@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.161.2.12 $
+:Version: $Revision: 1.161.2.13 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -18,7 +18,7 @@ Before you get too far, it's probably worth having a quick read of the Roundup
 
 Customisation of Roundup can take one of six forms:
 
-1. `tracker configuration`_ file changes
+1. `tracker configuration`_ changes
 2. database, or `tracker schema`_ changes
 3. "definition" class `database content`_ changes
 4. behavioural changes, through detectors_
@@ -58,6 +58,12 @@ Tracker Configuration
 The ``config.ini`` located in your tracker home contains the basic
 configuration for the web and e-mail components of roundup's interfaces.
 
+Changes to the data captured by your tracker is controlled by the `tracker
+schema`_.  Some configuration is also performed using permissions - see the 
+`security / access controls`_ section. For example, to allow users to
+automatically register through the email interface, you must grant the
+"Anonymous" Role the "Email Access" Permission.
+
 The following is taken from the `Python Library Reference`__ (May 20, 2004)
 section "ConfigParser -- Configuration file parser":
 
@@ -78,11 +84,6 @@ section "ConfigParser -- Configuration file parser":
  resulting in "foodir" being "frob/whatever".
 
 __ http://docs.python.org/lib/module-ConfigParser.html
-
-Configuration variables may be referred to in lower or upper case. In code,
-variables not in the "main" section are referred to using their section and
-name, so "domain" in the section "mail" becomes MAIL_DOMAIN. The
-configuration variables available are:
 
 Section **main**
  database -- ``db``
@@ -281,6 +282,11 @@ Section **nosy**
 
 You may generate a new default config file using the ``roundup-admin
 genconfig`` command.
+
+Configuration variables may be referred to in lower or upper case. In code,
+variables not in the "main" section are referred to using their section and
+name, so "domain" in the section "mail" becomes MAIL_DOMAIN. The
+configuration variables available are:
 
 
 Tracker Schema
@@ -740,22 +746,28 @@ A set of Permissions is built into the security module by default:
 - Edit (everything)
 - View (everything)
 
-Every Class you define in your tracker's schema also gets an Create, Edit
-and View Permission of its own.
+These are assigned to the "Admin" Role by default, and allow a user to do
+anything. Every Class you define in your `tracker schema`_ also gets an
+Create, Edit and View Permission of its own. The web and email interfaces
+also define:
 
-The default interfaces define:
-
-- Web Registration
-- Web Access
-- Web Roles
-- Email Registration
-- Email Access
+*Email Access*
+  If defined, the user may use the email interface. Used by default to deny
+  Anonymous users access to the email interface. When granted to the
+  Anonymous user, they will be automatically registered by the email
+  interface (see also the ``new_email_user_roles`` configuration option).
+*Web Access*
+  If defined, the user may use the web interface. All users are able to see
+  the login form, regardless of this setting (thus enabling logging in).
+*Web Roles*
+  Controls user access to editing the "roles" property of the "user" class.
+  TODO: deprecate in favour of a property-based control.
 
 These are hooked into the default Roles:
 
 - Admin (Create, Edit, View and everything; Web Roles)
 - User (Web Access; Email Access)
-- Anonymous (Web Registration; Email Registration)
+- Anonymous (Web Access)
 
 And finally, the "admin" user gets the "Admin" Role, and the "anonymous"
 user gets "Anonymous" assigned when the tracker is installed.
@@ -765,10 +777,11 @@ For the "User" Role, the "classic" tracker defines:
 - Create, Edit and View issue, file, msg, query, keyword 
 - View priority, status
 - View user
-- Edit their own record
+- Edit their own user record
 
 And the "Anonymous" Role is defined as:
 
+- Web interface access
 - Create user (for registration)
 - View issue, file, msg, query, keyword, priority, status
 
@@ -784,37 +797,31 @@ Put together, these settings appear in the tracker's ``schema.py`` file::
     # REGULAR USERS
     #
     # Give the regular users access to the web and email interface
-    p = db.security.getPermission('Web Access')
-    db.security.addPermissionToRole('User', p)
-    p = db.security.getPermission('Email Access')
-    db.security.addPermissionToRole('User', p)
+    db.security.addPermissionToRole('User', 'Web Access')
+    db.security.addPermissionToRole('User', 'Email Access')
 
     # Assign the access and edit Permissions for issue, file and message
     # to regular users now
     for cl in 'issue', 'file', 'msg', 'query', 'keyword':
-        p = db.security.getPermission('View', cl)
-        db.security.addPermissionToRole('User', p)
-        p = db.security.getPermission('Edit', cl)
-        db.security.addPermissionToRole('User', p)
-        p = db.security.getPermission('Create', cl)
-        db.security.addPermissionToRole('User', p)
+        db.security.addPermissionToRole('User', 'View', cl)
+        db.security.addPermissionToRole('User', 'Edit', cl)
+        db.security.addPermissionToRole('User', 'Create', cl)
     for cl in 'priority', 'status':
-        p = db.security.getPermission('View', cl)
-        db.security.addPermissionToRole('User', p)
+        db.security.addPermissionToRole('User', 'View', cl)
 
     # May users view other user information? Comment these lines out
     # if you don't want them to
-    p = db.security.getPermission('View', 'user')
-    db.security.addPermissionToRole('User', p)
+    db.security.addPermissionToRole('User', 'View', 'user')
 
-    # Users should be able to edit their own details. Note that this
-    # permission is limited to only the situation where the Viewed or
-    # Edited item is their own.
+    # Users should be able to edit their own details -- this permission
+    # is limited to only the situation where the Viewed or Edited item
+    # is their own.
     def own_record(db, userid, itemid):
         '''Determine whether the userid matches the item being accessed.'''
         return userid == itemid
     p = db.security.addPermission(name='View', klass='user', check=own_record,
         description="User is allowed to view their own user details")
+    db.security.addPermissionToRole('User', p)
     p = db.security.addPermission(name='Edit', klass='user', check=own_record,
         description="User is allowed to edit their own user details")
     db.security.addPermissionToRole('User', p)
@@ -825,35 +832,31 @@ Put together, these settings appear in the tracker's ``schema.py`` file::
     # Let anonymous users access the web interface. Note that almost all
     # trackers will need this Permission. The only situation where it's not
     # required is in a tracker that uses an HTTP Basic Authenticated front-end.
-    p = db.security.getPermission('Web Access')
-    db.security.addPermissionToRole('Anonymous', p)
+    db.security.addPermissionToRole('Anonymous', 'Web Access')
 
     # Let anonymous users access the email interface (note that this implies
     # that they will be registered automatically, hence they will need the
     # "Create" user Permission below)
-    p = db.security.getPermission('Email Access')
-    db.security.addPermissionToRole('Anonymous', p)
+    # This is disabled by default to stop spam from auto-registering users on
+    # public trackers.
+    #db.security.addPermissionToRole('Anonymous', 'Email Access')
 
     # Assign the appropriate permissions to the anonymous user's Anonymous
     # Role. Choices here are:
     # - Allow anonymous users to register
-    p = db.security.getPermission('Create', 'user')
-    db.security.addPermissionToRole('Anonymous', p)
+    db.security.addPermissionToRole('Anonymous', 'Create', 'user')
 
     # Allow anonymous users access to view issues (and the related, linked
     # information)
     for cl in 'issue', 'file', 'msg', 'keyword', 'priority', 'status':
-        p = db.security.getPermission('View', cl)
-        db.security.addPermissionToRole('Anonymous', p)
+        db.security.addPermissionToRole('Anonymous', 'View', cl)
 
     # [OPTIONAL]
     # Allow anonymous users access to create or edit "issue" items (and the
     # related file and message items)
     #for cl in 'issue', 'file', 'msg':
-    #   p = db.security.getPermission('Create', cl)
-    #   db.security.addPermissionToRole('Anonymous', p)
-    #   p = db.security.getPermission('Edit', cl)
-    #   db.security.addPermissionToRole('Anonymous', p)
+    #   db.security.addPermissionToRole('Anonymous', 'Create', cl)
+    #   db.security.addPermissionToRole('Anonymous', 'Edit', cl)
 
 
 Automatic Permission Checks
@@ -886,6 +889,9 @@ New users are assigned the Roles defined in the config file as:
 
 - NEW_WEB_USER_ROLES
 - NEW_EMAIL_USER_ROLES
+
+The `users may only edit their issues`_ example shows customisation of
+these parameters.
 
 
 Changing Access Controls

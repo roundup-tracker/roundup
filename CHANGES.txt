@@ -10,8 +10,17 @@ Fixed:
   (see doc/upgrading.txt for how to fix in your trackers)
 - after logout, always display tracker home page
 - web forms don't create new items if no item properties are set from UI
-- item creation failed if multilink fields had invalid entries (sf bug 1177602)
+- item creation failed if multilink fields had invalid entries (sf bug
+  1177602)
 - fix bdist_rpm (sf bug 1164328)
+- fix checking of "Email Access" for Anonymous email registration (sf bug
+  1177057)
+- disable "Email Access" for Anonymous by default to stop spam regsitering
+  users on public trackers
+- send errors in the web interface to a logfile by default. Use the
+  "debug" multiprocess mode (roundup-server) or the DEBUG_TO_CLIENT var
+  (roundup.cgi) to have the errors appear in your browser
+- fix setgid typo (sf bug 1171346)
 
 
 2005-03-03 0.8.2
