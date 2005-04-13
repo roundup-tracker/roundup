@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.85.2.3 2005-02-28 03:13:42 richard Exp $
+# $Id: admin.py,v 1.85.2.4 2005-04-13 06:57:09 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -1049,6 +1049,10 @@ Erase it? Y/N: """))
 
         class colon_separated(csv.excel):
             delimiter = ':'
+
+        # make sure target dir exists
+        if not os.path.exists(dir):
+            os.makedirs(dir)
 
         # do all the classes specified
         for classname in classes:

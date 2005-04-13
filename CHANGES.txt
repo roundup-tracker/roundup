@@ -22,6 +22,7 @@ Fixed:
   (roundup.cgi) to have the errors appear in your browser
 - fix setgid typo (sf bug 1171346)
 - fix faulty find_template filename facility (sf bug 1163629)
+- fix roundup-admin "export" so it creates the target dir if needed
 
 
 2005-03-03 0.8.2
