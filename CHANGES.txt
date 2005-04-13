@@ -21,6 +21,7 @@ Fixed:
   "debug" multiprocess mode (roundup-server) or the DEBUG_TO_CLIENT var
   (roundup.cgi) to have the errors appear in your browser
 - fix setgid typo (sf bug 1171346)
+- fix faulty find_template filename facility (sf bug 1163629)
 
 
 2005-03-03 0.8.2

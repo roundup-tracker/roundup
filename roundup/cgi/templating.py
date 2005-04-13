@@ -85,10 +85,10 @@ def find_template(dir, name, view):
 
     # try with a .html or .xml extension (new-style)
     for extension in '.html', '.xml':
-        filename = filename + extension
-        src = os.path.join(dir, filename)
+        f = filename + extension
+        src = os.path.join(dir, f)
         if os.path.exists(src):
-            return (src, filename)
+            return (src, f)
 
     # no view == no generic template is possible
     if not view:

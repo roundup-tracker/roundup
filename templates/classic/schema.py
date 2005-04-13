@@ -124,7 +124,9 @@ db.security.addPermissionToRole('Anonymous', 'Web Access')
 # Let anonymous users access the email interface (note that this implies
 # that they will be registered automatically, hence they will need the
 # "Create" user Permission below)
-db.security.addPermissionToRole('Anonymous', 'Email Access')
+# This is disabled by default to stop spam from auto-registering users on
+# public trackers.
+#db.security.addPermissionToRole('Anonymous', 'Email Access')
 
 # Assign the appropriate permissions to the anonymous user's Anonymous
 # Role. Choices here are:

@@ -97,6 +97,9 @@ The ``dbinit.py`` file has been split into two new files,
   need to be copied. Neither do the last few lines -- those starting
   with ``import detectors``, down to ``return db`` inclusive.
 
+You may remove the ``__init__.py`` module from the "detectors" directory as
+it is no longer used.
+
 There's a new way to write extension code for Roundup - the old
 ``interfaces.py`` file will be ignored. See the `customisation
 documentation`_ for information about how extensions are now written.
