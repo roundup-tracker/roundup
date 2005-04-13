@@ -17,6 +17,10 @@ Fixed:
 - web forms don't create new items if no item properties are set from UI
 - item creation failed if multilink fields had invalid entries (sf bug 1177602)
 - fix bdist_rpm (sf bug 1164328)
+- fix checking of "Email Access" for Anonymous email registration (sf bug
+  1177057)
+- disable "Email Access" for Anonymous by default to stop spam regsitering
+  users on public trackers
 
 
 2005-03-03 0.8.2

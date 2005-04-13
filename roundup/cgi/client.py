@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.212 2005-01-05 22:00:39 richard Exp $
+# $Id: client.py,v 1.213 2005-04-13 03:38:23 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -26,6 +26,7 @@ def initialiseSecurity(security):
     security.addPermissionToRole('Admin', p)
 
     # doing Role stuff through the web - make sure Admin can
+    # TODO: deprecate this and use a property-based control
     p = security.addPermission(name="Web Roles",
         description="User may manipulate user Roles through the web")
     security.addPermissionToRole('Admin', p)
