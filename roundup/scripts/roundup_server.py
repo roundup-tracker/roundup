@@ -17,11 +17,11 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.77 2005-02-19 10:21:32 a1s Exp $
+$Id: roundup_server.py,v 1.78 2005-04-13 05:30:06 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
-import errno, cgi, getopt, os, socket, sys, traceback, urllib
+import errno, cgi, getopt, os, socket, sys, traceback, urllib, time
 import ConfigParser, BaseHTTPServer, SocketServer, StringIO
 
 # python version check
@@ -70,6 +70,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     TRACKER_HOMES = {}
     TRACKERS = None
     LOG_IPADDRESS = 1
+    DEBUG_MODE = False
 
     def get_tracker(self, name):
         """Return a tracker instance for given tracker name"""
@@ -116,16 +117,26 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 self.send_response(400)
                 self.send_header('Content-Type', 'text/html')
                 self.end_headers()
-                try:
-                    reload(cgitb)
+                if self.DEBUG_MODE:
+                    try:
+                        reload(cgitb)
+                        self.wfile.write(cgitb.breaker())
+                        self.wfile.write(cgitb.html())
+                    except:
+                        s = StringIO.StringIO()
+                        traceback.print_exc(None, s)
+                        self.wfile.write("<pre>")
+                        self.wfile.write(cgi.escape(s.getvalue()))
+                        self.wfile.write("</pre>\n")
+                else:
+                    # user feedback
                     self.wfile.write(cgitb.breaker())
-                    self.wfile.write(cgitb.html())
-                except:
-                    s = StringIO.StringIO()
-                    traceback.print_exc(None, s)
-                    self.wfile.write("<pre>")
-                    self.wfile.write(cgi.escape(s.getvalue()))
-                    self.wfile.write("</pre>\n")
+                    ts = time.ctime()
+                    self.wfile.write('''<p>%s: An error occurred. Please check
+                    the server log for more infomation.</p>'''%ts)
+                    # out to the logfile
+                    print 'EXCEPTION AT', ts
+                    traceback.print_exc()
         sys.stdin = save_stdin
 
     do_GET = do_POST = do_HEAD = run_cgi
@@ -405,6 +416,7 @@ class ServerConfig(configuration.Config):
         """Return HTTP server object to run"""
         # we don't want the cgi module interpreting the command-line args ;)
         sys.argv = sys.argv[:1]
+
         # preload all trackers unless we are in "debug" mode
         tracker_homes = self.trackers()
         if self["MULTIPROCESS"] == "debug":
@@ -412,11 +424,14 @@ class ServerConfig(configuration.Config):
         else:
             trackers = dict([(name, roundup.instance.open(home, optimize=1))
                 for (name, home) in tracker_homes])
+
         # build customized request handler class
         class RequestHandler(RoundupRequestHandler):
             LOG_IPADDRESS = not self["LOG_HOSTNAMES"]
             TRACKER_HOMES = dict(tracker_homes)
             TRACKERS = trackers
+            DEBUG_MODE = self["MULTIPROCESS"] == "debug"
+
         # obtain request server class
         if self["MULTIPROCESS"] not in MULTIPROCESS_TYPES:
             print _("Multiprocess mode \"%s\" is not available, "

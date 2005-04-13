@@ -16,12 +16,12 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.40 2004-07-27 00:57:17 richard Exp $
+# $Id: roundup.cgi,v 1.41 2005-04-13 05:30:06 richard Exp $
 
 # python version check
 from roundup import version_check
 from roundup.i18n import _
-import sys
+import sys, time
 
 #
 ##  Configuration
@@ -42,8 +42,9 @@ import sys
 # ROUNDUP_LOG is the name of the logfile; if it's empty or does not exist,
 # logging is turned off (unless you changed the default below). 
 
-# ROUNDUP_DEBUG is a debug level, currently only 0 (OFF) and 1 (ON) are
-# used in the code. Higher numbers means more debugging output. 
+# DEBUG_TO_CLIENT specifies whether debugging goes to the HTTP server (via
+# stderr) or to the web client (via cgitb).
+DEBUG_TO_CLIENT = False
 
 # This indicates where the Roundup tracker lives
 TRACKER_HOMES = {
@@ -211,7 +212,16 @@ except SystemExit:
 except:
     sys.stdout, sys.stderr = out, err
     out.write('Content-Type: text/html\n\n')
-    cgitb.handler()
+    if DEBUG_TO_CLIENT:
+        cgitb.handler()
+    else:
+        out.write(cgitb.breaker())
+        ts = time.ctime()
+        out.write('''<p>%s: An error occurred. Please check
+            the server log for more infomation.</p>'''%ts)
+        print >> sys.stderr, 'EXCEPTION AT', ts
+        traceback.print_exc(0, sys.stderr)
+
 sys.stdout.flush()
 sys.stdout, sys.stderr = out, err
 LOG.close()
