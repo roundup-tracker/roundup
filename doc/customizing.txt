@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.177 $
+:Version: $Revision: 1.178 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -3198,16 +3198,20 @@ Tracking different types of issues
 Sometimes you will want to track different types of issues - developer,
 customer support, systems, sales leads, etc. A single Roundup tracker is
 able to support multiple types of issues. This example demonstrates adding
-a customer support issue class to a tracker.
+a system support issue class to a tracker.
 
 1. Figure out what information you're going to want to capture. OK, so
    this is obvious, but sometimes it's better to actually sit down for a
    while and think about the schema you're going to implement.
 
-2. Add the new issue class to your tracker's ``schema.py`` - in this
-   example, we're adding a "system support" class. Just after the "issue"
-   class definition, add::
+2. Add the new issue class to your tracker's ``schema.py``. Just after the
+   "issue" class definition, add::
 
+    # list our systems
+    system = Class(db, "system", name=String(), order=Number())
+    system.setkey("name")
+
+    # store issues related to those systems
     support = IssueClass(db, "support", 
                     assignedto=Link("user"), topic=Multilink("keyword"),
                     status=Link("status"), deadline=Date(),
