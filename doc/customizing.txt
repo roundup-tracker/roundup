@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.178 $
+:Version: $Revision: 1.179 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2524,6 +2524,8 @@ Define the new action class
 
 Create a new action class in your tracker's ``extensions`` directory, for
 example ``myaction.py``::
+
+ from roundup.cgi.actions import Action
 
  class MyAction(Action):
      def handle(self):
