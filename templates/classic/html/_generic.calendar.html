@@ -1,0 +1,18 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+ <head>
+  <link rel="stylesheet" type="text/css" href="@@file/style.css" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8;" />
+  <title tal:content="string:Roundup Calendar"></title>
+  <script language="Javascript"
+          type="text/javascript"
+          tal:content="structure string:
+          // this is the name of the field in the original form that we're working on
+          form  = window.opener.document.${request/form/form/value};
+          field = '${request/form/property/value}';" >
+  </script>
+ </head>
+ <body class="body"
+       tal:content="structure python:utils.html_calendar(request)">
+ </body>
+</html>

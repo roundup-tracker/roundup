@@ -20,6 +20,7 @@ __docformat__ = 'restructuredtext'
 from __future__ import nested_scopes
 
 import sys, cgi, urllib, os, re, os.path, time, errno, mimetypes, csv
+import calendar
 
 from roundup import hyperdb, date, support
 from roundup import i18n
@@ -1505,6 +1506,21 @@ class DateHTMLProperty(HTMLProperty):
         return DateHTMLProperty(self._client, self._classname, self._nodeid,
             self._prop, self._formname, self._value, offset=offset)
 
+    def popcal(self, width=300, height=200, label= "(cal)",
+            form="itemSynopsis"):
+        """Generate a link to a calendar pop-up window.
+
+        item: HTMLProperty e.g.: context.deadline
+        """
+        if self.isset():
+            date = "&date=%s"%self._value
+        else :
+            date = ""
+        return ('<a class="classhelp" href="javascript:help_window('
+            "'%s?@template=calendar&property=%s&form=%s%s', %d, %d)"
+            '">%s</a>'%(self._classname, self._name, form, date, width,
+            height, label))
+
 class IntervalHTMLProperty(HTMLProperty):
     def __init__(self, client, classname, nodeid, prop, name, value,
             anonymous=0):
@@ -2328,6 +2344,86 @@ class TemplatingUtils:
         if not self.client.instance.templating_utils.has_key(name):
             raise AttributeError, name
         return self.client.instance.templating_utils[name]
+
+    def html_calendar(self, request):
+        """Generate a HTML calendar.
+
+        `request`  the roundup.request object
+                   - @template : name of the template
+                   - form      : name of the form to store back the date
+                   - property  : name of the property of the form to store
+                                 back the date
+                   - date      : current date
+                   - display   : when browsing, specifies year and month
+
+        html will simply be a table.
+        """
+        date_str  = request.form.getfirst("date", ".")
+        display   = request.form.getfirst("display", date_str)
+        template  = request.form.getfirst("@template", "calendar")
+        form      = request.form.getfirst("form")
+        property  = request.form.getfirst("property")
+        curr_date = date.Date(date_str) # to highlight
+        display   = date.Date(display)  # to show
+        day       = display.day
+
+        # for navigation
+        date_prev_month = display + date.Interval("-1m")
+        date_next_month = display + date.Interval("+1m")
+        date_prev_year  = display + date.Interval("-1y")
+        date_next_year  = display + date.Interval("+1y")
+
+        res = []
+
+        base_link = "%s?@template=%s&property=%s&form=%s&date=%s" % \
+                    (request.classname, template, property, form, curr_date)
+
+        # navigation
+        # month
+        res.append('<table class="calendar"><tr><td>')
+        res.append(' <table width="100%" class="calendar_nav"><tr>')
+        link = "&display=%s"%date_prev_month
+        res.append('  <td><a href="%s&display=%s">&lt;</a></td>'%(base_link,
+            date_prev_month))
+        res.append('  <td>%s</td>'%calendar.month_name[display.month])
+        res.append('  <td><a href="%s&display=%s">&gt;</a></td>'%(base_link,
+            date_next_month))
+        # spacer
+        res.append('  <td width="100%"></td>')
+        # year
+        res.append('  <td><a href="%s&display=%s">&lt;</a></td>'%(base_link,
+            date_prev_year))
+        res.append('  <td>%s</td>'%display.year)
+        res.append('  <td><a href="%s&display=%s">&gt;</a></td>'%(base_link,
+            date_next_year))
+        res.append(' </tr></table>')
+        res.append(' </td></tr>')
+
+        # the calendar
+        res.append(' <tr><td><table class="calendar_display">')
+        res.append('  <tr class="weekdays">')
+        for day in calendar.weekheader(3).split():
+            res.append('   <td>%s</td>'%day)
+        res.append('  </tr>')
+        for week in calendar.monthcalendar(display.year, display.month):
+            res.append('  <tr>')
+            for day in week:
+                link = "javascript:form[field].value = '%d-%02d-%02d'; " \
+                      "window.close ();"%(display.year, display.month, day)
+                if (day == curr_date.day and display.month == curr_date.month
+                        and display.year == curr_date.year):
+                    # highlight
+                    style = "today"
+                else :
+                    style = ""
+                if day:
+                    res.append('   <td class="%s"><a href="%s">%s</a></td>'%(
+                        style, link, day))
+                else :
+                    res.append('   <td></td>')
+            res.append('  </tr>')
+        res.append('</table></td></tr></table>')
+        return "\n".join(res)
 
 class MissingValue:
     def __init__(self, description, **kwargs):

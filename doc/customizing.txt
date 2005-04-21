@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.179 $
+:Version: $Revision: 1.180 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1932,6 +1932,11 @@ pretty      Date properties - render the date as "dd Mon YYYY" (eg. "19
             format (eg. "yesterday"). The format arguments are those used
             in the standard ``strftime`` call (see the `Python Library
             Reference: time module`__)
+popcal      Generate a link to a popup calendar which may be used to
+            edit the date field, for example::
+
+              <span tal:replace="structure context/due/popupCalendar" />
+
 menu        only on Link and Multilink properties - render a form select
             list for this property. Takes a number of optional arguments
 
@@ -2141,6 +2146,9 @@ Method          Description
 Batch           return a batch object using the supplied list
 url_quote       quote some text as safe for a URL (ie. space, %, ...)
 html_quote      quote some text as safe in HTML (ie. <, >, ...)
+html_calendar   renders an HTML calendar used by the
+                ``_generic.calendar.html`` template (itself invoked by
+                the popupCalendar DateHTMLProperty method
 =============== ========================================================
 
 You may add additional utility methods by writing them in your tracker
