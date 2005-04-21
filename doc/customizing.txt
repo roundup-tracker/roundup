@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.161.2.15 $
+:Version: $Revision: 1.161.2.16 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1212,6 +1212,9 @@ variables and their values. You can:
 - Remove items from a multilink property of the current item.
 - Specify that some properties are required for the edit
   operation to be successful.
+
+These operations will only take place if the form action (the
+``@action`` variable) is "edit" or "new".
 
 In the following, <bracketed> values are variable, "@" may be
 either ":" or "@", and other text "required" is fixed.
