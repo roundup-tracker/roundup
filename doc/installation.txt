@@ -22,7 +22,7 @@ Roundup trackers
  `choosing your template`_.
 
 Roundup support code
- Installed into your Python install's lib directory
+ Installed into your Python install's lib directory.
 
 Roundup scripts
  These include the email gateway, the roundup
@@ -46,18 +46,24 @@ http://starship.python.net/crew/mhammond/win32/).
 Optional Components
 ===================
 
-You may optionall install and use:
+You may optionally install and use:
 
 An RDBMS
   Sqlite, MySQL and Postgresql are all supported by Roundup and will be
   used if available. One of these is recommended if you are anticipating a
   large user base (see `choosing your backend`_ below).
+
 Xapian full-text indexer
   The Xapian_ full-text indexer is also supported and will be used by
   default if it is available. This is strongly recommended if you are
   anticipating a large number of issues (> 1000).
 
+  You may install Xapian at any time, even after a tracker has been
+  installed and used. You will need to run the "roundup-admin reindex"
+  command if the tracker has existing data.
+
 .. _Xapian: http://www.xapian.org/
+
 
 Getting Roundup
 ===============

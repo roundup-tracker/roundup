@@ -18,9 +18,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: test_indexer.py,v 1.7 2005-04-28 00:21:42 richard Exp $
+# $Id: test_indexer.py,v 1.8 2005-04-28 09:06:09 richard Exp $
 
 import os, unittest, shutil
+
+class db:
+    class config:
+        DATABASE = 'test-index'
 
 class IndexerTest(unittest.TestCase):
     def setUp(self):
@@ -29,7 +33,7 @@ class IndexerTest(unittest.TestCase):
         os.mkdir('test-index')
         os.mkdir('test-index/files')
         from roundup.backends.indexer_dbm import Indexer
-        self.dex = Indexer('test-index')
+        self.dex = Indexer(db)
         self.dex.load_index()
 
     def test_basics(self):
@@ -45,12 +49,13 @@ class IndexerTest(unittest.TestCase):
 
 class XapianIndexerTest(IndexerTest):
     def setUp(self):
-        if os.path.exists('text-index'):
-            shutil.rmtree('text-index')
+        if os.path.exists('test-index'):
+            shutil.rmtree('test-index')
+        os.mkdir('test-index')
         from roundup.backends.indexer_xapian import Indexer
-        self.dex = Indexer('.')
+        self.dex = Indexer(db)
     def tearDown(self):
-        shutil.rmtree('text-index')
+        shutil.rmtree('test-index')
 
 def test_suite():
     suite = unittest.TestSuite()
