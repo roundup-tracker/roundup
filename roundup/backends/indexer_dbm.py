@@ -14,7 +14,7 @@
 #     that promote freedom, but obviously am giving up any rights
 #     to compel such.
 # 
-#$Id: indexer_dbm.py,v 1.5 2005-01-08 16:16:59 jlgijsbers Exp $
+#$Id: indexer_dbm.py,v 1.6 2005-04-28 00:21:42 richard Exp $
 '''This module provides an indexer class, RoundupIndexer, that stores text
 indices in a roundup instance.  This class makes searching the content of
 messages, string properties and text files possible.
@@ -37,8 +37,8 @@ class Indexer(Indexer):
 
     where identifier is (classname, nodeid, propertyname)
     '''
-    def __init__(self, db_path):
-        self.indexdb_path = os.path.join(db_path, 'indexes')
+    def __init__(self, db):
+        self.indexdb_path = os.path.join(db.config.DATABASE, 'indexes')
         self.indexdb = os.path.join(self.indexdb_path, 'index.db')
         self.reindex = 0
         self.quiet = 9

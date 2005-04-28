@@ -5,6 +5,7 @@ are given with the most recent entry first.
 Feature:
 - added "imapServer.py" script (sf patch 934567)
 - added date selection popup windows (thanks Marcus Priesch)
+- added Xapian indexer; replaces standard indexers if Xapian is available
 
 
 2005-??-?? 0.8.3

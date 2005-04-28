@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.93 2005-03-03 22:16:32 richard Exp $
+# $Id: back_metakit.py,v 1.94 2005-04-28 00:21:42 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -89,7 +89,7 @@ class _Database(hyperdb.Database, roundupdb.Database):
         self.dirty = 0
         self.lockfile = None
         self._db = self.__open()
-        self.indexer = Indexer(self.config.DATABASE, self._db)
+        self.indexer = Indexer(self)
         self.security = security.Security(self)
 
         self.stats = {'cache_hits': 0, 'cache_misses': 0, 'get_items': 0,
@@ -2000,11 +2000,11 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 CURVERSION = 2
 
-class Indexer(Indexer):
-    def __init__(self, path, datadb):
-        self.path = os.path.join(path, 'index.mk4')
+class MetakitIndexer(Indexer):
+    def __init__(self, db):
+        self.path = os.path.join(db.config.DATABASE, 'index.mk4')
         self.db = metakit.storage(self.path, 1)
-        self.datadb = datadb
+        self.datadb = db._db
         self.reindex = 0
         v = self.db.view('version')
         if not v.structure():
@@ -2134,5 +2134,10 @@ class Indexer(Indexer):
             self.db.rollback()
             self.db = metakit.storage(self.path, 1)
         self.changed = 0
+
+try:
+    from indexer_xapian import Indexer
+except ImportError:
+    Indexer = MetakitIndexer
 
 # vim: set et sts=4 sw=4 :

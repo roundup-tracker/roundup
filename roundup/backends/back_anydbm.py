@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: back_anydbm.py,v 1.186 2005-03-03 22:16:32 richard Exp $
+#$Id: back_anydbm.py,v 1.187 2005-04-28 00:21:42 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -41,7 +41,11 @@ from roundup.i18n import _
 
 from blobfiles import FileStorage
 from sessions_dbm import Sessions, OneTimeKeys
-from indexer_dbm import Indexer
+
+try:
+    from indexer_xapian import Indexer
+except ImportError:
+    from indexer_dbm import Indexer
 
 def db_exists(config):
     # check for the user db
@@ -90,7 +94,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.newnodes = {}      # keep track of the new nodes by class
         self.destroyednodes = {}# keep track of the destroyed nodes by class
         self.transactions = []
-        self.indexer = Indexer(self.dir)
+        self.indexer = Indexer(self)
         self.security = security.Security(self)
         # ensure files are group readable and writable
         os.umask(0002)

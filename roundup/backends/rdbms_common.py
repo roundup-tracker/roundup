@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.151 2005-03-03 22:16:32 richard Exp $
+# $Id: rdbms_common.py,v 1.152 2005-04-28 00:21:42 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -39,7 +39,10 @@ from roundup.backends import locking
 
 # support
 from blobfiles import FileStorage
-from indexer_rdbms import Indexer
+try:
+    from indexer_xapian import Indexer
+except ImportError:
+    from indexer_rdbms import Indexer
 from sessions_rdbms import Sessions, OneTimeKeys
 from roundup.date import Range
 
@@ -321,6 +324,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         for klass in classes:
             for nodeid in klass.list():
                 klass.index(nodeid)
+        self.indexer.save_index()
 
     hyperdb_to_sql_datatypes = {
         hyperdb.String : 'TEXT',
@@ -1176,6 +1180,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # now, do all the other transaction stuff
         for method, args in self.transactions:
             method(*args)
+
+        # save the indexer
+        self.indexer.save_index()
 
         # clear out the transactions
         self.transactions = []

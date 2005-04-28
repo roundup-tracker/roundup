@@ -1,4 +1,4 @@
-#$Id: indexer_rdbms.py,v 1.8 2005-01-08 16:16:59 jlgijsbers Exp $
+#$Id: indexer_rdbms.py,v 1.9 2005-04-28 00:21:42 richard Exp $
 ''' This implements the full-text indexer over two RDBMS tables. The first
 is a mapping of words to occurance IDs. The second maps the IDs to (Class,
 propname, itemid) instances.
@@ -16,6 +16,11 @@ class Indexer(Indexer):
         '''close the indexing database'''
         # just nuke the circular reference
         self.db = None
+
+    def save_index(self):
+        '''Save the changes to the index.'''
+        # not necessary - the RDBMS connection will handle this for us
+        pass
   
     def force_reindex(self):
         '''Force a reindexing of the database.  This essentially

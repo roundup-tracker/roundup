@@ -18,11 +18,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: test_indexer.py,v 1.6 2005-01-05 22:28:32 jlgijsbers Exp $
+# $Id: test_indexer.py,v 1.7 2005-04-28 00:21:42 richard Exp $
 
 import os, unittest, shutil
-
-from roundup.backends.indexer_dbm import Indexer
 
 class IndexerTest(unittest.TestCase):
     def setUp(self):
@@ -30,27 +28,39 @@ class IndexerTest(unittest.TestCase):
             shutil.rmtree('test-index')
         os.mkdir('test-index')
         os.mkdir('test-index/files')
+        from roundup.backends.indexer_dbm import Indexer
         self.dex = Indexer('test-index')
         self.dex.load_index()
 
     def test_basics(self):
-        self.dex.add_text('testing1', 'a the hello world')
-        self.assertEqual(self.dex.words, {'HELLO': {1: 1}, 'WORLD': {1: 1}})
-        self.dex.add_text('testing2', 'blah blah the world')
-        self.assertEqual(self.dex.words, {'BLAH': {2: 2}, 'HELLO': {1: 1},
-            'WORLD': {2: 1, 1: 1}})
-        self.assertEqual(self.dex.find(['world']), ['testing1',
-                                                    'testing2'])
-        self.assertEqual(self.dex.find(['blah']), ['testing2'])
+        self.dex.add_text(('test', '1', 'foo'), 'a the hello world')
+        self.dex.add_text(('test', '2', 'foo'), 'blah blah the world')
+        self.assertEqual(self.dex.find(['world']), [('test', '1', 'foo'),
+                                                    ('test', '2', 'foo')])
+        self.assertEqual(self.dex.find(['blah']), [('test', '2', 'foo')])
         self.assertEqual(self.dex.find(['blah', 'hello']), [])
-        self.dex.save_index()
 
     def tearDown(self):
         shutil.rmtree('test-index')
 
+class XapianIndexerTest(IndexerTest):
+    def setUp(self):
+        if os.path.exists('text-index'):
+            shutil.rmtree('text-index')
+        from roundup.backends.indexer_xapian import Indexer
+        self.dex = Indexer('.')
+    def tearDown(self):
+        shutil.rmtree('text-index')
+
 def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(IndexerTest))
+    try:
+        import xapian
+        suite.addTest(unittest.makeSuite(XapianIndexerTest))
+    except ImportError:
+        print "Skipping Xapian indexer tests"
+        pass
     return suite
 
 if __name__ == '__main__':
