@@ -9,6 +9,9 @@ Feature:
 
 
 2005-??-?? 0.8.3
+Feature:
+- chinese translation by limodou
+
 Fixed:
 - fix reference to The Zope Book in Roundup FAQ
 - disabled file logging in Roundup test suite (sf bug 1155649)
