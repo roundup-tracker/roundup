@@ -211,6 +211,15 @@ class Database(rdbms_common.Database):
         sql = "select setval('_%s_ids', %s) from dual"%(classname, int(setid))
         self.sql(sql)
 
+    def clear(self):
+        rdbms_common.Database.clear(self)
+
+        # reset the sequences
+        for cn in self.classes.keys():
+            self.sql('DROP SEQUENCE _%s_ids'%cn)
+            self.sql('CREATE SEQUENCE _%s_ids'%cn)
+
+
 
 class Class(rdbms_common.Class):
     pass

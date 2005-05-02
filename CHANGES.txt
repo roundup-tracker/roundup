@@ -145,7 +145,7 @@ Fixed:
 - relaxed URL designator syntax to allow issue[0]*1 (sf bug 1054523)
 
 
-2004-??-?? 0.7.12
+2005-05-02 0.7.12
 Fixed:
 - handle capitalisation of class names in text hyperlinking (sf bug
   1101043)
@@ -157,6 +157,7 @@ Fixed:
 - hack to fix some anydbm export problems (sf bug 1081454)
 - ignore AutoReply messages (sf patch 1085051)
 - fix ZRoundup syntax error (sf bug 1122335)
+- fix RDBMS clear() so it resets all class itemid counters
 
 
 2005-01-06 0.7.11

@@ -465,6 +465,13 @@ class Database(Database):
         vals = (int(setid)+1, classname)
         self.sql(sql, vals)
 
+    def clear(self):
+        rdbms_common.Database.clear(self)
+
+        # set the id counters to 0 (setid adds one) so we start at 1
+        for cn in self.classes.keys():
+            self.setid(cn, 0)
+
     def create_class(self, spec):
         rdbms_common.Database.create_class(self, spec)
         sql = 'insert into ids (name, num) values (%s, %s)'
