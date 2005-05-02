@@ -5,14 +5,16 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 This 0.8.3 release adds one feature and fixes some bugs:
 
 Feature:
+
 - chinese translation by limodou
 
 Fixed:
+
 - fix reference to The Zope Book in Roundup FAQ
 - disabled file logging in Roundup test suite (sf bug 1155649)
 - return original string if message issue xref isn't valid
-- fix nosyreaction.py to stop it setting the nosy list unnecessarily
-  (see doc/upgrading.txt for how to fix in your trackers)
+- fix nosyreaction.py to stop it setting the nosy list unnecessarily (see
+  doc/upgrading.txt for how to fix in your trackers)
 - after logout, always display tracker home page
 - web forms don't create new items if no item properties are set from UI
 - item creation failed if multilink fields had invalid entries (sf bug
