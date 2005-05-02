@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.40 2005-02-14 04:37:24 richard Exp $
+# $Id: back_sqlite.py,v 1.41 2005-05-02 01:05:15 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -325,11 +325,17 @@ class Database(rdbms_common.Database):
     def setid(self, classname, setid):
         ''' Set the id counter: used during import of database
 
-        We add one to make it behave like the seqeunces in postgres.
+        We add one to make it behave like the sequences in postgres.
         '''
         sql = 'update ids set num=%s where name=%s'%(self.arg, self.arg)
         vals = (int(setid)+1, classname)
         self.sql(sql, vals)
+
+    def clear(self):
+        # set the id counters to 0 (setid adds one) so we start at 1
+        rdbms_common.Database.clear(self)
+        for cn in self.classes.keys():
+            self.setid(cn, 0)
 
     def create_class(self, spec):
         rdbms_common.Database.create_class(self, spec)
