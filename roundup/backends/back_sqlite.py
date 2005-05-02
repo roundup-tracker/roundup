@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.27.2.3 2005-01-04 01:38:12 richard Exp $
+# $Id: back_sqlite.py,v 1.27.2.4 2005-05-02 01:03:40 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -320,13 +320,25 @@ class Database(rdbms_common.Database):
     def setid(self, classname, setid):
         ''' Set the id counter: used during import of database
 
-        We add one to make it behave like the seqeunces in postgres.
+        We add one to make it behave like the sequences in postgres.
         '''
         sql = 'update ids set num=%s where name=%s'%(self.arg, self.arg)
         vals = (int(setid)+1, classname)
         if __debug__:
             print >>hyperdb.DEBUG, 'setid', (self, sql, vals)
         self.cursor.execute(sql, vals)
+
+    def clear(self):
+        '''Delete all database contents.
+
+        Note: I don't commit here, which is different behaviour to the
+              "nuke from orbit" behaviour in the dbs.
+        '''
+        rdbms_common.Database.clear(self)
+
+        # set the id counters to 0 (setid adds one) so we start at 1
+        for cn in self.classes.keys():
+            self.setid(cn, 0)
 
     def create_class(self, spec):
         rdbms_common.Database.create_class(self, spec)

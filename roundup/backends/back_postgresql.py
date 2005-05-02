@@ -211,7 +211,7 @@ class Database(rdbms_common.Database):
     def newid(self, classname):
         sql = "select nextval('_%s_ids') from dual"%classname
         if __debug__:
-            print >>hyperdb.DEBUG, 'setid', (self, sql)
+            print >>hyperdb.DEBUG, 'newid', (self, sql)
         self.cursor.execute(sql)
         return self.cursor.fetchone()[0]
 
@@ -219,6 +219,7 @@ class Database(rdbms_common.Database):
         sql = "select setval('_%s_ids', %s) from dual"%(classname, int(setid))
         if __debug__:
             print >>hyperdb.DEBUG, 'setid', (self, sql)
+        print 'setid', (self, sql)
         self.cursor.execute(sql)
 
 

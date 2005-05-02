@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.27.2.15 2005-01-04 01:38:12 richard Exp $ 
+# $Id: db_test_base.py,v 1.27.2.16 2005-05-02 01:03:41 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -1381,7 +1381,7 @@ class ClassicInitTest(unittest.TestCase):
                 f.write(self.extra_config)
             finally:
                 f.close()
-        
+
         init.initialise(self.dirname, 'sekrit')
 
         # check we can load the package
