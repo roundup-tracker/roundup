@@ -8,7 +8,7 @@ Feature:
 - added Xapian indexer; replaces standard indexers if Xapian is available
 
 
-2005-??-?? 0.8.3
+2005-05-02 0.8.3
 Feature:
 - chinese translation by limodou
 
@@ -37,6 +37,7 @@ Fixed:
   the csv module appears to have its own ideas about such things (sf bug
   1163890)
 - fix installation docs referring to old-style configuration variables
+- fix roundup-admin "find" for searching Multilinks (sf bug 1189465)
 
 
 2005-03-03 0.8.2
