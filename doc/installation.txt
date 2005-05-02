@@ -178,18 +178,17 @@ Configuring your first tracker
       will be stored in.
 
       You will now be directed to edit the tracker configuration and
-      initial schema.  At a minimum, you must set ``MAILHOST``,
-      ``TRACKER_WEB``, ``MAIL_DOMAIN`` and ``ADMIN_EMAIL``. The
-      configuration file uses Python syntax, so almost every value must be
-      ``'quoted'`` using single or double quotes. If you get stuck, and get
-      configuration file errors, then see the `tracker configuration`_ section
-      of the `customisation documentation`_.
+      initial schema.  At a minimum, you must set "main :: admin_email"
+      (that's the "admin_email" option in the "main" section) "mail ::
+      host", "tracker :: web" and "mail :: domain".  If you get stuck,
+      and get configuration file errors, then see the `tracker
+      configuration`_ section of the `customisation documentation`_.
 
       If you just want to get set up to test things quickly (and follow
       the instructions in step 3 below), you can even just set the
-      TRACKER_WEB variable to::
+      "tracker :: web" variable to::
 
-         TRACKER_WEB = 'http://localhost:8080/support/'
+         web = http://localhost:8080/support/
 
       The URL *must* end in a '/', or your web interface *will not work*.
       See `Customising Roundup`_ for details on configuration and schema
@@ -213,7 +212,7 @@ Configuring your first tracker
 2. At this point, your tracker is set up, but doesn't have a nice user
    interface. To set that up, we need to `configure a web interface`_ and
    optionally `configure an email interface`_. If you want to try your
-   new tracker out, assuming ``TRACKER_WEB`` is set to
+   new tracker out, assuming "tracker :: web" is set to
    ``'http://localhost:8080/support/'``, run::
 
      roundup-server support=/opt/roundup/trackers/support
@@ -328,17 +327,18 @@ Copy the ``cgi-bin/roundup.cgi`` file to your web server's ``cgi-bin``
 directory. You will need to configure it to tell it where your tracker home
 is. You can do this either:
 
-through an environment variable
- set the variable TRACKER_HOMES to be a colon (":") separated list of
- name=home pairs (if you're using apache, the SetEnv directive can do this)
-directly in the ``roundup.cgi`` file itself
- add your instance to the TRACKER_HOMES variable as ``'name': 'home'``
+Through an environment variable
+  Set the variable TRACKER_HOMES to be a colon (":") separated list of
+  name=home pairs (if you're using apache, the SetEnv directive can do this)
+
+Directly in the ``roundup.cgi`` file itself
+  Add your instance to the TRACKER_HOMES variable as ``'name': 'home'``
 
 The "name" part of the configuration will appear in the URL and identifies the
 tracker (so you may have more than one tracker per cgi-bin script). Make sure
 there are no spaces or other illegal characters in it (to be safe, stick to
 letters and numbers). The "name" forms part of the URL that appears in the
-tracker config TRACKER_WEB variable, so make sure they match. The "home"
+tracker config "tracker :: web" variable, so make sure they match. The "home"
 part of the configuration is the tracker home directory.
 
 If you're using Apache, you can use an additional trick to hide the
