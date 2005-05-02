@@ -1,4 +1,4 @@
-#$Id: back_postgresql.py,v 1.29 2005-02-14 02:48:11 richard Exp $
+#$Id: back_postgresql.py,v 1.30 2005-05-02 05:48:59 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -211,6 +211,14 @@ class Database(rdbms_common.Database):
     def setid(self, classname, setid):
         sql = "select setval('_%s_ids', %s) from dual"%(classname, int(setid))
         self.sql(sql)
+
+    def clear(self):
+        rdbms_common.Database.clear(self)
+
+        # reset the sequences
+        for cn in self.classes.keys():
+            self.cursor.execute('DROP SEQUENCE _%s_ids'%cn)
+            self.cursor.execute('CREATE SEQUENCE _%s_ids'%cn)
 
 
 class Class(rdbms_common.Class):

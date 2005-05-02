@@ -1,4 +1,4 @@
-#$Id: back_mysql.py,v 1.57 2005-02-28 03:32:45 richard Exp $
+#$Id: back_mysql.py,v 1.58 2005-05-02 05:48:59 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -465,6 +465,13 @@ class Database(Database):
         sql = 'update ids set num=%s where name=%s'%(self.arg, self.arg)
         vals = (int(setid)+1, classname)
         self.sql(sql, vals)
+
+    def clear(self):
+        rdbms_common.Database.clear(self)
+
+        # set the id counters to 0 (setid adds one) so we start at 1
+        for cn in self.classes.keys():
+            self.setid(cn, 0)
 
     def create_class(self, spec):
         rdbms_common.Database.create_class(self, spec)

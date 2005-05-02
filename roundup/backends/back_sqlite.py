@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.41 2005-05-02 01:05:15 richard Exp $
+# $Id: back_sqlite.py,v 1.42 2005-05-02 05:48:59 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -332,8 +332,8 @@ class Database(rdbms_common.Database):
         self.sql(sql, vals)
 
     def clear(self):
-        # set the id counters to 0 (setid adds one) so we start at 1
         rdbms_common.Database.clear(self)
+        # set the id counters to 0 (setid adds one) so we start at 1
         for cn in self.classes.keys():
             self.setid(cn, 0)
 
