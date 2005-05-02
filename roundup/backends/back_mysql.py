@@ -497,11 +497,6 @@ class Database(Database):
         self.cursor.execute(sql, vals)
 
     def clear(self):
-        '''Delete all database contents.
-
-        Note: I don't commit here, which is different behaviour to the
-              "nuke from orbit" behaviour in the dbs.
-        '''
         rdbms_common.Database.clear(self)
 
         # set the id counters to 0 (setid adds one) so we start at 1

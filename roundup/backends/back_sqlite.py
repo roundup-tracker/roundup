@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.27.2.4 2005-05-02 01:03:40 richard Exp $
+# $Id: back_sqlite.py,v 1.27.2.5 2005-05-02 05:44:56 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -329,11 +329,6 @@ class Database(rdbms_common.Database):
         self.cursor.execute(sql, vals)
 
     def clear(self):
-        '''Delete all database contents.
-
-        Note: I don't commit here, which is different behaviour to the
-              "nuke from orbit" behaviour in the dbs.
-        '''
         rdbms_common.Database.clear(self)
 
         # set the id counters to 0 (setid adds one) so we start at 1

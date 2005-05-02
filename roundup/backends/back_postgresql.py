@@ -219,8 +219,15 @@ class Database(rdbms_common.Database):
         sql = "select setval('_%s_ids', %s) from dual"%(classname, int(setid))
         if __debug__:
             print >>hyperdb.DEBUG, 'setid', (self, sql)
-        print 'setid', (self, sql)
         self.cursor.execute(sql)
+
+    def clear(self):
+        rdbms_common.Database.clear(self)
+
+        # reset the sequences
+        for cn in self.classes.keys():
+            self.cursor.execute('DROP SEQUENCE _%s_ids'%cn)
+            self.cursor.execute('CREATE SEQUENCE _%s_ids'%cn)
 
 
 class Class(rdbms_common.Class):
