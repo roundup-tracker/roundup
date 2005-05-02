@@ -2,11 +2,18 @@ Roundup is a simple-to-use and -install issue-tracking system with
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-0.7.11 is a bug fix release:
+0.7.12 is a bug fix release:
 
-- index args URL generation broken in .10 (sf bug 1096027)
-- handle NotModified for non-static files (sf patch 1095790)
-- fix permission lookup in query editing
+- handle capitalisation of class names in text hyperlinking (sf bug
+  1101043)
+- quote full-text search text in URL generation
+- fixed problem migrating mysql databases
+- fix search_checkboxes macro (sf patch 1113828)
+- fix bug in date editing in Metakit
+- allow suppression of search_text in indexargs_form (sf bug 1101548)
+- hack to fix some anydbm export problems (sf bug 1081454)
+- ignore AutoReply messages (sf patch 1085051)
+- fix ZRoundup syntax error (sf bug 1122335)
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
