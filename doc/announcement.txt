@@ -2,23 +2,36 @@ Roundup is a simple-to-use and -install issue-tracking system with
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-This 0.8.2 release adds one feature and fixes some bugs:
+This 0.8.3 release adds one feature and fixes some bugs:
 
 Feature:
-
-- roundup-server automatically redirects from trackers list
-  to the tracker page if there is only one tracker
+- chinese translation by limodou
 
 Fixed:
-
-- added content to ZRoundup refresh.txt file (sf bug 1147622)
-- fix invalid reference to csv.colon_separated
-- correct URL to What's New in setup.py meta-data
-- change AUTOCOMMIT=OFF to AUTOCOMMIT=0 for MySQL (sf bug 1143707)
-- compile message objects in 'setup.py build'
-- use backend datatype for journal timestamps in RDBMSes
-- fixes to the "Using an external password validation source"
-  customisation example (sf bugs 1153640 and 1155108)
+- fix reference to The Zope Book in Roundup FAQ
+- disabled file logging in Roundup test suite (sf bug 1155649)
+- return original string if message issue xref isn't valid
+- fix nosyreaction.py to stop it setting the nosy list unnecessarily
+  (see doc/upgrading.txt for how to fix in your trackers)
+- after logout, always display tracker home page
+- web forms don't create new items if no item properties are set from UI
+- item creation failed if multilink fields had invalid entries (sf bug
+  1177602)
+- fix bdist_rpm (sf bug 1164328)
+- fix checking of "Email Access" for Anonymous email registration (sf bug
+  1177057)
+- disable "Email Access" for Anonymous by default to stop spam regsitering
+  users on public trackers
+- send errors in the web interface to a logfile by default. Use the
+  "debug" multiprocess mode (roundup-server) or the DEBUG_TO_CLIENT var
+  (roundup.cgi) to have the errors appear in your browser
+- fix setgid typo (sf bug 1171346)
+- fix faulty find_template filename facility (sf bug 1163629)
+- fix roundup-admin "export" so it creates the target dir if needed
+- "fix" roundup-admin "import" to not use "universal newline support" since
+  the csv module appears to have its own ideas about such things (sf bug
+  1163890)
+- fix installation docs referring to old-style configuration variables
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
