@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.93 2005-05-02 06:15:25 richard Exp $
+# $Id: admin.py,v 1.94 2005-05-06 06:49:54 a1s Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -1068,7 +1068,7 @@ Erase it? Y/N: """))
         for classname in classes:
             cl = self.get_class(classname)
 
-            f = open(os.path.join(dir, classname+'.csv'), 'w')
+            f = open(os.path.join(dir, classname+'.csv'), 'wb')
             writer = csv.writer(f, colon_separated)
 
             properties = cl.getprops()
@@ -1087,7 +1087,7 @@ Erase it? Y/N: """))
             f.close()
 
             # export the journals
-            jf = open(os.path.join(dir, classname+'-journals.csv'), 'w')
+            jf = open(os.path.join(dir, classname+'-journals.csv'), 'wb')
             journals = csv.writer(jf, colon_separated)
             map(journals.writerow, cl.export_journals())
             jf.close()
@@ -1151,7 +1151,7 @@ Erase it? Y/N: """))
             f.close()
 
             # import the journals
-            f = open(os.path.join(args[0], classname + '-journals.csv'), 'rU')
+            f = open(os.path.join(args[0], classname + '-journals.csv'), 'r')
             reader = csv.reader(f, colon_separated)
             cl.import_journals(reader)
             f.close()
