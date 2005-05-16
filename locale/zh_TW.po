@@ -1,16 +1,16 @@
 # Chinese Traditional message file for Roundup Issue Tracker
 # Fred Lin <gasolin@gmail.com>
 #
-# $Id: zh_TW.po,v 1.1 2005-05-15 09:59:02 a1s Exp $
+# $Id: zh_TW.po,v 1.2 2005-05-16 09:31:48 a1s Exp $
 #
 # roundup.pot revision 1.10
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: 0.8.2\n"
+"Project-Id-Version: 0.8.3\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2004-10-19 12:33+0300\n"
-"PO-Revision-Date: 2005-05-15 17:32+0800\n"
+"PO-Revision-Date: 2005-05-15 17:40+0800\n"
 "Last-Translator: Fred Lin <gasolin@gmail>\n"
 "Language-Team: Chinese Traditional <gasolin@gmail.com>\n"
 "MIME-Version: 1.0\n"
@@ -2026,7 +2026,7 @@ msgstr "狀態"
 
 #: ../templates/classic/html/issue.index.html:25
 msgid "Creator"
-msgstr "建立人"
+msgstr "建立者"
 
 #: ../templates/classic/html/issue.index.html:26
 msgid "Assigned&nbsp;To"
@@ -2361,7 +2361,7 @@ msgstr "內容"
 
 #: ../templates/classic/html/page.html:28
 msgid "<b>Your Queries</b> (<a href=\"query?@template=edit\">edit</a>)"
-msgstr "<b>你的查詢</b> (<a href=\"query?@template=edit\">編輯</a>)"
+msgstr "<b>我的查詢</b> (<a href=\"query?@template=edit\">編輯</a>)"
 
 #: ../templates/classic/html/page.html:39
 msgid "Issues"
@@ -2400,7 +2400,7 @@ msgstr "管理"
 #: ../templates/classic/html/page.html:72
 #: ../templates/minimal/html/page.html:49
 msgid "Class List"
-msgstr "類列表"
+msgstr "類別列表"
 
 #: ../templates/classic/html/page.html:76
 #: ../templates/minimal/html/page.html:51
@@ -2469,11 +2469,11 @@ msgstr "無值"
 
 #: ../templates/classic/html/query.edit.html:4
 msgid "\"Your Queries\" Editing - ${tracker}"
-msgstr "\"你的查詢\" 修改 - ${tracker}"
+msgstr "\"我的查詢\" 修改 - ${tracker}"
 
 #: ../templates/classic/html/query.edit.html:6
 msgid "\"Your Queries\" Editing"
-msgstr "\"你的查詢\"修改"
+msgstr "\"我的查詢\"修改"
 
 #: ../templates/classic/html/query.edit.html:11
 msgid "You are not allowed to edit queries."
@@ -2485,7 +2485,7 @@ msgstr "查詢"
 
 #: ../templates/classic/html/query.edit.html:29
 msgid "Include in \"Your Queries\""
-msgstr "包括在\"你的查詢\"中"
+msgstr "包括在\"我的查詢\"中"
 
 #: ../templates/classic/html/query.edit.html:31
 msgid "Private to you?"
