@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.142.2.8 2005-05-02 05:47:53 richard Exp $
+# $Id: rdbms_common.py,v 1.142.2.9 2005-05-18 05:18:15 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1698,9 +1698,14 @@ class Class(hyperdb.Class):
         propvalues['activity'] = date.Date()
         propvalues['actor'] = self.db.getuid()
 
-        # do the set, and journal it
+        # do the set
         self.db.setnode(self.classname, nodeid, propvalues, multilink_changes)
 
+        # remove the activity props now they're handled
+        del propvalues['activity']
+        del propvalues['actor']
+
+        # journal the set
         if self.do_journal:
             self.db.addjournal(self.classname, nodeid, ''"set", journalvalues)
 

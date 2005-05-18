@@ -4,6 +4,7 @@ are given with the most recent entry first.
 2005-??-?? 0.8.4
 Fixed:
 - extra CRs in CSV export files on Windows platform (sf bug 1195742)
+- activity RDBMS columns were being reported in changes
 
 
 2005-05-02 0.8.3
