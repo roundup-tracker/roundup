@@ -2206,7 +2206,10 @@ function help_window(helpurl, width, height) {
         klass = self.client.db.getclass(self.classname)
         if self.search_text:
             matches = self.client.db.indexer.search(
-                re.findall(r'\b\w{2,25}\b', self.search_text), klass)
+                [w.upper().encode("utf-8", "replace") for w in re.findall(
+                    r'(?u)\b\w{2,25}\b',
+                    unicode(self.search_text, "utf-8", "replace")
+                )], klass)
         else:
             matches = None
 
