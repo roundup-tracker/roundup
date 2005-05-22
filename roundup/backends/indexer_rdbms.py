@@ -1,4 +1,4 @@
-#$Id: indexer_rdbms.py,v 1.9 2005-04-28 00:21:42 richard Exp $
+#$Id: indexer_rdbms.py,v 1.10 2005-05-22 17:55:00 a1s Exp $
 ''' This implements the full-text indexer over two RDBMS tables. The first
 is a mapping of words to occurance IDs. The second maps the IDs to (Class,
 propname, itemid) instances.
@@ -21,7 +21,7 @@ class Indexer(Indexer):
         '''Save the changes to the index.'''
         # not necessary - the RDBMS connection will handle this for us
         pass
-  
+
     def force_reindex(self):
         '''Force a reindexing of the database.  This essentially
         empties the tables ids and index and sets a flag so
@@ -57,7 +57,9 @@ class Indexer(Indexer):
             self.db.cursor.execute(sql, (id, ))
 
         # ok, find all the words in the text
-        wordlist = re.findall(r'\b\w{2,25}\b', str(text).upper())
+        text = unicode(text, "utf-8", "replace").upper()
+        wordlist = [w.encode("utf-8", "replace")
+                for w in re.findall(r'(?u)\b\w{2,25}\b', text)]
         words = {}
         for word in wordlist:
             if is_stopword(word):
@@ -79,7 +81,7 @@ class Indexer(Indexer):
         '''look up all the words in the wordlist.
         If none are found return an empty dictionary
         * more rules here
-        '''        
+        '''
         if not wordlist:
             return {}
 
