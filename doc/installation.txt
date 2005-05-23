@@ -754,4 +754,4 @@ Next: `User Guide`_
 .. _mod_python: http://www.modpython.org/
 .. _MySQLdb: http://sourceforge.net/projects/mysql-python
 .. _Psycopg: http://initd.org/software/initd/psycopg
-.. _pysqlite: http://pysqlite.sourceforge.net/
+.. _pysqlite: http://pysqlite.org/
