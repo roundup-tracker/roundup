@@ -1526,7 +1526,7 @@ class IntervalHTMLProperty(HTMLProperty):
             anonymous=0):
         HTMLProperty.__init__(self, client, classname, nodeid, prop,
             name, value, anonymous)
-        if self._value:
+        if self._value and not isinstance(self._value, (str, unicode)):
             self._value.setTranslator(self._client.translator)
 
     def plain(self):
