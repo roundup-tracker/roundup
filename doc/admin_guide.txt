@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.18 $
+:Version: $Revision: 1.19 $
 
 .. contents::
 
@@ -165,6 +165,7 @@ Maintenance of Roundup can involve one of the following:
 3. `migrating backends`_
 4. `moving a tracker`_
 5. `migrating from other software`_
+6. `adding a user from the command-line`_
 
 
 Tracker Backup
@@ -280,6 +281,29 @@ directory containing files with the following format:
 
   where ``<designator>`` is the item's ``<classname><id>`` combination.
   The ``<N>`` value is ``int(<id> / 1000)``.
+
+
+Adding A User From The Command-Line
+-----------------------------------
+
+The ``roundup-admin`` program can create any data you wish to in the
+database. To create a new user, use::
+
+    roundup-admin create user
+
+To figure out what good values might be for some of the fields (eg. Roles)
+you can just display another user::
+
+    roundup-admin list user
+
+(or if you know their username, and it happens to be "richard")::
+
+    roundup-admin find username=richard
+
+then using the user id you get from one of the above commands, you may
+display the user's details::
+
+    roundup-admin display <userid>
 
 
 Running the Servers
