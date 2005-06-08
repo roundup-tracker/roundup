@@ -17,7 +17,7 @@ class MultiMapping:
             raise KeyError, key
         return default
     def __len__(self):
-        return reduce(operator.add, [len(x) for x in stores], 0)
+        return reduce(operator.add, [len(x) for x in self.stores], 0)
     def push(self, store):
         self.stores.append(store)
     def pop(self):

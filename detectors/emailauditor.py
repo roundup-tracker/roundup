@@ -28,7 +28,7 @@ def eml_to_mht(db, cl, nodeid, newvalues):
         name extension.
 
     So... we do that. :)'''
-    if newalues.get('type', '').lower() == "message/rfc822":
+    if newvalues.get('type', '').lower() == "message/rfc822":
         if not newvalues.has_key('name'):
             newvalues['name'] = 'email.mht'
             return
