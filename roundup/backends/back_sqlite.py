@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.42 2005-05-02 05:48:59 richard Exp $
+# $Id: back_sqlite.py,v 1.43 2005-06-08 03:41:21 anthonybaxter Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -168,7 +168,7 @@ class Database(rdbms_common.Database):
                 continue
             # it's a multilink, and it's been removed - drop the old
             # table. First drop indexes.
-            self.drop_multilink_table_indexes(spec.classname, ml)
+            self.drop_multilink_table_indexes(spec.classname, name)
             sql = 'drop table %s_%s'%(spec.classname, prop)
             self.sql(sql)
         old_has = old_has.has_key
