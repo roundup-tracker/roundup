@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.94 2005-04-28 00:21:42 richard Exp $
+# $Id: back_metakit.py,v 1.95 2005-06-08 03:41:46 anthonybaxter Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -533,7 +533,7 @@ class Class(hyperdb.Class):
             oldnode = self.uncommitted.get(id, None)
             if oldnode and oldnode.has_key(propname):
                 raw = oldnode[propname]
-                converter = _converters.get(rutyp.__class__, None)
+                converter = _converters.get(raw.__class__, None)
                 if converter:
                     return converter(raw)
                 return raw
@@ -1698,6 +1698,7 @@ class Class(hyperdb.Class):
 
         No heading here - the columns are fixed.
         '''
+        from roundup.hyperdb import Interval, Date, Password
         properties = self.getprops()
         r = []
         for nodeid in self.getnodeids():
