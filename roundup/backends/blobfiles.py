@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: blobfiles.py,v 1.18 2004-12-18 11:12:04 jlgijsbers Exp $
+#$Id: blobfiles.py,v 1.19 2005-06-08 03:35:18 anthonybaxter Exp $
 '''This module exports file storage for roundup backends.
 Files are stored into a directory hierarchy.
 '''
@@ -79,7 +79,7 @@ class FileStorage:
             return filename
 
         # file just ain't there
-        raise IOError, 'content file for %s not found'%name
+        raise IOError('content file for %s not found'%filename)
 
     def storefile(self, classname, nodeid, property, content):
         '''Store the content of the file in the database. The property may be
