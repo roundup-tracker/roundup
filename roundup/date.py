@@ -15,14 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: date.py,v 1.81 2005-03-03 04:49:16 richard Exp $
+# $Id: date.py,v 1.82 2005-06-08 03:47:09 anthonybaxter Exp $
 
 """Date, time and time interval handling.
 """
 __docformat__ = 'restructuredtext'
 
 import time, re, calendar
-from types import *
 import i18n
 
 try:
@@ -483,9 +482,9 @@ class Interval:
     ):
         """Construct an interval given a specification."""
         self.setTranslator(translator)
-        if type(spec) in (IntType, FloatType, LongType):
+        if isinstance(spec, (int, float, long)):
             self.from_seconds(spec)
-        elif type(spec) in (StringType, UnicodeType):
+        elif isinstance(spec, basestring):
             self.set(spec, allowdate=allowdate, add_granularity=add_granularity)
         elif isinstance(spec, Interval):
             (self.sign, self.year, self.month, self.day, self.hour,
