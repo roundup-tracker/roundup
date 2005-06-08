@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: load_tracker.py,v 1.5 2004-05-06 02:35:05 richard Exp $
+# $Id: load_tracker.py,v 1.6 2005-06-08 02:24:06 anthonybaxter Exp $
 
 '''
 Usage: %s <tracker home> <N>
@@ -13,7 +13,7 @@ from roundup import instance
 # open the instance
 if len(sys.argv) < 2:
     print "Error: Not enough arguments"
-    print __doc__.strip()%(sys.argv[0], username)
+    print __doc__.strip()%(sys.argv[0])
     sys.exit(1)
 tracker_home = sys.argv[1]
 N = int(sys.argv[2])
