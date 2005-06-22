@@ -14,6 +14,7 @@ Fixed:
 - activity RDBMS columns were being reported in changes
 - fix name collision in roundup.cgi script (sf bug 1203795)
 - fix handling of invalid interval input
+- search locale files relative ro roundup installation path (sf bug 1219689)
 
 
 2005-05-02 0.8.3
