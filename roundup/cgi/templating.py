@@ -1328,7 +1328,7 @@ class BooleanHTMLProperty(HTMLProperty):
 
         if self._value is None:
             return ''
-        return self._value and "Yes" or "No"
+        return self._value and self._("Yes") or self._("No")
 
     def field(self):
         ''' Render a form edit field for the property
@@ -1347,15 +1347,15 @@ class BooleanHTMLProperty(HTMLProperty):
         if value:
             s = self.input(type="radio", name=self._formname, value="yes",
                 checked="checked")
-            s += 'Yes'
+            s += self._('Yes')
             s +=self.input(type="radio", name=self._formname, value="no")
-            s += 'No'
+            s += self._('No')
         else:
             s = self.input(type="radio", name=self._formname, value="yes")
-            s += 'Yes'
+            s += self._('Yes')
             s +=self.input(type="radio", name=self._formname, value="no",
                 checked="checked")
-            s += 'No'
+            s += self._('No')
         return s
 
 class DateHTMLProperty(HTMLProperty):
