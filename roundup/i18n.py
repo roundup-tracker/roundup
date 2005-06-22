@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: i18n.py,v 1.14 2004-11-17 07:18:27 a1s Exp $
+# $Id: i18n.py,v 1.14.2.1 2005-06-22 06:34:01 a1s Exp $
 
 """
 RoundUp Internationalization (I18N)
@@ -42,6 +42,23 @@ import gettext as gettext_module
 import os
 
 from roundup import msgfmt
+
+# List of directories for mo file search (see SF bug 1219689)
+LOCALE_DIRS = [
+    gettext_module._default_localedir,
+]
+# compute mo location relative to roundup installation directory
+# (prefix/lib/python/site-packages/roundup/msgfmt.py on posix systems,
+# prefix/lib/site-packages/roundup/msgfmt.py on windows).
+# locale root is prefix/share/locale.
+if os.name == "nt":
+    _mo_path = [".."] * 4 + ["share", "locale"]
+else:
+    _mo_path = [".."] * 5 + ["share", "locale"]
+_mo_path = os.path.normpath(os.path.join(msgfmt.__file__, *_mo_path))
+if _mo_path not in LOCALE_DIRS:
+    LOCALE_DIRS.append(_mo_path)
+del _mo_path
 
 # Roundup text domain
 DOMAIN = "roundup"
@@ -170,7 +187,6 @@ def get_translation(language=None, tracker_home=None,
     """
     mofiles = []
     # locale directory paths
-    system_locale = gettext_module._default_localedir
     if tracker_home is None:
         tracker_locale = None
     else:
@@ -180,14 +196,16 @@ def get_translation(language=None, tracker_home=None,
     # add mofiles found in the tracker, then in the system locale directory
     if tracker_locale:
         mofiles.append(get_mofile(locales, tracker_locale))
-    mofiles.append(get_mofile(locales, system_locale, DOMAIN))
+    for system_locale in LOCALE_DIRS:
+        mofiles.append(get_mofile(locales, system_locale, DOMAIN))
     # we want to fall back to english unless english is selected language
     if "en" not in locales:
         locales = find_locales("en")
         # add mofiles found in the tracker, then in the system locale directory
         if tracker_locale:
             mofiles.append(get_mofile(locales, tracker_locale))
-        mofiles.append(get_mofile(locales, system_locale, DOMAIN))
+        for system_locale in LOCALE_DIRS:
+            mofiles.append(get_mofile(locales, system_locale, DOMAIN))
     # filter out elements that are not found
     mofiles = filter(None, mofiles)
     if mofiles:
