@@ -19,7 +19,7 @@ Fixed:
   popups (sf bug 1211800)
 - handle dropped properies in rdbms/metakit journal export (sf bug 1203569)
 - handle missing Subject lines better (sf bug 1198729)
-- sort/group by missing values correctly (sf bug 1198623)
+- sort/group by missing values correctly (sf bugs 1198623, 1176897)
 - discard, don't bounce messages to the mailgw when the messages's sender
   is invalid (ie. when we try to bounce, we get a 550 "unknown user
   account" response from the SMTP server) (sf bug 1190906)
