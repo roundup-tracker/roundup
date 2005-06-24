@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.85.2.7 2005-05-06 06:53:00 a1s Exp $
+# $Id: admin.py,v 1.85.2.8 2005-06-24 05:34:15 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -1246,11 +1246,16 @@ Erase it? Y/N: """))
         for rolename, role in roles:
             print _('Role "%(name)s":')%role.__dict__
             for permission in role.permissions:
+                d = permission.__dict__
                 if permission.klass:
-                    print _(' %(description)s (%(name)s for "%(klass)s" '
-                        'only)')%permission.__dict__
+                    if permission.properties:
+                        print _(' %(description)s (%(name)s for "%(klass)s"'
+                          ': %(properties)s only)')%d
+                    else:
+                        print _(' %(description)s (%(name)s for "%(klass)s" '
+                            'only)')%d
                 else:
-                    print _(' %(description)s (%(name)s)')%permission.__dict__
+                    print _(' %(description)s (%(name)s)')%d
         return 0
 
     def run_command(self, args):
