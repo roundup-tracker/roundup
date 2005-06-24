@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.181 $
+:Version: $Revision: 1.182 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1764,6 +1764,32 @@ filter      lists of items from this class, filtered and sorted. Two
 
 classhelp   display a link to a javascript popup containing this class'
             "help" template.
+
+            This generates a link to a popup window which displays the
+            properties indicated by "properties" of the class named by
+            "classname". The "properties" should be a comma-separated list
+            (eg. 'id,name,description'). Properties defaults to all the
+            properties of a class (excluding id, creator, created and
+            activity).
+
+            You may optionally override the "label" displayed, the "width",
+            the "height", the number of items per page ("pagesize") and
+            the field on which the list is sorted ("sort").
+
+            With the "filter" arg it is possible to specify a filter for
+            which items are supposed to be displayed. It has to be of
+            the format "<field>=<values>;<field>=<values>;...".
+
+            The popup window will be resizable and scrollable.
+
+            If the "property" arg is given, it's passed through to the
+            javascript help_window function. This allows updating of a
+            property in the calling HTML page.
+
+            If the "form" arg is given, it's passed through to the
+            javascript help_window function - it's the name of the form
+            the "property" belongs to.
+
 submit      generate a submit button (and action hidden element)
 renderWith  render this class with the given template.
 history     returns 'New node - no history' :)
@@ -1953,7 +1979,9 @@ menu        only on Link and Multilink properties - render a form select
                lists properties which should be included in the label
             sort_on
                 indicates the property to sort the list on as (direction,
-                property) where direction is '+' or '-'.
+                (direction, property) where direction is '+' or '-'. A
+                single string with the direction prepended may be used.
+                For example: ('-', 'order'), '+name'.
 
             The remaining keyword arguments are used as conditions for
             filtering the items in the list - they're passed as the
