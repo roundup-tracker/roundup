@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.165 2005-06-24 06:43:03 richard Exp $
+$Id: mailgw.py,v 1.166 2005-06-24 07:16:01 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -81,7 +81,7 @@ import time, random, sys, logging
 import traceback, MimeWriter, rfc822
 
 from roundup import hyperdb, date, password, rfc2822, exceptions
-from roundup.mailer import Mailer
+from roundup.mailer import Mailer, MessageSendError
 
 SENDMAILDEBUG = os.environ.get('SENDMAILDEBUG', '')
 
@@ -546,7 +546,19 @@ class MailGW:
             # just inform the user that he is not authorized
             m = ['']
             m.append(str(value))
-            self.mailer.bounce_message(message, [sendto[0][1]], m)
+            try:
+                self.mailer.bounce_message(message, [sendto[0][1]], m)
+            except MessageSendError, error:
+                # if the only reason the bounce failed is because of
+                # invalid addresses to bounce the message back to, then
+                # just discard the message - it's just not worth bothering
+                # with (most likely spam / otherwise forged)
+                invalid = True
+                for address, (code, reason) in error.keys():
+                    if code != 550:
+                        invalid = False
+                if not invalid:
+                    raise
         except IgnoreMessage:
             # do not take any action
             # this exception is thrown when email should be ignored
