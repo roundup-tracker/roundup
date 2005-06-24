@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.155 2005-05-18 05:21:14 richard Exp $
+# $Id: rdbms_common.py,v 1.156 2005-06-24 06:38:14 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2491,7 +2491,12 @@ class Class(hyperdb.Class):
             for nodeid, date, user, action, params in self.history(nodeid):
                 date = date.get_tuple()
                 if action == 'set':
+                    export_data = {}
                     for propname, value in params.items():
+                        if not properties.has_key(propname):
+                            # property no longer in the schema
+                            continue
+
                         prop = properties[propname]
                         # make sure the params are eval()'able
                         if value is None:
@@ -2502,7 +2507,8 @@ class Class(hyperdb.Class):
                             value = value.get_tuple()
                         elif isinstance(prop, Password):
                             value = str(value)
-                        params[propname] = value
+                        export_data[propname] = value
+                    params = export_data
                 l = [nodeid, date, user, action, params]
                 r.append(map(repr, l))
         return r
