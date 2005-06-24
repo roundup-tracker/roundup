@@ -21,6 +21,7 @@ Fixed:
 - fix invocation of hasPermission from templating code (sf bug 1224172)
 - have 'roundup-admin security' display property restrictions (sf bug
   1222135)
+- fixed templating menu() sort_on handling (sf bug 1221936)
 
 
 2005-05-02 0.8.3

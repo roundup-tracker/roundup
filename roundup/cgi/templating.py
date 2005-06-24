@@ -1637,7 +1637,9 @@ class LinkHTMLProperty(HTMLProperty):
             "additional" lists properties which should be included in the
                 label
             "sort_on" indicates the property to sort the list on as
-                (direction, property) where direction is '+' or '-'.
+                (direction, property) where direction is '+' or '-'. A
+                single string with the direction prepended may be used.
+                For example: ('-', 'order'), '+name'.
 
             The remaining keyword arguments are used as conditions for
             filtering the items in the list - they're passed as the
@@ -1657,13 +1659,16 @@ class LinkHTMLProperty(HTMLProperty):
         if value is None:
             s = 'selected="selected" '
         l.append(self._('<option %svalue="-1">- no selection -</option>')%s)
-        if linkcl.getprops().has_key('order'):
+        if sort_on is not None:
+            if not isinstance(sort_on, tuple):
+                if sort_on[0] in '+-':
+                    sort_on = (sort_on[0], sort_on[1:])
+                else:
+                    sort_on = ('+', sort_on)
+        elif linkcl.getprops().has_key('order'):
             sort_on = ('+', 'order')
         else:
-            if sort_on is None:
-                sort_on = ('+', linkcl.labelprop())
-            else:
-                sort_on = ('+', sort_on)
+            sort_on = ('+', linkcl.labelprop())
         options = linkcl.filter(None, conditions, sort_on, (None, None))
 
         # make sure we list the current value if it's retired
