@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.23.2.2 2005-02-14 02:55:30 richard Exp $
+# $Id: configuration.py,v 1.23.2.3 2005-06-24 05:28:24 richard Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -466,6 +466,14 @@ SETTINGS = (
             "If this option is not set, the language is determined\n"
             "by OS environment variable LANGUAGE, LC_ALL, LC_MESSAGES,\n"
             "or LANG, in that order of preference."),
+    )),
+    ("web", (
+        (Option, 'http_auth', "yes",
+            "Whether to use HTTP Basic Authentication, if present.\n"
+            "Roundup will use either the REMOTE_USER or HTTP_AUTHORIZATION\n"
+            "variables supplied by your web server (in that order).\n"
+            "Set this option to 'no' if you do not wish to use HTTP Basic\n"
+            "Authentication in your web interface."),
     )),
     ("rdbms", (
         (Option, 'name', 'roundup',

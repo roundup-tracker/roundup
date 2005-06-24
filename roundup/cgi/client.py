@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.211.2.1 2005-01-05 22:02:05 richard Exp $
+# $Id: client.py,v 1.211.2.2 2005-06-24 05:28:24 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -396,32 +396,33 @@ class Client:
 
         # first up, try the REMOTE_USER var (from HTTP Basic Auth handled
         # by a front-end HTTP server)
-        if self.env.has_key('REMOTE_USER'):
-            user = self.env['REMOTE_USER']
-        else:
-            user = 'anonymous'
+        use_http_auth = self.instance.config['WEB_HTTP_AUTH'] == 'yes'
+        user = 'anonymous'
+        if use_http_auth:
+            if self.env.has_key('REMOTE_USER'):
+                user = self.env['REMOTE_USER']
+            # try handling Basic Auth ourselves
+            elif self.env.get('HTTP_AUTHORIZATION', ''):
+                auth = self.env['HTTP_AUTHORIZATION']
+                scheme, challenge = auth.split(' ', 1)
+                if scheme.lower() == 'basic':
+                    try:
+                        decoded = base64.decodestring(challenge)
+                    except TypeError:
+                        # invalid challenge
+                        pass
+                    username, password = decoded.split(':')
+                    try:
+                        login = self.get_action_class('login')(self)
+                        login.verifyLogin(username, password)
+                    except LoginError, err:
+                        self.make_user_anonymous()
+                        self.response_code = 403
+                        raise Unauthorised, err
 
-        # try handling Basic Auth ourselves
-        if (user == 'anonymous') and self.env.get('HTTP_AUTHORIZATION', ''):
-            scheme, challenge = self.env['HTTP_AUTHORIZATION'].split(' ', 1)
-            if scheme.lower() == 'basic':
-                try:
-                    decoded = base64.decodestring(challenge)
-                except TypeError:
-                    # invalid challenge
-                    pass
-                username, password = decoded.split(':')
-                try:
-                    self.get_action_class('login')(self).verifyLogin(
-                        username, password)
-                except LoginError, err:
-                    self.make_user_anonymous()
-                    self.response_code = 403
-                    raise Unauthorised, err
+                    user = username
 
-                user = username
-
-        # look up the user session cookie (may override the REMOTE_USER)
+        # look up the user session cookie (may override the HTTP Basic Auth)
         cookie = self.cookie
         if (cookie.has_key(self.cookie_name) and
                 cookie[self.cookie_name].value != 'deleted'):
