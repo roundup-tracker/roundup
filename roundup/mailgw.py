@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.164 2005-04-13 03:38:22 richard Exp $
+$Id: mailgw.py,v 1.165 2005-06-24 06:43:03 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -579,10 +579,20 @@ class MailGW:
         if message.getheader('x-roundup-loop', ''):
             raise IgnoreLoop
 
+        # handle the subject line
+        subject = message.getheader('subject', '')
+        if not subject:
+            raise MailUsageError, '''
+Emails to Roundup trackers must include a Subject: line!
+'''
+
         # detect Precedence: Bulk, or Microsoft Outlook autoreplies
         if (message.getheader('precedence', '') == 'bulk'
-            or message.getheader('subject', '').lower().find("autoreply") > 0):
+                or subject.lower().find("autoreply") > 0):
             raise IgnoreBulk
+
+        if subject.strip().lower() == 'help':
+            raise MailUsageHelp
 
         # config is used many times in this method.
         # make local variable for easier access
@@ -609,20 +619,8 @@ class MailGW:
         if not from_list:
             from_list = message.getaddrlist('from')
 
-        # handle the subject line
-        subject = message.getheader('subject', '')
-
-        if not subject:
-            raise MailUsageError, '''
-Emails to Roundup trackers must include a Subject: line!
-'''
-
-        if subject.strip().lower() == 'help':
-            raise MailUsageHelp
-
-        m = self.subject_re.match(subject)
-
         # check for well-formed subject line
+        m = self.subject_re.match(subject)
         if m:
             # get the classname
             classname = m.group('classname')

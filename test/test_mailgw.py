@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.74 2005-02-14 05:54:41 richard Exp $
+# $Id: test_mailgw.py,v 1.75 2005-06-24 06:47:44 richard Exp $
 
 # TODO: test bcc
 
@@ -21,7 +21,7 @@ if not os.environ.has_key('SENDMAILDEBUG'):
 SENDMAILDEBUG = os.environ['SENDMAILDEBUG']
 
 from roundup.mailgw import MailGW, Unauthorized, uidFromAddress, \
-    parseContent, IgnoreLoop, IgnoreBulk
+    parseContent, IgnoreLoop, IgnoreBulk, MailUsageError
 from roundup import init, instance, password, rfc2822, __version__
 
 import db_test_base
@@ -1018,6 +1018,18 @@ Message-Id: <dummy_test_message_id>
 Subject: Re: [issue] Out of office AutoReply: Back next week
 
 Hi, I'm back in the office next week
+''')
+
+    def testNoSubject(self):
+        self.assertRaises(MailUsageError, self._handle_mail,
+            '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Cc: richard@test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+
 ''')
 
 def test_suite():
