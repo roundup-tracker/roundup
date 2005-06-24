@@ -1056,7 +1056,7 @@ class _HTMLUser(_HTMLItem):
         if classname is self._marker:
             classname = self._client.classname
         return self._client.db.security.hasPermission(permission,
-            self._nodeid, classname)
+            self._nodeid, classname, property, itemid)
 
 def HTMLItem(client, classname, nodeid, anonymous=0):
     if classname == 'user':
