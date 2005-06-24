@@ -620,7 +620,8 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         return l
 
     def classhelp(self, properties=None, label=''"(list)", width='500',
-            height='400', property='', form='itemSynopsis'):
+            height='400', property='', form='itemSynopsis',
+            pagesize=50, sort=None, filter=None):
         '''Pop up a javascript window with class help
 
         This generates a link to a popup window which displays the
@@ -630,8 +631,16 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         properties of a class (excluding id, creator, created and
         activity).
 
-        You may optionally override the label displayed, the width and
-        height. The popup window will be resizable and scrollable.
+        You may optionally override the label displayed, the width,
+        the height, the number of items per page and the field on which
+        the list is sorted (defaults to username if in the displayed
+        properties).
+
+        With the "filter" arg it is possible to specify a filter for
+        which items are supposed to be displayed. It has to be of
+        the format "<field>=<values>;<field>=<values>;...".
+
+        The popup window will be resizable and scrollable.
 
         If the "property" arg is given, it's passed through to the
         javascript help_window function.
@@ -644,13 +653,31 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
             properties = self._klass.getprops(protected=0).keys()
             properties.sort()
             properties = ','.join(properties)
+        if sort is None:
+            if 'username' in properties.split( ',' ):
+                sort = '&amp;@sort=username'
+            else:
+                sort = ''
+        else:
+            sort = '&amp;@sort=' + sort
         if property:
             property = '&amp;property=%s'%property
         if form:
             form = '&amp;form=%s'%form
+        if filter:
+            filterprops = filter.split(';')
+            filtervalues = []
+            names = []
+            for x in filterprops:
+                (name, values) = x.split('=')
+                names.append(name)
+                filtervalues.append('&amp;%s=%s' % (name, urllib.quote(values)))
+            filter = '&amp;@filter=%s%s' % (','.join(names), ''.join(filtervalues))
+        else:
+           filter = ''
         help_url = "%s?@startwith=0&amp;@template=help&amp;"\
-                   "properties=%s%s%s" % \
-                   (self.classname, properties, property, form)
+                   "properties=%s%s%s%s&amp;@pagesize=%s%s" % \
+                   (self.classname, properties, property, form, sort, pagesize, filter)
         onclick = "javascript:help_window('%s', '%s', '%s');return false;" % \
                   (help_url, width, height)
         return '<a class="classhelp" href="%s" onclick="%s">%s</a>' % \
@@ -1643,16 +1670,16 @@ class LinkHTMLProperty(HTMLProperty):
         if value is None:
             s = 'selected="selected" '
         l.append(self._('<option %svalue="-1">- no selection -</option>')%s)
+
         if sort_on is not None:
             if not isinstance(sort_on, tuple):
                 if sort_on[0] in '+-':
                     sort_on = (sort_on[0], sort_on[1:])
                 else:
                     sort_on = ('+', sort_on)
-        elif linkcl.getprops().has_key('order'):
-            sort_on = ('+', 'order')
         else:
-            sort_on = ('+', linkcl.labelprop())
+            sort_on = ('+', find_sort_key(linkcl))
+
         options = linkcl.filter(None, conditions, sort_on, (None, None))
 
         # make sure we list the current value if it's retired
@@ -1805,7 +1832,9 @@ class MultilinkHTMLProperty(HTMLProperty):
             "additional" lists properties which should be included in the
                 label
             "sort_on" indicates the property to sort the list on as
-                (direction, property) where direction is '+' or '-'.
+                (direction, property) where direction is '+' or '-'. A
+                single string with the direction prepended may be used.
+                For example: ('-', 'order'), '+name'.
 
             The remaining keyword arguments are used as conditions for
             filtering the items in the list - they're passed as the
@@ -1819,10 +1848,16 @@ class MultilinkHTMLProperty(HTMLProperty):
         value = self._value
 
         linkcl = self._db.getclass(self._prop.classname)
-        if sort_on is None:
-            sort_on = ('+', find_sort_key(linkcl))
+
+        if sort_on is not None:
+            if not isinstance(sort_on, tuple):
+                if sort_on[0] in '+-':
+                    sort_on = (sort_on[0], sort_on[1:])
+                else:
+                    sort_on = ('+', sort_on)
         else:
-            sort_on = ('+', sort_on)
+            sort_on = ('+', find_sort_key(linkcl))
+
         options = linkcl.filter(None, conditions, sort_on)
         height = height or min(len(options), 7)
         l = ['<select multiple name="%s" size="%s">'%(self._formname, height)]

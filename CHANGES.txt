@@ -15,6 +15,8 @@ Fixed:
 - have 'roundup-admin security' display property restrictions (sf bug
   1222135)
 - fixed templating menu() sort_on handling (sf bug 1221936)
+- allow specification of pagesize, sorting and filtering in "classhelp"
+  popups (sf bug 1211800)
 
 
 2005-05-02 0.8.3
