@@ -2341,8 +2341,11 @@ class Batch(ZTUtils.Batch):
         ''' Detect if the property marked as being the group property
             changed in the last iteration fetch
         '''
+        # we poke directly at the _value here since MissingValue can screw
+        # us up and cause Nones to compare strangely
         if (self.last_item is None or
-                self.last_item[property] != self.current_item[property]):
+                self.last_item[property]._value !=
+                self.current_item[property]._value):
             return 1
         return 0
 
