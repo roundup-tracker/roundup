@@ -19,6 +19,8 @@ Fixed:
 - enabled disabling of REMOTE_USER for when it's not a valid username (sf
   bug 1190187)
 - fix invocation of hasPermission from templating code (sf bug 1224172)
+- have 'roundup-admin security' display property restrictions (sf bug
+  1222135)
 
 
 2005-05-02 0.8.3
