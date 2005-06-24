@@ -16,6 +16,8 @@ Fixed:
 - fix handling of invalid interval input
 - search locale files relative ro roundup installation path (sf bug 1219689)
 - use translation for boolean property rendering (sf bug 1225152)
+- enabled disabling of REMOTE_USER for when it's not a valid username (sf
+  bug 1190187)
 
 
 2005-05-02 0.8.3
