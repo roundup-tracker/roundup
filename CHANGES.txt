@@ -18,6 +18,7 @@ Fixed:
 - allow specification of pagesize, sorting and filtering in "classhelp"
   popups (sf bug 1211800)
 - handle dropped properies in rdbms/metakit journal export (sf bug 1203569)
+- handle missing Subject lines better (sf bug 1198729)
 
 
 2005-05-02 0.8.3
