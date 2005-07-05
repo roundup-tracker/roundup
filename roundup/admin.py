@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.85.2.8 2005-06-24 05:34:15 richard Exp $
+# $Id: admin.py,v 1.85.2.9 2005-07-05 06:28:35 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -407,6 +407,7 @@ Erase it? Y/N: """) % locals())
         init.write_select_db(tracker_home, backend)
 
         print _("""
+---------------------------------------------------------------------------
  You should now edit the tracker configuration file:
    %(config_file)s""") % {"config_file": config_ini_file}
 
@@ -427,6 +428,10 @@ Erase it? Y/N: """) % locals())
  You may also change the database initialisation file:
    %(database_init_file)s
  ... see the documentation on customizing for more information.
+
+ You MUST run the "roundup-admin initialise" command once you've performed
+ the above steps.
+---------------------------------------------------------------------------
 """) % {
     'database_config_file': os.path.join(tracker_home, 'schema.py'),
     'database_init_file': os.path.join(tracker_home, 'initial_data.py'),
