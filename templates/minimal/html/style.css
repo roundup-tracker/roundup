@@ -6,12 +6,10 @@ body.body {
   margin: 0;
 }
 a[href]:hover {
-  background-color: white;
   color:blue;
   text-decoration: underline;
 }
 a[href], a[href]:link {
-  background-color: white;
   color:blue;
   text-decoration: none;
 }
@@ -40,11 +38,34 @@ td.sidebar {
     td.sidebar {
         display: none;
     }
+    .index-controls {
+        display: none;
+    }
+    #searchbox {
+        display: none;
+    }
 }
 
 td.page-header-top {
   padding: 5px;
   border-bottom: 1px solid #444;
+}
+#searchbox {
+    float: right;
+}
+
+div#body-title {
+  float: left;
+}
+
+
+div#searchbox {
+  float: right;
+  padding-top: 1em;
+}
+
+div#searchbox input#search-text {
+  width: 10em;
 }
 
 form {
@@ -69,6 +90,12 @@ td.sidebar p.userblock {
   background-color: #eef;
 }
 
+.form-small {
+  padding: 0;
+  font-size: 75%;
+}
+
+
 td.content {
   padding: 1px 5px 1px 5px;
   vertical-align: top;
@@ -90,6 +117,22 @@ p.error-message {
   padding: 5px;
   color: white;
   font-weight: bold;
+}
+p.error-message a[href] {
+  color: white;
+  text-decoration: underline;
+}
+
+
+/* style for search forms */
+ul.search-checkboxes {
+    display: inline;
+    padding: none;
+    list-style: none;
+}
+ul.search-checkboxes > li {
+    display: inline;
+    padding-right: .5em;
 }
 
 
