@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.47 2005-04-07 06:19:12 a1s Exp $
+#$Id: actions.py,v 1.48 2005-07-07 06:46:09 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random, csv
 
@@ -543,7 +543,6 @@ class EditItemAction(EditCommon):
             message = self._editnodes(props, links)
         except (ValueError, KeyError, IndexError,
                 roundup.exceptions.Reject), message:
-            import traceback;traceback.print_exc()
             self.client.error_message.append(
                 self._('Edit Error: %s') % str(message))
             return
