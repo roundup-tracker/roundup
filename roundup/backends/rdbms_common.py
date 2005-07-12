@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.156 2005-06-24 06:38:14 richard Exp $
+# $Id: rdbms_common.py,v 1.157 2005-07-12 01:37:50 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2061,8 +2061,6 @@ class Class(hyperdb.Class):
 
         cn = self.classname
 
-        timezone = self.db.getUserTimezone()
-
         # vars to hold the components of the SQL statement
         frum = []       # FROM clauses
         loj = []        # LEFT OUTER JOIN clauses
@@ -2151,7 +2149,7 @@ class Class(hyperdb.Class):
                 else:
                     try:
                         # Try to filter on range of dates
-                        date_rng = Range(v, date.Date, offset=timezone)
+                        date_rng = propclass.range_from_raw (v, self.db)
                         if date_rng.from_value:
                             where.append('_%s._%s >= %s'%(cn, k, a))
                             args.append(dc(date_rng.from_value))

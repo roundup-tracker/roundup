@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.95 2005-06-24 05:32:56 richard Exp $
+# $Id: admin.py,v 1.96 2005-07-12 01:37:49 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -571,7 +571,7 @@ Erase it? Y/N: """))
         return 0
 
 
-    def do_set(self, args, pwre = re.compile(r'{(\w+)}(.+)')):
+    def do_set(self, args):
         ""'''Usage: set items property=value property=value ...
         Set the given properties of one or more items(s).
 
@@ -732,7 +732,7 @@ Erase it? Y/N: """))
                 value = cl.get(nodeid, key)
                 print _('%(key)s: %(value)r')%locals()
 
-    def do_create(self, args, pwre = re.compile(r'{(\w+)}(.+)')):
+    def do_create(self, args):
         ""'''Usage: create classname property=value ...
         Create a new entry of a given class.
 

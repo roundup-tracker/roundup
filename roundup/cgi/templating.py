@@ -1397,6 +1397,8 @@ class DateHTMLProperty(HTMLProperty):
                 isinstance(self._value, unicode)):
             self._value.setTranslator(self._client.translator)
         self._offset = offset
+        if self._offset is None :
+            self._offset = self._prop.offset (self._db)
 
     def plain(self):
         ''' Render a "plain" representation of the property
@@ -1481,8 +1483,11 @@ class DateHTMLProperty(HTMLProperty):
             else:
                 value = date.Date(raw_value).pretty(format)
         else:
-            tz = self._db.getUserTimezone()
-            value = raw_value.local(tz)
+            if self._offset is None :
+                offset = self._db.getUserTimezone()
+            else :
+                offset = self._offset
+            value = raw_value.local(offset)
             if format is not self._marker:
                 value = value.pretty(format)
 

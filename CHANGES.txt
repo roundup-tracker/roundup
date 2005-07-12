@@ -6,6 +6,8 @@ Feature:
 - added "imapServer.py" script (sf patch 934567)
 - added date selection popup windows (thanks Marcus Priesch)
 - added Xapian indexer; replaces standard indexers if Xapian is available
+- refactored hyperdb.rawToHyperdb, allowing a number of improvements
+  (thanks Ralf Schlatterbeck)
 
 
 2005-??-?? 0.8.4

@@ -1,4 +1,4 @@
-#$Id: back_mysql.py,v 1.58 2005-05-02 05:48:59 richard Exp $
+#$Id: back_mysql.py,v 1.59 2005-07-12 01:37:49 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -521,8 +521,6 @@ class MysqlClass:
 
         cn = self.classname
 
-        timezone = self.db.getUserTimezone()
-
         # vars to hold the components of the SQL statement
         frum = ['_'+cn] # FROM clauses
         loj = []        # LEFT OUTER JOIN clauses
@@ -617,7 +615,7 @@ class MysqlClass:
                 else:
                     try:
                         # Try to filter on range of dates
-                        date_rng = Range(v, date.Date, offset=timezone)
+                        date_rng = propclass.range_from_raw (v, self.db)
                         if date_rng.from_value:
                             where.append('_%s._%s >= %s'%(cn, k, a))
                             args.append(dc(date_rng.from_value))
