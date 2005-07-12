@@ -520,8 +520,6 @@ class MysqlClass:
 
         cn = self.classname
 
-        timezone = self.db.getUserTimezone()
-
         # vars to hold the components of the SQL statement
         frum = ['_'+cn] # FROM clauses
         loj = []        # LEFT OUTER JOIN clauses
@@ -616,7 +614,7 @@ class MysqlClass:
                 else:
                     try:
                         # Try to filter on range of dates
-                        date_rng = Range(v, date.Date, offset=timezone)
+                        date_rng = propclass.range_from_raw (v, self.db)
                         if date_rng.from_value:
                             where.append('_%s._%s >= %s'%(cn, k, a))
                             args.append(dc(date_rng.from_value))

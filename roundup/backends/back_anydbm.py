@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: back_anydbm.py,v 1.179.2.7 2005-03-03 22:12:35 richard Exp $
+#$Id: back_anydbm.py,v 1.179.2.8 2005-07-12 01:43:17 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -1588,7 +1588,6 @@ class Class(hyperdb.Class):
         INTERVAL = 'spec:interval'
         OTHER = 'spec:other'
 
-        timezone = self.db.getUserTimezone()
         for k, v in filterspec.items():
             propclass = props[k]
             if isinstance(propclass, hyperdb.Link):
@@ -1619,7 +1618,7 @@ class Class(hyperdb.Class):
                     l.append((STRING, k, re.compile(v, re.I)))
             elif isinstance(propclass, hyperdb.Date):
                 try:
-                    date_rng = date.Range(v, date.Date, offset=timezone)
+                    date_rng = propclass.range_from_raw (v, self.db)
                     l.append((DATE, k, date_rng))
                 except ValueError:
                     # If range creation fails - ignore that search parameter

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: hyperdb.py,v 1.107.2.1 2005-03-03 22:12:35 richard Exp $
+# $Id: hyperdb.py,v 1.107.2.2 2005-07-12 01:43:17 richard Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -37,24 +37,67 @@ class String:
     def __repr__(self):
         ' more useful for dumps '
         return '<%s>'%self.__class__
+    def from_raw(self, value, **kw):
+        """fix the CRLF/CR -> LF stuff"""
+        return fixNewlines(value)
 
 class Password:
     """An object designating a Password property."""
     def __repr__(self):
         ' more useful for dumps '
         return '<%s>'%self.__class__
+    def from_raw(self, value, **kw):
+        m = password.Passowrd.pwre.match(value)
+        if m:
+            # password is being given to us encrypted
+            p = password.Password()
+            p.scheme = m.group(1)
+            if p.scheme not in 'SHA crypt plaintext'.split():
+                raise HyperdbValueError, 'property %s: unknown encryption '\
+                    'scheme %r'%(propname, p.scheme)
+            p.password = m.group(2)
+            value = p
+        else:
+            try:
+                value = password.Password(value)
+            except password.PasswordValueError, message:
+                raise HyperdbValueError, 'property %s: %s'%(propname, message)
+        return value
 
 class Date:
     """An object designating a Date property."""
+    def __init__(self, offset = None):
+        self._offset = offset
     def __repr__(self):
         ' more useful for dumps '
         return '<%s>'%self.__class__
+    def offset (self, db) :
+        if self._offset is not None :
+            return self._offset
+        return db.getUserTimezone ()
+    def from_raw(self, value, db, **kw):
+        try:
+            value = date.Date(value).local(-self.offset(db))
+        except ValueError, message:
+            raise HyperdbValueError, 'property %s: %r is an invalid '\
+                'date (%s)'%(propname, value, message)
+        return value
+    def range_from_raw (self, value, db):
+        """return Range value from given raw value with offset correction"""
+        return date.Range(value, date.Date, offset=self.offset (db))
 
 class Interval:
     """An object designating an Interval property."""
     def __repr__(self):
         ' more useful for dumps '
         return '<%s>'%self.__class__
+    def from_raw(self, value, **kw):
+        try:
+            value = date.Interval(value)
+        except ValueError, message:
+            raise HyperdbValueError, 'property %s: %r is an invalid '\
+                'date interval (%s)'%(propname, value, message)
+        return value
 
 class Link:
     """An object designating a Link property that links to a
@@ -67,6 +110,12 @@ class Link:
     def __repr__(self):
         ' more useful for dumps '
         return '<%s to "%s">'%(self.__class__, self.classname)
+    def from_raw(self, value, db, propname, **kw):
+        if value == '-1' or not value:
+            value = None
+        else:
+            value = convertLinkValue(db, propname, self, value)
+        return value
 
 class Multilink:
     """An object designating a Multilink property that links
@@ -85,18 +134,93 @@ class Multilink:
     def __repr__(self):
         ' more useful for dumps '
         return '<%s to "%s">'%(self.__class__, self.classname)
+    def from_raw(self, value, db, klass, propname, itemid, **kw):
+        # get the current item value if it's not a new item
+        if itemid and not itemid.startswith('-'):
+            curvalue = klass.get(itemid, propname)
+        else:
+            curvalue = []
+
+        # if the value is a comma-separated string then split it now
+        if isinstance(value, type('')):
+            value = value.split(',')
+
+        # handle each add/remove in turn
+        # keep an extra list for all items that are
+        # definitely in the new list (in case of e.g.
+        # <propname>=A,+B, which should replace the old
+        # list with A,B)
+        set = 1
+        newvalue = []
+        for item in value:
+            item = item.strip()
+
+            # skip blanks
+            if not item: continue
+
+            # handle +/-
+            remove = 0
+            if item.startswith('-'):
+                remove = 1
+                item = item[1:]
+                set = 0
+            elif item.startswith('+'):
+                item = item[1:]
+                set = 0
+
+            # look up the value
+            itemid = convertLinkValue(db, propname, proptype, item)
+
+            # perform the add/remove
+            if remove:
+                try:
+                    curvalue.remove(itemid)
+                except ValueError:
+                    raise HyperdbValueError, 'property %s: %r is not ' \
+                        'currently an element'%(propname, item)
+            else:
+                newvalue.append(itemid)
+                if itemid not in curvalue:
+                    curvalue.append(itemid)
+
+        # that's it, set the new Multilink property value,
+        # or overwrite it completely
+        if set:
+            value = newvalue
+        else:
+            value = curvalue
+
+        # TODO: one day, we'll switch to numeric ids and this will be
+        # unnecessary :(
+        value = [int(x) for x in value]
+        value.sort()
+        value = [str(x) for x in value]
+        return value
 
 class Boolean:
     """An object designating a boolean property"""
     def __repr__(self):
         'more useful for dumps'
         return '<%s>' % self.__class__
+    def from_raw(self, value, **kw):
+        value = value.strip()
+        # checked is a common HTML checkbox value
+        value = value.lower() in ('checked', 'yes', 'true', 'on', '1')
+        return value
 
 class Number:
     """An object designating a numeric property"""
     def __repr__(self):
         'more useful for dumps'
         return '<%s>' % self.__class__
+    def from_raw(self, value, **kw):
+        value = value.strip()
+        try:
+            value = float(value)
+        except ValueError:
+            raise HyperdbValueError, 'property %s: %r is not a number'%(
+                propname, value)
+        return value
 #
 # Support for splitting designators
 #
@@ -597,8 +721,7 @@ def fixNewlines(text):
     text = text.replace('\r\n', '\n')
     return text.replace('\r', '\n')
 
-def rawToHyperdb(db, klass, itemid, propname, value,
-        pwre=re.compile(r'{(\w+)}(.+)')):
+def rawToHyperdb(db, klass, itemid, propname, value, **kw):
     ''' Convert the raw (user-input) value to a hyperdb-storable value. The
         value is for the "propname" property on itemid (may be None for a
         new item) of "klass" in "db".
@@ -620,118 +743,15 @@ def rawToHyperdb(db, klass, itemid, propname, value,
     # if we got a string, strip it now
     if isinstance(value, type('')):
         value = value.strip()
-
     # convert the input value to a real property value
-    if isinstance(proptype, String):
-        # fix the CRLF/CR -> LF stuff
-        value = fixNewlines(value)
-    if isinstance(proptype, Password):
-        m = pwre.match(value)
-        if m:
-            # password is being given to us encrypted
-            p = password.Password()
-            p.scheme = m.group(1)
-            if p.scheme not in 'SHA crypt plaintext'.split():
-                raise HyperdbValueError, 'property %s: unknown encryption '\
-                    'scheme %r'%(propname, p.scheme)
-            p.password = m.group(2)
-            value = p
-        else:
-            try:
-                value = password.Password(value)
-            except password.PasswordValueError, message:
-                raise HyperdbValueError, 'property %s: %s'%(propname, message)
-    elif isinstance(proptype, Date):
-        try:
-            tz = db.getUserTimezone()
-            value = date.Date(value).local(-tz)
-        except ValueError, message:
-            raise HyperdbValueError, 'property %s: %r is an invalid '\
-                'date (%s)'%(propname, value, message)
-    elif isinstance(proptype, Interval):
-        try:
-            value = date.Interval(value)
-        except ValueError, message:
-            raise HyperdbValueError, 'property %s: %r is an invalid '\
-                'date interval (%s)'%(propname, value, message)
-    elif isinstance(proptype, Link):
-        if value == '-1' or not value:
-            value = None
-        else:
-            value = convertLinkValue(db, propname, proptype, value)
-
-    elif isinstance(proptype, Multilink):
-        # get the current item value if it's not a new item
-        if itemid and not itemid.startswith('-'):
-            curvalue = klass.get(itemid, propname)
-        else:
-            curvalue = []
-
-        # if the value is a comma-separated string then split it now
-        if isinstance(value, type('')):
-            value = value.split(',')
-
-        # handle each add/remove in turn
-        # keep an extra list for all items that are
-        # definitely in the new list (in case of e.g.
-        # <propname>=A,+B, which should replace the old
-        # list with A,B)
-        set = 1
-        newvalue = []
-        for item in value:
-            item = item.strip()
-
-            # skip blanks
-            if not item: continue
-
-            # handle +/-
-            remove = 0
-            if item.startswith('-'):
-                remove = 1
-                item = item[1:]
-                set = 0
-            elif item.startswith('+'):
-                item = item[1:]
-                set = 0
-
-            # look up the value
-            itemid = convertLinkValue(db, propname, proptype, item)
-
-            # perform the add/remove
-            if remove:
-                try:
-                    curvalue.remove(itemid)
-                except ValueError:
-                    raise HyperdbValueError, 'property %s: %r is not ' \
-                        'currently an element'%(propname, item)
-            else:
-                newvalue.append(itemid)
-                if itemid not in curvalue:
-                    curvalue.append(itemid)
-
-        # that's it, set the new Multilink property value,
-        # or overwrite it completely
-        if set:
-            value = newvalue
-        else:
-            value = curvalue
-
-        # TODO: one day, we'll switch to numeric ids and this will be
-        # unnecessary :(
-        value = [int(x) for x in value]
-        value.sort()
-        value = [str(x) for x in value]
-    elif isinstance(proptype, Boolean):
-        value = value.strip()
-        # checked is a common HTML checkbox value
-        value = value.lower() in ('checked', 'yes', 'true', 'on', '1')
-    elif isinstance(proptype, Number):
-        value = value.strip()
-        try:
-            value = float(value)
-        except ValueError:
-            raise HyperdbValueError, 'property %s: %r is not a number'%(
-                propname, value)
+    value = proptype.from_raw \
+        ( value
+        , db = db
+        , klass = klass
+        , propname = propname
+        , itemid = itemid
+        , **kw
+        )
     return value
 
 class FileClass:

@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.88.2.5 2005-06-24 06:40:18 richard Exp $
+# $Id: back_metakit.py,v 1.88.2.6 2005-07-12 01:43:17 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -1209,8 +1209,6 @@ class Class(hyperdb.Class):
         if __debug__:
             start_t = time.time()
 
-        timezone = self.db.getUserTimezone()
-
         where = {'_isdel':0}
         wherehigh = {}
         mlcriteria = {}
@@ -1277,7 +1275,7 @@ class Class(hyperdb.Class):
             elif isinstance(prop, hyperdb.Date):
                 try:
                     # Try to filter on range of dates
-                    date_rng = Range(value, date.Date, offset=timezone)
+                    date_rng = prop.range_from_raw (value, self.db)
                     if date_rng.from_value:
                         t = date_rng.from_value.get_tuple()
                         where[propname] = int(calendar.timegm(t))
