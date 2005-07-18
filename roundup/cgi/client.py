@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.211.2.3 2005-07-18 01:33:49 richard Exp $
+# $Id: client.py,v 1.211.2.4 2005-07-18 02:20:13 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -11,6 +11,7 @@ import Cookie
 from roundup import roundupdb, date, hyperdb, password
 from roundup.cgi import templating, cgitb, TranslationService
 from roundup.cgi.actions import *
+from roundup.exceptions import *
 from roundup.cgi.exceptions import *
 from roundup.cgi.form_parser import FormParser
 from roundup.mailer import Mailer, MessageSendError
