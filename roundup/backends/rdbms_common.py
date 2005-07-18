@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.157 2005-07-12 01:37:50 richard Exp $
+# $Id: rdbms_common.py,v 1.158 2005-07-18 02:35:18 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1669,6 +1669,7 @@ class Class(hyperdb.Class):
                 if value is not None and type(value) != type('') and type(value) != type(u''):
                     raise TypeError, 'new property "%s" not a string'%propname
                 if prop.indexme:
+                    if value is None: value = ''
                     self.db.indexer.add_text((self.classname, nodeid, propname),
                         value)
 
