@@ -1614,8 +1614,12 @@ class LinkHTMLProperty(HTMLProperty):
 
     def __getattr__(self, attr):
         ''' return a new HTMLItem '''
-       #print 'Link.getattr', (self, attr, self._value)
         if not self._value:
+            # handle a special page templates lookup
+            if attr == '__render_with_namespace__':
+                def nothing(*args, **kw):
+                    return ''
+                return nothing
             msg = self._('Attempt to look up %(attr)s on a missing value')
             return MissingValue(msg%locals())
         i = HTMLItem(self._client, self._prop.classname, self._value)
