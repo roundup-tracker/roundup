@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: hyperdb.py,v 1.107.2.2 2005-07-12 01:43:17 richard Exp $
+# $Id: hyperdb.py,v 1.107.2.3 2005-07-18 01:43:06 richard Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -47,7 +47,7 @@ class Password:
         ' more useful for dumps '
         return '<%s>'%self.__class__
     def from_raw(self, value, **kw):
-        m = password.Passowrd.pwre.match(value)
+        m = password.Password.pwre.match(value)
         if m:
             # password is being given to us encrypted
             p = password.Password()
@@ -80,7 +80,7 @@ class Date:
             value = date.Date(value).local(-self.offset(db))
         except ValueError, message:
             raise HyperdbValueError, 'property %s: %r is an invalid '\
-                'date (%s)'%(propname, value, message)
+                'date (%s)'%(kw['propname'], value, message)
         return value
     def range_from_raw (self, value, db):
         """return Range value from given raw value with offset correction"""
@@ -96,7 +96,7 @@ class Interval:
             value = date.Interval(value)
         except ValueError, message:
             raise HyperdbValueError, 'property %s: %r is an invalid '\
-                'date interval (%s)'%(propname, value, message)
+                'date interval (%s)'%(kw['propname'], value, message)
         return value
 
 class Link:
@@ -169,7 +169,7 @@ class Multilink:
                 set = 0
 
             # look up the value
-            itemid = convertLinkValue(db, propname, proptype, item)
+            itemid = convertLinkValue(db, propname, self, item)
 
             # perform the add/remove
             if remove:
@@ -219,7 +219,7 @@ class Number:
             value = float(value)
         except ValueError:
             raise HyperdbValueError, 'property %s: %r is not a number'%(
-                propname, value)
+                kw['propname'], value)
         return value
 #
 # Support for splitting designators
