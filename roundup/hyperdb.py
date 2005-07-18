@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: hyperdb.py,v 1.107.2.3 2005-07-18 01:43:06 richard Exp $
+# $Id: hyperdb.py,v 1.107.2.4 2005-07-18 02:30:00 richard Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -54,7 +54,7 @@ class Password:
             p.scheme = m.group(1)
             if p.scheme not in 'SHA crypt plaintext'.split():
                 raise HyperdbValueError, 'property %s: unknown encryption '\
-                    'scheme %r'%(propname, p.scheme)
+                    'scheme %r'%(kw['propname'], p.scheme)
             p.password = m.group(2)
             value = p
         else:
