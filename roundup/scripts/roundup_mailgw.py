@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundup_mailgw.py,v 1.20 2004-09-14 22:09:48 richard Exp $
+# $Id: roundup_mailgw.py,v 1.21 2005-07-18 01:19:57 richard Exp $
 
 """Command-line script stub that calls the roundup.mailgw.
 """
@@ -24,7 +24,7 @@ __docformat__ = 'restructuredtext'
 from roundup import version_check
 from roundup import __version__ as roundup_version
 
-import sys, os, re, cStringIO, getopt
+import sys, os, re, cStringIO, getopt, socket
 
 from roundup import mailgw
 from roundup.i18n import _
@@ -146,6 +146,12 @@ def main(argv):
         if len(args) < 3:
             return usage(argv, _('Error: not enough source specification information'))
         source, specification = args[1:3]
+
+        # time out net connections after a minute if we can
+        if source not in ('mailbox', 'imaps'):
+            if hasattr(socket, 'setdefaulttimeout'):
+                socket.setdefaulttimeout(60)
+
         if source == 'mailbox':
             return handler.do_mailbox(specification)
         elif source == 'pop':
@@ -182,10 +188,6 @@ def main(argv):
         handler.db.close()
 
 def run():
-    # time out after a minute if we can
-    import socket
-    if hasattr(socket, 'setdefaulttimeout'):
-        socket.setdefaulttimeout(60)
     sys.exit(main(sys.argv))
 
 # call main
