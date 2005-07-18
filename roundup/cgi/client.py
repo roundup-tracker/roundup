@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.214 2005-06-24 05:22:03 richard Exp $
+# $Id: client.py,v 1.215 2005-07-18 01:32:04 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -737,6 +737,9 @@ class Client:
 
             Actions may return a page (by default HTML) to return to the
             user, bypassing the usual template rendering.
+
+            We explicitly catch Reject and ValueError exceptions and
+            present their messages to the user.
         '''
         if self.form.has_key(':action'):
             action = self.form[':action'].value.lower()
@@ -755,7 +758,7 @@ class Client:
             else:
                 return action_klass(self).execute()
 
-        except ValueError, err:
+        except (ValueError, Reject), err:
             self.error_message.append(str(err))
 
     def get_action_class(self, action_name):
