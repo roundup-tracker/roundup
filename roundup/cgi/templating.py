@@ -383,7 +383,10 @@ def lookupKeys(linkcl, key, ids, num_re=re.compile('^-?\d+$')):
     l = []
     for entry in ids:
         if num_re.match(entry):
-            l.append(linkcl.get(entry, key))
+            label = linkcl.get(entry, key)
+            # fall back to designator if label is None
+            if label is None: label = '%s%s'%(linkcl.classname, entry)
+            l.append(label)
         else:
             l.append(entry)
     return l
@@ -935,6 +938,9 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                                     if hrefable:
                                         subml.append('<a href="%s%s">%s</a>'%(
                                             classname, linkid, label))
+                                    elif label is None:
+                                        subml.append('%s%s'%(classname,
+                                            linkid))
                                     else:
                                         subml.append(label)
                             ml.append(sublabel + ', '.join(subml))
@@ -1822,7 +1828,10 @@ class MultilinkHTMLProperty(HTMLProperty):
         k = linkcl.labelprop(1)
         labels = []
         for v in self._value:
-            labels.append(linkcl.get(v, k))
+            label = linkcl.get(v, k)
+            # fall back to designator if label is None
+            if label is None: label = '%s%s'%(self._prop.classname, k)
+            labels.append(label)
         value = ', '.join(labels)
         if escape:
             value = cgi.escape(value)
