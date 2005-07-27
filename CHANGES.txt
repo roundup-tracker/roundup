@@ -1,7 +1,12 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2005-??-?? 0.8.4
+2005-??-?? 0.8.5
+Fixed:
+- Display of Multilinks where linked Class labelprop values are None
+
+
+2005-07-18 0.8.4
 Fixed:
 - extra CRs in CSV export files on Windows platform (sf bug 1195742)
 - activity RDBMS columns were being reported in changes

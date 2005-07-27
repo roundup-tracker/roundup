@@ -1,4 +1,4 @@
-STXTOHTML = rst2html.py
+STXTOHTML = rest2html
 STXTOHT = rst2ht.py
 WEBDIR = ../../htdocs/htdocs/doc-0.8
 
