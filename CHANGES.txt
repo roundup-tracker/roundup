@@ -4,6 +4,7 @@ are given with the most recent entry first.
 2005-??-?? 0.8.5
 Fixed:
 - Display of Multilinks where linked Class labelprop values are None
+- Fix references to the old * Registration Permissions
 
 
 2005-07-18 0.8.4
