@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.182 $
+:Version: $Revision: 1.183 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -941,22 +941,25 @@ Example Scenarios
 
 See the `examples`_ section for longer examples of customisation.
 
-**automatic registration of users in the e-mail gateway**
- By giving the "anonymous" user the "Email Registration" Role, any
- unidentified user will automatically be registered with the tracker
- (with no password, so they won't be able to log in through the web
- until an admin sets their password). This is the default behaviour
- in the tracker templates that ship with Roundup.
-
 **anonymous access through the e-mail gateway**
- Give the "anonymous" user the "Email Access" and ("Edit", "issue")
- Roles but do not not give them the "Email Registration" Role. This
- means that when an unknown user sends email into the tracker, they're
- automatically logged in as "anonymous". Since they don't have the
- "Email Registration" Role, they won't be automatically registered, but
- since "anonymous" has permission to use the gateway, they'll still be
- able to submit issues. Note that the Sender information - their email
- address - will not be available - they're *anonymous*.
+ Give the "anonymous" user the "Email Access", ("Edit", "issue") and
+ ("Create", "msg") Permissions but do not not give them the ("Create",
+ "user") Permission. This means that when an unknown user sends email
+ into the tracker, they're automatically logged in as "anonymous".
+ Since they don't have the ("Create", "user") Permission, they won't
+ be automatically registered, but since "anonymous" has permission to
+ use the gateway, they'll still be able to submit issues. Note that
+ the Sender information - their email address - will not be available
+ - they're *anonymous*.
+
+**automatic registration of users in the e-mail gateway**
+ By giving the "anonymous" user the ("Create", "user" Permission, any
+ unidentified user will automatically be registered with the tracker
+ (with no password, so they won't be able to log in through
+ the web until an admin sets their password). This is the default
+ behaviour in the tracker templates that ship with Roundup. The new user
+ is given the Roles list defined in the "new_email_user_roles" config
+ variable.
 
 **only developers may be assigned issues**
  Create a new Permission called "Fixer" for the "issue" class. Create a
@@ -1184,7 +1187,7 @@ for each action are:
 **logout**
  No permission checks are made.
 **register**
- Determine whether the user has the "Web Registration" Permission.
+ Determine whether the user has the ("Create", "user") Permission.
 **edit**
  Determine whether the user has permission to edit this item. If we're
  editing the "user" class, users are allowed to edit their own details -
@@ -1193,7 +1196,7 @@ for each action are:
 **new**
  Determine whether the user has permission to create this item. No
  additional property checks are made. Additionally, new user items may
- be created if the user has the "Web Registration" Permission.
+ be created if the user has the ("Create", "user") Permission.
 **editCSV**
  Determine whether the user has permission to edit this class.
 **search**
