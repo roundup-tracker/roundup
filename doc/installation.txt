@@ -501,6 +501,7 @@ As a mail alias pipe process
 
 Set up a mail alias called "issue_tracker" as (include the quote marks):
 "``|/usr/bin/python /usr/local/bin/roundup-mailgw <tracker_home>``"
+(substitute ``/usr/local/bin`` for wherever roundup-mailgw is installed).
 
 In some installations (e.g. RedHat 6.2 I think) you'll need to set up smrsh so
 sendmail will accept the pipe command. In that case, symlink
@@ -516,7 +517,8 @@ To test the mail gateway on unix systems, try::
 As a regular job using a mailbox source
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Set ``roundup-mailgw`` up to run every 10 minutes or so. For example::
+Set ``roundup-mailgw`` up to run every 10 minutes or so. For example
+(substitute ``/usr/local/bin`` for wherever roundup-mailgw is installed)::
 
   0,10,20,30,40,50 * * * * /usr/local/bin/roundup-mailgw /opt/roundup/trackers/support mailbox <mail_spool_file>
 
@@ -527,7 +529,9 @@ will be "``/var/mail/issue_tracker``".
 As a regular job using a POP source
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To retrieve from a POP mailbox, use a *cron* entry similar to the mailbox one::
+To retrieve from a POP mailbox, use a *cron* entry similar to the mailbox
+one (substitute ``/usr/local/bin`` for wherever roundup-mailgw is
+installed)::
 
   0,10,20,30,40,50 * * * * /usr/local/bin/roundup-mailgw /opt/roundup/trackers/support pop <pop_spec>
 
@@ -540,7 +544,8 @@ As a regular job using an IMAP source
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To retrieve from an IMAP mailbox, use a *cron* entry similar to the
-POP one::
+POP one (substitute ``/usr/local/bin`` for wherever roundup-mailgw is
+installed)::
 
   0,10,20,30,40,50 * * * * /usr/local/bin/roundup-mailgw /opt/roundup/trackers/support imap <imap_spec>
 
