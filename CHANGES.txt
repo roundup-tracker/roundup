@@ -9,6 +9,9 @@ Feature:
 
 
 2005-??-?? 0.8.5
+Feature:
+- Argentinian Spanish translation by Ramiro Morales
+
 Fixed:
 - Display of Multilinks where linked Class labelprop values are None
 - Fix references to the old * Registration Permissions
