@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.161.2.18 $
+:Version: $Revision: 1.161.2.19 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2676,6 +2676,10 @@ This example shows how to add a simple field (a due date) to the default
 classic schema. It does not add any additional behaviour, such as enforcing
 the due date, or causing automatic actions to fire if the due date passes.
 
+You add new fields by editing the ``schema.py`` file in you tracker's home.
+Schema changes are automatically applied to the database on the next
+tracker access (note that roundup-server would need to be restarted as it
+caches the schema).
 
 1. modify the schema::
 
