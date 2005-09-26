@@ -8,6 +8,7 @@ Feature:
 Fixed:
 - Display of Multilinks where linked Class labelprop values are None
 - Fix references to the old * Registration Permissions
+- Fix missing merge of fix to sf bug 1177057
 
 
 2005-07-18 0.8.4

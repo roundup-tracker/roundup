@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.159.2.6 2005-06-24 07:17:08 richard Exp $
+$Id: mailgw.py,v 1.159.2.7 2005-09-26 02:14:07 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -778,7 +778,8 @@ The mail gateway is not properly set up. Please contact
         # Don't create users if anonymous isn't allowed to register
         create = 1
         anonid = self.db.user.lookup('anonymous')
-        if not self.db.security.hasPermission('Create', anonid, 'user'):
+        if not (self.db.security.hasPermission('Create', anonid, 'user')
+                and self.db.security.hasPermission('Email Access', anonid)):
             create = 0
 
         # ok, now figure out who the author is - create a new user if the
