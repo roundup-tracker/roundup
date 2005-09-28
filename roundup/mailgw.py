@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.166 2005-06-24 07:16:01 richard Exp $
+$Id: mailgw.py,v 1.167 2005-09-28 05:48:23 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -223,8 +223,9 @@ class Message(mimetools.Message):
         # Encode message to unicode
         charset = rfc2822.unaliasCharset(self.getparam("charset"))
         if charset:
-            # Do conversion only if charset specified
-            edata = unicode(data, charset).encode('utf-8')
+            # Do conversion only if charset specified - handle
+            # badly-specified charsets
+            edata = unicode(data, charset, 'replace').encode('utf-8')
             # Convert from dos eol to unix
             edata = edata.replace('\r\n', '\n')
         else:
