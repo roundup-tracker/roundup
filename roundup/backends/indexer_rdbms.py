@@ -1,4 +1,4 @@
-#$Id: indexer_rdbms.py,v 1.10 2005-05-22 17:55:00 a1s Exp $
+#$Id: indexer_rdbms.py,v 1.11 2005-09-28 05:42:23 richard Exp $
 ''' This implements the full-text indexer over two RDBMS tables. The first
 is a mapping of words to occurance IDs. The second maps the IDs to (Class,
 propname, itemid) instances.
@@ -62,8 +62,8 @@ class Indexer(Indexer):
                 for w in re.findall(r'(?u)\b\w{2,25}\b', text)]
         words = {}
         for word in wordlist:
-            if is_stopword(word):
-                continue
+            if is_stopword(word): continue
+            if len(word) > 25: continue
             words[word] = 1
         words = words.keys()
 
