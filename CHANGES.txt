@@ -9,6 +9,7 @@ Fixed:
 - Display of Multilinks where linked Class labelprop values are None
 - Fix references to the old * Registration Permissions
 - Fix missing merge of fix to sf bug 1177057
+- Fix RDBMS indexer indexing UTF-8 words that encode to > 30 chars
 
 
 2005-07-18 0.8.4

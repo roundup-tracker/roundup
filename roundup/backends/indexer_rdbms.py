@@ -56,8 +56,8 @@ class Indexer(Indexer):
                 for w in re.findall(r'(?u)\b\w{2,25}\b', text)]
         words = {}
         for word in wordlist:
-            if is_stopword(word):
-                continue
+            if is_stopword(word): continue
+            if len(word) > 25: continue
             words[word] = 1
         words = words.keys()
 
