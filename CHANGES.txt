@@ -10,6 +10,7 @@ Fixed:
 - Fix references to the old * Registration Permissions
 - Fix missing merge of fix to sf bug 1177057
 - Fix RDBMS indexer indexing UTF-8 words that encode to > 30 chars
+- Handle invalidly-specified charsets in incoming email
 
 
 2005-07-18 0.8.4
