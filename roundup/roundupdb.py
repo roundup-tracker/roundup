@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.118 2005-02-12 00:57:08 richard Exp $
+# $Id: roundupdb.py,v 1.119 2005-10-07 04:42:13 richard Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -346,60 +346,78 @@ class IssueClass:
         subject = '[%s%s] %s'%(cn, nodeid, title)
         author = (authname + from_tag, from_address)
 
-        # create the message
-        mailer = Mailer(self.db.config)
-        message, writer = mailer.get_standard_message(sendto, subject, author)
-
-        # set reply-to to the tracker
-        tracker_name = self.db.config.TRACKER_NAME
-        if charset != 'utf-8':
-            tracker = unicode(tracker_name, 'utf-8').encode(charset)
-        tracker_name = encode_header(tracker_name, charset)
-        writer.addheader('Reply-To', straddr((tracker_name, from_address)))
-
-        # message ids
-        if messageid:
-            writer.addheader('Message-Id', messageid)
-        if inreplyto:
-            writer.addheader('In-Reply-To', inreplyto)
-
-        # attach files
-        if message_files:
-            part = writer.startmultipartbody('mixed')
-            part = writer.nextpart()
-            part.addheader('Content-Transfer-Encoding', 'quoted-printable')
-            body = part.startbody('text/plain; charset=%s'%charset)
-            body.write(content_encoded)
-            for fileid in message_files:
-                name = files.get(fileid, 'name')
-                mime_type = files.get(fileid, 'type')
-                content = files.get(fileid, 'content')
-                part = writer.nextpart()
-                if mime_type == 'text/plain':
-                    part.addheader('Content-Disposition',
-                        'attachment;\n filename="%s"'%name)
-                    part.addheader('Content-Transfer-Encoding', '7bit')
-                    body = part.startbody('text/plain')
-                    body.write(content)
-                else:
-                    # some other type, so encode it
-                    if not mime_type:
-                        # this should have been done when the file was saved
-                        mime_type = mimetypes.guess_type(name)[0]
-                    if mime_type is None:
-                        mime_type = 'application/octet-stream'
-                    part.addheader('Content-Disposition',
-                        'attachment;\n filename="%s"'%name)
-                    part.addheader('Content-Transfer-Encoding', 'base64')
-                    body = part.startbody(mime_type)
-                    body.write(base64.encodestring(content))
-            writer.lastpart()
+        # send an individual message per recipient?
+        if self.db.config.NOSY_EMAIL_SENDING != 'single':
+            sendto = [[address] for address in sendto]
         else:
-            writer.addheader('Content-Transfer-Encoding', 'quoted-printable')
-            body = writer.startbody('text/plain; charset=%s'%charset)
-            body.write(content_encoded)
+            sendto = [sendto]
 
-        mailer.smtp_send(sendto + bcc_sendto, message)
+        # now send one or more messages
+        # TODO: I believe we have to create a new message each time as we
+        # can't fiddle the recipients in the message ... worth testing
+        # and/or fixing some day
+        first = True
+        for sendto in sendto:
+            # create the message
+            mailer = Mailer(self.db.config)
+            message, writer = mailer.get_standard_message(sendto, subject,
+                author)
+
+            # set reply-to to the tracker
+            tracker_name = self.db.config.TRACKER_NAME
+            if charset != 'utf-8':
+                tracker = unicode(tracker_name, 'utf-8').encode(charset)
+            tracker_name = encode_header(tracker_name, charset)
+            writer.addheader('Reply-To', straddr((tracker_name, from_address)))
+
+            # message ids
+            if messageid:
+                writer.addheader('Message-Id', messageid)
+            if inreplyto:
+                writer.addheader('In-Reply-To', inreplyto)
+
+            # attach files
+            if message_files:
+                part = writer.startmultipartbody('mixed')
+                part = writer.nextpart()
+                part.addheader('Content-Transfer-Encoding', 'quoted-printable')
+                body = part.startbody('text/plain; charset=%s'%charset)
+                body.write(content_encoded)
+                for fileid in message_files:
+                    name = files.get(fileid, 'name')
+                    mime_type = files.get(fileid, 'type')
+                    content = files.get(fileid, 'content')
+                    part = writer.nextpart()
+                    if mime_type == 'text/plain':
+                        part.addheader('Content-Disposition',
+                            'attachment;\n filename="%s"'%name)
+                        part.addheader('Content-Transfer-Encoding', '7bit')
+                        body = part.startbody('text/plain')
+                        body.write(content)
+                    else:
+                        # some other type, so encode it
+                        if not mime_type:
+                            # this should have been done when the file was saved
+                            mime_type = mimetypes.guess_type(name)[0]
+                        if mime_type is None:
+                            mime_type = 'application/octet-stream'
+                        part.addheader('Content-Disposition',
+                            'attachment;\n filename="%s"'%name)
+                        part.addheader('Content-Transfer-Encoding', 'base64')
+                        body = part.startbody(mime_type)
+                        body.write(base64.encodestring(content))
+                writer.lastpart()
+            else:
+                writer.addheader('Content-Transfer-Encoding',
+                    'quoted-printable')
+                body = writer.startbody('text/plain; charset=%s'%charset)
+                body.write(content_encoded)
+
+            if first:
+                mailer.smtp_send(sendto + bcc_sendto, message)
+            else:
+                mailer.smtp_send(sendto, message)
+            first = False
 
     def email_signature(self, nodeid, msgid):
         ''' Add a signature to the e-mail with some useful information

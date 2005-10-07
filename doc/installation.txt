@@ -56,7 +56,7 @@ An RDBMS
 Xapian full-text indexer
   The Xapian_ full-text indexer is also supported and will be used by
   default if it is available. This is strongly recommended if you are
-  anticipating a large number of issues (> 1000).
+  anticipating a large number of issues (> 5000).
 
   You may install Xapian at any time, even after a tracker has been
   installed and used. You will need to run the "roundup-admin reindex"
@@ -245,6 +245,10 @@ create your tracker on.
 
 Choosing Your Backend
 ---------------------
+
+.. note::
+
+   The tsearch2 backend is experimental and should not be selected.
 
 The actual storage of Roundup tracker information is handled by backends.
 There's several to choose from, each with benefits and limitations:

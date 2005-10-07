@@ -8,11 +8,11 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.75 2005-06-24 06:47:44 richard Exp $
+# $Id: test_mailgw.py,v 1.76 2005-10-07 04:42:13 richard Exp $
 
 # TODO: test bcc
 
-import unittest, tempfile, os, shutil, errno, imp, sys, difflib, rfc822
+import unittest, tempfile, os, shutil, errno, imp, sys, difflib, rfc822, time
 
 from cStringIO import StringIO
 
@@ -357,6 +357,10 @@ Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 _______________________________________________________________________
 ''')
 
+
+    #
+    # FOLLOWUP TITLE MATCH
+    #
     def testFollowupTitleMatch(self):
         self.doNewIssue()
         self._handle_mail('''Content-Type: text/plain;
@@ -399,6 +403,49 @@ Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 <http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
 _______________________________________________________________________
 ''')
+
+    def testFollowupTitleMatchNever(self):
+        nodeid = self.doNewIssue()
+        self.db.config.MAILGW_SUBJECT_CONTENT_MATCH = 'never'
+        self.assertNotEqual(self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: richard <richard@test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: Re: Testing...
+
+This is a followup
+'''), nodeid)
+
+    def testFollowupTitleMatchNever(self):
+        nodeid = self.doNewIssue()
+        # force failure of the interval
+        time.sleep(2)
+        self.db.config.MAILGW_SUBJECT_CONTENT_MATCH = 'creation 00:00:01'
+        self.assertNotEqual(self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: richard <richard@test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: Re: Testing...
+
+This is a followup
+'''), nodeid)
+        # now try a longer interval
+        self.db.config.MAILGW_SUBJECT_CONTENT_MATCH = 'creation +1d'
+        self.assertEqual(self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: richard <richard@test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: Re: Testing...
+
+This is a followup
+'''), nodeid)
+
 
     def testFollowupNosyAuthor(self):
         self.doNewIssue()
@@ -685,8 +732,11 @@ This is a test submission of a new issue.
         self.assertEqual(l, m)
 
         # now with the permission
-        p = self.db.security.getPermission('Create', 'user')
-        self.db.security.role['anonymous'].permissions=[p]
+        p = [
+            self.db.security.getPermission('Create', 'user'),
+            self.db.security.getPermission('Email Access', None),
+        ]
+        self.db.security.role['anonymous'].permissions=p
         self._handle_mail(message)
         m = self.db.user.list()
         m.sort()
@@ -1031,6 +1081,178 @@ Reply-To: chef@bork.bork.bork
 Message-Id: <dummy_test_message_id>
 
 ''')
+
+    #
+    # TEST FOR INVALID DESIGNATOR HANDLING
+    #
+    def testInvalidDesignator(self):
+        self.assertRaises(MailUsageError, self._handle_mail,
+            '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Subject: [frobulated] testing
+Cc: richard@test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+
+''')
+        self.assertRaises(MailUsageError, self._handle_mail,
+            '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Subject: [issue12345] testing
+Cc: richard@test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+
+''')
+
+    def testInvalidClassLoose(self):
+        self.instance.config.MAILGW_SUBJECT_PREFIX_PARSING = 'loose'
+        nodeid = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Subject: [frobulated] testing
+Cc: richard@test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+
+''')
+        assert not os.path.exists(SENDMAILDEBUG)
+        self.assertEqual(self.db.issue.get(nodeid, 'title'),
+            '[frobulated] testing')
+
+    def testInvalidClassLoose(self):
+        self.instance.config.MAILGW_SUBJECT_PREFIX_PARSING = 'loose'
+        nodeid = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Subject: [issue1234] testing
+Cc: richard@test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+
+''')
+        assert not os.path.exists(SENDMAILDEBUG)
+        self.assertEqual(self.db.issue.get(nodeid, 'title'),
+            '[issue1234] testing')
+
+    def testClassLooseOK(self):
+        self.instance.config.MAILGW_SUBJECT_PREFIX_PARSING = 'loose'
+        self.db.keyword.create(name='Foo')
+        nodeid = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Subject: [keyword1] Testing... [name=Bar]
+Cc: richard@test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+
+''')
+        assert not os.path.exists(SENDMAILDEBUG)
+        self.assertEqual(self.db.keyword.get('1', 'name'), 'Bar')
+
+    #
+    # TEST FOR INVALID COMMANDS HANDLING
+    #
+    def testInvalidCommands(self):
+        self.assertRaises(MailUsageError, self._handle_mail,
+            '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Subject: testing [frobulated]
+Cc: richard@test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+
+''')
+
+    def testInvalidCommandPassthrough(self):
+        self.instance.config.MAILGW_SUBJECT_SUFFIX_PARSING = 'none'
+        nodeid = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Subject: testing [frobulated]
+Cc: richard@test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+
+''')
+        assert not os.path.exists(SENDMAILDEBUG)
+        self.assertEqual(self.db.issue.get(nodeid, 'title'),
+            'testing [frobulated]')
+
+    def testInvalidCommandPassthroughLoose(self):
+        self.instance.config.MAILGW_SUBJECT_SUFFIX_PARSING = 'loose'
+        nodeid = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Subject: testing [frobulated]
+Cc: richard@test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+
+''')
+        assert not os.path.exists(SENDMAILDEBUG)
+        self.assertEqual(self.db.issue.get(nodeid, 'title'),
+            'testing [frobulated]')
+
+    def testInvalidCommandPassthroughLooseOK(self):
+        self.instance.config.MAILGW_SUBJECT_SUFFIX_PARSING = 'loose'
+        nodeid = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Subject: testing [assignedto=mary]
+Cc: richard@test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+
+''')
+        assert not os.path.exists(SENDMAILDEBUG)
+        self.assertEqual(self.db.issue.get(nodeid, 'title'), 'testing')
+        self.assertEqual(self.db.issue.get(nodeid, 'assignedto'), self.mary_id)
+
+    def testCommandDelimiters(self):
+        self.instance.config.MAILGW_SUBJECT_SUFFIX_DELIMITERS = '{}'
+        nodeid = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Subject: testing {assignedto=mary}
+Cc: richard@test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+
+''')
+        assert not os.path.exists(SENDMAILDEBUG)
+        self.assertEqual(self.db.issue.get(nodeid, 'title'), 'testing')
+        self.assertEqual(self.db.issue.get(nodeid, 'assignedto'), self.mary_id)
+
+    def testCommandDelimitersIgnore(self):
+        self.instance.config.MAILGW_SUBJECT_SUFFIX_DELIMITERS = '{}'
+        nodeid = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Subject: testing [assignedto=mary]
+Cc: richard@test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+
+''')
+        assert not os.path.exists(SENDMAILDEBUG)
+        self.assertEqual(self.db.issue.get(nodeid, 'title'),
+            'testing [assignedto=mary]')
+        self.assertEqual(self.db.issue.get(nodeid, 'assignedto'), None)
 
 def test_suite():
     suite = unittest.TestSuite()

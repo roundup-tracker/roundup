@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.26 2005-06-24 05:22:03 richard Exp $
+# $Id: configuration.py,v 1.27 2005-10-07 04:42:13 richard Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -569,6 +569,33 @@ SETTINGS = (
             "Default locale name for the tracker mail gateway.\n"
             "If this option is not set, mail gateway will use\n"
             "the language of the tracker instance."),
+        (Option, "subject_prefix_parsing", "strict",
+            "Controls the parsing of the [prefix] on subject\n"
+            "lines in incoming emails. \"strict\" will return an\n"
+            "error to the sender if the [prefix] is not recognised.\n"
+            "\"loose\" will attempt to parse the [prefix] but just\n"
+            "pass it through as part of the issue title if not\n"
+            "recognised. \"none\" will always pass any [prefix]\n"
+            "through as part of the issue title."),
+        (Option, "subject_suffix_parsing", "strict",
+            "Controls the parsing of the [suffix] on subject\n"
+            "lines in incoming emails. \"strict\" will return an\n"
+            "error to the sender if the [suffix] is not recognised.\n"
+            "\"loose\" will attempt to parse the [suffix] but just\n"
+            "pass it through as part of the issue title if not\n"
+            "recognised. \"none\" will always pass any [suffix]\n"
+            "through as part of the issue title."),
+        (Option, "subject_suffix_delimiters", "[]",
+            "Defines the brackets used for delimiting the commands\n"
+            "suffix in a subject line."),
+        (Option, "subject_content_match", "always",
+            "Controls matching of the incoming email subject line\n"
+            "against issue titles in the case where there is no\n"
+            "designator [prefix]. \"never\" turns off matching.\n"
+            "\"creation + interval\" or \"activity + interval\"\n"
+            "will match an issue for the interval after the issue's\n"
+            "creation or last activity. The interval is a standard\n"
+            "Roundup interval."),
     ), "Roundup Mail Gateway options"),
     ("nosy", (
         (RunDetectorOption, "messages_to_author", "no",
@@ -592,6 +619,11 @@ SETTINGS = (
             "If 'yes', then the recipients will be added on followups too.\n"
             "If 'no', they're never added to the nosy.\n",
             ["ADD_RECIPIENTS_TO_NOSY"]),
+        (Option, "email_sending", "single",
+            "Controls the email sending from the nosy reactor. If\n"
+            "\"multiple\" then a separate email is sent to each\n"
+            "recipient. If \"single\" then a single email is sent with\n"
+            "each recipient as a CC address."),
     ), "Nosy messages sending"),
 )
 

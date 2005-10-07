@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.184 $
+:Version: $Revision: 1.185 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -255,6 +255,31 @@ Section **mailgw**
   Default class to use in the mailgw if one isn't supplied in email subjects.
   To disable, leave the value blank.
 
+ subject_prefix_parsing -- ``strict``
+  Controls the parsing of the [prefix] on subject lines in incoming emails.
+  ``strict`` will return an error to the sender if the [prefix] is not
+  recognised. ``loose`` will attempt to parse the [prefix] but just
+  pass it through as part of the issue title if not recognised. ``none``
+  will always pass any [prefix] through as part of the issue title.
+
+ subject_suffix_parsing -- ``strict``
+  Controls the parsing of the [suffix] on subject lines in incoming emails.
+  ``strict`` will return an error to the sender if the [suffix] is not
+  recognised. ``loose`` will attempt to parse the [suffix] but just
+  pass it through as part of the issue title if not recognised. ``none``
+  will always pass any [suffix] through as part of the issue title.
+
+ subject_suffix_delimiters -- ``[]``
+  Defines the brackets used for delimiting the commands suffix in a subject
+  line.
+
+ subject_content_match -- ``always``
+  Controls matching of the incoming email subject line against issue titles
+  in the case where there is no designator [prefix]. ``never`` turns off
+  matching. ``creation + interval`` or ``activity + interval`` will match
+  an issue for the interval after the issue's creation or last activity.
+  The interval is a standard Roundup interval.
+
 Section **nosy**
  Nosy messages sending
 
@@ -279,6 +304,11 @@ Section **nosy**
   message creates a new issue. If ``yes``, then the recipients will be added
   on followups too. If ``no``, they're never added to the nosy.
   Allowed values: ``yes``, ``no``, ``new``
+
+ email_sending -- ``single``
+  Controls the email sending from the nosy reactor. If ``multiple`` then
+  a separate email is sent to each recipient. If ``single`` then a single
+  email is sent with each recipient as a CC address.
 
 You may generate a new default config file using the ``roundup-admin
 genconfig`` command.

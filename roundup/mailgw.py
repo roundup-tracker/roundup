@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.167 2005-09-28 05:48:23 richard Exp $
+$Id: mailgw.py,v 1.168 2005-10-07 04:42:13 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -296,19 +296,6 @@ class Message(mimetools.Message):
         return (self.getname(), self.gettype(), self.getbody())
 
 class MailGW:
-
-    # Matches subjects like:
-    # Re: "[issue1234] title of issue [status=resolved]"
-    subject_re = re.compile(r'''
-        (?P<refwd>\s*\W?\s*(fw|fwd|re|aw)\W\s*)*\s*   # Re:
-        (?P<quote>")?                                 # Leading "
-        (\[(?P<classname>[^\d\s]+)                    # [issue..
-           (?P<nodeid>\d+)?                           # ..1234]
-         \])?\s*
-        (?P<title>[^[]+)?                             # issue title
-        "?                                            # Trailing "
-        (\[(?P<args>.+?)\])?                          # [prop=value]
-        ''', re.IGNORECASE|re.VERBOSE)
 
     def __init__(self, instance, db, arguments=()):
         self.instance = instance
@@ -611,6 +598,23 @@ Emails to Roundup trackers must include a Subject: line!
         # make local variable for easier access
         config = self.instance.config
 
+        # determine the sender's address
+        from_list = message.getaddrlist('resent-from')
+        if not from_list:
+            from_list = message.getaddrlist('from')
+
+        # check for registration OTK
+        # or fallback on the default class
+        otk_re = re.compile('-- key (?P<otk>[a-zA-Z0-9]{32})')
+        otk = otk_re.search(subject)
+        if otk:
+            self.db.confirm_registration(otk.group('otk'))
+            subject = 'Your registration to %s is complete' % \
+                      config['TRACKER_NAME']
+            sendto = [from_list[0][1]]
+            self.mailer.standard_message(sendto, subject, '')
+            return
+
         # XXX Don't enable. This doesn't work yet.
 #  "[^A-z.]tracker\+(?P<classname>[^\d\s]+)(?P<nodeid>\d+)\@some.dom.ain[^A-z.]"
         # handle delivery to addresses like:tracker+issue25@some.dom.ain
@@ -627,29 +631,37 @@ Emails to Roundup trackers must include a Subject: line!
 #                    nodeid = issue.group('nodeid')
 #                    break
 
-        # determine the sender's address
-        from_list = message.getaddrlist('resent-from')
-        if not from_list:
-            from_list = message.getaddrlist('from')
+        # Matches subjects like:
+        # Re: "[issue1234] title of issue [status=resolved]"
+        open, close = config['MAILGW_SUBJECT_SUFFIX_DELIMITERS']
+        delim_open = re.escape(open)
+        delim_close = re.escape(close)
+        subject_re = re.compile(r'''
+        (?P<refwd>\s*\W?\s*(fw|fwd|re|aw)\W\s*)*\s*   # Re:
+        (?P<quote>")?                                 # Leading "
+        (\[(?P<classname>[^\d\s]+)                    # [issue..
+           (?P<nodeid>\d+)?                           # ..1234]
+         \])?\s*
+        (?P<title>[^%s]+)?                             # issue title
+        "?                                            # Trailing "
+        (?P<argswhole>%s(?P<args>.+?)%s)?             # [prop=value]
+        '''%(delim_open, delim_open, delim_close),
+        re.IGNORECASE|re.VERBOSE)
+
+        # figure subject line parsing modes
+        pfxmode = config['MAILGW_SUBJECT_PREFIX_PARSING']
+        sfxmode = config['MAILGW_SUBJECT_SUFFIX_PARSING']
 
         # check for well-formed subject line
-        m = self.subject_re.match(subject)
+        m = subject_re.match(subject)
         if m:
             # get the classname
-            classname = m.group('classname')
+            if pfxmode == 'none':
+                classname = None
+            else:
+                classname = m.group('classname')
             if classname is None:
-                # no classname, check if this a registration confirmation email
-                # or fallback on the default class
-                otk_re = re.compile('-- key (?P<otk>[a-zA-Z0-9]{32})')
-                otk = otk_re.search(m.group('title'))
-                if otk:
-                    self.db.confirm_registration(otk.group('otk'))
-                    subject = 'Your registration to %s is complete' % \
-                              config['TRACKER_NAME']
-                    sendto = [from_list[0][1]]
-                    self.mailer.standard_message(sendto, subject, '')
-                    return
-                elif self.default_class:
+                if self.default_class:
                     classname = self.default_class
                 else:
                     classname = config['MAILGW_DEFAULT_CLASS']
@@ -657,7 +669,7 @@ Emails to Roundup trackers must include a Subject: line!
                         # fail
                         m = None
 
-        if not m:
+        if not m and pfxmode == 'strict':
             raise MailUsageError, """
 The message you sent to roundup did not contain a properly formed subject
 line. The subject must contain a class name or designator to indicate the
@@ -672,10 +684,22 @@ line. The subject must contain a class name or designator to indicate the
 Subject was: '%s'
 """%subject
 
-        # get the class
-        try:
-            cl = self.db.getclass(classname)
-        except KeyError:
+        # try to get the class specified - if "loose" then fall back on the
+        # default
+        attempts = [classname]
+        if pfxmode == 'loose':
+            if self.default_class:
+                attempts.append(self.default_class)
+            else:
+                attempts.append(config['MAILGW_DEFAULT_CLASS'])
+        cl = None
+        for trycl in attempts:
+            try:
+                cl = self.db.getclass(classname)
+                break
+            except KeyError:
+                pass
+        if not cl:
             raise MailUsageError, '''
 The class name you identified in the subject line ("%s") does not exist in the
 database.
@@ -685,7 +709,10 @@ Subject was: "%s"
 '''%(classname, ', '.join(self.db.getclasses()), subject)
 
         # get the optional nodeid
-        nodeid = m.group('nodeid')
+        if pfxmode == 'none':
+            nodeid = None
+        else:
+            nodeid = m.group('nodeid')
 
         # title is optional too
         title = m.group('title')
@@ -703,7 +730,7 @@ Subject was: "%s"
         if nodeid is None and not title:
             raise MailUsageError, '''
 I cannot match your message to a node in the database - you need to either
-supply a full node identifier (with number, eg "[issue123]" or keep the
+supply a full designator (with number, eg "[issue123]" or keep the
 previous subject title intact so I can match that.
 
 Subject was: "%s"
@@ -713,20 +740,36 @@ Subject was: "%s"
         # maybe someone's responded to the initial mail that created an
         # entry. Try to find the matching nodes with the same title, and
         # use the _last_ one matched (since that'll _usually_ be the most
-        # recent...)
-        if nodeid is None and m.group('refwd'):
+        # recent...). The subject_content_match config may specify an
+        # additional restriction based on the matched node's creation or
+        # activity.
+        tmatch_mode = config['MAILGW_SUBJECT_CONTENT_MATCH']
+        if tmatch_mode != 'never' and nodeid is None and m.group('refwd'):
             l = cl.stringFind(title=title)
-            if l:
-                nodeid = l[-1]
+            limit = None
+            if (tmatch_mode.startswith('creation') or
+                    tmatch_mode.startswith('activity')):
+                limit, interval = tmatch_mode.split(' ', 1)
+                threshold = date.Date('.') - date.Interval(interval)
+            for id in l:
+                if limit:
+                    if threshold < cl.get(id, limit):
+                        nodeid = id
+                else:
+                    nodeid = id
 
         # if a nodeid was specified, make sure it's valid
         if nodeid is not None and not cl.hasnode(nodeid):
-            raise MailUsageError, '''
+            if pfxmode == 'strict':
+                raise MailUsageError, '''
 The node specified by the designator in the subject of your message ("%s")
 does not exist.
 
 Subject was: "%s"
 '''%(nodeid, subject)
+            else:
+                title = subject
+                nodeid = None
 
         # Handle the arguments specified by the email gateway command line.
         # We do this by looping over the list of self.arguments looking for
@@ -844,17 +887,24 @@ Unknown address: %s
         properties = cl.getprops()
         props = {}
         args = m.group('args')
+        argswhole = m.group('argswhole')
         if args:
-            errors, props = setPropArrayFromString(self, cl, args, nodeid)
-            # handle any errors parsing the argument list
-            if errors:
-                errors = '\n- '.join(map(str, errors))
-                raise MailUsageError, '''
+            if sfxmode == 'none':
+                title += ' ' + argswhole
+            else:
+                errors, props = setPropArrayFromString(self, cl, args, nodeid)
+                # handle any errors parsing the argument list
+                if errors:
+                    if sfxmode == 'strict':
+                        errors = '\n- '.join(map(str, errors))
+                        raise MailUsageError, '''
 There were problems handling your subject line argument list:
 - %s
 
 Subject was: "%s"
 '''%(errors, subject)
+                    else:
+                        title += ' ' + argswhole
 
 
         # set the issue title to the subject
