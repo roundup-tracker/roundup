@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.82 2005-03-17 11:14:24 a1s Exp $
+# $Id: setup.py,v 1.83 2005-10-07 05:35:02 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -351,21 +351,17 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
 
-This release introduces far too many features to list here so I've put
-together a What's New page:
+Roundup 0.9 includes:
 
-  http://roundup.sourceforge.net/doc-0.8/whatsnew-0.8.html
+- added "imapServer.py" script (sf patch 934567)
+- added date selection popup windows (thanks Marcus Priesch)
+- added Xapian indexer; replaces standard indexers if Xapian is available*
+- mailgw subject parsing has configurable levels of strictness
+- nosy messages may be sent individually to all recipients
+- remember where we came from when logging in (sf patch 1312889)
 
-Some highlights:
-
-- added postgresql backend
-- trackers using postgresql or mysql backends may have many users
-- new "actor" automatic property (user who caused the last "activity")
-- RDBMS backends have data typed columns and indexes on several columns
-- registration may be concluded by replying to the confirmation email
-- HTML templating permission checks are greatly simplified
-- database exports now include full journals
-- IMAP support in the mail gateway
+*: unfortunately the latest release of Xapian (0.9.2) has a bug in the
+Python bindings which prevents this indexer from working, so it's disabled
 ''',
         'author': "Richard Jones",
         'author_email': "richard@users.sourceforge.net",

@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.158 2005-07-18 02:35:18 richard Exp $
+# $Id: rdbms_common.py,v 1.159 2005-10-07 05:35:04 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -40,7 +40,8 @@ from roundup.backends import locking
 # support
 from blobfiles import FileStorage
 try:
-    from indexer_xapian import Indexer
+    # re-enable once Xapian is fixed
+    from indexer_xapian import Indexer_disabled
 except ImportError:
     from indexer_rdbms import Indexer
 from sessions_rdbms import Sessions, OneTimeKeys

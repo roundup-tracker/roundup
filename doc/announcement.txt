@@ -1,4 +1,4 @@
-I'm proud to release this 8th major feature release of Roundup.
+I'm proud to release this 9th major feature release of Roundup.
 
 First up, big thanks go to alexander smishlajev who has done some really
 good work getting the i18n and new configuration components of this release
@@ -6,13 +6,17 @@ going.
 
 Please note that Roundup now requires python 2.3 or later.
 
-Version 0.8 introduces far too many features to list here so I've put
-together a What's New page:
+Roundup 0.9 includes:
 
-  http://roundup.sourceforge.net/doc-0.8/whatsnew-0.8.html
+- added "imapServer.py" script (sf patch 934567)
+- added date selection popup windows (thanks Marcus Priesch)
+- added Xapian indexer; replaces standard indexers if Xapian is available*
+- mailgw subject parsing has configurable levels of strictness
+- nosy messages may be sent individually to all recipients
+- remember where we came from when logging in (sf patch 1312889)
 
-0.8b3 is a bugfix release, fixing:
-
+*: unfortunately the latest release of Xapian (0.9.2) has a bug in the
+Python bindings which prevents this indexer from working, so it's disabled
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.

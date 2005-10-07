@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.97 2005-07-12 01:37:49 richard Exp $
+# $Id: back_metakit.py,v 1.98 2005-10-07 05:35:04 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -2141,7 +2141,8 @@ class MetakitIndexer(Indexer):
         self.changed = 0
 
 try:
-    from indexer_xapian import Indexer
+    # re-enable once Xapian is fixed
+    from indexer_xapian import Indexer_disabled
 except ImportError:
     Indexer = MetakitIndexer
 
