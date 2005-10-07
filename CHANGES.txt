@@ -8,6 +8,7 @@ Feature:
 - added Xapian indexer; replaces standard indexers if Xapian is available
 - mailgw subject parsing has configurable levels of strictness
 - nosy messages may be sent individually to all recipients
+- remember where we came from when logging in (sf patch 1312889)
 
 
 2005-10-07 0.8.5

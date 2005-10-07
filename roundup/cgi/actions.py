@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.48 2005-07-07 06:46:09 richard Exp $
+#$Id: actions.py,v 1.49 2005-10-07 04:49:48 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random, csv
 
@@ -887,6 +887,10 @@ class LoginAction(Action):
 
         # set the session cookie
         self.client.set_cookie(self.client.user)
+
+        # If we came from someplace, go back there
+        if self.form.has_key('__came_from'):
+            raise exceptions.Redirect, self.form['__came_from'].value
 
     def verifyLogin(self, username, password):
         # make sure the user exists

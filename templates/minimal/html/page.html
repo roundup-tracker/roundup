@@ -42,6 +42,7 @@
     <input size="10" type="password" name="__login_password"><br>
     <input type="hidden" name="@action" value="Login">
     <input type="submit" value="Login" i18n:attributes="value">
+    <input type="hidden" name="__came_from" tal:attributes="value string:${request/base}${request/env/PATH_INFO}">
     <span tal:replace="structure request/indexargs_form" />
    </form>
    <a tal:condition="python:request.user.hasPermission('Web Registration')"
