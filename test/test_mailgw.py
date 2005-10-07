@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.73.2.2 2005-06-24 06:48:17 richard Exp $
+# $Id: test_mailgw.py,v 1.73.2.3 2005-10-07 05:49:15 richard Exp $
 
 # TODO: test bcc
 
@@ -685,8 +685,11 @@ This is a test submission of a new issue.
         self.assertEqual(l, m)
 
         # now with the permission
-        p = self.db.security.getPermission('Create', 'user')
-        self.db.security.role['anonymous'].permissions=[p]
+        p = [
+            self.db.security.getPermission('Create', 'user'),
+            self.db.security.getPermission('Email Access', None),
+        ]
+        self.db.security.role['anonymous'].permissions=p
         self._handle_mail(message)
         m = self.db.user.list()
         m.sort()
