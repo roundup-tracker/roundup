@@ -1,4 +1,4 @@
-#$Id: back_mysql.py,v 1.59 2005-07-12 01:37:49 richard Exp $
+#$Id: back_mysql.py,v 1.60 2005-10-24 03:37:11 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -117,7 +117,7 @@ class Database(Database):
     #mysql_backend = 'BDB'
 
     hyperdb_to_sql_datatypes = {
-        hyperdb.String : 'VARCHAR(255)',
+        hyperdb.String : 'TEXT',
         hyperdb.Date   : 'DATETIME',
         hyperdb.Link   : 'INTEGER',
         hyperdb.Interval  : 'VARCHAR(255)',

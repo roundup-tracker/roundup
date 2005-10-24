@@ -1,6 +1,11 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2005-??-?? 0.9.0b2
+Fixed:
+- MySQL now creates String columns using the TEXT column type
+
+
 2005-10-07 0.9.0b1
 Feature:
 - added "imapServer.py" script (sf patch 934567)

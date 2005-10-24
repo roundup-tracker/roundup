@@ -37,6 +37,10 @@ module. Download the latest version from http://www.python.org/.
 It is highly recommended that users install the latest patch version
 of python as these contain many fixes to serious bugs.
 
+Some variants of Linux will need an additional "python dev" package
+installed for Roundup installation to work. Debian and derivatives, are
+known to require this.
+
 If you're on windows, you will either need to be using the ActiveState python
 distribution (at http://www.activestate.com/Products/ActivePython/), or you'll
 have to install the win32all package separately (get it from
