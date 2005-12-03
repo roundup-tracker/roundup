@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.216 2005-07-18 02:19:40 richard Exp $
+# $Id: client.py,v 1.217 2005-12-03 09:35:06 a1s Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -15,6 +15,7 @@ from roundup.exceptions import *
 from roundup.cgi.exceptions import *
 from roundup.cgi.form_parser import FormParser
 from roundup.mailer import Mailer, MessageSendError
+from roundup.cgi import accept_language
 
 def initialiseSecurity(security):
     '''Create some Permissions and Roles on the security object
@@ -196,13 +197,15 @@ class Client:
 
         The most common requests are handled like so:
 
-        1. figure out who we are, defaulting to the "anonymous" user
+        1. look for charset and language preferences, set up user locale
+           see determine_charset, determine_language
+        2. figure out who we are, defaulting to the "anonymous" user
            see determine_user
-        2. figure out what the request is for - the context
+        3. figure out what the request is for - the context
            see determine_context
-        3. handle any requested action (item edit, search, ...)
+        4. handle any requested action (item edit, search, ...)
            see handle_action
-        4. render a template, resulting in HTML output
+        5. render a template, resulting in HTML output
 
         In some situations, exceptions occur:
 
@@ -225,6 +228,7 @@ class Client:
         self.error_message = []
         try:
             self.determine_charset()
+            self.determine_language()
 
             # make sure we're identified (even anonymously)
             self.determine_user()
@@ -331,7 +335,6 @@ class Client:
         If the charset is found, and differs from the storage charset,
         recode all form fields of type 'text/plain'
         """
-
         # look for client charset
         charset_parameter = 0
         if self.form.has_key('@charset'):
@@ -386,9 +389,32 @@ class Client:
                     value = re_charref.sub(_decode_charref, value)
                     field.value = encoder(value)[0]
 
+    def determine_language(self):
+        """Determine the language"""
+        # look for language parameter
+        # then for language cookie
+        # last for the Accept-Language header
+        if self.form.has_key("@language"):
+            language = self.form["@language"].value
+            if language.lower() == "none":
+                language = ""
+            self.add_cookie("roundup_language", language)
+        elif self.cookie.has_key("roundup_language"):
+            language = self.cookie["roundup_language"].value
+        elif self.instance.config["WEB_USE_BROWSER_LANGUAGE"]:
+            hal = self.env['HTTP_ACCEPT_LANGUAGE']
+            language = accept_language.parse(hal)
+        else:
+            language = ""
+
+        self.language = language
+        if language:
+            self.setTranslator(TranslationService.get_translation(
+                    language,
+                    tracker_home=self.instance.config["TRACKER_HOME"]))
+
     def determine_user(self):
-        ''' Determine who the user is
-        '''
+        """Determine who the user is"""
         # determine the uid to use
         self.opendb('admin')
 
@@ -460,13 +486,13 @@ class Client:
         self.opendb(self.user)
 
     def opendb(self, username):
-        ''' Open the database and set the current user.
+        """Open the database and set the current user.
 
         Opens a database once. On subsequent calls only the user is set on
         the database object the instance.optimize is set. If we are in
         "Development Mode" (cf. roundup_server) then the database is always
         re-opened.
-        '''
+        """
         # don't do anything if the db is open and the user has not changed
         if hasattr(self, 'db') and self.db.isCurrentUser(username):
             return
