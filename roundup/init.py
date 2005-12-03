@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: init.py,v 1.35 2004-11-24 07:03:47 a1s Exp $
+# $Id: init.py,v 1.36 2005-12-03 11:22:50 a1s Exp $
 
 """Init (create) a roundup instance.
 """
@@ -55,13 +55,15 @@ def copytree(src, dst, symlinks=0):
         else:
             install_util.copyDigestedFile(srcname, dstname)
 
-def install(instance_home, template):
+def install(instance_home, template, settings={}):
     '''Install an instance using the named template and backend.
 
     'instance_home'
        the directory to place the instance data in
     'template'
        the directory holding the template to use in creating the instance data
+    'settings'
+       config.ini setting overrides (dictionary)
 
     The instance_home directory will be created using the files found in
     the named template (roundup.templates.<name>). A usual instance_home
@@ -99,7 +101,7 @@ def install(instance_home, template):
     # installed from the template, write default config text
     config_ini_file = os.path.join(instance_home, CoreConfig.INI_FILE)
     if not os.path.isfile(config_ini_file):
-        config = CoreConfig()
+        config = CoreConfig(settings=settings)
         config.save(config_ini_file)
 
 
