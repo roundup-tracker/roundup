@@ -14,8 +14,8 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-# $Id: password.py,v 1.13 2004-05-10 22:32:17 richard Exp $
+#
+# $Id: password.py,v 1.14 2005-12-03 11:35:54 a1s Exp $
 
 """Password handling (encoding, decoding).
 """
@@ -43,7 +43,7 @@ def encodePassword(plaintext, scheme, other=None):
         s = md5.md5(plaintext).hexdigest()
     elif scheme == 'crypt' and crypt is not None:
         if other is not None:
-            salt = other[:2]
+            salt = other
         else:
             saltchars = './0123456789'+string.letters
             salt = random.choice(saltchars) + random.choice(saltchars)
@@ -59,7 +59,7 @@ def generatePassword(length=8):
     return ''.join([random.choice(chars) for x in range(length)])
 
 class Password:
-    '''The class encapsulates a Password property type value in the database. 
+    '''The class encapsulates a Password property type value in the database.
 
     The encoding of the password is one if None, 'SHA', 'MD5' or 'plaintext'.
     The encodePassword function is used to actually encode the password from
@@ -161,4 +161,4 @@ def test():
 if __name__ == '__main__':
     test()
 
-# vim: set filetype=python ts=4 sw=4 et si
+# vim: set filetype=python sts=4 sw=4 et si :
