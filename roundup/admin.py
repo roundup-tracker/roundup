@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.96 2005-07-12 01:37:49 richard Exp $
+# $Id: admin.py,v 1.97 2005-12-03 11:26:08 a1s Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -341,13 +341,20 @@ Command help:
         print _('Back ends:'), ', '.join(backends)
 
     def do_install(self, tracker_home, args):
-        ""'''Usage: install [template [backend [admin password]]]
+        ""'''Usage: install [template [backend [admin password [key=val[,key=val]]]]]
         Install a new Roundup tracker.
 
         The command will prompt for the tracker home directory
         (if not supplied through TRACKER_HOME or the -i option).
         The template, backend and admin password may be specified
         on the command-line as arguments, in that order.
+
+        The last command line argument allows to pass initial values
+        for config options.  For example, passing
+        "web_http_auth=no,rdbms_user=dinsdale" will override defaults
+        for options http_auth in section [web] and user in section [rdbms].
+        Please be careful to not use spaces in this argument! (Enclose
+        whole argument in quotes if you need spaces in option value).
 
         The initialise command must be called after this command in order
         to initialise the tracker's database. You may edit the tracker's
@@ -402,8 +409,18 @@ Erase it? Y/N: """) % locals())
                 backend = 'anydbm'
         # XXX perform a unit test based on the user's selections
 
+        # Process configuration file definitions
+        if len(args) > 3:
+            try:
+                defns = dict([item.split("=") for item in args[3].split(",")])
+            except:
+                print _('Error in configuration settings: "%s"') % args[3]
+                raise
+        else:
+            defns = {}
+
         # install!
-        init.install(tracker_home, templates[template]['path'])
+        init.install(tracker_home, templates[template]['path'], settings=defns)
         init.write_select_db(tracker_home, backend)
 
         print _("""
