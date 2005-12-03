@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.27 2005-10-07 04:42:13 richard Exp $
+# $Id: configuration.py,v 1.28 2005-12-03 09:31:00 a1s Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -474,6 +474,12 @@ SETTINGS = (
             "variables supplied by your web server (in that order).\n"
             "Set this option to 'no' if you do not wish to use HTTP Basic\n"
             "Authentication in your web interface."),
+        (BooleanOption, 'use_browser_language', "yes",
+            "Whether to use HTTP Accept-Language, if present.\n"
+            "Browsers send a language-region preference list.\n"
+            "It's usually set in the client's browser or in his\n"
+            "Operating System.\n"
+            "Set this option to 'no' if you want to ignore it."),
     )),
     ("rdbms", (
         (Option, 'name', 'roundup',
