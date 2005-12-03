@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.28 2005-12-03 09:31:00 a1s Exp $
+# $Id: configuration.py,v 1.29 2005-12-03 11:21:17 a1s Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -662,7 +662,7 @@ class Config:
     # actual name of the config file.  set on load.
     filepath = os.path.join(HOME, INI_FILE)
 
-    def __init__(self, config_path=None, layout=None):
+    def __init__(self, config_path=None, layout=None, settings={}):
         """Initialize confing instance
 
         Parameters:
@@ -674,6 +674,9 @@ class Config:
             layout:
                 optional configuration layout, a sequence of
                 section definitions suitable for .add_section()
+            settings:
+                optional setting overrides (dictionary).
+                The overrides are applied after loading config file.
 
         """
         # initialize option containers:
@@ -687,6 +690,8 @@ class Config:
                 self.add_section(*section)
         if config_path is not None:
             self.load(config_path)
+        for (name, value) in settings.items():
+            self[name.upper()] = value
 
     def add_section(self, section, options, description=None):
         """Define new config section
@@ -1079,8 +1084,8 @@ class CoreConfig(Config):
     ext = None
     detectors = None
 
-    def __init__(self, home_dir=None):
-        Config.__init__(self, home_dir, SETTINGS)
+    def __init__(self, home_dir=None, settings={}):
+        Config.__init__(self, home_dir, layout=SETTINGS, settings=settings)
         # load the config if home_dir given
         if home_dir is None:
             self.init_logging()
