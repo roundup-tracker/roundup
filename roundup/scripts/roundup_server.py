@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.80 2005-12-03 09:37:24 a1s Exp $
+$Id: roundup_server.py,v 1.81 2005-12-25 14:52:33 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -71,6 +71,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     TRACKERS = None
     LOG_IPADDRESS = 1
     DEBUG_MODE = False
+    CONFIG = None
 
     def get_tracker(self, name):
         """Return a tracker instance for given tracker name"""
@@ -167,11 +168,39 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         '''
         rest = self.path
 
+        # file-like object for the favicon.ico file information
+        favicon_fileobj = None
+
         if rest == '/favicon.ico':
+            # check to see if a custom favicon was specified, and set
+            # favicon_fileobj to the input file
+            if self.CONFIG is not None:
+                favicon_filepath = os.path.abspath(self.CONFIG['FAVICON'])
+
+                if os.access(favicon_filepath, os.R_OK):
+                    favicon_fileobj = open(favicon_filepath, 'rb')
+
+
+            if favicon_fileobj is None:
+                favicon_fileobj = StringIO.StringIO(favico)
+
             self.send_response(200)
             self.send_header('Content-Type', 'image/x-icon')
             self.end_headers()
-            self.wfile.write(favico)
+
+            # this bufsize is completely arbitrary, I picked 4K because it sounded good.
+            # if someone knows of a better buffer size, feel free to plug it in.
+            bufsize = 4 * 1024
+            Processing = True
+            while Processing:
+                data = favicon_fileobj.read(bufsize)
+                if len(data) > 0:
+                    self.wfile.write(data)
+                else:
+                    Processing = False
+
+            favicon_fileobj.close()
+
             return
 
         i = rest.rfind('?')
@@ -329,6 +358,9 @@ class ServerConfig(configuration.Config):
                 "If empty, listen on all network interfaces."),
             (configuration.IntegerNumberOption, "port", DEFAULT_PORT,
                 "Port to listen on."),
+            (configuration.NullableFilePathOption, "favicon", "favicon.ico",
+                "Path to favicon.ico image file."
+                "  If unset, built-in favicon.ico is used."),
             (configuration.NullableOption, "user", "",
                 "User ID as which the server will answer requests.\n"
                 "In order to use this option, "
@@ -432,6 +464,7 @@ class ServerConfig(configuration.Config):
             TRACKER_HOMES = dict(tracker_homes)
             TRACKERS = trackers
             DEBUG_MODE = self["MULTIPROCESS"] == "debug"
+            CONFIG = self
 
         # obtain request server class
         if self["MULTIPROCESS"] not in MULTIPROCESS_TYPES:
