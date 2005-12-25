@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: password.py,v 1.14 2005-12-03 11:35:54 a1s Exp $
+# $Id: password.py,v 1.15 2005-12-25 15:38:40 a1s Exp $
 
 """Password handling (encoding, decoding).
 """
@@ -89,15 +89,15 @@ class Password:
         if scheme is None:
             scheme = self.default_scheme
         if plaintext is not None:
-            self.password = encodePassword(plaintext, self.default_scheme)
-            self.scheme = self.default_scheme
+            self.setPassword (plaintext, scheme)
         elif encrypted is not None:
-            self.unpack(encrypted)
+            self.unpack(encrypted, scheme)
         else:
-            self.password = None
             self.scheme = self.default_scheme
+            self.password = None
+            self.plaintext = None
 
-    def unpack(self, encrypted):
+    def unpack(self, encrypted, scheme=None):
         '''Set the password info from the scheme:<encryted info> string
            (the inverse of __str__)
         '''
@@ -105,16 +105,18 @@ class Password:
         if m:
             self.scheme = m.group(1)
             self.password = m.group(2)
+            self.plaintext = None
         else:
             # currently plaintext - encrypt
-            self.password = encodePassword(encrypted, self.default_scheme)
-            self.scheme = self.default_scheme
+            self.setPassword(encrypted, scheme)
 
     def setPassword(self, plaintext, scheme=None):
         '''Sets encrypts plaintext.'''
         if scheme is None:
             scheme = self.default_scheme
+        self.scheme = scheme
         self.password = encodePassword(plaintext, scheme)
+        self.plaintext = plaintext
 
     def __cmp__(self, other):
         '''Compare this password against another password.'''
