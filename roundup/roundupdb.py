@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.119 2005-10-07 04:42:13 richard Exp $
+# $Id: roundupdb.py,v 1.120 2005-12-25 16:20:02 a1s Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -56,7 +56,7 @@ class Database:
             return self.journal_uid[1]
 
     def setCurrentUser(self, username):
-        """Set the user that is responsible for current database 
+        """Set the user that is responsible for current database
         activities.
         """
         self.journaltag = username
@@ -65,7 +65,7 @@ class Database:
         """Check if a given username equals the already active user.
         """
         return self.journaltag == username
-    
+
     def getUserTimezone(self):
         """Return user timezone defined in 'timezone' property of user class.
         If no such property exists return 0
@@ -391,9 +391,19 @@ class IssueClass:
                     if mime_type == 'text/plain':
                         part.addheader('Content-Disposition',
                             'attachment;\n filename="%s"'%name)
-                        part.addheader('Content-Transfer-Encoding', '7bit')
-                        body = part.startbody('text/plain')
-                        body.write(content)
+                        try:
+                            content.decode('ascii')
+                        except UnicodeError:
+                            # the content cannot be 7bit-encoded.
+                            # use quoted printable
+                            part.addheader('Content-Transfer-Encoding',
+                                'quoted-printable')
+                            body = part.startbody('text/plain')
+                            body.write(quopri.encodestring(content))
+                        else:
+                            part.addheader('Content-Transfer-Encoding', '7bit')
+                            body = part.startbody('text/plain')
+                            body.write(content)
                     else:
                         # some other type, so encode it
                         if not mime_type:
@@ -572,4 +582,4 @@ class IssueClass:
             m.insert(0, '')
         return '\n'.join(m)
 
-# vim: set filetype=python ts=4 sw=4 et si
+# vim: set filetype=python sts=4 sw=4 et si :
