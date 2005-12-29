@@ -18,15 +18,15 @@
   <td tal:content="structure context/realname/field">realname</td>
  </tr>
  <tr>
-  <th i18n:translate="">Login Name</th>
+  <th class="required" i18n:translate="">Login Name</th>
   <td tal:content="structure context/username/field">username</td>
  </tr>
  <tr>
-  <th i18n:translate="">Login Password</th>
+  <th class="required" i18n:translate="">Login Password</th>
   <td tal:content="structure context/password/field">password</td>
  </tr>
  <tr>
-  <th i18n:translate="">Confirm Password</th>
+  <th class="required" i18n:translate="">Confirm Password</th>
   <td tal:content="structure context/password/confirm">password</td>
  </tr>
  <tr tal:condition="python:request.user.hasPermission('Web Roles')">
@@ -46,7 +46,7 @@
   <td tal:content="structure context/organisation/field">organisation</td>
  </tr>
  <tr>
-  <th i18n:translate="">E-mail address</th>
+  <th class="required" i18n:translate="">E-mail address</th>
   <td tal:content="structure context/address/field">address</td>
  </tr>
  <tr>
@@ -65,6 +65,16 @@
  </tr>
 </table>
 </form>
+
+<tal:block tal:condition="not:context/id" i18n:translate="">
+<table class="form">
+<tr>
+ <td>Note:&nbsp;</td>
+ <th class="required">highlighted</th>
+ <td>&nbsp;fields are required.</td>
+</tr>
+</table>
+</tal:block>
 
 </td>
 
