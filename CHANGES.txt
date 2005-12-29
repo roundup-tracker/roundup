@@ -17,6 +17,8 @@ Fixed:
 - password.crypt won't work with md5 passwords (sf bug 1372253)
 - use quoted printable encoding for nosy attachments that have MIME
   type 'text/plain' but contain 8-bit characters (sf bug 1381559)
+- login name and email address fields in the classic template
+  are highlighted as required fields (sf bug 1392364)
 
 
 2005-10-07 0.9.0b1
