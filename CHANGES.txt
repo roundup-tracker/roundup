@@ -11,6 +11,8 @@ Feature:
 - favicon.ico image may be changed with server config option (sf patch 1355661)
 - Password objects initialized from plaintext remember plaintext value
   (sf rfe 1379447)
+- Roundup installation document includes configuration example
+  for Exim Internet Mailer (sf bug 1393860)
 
 Fixed:
 - MySQL now creates String columns using the TEXT column type
