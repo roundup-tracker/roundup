@@ -522,6 +522,98 @@ To test the mail gateway on unix systems, try::
 
     echo test |mail -s '[issue] test' support@YOUR_DOMAIN_HERE
 
+As a custom router transport using a pipe process (Exim4 specific)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following configuration snippets for Exim4 configuration
+implement a custom router & transport to accomplish mail delivery to
+roundup-mailgw. A configuration for Exim3 is similar but not
+included, since Exim3 is considered obsolete.
+
+This configuration is similar to the previous section, in that it uses
+a pipe process. However, there are advantages to using a custom
+router/transport process, if you are using Exim.
+
+* This avoids privilege escalation, since otherwise the pipe process
+  will run as the mail user, typically mail. The transport can be
+  configured to run as the user appropriate for the task at hand. In the
+  transport described in this section, Exim4 runs as the unprivileged
+  user ``roundup``.
+
+* Separate configuration is not required for each tracker
+  instance. When a email arrives at the server, Exim passes it through
+  the defined routers. The roundup_router looks for a match with one of
+  the roundup directories, and if there is one it is passed to the
+  roundup_transport, which uses the pipe process described in the
+  previous section (`As a mail alias pipe process`_).
+
+The matching is done in the line::
+
+  require_files = /usr/bin/roundup-mailgw:ROUNDUP_HOME/$local_part/schema.py
+
+The following configuration has been tested on Debian Sarge with
+Exim4. 
+
+.. note::
+  Note that the Debian Exim4 packages don't allow pipes in alias files
+  by default, so the method described in the section `As a mail alias
+  pipe process`_ will not work with the default configuration. However,
+  the method described in this section does. See the discussion in
+  ``/usr/share/doc/exim4-config/README.system_aliases`` on any Debian
+  system with Exim4 installed.
+
+  For more Debian-specific information, see suggested addition to
+  README.Debian in
+  http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=343283, which will
+  hopefully be merged into the Debian package eventually.
+
+This config makes a few assumptions:
+
+* That the mail address corresponding to the tracker instance has the
+  same name as the directory of the tracker instance, i.e. the mail
+  interface address corresponding to a Roundup instance called
+  ``/var/lib/roundup/trackers/mytracker`` is ``mytracker@your.host``.
+
+* That (at least) all the db subdirectories of all the tracker
+  instances (ie. ``/var/lib/roundup/trackers/*/db``) are owned by the same
+  user, in this case, 'roundup'.
+
+* That if the ``schema.py`` file exists, then the tracker is ready for
+  use. Another option is to use the ``config.ini`` file, but this recently
+  changed (in 0.8) from ``config.py``.
+
+Macros for Roundup router/transport. Should be placed in the macros
+section of the Exim4 config::
+
+  # Home dir for your Roundup installation
+  ROUNDUP_HOME=/var/lib/roundup/trackers
+
+  # User and group for Roundup.
+  ROUNDUP_USER=roundup
+  ROUNDUP_GROUP=roundup
+
+Custom router for Roundup. This will (probably) work if placed at the
+beginning of the router section of the Exim4 config::
+
+  roundup_router:
+      driver = accept
+      # The config file config.ini seems like a more natural choice, but the
+      # file config.py was replaced by config.ini in 0.8, and schema.py needs
+      # to be present too.
+      require_files = /usr/bin/roundup-mailgw:ROUNDUP_HOME/$local_part/schema.py
+      transport = roundup_transport
+
+Custom transport for Roundup. This will (probably) work if placed at
+the beginning of the router section of the Exim4 config::
+
+  roundup_transport:
+      driver = pipe
+      command = /usr/bin/python /usr/bin/roundup-mailgw ROUNDUP_HOME/$local_part/
+      current_directory = ROUNDUP_HOME
+      home_directory = ROUNDUP_HOME
+      user = ROUNDUP_USER
+      group = ROUNDUP_GROUP
+
 As a regular job using a mailbox source
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
