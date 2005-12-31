@@ -525,10 +525,12 @@ To test the mail gateway on unix systems, try::
 As a custom router transport using a pipe process (Exim4 specific)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The following configuration snippets for Exim4 configuration
+The following configuration snippets for `Exim 4`_ configuration
 implement a custom router & transport to accomplish mail delivery to
 roundup-mailgw. A configuration for Exim3 is similar but not
 included, since Exim3 is considered obsolete.
+
+.. _Exim 4: http://www.exim.org/
 
 This configuration is similar to the previous section, in that it uses
 a pipe process. However, there are advantages to using a custom
