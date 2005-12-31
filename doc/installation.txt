@@ -522,7 +522,7 @@ To test the mail gateway on unix systems, try::
 
     echo test |mail -s '[issue] test' support@YOUR_DOMAIN_HERE
 
-As a custom router transport using a pipe process (Exim4 specific)
+As a custom router/transport using a pipe process (Exim4 specific)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following configuration snippets for `Exim 4`_ configuration
