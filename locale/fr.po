@@ -2,36 +2,36 @@
 # Georges Martin <georges.martin@pi.be>, 2004.
 # This file is distributed under the same license as the Roundup package.
 # 
-# $Id: fr.po,v 1.2 2004-10-19 06:37:57 a1s Exp $
-# roundup.pot revision 1.9
+# $Id: fr.po,v 1.2.2.1 2006-01-07 10:10:09 a1s Exp $
+# roundup.pot revision 1.10.2.2
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Roundup 0.8.0\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2004-07-13 13:24+0300\n"
-"PO-Revision-Date: 2004-09-04 15:04+0100\n"
-"Last-Translator: Georges Martin <georges.martin@pi.be>\n"
+"POT-Creation-Date: 2005-07-05 09:42+0300\n"
+"PO-Revision-Date: 2006-01-07 11:55FLE Standard Time\n"
+"Last-Translator: Patrick Decat <pdecat@gmail.com>\n"
 "Language-Team: French Translators <roundup-devel@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n !=1;\n"
 
-# ../roundup/admin.py:83 :932 :981 :1003
-#: ../roundup/admin.py:83 ../roundup/admin.py:932 ../roundup/admin.py:981
-#: ../roundup/admin.py:1003
+# ../roundup/admin.py:85 :979 :1028 :1050
+#: ../roundup/admin.py:85 ../roundup/admin.py:962 ../roundup/admin.py:1011
+#: ../roundup/admin.py:1033
 #, python-format
 msgid "no such class \"%(classname)s\""
 msgstr "la classe \"%(classname)s\" n'existe pas"
 
-# ../roundup/admin.py:93 :97
-#: ../roundup/admin.py:93 ../roundup/admin.py:97
+# ../roundup/admin.py:95 :99
+#: ../roundup/admin.py:95 ../roundup/admin.py:99
 #, python-format
 msgid "argument \"%(arg)s\" not propname=value"
 msgstr "l'argument \"%(arg)s\" n'est pas au format nom-de-propriété=valeur"
 
-#: ../roundup/admin.py:110
+#: ../roundup/admin.py:112
 #, python-format
 msgid ""
 "Problem: %(message)s\n"
@@ -40,7 +40,7 @@ msgstr ""
 "Problème: %(message)s\n"
 "\n"
 
-#: ../roundup/admin.py:111
+#: ../roundup/admin.py:113
 #, python-format
 msgid ""
 "%(message)sUsage: roundup-admin [options] [<command> <arguments>]\n"
@@ -67,21 +67,20 @@ msgstr ""
 "%(message)sUsage: roundup-admin [options] [<commande> <arguments>]\n"
 "\n"
 "Options:\n"
-" -i base-du-pisteur"
-"                   -- spécifie le répertoire de base du pisteur "
-"à administrer.\n"
-" -u                -- le nom-d'utilisateur[:mot-de-passe] à utiliser pour "
-"les commandes.\n"
-" -d                -- imprime les indicateurs complets, pas seulement "
-"les numéros d'identification de classe.\n"
-" -c                -- imprime les listes de données en les séparant par "
-"des virgules.\n"
-"                      Identique à '-S \",\"'.\n"
-" -S <chaîne>       -- imprime les listes de données en les séparant par "
-"la chaîne spécifiée.\n"
-" -s                -- imprime les listes de données en les séparant par "
-"des espaces.\n"
-"                      Identique à '-S \" \"'.\n"
+" -i base-du-pisteur -- spécifie le répertoire de base du pisteur à\n"
+"                       administrer.\n"
+" -u                 -- le nom-d'utilisateur[:mot-de-passe] à utiliser\n"
+"                       pour les commandes.\n"
+" -d                 -- imprime les indicateurs complets, pas seulement\n"
+"                       les numéros d'identification de classe.\n"
+" -c                 -- imprime les listes de données en les séparant par\n"
+"                       des virgules.\n"
+"                       Identique à '-S \",\"'.\n"
+" -S <chaîne>        -- imprime les listes de données en les séparant par\n"
+"                       la chaîne spécifiée.\n"
+" -s                 -- imprime les listes de données en les séparant par\n"
+"                       des espaces.\n"
+"                       Identique à '-S \" \"'.\n"
 "\n"
 " Une seule des options -s, -c ou -S peut être spécifiée.\n"
 "\n"
@@ -91,19 +90,20 @@ msgstr ""
 " roundup-admin help <commande>            -- l'aide sur une commande\n"
 " roundup-admin help all                   -- toute l'aide disponible\n"
 
-#: ../roundup/admin.py:136
+#: ../roundup/admin.py:138
 msgid "Commands:"
 msgstr "Commandes:"
 
-#: ../roundup/admin.py:143
+#: ../roundup/admin.py:145
 msgid ""
 "Commands may be abbreviated as long as the abbreviation\n"
 "matches only one command, e.g. l == li == lis == list."
-msgstr "Les commandes peuvent être abrégées, pour autant\n"
+msgstr ""
+"Les commandes peuvent être abrégées, pour autant\n"
 "que l'abréviation ne corresponde qu'à une seule commande,\n"
 "par ex.: l == li == lis == list."
 
-#: ../roundup/admin.py:173
+#: ../roundup/admin.py:175
 msgid ""
 "\n"
 "All commands (except help) require a tracker specifier. This is just\n"
@@ -113,7 +113,8 @@ msgid ""
 "directory\". It may be specified in the environment variable TRACKER_HOME\n"
 "or on the command line as \"-i tracker\".\n"
 "\n"
-"A designator is a classname and a nodeid concatenated, eg. bug1, user10, ...\n"
+"A designator is a classname and a nodeid concatenated, eg. bug1, "
+"user10, ...\n"
 "\n"
 "Property values are represented as strings in command arguments and in the\n"
 "printed results:\n"
@@ -138,7 +139,8 @@ msgid ""
 "           Roch\\'e Compaan  (2 tokens: Roch'e Compaan)\n"
 "           address=\"1 2 3\"  (1 token: address=1 2 3)\n"
 "           \\\\               (1 token: \\)\n"
-"           \\n\\r\\t           (1 token: a newline, carriage-return and tab)\n"
+"           \\n\\r\\t           (1 token: a newline, carriage-return and "
+"tab)\n"
 "\n"
 "When multiple nodes are specified to the roundup get or roundup set\n"
 "commands, the specified properties are retrieved or set on all the listed\n"
@@ -170,10 +172,11 @@ msgstr ""
 "\n"
 "Toutes les commandes (à l'exception de \"help\") nécessitent\n"
 "un spécificateur de pisteur. Il s'agit juste du chemin vers le pisteur\n"
-"roundup sur lequel vous désirez travailler. Un pisteur roundup est l'endroit\n"
+"roundup sur lequel vous désirez travailler. Un pisteur roundup est "
+"l'endroit\n"
 "où roundup garde la base de données et les fichiers de configuration qui\n"
-"définissent un pisteur de problèmes."
-"Il peut être spécifié dans la variable d'environnement \"TRACKER_HOME\" ou\n"
+"définissent un pisteur de problèmes.Il peut être spécifié dans la variable "
+"d'environnement \"TRACKER_HOME\" ou\n"
 "dans la ligne de commande comme \"-i base-du-pisteur\".\n"
 "\n"
 "Un indicateur est la concaténation d'un nom de classe et d'un\n"
@@ -183,22 +186,24 @@ msgstr ""
 "dans les arguments de commande et dans les résultats imprimés:\n"
 " . les chaînes de caractères sont représentées telles quelles.\n"
 " . les dates sont imprimées dans le format de date complet avec le fuseau\n"
-"   horaire local et acceptées dans le format complet ou l'un des formats\n" 
-"   partiels expliqués ci-dessous."
-" . les valeurs de lien sont imprimées comme indicateurs de noeuds.\n"
+"   horaire local et acceptées dans le format complet ou l'un des formats\n"
+"   partiels expliqués ci-dessous. . les valeurs de lien sont imprimées comme "
+"indicateurs de noeuds.\n"
 "   Lorsqu'ils sont donnés comme arguments, les indicateurs de noeuds\n"
 "   et les chaînes de clés sont tout deux acceptés.\n"
 " . les valeurs des liens multiples sont imprimées comme listes de\n"
 "   désignateurs de noeuds, séparés par des virgules. Lorsqu'ils sont\n"
 "   donnés comme arguments, des désignateurs de noeuds ou des clés\n"
-"   sous forme de chaîne de caractères sont acceptés; une chaîne de caractères\n"
+"   sous forme de chaîne de caractères sont acceptés; une chaîne de "
+"caractères\n"
 "   vide, un noeud seul ou une liste de noeuds séparés par des virgules \n"
 "   sont acceptés.\n"
 "\n"
 "Lorsque des valeurs de propriétés doivent contenir des espaces, entourez\n"
 "simplement la valeur avec des guillements simples ('') ou doubles (\"\").\n"
 "Un espace seul peut également être \"backslash-quoted\". Si une valeur doit\n"
-"contenir une caractère de \"quoting\", il doit être \"backslash-quoted\" ou être\n" 
+"contenir une caractère de \"quoting\", il doit être \"backslash-quoted\" ou "
+"être\n"
 "placé entre guillemets. Par ex.:\n"
 "           hello world        (2 éléments: hello, world)\n"
 "           \"hello world\"    (1 élément: hello world)\n"
@@ -217,7 +222,8 @@ msgstr ""
 "ou \"set\", ils sont, par défaut, imprimés un par ligne ou, avec \n"
 "l'option -c, séparés par des virgules.\n"
 "\n"
-"Lorsqu'une commande change des données, une authentification par nom et mot de\n"
+"Lorsqu'une commande change des données, une authentification par nom et mot "
+"de\n"
 "passe est requise. L'authentification peut être donnée soit comme \"nom\",\n"
 "soit comme \"nom:mot-de-passe.\n"
 " . comme variable d'environnement ROUNDUP_LOGIN\n"
@@ -237,12 +243,12 @@ msgstr ""
 "\n"
 "Aide sur les commandes:\n"
 
-#: ../roundup/admin.py:236
+#: ../roundup/admin.py:238
 #, python-format
 msgid "%s:"
 msgstr "%s:"
 
-#: ../roundup/admin.py:241
+#: ../roundup/admin.py:243
 msgid ""
 "Usage: help topic\n"
 "        Give help about topic.\n"
@@ -253,7 +259,7 @@ msgid ""
 "        all       -- all available help\n"
 "        "
 msgstr ""
-"Usage: help topic\n"
+"Usage: help sujet\n"
 "        Donne de l'aide sur un sujet.\n"
 "\n"
 "        commands   -- liste les commandes\n"
@@ -262,22 +268,22 @@ msgstr ""
 "        all        -- toute l'aide disponible\n"
 "        "
 
-#: ../roundup/admin.py:264
+#: ../roundup/admin.py:266
 #, python-format
 msgid "Sorry, no help for \"%(topic)s\""
 msgstr "Désolé, aucune aide n'est disponible à propos de \"%(topic)s\""
 
-# ../roundup/admin.py:336 :382
-#: ../roundup/admin.py:336 ../roundup/admin.py:382
+# ../roundup/admin.py:338 :394
+#: ../roundup/admin.py:338 ../roundup/admin.py:387
 msgid "Templates:"
 msgstr "Modèles:"
 
-# ../roundup/admin.py:339 :393
-#: ../roundup/admin.py:339 ../roundup/admin.py:393
+# ../roundup/admin.py:341 :405
+#: ../roundup/admin.py:341 ../roundup/admin.py:398
 msgid "Back ends:"
 msgstr "Moteurs de stockage:"
 
-#: ../roundup/admin.py:342
+#: ../roundup/admin.py:344
 msgid ""
 "Usage: install [template [backend [admin password]]]\n"
 "        Install a new Roundup tracker.\n"
@@ -301,7 +307,8 @@ msgstr ""
 "        Cette commande demandera le répertoire de base du pisteur (s'il\n"
 "        n'est pas fourni par la variable d'environnement TRACKER_HOME\n"
 "        ou l'option -i).\n"
-"        Le modèle, le moteur de stockage et le mot de passe d'administration\n"
+"        Le modèle, le moteur de stockage et le mot de passe "
+"d'administration\n"
 "        peuvent être spécifiés dans cet ordre comme arguments dans la ligne\n"
 "        de commande.\n"
 "\n"
@@ -314,22 +321,23 @@ msgstr ""
 "        Voyez également l'aide sur \"initopts\".\n"
 "        "
 
-# ../roundup/admin.py:358 :483 :562 :612 :665 :686 :714 :785 :852 :923 :971
-# :993 :1020 :1082 :1148
-#: ../roundup/admin.py:358 ../roundup/admin.py:483 ../roundup/admin.py:562
-#: ../roundup/admin.py:612 ../roundup/admin.py:665 ../roundup/admin.py:686
-#: ../roundup/admin.py:714 ../roundup/admin.py:785 ../roundup/admin.py:852
-#: ../roundup/admin.py:923 ../roundup/admin.py:971 ../roundup/admin.py:993
-#: ../roundup/admin.py:1020 ../roundup/admin.py:1082 ../roundup/admin.py:1148
+# ../roundup/admin.py:367 :464 :525 :604 :654 :712 :733 :761 :832 :899 :970
+# :1018 :1040 :1067 :1134 :1201
+#: ../roundup/admin.py:360 ../roundup/admin.py:447 ../roundup/admin.py:508
+#: ../roundup/admin.py:587 ../roundup/admin.py:637 ../roundup/admin.py:695
+#: ../roundup/admin.py:716 ../roundup/admin.py:744 ../roundup/admin.py:815
+#: ../roundup/admin.py:882 ../roundup/admin.py:953 ../roundup/admin.py:1001
+#: ../roundup/admin.py:1023 ../roundup/admin.py:1050 ../roundup/admin.py:1117
+#: ../roundup/admin.py:1184
 msgid "Not enough arguments supplied"
 msgstr "Pas assez d'arguments fournis"
 
-#: ../roundup/admin.py:364
+#: ../roundup/admin.py:366
 #, python-format
 msgid "Instance home parent directory \"%(parent)s\" does not exist"
 msgstr "Le répertoire parent \"%(parent)s\" de l'instance de base n'existe pas"
 
-#: ../roundup/admin.py:369
+#: ../roundup/admin.py:374
 #, python-format
 msgid ""
 "WARNING: There appears to be a tracker in \"%(tracker_home)s\"!\n"
@@ -340,41 +348,54 @@ msgstr ""
 "Si vous le réinstallez, vous perdrez toutes les données !\n"
 "Effacer le pisteur ? Y/N: "
 
-#: ../roundup/admin.py:384
+#: ../roundup/admin.py:389
 msgid "Select template [classic]: "
 msgstr "Sélectionnez un modèle [classic]: "
 
-#: ../roundup/admin.py:395
+#: ../roundup/admin.py:400
 msgid "Select backend [anydbm]: "
 msgstr "Sélectionnez un moteur de stockage [anydbm]: "
 
-#: ../roundup/admin.py:404
+#: ../roundup/admin.py:409
 #, python-format
 msgid ""
 "\n"
+"---------------------------------------------------------------------------\n"
 " You should now edit the tracker configuration file:\n"
-"   %(config_file)s\n"
-" ... at a minimum, you must set MAILHOST, TRACKER_WEB, MAIL_DOMAIN and\n"
-" ADMIN_EMAIL.\n"
-"\n"
-" If you wish to modify the default schema, you should also edit\n"
-" the database initialisation file:\n"
-"   %(database_config_file)s\n"
-" ... see the documentation on customizing for more information.\n"
+"   %(config_file)s"
 msgstr ""
+
+#: ../roundup/admin.py:419
+msgid " ... at a minimum, you must set following options:"
+msgstr ""
+
+#: ../roundup/admin.py:424
+#, python-format
+msgid ""
 "\n"
-" Vous devriez maintenant éditer le fichier de configuration du pisteur:\n"
-"   %(config_file)s\n"
-" ... vous devez au moins régler MAILHOST, TRACKER_WEB, MAIL_DOMAIN et\n"
-" ADMIN_EMAIL.\n"
-"\n"
-" Si vous désirez modifier le schéma par défaut, vous devriez également\n"
-" éditer le fichier d'initialisation de la base de données:\n"
+" If you wish to modify the database schema,\n"
+" you should also edit the schema file:\n"
 "   %(database_config_file)s\n"
-" ... voyez la documentation sur les adaptations pour plus d'informations.\n"
+" You may also change the database initialisation file:\n"
+"   %(database_init_file)s\n"
+" ... see the documentation on customizing for more information.\n"
+"\n"
+" You MUST run the \"roundup-admin initialise\" command once you've "
+"performed\n"
+" the above steps.\n"
+"---------------------------------------------------------------------------\n"
+msgstr ""
+
+#: ../roundup/admin.py:442
+msgid ""
+"Usage: genconfig <filename>\n"
+"        Generate a new tracker config file (ini style) with default values\n"
+"        in <filename>.\n"
+"        "
+msgstr ""
 
 #. password
-#: ../roundup/admin.py:422
+#: ../roundup/admin.py:452
 msgid ""
 "Usage: initialise [adminpw]\n"
 "        Initialise a new Roundup tracker.\n"
@@ -387,28 +408,29 @@ msgstr ""
 "Usage: initialise [adminpw]\n"
 "        Initialise un nouveau pisteur Roundup.\n"
 "\n"
-"        Les détails sur l'administrateur sont réglés au cours de cette étape.\n"
+"        Les détails sur l'administrateur sont réglés au cours de cette\n"
+"        étape.\n"
 "\n"
 "        Exécute la fonction d'initialisation dbinit.init() du pisteur\n"
 "        "
 
-#: ../roundup/admin.py:436
+#: ../roundup/admin.py:466
 msgid "Admin Password: "
 msgstr "Mot de passe d'administrateur: "
 
-#: ../roundup/admin.py:437
+#: ../roundup/admin.py:467
 msgid "       Confirm: "
 msgstr "       Confirmez: "
 
-#: ../roundup/admin.py:441
+#: ../roundup/admin.py:471
 msgid "Instance home does not exist"
 msgstr "Le répertoire de base de l'instance n'existe pas"
 
-#: ../roundup/admin.py:445
+#: ../roundup/admin.py:475
 msgid "Instance has not been installed"
 msgstr "L'instance n'a pas été installée"
 
-#: ../roundup/admin.py:455
+#: ../roundup/admin.py:480
 msgid ""
 "WARNING: The database is already initialised!\n"
 "If you re-initialise it, you will lose all the data!\n"
@@ -418,7 +440,7 @@ msgstr ""
 "Si vous la réinitialisez, vous perdrez toutes les données !\n"
 "Effacer la base de données ? Y/N: "
 
-#: ../roundup/admin.py:476
+#: ../roundup/admin.py:501
 msgid ""
 "Usage: get property designator[,designator]*\n"
 "        Get the given property of one or more designator(s).\n"
@@ -434,26 +456,28 @@ msgstr ""
 "        les indicateurs.\n"
 "        "
 
-# ../roundup/admin.py:516 :531
-#: ../roundup/admin.py:516 ../roundup/admin.py:531
+# ../roundup/admin.py:558 :573
+#: ../roundup/admin.py:541 ../roundup/admin.py:556
 #, python-format
 msgid "property %s is not of type Multilink or Link so -d flag does not apply."
-msgstr "la propriété %s n'est pas de type Multilien ou Lien et donc l'option "
-"-d ne s'applique pas."
+msgstr ""
+"la propriété %s n'est pas de type Multilien ou Lien et donc l'option -d "
+"nes'applique pas."
 
-# ../roundup/admin.py:539 :934 :983 :1005
-#: ../roundup/admin.py:539 ../roundup/admin.py:934 ../roundup/admin.py:983
-#: ../roundup/admin.py:1005
+# ../roundup/admin.py:581 :981 :1030 :1052
+#: ../roundup/admin.py:564 ../roundup/admin.py:964 ../roundup/admin.py:1013
+#: ../roundup/admin.py:1035
 #, python-format
 msgid "no such %(classname)s node \"%(nodeid)s\""
 msgstr "le noeud \"%(nodeid)s\" de classe \"%(classname)s\" n'existe pas"
 
-#: ../roundup/admin.py:541
+#: ../roundup/admin.py:566
 #, python-format
 msgid "no such %(classname)s property \"%(propname)s\""
-msgstr "la propriété \"%(propname)s\" n'existe pas pour la classe \"%(classname)s\""
+msgstr ""
+"la propriété \"%(propname)s\" n'existe pas pour la classe \"%(classname)s\""
 
-#: ../roundup/admin.py:550
+#: ../roundup/admin.py:575
 msgid ""
 "Usage: set items property=value property=value ...\n"
 "        Set the given properties of one or more items(s).\n"
@@ -462,7 +486,8 @@ msgid ""
 "        list of item designators (ie \"designator[,designator,...]\").\n"
 "\n"
 "        This command sets the properties to the values for all designators\n"
-"        given. If the value is missing (ie. \"property=\") then the property\n"
+"        given. If the value is missing (ie. \"property=\") then the "
+"property\n"
 "        is un-set. If the property is a multilink, you specify the linked\n"
 "        ids for the multilink as comma-separated numbers (ie \"1,2,3\").\n"
 "        "
@@ -471,18 +496,18 @@ msgstr ""
 "        Assigne les propriétés données à un ou plusieurs éléments.\n"
 "\n"
 "        Les éléments sont spécifiés par une classe ou par une liste\n"
-"        d'indicateurs séparés par des virgules (par ex.:\n" 
+"        d'indicateurs séparés par des virgules (par ex.:\n"
 "        \"indicateur[,indicateur,...]\").\n"
 "\n"
 "        Cette commande assigne les valeurs données aux propriétés de tout\n"
 "        les indicateurs spécifiés. Si la valeur est absente (par ex.:\n"
-"        \"propriété=\") alors la propriété est #effacée. Si la propriété est\n" 
-"        un lien multiple, les identificateurs attachés à ce lien sont\n" 
+"        \"propriété=\") alors la propriété est #effacée. Si la propriété\n"
+"        est un lien multiple, les identificateurs attachés à ce lien sont\n"
 "        spécifiés comme des nombres séparés par des virgules (par ex.: \n"
 "        \"1,2,3\").\n"
 "        "
 
-#: ../roundup/admin.py:604
+#: ../roundup/admin.py:629
 msgid ""
 "Usage: find classname propname=value ...\n"
 "        Find the nodes of the given class with a given link property value.\n"
@@ -501,14 +526,14 @@ msgstr ""
 "        noeud lié, ou sa valeur de clé.\n"
 "        "
 
-# ../roundup/admin.py:652 :805 :817 :871
-#: ../roundup/admin.py:652 ../roundup/admin.py:805 ../roundup/admin.py:817
-#: ../roundup/admin.py:871
+# ../roundup/admin.py:699 :852 :864 :918
+#: ../roundup/admin.py:682 ../roundup/admin.py:835 ../roundup/admin.py:847
+#: ../roundup/admin.py:901
 #, python-format
 msgid "%(classname)s has no property \"%(propname)s\""
 msgstr "%(classname)s n'a pas de propriété \"%(propname)s\""
 
-#: ../roundup/admin.py:659
+#: ../roundup/admin.py:689
 msgid ""
 "Usage: specification classname\n"
 "        Show the properties for a classname.\n"
@@ -522,17 +547,17 @@ msgstr ""
 "        Cette commande énumère les propriétés d'une classe donnée.\n"
 "        "
 
-#: ../roundup/admin.py:674
+#: ../roundup/admin.py:704
 #, python-format
 msgid "%(key)s: %(value)s (key property)"
 msgstr "%(key)s: %(value)s (propriété clé)"
 
-#: ../roundup/admin.py:676
+#: ../roundup/admin.py:706
 #, python-format
 msgid "%(key)s: %(value)s"
 msgstr "%(key)s: %(value)s"
 
-#: ../roundup/admin.py:679
+#: ../roundup/admin.py:709
 msgid ""
 "Usage: display designator[,designator]*\n"
 "        Show the property values for the given node(s).\n"
@@ -548,12 +573,12 @@ msgstr ""
 "        des noeuds spécifiés.\n"
 "        "
 
-#: ../roundup/admin.py:703
+#: ../roundup/admin.py:733
 #, python-format
 msgid "%(key)s: %(value)r"
 msgstr "%(key)s: %(value)r"
 
-#: ../roundup/admin.py:706
+#: ../roundup/admin.py:736
 msgid ""
 "Usage: create classname property=value ...\n"
 "        Create a new entry of a given class.\n"
@@ -572,31 +597,31 @@ msgstr ""
 "        la ligne de commande, après la commande \"create\".\n"
 "        "
 
-#: ../roundup/admin.py:733
+#: ../roundup/admin.py:763
 #, python-format
 msgid "%(propname)s (Password): "
 msgstr "%(propname)s (Mot de passe): "
 
-#: ../roundup/admin.py:735
+#: ../roundup/admin.py:765
 #, python-format
 msgid "   %(propname)s (Again): "
 msgstr "   %(propname)s (À nouveau): "
 
-#: ../roundup/admin.py:737
+#: ../roundup/admin.py:767
 msgid "Sorry, try again..."
 msgstr "Désolé, essayez encore..."
 
-#: ../roundup/admin.py:741
+#: ../roundup/admin.py:771
 #, python-format
 msgid "%(propname)s (%(proptype)s): "
 msgstr "%(propname)s (%(proptype)s): "
 
-#: ../roundup/admin.py:759
+#: ../roundup/admin.py:789
 #, python-format
 msgid "you must provide the \"%(propname)s\" property."
 msgstr "Vous devez fournir la propriété \"%(propname)s\"."
 
-#: ../roundup/admin.py:770
+#: ../roundup/admin.py:800
 msgid ""
 "Usage: list classname [property]\n"
 "        List the instances of a class.\n"
@@ -620,22 +645,23 @@ msgstr ""
 "        les propriétés \"name\", \"title\" et la première propriété par\n"
 "        ordre alphabétique.\n"
 "\n"
-"        Avec les options -c, -S ou -s, affiche une liste des identificateurs\n" 
-"        d'éléments si aucune propriété n'est spécifiée.  Si une propriété \n" 
-"        est spécifiée, affiche une liste de cette propriété pour chaque\n"
-"        instance de cette classe.\n"
+"        Avec les options -c, -S ou -s, affiche une liste des\n"
+"        identificateurs d'éléments si aucune propriété n'est spécifiée.\n"
+"        Si une propriété est spécifiée, affiche une liste de cette "
+"propriété\n"
+"        pour chaque instance de cette classe.\n"
 "        "
 
-#: ../roundup/admin.py:783
+#: ../roundup/admin.py:813
 msgid "Too many arguments supplied"
 msgstr "Trop d'arguments fournis"
 
-#: ../roundup/admin.py:819
+#: ../roundup/admin.py:849
 #, python-format
 msgid "%(nodeid)4s: %(value)s"
 msgstr "%(nodeid)4s: %(value)s"
 
-#: ../roundup/admin.py:823
+#: ../roundup/admin.py:853
 msgid ""
 "Usage: table classname [property[,property]*]\n"
 "        List the instances of a class in tabular form.\n"
@@ -697,17 +723,18 @@ msgstr ""
 "        donnera une colonne \"Name\" large de 4 caractères.\n"
 "        "
 
-#: ../roundup/admin.py:867
+#: ../roundup/admin.py:897
 #, python-format
 msgid "\"%(spec)s\" not name:width"
 msgstr "\"%(spec)s\" ne correspond pas au format \"nom:largeur\""
 
-#: ../roundup/admin.py:917
+#: ../roundup/admin.py:947
 msgid ""
 "Usage: history designator\n"
 "        Show the history entries of a designator.\n"
 "\n"
-"        Lists the journal entries for the node identified by the designator.\n"
+"        Lists the journal entries for the node identified by the "
+"designator.\n"
 "        "
 msgstr ""
 "Usage: history indicateur\n"
@@ -717,7 +744,7 @@ msgstr ""
 "        l'indicateur.\n"
 "        "
 
-#: ../roundup/admin.py:938
+#: ../roundup/admin.py:968
 msgid ""
 "Usage: commit\n"
 "        Commit changes made to the database during an interactive session.\n"
@@ -734,15 +761,15 @@ msgstr ""
 "        Valide les changements apportés à la base de données lors d'une\n"
 "        session interactive.\n"
 "\n"
-"        Les changements effectués lors d'une session interactive ne sont pas\n"
-"        automatiquement enregistrés dans la base de données - Ils doivent \n" 
-"        être validés par cette commande.\n"
+"        Les changements effectués lors d'une session interactive ne sont\n"
+"        pas automatiquement enregistrés dans la base de données - Ils\n"
+"        doivent être validés par cette commande.\n"
 "\n"
 "        Les commandes \"one-off\" données en ligne de commande sont\n"
 "        automatiquement validées si elles réussissent\n"
 "        "
 
-#: ../roundup/admin.py:952
+#: ../roundup/admin.py:982
 msgid ""
 "Usage: rollback\n"
 "        Undo all changes that are pending commit to the database.\n"
@@ -757,14 +784,14 @@ msgstr ""
 "        Annule tout les changements en attente de validation pour la base\n"
 "        de données.\n"
 "\n"
-"        Les changements effectués lors d'une session interactive ne sont pas\n"
-"        automatiquement enregistrés dans la base de données - Ils doivent\n"
-"        être validés manuellement. Cette commande annule tout ces change-\n"
-"        ments, de telle manière qu'une validation effectuée immédiatement\n"
-"        n'apporterait aucun changement à la base de données.\n"
+"        Les changements effectués lors d'une session interactive ne sont\n"
+"        pas automatiquement enregistrés dans la base de données - Ils\n"
+"        doivent être validés manuellement. Cette commande annule tout ces\n"
+"        changements, de telle manière qu'une validation effectuée\n"
+"        immédiatement n'apporterait aucun changement à la base de données.\n"
 "        "
 
-#: ../roundup/admin.py:964
+#: ../roundup/admin.py:994
 msgid ""
 "Usage: retire designator[,designator]*\n"
 "        Retire the node specified by designator.\n"
@@ -781,7 +808,7 @@ msgstr ""
 "        de clé peut être ré-utilisée.\n"
 "        "
 
-#: ../roundup/admin.py:987
+#: ../roundup/admin.py:1017
 msgid ""
 "Usage: restore designator[,designator]*\n"
 "        Restore the retired node specified by designator.\n"
@@ -797,7 +824,7 @@ msgstr ""
 "        "
 
 #. grab the directory to export to
-#: ../roundup/admin.py:1009
+#: ../roundup/admin.py:1039
 msgid ""
 "Usage: export [class[,class]] export_dir\n"
 "        Export the database to colon-separated-value files.\n"
@@ -820,7 +847,7 @@ msgstr ""
 "        format aux valeurs séparées par des doubles-points.\n"
 "        "
 
-#: ../roundup/admin.py:1062
+#: ../roundup/admin.py:1097
 msgid ""
 "Usage: import import_dir\n"
 "        Import a database from the directory containing CSV files,\n"
@@ -859,13 +886,13 @@ msgstr ""
 "        (\"nodeid\") que ceux définis dans le fichier d'importation,\n"
 "        remplaçant dès lors tout contenu existant.\n"
 "\n"
-"        Les nouveaux noeuds sont ajoutés à la base de données - si, en fait,\n"
-"        vous désirez créer une nouvelle base de données avec les données\n"
-"        importées, créez plutôt une nouvelle base de données (ou, plus\n"
-"        péniblement, \"abandonnez\" toutes les anciennes données).\n"
+"        Les nouveaux noeuds sont ajoutés à la base de données - si, en\n"
+"        fait, vous désirez créer une nouvelle base de données avec les\n"
+"        données importées, créez plutôt une nouvelle base de données (ou,\n"
+"        plus péniblement, \"abandonnez\" toutes les anciennes données).\n"
 "        "
 
-#: ../roundup/admin.py:1130
+#: ../roundup/admin.py:1166
 msgid ""
 "Usage: pack period | date\n"
 "\n"
@@ -907,27 +934,32 @@ msgstr ""
 "\n"
 "        "
 
-#: ../roundup/admin.py:1158
+#: ../roundup/admin.py:1194
 msgid "Invalid format"
 msgstr "Format invalide"
 
-#: ../roundup/admin.py:1168
+#: ../roundup/admin.py:1204
 msgid ""
-"Usage: reindex\n"
+"Usage: reindex [classname|designator]*\n"
 "        Re-generate a tracker's search indexes.\n"
 "\n"
 "        This will re-generate the search indexes for a tracker.\n"
 "        This will typically happen automatically.\n"
 "        "
 msgstr ""
-"Usage: reindex\n"
+"Usage: reindex [classname|designator]*\n"
 "        Regénère les index de recherche d'un pisteur.\n"
 "\n"
 "        Cette commande regénèrera les index de recherche d'un pisteur.\n"
 "        Cette manoeuvre doit normalement s'effectuer automatiquement.\n"
 "        "
 
-#: ../roundup/admin.py:1179
+#: ../roundup/admin.py:1218
+#, python-format
+msgid "no such item \"%(designator)s\""
+msgstr ""
+
+#: ../roundup/admin.py:1228
 msgid ""
 "Usage: security [Role name]\n"
 "        Display the Permissions available to one or all Roles.\n"
@@ -937,72 +969,77 @@ msgstr ""
 "        Affiche les permissions disponible pour un ou plusieurs rôles.\n"
 "        "
 
-#: ../roundup/admin.py:1187
+#: ../roundup/admin.py:1236
 #, python-format
 msgid "No such Role \"%(role)s\""
 msgstr "Ce rôle \"%(role)s\" n'existe pas"
 
-#: ../roundup/admin.py:1193
+#: ../roundup/admin.py:1242
 #, python-format
 msgid "New Web users get the Roles \"%(role)s\""
 msgstr "Les nouveaux utilisateurs Web ont les rôles \"%(role)s\""
 
-#: ../roundup/admin.py:1195
+#: ../roundup/admin.py:1244
 #, python-format
 msgid "New Web users get the Role \"%(role)s\""
 msgstr "Les nouveaux utilisateurs Web ont le rôle \"%(role)s\""
 
-#: ../roundup/admin.py:1198
+#: ../roundup/admin.py:1247
 #, python-format
 msgid "New Email users get the Roles \"%(role)s\""
 msgstr "Les nouveaux utilisateurs Email ont les rôles \"%(role)s\""
 
-#: ../roundup/admin.py:1200
+#: ../roundup/admin.py:1249
 #, python-format
 msgid "New Email users get the Role \"%(role)s\""
 msgstr "Les nouveaux utilisateurs Email ont le rôle \"%(role)s\""
 
-#: ../roundup/admin.py:1203
+#: ../roundup/admin.py:1252
 #, python-format
 msgid "Role \"%(name)s\":"
 msgstr "Rôle \"%(name)s\":"
 
-#: ../roundup/admin.py:1206
+#: ../roundup/admin.py:1257
+#, python-format
+msgid " %(description)s (%(name)s for \"%(klass)s\": %(properties)s only)"
+msgstr ""
+
+#: ../roundup/admin.py:1260
 #, python-format
 msgid " %(description)s (%(name)s for \"%(klass)s\" only)"
 msgstr " %(description)s (%(name)s pour \"%(klass)s\" uniquement)"
 
-#: ../roundup/admin.py:1209
+#: ../roundup/admin.py:1263
 #, python-format
 msgid " %(description)s (%(name)s)"
 msgstr " %(description)s (%(name)s)"
 
-#: ../roundup/admin.py:1235
+#: ../roundup/admin.py:1292
 #, python-format
 msgid "Unknown command \"%(command)s\" (\"help commands\" for a list)"
 msgstr "Commande inconnue \"%(command)s\" (\"help commands\" pour la liste)"
 
-#: ../roundup/admin.py:1241
+#: ../roundup/admin.py:1298
 #, python-format
 msgid "Multiple commands match \"%(command)s\": %(list)s"
 msgstr "Plusieurs commandes correspondent à \"%(command)s\": %(list)s"
 
-#: ../roundup/admin.py:1248
+#: ../roundup/admin.py:1305
 msgid "Enter tracker home: "
 msgstr "Entrez le répertoire de base du pisteur: "
 
-# ../roundup/admin.py:1255 :1261 :1281
-#: ../roundup/admin.py:1255 ../roundup/admin.py:1261 ../roundup/admin.py:1281
+# ../roundup/admin.py:1329 :1335 :1355
+#: ../roundup/admin.py:1312 ../roundup/admin.py:1318 ../roundup/admin.py:1338
 #, python-format
 msgid "Error: %(message)s"
 msgstr "Erreur: %(message)s"
 
-#: ../roundup/admin.py:1269
+#: ../roundup/admin.py:1326
 #, python-format
 msgid "Error: Couldn't open tracker: %(message)s"
 msgstr "Erreur: impossible d'ouvrir le pisteur: %(message)s"
 
-#: ../roundup/admin.py:1294
+#: ../roundup/admin.py:1351
 #, python-format
 msgid ""
 "Roundup %s ready for input.\n"
@@ -1011,123 +1048,151 @@ msgstr ""
 "Roundup %s prêt pour l'entrée.\n"
 "Entrez \"help\" pour l'aide."
 
-#: ../roundup/admin.py:1299
+#: ../roundup/admin.py:1356
 msgid "Note: command history and editing not available"
 msgstr "Note: l'historique et l'édition des commandes n'est pas disponible"
 
-#: ../roundup/admin.py:1303
+#: ../roundup/admin.py:1360
 msgid "roundup> "
 msgstr "roundup> "
 
-#: ../roundup/admin.py:1305
+#: ../roundup/admin.py:1362
 msgid "exit..."
 msgstr "sortie..."
 
-#: ../roundup/admin.py:1315
+#: ../roundup/admin.py:1372
 msgid "There are unsaved changes. Commit them (y/N)? "
 msgstr "Des changements n'ont pas été enregistrés. À valider ? (y/N)? "
 
-#: ../roundup/backends/rdbms_common.py:1373
+#: ../roundup/backends/back_anydbm.py:2057
+#, python-format
+msgid "WARNING: invalid date tuple %r"
+msgstr ""
+
+#: ../roundup/backends/rdbms_common.py:1421
 msgid "create"
 msgstr "créer"
 
-#: ../roundup/backends/rdbms_common.py:1535
+#: ../roundup/backends/rdbms_common.py:1587
 msgid "unlink"
 msgstr "détacher"
 
-#: ../roundup/backends/rdbms_common.py:1539
+#: ../roundup/backends/rdbms_common.py:1591
 msgid "link"
 msgstr "attacher"
 
-#: ../roundup/backends/rdbms_common.py:1648
+#: ../roundup/backends/rdbms_common.py:1710
 msgid "set"
 msgstr "assigner"
 
-#: ../roundup/backends/rdbms_common.py:1672
+#: ../roundup/backends/rdbms_common.py:1734
 msgid "retired"
 msgstr "abandonné"
 
-#: ../roundup/backends/rdbms_common.py:1702
+#: ../roundup/backends/rdbms_common.py:1764
 msgid "restored"
 msgstr "restauré"
 
-#: ../roundup/cgi/actions.py:53
+#: ../roundup/cgi/actions.py:58
 #, python-format
 msgid "You do not have permission to %(action)s the %(classname)s class."
-msgstr "Vous n'avez pas les permissions pour %(action)s la classe %(classname)s."
+msgstr ""
+"Vous n'avez pas les permissions pour %(action)s la classe %(classname)s."
 
-#: ../roundup/cgi/actions.py:78
+#: ../roundup/cgi/actions.py:89
 msgid "No type specified"
 msgstr "Aucun type spécifié"
 
-#: ../roundup/cgi/actions.py:80
+#: ../roundup/cgi/actions.py:91
 msgid "No ID entered"
 msgstr "Aucun identifiant entré"
 
-#: ../roundup/cgi/actions.py:86
+#: ../roundup/cgi/actions.py:97
 #, python-format
 msgid "\"%(input)s\" is not an ID (%(classname)s ID required)"
-msgstr "\"%(input)s\" n'est pas un identifiant (l'identifiant de %(classname)s est requis)"
+msgstr ""
+"\"%(input)s\" n'est pas un identifiant (l'identifiant de %(classname)s est "
+"requis)"
 
-#: ../roundup/cgi/actions.py:106
+#: ../roundup/cgi/actions.py:117
 msgid "You may not retire the admin or anonymous user"
 msgstr "Vous ne pouvez pas abandonner les utilisateurs admin ou anonyme"
 
-#: ../roundup/cgi/actions.py:113
+#: ../roundup/cgi/actions.py:124
 #, python-format
 msgid "%(classname)s %(itemid)s has been retired"
 msgstr "%(classname)s %(itemid)s a été abandonné"
 
-#: ../roundup/cgi/actions.py:268
+# ../roundup/cgi/actions.py:163 :191
+#: ../roundup/cgi/actions.py:163 ../roundup/cgi/actions.py:191
+msgid "You do not have permission to edit queries"
+msgstr ""
+
+# ../roundup/cgi/actions.py:169 :197
+#: ../roundup/cgi/actions.py:169 ../roundup/cgi/actions.py:197
+msgid "You do not have permission to store queries"
+msgstr "Vous n'avez pas la permission de sauvegarder des requêtes"
+
+#: ../roundup/cgi/actions.py:286
 #, python-format
 msgid "Not enough values on line %(line)s"
 msgstr "Pas assez de valeurs sur la ligne %(line)s"
 
-#: ../roundup/cgi/actions.py:315
+#: ../roundup/cgi/actions.py:333
 msgid "Items edited OK"
 msgstr "Les éléments ont bien été modifiés"
 
-#: ../roundup/cgi/actions.py:334
-msgid "You do not have permission to edit user roles"
-msgstr "Vous n'avez pas la permission de modifier les rôles d'un utilisateur"
-
-#: ../roundup/cgi/actions.py:412
+#: ../roundup/cgi/actions.py:393
 #, python-format
 msgid "%(class)s %(id)s %(properties)s edited ok"
 msgstr "%(class)s %(id)s %(properties)s modifié(s)"
 
-#: ../roundup/cgi/actions.py:415
+#: ../roundup/cgi/actions.py:396
 #, python-format
 msgid "%(class)s %(id)s - nothing changed"
 msgstr "%(class)s %(id)s - aucun changement"
 
-#: ../roundup/cgi/actions.py:427
+#: ../roundup/cgi/actions.py:408
 #, python-format
 msgid "%(class)s %(id)s created"
 msgstr "%(class)s %(id)s créé"
 
-#: ../roundup/cgi/actions.py:459
+#: ../roundup/cgi/actions.py:440
 #, python-format
 msgid "You do not have permission to edit %(class)s"
 msgstr "Vous n'avez pas la permission de modifier %(class)s"
 
-#: ../roundup/cgi/actions.py:471
+#: ../roundup/cgi/actions.py:452
 #, python-format
 msgid "You do not have permission to create %(class)s"
 msgstr "Vous n'avez pas la permission de créer de %(class)s"
 
-#: ../roundup/cgi/actions.py:522
+#: ../roundup/cgi/actions.py:475
+msgid "You do not have permission to edit user roles"
+msgstr "Vous n'avez pas la permission de modifier les rôles d'un utilisateur"
+
+#: ../roundup/cgi/actions.py:519
+#, python-format
+msgid ""
+"Edit Error: someone else has edited this %s (%s). View <a target=\"new\" "
+"href=\"%s%s\">their changes</a> in a new window."
+msgstr ""
+"Erreur de modification: quelqu'un d'autre a édité ce %s (%s). Voir <a target="
+"\"new\" href=\"%s%s\">ses modifications</a> dans une nouvelle fenêtre."
+
+#: ../roundup/cgi/actions.py:548
 #, python-format
 msgid "Edit Error: %s"
 msgstr "Erreur de modification: %s"
 
-# ../roundup/cgi/actions.py:553 :563
-#: ../roundup/cgi/actions.py:553 ../roundup/cgi/actions.py:563
+# ../roundup/cgi/actions.py:578 :589 :760 :779
+#: ../roundup/cgi/actions.py:579 ../roundup/cgi/actions.py:590
+#: ../roundup/cgi/actions.py:761 ../roundup/cgi/actions.py:780
 #, python-format
 msgid "Error: %s"
 msgstr "Erreur: %s"
 
-#: ../roundup/cgi/actions.py:589
+#: ../roundup/cgi/actions.py:616
 msgid ""
 "Invalid One Time Key!\n"
 "(a Mozilla bug may cause this message to show up erroneously, please check "
@@ -1137,59 +1202,50 @@ msgstr ""
 "(un bug dans Mozilla peut provoquer une apparition erronée de ce message, "
 "veuillez vérifier votre courriel)"
 
-#: ../roundup/cgi/actions.py:631
+#: ../roundup/cgi/actions.py:658
 #, python-format
 msgid "Password reset and email sent to %s"
 msgstr "Mot de passe réinitialisé et courriel envoyé à %s"
 
-#: ../roundup/cgi/actions.py:640
+#: ../roundup/cgi/actions.py:667
 msgid "Unknown username"
 msgstr "Nom d'utilisateur inconnu"
 
-#: ../roundup/cgi/actions.py:648
+#: ../roundup/cgi/actions.py:675
 msgid "Unknown email address"
 msgstr "Adresse courriel inconnue"
 
-#: ../roundup/cgi/actions.py:653
+#: ../roundup/cgi/actions.py:680
 msgid "You need to specify a username or address"
 msgstr "Vous devez spécifier un nom d'utilisateur ou une adresse courriel"
 
-#: ../roundup/cgi/actions.py:678
+#: ../roundup/cgi/actions.py:705
 #, python-format
 msgid "Email sent to %s"
 msgstr "Courriel envoyé à %s"
 
-#: ../roundup/cgi/actions.py:704
+#: ../roundup/cgi/actions.py:724
 msgid "You are now registered, welcome!"
 msgstr "Vous êtes désormais inscrit, bienvenue !"
 
-#: ../roundup/cgi/actions.py:731
+#: ../roundup/cgi/actions.py:769
 msgid "It is not permitted to supply roles at registration."
-msgstr "Il n'est pas permis de spécifier des rôles lors de l'inscription"
+msgstr ""
 
-#: ../roundup/cgi/actions.py:736
-#, python-format
-msgid "Error: A user with the username \"%(username)s\" already exists"
-msgstr "Erreur: un utilisateur au nom de \"%(username)s\" existe déjà"
-
-#: ../roundup/cgi/actions.py:799
+#: ../roundup/cgi/actions.py:852
 msgid "You are logged out"
 msgstr "Vous êtes déconnecté"
 
-#: ../roundup/cgi/actions.py:810
+#: ../roundup/cgi/actions.py:869
 msgid "Username required"
 msgstr "Nom d'utilisateur requis"
 
-#: ../roundup/cgi/actions.py:825
-#, python-format
-msgid "No such user \"%(name)s\""
-msgstr "Utilisateur \"%(name)s\" inexistant"
+# ../roundup/cgi/actions.py:900 :904
+#: ../roundup/cgi/actions.py:897 ../roundup/cgi/actions.py:901
+msgid "Invalid login"
+msgstr "Tentative de connexion invalide"
 
-#: ../roundup/cgi/actions.py:833
-msgid "Incorrect password"
-msgstr "Mot de passe incorrect"
-
-#: ../roundup/cgi/actions.py:841
+#: ../roundup/cgi/actions.py:907
 msgid "You do not have permission to login"
 msgstr "Vous n'avez la permission de vous connecter"
 
@@ -1212,7 +1268,7 @@ msgstr "<li>\"%(name)s\" (%(info)s)</li>"
 #: ../roundup/cgi/cgitb.py:67
 #, python-format
 msgid "<li>Looking for \"%(name)s\", current path:<ol>%(path)s</ol></li>"
-msgstr "<li>En recherchant \"%(name)s\", chemin actuel:<ol>%(path)s</ol></li>"
+msgstr "<li>Recherche de \"%(name)s\", chemin actuel:<ol>%(path)s</ol></li>"
 
 #: ../roundup/cgi/cgitb.py:71
 #, python-format
@@ -1245,7 +1301,7 @@ msgstr ""
 
 #: ../roundup/cgi/cgitb.py:103
 msgid "Full traceback:"
-msgstr "Historique complète:"
+msgstr "Historique complet:"
 
 #: ../roundup/cgi/cgitb.py:116
 #, python-format
@@ -1255,8 +1311,8 @@ msgstr "<font size=+1><strong>%(exc_type)s</strong>: %(exc_value)s</font>"
 #: ../roundup/cgi/cgitb.py:120
 msgid ""
 "<p>A problem occurred while running a Python script. Here is the sequence of "
-"function calls leading up to the error, with the most recent (innermost) call "
-"first. The exception attributes are:"
+"function calls leading up to the error, with the most recent (innermost) "
+"call first. The exception attributes are:"
 msgstr ""
 "<p>Un problème est apparu lors de l'exécution d'un script Python. Voici la "
 "suite d'appels de fonction menant à l'erreur, avec l'appel le plus récent "
@@ -1264,7 +1320,8 @@ msgstr ""
 
 #: ../roundup/cgi/cgitb.py:129
 msgid "&lt;file is None - probably inside <tt>eval</tt> or <tt>exec</tt>&gt;"
-msgstr "&lt;\"file\" est à \"None\" - probablement dans un <tt>eval</tt> ou un "
+msgstr ""
+"&lt;\"file\" est à \"None\" - probablement dans un <tt>eval</tt> ou un "
 "<tt>exec</tt>&gt;"
 
 #: ../roundup/cgi/cgitb.py:138
@@ -1277,14 +1334,38 @@ msgstr "dans <strong>%s</strong>"
 msgid "<em>undefined</em>"
 msgstr "<em>non défini</em>"
 
-#: ../roundup/cgi/client.py:275
+#: ../roundup/cgi/client.py:296
 msgid "Form Error: "
 msgstr "Erreur de formulaire: "
 
-#: ../roundup/cgi/client.py:325
+#: ../roundup/cgi/client.py:349
 #, python-format
 msgid "Unrecognized charset: %r"
 msgstr "Table de caractères non reconnue: %r"
+
+#: ../roundup/cgi/client.py:452
+msgid "Anonymous users are not allowed to use the web interface"
+msgstr ""
+"Les utilisateurs anonymes ne sont pas autorisés à utiliser l'interface Web"
+
+#: ../roundup/cgi/client.py:603
+msgid "You are not allowed to view this file."
+msgstr "Vous n'êtes pas autorisé à voir ce fichier"
+
+#: ../roundup/cgi/client.py:695
+#, python-format
+msgid "%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n"
+msgstr "%(starttag)sTemps écoulé: %(seconds)fs%(endtag)s\n"
+
+#: ../roundup/cgi/client.py:699
+#, python-format
+msgid ""
+"%(starttag)sCache hits: %(cache_hits)d, misses %(cache_misses)d. Loading "
+"items: %(get_items)f secs. Filtering: %(filtering)f secs.%(endtag)s\n"
+msgstr ""
+"%(starttag)sAccès au cache: %(cache_hits)d, ratés %(cache_misses)d. "
+"Chargement d'éléments: %(get_items)f secondes. Filtrage: %(filtering)f "
+"secondes.%(endtag)s\n"
 
 #: ../roundup/cgi/form_parser.py:283
 #, python-format
@@ -1302,8 +1383,8 @@ msgid ""
 "You have submitted a %(action)s action for the property \"%(property)s\" "
 "which doesn't exist"
 msgstr ""
-"Vous avez demandé une action \"%(action)s\" sur une propriété "
-"\"%(property)s\" qui n'existe pas"
+"Vous avez demandé une action \"%(action)s\" sur une propriété \"%(property)s"
+"\" qui n'existe pas"
 
 # ../roundup/cgi/form_parser.py:331 :357
 #: ../roundup/cgi/form_parser.py:331 ../roundup/cgi/form_parser.py:357
@@ -1319,108 +1400,129 @@ msgstr "Le mot de passe et le texte de confirmation ne correspondent pas"
 #: ../roundup/cgi/form_parser.py:395
 #, python-format
 msgid "property \"%(propname)s\": \"%(value)s\" not currently in list"
-msgstr "propriété \"%(propname)s\": \"%(value)s\" n'est pas actuellement dans la liste"
+msgstr ""
+"propriété \"%(propname)s\": \"%(value)s\" n'est pas actuellement dans la "
+"liste"
 
 #: ../roundup/cgi/form_parser.py:509
 #, python-format
 msgid "Required %(class)s property %(property)s not supplied"
 msgid_plural "Required %(class)s properties %(property)s not supplied"
 msgstr[0] "La propriété requise %(property)s de %(class)s n'a pas été fournie"
-msgstr[1] "Les propriétés requises %(property)s de %(class)s n'ont pas été "
-"fournies"
+msgstr[1] ""
+"Les propriétés requises %(property)s de %(class)s n'ont pas été fournies"
 
-#: ../roundup/cgi/form_parser.py:529
+#: ../roundup/cgi/form_parser.py:532
 msgid "File is empty"
 msgstr "Le fichier est vide"
 
-#: ../roundup/cgi/templating.py:67
+#: ../roundup/cgi/templating.py:68
 #, python-format
 msgid "You are not allowed to %(action)s items of class %(class)s"
 msgstr "Vous ne pouvez pas %(action)s des éléments de classe %(class)s"
 
-#: ../roundup/cgi/templating.py:625
+#: ../roundup/cgi/templating.py:622
 msgid "(list)"
 msgstr "(liste)"
 
-#: ../roundup/cgi/templating.py:653
+#: ../roundup/cgi/templating.py:686
 msgid "Submit New Entry"
 msgstr "Soumettre un nouvelle entrée"
 
-#: ../roundup/cgi/templating.py:665
+# ../roundup/cgi/templating.py:704 :823 :1200 :1221 :1265 :1287 :1321 :1360
+# :1413 :1430 :1509 :1529 :1542 :1574 :1584 :1638 :1825
+#: ../roundup/cgi/templating.py:700 ../roundup/cgi/templating.py:819
+#: ../roundup/cgi/templating.py:1193 ../roundup/cgi/templating.py:1214
+#: ../roundup/cgi/templating.py:1258 ../roundup/cgi/templating.py:1280
+#: ../roundup/cgi/templating.py:1314 ../roundup/cgi/templating.py:1353
+#: ../roundup/cgi/templating.py:1404 ../roundup/cgi/templating.py:1421
+#: ../roundup/cgi/templating.py:1497 ../roundup/cgi/templating.py:1517
+#: ../roundup/cgi/templating.py:1530 ../roundup/cgi/templating.py:1547
+#: ../roundup/cgi/templating.py:1557 ../roundup/cgi/templating.py:1607
+#: ../roundup/cgi/templating.py:1794
+msgid "[hidden]"
+msgstr "[masqué]"
+
+#: ../roundup/cgi/templating.py:701
 msgid "New node - no history"
 msgstr "Nouveau noeud - pas d'historique"
 
-#: ../roundup/cgi/templating.py:746
+#: ../roundup/cgi/templating.py:801
 msgid "Submit Changes"
 msgstr "Soumettre les changements"
 
-#: ../roundup/cgi/templating.py:767
-msgid "History"
-msgstr "Historique"
-
-#: ../roundup/cgi/templating.py:769
-msgid "<th>Date</th>"
-msgstr "<th>Date</th>"
-
-#: ../roundup/cgi/templating.py:770
-msgid "<th>User</th>"
-msgstr "<th>Utilisateur</th>"
-
-#: ../roundup/cgi/templating.py:771
-msgid "<th>Action</th>"
-msgstr "<th>Action</th>"
-
-#: ../roundup/cgi/templating.py:772
-msgid "<th>Args</th>"
-msgstr "<th>Arguments</th>"
-
-#: ../roundup/cgi/templating.py:834
+#: ../roundup/cgi/templating.py:883
 msgid "<em>The indicated property no longer exists</em>"
 msgstr "<em>La propriété indiquée n'existe plus</em>"
 
-#: ../roundup/cgi/templating.py:835
+#: ../roundup/cgi/templating.py:884
 #, python-format
 msgid "<em>%s: %s</em>\n"
 msgstr "<em>%s: %s</em>\n"
 
-#: ../roundup/cgi/templating.py:848
+#: ../roundup/cgi/templating.py:897
 #, python-format
 msgid "The linked class %(classname)s no longer exists"
 msgstr "La classe liée %(classname)s n'existe plus"
 
-# ../roundup/cgi/templating.py:881 :902
-#: ../roundup/cgi/templating.py:881 ../roundup/cgi/templating.py:902
+# ../roundup/cgi/templating.py:934 :958
+#: ../roundup/cgi/templating.py:930 ../roundup/cgi/templating.py:951
 msgid "<strike>The linked node no longer exists</strike>"
 msgstr "<strike>Le noeud lié n'existe plus</strike>"
 
-#: ../roundup/cgi/templating.py:941
+# ../roundup/cgi/templating.py:1000 :1364 :1385 :1391
+#: ../roundup/cgi/templating.py:993 ../roundup/cgi/templating.py:1357
+#: ../roundup/cgi/templating.py:1378 ../roundup/cgi/templating.py:1384
 msgid "No"
 msgstr "Non"
 
-#: ../roundup/cgi/templating.py:941
+# ../roundup/cgi/templating.py:1000 :1364 :1383 :1388
+#: ../roundup/cgi/templating.py:993 ../roundup/cgi/templating.py:1357
+#: ../roundup/cgi/templating.py:1376 ../roundup/cgi/templating.py:1381
 msgid "Yes"
 msgstr "Oui"
 
-#: ../roundup/cgi/templating.py:952
+#: ../roundup/cgi/templating.py:1004
 #, python-format
 msgid "%s: (no value)"
 msgstr "%s: (pas de valeur)"
 
-#: ../roundup/cgi/templating.py:964
+#: ../roundup/cgi/templating.py:1016
 msgid ""
 "<strong><em>This event is not handled by the history display!</em></strong>"
 msgstr ""
-"<strong><em>Cet évènement n'est pas géré par l'affichage de l'historique !</em></strong>"
+"<strong><em>Cet évènement n'est pas géré par l'affichage de l'historique !</"
+"em></strong>"
 
-#: ../roundup/cgi/templating.py:976
+#: ../roundup/cgi/templating.py:1028
 msgid "<tr><td colspan=4><strong>Note:</strong></td></tr>"
 msgstr "<tr><td colspan=4><strong>Note:</strong></td></tr>"
 
-#: ../roundup/cgi/templating.py:1257
+#: ../roundup/cgi/templating.py:1037
+msgid "History"
+msgstr "Historique"
+
+#: ../roundup/cgi/templating.py:1039
+msgid "<th>Date</th>"
+msgstr "<th>Date</th>"
+
+#: ../roundup/cgi/templating.py:1040
+msgid "<th>User</th>"
+msgstr "<th>Utilisateur</th>"
+
+#: ../roundup/cgi/templating.py:1041
+msgid "<th>Action</th>"
+msgstr "<th>Action</th>"
+
+#: ../roundup/cgi/templating.py:1042
+msgid "<th>Args</th>"
+msgstr "<th>Arguments</th>"
+
+#: ../roundup/cgi/templating.py:1284
 msgid "*encrypted*"
 msgstr "*encrypté*"
 
-#: ../roundup/cgi/templating.py:1422
+#: ../roundup/cgi/templating.py:1465
 msgid ""
 "default value for DateHTMLProperty must be either DateHTMLProperty or string "
 "date representation."
@@ -1428,193 +1530,234 @@ msgstr ""
 "la valeur par défaut pour DateHTMLProperty doit être soit DateHTMLProperty "
 "soit une représentation textuelle de la date."
 
-#: ../roundup/cgi/templating.py:1609
+#: ../roundup/cgi/templating.py:1598
+#, python-format
+msgid "Attempt to look up %(attr)s on a missing value"
+msgstr "Tentative de recherche de %(attr)s sur une valeur manquante"
+
+#: ../roundup/cgi/templating.py:1672
 #, python-format
 msgid "<option %svalue=\"-1\">- no selection -</option>"
 msgstr "<option %svalue=\"-1\">- pas de sélection -</option>"
 
-#: ../roundup/date.py:169
-#, python-format
-msgid "Not a date spec: %s"
-msgstr "Ceci n'est pas une spécification de date: %s"
+#: ../roundup/date.py:181
+msgid ""
+"Not a date spec: \"yyyy-mm-dd\", \"mm-dd\", \"HH:MM\", \"HH:MM:SS\" or "
+"\"yyyy-mm-dd.HH:MM:SS.SSS\""
+msgstr ""
+"Ceci n'est pas une représentation de date: \"aaaa-mm-jj\", \"mm-jj\", \"HH:MM"
+"\", \"HH:MM:SS\" or \"aaaa-mm-jj.HH:MM:SS.SSS\""
 
-#: ../roundup/date.py:220
+#: ../roundup/date.py:235
 #, python-format
-msgid "%r not a date spec (%s)"
-msgstr "%r n'est pas une repésentation de date (%s)"
+msgid ""
+"%r not a date / time spec \"yyyy-mm-dd\", \"mm-dd\", \"HH:MM\", \"HH:MM:SS\" "
+"or \"yyyy-mm-dd.HH:MM:SS.SSS\""
+msgstr ""
+"%r n'est pas une représentation de date ou d'heure \"aaaa-mm-jj\", \"mm-jj"
+"\", \"HH:MM\", \"HH:MM:SS\" or \"aaaa-mm-jj.HH:MM:SS.SSS\""
 
-#: ../roundup/date.py:508
+#: ../roundup/date.py:533
 msgid ""
 "Not an interval spec: [+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS] [date spec]"
 msgstr ""
-"Ceci n'est pas un représentation d'intervalle: [+-] [#y] [#m] [#w] [#d] "
-"[[[H]H:MM]:SS] [spécification de date]"
+"Ceci n'est pas une représentation d'intervalle: [+-] [#a] [#m] [#s] [#j] "
+"[[[H]H:MM]:SS] [représentation de date]"
 
-#: ../roundup/date.py:527
+#: ../roundup/date.py:552
 msgid "Not an interval spec: [+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS]"
-msgstr "Ceci n'est pas un représentation d'intervalle: [+-] [#y] [#m] [#w] [#d]"
-" [[[H]H:MM]:SS]"
+msgstr ""
+"Ceci n'est pas une représentation d'intervalle: [+-] [#a] [#m] [#s] [#j] "
+"[[[H]H:MM]:SS]"
 
-#: ../roundup/date.py:664
+#: ../roundup/date.py:689
 #, python-format
 msgid "%(number)s year"
 msgid_plural "%(number)s years"
 msgstr[0] "%(number)s année"
 msgstr[1] "%(number)s années"
 
-#: ../roundup/date.py:668
+#: ../roundup/date.py:693
 #, python-format
 msgid "%(number)s month"
 msgid_plural "%(number)s months"
 msgstr[0] "%(number)s mois"
 msgstr[1] "%(number)s mois"
 
-#: ../roundup/date.py:672
+#: ../roundup/date.py:697
 #, python-format
 msgid "%(number)s week"
 msgid_plural "%(number)s weeks"
 msgstr[0] "%(number)s semaine"
 msgstr[1] "%(number)s semaines"
 
-#: ../roundup/date.py:676
+#: ../roundup/date.py:701
 #, python-format
 msgid "%(number)s day"
 msgid_plural "%(number)s days"
 msgstr[0] "%(number)s jour"
 msgstr[1] "%(number)s jours"
 
-#: ../roundup/date.py:680
+#: ../roundup/date.py:705
 msgid "tomorrow"
 msgstr "demain"
 
-#: ../roundup/date.py:682
+#: ../roundup/date.py:707
 msgid "yesterday"
 msgstr "hier"
 
-#: ../roundup/date.py:685
+#: ../roundup/date.py:710
 #, python-format
 msgid "%(number)s hour"
 msgid_plural "%(number)s hours"
 msgstr[0] "%(number)s heure"
 msgstr[1] "%(number)s heures"
 
-#: ../roundup/date.py:689
+#: ../roundup/date.py:714
 msgid "an hour"
 msgstr "une heure"
 
-#: ../roundup/date.py:691
+#: ../roundup/date.py:716
 msgid "1 1/2 hours"
-msgstr "une heure et demie"
+msgstr "1 heure et demie"
 
-#: ../roundup/date.py:693
+#: ../roundup/date.py:718
 #, python-format
 msgid "1 %(number)s/4 hours"
 msgid_plural "1 %(number)s/4 hours"
-msgstr[0] "une heure et quart"
-msgstr[1] "une heure trois quart"
+msgstr[0] "1 heure et quart"
+msgstr[1] "1 heure trois-quart"
 
-#: ../roundup/date.py:697
+#: ../roundup/date.py:722
 msgid "in a moment"
 msgstr "dans un instant"
 
-#: ../roundup/date.py:699
+#: ../roundup/date.py:724
 msgid "just now"
 msgstr "à l'instant"
 
-#: ../roundup/date.py:702
+#: ../roundup/date.py:727
 msgid "1 minute"
 msgstr "une minute"
 
-#: ../roundup/date.py:705
+#: ../roundup/date.py:730
 #, python-format
 msgid "%(number)s minute"
 msgid_plural "%(number)s minutes"
 msgstr[0] "%(number)s minute"
 msgstr[1] "%(number)s minutes"
 
-#: ../roundup/date.py:708
+#: ../roundup/date.py:733
 msgid "1/2 an hour"
-msgstr "une demie-heure"
+msgstr "une demi-heure"
 
-#: ../roundup/date.py:710
+#: ../roundup/date.py:735
 #, python-format
 msgid "%(number)s/4 hour"
 msgid_plural "%(number)s/4 hours"
 msgstr[0] "un quart d'heure"
-msgstr[1] "trois quart d'heure"
+msgstr[1] "trois quarts d'heure"
 
-#: ../roundup/date.py:714
+#: ../roundup/date.py:739
 #, python-format
 msgid "%s ago"
 msgstr "il y a %s"
 
-#: ../roundup/date.py:716
+#: ../roundup/date.py:741
 #, python-format
 msgid "in %s"
 msgstr "dans %s"
 
-#: ../roundup/roundupdb.py:120
+#: ../roundup/init.py:132
+#, python-format
+msgid ""
+"WARNING: directory '%s'\n"
+"\tcontains old-style template - ignored"
+msgstr ""
+"ATTENTION: le répertoire '%s'\n"
+"\tcontient des modèles obsolètes - ignoré"
+
+#: ../roundup/roundupdb.py:141
 msgid "files"
 msgstr "fichiers"
 
-#: ../roundup/roundupdb.py:120
+#: ../roundup/roundupdb.py:141
 msgid "messages"
 msgstr "messages"
 
-#: ../roundup/roundupdb.py:120
+#: ../roundup/roundupdb.py:141
 msgid "nosy"
-msgstr ""
+msgstr "fouineur"
 
-#: ../roundup/roundupdb.py:120
+#: ../roundup/roundupdb.py:141
 msgid "superseder"
-msgstr ""
+msgstr "remplaçant"
 
-#: ../roundup/roundupdb.py:120
+#: ../roundup/roundupdb.py:141
 msgid "title"
 msgstr "titre"
 
-#: ../roundup/roundupdb.py:121
+#: ../roundup/roundupdb.py:142
 msgid "assignedto"
 msgstr "assigné_à"
 
-#: ../roundup/roundupdb.py:121
+#: ../roundup/roundupdb.py:142
 msgid "priority"
 msgstr "priorité"
 
-#: ../roundup/roundupdb.py:121
+#: ../roundup/roundupdb.py:142
 msgid "status"
 msgstr "état"
 
-#: ../roundup/roundupdb.py:121
+#: ../roundup/roundupdb.py:142
 msgid "topic"
 msgstr "sujet"
 
-#: ../roundup/roundupdb.py:124
+#: ../roundup/roundupdb.py:145
 msgid "activity"
 msgstr "activité"
 
 #. following properties are common for all hyperdb classes
 #. they are listed here to keep things in one place
-#: ../roundup/roundupdb.py:124
+#: ../roundup/roundupdb.py:145
 msgid "actor"
 msgstr "acteur"
 
-#: ../roundup/roundupdb.py:124
+#: ../roundup/roundupdb.py:145
 msgid "creation"
 msgstr "création"
 
-#: ../roundup/roundupdb.py:124
+#: ../roundup/roundupdb.py:145
 msgid "creator"
 msgstr "créateur"
+
+#: ../roundup/scripts/roundup_demo.py:32
+#, python-format
+msgid "Enter directory path to create demo tracker [%s]: "
+msgstr ""
+"Saisissez le chemin du répertoire dans lequel créer le pisteur de "
+"démonstration [%s]: "
+
+#: ../roundup/scripts/roundup_gettext.py:22
+#, python-format
+msgid "Usage: %(program)s <tracker home>"
+msgstr "Usage: %(program)s <répertoire du pisteur>"
+
+#: ../roundup/scripts/roundup_gettext.py:37
+#, python-format
+msgid "No tracker templates found in directory %s"
+msgstr "Aucun modèle de pisteur dans le répertoire %s"
 
 #: ../roundup/scripts/roundup_mailgw.py:36
 #, python-format
 msgid ""
-"Usage: %(program)s [-v] [[-C class] -S field=value]* <instance home> "
+"Usage: %(program)s [-v] [-c] [[-C class] -S field=value]* <instance home> "
 "[method]\n"
 "\n"
 "Options:\n"
 " -v: print version and exit\n"
+" -c: default class of item to create (else the tracker's "
+"MAIL_DEFAULT_CLASS)\n"
 " -C / -S: see below\n"
 "\n"
 "The roundup mail gateway may be called in one of four ways:\n"
@@ -1678,33 +1821,42 @@ msgstr ""
 "\n"
 "Options:\n"
 " -v: imprime la version et quitte\n"
+" -c: classe de l'élement à créer (par défaut, la classe MAIL_DEFAULT_CLASS)\n"
 " -C / -S: voir ci-après\n"
 "\n"
-"La passerelle de messagerie de Roundup peut être appelée de quatre manières:\n"
+"La passerelle de messagerie de Roundup peut être appelée de quatre "
+"manières:\n"
 " . avec le répertoire de base d'une instance comme seul argument,\n"
-" . avec à la fois un répertoire de base et un fichier d'attente de messagerie,\n"
-" . avec à la fois un répertoire de base et un compte de serveur POP/APOP, ou\n"
+" . avec à la fois un répertoire de base et un fichier d'attente de "
+"messagerie,\n"
+" . avec à la fois un répertoire de base et un compte de serveur POP/APOP, "
+"ou\n"
 " . avec à la fois un répertoire de base et un compte de serveur IMAP/IMAPS.\n"
 "\n"
 "Elle accepte également les options -C et -S qui vous permettent d'assigner\n"
-"des champs pour une classe créée par roundup-mailgw. La classe par défaut, si\n"
+"des champs pour une classe créée par roundup-mailgw. La classe par défaut, "
+"si\n"
 "elle n'est pas spécifiée, est \"msg\", mais les autres classes: \"issue\",\n"
-"\"file\", \"user\" peuvent également être utilisées. Les options -S ou --set \n"
-"utilisent la même notation propriété=valeur[;propriété=valeur] acceptée par la\n"
+"\"file\", \"user\" peuvent également être utilisées. Les options -S ou --"
+"set \n"
+"utilisent la même notation propriété=valeur[;propriété=valeur] acceptée par "
+"la\n"
 "ligne de commande de  Roundup ou par les commandes qui peuvent être données\n"
 "dans l'objet d'un courriel.\n"
 "\n"
-"Elle vous permet également de spécifier le type de message pour chaque adresse\n"
-"de messagerie.\n" 
+"Elle vous permet également de spécifier le type de message pour chaque "
+"adresse\n"
+"de messagerie.\n"
 "\n"
 "PIPE:\n"
-" Dans le premier cas, la passerelle de messagerie lit un seul message venant\n"
+" Dans le premier cas, la passerelle de messagerie lit un seul message "
+"venant\n"
 " de l'entrée standard et le soumet au module roundup.mailgw.\n"
 "\n"
 "UNIX mailbox:\n"
 " Dans le second cas, la passerelle lit tout les messages venant du fichier\n"
 " d'attente de messagerie et les soumet chacun à leur tour au module\n"
-" roundup.mailgw. Le fichier est vidé une fois que tout les messages ont été\n" 
+" roundup.mailgw. Le fichier est vidé une fois que tout les messages ont été\n"
 " traités avec succés. Le fichier est spécifié comme:\n"
 "   mailbox /chemin/vers/mailbox\n"
 "\n"
@@ -1737,19 +1889,19 @@ msgstr ""
 "    imaps nom-d'utilisateur:mot-de-passe@serveur [boîte-aux-lettres]\n"
 "\n"
 
-#: ../roundup/scripts/roundup_mailgw.py:143
+#: ../roundup/scripts/roundup_mailgw.py:147
 msgid "Error: not enough source specification information"
 msgstr "Erreur: pas assez d'informations dans la spécification de la source"
 
-#: ../roundup/scripts/roundup_mailgw.py:153
+#: ../roundup/scripts/roundup_mailgw.py:157
 msgid "Error: pop specification not valid"
 msgstr "Erreur: la spécification pop n'est pas valide"
 
-#: ../roundup/scripts/roundup_mailgw.py:160
+#: ../roundup/scripts/roundup_mailgw.py:164
 msgid "Error: apop specification not valid"
 msgstr "Erreur: la spécification apop n'est pas valide"
 
-#: ../roundup/scripts/roundup_mailgw.py:174
+#: ../roundup/scripts/roundup_mailgw.py:178
 msgid ""
 "Error: The source must be either \"mailbox\", \"pop\", \"apop\", \"imap\" or "
 "\"imaps\""
@@ -1757,7 +1909,7 @@ msgstr ""
 "Erreur: la source doit être \"mailbox\", \"pop\", \"apop\", \"imap\" ou "
 "\"imaps\""
 
-#: ../roundup/scripts/roundup_server.py:130
+#: ../roundup/scripts/roundup_server.py:156
 msgid ""
 "<html><head><title>Roundup trackers index</title></head>\n"
 "<body><h1>Roundup trackers index</h1><ol>\n"
@@ -1765,32 +1917,77 @@ msgstr ""
 "<html><head><title>Index des pisteurs Roundup</title></head>\n"
 "<body><h1>Index des pisteurs Roundup</h1><ol>\n"
 
-#: ../roundup/scripts/roundup_server.py:239
+#: ../roundup/scripts/roundup_server.py:257
 #, python-format
 msgid "Error: %s: %s"
 msgstr "Erreur: %s: %s"
 
-#: ../roundup/scripts/roundup_server.py:347
+#: ../roundup/scripts/roundup_server.py:267
+msgid "WARNING: ignoring \"-g\" argument, not root"
+msgstr ""
+"ATTENTION: le paramètre \"-g\" est ignoré, vous n'êtes pas superutilisateur "
+"(\"root\")"
+
+#: ../roundup/scripts/roundup_server.py:273
+msgid "Can't change groups - no grp module"
+msgstr "Impossible de changer les groupes - le module grp n'est pas présent"
+
+#: ../roundup/scripts/roundup_server.py:282
+#, python-format
+msgid "Group %(group)s doesn't exist"
+msgstr "Le groupe %(group)s n'existe pas"
+
+#: ../roundup/scripts/roundup_server.py:293
+msgid "Can't run as root!"
+msgstr "Impossible d'exécuter en tant que superutilisateur (\"root\")"
+
+#: ../roundup/scripts/roundup_server.py:296
+msgid "WARNING: ignoring \"-u\" argument, not root"
+msgstr ""
+"ATTENTION: le paramètre \"-u\" est ignoré, vous n'êtes pas superutilisateur "
+"(\"root\")"
+
+#: ../roundup/scripts/roundup_server.py:301
+msgid "Can't change users - no pwd module"
+msgstr ""
+"Impossible de changer les utilisateurs - le module pwd n'est pas présent"
+
+#: ../roundup/scripts/roundup_server.py:310
+#, python-format
+msgid "User %(user)s doesn't exist"
+msgstr "L'utilisateur %(user)s n'existe pas"
+
+#: ../roundup/scripts/roundup_server.py:437
+#, python-format
+msgid "Multiprocess mode \"%s\" is not available, switching to single-process"
+msgstr ""
+"Le mode multiprocessus \"%s\" n'existe pas, passage en mode processus unique"
+
+#: ../roundup/scripts/roundup_server.py:460
+#, python-format
+msgid "Unable to bind to port %s, port already in use."
+msgstr "Impossible de s'attacher au port %s, le port est déjà utilisé"
+
+#: ../roundup/scripts/roundup_server.py:528
 msgid ""
 " -c <Command>  Windows Service options.\n"
 "               If you want to run the server as a Windows Service, you\n"
-"               must configure the rest of the options by changing the\n"
-"               constants of this program.  You will at least configure\n"
-"               one tracker in the TRACKER_HOMES variable.  This option\n"
-"               is mutually exclusive from the rest.  Typing\n"
-"               \"roundup-server -c help\" shows Windows Services\n"
+"               must use configuration file to specify tracker homes.\n"
+"               Logfile option is required to run Roundup Tracker service.\n"
+"               Typing \"roundup-server -c help\" shows Windows Services\n"
 "               specifics."
 msgstr ""
-" -c <Commande> options des services Windows.\n"
+" -c <Commande> \n"
+"               Options des services Windows.\n"
 "               Si vous désirez démarrer le serveur comme service Windows,\n"
-"               vous devez configurer le reste des options en changeant les\n"
-"               constantes de ce programme. Vous devez configurer au moins\n"
-"               un pisteur dans la variable TRACKER_HOMES.  Cette option\n"
-"               est mutuellement exclusive du reste.\n"
-"               La commande \"roundup-server -c help\" donne les spécificités\n"
-"               du service Windows."
+"               vous devez utiliser le fichier de configuration pour\n"
+"               préciser les répertoires des pisteurs.\n"
+"               L'option Logfile est requise pour exécuter le service\n"
+"               RoundUp Tracker.\n"
+"               La commande \"roundup-server -c help\" donne "
+"les                spécificités du service Windows."
 
-#: ../roundup/scripts/roundup_server.py:356
+#: ../roundup/scripts/roundup_server.py:535
 msgid ""
 " -u <UID>      runs the Roundup web server as this UID\n"
 " -g <GID>      runs the Roundup web server as this GID\n"
@@ -1803,130 +2000,86 @@ msgstr ""
 " -g <GID>      démarre le serveur Web de Roundup sous l'identificateur\n"
 "               de groupe GID\n"
 " -d <fichier-PID>\n"
-"               démarre le serveur en tâche de fond et écrit l'identificateur\n"
-"               de processus (\"PID\") dans le fichier spécifié par fichier-PID\n"
+"               démarre le serveur en tâche de fond et écrit "
+"l'identificateur\n"
+"               de processus (\"PID\") dans le fichier spécifié par fichier-"
+"PID\n"
 "               L'option -l option *doit* être spécifiée si -d est utilisé."
 
-#: ../roundup/scripts/roundup_server.py:364
+#: ../roundup/scripts/roundup_server.py:542
 #, python-format
 msgid ""
 "%(message)sUsage: roundup-server [options] [name=tracker home]*\n"
 "\n"
 "Options:\n"
-" -v            prints the Roundup version number and exits\n"
-" -n <name>     sets the host name of the Roundup web server instance\n"
-" -p <port>     sets the port to listen on (default: %(port)s)\n"
+" -v            print the Roundup version number and exit\n"
+" -h            print this text and exit\n"
+" -S            create or update configuration file and exit\n"
+" -C <fname>    use configuration file <fname>\n"
+" -n <name>     set the host name of the Roundup web server instance\n"
+" -p <port>     set the port to listen on (default: %(port)s)\n"
 " -l <fname>    log to the file indicated by fname instead of stderr/stdout\n"
 " -N            log client machine names instead of IP addresses (much "
 "slower)\n"
+" -t <mode>     multiprocess mode (default: %(mp_def)s).\n"
+"               Allowed values: %(mp_types)s.\n"
 "%(os_part)s\n"
 "\n"
+"Long options:\n"
+" --version          print the Roundup version number and exit\n"
+" --help             print this text and exit\n"
+" --save-config      create or update configuration file and exit\n"
+" --config <fname>   use configuration file <fname>\n"
+" All settings of the [main] section of the configuration file\n"
+" also may be specified in form --<name>=<value>\n"
+"\n"
 "Examples:\n"
+"\n"
+" roundup-server -S -C /opt/roundup/etc/roundup-server.ini \\\n"
+"    -n localhost -p 8917 -l /var/log/roundup.log \\\n"
+"    support=/var/spool/roundup-trackers/support\n"
+"\n"
+" roundup-server -C /opt/roundup/etc/roundup-server.ini\n"
+"\n"
 " roundup-server support=/var/spool/roundup-trackers/support\n"
 "\n"
 " roundup-server -d /var/run/roundup.pid -l /var/log/roundup.log \\\n"
-"     support=/var/spool/roundup-trackers/support\n"
+"    support=/var/spool/roundup-trackers/support\n"
+"\n"
+"Configuration file format:\n"
+"   Roundup Server configuration file has common .ini file format.\n"
+"   Configuration file created with 'roundup-server -S' contains\n"
+"   detailed explanations for each option.  Please see that file\n"
+"   for option descriptions.\n"
 "\n"
 "How to use \"name=tracker home\":\n"
 "   These arguments set the tracker home(s) to use. The name is how the\n"
 "   tracker is identified in the URL (it's the first part of the URL path).\n"
 "   The tracker home is the directory that was identified when you did\n"
 "   \"roundup-admin init\". You may specify any number of these name=home\n"
-"   pairs on the command-line. For convenience, you may edit the\n"
-"   TRACKER_HOMES variable in the roundup-server file instead.\n"
-"   Make sure the name part doesn't include any url-unsafe characters like\n"
-"   spaces, as these confuse the cookie handling in browsers like IE.\n"
+"   pairs on the command-line. Make sure the name part doesn't include\n"
+"   any url-unsafe characters like spaces, as these confuse IE.\n"
 msgstr ""
-"%(message)sUsage: roundup-server [options] [nom=base-du-traqueur]*\n"
-"\n"
-"Options:\n"
-" -v            imprime le numéro de version de Roundup et quitte\n"
-" -n <nom>      spécifie le nom d'hôte de l'instance de serveur web Roundup\n"
-" -p <port>     spécifie le numéro de port à écouter (par défaut: %(port)s)\n"
-" -l <nom-de-fichier>\n"
-"               loggue dans le fichier indiqué par nom-de-fichier plutôt que\n"
-"               vers stderr/stdout\n"
-" -N            loggue les noms des machines clientes plutôt que leurs \n"
-"               adresses IP (plus lent)\n"
-"%(os_part)s\n"
-"\n"
-"Exemples:\n"
-" roundup-server support=/var/spool/roundup-trackers/support\n"
-"\n"
-" roundup-server -d /var/run/roundup.pid -l /var/log/roundup.log \\\n"
-"     support=/var/spool/roundup-trackers/support\n"
-"\n"
-"Comment utiliser \"nom=base-du-pisteur\":\n"
-"   Ces arguments spécifient le ou les répertoires de base de pisteur à\n" 
-"   utiliser. Le nom est la manière dont le pisteur est identifié dans\n"
-"   l'URL (c'est la première partie du chemin de l'URL).\n"
-"   La base du pisteur est le répertoire qui a été donné lorsque vous avez\n"
-"   effectué \"roundup-admin init\". Vous pouvez spécifier sur la ligne de\n"
-"   commandes autant de paires nom=base-du-pisteur que vous désirez.\n"
-"   Par facilité, vous pouvez plutôt modifier la variable TRACKER_HOMES \n"
-"   dans le fichier roundup-server.\n"
-"   Assurez-vous néammoins que le nom ne contienne aucun caractère déconseillé\n"
-"   pour les URL, tels que des espaces, étant donné que cela peut perturber la\n"
-"   gestion des cookies de certains navigateurs comme Internet Explorer.\n"
 
-#: ../roundup/scripts/roundup_server.py:470
-msgid "windows service option must be the only one"
-msgstr "l'option de service Windows doit être seule"
-
-#: ../roundup/scripts/roundup_server.py:473
-msgid "logfile *must* be specified if pidfile is"
-msgstr "le fichier-de-log *doit* être spécifié si le fichier-de-pid l'est"
-
-#: ../roundup/scripts/roundup_server.py:484
-#, python-format
-msgid "Unable to bind to port %s, port already in use."
-msgstr "Impossible de s'attacher au port %s, il est déjà utilisé."
-
-#: ../roundup/scripts/roundup_server.py:493
-msgid "Can't change groups - no grp module"
-msgstr "Ne peut pas changer les groupes - pas de module \"grp\""
-
-#: ../roundup/scripts/roundup_server.py:502
-#, python-format
-msgid "Group %(group)s doesn't exist"
-msgstr "Le groupe %(group)s n'existe pas"
-
-#: ../roundup/scripts/roundup_server.py:505
-msgid "WARNING: ignoring \"-g\" argument, not root"
-msgstr "AVERTISSEMENT: l'argument \"-g\" est ignoré, n'étant pas "
-"superutilisateur (\"root\")"
-
-#: ../roundup/scripts/roundup_server.py:513
-msgid "Can't change users - no pwd module"
-msgstr "Ne peut pas changer les utilisateurs - pas de module \"pwd\""
-
-#: ../roundup/scripts/roundup_server.py:522
-#, python-format
-msgid "User %(user)s doesn't exist"
-msgstr "L'utilisateur %(user)s n'existe pas"
-
-#: ../roundup/scripts/roundup_server.py:525
-msgid "WARNING: ignoring \"-u\" argument, not root"
-msgstr "AVERTISSEMENT: l'argument \"-u\" est ignoré, n'étant pas "
-"superutilisateur (\"root\")"
-
-#: ../roundup/scripts/roundup_server.py:529
-msgid "Can't run as root!"
-msgstr "Ne peut démarrer en tant que superutilisateur !"
-
-#: ../roundup/scripts/roundup_server.py:538
+#: ../roundup/scripts/roundup_server.py:690
 msgid "Instances must be name=home"
 msgstr "Les instances doivent être nom=base-du-pisteur"
 
-#: ../roundup/scripts/roundup_server.py:554
-msgid "Sorry, you can't run the server as a daemon on this Operating System"
-msgstr "Désolé, vous ne pouvez pas démarrer le serveur en tâche de fond avec "
-"ce système d'exploitation"
-
-#: ../roundup/scripts/roundup_server.py:572
+#: ../roundup/scripts/roundup_server.py:704
 #, python-format
-msgid "Roundup server started on %(address)s"
-msgstr "Le serveur Roundup est démarré sur %(address)s"
+msgid "Configuration saved to %s"
+msgstr "Configuration sauvegardée dans %s"
+
+#: ../roundup/scripts/roundup_server.py:722
+msgid "Sorry, you can't run the server as a daemon on this Operating System"
+msgstr ""
+"Désolé, vous ne pouvez pas démarrer le serveur en tâche de fond avec ce "
+"système d'exploitation"
+
+#: ../roundup/scripts/roundup_server.py:734
+#, python-format
+msgid "Roundup server started on %(HOST)s:%(PORT)s"
+msgstr "Le serveur Roundup est démarré sur %(HOST)s:%(PORT)s"
 
 #: ../templates/classic/html/_generic.collision.html:4
 #: ../templates/minimal/html/_generic.collision.html:4
@@ -1947,8 +2100,9 @@ msgid ""
 "  the node and review your edits.\n"
 msgstr ""
 "\n"
-"  Une collision s'est produite. Un autre utilisateur a mis &agrave; jour ce noeud\n"
-"  pendant que vous l'&eacute;ditiez. Veuillez <a href='${context}'>recharger</a>\n"
+"  Une collision s'est produite. Un autre utilisateur a mis &agrave; jour ce\n"
+"  noeud pendant que vous l'&eacute;ditiez. Veuillez <a "
+"href='${context}'>recharger</a>\n"
 "  ce noeud et v&eacute;rifier vos modifications.\n"
 
 #: ../templates/classic/html/_generic.help.html:9
@@ -1966,21 +2120,21 @@ msgstr " Annuler "
 msgid " Apply "
 msgstr " Appliquer "
 
-#: ../templates/classic/html/_generic.help.html:66
-#: ../templates/classic/html/issue.index.html:67
-#: ../templates/minimal/html/_generic.help.html:66
+#: ../templates/classic/html/_generic.help.html:41
+#: ../templates/classic/html/issue.index.html:66
+#: ../templates/minimal/html/_generic.help.html:41
 msgid "&lt;&lt; previous"
 msgstr "&lt;&lt; pr&eacute;c&eacute;dents"
 
-#: ../templates/classic/html/_generic.help.html:73
-#: ../templates/classic/html/issue.index.html:75
-#: ../templates/minimal/html/_generic.help.html:73
+#: ../templates/classic/html/_generic.help.html:52
+#: ../templates/classic/html/issue.index.html:74
+#: ../templates/minimal/html/_generic.help.html:52
 msgid "${start}..${end} out of ${total}"
 msgstr "${start}..${end} sur ${total}"
 
-#: ../templates/classic/html/_generic.help.html:76
-#: ../templates/classic/html/issue.index.html:78
-#: ../templates/minimal/html/_generic.help.html:76
+#: ../templates/classic/html/_generic.help.html:56
+#: ../templates/classic/html/issue.index.html:77
+#: ../templates/minimal/html/_generic.help.html:56
 msgid "next &gt;&gt;"
 msgstr "suivants &gt;&gt;"
 
@@ -2002,8 +2156,10 @@ msgstr "&Eacute;dition de ${class}"
 #: ../templates/classic/html/_generic.item.html:12
 #: ../templates/classic/html/file.item.html:9
 #: ../templates/classic/html/issue.index.html:10
+#: ../templates/classic/html/issue.item.html:28
+#: ../templates/classic/html/msg.item.html:26
 #: ../templates/classic/html/user.index.html:9
-#: ../templates/classic/html/user.register.html:14
+#: ../templates/classic/html/user.item.html:28
 #: ../templates/minimal/html/_generic.index.html:14
 #: ../templates/minimal/html/_generic.item.html:12
 #: ../templates/minimal/html/user.index.html:9
@@ -2019,22 +2175,24 @@ msgid ""
 "using this form. Commas, newlines and double quotes (\") must be handled "
 "delicately. You may include commas and newlines by enclosing the values in "
 "double-quotes (\"). Double quotes themselves must be quoted by doubling "
-"(\"\"). </p> <p class=\"form-help\"> Multilink properties have their multiple "
-"values colon (\":\") separated (... ,\"one:two:three\", ...) </p> <p class="
-"\"form-help\"> Remove entries by deleting their line. Add new entries by "
-"appending them to the table - put an X in the id column. </p>"
+"(\"\"). </p> <p class=\"form-help\"> Multilink properties have their "
+"multiple values colon (\":\") separated (... ,\"one:two:three\", ...) </p> "
+"<p class=\"form-help\"> Remove entries by deleting their line. Add new "
+"entries by appending them to the table - put an X in the id column. </p>"
 msgstr ""
-"<p class=\"form-help\"> Vous pouvez &eacute;diter le contenu de la classe " 
-"${classname} en utilisant ce formulaire. Les virgules, passages &agrave; la ligne "
-"guillemets doubles (\") doivent &ecirc;tre g&eacute;r&eacute;s soigneusement. Vous pouvez ins&eacute;rer "
-"des virgules et des passage &agrave; la ligne en ins&eacute;rant les valeurs dans des "
-"guillemets doubles (\"). Les guillemets doubles elles-m&ecirc;mes doivent &ecirc;tre "
-"ins&eacute;r&eacute;es en les doublant (\"\").</p>"
-"<p class=\"form-help\">Les propri&eacute;t&eacute;s des liens multiples doivent s&eacute;parer"
-"leurs valeurs multiples par des double-points (\":\") (... ,\"un:deux:trois\", ...) </p>"
-"<p class=\"form-help\"> Enlevez des entr&eacute;es en effa&ccedil;ant leur ligne. Ajoutez de "
-"nouvelles entr&eacute;es en les ajoutant &agrave; la fin de la table - mettez un \"X\" dans "
-"la colonne \"id\".</p>"
+"<p class=\"form-help\"> Vous pouvez &eacute;diter le contenu de la classe "
+"${classname} en utilisant ce formulaire. Les virgules, passages &agrave; la "
+"ligne guillemets doubles (\") doivent &ecirc;tre g&eacute;r&eacute;s "
+"soigneusement. Vous pouvez ins&eacute;rer des virgules et des passage "
+"&agrave; la ligne en ins&eacute;rant les valeurs dans des guillemets doubles "
+"(\"). Les guillemets doubles elles-m&ecirc;mes doivent &ecirc;tre ins&eacute;"
+"r&eacute;es en les doublant (\"\").</p><p class=\"form-help\">Les "
+"propri&eacute;t&eacute;s des liens multiples doivent s&eacute;parerleurs "
+"valeurs multiples par des double-points (\":\") (... ,\"un:deux:trois"
+"\", ...) </p><p class=\"form-help\"> Enlevez des entr&eacute;es en "
+"effa&ccedil;ant leur ligne. Ajoutez de nouvelles entr&eacute;es en les "
+"ajoutant &agrave; la fin de la table - mettez un \"X\" dans la colonne \"id"
+"\".</p>"
 
 #: ../templates/classic/html/_generic.index.html:44
 #: ../templates/minimal/html/_generic.index.html:44
@@ -2054,8 +2212,7 @@ msgid "Download"
 msgstr "T&eacute;l&eacute;charger"
 
 #: ../templates/classic/html/file.index.html:11
-#: ../templates/classic/html/file.item.html:23
-#: ../templates/classic/html/file.item.html:51
+#: ../templates/classic/html/file.item.html:22
 msgid "Content Type"
 msgstr "Type de contenu"
 
@@ -2064,7 +2221,7 @@ msgid "Uploaded By"
 msgstr "T&eacute;l&eacute;charg&eacute; par"
 
 #: ../templates/classic/html/file.index.html:13
-#: ../templates/classic/html/msg.item.html:38
+#: ../templates/classic/html/msg.item.html:43
 msgid "Date"
 msgstr "Date"
 
@@ -2076,14 +2233,13 @@ msgstr "Affichage de fichier - ${tracker}"
 msgid "File display"
 msgstr "Affichage de fichier"
 
-#: ../templates/classic/html/file.item.html:19
-#: ../templates/classic/html/file.item.html:47
-#: ../templates/classic/html/user.item.html:34
-#: ../templates/classic/html/user.register.html:24
+#: ../templates/classic/html/file.item.html:18
+#: ../templates/classic/html/user.item.html:39
+#: ../templates/classic/html/user.register.html:17
 msgid "Name"
 msgstr "Nom"
 
-#: ../templates/classic/html/file.item.html:41
+#: ../templates/classic/html/file.item.html:40
 msgid "download"
 msgstr "t&eacute;l&eacute;chargement"
 
@@ -2105,74 +2261,74 @@ msgstr "Liste des demandes - ${tracker}"
 msgid "List of issues"
 msgstr "Liste des demandes"
 
-#: ../templates/classic/html/issue.index.html:17
-#: ../templates/classic/html/issue.item.html:38
+#: ../templates/classic/html/issue.index.html:16
+#: ../templates/classic/html/issue.item.html:44
 msgid "Priority"
 msgstr "Priorit&eacute;"
 
-#: ../templates/classic/html/issue.index.html:18
+#: ../templates/classic/html/issue.index.html:17
 msgid "ID"
 msgstr "ID"
 
-#: ../templates/classic/html/issue.index.html:19
+#: ../templates/classic/html/issue.index.html:18
 msgid "Creation"
 msgstr "Cr&eacute;ation"
 
-#: ../templates/classic/html/issue.index.html:20
+#: ../templates/classic/html/issue.index.html:19
 msgid "Activity"
 msgstr "Activit&eacute;"
 
-#: ../templates/classic/html/issue.index.html:21
+#: ../templates/classic/html/issue.index.html:20
 msgid "Actor"
 msgstr "Acteur"
 
-#: ../templates/classic/html/issue.index.html:22
+#: ../templates/classic/html/issue.index.html:21
 msgid "Topic"
 msgstr "Sujet"
 
-#: ../templates/classic/html/issue.index.html:23
-#: ../templates/classic/html/issue.item.html:33
+#: ../templates/classic/html/issue.index.html:22
+#: ../templates/classic/html/issue.item.html:39
 msgid "Title"
 msgstr "Titre"
 
-#: ../templates/classic/html/issue.index.html:24
-#: ../templates/classic/html/issue.item.html:40
+#: ../templates/classic/html/issue.index.html:23
+#: ../templates/classic/html/issue.item.html:46
 msgid "Status"
 msgstr "&Eacute;tat"
 
-#: ../templates/classic/html/issue.index.html:25
+#: ../templates/classic/html/issue.index.html:24
 msgid "Creator"
 msgstr "Cr&eacute;ateur"
 
-#: ../templates/classic/html/issue.index.html:26
+#: ../templates/classic/html/issue.index.html:25
 msgid "Assigned&nbsp;To"
 msgstr "Assign&eacute;&nbsp;&agrave;"
 
-#: ../templates/classic/html/issue.index.html:90
+#: ../templates/classic/html/issue.index.html:89
 msgid "Download as CSV"
 msgstr "T&eacute;l&eacute;charger comme CSV"
 
-#: ../templates/classic/html/issue.index.html:98
+#: ../templates/classic/html/issue.index.html:97
 msgid "Sort on:"
 msgstr "Trier sur:"
 
-#: ../templates/classic/html/issue.index.html:101
-#: ../templates/classic/html/issue.index.html:118
+#: ../templates/classic/html/issue.index.html:100
+#: ../templates/classic/html/issue.index.html:117
 msgid "- nothing -"
 msgstr "- rien -"
 
-#: ../templates/classic/html/issue.index.html:109
-#: ../templates/classic/html/issue.index.html:126
+#: ../templates/classic/html/issue.index.html:108
+#: ../templates/classic/html/issue.index.html:125
 msgid "Descending:"
 msgstr "Descendant:"
 
-#: ../templates/classic/html/issue.index.html:115
+#: ../templates/classic/html/issue.index.html:114
 msgid "Group on:"
 msgstr "Grouper sur:"
 
-#: ../templates/classic/html/issue.index.html:132
+#: ../templates/classic/html/issue.index.html:131
 msgid "Redisplay"
-msgstr "R&eacute;-afficher"
+msgstr "Ré-afficher"
 
 #: ../templates/classic/html/issue.item.html:7
 msgid "Issue ${id}: ${title} - ${tracker}"
@@ -2198,99 +2354,99 @@ msgstr "Issue${id}"
 msgid "Issue${id} Editing"
 msgstr "&Eacute;dition de la demande Issue${id}"
 
-#: ../templates/classic/html/issue.item.html:45
+#: ../templates/classic/html/issue.item.html:51
 msgid "Superseder"
 msgstr "Supplant&eacute; par"
 
-#: ../templates/classic/html/issue.item.html:50
+#: ../templates/classic/html/issue.item.html:56
 msgid "View: ${link}"
 msgstr "Voir: ${link}"
 
-#: ../templates/classic/html/issue.item.html:54
+#: ../templates/classic/html/issue.item.html:60
 msgid "Nosy List"
 msgstr "Liste des curieux"
 
-#: ../templates/classic/html/issue.item.html:63
+#: ../templates/classic/html/issue.item.html:69
 msgid "Assigned To"
 msgstr "Assign&eacute; &agrave;"
 
-#: ../templates/classic/html/issue.item.html:65
+#: ../templates/classic/html/issue.item.html:71
 msgid "Topics"
 msgstr "Sujets"
 
-#: ../templates/classic/html/issue.item.html:73
+#: ../templates/classic/html/issue.item.html:79
 msgid "Change Note"
 msgstr "Note de modification"
 
-#: ../templates/classic/html/issue.item.html:81
+#: ../templates/classic/html/issue.item.html:87
 msgid "File"
 msgstr "Fichier"
 
-#: ../templates/classic/html/issue.item.html:100
+#: ../templates/classic/html/issue.item.html:106
 msgid ""
 "<table class=\"form\"> <tr> <td>Note:&nbsp;</td> <th class=\"required"
 "\">highlighted</th> <td>&nbsp;fields are required.</td> </tr> </table>"
 msgstr ""
-"<table class=\"form\"> <tr> <td>Note:&nbsp;Les champs&nbsp;</td> "
-"<th class=\"required\">mis en &eacute;vidence</th> <td>&nbsp;sont requis.</td> "
-"</tr> </table>"
+"<table class=\"form\"> <tr> <td>Note:&nbsp;Les champs&nbsp;</td> <th class="
+"\"required\">mis en &eacute;vidence</th> <td>&nbsp;sont requis.</td> </tr> </"
+"table>"
 
-#: ../templates/classic/html/issue.item.html:114
+#: ../templates/classic/html/issue.item.html:120
 msgid ""
 "Created on <b>${creation}</b> by <b>${creator}</b>, last changed <b>"
 "${activity}</b> by <b>${actor}</b>."
 msgstr ""
-"Cr&eacute;&eacute; le <b>${creation}</b> par <b>${creator}</b>, modifi&eacute; le <b>"
-"${activity}</b> par <b>${actor}</b>."
+"Cr&eacute;&eacute; le <b>${creation}</b> par <b>${creator}</b>, "
+"modifi&eacute; le <b>${activity}</b> par <b>${actor}</b>."
 
-#: ../templates/classic/html/issue.item.html:118
-#: ../templates/classic/html/msg.item.html:51
+#: ../templates/classic/html/issue.item.html:124
+#: ../templates/classic/html/msg.item.html:56
 msgid "Files"
 msgstr "Fichiers"
 
-#: ../templates/classic/html/issue.item.html:120
-#: ../templates/classic/html/msg.item.html:53
+#: ../templates/classic/html/issue.item.html:126
+#: ../templates/classic/html/msg.item.html:58
 msgid "File name"
 msgstr "Nom de fichier"
 
-#: ../templates/classic/html/issue.item.html:121
-#: ../templates/classic/html/msg.item.html:54
+#: ../templates/classic/html/issue.item.html:127
+#: ../templates/classic/html/msg.item.html:59
 msgid "Uploaded"
 msgstr "T&eacute;l&eacute;charg&eacute;"
 
-#: ../templates/classic/html/issue.item.html:122
+#: ../templates/classic/html/issue.item.html:128
 msgid "Type"
 msgstr "Type"
 
-#: ../templates/classic/html/issue.item.html:123
+#: ../templates/classic/html/issue.item.html:129
 #: ../templates/classic/html/query.edit.html:30
 msgid "Edit"
 msgstr "Modifier"
 
-#: ../templates/classic/html/issue.item.html:124
+#: ../templates/classic/html/issue.item.html:130
 msgid "Remove"
 msgstr "Effacer"
 
-#: ../templates/classic/html/issue.item.html:144
-#: ../templates/classic/html/issue.item.html:165
+#: ../templates/classic/html/issue.item.html:150
+#: ../templates/classic/html/issue.item.html:171
 #: ../templates/classic/html/query.edit.html:50
 msgid "remove"
 msgstr "enlever"
 
-#: ../templates/classic/html/issue.item.html:151
+#: ../templates/classic/html/issue.item.html:157
 #: ../templates/classic/html/msg.index.html:9
 msgid "Messages"
 msgstr "Messages"
 
-#: ../templates/classic/html/issue.item.html:155
+#: ../templates/classic/html/issue.item.html:161
 msgid "msg${id} (view)"
 msgstr "msg${id} (voir)"
 
-#: ../templates/classic/html/issue.item.html:156
+#: ../templates/classic/html/issue.item.html:162
 msgid "Author: ${author}"
 msgstr "Auteur: ${author}"
 
-#: ../templates/classic/html/issue.item.html:158
+#: ../templates/classic/html/issue.item.html:164
 msgid "Date: ${date}"
 msgstr "Date: ${date}"
 
@@ -2302,124 +2458,131 @@ msgstr "Recherche de demande - ${tracker}"
 msgid "Issue searching"
 msgstr "Recherche de demande"
 
-#: ../templates/classic/html/issue.search.html:24
+#: ../templates/classic/html/issue.search.html:25
 msgid "Filter on"
 msgstr "Filter sur"
 
-#: ../templates/classic/html/issue.search.html:25
+#: ../templates/classic/html/issue.search.html:26
 msgid "Display"
 msgstr "Afficher"
 
-#: ../templates/classic/html/issue.search.html:26
+#: ../templates/classic/html/issue.search.html:27
 msgid "Sort on"
 msgstr "Trier sur"
 
-#: ../templates/classic/html/issue.search.html:27
+#: ../templates/classic/html/issue.search.html:28
 msgid "Group on"
 msgstr "Grouper sur"
 
-#: ../templates/classic/html/issue.search.html:31
+#: ../templates/classic/html/issue.search.html:32
 msgid "All text*:"
 msgstr "Tout le texte*:"
 
-#: ../templates/classic/html/issue.search.html:39
+#: ../templates/classic/html/issue.search.html:40
 msgid "Title:"
 msgstr "Titre:"
 
-#: ../templates/classic/html/issue.search.html:49
+#: ../templates/classic/html/issue.search.html:50
 msgid "Topic:"
 msgstr "Sujet:"
 
-#: ../templates/classic/html/issue.search.html:57
+#: ../templates/classic/html/issue.search.html:58
 msgid "ID:"
 msgstr "ID:"
 
-#: ../templates/classic/html/issue.search.html:65
+#: ../templates/classic/html/issue.search.html:66
 msgid "Creation Date:"
 msgstr "Date de cr&eacute;ation:"
 
-#: ../templates/classic/html/issue.search.html:75
+#: ../templates/classic/html/issue.search.html:77
 msgid "Creator:"
 msgstr "Cr&eacute;ateur:"
 
-#: ../templates/classic/html/issue.search.html:77
+#: ../templates/classic/html/issue.search.html:79
 msgid "created by me"
 msgstr "cr&eacute;&eacute; par moi"
 
-#: ../templates/classic/html/issue.search.html:86
+#: ../templates/classic/html/issue.search.html:88
 msgid "Activity:"
 msgstr "Activit&eacute;:"
 
-#: ../templates/classic/html/issue.search.html:94
+#: ../templates/classic/html/issue.search.html:99
 msgid "Actor:"
 msgstr "Acteur:"
 
-#: ../templates/classic/html/issue.search.html:96
+#: ../templates/classic/html/issue.search.html:101
 msgid "done by me"
 msgstr "fait par moi"
 
-#: ../templates/classic/html/issue.search.html:107
+#: ../templates/classic/html/issue.search.html:112
 msgid "Priority:"
 msgstr "Priorit&eacute;:"
 
-#: ../templates/classic/html/issue.search.html:109
-#: ../templates/classic/html/issue.search.html:125
+#: ../templates/classic/html/issue.search.html:114
+#: ../templates/classic/html/issue.search.html:130
 msgid "not selected"
 msgstr "non s&eacute;lectionn&eacute;"
 
-#: ../templates/classic/html/issue.search.html:120
+#: ../templates/classic/html/issue.search.html:125
 msgid "Status:"
 msgstr "&Eacute;tat:"
 
-#: ../templates/classic/html/issue.search.html:123
+#: ../templates/classic/html/issue.search.html:128
 msgid "not resolved"
 msgstr "non r&eacute;solu"
 
-#: ../templates/classic/html/issue.search.html:137
+#: ../templates/classic/html/issue.search.html:143
 msgid "Assigned to:"
 msgstr "Assign&eacute; &agrave;:"
 
-#: ../templates/classic/html/issue.search.html:140
+#: ../templates/classic/html/issue.search.html:146
 msgid "assigned to me"
 msgstr "assign&eacute; &agrave; moi"
 
-#: ../templates/classic/html/issue.search.html:142
+#: ../templates/classic/html/issue.search.html:148
 msgid "unassigned"
 msgstr "non assign&eacute;"
 
-#: ../templates/classic/html/issue.search.html:152
+#: ../templates/classic/html/issue.search.html:158
+msgid "No Sort or group:"
+msgstr "Aucun tri ou groupe:"
+
+#: ../templates/classic/html/issue.search.html:166
 msgid "Pagesize:"
 msgstr "Taille de la page:"
 
-#: ../templates/classic/html/issue.search.html:158
+#: ../templates/classic/html/issue.search.html:172
 msgid "Start With:"
 msgstr "Commence par"
 
-#: ../templates/classic/html/issue.search.html:164
+#: ../templates/classic/html/issue.search.html:178
 msgid "Sort Descending:"
 msgstr "Tri descendant:"
 
-#: ../templates/classic/html/issue.search.html:171
+#: ../templates/classic/html/issue.search.html:185
 msgid "Group Descending:"
 msgstr "Groupage descendant:"
 
-#: ../templates/classic/html/issue.search.html:178
+#: ../templates/classic/html/issue.search.html:192
 msgid "Query name**:"
 msgstr "Nom de requête**:"
 
-#: ../templates/classic/html/issue.search.html:188
-#: ../templates/classic/html/page.html:46
+#: ../templates/classic/html/issue.search.html:202
+#: ../templates/classic/html/page.html:31
+#: ../templates/classic/html/page.html:60
+#: ../templates/minimal/html/page.html:31
 msgid "Search"
 msgstr "Rechercher"
 
-#: ../templates/classic/html/issue.search.html:192
+#: ../templates/classic/html/issue.search.html:206
 msgid ""
 "*: The \"all text\" field will look in message bodies and issue titles<br> "
-"**: If you supply a name, the query will be saved off and available as a link "
-"in the sidebar"
+"**: If you supply a name, the query will be saved off and available as a "
+"link in the sidebar"
 msgstr ""
-"*: Le champ \"tout le texte\" recherchera dans tous les corps de message et les titres de demande<br> "
-"**: Si vous donnez un nom, la requ&ecirc;te sera sauvegard&eacute;e et disponible comme lien dans la barre lat&eacute;rale"
+"*: Le champ \"tout le texte\" recherchera dans tous les corps de message et "
+"les titres de demande<br> **: Si vous donnez un nom, la requ&ecirc;te sera "
+"sauvegard&eacute;e et disponible comme lien dans la barre lat&eacute;rale"
 
 #: ../templates/classic/html/keyword.item.html:3
 msgid "Keyword editing - ${tracker}"
@@ -2438,12 +2601,13 @@ msgid ""
 "To edit an existing keyword (for spelling or typing errors), click on its "
 "entry above."
 msgstr ""
-"Pour modifier un mot-cl&eacute; existant (pour les erreurs d'orthographe et de "
-"frappe), cliquez sur son entr&eacute;e ci-dessus."
+"Pour modifier un mot-cl&eacute; existant (pour les erreurs d'orthographe et "
+"de frappe), cliquez sur son entr&eacute;e ci-dessus."
 
 #: ../templates/classic/html/keyword.item.html:27
 msgid "To create a new keyword, enter it below and click \"Submit New Entry\"."
-msgstr "Pour cr&eacute;er un nouveau mot-cl&eacute;, entrez-le ci-dessous et cliquer "
+msgstr ""
+"Pour cr&eacute;er un nouveau mot-cl&eacute;, entrez-le ci-dessous et cliquer "
 "\"Soumettre une nouvelle entr&eacute;e\"."
 
 #: ../templates/classic/html/keyword.item.html:37
@@ -2482,123 +2646,124 @@ msgstr "Message${id}"
 msgid "Message${id} Editing"
 msgstr "&Eacute;dition de Message${id}"
 
-#: ../templates/classic/html/msg.item.html:28
+#: ../templates/classic/html/msg.item.html:33
 msgid "Author"
 msgstr "Auteur"
 
-#: ../templates/classic/html/msg.item.html:33
+#: ../templates/classic/html/msg.item.html:38
 msgid "Recipients"
 msgstr "Destinataires"
 
-#: ../templates/classic/html/msg.item.html:44
+#: ../templates/classic/html/msg.item.html:49
 msgid "Content"
 msgstr "Contenu"
 
-#: ../templates/classic/html/page.html:28
+#: ../templates/classic/html/page.html:41
 msgid "<b>Your Queries</b> (<a href=\"query?@template=edit\">edit</a>)"
-msgstr "<b>Vos requ&ecirc;tes</b> (<a href=\"query?@template=edit\">modifier</a>)"
+msgstr ""
+"<b>Vos requ&ecirc;tes</b> (<a href=\"query?@template=edit\">modifier</a>)"
 
-#: ../templates/classic/html/page.html:39
+#: ../templates/classic/html/page.html:52
 msgid "Issues"
 msgstr "Demandes"
 
-#: ../templates/classic/html/page.html:40
-#: ../templates/classic/html/page.html:57
+#: ../templates/classic/html/page.html:54
+#: ../templates/classic/html/page.html:74
 msgid "Create New"
 msgstr "Cr&eacute;er"
 
-#: ../templates/classic/html/page.html:42
+#: ../templates/classic/html/page.html:56
 msgid "Show Unassigned"
 msgstr "Montrer les non-assign&eacute;s"
 
-#: ../templates/classic/html/page.html:44
+#: ../templates/classic/html/page.html:58
 msgid "Show All"
 msgstr "Montrer tout"
 
-#: ../templates/classic/html/page.html:47
+#: ../templates/classic/html/page.html:61
 msgid "Show issue:"
 msgstr "Montrer la demande:"
 
-#: ../templates/classic/html/page.html:56
+#: ../templates/classic/html/page.html:72
 msgid "Keywords"
 msgstr "Mots-cl&eacute;"
 
-#: ../templates/classic/html/page.html:58
+#: ../templates/classic/html/page.html:78
 msgid "Edit Existing"
 msgstr "Modifier"
 
-#: ../templates/classic/html/page.html:64
-#: ../templates/minimal/html/page.html:48
+#: ../templates/classic/html/page.html:84
+#: ../templates/minimal/html/page.html:62
 msgid "Administration"
 msgstr "Administration"
 
-#: ../templates/classic/html/page.html:66
-#: ../templates/minimal/html/page.html:49
+#: ../templates/classic/html/page.html:86
+#: ../templates/minimal/html/page.html:63
 msgid "Class List"
 msgstr "Liste des classes"
 
-#: ../templates/classic/html/page.html:68
-#: ../templates/minimal/html/page.html:51
+#: ../templates/classic/html/page.html:90
+#: ../templates/minimal/html/page.html:65
 msgid "User List"
 msgstr "Liste des utilisateurs"
 
-#: ../templates/classic/html/page.html:71
-#: ../templates/minimal/html/page.html:54
+#: ../templates/classic/html/page.html:92
+#: ../templates/minimal/html/page.html:68
 msgid "Add User"
 msgstr "Ajouter un utilisateur"
 
-#: ../templates/classic/html/page.html:78
-#: ../templates/classic/html/page.html:82
-#: ../templates/minimal/html/page.html:30
+#: ../templates/classic/html/page.html:99
+#: ../templates/classic/html/page.html:103
+#: ../templates/minimal/html/page.html:44
 msgid "Login"
 msgstr "Se connecter"
 
-#: ../templates/classic/html/page.html:84
-#: ../templates/classic/html/user.register.html:70
-#: ../templates/minimal/html/page.html:33
+#: ../templates/classic/html/page.html:105
+#: ../templates/classic/html/user.register.html:63
+#: ../templates/minimal/html/page.html:47
 #: ../templates/minimal/html/user.register.html:58
 msgid "Register"
 msgstr "S'enregistrer"
 
-#: ../templates/classic/html/page.html:87
+#: ../templates/classic/html/page.html:108
 msgid "Lost&nbsp;your&nbsp;login?"
 msgstr "Perdu&nbsp;votre&nbsp;login&nbsp;?"
 
-#: ../templates/classic/html/page.html:92
+#: ../templates/classic/html/page.html:113
 msgid "Hello, ${user}"
 msgstr "Bienvenue, ${user}"
 
-#: ../templates/classic/html/page.html:94
-msgid "My Issues"
-msgstr "Mes demandes"
+#: ../templates/classic/html/page.html:115
+msgid "Your Issues"
+msgstr "Vos demandes"
 
-#: ../templates/classic/html/page.html:95
-#: ../templates/minimal/html/page.html:40
-msgid "My Details"
-msgstr "Mes d&eacute;tails"
+#: ../templates/classic/html/page.html:116
+#: ../templates/minimal/html/page.html:54
+msgid "Your Details"
+msgstr "Vos d&eacute;tails"
 
-#: ../templates/classic/html/page.html:97
-#: ../templates/minimal/html/page.html:42
+#: ../templates/classic/html/page.html:118
+#: ../templates/minimal/html/page.html:56
 msgid "Logout"
 msgstr "Se d&eacute;connecter"
 
-#: ../templates/classic/html/page.html:101
+#: ../templates/classic/html/page.html:122
 msgid "Help"
 msgstr "Aide"
 
-#: ../templates/classic/html/page.html:102
+#: ../templates/classic/html/page.html:123
 msgid "Roundup docs"
 msgstr "Documentation de Roundup"
 
-#: ../templates/classic/html/page.html:153
+#: ../templates/classic/html/page.html:174
 msgid "don't care"
 msgstr "aucune importance"
 
-#: ../templates/classic/html/page.html:155
+#: ../templates/classic/html/page.html:176
 msgid "------------"
 msgstr ""
 
-#: ../templates/classic/html/page.html:173
+#: ../templates/classic/html/page.html:203
 msgid "no value"
 msgstr "pas de valeur"
 
@@ -2664,7 +2829,7 @@ msgstr "[ne vous appartient pas]"
 
 #: ../templates/classic/html/query.edit.html:96
 msgid "Save Selection"
-msgstr "Sauvegarder la s&eacute;lection"
+msgstr "Sauvegarder la sélection"
 
 #: ../templates/classic/html/user.forgotten.html:3
 msgid "Password reset request - ${tracker}"
@@ -2679,9 +2844,9 @@ msgid ""
 "You have two options if you have forgotten your password. If you know the "
 "email address you registered with, enter it below."
 msgstr ""
-"Vous avez deux solutions si vous avez oubli&eacute; votre mot de passe. Si vous "
-"connaissez l'adresse de messagerie avec laquelle vous vous &ecirc;tes enregistr&eacute;, "
-"introduisez-l&agrave; ci-dessous."
+"Vous avez deux solutions si vous avez oubli&eacute; votre mot de passe. Si "
+"vous connaissez l'adresse de messagerie avec laquelle vous vous &ecirc;tes "
+"enregistr&eacute;, introduisez-l&agrave; ci-dessous."
 
 #: ../templates/classic/html/user.forgotten.html:16
 msgid "Email Address:"
@@ -2690,11 +2855,12 @@ msgstr "Adresse de messagerie:"
 #: ../templates/classic/html/user.forgotten.html:24
 #: ../templates/classic/html/user.forgotten.html:34
 msgid "Request password reset"
-msgstr "Demander une r&eacute;initialisation du mot de passe"
+msgstr "Demander une réinitialisation du mot de passe"
 
 #: ../templates/classic/html/user.forgotten.html:30
 msgid "Or, if you know your username, then enter it below."
-msgstr "ou, si vous connaissez votre nom d'utilisateur, introduisez-le ci-dessous."
+msgstr ""
+"ou, si vous connaissez votre nom d'utilisateur, introduisez-le ci-dessous."
 
 #: ../templates/classic/html/user.forgotten.html:33
 msgid "Username:"
@@ -2705,9 +2871,9 @@ msgid ""
 "A confirmation email will be sent to you - please follow the instructions "
 "within it to complete the reset process."
 msgstr ""
-"un courriel de confirmation va vous &ecirc;tre envoy&eacute; - veuillez suivre les "
-"instructions qui y sont donn&eacute;es pour terminer le processus de "
-"r&eacute;initialisation de votre mot de passe."
+"un courriel de confirmation va vous &ecirc;tre envoy&eacute; - veuillez "
+"suivre les instructions qui y sont donn&eacute;es pour terminer le processus "
+"de r&eacute;initialisation de votre mot de passe."
 
 #: ../templates/classic/html/user.index.html:3
 #: ../templates/minimal/html/user.index.html:3
@@ -2729,8 +2895,8 @@ msgid "Real name"
 msgstr "Nom r&eacute;el"
 
 #: ../templates/classic/html/user.index.html:16
-#: ../templates/classic/html/user.item.html:65
-#: ../templates/classic/html/user.register.html:52
+#: ../templates/classic/html/user.item.html:70
+#: ../templates/classic/html/user.register.html:45
 msgid "Organisation"
 msgstr "Organisation"
 
@@ -2779,63 +2945,66 @@ msgstr "User${id}"
 msgid "User${id} Editing"
 msgstr "&Eacute;dition de User${id}"
 
-#: ../templates/classic/html/user.item.html:38
-#: ../templates/classic/html/user.register.html:28
+#: ../templates/classic/html/user.item.html:43
+#: ../templates/classic/html/user.register.html:21
 #: ../templates/minimal/html/user.item.html:27
 #: ../templates/minimal/html/user.item.html:67
 #: ../templates/minimal/html/user.register.html:26
 msgid "Login Name"
 msgstr "Nom d'utilisateur"
 
-#: ../templates/classic/html/user.item.html:42
-#: ../templates/classic/html/user.register.html:32
+#: ../templates/classic/html/user.item.html:47
+#: ../templates/classic/html/user.register.html:25
 #: ../templates/minimal/html/user.item.html:31
 #: ../templates/minimal/html/user.register.html:30
 msgid "Login Password"
 msgstr "Mot de passe"
 
-#: ../templates/classic/html/user.item.html:46
-#: ../templates/classic/html/user.register.html:36
+#: ../templates/classic/html/user.item.html:51
+#: ../templates/classic/html/user.register.html:29
 #: ../templates/minimal/html/user.item.html:35
 #: ../templates/minimal/html/user.register.html:34
 msgid "Confirm Password"
 msgstr "Confirmation du mot de passe"
 
-#: ../templates/classic/html/user.item.html:50
-#: ../templates/classic/html/user.register.html:40
+#: ../templates/classic/html/user.item.html:55
+#: ../templates/classic/html/user.register.html:33
 #: ../templates/minimal/html/user.item.html:39
 #: ../templates/minimal/html/user.register.html:38
 msgid "Roles"
 msgstr "R&ocirc;les"
 
-#: ../templates/classic/html/user.item.html:56
-msgid "(to give the user more than one role, enter a comma,separated,list)"
-msgstr "(pour donner à l'utilisateur plus d'un r&ocirc;le, introduisez une "
-"liste,s&eacute;par&eacute;e,par,des,virgules)"
-
 #: ../templates/classic/html/user.item.html:61
-#: ../templates/classic/html/user.register.html:48
+msgid "(to give the user more than one role, enter a comma,separated,list)"
+msgstr ""
+"(pour donner à l'utilisateur plus d'un r&ocirc;le, introduisez une liste,"
+"s&eacute;par&eacute;e,par,des,virgules)"
+
+#: ../templates/classic/html/user.item.html:66
+#: ../templates/classic/html/user.register.html:41
 msgid "Phone"
 msgstr "T&eacute;l&eacute;phone"
 
-#: ../templates/classic/html/user.item.html:69
+#: ../templates/classic/html/user.item.html:74
 msgid "Timezone"
 msgstr "Fuseau horaire"
 
-#: ../templates/classic/html/user.item.html:73
-msgid "(this is a numeric hour offset, the default is ${zone})"
-msgstr "(il s'agit d'un d&eacute;calage horaire num&eacute;rique, par d&eacute;faut: ${zone})"
-
 #: ../templates/classic/html/user.item.html:78
-#: ../templates/classic/html/user.register.html:56
+msgid "(this is a numeric hour offset, the default is ${zone})"
+msgstr ""
+"(il s'agit d'un d&eacute;calage horaire num&eacute;rique, par d&eacute;faut: "
+"${zone})"
+
+#: ../templates/classic/html/user.item.html:83
+#: ../templates/classic/html/user.register.html:49
 #: ../templates/minimal/html/user.item.html:47
 #: ../templates/minimal/html/user.item.html:71
 #: ../templates/minimal/html/user.register.html:46
 msgid "E-mail address"
 msgstr "Adresse de messagerie"
 
-#: ../templates/classic/html/user.item.html:82
-#: ../templates/classic/html/user.register.html:60
+#: ../templates/classic/html/user.item.html:87
+#: ../templates/classic/html/user.register.html:53
 #: ../templates/minimal/html/user.item.html:51
 #: ../templates/minimal/html/user.register.html:50
 msgid "Alternate E-mail addresses<br>One address per line"
@@ -2865,7 +3034,7 @@ msgid ""
 "the registration process, visit the link indicated in the email."
 msgstr ""
 "Vous recevrez sous peu un courriel confirmant votre inscription. Pour "
-"clot&ucirc;rer le processus d'inscription, veuillez suivre le lien "
+"cl&ocirc;turer le processus d'inscription, veuillez suivre le lien "
 "indiqu&eacute; dans le courriel."
 
 #: ../templates/minimal/html/home.html:2
@@ -2878,13 +3047,14 @@ msgstr "Base du pisteur"
 
 #: ../templates/minimal/html/home.html:16
 msgid "Please select from one of the menu options on the left."
-msgstr "Veuillez s&eacute;lectionner l'une des options de menu &agrave; la gauche."
+msgstr ""
+"Veuillez s&eacute;lectionner l'une des options de menu &agrave; la gauche."
 
 #: ../templates/minimal/html/home.html:19
 msgid "Please log in or register."
 msgstr "Veuillez vous connecter ou vous inscrire."
 
-#: ../templates/minimal/html/page.html:38
+#: ../templates/minimal/html/page.html:52
 msgid "Hello,<br>${user}"
 msgstr "Bienvenue,<br>${user}"
 
