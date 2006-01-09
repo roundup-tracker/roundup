@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.217 2005-12-03 09:35:06 a1s Exp $
+# $Id: client.py,v 1.218 2006-01-09 09:14:27 a1s Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -415,22 +415,20 @@ class Client:
 
     def determine_user(self):
         """Determine who the user is"""
-        # determine the uid to use
         self.opendb('admin')
 
         # make sure we have the session Class
         self.clean_sessions()
         sessions = self.db.getSessionManager()
 
-        # first up, try the REMOTE_USER var (from HTTP Basic Auth handled
-        # by a front-end HTTP server)
-        use_http_auth = self.instance.config['WEB_HTTP_AUTH'] == 'yes'
-        user = 'anonymous'
-        if use_http_auth:
+        user = None
+        # first up, try http authorization if enabled
+        if self.instance.config['WEB_HTTP_AUTH']:
             if self.env.has_key('REMOTE_USER'):
+                # we have external auth (e.g. by Apache)
                 user = self.env['REMOTE_USER']
-            # try handling Basic Auth ourselves
             elif self.env.get('HTTP_AUTHORIZATION', ''):
+                # try handling Basic Auth ourselves
                 auth = self.env['HTTP_AUTHORIZATION']
                 scheme, challenge = auth.split(' ', 1)
                 if scheme.lower() == 'basic':
@@ -450,13 +448,11 @@ class Client:
 
                     user = username
 
-        # look up the user session cookie (may override the HTTP Basic Auth)
-        cookie = self.cookie
-        if (cookie.has_key(self.cookie_name) and
-                cookie[self.cookie_name].value != 'deleted'):
-
+        # if user was not set by http authorization, try session cookie
+        if (not user) and self.cookie.has_key(self.cookie_name) \
+        and (self.cookie[self.cookie_name].value != 'deleted'):
             # get the session key from the cookie
-            self.session = cookie[self.cookie_name].value
+            self.session = self.cookie[self.cookie_name].value
             # get the user from the session
             try:
                 # update the lifetime datestamp
@@ -466,8 +462,13 @@ class Client:
                 # not valid, ignore id
                 pass
 
-        # sanity check on the user still being valid, getting the userid
-        # at the same time
+        # if no user name set by http authorization or session cookie
+        # the user is anonymous
+        if not user:
+            user = 'anonymous'
+
+        # sanity check on the user still being valid,
+        # getting the userid at the same time
         try:
             self.userid = self.db.user.lookup(user)
         except (KeyError, TypeError):
