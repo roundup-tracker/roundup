@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.29 2005-12-03 11:21:17 a1s Exp $
+# $Id: configuration.py,v 1.30 2006-01-09 09:11:43 a1s Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -468,7 +468,7 @@ SETTINGS = (
             "or LANG, in that order of preference."),
     )),
     ("web", (
-        (Option, 'http_auth', "yes",
+        (BooleanOption, 'http_auth', "yes",
             "Whether to use HTTP Basic Authentication, if present.\n"
             "Roundup will use either the REMOTE_USER or HTTP_AUTHORIZATION\n"
             "variables supplied by your web server (in that order).\n"
