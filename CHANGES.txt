@@ -45,6 +45,7 @@ Fixed:
   String search (sf bug 1373396)
 - fix comma-separated ID filter spec in web requests (sf bug 1396278)
 - fix Date: header generation to be LOCALE-agnostic (sf bug 1352624)
+- fix admin doc description of roundup-server config file
 
 
 2005-10-07 0.8.5

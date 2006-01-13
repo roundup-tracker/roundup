@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.19 $
+:Version: $Revision: 1.20 $
 
 .. contents::
 
@@ -74,7 +74,7 @@ Configuring roundup-server
 The basic configuration file layout is as follows (take from the
 ``roundup-server.ini.example`` file in the "doc" directory)::
 
-    [server]
+    [main]
     port = 8080
     ;hostname = 
     ;user = 
@@ -83,9 +83,9 @@ The basic configuration file layout is as follows (take from the
     ;pidfile = 
     ;logfile = 
 
+    [trackers]
     ; Add one of these per tracker being served
-    [tracker_url_component]
-    home = /path/to/tracker
+    name = /path/to/tracker/name
 
 Values ";commented out" are optional. The meaning of the various options
 are as follows:
@@ -109,13 +109,10 @@ are as follows:
   written to this file. It must be specified if **pidfile** is specified.
   If per-tracker logging is specified, then very little will be written to
   this file.
-**example_tracker** sections
-  These are used to specify which Roundup trackers are to be served up by
-  roundup-server. Each tracker has its own ``[section]`` with a single
-  ``home`` value defined pointing to the tracker's home. The section name is
-  used in the URL to select the appropriate reacker. Make sure the name part
-  doesn't include any url-unsafe characters like spaces. Stick to
-  alphanumeric characters and you'll be ok.
+**trackers** section
+  Each line denotes a mapping from a URL component to a tracker home.
+  Make sure the name part doesn't include any url-unsafe characters like
+  spaces. Stick to alphanumeric characters and you'll be ok.
 
 
 Users and Security
