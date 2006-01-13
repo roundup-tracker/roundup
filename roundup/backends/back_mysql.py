@@ -1,4 +1,4 @@
-#$Id: back_mysql.py,v 1.60 2005-10-24 03:37:11 richard Exp $
+#$Id: back_mysql.py,v 1.61 2006-01-13 00:05:46 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -508,9 +508,11 @@ class MysqlClass:
 
         "search_matches" is {nodeid: marker} or None
 
-        The filter must match all properties specificed - but if the
-        property value to match is a list, any one of the values in the
-        list may match for that property to match.
+        The filter must match all properties specificed. If the property
+        value to match is a list:
+
+        1. String properties must match all elements in the list, and
+        2. Other properties must match any of the elements in the list.
         '''
         # we can't match anything if search_matches is empty
         if search_matches == {}:

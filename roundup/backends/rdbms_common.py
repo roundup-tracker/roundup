@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.159 2005-10-07 05:35:04 richard Exp $
+# $Id: rdbms_common.py,v 1.160 2006-01-13 00:05:46 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2050,9 +2050,11 @@ class Class(hyperdb.Class):
 
         "search_matches" is {nodeid: marker} or None
 
-        The filter must match all properties specificed - but if the
-        property value to match is a list, any one of the values in the
-        list may match for that property to match.
+        The filter must match all properties specificed. If the property
+        value to match is a list:
+
+        1. String properties must match all elements in the list, and
+        2. Other properties must match any of the elements in the list.
         '''
         # we can't match anything if search_matches is empty
         if search_matches == {}:
