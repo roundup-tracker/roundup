@@ -43,6 +43,7 @@ Fixed:
 - handle "schema" being reserved word in MySQL 5+ (sf bug 1397569)
 - fixed documentation of filter() in the case of multiple values in a
   String search (sf bug 1373396)
+- fix comma-separated ID filter spec in web requests (sf bug 1396278)
 
 
 2005-10-07 0.8.5

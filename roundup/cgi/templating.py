@@ -2075,6 +2075,9 @@ class HTMLRequest(HTMLInputMixin):
                 else:
                     if isinstance(fv, type([])):
                         self.filterspec[name] = [v.value for v in fv]
+                    elif name == 'id':
+                        # special case "id" property
+                        self.filterspec[name] = handleListCGIValue(fv)
                     else:
                         self.filterspec[name] = fv.value
 
