@@ -44,6 +44,7 @@ Fixed:
 - fixed documentation of filter() in the case of multiple values in a
   String search (sf bug 1373396)
 - fix comma-separated ID filter spec in web requests (sf bug 1396278)
+- fix Date: header generation to be LOCALE-agnostic (sf bug 1352624)
 
 
 2005-10-07 0.8.5
