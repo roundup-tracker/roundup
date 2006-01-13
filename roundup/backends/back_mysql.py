@@ -1,4 +1,4 @@
-#$Id: back_mysql.py,v 1.61 2006-01-13 00:05:46 richard Exp $
+#$Id: back_mysql.py,v 1.62 2006-01-13 01:18:06 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -379,6 +379,38 @@ class Database(Database):
         self.create_class_table_indexes(spec)
         return cols, mls
 
+    def create_class_table_indexes(self, spec):
+        ''' create the class table for the given spec
+        '''
+        # create __retired__ index
+        index_sql2 = 'create index _%s_retired_idx on _%s(__retired__)'%(
+                        spec.classname, spec.classname)
+        self.sql(index_sql2)
+
+        # create index for key property
+        if spec.key:
+            if isinstance(spec.properties[spec.key], String):
+                idx = spec.key + '(255)'
+            else:
+                idx = spec.key
+            index_sql3 = 'create index _%s_%s_idx on _%s(_%s)'%(
+                        spec.classname, spec.key,
+                        spec.classname, idx)
+            self.sql(index_sql3)
+
+        # TODO: create indexes on (selected?) Link property columns, as
+        # they're more likely to be used for lookup
+
+    def create_class_table_key_index(self, cn, key):
+        ''' create the class table for the given spec
+        '''
+        prop = self.classes[cn].getprops()[key]
+        if isinstance(prop, String):
+            sql = 'create index _%s_%s_idx on _%s(_%s(255))'%(cn, key, cn, key)
+        else:
+            sql = 'create index _%s_%s_idx on _%s(_%s)'%(cn, key, cn, key)
+        self.sql(sql)
+
     def drop_class_table_indexes(self, cn, key):
         # drop the old table indexes first
         l = ['_%s_id_idx'%cn, '_%s_retired_idx'%cn]
@@ -491,6 +523,14 @@ class Database(Database):
         # make sure we're in a new transaction and not autocommitting
         self.sql("SET AUTOCOMMIT=0")
         self.sql("START TRANSACTION")
+
+    def sql_close(self):
+        logging.getLogger('hyperdb').info('close')
+        try:
+            self.conn.close()
+        except MySQLdb.ProgrammingError, message:
+            if str(message) != 'closing a closed connection':
+                raise
 
 class MysqlClass:
     # we're overriding this method for ONE missing bit of functionality.

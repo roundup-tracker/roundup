@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.61 2005-03-29 16:33:49 a1s Exp $
+# $Id: db_test_base.py,v 1.62 2006-01-13 01:18:07 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -262,7 +262,7 @@ class DBTest(MyTestCase):
             b = self.db.issue.get(nid, "deadline")
             if commit: self.db.commit()
             self.assertNotEqual(a, b)
-            self.assertNotEqual(b, date.Date('1970-1-1 00:00:00'))
+            self.assertNotEqual(b, date.Date('1970-1-1.00:00:00'))
 
     def testDateUnset(self):
         for commit in (0,1):
