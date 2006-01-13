@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.186 $
+:Version: $Revision: 1.187 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -735,7 +735,8 @@ to generate email messages from Roundup.
 In addition, the ``IssueClass`` methods ``nosymessage()`` and
 ``send_message()`` are used to generate nosy messages, and may generate
 messages which only consist of a change note (ie. the message id parameter
-is not required).
+is not required - this is referred to as a "System Message" because it
+comes from "the system" and not a user).
 
 
 Database Content
