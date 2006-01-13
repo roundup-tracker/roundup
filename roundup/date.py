@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: date.py,v 1.77.2.4 2005-03-03 04:47:35 richard Exp $
+# $Id: date.py,v 1.77.2.5 2006-01-13 01:29:45 richard Exp $
 
 """Date, time and time interval handling.
 """
@@ -39,6 +39,19 @@ def _add_granularity(src, order, value = 1):
         if src[gran]:
             src[gran] = int(src[gran]) + value
             break
+
+# no, I don't know why we must anchor the date RE when we only ever use it
+# in a match()
+date_re = re.compile(r'''^
+    ((?P<y>\d\d\d\d)([/-](?P<m>\d\d?)([/-](?P<d>\d\d?))?)? # yyyy[-mm[-dd]]
+    |(?P<a>\d\d?)[/-](?P<b>\d\d?))?              # or mm-dd
+    (?P<n>\.)?                                   # .
+    (((?P<H>\d?\d):(?P<M>\d\d))?(:(?P<S>\d\d(\.\d+)?))?)?  # hh:mm:ss
+    (?P<o>[\d\smyd\-+]+)?                        # offset
+$''', re.VERBOSE)
+serialised_date_re = re.compile(r'''
+    (\d{4})(\d\d)(\d\d)(\d\d)(\d\d)(\d\d?(\.\d+)?)
+''', re.VERBOSE)
 
 class Date:
     '''
@@ -154,15 +167,8 @@ class Date:
         except:
             raise ValueError, 'Unknown spec %r' % (spec,)
 
-    def set(self, spec, offset=0, date_re=re.compile(r'''
-            ((?P<y>\d\d\d\d)([/-](?P<m>\d\d?)([/-](?P<d>\d\d?))?)? # yyyy[-mm[-dd]]
-            |(?P<a>\d\d?)[/-](?P<b>\d\d?))?              # or mm-dd
-            (?P<n>\.)?                                     # .
-            (((?P<H>\d?\d):(?P<M>\d\d))?(:(?P<S>\d\d(\.\d+)?))?)?  # hh:mm:ss
-            (?P<o>.+)?                                     # offset
-            ''', re.VERBOSE), serialised_re=re.compile(r'''
-            (\d{4})(\d\d)(\d\d)(\d\d)(\d\d)(\d\d?(\.\d+)?)
-            ''', re.VERBOSE), add_granularity=0):
+    def set(self, spec, offset=0, date_re=date_re,
+            serialised_re=serialised_date_re, add_granularity=0):
         ''' set the date to the value in spec
         '''
 

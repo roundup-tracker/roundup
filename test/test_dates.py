@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: test_dates.py,v 1.35.2.1 2005-02-25 17:24:53 a1s Exp $
+# $Id: test_dates.py,v 1.35.2.2 2006-01-13 01:29:48 richard Exp $
 from __future__ import nested_scopes
 
 import unittest, time
@@ -64,6 +64,7 @@ class DateTestCase(unittest.TestCase):
         self.assertRaises(ValueError, Date, "12")
         # Date cannot handle dates before UNIX epoch
         self.assertRaises(ValueError, Date, (1, 1, 1, 0, 0, 0.0, 0, 1, -1))
+        self.assertRaises(ValueError, Date, "1/1/06")
 
     def testOffset(self):
         ae = self.assertEqual

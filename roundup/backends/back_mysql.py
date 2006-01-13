@@ -172,6 +172,16 @@ class Database(Database):
             self.sql('create index ids_name_idx on ids(name)')
             self.create_version_2_tables()
 
+    def load_dbschema(self):
+        ''' Load the schema definition that the database currently implements
+        '''
+        self.cursor.execute('select `schema` from `schema`')
+        schema = self.cursor.fetchone()
+        if schema:
+            self.database_schema = eval(schema[0])
+        else:
+            self.database_schema = {}
+
     def create_version_2_tables(self):
         # OTK store
         self.sql('''CREATE TABLE otks (otk_key VARCHAR(255),
@@ -507,9 +517,11 @@ class MysqlClass:
 
         "search_matches" is {nodeid: marker} or None
 
-        The filter must match all properties specificed - but if the
-        property value to match is a list, any one of the values in the
-        list may match for that property to match.
+        The filter must match all properties specificed. If the property
+        value to match is a list:
+
+        1. String properties must match all elements in the list, and
+        2. Other properties must match any of the elements in the list.
         '''
         # we can't match anything if search_matches is empty
         if search_matches == {}:

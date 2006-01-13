@@ -1,7 +1,17 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2005-??-?? 0.8.5
+2006-??-?? 0.8.6
+Fixed:
+- french translation updated by Patrick Decat (sf patch 1397059)
+- tighten up Date parsing to not allow 'M/D/YY' (or 'D/M/YY) (sf bug
+  1290550)
+- handle "schema" being reserved word in MySQL 5+ (sf bug 1397569)
+- fixed documentation of filter() in the case of multiple values in a
+  String search (sf bug 1373396)
+
+
+2005-10-07 0.8.5
 Feature:
 - Argentinian Spanish translation by Ramiro Morales
 
@@ -11,7 +21,6 @@ Fixed:
 - Fix missing merge of fix to sf bug 1177057
 - Fix RDBMS indexer indexing UTF-8 words that encode to > 30 chars
 - Handle invalidly-specified charsets in incoming email
-- french translation updated by Patrick Decat (sf patch 1397059)
 
 
 2005-07-18 0.8.4

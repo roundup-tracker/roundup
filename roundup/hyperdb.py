@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: hyperdb.py,v 1.107.2.4 2005-07-18 02:30:00 richard Exp $
+# $Id: hyperdb.py,v 1.107.2.5 2006-01-13 01:29:46 richard Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -647,9 +647,11 @@ class Class:
 
         "search_matches" is {nodeid: marker}
 
-        The filter must match all properties specificed - but if the
-        property value to match is a list, any one of the values in the
-        list may match for that property to match.
+        The filter must match all properties specificed. If the property
+        value to match is a list:
+
+        1. String properties must match all elements in the list, and
+        2. Other properties must match any of the elements in the list.
         """
         raise NotImplementedError
 

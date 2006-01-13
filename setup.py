@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.77.2.10 2005-07-27 22:54:10 richard Exp $
+# $Id: setup.py,v 1.77.2.11 2006-01-13 01:29:44 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -348,35 +348,15 @@ def main():
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-This 0.8.4 release fixes some bugs:
+This 0.8.5 release includes an Argentinian Spanish translation by Ramiro
+Morales and fixes some bugs:
 
 Fixed:
-
-- extra CRs in CSV export files on Windows platform (sf bug 1195742)
-- activity RDBMS columns were being reported in changes
-- fix name collision in roundup.cgi script (sf bug 1203795)
-- fix handling of invalid interval input
-- search locale files relative ro roundup installation path (sf bug 1219689)
-- use translation for boolean property rendering (sf bug 1225152)
-- enabled disabling of REMOTE_USER for when it's not a valid username (sf
-  bug 1190187)
-- fix invocation of hasPermission from templating code (sf bug 1224172)
-- have 'roundup-admin security' display property restrictions (sf bug
-  1222135)
-- fixed templating menu() sort_on handling (sf bug 1221936)
-- allow specification of pagesize, sorting and filtering in "classhelp"
-  popups (sf bug 1211800)
-- handle dropped properies in rdbms/metakit journal export (sf bug 1203569)
-- handle missing Subject lines better (sf bug 1198729)
-- sort/group by missing values correctly (sf bugs 1198623, 1176897)
-- discard, don't bounce messages to the mailgw when the messages's sender
-  is invalid (ie. when we try to bounce, we get a 550 "unknown user
-  account" response from the SMTP server) (sf bug 1190906)
-- removed debugging code from cgi/actions.py
-- refactored hyperdb.rawToHyperdb, allowing a number of improvements
-  (thanks Ralf Schlatterbeck)
-- don't try to set a timeout for IMAPS (thanks Paul Jimenez)
-- present Reject exception messages to web users (sf bug 1237685)
+- Display of Multilinks where linked Class labelprop values are None
+- Fix references to the old * Registration Permissions
+- Fix missing merge of fix to sf bug 1177057
+- Fix RDBMS indexer indexing UTF-8 words that encode to > 30 chars
+- Handle invalidly-specified charsets in incoming email
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
