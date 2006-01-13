@@ -25,6 +25,8 @@ Fixed:
 - HTTP authorization takes precedence over session cookie (sf bug 1396134)
 - fixed documentation of filter() in the case of multiple values in a
   String search (sf bug 1373396)
+- tighten up Date parsing to not allow 'M/D/YY' (or 'D/M/YY) (sf bug
+  1290550)
 
 
 2005-10-07 0.9.0b1
