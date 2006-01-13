@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.168 2005-10-07 04:42:13 richard Exp $
+$Id: mailgw.py,v 1.169 2006-01-13 03:56:36 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -605,15 +605,16 @@ Emails to Roundup trackers must include a Subject: line!
 
         # check for registration OTK
         # or fallback on the default class
-        otk_re = re.compile('-- key (?P<otk>[a-zA-Z0-9]{32})')
-        otk = otk_re.search(subject)
-        if otk:
-            self.db.confirm_registration(otk.group('otk'))
-            subject = 'Your registration to %s is complete' % \
-                      config['TRACKER_NAME']
-            sendto = [from_list[0][1]]
-            self.mailer.standard_message(sendto, subject, '')
-            return
+        if self.db.config['EMAIL_REGISTRATION_CONFIRMATION']:
+            otk_re = re.compile('-- key (?P<otk>[a-zA-Z0-9]{32})')
+            otk = otk_re.search(m.group('title'))
+            if otk:
+                self.db.confirm_registration(otk.group('otk'))
+                subject = 'Your registration to %s is complete' % \
+                          config['TRACKER_NAME']
+                sendto = [from_list[0][1]]
+                self.mailer.standard_message(sendto, subject, '')
+                return
 
         # XXX Don't enable. This doesn't work yet.
 #  "[^A-z.]tracker\+(?P<classname>[^\d\s]+)(?P<nodeid>\d+)\@some.dom.ain[^A-z.]"

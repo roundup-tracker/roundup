@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.30 2006-01-09 09:11:43 a1s Exp $
+# $Id: configuration.py,v 1.31 2006-01-13 03:56:35 richard Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -448,6 +448,8 @@ SETTINGS = (
         (BooleanOption, "instant_registration", "no",
             "Register new users instantly, or require confirmation via\n"
             "email?"),
+        (BooleanOption, "email_registration_confirmation", "yes",
+            "Offer registration confirmation by email or only through the web?"),
     )),
     ("tracker", (
         (Option, "name", "Roundup issue tracker",

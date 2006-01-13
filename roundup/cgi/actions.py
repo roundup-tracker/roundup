@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.51 2006-01-13 03:50:03 richard Exp $
+#$Id: actions.py,v 1.52 2006-01-13 03:56:36 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random, csv
 
@@ -817,9 +817,10 @@ class RegisterAction(RegoCommon, EditCommon):
         # send the email
         tracker_name = self.db.config.TRACKER_NAME
         tracker_email = self.db.config.TRACKER_EMAIL
-        subject = 'Complete your registration to %s -- key %s'%(tracker_name,
+        if self.db.config['EMAIL_REGISTRATION_CONFIRMATION']:
+            subject = 'Complete your registration to %s -- key %s'%(tracker_name,
                                                                   otk)
-        body = """To complete your registration of the user "%(name)s" with
+            body = """To complete your registration of the user "%(name)s" with
 %(tracker)s, please do one of the following:
 
 - send a reply to %(tracker_email)s and maintain the subject line as is (the
@@ -831,8 +832,17 @@ reply's additional "Re:" is ok),
 
 """ % {'name': user_props['username'], 'tracker': tracker_name,
         'url': self.base, 'otk': otk, 'tracker_email': tracker_email}
+        else:
+            subject = 'Complete your registration to %s'%(tracker_name)
+            body = """To complete your registration of the user "%(name)s" with
+%(tracker)s, please visit the following URL:
+
+%(url)s?@action=confrego&otk=%(otk)s
+
+""" % {'name': user_props['username'], 'tracker': tracker_name,
+        'url': self.base, 'otk': otk}
         if not self.client.standard_message([user_props['address']], subject,
-                body, (tracker_name, tracker_email)):
+                body):
             return
 
         # commit changes to the database

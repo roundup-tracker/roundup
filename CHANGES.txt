@@ -13,6 +13,7 @@ Feature:
   (sf rfe 1379447)
 - Roundup installation document includes configuration example
   for Exim Internet Mailer (sf bug 1393860)
+- enable registration confirmation by web only (sf bug 1381675)
 
 Fixed:
 - MySQL now creates String columns using the TEXT column type
