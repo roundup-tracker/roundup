@@ -46,6 +46,7 @@ Fixed:
 - fix comma-separated ID filter spec in web requests (sf bug 1396278)
 - fix Date: header generation to be LOCALE-agnostic (sf bug 1352624)
 - fix admin doc description of roundup-server config file
+- fix redirect after instant registration (sf bug 1381676)
 
 
 2005-10-07 0.8.5

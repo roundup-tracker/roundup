@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.49 2005-10-07 04:49:48 richard Exp $
+#$Id: actions.py,v 1.50 2006-01-13 03:33:29 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random, csv
 
@@ -788,8 +788,7 @@ class RegisterAction(RegoCommon, EditCommon):
 
             # finish off by logging the user in
             self.userid = self.nodeid
-            self.finishRego()
-            return
+            return self.finishRego()
 
         # generate the one-time-key and store the props for later
         for propname, proptype in self.db.user.getprops().items():
