@@ -1,4 +1,4 @@
-#$Id: back_mysql.py,v 1.62 2006-01-13 01:18:06 richard Exp $
+#$Id: back_mysql.py,v 1.63 2006-01-13 01:21:14 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -172,6 +172,16 @@ class Database(Database):
                 num INTEGER) TYPE=%s'''%self.mysql_backend)
             self.sql('create index ids_name_idx on ids(name)')
             self.create_version_2_tables()
+
+    def load_dbschema(self):
+        ''' Load the schema definition that the database currently implements
+        '''
+        self.cursor.execute('select `schema` from `schema`')
+        schema = self.cursor.fetchone()
+        if schema:
+            self.database_schema = eval(schema[0])
+        else:
+            self.database_schema = {}
 
     def create_version_2_tables(self):
         # OTK store

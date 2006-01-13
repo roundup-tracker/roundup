@@ -27,6 +27,7 @@ Fixed:
   String search (sf bug 1373396)
 - tighten up Date parsing to not allow 'M/D/YY' (or 'D/M/YY) (sf bug
   1290550)
+- handle "schema" being reserved word in MySQL 5+ (sf bug 1397569)
 
 
 2005-10-07 0.9.0b1
