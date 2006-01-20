@@ -1,7 +1,7 @@
 """Sending Roundup-specific mail over SMTP.
 """
 __docformat__ = 'restructuredtext'
-# $Id: mailer.py,v 1.11 2006-01-13 02:38:45 richard Exp $
+# $Id: mailer.py,v 1.12 2006-01-20 03:04:14 richard Exp $
 
 import time, quopri, os, socket, smtplib, re
 
@@ -60,7 +60,7 @@ class Mailer:
         writer.addheader('Subject', encode_header(subject, charset))
         writer.addheader('To', ', '.join(to))
         writer.addheader('From', author)
-        writer.addheader('Date', formatdate(time.gmtime()))
+        writer.addheader('Date', formatdate(time.mktime(time.gmtime())))
 
         # Add a unique Roundup header to help filtering
         writer.addheader('X-Roundup-Name', encode_header(tracker_name,
