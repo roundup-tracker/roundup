@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.40.2.9 2006-01-13 03:34:34 richard Exp $
+#$Id: actions.py,v 1.40.2.10 2006-01-20 02:13:51 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random, csv
 
@@ -123,6 +123,11 @@ class RetireAction(Action):
         self.client.ok_message.append(
             self._('%(classname)s %(itemid)s has been retired')%{
                 'classname': self.classname.capitalize(), 'itemid': nodeid})
+
+    def hasPermission(self, permission, classname=Action._marker, itemid=None):
+        if itemid is None:
+            itemid = self.nodeid
+        return self.hasPermission(permission, classname, itemid)
 
 class SearchAction(Action):
     name = 'search'
@@ -435,7 +440,7 @@ class EditCommon(Action):
     def _changenode(self, cn, nodeid, props):
         """Change the node based on the contents of the form."""
         # check for permission
-        if not self.editItemPermission(props):
+        if not self.editItemPermission(props, classname=cn, itemid=nodeid):
             raise exceptions.Unauthorised, self._(
                 'You do not have permission to edit %(class)s'
             ) % {'class': cn}
@@ -447,7 +452,7 @@ class EditCommon(Action):
     def _createnode(self, cn, props):
         """Create a node based on the contents of the form."""
         # check for permission
-        if not self.newItemPermission(props):
+        if not self.newItemPermission(props, classname=cn):
             raise exceptions.Unauthorised, self._(
                 'You do not have permission to create %(class)s'
             ) % {'class': cn}
@@ -461,7 +466,8 @@ class EditCommon(Action):
         return (self.nodeid == self.userid
                 and self.db.user.get(self.nodeid, 'username') != 'anonymous')
 
-    def editItemPermission(self, props):
+    _cn_marker = []
+    def editItemPermission(self, props, classname=_cn_marker, itemid=None):
         """Determine whether the user has permission to edit this item.
 
         Base behaviour is to check the user can edit this class. If we're
@@ -475,17 +481,23 @@ class EditCommon(Action):
                     "You do not have permission to edit user roles")
             if self.isEditingSelf():
                 return 1
-        if self.hasPermission('Edit', itemid=self.nodeid):
+        if itemid is None:
+            itemid = self.nodeid
+        if classname is self._cn_marker:
+            classname = self.classname
+        if self.hasPermission('Edit', itemid=itemid, classname=classname):
             return 1
         return 0
 
-    def newItemPermission(self, props):
+    def newItemPermission(self, props, classname=None):
         """Determine whether the user has permission to create this item.
 
         Base behaviour is to check the user can edit this class. No additional
         property checks are made.
         """
-        return self.hasPermission('Create')
+        if not classname :
+            classname = self.client.classname
+        return self.hasPermission('Create', classname=classname)
 
 class EditItemAction(EditCommon):
     def lastUserActivity(self):
