@@ -71,11 +71,12 @@
            <th tal:repeat="prop props" tal:content="prop" i18n:translate=""></th>
        </tr>
        <tr tal:repeat="item batch">
-           <tal:block tal:define="attr python:item[props[0]]">
-             <td>
-                 <input type="checkbox" name="check"
+         <tal:block tal:define="attr python:item[props[0]]" >
+           <td>
+             <input name="check"
                  onclick="updatePreview();"
-                 tal:attributes="value attr; id string:id_$attr" />
+                 tal:attributes="type python:request.form['type'].value;
+                                 value attr; id string:id_$attr" />
              </td>
              <td tal:repeat="prop props">
                  <label class="classhelp-label"

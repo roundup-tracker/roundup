@@ -625,7 +625,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
 
     def classhelp(self, properties=None, label=''"(list)", width='500',
             height='400', property='', form='itemSynopsis',
-            pagesize=50, sort=None, filter=None):
+            pagesize=50, inputtype="checkbox", sort=None, filter=None):
         '''Pop up a javascript window with class help
 
         This generates a link to a popup window which displays the
@@ -648,6 +648,9 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
 
         If the "property" arg is given, it's passed through to the
         javascript help_window function.
+        
+        You can use inputtype="radio" to display a radio box instead
+        of the default checkbox (useful for entering Link-properties)
 
         If the "form" arg is given, it's passed through to the
         javascript help_window function. - it's the name of the form
@@ -668,6 +671,8 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
             property = '&amp;property=%s'%property
         if form:
             form = '&amp;form=%s'%form
+        if inputtype:
+            type= '&amp;type=%s'%inputtype
         if filter:
             filterprops = filter.split(';')
             filtervalues = []
@@ -680,8 +685,8 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         else:
            filter = ''
         help_url = "%s?@startwith=0&amp;@template=help&amp;"\
-                   "properties=%s%s%s%s&amp;@pagesize=%s%s" % \
-                   (self.classname, properties, property, form, sort, pagesize, filter)
+                   "properties=%s%s%s%s%s&amp;@pagesize=%s%s" % \
+                   (self.classname, properties, property, form, type, sort, pagesize, filter)
         onclick = "javascript:help_window('%s', '%s', '%s');return false;" % \
                   (help_url, width, height)
         return '<a class="classhelp" href="%s" onclick="%s">%s</a>' % \
