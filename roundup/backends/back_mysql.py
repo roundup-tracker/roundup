@@ -1,4 +1,4 @@
-#$Id: back_mysql.py,v 1.63 2006-01-13 01:21:14 richard Exp $
+#$Id: back_mysql.py,v 1.64 2006-01-20 02:40:56 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -738,14 +738,13 @@ class MysqlClass:
                     lcn = props[prop].classname
                     link = self.db.classes[lcn]
                     o = '_%s._%s'%(cn, prop)
-                    if link.getprops().has_key('order'):
+                    op = link.orderprop ()
+                    if op != 'id':
                         tn = '_' + lcn
                         loj.append('LEFT OUTER JOIN %s on %s=%s.id'%(tn,
                             o, tn))
-                        ordercols.append(tn + '._order')
-                        o = tn + '._order'
-                    else:
-                        ordercols.append(o)
+                        o = tn + '._%s'%op
+                    ordercols.append(o)
                 elif prop == 'id':
                     o = '_%s.id'%cn
                 else:

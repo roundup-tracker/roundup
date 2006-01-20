@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.188 $
+:Version: $Revision: 1.189 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -352,8 +352,10 @@ The ``schema.py`` module contains two functions:
 The "classic" schema
 --------------------
 
-The "classic" schema looks like this (see below for the meaning
-of ``'setkey'``)::
+The "classic" schema looks like this (see section `setkey(property)`_
+below for the meaning of ``'setkey'`` -- you may also want to look into
+the sections `setlabelprop(property)`_ and `setorderprop(property)`_ for
+specifying (default) labelling and ordering of classes.)::
 
     pri = Class(db, "priority", name=String(), order=String())
     pri.setkey("name")
@@ -548,12 +550,37 @@ or::
 
 Note, the same thing can be done in the web and e-mail interfaces. 
 
-If a class does not have an "order" property, the key is also used to
-sort instances of the class when it is rendered in the user interface.
-(If a class has no "order" property, sorting is by the labelproperty of
-the class. This is computed, in order of precedence, as the key, the
-"name", the "title", or the first property alphabetically.)
+setlabelprop(property)
+~~~~~~~~~~~~~~~~~~~~~~
 
+Select a property of the class to be the label property. The label
+property is used whereever an item should be uniquely identified, e.g.,
+when displaying a link to an item. If setlabelprop is not specified for
+a class, the following values are tried for the label: 
+
+ * the key of the class (see the `setkey(property)`_ section above)
+ * the "name" property
+ * the "title" property
+ * the first property from the sorted property name list
+
+So in most cases you can get away without specifying setlabelprop
+explicitly.
+
+setorderprop(property)
+~~~~~~~~~~~~~~~~~~~~~~
+
+Select a property of the class to be the order property. The order
+property is used whenever using a default sort order for the class,
+e.g., when grouping or sorting class A by a link to class B in the user
+interface, the order property of class B is used for sorting.  If
+setorderprop is not specified for a class, the following values are tried
+for the order property:
+
+ * the property named "order"
+ * the label property (see `setlabelprop(property)`_ above)
+
+So in most cases you can get away without specifying setorderprop
+explicitly.
 
 create(information)
 ~~~~~~~~~~~~~~~~~~~

@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.160 2006-01-13 00:05:46 richard Exp $
+# $Id: rdbms_common.py,v 1.161 2006-01-20 02:40:56 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1848,31 +1848,6 @@ class Class(hyperdb.Class):
         '''Return the name of the key property for this class or None.'''
         return self.key
 
-    def labelprop(self, default_to_id=0):
-        '''Return the property name for a label for the given node.
-
-        This method attempts to generate a consistent label for the node.
-        It tries the following in order:
-
-        1. key property
-        2. "name" property
-        3. "title" property
-        4. first property from the sorted property name list
-        '''
-        k = self.getkey()
-        if  k:
-            return k
-        props = self.getprops()
-        if props.has_key('name'):
-            return 'name'
-        elif props.has_key('title'):
-            return 'title'
-        if default_to_id:
-            return 'id'
-        props = props.keys()
-        props.sort()
-        return props[0]
-
     def lookup(self, keyvalue):
         '''Locate a particular node by its key property and return its id.
 
@@ -2224,14 +2199,13 @@ class Class(hyperdb.Class):
                     lcn = props[prop].classname
                     link = self.db.classes[lcn]
                     o = '_%s._%s'%(cn, prop)
-                    if link.getprops().has_key('order'):
+                    op = link.orderprop()
+                    if op != 'id':
                         tn = '_' + lcn
                         loj.append('LEFT OUTER JOIN %s on %s=%s.id'%(tn,
                             o, tn))
-                        ordercols.append(tn + '._order')
-                        o = tn + '._order'
-                    else:
-                        ordercols.append(o)
+                        o = tn + '._%s'%op
+                    ordercols.append(o)
                 elif prop == 'id':
                     o = '_%s.id'%cn
                 else:

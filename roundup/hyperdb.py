@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: hyperdb.py,v 1.112 2006-01-13 00:05:46 richard Exp $
+# $Id: hyperdb.py,v 1.113 2006-01-20 02:40:56 richard Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -591,6 +591,22 @@ class Class:
         """
         raise NotImplementedError
 
+    def setlabelprop (self, labelprop):
+        """Set the label property. Used for override of labelprop
+           resolution order.
+        """
+        if labelprop not in self.getprops () :
+            raise ValueError, "Not a property name: %s" % labelprop
+        self._labelprop = labelprop
+
+    def setorderprop (self, orderprop):
+        """Set the order property. Used for override of orderprop
+           resolution order
+        """
+        if orderprop not in self.getprops () :
+            raise ValueError, "Not a property name: %s" % orderprop
+        self._orderprop = orderprop
+
     def getkey(self):
         """Return the name of the key property for this class or None."""
         raise NotImplementedError
@@ -601,12 +617,45 @@ class Class:
         This method attempts to generate a consistent label for the node.
         It tries the following in order:
 
+        0. self._labelprop if set
         1. key property
         2. "name" property
         3. "title" property
         4. first property from the sorted property name list
         """
-        raise NotImplementedError
+        if hasattr (self, '_labelprop') :
+            return self._labelprop
+        k = self.getkey()
+        if  k:
+            return k
+        props = self.getprops()
+        if props.has_key('name'):
+            return 'name'
+        elif props.has_key('title'):
+            return 'title'
+        if default_to_id:
+            return 'id'
+        props = props.keys()
+        props.sort()
+        return props[0]
+
+    def orderprop (self):
+        """Return the property name to use for sorting for the given node.
+
+        This method computes the property for sorting. 
+        It tries the following in order:
+
+        0. self._orderprop if set
+        1. "order" property
+        2. self.labelprop ()
+        """
+
+        if hasattr (self, '_orderprop') :
+            return self._orderprop
+        props = self.getprops ()
+        if props.has_key ('order'):
+            return 'order'
+        return self.labelprop ()
 
     def lookup(self, keyvalue):
         """Locate a particular node by its key property and return its id.

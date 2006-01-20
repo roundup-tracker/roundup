@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: back_anydbm.py,v 1.191 2006-01-13 00:05:46 richard Exp $
+#$Id: back_anydbm.py,v 1.192 2006-01-20 02:40:56 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -1380,31 +1380,6 @@ class Class(hyperdb.Class):
         '''Return the name of the key property for this class or None.'''
         return self.key
 
-    def labelprop(self, default_to_id=0):
-        '''Return the property name for a label for the given node.
-
-        This method attempts to generate a consistent label for the node.
-        It tries the following in order:
-
-        1. key property
-        2. "name" property
-        3. "title" property
-        4. first property from the sorted property name list
-        '''
-        k = self.getkey()
-        if  k:
-            return k
-        props = self.getprops()
-        if props.has_key('name'):
-            return 'name'
-        elif props.has_key('title'):
-            return 'title'
-        if default_to_id:
-            return 'id'
-        props = props.keys()
-        props.sort()
-        return props[0]
-
     # TODO: set up a separate index db file for this? profile?
     def lookup(self, keyvalue):
         '''Locate a particular node by its key property and return its id.
@@ -1786,12 +1761,8 @@ class Class(hyperdb.Class):
                         elif isinstance(propclass, hyperdb.Link):
                             lcn = propclass.classname
                             link = self.db.classes[lcn]
-                            key = None
-                            if link.getprops().has_key('order'):
-                                key = 'order'
-                            elif link.getkey():
-                                key = link.getkey()
-                            if key:
+                            key = link.orderprop()
+                            if key!='id':
                                 if not lcache.has_key(v):
                                     # open the link class db if it's not already
                                     if lcldb is None:

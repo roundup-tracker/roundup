@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.98 2005-10-07 05:35:04 richard Exp $
+# $Id: back_metakit.py,v 1.99 2006-01-20 02:40:56 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -1386,11 +1386,7 @@ class Class(hyperdb.Class):
                     lv = linkclass.getview()
                     lv = lv.rename('id', propname)
                     v = v.join(lv, prop, 1)
-                    if linkclass.getprops().has_key('order'):
-                        propname = 'order'
-                    else:
-                        propname = linkclass.labelprop()
-                    prop = getattr(v, propname)
+                    prop = getattr(v, linkclass.orderprop())
                 if isreversed:
                     rev.append(prop)
                 sortspec.append(prop)
@@ -1414,31 +1410,6 @@ class Class(hyperdb.Class):
         '''Determine if the given nodeid actually exists
         '''
         return int(nodeid) < self.maxid
-
-    def labelprop(self, default_to_id=0):
-        '''Return the property name for a label for the given node.
-
-        This method attempts to generate a consistent label for the node.
-        It tries the following in order:
-
-        1. key property
-        2. "name" property
-        3. "title" property
-        4. first property from the sorted property name list
-        '''
-        k = self.getkey()
-        if  k:
-            return k
-        props = self.getprops()
-        if props.has_key('name'):
-            return 'name'
-        elif props.has_key('title'):
-            return 'title'
-        if default_to_id:
-            return 'id'
-        props = props.keys()
-        props.sort()
-        return props[0]
 
     def stringFind(self, **requirements):
         '''Locate a particular node by matching a set of its String
