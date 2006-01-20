@@ -1,4 +1,4 @@
-#$Id: back_postgresql.py,v 1.30 2005-05-02 05:48:59 richard Exp $
+#$Id: back_postgresql.py,v 1.31 2006-01-20 02:27:12 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -27,7 +27,7 @@ def connection_dict(config, dbnamestr=None):
 
 def db_create(config):
     """Clear all database contents and drop database itself"""
-    command = 'CREATE DATABASE %s'%config.RDBMS_NAME
+    command = "CREATE DATABASE %s WITH ENCODING='UNICODE'"%config.RDBMS_NAME
     logging.getLogger('hyperdb').info(command)
     db_command(config, command)
 
