@@ -1528,17 +1528,22 @@ class DateHTMLProperty(HTMLProperty):
             The format string is a standard python strftime format string.
             Note that if the day is zero, and appears at the start of the
             string, then it'll be stripped from the output. This is handy
-            for the situatin when a date only specifies a month and a year.
+            for the situation when a date only specifies a month and a year.
         '''
         if not self.is_view_ok():
             return self._('[hidden]')
-
+        
+        if self._offset is None:
+            offset = self._db.getUserTimezone()
+        else:
+            offset = self._offset
+        
         if not self._value:
             return ''
         elif format is not self._marker:
-            return self._value.pretty(format)
+            return self._value.local(offset).pretty(format)
         else:
-            return self._value.pretty()
+            return self._value.local(offset).pretty()
 
     def local(self, offset):
         ''' Return the date/time as a local (timezone offset) date/time.
