@@ -1,10 +1,14 @@
 <!-- dollarId: issue.index,v 1.2 2001/07/29 04:07:37 richard Exp dollar-->
 <tal:block metal:use-macro="templates/page/macros/icing">
-<title metal:fill-slot="head_title" i18n:translate=""
- >List of issues - <span tal:replace="config/TRACKER_NAME"
- i18n:name="tracker" /></title>
+<title metal:fill-slot="head_title" i18n:translate="" >
+	List of issues - 
+	<span tal:condition="python:request.form.has_key('dispname')" tal:replace="python:' %s - ' % request.form['dispname'].value" />
+	<span tal:replace="config/TRACKER_NAME" i18n:name="tracker" />
+	</title>
 <span metal:fill-slot="body_title" tal:omit-tag="python:1"
- i18n:translate="">List of issues</span>
+	i18n:translate="">List of issues 
+	<span tal:condition="python:request.form.has_key('dispname')" tal:replace="python:' - %s' % request.form['dispname'].value" />
+</span>
 <td class="content" metal:fill-slot="content">
 
 <p tal:condition="not:context/is_view_ok" i18n:translate="">You are not
