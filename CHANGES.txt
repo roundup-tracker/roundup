@@ -15,6 +15,7 @@ Fixed:
 - fix redirect after instant registration (sf bug 1381676)
 - fix permission checks in cgi interface (sf bug 1289557)
 - fix permission check on RetireAction (sf bug 1407342)
+- timezone now applied to date for pretty-format (sf bug 1406861)
 
 
 2005-10-07 0.8.5
