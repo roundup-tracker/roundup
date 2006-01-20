@@ -17,7 +17,8 @@ Feature:
 - allow preselection of values in templating menu()s (sf patch 1396085)
 - display the query name in the header (sf feature 1298535 / patch 1349387)
 - classhelp works with Link properties now (sf bug 1410290)
-- added setorderprop() and setlabelprop() to Class (lots of patches)
+- added setorderprop() and setlabelprop() to Class (sf features 1379534,
+  1379490)
 
 Fixed:
 - MySQL now creates String columns using the TEXT column type
