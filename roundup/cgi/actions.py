@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.52 2006-01-13 03:56:36 richard Exp $
+#$Id: actions.py,v 1.53 2006-01-20 02:12:53 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random, csv
 
@@ -123,6 +123,11 @@ class RetireAction(Action):
         self.client.ok_message.append(
             self._('%(classname)s %(itemid)s has been retired')%{
                 'classname': self.classname.capitalize(), 'itemid': nodeid})
+
+    def hasPermission(self, permission, classname=Action._marker, itemid=None):
+        if itemid is None:
+            itemid = self.nodeid
+        return self.hasPermission(permission, classname, itemid)
 
 class SearchAction(Action):
     name = 'search'
