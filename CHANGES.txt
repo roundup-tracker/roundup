@@ -30,7 +30,7 @@ Fixed:
 - french translation updated by Patrick Decat (sf patch 1397059)
 - HTTP authorization takes precedence over session cookie (sf bug 1396134)
 - enforce correct encoding of PostgreSQL backend (sf bug 1374235)
-
+- grouping/sorting on link to same class fixed (sf bug 1404930)
 
 2005-10-07 0.9.0b1
 Feature:
