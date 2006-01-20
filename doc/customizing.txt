@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.187 $
+:Version: $Revision: 1.188 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2035,6 +2035,8 @@ menu        only on Link and Multilink properties - render a form select
                 (direction, property) where direction is '+' or '-'. A
                 single string with the direction prepended may be used.
                 For example: ('-', 'order'), '+name'.
+            value
+                gives a default value to preselect in the menu
 
             The remaining keyword arguments are used as conditions for
             filtering the items in the list - they're passed as the

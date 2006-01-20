@@ -1669,13 +1669,14 @@ class LinkHTMLProperty(HTMLProperty):
         return '<input name="%s" value="%s" size="%s">'%(self._formname,
             value, size)
 
-    def menu(self, size=None, height=None, showid=0, additional=[],
+    def menu(self, size=None, height=None, showid=0, additional=[], value=None,
             sort_on=None, **conditions):
         ''' Render a form select list for this property
 
             "size" is used to limit the length of the list labels
             "height" is used to set the <select> tag's "size" attribute
             "showid" includes the item ids in the list labels
+            "value" specifies which item is pre-selected
             "additional" lists properties which should be included in the
                 label
             "sort_on" indicates the property to sort the list on as
@@ -1692,7 +1693,8 @@ class LinkHTMLProperty(HTMLProperty):
         if not self.is_edit_ok():
             return self.plain()
 
-        value = self._value
+        if value is None:
+            value = self._value
 
         linkcl = self._db.getclass(self._prop.classname)
         l = ['<select name="%s">'%self._formname]
@@ -1857,7 +1859,7 @@ class MultilinkHTMLProperty(HTMLProperty):
         return self.input(name=self._formname,size=size,value=value)
 
     def menu(self, size=None, height=None, showid=0, additional=[],
-            sort_on=None, **conditions):
+             value=None, sort_on=None, **conditions):
         ''' Render a form <select> list for this property.
 
             "size" is used to limit the length of the list labels
@@ -1865,6 +1867,7 @@ class MultilinkHTMLProperty(HTMLProperty):
             "showid" includes the item ids in the list labels
             "additional" lists properties which should be included in the
                 label
+            "value" specifies which item is pre-selected
             "sort_on" indicates the property to sort the list on as
                 (direction, property) where direction is '+' or '-'. A
                 single string with the direction prepended may be used.
@@ -1879,7 +1882,8 @@ class MultilinkHTMLProperty(HTMLProperty):
         if not self.is_edit_ok():
             return self.plain()
 
-        value = self._value
+        if value is None:
+            value = self._value
 
         linkcl = self._db.getclass(self._prop.classname)
 
