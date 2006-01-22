@@ -1,7 +1,7 @@
 # Lithuanian message file for Roundup Issue Tracker
 # Aiste Kesminaite <aiste@pov.lt>, 2005
 #
-# $Id: lt.po,v 1.1 2005-11-23 07:30:47 a1s Exp $
+# $Id: lt.po,v 1.2 2006-01-22 10:28:35 a1s Exp $
 #
 # roundup.pot revision 1.13
 #
@@ -2233,7 +2233,7 @@ msgstr "Kreipinių sąrašas - ${tracker}"
 
 #: ../templates/classic/html/issue.index.html:6
 msgid "List of issues"
-msgstr "Kreipinių sqrašas"
+msgstr "Kreipinių sąrašas"
 
 #: ../templates/classic/html/issue.index.html:16
 #: ../templates/classic/html/issue.item.html:44
@@ -2548,7 +2548,7 @@ msgid ""
 "*: The \"all text\" field will look in message bodies and issue titles<br> "
 "**: If you supply a name, the query will be saved off and available as a link "
 "in the sidebar"
-msgstr "*: Laukas \"visas tekstas\" išškos pranešimų tekste ir kreipinių pavadinimuose<br> **: Jei jūs pateiksite vardą, užklausimas bus išsaugotas ir prieinamas kaip nuoroda šoninėje juostoje"
+msgstr "*: Laukas \"visas tekstas\" iššoks pranešimų tekste ir kreipinių pavadinimuose<br> **: Jei jūs pateiksite vardą, užklausimas bus išsaugotas ir prieinamas kaip nuoroda šoninėje juostoje"
 
 #: ../templates/classic/html/keyword.item.html:3
 msgid "Keyword editing - ${tracker}"
@@ -2701,7 +2701,7 @@ msgstr "Jūsų kreipiniai"
 #: ../templates/classic/html/page.html:116
 #: ../templates/minimal/html/page.html:54
 msgid "Your Details"
-msgstr "Sulkesnė informacija apie jus"
+msgstr "Smulkesnė informacija apie jus"
 
 #: ../templates/classic/html/page.html:118
 #: ../templates/minimal/html/page.html:56
