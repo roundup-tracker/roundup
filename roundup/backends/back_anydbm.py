@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: back_anydbm.py,v 1.192 2006-01-20 02:40:56 richard Exp $
+#$Id: back_anydbm.py,v 1.193 2006-01-23 05:24:33 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -1515,8 +1515,11 @@ class Class(hyperdb.Class):
         l.sort()
         return l
 
-    def getnodeids(self, db=None):
+    def getnodeids(self, db=None, retired=None):
         ''' Return a list of ALL nodeids
+
+            Set retired=None to get all nodes. Otherwise it'll get all the
+            retired or non-retired nodes, depending on the flag.
         '''
         res = []
 
@@ -1524,16 +1527,31 @@ class Class(hyperdb.Class):
         if self.db.newnodes.has_key(self.classname):
             res += self.db.newnodes[self.classname].keys()
 
+        must_close = False
         if db is None:
             db = self.db.getclassdb(self.classname)
-        res = res + db.keys()
+            must_close = True 
+        try:
+            res = res + db.keys()
 
-        # remove the uncommitted, destroyed nodes
-        if self.db.destroyednodes.has_key(self.classname):
-            for nodeid in self.db.destroyednodes[self.classname].keys():
-                if db.has_key(nodeid):
-                    res.remove(nodeid)
+            # remove the uncommitted, destroyed nodes
+            if self.db.destroyednodes.has_key(self.classname):
+                for nodeid in self.db.destroyednodes[self.classname].keys():
+                    if db.has_key(nodeid):
+                        res.remove(nodeid)
 
+            # check retired flag
+            if retired is False or retired is True:
+                l = []
+                for nodeid in res:
+                    node = self.db.getnode(self.classname, nodeid, db)
+                    is_ret = node.has_key(self.db.RETIRED_FLAG)
+                    if retired == is_ret:
+                        l.append(nodeid)
+                res = l
+        finally:
+            if must_close:
+                db.close()
         return res
 
     def filter(self, search_matches, filterspec, sort=(None,None),

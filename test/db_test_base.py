@@ -15,9 +15,9 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.62 2006-01-13 01:18:07 richard Exp $
+# $Id: db_test_base.py,v 1.63 2006-01-23 05:24:33 richard Exp $
 
-import unittest, os, shutil, errno, imp, sys, time, pprint
+import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval, DatabaseError, Boolean, Number, Node
@@ -398,17 +398,35 @@ class DBTest(MyTestCase):
         self.db.issue.create(title="spam", status='1')
         b = self.db.status.get('1', 'name')
         a = self.db.status.list()
+        nodeids = self.db.status.getnodeids()
         self.db.status.retire('1')
+        others = nodeids[:]
+        others.remove('1')
+
+        self.assertEqual(sets.Set(self.db.status.getnodeids()),
+            sets.Set(nodeids))
+        self.assertEqual(sets.Set(self.db.status.getnodeids(retired=True)),
+            sets.Set(['1']))
+        self.assertEqual(sets.Set(self.db.status.getnodeids(retired=False)),
+            sets.Set(others))
+
+        self.assert_(self.db.status.is_retired('1'))
+
         # make sure the list is different
         self.assertNotEqual(a, self.db.status.list())
+
         # can still access the node if necessary
         self.assertEqual(self.db.status.get('1', 'name'), b)
         self.assertRaises(IndexError, self.db.status.set, '1', name='hello')
         self.db.commit()
+        self.assert_(self.db.status.is_retired('1'))
         self.assertEqual(self.db.status.get('1', 'name'), b)
         self.assertNotEqual(a, self.db.status.list())
+
         # try to restore retired node
         self.db.status.restore('1')
+
+        self.assert_(not self.db.status.is_retired('1'))
 
     def testCacheCreateSet(self):
         self.db.issue.create(title="spam", status='1')

@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.99 2006-01-20 02:40:56 richard Exp $
+# $Id: back_metakit.py,v 1.100 2006-01-23 05:24:33 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -1156,14 +1156,18 @@ class Class(hyperdb.Class):
             l.append(str(row.id))
         return l
 
-    def getnodeids(self):
+    def getnodeids(self, retired=None):
         ''' Retrieve all the ids of the nodes for a particular Class.
 
             Set retired=None to get all nodes. Otherwise it'll get all the
             retired or non-retired nodes, depending on the flag.
         '''
         l = []
-        for row in self.getview():
+        if retired is False or retired is True:
+            result = self.getview().select(_isdel=retired)
+        else:
+            result = self.getview()
+        for row in result:
             l.append(str(row.id))
         return l
 
