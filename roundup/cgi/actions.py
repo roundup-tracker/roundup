@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.53 2006-01-20 02:12:53 richard Exp $
+#$Id: actions.py,v 1.54 2006-01-23 03:42:27 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random, csv
 
@@ -127,7 +127,7 @@ class RetireAction(Action):
     def hasPermission(self, permission, classname=Action._marker, itemid=None):
         if itemid is None:
             itemid = self.nodeid
-        return self.hasPermission(permission, classname, itemid)
+        return Action.hasPermission(self, permission, classname, itemid)
 
 class SearchAction(Action):
     name = 'search'
