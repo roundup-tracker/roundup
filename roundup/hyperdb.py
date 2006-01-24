@@ -15,18 +15,18 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: hyperdb.py,v 1.113 2006-01-20 02:40:56 richard Exp $
+# $Id: hyperdb.py,v 1.114 2006-01-24 08:22:42 a1s Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
 __docformat__ = 'restructuredtext'
 
 # standard python modules
-import sys, os, time, re, shutil
+import sys, os, time, re, shutil, weakref
 
 # roundup modules
 import date, password
-from support import ensureParentsExist
+from support import ensureParentsExist, PrioList
 
 #
 # Types
@@ -441,7 +441,25 @@ class Class:
         or a ValueError is raised.  The keyword arguments in 'properties'
         must map names to property objects, or a TypeError is raised.
         """
-        raise NotImplementedError
+        for name in 'creation activity creator actor'.split():
+            if properties.has_key(name):
+                raise ValueError, '"creation", "activity", "creator" and '\
+                    '"actor" are reserved'
+
+        self.classname = classname
+        self.properties = properties
+        self.db = weakref.proxy(db)       # use a weak ref to avoid circularity
+        self.key = ''
+
+        # should we journal changes (default yes)
+        self.do_journal = 1
+
+        # do the db-related init stuff
+        db.addclass(self)
+
+        actions = "create set retire restore".split ()
+        self.auditors = dict ([(a, PrioList ()) for a in actions])
+        self.reactors = dict ([(a, PrioList ()) for a in actions])
 
     def __repr__(self):
         '''Slightly more useful representation
@@ -642,7 +660,7 @@ class Class:
     def orderprop (self):
         """Return the property name to use for sorting for the given node.
 
-        This method computes the property for sorting. 
+        This method computes the property for sorting.
         It tries the following in order:
 
         0. self._orderprop if set
@@ -733,12 +751,35 @@ class Class:
         raise NotImplementedError
 
     def index(self, nodeid):
-        '''Add (or refresh) the node to search indexes
-        '''
+        """Add (or refresh) the node to search indexes"""
         raise NotImplementedError
 
+    #
+    # Detector interface
+    #
+    def audit(self, event, detector, priority = 100):
+        """Register an auditor detector"""
+        self.auditors[event].append((priority, detector))
+
+    def fireAuditors(self, event, nodeid, newvalues):
+        """Fire all registered auditors"""
+        for prio, audit in self.auditors[event]:
+            audit(self.db, self, nodeid, newvalues)
+
+    def react(self, event, detector, priority = 100):
+        """Register a reactor detector"""
+        self.reactors[event].append((priority, detector))
+
+    def fireReactors(self, event, nodeid, oldvalues):
+        """Fire all registered reactors"""
+        for prio, react in self.reactors[event]:
+            react(self.db, self, nodeid, oldvalues)
+
+    #
+    # import / export support
+    #
     def export_propnames(self):
-        '''List the property names for export from this Class.'''
+        """List the property names for export from this Class"""
         propnames = self.getprops().keys()
         propnames.sort()
         return propnames
@@ -829,7 +870,7 @@ class FileClass:
 
         dest = self.exportFilename(dirname, nodeid)
         ensureParentsExist(dest)
-        shutil.copyfile(source, dest)    
+        shutil.copyfile(source, dest)
 
     def import_files(self, dirname, nodeid):
         ''' Import the "content" property as a file
