@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.162 2006-01-20 02:42:35 richard Exp $
+# $Id: rdbms_common.py,v 1.163 2006-01-24 08:27:54 a1s Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1230,32 +1230,6 @@ class Class(hyperdb.Class):
         concrete backend Class.
     '''
 
-    def __init__(self, db, classname, **properties):
-        '''Create a new class with a given name and property specification.
-
-        'classname' must not collide with the name of an existing class,
-        or a ValueError is raised.  The keyword arguments in 'properties'
-        must map names to property objects, or a TypeError is raised.
-        '''
-        for name in 'creation activity creator actor'.split():
-            if properties.has_key(name):
-                raise ValueError, '"creation", "activity", "creator" and '\
-                    '"actor" are reserved'
-
-        self.classname = classname
-        self.properties = properties
-        self.db = weakref.proxy(db)       # use a weak ref to avoid circularity
-        self.key = ''
-
-        # should we journal changes (default yes)
-        self.do_journal = 1
-
-        # do the db-related init stuff
-        db.addclass(self)
-
-        self.auditors = {'create': [], 'set': [], 'retire': [], 'restore': []}
-        self.reactors = {'create': [], 'set': [], 'retire': [], 'restore': []}
-
     def schema(self):
         ''' A dumpable version of the schema that we can store in the
             database
@@ -2318,36 +2292,6 @@ class Class(hyperdb.Class):
             if isinstance(propclass, String) and propclass.indexme:
                 self.db.indexer.add_text((self.classname, nodeid, prop),
                     str(self.get(nodeid, prop)))
-
-
-    #
-    # Detector interface
-    #
-    def audit(self, event, detector):
-        '''Register a detector
-        '''
-        l = self.auditors[event]
-        if detector not in l:
-            self.auditors[event].append(detector)
-
-    def fireAuditors(self, action, nodeid, newvalues):
-        '''Fire all registered auditors.
-        '''
-        for audit in self.auditors[action]:
-            audit(self.db, self, nodeid, newvalues)
-
-    def react(self, event, detector):
-        '''Register a detector
-        '''
-        l = self.reactors[event]
-        if detector not in l:
-            self.reactors[event].append(detector)
-
-    def fireReactors(self, action, nodeid, oldvalues):
-        '''Fire all registered reactors.
-        '''
-        for react in self.reactors[action]:
-            react(self.db, self, nodeid, oldvalues)
 
     #
     # import / export support

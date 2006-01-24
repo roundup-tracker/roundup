@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.100 2006-01-23 05:24:33 richard Exp $
+# $Id: back_metakit.py,v 1.101 2006-01-24 08:27:05 a1s Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -399,26 +399,17 @@ class Class(hyperdb.Class):
 
     privateprops = None
     def __init__(self, db, classname, **properties):
-        if (properties.has_key('creation') or properties.has_key('activity')
-            or properties.has_key('creator') or properties.has_key('actor')):
-            raise ValueError, '"creation", "activity" and "creator" are '\
-                  'reserved'
         if hasattr(db, classname):
             raise ValueError, "Class %s already exists"%classname
-
-        self.db = db
-        self.classname = classname
+        hyperdb.Class.__init__ (self, db, classname, **properties)
+        self.db = db # why isn't this a weakref as for other backends??
         self.key = None
-        self.ruprops = properties
+        self.ruprops = self.properties
         self.privateprops = { 'id' : hyperdb.String(),
                               'activity' : hyperdb.Date(),
                               'actor' : hyperdb.Link('user'),
                               'creation' : hyperdb.Date(),
                               'creator'  : hyperdb.Link('user') }
-
-        # event -> list of callables
-        self.auditors = {'create': [], 'set': [], 'retire': [], 'restore': []}
-        self.reactors = {'create': [], 'set': [], 'retire': [], 'restore': []}
 
         view = self.__getview()
         self.maxid = 1
@@ -429,12 +420,7 @@ class Class(hyperdb.Class):
         self.rbactions = []
 
         # people reach inside!!
-        self.properties = self.ruprops
-        self.db.addclass(self)
         self.idcache = {}
-
-        # default is to journal changes
-        self.do_journal = 1
 
     def setid(self, maxid):
         self.maxid = maxid + 1
@@ -448,35 +434,6 @@ class Class(hyperdb.Class):
         '''Turn journalling off for this class
         '''
         self.do_journal = 0
-
-    #
-    # Detector/reactor interface
-    #
-    def audit(self, event, detector):
-        '''Register a detector
-        '''
-        l = self.auditors[event]
-        if detector not in l:
-            self.auditors[event].append(detector)
-
-    def fireAuditors(self, action, nodeid, newvalues):
-       '''Fire all registered auditors.
-        '''
-       for audit in self.auditors[action]:
-            audit(self.db, self, nodeid, newvalues)
-
-    def react(self, event, detector):
-       '''Register a reactor
-       '''
-       l = self.reactors[event]
-       if detector not in l:
-           self.reactors[event].append(detector)
-
-    def fireReactors(self, action, nodeid, oldvalues):
-        '''Fire all registered reactors.
-        '''
-        for react in self.reactors[action]:
-            react(self.db, self, nodeid, oldvalues)
 
     # --- the hyperdb.Class methods
     def create(self, **propvalues):
