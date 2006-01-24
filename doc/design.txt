@@ -729,12 +729,6 @@ hyperdatabase, except for the following changes and additional methods::
             properties or "actor" cause a KeyError.
             """
 
-        # New methods:
-
-        def audit(self, event, detector):
-        def react(self, event, detector):
-            """Register a detector (see below for more details)."""
-
     class IssueClass(Class):
         # Overridden methods:
 
@@ -855,20 +849,22 @@ The ``audit()`` and ``react()`` methods register detectors on a given
 class of items::
 
     class Class:
-        def audit(self, event, detector):
+        def audit(self, event, detector, priority=100):
             """Register an auditor on this class.
 
             'event' should be one of "create", "set", "retire", or
             "restore". 'detector' should be a function accepting four
-            arguments.
+            arguments. Detectors are called in priority order, execution
+            order is undefined for detectors with the same priority.
             """
 
-        def react(self, event, detector):
+        def react(self, event, detector, priority=100):
             """Register a reactor on this class.
 
             'event' should be one of "create", "set", "retire", or
             "restore". 'detector' should be a function accepting four
-            arguments.
+            arguments. Detectors are called in priority order, execution
+            order is undefined for detectors with the same priority.
             """
 
 Auditors are called with the arguments::
