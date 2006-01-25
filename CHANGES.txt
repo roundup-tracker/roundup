@@ -32,6 +32,8 @@ Fixed:
 - enforce correct encoding of PostgreSQL backend (sf bug 1374235)
 - grouping/sorting on link to same class fixed (sf bug 1404930)
 - all backends implement the retired check in getnodeids (sf bug 1290560)
+- fix detection of "missing" existing values in CGI form parser (sf bug
+  1414149)
 
 
 2005-10-07 0.9.0b1

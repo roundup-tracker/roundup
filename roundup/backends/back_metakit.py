@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.101 2006-01-24 08:27:05 a1s Exp $
+# $Id: back_metakit.py,v 1.102 2006-01-25 02:24:28 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -82,6 +82,11 @@ def Database(config, journaltag=None):
     return db
 
 class _Database(hyperdb.Database, roundupdb.Database):
+    # Metakit has no concept of an explicit NULL
+    BACKEND_MISSING_STRING = ''
+    BACKEND_MISSING_NUMBER = 0
+    BACKEND_MISSING_BOOLEAN = 0
+
     def __init__(self, config, journaltag=None):
         self.config = config
         self.journaltag = journaltag

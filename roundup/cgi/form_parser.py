@@ -463,15 +463,18 @@ class FormParser:
 
                 # "missing" existing values may not be None
                 if not existing:
-                    if isinstance(proptype, hyperdb.String) and not existing:
+                    if isinstance(proptype, hyperdb.String):
                         # some backends store "missing" Strings as empty strings
-                        existing = None
-                    elif isinstance(proptype, hyperdb.Number) and not existing:
+                        if existing == self.db.BACKEND_MISSING_STRING:
+                            existing = None
+                    elif isinstance(proptype, hyperdb.Number):
                         # some backends store "missing" Numbers as 0 :(
-                        existing = 0
-                    elif isinstance(proptype, hyperdb.Boolean) and not existing:
+                        if existing == self.db.BACKEND_MISSING_NUMBER:
+                            existing = None
+                    elif isinstance(proptype, hyperdb.Boolean):
                         # likewise Booleans
-                        existing = 0
+                        if existing == self.db.BACKEND_MISSING_BOOLEAN:
+                            existing = None
 
                 # if changed, set it
                 if value != existing:

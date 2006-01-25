@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.26 2004-11-18 16:23:58 a1s Exp $
+# $Id: test_cgi.py,v 1.27 2006-01-25 02:24:28 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
@@ -424,14 +424,29 @@ class FormTestCase(unittest.TestCase):
     def testSetNumber(self):
         self.assertEqual(self.parseForm({'number': '1'}),
             ({('test', None): {'number': 1}}, []))
+        self.assertEqual(self.parseForm({'number': '0'}),
+            ({('test', None): {'number': 0}}, []))
         self.assertEqual(self.parseForm({'number': '\n0\n'}),
             ({('test', None): {'number': 0}}, []))
+
+    def testSetNumberReplaceOne(self):
         nodeid = self.db.test.create(number=1)
         self.assertEqual(self.parseForm({'number': '1'}, 'test', nodeid),
             ({('test', nodeid): {}}, []))
+        self.assertEqual(self.parseForm({'number': '0'}, 'test', nodeid),
+            ({('test', nodeid): {'number': 0}}, []))
+
+    def testSetNumberReplaceZero(self):
         nodeid = self.db.test.create(number=0)
         self.assertEqual(self.parseForm({'number': '0'}, 'test', nodeid),
             ({('test', nodeid): {}}, []))
+
+    def testSetNumberReplaceNone(self):
+        nodeid = self.db.test.create()
+        self.assertEqual(self.parseForm({'number': '0'}, 'test', nodeid),
+            ({('test', nodeid): {'number': 0}}, []))
+        self.assertEqual(self.parseForm({'number': '1'}, 'test', nodeid),
+            ({('test', nodeid): {'number': 1}}, []))
 
     def testEmptyNumberSet(self):
         nodeid = self.db.test.create(number=0)

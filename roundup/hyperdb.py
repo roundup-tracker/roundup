@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: hyperdb.py,v 1.114 2006-01-24 08:22:42 a1s Exp $
+# $Id: hyperdb.py,v 1.115 2006-01-25 02:24:28 richard Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -270,6 +270,10 @@ All methods except __repr__ must be implemented by a concrete backend Database.
 
     # flag to set on retired entries
     RETIRED_FLAG = '__hyperdb_retired'
+
+    BACKEND_MISSING_STRING = None
+    BACKEND_MISSING_NUMBER = None
+    BACKEND_MISSING_BOOLEAN = None
 
     def __init__(self, config, journaltag=None):
         """Open a hyperdatabase given a specifier to some storage.
