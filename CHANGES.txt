@@ -62,6 +62,7 @@ Fixed:
 - fix permission check on RetireAction (sf bug 1407342)
 - timezone now applied to date for pretty-format (sf bug 1406861)
 - fix mangling of "_" in mail Subject class name (sf bug 1413852)
+- catch bad classname in URL (related to sf bug 1240541)
 
 
 2005-10-07 0.8.5
