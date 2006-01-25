@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.170 2006-01-20 03:04:14 richard Exp $
+$Id: mailgw.py,v 1.171 2006-01-25 03:20:35 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -849,10 +849,14 @@ Unknown address: %s
                 raise Unauthorized, 'You are not permitted to access '\
                     'this tracker.'
 
-        # make sure they're allowed to edit this class of information
-        if not self.db.security.hasPermission('Edit', author, classname):
-            raise Unauthorized, 'You are not permitted to edit %s.'%classname
-
+        # make sure they're allowed to edit or create this class of information
+        if nodeid:
+            if not self.db.security.hasPermission('Edit', author, classname):
+                raise Unauthorized, 'You are not permitted to edit %s.'%classname
+        else:
+            if not self.db.security.hasPermission('Create', author, classname):
+                raise Unauthorized, 'You are not permitted to create %s.'%classname
+                
         # the author may have been created - make sure the change is
         # committed before we reopen the database
         self.db.commit()
@@ -946,6 +950,8 @@ not find a text/plain part to use.
         if properties.has_key('files'):
             files = []
             for (name, mime_type, data) in attachments:
+                if not self.db.security.hasPermission('Create', author, 'file'):
+                    raise Unauthorized, 'You are not permitted to create files.'
                 if not name:
                     name = "unnamed"
                 try:
@@ -956,6 +962,9 @@ not find a text/plain part to use.
                 else:
                     files.append(fileid)
             # attach the files to the issue
+            if not self.db.security.hasPermission('Edit', author, classname, 'files'):
+                raise Unauthorized, 'You are not permitted to add files to %s.'%classname
+
             if nodeid:
                 # extend the existing files list
                 fileprop = cl.get(nodeid, 'files')
@@ -969,6 +978,9 @@ not find a text/plain part to use.
         # create the message if there's a message body (content)
         #
         if (content and properties.has_key('messages')):
+            if not self.db.security.hasPermission('Create', author, 'msg'):
+                raise Unauthorized, 'You are not permitted to create messages.'
+
             try:
                 message_id = self.db.msg.create(author=author,
                     recipients=recipients, date=date.Date('.'),
@@ -980,6 +992,9 @@ Mail message was rejected by a detector.
 %s
 '''%error
             # attach the message to the node
+            if not self.db.security.hasPermission('Edit', author, classname, 'messages'):
+                raise Unauthorized, 'You are not permitted to add messages to %s.'%classname
+
             if nodeid:
                 # add the message to the node's list
                 messages = cl.get(nodeid, 'messages')
@@ -999,6 +1014,12 @@ Mail message was rejected by a detector.
             for prop in issue_props.keys() :
                 if not props.has_key(prop) :
                     props[prop] = issue_props[prop]
+
+            # Check permissions for each property
+            for prop in props.keys():
+                if not self.db.security.hasPermission('Edit', author, classname, prop):
+                    raise Unauthorized, 'You are not permitted to edit property %s of class %s.'%(prop,classname)
+
             if nodeid:
                 cl.set(nodeid, **props)
             else:
