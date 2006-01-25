@@ -141,7 +141,7 @@ def encode_header(header, charset='utf-8'):
         if c == ' ':
             quoted += '_'
         # These characters can be included verbatim
-        elif hqre.match(c):
+        elif hqre.match(c) and c != '_':
             quoted += c
         # Otherwise, replace with hex value like =E2
         else:

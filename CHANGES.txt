@@ -61,6 +61,7 @@ Fixed:
 - fix permission checks in cgi interface (sf bug 1289557)
 - fix permission check on RetireAction (sf bug 1407342)
 - timezone now applied to date for pretty-format (sf bug 1406861)
+- fix mangling of "_" in mail Subject class name (sf bug 1413852)
 
 
 2005-10-07 0.8.5
