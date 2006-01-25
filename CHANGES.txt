@@ -19,6 +19,7 @@ Feature:
 - classhelp works with Link properties now (sf bug 1410290)
 - added setorderprop() and setlabelprop() to Class (sf features 1379534,
   1379490)
+- CSV encoding support (sf bug 1240848)
 
 Fixed:
 - MySQL now creates String columns using the TEXT column type

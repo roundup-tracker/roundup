@@ -1,6 +1,6 @@
-#$Id: actions.py,v 1.54 2006-01-23 03:42:27 richard Exp $
+#$Id: actions.py,v 1.55 2006-01-25 03:14:40 richard Exp $
 
-import re, cgi, StringIO, urllib, Cookie, time, random, csv
+import re, cgi, StringIO, urllib, Cookie, time, random, csv, codecs
 
 from roundup import hyperdb, token, date, password
 from roundup.i18n import _
@@ -961,7 +961,7 @@ class ExportCSVAction(Action):
             matches = None
 
         h = self.client.additional_headers
-        h['Content-Type'] = 'text/csv'
+        h['Content-Type'] = 'text/csv; charset=%s' % self.client.charset
         # some browsers will honor the filename here...
         h['Content-Disposition'] = 'inline; filename=query.csv'
 
@@ -971,7 +971,12 @@ class ExportCSVAction(Action):
             # all done, return a dummy string
             return 'dummy'
 
-        writer = csv.writer(self.client.request.wfile)
+        wfile = self.client.request.wfile
+        if self.client.charset != self.client.STORAGE_CHARSET:
+            wfile = codecs.EncodedFile(wfile,
+                self.client.STORAGE_CHARSET, self.client.charset, 'replace')
+
+        writer = csv.writer(wfile)
         writer.writerow(columns)
 
         # and search
