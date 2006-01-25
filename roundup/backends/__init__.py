@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: __init__.py,v 1.35 2005-10-07 05:35:03 richard Exp $
+# $Id: __init__.py,v 1.36 2006-01-25 03:24:09 richard Exp $
 
 '''Container for the hyperdb storage backend implementations.
 '''
@@ -59,6 +59,7 @@ def get_backend(name):
 def have_backend(name):
     '''Is backend "name" available?'''
     if name == 'tsearch2':
+        # currently not working
         return 0
     try:
         get_backend(name)
