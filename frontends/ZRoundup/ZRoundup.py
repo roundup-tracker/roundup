@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: ZRoundup.py,v 1.21 2005-02-15 00:25:11 richard Exp $
+# $Id: ZRoundup.py,v 1.22 2006-01-25 03:43:04 richard Exp $
 #
 ''' ZRoundup module - exposes the roundup web interface to Zope
 
@@ -81,23 +81,26 @@ class FormWrapper:
     '''Make a Zope form dict look like a cgi.py one
     '''
     def __init__(self, form):
-        self.form = form
+        self.__form = form
     def __getitem__(self, item):
-        entry = self.form[item]
+        entry = self.__form[item]
         if isinstance(entry, type([])):
             entry = map(FormItem, entry)
         else:
             entry = FormItem(entry)
         return entry
     def getvalue(self, key, default=None):
-        if self.form.has_key(key):
-            return self.form[key]
+        if self.__form.has_key(key):
+            return self.__form[key]
         else:
             return default
     def has_key(self, item):
-        return self.form.has_key(item)
+        return self.__form.has_key(item)
     def keys(self):
-        return self.form.keys()
+        return self.__form.keys()
+
+    def __repr__(self):
+        return '<ZRoundup.FormWrapper %r>'%self.__form
 
 class ZRoundup(Item, PropertyManager, Implicit, Persistent):
     '''An instance of this class provides an interface between Zope and

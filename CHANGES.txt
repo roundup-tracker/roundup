@@ -35,6 +35,7 @@ Fixed:
 - all backends implement the retired check in getnodeids (sf bug 1290560)
 - fix detection of "missing" existing values in CGI form parser (sf bug
   1414149)
+- ZRoundup works again (sf bug 1263842)
 
 
 2005-10-07 0.9.0b1
