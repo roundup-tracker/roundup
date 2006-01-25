@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: install_util.py,v 1.10 2004-02-11 23:55:08 richard Exp $
+# $Id: install_util.py,v 1.11 2006-01-25 03:11:43 richard Exp $
 
 """Support module to generate and check fingerprints of installed files.
 """
@@ -23,9 +23,8 @@ __docformat__ = 'restructuredtext'
 
 import os, sha, shutil
 
-# ".filter", ".index", ".item", ".newitem" are roundup-specific
-sgml_file_types = [".xml", ".ent", ".html", ".filter", ".index", ".item", ".newitem"]
-hash_file_types = [".py", ".sh", ".conf", ".cgi", '']
+sgml_file_types = [".xml", ".ent", ".html"]
+hash_file_types = [".py", ".sh", ".conf", ".cgi"]
 slast_file_types = [".css"]
 
 digested_file_types = sgml_file_types + hash_file_types + slast_file_types
