@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.211.2.4 2005-07-18 02:20:13 richard Exp $
+# $Id: client.py,v 1.211.2.5 2006-01-25 03:01:51 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -563,7 +563,11 @@ class Client:
         if m:
             self.classname = m.group(1)
             self.nodeid = m.group(2)
-            if not self.db.getclass(self.classname).hasnode(self.nodeid):
+            try:
+                klass = self.db.getclass(self.classname)
+            except KeyError:
+                raise NotFound, '%s/%s'%(self.classname, self.nodeid)
+            if not klass.hasnode(self.nodeid):
                 raise NotFound, '%s/%s'%(self.classname, self.nodeid)
             # with a designator, we default to item view
             self.template = 'item'
