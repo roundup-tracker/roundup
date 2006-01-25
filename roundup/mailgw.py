@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.171 2006-01-25 03:20:35 richard Exp $
+$Id: mailgw.py,v 1.172 2006-01-25 03:51:21 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -852,10 +852,12 @@ Unknown address: %s
         # make sure they're allowed to edit or create this class of information
         if nodeid:
             if not self.db.security.hasPermission('Edit', author, classname):
-                raise Unauthorized, 'You are not permitted to edit %s.'%classname
+                raise Unauthorized, 'You are not permitted to '\
+                    'edit %s.'%classname
         else:
             if not self.db.security.hasPermission('Create', author, classname):
-                raise Unauthorized, 'You are not permitted to create %s.'%classname
+                raise Unauthorized, 'You are not permitted to '\
+                    'create %s.'%classname
                 
         # the author may have been created - make sure the change is
         # committed before we reopen the database
@@ -962,8 +964,10 @@ not find a text/plain part to use.
                 else:
                     files.append(fileid)
             # attach the files to the issue
-            if not self.db.security.hasPermission('Edit', author, classname, 'files'):
-                raise Unauthorized, 'You are not permitted to add files to %s.'%classname
+            if not self.db.security.hasPermission('Edit', author,
+                    classname, 'files'):
+                raise Unauthorized, 'You are not permitted to add '\
+                    'files to %s.'%classname
 
             if nodeid:
                 # extend the existing files list
@@ -992,8 +996,10 @@ Mail message was rejected by a detector.
 %s
 '''%error
             # attach the message to the node
-            if not self.db.security.hasPermission('Edit', author, classname, 'messages'):
-                raise Unauthorized, 'You are not permitted to add messages to %s.'%classname
+            if not self.db.security.hasPermission('Edit', author,
+                    classname, 'messages'):
+                raise Unauthorized, 'You are not permitted to add '\
+                    'messages to %s.'%classname
 
             if nodeid:
                 # add the message to the node's list
@@ -1017,8 +1023,10 @@ Mail message was rejected by a detector.
 
             # Check permissions for each property
             for prop in props.keys():
-                if not self.db.security.hasPermission('Edit', author, classname, prop):
-                    raise Unauthorized, 'You are not permitted to edit property %s of class %s.'%(prop,classname)
+                if not self.db.security.hasPermission('Edit', author,
+                        classname, prop):
+                    raise Unauthorized, 'You are not permitted to edit '\
+                        'property %s of class %s.'%(prop,classname)
 
             if nodeid:
                 cl.set(nodeid, **props)
