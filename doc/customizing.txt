@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.189 $
+:Version: $Revision: 1.190 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1919,8 +1919,16 @@ hasPermission   specific to the "user" class - determine whether the
 is_edit_ok      is the user allowed to Edit the current item?
 is_view_ok      is the user allowed to View the current item?
 is_retired      is the item retired?
-download_url    generates a url-quoted link for download of FileClass
+download_url    generate a url-quoted link for download of FileClass
                 item contents (ie. file<id>/<name>)
+copy_url        generate a url-quoted link for creating a copy
+                of this item.  By default, the copy will acquire
+                all properties of the current item except for
+                ``messages`` and ``files``.  This can be overridden
+                by passing ``exclude`` argument which contains a list
+                (or any iterable) of property names that shall not be
+                copied.  Database-driven properties like ``id`` or
+                ``activity`` cannot be copied.
 =============== ========================================================
 
 Note that if you have a property of the same name as one of the above
