@@ -20,6 +20,10 @@ Feature:
 - added setorderprop() and setlabelprop() to Class (sf features 1379534,
   1379490)
 - CSV encoding support (sf bug 1240848)
+- fields rendered with StructuredText are hyperlinked by default
+- additional attributes for input element may be passed to the 'field'
+  method of a property wrapper
+- added "copy_url" method to generate a URL for copying an item
 
 Fixed:
 - MySQL now creates String columns using the TEXT column type
@@ -36,6 +40,9 @@ Fixed:
 - fix detection of "missing" existing values in CGI form parser (sf bug
   1414149)
 - ZRoundup works again (sf bug 1263842)
+- default user template does not display password fields and submit button
+  when editing is not allowed
+- fix StructuredText import in cgi.templating
 
 
 2005-10-07 0.9.0b1
