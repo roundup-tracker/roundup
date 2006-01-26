@@ -43,11 +43,11 @@
   <th class="required" i18n:translate="">Login Name</th>
   <td tal:content="structure context/username/field">username</td>
  </tr>
- <tr>
+ <tr tal:condition="context/is_edit_ok">
   <th i18n:translate="">Login Password</th>
   <td tal:content="structure context/password/field">password</td>
  </tr>
- <tr>
+ <tr tal:condition="context/is_edit_ok">
   <th i18n:translate="">Confirm Password</th>
   <td tal:content="structure context/password/confirm">password</td>
  </tr>
@@ -81,14 +81,18 @@
  </tr>
  <tr>
   <th class="required" i18n:translate="">E-mail address</th>
-  <td tal:content="structure context/address/field">address</td>
+  <td tal:define="mailto context/address/field">
+   <a tal:condition="not:context/is_edit_ok"
+    tal:attributes="href string:mailto:${mailto}" tal:content="mailto"
+   /><span tal:condition="context/is_edit_ok" tal:replace="structure mailto" />
+  </td>
  </tr>
  <tr>
   <th i18n:translate="">Alternate E-mail addresses<br>One address per line</th>
   <td tal:content="structure context/alternate_addresses/multiline">alternate_addresses</td>
  </tr>
 
- <tr>
+ <tr tal:condition="context/is_edit_ok">
   <td>
    &nbsp;
    <input type="hidden" name="@template" value="item">
