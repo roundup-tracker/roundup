@@ -35,9 +35,12 @@ try:
 except ImportError:
     import StringIO
 try:
-    import StructuredText
+    from StructuredText.StructuredText import HTML as StructuredText
 except ImportError:
-    StructuredText = None
+    try: # older version
+        import StructuredText
+    except ImportError:
+        StructuredText = None
 
 # bring in the templating support
 from roundup.cgi.PageTemplates import PageTemplate, GlobalTranslationService
@@ -648,7 +651,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
 
         If the "property" arg is given, it's passed through to the
         javascript help_window function.
-        
+
         You can use inputtype="radio" to display a radio box instead
         of the default checkbox (useful for entering Link-properties)
 
@@ -1080,6 +1083,29 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         url = '%s%s/%s'%(self._classname, self._nodeid, name)
         return urllib.quote(url)
 
+    def copy_url(self, exclude=("messages", "files")):
+        """Construct a URL for creating a copy of this item
+
+        "exclude" is an optional list of properties that should
+        not be copied to the new object.  By default, this list
+        includes "messages" and "files" properties.  Note that
+        "id" property cannot be copied.
+
+        """
+        exclude = ("id", "activity", "actor", "creation", "creator") \
+            + tuple(exclude)
+        query = {
+            "@template": "item",
+            "@note": self._("Copy of %(class)s %(id)s") % {
+                "class": self._(self._classname), "id": self._nodeid},
+        }
+        for name in self._props.keys():
+            if name not in exclude:
+                query[name] = self[name].plain()
+        return self._classname + "?" + "&".join(
+            ["%s=%s" % (key, urllib.quote(value))
+                for key, value in query.items()])
+
 class _HTMLUser(_HTMLItem):
     '''Add ability to check for permissions on users.
     '''
@@ -1217,7 +1243,7 @@ class StringHTMLProperty(HTMLProperty):
             s = self.hyper_re.sub(self._hyper_repl, s)
         return s
 
-    def stext(self, escape=0):
+    def stext(self, escape=0, hyperlink=1):
         ''' Render the value of the property as StructuredText.
 
             This requires the StructureText module to be installed separately.
@@ -1225,12 +1251,12 @@ class StringHTMLProperty(HTMLProperty):
         if not self.is_view_ok():
             return self._('[hidden]')
 
-        s = self.plain(escape=escape)
+        s = self.plain(escape=escape, hyperlink=hyperlink)
         if not StructuredText:
             return s
         return StructuredText(s,level=1,header=0)
 
-    def field(self, size = 30):
+    def field(self, **kwargs):
         ''' Render the property as a field in HTML.
 
             If not editable, just display the value via plain().
@@ -1244,7 +1270,10 @@ class StringHTMLProperty(HTMLProperty):
             value = cgi.escape(str(self._value))
 
         value = '&quot;'.join(value.split('"'))
-        return self.input(name=self._formname,value=value,size=size)
+
+        kwargs.setdefault("size", 30)
+        kwargs.update({"name": self._formname, "value": value})
+        return self.input(**kwargs)
 
     def multiline(self, escape=0, rows=5, cols=40):
         ''' Render a multiline form edit field for the property.
@@ -1532,12 +1561,12 @@ class DateHTMLProperty(HTMLProperty):
         '''
         if not self.is_view_ok():
             return self._('[hidden]')
-        
+
         if self._offset is None:
             offset = self._db.getUserTimezone()
         else:
             offset = self._offset
-        
+
         if not self._value:
             return ''
         elif format is not self._marker:
