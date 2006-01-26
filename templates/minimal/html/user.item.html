@@ -1,7 +1,15 @@
 <!-- dollarId: user.item,v 1.7 2002/08/16 04:29:04 richard Exp dollar-->
 <tal:block metal:use-macro="templates/page/macros/icing">
-<title metal:fill-slot="head_title" i18n:translate="">User editing - <span
- i18n:name="tracker" tal:replace="config/TRACKER_NAME" /></title>
+<title metal:fill-slot="head_title">
+<tal:block condition="context/id" i18n:translate=""
+ >User <span tal:replace="context/id" i18n:name="id"
+ />: <span tal:replace="context/username" i18n:name="title"
+ /> - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
+/></tal:block>
+<tal:block condition="not:context/id" i18n:translate=""
+ >New User - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
+/></tal:block>
+</title>
 <tal:block metal:fill-slot="body_title">
  <span tal:condition="python: not (context.id or context.is_edit_ok())"
   tal:omit-tag="python:1" i18n:translate="">New User</span>
@@ -14,67 +22,80 @@
   tal:omit-tag="python:1" i18n:translate="">User<tal:x
   replace="context/id" i18n:name="id" /> Editing</span>
 </tal:block>
+
 <td class="content" metal:fill-slot="content">
-<span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())"
- i18n:translate="">You are not allowed to view this page.</span>
+
+<p tal:condition="not:context/is_view_ok" i18n:translate="">
+    You are not allowed to view this page.
+</p>
+
+<div tal:condition="context/is_view_ok">
 
 <form method="POST" onSubmit="return submit_once()"
-      enctype="multipart/form-data" tal:condition="context/is_edit_ok">
-
+      enctype="multipart/form-data"
+      tal:attributes="action context/designator">
 
 <table class="form">
  <tr>
-  <th i18n:translate="">Login Name</th>
+  <th class="required" i18n:translate="">Login Name</th>
   <td tal:content="structure context/username/field">username</td>
  </tr>
- <tr>
+ <tr tal:condition="context/is_edit_ok">
   <th i18n:translate="">Login Password</th>
   <td tal:content="structure context/password/field">password</td>
  </tr>
- <tr>
+ <tr tal:condition="context/is_edit_ok">
   <th i18n:translate="">Confirm Password</th>
   <td tal:content="structure context/password/confirm">password</td>
  </tr>
  <tr tal:condition="python:request.user.hasPermission('Web Roles')">
   <th i18n:translate="">Roles</th>
-  <td tal:condition="context/id"
-      tal:content="structure context/roles/field">roles</td>
-  <td tal:condition="not:context/id">
-   <input name="roles" tal:attributes="value db/config/NEW_WEB_USER_ROLES">
+  <td>
+   <input tal:condition="context/id"
+          tal:replace="structure context/roles/field">
+   <input name="roles" tal:condition="not:context/id"
+          tal:attributes="value db/config/NEW_WEB_USER_ROLES">
+   <tal:block i18n:translate="">(to give the user more than one role,
+    enter a comma,separated,list)</tal:block>
   </td>
  </tr>
  <tr>
-  <th i18n:translate="">E-mail address</th>
-  <td tal:content="structure context/address/field">address</td>
+  <th class="required" i18n:translate="">E-mail address</th>
+  <td tal:define="mailto context/address/field">
+   <a tal:condition="not:context/is_edit_ok"
+    tal:attributes="href string:mailto:${mailto}" tal:content="mailto"
+   /><span tal:condition="context/is_edit_ok" tal:replace="structure mailto" />
+  </td>
  </tr>
  <tr>
   <th i18n:translate="">Alternate E-mail addresses<br>One address per line</th>
   <td tal:content="structure context/alternate_addresses/multiline">alternate_addresses</td>
  </tr>
 
- <tr>
-  <td>&nbsp;
-   <input type="hidden" name="@required" value="username,address">
+ <tr tal:condition="context/is_edit_ok">
+  <td>
+   &nbsp;
    <input type="hidden" name="@template" value="item">
+   <input type="hidden" name="@required" value="username,address">
   </td>
   <td tal:content="structure context/submit">submit button here</td>
  </tr>
 </table>
 </form>
 
-<table class="form" tal:condition="context/is_only_view_ok">
- <tr>
-  <th i18n:translate="">Login Name</th>
-  <td tal:content="context/username">username</td>
- </tr>
- <tr>
-  <th i18n:translate="">E-mail address</th>
-  <td tal:content="context/address/email">address</td>
- </tr>
+<tal:block tal:condition="not:context/id" i18n:translate="">
+<table class="form">
+<tr>
+ <td>Note:&nbsp;</td>
+ <th class="required">highlighted</th>
+ <td>&nbsp;fields are required.</td>
+</tr>
 </table>
+</tal:block>
 
-<tal:block tal:condition="python:context.id and context.is_view_ok()"
-           tal:replace="structure context/history" />
+<tal:block tal:condition="context/id" tal:replace="structure context/history" />
+
+</div>
 
 </td>
 
