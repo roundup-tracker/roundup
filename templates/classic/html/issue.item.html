@@ -94,13 +94,14 @@ python:db.user.classhelp('username,realname,address', property='nosy', width='60
   <input type="hidden" name="@template" value="item">
   <input type="hidden" name="@required" value="title,priority">
  </td>
- <td colspan=3 tal:content="structure context/submit">
-  submit button will go here
+ <td colspan=3>
+  <span tal:replace="structure context/submit">submit button</span>
+  <a tal:condition="context/id" tal:attributes="href context/copy_url"
+   i18n:translate="">Make a copy</a>
  </td>
 </tr>
 
 </table>
-
 </form>
 
 <tal:block tal:condition="not:context/id" i18n:translate="">
