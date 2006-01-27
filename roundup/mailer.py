@@ -1,7 +1,7 @@
 """Sending Roundup-specific mail over SMTP.
 """
 __docformat__ = 'restructuredtext'
-# $Id: mailer.py,v 1.12 2006-01-20 03:04:14 richard Exp $
+# $Id: mailer.py,v 1.13 2006-01-27 02:41:18 richard Exp $
 
 import time, quopri, os, socket, smtplib, re
 
@@ -120,7 +120,7 @@ class Mailer:
         part = writer.nextpart()
         part.addheader('Content-Transfer-Encoding', 'quoted-printable')
         body = part.startbody('text/plain; charset=utf-8')
-        body.write('\n'.join(error))
+        body.write(quopri.encodestring ('\n'.join(error)))
 
         # attach the original message to the returned message
         part = writer.nextpart()
