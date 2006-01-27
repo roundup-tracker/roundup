@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.102 2006-01-25 02:24:28 richard Exp $
+# $Id: back_metakit.py,v 1.103 2006-01-27 05:22:46 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -406,6 +406,7 @@ class Class(hyperdb.Class):
     def __init__(self, db, classname, **properties):
         if hasattr(db, classname):
             raise ValueError, "Class %s already exists"%classname
+
         hyperdb.Class.__init__ (self, db, classname, **properties)
         self.db = db # why isn't this a weakref as for other backends??
         self.key = None
@@ -416,16 +417,15 @@ class Class(hyperdb.Class):
                               'creation' : hyperdb.Date(),
                               'creator'  : hyperdb.Link('user') }
 
-        view = self.__getview()
-        self.maxid = 1
-        if view:
-            self.maxid = view[-1].id + 1
+        self.idcache = {}
         self.uncommitted = {}
         self.comactions = []
         self.rbactions = []
 
-        # people reach inside!!
-        self.idcache = {}
+        view = self.__getview()
+        self.maxid = 1
+        if view:
+            self.maxid = view[-1].id + 1
 
     def setid(self, maxid):
         self.maxid = maxid + 1
