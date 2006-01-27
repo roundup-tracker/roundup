@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.83 2005-10-07 05:35:02 richard Exp $
+# $Id: setup.py,v 1.84 2006-01-27 06:09:44 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -351,17 +351,30 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
 
-Roundup 0.9 includes:
+Roundup 1.0 includes all the pre-1.0 goodness, and:
 
-- added "imapServer.py" script (sf patch 934567)
-- added date selection popup windows (thanks Marcus Priesch)
-- added Xapian indexer; replaces standard indexers if Xapian is available*
-- mailgw subject parsing has configurable levels of strictness
-- nosy messages may be sent individually to all recipients
-- remember where we came from when logging in (sf patch 1312889)
-
-*: unfortunately the latest release of Xapian (0.9.2) has a bug in the
-Python bindings which prevents this indexer from working, so it's disabled
+- added full-text indexer using Xapian as the back end
+- Lithuanian translation by Aiste Kesminaite
+- Web User Interface language selection by form variable @language,
+  browser cookie or HTTP header Accept-Language (sf patch 1360321)
+- initial values for configuration options may be passed on
+  'roundup-admin install' command line (based on sf patch 1237110)
+- favicon.ico image may be changed with server config option (sf patch 1355661)
+- Password objects initialized from plaintext remember plaintext value
+  (sf rfe 1379447)
+- Roundup installation document includes configuration example
+  for Exim Internet Mailer (sf bug 1393860)
+- enable registration confirmation by web only (sf bug 1381675)
+- allow preselection of values in templating menu()s (sf patch 1396085)
+- display the query name in the header (sf feature 1298535 / patch 1349387)
+- classhelp works with Link properties now (sf bug 1410290)
+- added setorderprop() and setlabelprop() to Class (sf features 1379534,
+  1379490)
+- CSV encoding support (sf bug 1240848)
+- fields rendered with StructuredText are hyperlinked by default
+- additional attributes for input element may be passed to the 'field'
+  method of a property wrapper
+- added "copy_url" method to generate a URL for copying an item
 ''',
         'author': "Richard Jones",
         'author_email': "richard@users.sourceforge.net",

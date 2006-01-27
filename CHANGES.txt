@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2005-??-?? 0.9.0b2
+2005-01-27 1.0
 Feature:
 - Lithuanian translation by Aiste Kesminaite
 - Web User Interface language selection by form variable @language,

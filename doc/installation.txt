@@ -254,10 +254,6 @@ create your tracker on.
 Choosing Your Backend
 ---------------------
 
-.. note::
-
-   The tsearch2 backend is experimental and should not be selected.
-
 The actual storage of Roundup tracker information is handled by backends.
 There's several to choose from, each with benefits and limitations:
 
