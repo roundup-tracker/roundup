@@ -189,9 +189,11 @@
 </tr>
 
 <tr tal:condition="python:request.user.hasPermission('Edit', 'query')">
-<th i18n:translate="">Query name**:</th>
-<td><input name="@queryname"
-           tal:attributes="value request/form/@queryname/value | default"></td>
+ <th i18n:translate="">Query name**:</th>
+ <td tal:define="value request/form/@queryname/value | nothing">
+  <input name="@queryname" tal:attributes="value value">
+  <input type="hidden" name="@old-queryname" tal:attributes="value value">
+ </td>
 </tr>
 
 <tr>

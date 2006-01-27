@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.55 2006-01-25 03:14:40 richard Exp $
+#$Id: actions.py,v 1.56 2006-01-27 03:30:38 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random, csv, codecs
 
@@ -148,6 +148,12 @@ class SearchAction(Action):
         """
         self.fakeFilterVars()
         queryname = self.getQueryName()
+    
+        # editing existing query name?
+        old_queryname = ''
+        for key in ('@old-queryname', ':old-queryname'):
+            if self.form.has_key(key):
+                old_queryname = self.form[key].value.strip()
 
         # handle saving the query params
         if queryname:
@@ -162,7 +168,7 @@ class SearchAction(Action):
             if key:
                 # edit the old way, only one query per name
                 try:
-                    qid = self.db.query.lookup(queryname)
+                    qid = self.db.query.lookup(old_queryname)
                     if not self.hasPermission('Edit', 'query', itemid=qid):
                         raise exceptions.Unauthorised, self._(
                             "You do not have permission to edit queries")
@@ -178,23 +184,24 @@ class SearchAction(Action):
                 # edit the new way, query name not a key any more
                 # see if we match an existing private query
                 uid = self.db.getuid()
-                qids = self.db.query.filter(None, {'name': queryname,
+                qids = self.db.query.filter(None, {'name': old_queryname,
                         'private_for': uid})
                 if not qids:
                     # ok, so there's not a private query for the current user
-                    # - see if there's a public one created by them
-                    qids = self.db.query.filter(None, {'name': queryname,
-                        'private_for': -1, 'creator': uid})
+                    # - see if there's one created by them
+                    qids = self.db.query.filter(None, {'name': old_queryname,
+                        'creator': uid})
 
                 if qids:
                     # edit query - make sure we get an exact match on the name
                     for qid in qids:
-                        if queryname != self.db.query.get(qid, 'name'):
+                        if old_queryname != self.db.query.get(qid, 'name'):
                             continue
                         if not self.hasPermission('Edit', 'query', itemid=qid):
                             raise exceptions.Unauthorised, self._(
                             "You do not have permission to edit queries")
-                        self.db.query.set(qid, klass=self.classname, url=url)
+                        self.db.query.set(qid, klass=self.classname,
+                            url=url, name=queryname)
                 else:
                     # create a query
                     if not self.hasPermission('Create', 'query'):
@@ -239,10 +246,9 @@ class SearchAction(Action):
 
             self.form.value.append(cgi.MiniFieldStorage('@filter', key))
 
-    FV_QUERYNAME = re.compile(r'[@:]queryname')
     def getQueryName(self):
-        for key in self.form.keys():
-            if self.FV_QUERYNAME.match(key):
+        for key in ('@queryname', ':queryname'):
+            if self.form.has_key(key):
                 return self.form[key].value.strip()
         return ''
 

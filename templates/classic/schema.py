@@ -90,7 +90,7 @@ db.security.addPermissionToRole('User', 'Email Access')
 
 # Assign the access and edit Permissions for issue, file and message
 # to regular users now
-for cl in 'issue', 'file', 'msg', 'query', 'keyword':
+for cl in 'issue', 'file', 'msg', 'keyword':
     db.security.addPermissionToRole('User', 'View', cl)
     db.security.addPermissionToRole('User', 'Edit', cl)
     db.security.addPermissionToRole('User', 'Create', cl)
@@ -112,6 +112,26 @@ db.security.addPermissionToRole('User', p)
 p = db.security.addPermission(name='Edit', klass='user', check=own_record,
     description="User is allowed to edit their own user details")
 db.security.addPermissionToRole('User', p)
+
+# Users should be able to edit and view their own queries. They should also
+# be able to view any marked as not private. They should not be able to
+# edit others' queries, even if they're not private
+def view_query(db, userid, itemid):
+    private_for = db.query.get(itemid, 'private_for')
+    if not private_for: return True
+    return userid == private_for
+def edit_query(db, userid, itemid):
+    return userid == db.query.get(itemid, 'creator')
+p = db.security.addPermission(name='View', klass='query', check=view_query,
+    description="User is allowed to view their own and public queries")
+db.security.addPermissionToRole('User', p)
+p = db.security.addPermission(name='Edit', klass='query', check=edit_query,
+    description="User is allowed to edit their queries")
+db.security.addPermissionToRole('User', p)
+p = db.security.addPermission(name='Create', klass='query',
+    description="User is allowed to create queries")
+db.security.addPermissionToRole('User', p)
+
 
 #
 # ANONYMOUS USER PERMISSIONS

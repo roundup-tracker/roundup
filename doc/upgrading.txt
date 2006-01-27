@@ -13,10 +13,44 @@ steps.
 
 .. contents::
 
-Migrating from 0.8.x to 0.9.0
-=============================
+Migrating from 0.8.x to 1.0
+===========================
 
-No upgrade steps are required.
+1.0 New Query Permissions
+-------------------------
+
+New permissions are defined for query editing and viewing. To include these
+in your tracker, you need to add these lines to your tracker's
+``schema.py``::
+
+ # Users should be able to edit and view their own queries. They should also
+ # be able to view any marked as not private. They should not be able to
+ # edit others' queries, even if they're not private
+ def view_query(db, userid, itemid):
+     private_for = db.query.get(itemid, 'private_for')
+     if not private_for: return True
+     return userid == private_for
+ def edit_query(db, userid, itemid):
+     return userid == db.query.get(itemid, 'creator')
+ p = db.security.addPermission(name='View', klass='query', check=view_query,
+     description="User is allowed to view their own and public queries")
+ db.security.addPermissionToRole('User', p)
+ p = db.security.addPermission(name='Edit', klass='query', check=edit_query,
+     description="User is allowed to edit their queries")
+ db.security.addPermissionToRole('User', p)
+ p = db.security.addPermission(name='Create', klass='query',
+     description="User is allowed to create queries")
+ db.security.addPermissionToRole('User', p)
+
+and then remove 'query' from the line::
+
+ # Assign the access and edit Permissions for issue, file and message
+ # to regular users now
+ for cl in 'issue', 'file', 'msg', 'query', 'keyword':
+
+so it looks like::
+
+ for cl in 'issue', 'file', 'msg', 'keyword':
 
 
 Migrating from 0.8.0 to 0.8.3
