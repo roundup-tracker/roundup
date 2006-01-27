@@ -20,6 +20,7 @@ Fixed:
 - catch bad classname in URL (related to sf bug 1240541)
 - clean up digested_file_types (sf bug 1268303)
 - fix permission checks in mailgw (sf bug 1263655)
+- fix encoding of subject in generated error message (sf bug 1414465)
 
 
 2005-10-07 0.8.5
