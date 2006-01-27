@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2006-??-?? 0.8.6
+2006-01-27 0.8.6
 Fixed:
 - french translation updated by Patrick Decat (sf patch 1397059)
 - tighten up Date parsing to not allow 'M/D/YY' (or 'D/M/YY) (sf bug

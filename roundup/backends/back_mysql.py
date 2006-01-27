@@ -501,6 +501,14 @@ class Database(Database):
         self.sql("SET AUTOCOMMIT=0")
         self.sql("START TRANSACTION")
 
+    def sql_close(self):
+        logging.getLogger('hyperdb').info('close')
+        try:
+            self.conn.close()
+        except MySQLdb.ProgrammingError, message:
+            if str(message) != 'closing a closed connection':
+                raise
+
 class MysqlClass:
     # we're overriding this method for ONE missing bit of functionality.
     # look for "I can't believe it's not a toy RDBMS" below
