@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.120 2005-12-25 16:20:02 a1s Exp $
+# $Id: roundupdb.py,v 1.121 2006-01-27 02:39:42 richard Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -180,12 +180,13 @@ class IssueClass:
         list. These recipients will not be included in the To: or Cc:
         address lists.
         """
-        if msgid is None:
-            authid = '1'
-            recipients = []
-        else:
+        if msgid:
             authid = self.db.msg.get(msgid, 'author')
             recipients = self.db.msg.get(msgid, 'recipients', [])
+        else:
+            # "system message"
+            authid = None
+            recipients = []
 
         sendto = []
         bcc_sendto = []
@@ -274,15 +275,18 @@ class IssueClass:
         title = self.get(nodeid, 'title') or '%s message copy'%cn
 
         # figure author information
-        if msgid is None:
-            authid = '1'
-            authname = 'admin'
-        else:
+        if msgid:
             authid = messages.get(msgid, 'author')
             authname = users.get(authid, 'realname')
-        if not authname:
-            authname = users.get(authid, 'username', '')
-        authaddr = users.get(authid, 'address', '')
+            if not authname:
+                authname = users.get(authid, 'username', '')
+            authaddr = users.get(authid, 'address', '')
+        else:
+            # "system message"
+            authid = None
+            authname = 'admin'
+            authaddr = self.db.config.ADMIN_EMAIL
+
         if authaddr:
             authaddr = " <%s>" % straddr( ('',authaddr) )
 

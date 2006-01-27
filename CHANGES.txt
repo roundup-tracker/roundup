@@ -43,6 +43,7 @@ Fixed:
 - default user template does not display password fields and submit button
   when editing is not allowed
 - fix StructuredText import in cgi.templating
+- have "System Messages" be marked as such again (sf bug 1281907)
 
 
 2005-10-07 0.9.0b1
