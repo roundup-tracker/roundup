@@ -2,9 +2,7 @@
 Roundup - An Issue-Tracking System for Knowledge Workers
 ========================================================
 
-:Authors: Ka-Ping Yee (original__), Richard Jones (implementation)
-
-__ spec.html
+:Authors: Ka-Ping Yee (original), Richard Jones (implementation)
 
 .. contents::
 
@@ -14,9 +12,11 @@ Introduction
 This document presents a description of the components of the Roundup
 system and specifies their interfaces and behaviour in sufficient detail
 to guide an implementation. For the philosophy and rationale behind the
-Roundup design, see the first-round Software Carpentry submission for
-Roundup. This document fleshes out that design as well as specifying
+Roundup design, see the first-round Software Carpentry `submission for
+Roundup`__. This document fleshes out that design as well as specifying
 interfaces so that the components can be developed separately.
+
+__ spec.html
 
 
 The Layer Cake
