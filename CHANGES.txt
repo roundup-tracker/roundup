@@ -1,7 +1,12 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2005-01-27 1.0
+2006-??-?? 1.0.1
+Fixed:
+- SQL generation for sort/group by separate Link properties (sf bug
+  1417565)
+
+2006-01-27 1.0
 Feature:
 - Lithuanian translation by Aiste Kesminaite
 - Web User Interface language selection by form variable @language,

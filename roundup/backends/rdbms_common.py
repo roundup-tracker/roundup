@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.163 2006-01-24 08:27:54 a1s Exp $
+# $Id: rdbms_common.py,v 1.164 2006-01-30 00:36:26 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2158,6 +2158,7 @@ class Class(hyperdb.Class):
         orderby = []
         ordercols = []
         mlsort = []
+        rhsnum = 0
         for sortby in group, sort:
             sdir, prop = sortby
             if sdir and prop:
@@ -2176,9 +2177,11 @@ class Class(hyperdb.Class):
                     op = link.orderprop()
                     if op != 'id':
                         tn = '_' + lcn
-                        loj.append('LEFT OUTER JOIN %s as rhs_ on %s=rhs_.id'
-                                  %(tn, o))
-                        o = 'rhs_._%s'%op
+                        rhs = 'rhs%s_'%rhsnum
+                        rhsnum += 1
+                        loj.append('LEFT OUTER JOIN %s as %s on %s=%s.id'%(
+                            tn, rhs, o, rhs))
+                        o = '%s._%s'%(rhs, op)
                     ordercols.append(o)
                 elif prop == 'id':
                     o = '_%s.id'%cn

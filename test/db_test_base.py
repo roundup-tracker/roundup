@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.63 2006-01-23 05:24:33 richard Exp $
+# $Id: db_test_base.py,v 1.64 2006-01-30 00:36:26 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
@@ -1020,6 +1020,15 @@ class DBTest(MyTestCase):
         ae, filt = self.filteringSetup()
         ae(filt(None, {}, ('+','nosy'), (None,None)), ['1', '2', '4', '3'])
         ae(filt(None, {}, ('-','nosy'), (None,None)), ['3', '4', '1', '2'])
+
+    def testFilteringLinkSortGroup(self):
+        # 1: status: 2, priority: 3
+        # 2: status: 1, priority: 3
+        # 3: status: 1, priority: 2,
+        # 4: status: 3, priority: 2,
+        ae, filt = self.filteringSetup()
+        ae(filt(None, {}, ('+','status'), ('+','priority')),
+            ['1', '2', '4', '3'])
 
     def testFilteringDateSort(self):
         # '1': '2003-02-16.22:50'

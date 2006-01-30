@@ -1,4 +1,4 @@
-#$Id: back_mysql.py,v 1.65 2006-01-20 02:42:35 richard Exp $
+#$Id: back_mysql.py,v 1.66 2006-01-30 00:36:26 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -723,6 +723,7 @@ class MysqlClass:
         orderby = []
         ordercols = []
         mlsort = []
+        rhsnum = 0
         for sortby in group, sort:
             sdir, prop = sortby
             if sdir and prop:
@@ -741,9 +742,11 @@ class MysqlClass:
                     op = link.orderprop ()
                     if op != 'id':
                         tn = '_' + lcn
-                        loj.append('LEFT OUTER JOIN %s as rhs_ on %s=rhs_.id'
-                                  %(tn, o))
-                        o = 'rhs_._%s'%op
+                        rhs = 'rhs%s_'%rhsnum
+                        rhsnum += 1
+                        loj.append('LEFT OUTER JOIN %s as %s on %s=%s.id'%(
+                            tn, rhs, o, rhs))
+                        o = '%s._%s'%(rhs, op)
                     ordercols.append(o)
                 elif prop == 'id':
                     o = '_%s.id'%cn
