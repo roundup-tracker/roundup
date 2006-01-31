@@ -9,26 +9,32 @@ to find out how to install this software.
 Building a release of Roundup is done by running:
 
 1.  Make sure the unit tests run! "./run_tests.py"
-2.  Edit roundup/__init__.py and doc/announcement.txt to reflect the new
+2.  Tag the CVS for the release, eg. "cvs tag -R release-0-6-3"
+3.  Edit roundup/__init__.py and doc/announcement.txt to reflect the new
     version and appropriate announcements. Add truncated announcement to
     setup.py description field.
-3.  python setup.py clean --all
-4.  Edit setup.py to ensure that all information therein (version, contact
+4.  Clean out all *.orig, *.rej, .#* files from the source.
+5.  python setup.py clean --all
+6.  Edit setup.py to ensure that all information therein (version, contact
     information etc) is correct.
-5.  python setup.py sdist --manifest-only
-6.  Check the MANIFEST to make sure that any new files are included. If
+7.  python setup.py sdist --manifest-only
+8.  Check the MANIFEST to make sure that any new files are included. If
     they are not, edit MANIFEST.in to include them. "Documentation" for
     MANIFEST.in may be found in disutils.filelist._parse_template_line.
-7.  python setup.py sdist
+9.  python setup.py sdist
     (if you find sdist a little verbose, add "--quiet" to the end of the
      command)
-8. unpack the new dist file in /tmp then a) run_test.py and b) demo.py
+10. Unpack the new dist file in /tmp then a) run_test.py and b) demo.py
     with all available Python versions.
-9.  python setup.py bdist_rpm
-10. python setup.py bdist_wininst
+11. Generate gpg signature with "gpg -a --detach-sign"
+12. python setup.py bdist_rpm
+13. python setup.py bdist_wininst
 
 So, those commands in a nice, cut'n'pasteable form::
 
+ find . -name '*.orig' -exec rm {} \;
+ find . -name '*.rej' -exec rm {} \;
+ find . -name '.#*' -exec rm {} \;
  python setup.py clean --all
  python setup.py sdist --manifest-only
  python setup.py sdist --quiet
@@ -37,21 +43,23 @@ So, those commands in a nice, cut'n'pasteable form::
  python2.3 setup.py register
 
 
+
 Distributing Releases
 =====================
 
 Once a release is built, follow these steps:
 
-1. generate gpg signature with "gpg -a --detach-sign" and upload to
-   Sourceforge.
-2. tag the CVS for the release, eg. "cvs tag -R release-0-6-3"
-3. FTP the tar.gz from the dist directory to to the "incoming" directory on
+1. FTP the tar.gz from the dist directory to to the "incoming" directory on
    "upload.sourceforge.net".
-4. Make a quick release at:
+2. Make a quick release at:
     http://sourceforge.net/project/admin/qrs.php?package_id=&group_id=31577
-5. PyPI registration
-6. Send doc/announcement.txt to python-announce@python.org
-7. Notify any other news services as appropriate...
+3. PyPI registration / upload::
+
+     python setup.py register
+     python2.5 setup.py sdist upload --sign
+
+4. Send doc/announcement.txt to python-announce@python.org
+5. Notify any other news services as appropriate...
 
    http://freshmeat.net/projects/roundup/
 
