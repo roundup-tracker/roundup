@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.31 $
+:Version: $Revision: 1.32 $
 
 .. contents::
 
@@ -44,19 +44,19 @@ You may access your tracker through one of three ways:
 3. using the `command line tool`_.
 
 The last is usually only used by administrators. Most users will use the
-web and email interfaces. All three are explained below.
+web and e-mail interfaces. All three are explained below.
 
 
 Issue life cycles in Roundup
 ----------------------------
 
-New issues may be submitted via the web or email.
+New issues may be submitted via the web or e-mail.
 
 By default, the issue will have the status "unread". If another message
 is received for the issue, its status will change to "chatting". 
 
 The "home" page for a tracker will generally display all issues which
-are not "resolved.
+are not "resolved".
 
 If an issue is closed, and a new message is received then it'll be
 reopened to the state of "chatting".
@@ -67,7 +67,7 @@ Entering values in your Tracker
 
 All interfaces to your tracker use the same format for entering values.
 This means the web interface for entering a new issue, the web interface
-for searching issues, the email interface and even the command-line
+for searching issues, the e-mail interface and even the command-line
 administration tool.
 
 
@@ -107,8 +107,8 @@ not set. For example, the following searches on the issues:
   match issues that are assigned to users 2, 3 or 40.
 ``topic=user interface``
   match issues with the keyword "user interface" in their topic list
-``topic=web interface,email interface``
-  match issues with the keyword "web interface" or "email interface" in
+``topic=web interface,e-mail interface``
+  match issues with the keyword "web interface" or "e-mail interface" in
   their topic list
 ``topic=-1``
   match issues with no topics set
@@ -354,14 +354,23 @@ Any number of new Permissions and Roles may be created as described in
 the customisation documentation. Examples of new access controls are:
 
 - only managers may sign off issues as complete
-- don't give users who register through email web access
+- don't give users who register through e-mail web access
 - let some users edit the details of all users
 
 
 E-Mail Gateway
 ==============
 
-E-mail sent to Roundup is examined for several pieces of information:
+Roundup trackers may be used to facilitate e-mail conversations around
+issues. The "nosy" list attached to each issue indicates the users who
+should receive e-mail when messages are added to the issue.
+
+When e-mail comes into a tracker that identifies an issue in the subject
+line, the content of the e-mail is attached to the issue.
+
+You may even create new issues from e-mail messages.
+
+E-mail sent to a tracker is examined for several pieces of information:
 
 1. `subject-line information`_ identifying the purpose of the e-mail
 2. `sender identification`_ using the sender of the message
@@ -448,13 +457,13 @@ Automatic Properties
 Sender identification
 ---------------------
 
-If the sender of an email is unknown to Roundup (looking up both user
-primary email addresses and their alternate addresses) then a new user
+If the sender of an e-mail is unknown to Roundup (looking up both user
+primary e-mail addresses and their alternate addresses) then a new user
 will be created. The new user will have their username set to the "user"
-part of "user@domain" in their email address. Their password will be
+part of "user@domain" in their e-mail address. Their password will be
 completely randomised, and they'll have to visit the web interface to
 have it changed. Some sites don't allow web access by users who register
-via email like this.
+via e-mail like this.
 
 
 E-Mail Message Content
@@ -553,9 +562,9 @@ not specified is msg, but the other classes: issue, file, user can also
 be used. The -S or --set options uses the same
 property=value[;property=value] notation accepted by the command line
 roundup command or the commands that can be given on the Subject line of
-an email message.
+an e-mail message.
 
-It can let you set the type of the message on a per email address basis.
+It can let you set the type of the message on a per e-mail address basis.
 
 PIPE:
  In the first case, the mail gateway reads a single message from the
