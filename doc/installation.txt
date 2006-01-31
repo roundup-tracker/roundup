@@ -733,7 +733,7 @@ released.
 Further Reading
 ===============
 
-If you intend to use Roundup with anything other than the defualt
+If you intend to use Roundup with anything other than the default
 templates, if you would like to hack on Roundup, or if you would
 like implementation details, you should read `Customising Roundup`_.
 
