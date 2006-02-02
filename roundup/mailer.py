@@ -1,7 +1,7 @@
 """Sending Roundup-specific mail over SMTP.
 """
 __docformat__ = 'restructuredtext'
-# $Id: mailer.py,v 1.13 2006-01-27 02:41:18 richard Exp $
+# $Id: mailer.py,v 1.14 2006-02-02 04:14:29 richard Exp $
 
 import time, quopri, os, socket, smtplib, re
 
@@ -14,8 +14,8 @@ from roundup import __version__
 try:
     from email.Utils import formatdate
 except ImportError:
-    def formatdate(timeval):
-        return time.strftime("%a, %d %b %Y %H:%M:%S +0000", timeval)
+    def formatdate():
+        return time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime())
 
 class MessageSendError(RuntimeError):
     pass
@@ -60,7 +60,7 @@ class Mailer:
         writer.addheader('Subject', encode_header(subject, charset))
         writer.addheader('To', ', '.join(to))
         writer.addheader('From', author)
-        writer.addheader('Date', formatdate(time.mktime(time.gmtime())))
+        writer.addheader('Date', formatdate())
 
         # Add a unique Roundup header to help filtering
         writer.addheader('X-Roundup-Name', encode_header(tracker_name,

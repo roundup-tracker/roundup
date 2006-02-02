@@ -5,6 +5,7 @@ are given with the most recent entry first.
 Fixed:
 - SQL generation for sort/group by separate Link properties (sf bug
   1417565)
+- fix timezone offsetting in email Date: header
 
 2006-01-27 1.0
 Feature:
