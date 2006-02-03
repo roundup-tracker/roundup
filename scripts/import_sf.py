@@ -26,15 +26,20 @@ from elementtree import ElementTree
 
 from roundup import instance, hyperdb, date, support, password
 
+today = date.Date('.')
+
 DL_URL = 'http://sourceforge.net/tracker/download.php?group_id=%(group_id)s&atid=%(atid)s&aid=%(aid)s'
 
 def get_url(aid):
     """ so basically we have to jump through hoops, given an artifact id, to
     figure what the URL should be to access that artifact, and hence any
     attached files."""
+    # first we hit this URL...
     conn = httplib.HTTPConnection("sourceforge.net")
     conn.request("GET", "/support/tracker.php?aid=%s"%aid)
     response = conn.getresponse()
+    # which should respond with a redirect to the correct url which has the
+    # magic "group_id" and "atid" values in it that we need
     assert response.status == 302, 'response code was %s'%response.status
     location = response.getheader('location')
     query = urlparse.urlparse(response.getheader('location'))[-2]
@@ -263,6 +268,13 @@ def import_xml(tracker_home, xml_file, file_dir):
             actor = authid
             if d['status'] == unread:
                 d['status'] = chatting
+
+        message_id += 1
+        m = {'content': 'IMPORT FROM SOURCEFORGE', 'author': '1',
+            'date': today, 'id': str(message_id), 'creation': today }
+        message_data.append(m)
+        messages.append(message_id)
+
         d['messages'] = messages
         d['nosy'] = list(nosy)
 
@@ -325,7 +337,6 @@ def convert_message(content, id):
 class colon_separated(csv.excel):
     delimiter = ':'
 
-today = date.Date('.')
 def write_csv(klass, data):
     props = klass.getprops()
     if not os.path.exists('/tmp/imported'):
