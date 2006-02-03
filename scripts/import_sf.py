@@ -21,10 +21,12 @@ This script needs four steps to work:
 And you're done!
 '''
 
-import sys, sets, os, csv, time, urllib2, httplib, mimetypes
+import sys, sets, os, csv, time, urllib2, httplib, mimetypes, urlparse
 from elementtree import ElementTree
 
 from roundup import instance, hyperdb, date, support, password
+
+DL_URL = 'http://sourceforge.net/tracker/download.php?group_id=%(group_id)s&atid=%(atid)s&aid=%(aid)s'
 
 def get_url(aid):
     """ so basically we have to jump through hoops, given an artifact id, to
@@ -34,7 +36,10 @@ def get_url(aid):
     conn.request("GET", "/support/tracker.php?aid=%s"%aid)
     response = conn.getresponse()
     assert response.status == 302, 'response code was %s'%response.status
-    return 'http://sourceforge.net' + response.getheader('location')
+    location = response.getheader('location')
+    query = urlparse.urlparse(response.getheader('location'))[-2]
+    info = dict([param.split('=') for param in query.split('&')])
+    return DOWNLOAD_TEMPLATE%info
 
 def fetch_files(xml_file, file_dir):
     """ Fetch files referenced in the xml_file into the dir file_dir. """

@@ -21,10 +21,10 @@ To give Roundup a try, just download (see below), unpack and run::
 
     python demo.py
 
+Release info and download page:
+     http://cheeseshop.python.org/roundup
 Source and documentation is available at the website:
      http://roundup.sourceforge.net/
-Release Info (via download page):
-     http://sourceforge.net/projects/roundup
 Mailing lists - the place to ask questions:
      http://sourceforge.net/mail/?group_id=31577
 
