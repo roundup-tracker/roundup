@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.85 2006-02-03 04:12:35 richard Exp $
+# $Id: setup.py,v 1.86 2006-02-03 05:27:59 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -351,13 +351,13 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
 
-In this release:
+Features in this release:
 
-Feature:
 - scripts/import_sf.py will import a tracker from Sourceforge.NET
 - added hasRole('Role Name') to HTMLUser
 
-Fixed:
+Fixed in this release:
+
 - SQL generation for sort/group by separate Link properties (sf bug
   1417565)
 - fix timezone offsetting in email Date: header

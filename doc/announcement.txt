@@ -1,12 +1,12 @@
 I'm proud to release this, the 1.0.1 release of Roundup.
 
-In this release:
+Features in this release:
 
-Feature:
 - scripts/import_sf.py will import a tracker from Sourceforge.NET
 - added hasRole('Role Name') to HTMLUser
 
-Fixed:
+Fixed in this release:
+
 - SQL generation for sort/group by separate Link properties (sf bug
   1417565)
 - fix timezone offsetting in email Date: header
