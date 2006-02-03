@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.190 $
+:Version: $Revision: 1.191 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1916,6 +1916,11 @@ hasPermission   specific to the "user" class - determine whether the
                         [property=], [itemid=])
 
                 where the classname defaults to the current context.
+hasRole         specific to the "user" class - determine whether the
+                user has a Role. The signature is::
+
+                    hasRole(self, rolename)
+
 is_edit_ok      is the user allowed to Edit the current item?
 is_view_ok      is the user allowed to View the current item?
 is_retired      is the item retired?

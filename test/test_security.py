@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: test_security.py,v 1.9 2005-01-28 04:07:58 richard Exp $
+# $Id: test_security.py,v 1.10 2006-02-03 04:04:37 richard Exp $
 
 import os, unittest, shutil
 
@@ -41,17 +41,27 @@ class PermissionTest(MyTestCase):
         # TODO: some asserts
 
     def testInitialiseSecurity(self):
-        ''' Create some Permissions and Roles on the security object
-
-            This function is directly invoked by security.Security.__init__()
-            as a part of the Security object instantiation.
-        '''
         ei = self.db.security.addPermission(name="Edit", klass="issue",
                         description="User is allowed to edit issues")
         self.db.security.addPermissionToRole('User', ei)
         ai = self.db.security.addPermission(name="View", klass="issue",
                         description="User is allowed to access issues")
         self.db.security.addPermissionToRole('User', ai)
+
+    def testAdmin(self):
+        ei = self.db.security.addPermission(name="Edit", klass="issue",
+                        description="User is allowed to edit issues")
+        self.db.security.addPermissionToRole('User', ei)
+        ei = self.db.security.addPermission(name="Edit", klass=None,
+                        description="User is allowed to edit issues")
+        self.db.security.addPermissionToRole('Admin', ei)
+
+        u1 = self.db.user.create(username='one', roles='Admin')
+        u2 = self.db.user.create(username='two', roles='User')
+
+        self.assert_(self.db.security.hasPermission('Edit', u1, None))
+        self.assert_(not self.db.security.hasPermission('Edit', u2, None))
+
 
     def testGetPermission(self):
         self.db.security.getPermission('Edit')
