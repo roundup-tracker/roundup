@@ -1,3 +1,26 @@
+''' Import tracker data from Sourceforge.NET
+
+This script needs four steps to work:
+
+1. Export the project XML data using the admin web interface at sf.net
+2. Run the file fetching (these are not included in the XML):
+
+    import_sf.py files <path to XML> <path to files dir>
+
+   this will place all the downloaded files in the files dir by file id.
+3. Convert the sf.net XML to Roundup "export" format:
+
+    import_sf.py import <tracker home> <path to XML> <path to files dir>
+
+   this will generate a directory "/tmp/imported" which contains the
+   data to be imported into a Roundup tracker.
+4. Import the data:
+
+    roundup-admin -i <tracker home> import /tmp/imported
+
+And you're done!
+'''
+
 import sys, sets, os, csv, time, urllib2, httplib, mimetypes
 from elementtree import ElementTree
 

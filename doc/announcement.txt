@@ -1,32 +1,16 @@
-I'm proud to release this, the 1.0 release of Roundup.
+I'm proud to release this, the 1.0.1 release of Roundup.
 
-Yes, finally after over 4 years and 8 major releases, the 1.0 release is
-here.
+In this release:
 
-Roundup 1.0 includes all the pre-1.0 goodness, and:
+Feature:
+- scripts/import_sf.py will import a tracker from Sourceforge.NET
+- added hasRole('Role Name') to HTMLUser
 
-- added full-text indexer using Xapian as the back end
-- Lithuanian translation by Aiste Kesminaite
-- Web User Interface language selection by form variable @language,
-  browser cookie or HTTP header Accept-Language (sf patch 1360321)
-- initial values for configuration options may be passed on
-  'roundup-admin install' command line (based on sf patch 1237110)
-- favicon.ico image may be changed with server config option (sf patch 1355661)
-- Password objects initialized from plaintext remember plaintext value
-  (sf rfe 1379447)
-- Roundup installation document includes configuration example
-  for Exim Internet Mailer (sf bug 1393860)
-- enable registration confirmation by web only (sf bug 1381675)
-- allow preselection of values in templating menu()s (sf patch 1396085)
-- display the query name in the header (sf feature 1298535 / patch 1349387)
-- classhelp works with Link properties now (sf bug 1410290)
-- added setorderprop() and setlabelprop() to Class (sf features 1379534,
-  1379490)
-- CSV encoding support (sf bug 1240848)
-- fields rendered with StructuredText are hyperlinked by default
-- additional attributes for input element may be passed to the 'field'
-  method of a property wrapper
-- added "copy_url" method to generate a URL for copying an item
+Fixed:
+- SQL generation for sort/group by separate Link properties (sf bug
+  1417565)
+- fix timezone offsetting in email Date: header
+- fix security check for hasPermission('Permission', None)
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
