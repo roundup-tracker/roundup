@@ -2,6 +2,9 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
 2006-??-?? 1.0.1
+Feature:
+- scripts/import_sf.py will import a tracker from Sourceforge.NET
+
 Fixed:
 - SQL generation for sort/group by separate Link properties (sf bug
   1417565)
