@@ -1,7 +1,12 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2006-??-?? 1.0.1
+2006-??-?? 1.0.2
+Fixed:
+- silly typo in scripts/import_sf.py
+
+
+2006-02-03 1.0.1
 Feature:
 - scripts/import_sf.py will import a tracker from Sourceforge.NET
 - added hasRole() to HTMLUser

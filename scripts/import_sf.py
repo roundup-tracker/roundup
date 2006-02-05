@@ -44,7 +44,7 @@ def get_url(aid):
     location = response.getheader('location')
     query = urlparse.urlparse(response.getheader('location'))[-2]
     info = dict([param.split('=') for param in query.split('&')])
-    return DOWNLOAD_TEMPLATE%info
+    return DL_URL%info
 
 def fetch_files(xml_file, file_dir):
     """ Fetch files referenced in the xml_file into the dir file_dir. """

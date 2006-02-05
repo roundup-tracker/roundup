@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.86 2006-02-03 05:27:59 richard Exp $
+# $Id: setup.py,v 1.87 2006-02-05 02:41:09 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -369,7 +369,7 @@ Fixed in this release:
         'download_url': 'http://sourceforge.net/project/showfiles.php?group_id=31577',
         'packages': packagelist,
         'classifiers': [
-            'Development Status :: 4 - Beta',
+            'Development Status :: 5 - Production/Stable',
             'Environment :: Console',
             'Environment :: Web Environment',
             'Intended Audience :: End Users/Desktop',
