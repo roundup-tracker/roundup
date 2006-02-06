@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.164 2006-01-30 00:36:26 richard Exp $
+# $Id: rdbms_common.py,v 1.165 2006-02-06 21:00:47 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -32,7 +32,7 @@ __docformat__ = 'restructuredtext'
 import sys, os, time, re, errno, weakref, copy, logging
 
 # roundup modules
-from roundup import hyperdb, date, password, roundupdb, security
+from roundup import hyperdb, date, password, roundupdb, security, support
 from roundup.hyperdb import String, Password, Date, Interval, Link, \
     Multilink, DatabaseError, Boolean, Number, Node
 from roundup.backends import locking
@@ -40,8 +40,7 @@ from roundup.backends import locking
 # support
 from blobfiles import FileStorage
 try:
-    # re-enable once Xapian is fixed
-    from indexer_xapian import Indexer_disabled
+    from indexer_xapian import Indexer
 except ImportError:
     from indexer_rdbms import Indexer
 from sessions_rdbms import Sessions, OneTimeKeys
@@ -317,14 +316,19 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.post_init()
 
 
-    def reindex(self, classname=None):
+    def reindex(self, classname=None, show_progress=False):
         if classname:
             classes = [self.getclass(classname)]
         else:
             classes = self.classes.values()
         for klass in classes:
-            for nodeid in klass.list():
-                klass.index(nodeid)
+            if show_progress:
+                for nodeid in support.Progress('Reindex %s'%klass.classname,
+                        klass.list()):
+                    klass.index(nodeid)
+            else:
+                for nodeid in klass.list():
+                    klass.index(nodeid)
         self.indexer.save_index()
 
     hyperdb_to_sql_datatypes = {
@@ -2371,15 +2375,17 @@ class Class(hyperdb.Class):
                 pwd = password.Password()
                 pwd.unpack(value)
                 value = pwd
-            d[propname] = value
-            if isinstance(prop, String):
-                if type(value) != type('') and type(value) != type(u''):
+            elif isinstance(prop, String):
+                if isinstance(value, unicode):
+                    value = value.encode('utf8')
+                if not isinstance(value, str):
                     raise TypeError, \
                         'new property "%(propname)s" not a string: %(value)r' \
                         % locals()
                 if prop.indexme:
                     self.db.indexer.add_text((self.classname, newid, propname),
                         value)
+            d[propname] = value
 
         # get a new id if necessary
         if newid is None:

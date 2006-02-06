@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.191 $
+:Version: $Revision: 1.192 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -139,6 +139,15 @@ Section **main**
   Register new users instantly, or require confirmation via
   email?
   Allowed values: ``yes``, ``no``
+
+ email_registration_confirmation -- ``yes``
+  Offer registration confirmation by email or only through the web?
+  Allowed values: ``yes``, ``no``
+
+ indexer_stopwords -- default *blank*
+  Additional stop-words for the full-text indexer specific to
+  your tracker. See the indexer source for the default list of
+  stop-words (e.g. ``A,AND,ARE,AS,AT,BE,BUT,BY, ...``).
 
 Section **tracker**
  name -- ``Roundup issue tracker``

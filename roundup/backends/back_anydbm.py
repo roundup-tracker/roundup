@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: back_anydbm.py,v 1.194 2006-01-24 08:26:09 a1s Exp $
+#$Id: back_anydbm.py,v 1.195 2006-02-06 21:00:46 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -43,8 +43,7 @@ from blobfiles import FileStorage
 from sessions_dbm import Sessions, OneTimeKeys
 
 try:
-    # re-enable once Xapian is fixed
-    from indexer_xapian import Indexer_disabled
+    from indexer_xapian import Indexer
 except ImportError:
     from indexer_dbm import Indexer
 

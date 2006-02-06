@@ -1,26 +1,29 @@
-#$Id: indexer_common.py,v 1.4 2005-01-08 16:16:59 jlgijsbers Exp $
-import re
+#$Id: indexer_common.py,v 1.5 2006-02-06 21:00:47 richard Exp $
+import re, sets
 
 from roundup import hyperdb
 
-stopwords = [
-"A", "AND", "ARE", "AS", "AT", "BE", "BUT", "BY",
-"FOR", "IF", "IN", "INTO", "IS", "IT",
-"NO", "NOT", "OF", "ON", "OR", "SUCH",
-"THAT", "THE", "THEIR", "THEN", "THERE", "THESE",
-"THEY", "THIS", "TO", "WAS", "WILL", "WITH" 
+STOPWORDS = [
+    "A", "AND", "ARE", "AS", "AT", "BE", "BUT", "BY",
+    "FOR", "IF", "IN", "INTO", "IS", "IT",
+    "NO", "NOT", "OF", "ON", "OR", "SUCH",
+    "THAT", "THE", "THEIR", "THEN", "THERE", "THESE",
+    "THEY", "THIS", "TO", "WAS", "WILL", "WITH" 
 ]
-
-is_stopword = {}
-for word in stopwords:
-    is_stopword[word] = None
-is_stopword = is_stopword.has_key
 
 def _isLink(propclass):
     return (isinstance(propclass, hyperdb.Link) or
             isinstance(propclass, hyperdb.Multilink))
 
 class Indexer:    
+    def __init__(self, db):
+        self.stopwords = sets.Set(STOPWORDS)
+        for word in db.config[('main', 'indexer_stopwords')]:
+            self.stopwords.add(word)
+
+    def is_stopword(self, word):
+        return word in self.stopwords
+
     def getHits(self, search_terms, klass):
         return self.find(search_terms)
     

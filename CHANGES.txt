@@ -1,9 +1,15 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2006-??-?? 1.0.2
+2006-02-06 1.0.2
+Feature:
+- trackers may configure custom stop-words for the full-text indexer
+
 Fixed:
-- silly typo in scripts/import_sf.py
+- fixes in scripts/import_sf.py
+- fix some unicode bugs in roundup-admin import
+- Xapian indexer wasn't actually being used
+- fix indexing of message content on roundup-admin import
 
 
 2006-02-03 1.0.1

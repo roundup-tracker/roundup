@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.97 2005-12-03 11:26:08 a1s Exp $
+# $Id: admin.py,v 1.98 2006-02-06 21:00:44 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -1155,16 +1155,19 @@ Erase it? Y/N: """))
             file_props = None
             maxid = 1
             # loop through the file and create a node for each entry
-            for r in reader:
+            for n, r in enumerate(reader):
                 if file_props is None:
                     file_props = r
                     continue
+                sys.stdout.write('Importing %s - %d\r'%(classname, n))
+                sys.stdout.flush()
+
                 # do the import and figure the current highest nodeid
                 nodeid = int(cl.import_list(file_props, r))
                 if hasattr(cl, 'import_files'):
                     cl.import_files(dir, nodeid)
                 maxid = max(maxid, nodeid)
-
+            print
             f.close()
 
             # import the journals
@@ -1238,7 +1241,7 @@ Erase it? Y/N: """))
                     cl = self.get_class(arg)
                     self.db.reindex(arg)
         else:
-            self.db.reindex()
+            self.db.reindex(show_progress=True)
         return 0
 
     def do_security(self, args):

@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.31 2006-01-13 03:56:35 richard Exp $
+# $Id: configuration.py,v 1.32 2006-02-06 21:00:44 richard Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -268,6 +268,18 @@ class BooleanOption(Option):
             _val = value and 1 or 0
         return _val
 
+class WordListOption(Option):
+
+    """List of strings"""
+
+    class_description = "Allowed values: comma-separated list of words"
+
+    def _value2str(self, value):
+        return ','.join(value)
+
+    def str2value(self, value):
+        return value.split(',')
+
 class RunDetectorOption(Option):
 
     """When a detector is run: always, never or for new items only"""
@@ -450,6 +462,10 @@ SETTINGS = (
             "email?"),
         (BooleanOption, "email_registration_confirmation", "yes",
             "Offer registration confirmation by email or only through the web?"),
+        (WordListOption, "indexer_stopwords", "",
+            "Additional stop-words for the full-text indexer specific to\n"
+            "your tracker. See the indexer source for the default list of\n"
+            "stop-words (eg. A,AND,ARE,AS,AT,BE,BUT,BY, ...)"),
     )),
     ("tracker", (
         (Option, "name", "Roundup issue tracker",

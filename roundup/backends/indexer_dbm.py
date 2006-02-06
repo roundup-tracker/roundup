@@ -14,7 +14,7 @@
 #     that promote freedom, but obviously am giving up any rights
 #     to compel such.
 # 
-#$Id: indexer_dbm.py,v 1.6 2005-04-28 00:21:42 richard Exp $
+#$Id: indexer_dbm.py,v 1.7 2006-02-06 21:00:47 richard Exp $
 '''This module provides an indexer class, RoundupIndexer, that stores text
 indices in a roundup instance.  This class makes searching the content of
 messages, string properties and text files possible.
@@ -23,9 +23,9 @@ __docformat__ = 'restructuredtext'
 
 import os, shutil, re, mimetypes, marshal, zlib, errno
 from roundup.hyperdb import Link, Multilink
-from roundup.backends.indexer_common import Indexer, is_stopword
+from roundup.backends.indexer_common import Indexer as IndexerBase
 
-class Indexer(Indexer):
+class Indexer(IndexerBase):
     '''Indexes information from roundup's hyperdb to allow efficient
     searching.
 
@@ -38,6 +38,7 @@ class Indexer(Indexer):
     where identifier is (classname, nodeid, propertyname)
     '''
     def __init__(self, db):
+        IndexerBase.__init__(self, db)
         self.indexdb_path = os.path.join(db.config.DATABASE, 'indexes')
         self.indexdb = os.path.join(self.indexdb_path, 'index.db')
         self.reindex = 0
@@ -96,7 +97,7 @@ class Indexer(Indexer):
         # find the unique words
         filedict = {}
         for word in words:
-            if is_stopword(word):
+            if self.is_stopword(word):
                 continue
             if filedict.has_key(word):
                 filedict[word] = filedict[word]+1

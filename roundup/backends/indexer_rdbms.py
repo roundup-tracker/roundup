@@ -1,14 +1,15 @@
-#$Id: indexer_rdbms.py,v 1.11 2005-09-28 05:42:23 richard Exp $
+#$Id: indexer_rdbms.py,v 1.12 2006-02-06 21:00:47 richard Exp $
 ''' This implements the full-text indexer over two RDBMS tables. The first
 is a mapping of words to occurance IDs. The second maps the IDs to (Class,
 propname, itemid) instances.
 '''
 import re
 
-from indexer_common import Indexer, is_stopword
+from roundup.backends.indexer_common import Indexer as IndexerBase
 
-class Indexer(Indexer):
+class Indexer(IndexerBase):
     def __init__(self, db):
+        IndexerBase.__init__(self, db)
         self.db = db
         self.reindex = 0
 
@@ -62,7 +63,7 @@ class Indexer(Indexer):
                 for w in re.findall(r'(?u)\b\w{2,25}\b', text)]
         words = {}
         for word in wordlist:
-            if is_stopword(word): continue
+            if self.is_stopword(word): continue
             if len(word) > 25: continue
             words[word] = 1
         words = words.keys()

@@ -83,7 +83,7 @@ def fetch_files(xml_file, file_dir):
             aid, url = line.strip().split()
             urls[aid] = url
 
-    for aid, fid in Progress('Fetching files', list(to_fetch)):
+    for aid, fid in support.Progress('Fetching files', list(to_fetch)):
         if fid in got: continue
         if not urls.has_key(aid):
             urls[aid] = get_url(aid)
@@ -390,61 +390,6 @@ def write_csv(klass, data):
     f.close()
     f = open('/tmp/imported/%s-journals.csv'%klass.classname, 'w')
     f.close()
-
-class Progress:
-    '''Progress display for console applications.
-
-    See __main__ block at end of file for sample usage.
-    '''
-    def __init__(self, info, sequence):
-        self.info = info
-        self.sequence = iter(sequence)
-        self.total = len(sequence)
-        self.start = self.now = time.time()
-        self.num = 0
-        self.stepsize = self.total / 100 or 1
-        self.steptimes = []
-        self.display()
-
-    def __iter__(self): return self
-
-    def next(self):
-        self.num += 1
-
-        if self.num > self.total:
-            print self.info, 'done', ' '*(75-len(self.info)-6)
-            sys.stdout.flush()
-            return self.sequence.next()
-
-        if self.num % self.stepsize:
-            return self.sequence.next()
-
-        self.display()
-        return self.sequence.next()
-
-    def display(self):
-        # figure how long we've spent - guess how long to go
-        now = time.time()
-        steptime = now - self.now
-        self.steptimes.insert(0, steptime)
-        if len(self.steptimes) > 5:
-            self.steptimes.pop()
-        steptime = sum(self.steptimes) / len(self.steptimes)
-        self.now = now
-        eta = steptime * ((self.total - self.num)/self.stepsize)
-
-        # tell it like it is (or might be)
-        if now - self.start > 3:
-            M = eta / 60
-            H = M / 60
-            M = M % 60
-            S = eta % 60
-            s = '%s %2d%% (ETA %02d:%02d:%02d)'%(self.info,
-                self.num * 100. / self.total, H, M, S)
-        else:
-            s = '%s %2d%%'%(self.info, self.num * 100. / self.total)
-        sys.stdout.write(s + ' '*(75-len(s)) + '\r')
-        sys.stdout.flush()
 
 if __name__ == '__main__':
     if sys.argv[1] == 'import':

@@ -1,16 +1,17 @@
-#$Id: indexer_xapian.py,v 1.1 2005-04-28 00:21:42 richard Exp $
+#$Id: indexer_xapian.py,v 1.2 2006-02-06 21:00:47 richard Exp $
 ''' This implements the full-text indexer using the Xapian indexer.
 '''
 import re, os
 
 import xapian
 
-from indexer_common import Indexer, is_stopword
+from roundup.backends.indexer_common import Indexer as IndexerBase
 
 # TODO: we need to delete documents when a property is *reindexed*
 
-class Indexer(Indexer):
+class Indexer(IndexerBase):
     def __init__(self, db):
+        IndexerBase.__init__(self, db)
         self.db_path = db.config.DATABASE
         self.reindex = 0
         self.transaction_active = False
@@ -63,7 +64,7 @@ class Indexer(Indexer):
         doc.set_data('%s:%s:%s'%identifier)
         for match in re.finditer(r'\b\w{2,25}\b', text.upper()):
             word = match.group(0)
-            if is_stopword(word):
+            if self.is_stopword(word):
                 continue
             term = stemmer.stem_word(word)
             doc.add_posting(term, match.start(0))

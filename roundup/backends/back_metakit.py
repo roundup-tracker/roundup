@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.103 2006-01-27 05:22:46 richard Exp $
+# $Id: back_metakit.py,v 1.104 2006-02-06 21:00:47 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -1816,6 +1816,14 @@ class FileClass(hyperdb.FileClass, Class):
             os.makedirs(os.path.dirname(dest))
         shutil.copyfile(source, dest)
 
+        mime_type = None
+        if self.getprops().has_key('type'):
+            mime_type = propvalues.get('type', self.get(itemid, 'type'))
+        if not mime_type:
+            mime_type = self.default_mime_type
+        self.db.indexer.add_text((self.classname, nodeid, 'content'),
+            self.get(nodeid, 'content'), mime_type)
+
     def get(self, nodeid, propname, default=_marker, cache=1):
         if propname == 'content':
             poss_msg = 'Possibly an access right configuration problem.'
@@ -2078,8 +2086,7 @@ class MetakitIndexer(Indexer):
         self.changed = 0
 
 try:
-    # re-enable once Xapian is fixed
-    from indexer_xapian import Indexer_disabled
+    from indexer_xapian import Indexer
 except ImportError:
     Indexer = MetakitIndexer
 
