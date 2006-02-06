@@ -22,7 +22,11 @@ And you're done!
 '''
 
 import sys, sets, os, csv, time, urllib2, httplib, mimetypes, urlparse
-from elementtree import ElementTree
+
+try:
+    import cElementTree as ElementTree
+except ImportError:
+    from elementtree import ElementTree
 
 from roundup import instance, hyperdb, date, support, password
 
@@ -255,6 +259,7 @@ def import_xml(tracker_home, xml_file, file_dir):
         for message in artifact.get('messages', []):
             message_id += 1
             authid = users[message['user_name']]
+            if not message['body']: continue
             body = convert_message(message['body'], message_id)
             if not body: continue
             m = {'content': body, 'author': authid,
@@ -281,7 +286,7 @@ def import_xml(tracker_home, xml_file, file_dir):
         files = []
         for event in artifact.get('history', []):
             if event['field_name'] == 'File Added':
-                fid, name = event['old_value'].split(':')
+                fid, name = event['old_value'].split(':', 1)
                 if fid in add_files:
                     files.append(fid)
                     name = name.strip()
