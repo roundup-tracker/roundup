@@ -307,11 +307,12 @@ def import_xml(tracker_home, xml_file, file_dir):
                 continue
             elif event['field_name'] == 'close_date':
                 action = "'set'"
-                info = { 'status': 'unread' }
+                info = { 'status': unread }
             elif event['field_name'] == 'summary':
                 action = "'set'"
                 info = { 'title': event['old_value'] }
             else:
+                # not an interesting / translatable event
                 continue
             row = [ d['id'], event['entrydate'].get_tuple(),
                 users[event['mod_by']], action, info ]
