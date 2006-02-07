@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: hyperdb.py,v 1.116 2006-02-06 21:00:44 richard Exp $
+# $Id: hyperdb.py,v 1.117 2006-02-07 04:14:01 richard Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -887,7 +887,7 @@ class FileClass:
 
         mime_type = None
         if self.getprops().has_key('type'):
-            mime_type = self.get(itemid, 'type')
+            mime_type = self.get(nodeid, 'type')
         if not mime_type:
             mime_type = self.default_mime_type
         self.db.indexer.add_text((self.classname, nodeid, 'content'),
