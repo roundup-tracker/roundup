@@ -18,13 +18,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: test_indexer.py,v 1.8 2005-04-28 09:06:09 richard Exp $
+# $Id: test_indexer.py,v 1.9 2006-02-07 04:14:32 richard Exp $
 
 import os, unittest, shutil
 
 class db:
-    class config:
+    class config(dict):
         DATABASE = 'test-index'
+    config = config()
+    config[('main', 'indexer_stopwords')] = []
 
 class IndexerTest(unittest.TestCase):
     def setUp(self):
@@ -43,6 +45,10 @@ class IndexerTest(unittest.TestCase):
                                                     ('test', '2', 'foo')])
         self.assertEqual(self.dex.find(['blah']), [('test', '2', 'foo')])
         self.assertEqual(self.dex.find(['blah', 'hello']), [])
+
+        # change
+        self.dex.add_text(('test', '1', 'foo'), 'a the hello')
+        self.assertEqual(self.dex.find(['world']), [('test', '2', 'foo')])
 
     def tearDown(self):
         shutil.rmtree('test-index')

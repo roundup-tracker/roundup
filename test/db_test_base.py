@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.64 2006-01-30 00:36:26 richard Exp $
+# $Id: db_test_base.py,v 1.65 2006-02-07 04:14:32 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
@@ -26,7 +26,7 @@ from roundup import date, password, init, instance, configuration
 from mocknull import MockNull
 
 config = configuration.CoreConfig()
-config.DATABASE = "_test_dir"
+config.DATABASE = "db"
 config.RDBMS_NAME = "rounduptest"
 config.RDBMS_HOST = "localhost"
 config.RDBMS_USER = "rounduptest"
@@ -1108,7 +1108,7 @@ class DBTest(MyTestCase):
                 for itemprops in items[1:]:
                     id = int(klass.import_list(names, itemprops))
                     if hasattr(klass, 'import_files'):
-                        klass.import_files('_test_export', id)
+                        klass.import_files('_test_export', str(id))
                     maxid = max(maxid, id)
                 self.db.setid(cn, str(maxid+1))
                 klass.import_journals(journals[cn])
