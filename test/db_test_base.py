@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.65 2006-02-07 04:14:32 richard Exp $
+# $Id: db_test_base.py,v 1.66 2006-02-07 04:59:05 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
@@ -735,7 +735,7 @@ class DBTest(MyTestCase):
         # unindexed stopword
         self.assertEquals(self.db.indexer.search(['the'], self.db.issue), {})
 
-    def testReindexing(self):
+    def testReindexingChange(self):
         search = self.db.indexer.search
         issue = self.db.issue
         i1 = issue.create(title="flebble plop")
@@ -749,6 +749,15 @@ class DBTest(MyTestCase):
         self.db.commit()
         self.assertEquals(search(['plop'], issue), {i1: {}})
         self.assertEquals(search(['flebble'], issue), {i2: {}})
+
+    def testReindexingClear(self):
+        search = self.db.indexer.search
+        issue = self.db.issue
+        i1 = issue.create(title="flebble plop")
+        i2 = issue.create(title="flebble frooz")
+        self.db.commit()
+        self.assertEquals(search(['plop'], issue), {i1: {}})
+        self.assertEquals(search(['flebble'], issue), {i1: {}, i2: {}})
 
         # unset i1's title
         issue.set(i1, title="")

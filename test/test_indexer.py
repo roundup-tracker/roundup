@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: test_indexer.py,v 1.9 2006-02-07 04:14:32 richard Exp $
+# $Id: test_indexer.py,v 1.10 2006-02-07 04:59:05 richard Exp $
 
 import os, unittest, shutil
 
@@ -46,8 +46,20 @@ class IndexerTest(unittest.TestCase):
         self.assertEqual(self.dex.find(['blah']), [('test', '2', 'foo')])
         self.assertEqual(self.dex.find(['blah', 'hello']), [])
 
-        # change
+    def test_change(self):
+        self.dex.add_text(('test', '1', 'foo'), 'a the hello world')
+        self.dex.add_text(('test', '2', 'foo'), 'blah blah the world')
+        self.assertEqual(self.dex.find(['world']), [('test', '1', 'foo'),
+                                                    ('test', '2', 'foo')])
         self.dex.add_text(('test', '1', 'foo'), 'a the hello')
+        self.assertEqual(self.dex.find(['world']), [('test', '2', 'foo')])
+
+    def test_clear(self):
+        self.dex.add_text(('test', '1', 'foo'), 'a the hello world')
+        self.dex.add_text(('test', '2', 'foo'), 'blah blah the world')
+        self.assertEqual(self.dex.find(['world']), [('test', '1', 'foo'),
+                                                    ('test', '2', 'foo')])
+        self.dex.add_text(('test', '1', 'foo'), '')
         self.assertEqual(self.dex.find(['world']), [('test', '2', 'foo')])
 
     def tearDown(self):

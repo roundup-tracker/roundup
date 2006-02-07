@@ -9,6 +9,7 @@ Fixed:
 - fixes in scripts/import_sf.py
 - fix some unicode bugs in roundup-admin import
 - Xapian indexer wasn't actually being used
+- fix reindexing in Xapian
 - fix indexing of message content on roundup-admin import
 
 

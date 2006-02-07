@@ -1,4 +1,4 @@
-#$Id: indexer_xapian.py,v 1.2 2006-02-06 21:00:47 richard Exp $
+#$Id: indexer_xapian.py,v 1.3 2006-02-07 04:59:05 richard Exp $
 ''' This implements the full-text indexer using the Xapian indexer.
 '''
 import re, os
@@ -47,6 +47,7 @@ class Indexer(IndexerBase):
         ''' "identifier" is  (classname, itemid, property) '''
         if mime_type != 'text/plain':
             return
+        if not text: text = ''
 
         # open the database and start a transaction if needed
         database = self._get_database()
@@ -57,18 +58,38 @@ class Indexer(IndexerBase):
 
         # TODO: allow configuration of other languages
         stemmer = xapian.Stem("english")
-        doc = xapian.Document()
 
-        # Xapian doesn't actually seem to care what data is put in here, so
-        # we use it to store the text identifier.
-        doc.set_data('%s:%s:%s'%identifier)
+        # We use the identifier twice: once in the actual "text" being
+        # indexed so we can search on it, and again as the "data" being
+        # indexed so we know what we're matching when we get results
+        identifier = '%s:%s:%s'%identifier
+
+        # see if the id is in the database
+        enquire = xapian.Enquire(database)
+        query = xapian.Query(xapian.Query.OP_AND, [identifier])
+        enquire.set_query(query)
+        matches = enquire.get_mset(0, 10)
+        if matches.size():      # would it killya to implement __len__()??
+            b = matches.begin()
+            docid = b.get_docid()
+        else:
+            docid = None
+
+        # create the new document
+        doc = xapian.Document()
+        doc.set_data(identifier)
+        doc.add_posting(identifier, 0)
+
         for match in re.finditer(r'\b\w{2,25}\b', text.upper()):
             word = match.group(0)
             if self.is_stopword(word):
                 continue
             term = stemmer.stem_word(word)
             doc.add_posting(term, match.start(0))
-        database.add_document(doc)
+        if docid:
+            database.replace_document(docid, doc)
+        else:
+            database.add_document(doc)
 
     def find(self, wordlist):
         '''look up all the words in the wordlist.
