@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.220 2006-02-08 03:47:28 richard Exp $
+# $Id: client.py,v 1.221 2006-02-08 05:33:11 a1s Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -46,9 +46,11 @@ def clean_message_callback(match, ok={'a':1,'i':1,'b':1,'br':1}):
         return match.group(1)
     return '&lt;%s&gt;'%match.group(2)
 
-error_message = '''<h1>An error has occurred</h1>
-<p>A problem was encountered processing your request. The tracker maintainers
-have been notified of the problem.</p>'''
+error_message = ""'''<html><head><title>Roundup error</title></head><body>
+<h1>An error has occurred</h1>
+<p>A problem was encountered processing your request.
+The tracker maintainers have been notified of the problem.</p>
+</body></html>'''
 
 class Client:
     '''Instantiate to handle one CGI request.
@@ -310,7 +312,7 @@ class Client:
                 self.write_html(cgitb.html(i18n=self.translator))
             else:
                 self.mailer.exception_message()
-                return self.write_html(error_message)
+                return self.write_html(self._(error_message))
 
     def clean_sessions(self):
         """Age sessions, remove when they haven't been used for a week.
