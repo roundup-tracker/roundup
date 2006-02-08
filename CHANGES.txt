@@ -4,16 +4,16 @@ are given with the most recent entry first.
 2006-02-06 1.1.0
 Feature:
 - trackers may configure custom stop-words for the full-text indexer
-- login may now be for a single session
+- login may now be for a single session (and this is the default)
 - trackers may hide exceptions from web users (they will be mailed to the
-  tracker admin)
+  tracker admin) (hiding is the default)
 
 Fixed:
 - fixes in scripts/import_sf.py
 - fix some unicode bugs in roundup-admin import
-- Xapian indexer wasn't actually being used
-- fix reindexing in Xapian
-- fix indexing of message content on roundup-admin import
+- Xapian indexer wasn't actually being used and its reindexing of existing
+  data was busted to boot
+- roundup-admin import wasn't indexing message content
 - allow dispname to be passed to renderWith (sf bug 1424587)
 - rename dispname to @dispname to avoid name clashes in the future
 

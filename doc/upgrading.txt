@@ -13,11 +13,11 @@ steps.
 
 .. contents::
 
-Migrating from 1.0 to 1.1
-=========================
+Migrating from 1.0.x to 1.1.0
+=============================
 
-1.1 Login for Session Only
---------------------------
+1.1 Login "For Session Only"
+----------------------------
 
 In 1.1, web logins are alive for the length of a session only, *unless* you
 add the following to the login form in your tracker's ``page.html``::
