@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.32 2006-02-06 21:00:44 richard Exp $
+# $Id: configuration.py,v 1.33 2006-02-08 03:47:28 richard Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -495,9 +495,13 @@ SETTINGS = (
         (BooleanOption, 'use_browser_language', "yes",
             "Whether to use HTTP Accept-Language, if present.\n"
             "Browsers send a language-region preference list.\n"
-            "It's usually set in the client's browser or in his\n"
+            "It's usually set in the client's browser or in their\n"
             "Operating System.\n"
             "Set this option to 'no' if you want to ignore it."),
+        (BooleanOption, "debug", "no",
+            "Setting this option makes Roundup display error tracebacks\n"
+            "in the user's browser rather than emailing them to the\n"
+            "tracker admin."),
     )),
     ("rdbms", (
         (Option, 'name', 'roundup',

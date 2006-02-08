@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.56 2006-01-27 03:30:38 richard Exp $
+#$Id: actions.py,v 1.57 2006-02-08 03:47:28 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random, csv, codecs
 
@@ -735,7 +735,7 @@ class RegoCommon(Action):
                 user=user, last_use=time.time())
         else:
             # new session cookie
-            self.client.set_cookie(user)
+            self.client.set_cookie(user, expire=None)
 
         # nice message
         message = self._('You are now registered, welcome!')
@@ -913,7 +913,10 @@ class LoginAction(Action):
         self.client.opendb(self.client.user)
 
         # set the session cookie
-        self.client.set_cookie(self.client.user)
+        if self.form.get('remember'):
+            self.client.set_cookie(self.client.user, expire=86400*365)
+        else:
+            self.client.set_cookie(self.client.user, expire=None)
 
         # If we came from someplace, go back there
         if self.form.has_key('__came_from'):

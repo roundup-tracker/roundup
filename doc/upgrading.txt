@@ -13,6 +13,22 @@ steps.
 
 .. contents::
 
+Migrating from 1.0 to 1.1
+=========================
+
+1.1 Login for Session Only
+--------------------------
+
+In 1.1, web logins are alive for the length of a session only, *unless* you
+add the following to the login form in your tracker's ``page.html``::
+
+    <input type="checkbox" name="remember" id="remember">
+    <label for="remember" i18n:translate="">Remember me?</label><br>
+
+See the classic tracker ``page.html`` if you're unsure where this should
+go.
+
+
 Migrating from 0.8.x to 1.0
 ===========================
 

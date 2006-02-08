@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.219 2006-01-25 02:59:27 richard Exp $
+# $Id: client.py,v 1.220 2006-02-08 03:47:28 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -45,6 +45,10 @@ def clean_message_callback(match, ok={'a':1,'i':1,'b':1,'br':1}):
     if ok.has_key(match.group(3).lower()):
         return match.group(1)
     return '&lt;%s&gt;'%match.group(2)
+
+error_message = '''<h1>An error has occurred</h1>
+<p>A problem was encountered processing your request. The tracker maintainers
+have been notified of the problem.</p>'''
 
 class Client:
     '''Instantiate to handle one CGI request.
@@ -302,8 +306,11 @@ class Client:
             self.error_message.append(self._('Form Error: ') + str(e))
             self.write_html(self.renderContext())
         except:
-            # everything else
-            self.write_html(cgitb.html(i18n=self.translator))
+            if self.db.config.WEB_DEBUG:
+                self.write_html(cgitb.html(i18n=self.translator))
+            else:
+                self.mailer.exception_message()
+                return self.write_html(error_message)
 
     def clean_sessions(self):
         """Age sessions, remove when they haven't been used for a week.
@@ -854,9 +861,10 @@ class Client:
         for entry in headers.items():
             self.request.send_header(*entry)
         for ((path, name), (value, expire)) in self.add_cookies.items():
-            self.request.send_header('Set-Cookie',
-                "%s=%s; expires=%s; Path=%s;"
-                % (name, value, Cookie._getdate(expire), path))
+            cookie = "%s=%s; Path=%s;"%(name, value, path)
+            if expire is not None:
+                cookie += " expires=%s;"%Cookie._getdate(expire)
+            self.request.send_header('Set-Cookie', cookie)
         self.request.end_headers()
         self.headers_done = 1
         if self.debug:
@@ -875,6 +883,7 @@ class Client:
                 If value is empty (meaning "delete cookie"),
                 expiration time is forced in the past
                 and this argument is ignored.
+                If None, the cookie will expire at end-of-session.
                 If omitted, the cookie will be kept for a year.
             path:
                 cookie path (optional)
@@ -886,7 +895,7 @@ class Client:
             expire = -1
         self.add_cookies[(path, name)] = (value, expire)
 
-    def set_cookie(self, user):
+    def set_cookie(self, user, expire=None):
         """Set up a session cookie for the user.
 
         Also store away the user's login info against the session.
@@ -913,7 +922,7 @@ class Client:
         self.db.commit()
 
         # add session cookie
-        self.add_cookie(self.cookie_name, self.session)
+        self.add_cookie(self.cookie_name, self.session, expire=expire)
 
     def make_user_anonymous(self):
         ''' Make us anonymous

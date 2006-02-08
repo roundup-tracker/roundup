@@ -1,9 +1,9 @@
 """Sending Roundup-specific mail over SMTP.
 """
 __docformat__ = 'restructuredtext'
-# $Id: mailer.py,v 1.14 2006-02-02 04:14:29 richard Exp $
+# $Id: mailer.py,v 1.15 2006-02-08 03:47:28 richard Exp $
 
-import time, quopri, os, socket, smtplib, re
+import time, quopri, os, socket, smtplib, re, sys, traceback
 
 from cStringIO import StringIO
 from MimeWriter import MimeWriter
@@ -142,6 +142,15 @@ class Mailer:
         writer.lastpart()
 
         self.smtp_send(to, message)
+
+    def exception_message(self):
+        '''Send a message to the admins with information about the latest
+        traceback.
+        '''
+        subject = '%s: %s'%(self.config.TRACKER_NAME, sys.exc_info()[1])
+        to = [self.config.ADMIN_EMAIL]
+        content = traceback.format_exc()
+        self.standard_message(to, subject, content)
 
     def smtp_send(self, to, message):
         """Send a message over SMTP, using roundup's config.

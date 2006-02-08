@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.192 $
+:Version: $Revision: 1.193 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -162,6 +162,26 @@ Section **tracker**
 
  email -- ``issue_tracker``
   Email address that mail to roundup should go to.
+
+Section **web**
+ http_auth -- ``yes``
+  Whether to use HTTP Basic Authentication, if present.
+  Roundup will use either the REMOTE_USER or HTTP_AUTHORIZATION
+  variables supplied by your web server (in that order).
+  Set this option to 'no' if you do not wish to use HTTP Basic
+  Authentication in your web interface.
+
+ use_browser_language -- ``yes``
+  Whether to use HTTP Accept-Language, if present.
+  Browsers send a language-region preference list.
+  It's usually set in the client's browser or in their
+  Operating System.
+  Set this option to 'no' if you want to ignore it.
+
+ debug -- ``no``
+  Setting this option makes Roundup display error tracebacks
+  in the user's browser rather than emailing them to the
+  tracker admin."),
 
 Section **rdbms**
  Settings in this section are used by Postgresql and MySQL backends only
@@ -4492,6 +4512,24 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
 
 4. Use the usual "new" action as the ``@action`` on the final page, and
    you're done (the standard context/submit method can do this for you).
+
+
+Debugging Trackers
+==================
+
+There are three switches in tracker configs that turn on debugging in
+Roundup:
+
+1. web :: debug
+2. mail :: debug
+3. logging :: level
+
+See the config.ini file or the `tracker configuration`_ section above for
+more information.
+
+Additionally, the ``roundup-server.py`` script has its own debugging mode
+in which it reloads edited templates immediately when they are changed,
+rather than requiring a web server restart.
 
 
 -------------------
