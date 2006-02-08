@@ -29,6 +29,18 @@ See the classic tracker ``page.html`` if you're unsure where this should
 go.
 
 
+1.1 Query Display Name
+----------------------
+
+The ``dispname`` web variable has been renamed ``@dispname`` to avoid
+clashing with other variables of the same name. If you are using the
+display name feature, you will need to edit your tracker's ``page.html``
+and ``issue.index.html`` pages to change ``dispname`` to ``@dispname``.
+
+A side-effect of this change is that the renderWith method used in the
+``home.html`` page may now take a dispname argument.
+
+
 Migrating from 0.8.x to 1.0
 ===========================
 

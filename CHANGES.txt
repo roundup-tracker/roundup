@@ -14,6 +14,8 @@ Fixed:
 - Xapian indexer wasn't actually being used
 - fix reindexing in Xapian
 - fix indexing of message content on roundup-admin import
+- allow dispname to be passed to renderWith (sf bug 1424587)
+- rename dispname to @dispname to avoid name clashes in the future
 
 
 2006-02-03 1.0.1

@@ -2155,6 +2155,11 @@ class HTMLRequest(HTMLInputMixin):
                 self.special_char = name[0]
                 self.startwith = int(self.form[name].value)
 
+        # dispname
+        self.dispname = None
+        if self.form.has_key('@dispname'):
+            self.dispname = self.form['@dispname'].value
+
     def updateFromURL(self, url):
         ''' Parse the URL for query args, and update my attributes using the
             values.

@@ -2,12 +2,14 @@
 <tal:block metal:use-macro="templates/page/macros/icing">
 <title metal:fill-slot="head_title" i18n:translate="" >
 	List of issues - 
-	<span tal:condition="python:request.form.has_key('dispname')" tal:replace="python:' %s - ' % request.form['dispname'].value" />
+	<span tal:condition="request/dispname"
+          tal:replace="python:' %s - '%request.dispname" />
 	<span tal:replace="config/TRACKER_NAME" i18n:name="tracker" />
 	</title>
 <span metal:fill-slot="body_title" tal:omit-tag="python:1"
 	i18n:translate="">List of issues 
-	<span tal:condition="python:request.form.has_key('dispname')" tal:replace="python:' - %s' % request.form['dispname'].value" />
+	<span tal:condition="request/dispname"
+          tal:replace="python:' - %s' % request.dispname" />
 </span>
 <td class="content" metal:fill-slot="content">
 

@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 #
-# $Id: demo.py,v 1.23 2004-11-06 15:05:47 a1s Exp $
+# $Id: demo.py,v 1.24 2006-02-08 04:03:54 richard Exp $
 
 import errno
 import os
@@ -33,6 +33,7 @@ def install_demo(home, backend, template):
     config['TRACKER_HOME'] = home
     config['MAIL_DOMAIN'] = 'localhost'
     config['DATABASE'] = 'db'
+    config['WEB_DEBUG'] = True
     if backend in ('mysql', 'postgresql'):
         config['RDBMS_HOST'] = 'localhost'
         config['RDBMS_USER'] = 'rounduptest'

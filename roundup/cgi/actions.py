@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.57 2006-02-08 03:47:28 richard Exp $
+#$Id: actions.py,v 1.58 2006-02-08 04:03:54 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random, csv, codecs
 
@@ -913,7 +913,7 @@ class LoginAction(Action):
         self.client.opendb(self.client.user)
 
         # set the session cookie
-        if self.form.get('remember'):
+        if self.form.has_key('remember'):
             self.client.set_cookie(self.client.user, expire=86400*365)
         else:
             self.client.set_cookie(self.client.user, expire=None)
