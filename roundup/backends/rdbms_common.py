@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.165 2006-02-06 21:00:47 richard Exp $
+Id$
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -181,9 +181,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             We should now confirm that the schema defined by our "classes"
             attribute actually matches the schema in the database.
         '''
-        save = self.upgrade_db()
+        save = 0
 
-        # now detect changes in the schema
+        # handle changes in the schema
         tables = self.database_schema['tables']
         for classname, spec in self.classes.items():
             if tables.has_key(classname):
@@ -201,6 +201,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 self.drop_class(classname, tables[classname])
                 del tables[classname]
                 save = 1
+
+        # now upgrade the database for column type changes, new internal
+        # tables, etc.
+        save = save | self.upgrade_db()
 
         # update the database version of the schema
         if save:
