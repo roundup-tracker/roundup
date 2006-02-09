@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.221 2006-02-08 05:33:11 a1s Exp $
+# $Id: client.py,v 1.222 2006-02-09 23:53:11 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -46,8 +46,8 @@ def clean_message_callback(match, ok={'a':1,'i':1,'b':1,'br':1}):
         return match.group(1)
     return '&lt;%s&gt;'%match.group(2)
 
-error_message = ""'''<html><head><title>Roundup error</title></head><body>
-<h1>An error has occurred</h1>
+error_message = ""'''<html><head><title>An error has occurred</title></head>
+<body><h1>An error has occurred</h1>
 <p>A problem was encountered processing your request.
 The tracker maintainers have been notified of the problem.</p>
 </body></html>'''
@@ -308,7 +308,7 @@ class Client:
             self.error_message.append(self._('Form Error: ') + str(e))
             self.write_html(self.renderContext())
         except:
-            if self.db.config.WEB_DEBUG:
+            if self.instance.config.WEB_DEBUG:
                 self.write_html(cgitb.html(i18n=self.translator))
             else:
                 self.mailer.exception_message()

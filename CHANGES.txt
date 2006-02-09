@@ -17,6 +17,7 @@ Fixed:
 - roundup-admin import wasn't indexing message content
 - allow dispname to be passed to renderWith (sf bug 1424587)
 - rename dispname to @dispname to avoid name clashes in the future
+- fixed schema migration problem when Class keys were removed
 
 
 2006-02-03 1.0.1

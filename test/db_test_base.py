@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.66 2006-02-07 04:59:05 richard Exp $
+# $Id: db_test_base.py,v 1.67 2006-02-09 23:53:11 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
@@ -1354,6 +1354,20 @@ class SchemaTest(MyTestCase):
 
         # confirm journal's ok
         self.db.getjournal('a', aid)
+
+    def test_removeClassKey(self):
+        self.init_amod()
+        aid = self.db.a.create(name='apple')
+        self.assertEqual(self.db.a.lookup('apple'), aid)
+        self.db.commit(); self.db.close()
+
+        self.db = self.module.Database(config, 'admin')
+        a = self.module.Class(self.db, "a", name=String(), newstr=String())
+        self.db.post_init()
+
+        aid2 = self.db.a.create(name='apple', newstr='booz')
+        self.db.commit()
+
 
     def init_amodml(self):
         self.db = self.module.Database(config, 'admin')

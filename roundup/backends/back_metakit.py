@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.105 2006-02-07 04:14:02 richard Exp $
+# $Id: back_metakit.py,v 1.106 2006-02-09 23:53:10 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -46,7 +46,7 @@ import logging
 import metakit
 from sessions_dbm import Sessions, OneTimeKeys
 import re, marshal, os, sys, time, calendar, shutil
-from indexer_common import Indexer, is_stopword
+from indexer_common import Indexer
 import locking
 from roundup.date import Range
 from blobfiles import files_in_dir
@@ -2027,7 +2027,7 @@ class MetakitIndexer(Indexer):
         wordlist = re.findall(r'\b\w{2,25}\b', text.upper())
         words = {}
         for word in wordlist:
-            if not is_stopword(word):
+            if not self.is_stopword(word):
                 words[word] = 1
         words = words.keys()
 
