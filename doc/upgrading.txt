@@ -40,6 +40,28 @@ and ``issue.index.html`` pages to change ``dispname`` to ``@dispname``.
 A side-effect of this change is that the renderWith method used in the
 ``home.html`` page may now take a dispname argument.
 
+1.1 "Clear this message"
+------------------------
+
+In 1.1, the standard ``page.html`` template includes a "clear this message"
+link in the green "ok" message bar that appears after a successful edit
+(or other) action.
+
+To include this in your tracker, change the following in your ``page.html``
+template::
+
+ <p tal:condition="options/ok_message | nothing" class="ok-message"
+    tal:repeat="m options/ok_message" tal:content="structure m">error</p>
+
+to be::
+
+ <p tal:condition="options/ok_message | nothing" class="ok-message">
+   <span tal:repeat="m options/ok_message"
+      tal:content="structure string:$m <br/ > " />
+    <a class="form-small" tal:attributes="href string:issue${context/id}"
+       i18n:translate="">clear this message</a>
+ </p>
+
 
 Migrating from 0.8.x to 1.0
 ===========================

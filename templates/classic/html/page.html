@@ -129,9 +129,13 @@
  </td>
  <td>
   <p tal:condition="options/error_message | nothing" class="error-message"
-     tal:repeat="m options/error_message" tal:content="structure m">error</p>
-  <p tal:condition="options/ok_message | nothing" class="ok-message"
-     tal:repeat="m options/ok_message" tal:content="structure m">error</p>
+     tal:repeat="m options/error_message" tal:content="structure m" />
+  <p tal:condition="options/ok_message | nothing" class="ok-message">
+    <span tal:repeat="m options/ok_message"
+       tal:content="structure string:$m <br/ > " />
+     <a class="form-small" tal:attributes="href string:issue${context/id}"
+        i18n:translate="">clear this message</a>
+  </p>
  </td>
 </tr>
 <tr>
