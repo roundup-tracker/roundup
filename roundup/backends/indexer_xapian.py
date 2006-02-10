@@ -1,4 +1,4 @@
-#$Id: indexer_xapian.py,v 1.3 2006-02-07 04:59:05 richard Exp $
+#$Id: indexer_xapian.py,v 1.4 2006-02-10 00:16:13 richard Exp $
 ''' This implements the full-text indexer using the Xapian indexer.
 '''
 import re, os
@@ -33,6 +33,14 @@ class Indexer(IndexerBase):
         '''close the indexing database'''
         pass
   
+    def rollback(self):
+        if not self.transaction_active:
+            return
+        # XXX: Xapian databases don't actually implement transactions yet
+        database = self._get_database()
+        database.cancel_transaction()
+        self.transaction_active = False
+
     def force_reindex(self):
         '''Force a reindexing of the database.  This essentially
         empties the tables ids and index and sets a flag so

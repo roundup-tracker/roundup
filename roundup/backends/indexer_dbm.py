@@ -14,7 +14,7 @@
 #     that promote freedom, but obviously am giving up any rights
 #     to compel such.
 # 
-#$Id: indexer_dbm.py,v 1.7 2006-02-06 21:00:47 richard Exp $
+#$Id: indexer_dbm.py,v 1.8 2006-02-10 00:16:13 richard Exp $
 '''This module provides an indexer class, RoundupIndexer, that stores text
 indices in a roundup instance.  This class makes searching the content of
 messages, string properties and text files possible.
@@ -280,7 +280,6 @@ class Indexer(IndexerBase):
     def index_loaded(self):
         return (hasattr(self,'fileids') and hasattr(self,'files') and
             hasattr(self,'words'))
-
 
     def rollback(self):
         ''' load last saved index info. '''

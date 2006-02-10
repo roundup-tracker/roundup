@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.87 2006-02-05 02:41:09 richard Exp $
+# $Id: setup.py,v 1.88 2006-02-10 00:16:12 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -351,22 +351,28 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
 
-Features in this release:
+Feature:
 
-- scripts/import_sf.py will import a tracker from Sourceforge.NET
-- added hasRole('Role Name') to HTMLUser
+- trackers may configure custom stop-words for the full-text indexer
+- login may now be for a single session (and this is the default)
+- trackers may hide exceptions from web users (they will be mailed to the
+  tracker admin) (hiding is the default)
+- include "clear this message" link in the "ok" message bar
 
-Fixed in this release:
+Fixed:
 
-- SQL generation for sort/group by separate Link properties (sf bug
-  1417565)
-- fix timezone offsetting in email Date: header
-- fix security check for hasPermission('Permission', None)
+- fixes in scripts/import_sf.py
+- fix some unicode bugs in roundup-admin import
+- Xapian indexer wasn't actually being used and its reindexing of existing
+  data was busted to boot
+- roundup-admin import wasn't indexing message content
+- allow dispname to be passed to renderWith (sf bug 1424587)
+- rename dispname to @dispname to avoid name clashes in the future
+- fixed schema migration problem when Class keys were removed
 ''',
         'author': "Richard Jones",
         'author_email': "richard@users.sourceforge.net",
         'url': 'http://roundup.sourceforge.net/',
-        'download_url': 'http://sourceforge.net/project/showfiles.php?group_id=31577',
         'packages': packagelist,
         'classifiers': [
             'Development Status :: 5 - Production/Stable',

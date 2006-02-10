@@ -1,16 +1,23 @@
-I'm proud to release this, the 1.0.1 release of Roundup.
+I'm proud to release this, the 1.1.0 release of Roundup.
 
-Features in this release:
+Feature:
 
-- scripts/import_sf.py will import a tracker from Sourceforge.NET
-- added hasRole('Role Name') to HTMLUser
+- trackers may configure custom stop-words for the full-text indexer
+- login may now be for a single session (and this is the default)
+- trackers may hide exceptions from web users (they will be mailed to the
+  tracker admin) (hiding is the default)
+- include "clear this message" link in the "ok" message bar
 
-Fixed in this release:
+Fixed:
 
-- SQL generation for sort/group by separate Link properties (sf bug
-  1417565)
-- fix timezone offsetting in email Date: header
-- fix security check for hasPermission('Permission', None)
+- fixes in scripts/import_sf.py
+- fix some unicode bugs in roundup-admin import
+- Xapian indexer wasn't actually being used and its reindexing of existing
+  data was busted to boot
+- roundup-admin import wasn't indexing message content
+- allow dispname to be passed to renderWith (sf bug 1424587)
+- rename dispname to @dispname to avoid name clashes in the future
+- fixed schema migration problem when Class keys were removed
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
