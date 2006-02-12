@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.222 2006-02-09 23:53:11 richard Exp $
+# $Id: client.py,v 1.223 2006-02-12 11:00:23 a1s Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -411,7 +411,7 @@ class Client:
         elif self.cookie.has_key("roundup_language"):
             language = self.cookie["roundup_language"].value
         elif self.instance.config["WEB_USE_BROWSER_LANGUAGE"]:
-            hal = self.env['HTTP_ACCEPT_LANGUAGE']
+            hal = self.env.get('HTTP_ACCEPT_LANGUAGE')
             language = accept_language.parse(hal)
         else:
             language = ""
