@@ -6,6 +6,7 @@ Fixed:
 - failure with browsers not sending "Accept-Language" header (sf bug 1429646)
 - translate class name in "required property not supplied" error message
   (sf bug 1429669)
+- error in link property lookups with numeric-alike key values (sf bug 1424550)
 
 
 2006-02-10 1.1.0

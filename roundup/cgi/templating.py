@@ -368,15 +368,13 @@ def lookupIds(db, prop, ids, fail_ok=0, num_re=re.compile('^-?\d+$')):
     cl = db.getclass(prop.classname)
     l = []
     for entry in ids:
-        if num_re.match(entry):
-            l.append(entry)
-        else:
-            try:
-                l.append(cl.lookup(entry))
-            except (TypeError, KeyError):
-                if fail_ok:
-                    # pass through the bad value
-                    l.append(entry)
+        try:
+            l.append(cl.lookup(entry))
+        except (TypeError, KeyError):
+            # if fail_ok, ignore lookup error
+            # otherwise entry must be existing object id rather than key value
+            if fail_ok or num_re.match(entry):
+                l.append(entry)
     return l
 
 def lookupKeys(linkcl, key, ids, num_re=re.compile('^-?\d+$')):
