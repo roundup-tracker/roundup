@@ -4,6 +4,8 @@ are given with the most recent entry first.
 2006-??-?? 1.1.1
 Fixed:
 - failure with browsers not sending "Accept-Language" header (sf bug 1429646)
+- translate class name in "required property not supplied" error message
+  (sf bug 1429669)
 
 
 2006-02-10 1.1.0
