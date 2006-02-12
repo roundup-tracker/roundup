@@ -318,8 +318,8 @@ class FormParser:
                 continue
             proptype = propdef[propname]
 
-            # Get the form value. This value may be a MiniFieldStorage or a list
-            # of MiniFieldStorages.
+            # Get the form value. This value may be a MiniFieldStorage
+            # or a list of MiniFieldStorages.
             value = form[key]
 
             # handle unpacking of the MiniFieldStorage / list form value
@@ -513,7 +513,7 @@ class FormParser:
                 'Required %(class)s properties %(property)s not supplied',
                 len(required)
             ) % {
-                'class': thing[0],
+                'class': self._(thing[0]),
                 'property': ', '.join(map(self.gettext, required))
             })
         if s:
@@ -556,3 +556,5 @@ class FormParser:
 
         # filter out the empty bits
         return filter(None, value)
+
+# vim: set et sts=4 sw=4 :
