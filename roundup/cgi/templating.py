@@ -1757,7 +1757,10 @@ class LinkHTMLProperty(HTMLProperty):
         else:
             sort_on = ('+', find_sort_key(linkcl))
 
-        options = linkcl.filter(None, conditions, sort_on, (None, None))
+        options = [opt
+            for opt in linkcl.filter(None, conditions, sort_on, (None, None))
+            if self._db.security.hasPermission("View", self._client.userid,
+                linkcl.classname, itemid=id)]
 
         # make sure we list the current value if it's retired
         if value and value not in options:
@@ -1940,7 +1943,10 @@ class MultilinkHTMLProperty(HTMLProperty):
         else:
             sort_on = ('+', find_sort_key(linkcl))
 
-        options = linkcl.filter(None, conditions, sort_on)
+        options = [opt
+            for opt in linkcl.filter(None, conditions, sort_on)
+            if self._db.security.hasPermission("View", self._client.userid,
+                linkcl.classname, itemid=id)]
         height = height or min(len(options), 7)
         l = ['<select multiple name="%s" size="%s">'%(self._formname, height)]
         k = linkcl.labelprop(1)
