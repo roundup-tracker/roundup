@@ -117,6 +117,11 @@ def make(filename, outfile):
         print >> sys.stderr, msg
         sys.exit(1)
 
+    # remove UTF-8 Byte Order Mark, if any.
+    # (UCS2 BOMs are not handled because messages in UCS2 cannot be handled)
+    if lines[0].startswith('\xEF\xBB\xBF'):
+        lines[0] = lines[0][3:]
+
     section = None
     fuzzy = 0
 
@@ -215,3 +220,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# vim: set et sts=4 sw=4 :
