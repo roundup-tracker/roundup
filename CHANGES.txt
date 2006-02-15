@@ -9,6 +9,7 @@ Fixed:
 - error in link property lookups with numeric-alike key values (sf bug 1424550)
 - ignore UTF-8 BOM in .po files
 - add permission filter to menu() implementations (sf bug 1431188)
+- lithuanian translation updated by Nerijus Baliunas (sf patch 1411175)
 
 
 2006-02-10 1.1.0
