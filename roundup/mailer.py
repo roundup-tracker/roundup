@@ -1,7 +1,7 @@
 """Sending Roundup-specific mail over SMTP.
 """
 __docformat__ = 'restructuredtext'
-# $Id: mailer.py,v 1.15 2006-02-08 03:47:28 richard Exp $
+# $Id: mailer.py,v 1.16 2006-02-16 06:33:05 a1s Exp $
 
 import time, quopri, os, socket, smtplib, re, sys, traceback
 
@@ -149,7 +149,7 @@ class Mailer:
         '''
         subject = '%s: %s'%(self.config.TRACKER_NAME, sys.exc_info()[1])
         to = [self.config.ADMIN_EMAIL]
-        content = traceback.format_exc()
+        content = '\n'.join(traceback.format_exception(*sys.exc_info()))
         self.standard_message(to, subject, content)
 
     def smtp_send(self, to, message):
