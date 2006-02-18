@@ -96,15 +96,20 @@ If you just want to give Roundup a whirl Right Now, then simply run
 ``roundup-demo`` program instead. Users of other binary distributions or
 pre-installed Roundup will need to download the source to use it.
 
-This will set up a simple demo tracker on your machine. When it's done,
-it'll print out a URL to point your web browser at so you may start
-playing. Three users will be set up:
+This will set up a simple demo tracker on your machine. [1]_
+When it's done, it'll print out a URL to point your web browser at
+so you may start playing. Three users will be set up:
 
 1. anonymous - the "default" user with permission to do very little
 2. demo (password "demo") - a normal user who may create issues
 3. admin (password "admin") - an administrative user who has complete
    access to the tracker
 
+.. [1] Demo tracker is set up to be accessed by localhost browser.
+       If you run demo on a server host, please stop the demo when
+       it has shown startup notice, open file ``demo/config.ini`` with
+       your editor, change host name in the ``web`` option in section
+       ``[tracker]``, save the file, then re-run the demo program.
 
 Installation
 ============
