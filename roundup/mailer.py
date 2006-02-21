@@ -1,7 +1,7 @@
 """Sending Roundup-specific mail over SMTP.
 """
 __docformat__ = 'restructuredtext'
-# $Id: mailer.py,v 1.16 2006-02-16 06:33:05 a1s Exp $
+# $Id: mailer.py,v 1.17 2006-02-21 05:48:23 a1s Exp $
 
 import time, quopri, os, socket, smtplib, re, sys, traceback
 
@@ -189,7 +189,7 @@ class SMTPConnection(smtplib.SMTP):
         # start the TLS if requested
         if config["MAIL_TLS"]:
             self.starttls(config["MAIL_TLS_KEYFILE"],
-                config["MAIL_TLS_CERFILE"])
+                config["MAIL_TLS_CERTFILE"])
 
         # ok, now do we also need to log in?
         mailuser = config["MAIL_USERNAME"]

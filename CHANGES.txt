@@ -11,6 +11,7 @@ Fixed:
 - add permission filter to menu() implementations (sf bug 1431188)
 - lithuanian translation updated by Nerijus Baliunas (sf patch 1411175)
 - incompatibility with python2.3 in the mailer module (sf bug 1432602)
+- typo in SMTP TLS option name: "MAIL_TLS_CERFILE" (sf bug 1435452)
 
 
 2006-02-10 1.1.0
