@@ -1307,8 +1307,9 @@ class StringHTMLProperty(HTMLProperty):
             value = ''
         else:
             value = str(self._value)
-        if value.find('@') != -1:
-            name, domain = value.split('@')
+        split = value.split('@')
+        if len(split) == 2:
+            name, domain = split
             domain = ' '.join(domain.split('.')[:-1])
             name = name.replace('.', ' ')
             value = '%s at %s ...'%(name, domain)
