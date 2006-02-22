@@ -3,7 +3,8 @@ are given with the most recent entry first.
 
 2006-??-?? 1.1.1
 Fixed:
-- failure with browsers not sending "Accept-Language" header (sf bug 1429646)
+- failure with browsers not sending "Accept-Language" header
+  (sf bugs 1429646 and 1435335)
 - translate class name in "required property not supplied" error message
   (sf bug 1429669)
 - error in link property lookups with numeric-alike key values (sf bug 1424550)
