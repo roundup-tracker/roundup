@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2006-02-12 13:55+0200\n"
+"POT-Creation-Date: 2006-02-28 07:44+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1063,122 +1063,122 @@ msgstr ""
 msgid "You are not allowed to %(action)s items of class %(class)s"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:629
+#: ../roundup/cgi/templating.py:627
 msgid "(list)"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:698
+#: ../roundup/cgi/templating.py:696
 msgid "Submit New Entry"
 msgstr ""
 
-# ../roundup/cgi/templating.py:712 :831 :1238 :1259 :1306 :1328 :1362 :1401
-# :1454 :1471 :1550 :1570 :1588 :1620 :1630 :1684 :1873
-#: ../roundup/cgi/templating.py:712 ../roundup/cgi/templating.py:831
-#: ../roundup/cgi/templating.py:1238 ../roundup/cgi/templating.py:1259
-#: ../roundup/cgi/templating.py:1306 ../roundup/cgi/templating.py:1328
-#: ../roundup/cgi/templating.py:1362 ../roundup/cgi/templating.py:1401
-#: ../roundup/cgi/templating.py:1454 ../roundup/cgi/templating.py:1471
-#: ../roundup/cgi/templating.py:1550 ../roundup/cgi/templating.py:1570
-#: ../roundup/cgi/templating.py:1588 ../roundup/cgi/templating.py:1620
-#: ../roundup/cgi/templating.py:1630 ../roundup/cgi/templating.py:1684
-#: ../roundup/cgi/templating.py:1873
+# ../roundup/cgi/templating.py:710 :829 :1236 :1257 :1304 :1327 :1361 :1400
+# :1453 :1470 :1549 :1569 :1587 :1619 :1629 :1683 :1875
+#: ../roundup/cgi/templating.py:710 ../roundup/cgi/templating.py:829
+#: ../roundup/cgi/templating.py:1236 ../roundup/cgi/templating.py:1257
+#: ../roundup/cgi/templating.py:1304 ../roundup/cgi/templating.py:1327
+#: ../roundup/cgi/templating.py:1361 ../roundup/cgi/templating.py:1400
+#: ../roundup/cgi/templating.py:1453 ../roundup/cgi/templating.py:1470
+#: ../roundup/cgi/templating.py:1549 ../roundup/cgi/templating.py:1569
+#: ../roundup/cgi/templating.py:1587 ../roundup/cgi/templating.py:1619
+#: ../roundup/cgi/templating.py:1629 ../roundup/cgi/templating.py:1683
+#: ../roundup/cgi/templating.py:1875
 msgid "[hidden]"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:713
+#: ../roundup/cgi/templating.py:711
 msgid "New node - no history"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:813
+#: ../roundup/cgi/templating.py:811
 msgid "Submit Changes"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:895
+#: ../roundup/cgi/templating.py:893
 msgid "<em>The indicated property no longer exists</em>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:896
+#: ../roundup/cgi/templating.py:894
 #, python-format
 msgid "<em>%s: %s</em>\n"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:909
+#: ../roundup/cgi/templating.py:907
 #, python-format
 msgid "The linked class %(classname)s no longer exists"
 msgstr ""
 
-# ../roundup/cgi/templating.py:942 :966
-#: ../roundup/cgi/templating.py:942 ../roundup/cgi/templating.py:966
+# ../roundup/cgi/templating.py:940 :964
+#: ../roundup/cgi/templating.py:940 ../roundup/cgi/templating.py:964
 msgid "<strike>The linked node no longer exists</strike>"
 msgstr ""
 
-# ../roundup/cgi/templating.py:1008 :1405 :1426 :1432
-#: ../roundup/cgi/templating.py:1008 ../roundup/cgi/templating.py:1405
-#: ../roundup/cgi/templating.py:1426 ../roundup/cgi/templating.py:1432
+# ../roundup/cgi/templating.py:1006 :1404 :1425 :1431
+#: ../roundup/cgi/templating.py:1006 ../roundup/cgi/templating.py:1404
+#: ../roundup/cgi/templating.py:1425 ../roundup/cgi/templating.py:1431
 msgid "No"
 msgstr ""
 
-# ../roundup/cgi/templating.py:1008 :1405 :1424 :1429
-#: ../roundup/cgi/templating.py:1008 ../roundup/cgi/templating.py:1405
-#: ../roundup/cgi/templating.py:1424 ../roundup/cgi/templating.py:1429
+# ../roundup/cgi/templating.py:1006 :1404 :1423 :1428
+#: ../roundup/cgi/templating.py:1006 ../roundup/cgi/templating.py:1404
+#: ../roundup/cgi/templating.py:1423 ../roundup/cgi/templating.py:1428
 msgid "Yes"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1019
+#: ../roundup/cgi/templating.py:1017
 #, python-format
 msgid "%s: (no value)"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1031
+#: ../roundup/cgi/templating.py:1029
 msgid ""
 "<strong><em>This event is not handled by the history display!</em></strong>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1043
+#: ../roundup/cgi/templating.py:1041
 msgid "<tr><td colspan=4><strong>Note:</strong></td></tr>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1052
+#: ../roundup/cgi/templating.py:1050
 msgid "History"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1054
+#: ../roundup/cgi/templating.py:1052
 msgid "<th>Date</th>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1055
+#: ../roundup/cgi/templating.py:1053
 msgid "<th>User</th>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1056
+#: ../roundup/cgi/templating.py:1054
 msgid "<th>Action</th>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1057
+#: ../roundup/cgi/templating.py:1055
 msgid "<th>Args</th>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1099
+#: ../roundup/cgi/templating.py:1097
 #, python-format
 msgid "Copy of %(class)s %(id)s"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1332
+#: ../roundup/cgi/templating.py:1331
 msgid "*encrypted*"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1515
+#: ../roundup/cgi/templating.py:1514
 msgid ""
 "default value for DateHTMLProperty must be either DateHTMLProperty or string "
 "date representation."
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1675
+#: ../roundup/cgi/templating.py:1674
 #, python-format
 msgid "Attempt to look up %(attr)s on a missing value"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1751
+#: ../roundup/cgi/templating.py:1750
 #, python-format
 msgid "<option %svalue=\"-1\">- no selection -</option>"
 msgstr ""
@@ -2085,11 +2085,14 @@ msgstr ""
 msgid "Search"
 msgstr ""
 
-#: ../templates/classic/html/issue.search.html:210
+#: ../templates/classic/html/issue.search.html:209
+msgid "*: The \"all text\" field will look in message bodies and issue titles"
+msgstr ""
+
+#: ../templates/classic/html/issue.search.html:212
 msgid ""
-"*: The \"all text\" field will look in message bodies and issue titles<br> "
-"<span> **: If you supply a name, the query will be saved off and available as "
-"a link in the sidebar </span>"
+"**: If you supply a name, the query will be saved off and available as a link "
+"in the sidebar"
 msgstr ""
 
 #: ../templates/classic/html/keyword.item.html:3
