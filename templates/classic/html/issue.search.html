@@ -205,12 +205,16 @@
 </tr>
 
 <tr><td>&nbsp;</td>
- <td colspan="4" class="help" i18n:translate="">
-   *: The "all text" field will look in message bodies and issue titles<br>
-   <span tal:condition="python:request.user.hasPermission('Edit', 'query')">
+ <td colspan="4" class="help">
+  <span i18n:translate="" tal:omit-tag="true">
+   *: The "all text" field will look in message bodies and issue titles
+  </span><br>
+  <span tal:condition="python:request.user.hasPermission('Edit', 'query')"
+   i18n:translate="" tal:omit-tag="true"
+  >
    **: If you supply a name, the query will be saved off and available as a
        link in the sidebar
-   </span>
+  </span>
  </td>
 </tr>
 </table>
