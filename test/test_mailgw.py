@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.76 2005-10-07 04:42:13 richard Exp $
+# $Id: test_mailgw.py,v 1.77 2006-03-02 23:45:23 richard Exp $
 
 # TODO: test bcc
 
@@ -679,6 +679,26 @@ To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 Subject: [issue1] Testing... [assignedto=mary; nosy=+john]
+
+''')
+        l = self.db.issue.get('1', 'nosy')
+        l.sort()
+        self.assertEqual(l, [self.chef_id, self.richard_id, self.mary_id,
+            self.john_id])
+
+        # should be no file created (ie. no message)
+        assert not os.path.exists(SENDMAILDEBUG)
+
+    def testFollowupEmptyMessageNoSubject(self):
+        self.doNewIssue()
+
+        self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: richard <richard@test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: [issue1] [assignedto=mary; nosy=+john]
 
 ''')
         l = self.db.issue.get('1', 'nosy')

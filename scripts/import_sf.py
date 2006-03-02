@@ -254,19 +254,16 @@ def import_xml(tracker_home, xml_file, file_dir):
         else:
             d['status'] = unread
 
-        messages = []
         nosy = sets.Set()
         for message in artifact.get('messages', []):
-            message_id += 1
             authid = users[message['user_name']]
             if not message['body']: continue
             body = convert_message(message['body'], message_id)
             if not body: continue
             m = {'content': body, 'author': authid,
-                'date': message['adddate'], 'id': str(message_id),
+                'date': message['adddate'],
                 'creation': message['adddate'], }
             message_data.append(m)
-            messages.append(message_id)
             if authid not in (None, '2'):
                 nosy.add(authid)
             activity = message['adddate']
@@ -274,13 +271,19 @@ def import_xml(tracker_home, xml_file, file_dir):
             if d['status'] == unread:
                 d['status'] = chatting
 
-        message_id += 1
+        # add import message
         m = {'content': 'IMPORT FROM SOURCEFORGE', 'author': '1',
-            'date': today, 'id': str(message_id), 'creation': today }
+            'date': today, 'creation': today}
         message_data.append(m)
-        messages.append(message_id)
 
-        d['messages'] = messages
+        # sort messages and assign ids
+        d['messages'] = []
+        message_data.sort(lambda a,b:cmp(a['date'],b['date']))
+        for message in message_data:
+            message_id += 1
+            message['id'] = str(message_id)
+            d['messages'].append(message_id)
+
         d['nosy'] = list(nosy)
 
         files = []

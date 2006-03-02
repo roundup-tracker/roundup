@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.172 2006-01-25 03:51:21 richard Exp $
+$Id: mailgw.py,v 1.173 2006-03-02 23:45:22 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -647,7 +647,7 @@ Emails to Roundup trackers must include a Subject: line!
             # or fallback on the default class
             if self.db.config['EMAIL_REGISTRATION_CONFIRMATION']:
                 otk_re = re.compile('-- key (?P<otk>[a-zA-Z0-9]{32})')
-                otk = otk_re.search(m.group('title'))
+                otk = otk_re.search(m.group('title') or '')
                 if otk:
                     self.db.confirm_registration(otk.group('otk'))
                     subject = 'Your registration to %s is complete' % \
