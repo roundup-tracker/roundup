@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.193 $
+:Version: $Revision: 1.194 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -4266,6 +4266,7 @@ for the "issue", "file" and "msg" classes with the following::
     def checker(klass):
         def check(db, userid, itemid, klass=klass):
             return db.getclass(klass).get(itemid, 'creator') == userid
+        return check
     for cl in 'issue', 'file', 'msg':
         p = db.security.addPermission(name='View', klass=cl,
             check=checker(cl))

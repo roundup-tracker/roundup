@@ -15,6 +15,9 @@ Fixed:
 - typo in SMTP TLS option name: "MAIL_TLS_CERFILE" (sf bug 1435452)
 - email obfuscation code in html templating is more robust
 - fix blank-title subject line handling (sf bug 1442121)
+- fix "All users may only view and edit issues, files and messages they
+  create" example in docs (sf bug 1439086)
+
 
 
 2006-02-10 1.1.0
