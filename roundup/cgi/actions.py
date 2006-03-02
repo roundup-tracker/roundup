@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.58 2006-02-08 04:03:54 richard Exp $
+#$Id: actions.py,v 1.59 2006-03-02 23:51:08 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random, csv, codecs
 
@@ -192,7 +192,7 @@ class SearchAction(Action):
                     qids = self.db.query.filter(None, {'name': old_queryname,
                         'creator': uid})
 
-                if qids:
+                if qids and old_queryname:
                     # edit query - make sure we get an exact match on the name
                     for qid in qids:
                         if old_queryname != self.db.query.get(qid, 'name'):
