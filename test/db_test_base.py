@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.67 2006-02-09 23:53:11 richard Exp $
+# $Id: db_test_base.py,v 1.68 2006-03-03 02:02:50 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
@@ -996,6 +996,7 @@ class DBTest(MyTestCase):
         # may fail :)
         ae(filt(None, {'deadline': 'from 2003-02-16'}), ['1', '3', '4'])
         ae(filt(None, {'deadline': '2003-02-16;'}), ['1', '3', '4'])
+        ae(filt(None, {'deadline': '2003-02-16;'}), ['1', '3', '4'])
         # year and month granularity
         ae(filt(None, {'deadline': '2002'}), [])
         ae(filt(None, {'deadline': '2003'}), ['1', '2', '3'])
@@ -1009,6 +1010,17 @@ class DBTest(MyTestCase):
         ae(filt(None, {'foo': 'from 0:50 to 1d 2:00'}), ['1', '2'])
         ae(filt(None, {'foo': 'from 5:50'}), ['2'])
         ae(filt(None, {'foo': 'to 0:05'}), [])
+
+        # further
+        for issue in (
+                { 'deadline': date.Date('. -2d')},
+                { 'deadline': date.Date('. -1d')},
+                { 'deadline': date.Date('. -8d')},
+                ):
+            self.db.issue.create(**issue)
+        ae(filt(None, {'deadline': '-2d;'}), ['5', '6'])
+        ae(filt(None, {'deadline': '-1d;'}), ['6'])
+        ae(filt(None, {'deadline': '-1w;'}), ['5', '6'])
 
     def testFilteringIntervalSort(self):
         # 1: '1:10'

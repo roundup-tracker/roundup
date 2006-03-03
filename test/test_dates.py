@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: test_dates.py,v 1.37 2006-01-13 00:22:17 richard Exp $
+# $Id: test_dates.py,v 1.38 2006-03-03 02:02:50 richard Exp $
 from __future__ import nested_scopes
 
 import unittest, time
@@ -83,6 +83,12 @@ class DateTestCase(unittest.TestCase):
         ae(str(date), '%s-%02d-%02d.19:25:00'%(y, m, d))
         date = Date("8:47:11", -5)
         ae(str(date), '%s-%02d-%02d.13:47:11'%(y, m, d))
+
+        # just make sure we parse these, m'kay?
+        date = Date('-1d')
+        date = Date('-1w')
+        date = Date('-1m')
+        date = Date('-1y')
 
     def testOffsetRandom(self):
         ae = self.assertEqual

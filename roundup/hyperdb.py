@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: hyperdb.py,v 1.117 2006-02-07 04:14:01 richard Exp $
+# $Id: hyperdb.py,v 1.118 2006-03-03 02:02:50 richard Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -83,9 +83,9 @@ class Date:
             raise HyperdbValueError, 'property %s: %r is an invalid '\
                 'date (%s)'%(kw['propname'], value, message)
         return value
-    def range_from_raw (self, value, db):
+    def range_from_raw(self, value, db):
         """return Range value from given raw value with offset correction"""
-        return date.Range(value, date.Date, offset=self.offset (db))
+        return date.Range(value, date.Date, offset=self.offset(db))
 
 class Interval:
     """An object designating an Interval property."""

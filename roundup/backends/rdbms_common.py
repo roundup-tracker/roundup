@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.167 2006-02-09 23:53:11 richard Exp $
+#$Id: rdbms_common.py,v 1.168 2006-03-03 02:02:50 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2130,7 +2130,7 @@ class Class(hyperdb.Class):
                 else:
                     try:
                         # Try to filter on range of dates
-                        date_rng = propclass.range_from_raw (v, self.db)
+                        date_rng = propclass.range_from_raw(v, self.db)
                         if date_rng.from_value:
                             where.append('_%s._%s >= %s'%(cn, k, a))
                             args.append(dc(date_rng.from_value))

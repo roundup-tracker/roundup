@@ -23,6 +23,7 @@ Fixed:
 - security check in mailgw (sf bug 1442145)
 - "clear this message" (sf bug 1429367)
 - escape all uses of "schema" in mysql backend (sf bug 1397569)
+- date spec wasn't allowing week intervals
 
 
 2006-02-10 1.1.0
