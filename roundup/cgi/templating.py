@@ -687,7 +687,8 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
            filter = ''
         help_url = "%s?@startwith=0&amp;@template=help&amp;"\
                    "properties=%s%s%s%s%s&amp;@pagesize=%s%s" % \
-                   (self.classname, properties, property, form, type, sort, pagesize, filter)
+                   (self.classname, properties, property, form, type,
+                   sort, pagesize, filter)
         onclick = "javascript:help_window('%s', '%s', '%s');return false;" % \
                   (help_url, width, height)
         return '<a class="classhelp" href="%s" onclick="%s">%s</a>' % \

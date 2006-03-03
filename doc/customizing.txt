@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.194 $
+:Version: $Revision: 1.195 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2920,9 +2920,9 @@ If you haven't initialised the database with the ``roundup-admin``
 Add::
 
      category = db.getclass('category')
-     category.create(name="scipy", order="1")
-     category.create(name="chaco", order="2")
-     category.create(name="weave", order="3")
+     category.create(name="scipy")
+     category.create(name="chaco")
+     category.create(name="weave")
 
 If the database has already been initalised, then you need to use the
 ``roundup-admin`` tool::
@@ -2930,16 +2930,14 @@ If the database has already been initalised, then you need to use the
      % roundup-admin -i <tracker home>
      Roundup <version> ready for input.
      Type "help" for help.
-     roundup> create category name=scipy order=1
+     roundup> create category name=scipy
      1
-     roundup> create category name=chaco order=1
+     roundup> create category name=chaco
      2
-     roundup> create category name=weave order=1
+     roundup> create category name=weave
      3
      roundup> exit...
      There are unsaved changes. Commit them (y/N)? y
-
-TODO: explain why order=1 in each case.
 
 
 Setting up security on the new objects
@@ -3148,8 +3146,10 @@ table to lay things out. It doesn't matter where in the table we add new
 stuff, it is entirely up to your sense of aesthetics::
 
    <th>Category</th>
-   <td><span tal:replace="structure context/category/field" />
-       <span tal:replace="structure db/category/classhelp" />
+   <td>
+    <span tal:replace="structure context/category/field" />
+    <span tal:replace="structure python:db.category.classhelp('name',
+                property='category', width='200')" />
    </td>
 
 First, we define a nice header so that the user knows what the next
