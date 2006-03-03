@@ -2064,6 +2064,7 @@ class HTMLRequest(HTMLInputMixin):
 
         # store the current class name and action
         self.classname = client.classname
+        self.nodeid = client.nodeid
         self.template = client.template
 
         # the special char to use for special vars
@@ -2072,6 +2073,17 @@ class HTMLRequest(HTMLInputMixin):
         HTMLInputMixin.__init__(self)
 
         self._post_init()
+
+    def current_url(self):
+        url = self.base
+        if self.classname:
+            url += self.classname
+            if self.nodeid:
+                url += self.nodeid
+        args = {}
+        if self.template:
+            args['@template'] = self.template
+        return self.indexargs_url(url, args)
 
     def _post_init(self):
         ''' Set attributes based on self.form

@@ -21,6 +21,7 @@ Fixed:
 - fix "Adding a new constrained field to the classic schema" example in docs
   (sf bug 1433118)
 - fix security check in mailgw (sf bug 1442145)
+- fix "clear this message" (sf bug 1429367)
 
 
 2006-02-10 1.1.0
