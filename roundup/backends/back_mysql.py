@@ -1,4 +1,4 @@
-#$Id: back_mysql.py,v 1.66 2006-01-30 00:36:26 richard Exp $
+#$Id: back_mysql.py,v 1.67 2006-03-03 01:02:26 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -166,7 +166,7 @@ class Database(Database):
             if message[0] != ER.NO_SUCH_TABLE:
                 raise DatabaseError, message
             self.init_dbschema()
-            self.sql("CREATE TABLE schema (schema TEXT) TYPE=%s"%
+            self.sql("CREATE TABLE `schema` (`schema` TEXT) TYPE=%s"%
                 self.mysql_backend)
             self.sql('''CREATE TABLE ids (name VARCHAR(255),
                 num INTEGER) TYPE=%s'''%self.mysql_backend)

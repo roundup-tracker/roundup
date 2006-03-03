@@ -14,14 +14,15 @@ Fixed:
 - incompatibility with python2.3 in the mailer module (sf bug 1432602)
 - typo in SMTP TLS option name: "MAIL_TLS_CERFILE" (sf bug 1435452)
 - email obfuscation code in html templating is more robust
-- fix blank-title subject line handling (sf bug 1442121)
-- fix "All users may only view and edit issues, files and messages they
+- blank-title subject line handling (sf bug 1442121)
+- "All users may only view and edit issues, files and messages they
   create" example in docs (sf bug 1439086)
-- fix saving of queries (sf bug 1436169)
-- fix "Adding a new constrained field to the classic schema" example in docs
+- saving of queries (sf bug 1436169)
+- "Adding a new constrained field to the classic schema" example in docs
   (sf bug 1433118)
-- fix security check in mailgw (sf bug 1442145)
-- fix "clear this message" (sf bug 1429367)
+- security check in mailgw (sf bug 1442145)
+- "clear this message" (sf bug 1429367)
+- escape all uses of "schema" in mysql backend (sf bug 1397569)
 
 
 2006-02-10 1.1.0
