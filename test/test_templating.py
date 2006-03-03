@@ -49,6 +49,7 @@ class FunctionsTestCase(TemplatingTestCase):
                 return '1'
             if key == 'fail':
                 raise KeyError, 'fail'
+            return key
         db._db.classes = {'issue': MockNull(lookup=lookup)}
         prop = MockNull(classname='issue')
         self.assertEqual(lookupIds(db._db, prop, ['1','2']), ['1','2'])
