@@ -1,23 +1,28 @@
-I'm proud to release this, the 1.1.0 release of Roundup.
-
-Feature:
-
-- trackers may configure custom stop-words for the full-text indexer
-- login may now be for a single session (and this is the default)
-- trackers may hide exceptions from web users (they will be mailed to the
-  tracker admin) (hiding is the default)
-- include "clear this message" link in the "ok" message bar
+I'm proud to release this, the 1.1.1 release of Roundup.
 
 Fixed:
 
-- fixes in scripts/import_sf.py
-- fix some unicode bugs in roundup-admin import
-- Xapian indexer wasn't actually being used and its reindexing of existing
-  data was busted to boot
-- roundup-admin import wasn't indexing message content
-- allow dispname to be passed to renderWith (sf bug 1424587)
-- rename dispname to @dispname to avoid name clashes in the future
-- fixed schema migration problem when Class keys were removed
+- failure with browsers not sending "Accept-Language" header
+  (sf bugs 1429646 and 1435335)
+- translate class name in "required property not supplied" error message
+  (sf bug 1429669)
+- error in link property lookups with numeric-alike key values (sf bug 1424550)
+- ignore UTF-8 BOM in .po files
+- add permission filter to menu() implementations (sf bug 1431188)
+- lithuanian translation updated by Nerijus Baliunas (sf patch 1411175)
+- incompatibility with python2.3 in the mailer module (sf bug 1432602)
+- typo in SMTP TLS option name: "MAIL_TLS_CERFILE" (sf bug 1435452)
+- email obfuscation code in html templating is more robust
+- blank-title subject line handling (sf bug 1442121)
+- "All users may only view and edit issues, files and messages they
+  create" example in docs (sf bug 1439086)
+- saving of queries (sf bug 1436169)
+- "Adding a new constrained field to the classic schema" example in docs
+  (sf bug 1433118)
+- security check in mailgw (sf bug 1442145)
+- "clear this message" (sf bug 1429367)
+- escape all uses of "schema" in mysql backend (sf bug 1397569)
+- date spec wasn't allowing week intervals
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.

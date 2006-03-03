@@ -6,7 +6,7 @@ want it to stay that way, too. This document describes how to build a
 source release. Users of Roundup should read the doc/installation.txt file
 to find out how to install this software.
 
-Building a release of Roundup is done by running:
+Building and distributing a release of Roundup is done by running:
 
 1.  Make sure the unit tests run! "./run_tests.py"
 2.  Tag the CVS for the release, eg. "cvs tag -R release-0-6-3"
@@ -29,6 +29,11 @@ Building a release of Roundup is done by running:
 11. Generate gpg signature with "gpg -a --detach-sign"
 12. python setup.py bdist_rpm
 13. python setup.py bdist_wininst
+14. Send doc/announcement.txt to python-announce@python.org
+15. Notify any other news services as appropriate...
+
+      http://freshmeat.net/projects/roundup/
+
 
 So, those commands in a nice, cut'n'pasteable form::
 
@@ -40,26 +45,7 @@ So, those commands in a nice, cut'n'pasteable form::
  python setup.py sdist --quiet
  python setup.py bdist_rpm
  python setup.py bdist_wininst
- python2.3 setup.py register
+ python setup.py register
+ python2.5 setup.py sdist upload --sign
 
-
-
-Distributing Releases
-=====================
-
-Once a release is built, follow these steps:
-
-1. FTP the tar.gz from the dist directory to to the "incoming" directory on
-   "upload.sourceforge.net".
-2. Make a quick release at:
-    http://sourceforge.net/project/admin/qrs.php?package_id=&group_id=31577
-3. PyPI registration / upload::
-
-     python setup.py register
-     python2.5 setup.py sdist upload --sign
-
-4. Send doc/announcement.txt to python-announce@python.org
-5. Notify any other news services as appropriate...
-
-   http://freshmeat.net/projects/roundup/
 
