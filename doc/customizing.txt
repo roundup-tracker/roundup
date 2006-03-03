@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.195 $
+:Version: $Revision: 1.196 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -3950,7 +3950,7 @@ resolved. To achieve this:
         status=-1,1,2,3,4,5,6,7">Show All</a><br>
 
    modify it to add the "blockers" info to the URL (note, both the
-   "@filter" *and* "blockers" values must be specified)@@
+   "@filter" *and* "blockers" values must be specified)::
 
      <a href="issue?@sort=-activity&@group=priority&@filter=status,blockers&
         blockers=-1&@columns=id,activity,title,creator,assignedto,status&
