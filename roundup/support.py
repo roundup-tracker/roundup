@@ -114,7 +114,7 @@ class Progress:
         elif self.total:
             s = '%s %2d%%'%(self.info, self.num * 100. / self.total)
         else:
-            s = '%s 0%% (ETA %02d:%02d:%02d)'%(self.info, H, M, S)
+            s = '%s %d done'%(self.info, self.num)
         sys.stdout.write(s + ' '*(75-len(s)) + '\r')
         sys.stdout.flush()
 
