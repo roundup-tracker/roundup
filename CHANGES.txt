@@ -20,6 +20,7 @@ Fixed:
 - fix saving of queries (sf bug 1436169)
 - fix "Adding a new constrained field to the classic schema" example in docs
   (sf bug 1433118)
+- fix security check in mailgw (sf bug 1442145)
 
 
 2006-02-10 1.1.0

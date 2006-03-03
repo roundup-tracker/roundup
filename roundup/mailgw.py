@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.173 2006-03-02 23:45:22 richard Exp $
+$Id: mailgw.py,v 1.174 2006-03-03 00:13:20 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -851,7 +851,8 @@ Unknown address: %s
 
         # make sure they're allowed to edit or create this class of information
         if nodeid:
-            if not self.db.security.hasPermission('Edit', author, classname):
+            if not self.db.security.hasPermission('Edit', author, classname,
+                    itemid=nodeid):
                 raise Unauthorized, 'You are not permitted to '\
                     'edit %s.'%classname
         else:
