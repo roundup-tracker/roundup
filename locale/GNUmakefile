@@ -1,7 +1,7 @@
 # Extract translatable strings from Roundup sources,
 # update and compile all existing translations
 #
-# $Id: GNUmakefile,v 1.9 2006-02-28 05:53:04 a1s Exp $
+# $Id: GNUmakefile,v 1.10 2006-03-04 09:04:29 a1s Exp $
 
 # tool locations
 XPOT ?= xpot
@@ -50,7 +50,7 @@ diff:
 	cvs diff roundup.pot|grep -v '^[-+]#'|vim -Rv -
 
 %.po: $(TEMPLATE)
-	${MSGMERGE} -U -w 72 --suffix=.bak $@ $<
+	${MSGMERGE} -U --suffix=.bak $@ $<
 
 %.mo: %.po
 	${MSGFMT} --statistics -o $@ $<
