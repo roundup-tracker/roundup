@@ -4,6 +4,7 @@ are given with the most recent entry first.
 2006-??-?? 1.1.2
 Fixed:
 - progress display in roundup-admin reindex
+- bug in menu() permission filter (sf bug 1444440)
 
 
 2006-03-03 1.1.1
