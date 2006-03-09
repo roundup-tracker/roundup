@@ -2,18 +2,21 @@
 
 #
 # Configuration
-# 
-PORT=8080
-PIDFILE="/usr/local/roundup/var/roundup-server.pid"
-LOGFILE="/usr/local/roundup/var/roundup-server.log"
-OTHERARGS=""
-TRACKERS="cg=/usr/local/roundup/trackers/cg"
+#
+CONFFILE="/var/roundup/server-config.ini"
 
-SERVER="/usr/local/bin/roundup-server -l ${LOGFILE} -d ${PIDFILE} -p ${PORT} ${OTHERARGS} ${TRACKERS}"
+# this will end up with extra space, but it should be ignored in the script
+PIDFILE=`grep '^pidfile' ${CONFFILE} | awk -F = '{print $2}' `
+SERVER="/usr/local/bin/roundup-server -C ${CONFFILE}"
 ERROR=0
 ARGV="$@"
-if [ "x$ARGV" = "x" ] ; then 
+if [ "x$ARGV" = "x" ] ; then
     ARGS="help"
+fi
+
+if [ -z "${PIDFILE}" ] ; then
+    echo "pidfile option must be set in configuration file"
+    exit 1
 fi
 
 for ARG in $@ $ARGS
