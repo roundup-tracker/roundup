@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.196 $
+:Version: $Revision: 1.197 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2086,7 +2086,7 @@ pretty      Date properties - render the date as "dd Mon YYYY" (eg. "19
 popcal      Generate a link to a popup calendar which may be used to
             edit the date field, for example::
 
-              <span tal:replace="structure context/due/popupCalendar" />
+              <span tal:replace="structure context/due/popcal" />
 
 menu        only on Link and Multilink properties - render a form select
             list for this property. Takes a number of optional arguments
@@ -2109,7 +2109,13 @@ menu        only on Link and Multilink properties - render a form select
 
             The remaining keyword arguments are used as conditions for
             filtering the items in the list - they're passed as the
-            "filterspec" argument to a Class.filter() call.
+            "filterspec" argument to a Class.filter() call. For example::
+
+             <span tal:replace="structure context/status/menu" />
+
+             <span tal:replace="python:context.status.menu(order='+name",
+                                   value='chatting', 
+                                   filterspec={'status': '1,2,3,4'}" />
 
 sorted      only on Multilink properties - produce a list of the linked
             items sorted by some property, for example::
