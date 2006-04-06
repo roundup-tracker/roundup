@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.121 2006-01-27 02:39:42 richard Exp $
+# $Id: roundupdb.py,v 1.122 2006-04-06 05:57:17 a1s Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -29,6 +29,7 @@ import cStringIO, base64, quopri, mimetypes
 from rfc2822 import encode_header
 
 from roundup import password, date, hyperdb
+from roundup.i18n import _
 
 # MessageSendError is imported for backwards compatibility
 from roundup.mailer import Mailer, straddr, MessageSendError
@@ -300,11 +301,13 @@ class IssueClass:
         # add author information
         if authid:
             if len(self.get(nodeid,'messages')) == 1:
-                m.append("New submission from %s%s:"%(authname, authaddr))
+                m.append(_("New submission from %(authname)s%(authaddr)s:")
+                    % locals())
             else:
-                m.append("%s%s added the comment:"%(authname, authaddr))
+                m.append(_("%(authname)%(authaddr)s added the comment:")
+                    % locals())
         else:
-            m.append("System message:")
+            m.append(_("System message:"))
         m.append('')
 
         # add the content
