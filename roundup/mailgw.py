@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.174 2006-03-03 00:13:20 richard Exp $
+$Id: mailgw.py,v 1.175 2006-04-06 06:01:35 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -82,6 +82,7 @@ import traceback, MimeWriter, rfc822
 
 from roundup import hyperdb, date, password, rfc2822, exceptions
 from roundup.mailer import Mailer, MessageSendError
+from roundup.i18n import _
 
 SENDMAILDEBUG = os.environ.get('SENDMAILDEBUG', '')
 
@@ -582,9 +583,9 @@ class MailGW:
         # handle the subject line
         subject = message.getheader('subject', '')
         if not subject:
-            raise MailUsageError, '''
+            raise MailUsageError, _("""
 Emails to Roundup trackers must include a Subject: line!
-'''
+""")
 
         # detect Precedence: Bulk, or Microsoft Outlook autoreplies
         if (message.getheader('precedence', '') == 'bulk'
@@ -670,7 +671,7 @@ Emails to Roundup trackers must include a Subject: line!
                         m = None
 
         if not m and pfxmode == 'strict':
-            raise MailUsageError, """
+            raise MailUsageError, _("""
 The message you sent to roundup did not contain a properly formed subject
 line. The subject must contain a class name or designator to indicate the
 'topic' of the message. For example:
@@ -681,8 +682,8 @@ line. The subject must contain a class name or designator to indicate the
       - this will append the message's contents to the existing issue 1234
         in the tracker.
 
-Subject was: '%s'
-"""%subject
+Subject was: '%(subject)s'
+""") % locals()
 
         # try to get the class specified - if "loose" then fall back on the
         # default
@@ -700,13 +701,14 @@ Subject was: '%s'
             except KeyError:
                 pass
         if not cl:
-            raise MailUsageError, '''
-The class name you identified in the subject line ("%s") does not exist in the
+            validname = ', '.join(self.db.getclasses())
+            raise MailUsageError, _("""
+The class name you identified in the subject line ("%(classname)s") does not exist in the
 database.
 
-Valid class names are: %s
-Subject was: "%s"
-'''%(classname, ', '.join(self.db.getclasses()), subject)
+Valid class names are: %(validname)s
+Subject was: "%(subject)s"
+""") % locals()
 
         # get the optional nodeid
         if pfxmode == 'none':
@@ -728,13 +730,13 @@ Subject was: "%s"
 
         # but we do need either a title or a nodeid...
         if nodeid is None and not title:
-            raise MailUsageError, '''
+            raise MailUsageError, _("""
 I cannot match your message to a node in the database - you need to either
 supply a full designator (with number, eg "[issue123]" or keep the
 previous subject title intact so I can match that.
 
-Subject was: "%s"
-'''%subject
+Subject was: "%(subject)s"
+""") % locals()
 
         # If there's no nodeid, check to see if this is a followup and
         # maybe someone's responded to the initial mail that created an
@@ -761,12 +763,12 @@ Subject was: "%s"
         # if a nodeid was specified, make sure it's valid
         if nodeid is not None and not cl.hasnode(nodeid):
             if pfxmode == 'strict':
-                raise MailUsageError, '''
-The node specified by the designator in the subject of your message ("%s")
-does not exist.
+                raise MailUsageError, _("""
+The node specified by the designator in the subject of your message
+("%(nodeid)s") does not exist.
 
-Subject was: "%s"
-'''%(nodeid, subject)
+Subject was: "%(subject)s"
+""") % locals()
             else:
                 title = subject
                 nodeid = None
@@ -788,11 +790,12 @@ Subject was: "%s"
                     #   we should chect for subclasses of these classes,
                     #   not for the class name...
                     if current_class not in ('msg', 'file', 'user', 'issue'):
-                        raise MailUsageError, '''
+                        mailadmin = config['ADMIN_EMAIL']
+                        raise MailUsageError, _("""
 The mail gateway is not properly set up. Please contact
-%s and have them fix the incorrect class specified as:
-  %s
-''' % (config['ADMIN_EMAIL'], current_class)
+%(mailadmin)s and have them fix the incorrect class specified as:
+  %(current_class)s
+""") % locals()
                 if option in ('-S', '--set'):
                     if current_class == 'issue' :
                         errors, issue_props = setPropArrayFromString(self,
@@ -810,11 +813,12 @@ The mail gateway is not properly set up. Please contact
                         errors, user_props = setPropArrayFromString(self,
                             temp_cl, propstring.strip())
                     if errors:
-                        raise MailUsageError, '''
+                        mailadmin = config['ADMIN_EMAIL']
+                        raise MailUsageError, _("""
 The mail gateway is not properly set up. Please contact
-%s and have them fix the incorrect properties:
-  %s
-'''%(config['ADMIN_EMAIL'], errors)
+%(mailadmin)s and have them fix the incorrect properties:
+  %(errors)s
+""") % locals()
 
         #
         # handle the users
@@ -839,27 +843,29 @@ The mail gateway is not properly set up. Please contact
         if not self.db.security.hasPermission('Email Access', author):
             if author == anonid:
                 # we're anonymous and we need to be a registered user
-                raise Unauthorized, '''
+                from_address = from_list[0][1]
+                raise Unauthorized, _("""
 You are not a registered user.
 
-Unknown address: %s
-'''%from_list[0][1]
+Unknown address: %(from_address)s
+""") % locals()
             else:
                 # we're registered and we're _still_ not allowed access
-                raise Unauthorized, 'You are not permitted to access '\
-                    'this tracker.'
+                raise Unauthorized, _(
+                    'You are not permitted to access this tracker.')
 
         # make sure they're allowed to edit or create this class of information
         if nodeid:
             if not self.db.security.hasPermission('Edit', author, classname,
                     itemid=nodeid):
-                raise Unauthorized, 'You are not permitted to '\
-                    'edit %s.'%classname
+                raise Unauthorized, _(
+                    'You are not permitted to edit %(classname)s.') % locals()
         else:
             if not self.db.security.hasPermission('Create', author, classname):
-                raise Unauthorized, 'You are not permitted to '\
-                    'create %s.'%classname
-                
+                raise Unauthorized, _(
+                    'You are not permitted to create %(classname)s.'
+                    ) % locals()
+
         # the author may have been created - make sure the change is
         # committed before we reopen the database
         self.db.commit()
@@ -904,12 +910,12 @@ Unknown address: %s
                 if errors:
                     if sfxmode == 'strict':
                         errors = '\n- '.join(map(str, errors))
-                        raise MailUsageError, '''
+                        raise MailUsageError, _("""
 There were problems handling your subject line argument list:
-- %s
+- %(errors)s
 
-Subject was: "%s"
-'''%(errors, subject)
+Subject was: "%(subject)s"
+""") % locals()
                     else:
                         title += ' ' + argswhole
 
@@ -933,10 +939,10 @@ Subject was: "%s"
         # now handle the body - find the message
         content, attachments = message.extract_content()
         if content is None:
-            raise MailUsageError, '''
+            raise MailUsageError, _("""
 Roundup requires the submission to be plain text. The message parser could
 not find a text/plain part to use.
-'''
+""")
 
         # figure how much we should muck around with the email body
         keep_citations = config['MAILGW_KEEP_QUOTED_TEXT']
@@ -954,7 +960,8 @@ not find a text/plain part to use.
             files = []
             for (name, mime_type, data) in attachments:
                 if not self.db.security.hasPermission('Create', author, 'file'):
-                    raise Unauthorized, 'You are not permitted to create files.'
+                    raise Unauthorized, _(
+                        'You are not permitted to create files.')
                 if not name:
                     name = "unnamed"
                 try:
@@ -967,8 +974,9 @@ not find a text/plain part to use.
             # attach the files to the issue
             if not self.db.security.hasPermission('Edit', author,
                     classname, 'files'):
-                raise Unauthorized, 'You are not permitted to add '\
-                    'files to %s.'%classname
+                raise Unauthorized, _(
+                    'You are not permitted to add files to %(classname)s.'
+                    ) % locals()
 
             if nodeid:
                 # extend the existing files list
@@ -984,7 +992,8 @@ not find a text/plain part to use.
         #
         if (content and properties.has_key('messages')):
             if not self.db.security.hasPermission('Create', author, 'msg'):
-                raise Unauthorized, 'You are not permitted to create messages.'
+                raise Unauthorized, _(
+                    'You are not permitted to create messages.')
 
             try:
                 message_id = self.db.msg.create(author=author,
@@ -992,15 +1001,16 @@ not find a text/plain part to use.
                     summary=summary, content=content, files=files,
                     messageid=messageid, inreplyto=inreplyto, **msg_props)
             except exceptions.Reject, error:
-                raise MailUsageError, '''
+                raise MailUsageError, _("""
 Mail message was rejected by a detector.
-%s
-'''%error
+%(error)s
+""") % locals()
             # attach the message to the node
             if not self.db.security.hasPermission('Edit', author,
                     classname, 'messages'):
-                raise Unauthorized, 'You are not permitted to add '\
-                    'messages to %s.'%classname
+                raise Unauthorized, _(
+                    'You are not permitted to add messages to %(classname)s.'
+                    ) % locals()
 
             if nodeid:
                 # add the message to the node's list
@@ -1026,18 +1036,18 @@ Mail message was rejected by a detector.
             for prop in props.keys():
                 if not self.db.security.hasPermission('Edit', author,
                         classname, prop):
-                    raise Unauthorized, 'You are not permitted to edit '\
-                        'property %s of class %s.'%(prop,classname)
+                    raise Unauthorized, _('You are not permitted to edit '
+                        'property %(prop)s of class %(classname)s.') % locals()
 
             if nodeid:
                 cl.set(nodeid, **props)
             else:
                 nodeid = cl.create(**props)
         except (TypeError, IndexError, ValueError), message:
-            raise MailUsageError, '''
+            raise MailUsageError, _("""
 There was a problem with the message you sent:
-   %s
-'''%message
+   %(message)s
+""") % locals()
 
         # commit the changes to the DB
         self.db.commit()
@@ -1056,8 +1066,8 @@ def setPropArrayFromString(self, cl, propString, nodeid=None):
         try:
             propname, value = prop.split('=')
         except ValueError, message:
-            errors.append('not of form [arg=value,value,...;'
-                'arg=value,value,...]')
+            errors.append(_('not of form [arg=value,value,...;'
+                'arg=value,value,...]'))
             return (errors, props)
         # convert the value to a hyperdb-usable value
         propname = propname.strip()
