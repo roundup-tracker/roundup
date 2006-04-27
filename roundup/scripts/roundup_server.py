@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.82 2006-02-22 05:40:56 a1s Exp $
+$Id: roundup_server.py,v 1.83 2006-04-27 04:59:37 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -657,7 +657,6 @@ def daemonize(pidfile):
         os._exit(0)
 
     os.chdir("/")
-    os.umask(0)
 
     # close off std(in|out|err), redirect to devnull so the file
     # descriptors can't be used again

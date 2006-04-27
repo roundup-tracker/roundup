@@ -263,9 +263,6 @@ class IMAPServer:
                 pidfile.close()
             os._exit(0)
 
-        #os.chdir("/")
-        #os.umask(0)
-
     def run(self):
         """Run email gathering daemon.
 

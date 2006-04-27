@@ -18,6 +18,7 @@ Fixed:
 - dangling connections in session handling (sf bug 1463359)
 - reduced frequency of session timestamp update
 - classhelp popup pagination forgot about "type" (sf bug 1465836)
+- umask is now configurable (with the same 0002 default)
 
 
 2006-03-03 1.1.1

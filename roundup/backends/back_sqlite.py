@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.43 2005-06-08 03:41:21 anthonybaxter Exp $
+# $Id: back_sqlite.py,v 1.44 2006-04-27 04:59:37 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -94,7 +94,7 @@ class Database(rdbms_common.Database):
 
     def open_connection(self):
         # ensure files are group readable and writable
-        os.umask(0002)
+        os.umask(self.config.UMASK)
 
         (self.conn, self.cursor) = self.sql_open_connection()
 

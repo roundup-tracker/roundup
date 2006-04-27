@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.107 2006-04-27 01:39:47 richard Exp $
+# $Id: back_metakit.py,v 1.108 2006-04-27 04:59:37 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -100,7 +100,7 @@ class _Database(hyperdb.Database, roundupdb.Database):
         self.stats = {'cache_hits': 0, 'cache_misses': 0, 'get_items': 0,
             'filtering': 0}
 
-        os.umask(0002)
+        os.umask(config.UMASK)
 
     def post_init(self):
         if self.indexer.should_reindex():

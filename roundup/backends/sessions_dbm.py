@@ -1,4 +1,4 @@
-#$Id: sessions_dbm.py,v 1.6 2006-04-27 04:03:11 richard Exp $
+#$Id: sessions_dbm.py,v 1.7 2006-04-27 04:59:37 richard Exp $
 """This module defines a very basic store that's used by the CGI interface
 to store session and one-time-key information.
 
@@ -19,8 +19,7 @@ class BasicDatabase:
     def __init__(self, db):
         self.config = db.config
         self.dir = db.config.DATABASE
-        # ensure files are group readable and writable
-        os.umask(0002)
+        os.umask(db.config.UMASK)
 
     def exists(self, infoid):
         db = self.opendb('c')

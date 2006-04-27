@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.33 2006-02-08 03:47:28 richard Exp $
+# $Id: configuration.py,v 1.34 2006-04-27 04:59:37 richard Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -353,6 +353,19 @@ class IntegerNumberOption(Option):
         except ValueError:
             raise OptionValueError(self, value, "Integer number required")
 
+class OctalNumberOption(Option):
+
+    """Octal Integer numbers"""
+
+    def str2value(self, value):
+        try:
+            return int(value, 8)
+        except ValueError:
+            raise OptionValueError(self, value, "Octal Integer number required")
+
+    def _value2str(self, value):
+        return oct(value)
+
 class NullableOption(Option):
 
     """Option that is set to None if it's string value is one of NULL strings
@@ -466,6 +479,8 @@ SETTINGS = (
             "Additional stop-words for the full-text indexer specific to\n"
             "your tracker. See the indexer source for the default list of\n"
             "stop-words (eg. A,AND,ARE,AS,AT,BE,BUT,BY, ...)"),
+        (OctalNumberOption, "umask", "02",
+            "Defines the file creation mode mask."),
     )),
     ("tracker", (
         (Option, "name", "Roundup issue tracker",
