@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.169 2006-04-27 01:39:47 richard Exp $
+#$Id: rdbms_common.py,v 1.170 2006-04-27 05:15:17 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -720,7 +720,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     hyperdb_to_sql_value = {
         hyperdb.String : str,
         # fractional seconds by default
-        hyperdb.Date   : lambda x: x.formal(sep=' ', sec='%.3f'),
+        hyperdb.Date   : lambda x: x.formal(sep=' ', sec='%06.3f'),
         hyperdb.Link   : int,
         hyperdb.Interval  : str,
         hyperdb.Password  : str,

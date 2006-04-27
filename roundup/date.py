@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: date.py,v 1.85 2006-04-27 05:11:28 richard Exp $
+# $Id: date.py,v 1.86 2006-04-27 05:15:16 richard Exp $
 
 """Date, time and time interval handling.
 """
@@ -391,7 +391,7 @@ class Date:
         return str
 
     def __repr__(self):
-        return '<Date %s>'%self.formal(sec='%f')
+        return '<Date %s>'%self.formal(sec='%06.3f')
 
     def local(self, offset):
         """ Return this date as yyyy-mm-dd.hh:mm:ss in a local time zone.
@@ -408,7 +408,7 @@ class Date:
             self.second, 0, 0, 0)
 
     def serialise(self):
-        return '%4d%02d%02d%02d%02d%f'%(self.year, self.month,
+        return '%4d%02d%02d%02d%02d%06.3f'%(self.year, self.month,
             self.day, self.hour, self.minute, self.second)
 
     def timestamp(self):
