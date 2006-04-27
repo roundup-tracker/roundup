@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: hyperdb.py,v 1.118 2006-03-03 02:02:50 richard Exp $
+# $Id: hyperdb.py,v 1.119 2006-04-27 01:39:47 richard Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -855,6 +855,15 @@ class FileClass:
     ''' A class that requires the "content" property and stores it on
         disk.
     '''
+    default_mime_type = 'text/plain'
+
+    def __init__(self, db, classname, **properties):
+        '''The newly-created class automatically includes the "content"
+        property.
+        '''
+        if not properties.has_key('content'):
+            properties['content'] = hyperdb.String(indexme='yes')
+
     def export_propnames(self):
         ''' Don't export the "content" property
         '''

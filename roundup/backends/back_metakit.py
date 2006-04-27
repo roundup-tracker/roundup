@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.106 2006-02-09 23:53:10 richard Exp $
+# $Id: back_metakit.py,v 1.107 2006-04-27 01:39:47 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -1778,9 +1778,12 @@ _typmap = {
 class FileClass(hyperdb.FileClass, Class):
     ''' like Class but with a content property
     '''
-    default_mime_type = 'text/plain'
     def __init__(self, db, classname, **properties):
-        properties['content'] = FileName()
+        '''The newly-created class automatically includes the "content"
+        and "type" properties.
+        '''
+        if not properties.has_key('content'):
+            properties['content'] = hyperdb.String(indexme='yes')
         if not properties.has_key('type'):
             properties['type'] = hyperdb.String()
         Class.__init__(self, db, classname, **properties)
@@ -1908,24 +1911,32 @@ class FileClass(hyperdb.FileClass, Class):
             f.write(content)
             f.close()
 
-            mimetype = propvalues.get('type', self.default_mime_type)
-            self.db.indexer.add_text((self.classname, itemid, 'content'),
-                content, mimetype)
+            if self.properties['content'].indexme:
+                mimetype = self.get('type', self.default_mime_type)
+                self.db.indexer.add_text((self.classname, itemid, 'content'),
+                    content, mimetype)
 
         self.fireReactors('set', oldnode, propvalues)
 
     def index(self, nodeid):
-        '''Add (or refresh) the node to search indexes.
+        ''' Add (or refresh) the node to search indexes.
 
-        Pass on the content-type property for the content property.
+        Use the content-type property for the content property.
         '''
-        Class.index(self, nodeid)
-        try:
-            mime_type = self.get(nodeid, 'type', self.default_mime_type)
-        except KeyError:
-            mime_type = self.default_mime_type
-        self.db.indexer.add_text((self.classname, nodeid, 'content'),
-            str(self.get(nodeid, 'content')), mime_type)
+        # find all the String properties that have indexme
+        for prop, propclass in self.getprops().items():
+            if prop == 'content' and propclass.indexme:
+                mime_type = self.get(nodeid, 'type', self.default_mime_type)
+                self.db.indexer.add_text((self.classname, nodeid, 'content'),
+                    str(self.get(nodeid, 'content')), mime_type)
+            elif isinstance(propclass, hyperdb.String) and propclass.indexme:
+                # index them under (classname, nodeid, property)
+                try:
+                    value = str(self.get(nodeid, prop))
+                except IndexError:
+                    # node has been destroyed
+                    continue
+                self.db.indexer.add_text((self.classname, nodeid, prop), value)
 
 class IssueClass(Class, roundupdb.IssueClass):
     ''' The newly-created class automatically includes the "messages",

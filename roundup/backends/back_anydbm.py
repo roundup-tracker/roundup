@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: back_anydbm.py,v 1.197 2006-03-03 02:51:13 richard Exp $
+#$Id: back_anydbm.py,v 1.198 2006-04-27 01:39:47 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -2023,7 +2023,15 @@ class FileClass(hyperdb.FileClass, Class):
        "default_mime_type" class attribute, which may be overridden by each
        node if the class defines a "type" String property.
     '''
-    default_mime_type = 'text/plain'
+    def __init__(self, db, classname, **properties):
+        '''The newly-created class automatically includes the "content"
+        and "type" properties.
+        '''
+        if not properties.has_key('content'):
+            properties['content'] = hyperdb.String(indexme='yes')
+        if not properties.has_key('type'):
+            properties['type'] = hyperdb.String()
+        Class.__init__(self, db, classname, **properties)
 
     def create(self, **propvalues):
         ''' Snarf the "content" propvalue and store in a file
@@ -2093,47 +2101,37 @@ class FileClass(hyperdb.FileClass, Class):
 
         # do content?
         if content:
-            # store and index
+            # store and possibly index
             self.db.storefile(self.classname, itemid, None, content)
-            mime_type = None
-            if self.getprops().has_key('type'):
-                mime_type = propvalues.get('type', self.get(itemid, 'type'))
-            if not mime_type:
-                mime_type = self.default_mime_type
-            self.db.indexer.add_text((self.classname, itemid, 'content'),
-                content, mime_type)
-
+            if self.properties['content'].indexme:
+                mime_type = self.get(itemid, 'type', self.default_mime_type)
+                self.db.indexer.add_text((self.classname, itemid, 'content'),
+                    content, mime_type)
             propvalues['content'] = content
 
         # fire reactors
         self.fireReactors('set', itemid, oldvalues)
         return propvalues
 
-    def getprops(self, protected=1):
-        '''In addition to the actual properties on the node, these methods
-        provide the "content" property. If the "protected" flag is true,
-        we include protected properties - those which may not be
-        modified.
-
-        Note that the content prop is indexed separately, hence no indexme.
-        '''
-        d = Class.getprops(self, protected=protected).copy()
-        d['content'] = hyperdb.String()
-        return d
-
     def index(self, nodeid):
-        '''Add (or refresh) the node to search indexes.
+        ''' Add (or refresh) the node to search indexes.
 
-        Pass on the content-type property for the content property.
+        Use the content-type property for the content property.
         '''
-        Class.index(self, nodeid)
-        mime_type = None
-        if self.getprops().has_key('type'):
-            mime_type = self.get(nodeid, 'type', self.default_mime_type)
-        if not mime_type:
-            mime_type = self.default_mime_type
-        self.db.indexer.add_text((self.classname, nodeid, 'content'),
-            str(self.get(nodeid, 'content')), mime_type)
+        # find all the String properties that have indexme
+        for prop, propclass in self.getprops().items():
+            if prop == 'content' and propclass.indexme:
+                mime_type = self.get(nodeid, 'type', self.default_mime_type)
+                self.db.indexer.add_text((self.classname, nodeid, 'content'),
+                    str(self.get(nodeid, 'content')), mime_type)
+            elif isinstance(propclass, hyperdb.String) and propclass.indexme:
+                # index them under (classname, nodeid, property)
+                try:
+                    value = str(self.get(nodeid, prop))
+                except IndexError:
+                    # node has been destroyed
+                    continue
+                self.db.indexer.add_text((self.classname, nodeid, prop), value)
 
 # deviation from spec - was called ItemClass
 class IssueClass(Class, roundupdb.IssueClass):

@@ -50,6 +50,7 @@ user.setkey("username")
 
 # FileClass automatically gets this property in addition to the Class ones:
 #   content = String()    [saved to disk in <tracker home>/db/files/]
+#   type = String()       [MIME type of the content, default 'text/plain']
 msg = FileClass(db, "msg",
                 author=Link("user", do_journal='no'),
                 recipients=Multilink("user", do_journal='no'),
@@ -60,8 +61,7 @@ msg = FileClass(db, "msg",
                 inreplyto=String())
 
 file = FileClass(db, "file",
-                name=String(),
-                type=String())
+                name=String())
 
 # IssueClass automatically gets these properties in addition to the Class ones:
 #   title = String()

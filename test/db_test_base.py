@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.68 2006-03-03 02:02:50 richard Exp $
+# $Id: db_test_base.py,v 1.69 2006-04-27 01:39:47 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
@@ -73,6 +73,7 @@ def setupSchema(db, create, module):
     user.setkey("username")
     file = module.FileClass(db, "file", name=String(), type=String(),
         comment=String(indexme="yes"), fooz=Password())
+    file_nidx = module.FileClass(db, "file_nidx", content=String(indexme='no'))
     issue = module.IssueClass(db, "issue", title=String(indexme="yes"),
         status=Link("status"), nosy=Multilink("user"), deadline=Date(),
         foo=Interval(), files=Multilink("file"), assignedto=Link('user'),
@@ -784,6 +785,17 @@ class DBTest(MyTestCase):
         self.assertEquals(self.db.indexer.search(['hello'], self.db.issue),
             {i1: {'files': [f2]}})
 
+    def testFileClassIndexingNoNoNo(self):
+        f1 = self.db.file.create(content='hello')
+        self.db.commit()
+        self.assertEquals(self.db.indexer.search(['hello'], self.db.file),
+            {'1': {}})
+
+        f1 = self.db.file_nidx.create(content='hello')
+        self.db.commit()
+        self.assertEquals(self.db.indexer.search(['hello'], self.db.file_nidx),
+            {})
+
     def testForcedReindexing(self):
         self.db.issue.create(title="flebble frooz")
         self.db.commit()
@@ -1257,6 +1269,14 @@ class SchemaTest(MyTestCase):
         a = self.module.Class(self.db, "a", name=String())
         a.setkey("name")
         self.db.post_init()
+
+    def test_fileClassProps(self):
+        self.db = self.module.Database(config, 'admin')
+        a = self.module.FileClass(self.db, 'a')
+        l = a.getprops().keys()
+        l.sort()
+        self.assert_(l, ['activity', 'actor', 'content', 'created',
+            'creation', 'type'])
 
     def init_ab(self):
         self.db = self.module.Database(config, 'admin')

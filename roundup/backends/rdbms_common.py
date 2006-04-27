@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.168 2006-03-03 02:02:50 richard Exp $
+#$Id: rdbms_common.py,v 1.169 2006-04-27 01:39:47 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2504,7 +2504,15 @@ class FileClass(hyperdb.FileClass, Class):
        "default_mime_type" class attribute, which may be overridden by each
        node if the class defines a "type" String property.
     '''
-    default_mime_type = 'text/plain'
+    def __init__(self, db, classname, **properties):
+        '''The newly-created class automatically includes the "content"
+        and "type" properties.
+        '''
+        if not properties.has_key('content'):
+            properties['content'] = hyperdb.String(indexme='yes')
+        if not properties.has_key('type'):
+            properties['type'] = hyperdb.String()
+        Class.__init__(self, db, classname, **properties)
 
     def create(self, **propvalues):
         ''' snaffle the file propvalue and store in a file
@@ -2524,8 +2532,9 @@ class FileClass(hyperdb.FileClass, Class):
         mime_type = propvalues.get('type', self.default_mime_type)
 
         # and index!
-        self.db.indexer.add_text((self.classname, newid, 'content'), content,
-            mime_type)
+        if self.properties['content'].indexme:
+            self.db.indexer.add_text((self.classname, newid, 'content'),
+                content, mime_type)
 
         # fire reactors
         self.fireReactors('create', newid, None)
@@ -2581,16 +2590,12 @@ class FileClass(hyperdb.FileClass, Class):
 
         # do content?
         if content:
-            # store and index
+            # store and possibly index
             self.db.storefile(self.classname, itemid, None, content)
-            mime_type = None
-            if self.getprops().has_key('type'):
-                mime_type = propvalues.get('type', self.get(itemid, 'type'))
-            if not mime_type:
-                mime_type = self.default_mime_type
-            self.db.indexer.add_text((self.classname, itemid, 'content'),
-                content, mime_type)
-
+            if self.properties['content'].indexme:
+                mime_type = self.get(itemid, 'type', self.default_mime_type)
+                self.db.indexer.add_text((self.classname, itemid, 'content'),
+                    content, mime_type)
             propvalues['content'] = content
 
         # fire reactors
@@ -2598,18 +2603,24 @@ class FileClass(hyperdb.FileClass, Class):
         return propvalues
 
     def index(self, nodeid):
-        '''Add (or refresh) the node to search indexes.
+        ''' Add (or refresh) the node to search indexes.
 
-        Pass on the content-type property for the content property.
+        Use the content-type property for the content property.
         '''
-        Class.index(self, nodeid)
-        mime_type = None
-        if self.getprops().has_key('type'):
-            mime_type = self.get(nodeid, 'type')
-        if not mime_type:
-            mime_type = self.default_mime_type
-        self.db.indexer.add_text((self.classname, nodeid, 'content'),
-            str(self.get(nodeid, 'content')), mime_type)
+        # find all the String properties that have indexme
+        for prop, propclass in self.getprops().items():
+            if prop == 'content' and propclass.indexme:
+                mime_type = self.get(nodeid, 'type', self.default_mime_type)
+                self.db.indexer.add_text((self.classname, nodeid, 'content'),
+                    str(self.get(nodeid, 'content')), mime_type)
+            elif isinstance(propclass, hyperdb.String) and propclass.indexme:
+                # index them under (classname, nodeid, property)
+                try:
+                    value = str(self.get(nodeid, prop))
+                except IndexError:
+                    # node has been destroyed
+                    continue
+                self.db.indexer.add_text((self.classname, nodeid, prop), value)
 
 # XXX deviation from spec - was called ItemClass
 class IssueClass(Class, roundupdb.IssueClass):

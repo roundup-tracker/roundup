@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.122 2006-04-06 05:57:17 a1s Exp $
+# $Id: roundupdb.py,v 1.123 2006-04-27 01:39:47 richard Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -304,7 +304,7 @@ class IssueClass:
                 m.append(_("New submission from %(authname)s%(authaddr)s:")
                     % locals())
             else:
-                m.append(_("%(authname)%(authaddr)s added the comment:")
+                m.append(_("%(authname)s%(authaddr)s added the comment:")
                     % locals())
         else:
             m.append(_("System message:"))

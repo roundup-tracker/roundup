@@ -8,6 +8,10 @@ Feature:
 Fixed:
 - progress display in roundup-admin reindex
 - bug in menu() permission filter (sf bug 1444440)
+- indexing may be turned off for FileClass "content" now
+  ("content" and "type" properties are now automatically included in the
+  FileClass schema where previously the "content" property was faked and
+  "type" was optional)
 
 
 2006-03-03 1.1.1
