@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: date.py,v 1.84 2006-03-03 02:02:50 richard Exp $
+# $Id: date.py,v 1.85 2006-04-27 05:11:28 richard Exp $
 
 """Date, time and time interval handling.
 """
@@ -45,7 +45,7 @@ date_re = re.compile(r'''^
     ((?P<y>\d\d\d\d)([/-](?P<m>\d\d?)([/-](?P<d>\d\d?))?)? # yyyy[-mm[-dd]]
     |(?P<a>\d\d?)[/-](?P<b>\d\d?))?              # or mm-dd
     (?P<n>\.)?                                   # .
-    (((?P<H>\d?\d):(?P<M>\d\d))?(:(?P<S>\d\d(\.\d+)?))?)?  # hh:mm:ss
+    (((?P<H>\d?\d):(?P<M>\d\d))?(:(?P<S>\d\d?(\.\d+)?))?)?  # hh:mm:ss
     (?P<o>[\d\smywd\-+]+)?                       # offset
 $''', re.VERBOSE)
 serialised_date_re = re.compile(r'''
