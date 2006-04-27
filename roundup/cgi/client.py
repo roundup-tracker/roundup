@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.224 2006-04-27 03:48:41 richard Exp $
+# $Id: client.py,v 1.225 2006-04-27 04:03:11 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -466,8 +466,8 @@ class Client:
             try:
                 # update the lifetime datestamp
                 sessions.updateTimestamp(self.session)
-                user = sessions.get(self.session, 'user')
                 self.db.commit()
+                user = sessions.get(self.session, 'user')
             except KeyError:
                 # not valid, ignore id
                 pass

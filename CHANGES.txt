@@ -16,6 +16,7 @@ Fixed:
 - escape *all* uses of "schema" in mysql backend (sf bug 1472120)
 - responses to user rego email (sf bug 1470254)
 - dangling connections in session handling (sf bug 1463359)
+- reduced frequency of session timestamp update
 
 
 2006-03-03 1.1.1
