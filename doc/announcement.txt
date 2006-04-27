@@ -1,28 +1,29 @@
-I'm proud to release this, the 1.1.1 release of Roundup.
+I'm proud to release version 1.1.2 of Roundup.
+
+Feature:
+
+- server-ctl script uses server configuration file (sf bug 1443805)
 
 Fixed:
 
-- failure with browsers not sending "Accept-Language" header
-  (sf bugs 1429646 and 1435335)
-- translate class name in "required property not supplied" error message
-  (sf bug 1429669)
-- error in link property lookups with numeric-alike key values (sf bug 1424550)
-- ignore UTF-8 BOM in .po files
-- add permission filter to menu() implementations (sf bug 1431188)
-- lithuanian translation updated by Nerijus Baliunas (sf patch 1411175)
-- incompatibility with python2.3 in the mailer module (sf bug 1432602)
-- typo in SMTP TLS option name: "MAIL_TLS_CERFILE" (sf bug 1435452)
-- email obfuscation code in html templating is more robust
-- blank-title subject line handling (sf bug 1442121)
-- "All users may only view and edit issues, files and messages they
-  create" example in docs (sf bug 1439086)
-- saving of queries (sf bug 1436169)
-- "Adding a new constrained field to the classic schema" example in docs
-  (sf bug 1433118)
-- security check in mailgw (sf bug 1442145)
-- "clear this message" (sf bug 1429367)
-- escape all uses of "schema" in mysql backend (sf bug 1397569)
-- date spec wasn't allowing week intervals
+- indexing may be turned off for FileClass "content" now
+  ("content" and "type" properties are now automatically included in the
+  FileClass schema where previously the "content" property was faked and
+  "type" was optional)
+- reduced frequency of session timestamp update
+- progress display in roundup-admin reindex
+- bug in menu() permission filter (sf bug 1444440)
+- verbose output during import is optional now (sf bug 1475624)
+- escape *all* uses of "schema" in mysql backend (sf bug 1472120)
+- responses to user rego email (sf bug 1470254)
+- dangling connections in session handling (sf bug 1463359)
+- classhelp popup pagination forgot about "type" (sf bug 1465836)
+- umask is now configurable (with the same 0002 default)
+- sorting of entries in classhelp popup (sf bug 1449000)
+- allow single digit seconds in date spec (sf bug 1447141)
+- prevent generation of new single-digit seconds dates (sf bug 1429390)
+- implement close() on all indexers (sf bug 1242477)
+
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.

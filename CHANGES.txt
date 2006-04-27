@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2006-??-?? 1.1.2
+2006-04-27 1.1.2
 Feature:
 - server-ctl script uses server configuration file (sf bug 1443805)
 
@@ -23,6 +23,7 @@ Fixed:
 - allow single digit seconds in date spec (sf bug 1447141)
 - prevent generation of new single-digit seconds dates (sf bug 1429390)
 - implement close() on all indexers (sf bug 1242477)
+
 
 2006-03-03 1.1.1
 Fixed:
