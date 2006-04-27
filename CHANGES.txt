@@ -17,6 +17,7 @@ Fixed:
 - responses to user rego email (sf bug 1470254)
 - dangling connections in session handling (sf bug 1463359)
 - reduced frequency of session timestamp update
+- classhelp popup pagination forgot about "type" (sf bug 1465836)
 
 
 2006-03-03 1.1.1
