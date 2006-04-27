@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.98 2006-02-06 21:00:44 richard Exp $
+# $Id: admin.py,v 1.99 2006-04-27 03:38:53 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -121,6 +121,8 @@ Options:
  -S <string>       -- when outputting lists of data, string-separate them
  -s                -- when outputting lists of data, space-separate them.
                       Same as '-S " "'.
+ -V                -- be verbose when importing
+ -v                -- report Roundup and Python versions (and quit)
 
  Only one of -s, -c or -S can be specified.
 
@@ -1159,6 +1161,7 @@ Erase it? Y/N: """))
                 if file_props is None:
                     file_props = r
                     continue
+
                 sys.stdout.write('Importing %s - %d\r'%(classname, n))
                 sys.stdout.flush()
 
@@ -1412,31 +1415,34 @@ Erase it? Y/N: """))
                 password = l[1]
         self.separator = None
         self.print_designator = 0
+        self.verbose = 0
         for opt, arg in opts:
             if opt == '-h':
                 self.usage()
                 return 0
-            if opt == '-v':
+            elif opt == '-v':
                 print '%s (python %s)'%(roundup_version, sys.version.split()[0])
                 return 0
-            if opt == '-i':
+            elif opt == '-V':
+                self.verbose = 1
+            elif opt == '-i':
                 self.tracker_home = arg
-            if opt == '-c':
+            elif opt == '-c':
                 if self.separator != None:
                     self.usage('Only one of -c, -S and -s may be specified')
                     return 1
                 self.separator = ','
-            if opt == '-S':
+            elif opt == '-S':
                 if self.separator != None:
                     self.usage('Only one of -c, -S and -s may be specified')
                     return 1
                 self.separator = arg
-            if opt == '-s':
+            elif opt == '-s':
                 if self.separator != None:
                     self.usage('Only one of -c, -S and -s may be specified')
                     return 1
                 self.separator = ' '
-            if opt == '-d':
+            elif opt == '-d':
                 self.print_designator = 1
 
         # if no command - go interactive
