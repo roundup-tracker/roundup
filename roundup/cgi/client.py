@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.223 2006-02-12 11:00:23 a1s Exp $
+# $Id: client.py,v 1.224 2006-04-27 03:48:41 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -458,8 +458,8 @@ class Client:
                     user = username
 
         # if user was not set by http authorization, try session cookie
-        if (not user) and self.cookie.has_key(self.cookie_name) \
-        and (self.cookie[self.cookie_name].value != 'deleted'):
+        if (not user and self.cookie.has_key(self.cookie_name)
+                and (self.cookie[self.cookie_name].value != 'deleted')):
             # get the session key from the cookie
             self.session = self.cookie[self.cookie_name].value
             # get the user from the session
@@ -467,6 +467,7 @@ class Client:
                 # update the lifetime datestamp
                 sessions.updateTimestamp(self.session)
                 user = sessions.get(self.session, 'user')
+                self.db.commit()
             except KeyError:
                 # not valid, ignore id
                 pass
