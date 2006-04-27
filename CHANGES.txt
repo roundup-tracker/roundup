@@ -4,6 +4,7 @@ are given with the most recent entry first.
 2006-04-27 1.1.2
 Feature:
 - server-ctl script uses server configuration file (sf bug 1443805)
+- mail user interface translated (sf patch 1462491)
 
 Fixed:
 - progress display in roundup-admin reindex
