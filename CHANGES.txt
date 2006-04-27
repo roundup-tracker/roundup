@@ -19,6 +19,7 @@ Fixed:
 - reduced frequency of session timestamp update
 - classhelp popup pagination forgot about "type" (sf bug 1465836)
 - umask is now configurable (with the same 0002 default)
+- sorting of entries in classhelp popup (sf bug 1449000)
 
 
 2006-03-03 1.1.1

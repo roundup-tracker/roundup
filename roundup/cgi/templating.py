@@ -663,11 +663,10 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
             properties = ','.join(properties)
         if sort is None:
             if 'username' in properties.split( ',' ):
-                sort = '&amp;@sort=username'
+                sort = 'username'
             else:
-                sort = ''
-        else:
-            sort = '&amp;@sort=' + sort
+                sort = find_sort_key(self._klass)
+        sort = '&amp;@sort=' + sort
         if property:
             property = '&amp;property=%s'%property
         if form:
