@@ -1,4 +1,4 @@
-#$Id: indexer_common.py,v 1.5 2006-02-06 21:00:47 richard Exp $
+#$Id: indexer_common.py,v 1.6 2006-04-27 05:48:26 richard Exp $
 import re, sets
 
 from roundup import hyperdb
@@ -15,7 +15,7 @@ def _isLink(propclass):
     return (isinstance(propclass, hyperdb.Link) or
             isinstance(propclass, hyperdb.Multilink))
 
-class Indexer:    
+class Indexer:
     def __init__(self, db):
         self.stopwords = sets.Set(STOPWORDS)
         for word in db.config[('main', 'indexer_stopwords')]:
@@ -89,3 +89,4 @@ class Indexer:
                         else:
                             node_dict[linkprop].append(nodeid)
         return nodeids
+
