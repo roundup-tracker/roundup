@@ -1,9 +1,9 @@
-#$Id: indexer_rdbms.py,v 1.12 2006-02-06 21:00:47 richard Exp $
+#$Id: indexer_rdbms.py,v 1.13 2006-04-27 06:33:18 richard Exp $
 ''' This implements the full-text indexer over two RDBMS tables. The first
 is a mapping of words to occurance IDs. The second maps the IDs to (Class,
 propname, itemid) instances.
 '''
-import re
+import re, sets
 
 from roundup.backends.indexer_common import Indexer as IndexerBase
 
@@ -45,38 +45,31 @@ class Indexer(IndexerBase):
         self.db.cursor.execute(sql, identifier)
         r = self.db.cursor.fetchone()
         if not r:
+            # not previously indexed
             id = self.db.newid('__textids')
             sql = 'insert into __textids (_textid, _class, _itemid, _prop)'\
                 ' values (%s, %s, %s, %s)'%(a, a, a, a)
             self.db.cursor.execute(sql, (id, ) + identifier)
-            self.db.cursor.execute('select max(_textid) from __textids')
-            id = self.db.cursor.fetchone()[0]
         else:
             id = int(r[0])
             # clear out any existing indexed values
             sql = 'delete from __words where _textid=%s'%a
             self.db.cursor.execute(sql, (id, ))
 
-        # ok, find all the words in the text
+        # ok, find all the unique words in the text
         text = unicode(text, "utf-8", "replace").upper()
         wordlist = [w.encode("utf-8", "replace")
                 for w in re.findall(r'(?u)\b\w{2,25}\b', text)]
-        words = {}
+        words = sets.Set()
         for word in wordlist:
             if self.is_stopword(word): continue
             if len(word) > 25: continue
-            words[word] = 1
-        words = words.keys()
+            words.add(word)
 
         # for each word, add an entry in the db
-        for word in words:
-            # don't dupe
-            sql = 'select * from __words where _word=%s and _textid=%s'%(a, a)
-            self.db.cursor.execute(sql, (word, id))
-            if self.db.cursor.fetchall():
-                continue
-            sql = 'insert into __words (_word, _textid) values (%s, %s)'%(a, a)
-            self.db.cursor.execute(sql, (word, id))
+        sql = 'insert into __words (_word, _textid) values (%s, %s)'%(a, a)
+        words = [(word, id) for word in words]
+        self.db.cursor.execute(sql, words)
 
     def find(self, wordlist):
         '''look up all the words in the wordlist.
