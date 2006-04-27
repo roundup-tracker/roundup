@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.59 2006-03-02 23:51:08 richard Exp $
+#$Id: actions.py,v 1.60 2006-04-27 03:44:47 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random, csv, codecs
 
@@ -853,7 +853,7 @@ reply's additional "Re:" is ok),
 """ % {'name': user_props['username'], 'tracker': tracker_name,
         'url': self.base, 'otk': otk}
         if not self.client.standard_message([user_props['address']], subject,
-                body):
+                body, (tracker_name, tracker_email)):
             return
 
         # commit changes to the database
