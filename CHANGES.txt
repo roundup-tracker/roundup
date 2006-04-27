@@ -13,6 +13,7 @@ Fixed:
   FileClass schema where previously the "content" property was faked and
   "type" was optional)
 - verbose output during import is optional now (sf bug 1475624)
+- escape *all* uses of "schema" in mysql backend (sf bug 1472120)
 
 
 2006-03-03 1.1.1

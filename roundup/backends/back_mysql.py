@@ -1,4 +1,4 @@
-#$Id: back_mysql.py,v 1.67 2006-03-03 01:02:26 richard Exp $
+#$Id: back_mysql.py,v 1.68 2006-04-27 03:40:42 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -66,7 +66,7 @@ def db_nuke(config):
             tables = cursor.fetchall()
             # stupid MySQL bug requires us to drop all the tables first
             for table in tables:
-                command = 'DROP TABLE %s'%table[0]
+                command = 'DROP TABLE `%s`'%table[0]
                 if __debug__:
                     logging.getLogger('hyperdb').debug(command)
                 cursor.execute(command)
@@ -182,6 +182,13 @@ class Database(Database):
             self.database_schema = eval(schema[0])
         else:
             self.database_schema = {}
+
+    def save_dbschema(self):
+        ''' Save the schema definition that the database currently implements
+        '''
+        s = repr(self.database_schema)
+        self.sql('delete from `schema`')
+        self.sql('insert into `schema` values (%s)', (s,))
 
     def create_version_2_tables(self):
         # OTK store
