@@ -15,12 +15,12 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: test_dates.py,v 1.38 2006-03-03 02:02:50 richard Exp $
+# $Id: test_dates.py,v 1.39 2006-05-06 17:21:34 a1s Exp $
 from __future__ import nested_scopes
 
 import unittest, time
 
-from roundup.date import Date, Interval, Range, fixTimeOverflow
+from roundup.date import Date, Interval, Range, fixTimeOverflow, get_timezone
 
 class DateTestCase(unittest.TestCase):
     def testDateInterval(self):
@@ -390,9 +390,60 @@ class DateTestCase(unittest.TestCase):
         d = datetime.datetime.now()
         Date(d)
 
+    def testSimpleTZ(self):
+        ae = self.assertEqual
+        # local to utc
+        date = Date('2006-04-04.12:00:00', 2)
+        ae(str(date), '2006-04-04.10:00:00')
+        # utc to local
+        date = Date('2006-04-04.10:00:00')
+        date = date.local(2)
+        ae(str(date), '2006-04-04.12:00:00')
+        # from Date instance
+        date = Date('2006-04-04.12:00:00')
+        date = Date(date, 2)
+        ae(str(date), '2006-04-04.10:00:00')
+
+class TimezoneTestCase(unittest.TestCase):
+
+    def testTZ(self):
+        ae = self.assertEqual
+        tz = 'Europe/Warsaw'
+
+        # local to utc, DST
+        date = Date('2006-04-04.12:00:00', tz)
+        ae(str(date), '2006-04-04.10:00:00')
+
+        # local to utc, no DST
+        date = Date('2006-01-01.12:00:00', tz)
+        ae(str(date), '2006-01-01.11:00:00')
+
+        # utc to local, DST
+        date = Date('2006-04-04.10:00:00')
+        date = date.local(tz)
+        ae(str(date), '2006-04-04.12:00:00')
+
+        # utc to local, no DST
+        date = Date('2006-01-01.10:00:00')
+        date = date.local(tz)
+        ae(str(date), '2006-01-01.11:00:00')
+
+        date = Date('2006-04-04.12:00:00')
+        date = Date(date, tz)
+        ae(str(date), '2006-04-04.10:00:00')
+        date = Date('2006-01-01.12:00:00')
+        date = Date(date, tz)
+        ae(str(date), '2006-01-01.11:00:00')
+
 def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(DateTestCase))
+    try:
+        import pytz
+    except ImportError:
+        pass
+    else:
+        suite.addTest(unittest.makeSuite(TimezoneTestCase))
     return suite
 
 if __name__ == '__main__':
