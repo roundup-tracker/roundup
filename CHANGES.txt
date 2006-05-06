@@ -1,6 +1,11 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2006-??-?? 1.1.3
+Feature:
+- full timezone support (sf patch 1465296)
+
+
 2006-04-27 1.1.2
 Feature:
 - server-ctl script uses server configuration file (sf bug 1443805)
