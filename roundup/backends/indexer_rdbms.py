@@ -1,4 +1,4 @@
-#$Id: indexer_rdbms.py,v 1.13 2006-04-27 06:33:18 richard Exp $
+#$Id: indexer_rdbms.py,v 1.14 2006-05-06 16:19:27 a1s Exp $
 ''' This implements the full-text indexer over two RDBMS tables. The first
 is a mapping of words to occurance IDs. The second maps the IDs to (Class,
 propname, itemid) instances.
@@ -69,7 +69,7 @@ class Indexer(IndexerBase):
         # for each word, add an entry in the db
         sql = 'insert into __words (_word, _textid) values (%s, %s)'%(a, a)
         words = [(word, id) for word in words]
-        self.db.cursor.execute(sql, words)
+        self.db.cursor.executemany(sql, words)
 
     def find(self, wordlist):
         '''look up all the words in the wordlist.
