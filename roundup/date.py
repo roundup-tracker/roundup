@@ -15,20 +15,23 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: date.py,v 1.86 2006-04-27 05:15:16 richard Exp $
+# $Id: date.py,v 1.87 2006-05-06 16:43:29 a1s Exp $
 
 """Date, time and time interval handling.
 """
 __docformat__ = 'restructuredtext'
 
-import time, re, calendar
-import i18n
+import calendar
+import datetime
+import time
+import re
 
 try:
-    import datetime
-    have_datetime = 1
-except:
-    have_datetime = 0
+    import pytz
+except ImportError:
+    pytz = None
+
+from roundup import i18n
 
 def _add_granularity(src, order, value = 1):
     '''Increment first non-None value in src dictionary ordered by 'order'
@@ -51,6 +54,119 @@ $''', re.VERBOSE)
 serialised_date_re = re.compile(r'''
     (\d{4})(\d\d)(\d\d)(\d\d)(\d\d)(\d\d?(\.\d+)?)
 ''', re.VERBOSE)
+
+_timedelta0 = datetime.timedelta(0)
+
+# load UTC tzinfo
+if pytz:
+    UTC = pytz.utc
+else:
+    # fallback implementation from Python Library Reference
+
+    class _UTC(datetime.tzinfo):
+
+        """Universal Coordinated Time zoneinfo"""
+
+        def utcoffset(self, dt):
+            return _timedelta0
+
+        def tzname(self, dt):
+            return "UTC"
+
+        def dst(self, dt):
+            return _timedelta0
+
+        def __repr__(self):
+            return "<UTC>"
+
+        # pytz adjustments interface
+        # Note: pytz verifies that dt is naive datetime for localize()
+        # and not naive datetime for normalize().
+        # In this implementation, we don't care.
+
+        def normalize(self, dt, is_dst=False):
+            return dt.replace(tzinfo=self)
+
+        def localize(self, dt, is_dst=False):
+            return dt.replace(tzinfo=self)
+
+    UTC = _UTC()
+
+# integral hours offsets were available in Roundup versions prior to 1.1.3
+# and still are supported as a fallback if pytz module is not installed
+class SimpleTimezone(datetime.tzinfo):
+
+    """Simple zoneinfo with fixed numeric offset and no daylight savings"""
+
+    def __init__(self, offset=0, name=None):
+        super(SimpleTimezone, self).__init__()
+        self.offset = offset
+        if name:
+            self.name = name
+        else:
+            self.name = "Etc/GMT%+d" % self.offset
+
+    def utcoffset(self, dt):
+        return datetime.timedelta(hours=self.offset)
+
+    def tzname(self, dt):
+        return self.name
+
+    def dst(self, dt):
+        return _timedelta0
+
+    def __repr__(self):
+        return "<%s: %s>" % (self.__class__.__name__, self.name)
+
+    # pytz adjustments interface
+
+    def normalize(self, dt):
+        return dt.replace(tzinfo=self)
+
+    def localize(self, dt, is_dst=False):
+        return dt.replace(tzinfo=self)
+
+# simple timezones with fixed offset
+_tzoffsets = dict(GMT=0, UCT=0, EST=5, MST=7, HST=10)
+
+def get_timezone(tz):
+    # if tz is None, return None (will result in naive datetimes)
+    # XXX should we return UTC for None?
+    if tz is None:
+        return None
+    # try integer offset first for backward compatibility
+    try:
+        utcoffset = int(tz)
+    except (TypeError, ValueError):
+        pass
+    else:
+        if utcoffset == 0:
+            return UTC
+        else:
+            return SimpleTimezone(utcoffset)
+    # tz is a timezone name
+    if pytz:
+        return pytz.timezone(tz)
+    elif tz == "UTC":
+        return UTC
+    elif tz in _tzoffsets:
+        return SimpleTimezone(_tzoffsets[tz], tz)
+    else:
+        raise KeyError, tz
+
+def _utc_to_local(y,m,d,H,M,S,tz):
+    TZ = get_timezone(tz)
+    frac = S - int(S)
+    dt = datetime.datetime(y, m, d, H, M, int(S), tzinfo=UTC)
+    y,m,d,H,M,S = dt.astimezone(TZ).timetuple()[:6]
+    S = S + frac
+    return (y,m,d,H,M,S)
+
+def _local_to_utc(y,m,d,H,M,S,tz):
+    TZ = get_timezone(tz)
+    dt = datetime.datetime(y,m,d,H,M,int(S))
+    y,m,d,H,M,S = TZ.localize(dt).utctimetuple()[:6]
+    return (y,m,d,H,M,S)
 
 class Date:
     '''
@@ -144,7 +260,7 @@ class Date:
         if type(spec) == type(''):
             self.set(spec, offset=offset, add_granularity=add_granularity)
             return
-        elif have_datetime and isinstance(spec, datetime.datetime):
+        elif isinstance(spec, datetime.datetime):
             # Python 2.3+ datetime object
             y,m,d,H,M,S,x,x,x = spec.timetuple()
             if y < 1970: raise ValueError, 'year must be > 1970'
@@ -158,9 +274,8 @@ class Date:
             y,m,d,H,M,S,x,x,x = spec
             if y < 1970: raise ValueError, 'year must be > 1970'
             frac = S - int(S)
-            ts = calendar.timegm((y,m,d,H+offset,M,S,0,0,0))
             self.year, self.month, self.day, self.hour, self.minute, \
-                self.second, x, x, x = time.gmtime(ts)
+                self.second = _local_to_utc(y, m, d, H, M, S, offset)
             # we lost the fractional part
             self.second = self.second + frac
         except:
@@ -199,6 +314,9 @@ class Date:
         # gmtime loses the fractional seconds
         S = S + frac
 
+        # whether we need to convert to UTC
+        adjust = False
+
         if info['y'] is not None or info['a'] is not None:
             if info['y'] is not None:
                 y = int(info['y'])
@@ -211,16 +329,18 @@ class Date:
             if info['a'] is not None:
                 m = int(info['a'])
                 d = int(info['b'])
-            H = -offset
+            H = 0
             M = S = 0
+            adjust = True
 
         # override hour, minute, second parts
         if info['H'] is not None and info['M'] is not None:
-            H = int(info['H']) - offset
+            H = int(info['H'])
             M = int(info['M'])
             S = 0
             if info['S'] is not None:
                 S = float(info['S'])
+            adjust = True
 
         if add_granularity:
             S = S - 1
@@ -228,8 +348,11 @@ class Date:
         # now handle the adjustment of hour
         frac = S - int(S)
         ts = calendar.timegm((y,m,d,H,M,S,0,0,0))
+        y, m, d, H, M, S, x, x, x = time.gmtime(ts)
+        if adjust:
+            y, m, d, H, M, S = _local_to_utc(y, m, d, H, M, S, offset)
         self.year, self.month, self.day, self.hour, self.minute, \
-            self.second, x, x, x = time.gmtime(ts)
+            self.second = y, m, d, H, M, S
         # we lost the fractional part along the way
         self.second = self.second + frac
 
@@ -396,8 +519,9 @@ class Date:
     def local(self, offset):
         """ Return this date as yyyy-mm-dd.hh:mm:ss in a local time zone.
         """
-        return Date((self.year, self.month, self.day, self.hour + offset,
-            self.minute, self.second, 0, 0, 0), translator=self.translator)
+        y, m, d, H, M, S = _utc_to_local(self.year, self.month, self.day,
+                self.hour, self.minute, self.second, offset)
+        return Date((y, m, d, H, M, S, 0, 0, 0), translator=self.translator)
 
     def __deepcopy__(self, memo):
         return Date((self.year, self.month, self.day, self.hour,
