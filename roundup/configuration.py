@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.34 2006-04-27 04:59:37 richard Exp $
+# $Id: configuration.py,v 1.35 2006-05-06 17:15:11 a1s Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -11,6 +11,8 @@ import time
 import ConfigParser
 import logging, logging.config
 import sys
+
+import roundup.date
 
 # XXX i don't think this module needs string translation, does it?
 
@@ -407,6 +409,22 @@ class NullableFilePathOption(NullableOption, FilePathOption):
     class_description = FilePathOption.class_description
     # everything else taken from NullableOption (inheritance order)
 
+class TimezoneOption(Option):
+
+    class_description = \
+        "If pytz module is installed, value may be any valid\n" \
+        "timezone specification (e.g. EET or Europe/Warsaw).\n" \
+        "If pytz is not installed, value must be integer number\n" \
+        "giving local timezone offset from UTC in hours."
+
+    def str2value(self, value):
+        try:
+            roundup.date.get_timezone(value)
+        except KeyError:
+            raise OptionValueError(self, value,
+                    "Timezone name or numeric hour offset required")
+        return value
+
 ### Main configuration layout.
 # Config is described as a sequence of sections,
 # where each section name is followed by a sequence
@@ -463,12 +481,8 @@ SETTINGS = (
             "If you wish to make them xhtml, then you'll need to change this\n"
             "var to 'xhtml' too so all auto-generated HTML is compliant.\n"
             "Allowed values: html4, xhtml"),
-        # It seems to me that all timezone offsets in the modern world
-        # are integral hours.  However, there were fractional hour offsets
-        # in the past.  Use float number for sure.
-        (FloatNumberOption, "timezone", "0",
-            "Numeric timezone offset used when users do not choose their own\n"
-            "in their settings.",
+        (TimezoneOption, "timezone", "UTC", "Default timezone offset,"
+            " applied when user's timezone is not set.",
             ["DEFAULT_TIMEZONE"]),
         (BooleanOption, "instant_registration", "no",
             "Register new users instantly, or require confirmation via\n"
