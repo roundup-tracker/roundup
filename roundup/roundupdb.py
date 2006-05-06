@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.123 2006-04-27 01:39:47 richard Exp $
+# $Id: roundupdb.py,v 1.124 2006-05-06 17:19:58 a1s Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -72,13 +72,18 @@ class Database:
         If no such property exists return 0
         """
         userid = self.getuid()
+        timezone = None
         try:
-            timezone = int(self.user.get(userid, 'timezone'))
-        except (KeyError, ValueError, TypeError):
-            # If there is no class 'user' or current user doesn't have timezone
-            # property or that property is not numeric assume he/she lives in
-            # Greenwich :)
-            timezone = getattr(self.config, 'DEFAULT_TIMEZONE', 0)
+            tz = self.user.get(userid, 'timezone')
+            date.get_timezone(tz)
+            timezone = tz
+        except KeyError:
+            pass
+        # If there is no class 'user' or current user doesn't have timezone
+        # property or that property is not set assume he/she lives in
+        # the timezone set in the tracker config.
+        if timezone is None:
+            timezone = self.config['TIMEZONE']
         return timezone
 
     def confirm_registration(self, otk):
