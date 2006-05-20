@@ -1,31 +1,34 @@
 # Russian message file for Roundup Issue Tracker
 # alexander smishlajev <alex@tycobka.lv>, 2004
 #
-# $Id: ru.po,v 1.13 2006-03-04 08:51:32 a1s Exp $
+# $Id: ru.po,v 1.14 2006-05-20 07:43:17 a1s Exp $
 #
-# roundup.pot revision 1.17
+# roundup.pot revision 1.18
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Roundup 0.9.0\n"
+"Project-Id-Version: Roundup 1.1.2\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2006-02-28 07:44+0200\n"
-"PO-Revision-Date: 2006-03-04 10:42+0200\n"
+"POT-Creation-Date: 2006-04-27 09:02+0300\n"
+"PO-Revision-Date: 2006-05-20 10:37+0200\n"
 "Last-Translator: alexander smishlajev <alex@tycobka.lv>\n"
 "Language-Team: Russian\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=koi8-r\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%"
-"10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"X-Poedit-Language: Russian\n"
 
-#: ../roundup/admin.py:85 ../roundup/admin.py:979 ../roundup/admin.py:1028
-#: ../roundup/admin.py:1050
+#: ../roundup/admin.py:85
+#: ../roundup/admin.py:981
+#: ../roundup/admin.py:1030
+#: ../roundup/admin.py:1052
 #, python-format
 msgid "no such class \"%(classname)s\""
 msgstr "Класс \"%(classname)s\" не существует"
 
-#: ../roundup/admin.py:95 ../roundup/admin.py:99
+#: ../roundup/admin.py:95
+#: ../roundup/admin.py:99
 #, python-format
 msgid "argument \"%(arg)s\" not propname=value"
 msgstr "аргумент \"%(arg)s\" должен иметь вид имя=значение"
@@ -45,8 +48,7 @@ msgid ""
 "%(message)sUsage: roundup-admin [options] [<command> <arguments>]\n"
 "\n"
 "Options:\n"
-" -i instance home  -- specify the issue tracker \"home directory\" to "
-"administer\n"
+" -i instance home  -- specify the issue tracker \"home directory\" to administer\n"
 " -u                -- the user[:password] to use for commands\n"
 " -d                -- print full designators not just class id numbers\n"
 " -c                -- when outputting lists of data, comma-separate them.\n"
@@ -54,6 +56,8 @@ msgid ""
 " -S <string>       -- when outputting lists of data, string-separate them\n"
 " -s                -- when outputting lists of data, space-separate them.\n"
 "                      Same as '-S \" \"'.\n"
+" -V                -- be verbose when importing\n"
+" -v                -- report Roundup and Python versions (and quit)\n"
 "\n"
 " Only one of -s, -c or -S can be specified.\n"
 "\n"
@@ -74,6 +78,8 @@ msgstr ""
 " -S <строка>   -- при выдаче списков разделять значения указанной строкой.\n"
 " -s            -- при выдаче списков разделять значения пробелами.\n"
 "                  То же, что '-S \" \"'.\n"
+" -V            -- выдавать дополнительные сообщения при импорте данных.\n"
+" -v            -- показать версии Roundup и Python (и завершить работу).\n"
 "\n"
 " Одновременно можно использовать только один из ключей -s, -c и -S.\n"
 "\n"
@@ -83,11 +89,11 @@ msgstr ""
 " roundup-admin help <command>             -- справка по команде\n"
 " roundup-admin help all                   -- все справочные сообщения\n"
 
-#: ../roundup/admin.py:138
+#: ../roundup/admin.py:140
 msgid "Commands:"
 msgstr "Команды:"
 
-#: ../roundup/admin.py:145
+#: ../roundup/admin.py:147
 msgid ""
 "Commands may be abbreviated as long as the abbreviation\n"
 "matches only one command, e.g. l == li == lis == list."
@@ -99,9 +105,9 @@ msgstr ""
 # прошу прощения, не могу придумать, как по-русски называется
 # backslash escape.  я написал "заэкранировать обратной косой чертой",
 # но мне это совсем не нравится.
-#  
+#
 # что лучше написать вместо "ввести с терминала"?
-#: ../roundup/admin.py:175
+#: ../roundup/admin.py:177
 msgid ""
 "\n"
 "All commands (except help) require a tracker specifier. This is just\n"
@@ -111,8 +117,7 @@ msgid ""
 "directory\". It may be specified in the environment variable TRACKER_HOME\n"
 "or on the command line as \"-i tracker\".\n"
 "\n"
-"A designator is a classname and a nodeid concatenated, eg. bug1, "
-"user10, ...\n"
+"A designator is a classname and a nodeid concatenated, eg. bug1, user10, ...\n"
 "\n"
 "Property values are represented as strings in command arguments and in the\n"
 "printed results:\n"
@@ -137,8 +142,8 @@ msgid ""
 "           Roch\\'e Compaan  (2 tokens: Roch'e Compaan)\n"
 "           address=\"1 2 3\"  (1 token: address=1 2 3)\n"
 "           \\\\               (1 token: \\)\n"
-"           \\n\\r\\t           (1 token: a newline, carriage-return and "
-"tab)\n"
+"           \\n"
+"\\r\\t           (1 token: a newline, carriage-return and tab)\n"
 "\n"
 "When multiple nodes are specified to the roundup get or roundup set\n"
 "commands, the specified properties are retrieved or set on all the listed\n"
@@ -195,8 +200,7 @@ msgstr ""
 "\n"
 "Если в значениях атрибутов встречаются пробелы, такие значения должны быть\n"
 "заключены в кавычки (одинарные или двойные - все равно).  Одиночный пробел\n"
-"можно \"заэкранировать\" обратной косой чертой.  Если в значении "
-"встречается\n"
+"можно \"заэкранировать\" обратной косой чертой.  Если в значении встречается\n"
 "кавычка, она должна быть заэкранирована обратной косой чертой.  Примеры:\n"
 "           hello world      (2 слова: hello, world)\n"
 "           \"hello world\"    (1 слово: hello world)\n"
@@ -204,8 +208,8 @@ msgstr ""
 "           Roch'e Compaan   (2 слова: Roch'e Compaan)\n"
 "           address=\"1 2 3\"  (1 слово: address=1 2 3)\n"
 "           \\\\               (1 слово: \\)\n"
-"           \\n\\r\\t           (1 слово: перевод строки, возврат каретки и "
-"табуляция)\n"
+"           \\n"
+"\\r\\t           (1 слово: перевод строки, возврат каретки и табуляция)\n"
 "\n"
 "Если в команде get или set указаны несколько объектов, запрошенные атрибуты\n"
 "будут выданы или уставновлены для каждого объекта в списке.\n"
@@ -232,12 +236,12 @@ msgstr ""
 "\n"
 "Справка по командам:\n"
 
-#: ../roundup/admin.py:238
+#: ../roundup/admin.py:240
 #, python-format
 msgid "%s:"
 msgstr ""
 
-#: ../roundup/admin.py:243
+#: ../roundup/admin.py:245
 msgid ""
 "Usage: help topic\n"
 "        Give help about topic.\n"
@@ -257,20 +261,22 @@ msgstr ""
 "        all       -- все справки\n"
 "        "
 
-#: ../roundup/admin.py:266
+#: ../roundup/admin.py:268
 #, python-format
 msgid "Sorry, no help for \"%(topic)s\""
 msgstr "Ивините, справка \"%(topic)s\" не существует."
 
-#: ../roundup/admin.py:338 ../roundup/admin.py:394
+#: ../roundup/admin.py:340
+#: ../roundup/admin.py:396
 msgid "Templates:"
 msgstr "Шаблоны:"
 
-#: ../roundup/admin.py:341 ../roundup/admin.py:405
+#: ../roundup/admin.py:343
+#: ../roundup/admin.py:407
 msgid "Back ends:"
 msgstr "Серверы:"
 
-#: ../roundup/admin.py:344
+#: ../roundup/admin.py:346
 msgid ""
 "Usage: install [template [backend [admin password [key=val[,key=val]]]]]\n"
 "        Install a new Roundup tracker.\n"
@@ -321,21 +327,31 @@ msgstr ""
 "        См.также \"help initopts\".\n"
 "        "
 
-#: ../roundup/admin.py:367 ../roundup/admin.py:464 ../roundup/admin.py:525
-#: ../roundup/admin.py:604 ../roundup/admin.py:654 ../roundup/admin.py:712
-#: ../roundup/admin.py:733 ../roundup/admin.py:761 ../roundup/admin.py:832
-#: ../roundup/admin.py:899 ../roundup/admin.py:970 ../roundup/admin.py:1018
-#: ../roundup/admin.py:1040 ../roundup/admin.py:1067 ../roundup/admin.py:1134
-#: ../roundup/admin.py:1204
+#: ../roundup/admin.py:369
+#: ../roundup/admin.py:466
+#: ../roundup/admin.py:527
+#: ../roundup/admin.py:606
+#: ../roundup/admin.py:656
+#: ../roundup/admin.py:714
+#: ../roundup/admin.py:735
+#: ../roundup/admin.py:763
+#: ../roundup/admin.py:834
+#: ../roundup/admin.py:901
+#: ../roundup/admin.py:972
+#: ../roundup/admin.py:1020
+#: ../roundup/admin.py:1042
+#: ../roundup/admin.py:1069
+#: ../roundup/admin.py:1136
+#: ../roundup/admin.py:1207
 msgid "Not enough arguments supplied"
 msgstr "Недостаточно аргументов"
 
-#: ../roundup/admin.py:373
+#: ../roundup/admin.py:375
 #, python-format
 msgid "Instance home parent directory \"%(parent)s\" does not exist"
 msgstr "Каталог \"%(parent)s\" не существует"
 
-#: ../roundup/admin.py:381
+#: ../roundup/admin.py:383
 #, python-format
 msgid ""
 "WARNING: There appears to be a tracker in \"%(tracker_home)s\"!\n"
@@ -346,20 +362,20 @@ msgstr ""
 "Повторная установка уничтожит все ваши данные!\n"
 "Удалить существующий трекер? Y/N: "
 
-#: ../roundup/admin.py:396
+#: ../roundup/admin.py:398
 msgid "Select template [classic]: "
 msgstr "Выберите шаблон [classic]: "
 
-#: ../roundup/admin.py:407
+#: ../roundup/admin.py:409
 msgid "Select backend [anydbm]: "
 msgstr "Выберите сервер [anydbm]: "
 
-#: ../roundup/admin.py:417
+#: ../roundup/admin.py:419
 #, python-format
 msgid "Error in configuration settings: \"%s\""
 msgstr "Ошибка в параметрах конфигурации: \"%s\""
 
-#: ../roundup/admin.py:426
+#: ../roundup/admin.py:428
 #, python-format
 msgid ""
 "\n"
@@ -372,12 +388,12 @@ msgstr ""
 " Теперь вам нужно исправить конфигурационный файл трекера:\n"
 "   %(config_file)s"
 
-#: ../roundup/admin.py:436
+#: ../roundup/admin.py:438
 msgid " ... at a minimum, you must set following options:"
 msgstr " ... как минимум, вы должны установить настройки:"
 
 # Указано английское название документа
-#: ../roundup/admin.py:441
+#: ../roundup/admin.py:443
 #, python-format
 msgid ""
 "\n"
@@ -388,8 +404,7 @@ msgid ""
 "   %(database_init_file)s\n"
 " ... see the documentation on customizing for more information.\n"
 "\n"
-" You MUST run the \"roundup-admin initialise\" command once you've "
-"performed\n"
+" You MUST run the \"roundup-admin initialise\" command once you've performed\n"
 " the above steps.\n"
 "---------------------------------------------------------------------------\n"
 msgstr ""
@@ -404,7 +419,7 @@ msgstr ""
 " После этого вы должны выполнить команду \"roundup-admin initialise\".\n"
 "---------------------------------------------------------------------------\n"
 
-#: ../roundup/admin.py:459
+#: ../roundup/admin.py:461
 msgid ""
 "Usage: genconfig <filename>\n"
 "        Generate a new tracker config file (ini style) with default values\n"
@@ -418,7 +433,7 @@ msgstr ""
 
 #  password
 #. password
-#: ../roundup/admin.py:469
+#: ../roundup/admin.py:471
 msgid ""
 "Usage: initialise [adminpw]\n"
 "        Initialise a new Roundup tracker.\n"
@@ -436,23 +451,23 @@ msgstr ""
 "        Инициализация трекера делается функцией dbinit.init()\n"
 "        "
 
-#: ../roundup/admin.py:483
+#: ../roundup/admin.py:485
 msgid "Admin Password: "
 msgstr "Пароль администратора: "
 
-#: ../roundup/admin.py:484
+#: ../roundup/admin.py:486
 msgid "       Confirm: "
 msgstr "              Еще раз: "
 
-#: ../roundup/admin.py:488
+#: ../roundup/admin.py:490
 msgid "Instance home does not exist"
 msgstr "Домашний каталог трекера не существует"
 
-#: ../roundup/admin.py:492
+#: ../roundup/admin.py:494
 msgid "Instance has not been installed"
 msgstr "Трекер не установлен"
 
-#: ../roundup/admin.py:497
+#: ../roundup/admin.py:499
 msgid ""
 "WARNING: The database is already initialised!\n"
 "If you re-initialise it, you will lose all the data!\n"
@@ -462,7 +477,7 @@ msgstr ""
 "Повторная инициализация уничтожит все ваши данные!\n"
 "Удалить существующую базу? Y/N: "
 
-#: ../roundup/admin.py:518
+#: ../roundup/admin.py:520
 msgid ""
 "Usage: get property designator[,designator]*\n"
 "        Get the given property of one or more designator(s).\n"
@@ -479,24 +494,26 @@ msgstr ""
 "        перечисленных в списке описателей.\n"
 "        "
 
-#: ../roundup/admin.py:558 ../roundup/admin.py:573
+#: ../roundup/admin.py:560
+#: ../roundup/admin.py:575
 #, python-format
 msgid "property %s is not of type Multilink or Link so -d flag does not apply."
-msgstr ""
-"Ключ '-d' неприменим, потому что тип атрибута %s - не Link и не Multilink"
+msgstr "Ключ '-d' неприменим, потому что тип атрибута %s - не Link и не Multilink"
 
-#: ../roundup/admin.py:581 ../roundup/admin.py:981 ../roundup/admin.py:1030
-#: ../roundup/admin.py:1052
+#: ../roundup/admin.py:583
+#: ../roundup/admin.py:983
+#: ../roundup/admin.py:1032
+#: ../roundup/admin.py:1054
 #, python-format
 msgid "no such %(classname)s node \"%(nodeid)s\""
 msgstr "В классе %(classname)s нет объекта \"%(nodeid)s\""
 
-#: ../roundup/admin.py:583
+#: ../roundup/admin.py:585
 #, python-format
 msgid "no such %(classname)s property \"%(propname)s\""
 msgstr "У класса %(classname)s нет атрибута \"%(propname)s\""
 
-#: ../roundup/admin.py:592
+#: ../roundup/admin.py:594
 msgid ""
 "Usage: set items property=value property=value ...\n"
 "        Set the given properties of one or more items(s).\n"
@@ -505,8 +522,7 @@ msgid ""
 "        list of item designators (ie \"designator[,designator,...]\").\n"
 "\n"
 "        This command sets the properties to the values for all designators\n"
-"        given. If the value is missing (ie. \"property=\") then the "
-"property\n"
+"        given. If the value is missing (ie. \"property=\") then the property\n"
 "        is un-set. If the property is a multilink, you specify the linked\n"
 "        ids for the multilink as comma-separated numbers (ie \"1,2,3\").\n"
 "        "
@@ -525,7 +541,7 @@ msgstr ""
 "        атрибут.  (Например, \"1,2,3\".)\n"
 "        "
 
-#: ../roundup/admin.py:646
+#: ../roundup/admin.py:648
 msgid ""
 "Usage: find classname propname=value ...\n"
 "        Find the nodes of the given class with a given link property value.\n"
@@ -543,13 +559,15 @@ msgstr ""
 "        который ссылается атрибут, или ключом этого объекта.\n"
 "        "
 
-#: ../roundup/admin.py:699 ../roundup/admin.py:852 ../roundup/admin.py:864
-#: ../roundup/admin.py:918
+#: ../roundup/admin.py:701
+#: ../roundup/admin.py:854
+#: ../roundup/admin.py:866
+#: ../roundup/admin.py:920
 #, python-format
 msgid "%(classname)s has no property \"%(propname)s\""
 msgstr "Класс %(classname)s не имеет атрибута \"%(propname)s\""
 
-#: ../roundup/admin.py:706
+#: ../roundup/admin.py:708
 msgid ""
 "Usage: specification classname\n"
 "        Show the properties for a classname.\n"
@@ -563,17 +581,17 @@ msgstr ""
 "        Выдает список атрибутов указанного класса.\n"
 "        "
 
-#: ../roundup/admin.py:721
+#: ../roundup/admin.py:723
 #, python-format
 msgid "%(key)s: %(value)s (key property)"
 msgstr "%(key)s: %(value)s (ключевой атрибут)"
 
-#: ../roundup/admin.py:723
+#: ../roundup/admin.py:725
 #, python-format
 msgid "%(key)s: %(value)s"
 msgstr ""
 
-#: ../roundup/admin.py:726
+#: ../roundup/admin.py:728
 msgid ""
 "Usage: display designator[,designator]*\n"
 "        Show the property values for the given node(s).\n"
@@ -589,19 +607,18 @@ msgstr ""
 "        заданных описателями.\n"
 "        "
 
-#: ../roundup/admin.py:750
+#: ../roundup/admin.py:752
 #, python-format
 msgid "%(key)s: %(value)r"
 msgstr ""
 
-#: ../roundup/admin.py:753
+#: ../roundup/admin.py:755
 msgid ""
 "Usage: create classname property=value ...\n"
 "        Create a new entry of a given class.\n"
 "\n"
 "        This creates a new entry of the given class using the property\n"
-"        name=value arguments provided on the command line after the \"create"
-"\"\n"
+"        name=value arguments provided on the command line after the \"create\"\n"
 "        command.\n"
 "        "
 msgstr ""
@@ -612,31 +629,31 @@ msgstr ""
 "        этого объекта указанными значениями.\n"
 "        "
 
-#: ../roundup/admin.py:780
+#: ../roundup/admin.py:782
 #, python-format
 msgid "%(propname)s (Password): "
 msgstr " %(propname)s (пароль): "
 
-#: ../roundup/admin.py:782
+#: ../roundup/admin.py:784
 #, python-format
 msgid "   %(propname)s (Again): "
 msgstr "%(propname)s (еще раз): "
 
-#: ../roundup/admin.py:784
+#: ../roundup/admin.py:786
 msgid "Sorry, try again..."
 msgstr "Пароли не совпали.  Попробуйте еще раз."
 
-#: ../roundup/admin.py:788
+#: ../roundup/admin.py:790
 #, python-format
 msgid "%(propname)s (%(proptype)s): "
 msgstr ""
 
-#: ../roundup/admin.py:806
+#: ../roundup/admin.py:808
 #, python-format
 msgid "you must provide the \"%(propname)s\" property."
 msgstr "Атрибут \"%(propname)s\" должен быть заполнен."
 
-#: ../roundup/admin.py:817
+#: ../roundup/admin.py:819
 msgid ""
 "Usage: list classname [property]\n"
 "        List the instances of a class.\n"
@@ -665,16 +682,16 @@ msgstr ""
 "        выдает список значений этого атрибута.\n"
 "        "
 
-#: ../roundup/admin.py:830
+#: ../roundup/admin.py:832
 msgid "Too many arguments supplied"
 msgstr "Подано слишком много параметров"
 
-#: ../roundup/admin.py:866
+#: ../roundup/admin.py:868
 #, python-format
 msgid "%(nodeid)4s: %(value)s"
 msgstr ""
 
-#: ../roundup/admin.py:870
+#: ../roundup/admin.py:872
 msgid ""
 "Usage: table classname [property[,property]*]\n"
 "        List the instances of a class in tabular form.\n"
@@ -734,18 +751,17 @@ msgstr ""
 "        обрезает значения столбца \"Name\" до четырех символов.\n"
 "        "
 
-#: ../roundup/admin.py:914
+#: ../roundup/admin.py:916
 #, python-format
 msgid "\"%(spec)s\" not name:width"
 msgstr "Значение \"%(spec)s\" должно быть задано как имя:ширина"
 
-#: ../roundup/admin.py:964
+#: ../roundup/admin.py:966
 msgid ""
 "Usage: history designator\n"
 "        Show the history entries of a designator.\n"
 "\n"
-"        Lists the journal entries for the node identified by the "
-"designator.\n"
+"        Lists the journal entries for the node identified by the designator.\n"
 "        "
 msgstr ""
 "Вызов: history описатель\n"
@@ -755,7 +771,7 @@ msgstr ""
 "        заданного описателем.\n"
 "        "
 
-#: ../roundup/admin.py:985
+#: ../roundup/admin.py:987
 msgid ""
 "Usage: commit\n"
 "        Commit changes made to the database during an interactive session.\n"
@@ -779,7 +795,7 @@ msgstr ""
 "        автоматически, если при выполнении команды не произошло ошибки.\n"
 "        "
 
-#: ../roundup/admin.py:999
+#: ../roundup/admin.py:1001
 msgid ""
 "Usage: rollback\n"
 "        Undo all changes that are pending commit to the database.\n"
@@ -800,7 +816,7 @@ msgstr ""
 "        было в момент последней записи.\n"
 "        "
 
-#: ../roundup/admin.py:1011
+#: ../roundup/admin.py:1013
 msgid ""
 "Usage: retire designator[,designator]*\n"
 "        Retire the node specified by designator.\n"
@@ -818,7 +834,7 @@ msgstr ""
 "        использованы в других объектах.\n"
 "        "
 
-#: ../roundup/admin.py:1034
+#: ../roundup/admin.py:1036
 msgid ""
 "Usage: restore designator[,designator]*\n"
 "        Restore the retired node specified by designator.\n"
@@ -834,7 +850,7 @@ msgstr ""
 "        "
 
 #. grab the directory to export to
-#: ../roundup/admin.py:1056
+#: ../roundup/admin.py:1058
 msgid ""
 "Usage: export [class[,class]] export_dir\n"
 "        Export the database to colon-separated-value files.\n"
@@ -859,7 +875,7 @@ msgstr ""
 "        двоеточиями.\n"
 "        "
 
-#: ../roundup/admin.py:1114
+#: ../roundup/admin.py:1116
 msgid ""
 "Usage: import import_dir\n"
 "        Import a database from the directory containing CSV files,\n"
@@ -903,15 +919,14 @@ msgstr ""
 "        из существующей базы все объекты).\n"
 "        "
 
-#: ../roundup/admin.py:1186
+#: ../roundup/admin.py:1189
 msgid ""
 "Usage: pack period | date\n"
 "\n"
 "        Remove journal entries older than a period of time specified or\n"
 "        before a certain date.\n"
 "\n"
-"        A period is specified using the suffixes \"y\", \"m\", and \"d\". "
-"The\n"
+"        A period is specified using the suffixes \"y\", \"m\", and \"d\". The\n"
 "        suffix \"w\" (for \"week\") means 7 days.\n"
 "\n"
 "              \"3y\" means three years\n"
@@ -943,11 +958,11 @@ msgstr ""
 "\n"
 "        "
 
-#: ../roundup/admin.py:1214
+#: ../roundup/admin.py:1217
 msgid "Invalid format"
 msgstr "Неправильный формат"
 
-#: ../roundup/admin.py:1224
+#: ../roundup/admin.py:1227
 msgid ""
 "Usage: reindex [classname|designator]*\n"
 "        Re-generate a tracker's search indexes.\n"
@@ -963,12 +978,12 @@ msgstr ""
 "        данных.  Обычно построение индексов происходит автоматически.\n"
 "        "
 
-#: ../roundup/admin.py:1238
+#: ../roundup/admin.py:1241
 #, python-format
 msgid "no such item \"%(designator)s\""
 msgstr "объект \"%(designator)s\" не существует"
 
-#: ../roundup/admin.py:1248
+#: ../roundup/admin.py:1251
 msgid ""
 "Usage: security [Role name]\n"
 "        Display the Permissions available to one or all Roles.\n"
@@ -979,79 +994,78 @@ msgstr ""
 "        ролям.\n"
 "        "
 
-#: ../roundup/admin.py:1256
+#: ../roundup/admin.py:1259
 #, python-format
 msgid "No such Role \"%(role)s\""
 msgstr "Роль \"%(role)s\" не существует"
 
-#: ../roundup/admin.py:1262
+#: ../roundup/admin.py:1265
 #, python-format
 msgid "New Web users get the Roles \"%(role)s\""
 msgstr "Новые пользователи web получают роли \"%(role)s\""
 
-#: ../roundup/admin.py:1264
+#: ../roundup/admin.py:1267
 #, python-format
 msgid "New Web users get the Role \"%(role)s\""
 msgstr "Новые пользователи web получают роль \"%(role)s\""
 
-#: ../roundup/admin.py:1267
+#: ../roundup/admin.py:1270
 #, python-format
 msgid "New Email users get the Roles \"%(role)s\""
 msgstr "Новые пользователи email получают роли \"%(role)s\""
 
-#: ../roundup/admin.py:1269
+#: ../roundup/admin.py:1272
 #, python-format
 msgid "New Email users get the Role \"%(role)s\""
 msgstr "Новые пользователи email получают роль \"%(role)s\""
 
-#: ../roundup/admin.py:1272
+#: ../roundup/admin.py:1275
 #, python-format
 msgid "Role \"%(name)s\":"
 msgstr "Роль \"%(name)s\":"
 
-#: ../roundup/admin.py:1277
+#: ../roundup/admin.py:1280
 #, python-format
 msgid " %(description)s (%(name)s for \"%(klass)s\": %(properties)s only)"
-msgstr ""
-" %(description)s (%(name)s для класса \"%(klass)s\": только свойства %"
-"(properties)s)"
+msgstr " %(description)s (%(name)s для класса \"%(klass)s\": только свойства %(properties)s)"
 
-#: ../roundup/admin.py:1280
+#: ../roundup/admin.py:1283
 #, python-format
 msgid " %(description)s (%(name)s for \"%(klass)s\" only)"
 msgstr " %(description)s (%(name)s только для класса \"%(klass)s\")"
 
-#: ../roundup/admin.py:1283
+#: ../roundup/admin.py:1286
 #, python-format
 msgid " %(description)s (%(name)s)"
 msgstr ""
 
-#: ../roundup/admin.py:1312
+#: ../roundup/admin.py:1315
 #, python-format
 msgid "Unknown command \"%(command)s\" (\"help commands\" for a list)"
-msgstr ""
-"Команда \"%(command)s\" неизвестна. (\"help commands\" выдает список команд)"
+msgstr "Команда \"%(command)s\" неизвестна. (\"help commands\" выдает список команд)"
 
-#: ../roundup/admin.py:1318
+#: ../roundup/admin.py:1321
 #, python-format
 msgid "Multiple commands match \"%(command)s\": %(list)s"
 msgstr "\"%(command)s\" соответствует нескольким командам: %(list)s"
 
-#: ../roundup/admin.py:1325
+#: ../roundup/admin.py:1328
 msgid "Enter tracker home: "
 msgstr "Домашний каталог трекера: "
 
-#: ../roundup/admin.py:1332 ../roundup/admin.py:1338 ../roundup/admin.py:1358
+#: ../roundup/admin.py:1335
+#: ../roundup/admin.py:1341
+#: ../roundup/admin.py:1361
 #, python-format
 msgid "Error: %(message)s"
 msgstr "Ошибка: %(message)s"
 
-#: ../roundup/admin.py:1346
+#: ../roundup/admin.py:1349
 #, python-format
 msgid "Error: Couldn't open tracker: %(message)s"
 msgstr "Ошибка: Трекер не открывается: %(message)s"
 
-#: ../roundup/admin.py:1371
+#: ../roundup/admin.py:1374
 #, python-format
 msgid ""
 "Roundup %s ready for input.\n"
@@ -1060,23 +1074,23 @@ msgstr ""
 "Roundup %s к вашим услугам.\n"
 "Введите \"help\" для справки."
 
-#: ../roundup/admin.py:1376
+#: ../roundup/admin.py:1379
 msgid "Note: command history and editing not available"
 msgstr "Примечание: работает редактор и история команд"
 
-#: ../roundup/admin.py:1380
+#: ../roundup/admin.py:1383
 msgid "roundup> "
 msgstr ""
 
-#: ../roundup/admin.py:1382
+#: ../roundup/admin.py:1385
 msgid "exit..."
 msgstr "приходите к нам еще..."
 
-#: ../roundup/admin.py:1392
+#: ../roundup/admin.py:1395
 msgid "There are unsaved changes. Commit them (y/N)? "
 msgstr "Ой, тут несохраненные изменения. Записать в базу данных (y/N)? "
 
-#: ../roundup/backends/back_anydbm.py:1997
+#: ../roundup/backends/back_anydbm.py:2001
 #, python-format
 msgid "WARNING: invalid date tuple %r"
 msgstr "ВНИМАНИЕ! Неверная дата: %r"
@@ -1121,9 +1135,7 @@ msgstr "Не указан идентификатор"
 #: ../roundup/cgi/actions.py:97
 #, python-format
 msgid "\"%(input)s\" is not an ID (%(classname)s ID required)"
-msgstr ""
-"\"%(input)s\" - не идентификатор (требуется идентификатор класса %(classname)"
-"s)"
+msgstr "\"%(input)s\" - не идентификатор (требуется идентификатор класса %(classname)s)"
 
 #: ../roundup/cgi/actions.py:117
 msgid "You may not retire the admin or anonymous user"
@@ -1134,11 +1146,13 @@ msgstr "Нельзя удалять пользователей admin и anonymous."
 msgid "%(classname)s %(itemid)s has been retired"
 msgstr "%(classname)s %(itemid)s удален"
 
-#: ../roundup/cgi/actions.py:174 ../roundup/cgi/actions.py:202
+#: ../roundup/cgi/actions.py:174
+#: ../roundup/cgi/actions.py:202
 msgid "You do not have permission to edit queries"
 msgstr "У вас нет разрешения на редактирование запросов"
 
-#: ../roundup/cgi/actions.py:180 ../roundup/cgi/actions.py:209
+#: ../roundup/cgi/actions.py:180
+#: ../roundup/cgi/actions.py:209
 msgid "You do not have permission to store queries"
 msgstr "У вас нет разрешения на сохранение запросов"
 
@@ -1182,20 +1196,18 @@ msgstr "У вас нет разрешения на изменение ролей пользователей"
 
 #: ../roundup/cgi/actions.py:537
 #, python-format
-msgid ""
-"Edit Error: someone else has edited this %s (%s). View <a target=\"new\" "
-"href=\"%s%s\">their changes</a> in a new window."
-msgstr ""
-"Ошибка редактирования: %s (%s) изменил другой пользователь. <a target=\"new"
-"\" href=\"%s%s\">Просмотреть эти изменения</a> в другом окне."
+msgid "Edit Error: someone else has edited this %s (%s). View <a target=\"new\" href=\"%s%s\">their changes</a> in a new window."
+msgstr "Ошибка редактирования: %s (%s) изменил другой пользователь. <a target=\"new\" href=\"%s%s\">Просмотреть эти изменения</a> в другом окне."
 
 #: ../roundup/cgi/actions.py:565
 #, python-format
 msgid "Edit Error: %s"
 msgstr "Ошибка редактирования: %s"
 
-#: ../roundup/cgi/actions.py:596 ../roundup/cgi/actions.py:607
-#: ../roundup/cgi/actions.py:778 ../roundup/cgi/actions.py:797
+#: ../roundup/cgi/actions.py:596
+#: ../roundup/cgi/actions.py:607
+#: ../roundup/cgi/actions.py:778
+#: ../roundup/cgi/actions.py:797
 #, python-format
 msgid "Error: %s"
 msgstr "Ошибка: %s"
@@ -1203,12 +1215,10 @@ msgstr "Ошибка: %s"
 #: ../roundup/cgi/actions.py:633
 msgid ""
 "Invalid One Time Key!\n"
-"(a Mozilla bug may cause this message to show up erroneously, please check "
-"your email)"
+"(a Mozilla bug may cause this message to show up erroneously, please check your email)"
 msgstr ""
 "Ключ подтверждения неправилен!\n"
-"(Из-за ошибки в браузере Mozilla это сообщение может быть неверным. "
-"Проверьте вашу почту, пожалуйста.)"
+"(Из-за ошибки в браузере Mozilla это сообщение может быть неверным. Проверьте вашу почту, пожалуйста.)"
 
 #: ../roundup/cgi/actions.py:675
 #, python-format
@@ -1248,7 +1258,8 @@ msgstr "Сеанс работы завершен"
 msgid "Username required"
 msgstr "Не указано имя пользователя"
 
-#: ../roundup/cgi/actions.py:930 ../roundup/cgi/actions.py:934
+#: ../roundup/cgi/actions.py:930
+#: ../roundup/cgi/actions.py:934
 msgid "Invalid login"
 msgstr "Неправильный пароль или имя пользователя."
 
@@ -1301,8 +1312,7 @@ msgstr ""
 "\n"
 "<li>При вычислении выражения %(info)r в строке %(line)d\n"
 "<table class=\"otherinfo\" style=\"font-size: 90%%\">\n"
-" <tr><th colspan=\"2\" class=\"header\">Определены следующие переменные:</"
-"th></tr>\n"
+" <tr><th colspan=\"2\" class=\"header\">Определены следующие переменные:</th></tr>\n"
 " %(globals)s\n"
 " %(locals)s\n"
 "</table></li>\n"
@@ -1317,28 +1327,20 @@ msgid "<font size=+1><strong>%(exc_type)s</strong>: %(exc_value)s</font>"
 msgstr ""
 
 #: ../roundup/cgi/cgitb.py:120
-msgid ""
-"<p>A problem occurred while running a Python script. Here is the sequence of "
-"function calls leading up to the error, with the most recent (innermost) "
-"call first. The exception attributes are:"
-msgstr ""
-"<p>При выполнении программы произошла ошибка.  Ниже приведена "
-"последовательность вызовов функций, которая привела к ошибке.  Функция, в "
-"которой произошла ошибка, - последняя вызванная функция - показана первой.  "
-"Информация об ошибке:"
+msgid "<p>A problem occurred while running a Python script. Here is the sequence of function calls leading up to the error, with the most recent (innermost) call first. The exception attributes are:"
+msgstr "<p>При выполнении программы произошла ошибка.  Ниже приведена последовательность вызовов функций, которая привела к ошибке.  Функция, в которой произошла ошибка, - последняя вызванная функция - показана первой.  Информация об ошибке:"
 
 #: ../roundup/cgi/cgitb.py:129
 msgid "&lt;file is None - probably inside <tt>eval</tt> or <tt>exec</tt>&gt;"
-msgstr ""
-"&lt;имя файла не определено - вероятно вызвано из <tt>eval</tt> или "
-"<tt>exec</tt>&gt;"
+msgstr "&lt;имя файла не определено - вероятно вызвано из <tt>eval</tt> или <tt>exec</tt>&gt;"
 
 #: ../roundup/cgi/cgitb.py:138
 #, python-format
 msgid "in <strong>%s</strong>"
 msgstr "в <strong>%s</strong>"
 
-#: ../roundup/cgi/cgitb.py:172 ../roundup/cgi/cgitb.py:178
+#: ../roundup/cgi/cgitb.py:172
+#: ../roundup/cgi/cgitb.py:178
 msgid "<em>undefined</em>"
 msgstr "<em>неопределено</em>"
 
@@ -1365,28 +1367,23 @@ msgstr "Ошибка формы: "
 msgid "Unrecognized charset: %r"
 msgstr "Кодировка %r не распознана"
 
-#: ../roundup/cgi/client.py:490
+#: ../roundup/cgi/client.py:491
 msgid "Anonymous users are not allowed to use the web interface"
 msgstr "Анонимным пользователям не разрешено пользоваться веб-интерфейсом."
 
-#: ../roundup/cgi/client.py:645
+#: ../roundup/cgi/client.py:646
 msgid "You are not allowed to view this file."
 msgstr "У вас нет разрешения на просмотр этого файла."
 
-#: ../roundup/cgi/client.py:737
+#: ../roundup/cgi/client.py:738
 #, python-format
 msgid "%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n"
 msgstr "%(starttag)sЗатраченное время: %(seconds)fs%(endtag)s\n"
 
-#: ../roundup/cgi/client.py:741
+#: ../roundup/cgi/client.py:742
 #, python-format
-msgid ""
-"%(starttag)sCache hits: %(cache_hits)d, misses %(cache_misses)d. Loading "
-"items: %(get_items)f secs. Filtering: %(filtering)f secs.%(endtag)s\n"
-msgstr ""
-"%(starttag)sКешированные элементы: %(cache_hits)d, вычисленные: %"
-"(cache_misses)d. Загрузка объектов: %(get_items)f сек. Фильтрация: %"
-"(filtering)f сек.%(endtag)s\n"
+msgid "%(starttag)sCache hits: %(cache_hits)d, misses %(cache_misses)d. Loading items: %(get_items)f secs. Filtering: %(filtering)f secs.%(endtag)s\n"
+msgstr "%(starttag)sКешированные элементы: %(cache_hits)d, вычисленные: %(cache_misses)d. Загрузка объектов: %(get_items)f сек. Фильтрация: %(filtering)f сек.%(endtag)s\n"
 
 #: ../roundup/cgi/form_parser.py:283
 #, python-format
@@ -1400,20 +1397,18 @@ msgstr "Атрибут %(property)s класса %(class)s не является ссылочным"
 
 #: ../roundup/cgi/form_parser.py:312
 #, python-format
-msgid ""
-"You have submitted a %(action)s action for the property \"%(property)s\" "
-"which doesn't exist"
-msgstr ""
-"Вы запросили действие \"%(action)s\" для атрибута \"%(property)s\", который "
-"не существует"
+msgid "You have submitted a %(action)s action for the property \"%(property)s\" which doesn't exist"
+msgstr "Вы запросили действие \"%(action)s\" для атрибута \"%(property)s\", который не существует"
 
-#: ../roundup/cgi/form_parser.py:331 ../roundup/cgi/form_parser.py:357
+#: ../roundup/cgi/form_parser.py:331
+#: ../roundup/cgi/form_parser.py:357
 #, python-format
 msgid "You have submitted more than one value for the %s property"
 msgstr "Вы ввели несколько значений для атрибута %s"
 
 # ../roundup/cgi/form_parser.py:354 :360
-#: ../roundup/cgi/form_parser.py:354 ../roundup/cgi/form_parser.py:360
+#: ../roundup/cgi/form_parser.py:354
+#: ../roundup/cgi/form_parser.py:360
 msgid "Password and confirmation text do not match"
 msgstr "Пароли не совпали"
 
@@ -1449,14 +1444,22 @@ msgstr "Добавить"
 
 # ../roundup/cgi/templating.py:673 :792 :1166 :1187 :1231 :1253 :1287 :1326
 # :1377 :1394 :1470 :1490 :1503 :1520 :1530 :1580 :1755
-#: ../roundup/cgi/templating.py:710 ../roundup/cgi/templating.py:829
-#: ../roundup/cgi/templating.py:1236 ../roundup/cgi/templating.py:1257
-#: ../roundup/cgi/templating.py:1304 ../roundup/cgi/templating.py:1327
-#: ../roundup/cgi/templating.py:1361 ../roundup/cgi/templating.py:1400
-#: ../roundup/cgi/templating.py:1453 ../roundup/cgi/templating.py:1470
-#: ../roundup/cgi/templating.py:1549 ../roundup/cgi/templating.py:1569
-#: ../roundup/cgi/templating.py:1587 ../roundup/cgi/templating.py:1619
-#: ../roundup/cgi/templating.py:1629 ../roundup/cgi/templating.py:1683
+#: ../roundup/cgi/templating.py:710
+#: ../roundup/cgi/templating.py:829
+#: ../roundup/cgi/templating.py:1236
+#: ../roundup/cgi/templating.py:1257
+#: ../roundup/cgi/templating.py:1304
+#: ../roundup/cgi/templating.py:1327
+#: ../roundup/cgi/templating.py:1361
+#: ../roundup/cgi/templating.py:1400
+#: ../roundup/cgi/templating.py:1453
+#: ../roundup/cgi/templating.py:1470
+#: ../roundup/cgi/templating.py:1549
+#: ../roundup/cgi/templating.py:1569
+#: ../roundup/cgi/templating.py:1587
+#: ../roundup/cgi/templating.py:1619
+#: ../roundup/cgi/templating.py:1629
+#: ../roundup/cgi/templating.py:1683
 #: ../roundup/cgi/templating.py:1875
 msgid "[hidden]"
 msgstr "[недоступно]"
@@ -1484,17 +1487,22 @@ msgid "The linked class %(classname)s no longer exists"
 msgstr "Связянный класс %(classname)s уже не существует"
 
 # :823
-#: ../roundup/cgi/templating.py:940 ../roundup/cgi/templating.py:964
+#: ../roundup/cgi/templating.py:940
+#: ../roundup/cgi/templating.py:964
 msgid "<strike>The linked node no longer exists</strike>"
 msgstr "<strike>Связанный объект уже не существует</strike>"
 
-#: ../roundup/cgi/templating.py:1006 ../roundup/cgi/templating.py:1404
-#: ../roundup/cgi/templating.py:1425 ../roundup/cgi/templating.py:1431
+#: ../roundup/cgi/templating.py:1006
+#: ../roundup/cgi/templating.py:1404
+#: ../roundup/cgi/templating.py:1425
+#: ../roundup/cgi/templating.py:1431
 msgid "No"
 msgstr "Нет"
 
-#: ../roundup/cgi/templating.py:1006 ../roundup/cgi/templating.py:1404
-#: ../roundup/cgi/templating.py:1423 ../roundup/cgi/templating.py:1428
+#: ../roundup/cgi/templating.py:1006
+#: ../roundup/cgi/templating.py:1404
+#: ../roundup/cgi/templating.py:1423
+#: ../roundup/cgi/templating.py:1428
 msgid "Yes"
 msgstr "Да"
 
@@ -1504,8 +1512,7 @@ msgid "%s: (no value)"
 msgstr "%s: (нет значения)"
 
 #: ../roundup/cgi/templating.py:1029
-msgid ""
-"<strong><em>This event is not handled by the history display!</em></strong>"
+msgid "<strong><em>This event is not handled by the history display!</em></strong>"
 msgstr "<strong><em>Неизвестный тип события!</em></strong>"
 
 #: ../roundup/cgi/templating.py:1041
@@ -1542,12 +1549,8 @@ msgid "*encrypted*"
 msgstr "*зашифрован*"
 
 #: ../roundup/cgi/templating.py:1514
-msgid ""
-"default value for DateHTMLProperty must be either DateHTMLProperty or string "
-"date representation."
-msgstr ""
-"значение по умолчанию для DateHTMLProperty должно быть объектом "
-"DateHTMLProperty или строковым представлением даты."
+msgid "default value for DateHTMLProperty must be either DateHTMLProperty or string date representation."
+msgstr "значение по умолчанию для DateHTMLProperty должно быть объектом DateHTMLProperty или строковым представлением даты."
 
 #: ../roundup/cgi/templating.py:1674
 #, python-format
@@ -1560,27 +1563,17 @@ msgid "<option %svalue=\"-1\">- no selection -</option>"
 msgstr "<option %svalue=\"-1\">- не указано -</option>"
 
 #: ../roundup/date.py:186
-msgid ""
-"Not a date spec: \"yyyy-mm-dd\", \"mm-dd\", \"HH:MM\", \"HH:MM:SS\" or "
-"\"yyyy-mm-dd.HH:MM:SS.SSS\""
-msgstr ""
-"Дата должна быть в формате \"yyyy-mm-dd\", \"mm-dd\", \"HH:MM\", \"HH:MM:SS"
-"\" или \"yyyy-mm-dd.HH:MM:SS.SSS\""
+msgid "Not a date spec: \"yyyy-mm-dd\", \"mm-dd\", \"HH:MM\", \"HH:MM:SS\" or \"yyyy-mm-dd.HH:MM:SS.SSS\""
+msgstr "Дата должна быть в формате \"yyyy-mm-dd\", \"mm-dd\", \"HH:MM\", \"HH:MM:SS\" или \"yyyy-mm-dd.HH:MM:SS.SSS\""
 
 #: ../roundup/date.py:240
 #, python-format
-msgid ""
-"%r not a date / time spec \"yyyy-mm-dd\", \"mm-dd\", \"HH:MM\", \"HH:MM:SS\" "
-"or \"yyyy-mm-dd.HH:MM:SS.SSS\""
-msgstr ""
-"Неверное значение даты/времени: %r.  Дата должна быть в формате \"yyyy-mm-dd"
-"\", \"mm-dd\", \"HH:MM\", \"HH:MM:SS\" или \"yyyy-mm-dd.HH:MM:SS.SSS\""
+msgid "%r not a date / time spec \"yyyy-mm-dd\", \"mm-dd\", \"HH:MM\", \"HH:MM:SS\" or \"yyyy-mm-dd.HH:MM:SS.SSS\""
+msgstr "Неверное значение даты/времени: %r.  Дата должна быть в формате \"yyyy-mm-dd\", \"mm-dd\", \"HH:MM\", \"HH:MM:SS\" или \"yyyy-mm-dd.HH:MM:SS.SSS\""
 
 #: ../roundup/date.py:538
-msgid ""
-"Not an interval spec: [+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS] [date spec]"
-msgstr ""
-"Интервал должен быть в формате [+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS] [дата]"
+msgid "Not an interval spec: [+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS] [date spec]"
+msgstr "Интервал должен быть в формате [+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS] [дата]"
 
 #: ../roundup/date.py:557
 msgid "Not an interval spec: [+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS]"
@@ -1704,59 +1697,289 @@ msgstr ""
 "ВНИМАНИЕ! Каталог '%s'\n"
 "\tсодержит шаблон старого образца - пропущен"
 
-#: ../roundup/roundupdb.py:141
+#: ../roundup/mailgw.py:586
+msgid ""
+"\n"
+"Emails to Roundup trackers must include a Subject: line!\n"
+msgstr ""
+"\n"
+"В письмах для трекера Roundup должна быть указана тема сообщения (Subject).\n"
+
+#: ../roundup/mailgw.py:674
+#, python-format
+msgid ""
+"\n"
+"The message you sent to roundup did not contain a properly formed subject\n"
+"line. The subject must contain a class name or designator to indicate the\n"
+"'topic' of the message. For example:\n"
+"    Subject: [issue] This is a new issue\n"
+"      - this will create a new issue in the tracker with the title 'This is\n"
+"        a new issue'.\n"
+"    Subject: [issue1234] This is a followup to issue 1234\n"
+"      - this will append the message's contents to the existing issue 1234\n"
+"        in the tracker.\n"
+"\n"
+"Subject was: '%(subject)s'\n"
+msgstr ""
+"\n"
+"Вы послали трекеру Roundup сообщение, в котором неправильно заполнена\n"
+"тема письма - поле \"Subject:\".  В этом поле в квадратных скобках\n"
+"должнен быть указан класс или описатель объекта, к которому относится\n"
+"это сообщение.  Например:\n"
+"    Subject: [issue] Это новая задача\n"
+"      - такое письмо создаст в трекере новую задачу (объект класса issue)\n"
+"        с заголовком \"Это новая задача\".\n"
+"    Subject: [issue1234] Это замечание к задаче 1234\n"
+"      - содержимое этого письма будет добавлено к списку сообщений задачи\n"
+"        1234, которая уже существует в трекере.\n"
+"Тема вашего письма: \"%(subject)s\"\n"
+
+#: ../roundup/mailgw.py:705
+#, python-format
+msgid ""
+"\n"
+"The class name you identified in the subject line (\"%(classname)s\") does not exist in the\n"
+"database.\n"
+"\n"
+"Valid class names are: %(validname)s\n"
+"Subject was: \"%(subject)s\"\n"
+msgstr ""
+"\n"
+"Имя класса, указанное в теме сообщения (\"%(classname)s\"),\n"
+"не определено в базе данных.\n"
+"\n"
+"Имена существующих классов: %(validname)s\n"
+"Тема вашего письма: \"%(subject)s\"\n"
+
+#: ../roundup/mailgw.py:733
+#, python-format
+msgid ""
+"\n"
+"I cannot match your message to a node in the database - you need to either\n"
+"supply a full designator (with number, eg \"[issue123]\" or keep the\n"
+"previous subject title intact so I can match that.\n"
+"\n"
+"Subject was: \"%(subject)s\"\n"
+msgstr ""
+"\n"
+"Трекер не смог присоединить ваше сообщение к существующему объекту\n"
+"базы данных - вы должны или указать полный описатель объекта\n"
+"(с номером, напр.: \"[issue123]\"), или при ответе сохранить\n"
+"без изменений тему письма, чтобы Roundup смог соотнести ее\n"
+"с заголовком объекта.\n"
+"\n"
+"Тема вашего письма: \"%(subject)s\"\n"
+
+#: ../roundup/mailgw.py:766
+#, python-format
+msgid ""
+"\n"
+"The node specified by the designator in the subject of your message\n"
+"(\"%(nodeid)s\") does not exist.\n"
+"\n"
+"Subject was: \"%(subject)s\"\n"
+msgstr ""
+"\n"
+"Объект, указанный в теме вашего сообщения, - \"%(nodeid)s\" - не существует.\n"
+"\n"
+"Тема вашего письма: \"%(subject)s\"\n"
+
+#: ../roundup/mailgw.py:794
+#, python-format
+msgid ""
+"\n"
+"The mail gateway is not properly set up. Please contact\n"
+"%(mailadmin)s and have them fix the incorrect class specified as:\n"
+"  %(current_class)s\n"
+msgstr ""
+"\n"
+"Обнаружена ошибка в настройке почтового шлюза.\n"
+"Сообщите, пожалуйста, на адрес %(mailadmin)s\n"
+"о неправильно описанном классе:\n"
+"  %(current_class)s\n"
+
+#: ../roundup/mailgw.py:817
+#, python-format
+msgid ""
+"\n"
+"The mail gateway is not properly set up. Please contact\n"
+"%(mailadmin)s and have them fix the incorrect properties:\n"
+"  %(errors)s\n"
+msgstr ""
+"\n"
+"Обнаружена ошибка в настройке почтового шлюза.\n"
+"Сообщите, пожалуйста, на адрес %(mailadmin)s\n"
+"о неправильно описанных атрибутах:\n"
+"  %(errors)s\n"
+
+#: ../roundup/mailgw.py:847
+#, python-format
+msgid ""
+"\n"
+"You are not a registered user.\n"
+"\n"
+"Unknown address: %(from_address)s\n"
+msgstr ""
+"\n"
+"Доступ разрешен только зарегистрированным пользователям.\n"
+"\n"
+"Неизвестный адрес: %(from_address)s\n"
+
+#: ../roundup/mailgw.py:855
+msgid "You are not permitted to access this tracker."
+msgstr "У вас нет разрешения на доступ к этому трекеру."
+
+#: ../roundup/mailgw.py:862
+#, python-format
+msgid "You are not permitted to edit %(classname)s."
+msgstr "У вас нет разрешения редактировать %(classname)s"
+
+#: ../roundup/mailgw.py:866
+#, python-format
+msgid "You are not permitted to create %(classname)s."
+msgstr "У вас нет разрешения создавать объекты %(classname)s"
+
+#: ../roundup/mailgw.py:913
+#, python-format
+msgid ""
+"\n"
+"There were problems handling your subject line argument list:\n"
+"- %(errors)s\n"
+"\n"
+"Subject was: \"%(subject)s\"\n"
+msgstr ""
+"\n"
+"При обработке аргументов, указанных в теме вашего письма, произошли ошибки:\n"
+"- %(errors)s\n"
+"\n"
+"Тема письма: \"%(subject)s\"\n"
+
+#: ../roundup/mailgw.py:942
+msgid ""
+"\n"
+"Roundup requires the submission to be plain text. The message parser could\n"
+"not find a text/plain part to use.\n"
+msgstr ""
+"\n"
+"Сообщения для Roundup должны быть в текстовом формате.\n"
+"В вашем сообщении не найдена часть формата text/plain.\n"
+
+#: ../roundup/mailgw.py:964
+msgid "You are not permitted to create files."
+msgstr "У вас нет разрешения на создание файлов."
+
+#: ../roundup/mailgw.py:978
+#, python-format
+msgid "You are not permitted to add files to %(classname)s."
+msgstr "У вас нет разрешения добавлять файлы для класса %(classname)s."
+
+#: ../roundup/mailgw.py:996
+msgid "You are not permitted to create messages."
+msgstr "У вас нет разрешения на создание сообщений"
+
+#: ../roundup/mailgw.py:1004
+#, python-format
+msgid ""
+"\n"
+"Mail message was rejected by a detector.\n"
+"%(error)s\n"
+msgstr ""
+"\n"
+"Сообщение отброшено детектором.\n"
+"%(error)s\n"
+
+#: ../roundup/mailgw.py:1012
+#, python-format
+msgid "You are not permitted to add messages to %(classname)s."
+msgstr "У вас нет разрешения добавлять сообщения для класса %(classname)s."
+
+#: ../roundup/mailgw.py:1039
+#, python-format
+msgid "You are not permitted to edit property %(prop)s of class %(classname)s."
+msgstr "У вас нет разрешения изменять атрибут %(prop)s класса %(classname)s"
+
+#: ../roundup/mailgw.py:1047
+#, python-format
+msgid ""
+"\n"
+"There was a problem with the message you sent:\n"
+"   %(message)s\n"
+msgstr ""
+"\n"
+"При обработке вашего сообщения произошла ошибка:\n"
+"   %(message)s\n"
+
+#: ../roundup/mailgw.py:1069
+msgid "not of form [arg=value,value,...;arg=value,value,...]"
+msgstr "аргументы должны быть в формате [имя=значение,значение,...;имя=значение,значение,...]"
+
+#: ../roundup/roundupdb.py:142
 msgid "files"
 msgstr "файлы"
 
-#: ../roundup/roundupdb.py:141
+#: ../roundup/roundupdb.py:142
 msgid "messages"
 msgstr "сообщения"
 
-#: ../roundup/roundupdb.py:141
+#: ../roundup/roundupdb.py:142
 msgid "nosy"
 msgstr "извещения"
 
-#: ../roundup/roundupdb.py:141
+#: ../roundup/roundupdb.py:142
 msgid "superseder"
 msgstr "замещение"
 
-#: ../roundup/roundupdb.py:141
+#: ../roundup/roundupdb.py:142
 msgid "title"
 msgstr "заглавие"
 
-#: ../roundup/roundupdb.py:142
+#: ../roundup/roundupdb.py:143
 msgid "assignedto"
 msgstr "исполнитель"
 
-#: ../roundup/roundupdb.py:142
+#: ../roundup/roundupdb.py:143
 msgid "priority"
 msgstr "приоритет"
 
-#: ../roundup/roundupdb.py:142
+#: ../roundup/roundupdb.py:143
 msgid "status"
 msgstr "статус"
 
-#: ../roundup/roundupdb.py:142
+#: ../roundup/roundupdb.py:143
 msgid "topic"
 msgstr "тема"
 
-#: ../roundup/roundupdb.py:145
+#: ../roundup/roundupdb.py:146
 msgid "activity"
 msgstr "действие"
 
 #. following properties are common for all hyperdb classes
 #. they are listed here to keep things in one place
-#: ../roundup/roundupdb.py:145
+#: ../roundup/roundupdb.py:146
 msgid "actor"
 msgstr "выполнил"
 
-#: ../roundup/roundupdb.py:145
+#: ../roundup/roundupdb.py:146
 msgid "creation"
 msgstr "дата создания"
 
-#: ../roundup/roundupdb.py:145
+#: ../roundup/roundupdb.py:146
 msgid "creator"
 msgstr "автор"
+
+#: ../roundup/roundupdb.py:304
+#, python-format
+msgid "New submission from %(authname)s%(authaddr)s:"
+msgstr "Новое поступление от %(authname)s%(authaddr)s:"
+
+#: ../roundup/roundupdb.py:307
+#, python-format
+msgid "%(authname)s%(authaddr)s added the comment:"
+msgstr "%(authname)s%(authaddr)s добавил замечание:"
+
+#: ../roundup/roundupdb.py:310
+msgid "System message:"
+msgstr "Сообщение системы:"
 
 #: ../roundup/scripts/roundup_demo.py:32
 #, python-format
@@ -1776,13 +1999,11 @@ msgstr "В каталоге %s не найдено ни одного шаблона трекера"
 #: ../roundup/scripts/roundup_mailgw.py:36
 #, python-format
 msgid ""
-"Usage: %(program)s [-v] [-c] [[-C class] -S field=value]* <instance home> "
-"[method]\n"
+"Usage: %(program)s [-v] [-c] [[-C class] -S field=value]* <instance home> [method]\n"
 "\n"
 "Options:\n"
 " -v: print version and exit\n"
-" -c: default class of item to create (else the tracker's "
-"MAIL_DEFAULT_CLASS)\n"
+" -c: default class of item to create (else the tracker's MAIL_DEFAULT_CLASS)\n"
 " -C / -S: see below\n"
 "\n"
 "The roundup mail gateway may be called in one of four ways:\n"
@@ -1841,8 +2062,7 @@ msgid ""
 "    imaps username:password@server [mailbox]\n"
 "\n"
 msgstr ""
-"Вызов: %(program)s [-v] [-c] [[-C класс] -S поле=значение]* <каталог "
-"трекера> [почтовый ящик]\n"
+"Вызов: %(program)s [-v] [-c] [[-C класс] -S поле=значение]* <каталог трекера> [почтовый ящик]\n"
 "\n"
 "Ключи:\n"
 " -v: показать номер версии и выйти\n"
@@ -1923,12 +2143,8 @@ msgid "Error: apop specification not valid"
 msgstr "Ошибка: неправильный адрес apop-сервера"
 
 #: ../roundup/scripts/roundup_mailgw.py:184
-msgid ""
-"Error: The source must be either \"mailbox\", \"pop\", \"apop\", \"imap\" or "
-"\"imaps\""
-msgstr ""
-"Ошибка: Тип почтового ящика должен быть \"mailbox\", \"pop\", \"apop\", "
-"\"imap\" или \"imaps\""
+msgid "Error: The source must be either \"mailbox\", \"pop\", \"apop\", \"imap\" or \"imaps\""
+msgstr "Ошибка: Тип почтового ящика должен быть \"mailbox\", \"pop\", \"apop\", \"imap\" или \"imaps\""
 
 #: ../roundup/scripts/roundup_server.py:157
 msgid ""
@@ -1945,9 +2161,7 @@ msgstr "Ошибка: %s: %s"
 
 #: ../roundup/scripts/roundup_server.py:297
 msgid "WARNING: ignoring \"-g\" argument, not root"
-msgstr ""
-"ВНИМАНИЕ: параметр \"-g\" не используется, он разрешен только для "
-"пользователя root"
+msgstr "ВНИМАНИЕ: параметр \"-g\" не используется, он разрешен только для пользователя root"
 
 #: ../roundup/scripts/roundup_server.py:303
 msgid "Can't change groups - no grp module"
@@ -1964,9 +2178,7 @@ msgstr "Запуск сервера с полномочиями пользователя root запрещен!"
 
 #: ../roundup/scripts/roundup_server.py:326
 msgid "WARNING: ignoring \"-u\" argument, not root"
-msgstr ""
-"ВНИМАНИЕ: параметр \"-u\" не используется, он разрешен только для "
-"пользователя root"
+msgstr "ВНИМАНИЕ: параметр \"-u\" не используется, он разрешен только для пользователя root"
 
 #: ../roundup/scripts/roundup_server.py:331
 msgid "Can't change users - no pwd module"
@@ -2031,8 +2243,7 @@ msgid ""
 " -n <name>     set the host name of the Roundup web server instance\n"
 " -p <port>     set the port to listen on (default: %(port)s)\n"
 " -l <fname>    log to the file indicated by fname instead of stderr/stdout\n"
-" -N            log client machine names instead of IP addresses (much "
-"slower)\n"
+" -N            log client machine names instead of IP addresses (much slower)\n"
 " -t <mode>     multiprocess mode (default: %(mp_def)s).\n"
 "               Allowed values: %(mp_types)s.\n"
 "%(os_part)s\n"
@@ -2126,21 +2337,20 @@ msgstr ""
 "   не могут использоваться в URL (пробелы, русские буквы и проч.),\n"
 "   потому что такие имена сбивают с толку некоторые браузеры типа IE.\n"
 
-#: ../roundup/scripts/roundup_server.py:724
+#: ../roundup/scripts/roundup_server.py:723
 msgid "Instances must be name=home"
 msgstr "Список трекеров должен быть в формате имя=каталог"
 
-#: ../roundup/scripts/roundup_server.py:738
+#: ../roundup/scripts/roundup_server.py:737
 #, python-format
 msgid "Configuration saved to %s"
 msgstr "Конфигурация записана в %s"
 
-#: ../roundup/scripts/roundup_server.py:756
+#: ../roundup/scripts/roundup_server.py:755
 msgid "Sorry, you can't run the server as a daemon on this Operating System"
-msgstr ""
-"Извините, в этой операционной системе работа в фоновом режиме невозможна"
+msgstr "Извините, в этой операционной системе работа в фоновом режиме невозможна"
 
-#: ../roundup/scripts/roundup_server.py:768
+#: ../roundup/scripts/roundup_server.py:767
 #, python-format
 msgid "Roundup server started on %(HOST)s:%(PORT)s"
 msgstr "Сервер Roundup готов к работе по адресу %(HOST)s:%(PORT)s"
@@ -2190,15 +2400,15 @@ msgstr " Применить "
 msgid "&lt;&lt; previous"
 msgstr "&lt;&lt; предыдущие"
 
-#: ../templates/classic/html/_generic.help.html:52
+#: ../templates/classic/html/_generic.help.html:53
 #: ../templates/classic/html/issue.index.html:81
-#: ../templates/minimal/html/_generic.help.html:52
+#: ../templates/minimal/html/_generic.help.html:53
 msgid "${start}..${end} out of ${total}"
 msgstr "${start}..${end} из ${total}"
 
-#: ../templates/classic/html/_generic.help.html:56
+#: ../templates/classic/html/_generic.help.html:57
 #: ../templates/classic/html/issue.index.html:84
-#: ../templates/minimal/html/_generic.help.html:56
+#: ../templates/minimal/html/_generic.help.html:57
 msgid "next &gt;&gt;"
 msgstr "следующие &gt;&gt;"
 
@@ -2234,26 +2444,8 @@ msgstr "У вас нет разрешения на просмотр этой страницы."
 
 #: ../templates/classic/html/_generic.index.html:22
 #: ../templates/minimal/html/_generic.index.html:22
-msgid ""
-"<p class=\"form-help\"> You may edit the contents of the ${classname} class "
-"using this form. Commas, newlines and double quotes (\") must be handled "
-"delicately. You may include commas and newlines by enclosing the values in "
-"double-quotes (\"). Double quotes themselves must be quoted by doubling "
-"(\"\"). </p> <p class=\"form-help\"> Multilink properties have their "
-"multiple values colon (\":\") separated (... ,\"one:two:three\", ...) </p> "
-"<p class=\"form-help\"> Remove entries by deleting their line. Add new "
-"entries by appending them to the table - put an X in the id column. </p>"
-msgstr ""
-"<p class=\"form-help\"> При помощи этой формы вы можете изменить содержимое "
-"класса ${classname}. Будьте осторожны с запятыми, переводами строк и "
-"двойными кавычками (\"). Значения, содержащие запятые и переводы строк, "
-"должны быть заключены в двойные кавычки (\"). Двойные кавычки в значениях "
-"должны быть удвоены (\"\"). </p> <p class=\"form-help\"> Значения "
-"множественных ссылок (multilink properties) разделяются двоеточием (... ,"
-"\"раз:два:три\", ...) </p> <p class=\"form-help\"> Для того, чтобы "
-"уничтожить запись, удалите соответствующую строку.  Новые записи "
-"дописываются в конец таблицы. Вместо идентификатора (id) новых записей нужно "
-"вписывать латинскую букву \"X\". </p>"
+msgid "<p class=\"form-help\"> You may edit the contents of the ${classname} class using this form. Commas, newlines and double quotes (\") must be handled delicately. You may include commas and newlines by enclosing the values in double-quotes (\"). Double quotes themselves must be quoted by doubling (\"\"). </p> <p class=\"form-help\"> Multilink properties have their multiple values colon (\":\") separated (... ,\"one:two:three\", ...) </p> <p class=\"form-help\"> Remove entries by deleting their line. Add new entries by appending them to the table - put an X in the id column. </p>"
+msgstr "<p class=\"form-help\"> При помощи этой формы вы можете изменить содержимое класса ${classname}. Будьте осторожны с запятыми, переводами строк и двойными кавычками (\"). Значения, содержащие запятые и переводы строк, должны быть заключены в двойные кавычки (\"). Двойные кавычки в значениях должны быть удвоены (\"\"). </p> <p class=\"form-help\"> Значения множественных ссылок (multilink properties) разделяются двоеточием (... ,\"раз:два:три\", ...) </p> <p class=\"form-help\"> Для того, чтобы уничтожить запись, удалите соответствующую строку.  Новые записи дописываются в конец таблицы. Вместо идентификатора (id) новых записей нужно вписывать латинскую букву \"X\". </p>"
 
 #: ../templates/classic/html/_generic.index.html:44
 #: ../templates/minimal/html/_generic.index.html:44
@@ -2451,20 +2643,12 @@ msgstr "Скопировать"
 #: ../templates/classic/html/user.item.html:106
 #: ../templates/classic/html/user.register.html:69
 #: ../templates/minimal/html/user.item.html:86
-msgid ""
-"<table class=\"form\"> <tr> <td>Note:&nbsp;</td> <th class=\"required"
-"\">highlighted</th> <td>&nbsp;fields are required.</td> </tr> </table>"
-msgstr ""
-"<table class=\"form\"> <tr> <td>Примечание:&nbsp;</td><th class=\"required"
-"\">выделенные</th><td>&nbsp;поля должны быть заполнены.</td> </tr> </table>"
+msgid "<table class=\"form\"> <tr> <td>Note:&nbsp;</td> <th class=\"required\">highlighted</th> <td>&nbsp;fields are required.</td> </tr> </table>"
+msgstr "<table class=\"form\"> <tr> <td>Примечание:&nbsp;</td><th class=\"required\">выделенные</th><td>&nbsp;поля должны быть заполнены.</td> </tr> </table>"
 
 #: ../templates/classic/html/issue.item.html:121
-msgid ""
-"Created on <b>${creation}</b> by <b>${creator}</b>, last changed <b>"
-"${activity}</b> by <b>${actor}</b>."
-msgstr ""
-"Создано <b>${creation}</b> пользователем <b>${creator}</b>, последнее "
-"изменение <b>${activity}</b>, пользователь <b>${actor}</b>."
+msgid "Created on <b>${creation}</b> by <b>${creator}</b>, last changed <b>${activity}</b> by <b>${actor}</b>."
+msgstr "Создано <b>${creation}</b> пользователем <b>${creator}</b>, последнее изменение <b>${activity}</b>, пользователь <b>${actor}</b>."
 
 #: ../templates/classic/html/issue.item.html:125
 #: ../templates/classic/html/msg.item.html:56
@@ -2643,17 +2827,11 @@ msgstr "Поиск"
 
 #: ../templates/classic/html/issue.search.html:209
 msgid "*: The \"all text\" field will look in message bodies and issue titles"
-msgstr ""
-"*: Поиск по всему тексту ищет введенную строку в заголовках и в теле "
-"сообщений."
+msgstr "*: Поиск по всему тексту ищет введенную строку в заголовках и в теле сообщений."
 
 #: ../templates/classic/html/issue.search.html:212
-msgid ""
-"**: If you supply a name, the query will be saved off and available as a "
-"link in the sidebar"
-msgstr ""
-"**: Если указано имя, запрос будет сохранен под этим именем "
-"и появится в списке запросов в меню."
+msgid "**: If you supply a name, the query will be saved off and available as a link in the sidebar"
+msgstr "**: Если указано имя, запрос будет сохранен под этим именем и появится в списке запросов в меню."
 
 #: ../templates/classic/html/keyword.item.html:3
 msgid "Keyword editing - ${tracker}"
@@ -2668,18 +2846,12 @@ msgid "Existing Keywords"
 msgstr "Существующие ключевые слова"
 
 #: ../templates/classic/html/keyword.item.html:20
-msgid ""
-"To edit an existing keyword (for spelling or typing errors), click on its "
-"entry above."
-msgstr ""
-"Для того, чтобы исправить ошибки или опечатки в ключевом слове, вызовите "
-"редактор по ссылке в этом списке."
+msgid "To edit an existing keyword (for spelling or typing errors), click on its entry above."
+msgstr "Для того, чтобы исправить ошибки или опечатки в ключевом слове, вызовите редактор по ссылке в этом списке."
 
 #: ../templates/classic/html/keyword.item.html:27
 msgid "To create a new keyword, enter it below and click \"Submit New Entry\"."
-msgstr ""
-"Чтобы создать новое ключевое слово, заполните поле ввода и нажмите кнопку "
-"\"Добавить\"."
+msgstr "Чтобы создать новое ключевое слово, заполните поле ввода и нажмите кнопку \"Добавить\"."
 
 #: ../templates/classic/html/keyword.item.html:37
 msgid "Keyword"
@@ -2921,12 +3093,8 @@ msgid "Password reset request"
 msgstr "Сброс пароля"
 
 #: ../templates/classic/html/user.forgotten.html:9
-msgid ""
-"You have two options if you have forgotten your password. If you know the "
-"email address you registered with, enter it below."
-msgstr ""
-"Если вы забыли пароль, у вас есть две возможности. Если вы помните адрес "
-"электронной почты, с которым вы зарегистрированы, введите его в этом поле."
+msgid "You have two options if you have forgotten your password. If you know the email address you registered with, enter it below."
+msgstr "Если вы забыли пароль, у вас есть две возможности. Если вы помните адрес электронной почты, с которым вы зарегистрированы, введите его в этом поле."
 
 #: ../templates/classic/html/user.forgotten.html:16
 msgid "Email Address:"
@@ -2946,13 +3114,8 @@ msgid "Username:"
 msgstr "Имя пользователя:"
 
 #: ../templates/classic/html/user.forgotten.html:39
-msgid ""
-"A confirmation email will be sent to you - please follow the instructions "
-"within it to complete the reset process."
-msgstr ""
-"Для подтверждения этой операции вам будет послано сообщение по электронной "
-"почте. В этом письме будет написано, что вы должны сделать, чтобы очистить "
-"пароль Roundup."
+msgid "A confirmation email will be sent to you - please follow the instructions within it to complete the reset process."
+msgstr "Для подтверждения этой операции вам будет послано сообщение по электронной почте. В этом письме будет написано, что вы должны сделать, чтобы очистить пароль Roundup."
 
 #: ../templates/classic/html/user.index.html:3
 #: ../templates/minimal/html/user.index.html:3
@@ -3070,9 +3233,7 @@ msgstr "Часовой пояс"
 
 #: ../templates/classic/html/user.item.html:78
 msgid "(this is a numeric hour offset, the default is ${zone})"
-msgstr ""
-"(число - разница между местным и гринвичским временем, по умолчанию - "
-"${zone})"
+msgstr "(число - разница между местным и гринвичским временем, по умолчанию - ${zone})"
 
 #: ../templates/classic/html/user.item.html:83
 #: ../templates/classic/html/user.register.html:49
@@ -3107,12 +3268,8 @@ msgstr "Выполняется регистрация..."
 
 #: ../templates/classic/html/user.rego_progress.html:10
 #: ../templates/minimal/html/user.rego_progress.html:10
-msgid ""
-"You will shortly receive an email to confirm your registration. To complete "
-"the registration process, visit the link indicated in the email."
-msgstr ""
-"Скоро вы получите письмо с подтверждением вашей регистрации. Для того, чтобы "
-"закончить регистрацию, вызовите указанную в письме ссылку."
+msgid "You will shortly receive an email to confirm your registration. To complete the registration process, visit the link indicated in the email."
+msgstr "Скоро вы получите письмо с подтверждением вашей регистрации. Для того, чтобы закончить регистрацию, вызовите указанную в письме ссылку."
 
 #: ../templates/minimal/html/home.html:2
 msgid "Tracker home - ${tracker}"
@@ -3133,3 +3290,4 @@ msgstr "Пожалуйста, входите или зарегистрируйтесь"
 #: ../templates/minimal/html/page.html:55
 msgid "Hello,<br>${user}"
 msgstr "Привет,<br>${user}"
+
