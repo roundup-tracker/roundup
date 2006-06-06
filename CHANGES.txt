@@ -4,6 +4,7 @@ are given with the most recent entry first.
 2006-??-?? 1.1.3
 Feature:
 - full timezone support (sf patch 1465296)
+- handle connection loss when responding to web requests
 
 
 2006-04-27 1.1.2

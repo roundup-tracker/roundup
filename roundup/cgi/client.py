@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.225 2006-04-27 04:03:11 richard Exp $
+# $Id: client.py,v 1.226 2006-06-06 01:44:44 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -6,7 +6,7 @@ __docformat__ = 'restructuredtext'
 
 import base64, binascii, cgi, codecs, mimetypes, os
 import random, re, rfc822, stat, time, urllib, urlparse
-import Cookie
+import Cookie, socket, errno
 
 from roundup import roundupdb, date, hyperdb, password
 from roundup.cgi import templating, cgitb, TranslationService
@@ -821,7 +821,12 @@ class Client:
         if not self.headers_done:
             self.header()
         if self.env['REQUEST_METHOD'] != 'HEAD':
-            self.request.wfile.write(content)
+            try:
+                self.request.wfile.write(content)
+            except socket.error, error:
+                # the end-user has gone away
+                if error.errno != errno.EPIPE:
+                    raise
 
     def write_html(self, content):
         if not self.headers_done:
@@ -840,7 +845,12 @@ class Client:
             content = content.encode(self.charset, 'xmlcharrefreplace')
 
         # and write
-        self.request.wfile.write(content)
+        try:
+            self.request.wfile.write(content)
+        except socket.error, error:
+            # the end-user has gone away
+            if error.errno != errno.EPIPE:
+                raise
 
     def setHeader(self, header, value):
         '''Override a header to be returned to the user's browser.
