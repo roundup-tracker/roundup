@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.170 2006-04-27 05:15:17 richard Exp $
+#$Id: rdbms_common.py,v 1.171 2006-07-07 15:04:28 schlatterbeck Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2014,6 +2014,14 @@ class Class(hyperdb.Class):
         ids = [str(x[0]) for x in self.db.cursor.fetchall()]
         return ids
 
+    def _subselect (self, cn, tn) :
+        '''Create a subselect. This is factored out because some
+           databases (hmm only one, so far) doesn't support subselects
+           look for "I can't believe it's not a toy RDBMS" in the mysql
+           backend.
+        '''
+        return '_%s.id not in (select nodeid from %s)'%(cn, tn)
+
     def filter(self, search_matches, filterspec, sort=(None,None),
             group=(None,None)):
         '''Return a list of the ids of the active nodes in this class that
@@ -2061,8 +2069,7 @@ class Class(hyperdb.Class):
                 if v in ('-1', ['-1']):
                     # only match rows that have count(linkid)=0 in the
                     # corresponding multilink table)
-                    where.append('_%s.id not in (select nodeid from %s)'%(cn,
-                        tn))
+                    where.append(self._subselect(cn, tn))
                 elif isinstance(v, type([])):
                     frum.append(tn)
                     s = ','.join([a for x in v])
@@ -2126,7 +2133,7 @@ class Class(hyperdb.Class):
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
                     where.append('_%s._%s in (%s)'%(cn, k, s))
-                    args = args + [dc(date.Date(v)) for x in v]
+                    args = args + [dc(date.Date(x)) for x in v]
                 else:
                     try:
                         # Try to filter on range of dates
