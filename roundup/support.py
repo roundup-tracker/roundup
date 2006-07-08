@@ -5,6 +5,7 @@ places in Roundup code.
 __docformat__ = 'restructuredtext'
 
 import os, time, sys
+import hyperdb
 
 class TruthDict:
     '''Returns True for valid keys, False for others.
@@ -117,5 +118,55 @@ class Progress:
             s = '%s %d done'%(self.info, self.num)
         sys.stdout.write(s + ' '*(75-len(s)) + '\r')
         sys.stdout.flush()
+
+class Proptree :
+    ''' Simple tree data structure for optimizing searching of properties
+    '''
+
+    def __init__ (self, db, cls, name, props, parent = None, val = None) :
+        self.db        = db
+        self.name      = name
+        self.props     = props
+        self.parent    = parent
+        self.val       = val
+        self.cls       = cls
+        self.classname = None
+        self.uniqname  = None
+        self.children  = []
+        self.propnames = {}
+        if parent :
+            self.root  = parent.root
+            self.prcls = self.parent.props [name]
+        else :
+            self.root  = self
+            self.seqno = 1
+        self.id = self.root.seqno
+        self.root.seqno += 1
+        if self.cls :
+            self.classname = self.cls.classname
+            self.uniqname  = '%s%s' % (self.cls.classname, self.id)
+        if not self.parent :
+            self.uniqname  = self.cls.classname
+
+    def append (self, name) :
+        if name in self.propnames :
+            return self.propnames [name]
+        propclass = self.props [name]
+        cls   = None
+        props = None
+        if isinstance (propclass, (hyperdb.Link, hyperdb.Multilink)) :
+            cls   = self.db.getclass (propclass.classname)
+            props = cls.getprops ()
+        child = self.__class__ (self.db, cls, name, props, parent = self)
+        self.children.append (child)
+        self.propnames [name] = child
+        return child
+
+    def __iter__ (self) :
+        """ Yield nodes in depth-first order -- visited nodes first """
+        for p in self.children :
+            yield p
+            for c in p :
+                yield c
 
 # vim: set et sts=4 sw=4 :

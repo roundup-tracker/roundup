@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.108 2006-04-27 04:59:37 richard Exp $
+# $Id: back_metakit.py,v 1.109 2006-07-08 18:28:18 schlatterbeck Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -1155,7 +1155,7 @@ class Class(hyperdb.Class):
         self.db.commit()
     # ---- end of ping's spec
 
-    def filter(self, search_matches, filterspec, sort=(None,None),
+    def _filter(self, search_matches, filterspec, sort=(None,None),
             group=(None,None)):
         '''Return a list of the ids of the active nodes in this class that
         match the 'filter' spec, sorted by the group spec and then the

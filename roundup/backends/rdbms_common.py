@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.171 2006-07-07 15:04:28 schlatterbeck Exp $
+#$Id: rdbms_common.py,v 1.172 2006-07-08 18:28:18 schlatterbeck Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2048,7 +2048,7 @@ class Class(hyperdb.Class):
         if __debug__:
             start_t = time.time()
 
-        cn = self.classname
+        icn = self.classname
 
         # vars to hold the components of the SQL statement
         frum = []       # FROM clauses
@@ -2058,36 +2058,56 @@ class Class(hyperdb.Class):
         a = self.db.arg
 
         # figure the WHERE clause from the filterspec
-        props = self.getprops()
         mlfilt = 0      # are we joining with Multilink tables?
-        for k, v in filterspec.items():
-            propclass = props[k]
+        proptree = self._proptree (filterspec)
+        for p in proptree :
+            cn = p.classname
+            ln = p.uniqname
+            pln = p.parent.uniqname
+            pcn = p.parent.classname
+            k = p.name
+            v = p.val
+            propclass = p.prcls
+            if p.children :
+                if isinstance (propclass, Multilink) :
+                    mlfilt = 1
+                    mn = '%s_%s'%(pcn, p.name)
+                    frum.append(mn)
+                    frum.append('_%s as _%s' % (cn, ln))
+                    where.append('_%s.id=%s.nodeid and %s.linkid=_%s.id'%(pln,
+                        mn, mn, ln))
+                else :
+                    if not isinstance (propclass, Link) :
+                        raise ValueError,"%s must be Link/Multilink property"%k
+                    frum.append('_%s as _%s' % (cn, ln))
+                    where.append('_%s._%s=_%s.id'%(pln, k, ln))
+                continue
             # now do other where clause stuff
-            if isinstance(propclass, Multilink):
+            elif isinstance(propclass, Multilink):
                 mlfilt = 1
-                tn = '%s_%s'%(cn, k)
+                tn = '%s_%s'%(pcn, k)
                 if v in ('-1', ['-1']):
                     # only match rows that have count(linkid)=0 in the
                     # corresponding multilink table)
-                    where.append(self._subselect(cn, tn))
+                    where.append(self._subselect(pcn, tn))
                 elif isinstance(v, type([])):
                     frum.append(tn)
                     s = ','.join([a for x in v])
-                    where.append('_%s.id=%s.nodeid and %s.linkid in (%s)'%(cn,
+                    where.append('_%s.id=%s.nodeid and %s.linkid in (%s)'%(pln,
                         tn, tn, s))
                     args = args + v
                 else:
                     frum.append(tn)
-                    where.append('_%s.id=%s.nodeid and %s.linkid=%s'%(cn, tn,
+                    where.append('_%s.id=%s.nodeid and %s.linkid=%s'%(pln, tn,
                         tn, a))
                     args.append(v)
             elif k == 'id':
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
-                    where.append('_%s.%s in (%s)'%(cn, k, s))
+                    where.append('_%s.%s in (%s)'%(pln, k, s))
                     args = args + v
                 else:
-                    where.append('_%s.%s=%s'%(cn, k, a))
+                    where.append('_%s.%s=%s'%(pln, k, a))
                     args.append(v)
             elif isinstance(propclass, String):
                 if not isinstance(v, type([])):
@@ -2100,7 +2120,7 @@ class Class(hyperdb.Class):
 
                 # now add to the where clause
                 where.append('('
-                    +' and '.join(["_%s._%s LIKE '%s'"%(cn, k, s) for s in v])
+                    +' and '.join(["_%s._%s LIKE '%s'"%(pln, k, s) for s in v])
                     +')')
                 # note: args are embedded in the query string now
             elif isinstance(propclass, Link):
@@ -2113,36 +2133,36 @@ class Class(hyperdb.Class):
                     l = []
                     if d.has_key(None) or not d:
                         del d[None]
-                        l.append('_%s._%s is NULL'%(cn, k))
+                        l.append('_%s._%s is NULL'%(pln, k))
                     if d:
                         v = d.keys()
                         s = ','.join([a for x in v])
-                        l.append('(_%s._%s in (%s))'%(cn, k, s))
+                        l.append('(_%s._%s in (%s))'%(pln, k, s))
                         args = args + v
                     if l:
                         where.append('(' + ' or '.join(l) +')')
                 else:
                     if v in ('-1', None):
                         v = None
-                        where.append('_%s._%s is NULL'%(cn, k))
+                        where.append('_%s._%s is NULL'%(pln, k))
                     else:
-                        where.append('_%s._%s=%s'%(cn, k, a))
+                        where.append('_%s._%s=%s'%(pln, k, a))
                         args.append(v)
             elif isinstance(propclass, Date):
                 dc = self.db.hyperdb_to_sql_value[hyperdb.Date]
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
-                    where.append('_%s._%s in (%s)'%(cn, k, s))
+                    where.append('_%s._%s in (%s)'%(pln, k, s))
                     args = args + [dc(date.Date(x)) for x in v]
                 else:
                     try:
                         # Try to filter on range of dates
                         date_rng = propclass.range_from_raw(v, self.db)
                         if date_rng.from_value:
-                            where.append('_%s._%s >= %s'%(cn, k, a))
+                            where.append('_%s._%s >= %s'%(pln, k, a))
                             args.append(dc(date_rng.from_value))
                         if date_rng.to_value:
-                            where.append('_%s._%s <= %s'%(cn, k, a))
+                            where.append('_%s._%s <= %s'%(pln, k, a))
                             args.append(dc(date_rng.to_value))
                     except ValueError:
                         # If range creation fails - ignore that search parameter
@@ -2151,17 +2171,17 @@ class Class(hyperdb.Class):
                 # filter using the __<prop>_int__ column
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
-                    where.append('_%s.__%s_int__ in (%s)'%(cn, k, s))
+                    where.append('_%s.__%s_int__ in (%s)'%(pln, k, s))
                     args = args + [date.Interval(x).as_seconds() for x in v]
                 else:
                     try:
                         # Try to filter on range of intervals
                         date_rng = Range(v, date.Interval)
                         if date_rng.from_value:
-                            where.append('_%s.__%s_int__ >= %s'%(cn, k, a))
+                            where.append('_%s.__%s_int__ >= %s'%(pln, k, a))
                             args.append(date_rng.from_value.as_seconds())
                         if date_rng.to_value:
-                            where.append('_%s.__%s_int__ <= %s'%(cn, k, a))
+                            where.append('_%s.__%s_int__ <= %s'%(pln, k, a))
                             args.append(date_rng.to_value.as_seconds())
                     except ValueError:
                         # If range creation fails - ignore that search parameter
@@ -2169,20 +2189,22 @@ class Class(hyperdb.Class):
             else:
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
-                    where.append('_%s._%s in (%s)'%(cn, k, s))
+                    where.append('_%s._%s in (%s)'%(pln, k, s))
                     args = args + v
                 else:
-                    where.append('_%s._%s=%s'%(cn, k, a))
+                    where.append('_%s._%s=%s'%(pln, k, a))
                     args.append(v)
 
+        props = self.getprops()
+
         # don't match retired nodes
-        where.append('_%s.__retired__ <> 1'%cn)
+        where.append('_%s.__retired__ <> 1'%icn)
 
         # add results of full text search
         if search_matches is not None:
             v = search_matches.keys()
             s = ','.join([a for x in v])
-            where.append('_%s.id in (%s)'%(cn, s))
+            where.append('_%s.id in (%s)'%(icn, s))
             args = args + v
 
         # sanity check: sorting *and* grouping on the same property?
@@ -2208,7 +2230,7 @@ class Class(hyperdb.Class):
                     # determine whether the linked Class has an order property
                     lcn = props[prop].classname
                     link = self.db.classes[lcn]
-                    o = '_%s._%s'%(cn, prop)
+                    o = '_%s._%s'%(icn, prop)
                     op = link.orderprop()
                     if op != 'id':
                         tn = '_' + lcn
@@ -2219,16 +2241,16 @@ class Class(hyperdb.Class):
                         o = '%s._%s'%(rhs, op)
                     ordercols.append(o)
                 elif prop == 'id':
-                    o = '_%s.id'%cn
+                    o = '_%s.id'%icn
                 else:
-                    o = '_%s._%s'%(cn, prop)
+                    o = '_%s._%s'%(icn, prop)
                     ordercols.append(o)
                 if sdir == '-':
                     o += ' desc'
                 orderby.append(o)
 
         # construct the SQL
-        frum.append('_'+cn)
+        frum.append('_'+icn)
         frum = ','.join(frum)
         if where:
             where = ' where ' + (' and '.join(where))
@@ -2237,9 +2259,9 @@ class Class(hyperdb.Class):
         if mlfilt:
             # we're joining tables on the id, so we will get dupes if we
             # don't distinct()
-            cols = ['distinct(_%s.id)'%cn]
+            cols = ['distinct(_%s.id)'%icn]
         else:
-            cols = ['_%s.id'%cn]
+            cols = ['_%s.id'%icn]
         if orderby:
             cols = cols + ordercols
             order = ' order by %s'%(','.join(orderby))

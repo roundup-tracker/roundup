@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.69 2006-04-27 01:39:47 richard Exp $
+# $Id: db_test_base.py,v 1.70 2006-07-08 18:28:18 schlatterbeck Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
@@ -69,7 +69,8 @@ def setupSchema(db, create, module):
     priority = module.Class(db, "priority", name=String(), order=String())
     priority.setkey("name")
     user = module.Class(db, "user", username=String(), password=Password(),
-        assignable=Boolean(), age=Number(), roles=String())
+        assignable=Boolean(), age=Number(), roles=String(),
+        supervisor=Link('user'))
     user.setkey("username")
     file = module.FileClass(db, "file", name=String(), type=String(),
         comment=String(indexme="yes"), fooz=Password())
@@ -80,7 +81,7 @@ def setupSchema(db, create, module):
         priority=Link('priority'))
     stuff = module.Class(db, "stuff", stuff=String())
     session = module.Class(db, 'session', title=String())
-    msg = module.FileClass(db, "msg",
+    msg = module.FileClass(db, "msg", date=Date(),
                            author=Link("user", do_journal='no'))
     session.disableJournalling()
     db.post_init()
@@ -949,7 +950,7 @@ class DBTest(MyTestCase):
         ae, filt = self.filteringSetup()
         ae(filt(None, {'id': '1'}, ('+','id'), (None,None)), ['1'])
         ae(filt(None, {'id': '2'}, ('+','id'), (None,None)), ['2'])
-        ae(filt(None, {'id': '10'}, ('+','id'), (None,None)), [])
+        ae(filt(None, {'id': '100'}, ('+','id'), (None,None)), [])
 
     def testFilteringNumber(self):
         self.filteringSetup()
@@ -1091,6 +1092,105 @@ class DBTest(MyTestCase):
             ['3', '4', '2', '1'])
         ae(filt(None, {}, ('-','deadline'), ('-','priority')),
             ['4', '3', '1', '2'])
+
+    def filteringSetupTransitiveSearch(self):
+        u_m = {}
+        k = 1
+        for user in (
+                {'username': 'ceo', 'age': 129},
+                {'username': 'grouplead1', 'age': 29, 'supervisor': '3'},
+                {'username': 'grouplead2', 'age': 29, 'supervisor': '3'},
+                {'username': 'worker1', 'age': 25, 'supervisor' : '4'},
+                {'username': 'worker2', 'age': 26, 'supervisor' : '4'},
+                {'username': 'worker3', 'age': 27, 'supervisor' : '5'},
+                {'username': 'worker4', 'age': 28, 'supervisor' : '5'},
+                {'username': 'worker5', 'age': 29, 'supervisor' : '5'}):
+            u = self.db.user.create(**user)
+            u_m [u] = self.db.msg.create(author = u, content = ' '
+                , date = date.Date ('2006-01-%s' % k))
+            k += 1
+        iss = self.db.issue
+        for issue in (
+                {'title': 'ts1', 'status': '2', 'assignedto': '6',
+                    'priority': '3', 'messages' : [u_m ['6']], 'nosy' : ['4']},
+                {'title': 'ts2', 'status': '1', 'assignedto': '6',
+                    'priority': '3', 'messages' : [u_m ['6']], 'nosy' : ['5']},
+                {'title': 'ts4', 'status': '2', 'assignedto': '7',
+                    'priority': '3', 'messages' : [u_m ['7']]},
+                {'title': 'ts5', 'status': '1', 'assignedto': '8',
+                    'priority': '3', 'messages' : [u_m ['8']]},
+                {'title': 'ts6', 'status': '2', 'assignedto': '9',
+                    'priority': '3', 'messages' : [u_m ['9']]},
+                {'title': 'ts7', 'status': '1', 'assignedto': '10',
+                    'priority': '3', 'messages' : [u_m ['10']]},
+                {'title': 'ts8', 'status': '2', 'assignedto': '10',
+                    'priority': '3', 'messages' : [u_m ['10']]},
+                {'title': 'ts9', 'status': '1', 'assignedto': '10',
+                    'priority': '3', 'messages' : [u_m ['10'], u_m ['9']]}):
+            self.db.issue.create(**issue)
+        return self.assertEqual, self.db.issue.filter
+
+    def testFilteringTransitiveLinkUser(self):
+        ae, filt = self.filteringSetupTransitiveSearch()
+        ufilt = self.db.user.filter
+        ae(ufilt(None, {'supervisor.username': 'ceo'}, ('+','username')),
+            ['4', '5'])
+        ae(ufilt(None, {'supervisor.supervisor.username': 'ceo'},
+            ('+','username')), ['6', '7', '8', '9', '10'])
+        ae(ufilt(None, {'supervisor.supervisor': '3'}, ('+','username')),
+            ['6', '7', '8', '9', '10'])
+        ae(ufilt(None, {'supervisor.supervisor.id': '3'}, ('+','username')),
+            ['6', '7', '8', '9', '10'])
+        ae(ufilt(None, {'supervisor.username': 'grouplead1'}, ('+','username')),
+            ['6', '7'])
+        ae(ufilt(None, {'supervisor.username': 'grouplead2'}, ('+','username')),
+            ['8', '9', '10'])
+        ae(ufilt(None, {'supervisor.username': 'grouplead2',
+            'supervisor.supervisor.username': 'ceo'}, ('+','username')),
+            ['8', '9', '10'])
+
+    def testFilteringTransitiveLinkIssue(self):
+        ae, filt = self.filteringSetupTransitiveSearch()
+        ae(filt(None, {'assignedto.supervisor.username': 'grouplead1'},
+            ('+','id')), ['1', '2', '3'])
+        ae(filt(None, {'assignedto.supervisor.username': 'grouplead2'},
+            ('+','id')), ['4', '5', '6', '7', '8'])
+        ae(filt(None, {'assignedto.supervisor.username': 'grouplead2',
+                       'status': '1'}, ('+','id')), ['4', '6', '8'])
+        ae(filt(None, {'assignedto.supervisor.username': 'grouplead2',
+                       'status': '2'}, ('+','id')), ['5', '7'])
+        ae(filt(None, {'assignedto.supervisor.username': ['grouplead2'],
+                       'status': '2'}, ('+','id')), ['5', '7'])
+        ae(filt(None, {'assignedto.supervisor': ['4', '5'], 'status': '2'},
+            ('+','id')), ['1', '3', '5', '7'])
+
+    def testFilteringTransitiveMultilink(self):
+        ae, filt = self.filteringSetupTransitiveSearch()
+        ae(filt(None, {'messages.author.username': 'grouplead1'},
+            ('+','id')), [])
+        ae(filt(None, {'messages.author': '6'},
+            ('+','id')), ['1', '2'])
+        ae(filt(None, {'messages.author.id': '6'},
+            ('+','id')), ['1', '2'])
+        ae(filt(None, {'messages.author.username': 'worker1'},
+            ('+','id')), ['1', '2'])
+        ae(filt(None, {'messages.author': '10'},
+            ('+','id')), ['6', '7', '8'])
+        ae(filt(None, {'messages.author': '9'},
+            ('+','id')), ['5', '8'])
+        ae(filt(None, {'messages.author': ['9', '10']},
+            ('+','id')), ['5', '6', '7', '8'])
+        ae(filt(None, {'messages.author': ['8', '9']},
+            ('+','id')), ['4', '5', '8'])
+        ae(filt(None, {'messages.author': ['8', '9'], 'status' : '1'},
+            ('+','id')), ['4', '8'])
+        ae(filt(None, {'messages.author': ['8', '9'], 'status' : '2'},
+            ('+','id')), ['5'])
+        ae(filt(None, {'messages.author': ['8', '9', '10'],
+            'messages.date': '2006-01-07.21:00;2006-01-10'}, ('+','id')),
+            ['6', '7', '8'])
+        ae(filt(None, {'nosy.supervisor.username': 'ceo'},
+            ('+','id')), ['1', '2'])
 
 # XXX add sorting tests for other types
 # XXX test auditors and reactors

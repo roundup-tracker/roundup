@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: hyperdb.py,v 1.120 2006-05-06 17:18:03 a1s Exp $
+# $Id: hyperdb.py,v 1.121 2006-07-08 18:28:18 schlatterbeck Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -26,7 +26,7 @@ import sys, os, time, re, shutil, weakref
 
 # roundup modules
 import date, password
-from support import ensureParentsExist, PrioList
+from support import ensureParentsExist, PrioList, Proptree
 
 #
 # Types
@@ -706,6 +706,37 @@ class Class:
         """
         raise NotImplementedError
 
+    def _filter(self, search_matches, filterspec, sort=(None,None),
+            group=(None,None)):
+        """For some backends this implements the non-transitive
+        search, for more information see the filter method.
+        """
+        raise NotImplementedError
+
+    def _proptree (self, filterspec) :
+        """Build a tree of all transitive properties in the given
+        filterspec.
+        """
+        proptree = Proptree (self.db, self, '', self.getprops ())
+        for key, v in filterspec.iteritems () :
+            keys = key.split ('.')
+            p = proptree
+            for k in keys :
+                p = p.append (k)
+            p.val = v
+        return proptree
+
+    def _propsearch (self, search_matches, proptree, sort, group) :
+        """ Recursively search for the given properties in proptree.
+        Once all properties are non-transitive, the search generates a
+        simple _filter call which does the real work
+        """
+        for p in proptree.children :
+            if not p.children : continue
+            p.val = p.cls._propsearch (None, p, (None, None), (None, None))
+        filterspec = dict ([(p.name, p.val) for p in proptree.children])
+        return self._filter (search_matches, filterspec, sort, group)
+
     def filter(self, search_matches, filterspec, sort=(None,None),
             group=(None,None)):
         """Return a list of the ids of the active nodes in this class that
@@ -713,6 +744,12 @@ class Class:
         sort spec.
 
         "filterspec" is {propname: value(s)}
+
+        Note that now the propname in filterspec may be transitive,
+        i.e., it may contain properties of the form link.link.link.name,
+        e.g. you can search for all issues where a message was added by
+        a certain user in the last week with a filterspec of
+        {'messages.author' : '42', 'messages.creation' : '.-1w;'}
 
         "sort" and "group" are (dir, prop) where dir is '+', '-' or None
         and prop is a prop name or None
@@ -724,8 +761,16 @@ class Class:
 
         1. String properties must match all elements in the list, and
         2. Other properties must match any of the elements in the list.
+        
+        Implementation note:
+        This implements a non-optimized version of Transitive search
+        using _filter implemented in a backend class. A more efficient
+        version can be implemented in the individual backends -- e.g.,
+        an SQL backen will want to create a single SQL statement and
+        override the filter method instead of implementing _filter.
         """
-        raise NotImplementedError
+        proptree = self._proptree (filterspec)
+        return self._propsearch (search_matches, proptree, sort, group)
 
     def count(self):
         """Get the number of nodes in this class.
