@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.71 2006-07-13 10:14:56 schlatterbeck Exp $
+# $Id: db_test_base.py,v 1.72 2006-07-13 13:30:39 schlatterbeck Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
@@ -977,6 +977,8 @@ class DBTest(MyTestCase):
         ae(filt(None, {'status': '1'}, ('+','id'), (None,None)), ['2','3'])
         ae(filt(None, {'assignedto': '-1'}, ('+','id'), (None,None)), ['3','4'])
         ae(filt(None, {'assignedto': None}, ('+','id'), (None,None)), ['3','4'])
+        ae(filt(None, {'assignedto': [None]}, ('+','id'), (None,None)),
+            ['3','4'])
         ae(filt(None, {'assignedto': ['-1', None]}, ('+','id'), (None,None)),
             ['3','4'])
         ae(filt(None, {'assignedto': ['1', None]}, ('+','id'), (None,None)),
@@ -1148,6 +1150,8 @@ class DBTest(MyTestCase):
         ae(ufilt(None, {'supervisor.username': 'grouplead2',
             'supervisor.supervisor.username': 'ceo'}, ('+','username')),
             ['8', '9', '10'])
+        ae(ufilt(None, {'supervisor.supervisor': '3', 'supervisor': '4'},
+            ('+','username')), ['6', '7'])
 
     def testFilteringTransitiveLinkIssue(self):
         ae, filt = self.filteringSetupTransitiveSearch()

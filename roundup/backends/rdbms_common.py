@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.173 2006-07-13 10:14:56 schlatterbeck Exp $
+#$Id: rdbms_common.py,v 1.174 2006-07-13 13:30:39 schlatterbeck Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2069,11 +2069,8 @@ class Class(hyperdb.Class):
             k = p.name
             v = p.val
             propclass = p.prcls
-            if p.children and not isinstance(propclass, Multilink):
-                if not isinstance(propclass, Link):
-                    raise ValueError,"%s must be Link/Multilink property"%k
-                frum.append('_%s as _%s' % (cn, ln))
-                where.append('_%s._%s=_%s.id'%(pln, k, ln))
+            if p.children and not isinstance(propclass, (Link, Multilink)):
+                raise ValueError,"%s must be Link/Multilink property"%k
             # now do other where clause stuff
             elif isinstance(propclass, Multilink):
                 mlfilt = 1
@@ -2088,7 +2085,7 @@ class Class(hyperdb.Class):
                     if p.children:
                         frum.append('_%s as _%s' % (cn, ln))
                         where.append('%s.linkid=_%s.id'%(tn, ln))
-                    if v:
+                    if p.has_values:
                         if isinstance(v, type([])):
                             s = ','.join([a for x in v])
                             where.append('%s.linkid in (%s)'%(tn, s))
@@ -2119,30 +2116,34 @@ class Class(hyperdb.Class):
                     +')')
                 # note: args are embedded in the query string now
             elif isinstance(propclass, Link):
-                if isinstance(v, type([])):
-                    d = {}
-                    for entry in v:
-                        if entry == '-1':
-                            entry = None
-                        d[entry] = entry
-                    l = []
-                    if d.has_key(None) or not d:
-                        del d[None]
-                        l.append('_%s._%s is NULL'%(pln, k))
-                    if d:
-                        v = d.keys()
-                        s = ','.join([a for x in v])
-                        l.append('(_%s._%s in (%s))'%(pln, k, s))
-                        args = args + v
-                    if l:
-                        where.append('(' + ' or '.join(l) +')')
-                else:
-                    if v in ('-1', None):
-                        v = None
-                        where.append('_%s._%s is NULL'%(pln, k))
+                if p.children:
+                    frum.append('_%s as _%s' % (cn, ln))
+                    where.append('_%s._%s=_%s.id'%(pln, k, ln))
+                if p.has_values:
+                    if isinstance(v, type([])):
+                        d = {}
+                        for entry in v:
+                            if entry == '-1':
+                                entry = None
+                            d[entry] = entry
+                        l = []
+                        if d.has_key(None) or not d:
+                            del d[None]
+                            l.append('_%s._%s is NULL'%(pln, k))
+                        if d:
+                            v = d.keys()
+                            s = ','.join([a for x in v])
+                            l.append('(_%s._%s in (%s))'%(pln, k, s))
+                            args = args + v
+                        if l:
+                            where.append('(' + ' or '.join(l) +')')
                     else:
-                        where.append('_%s._%s=%s'%(pln, k, a))
-                        args.append(v)
+                        if v in ('-1', None):
+                            v = None
+                            where.append('_%s._%s is NULL'%(pln, k))
+                        else:
+                            where.append('_%s._%s=%s'%(pln, k, a))
+                            args.append(v)
             elif isinstance(propclass, Date):
                 dc = self.db.hyperdb_to_sql_value[hyperdb.Date]
                 if isinstance(v, type([])):

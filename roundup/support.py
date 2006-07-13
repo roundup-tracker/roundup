@@ -125,12 +125,13 @@ class Proptree(object):
     ''' Simple tree data structure for optimizing searching of properties
     '''
 
-    def __init__(self, db, cls, name, props, parent = None, val = None):
+    def __init__(self, db, cls, name, props, parent = None):
         self.db = db
         self.name = name
         self.props = props
         self.parent = parent
-        self._val = val
+        self._val = None
+        self.has_values = False
         self.cls = cls
         self.classname = None
         self.uniqname = None
@@ -171,7 +172,7 @@ class Proptree(object):
         """Check if self._val is already defined. If yes, we compute the
         intersection of the old and the new value(s)
         """
-        if self._val:
+        if self.has_values:
             v = self._val
             if not isinstance(self._val, type([])):
                 v = [self._val]
@@ -180,6 +181,7 @@ class Proptree(object):
             self._val = [v for v in vals]
         else:
             self._val = val
+        self.has_values = True
     
     val = property(lambda self: self._val, _set_val)
 
