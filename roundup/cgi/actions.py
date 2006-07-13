@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.60 2006-04-27 03:44:47 richard Exp $
+#$Id: actions.py,v 1.61 2006-07-13 10:14:56 schlatterbeck Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random, csv, codecs
 
@@ -221,9 +221,10 @@ class SearchAction(Action):
 
     def fakeFilterVars(self):
         """Add a faked :filter form variable for each filtering prop."""
-        props = self.db.classes[self.classname].getprops()
+        cls = self.db.classes[self.classname]
         for key in self.form.keys():
-            if not props.has_key(key):
+            prop = cls.get_transitive_prop(key)
+            if not prop:
                 continue
             if isinstance(self.form[key], type([])):
                 # search for at least one entry which is not empty
@@ -235,7 +236,7 @@ class SearchAction(Action):
             else:
                 if not self.form[key].value:
                     continue
-                if isinstance(props[key], hyperdb.String):
+                if isinstance(prop, hyperdb.String):
                     v = self.form[key].value
                     l = token.token_split(v)
                     if len(l) > 1 or l[0] != v:

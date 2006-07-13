@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.70 2006-07-08 18:28:18 schlatterbeck Exp $
+# $Id: db_test_base.py,v 1.71 2006-07-13 10:14:56 schlatterbeck Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
@@ -1191,6 +1191,12 @@ class DBTest(MyTestCase):
             ['6', '7', '8'])
         ae(filt(None, {'nosy.supervisor.username': 'ceo'},
             ('+','id')), ['1', '2'])
+        ae(filt(None, {'messages.author': ['6', '9']},
+            ('+','id')), ['1', '2', '5', '8'])
+        ae(filt(None, {'messages': ['5', '7']},
+            ('+','id')), ['3', '5', '8'])
+        ae(filt(None, {'messages.author': ['6', '9'], 'messages': ['5', '7']},
+            ('+','id')), ['5', '8'])
 
 # XXX add sorting tests for other types
 # XXX test auditors and reactors

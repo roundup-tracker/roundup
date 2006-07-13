@@ -2132,11 +2132,11 @@ class HTMLRequest(HTMLInputMixin):
         self.filterspec = {}
         db = self.client.db
         if self.classname is not None:
-            props = db.getclass(self.classname).getprops()
+            cls = db.getclass (self.classname)
             for name in self.filter:
                 if not self.form.has_key(name):
                     continue
-                prop = props[name]
+                prop = cls.get_transitive_prop (name)
                 fv = self.form[name]
                 if (isinstance(prop, hyperdb.Link) or
                         isinstance(prop, hyperdb.Multilink)):
@@ -2314,11 +2314,12 @@ env: %(env)s
 
         # finally, the remainder of the filter args in the request
         if self.classname and self.filterspec:
-            props = self.client.db.getclass(self.classname).getprops()
+            cls = self.client.db.getclass(self.classname)
             for k,v in self.filterspec.items():
                 if not args.has_key(k):
                     if type(v) == type([]):
-                        if isinstance(props[k], hyperdb.String):
+                        prop = cls.get_transitive_prop(k)
+                        if isinstance(prop, hyperdb.String):
                             l.append('%s=%s'%(k, '%20'.join([q(i) for i in v])))
                         else:
                             l.append('%s=%s'%(k, ','.join([q(i) for i in v])))

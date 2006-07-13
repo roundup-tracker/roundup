@@ -7,6 +7,8 @@ __docformat__ = 'restructuredtext'
 import os, time, sys
 import hyperdb
 
+from sets import Set
+
 class TruthDict:
     '''Returns True for valid keys, False for others.
     '''
@@ -32,11 +34,11 @@ class PrioList:
     full list interface.
     Implementation: We manage a "sorted" status and sort on demand.
     Appending to the list will require re-sorting before use.
-    >>> p = PrioList ()
-    >>> for i in 5,7,1,-1 :
-    ...  p.append (i)
+    >>> p = PrioList()
+    >>> for i in 5,7,1,-1:
+    ...  p.append(i)
     ...
-    >>> for k in p :
+    >>> for k in p:
     ...  print k
     ...
     -1
@@ -50,14 +52,14 @@ class PrioList:
         self.sorted = True
 
     def append(self, item):
-        self.list.append (item)
+        self.list.append(item)
         self.sorted = False
 
     def __iter__(self):
-        if not self.sorted :
-            self.list.sort ()
+        if not self.sorted:
+            self.list.sort()
             self.sorted = True
-        return iter (self.list)
+        return iter(self.list)
 
 class Progress:
     '''Progress display for console applications.
@@ -119,54 +121,73 @@ class Progress:
         sys.stdout.write(s + ' '*(75-len(s)) + '\r')
         sys.stdout.flush()
 
-class Proptree :
+class Proptree(object):
     ''' Simple tree data structure for optimizing searching of properties
     '''
 
-    def __init__ (self, db, cls, name, props, parent = None, val = None) :
-        self.db        = db
-        self.name      = name
-        self.props     = props
-        self.parent    = parent
-        self.val       = val
-        self.cls       = cls
+    def __init__(self, db, cls, name, props, parent = None, val = None):
+        self.db = db
+        self.name = name
+        self.props = props
+        self.parent = parent
+        self._val = val
+        self.cls = cls
         self.classname = None
-        self.uniqname  = None
-        self.children  = []
+        self.uniqname = None
+        self.children = []
         self.propnames = {}
-        if parent :
-            self.root  = parent.root
+        if parent:
+            self.root = parent.root
             self.prcls = self.parent.props [name]
-        else :
-            self.root  = self
+        else:
+            self.root = self
             self.seqno = 1
         self.id = self.root.seqno
         self.root.seqno += 1
-        if self.cls :
+        if self.cls:
             self.classname = self.cls.classname
-            self.uniqname  = '%s%s' % (self.cls.classname, self.id)
-        if not self.parent :
-            self.uniqname  = self.cls.classname
+            self.uniqname = '%s%s' % (self.cls.classname, self.id)
+        if not self.parent:
+            self.uniqname = self.cls.classname
 
-    def append (self, name) :
-        if name in self.propnames :
+    def append(self, name):
+        """Append a property to self.children. Will create a new
+        propclass for the child.
+        """
+        if name in self.propnames:
             return self.propnames [name]
         propclass = self.props [name]
-        cls   = None
+        cls = None
         props = None
-        if isinstance (propclass, (hyperdb.Link, hyperdb.Multilink)) :
-            cls   = self.db.getclass (propclass.classname)
-            props = cls.getprops ()
-        child = self.__class__ (self.db, cls, name, props, parent = self)
-        self.children.append (child)
+        if isinstance(propclass, (hyperdb.Link, hyperdb.Multilink)):
+            cls = self.db.getclass(propclass.classname)
+            props = cls.getprops()
+        child = self.__class__(self.db, cls, name, props, parent = self)
+        self.children.append(child)
         self.propnames [name] = child
         return child
 
-    def __iter__ (self) :
+    def _set_val(self, val):
+        """Check if self._val is already defined. If yes, we compute the
+        intersection of the old and the new value(s)
+        """
+        if self._val:
+            v = self._val
+            if not isinstance(self._val, type([])):
+                v = [self._val]
+            vals = Set(v)
+            vals.intersection_update(val)
+            self._val = [v for v in vals]
+        else:
+            self._val = val
+    
+    val = property(lambda self: self._val, _set_val)
+
+    def __iter__(self):
         """ Yield nodes in depth-first order -- visited nodes first """
-        for p in self.children :
+        for p in self.children:
             yield p
-            for c in p :
+            for c in p:
                 yield c
 
 # vim: set et sts=4 sw=4 :

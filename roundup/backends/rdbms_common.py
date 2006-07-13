@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.172 2006-07-08 18:28:18 schlatterbeck Exp $
+#$Id: rdbms_common.py,v 1.173 2006-07-13 10:14:56 schlatterbeck Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2014,13 +2014,14 @@ class Class(hyperdb.Class):
         ids = [str(x[0]) for x in self.db.cursor.fetchall()]
         return ids
 
-    def _subselect (self, cn, tn) :
+    def _subselect(self, classname, multilink_table):
         '''Create a subselect. This is factored out because some
            databases (hmm only one, so far) doesn't support subselects
            look for "I can't believe it's not a toy RDBMS" in the mysql
            backend.
         '''
-        return '_%s.id not in (select nodeid from %s)'%(cn, tn)
+        return '_%s.id not in (select nodeid from %s)'%(classname,
+            multilink_table)
 
     def filter(self, search_matches, filterspec, sort=(None,None),
             group=(None,None)):
@@ -2059,8 +2060,8 @@ class Class(hyperdb.Class):
 
         # figure the WHERE clause from the filterspec
         mlfilt = 0      # are we joining with Multilink tables?
-        proptree = self._proptree (filterspec)
-        for p in proptree :
+        proptree = self._proptree(filterspec)
+        for p in proptree:
             cn = p.classname
             ln = p.uniqname
             pln = p.parent.uniqname
@@ -2068,20 +2069,11 @@ class Class(hyperdb.Class):
             k = p.name
             v = p.val
             propclass = p.prcls
-            if p.children :
-                if isinstance (propclass, Multilink) :
-                    mlfilt = 1
-                    mn = '%s_%s'%(pcn, p.name)
-                    frum.append(mn)
-                    frum.append('_%s as _%s' % (cn, ln))
-                    where.append('_%s.id=%s.nodeid and %s.linkid=_%s.id'%(pln,
-                        mn, mn, ln))
-                else :
-                    if not isinstance (propclass, Link) :
-                        raise ValueError,"%s must be Link/Multilink property"%k
-                    frum.append('_%s as _%s' % (cn, ln))
-                    where.append('_%s._%s=_%s.id'%(pln, k, ln))
-                continue
+            if p.children and not isinstance(propclass, Multilink):
+                if not isinstance(propclass, Link):
+                    raise ValueError,"%s must be Link/Multilink property"%k
+                frum.append('_%s as _%s' % (cn, ln))
+                where.append('_%s._%s=_%s.id'%(pln, k, ln))
             # now do other where clause stuff
             elif isinstance(propclass, Multilink):
                 mlfilt = 1
@@ -2090,17 +2082,20 @@ class Class(hyperdb.Class):
                     # only match rows that have count(linkid)=0 in the
                     # corresponding multilink table)
                     where.append(self._subselect(pcn, tn))
-                elif isinstance(v, type([])):
-                    frum.append(tn)
-                    s = ','.join([a for x in v])
-                    where.append('_%s.id=%s.nodeid and %s.linkid in (%s)'%(pln,
-                        tn, tn, s))
-                    args = args + v
                 else:
                     frum.append(tn)
-                    where.append('_%s.id=%s.nodeid and %s.linkid=%s'%(pln, tn,
-                        tn, a))
-                    args.append(v)
+                    where.append('_%s.id=%s.nodeid'%(pln,tn))
+                    if p.children:
+                        frum.append('_%s as _%s' % (cn, ln))
+                        where.append('%s.linkid=_%s.id'%(tn, ln))
+                    if v:
+                        if isinstance(v, type([])):
+                            s = ','.join([a for x in v])
+                            where.append('%s.linkid in (%s)'%(tn, s))
+                            args = args + v
+                        else:
+                            where.append('%s.linkid=%s'%(tn, a))
+                            args.append(v)
             elif k == 'id':
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])

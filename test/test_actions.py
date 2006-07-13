@@ -98,8 +98,8 @@ class StandardSearchActionTestCase(SearchActionTestCase):
 class FakeFilterVarsTestCase(SearchActionTestCase):
     def setUp(self):
         SearchActionTestCase.setUp(self)
-        self.client.db.classes.getprops = lambda: {'foo':
-            hyperdb.Multilink('foo')}
+        self.client.db.classes.get_transitive_prop = lambda x: \
+            hyperdb.Multilink('foo')
 
     def assertFilterEquals(self, expected):
         self.action.fakeFilterVars()
@@ -131,7 +131,7 @@ class FakeFilterVarsTestCase(SearchActionTestCase):
         self.assertFilterEquals('foo')
 
     def testTokenizedStringKey(self):
-        self.client.db.classes.getprops = lambda: {'foo': hyperdb.String()}
+        self.client.db.classes.get_transitive_prop = lambda x: hyperdb.String()
         self.form.value.append(MiniFieldStorage('foo', 'hello world'))
 
         self.assertFilterEquals('foo')

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: hyperdb.py,v 1.121 2006-07-08 18:28:18 schlatterbeck Exp $
+# $Id: hyperdb.py,v 1.122 2006-07-13 10:14:56 schlatterbeck Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -713,29 +713,49 @@ class Class:
         """
         raise NotImplementedError
 
-    def _proptree (self, filterspec) :
+    def _proptree (self, filterspec):
         """Build a tree of all transitive properties in the given
         filterspec.
         """
         proptree = Proptree (self.db, self, '', self.getprops ())
-        for key, v in filterspec.iteritems () :
+        for key, v in filterspec.iteritems ():
             keys = key.split ('.')
             p = proptree
-            for k in keys :
+            for k in keys:
                 p = p.append (k)
             p.val = v
         return proptree
 
-    def _propsearch (self, search_matches, proptree, sort, group) :
+    def _propsearch (self, search_matches, proptree, sort, group):
         """ Recursively search for the given properties in proptree.
         Once all properties are non-transitive, the search generates a
         simple _filter call which does the real work
         """
-        for p in proptree.children :
-            if not p.children : continue
+        for p in proptree.children:
+            if not p.children:
+                continue
             p.val = p.cls._propsearch (None, p, (None, None), (None, None))
         filterspec = dict ([(p.name, p.val) for p in proptree.children])
         return self._filter (search_matches, filterspec, sort, group)
+
+    def get_transitive_prop (self, propname_path, default = None) :
+        """Expand a transitive property (individual property names
+        separated by '.' into a new property at the end of the path. If
+        one of the names does not refer to a valid property, we return
+        None.
+        Example propname_path (for class issue): "messages.author"
+        """
+        props = self.db.getclass(self.classname).getprops()
+        for k in propname_path.split('.'):
+            try :
+                prop = props[k]
+            except KeyError, TypeError:
+                return default
+            cl = getattr (prop, 'classname', None)
+            props = None
+            if cl:
+                props = self.db.getclass (cl).getprops()
+        return prop
 
     def filter(self, search_matches, filterspec, sort=(None,None),
             group=(None,None)):

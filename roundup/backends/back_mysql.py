@@ -1,4 +1,4 @@
-#$Id: back_mysql.py,v 1.69 2006-07-07 15:04:28 schlatterbeck Exp $
+#$Id: back_mysql.py,v 1.70 2006-07-13 10:14:56 schlatterbeck Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -550,13 +550,13 @@ class Database(Database):
                 raise
 
 class MysqlClass:
-    def _subselect (self, cn, tn) :
+    def _subselect(self, classname, multilink_table):
         ''' "I can't believe it's not a toy RDBMS"
            see, even toy RDBMSes like gadfly and sqlite can do sub-selects...
         '''
-        self.db.sql('select nodeid from %s'%tn)
+        self.db.sql('select nodeid from %s'%multilink_table)
         s = ','.join([x[0] for x in self.db.sql_fetchall()])
-        return '_%s.id not in (%s)'%(cn, s)
+        return '_%s.id not in (%s)'%(classname, s)
 
 class Class(MysqlClass, rdbms_common.Class):
     pass
