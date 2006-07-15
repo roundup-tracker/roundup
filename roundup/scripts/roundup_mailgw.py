@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundup_mailgw.py,v 1.21 2005-07-18 01:19:57 richard Exp $
+# $Id: roundup_mailgw.py,v 1.22 2006-07-15 10:08:01 schlatterbeck Exp $
 
 """Command-line script stub that calls the roundup.mailgw.
 """
@@ -33,7 +33,7 @@ def usage(args, message=None):
     if message is not None:
         print message
     print _(
-"""Usage: %(program)s [-v] [-c] [[-C class] -S field=value]* <instance home> [method]
+"""Usage: %(program)s [-v] [-c class] [[-C class] -S field=value]* <instance home> [method]
 
 Options:
  -v: print version and exit
@@ -104,7 +104,7 @@ def main(argv):
     # take the argv array and parse it leaving the non-option
     # arguments in the args array.
     try:
-        optionsList, args = getopt.getopt(argv[1:], 'vcC:S:', ['set=',
+        optionsList, args = getopt.getopt(argv[1:], 'vc:C:S:', ['set=',
             'class='])
     except getopt.GetoptError:
         # print help information and exit:
