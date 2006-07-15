@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.99 2006-04-27 03:38:53 richard Exp $
+# $Id: admin.py,v 1.100 2006-07-15 10:04:32 schlatterbeck Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -1098,6 +1098,9 @@ Erase it? Y/N: """))
 
             # all nodes for this class
             for nodeid in cl.getnodeids():
+                if self.verbose:
+                    sys.stdout.write ('Exporting %s - %d\r'%(classname, nodeid))
+                    sys.stdout.flush ()
                 writer.writerow(cl.export_list(propnames, nodeid))
                 if hasattr(cl, 'export_files'):
                     cl.export_files(dir, nodeid)
@@ -1107,6 +1110,9 @@ Erase it? Y/N: """))
 
             # export the journals
             jf = open(os.path.join(dir, classname+'-journals.csv'), 'wb')
+            if self.verbose:
+                sys.stdout.write ("\nExporting Journal for %s\n" % classname)
+                sys.stdout.flush ()
             journals = csv.writer(jf, colon_separated)
             map(journals.writerow, cl.export_journals())
             jf.close()
@@ -1162,8 +1168,9 @@ Erase it? Y/N: """))
                     file_props = r
                     continue
 
-                sys.stdout.write('Importing %s - %d\r'%(classname, n))
-                sys.stdout.flush()
+                if self.verbose :
+                    sys.stdout.write('Importing %s - %d\r'%(classname, n))
+                    sys.stdout.flush()
 
                 # do the import and figure the current highest nodeid
                 nodeid = int(cl.import_list(file_props, r))
@@ -1399,7 +1406,7 @@ Erase it? Y/N: """))
 
     def main(self):
         try:
-            opts, args = getopt.getopt(sys.argv[1:], 'i:u:hcdsS:v')
+            opts, args = getopt.getopt(sys.argv[1:], 'i:u:hcdsS:vV')
         except getopt.GetoptError, e:
             self.usage(str(e))
             return 1
