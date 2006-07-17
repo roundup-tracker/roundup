@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.101 2006-07-15 10:15:17 schlatterbeck Exp $
+# $Id: admin.py,v 1.102 2006-07-17 14:47:23 schlatterbeck Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -1099,8 +1099,8 @@ Erase it? Y/N: """))
             # all nodes for this class
             for nodeid in cl.getnodeids():
                 if self.verbose:
-                    sys.stdout.write ('Exporting %s - %s\r'%(classname, nodeid))
-                    sys.stdout.flush ()
+                    sys.stdout.write('Exporting %s - %s\r'%(classname, nodeid))
+                    sys.stdout.flush()
                 writer.writerow(cl.export_list(propnames, nodeid))
                 if hasattr(cl, 'export_files'):
                     cl.export_files(dir, nodeid)
@@ -1111,8 +1111,8 @@ Erase it? Y/N: """))
             # export the journals
             jf = open(os.path.join(dir, classname+'-journals.csv'), 'wb')
             if self.verbose:
-                sys.stdout.write ("\nExporting Journal for %s\n" % classname)
-                sys.stdout.flush ()
+                sys.stdout.write("\nExporting Journal for %s\n" % classname)
+                sys.stdout.flush()
             journals = csv.writer(jf, colon_separated)
             map(journals.writerow, cl.export_journals())
             jf.close()
@@ -1168,7 +1168,7 @@ Erase it? Y/N: """))
                     file_props = r
                     continue
 
-                if self.verbose :
+                if self.verbose:
                     sys.stdout.write('Importing %s - %s\r'%(classname, n))
                     sys.stdout.flush()
 
