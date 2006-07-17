@@ -6,6 +6,11 @@ Feature:
 - full timezone support (sf patch 1465296)
 - handle connection loss when responding to web requests
 
+Fixed:
+- Verbose option for import and export (sf bug 1505645)
+- -c option for roundup-mailgw won't accept parameter (sf bug 1505649)
+- '?' in rfc2822-encoded header isn't quoted (sf bug 1505663)
+
 
 2006-04-27 1.1.2
 Feature:
