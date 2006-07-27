@@ -2,7 +2,7 @@
 Developing Roundup
 ==================
 
-:Version: $Revision: 1.15 $
+:Version: $Revision: 1.16 $
 
 .. note::
    The intended audience of this document is the developers of the core
@@ -27,8 +27,8 @@ All development is coordinated through two resources:
 Small Changes
 -------------
 
-Most small changes can be submitted through the Feature tracker, with patches
-attached that give context diffs of the affected source.
+Most small changes can be submitted through the `feature tracker`_, with
+patches attached that give context diffs of the affected source.
 
 
 CVS Access
@@ -471,3 +471,5 @@ Back to `Table of Contents`_
    http://dev.zope.org/Wikis/DevSite/Projects/ZPT/TALES%20Specification%201.3
 .. _vim: http://www.vim.org/
 .. _ZPTInternationalizationSupport: http://dev.zope.org/Wikis/DevSite/Projects/ComponentArchitecture/ZPTInternationalizationSupport
+.. _feature tracker: http://sourceforge.net/tracker/?group_id=31577&atid=402791
+
