@@ -5,6 +5,8 @@ are given with the most recent entry first.
 Feature:
 - full timezone support (sf patch 1465296)
 - handle connection loss when responding to web requests
+- added StringHTMLProperty wrapped() method to wrap long lines in issue
+  display
 
 Fixed:
 - Verbose option for import and export (sf bug 1505645)

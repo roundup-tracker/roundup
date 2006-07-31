@@ -4,8 +4,7 @@ places in Roundup code.
 
 __docformat__ = 'restructuredtext'
 
-import os, time, sys
-import hyperdb
+import os, time, sys, re
 
 from sets import Set
 
@@ -155,6 +154,7 @@ class Proptree(object):
         """Append a property to self.children. Will create a new
         propclass for the child.
         """
+        import hyperdb
         if name in self.propnames:
             return self.propnames [name]
         propclass = self.props [name]
@@ -191,5 +191,98 @@ class Proptree(object):
             yield p
             for c in p:
                 yield c
+
+LEFT = 'left'
+LEFTN = 'left no strip'
+RIGHT = 'right'
+CENTER = 'center'
+
+def align(line, width=70, alignment=LEFTN):
+    ''' Code from http://www.faqts.com/knowledge_base/view.phtml/aid/4476 '''
+    if alignment == CENTER:
+        line = line.strip()
+        space = width - len(line)
+        return ' '*(space/2) + line + ' '*(space/2 + space%2)
+    elif alignment == RIGHT:
+        line = line.rstrip()
+        space = width - len(line)
+        return ' '*space + line
+    else:
+        if alignment == LEFT:
+            line = line.lstrip()
+        space = width - len(line)
+        return line + ' '*space
+
+
+def format_line(columns, positions, contents, spacer=' | ',
+        collapse_whitespace=True, wsre=re.compile(r'\s+')):
+    ''' Fill up a single row with data from the contents '''
+    l = []
+    data = 0
+    for i in range(len(columns)):
+        width, alignment = columns[i]
+        content = contents[i]
+        col = ''
+        while positions[i] < len(content):
+            word = content[positions[i]]
+            # if we hit a newline, honor it
+            if '\n' in word:
+                # chomp
+                positions[i] += 1
+                break
+
+            # make sure this word fits
+            if col and len(word) + len(col) > width:
+                break
+
+            # no whitespace at start-of-line
+            if collapse_whitespace and wsre.match(word) and not col:
+                # chomp
+                positions[i] += 1
+                continue
+
+            col += word
+            # chomp
+            positions[i] += 1
+        if col:
+            data = 1
+        col = align(col, width, alignment)
+        l.append(col)
+
+    if not data:
+        return ''
+    return spacer.join(l).rstrip()
+
+
+def format_columns(columns, contents, spacer=' | ', collapse_whitespace=True,
+        splitre=re.compile(r'(\n|\r\n|\r|[ \t]+|\S+)')):
+    ''' Format the contents into columns, with 'spacing' between the
+        columns
+    '''
+    assert len(columns) == len(contents), \
+        'columns and contents must be same length'
+
+    # split the text into words, spaces/tabs and newlines
+    for i in range(len(contents)):
+        contents[i] = splitre.findall(contents[i])
+
+    # now process line by line
+    l = []
+    positions = [0]*len(contents)
+    while 1:
+        l.append(format_line(columns, positions, contents, spacer,
+            collapse_whitespace))
+
+        # are we done?
+        for i in range(len(contents)):
+            if positions[i] < len(contents[i]):
+                break
+        else:
+            break
+    return '\n'.join(l)
+
+def wrap(text, width=75, alignment=LEFTN):
+    return format_columns(((width, alignment),), [text],
+        collapse_whitespace=False)
 
 # vim: set et sts=4 sw=4 :

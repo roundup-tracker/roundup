@@ -20,7 +20,7 @@ __docformat__ = 'restructuredtext'
 from __future__ import nested_scopes
 
 import sys, cgi, urllib, os, re, os.path, time, errno, mimetypes, csv
-import calendar
+import calendar, textwrap
 
 from roundup import hyperdb, date, support
 from roundup import i18n
@@ -1241,6 +1241,34 @@ class StringHTMLProperty(HTMLProperty):
             s = cgi.escape(str(self._value))
         else:
             s = str(self._value)
+        if hyperlink:
+            # no, we *must* escape this text
+            if not escape:
+                s = cgi.escape(s)
+            s = self.hyper_re.sub(self._hyper_repl, s)
+        return s
+
+    def wrapped(self, escape=1, hyperlink=1):
+        '''Render a "wrapped" representation of the property.
+
+        We wrap long lines at 80 columns on the nearest whitespace. Lines
+        with no whitespace are not broken to force wrapping.
+
+        Note that unlike plain() we default wrapped() to have the escaping
+        and hyperlinking turned on since that's the most common usage.
+
+        - "escape" turns on/off HTML quoting
+        - "hyperlink" turns on/off in-text hyperlinking of URLs, email
+          addresses and designators
+        '''
+        if not self.is_view_ok():
+            return self._('[hidden]')
+
+        if self._value is None:
+            return ''
+        s = support.wrap(str(self._value), width=80)
+        if escape:
+            s = cgi.escape(s)
         if hyperlink:
             # no, we *must* escape this text
             if not escape:
