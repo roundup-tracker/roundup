@@ -5,6 +5,8 @@ are given with the most recent entry first.
 Feature:
 - full timezone support (sf patch 1465296)
 - handle connection loss when responding to web requests
+- match incoming mail In-Reply-To against existing messages when no issue
+  id is specified in the Subject
 - added StringHTMLProperty wrapped() method to wrap long lines in issue
   display
 
