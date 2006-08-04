@@ -18,6 +18,10 @@ To start anew (a fresh demo instance)::
 
    python demo.py nuke
 
+Run demo.py from the *source* direcotyr; don't try to run demo.py from
+the *installed* directory, it will *break*.
+
+
 Installation
 ============
 For installation instructions, please see installation.txt in the "doc"
