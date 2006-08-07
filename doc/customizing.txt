@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.197 $
+:Version: $Revision: 1.198 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2086,6 +2086,12 @@ pretty      Date properties - render the date as "dd Mon YYYY" (eg. "19
 popcal      Generate a link to a popup calendar which may be used to
             edit the date field, for example::
 
+              <span tal:replace="structure context/due/popcal" />
+
+            you still need to include the ``field`` for the property, so
+            typically you'd have:
+
+              <span tal:replace="structure context/due/field" />
               <span tal:replace="structure context/due/popcal" />
 
 menu        only on Link and Multilink properties - render a form select

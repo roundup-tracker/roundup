@@ -32,7 +32,7 @@ Roundup requires python 2.3 or later for correct operation.
 
 To give Roundup a try, just download (see below), unpack and run::
 
-    python demo.py
+    roundup-demo
 
 Release info and download page:
      http://cheeseshop.python.org/pypi/roundup

@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 #
-# $Id: demo.py,v 1.24 2006-02-08 04:03:54 richard Exp $
+# $Id: demo.py,v 1.25 2006-08-07 07:15:05 richard Exp $
 
 import errno
 import os
@@ -101,8 +101,8 @@ def run_demo(home):
     %s
 1. Log in as "demo"/"demo" or "admin"/"admin".
 2. Hit Control-C to stop the server.
-3. Re-start the server by running "python demo.py" again.
-4. Re-initialise the server by running "python demo.py nuke".
+3. Re-start the server by running "roundup-demo" again.
+4. Re-initialise the server by running "roundup-demo nuke".
 ''' % url
 
     # disable command line processing in roundup_server

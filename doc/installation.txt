@@ -99,10 +99,7 @@ For The Really Impatient
 ========================
 
 If you just want to give Roundup a whirl Right Now, then simply run
-``python demo.py`` in the *source* directory (not the *installed*
-directory). If you used the Windows installer, you should run the
-``roundup-demo`` program instead. Users of other binary distributions or
-pre-installed Roundup will need to download the source to use it.
+``roundup-demo``.
 
 This will set up a simple demo tracker on your machine. [1]_
 When it's done, it'll print out a URL to point your web browser at
