@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.198 $
+:Version: $Revision: 1.199 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2089,7 +2089,7 @@ popcal      Generate a link to a popup calendar which may be used to
               <span tal:replace="structure context/due/popcal" />
 
             you still need to include the ``field`` for the property, so
-            typically you'd have:
+            typically you'd have::
 
               <span tal:replace="structure context/due/field" />
               <span tal:replace="structure context/due/popcal" />
