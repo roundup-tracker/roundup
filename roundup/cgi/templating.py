@@ -1513,10 +1513,13 @@ class DateHTMLProperty(HTMLProperty):
         return DateHTMLProperty(self._client, self._classname, self._nodeid,
             self._prop, self._formname, ret)
 
-    def field(self, size=30, default=None, format=_marker):
+    def field(self, size=30, default=None, format=_marker, popcal=True):
         '''Render a form edit field for the property
 
         If not editable, just display the value via plain().
+
+        If "popcal" then include the Javascript calendar editor.
+        Default=yes.
 
         The format string is a standard python strftime format string.
         '''
@@ -1566,7 +1569,10 @@ class DateHTMLProperty(HTMLProperty):
                 value = value.pretty(format)
 
         value = cgi.escape(str(value), 1)
-        return self.input(name=self._formname, value=value, size=size)
+        s = self.input(name=self._formname, value=value, size=size)
+        if popcal:
+            s += self.popcal()
+        return s
 
     def reldate(self, pretty=1):
         ''' Render the interval between the date and now.

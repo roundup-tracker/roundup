@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.199 $
+:Version: $Revision: 1.200 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2050,6 +2050,10 @@ field       render an appropriate form edit field for the property - for
               Sets the format of the date in the field - uses the same
               format string argument as supplied to the ``pretty`` method
               below.
+
+            popcal (Date properties only)
+              Include the Javascript-based popup calendar for date
+              selection. Defaults to on.
 
 stext       only on String properties - render the value of the property
             as StructuredText (requires the StructureText module to be

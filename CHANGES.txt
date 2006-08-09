@@ -9,6 +9,8 @@ Feature:
   id is specified in the Subject
 - added StringHTMLProperty wrapped() method to wrap long lines in issue
   display
+- include the popcal in Date field editing and search fields by default
+
 
 Fixed:
 - Verbose option for import and export (sf bug 1505645)

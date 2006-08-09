@@ -164,6 +164,12 @@ See issue.search.html in the classic template for examples.
                          name name">
 </td>
 
+<td metal:define-macro="search_date">
+  <input tal:attributes="value python:request.form.getvalue(name) or nothing;
+                         name name">
+  <a class="classhelp" tal:attributes="href python:'''javascript:help_window('issue?@template=calendar&property=%s&form=itemSynopsis', 300, 200)'''%name">(cal)</a>
+</td>
+
 <td metal:define-macro="search_popup">
   <!--
     context needs to specify the popup "columns" as a comma-separated
