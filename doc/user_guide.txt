@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.32 $
+:Version: $Revision: 1.33 $
 
 .. contents::
 
@@ -60,6 +60,31 @@ are not "resolved".
 
 If an issue is closed, and a new message is received then it'll be
 reopened to the state of "chatting".
+
+The full set of **prority** and **status** values are:
+
+=========== =====================================
+Priority    Description
+=========== =====================================
+"critical"  panic: work is stopped!
+"urgent"    important, but not deadly
+"bug"       lost work or incorrect results
+"feature"   want missing functionality
+"wish"      avoidable bugs, missing conveniences
+=========== =====================================
+
+============= =====================================
+Status        Description
+============= =====================================
+"unread"      submitted but no action yet
+"deferred"    intentionally set aside
+"chatting"    under review or seeking clarification
+"need-eg"     need a reproducible example of a bug
+"in-progress" understood; development in progress
+"testing"     we think it's done; others, please test
+"done-cbb"    okay for now, but could be better
+"resolved"    fix has been released
+============= =====================================
 
 
 Entering values in your Tracker
