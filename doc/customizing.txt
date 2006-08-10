@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.200 $
+:Version: $Revision: 1.201 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -3291,6 +3291,16 @@ be able to give a summary of the total time spent on a particular issue.
 
    Note that we automatically get the date of the time log entry
    creation through the standard property "creation".
+
+   You will need to grant "Creation" permission to the users who are
+   allowed to add timelog entries. You may do this with:
+
+    db.security.addPermissionToRole('User', 'Create', 'timelog')
+    db.security.addPermissionToRole('User', 'View', 'timelog')
+
+   If users are also able to *edit* timelog entries, then also include:
+
+    db.security.addPermissionToRole('User', 'Edit', 'timelog')
 
 2. Link to the new class from your issue class (again, in
    ``schema.py``)::
