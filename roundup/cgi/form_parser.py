@@ -281,7 +281,7 @@ class FormParser:
                     m = self.FV_DESIGNATOR.match(entry)
                     if not m:
                         raise FormError, self._('link "%(key)s" '
-                            'value "%(value)s" not a designator') % locals()
+                            'value "%(entry)s" not a designator') % locals()
                     value.append((m.group(1), m.group(2)))
 
                 # make sure the link property is valid
