@@ -24,6 +24,7 @@ Fixed:
 - updated ZRoundup for Zope 2.9 (sf patch 1511734)
 - fix timelog example in customisation doc to mention permissions
 - nicer listing of Superseder links (sf non-patch 1497767)
+- include roundup-server.ini.example (sf bug 1493859)
 
 
 2006-04-27 1.1.2
