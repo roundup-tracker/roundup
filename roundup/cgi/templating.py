@@ -2511,7 +2511,7 @@ class TemplatingUtils:
 
     def html_quote(self, html):
         '''HTML-quote the supplied text.'''
-        return cgi.escape(url)
+        return cgi.escape(html)
 
     def __getattr__(self, name):
         '''Try the tracker's templating_utils.'''
