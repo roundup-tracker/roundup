@@ -14,7 +14,10 @@ additionally install:
 1. PostgreSQL 7.x - http://www.postgresql.org/
 
 2. The psycopg python interface to PostgreSQL:
-   http://initd.org/software/initd/psycopg
+
+     http://initd.org/software/initd/psycopg
+
+   It is recommended that you use at least version 1.1.21
 
 Some advice on setting up the postgresql backend may be found at:
 
