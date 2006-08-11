@@ -2213,8 +2213,7 @@ class HTMLRequest(HTMLInputMixin):
             # dispname should be encoded to the web interface's charset,
             # but the web interface rendering will be expecting a unicode
             # string
-            charset = self.client.charset
-            self.dispname = value.decode('utf8')
+            self.dispname = value.decode(self.client.charset)
 
     def updateFromURL(self, url):
         ''' Parse the URL for query args, and update my attributes using the
