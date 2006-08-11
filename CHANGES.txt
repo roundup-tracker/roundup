@@ -31,6 +31,8 @@ Fixed:
 - fix error during mailgw bouncing message (sf bug 1413501)
 - hyperdb handling of empty raw values for Multilink and Password (sf bug
   1507814)
+- don't int() ids (sf bug 1512939)
+- fix importing into anydbm backend (sf bug 1512939)
 
 
 2006-04-27 1.1.2

@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.103 2006-08-11 05:00:19 richard Exp $
+# $Id: admin.py,v 1.104 2006-08-11 05:10:15 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -1054,7 +1054,7 @@ Erase it? Y/N: """))
                 raise UsageError, _('no such %(classname)s node "%(nodeid)s"')%locals()
         return 0
 
-    def do_export(self, args):
+    def do_export(self, args, export_files=True):
         ""'''Usage: export [[-]class[,class]] export_dir
         Export the database to colon-separated-value files.
         To exclude the files (e.g. for the msg or file class),
@@ -1094,6 +1094,10 @@ Erase it? Y/N: """))
         for classname in classes:
             cl = self.get_class(classname)
 
+            if not export_files and hasattr(cl, 'export_files'):
+                sys.stdout.write('Exporting %s WITHOUT the files\r\n'%
+                    classname)
+
             f = open(os.path.join(dir, classname+'.csv'), 'wb')
             writer = csv.writer(f, colon_separated)
 
@@ -1112,11 +1116,14 @@ Erase it? Y/N: """))
                     sys.stdout.write('Exporting %s - %s\r'%(classname, nodeid))
                     sys.stdout.flush()
                 writer.writerow(cl.export_list(propnames, nodeid))
-                if hasattr(cl, 'export_files'):
+                if export_files and hasattr(cl, 'export_files'):
                     cl.export_files(dir, nodeid)
 
             # close this file
             f.close()
+
+            # export the journals
+            jf = open(os.path.join(dir, classname+'-journals.csv'), 'wb')
             if self.verbose:
                 sys.stdout.write("\nExporting Journal for %s\n" % classname)
                 sys.stdout.flush()
@@ -1138,69 +1145,7 @@ Erase it? Y/N: """))
         colon-separated-value files that are placed in the nominated
         destination directory.
         '''
-        # grab the directory to export to
-        if len(args) < 1:
-            raise UsageError, _('Not enough arguments supplied')
-
-        dir = args[-1]
-
-        # get the list of classes to export
-        if len(args) == 2:
-            if args[0].startswith('-'):
-                classes = [ c for c in self.db.classes.keys()
-                            if not c in args[0][1:].split(',') ]
-            else:
-                classes = args[0].split(',')
-        else:
-            classes = self.db.classes.keys()
-
-        class colon_separated(csv.excel):
-            delimiter = ':'
-
-        # make sure target dir exists
-        if not os.path.exists(dir):
-            os.makedirs(dir)
-
-        # do all the classes specified
-        for classname in classes:
-            cl = self.get_class(classname)
-            if hasattr(cl, 'export_files'):
-                sys.stdout.write('Exporting %s WITHOUT the files\r\n' % classname)
-
-            f = open(os.path.join(dir, classname+'.csv'), 'wb')
-            writer = csv.writer(f, colon_separated)
-
-            properties = cl.getprops()
-            propnames = cl.export_propnames()
-            fields = propnames[:]
-            fields.append('is retired')
-            writer.writerow(fields)
-
-            # all nodes for this class
-            for nodeid in cl.getnodeids():
-                if self.verbose:
-                    sys.stdout.write('Exporting %s - %s\r'%(classname, nodeid))
-                    sys.stdout.flush()
-                writer.writerow(cl.export_list(propnames, nodeid))
-
-            # close this file
-            f.close()
-
-            # export the journals
-            jf = open(os.path.join(dir, classname+'-journals.csv'), 'wb')
-            if self.verbose:
-                sys.stdout.write("\nExporting Journal for %s\n" % classname)
-                sys.stdout.flush()
-
-            # export the journals
-            jf = open(os.path.join(dir, classname+'-journals.csv'), 'wb')
-            if self.verbose:
-                sys.stdout.write("\nExporting Journal for %s\n" % classname)
-                sys.stdout.flush()
-            journals = csv.writer(jf, colon_separated)
-            map(journals.writerow, cl.export_journals())
-            jf.close()
-        return 0
+        return self.do_export(args, export_files=False)
 
     def do_import(self, args):
         ""'''Usage: import import_dir
@@ -1257,10 +1202,10 @@ Erase it? Y/N: """))
                     sys.stdout.flush()
 
                 # do the import and figure the current highest nodeid
-                nodeid = int(cl.import_list(file_props, r))
+                nodeid = cl.import_list(file_props, r)
                 if hasattr(cl, 'import_files'):
                     cl.import_files(dir, nodeid)
-                maxid = max(maxid, nodeid)
+                maxid = max(maxid, int(nodeid))
             print
             f.close()
 
