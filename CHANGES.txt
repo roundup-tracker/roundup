@@ -21,6 +21,7 @@ Fixed:
 - update for latest version of pysqlite (sf bug 1487098; patch 1534227)
 - updated ZRoundup for Zope 2.9 (sf patch 1511734)
 - fix timelog example in customisation doc to mention permissions
+- nicer listing of Superseder links (sf non-patch 1497767)
 
 
 2006-04-27 1.1.2

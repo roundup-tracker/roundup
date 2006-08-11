@@ -52,9 +52,11 @@
  <td>
   <span tal:replace="structure python:context.superseder.field(showid=1, size=20)" />
   <span tal:condition="context/is_edit_ok" tal:replace="structure python:db.issue.classhelp('id,title', property='superseder')" />
-  <span tal:condition="context/superseder" tal:repeat="sup context/superseder">
-   <br><span i18n:translate="">View: <a i18n:name="link" tal:content="sup/id"
-     tal:attributes="href string:issue${sup/id}"></a></span>
+  <span tal:condition="context/superseder">
+   <br><span i18n:translate="">View:</span>
+     <a tal:repeat="sup context/superseder"
+        tal:content="python:sup['id'] + ', '*(not repeat['sup'].end)"
+        tal:attributes="href string:issue${sup/id}"></a>
   </span>
  </td>
  <th i18n:translate="">Nosy List</th>
