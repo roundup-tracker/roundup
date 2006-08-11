@@ -1,4 +1,4 @@
-#$Id: back_postgresql.py,v 1.31 2006-01-20 02:27:12 richard Exp $
+#$Id: back_postgresql.py,v 1.32 2006-08-11 00:44:00 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -10,7 +10,10 @@
 __docformat__ = 'restructuredtext'
 
 import os, shutil, popen2, time
-import psycopg
+try:
+    import psycopg
+except:
+    import psycopg2 as psycopg
 import logging
 
 from roundup import hyperdb, date
