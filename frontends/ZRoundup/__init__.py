@@ -14,9 +14,9 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.4 2002-10-10 03:47:27 richard Exp $
+# $Id: __init__.py,v 1.5 2006-08-11 00:04:29 richard Exp $
 #
-__version__='1.0'
+__version__='1.1'
 
 import os
 # figure where ZRoundup is installed
@@ -37,12 +37,13 @@ if here is None:
             raise ValueError, "Can't determine where ZRoundup is installed"
 
 # product initialisation
-import ZRoundup
+from ZRoundup import ZRoundup, manage_addZRoundupForm, manage_addZRoundup
 def initialize(context):
     context.registerClass(
-        ZRoundup, meta_type = 'Z Roundup',
+        ZRoundup,
+        meta_type = 'Z Roundup',
         constructors = (
-            ZRoundup.manage_addZRoundupForm, ZRoundup.manage_addZRoundup
+            manage_addZRoundupForm, manage_addZRoundup
         )
     )
 

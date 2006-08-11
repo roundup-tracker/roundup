@@ -18,6 +18,7 @@ Fixed:
 - '?' in rfc2822-encoded header isn't quoted (sf bug 1505663)
 - fix error message in form parser
 - update for latest version of pysqlite (sf bug 1487098; patch 1534227)
+- updated ZRoundup for Zope 2.9 (sf patch 1511734)
 
 
 2006-04-27 1.1.2
