@@ -284,6 +284,17 @@ class FormParser:
                             'value "%(entry)s" not a designator') % locals()
                     value.append((m.group(1), m.group(2)))
 
+                    # get details of linked class
+                    lcn = m.group(1)
+                    lcl = self.db.classes[lcn]
+                    lnodeid = m.group(2)
+                    if not all_propdef.has_key(lcn):
+                        all_propdef[lcn] = lcl.getprops()
+                    if not all_props.has_key((lcn, lnodeid)):
+                        all_props[(lcn, lnodeid)] = {}
+                    if not got_props.has_key((lcn, lnodeid)):
+                        got_props[(lcn, lnodeid)] = {}
+
                 # make sure the link property is valid
                 if (not isinstance(propdef[propname], hyperdb.Multilink) and
                         not isinstance(propdef[propname], hyperdb.Link)):
@@ -296,7 +307,19 @@ class FormParser:
 
             # detect the special ":required" variable
             if d['required']:
-                all_required[this] = self.extractFormList(form[key])
+                for entry in self.extractFormList(form[key]):
+                    m = self.FV_SPECIAL.match(entry)
+                    if not m:
+                        raise FormError, self._('The form action claims to '
+                            'require property "%(property)s" '
+                            'which doesn\'t exist') % {
+                            'property':propname}
+                    if m.group('classname'):
+                        this = (m.group('classname'), m.group('id'))
+                        entry = m.group('propname')
+                    if not all_required.has_key(this):
+                        all_required[this] = []
+                    all_required[this].append(entry)
                 continue
 
             # see if we're performing a special multilink action

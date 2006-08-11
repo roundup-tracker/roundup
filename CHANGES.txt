@@ -10,6 +10,8 @@ Feature:
 - added StringHTMLProperty wrapped() method to wrap long lines in issue
   display
 - include the popcal in Date field editing and search fields by default
+- @required in forms may now specify properties of linked items (sf patch
+  1507093)
 
 
 Fixed:

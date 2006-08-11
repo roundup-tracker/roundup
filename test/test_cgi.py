@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.27 2006-01-25 02:24:28 richard Exp $
+# $Id: test_cgi.py,v 1.28 2006-08-11 00:18:59 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
@@ -152,6 +152,10 @@ class FormTestCase(unittest.TestCase):
             {':required': 'status', 'status':''}, 'issue')
         self.assertRaises(FormError, self.parseForm,
             {':required': 'nosy', 'nosy':''}, 'issue')
+        self.assertRaises(FormError, self.parseForm,
+            {':required': 'msg-1@content', 'msg-1@content':''}, 'issue')
+        self.assertRaises(FormError, self.parseForm,
+            {':required': 'msg-1@content'}, 'issue')
 
     #
     # Nonexistant edit

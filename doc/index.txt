@@ -150,6 +150,7 @@ Alexander Smishlajev,
 Nathaniel Smith,
 Maciej Starzyk,
 Mitchell Surface,
+Jon C. Thomason
 Mike Thompson,
 Michael Twomey,
 Karl Ulbrich,
