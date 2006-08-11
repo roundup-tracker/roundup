@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.176 2006-08-03 00:50:06 richard Exp $
+$Id: mailgw.py,v 1.177 2006-08-11 01:41:25 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -535,19 +535,7 @@ class MailGW:
             # just inform the user that he is not authorized
             m = ['']
             m.append(str(value))
-            try:
-                self.mailer.bounce_message(message, [sendto[0][1]], m)
-            except MessageSendError, error:
-                # if the only reason the bounce failed is because of
-                # invalid addresses to bounce the message back to, then
-                # just discard the message - it's just not worth bothering
-                # with (most likely spam / otherwise forged)
-                invalid = True
-                for address, (code, reason) in error.keys():
-                    if code != 550:
-                        invalid = False
-                if not invalid:
-                    raise
+            self.mailer.bounce_message(message, [sendto[0][1]], m)
         except IgnoreMessage:
             # do not take any action
             # this exception is thrown when email should be ignored

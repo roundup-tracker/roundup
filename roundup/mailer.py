@@ -1,7 +1,7 @@
 """Sending Roundup-specific mail over SMTP.
 """
 __docformat__ = 'restructuredtext'
-# $Id: mailer.py,v 1.17 2006-02-21 05:48:23 a1s Exp $
+# $Id: mailer.py,v 1.18 2006-08-11 01:41:25 richard Exp $
 
 import time, quopri, os, socket, smtplib, re, sys, traceback
 
@@ -141,7 +141,14 @@ class Mailer:
 
         writer.lastpart()
 
-        self.smtp_send(to, message)
+        try:
+            self.smtp_send(to, message)
+        except MessageSendError:
+            # squash mail sending errors when bouncing mail
+            # TODO this *could* be better, as we could notify admin of the
+            # problem (even though the vast majority of bounce errors are
+            # because of spam)
+            pass
 
     def exception_message(self):
         '''Send a message to the admins with information about the latest
