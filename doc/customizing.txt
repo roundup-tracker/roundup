@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.202 $
+:Version: $Revision: 1.203 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -3385,6 +3385,32 @@ be able to give a summary of the total time spent on a particular issue.
    ``mod_python`` for example - then you'll need to restart that to pick up
    the code changes. When that's done, you'll be able to use the new
    time logging interface.
+
+An extension of this modification attaches the timelog entries to any
+change message entered at the time of the timelog entry:
+
+1. Add a link to the timelog to the msg class:
+
+    msg = FileClass(db, "msg",
+                    author=Link("user", do_journal='no'),
+                    recipients=Multilink("user", do_journal='no'),
+                    date=Date(),
+                    summary=String(),
+                    files=Multilink("file"),
+                    messageid=String(),
+                    inreplyto=String()
+                    times=Multilink("timelog"))
+
+2. Add a new hidden field that links that new timelog item (new
+   because it's marked as having id "-1") to the new message.
+   It looks like this::
+ 
+      <input type="hidden" name="msg-1@link@times" value="timelog-1" />
+ 
+   The "times" property of the message will have the new id added to it.
+
+3. Add the timelog listing from step 5. to the ``msg.item.html`` template
+   so that the timelog entry appears on the message view page.
 
 
 Tracking different types of issues

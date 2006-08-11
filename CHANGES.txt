@@ -13,7 +13,6 @@ Feature:
 - @required in forms may now specify properties of linked items (sf patch
   1507093)
 
-
 Fixed:
 - Verbose option for import and export (sf bug 1505645)
 - -c option for roundup-mailgw won't accept parameter (sf bug 1505649)
@@ -21,6 +20,7 @@ Fixed:
 - fix error message in form parser
 - update for latest version of pysqlite (sf bug 1487098; patch 1534227)
 - updated ZRoundup for Zope 2.9 (sf patch 1511734)
+- fix timelog example in customisation doc to mention permissions
 
 
 2006-04-27 1.1.2
