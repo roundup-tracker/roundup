@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.102 2006-07-17 14:47:23 schlatterbeck Exp $
+# $Id: admin.py,v 1.103 2006-08-11 05:00:19 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -1055,10 +1055,13 @@ Erase it? Y/N: """))
         return 0
 
     def do_export(self, args):
-        ""'''Usage: export [class[,class]] export_dir
+        ""'''Usage: export [[-]class[,class]] export_dir
         Export the database to colon-separated-value files.
+        To exclude the files (e.g. for the msg or file class),
+        use the exporttables command.
 
-        Optionally limit the export to just the names classes.
+        Optionally limit the export to just the named classes
+        or exclude the named classes, if the 1st argument starts with '-'.
 
         This action exports the current data from the database into
         colon-separated-value files that are placed in the nominated
@@ -1072,7 +1075,11 @@ Erase it? Y/N: """))
 
         # get the list of classes to export
         if len(args) == 2:
-            classes = args[0].split(',')
+            if args[0].startswith('-'):
+                classes = [ c for c in self.db.classes.keys()
+                            if not c in args[0][1:].split(',') ]
+            else:
+                classes = args[0].split(',')
         else:
             classes = self.db.classes.keys()
 
@@ -1101,12 +1108,89 @@ Erase it? Y/N: """))
                 if self.verbose:
                     sys.stdout.write('Exporting %s - %s\r'%(classname, nodeid))
                     sys.stdout.flush()
+                if self.verbose:
+                    sys.stdout.write('Exporting %s - %s\r'%(classname, nodeid))
+                    sys.stdout.flush()
                 writer.writerow(cl.export_list(propnames, nodeid))
                 if hasattr(cl, 'export_files'):
                     cl.export_files(dir, nodeid)
 
             # close this file
             f.close()
+            if self.verbose:
+                sys.stdout.write("\nExporting Journal for %s\n" % classname)
+                sys.stdout.flush()
+            journals = csv.writer(jf, colon_separated)
+            map(journals.writerow, cl.export_journals())
+            jf.close()
+        return 0
+
+    def do_exporttables(self, args):
+        ""'''Usage: exporttables [[-]class[,class]] export_dir
+        Export the database to colon-separated-value files, excluding the
+        files below $TRACKER_HOME/db/files/ (which can be archived separately).
+        To include the files, use the export command.
+
+        Optionally limit the export to just the named classes
+        or exclude the named classes, if the 1st argument starts with '-'.
+
+        This action exports the current data from the database into
+        colon-separated-value files that are placed in the nominated
+        destination directory.
+        '''
+        # grab the directory to export to
+        if len(args) < 1:
+            raise UsageError, _('Not enough arguments supplied')
+
+        dir = args[-1]
+
+        # get the list of classes to export
+        if len(args) == 2:
+            if args[0].startswith('-'):
+                classes = [ c for c in self.db.classes.keys()
+                            if not c in args[0][1:].split(',') ]
+            else:
+                classes = args[0].split(',')
+        else:
+            classes = self.db.classes.keys()
+
+        class colon_separated(csv.excel):
+            delimiter = ':'
+
+        # make sure target dir exists
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+
+        # do all the classes specified
+        for classname in classes:
+            cl = self.get_class(classname)
+            if hasattr(cl, 'export_files'):
+                sys.stdout.write('Exporting %s WITHOUT the files\r\n' % classname)
+
+            f = open(os.path.join(dir, classname+'.csv'), 'wb')
+            writer = csv.writer(f, colon_separated)
+
+            properties = cl.getprops()
+            propnames = cl.export_propnames()
+            fields = propnames[:]
+            fields.append('is retired')
+            writer.writerow(fields)
+
+            # all nodes for this class
+            for nodeid in cl.getnodeids():
+                if self.verbose:
+                    sys.stdout.write('Exporting %s - %s\r'%(classname, nodeid))
+                    sys.stdout.flush()
+                writer.writerow(cl.export_list(propnames, nodeid))
+
+            # close this file
+            f.close()
+
+            # export the journals
+            jf = open(os.path.join(dir, classname+'-journals.csv'), 'wb')
+            if self.verbose:
+                sys.stdout.write("\nExporting Journal for %s\n" % classname)
+                sys.stdout.flush()
 
             # export the journals
             jf = open(os.path.join(dir, classname+'-journals.csv'), 'wb')

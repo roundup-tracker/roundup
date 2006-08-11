@@ -14,7 +14,8 @@ Feature:
   1507093)
 - update for latest version of pysqlite (sf bug 1487098; patch 1534227)
 - update for latest version of psycopg2 (sf patch 1429391)
-
+- new "exporttables" command in roundup-admin (sf bug 1533791)
+- roundup-admin "export" may specify classes to exclude (sf bug 1533791)
 
 Fixed:
 - Verbose option for import and export (sf bug 1505645)
