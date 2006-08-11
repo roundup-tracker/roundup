@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.44 2006-04-27 04:59:37 richard Exp $
+# $Id: back_sqlite.py,v 1.45 2006-08-11 00:02:12 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -13,7 +13,10 @@ import os, base64, marshal, shutil, time, logging
 
 from roundup import hyperdb, date, password
 from roundup.backends import rdbms_common
-import sqlite
+try:
+    import sqlite
+except ImportError:
+    from pysqlite2 import dbapi2 as sqlite
 
 def db_exists(config):
     return os.path.exists(os.path.join(config.DATABASE, 'db'))
