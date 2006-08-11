@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.104 2006-08-11 05:10:15 richard Exp $
+# $Id: admin.py,v 1.105 2006-08-11 05:13:06 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -343,16 +343,16 @@ Command help:
         print _('Back ends:'), ', '.join(backends)
 
     def do_install(self, tracker_home, args):
-        ""'''Usage: install [template [backend [admin password [key=val[,key=val]]]]]
+        ""'''Usage: install [template [backend [key=val[,key=val]]]]
         Install a new Roundup tracker.
 
         The command will prompt for the tracker home directory
         (if not supplied through TRACKER_HOME or the -i option).
-        The template, backend and admin password may be specified
-        on the command-line as arguments, in that order.
+        The template and backend may be specified on the command-line
+        as arguments, in that order.
 
-        The last command line argument allows to pass initial values
-        for config options.  For example, passing
+        Command line arguments following the backend allows you to
+        pass initial values for config options.  For example, passing
         "web_http_auth=no,rdbms_user=dinsdale" will override defaults
         for options http_auth in section [web] and user in section [rdbms].
         Please be careful to not use spaces in this argument! (Enclose

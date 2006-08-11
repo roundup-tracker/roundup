@@ -33,6 +33,7 @@ Fixed:
   1507814)
 - don't int() ids (sf bug 1512939)
 - fix importing into anydbm backend (sf bug 1512939)
+- fix help message for roundup-admin install (sf bug 1494990)
 
 
 2006-04-27 1.1.2
