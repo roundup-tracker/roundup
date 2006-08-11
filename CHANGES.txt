@@ -26,6 +26,7 @@ Fixed:
 - nicer listing of Superseder links (sf non-patch 1497767)
 - include roundup-server.ini.example (sf bug 1493859)
 - dumb bug in cgi templating utils (sf bug 1490176)
+- handle unicode in query names (sf bug 1495702)
 
 
 2006-04-27 1.1.2
