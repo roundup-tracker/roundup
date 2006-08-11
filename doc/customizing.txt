@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.203 $
+:Version: $Revision: 1.204 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2829,28 +2829,28 @@ Schema changes are automatically applied to the database on the next
 tracker access (note that roundup-server would need to be restarted as it
 caches the schema).
 
-1. modify the schema::
+1. modify the ``schema.py``::
 
     issue = IssueClass(db, "issue", 
                     assignedto=Link("user"), topic=Multilink("keyword"),
                     priority=Link("priority"), status=Link("status"),
                     due_date=Date())
 
-2. add an edit field to the issue.item.html template::
+2. add an edit field to the ``issue.item.html`` template::
 
     <tr> 
      <th>Due Date</th> 
      <td tal:content="structure context/due_date/field" /> 
     </tr> 
 
-3. add the property to the issue.index.html page::
+3. add the property to the ``issue.index.html`` page::
 
     (in the heading row)
       <th tal:condition="request/show/due_date">Due Date</th>
     (in the data row)
       <td tal:condition="request/show/due_date" tal:content="i/due_date" />
 
-4. add the property to the issue.search.html page::
+4. add the property to the ``issue.search.html`` page::
 
      <tr tal:define="name string:due_date">
        <th i18n:translate="">Due Date:</th>
@@ -2859,6 +2859,11 @@ caches the schema).
        <td metal:use-macro="sort_input"></td>
        <td metal:use-macro="group_input"></td>
      </tr>
+
+5. if you wish for the due date to appear in the standard views listed
+    in the sidebar of the web interface then you'll need to add "due_date"
+    to the list of @columns in the links in the sidebar section of
+    ``page.html``.
 
 
 Adding a new constrained field to the classic schema
