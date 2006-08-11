@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_hyperdbvals.py,v 1.1 2003-11-11 00:35:14 richard Exp $
+# $Id: test_hyperdbvals.py,v 1.2 2006-08-11 04:50:24 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re, sha
 
@@ -59,16 +59,20 @@ class RawToHyperdbTest(unittest.TestCase):
         return hyperdb.rawToHyperdb(TestDatabase(), TestClass(), itemid,
             propname, value)
     def testString(self):
+        self.assertEqual(self._test('password', ''), None)
         self.assertEqual(self._test('string', '  a string '), 'a string')
     def testNumber(self):
+        self.assertEqual(self._test('password', ''), None)
         self.assertEqual(self._test('number', '  10 '), 10)
         self.assertEqual(self._test('number', '  1.5 '), 1.5)
     def testBoolean(self):
+        self.assertEqual(self._test('password', ''), None)
         for true in 'yes true on 1'.split():
             self.assertEqual(self._test('boolean', '  %s '%true), 1)
         for false in 'no false off 0'.split():
             self.assertEqual(self._test('boolean', '  %s '%false), 0)
     def testPassword(self):
+        self.assertEqual(self._test('password', ''), None)
         self.assertEqual(self._test('password', '  a string '), 'a string')
         val = self._test('password', '  a string ')
         self.assert_(isinstance(val, password.Password))
@@ -83,6 +87,7 @@ class RawToHyperdbTest(unittest.TestCase):
         self.assertRaises(hyperdb.HyperdbValueError, self._test,
             'password', '{fubar}a string')
     def testDate(self):
+        self.assertEqual(self._test('password', ''), None)
         val = self._test('date', ' 2003-01-01  ')
         self.assert_(isinstance(val, date.Date))
         val = self._test('date', ' 2003/01/01  ')
@@ -94,16 +99,19 @@ class RawToHyperdbTest(unittest.TestCase):
         self.assertRaises(hyperdb.HyperdbValueError, self._test, 'date',
             'fubar')
     def testInterval(self):
+        self.assertEqual(self._test('password', ''), None)
         val = self._test('interval', ' +1d  ')
         self.assert_(isinstance(val, date.Interval))
         self.assertRaises(hyperdb.HyperdbValueError, self._test, 'interval',
             'fubar')
     def testLink(self):
+        self.assertEqual(self._test('password', ''), None)
         self.assertEqual(self._test('link', '1'), '1')
         self.assertEqual(self._test('link', 'valid'), '1')
         self.assertRaises(hyperdb.HyperdbValueError, self._test, 'link',
             'invalid')
     def testMultilink(self):
+        self.assertEqual(self._test('password', ''), [])
         self.assertEqual(self._test('multilink', '', '1'), [])
         self.assertEqual(self._test('multilink', '1', '1'), ['1'])
         self.assertEqual(self._test('multilink', 'valid', '1'), ['1'])

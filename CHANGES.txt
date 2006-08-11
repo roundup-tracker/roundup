@@ -28,6 +28,8 @@ Fixed:
 - dumb bug in cgi templating utils (sf bug 1490176)
 - handle unicode in query names (sf bug 1495702)
 - fix error during mailgw bouncing message (sf bug 1413501)
+- hyperdb handling of empty raw values for Multilink and Password (sf bug
+  1507814)
 
 
 2006-04-27 1.1.2

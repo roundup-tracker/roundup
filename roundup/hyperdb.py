@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: hyperdb.py,v 1.122 2006-07-13 10:14:56 schlatterbeck Exp $
+# $Id: hyperdb.py,v 1.123 2006-08-11 04:50:24 richard Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -48,6 +48,8 @@ class Password:
         ' more useful for dumps '
         return '<%s>'%self.__class__
     def from_raw(self, value, **kw):
+        if not value:
+            return None
         m = password.Password.pwre.match(value)
         if m:
             # password is being given to us encrypted
@@ -136,6 +138,9 @@ class Multilink:
         ' more useful for dumps '
         return '<%s to "%s">'%(self.__class__, self.classname)
     def from_raw(self, value, db, klass, propname, itemid, **kw):
+        if not value:
+            return []
+
         # get the current item value if it's not a new item
         if itemid and not itemid.startswith('-'):
             curvalue = klass.get(itemid, propname)
@@ -905,15 +910,11 @@ def rawToHyperdb(db, klass, itemid, propname, value, **kw):
     # if we got a string, strip it now
     if isinstance(value, type('')):
         value = value.strip()
+
     # convert the input value to a real property value
-    value = proptype.from_raw \
-        ( value
-        , db = db
-        , klass = klass
-        , propname = propname
-        , itemid = itemid
-        , **kw
-        )
+    value = proptype.from_raw(value, db=db, klass=klass,
+        propname=propname, itemid=itemid, **kw)
+
     return value
 
 class FileClass:
