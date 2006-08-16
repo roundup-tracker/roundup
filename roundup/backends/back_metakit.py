@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.109 2006-07-08 18:28:18 schlatterbeck Exp $
+# $Id: back_metakit.py,v 1.110 2006-08-16 19:00:47 schlatterbeck Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -46,7 +46,7 @@ import logging
 import metakit
 from sessions_dbm import Sessions, OneTimeKeys
 import re, marshal, os, sys, time, calendar, shutil
-from indexer_common import Indexer
+from indexer_common import Indexer as CommonIndexer
 import locking
 from roundup.date import Range
 from blobfiles import files_in_dir
@@ -1912,7 +1912,7 @@ class FileClass(hyperdb.FileClass, Class):
             f.close()
 
             if self.properties['content'].indexme:
-                mimetype = self.get('type', self.default_mime_type)
+                mimetype = propvalues.get('type', self.default_mime_type)
                 self.db.indexer.add_text((self.classname, itemid, 'content'),
                     content, mimetype)
 
@@ -1961,8 +1961,9 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 CURVERSION = 2
 
-class MetakitIndexer(Indexer):
+class MetakitIndexer(CommonIndexer):
     def __init__(self, db):
+        CommonIndexer.__init__(self, db)
         self.path = os.path.join(db.config.DATABASE, 'index.mk4')
         self.db = metakit.storage(self.path, 1)
         self.datadb = db._db
