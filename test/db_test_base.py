@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.72 2006-07-13 13:30:39 schlatterbeck Exp $
+# $Id: db_test_base.py,v 1.73 2006-08-17 09:32:46 schlatterbeck Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
@@ -928,6 +928,8 @@ class DBTest(MyTestCase):
                 {'username': 'blorp', 'age': 2}):
             self.db.user.create(**user)
         iss = self.db.issue
+        file_content = ''.join([chr(i) for i in range(255)])
+        f = self.db.file.create(content=file_content)
         for issue in (
                 {'title': 'issue one', 'status': '2', 'assignedto': '1',
                     'foo': date.Interval('1:10'), 'priority': '3',
@@ -939,10 +941,9 @@ class DBTest(MyTestCase):
                     'nosy': ['1','2'], 'deadline': date.Date('2003-02-18')},
                 {'title': 'non four', 'status': '3',
                     'foo': date.Interval('0:10'), 'priority': '2',
-                    'nosy': ['1'], 'deadline': date.Date('2004-03-08')}):
+                    'nosy': ['1'], 'deadline': date.Date('2004-03-08'),
+                    'files': [f]}):
             self.db.issue.create(**issue)
-        file_content = ''.join([chr(i) for i in range(255)])
-        self.db.file.create(content=file_content)
         self.db.commit()
         return self.assertEqual, self.db.issue.filter
 
@@ -983,6 +984,14 @@ class DBTest(MyTestCase):
             ['3','4'])
         ae(filt(None, {'assignedto': ['1', None]}, ('+','id'), (None,None)),
             ['1', '3','4'])
+
+    def testFilteringMultilinkAndGroup(self):
+        """testFilteringMultilinkAndGroup:
+        See roundup Bug 1541128: apparently grouping by something and
+        searching a Multilink failed with MySQL 5.0
+        """
+        ae, filt = self.filteringSetup()
+        ae(filt(None, {'files': '1'}, ('-','activity'), ('+','status')), ['4'])
 
     def testFilteringRetired(self):
         ae, filt = self.filteringSetup()
@@ -1056,6 +1065,15 @@ class DBTest(MyTestCase):
         ae, filt = self.filteringSetup()
         ae(filt(None, {}, ('+','nosy'), (None,None)), ['1', '2', '4', '3'])
         ae(filt(None, {}, ('-','nosy'), (None,None)), ['3', '4', '1', '2'])
+
+    def testFilteringMultilinkSortGroup(self):
+        # 1: status: 2 "in-progress" nosy: []
+        # 2: status: 1 "unread"      nosy: []
+        # 3: status: 1 "unread"      nosy: ['1','2']
+        # 4: status: 3 "testing"     nosy: ['1']
+        ae, filt = self.filteringSetup()
+        ae(filt(None, {}, ('+','nosy'), ('+','status')), ['1', '4', '2', '3'])
+        ae(filt(None, {}, ('-','nosy'), ('+','status')), ['1', '4', '3', '2'])
 
     def testFilteringLinkSortGroup(self):
         # 1: status: 2, priority: 3
