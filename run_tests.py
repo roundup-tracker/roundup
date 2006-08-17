@@ -184,6 +184,8 @@ class ImmediateTestResult(unittest._TextTestResult):
         self._progressWithNames = 0
         self._count = count
         self._testtimes = {}
+        # docstrings for tests don't override test-descriptions:
+        self.descriptions = False
         if progress and verbosity == 1:
             self.dots = 0
             self._progressWithNames = 1
