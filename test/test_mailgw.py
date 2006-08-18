@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.77 2006-03-02 23:45:23 richard Exp $
+# $Id: test_mailgw.py,v 1.78 2006-08-18 01:31:38 richard Exp $
 
 # TODO: test bcc
 
@@ -368,7 +368,6 @@ _______________________________________________________________________
 From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <followup_dummy_id>
-In-Reply-To: <dummy_test_message_id>
 Subject: Re: Testing... [assignedto=mary; nosy=+john]
 
 This is a followup
@@ -412,13 +411,12 @@ _______________________________________________________________________
 From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <followup_dummy_id>
-In-Reply-To: <dummy_test_message_id>
 Subject: Re: Testing...
 
 This is a followup
 '''), nodeid)
 
-    def testFollowupTitleMatchNever(self):
+    def testFollowupTitleMatchNeverInterval(self):
         nodeid = self.doNewIssue()
         # force failure of the interval
         time.sleep(2)
@@ -428,7 +426,6 @@ This is a followup
 From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <followup_dummy_id>
-In-Reply-To: <dummy_test_message_id>
 Subject: Re: Testing...
 
 This is a followup
@@ -440,7 +437,6 @@ This is a followup
 From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <followup_dummy_id>
-In-Reply-To: <dummy_test_message_id>
 Subject: Re: Testing...
 
 This is a followup
