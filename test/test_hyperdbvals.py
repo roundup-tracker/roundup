@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_hyperdbvals.py,v 1.2 2006-08-11 04:50:24 richard Exp $
+# $Id: test_hyperdbvals.py,v 1.3 2006-08-18 01:26:19 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re, sha
 
@@ -111,7 +111,6 @@ class RawToHyperdbTest(unittest.TestCase):
         self.assertRaises(hyperdb.HyperdbValueError, self._test, 'link',
             'invalid')
     def testMultilink(self):
-        self.assertEqual(self._test('password', ''), [])
         self.assertEqual(self._test('multilink', '', '1'), [])
         self.assertEqual(self._test('multilink', '1', '1'), ['1'])
         self.assertEqual(self._test('multilink', 'valid', '1'), ['1'])
