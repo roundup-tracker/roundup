@@ -35,6 +35,7 @@ Fixed:
 - fix importing into anydbm backend (sf bug 1512939)
 - fix help message for roundup-admin install (sf bug 1494990)
 - removed traceback with OTK is used multiple times (sf bug 1240539)
+- metakit backend was indexing FileClass content even when asked not to
 
 
 2006-04-27 1.1.2
