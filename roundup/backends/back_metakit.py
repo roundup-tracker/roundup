@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.110 2006-08-16 19:00:47 schlatterbeck Exp $
+# $Id: back_metakit.py,v 1.111 2006-08-18 01:36:58 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -1819,6 +1819,9 @@ class FileClass(hyperdb.FileClass, Class):
             os.makedirs(os.path.dirname(dest))
         shutil.copyfile(source, dest)
 
+        if self.properties['content'].indexme:
+            return
+
         mime_type = None
         if self.getprops().has_key('type'):
             mime_type = self.get(nodeid, 'type')
@@ -1874,6 +1877,9 @@ class FileClass(hyperdb.FileClass, Class):
         f = open(nm + '.tmp', 'wb')
         f.write(content)
         f.close()
+
+        if not self.properties['content'].indexme:
+            return newid
 
         mimetype = propvalues.get('type', self.default_mime_type)
         self.db.indexer.add_text((self.classname, newid, 'content'), content,
