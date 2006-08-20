@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.73 2006-08-17 09:32:46 schlatterbeck Exp $
+# $Id: db_test_base.py,v 1.74 2006-08-20 10:16:03 schlatterbeck Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
@@ -1056,6 +1056,34 @@ class DBTest(MyTestCase):
         ae(filt(None, {}, ('+','foo'), (None,None)), ['3', '4', '1', '2'])
         # descending should sort 1d, 1:10, None
         ae(filt(None, {}, ('-','foo'), (None,None)), ['2', '1', '4', '3'])
+
+    def testFilteringStringSort(self):
+        # 1: 'issue one'
+        # 2: 'issue two'
+        # 3: 'issue three'
+        # 4: 'non four'
+        ae, filt = self.filteringSetup()
+        ae(filt(None, {}, ('+','title')), ['1', '3', '2', '4'])
+        ae(filt(None, {}, ('-','title')), ['4', '2', '3', '1'])
+        # Test string case: For now allow both, w/wo case matching.
+        # 1: 'issue one'
+        # 2: 'issue two'
+        # 3: 'Issue three'
+        # 4: 'non four'
+        self.db.issue.set('3', title='Issue three')
+        assert(filt(None, {}, ('+','title')) in 
+            [['3', '1', '2', '4'], ['1', '3', '2', '4']])
+        assert(filt(None, {}, ('-','title')) in
+            [['4', '2', '1', '3'], ['4', '2', '3', '1']])
+        # Obscure bug in anydbm backend trying to convert to number
+        # 1: '1st issue'
+        # 2: '2'
+        # 3: 'Issue three'
+        # 4: 'non four'
+        self.db.issue.set('1', title='1st issue')
+        self.db.issue.set('2', title='2')
+        ae(filt(None, {}, ('+','title')), ['1', '2', '3', '4'])
+        ae(filt(None, {}, ('-','title')), ['4', '3', '2', '1'])
 
     def testFilteringMultilinkSort(self):
         # 1: []
