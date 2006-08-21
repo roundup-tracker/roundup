@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: hyperdb.py,v 1.123 2006-08-11 04:50:24 richard Exp $
+# $Id: hyperdb.py,v 1.124 2006-08-21 12:19:48 schlatterbeck Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -23,30 +23,45 @@ __docformat__ = 'restructuredtext'
 
 # standard python modules
 import sys, os, time, re, shutil, weakref
+from sets import Set
 
 # roundup modules
 import date, password
-from support import ensureParentsExist, PrioList, Proptree
+from support import ensureParentsExist, PrioList, sorted, reversed
 
 #
 # Types
 #
-class String:
-    """An object designating a String property."""
-    def __init__(self, indexme='no'):
-        self.indexme = indexme == 'yes'
+class _Type(object):
+    """A roundup property type."""
+    def __init__(self, required=False):
+        self.required = required
     def __repr__(self):
         ' more useful for dumps '
-        return '<%s>'%self.__class__
+        return '<%s.%s>'%(self.__class__.__module__, self.__class__.__name__)
+    def sort_repr (self, cls, val, name):
+        """Representation used for sorting. This should be a python
+        built-in type, otherwise sorting will take ages. Note that
+        individual backends may chose to use something different for
+        sorting as long as the outcome is the same.
+        """
+        return val
+
+class String(_Type):
+    """An object designating a String property."""
+    def __init__(self, indexme='no', required=False):
+        super(String, self).__init__(required)
+        self.indexme = indexme == 'yes'
     def from_raw(self, value, **kw):
         """fix the CRLF/CR -> LF stuff"""
         return fixNewlines(value)
+    def sort_repr (self, cls, val, name):
+        if name == 'id':
+            return int(val)
+        return val
 
-class Password:
+class Password(_Type):
     """An object designating a Password property."""
-    def __repr__(self):
-        ' more useful for dumps '
-        return '<%s>'%self.__class__
     def from_raw(self, value, **kw):
         if not value:
             return None
@@ -66,18 +81,20 @@ class Password:
             except password.PasswordValueError, message:
                 raise HyperdbValueError, 'property %s: %s'%(propname, message)
         return value
+    def sort_repr (self, cls, val, name):
+        if not val:
+            return val
+        return str(val)
 
-class Date:
+class Date(_Type):
     """An object designating a Date property."""
-    def __init__(self, offset = None):
+    def __init__(self, offset=None, required=False):
+        super(Date, self).__init__(required)
         self._offset = offset
-    def __repr__(self):
-        ' more useful for dumps '
-        return '<%s>'%self.__class__
-    def offset (self, db) :
-        if self._offset is not None :
+    def offset(self, db):
+        if self._offset is not None:
             return self._offset
-        return db.getUserTimezone ()
+        return db.getUserTimezone()
     def from_raw(self, value, db, **kw):
         try:
             value = date.Date(value, self.offset(db))
@@ -88,12 +105,13 @@ class Date:
     def range_from_raw(self, value, db):
         """return Range value from given raw value with offset correction"""
         return date.Range(value, date.Date, offset=self.offset(db))
+    def sort_repr (self, cls, val, name):
+        if not val:
+            return val
+        return str(val)
 
-class Interval:
+class Interval(_Type):
     """An object designating an Interval property."""
-    def __repr__(self):
-        ' more useful for dumps '
-        return '<%s>'%self.__class__
     def from_raw(self, value, **kw):
         try:
             value = date.Interval(value)
@@ -101,26 +119,45 @@ class Interval:
             raise HyperdbValueError, 'property %s: %r is an invalid '\
                 'date interval (%s)'%(kw['propname'], value, message)
         return value
+    def sort_repr (self, cls, val, name):
+        if not val:
+            return val
+        return val.as_seconds()
 
-class Link:
-    """An object designating a Link property that links to a
-       node in a specified class."""
-    def __init__(self, classname, do_journal='yes'):
-        ''' Default is to not journal link and unlink events
+class _Pointer(_Type):
+    """An object designating a Pointer property that links or multilinks
+    to a node in a specified class."""
+    def __init__(self, classname, do_journal='yes', required=False):
+        ''' Default is to journal link and unlink events
         '''
+        super(_Pointer, self).__init__(required)
         self.classname = classname
         self.do_journal = do_journal == 'yes'
     def __repr__(self):
-        ' more useful for dumps '
-        return '<%s to "%s">'%(self.__class__, self.classname)
+        """more useful for dumps. But beware: This is also used in schema
+        storage in SQL backends!
+        """
+        return '<%s.%s to "%s">'%(self.__class__.__module__,
+            self.__class__.__name__, self.classname)
+
+class Link(_Pointer):
+    """An object designating a Link property that links to a
+       node in a specified class."""
     def from_raw(self, value, db, propname, **kw):
         if value == '-1' or not value:
             value = None
         else:
             value = convertLinkValue(db, propname, self, value)
         return value
+    def sort_repr (self, cls, val, name):
+        if not val:
+            return val
+        op = cls.labelprop()
+        if op == 'id':
+            return int(cls.get(val, op))
+        return cls.get(val, op)
 
-class Multilink:
+class Multilink(_Pointer):
     """An object designating a Multilink property that links
        to nodes in a specified class.
 
@@ -129,14 +166,6 @@ class Multilink:
        "do_journal" indicates whether the linked-to nodes should have
                     'link' and 'unlink' events placed in their journal
     """
-    def __init__(self, classname, do_journal='yes'):
-        ''' Default is to not journal link and unlink events
-        '''
-        self.classname = classname
-        self.do_journal = do_journal == 'yes'
-    def __repr__(self):
-        ' more useful for dumps '
-        return '<%s to "%s">'%(self.__class__, self.classname)
     def from_raw(self, value, db, klass, propname, itemid, **kw):
         if not value:
             return []
@@ -203,22 +232,24 @@ class Multilink:
         value = [str(x) for x in value]
         return value
 
-class Boolean:
+    def sort_repr (self, cls, val, name):
+        if not val:
+            return val
+        op = cls.labelprop()
+        if op == 'id':
+            return [int(cls.get(v, op)) for v in val]
+        return [cls.get(v, op) for v in val]
+
+class Boolean(_Type):
     """An object designating a boolean property"""
-    def __repr__(self):
-        'more useful for dumps'
-        return '<%s>' % self.__class__
     def from_raw(self, value, **kw):
         value = value.strip()
         # checked is a common HTML checkbox value
         value = value.lower() in ('checked', 'yes', 'true', 'on', '1')
         return value
 
-class Number:
+class Number(_Type):
     """An object designating a numeric property"""
-    def __repr__(self):
-        'more useful for dumps'
-        return '<%s>' % self.__class__
     def from_raw(self, value, **kw):
         value = value.strip()
         try:
@@ -239,6 +270,286 @@ def splitDesignator(designator, dre=re.compile(r'([^\d]+)(\d+)')):
     if m is None:
         raise DesignatorError, '"%s" not a node designator'%designator
     return m.group(1), m.group(2)
+
+class Proptree(object):
+    ''' Simple tree data structure for optimizing searching of
+    properties. Each node in the tree represents a roundup Class
+    Property that has to be navigated for finding the given search
+    or sort properties. The sort_type attribute is used for
+    distinguishing nodes in the tree used for sorting or searching: If
+    it is 0 for a node, that node is not used for sorting. If it is 1,
+    it is used for both, sorting and searching. If it is 2 it is used
+    for sorting only.
+
+    The Proptree is also used for transitively searching attributes for
+    backends that do not support transitive search (e.g. anydbm). The
+    _val attribute with set_val is used for this.
+    '''
+
+    def __init__(self, db, cls, name, props, parent = None):
+        self.db = db
+        self.name = name
+        self.props = props
+        self.parent = parent
+        self._val = None
+        self.has_values = False
+        self.cls = cls
+        self.classname = None
+        self.uniqname = None
+        self.children = []
+        self.sortattr = []
+        self.propdict = {}
+        self.sort_type = 0
+        self.sort_direction = None
+        self.sort_ids = None
+        self.sort_ids_needed = False
+        self.sort_result = None
+        self.attr_sort_done = False
+        self.tree_sort_done = False
+        self.propclass = None
+        if parent:
+            self.root = parent.root
+            self.depth = parent.depth + 1
+        else:
+            self.root = self
+            self.seqno = 1
+            self.depth = 0
+            self.sort_type = 1
+        self.id = self.root.seqno
+        self.root.seqno += 1
+        if self.cls:
+            self.classname = self.cls.classname
+            self.uniqname = '%s%s' % (self.cls.classname, self.id)
+        if not self.parent:
+            self.uniqname = self.cls.classname
+
+    def append(self, name, sort_type = 0):
+        """Append a property to self.children. Will create a new
+        propclass for the child.
+        """
+        if name in self.propdict:
+            pt = self.propdict[name]
+            if sort_type and not pt.sort_type:
+                pt.sort_type = 1
+            return pt
+        propclass = self.props[name]
+        cls = None
+        props = None
+        if isinstance(propclass, (Link, Multilink)):
+            cls = self.db.getclass(propclass.classname)
+            props = cls.getprops()
+        child = self.__class__(self.db, cls, name, props, parent = self)
+        child.sort_type = sort_type
+        child.propclass = propclass
+        self.children.append(child)
+        self.propdict[name] = child
+        return child
+
+    def compute_sort_done(self, mlseen=False):
+        """ Recursively check if attribute is needed for sorting
+        (self.sort_type > 0) or all children have tree_sort_done set and
+        sort_ids_needed unset: set self.tree_sort_done if one of the conditions
+        holds. Also remove sort_ids_needed recursively once having seen a
+        Multilink.
+        """
+        if isinstance (self.propclass, Multilink):
+            mlseen = True
+        if mlseen:
+            self.sort_ids_needed = False
+        self.tree_sort_done = True
+        for p in self.children:
+            p.compute_sort_done(mlseen)
+            if not p.tree_sort_done:
+                self.tree_sort_done = False
+        if not self.sort_type:
+            self.tree_sort_done = True
+        if mlseen:
+            self.tree_sort_done = False
+
+    def ancestors(self):
+        p = self
+        while p.parent:
+            yield p
+            p = p.parent
+
+    def search(self, search_matches=None, sort=True):
+        """ Recursively search for the given properties in a proptree.
+        Once all properties are non-transitive, the search generates a
+        simple _filter call which does the real work
+        """
+        filterspec = {}
+        for p in self.children:
+            if p.sort_type < 2:
+                if p.children:
+                    p.search(sort = False)
+                filterspec[p.name] = p.val
+        self.val = self.cls._filter(search_matches, filterspec, sort and self)
+        return self.val
+
+    def sort (self, ids=None):
+        """ Sort ids by the order information stored in self. With
+        optimisations: Some order attributes may be precomputed (by the
+        backend) and some properties may already be sorted.
+        """
+        if ids is None:
+            ids = self.val
+        if self.sortattr and [s for s in self.sortattr if not s.attr_sort_done]:
+            return self._searchsort(ids, True, True)
+        return ids
+
+    def sortable_children(self, intermediate=False):
+        """ All children needed for sorting. If intermediate is True,
+        intermediate nodes (not being a sort attribute) are returned,
+        too.
+        """
+        return [p for p in self.children
+                if p.sort_type > 0 and (intermediate or p.sort_direction)]
+
+    def __iter__(self):
+        """ Yield nodes in depth-first order -- visited nodes first """
+        for p in self.children:
+            yield p
+            for c in p:
+                yield c
+
+    def _get (self, ids):
+        """Lookup given ids -- possibly a list of list. We recurse until
+        we have a list of ids.
+        """
+        if not ids:
+            return ids
+        if isinstance (ids[0], list):
+            cids = [self._get(i) for i in ids]
+        else:
+            cids = [i and self.parent.cls.get(i, self.name) for i in ids]
+            if self.sortattr:
+                cids = [self._searchsort(i, False, True) for i in cids]
+        return cids
+
+    def _searchsort(self, ids=None, update=True, dosort=True):
+        """ Recursively compute the sort attributes. Note that ids
+        may be a deeply nested list of lists of ids if several
+        multilinks are encountered on the way from the root to an
+        individual attribute. We make sure that everything is properly
+        sorted on the way up. Note that the individual backend may
+        already have precomputed self.result or self.sort_ids. In this
+        case we do nothing for existing sa.result and recurse further if
+        self.sort_ids is available.
+
+        Yech, Multilinks: This gets especially complicated if somebody
+        sorts by different attributes of the same multilink (or
+        transitively across several multilinks). My use-case is sorting
+        by issue.messages.author and (reverse) by issue.messages.date.
+        In this case we sort the messages by author and date and use
+        this sorted list twice for sorting issues. This means that
+        issues are sorted by author and then by the time of the messages
+        *of this author*. Probably what the user intends in that case,
+        so we do *not* use two sorted lists of messages, one sorted by
+        author and one sorted by date for sorting issues.
+        """
+        for pt in self.sortable_children(intermediate = True):
+            # ids can be an empty list
+            if pt.tree_sort_done or not ids:
+                continue
+            if pt.sort_ids: # cached or computed by backend
+                cids = pt.sort_ids
+            else:
+                cids = pt._get(ids)
+            if pt.sort_direction and not pt.sort_result:
+                sortrep = pt.propclass.sort_repr
+                pt.sort_result = pt._sort_repr(sortrep, cids)
+            pt.sort_ids = cids
+            if pt.children:
+                pt._searchsort(cids, update, False)
+        if self.sortattr and dosort:
+            ids = self._sort(ids)
+        if not update:
+            for pt in self.sortable_children(intermediate = True):
+                pt.sort_ids = None
+            for pt in self.sortattr:
+                pt.sort_result = None
+        return ids
+
+    def _set_val(self, val):
+        """Check if self._val is already defined. If yes, we compute the
+        intersection of the old and the new value(s)
+        """
+        if self.has_values:
+            v = self._val
+            if not isinstance(self._val, type([])):
+                v = [self._val]
+            vals = Set(v)
+            vals.intersection_update(val)
+            self._val = [v for v in vals]
+        else:
+            self._val = val
+        self.has_values = True
+    
+    val = property(lambda self: self._val, _set_val)
+
+    def _sort(self, val):
+        """Finally sort by the given sortattr.sort_result. Note that we
+        do not sort by attrs having attr_sort_done set. The caller is
+        responsible for setting attr_sort_done only for trailing
+        attributes (otherwise the sort order is wrong). Since pythons
+        sort is stable, we can sort already sorted lists without
+        destroying the sort-order for items that compare equal with the
+        current sort.
+
+        Sorting-Strategy: We sort repeatedly by different sort-keys from
+        right to left. Since pythons sort is stable, we can safely do
+        that. An optimisation is a "run-length encoding" of the
+        sort-directions: If several sort attributes sort in the same
+        direction we can combine them into a single sort. Note that
+        repeated sorting is probably more efficient than using
+        compare-methods in python due to the overhead added by compare
+        methods.
+        """
+        if not val:
+            return val
+        sortattr = []
+        directions = []
+        dir_idx = []
+        idx = 0
+        curdir = None
+        for sa in self.sortattr:
+            if sa.attr_sort_done:
+                break
+            if sortattr:
+                assert len(sortattr[0]) == len(sa.sort_result)
+            sortattr.append (sa.sort_result)
+            if curdir != sa.sort_direction:
+                dir_idx.append (idx)
+                directions.append (sa.sort_direction)
+                curdir = sa.sort_direction
+            idx += 1
+        sortattr.append (val)
+        #print >> sys.stderr, "\nsortattr", sortattr
+        sortattr = zip (*sortattr)
+        for dir, i in reversed(zip(directions, dir_idx)):
+            rev = dir == '-'
+            sortattr = sorted (sortattr, key = lambda x:x[i:idx], reverse = rev)
+            idx = i
+        return [x[-1] for x in sortattr]
+
+    def _sort_repr(self, sortrep, ids):
+        """Call sortrep for given ids -- possibly a list of list. We
+        recurse until we have a list of ids.
+        """
+        if not ids:
+            return ids
+        if isinstance (ids[0], list):
+            res = [self._sort_repr(sortrep, i) for i in ids]
+        else:
+            res = [sortrep(self.cls, i, self.name) for i in ids]
+        return res
+
+    def __repr__(self):
+        r = ["proptree:" + self.name]
+        for n in self:
+            r.append("proptree:" + "    " * n.depth + n.name)
+        return '\n'.join(r)
+    __str__ = __repr__
 
 #
 # the base Database class
@@ -466,9 +777,9 @@ class Class:
         # do the db-related init stuff
         db.addclass(self)
 
-        actions = "create set retire restore".split ()
-        self.auditors = dict ([(a, PrioList ()) for a in actions])
-        self.reactors = dict ([(a, PrioList ()) for a in actions])
+        actions = "create set retire restore".split()
+        self.auditors = dict([(a, PrioList()) for a in actions])
+        self.reactors = dict([(a, PrioList()) for a in actions])
 
     def __repr__(self):
         '''Slightly more useful representation
@@ -618,19 +929,19 @@ class Class:
         """
         raise NotImplementedError
 
-    def setlabelprop (self, labelprop):
+    def setlabelprop(self, labelprop):
         """Set the label property. Used for override of labelprop
            resolution order.
         """
-        if labelprop not in self.getprops () :
+        if labelprop not in self.getprops():
             raise ValueError, "Not a property name: %s" % labelprop
         self._labelprop = labelprop
 
-    def setorderprop (self, orderprop):
+    def setorderprop(self, orderprop):
         """Set the order property. Used for override of orderprop
            resolution order
         """
-        if orderprop not in self.getprops () :
+        if orderprop not in self.getprops():
             raise ValueError, "Not a property name: %s" % orderprop
         self._orderprop = orderprop
 
@@ -650,7 +961,7 @@ class Class:
         3. "title" property
         4. first property from the sorted property name list
         """
-        if hasattr (self, '_labelprop') :
+        if hasattr(self, '_labelprop'):
             return self._labelprop
         k = self.getkey()
         if  k:
@@ -666,7 +977,7 @@ class Class:
         props.sort()
         return props[0]
 
-    def orderprop (self):
+    def orderprop(self):
         """Return the property name to use for sorting for the given node.
 
         This method computes the property for sorting.
@@ -674,15 +985,15 @@ class Class:
 
         0. self._orderprop if set
         1. "order" property
-        2. self.labelprop ()
+        2. self.labelprop()
         """
 
-        if hasattr (self, '_orderprop') :
+        if hasattr(self, '_orderprop'):
             return self._orderprop
-        props = self.getprops ()
-        if props.has_key ('order'):
+        props = self.getprops()
+        if props.has_key('order'):
             return 'order'
-        return self.labelprop ()
+        return self.labelprop()
 
     def lookup(self, keyvalue):
         """Locate a particular node by its key property and return its id.
@@ -718,32 +1029,42 @@ class Class:
         """
         raise NotImplementedError
 
-    def _proptree (self, filterspec):
+    def _proptree(self, filterspec, sortattr=[]):
         """Build a tree of all transitive properties in the given
         filterspec.
         """
-        proptree = Proptree (self.db, self, '', self.getprops ())
-        for key, v in filterspec.iteritems ():
-            keys = key.split ('.')
+        proptree = Proptree(self.db, self, '', self.getprops())
+        for key, v in filterspec.iteritems():
+            keys = key.split('.')
             p = proptree
             for k in keys:
-                p = p.append (k)
+                p = p.append(k)
             p.val = v
+        multilinks = {}
+        for s in sortattr:
+            keys = s[1].split('.')
+            p = proptree
+            for k in keys:
+                p = p.append(k, sort_type = 2)
+                if isinstance (p.propclass, Multilink):
+                    multilinks[p] = True
+            if p.cls:
+                p = p.append(p.cls.orderprop(), sort_type = 2)
+            if p.sort_direction: # if an orderprop is also specified explicitly
+                continue
+            p.sort_direction = s[0]
+            proptree.sortattr.append (p)
+        for p in multilinks.iterkeys():
+            sattr = {}
+            for c in p:
+                if c.sort_direction:
+                    sattr [c] = True
+            for sa in proptree.sortattr:
+                if sa in sattr:
+                    p.sortattr.append (sa)
         return proptree
 
-    def _propsearch (self, search_matches, proptree, sort, group):
-        """ Recursively search for the given properties in proptree.
-        Once all properties are non-transitive, the search generates a
-        simple _filter call which does the real work
-        """
-        for p in proptree.children:
-            if not p.children:
-                continue
-            p.val = p.cls._propsearch (None, p, (None, None), (None, None))
-        filterspec = dict ([(p.name, p.val) for p in proptree.children])
-        return self._filter (search_matches, filterspec, sort, group)
-
-    def get_transitive_prop (self, propname_path, default = None) :
+    def get_transitive_prop(self, propname_path, default = None):
         """Expand a transitive property (individual property names
         separated by '.' into a new property at the end of the path. If
         one of the names does not refer to a valid property, we return
@@ -752,32 +1073,45 @@ class Class:
         """
         props = self.db.getclass(self.classname).getprops()
         for k in propname_path.split('.'):
-            try :
+            try:
                 prop = props[k]
             except KeyError, TypeError:
                 return default
-            cl = getattr (prop, 'classname', None)
+            cl = getattr(prop, 'classname', None)
             props = None
             if cl:
-                props = self.db.getclass (cl).getprops()
+                props = self.db.getclass(cl).getprops()
         return prop
 
-    def filter(self, search_matches, filterspec, sort=(None,None),
-            group=(None,None)):
+    def _sortattr(self, sort=[], group=[]):
+        """Build a single list of sort attributes in the correct order
+        with sanity checks (no duplicate properties) included. Always
+        sort last by id -- if id is not already in sortattr.
+        """
+        seen = {}
+        sortattr = []
+        for srt in group, sort:
+            if not isinstance(srt, list):
+                srt = [srt]
+            for s in srt:
+                if s[1] and s[1] not in seen:
+                    sortattr.append((s[0] or '+', s[1]))
+                    seen[s[1]] = True
+        if 'id' not in seen :
+            sortattr.append(('+', 'id'))
+        return sortattr
+
+    def filter(self, search_matches, filterspec, sort=[], group=[]):
         """Return a list of the ids of the active nodes in this class that
         match the 'filter' spec, sorted by the group spec and then the
         sort spec.
 
         "filterspec" is {propname: value(s)}
 
-        Note that now the propname in filterspec may be transitive,
-        i.e., it may contain properties of the form link.link.link.name,
-        e.g. you can search for all issues where a message was added by
-        a certain user in the last week with a filterspec of
-        {'messages.author' : '42', 'messages.creation' : '.-1w;'}
-
-        "sort" and "group" are (dir, prop) where dir is '+', '-' or None
-        and prop is a prop name or None
+        "sort" and "group" are [(dir, prop), ...] where dir is '+', '-'
+        or None and prop is a prop name or None. Note that for
+        backward-compatibility reasons a single (dir, prop) tuple is
+        also allowed.
 
         "search_matches" is {nodeid: marker}
 
@@ -786,6 +1120,13 @@ class Class:
 
         1. String properties must match all elements in the list, and
         2. Other properties must match any of the elements in the list.
+
+        Note that now the propname in filterspec and prop in a
+        sort/group spec may be transitive, i.e., it may contain
+        properties of the form link.link.link.name, e.g. you can search
+        for all issues where a message was added by a certain user in
+        the last week with a filterspec of
+        {'messages.author' : '42', 'messages.creation' : '.-1w;'}
         
         Implementation note:
         This implements a non-optimized version of Transitive search
@@ -794,8 +1135,10 @@ class Class:
         an SQL backen will want to create a single SQL statement and
         override the filter method instead of implementing _filter.
         """
-        proptree = self._proptree (filterspec)
-        return self._propsearch (search_matches, proptree, sort, group)
+        sortattr = self._sortattr(sort = sort, group = group)
+        proptree = self._proptree(filterspec, sortattr)
+        proptree.search(search_matches)
+        return proptree.sort()
 
     def count(self):
         """Get the number of nodes in this class.
@@ -813,6 +1156,17 @@ class Class:
            those which may not be modified.
         """
         raise NotImplementedError
+
+    def get_required_props(self, propnames = []):
+        """Return a dict of property names mapping to property objects.
+        All properties that have the "required" flag set will be
+        returned in addition to all properties in the propnames
+        parameter.
+        """
+        props = self.getprops(protected = False)
+        pdict = dict([(p, props[p]) for p in propnames])
+        pdict.update([(k, v) for k, v in props.iteritems() if v.required])
+        return pdict
 
     def addprop(self, **properties):
         """Add properties to this class.

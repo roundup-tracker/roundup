@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.74 2006-08-20 10:16:03 schlatterbeck Exp $
+# $Id: db_test_base.py,v 1.75 2006-08-21 12:19:48 schlatterbeck Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
@@ -941,7 +941,7 @@ class DBTest(MyTestCase):
                     'nosy': ['1','2'], 'deadline': date.Date('2003-02-18')},
                 {'title': 'non four', 'status': '3',
                     'foo': date.Interval('0:10'), 'priority': '2',
-                    'nosy': ['1'], 'deadline': date.Date('2004-03-08'),
+                    'nosy': ['1','2','3'], 'deadline': date.Date('2004-03-08'),
                     'files': [f]}):
             self.db.issue.create(**issue)
         self.db.commit()
@@ -1000,7 +1000,7 @@ class DBTest(MyTestCase):
 
     def testFilteringMultilink(self):
         ae, filt = self.filteringSetup()
-        ae(filt(None, {'nosy': '2'}, ('+','id'), (None,None)), ['3'])
+        ae(filt(None, {'nosy': '3'}, ('+','id'), (None,None)), ['4'])
         ae(filt(None, {'nosy': '-1'}, ('+','id'), (None,None)), ['1', '2'])
         ae(filt(None, {'nosy': ['1','2']}, ('+', 'status'),
             ('-', 'deadline')), ['4', '3'])
@@ -1086,31 +1086,46 @@ class DBTest(MyTestCase):
         ae(filt(None, {}, ('-','title')), ['4', '3', '2', '1'])
 
     def testFilteringMultilinkSort(self):
-        # 1: []
-        # 2: []
-        # 3: ['1','2']
-        # 4: ['1']
+        # 1: []                 Reverse:  1: []
+        # 2: []                           2: []              
+        # 3: ['admin','fred']             3: ['fred','admin']       
+        # 4: ['admin','bleep','fred']     4: ['fred','bleep','admin']
+        # Note the sort order for the multilink doen't change when
+        # reversing the sort direction due to the re-sorting of the
+        # multilink!
         ae, filt = self.filteringSetup()
         ae(filt(None, {}, ('+','nosy'), (None,None)), ['1', '2', '4', '3'])
-        ae(filt(None, {}, ('-','nosy'), (None,None)), ['3', '4', '1', '2'])
+        ae(filt(None, {}, ('-','nosy'), (None,None)), ['4', '3', '1', '2'])
 
     def testFilteringMultilinkSortGroup(self):
         # 1: status: 2 "in-progress" nosy: []
         # 2: status: 1 "unread"      nosy: []
-        # 3: status: 1 "unread"      nosy: ['1','2']
-        # 4: status: 3 "testing"     nosy: ['1']
+        # 3: status: 1 "unread"      nosy: ['admin','fred']
+        # 4: status: 3 "testing"     nosy: ['admin','bleep','fred']
         ae, filt = self.filteringSetup()
         ae(filt(None, {}, ('+','nosy'), ('+','status')), ['1', '4', '2', '3'])
         ae(filt(None, {}, ('-','nosy'), ('+','status')), ['1', '4', '3', '2'])
+        ae(filt(None, {}, ('+','nosy'), ('-','status')), ['2', '3', '4', '1'])
+        ae(filt(None, {}, ('-','nosy'), ('-','status')), ['3', '2', '4', '1'])
+        ae(filt(None, {}, ('+','status'), ('+','nosy')), ['1', '2', '4', '3'])
+        ae(filt(None, {}, ('-','status'), ('+','nosy')), ['2', '1', '4', '3'])
+        ae(filt(None, {}, ('+','status'), ('-','nosy')), ['4', '3', '1', '2'])
+        ae(filt(None, {}, ('-','status'), ('-','nosy')), ['4', '3', '2', '1'])
 
     def testFilteringLinkSortGroup(self):
-        # 1: status: 2, priority: 3
-        # 2: status: 1, priority: 3
-        # 3: status: 1, priority: 2,
-        # 4: status: 3, priority: 2,
+        # 1: status: 2 -> 'i', priority: 3 -> 1
+        # 2: status: 1 -> 'u', priority: 3 -> 1
+        # 3: status: 1 -> 'u', priority: 2 -> 3
+        # 4: status: 3 -> 't', priority: 2 -> 3
         ae, filt = self.filteringSetup()
         ae(filt(None, {}, ('+','status'), ('+','priority')),
             ['1', '2', '4', '3'])
+        ae(filt(None, {'priority':'2'}, ('+','status'), ('+','priority')),
+            ['4', '3'])
+        ae(filt(None, {'priority.order':'3'}, ('+','status'), ('+','priority')),
+            ['4', '3'])
+        ae(filt(None, {}, ('+','priority'), ('+','status')),
+            ['1', '4', '2', '3'])
 
     def testFilteringDateSort(self):
         # '1': '2003-02-16.22:50'
@@ -1143,20 +1158,20 @@ class DBTest(MyTestCase):
 
     def filteringSetupTransitiveSearch(self):
         u_m = {}
-        k = 1
+        k = 30
         for user in (
                 {'username': 'ceo', 'age': 129},
                 {'username': 'grouplead1', 'age': 29, 'supervisor': '3'},
                 {'username': 'grouplead2', 'age': 29, 'supervisor': '3'},
                 {'username': 'worker1', 'age': 25, 'supervisor' : '4'},
-                {'username': 'worker2', 'age': 26, 'supervisor' : '4'},
-                {'username': 'worker3', 'age': 27, 'supervisor' : '5'},
-                {'username': 'worker4', 'age': 28, 'supervisor' : '5'},
-                {'username': 'worker5', 'age': 29, 'supervisor' : '5'}):
+                {'username': 'worker2', 'age': 24, 'supervisor' : '4'},
+                {'username': 'worker3', 'age': 23, 'supervisor' : '5'},
+                {'username': 'worker4', 'age': 22, 'supervisor' : '5'},
+                {'username': 'worker5', 'age': 21, 'supervisor' : '5'}):
             u = self.db.user.create(**user)
             u_m [u] = self.db.msg.create(author = u, content = ' '
                 , date = date.Date ('2006-01-%s' % k))
-            k += 1
+            k -= 1
         iss = self.db.issue
         for issue in (
                 {'title': 'ts1', 'status': '2', 'assignedto': '6',
@@ -1199,6 +1214,47 @@ class DBTest(MyTestCase):
         ae(ufilt(None, {'supervisor.supervisor': '3', 'supervisor': '4'},
             ('+','username')), ['6', '7'])
 
+    def testFilteringTransitiveLinkSort(self):
+        ae, filt = self.filteringSetupTransitiveSearch()
+        ufilt = self.db.user.filter
+        # Need to make ceo his own (and first two users') supervisor,
+        # otherwise sorting for postgreSQL will fail: postgreSQL seems
+        # to sort NULLs last.
+        self.db.user.set('1', supervisor = '3')
+        self.db.user.set('2', supervisor = '3')
+        self.db.user.set('3', supervisor = '3')
+        ae(ufilt(None, {'supervisor':'3'}, []), ['1', '2', '3', '4', '5'])
+        ae(ufilt(None, {}, [('+','supervisor.supervisor.supervisor'),
+            ('+','supervisor.supervisor'), ('+','supervisor'),
+            ('+','username')]),
+            ['1', '3', '2', '4', '5', '6', '7', '8', '9', '10'])
+        ae(ufilt(None, {}, [('+','supervisor.supervisor.supervisor'),
+            ('-','supervisor.supervisor'), ('-','supervisor'),
+            ('+','username')]),
+            ['8', '9', '10', '6', '7', '1', '3', '2', '4', '5'])
+        ae(filt(None, {}, [('+','assignedto.supervisor.supervisor.supervisor'),
+            ('+','assignedto.supervisor.supervisor'),
+            ('+','assignedto.supervisor'), ('+','assignedto')]),
+            ['1', '2', '3', '4', '5', '6', '7', '8'])
+        ae(filt(None, {}, [('+','assignedto.supervisor.supervisor.supervisor'),
+            ('+','assignedto.supervisor.supervisor'),
+            ('-','assignedto.supervisor'), ('+','assignedto')]),
+            ['4', '5', '6', '7', '8', '1', '2', '3'])
+        ae(filt(None, {}, [('+','assignedto.supervisor.supervisor.supervisor'),
+            ('+','assignedto.supervisor.supervisor'),
+            ('+','assignedto.supervisor'), ('+','assignedto'),
+            ('-','status')]),
+            ['2', '1', '3', '4', '5', '6', '8', '7'])
+        ae(filt(None, {}, [('+','assignedto.supervisor.supervisor.supervisor'),
+            ('+','assignedto.supervisor.supervisor'),
+            ('+','assignedto.supervisor'), ('+','assignedto'),
+            ('+','status')]),
+            ['1', '2', '3', '4', '5', '7', '6', '8'])
+        ae(filt(None, {}, [('+','assignedto.supervisor.supervisor.supervisor'),
+            ('+','assignedto.supervisor.supervisor'),
+            ('-','assignedto.supervisor'), ('+','assignedto'), ('+','status')]),
+            ['4', '5', '7', '6', '8', '1', '2', '3'])
+
     def testFilteringTransitiveLinkIssue(self):
         ae, filt = self.filteringSetupTransitiveSearch()
         ae(filt(None, {'assignedto.supervisor.username': 'grouplead1'},
@@ -1237,7 +1293,7 @@ class DBTest(MyTestCase):
         ae(filt(None, {'messages.author': ['8', '9'], 'status' : '2'},
             ('+','id')), ['5'])
         ae(filt(None, {'messages.author': ['8', '9', '10'],
-            'messages.date': '2006-01-07.21:00;2006-01-10'}, ('+','id')),
+            'messages.date': '2006-01-22.21:00;2006-01-23'}, ('+','id')),
             ['6', '7', '8'])
         ae(filt(None, {'nosy.supervisor.username': 'ceo'},
             ('+','id')), ['1', '2'])
@@ -1247,6 +1303,76 @@ class DBTest(MyTestCase):
             ('+','id')), ['3', '5', '8'])
         ae(filt(None, {'messages.author': ['6', '9'], 'messages': ['5', '7']},
             ('+','id')), ['5', '8'])
+
+    def testFilteringTransitiveMultilinkSort(self):
+        ae, filt = self.filteringSetupTransitiveSearch()
+        ae(filt(None, {}, [('+','messages.author')]),
+            ['1', '2', '3', '4', '5', '8', '6', '7'])
+        ae(filt(None, {}, [('-','messages.author')]),
+            ['8', '6', '7', '5', '4', '3', '1', '2'])
+        ae(filt(None, {}, [('+','messages.date')]),
+            ['6', '7', '8', '5', '4', '3', '1', '2'])
+        ae(filt(None, {}, [('-','messages.date')]),
+            ['1', '2', '3', '4', '8', '5', '6', '7'])
+        ae(filt(None, {}, [('+','messages.author'),('+','messages.date')]),
+            ['1', '2', '3', '4', '5', '8', '6', '7'])
+        ae(filt(None, {}, [('-','messages.author'),('+','messages.date')]),
+            ['8', '6', '7', '5', '4', '3', '1', '2'])
+        ae(filt(None, {}, [('+','messages.author'),('-','messages.date')]),
+            ['1', '2', '3', '4', '5', '8', '6', '7'])
+        ae(filt(None, {}, [('-','messages.author'),('-','messages.date')]),
+            ['8', '6', '7', '5', '4', '3', '1', '2'])
+        ae(filt(None, {}, [('+','messages.author'),('+','assignedto')]),
+            ['1', '2', '3', '4', '5', '8', '6', '7'])
+        ae(filt(None, {}, [('+','messages.author'),
+            ('-','assignedto.supervisor'),('-','assignedto')]),
+            ['1', '2', '3', '4', '5', '8', '6', '7'])
+        ae(filt(None, {},
+            [('+','messages.author.supervisor.supervisor.supervisor'),
+            ('+','messages.author.supervisor.supervisor'),
+            ('+','messages.author.supervisor'), ('+','messages.author')]),
+            ['1', '2', '3', '4', '5', '6', '7', '8'])
+        self.db.user.setorderprop('age')
+        self.db.msg.setorderprop('date')
+        ae(filt(None, {}, [('+','messages'), ('+','messages.author')]),
+            ['6', '7', '8', '5', '4', '3', '1', '2'])
+        ae(filt(None, {}, [('+','messages.author'), ('+','messages')]),
+            ['6', '7', '8', '5', '4', '3', '1', '2'])
+        self.db.msg.setorderprop('author')
+        # Orderprop is a Link/Multilink:
+        # messages are sorted by orderprop().labelprop(), i.e. by
+        # author.username, *not* by author.orderprop() (author.age)!
+        ae(filt(None, {}, [('+','messages')]),
+            ['1', '2', '3', '4', '5', '8', '6', '7'])
+        ae(filt(None, {}, [('+','messages.author'), ('+','messages')]),
+            ['6', '7', '8', '5', '4', '3', '1', '2'])
+        # The following will sort by 
+        # author.supervisor.username and then by
+        # author.username
+        # I've resited the tempation to implement recursive orderprop
+        # here: There could even be loops if several classes specify a
+        # Link or Multilink as the orderprop...
+        # msg: 4: worker1 (id  5) : grouplead1 (id 4) ceo (id 3)
+        # msg: 5: worker2 (id  7) : grouplead1 (id 4) ceo (id 3)
+        # msg: 6: worker3 (id  8) : grouplead2 (id 5) ceo (id 3)
+        # msg: 7: worker4 (id  9) : grouplead2 (id 5) ceo (id 3)
+        # msg: 8: worker5 (id 10) : grouplead2 (id 5) ceo (id 3)
+        # issue 1: messages 4   sortkey:[[grouplead1], [worker1], 1]
+        # issue 2: messages 4   sortkey:[[grouplead1], [worker1], 2]
+        # issue 3: messages 5   sortkey:[[grouplead1], [worker2], 3]
+        # issue 4: messages 6   sortkey:[[grouplead2], [worker3], 4]
+        # issue 5: messages 7   sortkey:[[grouplead2], [worker4], 5]
+        # issue 6: messages 8   sortkey:[[grouplead2], [worker5], 6]
+        # issue 7: messages 8   sortkey:[[grouplead2], [worker5], 7]
+        # issue 8: messages 7,8 sortkey:[[grouplead2, grouplead2], ...]
+        self.db.user.setorderprop('supervisor')
+        ae(filt(None, {}, [('+','messages.author'), ('-','messages')]),
+            ['3', '1', '2', '6', '7', '5', '4', '8'])
+
+    def testFilteringSortId(self):
+        ae, filt = self.filteringSetupTransitiveSearch()
+        ae(self.db.user.filter(None, {}, ('+','id')),
+            ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'])
 
 # XXX add sorting tests for other types
 # XXX test auditors and reactors

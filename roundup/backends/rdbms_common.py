@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.174 2006-07-13 13:30:39 schlatterbeck Exp $
+#$Id: rdbms_common.py,v 1.175 2006-08-21 12:19:48 schlatterbeck Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -53,6 +53,7 @@ from roundup import hyperdb, date, password, roundupdb, security, support
 from roundup.hyperdb import String, Password, Date, Interval, Link, \
     Multilink, DatabaseError, Boolean, Number, Node
 from roundup.backends import locking
+from roundup.support import reversed
 
 # support
 from blobfiles import FileStorage
@@ -2023,16 +2024,17 @@ class Class(hyperdb.Class):
         return '_%s.id not in (select nodeid from %s)'%(classname,
             multilink_table)
 
-    def filter(self, search_matches, filterspec, sort=(None,None),
-            group=(None,None)):
+    def filter(self, search_matches, filterspec, sort=[], group=[]):
         '''Return a list of the ids of the active nodes in this class that
         match the 'filter' spec, sorted by the group spec and then the
         sort spec
 
         "filterspec" is {propname: value(s)}
 
-        "sort" and "group" are (dir, prop) where dir is '+', '-' or None
-        and prop is a prop name or None
+        "sort" and "group" are [(dir, prop), ...] where dir is '+', '-'
+        or None and prop is a prop name or None. Note that for
+        backward-compatibility reasons a single (dir, prop) tuple is
+        also allowed.
 
         "search_matches" is {nodeid: marker} or None
 
@@ -2060,48 +2062,74 @@ class Class(hyperdb.Class):
 
         # figure the WHERE clause from the filterspec
         mlfilt = 0      # are we joining with Multilink tables?
-        proptree = self._proptree(filterspec)
+        sortattr = self._sortattr (group = group, sort = sort)
+        proptree = self._proptree(filterspec, sortattr)
+        mlseen = 0
+        for pt in reversed(proptree.sortattr):
+            p = pt
+            while p.parent:
+                if isinstance (p.propclass, Multilink):
+                    mlseen = True
+                if mlseen:
+                    p.sort_ids_needed = True
+                    p.tree_sort_done = False
+                p = p.parent
+            if not mlseen:
+                pt.attr_sort_done = pt.tree_sort_done = True
+        proptree.compute_sort_done()
+                
+        orderby = []
+        ordercols = []
+        auxcols = {}
+        mlsort = []
+        rhsnum = 0
         for p in proptree:
+            oc = None
             cn = p.classname
             ln = p.uniqname
             pln = p.parent.uniqname
             pcn = p.parent.classname
             k = p.name
             v = p.val
-            propclass = p.prcls
-            if p.children and not isinstance(propclass, (Link, Multilink)):
-                raise ValueError,"%s must be Link/Multilink property"%k
-            # now do other where clause stuff
-            elif isinstance(propclass, Multilink):
-                mlfilt = 1
-                tn = '%s_%s'%(pcn, k)
-                if v in ('-1', ['-1']):
-                    # only match rows that have count(linkid)=0 in the
-                    # corresponding multilink table)
-                    where.append(self._subselect(pcn, tn))
-                else:
-                    frum.append(tn)
-                    where.append('_%s.id=%s.nodeid'%(pln,tn))
-                    if p.children:
-                        frum.append('_%s as _%s' % (cn, ln))
-                        where.append('%s.linkid=_%s.id'%(tn, ln))
-                    if p.has_values:
-                        if isinstance(v, type([])):
-                            s = ','.join([a for x in v])
-                            where.append('%s.linkid in (%s)'%(tn, s))
-                            args = args + v
-                        else:
-                            where.append('%s.linkid=%s'%(tn, a))
-                            args.append(v)
+            propclass = p.propclass
+            if p.sort_type > 0:
+                oc = ac = '_%s._%s'%(pln, k)
+            if isinstance(propclass, Multilink):
+                if p.sort_type < 2:
+                    mlfilt = 1
+                    tn = '%s_%s'%(pcn, k)
+                    if v in ('-1', ['-1']):
+                        # only match rows that have count(linkid)=0 in the
+                        # corresponding multilink table)
+                        where.append(self._subselect(pcn, tn))
+                    else:
+                        frum.append(tn)
+                        where.append('_%s.id=%s.nodeid'%(pln,tn))
+                        if p.children:
+                            frum.append('_%s as _%s' % (cn, ln))
+                            where.append('%s.linkid=_%s.id'%(tn, ln))
+                        if p.has_values:
+                            if isinstance(v, type([])):
+                                s = ','.join([a for x in v])
+                                where.append('%s.linkid in (%s)'%(tn, s))
+                                args = args + v
+                            else:
+                                where.append('%s.linkid=%s'%(tn, a))
+                                args.append(v)
+                if p.sort_type > 0:
+                    assert not p.attr_sort_done and not p.sort_ids_needed
             elif k == 'id':
-                if isinstance(v, type([])):
-                    s = ','.join([a for x in v])
-                    where.append('_%s.%s in (%s)'%(pln, k, s))
-                    args = args + v
-                else:
-                    where.append('_%s.%s=%s'%(pln, k, a))
-                    args.append(v)
-            elif isinstance(propclass, String):
+                if p.sort_type < 2:
+                    if isinstance(v, type([])):
+                        s = ','.join([a for x in v])
+                        where.append('_%s.%s in (%s)'%(pln, k, s))
+                        args = args + v
+                    else:
+                        where.append('_%s.%s=%s'%(pln, k, a))
+                        args.append(v)
+                if p.sort_type > 0:
+                    oc = ac = '_%s.id'%pln
+            elif isinstance(propclass, String) and p.sort_type < 2:
                 if not isinstance(v, type([])):
                     v = [v]
 
@@ -2116,35 +2144,46 @@ class Class(hyperdb.Class):
                     +')')
                 # note: args are embedded in the query string now
             elif isinstance(propclass, Link):
-                if p.children:
-                    frum.append('_%s as _%s' % (cn, ln))
-                    where.append('_%s._%s=_%s.id'%(pln, k, ln))
-                if p.has_values:
-                    if isinstance(v, type([])):
-                        d = {}
-                        for entry in v:
-                            if entry == '-1':
-                                entry = None
-                            d[entry] = entry
-                        l = []
-                        if d.has_key(None) or not d:
-                            del d[None]
-                            l.append('_%s._%s is NULL'%(pln, k))
-                        if d:
-                            v = d.keys()
-                            s = ','.join([a for x in v])
-                            l.append('(_%s._%s in (%s))'%(pln, k, s))
-                            args = args + v
-                        if l:
-                            where.append('(' + ' or '.join(l) +')')
-                    else:
-                        if v in ('-1', None):
-                            v = None
-                            where.append('_%s._%s is NULL'%(pln, k))
+                if p.sort_type < 2:
+                    if p.children:
+                        frum.append('_%s as _%s' % (cn, ln))
+                        where.append('_%s._%s=_%s.id'%(pln, k, ln))
+                    if p.has_values:
+                        if isinstance(v, type([])):
+                            d = {}
+                            for entry in v:
+                                if entry == '-1':
+                                    entry = None
+                                d[entry] = entry
+                            l = []
+                            if d.has_key(None) or not d:
+                                del d[None]
+                                l.append('_%s._%s is NULL'%(pln, k))
+                            if d:
+                                v = d.keys()
+                                s = ','.join([a for x in v])
+                                l.append('(_%s._%s in (%s))'%(pln, k, s))
+                                args = args + v
+                            if l:
+                                where.append('(' + ' or '.join(l) +')')
                         else:
-                            where.append('_%s._%s=%s'%(pln, k, a))
-                            args.append(v)
-            elif isinstance(propclass, Date):
+                            if v in ('-1', None):
+                                v = None
+                                where.append('_%s._%s is NULL'%(pln, k))
+                            else:
+                                where.append('_%s._%s=%s'%(pln, k, a))
+                                args.append(v)
+                if p.sort_type > 0:
+                    lp = p.cls.labelprop()
+                    oc = ac = '_%s._%s'%(pln, k)
+                    if lp != 'id':
+                        if p.tree_sort_done and (p.sort_type == 2 or not
+                                                 p.children):
+                            loj.append(
+                                'LEFT OUTER JOIN _%s as _%s on _%s._%s=_%s.id'%(
+                                cn, ln, pln, k, ln))
+                        oc = '_%s._%s'%(ln, lp)
+            elif isinstance(propclass, Date) and p.sort_type < 2:
                 dc = self.db.hyperdb_to_sql_value[hyperdb.Date]
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
@@ -2164,25 +2203,28 @@ class Class(hyperdb.Class):
                         # If range creation fails - ignore that search parameter
                         pass
             elif isinstance(propclass, Interval):
-                # filter using the __<prop>_int__ column
-                if isinstance(v, type([])):
-                    s = ','.join([a for x in v])
-                    where.append('_%s.__%s_int__ in (%s)'%(pln, k, s))
-                    args = args + [date.Interval(x).as_seconds() for x in v]
-                else:
-                    try:
-                        # Try to filter on range of intervals
-                        date_rng = Range(v, date.Interval)
-                        if date_rng.from_value:
-                            where.append('_%s.__%s_int__ >= %s'%(pln, k, a))
-                            args.append(date_rng.from_value.as_seconds())
-                        if date_rng.to_value:
-                            where.append('_%s.__%s_int__ <= %s'%(pln, k, a))
-                            args.append(date_rng.to_value.as_seconds())
-                    except ValueError:
-                        # If range creation fails - ignore that search parameter
-                        pass
-            else:
+                # filter/sort using the __<prop>_int__ column
+                if p.sort_type < 2:
+                    if isinstance(v, type([])):
+                        s = ','.join([a for x in v])
+                        where.append('_%s.__%s_int__ in (%s)'%(pln, k, s))
+                        args = args + [date.Interval(x).as_seconds() for x in v]
+                    else:
+                        try:
+                            # Try to filter on range of intervals
+                            date_rng = Range(v, date.Interval)
+                            if date_rng.from_value:
+                                where.append('_%s.__%s_int__ >= %s'%(pln, k, a))
+                                args.append(date_rng.from_value.as_seconds())
+                            if date_rng.to_value:
+                                where.append('_%s.__%s_int__ <= %s'%(pln, k, a))
+                                args.append(date_rng.to_value.as_seconds())
+                        except ValueError:
+                            # If range creation fails - ignore search parameter
+                            pass
+                if p.sort_type > 0:
+                    oc = ac = '_%s.__%s_int__'%(pln,k)
+            elif p.sort_type < 2:
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
                     where.append('_%s._%s in (%s)'%(pln, k, s))
@@ -2190,6 +2232,16 @@ class Class(hyperdb.Class):
                 else:
                     where.append('_%s._%s=%s'%(pln, k, a))
                     args.append(v)
+            if oc:
+                if p.sort_ids_needed:
+                    auxcols[ac] = p
+                if p.tree_sort_done and p.sort_direction:
+                    # Don't select top-level id twice
+                    if p.name != 'id' or p.parent != proptree:
+                        ordercols.append(oc)
+                    if p.sort_direction == '-':
+                        oc += ' desc'
+                    orderby.append(oc)
 
         props = self.getprops()
 
@@ -2202,48 +2254,6 @@ class Class(hyperdb.Class):
             s = ','.join([a for x in v])
             where.append('_%s.id in (%s)'%(icn, s))
             args = args + v
-
-        # sanity check: sorting *and* grouping on the same property?
-        if group[1] == sort[1]:
-            sort = (None, None)
-
-        # "grouping" is just the first-order sorting in the SQL fetch
-        orderby = []
-        ordercols = []
-        mlsort = []
-        rhsnum = 0
-        for sortby in group, sort:
-            sdir, prop = sortby
-            if sdir and prop:
-                if isinstance(props[prop], Multilink):
-                    mlsort.append(sortby)
-                    continue
-                elif isinstance(props[prop], Interval):
-                    # use the int column for sorting
-                    o = '__'+prop+'_int__'
-                    ordercols.append(o)
-                elif isinstance(props[prop], Link):
-                    # determine whether the linked Class has an order property
-                    lcn = props[prop].classname
-                    link = self.db.classes[lcn]
-                    o = '_%s._%s'%(icn, prop)
-                    op = link.orderprop()
-                    if op != 'id':
-                        tn = '_' + lcn
-                        rhs = 'rhs%s_'%rhsnum
-                        rhsnum += 1
-                        loj.append('LEFT OUTER JOIN %s as %s on %s=%s.id'%(
-                            tn, rhs, o, rhs))
-                        o = '%s._%s'%(rhs, op)
-                    ordercols.append(o)
-                elif prop == 'id':
-                    o = '_%s.id'%icn
-                else:
-                    o = '_%s._%s'%(icn, prop)
-                    ordercols.append(o)
-                if sdir == '-':
-                    o += ' desc'
-                orderby.append(o)
 
         # construct the SQL
         frum.append('_'+icn)
@@ -2263,6 +2273,10 @@ class Class(hyperdb.Class):
             order = ' order by %s'%(','.join(orderby))
         else:
             order = ''
+        for o, p in auxcols.iteritems ():
+            cols.append (o)
+            p.auxcol = len (cols) - 1
+
         cols = ','.join(cols)
         loj = ' '.join(loj)
         sql = 'select %s from %s %s %s%s'%(cols, frum, loj, where, order)
@@ -2271,37 +2285,17 @@ class Class(hyperdb.Class):
         self.db.sql(sql, args)
         l = self.db.sql_fetchall()
 
+        # Compute values needed for sorting in proptree.sort
+        for p in auxcols.itervalues():
+            p.sort_ids = p.sort_result = [row[p.auxcol] for row in l]
         # return the IDs (the first column)
         # XXX numeric ids
         l = [str(row[0]) for row in l]
-
-        if not mlsort:
-            if __debug__:
-                self.db.stats['filtering'] += (time.time() - start_t)
-            return l
-
-        # ergh. someone wants to sort by a multilink.
-        r = []
-        for id in l:
-            m = []
-            for ml in mlsort:
-                m.append(self.get(id, ml[1]))
-            r.append((id, m))
-        i = 0
-        for sortby in mlsort:
-            def sortfun(a, b, dir=sortby[i], i=i):
-                if dir == '-':
-                    return cmp(b[1][i], a[1][i])
-                else:
-                    return cmp(a[1][i], b[1][i])
-            r.sort(sortfun)
-            i += 1
-        r = [i[0] for i in r]
+        l = proptree.sort (l)
 
         if __debug__:
             self.db.stats['filtering'] += (time.time() - start_t)
-
-        return r
+        return l
 
     def count(self):
         '''Get the number of nodes in this class.

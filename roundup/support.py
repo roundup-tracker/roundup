@@ -6,8 +6,6 @@ __docformat__ = 'restructuredtext'
 
 import os, time, sys, re
 
-from sets import Set
-
 class TruthDict:
     '''Returns True for valid keys, False for others.
     '''
@@ -120,78 +118,6 @@ class Progress:
         sys.stdout.write(s + ' '*(75-len(s)) + '\r')
         sys.stdout.flush()
 
-class Proptree(object):
-    ''' Simple tree data structure for optimizing searching of properties
-    '''
-
-    def __init__(self, db, cls, name, props, parent = None):
-        self.db = db
-        self.name = name
-        self.props = props
-        self.parent = parent
-        self._val = None
-        self.has_values = False
-        self.cls = cls
-        self.classname = None
-        self.uniqname = None
-        self.children = []
-        self.propnames = {}
-        if parent:
-            self.root = parent.root
-            self.prcls = self.parent.props [name]
-        else:
-            self.root = self
-            self.seqno = 1
-        self.id = self.root.seqno
-        self.root.seqno += 1
-        if self.cls:
-            self.classname = self.cls.classname
-            self.uniqname = '%s%s' % (self.cls.classname, self.id)
-        if not self.parent:
-            self.uniqname = self.cls.classname
-
-    def append(self, name):
-        """Append a property to self.children. Will create a new
-        propclass for the child.
-        """
-        import hyperdb
-        if name in self.propnames:
-            return self.propnames [name]
-        propclass = self.props [name]
-        cls = None
-        props = None
-        if isinstance(propclass, (hyperdb.Link, hyperdb.Multilink)):
-            cls = self.db.getclass(propclass.classname)
-            props = cls.getprops()
-        child = self.__class__(self.db, cls, name, props, parent = self)
-        self.children.append(child)
-        self.propnames [name] = child
-        return child
-
-    def _set_val(self, val):
-        """Check if self._val is already defined. If yes, we compute the
-        intersection of the old and the new value(s)
-        """
-        if self.has_values:
-            v = self._val
-            if not isinstance(self._val, type([])):
-                v = [self._val]
-            vals = Set(v)
-            vals.intersection_update(val)
-            self._val = [v for v in vals]
-        else:
-            self._val = val
-        self.has_values = True
-    
-    val = property(lambda self: self._val, _set_val)
-
-    def __iter__(self):
-        """ Yield nodes in depth-first order -- visited nodes first """
-        for p in self.children:
-            yield p
-            for c in p:
-                yield c
-
 LEFT = 'left'
 LEFTN = 'left no strip'
 RIGHT = 'right'
@@ -284,5 +210,39 @@ def format_columns(columns, contents, spacer=' | ', collapse_whitespace=True,
 def wrap(text, width=75, alignment=LEFTN):
     return format_columns(((width, alignment),), [text],
         collapse_whitespace=False)
+
+# Python2.3 backwards-compatibility-hack. Should be removed (and clients
+# fixed to use built-in reversed/sorted) when we abandon support for
+# python2.3
+try:
+    reversed = reversed
+except NameError:
+    def reversed(x):
+        x = list(x)
+        x.reverse()
+        return x
+
+try:
+    sorted = sorted
+except NameError:
+    def sorted(iter, cmp=None, key=None, reverse=False):
+        if key:
+            l = []
+            cnt = 0 # cnt preserves original sort-order
+            inc = [1, -1][bool(reverse)] # count down on reverse
+            for x in iter:
+                l.append ((key(x), cnt, x))
+                cnt += inc
+        else:
+            l = list(iter)
+        if cmp:
+            l.sort(cmp = cmp)
+        else:
+            l.sort()
+        if reverse:
+            l.reverse()
+        if key:
+            return [x[-1] for x in l]
+        return l
 
 # vim: set et sts=4 sw=4 :

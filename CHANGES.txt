@@ -16,6 +16,10 @@ Feature:
 - update for latest version of psycopg2 (sf patch 1429391)
 - new "exporttables" command in roundup-admin (sf bug 1533791)
 - roundup-admin "export" may specify classes to exclude (sf bug 1533791)
+- sorting and grouping by multiple properties is now supported by the
+  backends
+- sorting, grouping, and searching by transitive properties (e.g.,
+  messages.author.supervisor) is now supported in all backends
 
 Fixed:
 - Verbose option for import and export (sf bug 1505645)
@@ -36,7 +40,13 @@ Fixed:
 - fix help message for roundup-admin install (sf bug 1494990)
 - removed traceback with OTK is used multiple times (sf bug 1240539)
 - metakit backend was indexing FileClass content even when asked not to
-
+- anydbm backend will finally sort numerically by ID
+- problem with string sorting in anydbm backend fixed: If a string was
+  fully numeric it was sorted as a number
+- Multilink-sorting now sorts by orderprop not by ID and works for all
+  backends
+- Bug with name-collisions in sorted classes when sorting by Link
+  properties in metakit backend fixed
 
 2006-04-27 1.1.2
 Feature:

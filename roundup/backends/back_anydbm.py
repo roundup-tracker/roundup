@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: back_anydbm.py,v 1.200 2006-07-08 18:28:18 schlatterbeck Exp $
+#$Id: back_anydbm.py,v 1.201 2006-08-21 12:19:48 schlatterbeck Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -36,6 +36,7 @@ except AssertionError:
 import whichdb, os, marshal, re, weakref, string, copy, time, shutil, logging
 
 from roundup import hyperdb, date, password, roundupdb, security, support
+from roundup.support import reversed
 from roundup.backends import locking
 from roundup.i18n import _
 
@@ -1531,8 +1532,8 @@ class Class(hyperdb.Class):
                 db.close()
         return res
 
-    def _filter(self, search_matches, filterspec, sort=(None,None),
-            group=(None,None), num_re = re.compile('^\d+$')):
+    def _filter(self, search_matches, filterspec, proptree,
+            num_re = re.compile('^\d+$')):
         """Return a list of the ids of the active nodes in this class that
         match the 'filter' spec, sorted by the group spec and then the
         sort spec.
@@ -1706,18 +1707,21 @@ class Class(hyperdb.Class):
                         k.append(v)
                 matches = k
 
-            # always sort by id if no other sort is specified
-            if sort == (None, None):
-                sort = ('+', 'id')
-
-            # add sorting information to the match entries
-            directions = []
+            # add sorting information to the proptree
             JPROPS = {'actor':1, 'activity':1, 'creator':1, 'creation':1}
-            for dir, prop in sort, group:
-                if dir is None or prop is None:
-                    continue
-                directions.append(dir)
+            children = []
+            if proptree:
+                children = proptree.sortable_children()
+            for pt in children:
+                dir = pt.sort_direction
+                prop = pt.name
+                assert (dir and prop)
                 propclass = props[prop]
+                pt.sort_ids = []
+                is_pointer = isinstance(propclass,(hyperdb.Link,
+                    hyperdb.Multilink))
+                if not is_pointer:
+                    pt.sort_result = []
                 try:
                     # cache the opened link class db, if needed.
                     lcldb = None
@@ -1738,33 +1742,42 @@ class Class(hyperdb.Class):
                             else:
                                 # the node doesn't have a value for this
                                 # property
-                                if isinstance(propclass, hyperdb.Multilink): v = []
-                                else: v = None
-                                entry.insert(0, v)
+                                v = None
+                                if isinstance(propclass, hyperdb.Multilink):
+                                    v = []
+                                if prop == 'id':
+                                    v = int (itemid)
+                                pt.sort_ids.append(v)
+                                if not is_pointer:
+                                    pt.sort_result.append(v)
                                 continue
 
                         # missing (None) values are always sorted first
                         if v is None:
-                            entry.insert(0, v)
+                            pt.sort_ids.append(v)
+                            if not is_pointer:
+                                pt.sort_result.append(v)
                             continue
 
-                        if isinstance(propclass, hyperdb.String):
-                            # it might be a string that's really an integer
-                            try: tv = int(v)
-                            except: v = v.lower()
-                            else: v = tv
-                        elif isinstance(propclass, hyperdb.Link):
+                        if isinstance(propclass, hyperdb.Link):
                             lcn = propclass.classname
                             link = self.db.classes[lcn]
                             key = link.orderprop()
+                            child = pt.propdict[key]
                             if key!='id':
                                 if not lcache.has_key(v):
                                     # open the link class db if it's not already
                                     if lcldb is None:
                                         lcldb = self.db.getclassdb(lcn)
                                     lcache[v] = self.db.getnode(lcn, v, lcldb)
-                                v = lcache[v][key]
-                        entry.insert(0, v)
+                                r = lcache[v][key]
+                                child.propdict[key].sort_ids.append(r)
+                            else:
+                                child.propdict[key].sort_ids.append(v)
+                        pt.sort_ids.append(v)
+                        if not is_pointer:
+                            r = propclass.sort_repr(pt.parent.cls, v, pt.name)
+                            pt.sort_result.append(r)
                 finally:
                     # if we opened the link class db, close it now
                     if lcldb is not None:
@@ -1772,29 +1785,6 @@ class Class(hyperdb.Class):
                 del lcache
         finally:
             cldb.close()
-
-        # sort vals are inserted, but directions are appended, so reverse
-        directions.reverse()
-
-        if '-' in directions:
-            # one or more of the sort specs is in reverse order, so we have
-            # to use this icky function to sort
-            def sortfun(a, b, directions=directions, n=range(len(directions))):
-                for i in n:
-                    if not cmp(a[i], b[i]):
-                        continue
-                    if directions[i] == '+':
-                        # compare in the usual, ascending direction
-                        return cmp(a[i],b[i])
-                    else:
-                        # compare in the reverse, descending direction
-                        return cmp(b[i],a[i])
-                # for consistency, sort by the id if the items are equal
-                return cmp(a[-2], b[-2])
-            matches.sort(sortfun)
-        else:
-            # sorting is in the normal, ascending direction
-            matches.sort()
 
         # pull the id out of the individual entries
         matches = [entry[-2] for entry in matches]

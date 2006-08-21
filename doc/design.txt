@@ -471,9 +471,31 @@ Here is the interface provided by the hyperdatabase::
             """
 
         def filter(self, search_matches, filterspec, sort, group):
-            """ Return a list of the ids of the active items in this
-            class that match the 'filter' spec, sorted by the group spec
-            and then the sort spec.
+            """Return a list of the ids of the active nodes in this class that
+            match the 'filter' spec, sorted by the group spec and then the
+            sort spec.
+
+            "filterspec" is {propname: value(s)}
+
+            "sort" and "group" are [(dir, prop), ...] where dir is '+', '-'
+            or None and prop is a prop name or None. Note that for
+            backward-compatibility reasons a single (dir, prop) tuple is
+            also allowed.
+
+            "search_matches" is {nodeid: marker}
+
+            The filter must match all properties specificed. If the property
+            value to match is a list:
+
+            1. String properties must match all elements in the list, and
+            2. Other properties must match any of the elements in the list.
+
+            Note that now the propname in filterspec and prop in a 
+            sort/group spec may be transitive, i.e., it may contain
+            properties of the form link.link.link.name, e.g. you can search
+            for all issues where a message was added by a certain user in
+            the last week with a filterspec of
+            {'messages.author' : '42', 'messages.creation' : '.-1w;'}
             """
 
         def list(self):

@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.111 2006-08-18 01:36:58 richard Exp $
+# $Id: back_metakit.py,v 1.112 2006-08-21 12:19:48 schlatterbeck Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -42,6 +42,7 @@ __docformat__ = 'restructuredtext'
 BACKWARDS_COMPATIBLE = 1
 
 from roundup import hyperdb, date, password, roundupdb, security
+from roundup.support import reversed
 import logging
 import metakit
 from sessions_dbm import Sessions, OneTimeKeys
@@ -1155,8 +1156,7 @@ class Class(hyperdb.Class):
         self.db.commit()
     # ---- end of ping's spec
 
-    def _filter(self, search_matches, filterspec, sort=(None,None),
-            group=(None,None)):
+    def _filter(self, search_matches, filterspec, proptree):
         '''Return a list of the ids of the active nodes in this class that
         match the 'filter' spec, sorted by the group spec and then the
         sort spec
@@ -1326,37 +1326,58 @@ class Class(hyperdb.Class):
             iv = v.filter(ff)
             v = v.remapwith(iv)
 
-        if sort or group:
-            sortspec = []
-            rev = []
-            for dir, propname in group, sort:
-                if propname is None: continue
-                isreversed = 0
-                if dir == '-':
-                    isreversed = 1
-                try:
-                    prop = getattr(v, propname)
-                except AttributeError:
-                    logging.getLogger("hyperdb").error(
-                        "MK has no property %s" % propname)
-                    continue
-                propclass = self.ruprops.get(propname, None)
+        # Handle all the sorting we can inside Metakit. If we encounter
+        # transitive attributes or a Multilink on the way, we sort by
+        # what we have so far and defer the rest to the outer sorting
+        # routine. We mark the attributes for which sorting has been
+        # done with sort_done. Of course the whole thing works only if
+        # we do it backwards.
+        sortspec = []
+        rev = []
+        sa = []
+        if proptree:
+            sa = reversed(proptree.sortattr)
+        for pt in sa:
+            if pt.parent != proptree:
+                break;
+            propname = pt.name
+            dir = pt.sort_direction
+            assert (dir and propname)
+            isreversed = 0
+            if dir == '-':
+                isreversed = 1
+            try:
+                prop = getattr(v, propname)
+            except AttributeError:
+                logging.getLogger("hyperdb").error(
+                    "MK has no property %s" % propname)
+                continue
+            propclass = self.ruprops.get(propname, None)
+            if propclass is None:
+                propclass = self.privateprops.get(propname, None)
                 if propclass is None:
-                    propclass = self.privateprops.get(propname, None)
-                    if propclass is None:
-                        logging.getLogger("hyperdb").error(
-                            "Schema has no property %s" % propname)
-                        continue
-                if isinstance(propclass, hyperdb.Link):
-                    linkclass = self.db.getclass(propclass.classname)
-                    lv = linkclass.getview()
-                    lv = lv.rename('id', propname)
-                    v = v.join(lv, prop, 1)
-                    prop = getattr(v, linkclass.orderprop())
-                if isreversed:
-                    rev.append(prop)
-                sortspec.append(prop)
-            v = v.sortrev(sortspec, rev)[:] #XXX Metakit bug
+                    logging.getLogger("hyperdb").error(
+                        "Schema has no property %s" % propname)
+                    continue
+            # Dead code: We dont't find Links here (in sortattr we would
+            # see the order property of the link, but this is not in the
+            # first level of the tree). The code is left in because one
+            # day we might want to properly implement this.  The code is
+            # broken because natural-joining to the Link-class can
+            # produce name-clashes wich result in broken sorting.
+            if isinstance(propclass, hyperdb.Link):
+                linkclass = self.db.getclass(propclass.classname)
+                lv = linkclass.getview()
+                lv = lv.rename('id', propname)
+                v = v.join(lv, prop, 1)
+                prop = getattr(v, linkclass.orderprop())
+            if isreversed:
+                rev.append(prop)
+            sortspec.append(prop)
+            pt.sort_done = True
+        sortspec.reverse()
+        rev.reverse()
+        v = v.sortrev(sortspec, rev)[:] #XXX Metakit bug
 
         rslt = []
         for row in v:
