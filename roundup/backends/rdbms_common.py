@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.175 2006-08-21 12:19:48 schlatterbeck Exp $
+#$Id: rdbms_common.py,v 1.176 2006-08-22 19:27:36 schlatterbeck Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2129,20 +2129,23 @@ class Class(hyperdb.Class):
                         args.append(v)
                 if p.sort_type > 0:
                     oc = ac = '_%s.id'%pln
-            elif isinstance(propclass, String) and p.sort_type < 2:
-                if not isinstance(v, type([])):
-                    v = [v]
+            elif isinstance(propclass, String):
+                if p.sort_type < 2:
+                    if not isinstance(v, type([])):
+                        v = [v]
 
-                # Quote the bits in the string that need it and then embed
-                # in a "substring" search. Note - need to quote the '%' so
-                # they make it through the python layer happily
-                v = ['%%'+self.db.sql_stringquote(s)+'%%' for s in v]
+                    # Quote the bits in the string that need it and then embed
+                    # in a "substring" search. Note - need to quote the '%' so
+                    # they make it through the python layer happily
+                    v = ['%%'+self.db.sql_stringquote(s)+'%%' for s in v]
 
-                # now add to the where clause
-                where.append('('
-                    +' and '.join(["_%s._%s LIKE '%s'"%(pln, k, s) for s in v])
-                    +')')
-                # note: args are embedded in the query string now
+                    # now add to the where clause
+                    where.append('('
+                        +' and '.join(["_%s._%s LIKE '%s'"%(pln, k, s) for s in v])
+                        +')')
+                    # note: args are embedded in the query string now
+                if p.sort_type > 0:
+                    oc = ac = 'lower(_%s._%s)'%(pln, k)
             elif isinstance(propclass, Link):
                 if p.sort_type < 2:
                     if p.children:
