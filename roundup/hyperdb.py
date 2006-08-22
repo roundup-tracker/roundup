@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: hyperdb.py,v 1.124 2006-08-21 12:19:48 schlatterbeck Exp $
+# $Id: hyperdb.py,v 1.125 2006-08-22 19:33:02 schlatterbeck Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -56,9 +56,11 @@ class String(_Type):
         """fix the CRLF/CR -> LF stuff"""
         return fixNewlines(value)
     def sort_repr (self, cls, val, name):
+        if not val:
+            return val
         if name == 'id':
             return int(val)
-        return val
+        return val.lower()
 
 class Password(_Type):
     """An object designating a Password property."""

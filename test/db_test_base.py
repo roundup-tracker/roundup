@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.75 2006-08-21 12:19:48 schlatterbeck Exp $
+# $Id: db_test_base.py,v 1.76 2006-08-22 19:33:02 schlatterbeck Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
@@ -1071,10 +1071,8 @@ class DBTest(MyTestCase):
         # 3: 'Issue three'
         # 4: 'non four'
         self.db.issue.set('3', title='Issue three')
-        assert(filt(None, {}, ('+','title')) in 
-            [['3', '1', '2', '4'], ['1', '3', '2', '4']])
-        assert(filt(None, {}, ('-','title')) in
-            [['4', '2', '1', '3'], ['4', '2', '3', '1']])
+        ae(filt(None, {}, ('+','title')), ['1', '3', '2', '4'])
+        ae(filt(None, {}, ('-','title')), ['4', '2', '3', '1'])
         # Obscure bug in anydbm backend trying to convert to number
         # 1: '1st issue'
         # 2: '2'
