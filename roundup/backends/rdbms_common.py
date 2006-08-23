@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.176 2006-08-22 19:27:36 schlatterbeck Exp $
+#$Id: rdbms_common.py,v 1.177 2006-08-23 12:57:10 schlatterbeck Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2024,6 +2024,14 @@ class Class(hyperdb.Class):
         return '_%s.id not in (select nodeid from %s)'%(classname,
             multilink_table)
 
+    # Some DBs order NULL values last. Set this variable in the backend
+    # for prepending an order by clause for each attribute that causes
+    # correct sort order for NULLs. Examples:
+    # order_by_null_values = '(%s is not NULL)'
+    # order_by_null_values = 'notnull(%s)'
+    # The format parameter is replaced with the attribute.
+    order_by_null_values = None
+
     def filter(self, search_matches, filterspec, sort=[], group=[]):
         '''Return a list of the ids of the active nodes in this class that
         match the 'filter' spec, sorted by the group spec and then the
@@ -2242,9 +2250,13 @@ class Class(hyperdb.Class):
                     # Don't select top-level id twice
                     if p.name != 'id' or p.parent != proptree:
                         ordercols.append(oc)
-                    if p.sort_direction == '-':
-                        oc += ' desc'
-                    orderby.append(oc)
+                    desc = ['', ' desc'][p.sort_direction == '-']
+                    # Some SQL dbs sort NULL values last -- we want them first.
+                    if (self.order_by_null_values and p.name != 'id'):
+                        nv = self.order_by_null_values % oc
+                        ordercols.append(nv)
+                        orderby.append(nv + desc)
+                    orderby.append(oc + desc)
 
         props = self.getprops()
 

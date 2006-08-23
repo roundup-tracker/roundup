@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: test_postgresql.py,v 1.12 2004-11-03 01:34:21 richard Exp $
+# $Id: test_postgresql.py,v 1.13 2006-08-23 12:57:10 schlatterbeck Exp $
 
 import unittest
 
@@ -47,15 +47,6 @@ class postgresqlDBTest(postgresqlOpener, DBTest):
     def tearDown(self):
         DBTest.tearDown(self)
         postgresqlOpener.tearDown(self)
-
-    def testFilteringIntervalSort(self):
-        # PostgreSQL sorts NULLs differently to other databases (others
-        # treat it as lower than real values, PG treats it as higher)
-        ae, filt = self.filteringSetup()
-        # ascending should sort None, 1:10, 1d
-        ae(filt(None, {}, ('+','foo'), (None,None)), ['4', '1', '2', '3'])
-        # descending should sort 1d, 1:10, None
-        ae(filt(None, {}, ('-','foo'), (None,None)), ['3', '2', '1', '4'])
 
 class postgresqlROTest(postgresqlOpener, ROTest):
     def setUp(self):

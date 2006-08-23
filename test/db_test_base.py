@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.76 2006-08-22 19:33:02 schlatterbeck Exp $
+# $Id: db_test_base.py,v 1.77 2006-08-23 12:57:10 schlatterbeck Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
@@ -1216,8 +1216,8 @@ class DBTest(MyTestCase):
         ae, filt = self.filteringSetupTransitiveSearch()
         ufilt = self.db.user.filter
         # Need to make ceo his own (and first two users') supervisor,
-        # otherwise sorting for postgreSQL will fail: postgreSQL seems
-        # to sort NULLs last.
+        # otherwise we will depend on sorting order of NULL values.
+        # Leave that to a separate test.
         self.db.user.set('1', supervisor = '3')
         self.db.user.set('2', supervisor = '3')
         self.db.user.set('3', supervisor = '3')
@@ -1252,6 +1252,27 @@ class DBTest(MyTestCase):
             ('+','assignedto.supervisor.supervisor'),
             ('-','assignedto.supervisor'), ('+','assignedto'), ('+','status')]),
             ['4', '5', '7', '6', '8', '1', '2', '3'])
+
+    def testFilteringTransitiveLinkSortNull(self):
+        """Check sorting of NULL values"""
+        ae, filt = self.filteringSetupTransitiveSearch()
+        ufilt = self.db.user.filter
+        ae(ufilt(None, {}, [('+','supervisor.supervisor.supervisor'),
+            ('+','supervisor.supervisor'), ('+','supervisor'),
+            ('+','username')]),
+            ['1', '3', '2', '4', '5', '6', '7', '8', '9', '10'])
+        ae(ufilt(None, {}, [('+','supervisor.supervisor.supervisor'),
+            ('-','supervisor.supervisor'), ('-','supervisor'),
+            ('+','username')]),
+            ['8', '9', '10', '6', '7', '4', '5', '1', '3', '2'])
+        ae(filt(None, {}, [('+','assignedto.supervisor.supervisor.supervisor'),
+            ('+','assignedto.supervisor.supervisor'),
+            ('+','assignedto.supervisor'), ('+','assignedto')]),
+            ['1', '2', '3', '4', '5', '6', '7', '8'])
+        ae(filt(None, {}, [('+','assignedto.supervisor.supervisor.supervisor'),
+            ('+','assignedto.supervisor.supervisor'),
+            ('-','assignedto.supervisor'), ('+','assignedto')]),
+            ['4', '5', '6', '7', '8', '1', '2', '3'])
 
     def testFilteringTransitiveLinkIssue(self):
         ae, filt = self.filteringSetupTransitiveSearch()

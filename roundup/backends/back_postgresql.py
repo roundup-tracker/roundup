@@ -1,4 +1,4 @@
-#$Id: back_postgresql.py,v 1.32 2006-08-11 00:44:00 richard Exp $
+#$Id: back_postgresql.py,v 1.33 2006-08-23 12:57:10 schlatterbeck Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -223,11 +223,13 @@ class Database(rdbms_common.Database):
             self.cursor.execute('DROP SEQUENCE _%s_ids'%cn)
             self.cursor.execute('CREATE SEQUENCE _%s_ids'%cn)
 
+class PostgresqlClass:
+    order_by_null_values = '(%s is not NULL)'
 
-class Class(rdbms_common.Class):
+class Class(PostgresqlClass, rdbms_common.Class):
     pass
-class IssueClass(rdbms_common.IssueClass):
+class IssueClass(PostgresqlClass, rdbms_common.IssueClass):
     pass
-class FileClass(rdbms_common.FileClass):
+class FileClass(PostgresqlClass, rdbms_common.FileClass):
     pass
 
