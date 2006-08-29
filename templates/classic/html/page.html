@@ -53,10 +53,23 @@
     <span tal:condition="python:request.user.hasPermission('Create', 'issue')">
       <a href="issue?@template=item" i18n:translate="">Create New</a><br>
     </span>
-    <a href="issue?@sort=-activity&@group=priority&@filter=status,assignedto&@columns=id,activity,title,creator,status&status=-1,1,2,3,4,5,6,7&assignedto=-1&@dispname=Show%20Unassigned"
-     i18n:translate="">Show Unassigned</a><br>
-    <a href="issue?@sort=-activity&@group=priority&@filter=status&@columns=id,activity,title,creator,assignedto,status&status=-1,1,2,3,4,5,6,7&@dispname=Show%20All"
-     i18n:translate="">Show All</a><br>
+    <a tal:attributes="href python:request.indexargs_url('issue', {
+      '@sort': '-activity',
+      '@group': 'priority',
+      '@filter': 'status,assignedto',
+      '@columns': 'id,activity,title,creator,status',
+      'status': '-1,1,2,3,4,5,6,7',
+      'assignedto': '-1',
+      '@dispname': i18n.gettext('Show Unassigned'),
+     })" i18n:translate="">Show Unassigned</a><br>
+    <a tal:attributes="href python:request.indexargs_url('issue', {
+      '@sort': '-activity',
+      '@group': 'priority',
+      '@filter': 'status',
+      '@columns': 'id,activity,title,creator,assignedto,status',
+      'status': '-1,1,2,3,4,5,6,7',
+      '@dispname': i18n.gettext('Show All'),
+     })" i18n:translate="">Show All</a><br>
     <a href="issue?@template=search" i18n:translate="">Search</a><br>
     <input type="submit" class="form-small" value="Show issue:"
      i18n:attributes="value"><input class="form-small" size="4"
