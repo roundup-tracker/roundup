@@ -2207,13 +2207,10 @@ class HTMLRequest(HTMLInputMixin):
                 self.startwith = int(self.form[name].value)
 
         # dispname
-        self.dispname = None
         if self.form.has_key('@dispname'):
-            value = self.form['@dispname'].value
-            # dispname should be encoded to the web interface's charset,
-            # but the web interface rendering will be expecting a unicode
-            # string
-            self.dispname = value.decode(self.client.charset)
+            self.dispname = self.form['@dispname'].value
+        else:
+            self.dispname = None
 
     def updateFromURL(self, url):
         ''' Parse the URL for query args, and update my attributes using the
