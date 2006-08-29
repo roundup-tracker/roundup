@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.177 2006-08-23 12:57:10 schlatterbeck Exp $
+#$Id: rdbms_common.py,v 1.178 2006-08-29 04:20:50 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1188,23 +1188,30 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 "action<>'create'"%(classname, self.arg)
             self.sql(sql, (date_stamp,))
 
-    def sql_commit(self):
+    def sql_commit(self, fail_ok=False):
         ''' Actually commit to the database.
         '''
         logging.getLogger('hyperdb').info('commit')
+
         self.conn.commit()
 
         # open a new cursor for subsequent work
         self.cursor = self.conn.cursor()
 
-    def commit(self):
+    def commit(self, fail_ok=False):
         ''' Commit the current transactions.
 
         Save all data changed since the database was opened or since the
         last commit() or rollback().
+
+        fail_ok indicates that the commit is allowed to fail. This is used
+        in the web interface when committing cleaning of the session
+        database. We don't care if there's a concurrency issue there.
+
+        The only backend this seems to affect is postgres.
         '''
         # commit the database
-        self.sql_commit()
+        self.sql_commit(fail_ok)
 
         # now, do all the other transaction stuff
         for method, args in self.transactions:

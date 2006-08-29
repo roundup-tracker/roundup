@@ -47,6 +47,8 @@ Fixed:
   backends
 - Bug with name-collisions in sorted classes when sorting by Link
   properties in metakit backend fixed
+- Postgres backend allows transaction collisions to be ignored when
+  committing clenup in the sessions database
 
 2006-04-27 1.1.2
 Feature:

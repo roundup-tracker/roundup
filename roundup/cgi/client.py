@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.226 2006-06-06 01:44:44 richard Exp $
+# $Id: client.py,v 1.227 2006-08-29 04:20:50 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -334,7 +334,7 @@ class Client:
         sessions.clean(now)
         self.db.getOTKManager().clean(now)
         sessions.set('last_clean', last_use=time.time())
-        self.db.commit()
+        self.db.commit(fail_ok=True)
 
     def determine_charset(self):
         """Look for client charset in the form parameters or browser cookie.

@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.112 2006-08-21 12:19:48 schlatterbeck Exp $
+# $Id: back_metakit.py,v 1.113 2006-08-29 04:20:50 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -147,8 +147,18 @@ class _Database(hyperdb.Database, roundupdb.Database):
     # --- end of ping's spec
 
     # --- exposed methods
-    def commit(self):
-        '''commit all changes to the database'''
+    def commit(self, fail_ok=False):
+        ''' Commit the current transactions.
+
+        Save all data changed since the database was opened or since the
+        last commit() or rollback().
+
+        fail_ok indicates that the commit is allowed to fail. This is used
+        in the web interface when committing cleaning of the session
+        database. We don't care if there's a concurrency issue there.
+
+        The only backend this seems to affect is postgres.
+        '''
         if self.dirty:
             self._db.commit()
             for cl in self.classes.values():

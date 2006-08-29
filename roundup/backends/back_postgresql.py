@@ -1,4 +1,4 @@
-#$Id: back_postgresql.py,v 1.33 2006-08-23 12:57:10 schlatterbeck Exp $
+#$Id: back_postgresql.py,v 1.34 2006-08-29 04:20:50 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -180,6 +180,24 @@ class Database(rdbms_common.Database):
 
     def __repr__(self):
         return '<roundpsycopgsql 0x%x>' % id(self)
+
+    def sql_commit(self, fail_ok=False):
+        ''' Actually commit to the database.
+        '''
+        logging.getLogger('hyperdb').info('commit')
+
+        try:
+            self.conn.commit()
+        except psycopg.ProgrammingError, message:
+            # we've been instructed that this commit is allowed to fail
+            if fail_ok and str(message).endswith('could not serialize '
+                    'access due to concurrent update'):
+                logging.getLogger('hyperdb').info('commit FAILED, but fail_ok')
+            else:
+                raise
+
+        # open a new cursor for subsequent work
+        self.cursor = self.conn.cursor()
 
     def sql_stringquote(self, value):
         ''' psycopg.QuotedString returns a "buffer" object with the

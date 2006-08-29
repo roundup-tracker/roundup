@@ -1,4 +1,4 @@
-#$Id: back_mysql.py,v 1.70 2006-07-13 10:14:56 schlatterbeck Exp $
+#$Id: back_mysql.py,v 1.71 2006-08-29 04:20:50 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -528,10 +528,13 @@ class Database(Database):
         vals = (spec.classname, 1)
         self.sql(sql, vals)
 
-    def sql_commit(self):
+    def sql_commit(self, fail_ok=False):
         ''' Actually commit to the database.
         '''
         logging.getLogger('hyperdb').info('commit')
+
+        # MySQL commits don't seem to ever fail, the latest update winning.
+        # makes you wonder why they have transactions...
         self.conn.commit()
 
         # open a new cursor for subsequent work
