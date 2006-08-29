@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.204 $
+:Version: $Revision: 1.205 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1870,6 +1870,17 @@ filter      lists of items from this class, filtered and sorted. Two
 
             eg. ``issue.filter(filterspec={"priority": "1"},
             sort=('activity', '+'))``
+
+filter_sql  **Only in SQL backends**
+
+            Lists the items that match the SQL provided. The SQL is a
+            complete "select" statement.
+
+            The SQL select must include the item id as the first column.
+
+            This function **does not** filter out retired items, add
+            on a where clause "__retired__ <> 1" if you don't want
+            retired nodes.
 
 classhelp   display a link to a javascript popup containing this class'
             "help" template.

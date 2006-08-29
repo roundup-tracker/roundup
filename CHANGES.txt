@@ -20,6 +20,8 @@ Feature:
   backends
 - sorting, grouping, and searching by transitive properties (e.g.,
   messages.author.supervisor) is now supported in all backends
+- added filter_sql to SQL backends which takes an arbitrary SQL statement
+  and returns a list of item ids
 
 Fixed:
 - Verbose option for import and export (sf bug 1505645)

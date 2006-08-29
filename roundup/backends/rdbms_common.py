@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.178 2006-08-29 04:20:50 richard Exp $
+#$Id: rdbms_common.py,v 1.179 2006-08-29 04:32:49 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2314,6 +2314,25 @@ class Class(hyperdb.Class):
         # XXX numeric ids
         l = [str(row[0]) for row in l]
         l = proptree.sort (l)
+
+        if __debug__:
+            self.db.stats['filtering'] += (time.time() - start_t)
+        return l
+
+    def filter_sql(self, sql):
+        '''Return a list of the ids of the items in this class that match
+        the SQL provided. The SQL is a complete "select" statement.
+
+        The SQL select must include the item id as the first column.
+
+        This function DOES NOT filter out retired items, add on a where
+        clause "__retired__ <> 1" if you don't want retired nodes.
+        '''
+        if __debug__:
+            start_t = time.time()
+
+        self.db.sql(sql)
+        l = self.db.sql_fetchall()
 
         if __debug__:
             self.db.stats['filtering'] += (time.time() - start_t)
