@@ -51,6 +51,8 @@ Fixed:
   properties in metakit backend fixed
 - Postgres backend allows transaction collisions to be ignored when
   committing clenup in the sessions database
+- translate titles of "show all" and "unassigned" issue lists
+  in classic template (sf patch 1424576)
 
 2006-04-27 1.1.2
 Feature:
