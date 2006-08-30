@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: hyperdb.py,v 1.126 2006-08-29 04:20:50 richard Exp $
+# $Id: hyperdb.py,v 1.127 2006-08-30 09:35:31 schlatterbeck Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -309,6 +309,7 @@ class Proptree(object):
         self.attr_sort_done = False
         self.tree_sort_done = False
         self.propclass = None
+        self.orderby = []
         if parent:
             self.root = parent.root
             self.depth = parent.depth + 1
