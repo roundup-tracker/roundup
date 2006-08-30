@@ -17,7 +17,7 @@ Feature:
 - new "exporttables" command in roundup-admin (sf bug 1533791)
 - roundup-admin "export" may specify classes to exclude (sf bug 1533791)
 - sorting and grouping by multiple properties is now supported by the
-  backends
+  backends *and* the classic template.
 - sorting, grouping, and searching by transitive properties (e.g.,
   messages.author.supervisor) is now supported in all backends
 - added filter_sql to SQL backends which takes an arbitrary SQL statement

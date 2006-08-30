@@ -604,8 +604,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         idlessprops.sort()
         return ['id'] + idlessprops
 
-    def filter(self, request=None, filterspec={}, sort=(None,None),
-            group=(None,None)):
+    def filter(self, request=None, filterspec={}, sort=[], group=[]):
         ''' Return a list of items from this class, filtered and sorted
             by the current requested filterspec/filter/sort/group args
 
@@ -769,27 +768,40 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
 
     def __getitem__(self, item):
         ''' return an HTMLProperty instance
+            this now can handle transitive lookups where item is of the
+            form x.y.z
         '''
         #print 'HTMLItem.getitem', (self, item)
         if item == 'id':
             return self._nodeid
 
+        items = item.split('.', 1)
+        has_rest = len(items) > 1
+
         # get the property
-        prop = self._props[item]
+        prop = self._props[items[0]]
+
+        if has_rest and not isinstance(prop, (hyperdb.Link, hyperdb.Multilink)):
+            raise KeyError, item
 
         # get the value, handling missing values
         value = None
         if int(self._nodeid) > 0:
-            value = self._klass.get(self._nodeid, item, None)
+            value = self._klass.get(self._nodeid, items[0], None)
         if value is None:
-            if isinstance(self._props[item], hyperdb.Multilink):
+            if isinstance(prop, hyperdb.Multilink):
                 value = []
 
         # look up the correct HTMLProperty class
+        htmlprop = None
         for klass, htmlklass in propclasses:
             if isinstance(prop, klass):
-                return htmlklass(self._client, self._classname,
-                    self._nodeid, prop, item, value, self._anonymous)
+                htmlprop = htmlklass(self._client, self._classname,
+                    self._nodeid, prop, items[0], value, self._anonymous)
+        if htmlprop is not None:
+            if has_rest:
+                return htmlprop[items[1]]
+            return htmlprop
 
         raise KeyError, item
 
@@ -2118,6 +2130,43 @@ class HTMLRequest(HTMLInputMixin):
             args['@template'] = self.template
         return self.indexargs_url(url, args)
 
+    def _parse_sort(self, var, name):
+        ''' Parse sort/group options. Append to var
+        '''
+        fields = []
+        dirs = []
+        for special in ':@':
+            idx = 0
+            key = '%s%s%d'%(special, name, idx)
+            while key in self.form:
+                self.special_char = special
+                fields.append (self.form[key].value)
+                dirkey = '%s%sdir%d'%(special, name, idx)
+                if dirkey in self.form:
+                    dirs.append(self.form[dirkey].value)
+                else:
+                    dirs.append(None)
+                idx += 1
+                key = '%s%s%d'%(special, name, idx)
+            # backward compatible (and query) URL format
+            key = special + name
+            dirkey = key + 'dir'
+            if key in self.form and not fields:
+                fields = handleListCGIValue(self.form[key])
+                if dirkey in self.form:
+                    dirs.append(self.form[dirkey].value)
+                else:
+                    dirs.append(None)
+            if fields:
+                break
+        for f, d in map(None, fields, dirs):
+            if f.startswith('-'):
+                var.append(('-', f[1:]))
+            elif d:
+                var.append(('-', f))
+            else:
+                var.append(('+', f))
+
     def _post_init(self):
         ''' Set attributes based on self.form
         '''
@@ -2130,31 +2179,11 @@ class HTMLRequest(HTMLInputMixin):
                 break
         self.show = support.TruthDict(self.columns)
 
-        # sorting
-        self.sort = (None, None)
-        for name in ':sort @sort'.split():
-            if self.form.has_key(name):
-                self.special_char = name[0]
-                sort = self.form[name].value
-                if sort.startswith('-'):
-                    self.sort = ('-', sort[1:])
-                else:
-                    self.sort = ('+', sort)
-                if self.form.has_key(self.special_char+'sortdir'):
-                    self.sort = ('-', self.sort[1])
-
-        # grouping
-        self.group = (None, None)
-        for name in ':group @group'.split():
-            if self.form.has_key(name):
-                self.special_char = name[0]
-                group = self.form[name].value
-                if group.startswith('-'):
-                    self.group = ('-', group[1:])
-                else:
-                    self.group = ('+', group)
-                if self.form.has_key(self.special_char+'groupdir'):
-                    self.group = ('-', self.group[1])
+        # sorting and grouping
+        self.sort = []
+        self.group = []
+        self._parse_sort(self.sort, 'sort')
+        self._parse_sort(self.group, 'group')
 
         # filtering
         self.filter = []
@@ -2280,18 +2309,22 @@ env: %(env)s
         s = self.input(type="hidden",name="%s",value="%s")
         if columns and self.columns:
             l.append(s%(sc+'columns', ','.join(self.columns)))
-        if sort and self.sort[1] is not None:
-            if self.sort[0] == '-':
-                val = '-'+self.sort[1]
-            else:
-                val = self.sort[1]
-            l.append(s%(sc+'sort', val))
-        if group and self.group[1] is not None:
-            if self.group[0] == '-':
-                val = '-'+self.group[1]
-            else:
-                val = self.group[1]
-            l.append(s%(sc+'group', val))
+        if sort:
+            val = []
+            for dir, attr in self.sort:
+                if dir == '-':
+                    val.append('-'+attr)
+                else:
+                    val.append(attr)
+            l.append(s%(sc+'sort', ','.join (val)))
+        if group:
+            val = []
+            for dir, attr in self.group:
+                if dir == '-':
+                    val.append('-'+attr)
+                else:
+                    val.append(attr)
+            l.append(s%(sc+'group', ','.join (val)))
         if filter and self.filter:
             l.append(s%(sc+'filter', ','.join(self.filter)))
         if self.classname and filterspec:
@@ -2326,18 +2359,22 @@ env: %(env)s
         # ok, now handle the specials we received in the request
         if self.columns and not specials.has_key('columns'):
             l.append(sc+'columns=%s'%(','.join(self.columns)))
-        if self.sort[1] is not None and not specials.has_key('sort'):
-            if self.sort[0] == '-':
-                val = '-'+self.sort[1]
-            else:
-                val = self.sort[1]
-            l.append(sc+'sort=%s'%val)
-        if self.group[1] is not None and not specials.has_key('group'):
-            if self.group[0] == '-':
-                val = '-'+self.group[1]
-            else:
-                val = self.group[1]
-            l.append(sc+'group=%s'%val)
+        if self.sort and not specials.has_key('sort'):
+            val = []
+            for dir, attr in self.sort:
+                if dir == '-':
+                    val.append('-'+attr)
+                else:
+                    val.append(attr)
+            l.append(sc+'sort=%s'%(','.join(val)))
+        if self.group and not specials.has_key('group'):
+            val = []
+            for dir, attr in self.group:
+                if dir == '-':
+                    val.append('-'+attr)
+                else:
+                    val.append(attr)
+            l.append(sc+'group=%s'%(','.join(val)))
         if self.filter and not specials.has_key('filter'):
             l.append(sc+'filter=%s'%(','.join(self.filter)))
         if self.search_text and not specials.has_key('search_text'):
@@ -2469,16 +2506,18 @@ class Batch(ZTUtils.Batch):
         self.current_item = item
         return item
 
-    def propchanged(self, property):
-        ''' Detect if the property marked as being the group property
-            changed in the last iteration fetch
+    def propchanged(self, *properties):
+        ''' Detect if one of the properties marked as being a group
+            property changed in the last iteration fetch
         '''
         # we poke directly at the _value here since MissingValue can screw
         # us up and cause Nones to compare strangely
-        if (self.last_item is None or
-                self.last_item[property]._value !=
-                self.current_item[property]._value):
+        if self.last_item is None:
             return 1
+        for property in properties:
+            if (self.last_item[property]._value !=
+                self.current_item[property]._value):
+                return 1
         return 0
 
     # override these 'cos we don't have access to acquisition

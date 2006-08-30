@@ -31,10 +31,12 @@
    <th tal:condition="request/show/assignedto" i18n:translate="">Assigned&nbsp;To</th>
   </tr>
  <tal:block tal:repeat="i batch">
-  <tr tal:define="group python:request.group[1]"
-      tal:condition="python:group and batch.propchanged(group)">
-   <th tal:attributes="colspan python:len(request.columns)"
-       tal:content="python:str(i[group]) or '(no %s set)'%group" class="group">
+  <tr tal:define="group python:[r[1] for r in request.group]"
+      tal:condition="python:group and batch.propchanged(*group)">
+   <th tal:attributes="colspan python:len(request.columns)" class="group">
+    <tal:block tal:repeat="g group">
+     <tal:block tal:content="python:str(i[g]) or '(no %s set)'%g"/>
+    </tal:block>
    </th>
   </tr>
 
@@ -100,41 +102,49 @@
 <form method="GET" class="index-controls"
     tal:attributes="action request/classname">
 
- <table class="form">
-  <tr tal:condition="batch">
-   <th i18n:translate="">Sort on:</th>
+ <table class="form" tal:define="n_sort python:2">
+  <tal:block tal:repeat="n python:range(n_sort)" tal:condition="batch">
+  <tr tal:define="key python:len(request.sort)>n and request.sort[n]">
+   <th>
+    <tal:block tal:condition="not:n" i18n:translate="">Sort on:</tal:block>
+   </th>
    <td>
-    <select name="@sort">
+    <select tal:attributes="name python:'@sort%d'%n">
      <option value="" i18n:translate="">- nothing -</option>
      <option tal:repeat="col context/properties"
              tal:attributes="value col/_name;
-                             selected python:col._name == request.sort[1]"
+                             selected python:key and col._name == key[1]"
              tal:content="col/_name"
              i18n:translate="">column</option>
     </select>
    </td>
    <th i18n:translate="">Descending:</th>
    <td><input type="checkbox" name="@sortdir"
-              tal:attributes="checked python:request.sort[0] == '-'">
+              tal:attributes="checked python:key and key[0] == '-'">
    </td>
   </tr>
-  <tr>
-   <th i18n:translate="">Group on:</th>
+  </tal:block>
+  <tal:block tal:repeat="n python:range(n_sort)" tal:condition="batch">
+  <tr tal:define="key python:len(request.group)>n and request.group[n]">
+   <th>
+    <tal:block tal:condition="not:n" i18n:translate="">Group on:</tal:block>
+   </th>
    <td>
-    <select name="@group">
+    <select tal:attributes="name python:'@group%d'%n">
      <option value="" i18n:translate="">- nothing -</option>
      <option tal:repeat="col context/properties"
              tal:attributes="value col/_name;
-                             selected python:col._name == request.group[1]"
+                             selected python:key and col._name == key[1]"
              tal:content="col/_name"
              i18n:translate="">column</option>
     </select>
    </td>
    <th i18n:translate="">Descending:</th>
    <td><input type="checkbox" name="@groupdir"
-              tal:attributes="checked python:request.group[0] == '-'">
+              tal:attributes="checked python:key and key[0] == '-'">
    </td>
   </tr>
+  </tal:block>
   <tr><td colspan="4">
               <input type="submit" value="Redisplay" i18n:attributes="value">
               <tal:block tal:replace="structure

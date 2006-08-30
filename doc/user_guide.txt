@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.33 $
+:Version: $Revision: 1.34 $
 
 .. contents::
 
@@ -338,9 +338,11 @@ arguments:
 Argument     Description
 ============ =============================================================
 @sort        sort by prop name, optionally preceeded with '-' to give
-             descending or nothing for ascending sorting.
+             descending or nothing for ascending sorting. The sort
+             argument can have several props separated with comma.
 @group       group by prop name, optionally preceeded with '-' or to sort
-             in descending or nothing for ascending order.
+             in descending or nothing for ascending order. The group
+             argument can have several props separated with comma.
 @columns     selects the columns that should be displayed. Default is
              all.                     
 @filter      indicates which properties are being used in filtering.
@@ -356,7 +358,7 @@ You may manually write URLS that contain these arguments, like so
 
     /issue?status=unread,in-progress,resolved&
         topic=security,ui&
-        @group=priority&
+        @group=priority,-status&
         @sort=-activity&
         @filters=status,topic&
         @columns=title,status,fixer

@@ -13,6 +13,37 @@ steps.
 
 .. contents::
 
+Migrating from 1.1.2 to 1.X.X
+=============================
+
+1.X.X Sorting and grouping by multiple properties
+-------------------------------------------------
+
+Starting with this version, sorting and grouping by multiple properties
+is possible. This means that request.sort and request.group are now
+lists. This is reflected in several places:
+
+ * ``renderWith`` now has list attributes for ``sort`` and ``group``,
+   where you previously wrote::
+   
+    renderWith(... sort=('-', 'activity'), group=('+', 'priority')
+
+   you write now::
+
+    renderWith(... sort=[('-', 'activity')], group=[('+', 'priority')]
+
+ * In templates that permit to edit sorting/grouping, request.sort and
+   request.group are (possibly empty) lists. You can now sort and group
+   by multiple attributes. For an example, see the classic template. You
+   may want search for the variable ``n_sort`` which can be set to the
+   number of sort/group properties.
+
+ * Templates that diplay new headlines for each group of items with
+   equal group properties can now use the modified ``batch.propchanged``
+   method that can take several properties which are checked for
+   changes. See the example in the classic template which makes use of
+   ``batch.propchanged``.
+
 Migrating from 1.1.0 to 1.1.1
 =============================
 

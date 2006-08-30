@@ -1251,7 +1251,7 @@ clarity)::
 
     /issue?status=unread,in-progress,resolved&
         topic=security,ui&
-        :group=priority&
+        :group=priority,-status&
         :sort=-activity&
         :filters=status,topic&
         :columns=title,status,fixer
@@ -1275,11 +1275,11 @@ of issues with values matching any specified Multilink properties.
 The example specifies an index of "issue" items. Only issues with a
 "status" of either "unread" or "in-progres" or "resolved" are displayed,
 and only issues with "topic" values including both "security" and "ui"
-are displayed.  The issues are grouped by priority, arranged in
-ascending order; and within groups, sorted by activity, arranged in
-descending order.  The filter section shows filters for the "status" and
-"topic" properties, and the table includes columns for the "title",
-"status", and "fixer" properties.
+are displayed.  The items are grouped by priority arranged in ascending
+order and in descending order by status; and within groups, sorted by
+activity, arranged in descending order. The filter section shows
+filters for the "status" and "topic" properties, and the table includes
+columns for the "title", "status", and "fixer" properties.
 
 Associated with each issue class is a default layout specifier.  The
 layout specifier in the above example is the default layout to be

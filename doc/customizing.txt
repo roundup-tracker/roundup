@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.205 $
+:Version: $Revision: 1.206 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1865,7 +1865,8 @@ filter      lists of items from this class, filtered and sorted. Two
             1. by the current *request* filterspec/filter/sort/group args
             2. by the "filterspec", "sort" and "group" keyword args.
                "filterspec" is ``{propname: value(s)}``. "sort" and
-               "group" are ``(dir, prop)`` where dir is '+', '-' or None
+               "group" are an optionally empty list ``[(dir, prop)]``
+               where dir is '+', '-' or None
                and prop is a prop name or None.
 
             eg. ``issue.filter(filterspec={"priority": "1"},
@@ -2195,8 +2196,8 @@ Variable    Holds
 columns     dictionary of the columns to display in an index page
 show        a convenience access to columns - request/show/colname will
             be true if the columns should be displayed, false otherwise
-sort        index sort column (direction, column name)
-group       index grouping property (direction, column name)
+sort        index sort columns [(direction, column name)]
+group       index grouping properties [(direction, column name)]
 filter      properties to filter the index on
 filterspec  values to filter the index on
 search_text text to perform a full-text search on for an index
@@ -2432,7 +2433,7 @@ been added for clarity)::
 
     /issue?status=unread,in-progress,resolved&
         topic=security,ui&
-        @group=priority&
+        @group=priority,-status&
         @sort=-activity&
         @filters=status,topic&
         @columns=title,status,fixer
@@ -2454,19 +2455,30 @@ of items with values matching any specified Multilink properties.
 The example specifies an index of "issue" items. Only items with a
 "status" of either "unread" or "in-progress" or "resolved" are
 displayed, and only items with "topic" values including both "security"
-and "ui" are displayed. The items are grouped by priority, arranged in
-ascending order; and within groups, sorted by activity, arranged in
-descending order. The filter section shows filters for the "status" and
-"topic" properties, and the table includes columns for the "title",
-"status", and "fixer" properties.
+and "ui" are displayed. The items are grouped by priority arranged in
+ascending order and in descending order by status; and within
+groups, sorted by activity, arranged in descending order. The filter
+section shows filters for the "status" and "topic" properties, and the
+table includes columns for the "title", "status", and "fixer"
+properties.
 
 ============ =============================================================
 Argument     Description
 ============ =============================================================
 @sort        sort by prop name, optionally preceeded with '-' to give
-             descending or nothing for ascending sorting.
+             descending or nothing for ascending sorting. Several
+             properties can be specified delimited with comma.
+             Internally a search-page using several sort properties may
+             use @sort0, @sort1 etc. with option @sortdir0, @sortdir1
+             etc. for the direction of sorting (a non-empty value of
+             sortdir0 specifies reverse order).
 @group       group by prop name, optionally preceeded with '-' or to sort
-             in descending or nothing for ascending order.
+             in descending or nothing for ascending order. Several
+             properties can be specified delimited with comma.
+             Internally a search-page using several grouping properties may
+             use @group0, @group1 etc. with option @groupdir0, @groupdir1
+             etc. for the direction of grouping (a non-empty value of
+             groupdir0 specifies reverse order).
 @columns     selects the columns that should be displayed. Default is
              all.                     
 @filter      indicates which properties are being used in filtering.
@@ -3248,8 +3260,8 @@ The category search code above would expand to the following::
       </select>
     </td>
     <td><input type="checkbox" name=":columns" value="category"></td>
-    <td><input type="radio" name=":sort" value="category"></td>
-    <td><input type="radio" name=":group" value="category"></td>
+    <td><input type="radio" name=":sort0" value="category"></td>
+    <td><input type="radio" name=":group0" value="category"></td>
   </tr>
 
 Adding category to the default view
