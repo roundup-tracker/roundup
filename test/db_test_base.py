@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.77 2006-08-23 12:57:10 schlatterbeck Exp $
+# $Id: db_test_base.py,v 1.78 2006-08-30 08:50:44 schlatterbeck Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
@@ -1122,6 +1122,8 @@ class DBTest(MyTestCase):
             ['4', '3'])
         ae(filt(None, {'priority.order':'3'}, ('+','status'), ('+','priority')),
             ['4', '3'])
+        ae(filt(None, {'priority':['2','3']}, ('+','priority'), ('+','status')),
+            ['1', '4', '2', '3'])
         ae(filt(None, {}, ('+','priority'), ('+','status')),
             ['1', '4', '2', '3'])
 
@@ -1252,6 +1254,16 @@ class DBTest(MyTestCase):
             ('+','assignedto.supervisor.supervisor'),
             ('-','assignedto.supervisor'), ('+','assignedto'), ('+','status')]),
             ['4', '5', '7', '6', '8', '1', '2', '3'])
+        ae(filt(None, {'assignedto':['6','7','8','9','10']},
+            [('+','assignedto.supervisor.supervisor.supervisor'),
+            ('+','assignedto.supervisor.supervisor'),
+            ('-','assignedto.supervisor'), ('+','assignedto'), ('+','status')]),
+            ['4', '5', '7', '6', '8', '1', '2', '3'])
+        ae(filt(None, {'assignedto':['6','7','8','9']},
+            [('+','assignedto.supervisor.supervisor.supervisor'),
+            ('+','assignedto.supervisor.supervisor'),
+            ('-','assignedto.supervisor'), ('+','assignedto'), ('+','status')]),
+            ['4', '5', '1', '2', '3'])
 
     def testFilteringTransitiveLinkSortNull(self):
         """Check sorting of NULL values"""
