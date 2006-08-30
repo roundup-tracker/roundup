@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.45 2006-08-11 00:02:12 richard Exp $
+# $Id: back_sqlite.py,v 1.46 2006-08-30 09:05:30 schlatterbeck Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -288,7 +288,7 @@ class Database(rdbms_common.Database):
     def __repr__(self):
         return '<roundlite 0x%x>'%id(self)
 
-    def sql_commit(self):
+    def sql_commit(self, fail_ok=False):
         ''' Actually commit to the database.
 
             Ignore errors if there's nothing to commit.

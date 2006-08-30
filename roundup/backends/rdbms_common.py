@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.179 2006-08-29 04:32:49 richard Exp $
+#$Id: rdbms_common.py,v 1.180 2006-08-30 09:05:30 schlatterbeck Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2092,8 +2092,7 @@ class Class(hyperdb.Class):
             if not mlseen:
                 pt.attr_sort_done = pt.tree_sort_done = True
         proptree.compute_sort_done()
-                
-        orderby = []
+
         ordercols = []
         auxcols = {}
         mlsort = []
@@ -2262,8 +2261,8 @@ class Class(hyperdb.Class):
                     if (self.order_by_null_values and p.name != 'id'):
                         nv = self.order_by_null_values % oc
                         ordercols.append(nv)
-                        orderby.append(nv + desc)
-                    orderby.append(oc + desc)
+                        p.orderby.append(nv + desc)
+                    p.orderby.append(oc + desc)
 
         props = self.getprops()
 
@@ -2290,9 +2289,16 @@ class Class(hyperdb.Class):
             cols = ['distinct(_%s.id)'%icn]
         else:
             cols = ['_%s.id'%icn]
-        if orderby:
+        if ordercols:
             cols = cols + ordercols
-            order = ' order by %s'%(','.join(orderby))
+        order = []
+        # keep correct sequence of order attributes.
+        for sa in proptree.sortattr:
+            if not sa.attr_sort_done:
+                continue
+            order.extend(sa.orderby)
+        if order:
+            order = ' order by %s'%(','.join(order))
         else:
             order = ''
         for o, p in auxcols.iteritems ():
