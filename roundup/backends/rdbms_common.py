@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.180 2006-08-30 09:05:30 schlatterbeck Exp $
+#$Id: rdbms_common.py,v 1.181 2006-08-30 09:28:26 schlatterbeck Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2163,7 +2163,8 @@ class Class(hyperdb.Class):
             elif isinstance(propclass, Link):
                 if p.sort_type < 2:
                     if p.children:
-                        frum.append('_%s as _%s' % (cn, ln))
+                        if p.sort_type == 0:
+                            frum.append('_%s as _%s' % (cn, ln))
                         where.append('_%s._%s=_%s.id'%(pln, k, ln))
                     if p.has_values:
                         if isinstance(v, type([])):
@@ -2194,8 +2195,7 @@ class Class(hyperdb.Class):
                     lp = p.cls.labelprop()
                     oc = ac = '_%s._%s'%(pln, k)
                     if lp != 'id':
-                        if p.tree_sort_done and (p.sort_type == 2 or not
-                                                 p.children):
+                        if p.tree_sort_done and p.sort_type > 0:
                             loj.append(
                                 'LEFT OUTER JOIN _%s as _%s on _%s._%s=_%s.id'%(
                                 cn, ln, pln, k, ln))
