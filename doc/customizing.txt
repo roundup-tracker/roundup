@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.206 $
+:Version: $Revision: 1.207 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1870,7 +1870,7 @@ filter      lists of items from this class, filtered and sorted. Two
                and prop is a prop name or None.
 
             eg. ``issue.filter(filterspec={"priority": "1"},
-            sort=('activity', '+'))``
+            sort=[('activity', '+')])``
 
 filter_sql  **Only in SQL backends**
 
