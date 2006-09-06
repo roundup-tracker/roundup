@@ -2135,7 +2135,7 @@ class HTMLRequest(HTMLInputMixin):
         '''
         fields = []
         dirs = []
-        for special in ':@':
+        for special in '@:':
             idx = 0
             key = '%s%s%d'%(special, name, idx)
             while key in self.form:
@@ -2155,9 +2155,7 @@ class HTMLRequest(HTMLInputMixin):
                 fields = handleListCGIValue(self.form[key])
                 if dirkey in self.form:
                     dirs.append(self.form[dirkey].value)
-                else:
-                    dirs.append(None)
-            if fields:
+            if fields: # only try other special char if nothing found
                 break
         for f, d in map(None, fields, dirs):
             if f.startswith('-'):
