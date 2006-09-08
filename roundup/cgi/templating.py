@@ -800,6 +800,8 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                     self._nodeid, prop, items[0], value, self._anonymous)
         if htmlprop is not None:
             if has_rest:
+                if isinstance(htmlprop, MultilinkHTMLProperty):
+                    return [h[items[1]] for h in htmlprop]
                 return htmlprop[items[1]]
             return htmlprop
 
@@ -2513,9 +2515,13 @@ class Batch(ZTUtils.Batch):
         if self.last_item is None:
             return 1
         for property in properties:
-            if (self.last_item[property]._value !=
-                self.current_item[property]._value):
-                return 1
+            if property == 'id':
+                if (self.last_item['id'] != self.current_item['id']):
+                    return 1
+            else:
+                if (self.last_item[property]._value !=
+                    self.current_item[property]._value):
+                    return 1
         return 0
 
     # override these 'cos we don't have access to acquisition
