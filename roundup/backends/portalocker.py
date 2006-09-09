@@ -2,7 +2,7 @@
 #                  Requires python 1.5.2 or better.
 
 # ID line added by richard for Roundup file tracking
-# $Id: portalocker.py,v 1.8 2004-02-11 23:55:09 richard Exp $
+# $Id: portalocker.py,v 1.9 2006-09-09 05:42:45 richard Exp $
 
 """Cross-platform (posix/nt) API for flock-style file locking.
 
@@ -66,7 +66,8 @@ if os.name == 'nt':
     FFFF0000 = -65536
     def lock(file, flags):
         hfile = win32file._get_osfhandle(file.fileno())
-        # LockFileEx is not supported on all Win32 platforms (Win95, Win98, WinME).
+        # LockFileEx is not supported on all Win32 platforms (Win95, Win98,
+        # WinME).
         # If it's not supported, win32file will raise an exception.
         # Try LockFileEx first, as it has more functionality and handles
         # blocking locks more efficiently.
@@ -80,10 +81,12 @@ if os.name == 'nt':
             
             # LockFileEx is not supported. Use LockFile.
             # LockFile does not support shared locking -- always exclusive.
-            # Care: the low/high length params are reversed compared to LockFileEx.
+            # Care: the low/high length params are reversed compared to
+            # LockFileEx.
             if not flags & LOCK_EX:
                 import warnings
-                warnings.warn("PortaLocker does not support shared locking on Win9x", RuntimeWarning)
+                warnings.warn("PortaLocker does not support shared "
+                    "locking on Win9x", RuntimeWarning)
             # LockFile only supports immediate-fail locking.
             if flags & LOCK_NB:
                 win32file.LockFile(hfile, 0, 0, FFFF0000, 0)
@@ -96,7 +99,8 @@ if os.name == 'nt':
                         win32file.LockFile(hfile, 0, 0, FFFF0000, 0)
                         break
                     except win32file.error, e:
-                        # Propagate upwards all exceptions other than lock violation.
+                        # Propagate upwards all exceptions other than lock
+                        # violation.
                         if e[0] != winerror.ERROR_LOCK_VIOLATION:
                             raise e
                     # Sleep and poll again.
@@ -105,7 +109,8 @@ if os.name == 'nt':
                     
     def unlock(file):
         hfile = win32file._get_osfhandle(file.fileno())
-        # UnlockFileEx is not supported on all Win32 platforms (Win95, Win98, WinME).
+        # UnlockFileEx is not supported on all Win32 platforms (Win95, Win98,
+        # WinME).
         # If it's not supported, win32file will raise an api_error exception.
         try:
             win32file.UnlockFileEx(hfile, 0, FFFF0000, __overlapped)
@@ -116,7 +121,8 @@ if os.name == 'nt':
                 raise e
             
             # UnlockFileEx is not supported. Use UnlockFile.
-            # Care: the low/high length params are reversed compared to UnLockFileEx.
+            # Care: the low/high length params are reversed compared to
+            # UnLockFileEx.
             win32file.UnlockFile(hfile, 0, 0, FFFF0000, 0)
 
 elif os.name =='posix':
