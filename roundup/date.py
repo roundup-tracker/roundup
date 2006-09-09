@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: date.py,v 1.87 2006-05-06 16:43:29 a1s Exp $
+# $Id: date.py,v 1.88 2006-09-09 05:50:17 richard Exp $
 
 """Date, time and time interval handling.
 """
@@ -732,10 +732,10 @@ class Interval:
         elif isinstance(other, Interval):
             # add the other Interval to this one
             a = self.get_tuple()
-            as = a[0]
+            asgn = a[0]
             b = other.get_tuple()
-            bs = b[0]
-            i = [as*x + bs*y for x,y in zip(a[1:],b[1:])]
+            bsgn = b[0]
+            i = [asgn*x + bsgn*y for x,y in zip(a[1:],b[1:])]
             i.insert(0, 1)
             i = fixTimeOverflow(i)
             return Interval(i, translator=self.translator)
@@ -752,10 +752,10 @@ class Interval:
         elif isinstance(other, Interval):
             # add the other Interval to this one
             a = self.get_tuple()
-            as = a[0]
+            asgn = a[0]
             b = other.get_tuple()
-            bs = b[0]
-            i = [as*x - bs*y for x,y in zip(a[1:],b[1:])]
+            bsgn = b[0]
+            i = [asgn*x - bsgn*y for x,y in zip(a[1:],b[1:])]
             i.insert(0, 1)
             i = fixTimeOverflow(i)
             return Interval(i, translator=self.translator)

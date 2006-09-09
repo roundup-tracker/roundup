@@ -1,3 +1,4 @@
+from __future__ import nested_scopes
 #
 # Copyright (c) 2001 Bizar Software Pty Ltd (http://www.bizarsoftware.com.au/)
 # This module is free software, and you may redistribute it and/or modify
@@ -15,13 +16,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.124 2006-05-06 17:19:58 a1s Exp $
+# $Id: roundupdb.py,v 1.125 2006-09-09 05:50:17 richard Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
 __docformat__ = 'restructuredtext'
-
-from __future__ import nested_scopes
 
 import re, os, smtplib, socket, time, random
 import cStringIO, base64, quopri, mimetypes

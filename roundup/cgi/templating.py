@@ -1,3 +1,5 @@
+from __future__ import nested_scopes
+
 """Implements the API used in the HTML templating for the web interface.
 """
 
@@ -17,7 +19,6 @@ todo = '''
 
 __docformat__ = 'restructuredtext'
 
-from __future__ import nested_scopes
 
 import sys, cgi, urllib, os, re, os.path, time, errno, mimetypes, csv
 import calendar, textwrap

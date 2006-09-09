@@ -53,6 +53,9 @@ Fixed:
   committing clenup in the sessions database
 - translate titles of "show all" and "unassigned" issue lists
   in classic template (sf patch 1424576)
+- "as" is a keyword in Python 2.6
+- "from __future__" statments need to be first line of file in Python 2.6
+
 
 2006-04-27 1.1.2
 Feature:
