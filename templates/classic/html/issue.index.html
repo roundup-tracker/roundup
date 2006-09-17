@@ -1,4 +1,4 @@
-<!-- dollarId: issue.index,v 1.2 2001/07/29 04:07:37 richard Exp dollar-->
+<!-- $Id: issue.index.html,v 1.24 2006-09-17 23:27:21 tobias-herp Exp $ -->
 <tal:block metal:use-macro="templates/page/macros/icing">
 <title metal:fill-slot="head_title" >
   <span tal:omit-tag="true" i18n:translate="" >List of issues</span>
@@ -30,7 +30,7 @@
    <th tal:condition="request/show/creator" i18n:translate="">Creator</th>
    <th tal:condition="request/show/assignedto" i18n:translate="">Assigned&nbsp;To</th>
   </tr>
- <tal:block tal:repeat="i batch">
+ <tal:block tal:repeat="i batch" condition=true>
   <tr tal:define="group python:[r[1] for r in request.group]"
       tal:condition="python:group and batch.propchanged(*group)">
    <th tal:attributes="colspan python:len(request.columns)" class="group">
@@ -156,4 +156,5 @@
 </tal:block>
 
 </td>
-</tal:block>
+</tal:block><tal:comment condition=false> vim: sw=1 ts=8 et si
+</tal:comment>

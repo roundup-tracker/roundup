@@ -44,6 +44,16 @@ function determineList() {
      return list;  
 }
 
+/**
+ * update the field in the opening window;
+ * the text_field variable must be set in the calling page
+ */
+function updateOpener() {
+  // write back to opener window
+  if (document.frm_help.check==undefined) { return; }
+  form[field].value = text_field.value;
+}
+
 function updateList() {
   // write back to opener window
   if (document.frm_help.check==undefined) { return; }
@@ -61,6 +71,40 @@ function clearList() {
   if (document.frm_help.check==undefined) { return; }
   for (box=0; box < document.frm_help.check.length; box++) {
       document.frm_help.check[box].checked = false;
+  }
+}
+
+function reviseList_framed(form, textfield) {
+  // update the checkboxes based on the preview field
+  // alert('reviseList_framed')
+  // alert(form)
+  if (form.check==undefined)
+      return;
+  // alert(textfield)
+  var to_check;
+  var list = textfield.value.split(",");
+  if (form.check.length==undefined) {
+      check = form.check;
+      to_check = false;
+      for (val in list) {
+          if (check.value==trim(list[val])) {
+              to_check = true;
+              break;
+          }
+      }
+      check.checked = to_check;
+  } else {
+    for (box=0; box < form.check.length; box++) {
+      check = form.check[box];
+      to_check = false;
+      for (val in list) {
+          if (check.value==trim(list[val])) {
+              to_check = true;
+              break;
+          }
+      }
+      check.checked = to_check;
+    }
   }
 }
 
@@ -118,6 +162,44 @@ function selectField(name) {
       var obj = document.forms[i].elements[name];
       if (obj && obj.focus){obj.focus();} 
       if (obj && obj.select){obj.select();}
+    }
+}
+
+function checkRequiredFields(fields)
+{
+    var bonk='';
+    var res='';
+    var argv = checkRequiredFields.arguments;
+    var argc = argv.length;
+    var input = '';
+    var val='';
+
+    for (var i=0; i < argc; i++) {
+        fi = argv[i];
+        input = document.getElementById(fi);
+        if (input) {
+            val = input.value
+            if (val == '' || val == '-1' || val == -1) {
+                if (res == '') {
+                    res = fi;
+                    bonk = input;
+                } else {
+                    res += ', '+fi;
+                }
+            }
+        } else {
+            alert('Field with id='+fi+' not found!')
+        }
+    }
+    if (res == '') {
+        return submit_once();
+    } else {
+        alert('Missing value here ('+res+')!');
+        if (window.event && window.event.returnvalue) {
+            event.returnValue = 0;    // work-around for IE
+        }
+        bonk.focus();
+        return false;
     }
 }
 

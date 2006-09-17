@@ -7,11 +7,15 @@
 
 <form method="GET" name="itemSynopsis"
       tal:attributes="action request/classname">
-
+      
 <table class="form" tal:define="
    cols python:request.columns or 'id activity title status assignedto'.split();
-   sort_on python:request.sort[1] or 'activity';
-   group_on python:request.group[1] or 'priority';
+   sort_on python:request.sort and request.sort[0] or nothing;
+   sort_desc python:sort_on and sort_on[0] == '-';
+   sort_on python:(sort_on and sort_on[1]) or 'activity';
+   group_on python:request.group and request.group[0] or nothing;
+   group_desc python:group_on and group_on[0] == '-';
+   group_on python:(group_on and group_on[1]) or 'priority';
 
    search_input templates/page/macros/search_input;
    search_date templates/page/macros/search_date;
@@ -19,6 +23,7 @@
    sort_input templates/page/macros/sort_input;
    group_input templates/page/macros/group_input;
    search_select templates/page/macros/search_select;
+   search_select_translated templates/page/macros/search_select_translated;
    search_multiselect templates/page/macros/search_multiselect;">
 
 <tr>
@@ -111,7 +116,7 @@
                 db_klass string:priority;
                 db_content string:name;">
   <th i18n:translate="">Priority:</th>
-  <td metal:use-macro="search_select">
+  <td metal:use-macro="search_select_translated">
     <option metal:fill-slot="extra_options" value="-1" i18n:translate=""
             tal:attributes="selected python:value == '-1'">not selected</option>
   </td>
@@ -124,7 +129,7 @@
                 db_klass string:status;
                 db_content string:name;">
   <th i18n:translate="">Status:</th>
-  <td metal:use-macro="search_select">
+  <td metal:use-macro="search_select_translated">
     <tal:block metal:fill-slot="extra_options">
       <option value="-1,1,2,3,4,5,6,7" i18n:translate=""
               tal:attributes="selected python:value == '-1,1,2,3,4,5,6,7'">not resolved</option>
@@ -178,14 +183,14 @@
 <tr>
 <th i18n:translate="">Sort Descending:</th>
 <td><input type="checkbox" name="@sortdir"
-           tal:attributes="checked python:request.sort[0] == '-' or request.sort[0] is None">
+           tal:attributes="checked sort_desc">
 </td>
 </tr>
 
 <tr>
 <th i18n:translate="">Group Descending:</th>
 <td><input type="checkbox" name="@groupdir"
-           tal:attributes="checked python:request.group[0] == '-'">
+           tal:attributes="checked group_desc">
 </td>
 </tr>
 
