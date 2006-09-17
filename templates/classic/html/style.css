@@ -127,7 +127,7 @@ p.error-message a[href] {
 /* style for search forms */
 ul.search-checkboxes {
     display: inline;
-    padding: none;
+    padding: 0;
     list-style: none;
 }
 ul.search-checkboxes > li {
@@ -421,3 +421,13 @@ table.otherinfo th {
   font-weight: bold;
   text-align: left;
 }
+input[type="text"]:focus,
+input[type="checkbox"]:focus,
+input[type="radio"]:focus,
+input[type="password"]:focus,
+textarea:focus, select:focus {
+  background-color: #ffffc0;
+}
+
+/* vim: ts=2 sw=2 et
+*/
