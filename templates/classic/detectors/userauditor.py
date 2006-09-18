@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-#$Id: userauditor.py,v 1.2 2003-11-11 22:25:37 richard Exp $
+#$Id: userauditor.py,v 1.3 2006-09-18 03:24:38 tobias-herp Exp $
 
 def audit_user_fields(db, cl, nodeid, newvalues):
     ''' Make sure user properties are valid.
@@ -29,7 +29,7 @@ def audit_user_fields(db, cl, nodeid, newvalues):
     if newvalues.has_key('address') and ' ' in newvalues['address']:
         raise ValueError, 'Email address must not contain spaces'
 
-    if newvalues.has_key('roles'):
+    if newvalues.has_key('roles') and newvalues['roles']:
         roles = [x.lower().strip() for x in newvalues['roles'].split(',')]
         for rolename in roles:
             if not db.security.role.has_key(rolename):
