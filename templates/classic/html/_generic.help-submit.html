@@ -48,10 +48,6 @@ function checkListForm() {
        props python:request.form['properties'].value.split(',')"
        class="help-submit"
        id="classhelp-controls">
-       <!--input type="button" name="btn_clear"
- tal:attributes="action request/base"
- style="width:100%;margin-right:1em;margin-left:0"
-              value="Clear" onClick="clearList()"/ -->
      <div style="width:100%;text-align:left;margin-bottom:0.2em">
        <input type="text" name="text_preview" size="24" class="preview"
        onchange="f=getListForm();if(f){ reviseList_framed(f, this)};"

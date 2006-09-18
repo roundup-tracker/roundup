@@ -11,7 +11,7 @@ field request/form/property/value">
       <tal:block tal:condition="python:request.form.has_key('property')">
       <title><tal:x i18n:translate=""><tal:x i18n:name="property"
        tal:content="property" i18n:translate="" /> help - <span i18n:name="tracker"
-	       tal:replace="config/TRACKER_NAME" /></tal:x> - Frame-Version</title>
+	       tal:replace="config/TRACKER_NAME" /></tal:x></title>
       <script language="Javascript" type="text/javascript"
 	      tal:condition=false
           tal:content="structure string:<!--

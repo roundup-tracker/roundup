@@ -41,12 +41,12 @@ qs python:'&'.join([a for a in qs.split('&') if not a.startswith('@template=')])
    <input type="hidden" name="form" value="" tal:attributes="value request/form/form/value">
    <table>
 <tr tal:define="name string:username; label string:Username:">
-  <th metal:use-macro="th_label" />
+  <th metal:use-macro="th_label">Name</th>
   <td metal:use-macro="search_input"><input type=text></td>
 </tr>
 
 <tr tal:define="name string:phone; label string:Phone number">
-  <th metal:use-macro="th_label" />
+  <th metal:use-macro="th_label">Phone</th>
   <td metal:use-macro="search_input"><input type=text></td>
 </tr>
 
@@ -54,10 +54,10 @@ qs python:'&'.join([a for a in qs.split('&') if not a.startswith('@template=')])
                 onchange string:this.form.submit();
                 label string:Rollen:"
                 >
-  <th metal:use-macro="th_label" />
+  <th metal:use-macro="th_label">role</th>
   <td metal:use-macro="search_select_roles">
     <select>
-      <option value="">Spaßvogel</option>
+      <option value="">jokester</option>
     </select>
   </td>
 </tr>
@@ -81,11 +81,5 @@ qs python:'&'.join([a for a in qs.split('&') if not a.startswith('@template=')])
 <script type="text/javascript"><!--
   focus2id('username');
 //--></script>
-  <script type="text/javascript"
-    tal:condition=false
-    tal:content="structure string:<!--
-    parent.submit.document.URL='?form=${form}&field=${field}&@template=help-submit&_current_val='+encodeURIComponent(original_field);
-    document.write(parent.submit.document.URL)
-//-->"></script>
   </body>
 </html>
