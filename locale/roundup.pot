@@ -2733,3 +2733,71 @@ msgstr ""
 #: ../templates/minimal/html/page.html:55
 msgid "Hello,<br>${user}"
 msgstr ""
+
+# priority translations:
+#: ../templates/classic/initial_data.py:5
+#: ../templates/classic/html/page.html:246
+msgid "critical"
+msgstr ""
+
+#: ../templates/classic/initial_data.py:6
+#: ../templates/classic/html/page.html:246
+msgid "urgent"
+msgstr ""
+
+#: ../templates/classic/initial_data.py:7
+#: ../templates/classic/html/page.html:246
+msgid "bug"
+msgstr ""
+
+#: ../templates/classic/initial_data.py:8
+#: ../templates/classic/html/page.html:246
+msgid "feature"
+msgstr ""
+
+#: ../templates/classic/initial_data.py:9
+#: ../templates/classic/html/page.html:246
+msgid "wish"
+msgstr ""
+
+#: status translations:
+#: ../templates/classic/initial_data.py:12
+#: ../templates/classic/html/page.html:246
+msgid "unread"
+msgstr ""
+
+#: ../templates/classic/initial_data.py:13
+#: ../templates/classic/html/page.html:246
+msgid "deferred"
+msgstr ""
+
+#: ../templates/classic/initial_data.py:14
+#: ../templates/classic/html/page.html:246
+msgid "chatting"
+msgstr ""
+
+#: ../templates/classic/initial_data.py:15
+#: ../templates/classic/html/page.html:246
+msgid "in-progress"
+msgstr ""
+
+#: ../templates/classic/initial_data.py:16
+#: ../templates/classic/html/page.html:246
+msgid "need-eg"
+msgstr ""
+
+#: ../templates/classic/initial_data.py:17
+#: ../templates/classic/html/page.html:246
+msgid "testing"
+msgstr ""
+
+#: ../templates/classic/initial_data.py:18
+#: ../templates/classic/html/page.html:246
+msgid "done-cbb"
+msgstr ""
+
+#: ../templates/classic/initial_data.py:19
+#: ../templates/classic/html/page.html:246
+msgid "resolved"
+msgstr ""
+
