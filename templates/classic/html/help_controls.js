@@ -17,10 +17,10 @@ function trim(value) {
 function determineList() {
      // generate a comma-separated list of the checked items
      var list = new String('');
- 
+
      // either a checkbox object or an array of checkboxes
      var check = document.frm_help.check;
- 
+
      if ((check.length == undefined) && (check.checked != undefined)) {
          // only one checkbox on page
          if (check.checked) {
@@ -41,7 +41,7 @@ function determineList() {
              }
          }
      }
-     return list;  
+     return list;
 }
 
 /**
@@ -160,7 +160,7 @@ function focusField(name) {
 function selectField(name) {
     for(i=0; i < document.forms.length; ++i) {
       var obj = document.forms[i].elements[name];
-      if (obj && obj.focus){obj.focus();} 
+      if (obj && obj.focus){obj.focus();}
       if (obj && obj.select){obj.select();}
     }
 }
@@ -203,3 +203,122 @@ function checkRequiredFields(fields)
     }
 }
 
+/**
+ * seeks the given value (2nd argument)
+ * in the value of the given input element (1st argument),
+ * which is considered a list of values, separated by commas
+ */
+function has_value(input, val)
+{
+    var actval = input.value
+    var arr = feld.value.split(',');
+    var max = arr.length;
+    for (i=0;i<max;i++) {
+        if (trim(arr[i]) == val) {
+            return true
+        }
+    }
+    return false
+}
+
+/**
+ * Switch Value:
+ * change the value of the given input field (might be of type text or hidden),
+ * adding or removing the value of the given checkbox field (might be a radio
+ * button as well)
+ *
+ * This function doesn't care whether or not the checkboxes of all values of
+ * interest are present; but of course it doesn't have total control of the
+ * text field.
+ */
+function switch_val(text, check)
+{
+    var switched_val = check.value
+    var arr = text.value.split(',')
+    var max = arr.length
+    if (check.checked) {
+        for (i=0; i<max; i++) {
+            if (trim(arr[i]) == switched_val) {
+                return
+            }
+        }
+	if (text.value)
+            text.value = text.value+','+switched_val
+	else
+            text.value = switched_val
+    } else {
+        var neu = ''
+	var changed = false
+        for (i=0; i<max; i++) {
+            if (trim(arr[i]) == switched_val) {
+                changed=true
+            } else {
+                neu = neu+','+trim(arr[i])
+            }
+        }
+        if (changed) {
+            text.value = neu.substr(1)
+        }
+    }
+}
+
+/**
+ * append the given value (2nd argument) to an input field
+ * (1st argument) which contains comma-separated values;
+ * see --> remove_val()
+ *
+ * This will work nicely even for batched lists
+ */
+function append_val(name, val)
+{
+    var feld = document.itemSynopsis[name];
+    var actval = feld.value;
+    if (actval == '') {
+        feld.value = val
+    } else {
+        var arr = feld.value.split(',');
+        var max = arr.length;
+        for (i=0;i<max;i++) {
+            if (trim(arr[i]) == val) {
+                return
+            }
+        }
+        feld.value = actval+','+val
+    }
+}
+
+/**
+ * remove the given value (2nd argument) from the comma-separated values
+ * of the given input element (1st argument); see --> append_val()
+ */
+function remove_val(name, val)
+{
+    var feld = document.itemSynopsis[name];
+    var actval = feld.value;
+    var changed=false;
+    if (actval == '') {
+	return
+    } else {
+        var arr = feld.value.split(',');
+        var max = arr.length;
+        var neu = ''
+        for (i=0;i<max;i++) {
+            if (trim(arr[i]) == val) {
+                changed=true
+            } else {
+                neu = neu+','+trim(arr[i])
+            }
+        }
+        if (changed) {
+            feld.value = neu.substr(1)
+        }
+    }
+}
+
+/**
+ * give the focus to the element given by id
+ */
+function focus2id(name)
+{
+    document.getElementById(name).focus();
+}

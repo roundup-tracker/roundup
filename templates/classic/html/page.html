@@ -251,8 +251,9 @@ Could extend it (METAL 1.1 attribute "extend-macro")
 </td>
 
 <!-- currently, there is no convenient API to get a list of all roles -->
-<td metal:define-macro="search_select_roles">
-  <select name=roles id=roles>
+<td metal:define-macro="search_select_roles"
+	  tal:define="onchange onchange | nothing">
+  <select name=roles id=roles tal:attributes="onchange onchange">
     <option value="" i18n:translate="">don't care</option>
     <option value="" i18n:translate="" disabled="disabled">------------</option>
     <option value="User">User</option>
