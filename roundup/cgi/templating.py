@@ -393,12 +393,28 @@ def lookupKeys(linkcl, key, ids, num_re=re.compile('^-?\d+$')):
             l.append(entry)
     return l
 
+def _set_input_default_args(dic):
+    # 'text' is the default value anyway --
+    # but for CSS usage it should be present
+    dic.setdefault('type', 'text')
+    # useful e.g for HTML LABELs:
+    if not dic.has_key('id'):
+        try:
+            if dic['text'] in ('radio', 'checkbox'):
+                dic['id'] = '%(name)s-%(value)s' % dic
+            else:
+                dic['id'] = dic['name']
+        except KeyError:
+            pass
+
 def input_html4(**attrs):
     """Generate an 'input' (html4) element with given attributes"""
+    _set_input_default_args(attrs) 
     return '<input %s>'%' '.join(['%s="%s"'%item for item in attrs.items()])
 
 def input_xhtml(**attrs):
     """Generate an 'input' (xhtml) element with given attributes"""
+    _set_input_default_args(attrs)
     return '<input %s/>'%' '.join(['%s="%s"'%item for item in attrs.items()])
 
 class HTMLInputMixin:
@@ -1336,9 +1352,11 @@ class StringHTMLProperty(HTMLProperty):
         else:
             value = cgi.escape(str(self._value))
 
-        value = '&quot;'.join(value.split('"'))
-        return '<textarea name="%s" rows="%s" cols="%s">%s</textarea>'%(
-            self._formname, rows, cols, value)
+            value = '&quot;'.join(value.split('"'))
+        name = self._formname
+        return ('<textarea name="%(name)s" id="%(name)s"'
+                ' rows="%(rows)s" cols="%(cols)s">'
+                 '%(value)s</textarea>') % locals()
 
     def email(self, escape=1):
         ''' Render the value of the property as an obscured email address
@@ -1373,7 +1391,7 @@ class PasswordHTMLProperty(HTMLProperty):
             return ''
         return self._('*encrypted*')
 
-    def field(self, size = 30):
+    def field(self, size=30):
         ''' Render a form edit field for the property.
 
             If not editable, just display the value via plain().
@@ -1383,7 +1401,7 @@ class PasswordHTMLProperty(HTMLProperty):
 
         return self.input(type="password", name=self._formname, size=size)
 
-    def confirm(self, size = 30):
+    def confirm(self, size=30):
         ''' Render a second form edit field for the property, used for
             confirmation that the user typed the password correctly. Generates
             a field with name "@confirm@name".
@@ -1394,7 +1412,9 @@ class PasswordHTMLProperty(HTMLProperty):
             return ''
 
         return self.input(type="password",
-            name="@confirm@%s"%self._formname, size=size)
+            name="@confirm@%s"%self._formname,
+            id="%s-confirm"%self._formname,
+            size=size)
 
 class NumberHTMLProperty(HTMLProperty):
     def plain(self):
@@ -1408,7 +1428,7 @@ class NumberHTMLProperty(HTMLProperty):
 
         return str(self._value)
 
-    def field(self, size = 30):
+    def field(self, size=30):
         ''' Render a form edit field for the property.
 
             If not editable, just display the value via plain().
@@ -1638,7 +1658,7 @@ class DateHTMLProperty(HTMLProperty):
         return DateHTMLProperty(self._client, self._classname, self._nodeid,
             self._prop, self._formname, self._value, offset=offset)
 
-    def popcal(self, width=300, height=200, label= "(cal)",
+    def popcal(self, width=300, height=200, label="(cal)",
             form="itemSynopsis"):
         """Generate a link to a calendar pop-up window.
 
@@ -1679,7 +1699,7 @@ class IntervalHTMLProperty(HTMLProperty):
 
         return self._value.pretty()
 
-    def field(self, size = 30):
+    def field(self, size=30):
         ''' Render a form edit field for the property
 
             If not editable, just display the value via plain().
@@ -1760,8 +1780,9 @@ class LinkHTMLProperty(HTMLProperty):
                 value = self._value
             value = cgi.escape(str(value))
             value = '&quot;'.join(value.split('"'))
-        return '<input name="%s" value="%s" size="%s">'%(self._formname,
-            value, size)
+        return self.input(name=self._formname,
+                          value=value,
+                          size=size)
 
     def menu(self, size=None, height=None, showid=0, additional=[], value=None,
             sort_on=None, **conditions):
