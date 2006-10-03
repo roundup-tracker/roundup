@@ -1,4 +1,4 @@
-#$Id: back_postgresql.py,v 1.34 2006-08-29 04:20:50 richard Exp $
+#$Id: back_postgresql.py,v 1.35 2006-10-03 23:15:09 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -12,8 +12,10 @@ __docformat__ = 'restructuredtext'
 import os, shutil, popen2, time
 try:
     import psycopg
+    from psycopg import QuotedString
 except:
-    import psycopg2 as psycopg
+    from psycopg2 import psycopg1 as psycopg
+    from psycopg2.extensions import QuotedString
 import logging
 
 from roundup import hyperdb, date
@@ -202,7 +204,7 @@ class Database(rdbms_common.Database):
     def sql_stringquote(self, value):
         ''' psycopg.QuotedString returns a "buffer" object with the
             single-quotes around it... '''
-        return str(psycopg.QuotedString(str(value)))[1:-1]
+        return str(QuotedString(str(value)))[1:-1]
 
     def sql_index_exists(self, table_name, index_name):
         sql = 'select count(*) from pg_indexes where ' \
