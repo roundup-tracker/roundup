@@ -1,4 +1,4 @@
-#$Id: back_postgresql.py,v 1.35 2006-10-03 23:15:09 richard Exp $
+#$Id: back_postgresql.py,v 1.36 2006-10-03 23:28:51 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -70,6 +70,8 @@ def db_command(config, command):
 def pg_command(cursor, command):
     '''Execute the postgresql command, which may be blocked by some other
     user connecting to the database, and return a true value if it succeeds.
+    
+    If there is a concurrent update, retry the command.
     '''
     try:
         cursor.execute(command)
@@ -78,10 +80,18 @@ def pg_command(cursor, command):
         if response.find('FATAL') != -1:
             raise RuntimeError, response
         elif response.find('ERROR') != -1:
-            if response.find('is being accessed by other users') == -1:
-                raise RuntimeError, response
-            time.sleep(1)
-            return 0
+            msgs = [
+                'is being accessed by other users',
+                'could not serialize access due to concurrent update',
+            ]
+            can_retry = 0
+            for msg in msgs:
+                if response.find(msg) == -1:
+                    can_retry = 1
+            if can_retry:
+                time.sleep(1)
+                return 0
+            raise RuntimeError, response
     return 1
 
 def db_exists(config):

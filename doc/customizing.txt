@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.207 $
+:Version: $Revision: 1.208 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -3373,11 +3373,13 @@ be able to give a summary of the total time spent on a particular issue.
    to the ``extensions`` directory in our tracker. The contents of this
    file is as follows::
 
+    from roundup import date
+
     def totalTimeSpent(times):
         ''' Call me with a list of timelog items (which have an
             Interval "period" property)
         '''
-        total = Interval('0d')
+        total = date.Interval('0d')
         for time in times:
             total += time.period._value
         return total

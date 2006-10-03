@@ -63,6 +63,7 @@ letting me implement this system on their time.
 Thanks also to the many people on the mailing list, in the sourceforge
 project and those who just report bugs:
 Thomas Arendsen Hein,
+Nerijus Baliunas,
 Anthony Baxter,
 Marlon van den Berg,
 Bo Berglund,
