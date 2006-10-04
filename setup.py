@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.89 2006-03-03 02:29:09 richard Exp $
+# $Id: setup.py,v 1.90 2006-10-04 01:14:37 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -351,29 +351,31 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
 
-Fixed:
+New Features in this release:
 
-- failure with browsers not sending "Accept-Language" header
-  (sf bugs 1429646 and 1435335)
-- translate class name in "required property not supplied" error message
-  (sf bug 1429669)
-- error in link property lookups with numeric-alike key values (sf bug 1424550)
-- ignore UTF-8 BOM in .po files
-- add permission filter to menu() implementations (sf bug 1431188)
-- lithuanian translation updated by Nerijus Baliunas (sf patch 1411175)
-- incompatibility with python2.3 in the mailer module (sf bug 1432602)
-- typo in SMTP TLS option name: "MAIL_TLS_CERFILE" (sf bug 1435452)
-- email obfuscation code in html templating is more robust
-- blank-title subject line handling (sf bug 1442121)
-- "All users may only view and edit issues, files and messages they
-  create" example in docs (sf bug 1439086)
-- saving of queries (sf bug 1436169)
-- "Adding a new constrained field to the classic schema" example in docs
-  (sf bug 1433118)
-- security check in mailgw (sf bug 1442145)
-- "clear this message" (sf bug 1429367)
-- escape all uses of "schema" in mysql backend (sf bug 1397569)
-- date spec wasn't allowing week intervals
+- supports Python 2.5, including the sqlite3 module
+- full timezone support (sf patch 1465296)
+- handle connection loss when responding to web requests
+- match incoming mail In-Reply-To against existing messages when no issue
+  id is specified in the Subject
+- added StringHTMLProperty wrapped() method to wrap long lines in issue
+  display
+- include the popcal in Date field editing and search fields by default
+- @required in forms may now specify properties of linked items (sf patch
+  1507093)
+- update for latest version of pysqlite (sf bug 1487098; patch 1534227)
+- update for latest version of psycopg2 (sf patch 1429391)
+- new "exporttables" command in roundup-admin (sf bug 1533791)
+- roundup-admin "export" may specify classes to exclude (sf bug 1533791)
+- sorting and grouping by multiple properties is now supported by the
+  backends *and* the classic template.
+- sorting, grouping, and searching by transitive properties (e.g.,
+  messages.author.supervisor) is now supported in all backends
+- added filter_sql to SQL backends which takes an arbitrary SQL statement
+  and returns a list of item ids
+
+There was also a lot of bugfixes - see the bundled CHANGES.txt file for the
+list.
 ''',
         'author': "Richard Jones",
         'author_email': "richard@users.sourceforge.net",
