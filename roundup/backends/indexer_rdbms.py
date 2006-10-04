@@ -1,4 +1,4 @@
-#$Id: indexer_rdbms.py,v 1.14 2006-05-06 16:19:27 a1s Exp $
+#$Id: indexer_rdbms.py,v 1.15 2006-10-04 01:12:00 richard Exp $
 ''' This implements the full-text indexer over two RDBMS tables. The first
 is a mapping of words to occurance IDs. The second maps the IDs to (Class,
 propname, itemid) instances.
@@ -95,7 +95,7 @@ class Indexer(IndexerBase):
             a = ','.join([self.db.arg] * len(r))
             sql = 'select _class, _itemid, _prop from __textids '\
                 'where _textid in (%s)'%a
-            self.db.cursor.execute(sql, tuple([int(id) for (id,) in r]))
+            self.db.cursor.execute(sql, tuple([int(row[0]) for row in r]))
 
         else:
             # A more complex version for MySQL since it doesn't implement INTERSECT

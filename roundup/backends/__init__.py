@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: __init__.py,v 1.36 2006-01-25 03:24:09 richard Exp $
+# $Id: __init__.py,v 1.37 2006-10-04 01:12:00 richard Exp $
 
 '''Container for the hyperdb storage backend implementations.
 '''
@@ -28,9 +28,10 @@ import sys
 # module name, have_backend quietly returns False.
 # Otherwise the error is reraised.
 _modules = {
-    'mysql': 'MySQLdb',
-    'postgresql': 'psycopg',
-    'tsearch2': 'psycopg',
+    'mysql': ('MySQLdb',),
+    'postgresql': ('psycopg',),
+    'tsearch2': ('psycopg',),
+    'sqlite': ('pysqlite', 'pysqlite2'),
 }
 
 def get_backend(name):
@@ -65,10 +66,10 @@ def have_backend(name):
         get_backend(name)
         return 1
     except ImportError, e:
-        global _modules
-        if not str(e).startswith('No module named %s'
-                % _modules.get(name, name)):
-            raise
+        for name in _modules.get(name, (name,)):
+            if str(e).startswith('No module named %s'%name):
+                return 0
+        raise
     return 0
 
 def list_backends():

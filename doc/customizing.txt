@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.208 $
+:Version: $Revision: 1.209 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1869,8 +1869,14 @@ filter      lists of items from this class, filtered and sorted. Two
                where dir is '+', '-' or None
                and prop is a prop name or None.
 
-            eg. ``issue.filter(filterspec={"priority": "1"},
-            sort=[('activity', '+')])``
+               The propname in filterspec and prop in a sort/group spec
+               may be transitive, i.e., it may contain properties of
+               the form link.link.link.name.
+
+            eg. All issues with a priority of "1" with messages added in
+            the last week, sorted by activity date:
+            ``issue.filter(filterspec={"priority": "1",
+            'messages.creation' : '.-1w;'}, sort=[('activity', '+')])``
 
 filter_sql  **Only in SQL backends**
 
@@ -2199,7 +2205,8 @@ show        a convenience access to columns - request/show/colname will
 sort        index sort columns [(direction, column name)]
 group       index grouping properties [(direction, column name)]
 filter      properties to filter the index on
-filterspec  values to filter the index on
+filterspec  values to filter the index on (property=value, eg
+            ``priority=1`` or ``messages.author=42``
 search_text text to perform a full-text search on for an index
 =========== ============================================================
 

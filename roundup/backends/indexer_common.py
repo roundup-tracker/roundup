@@ -1,4 +1,4 @@
-#$Id: indexer_common.py,v 1.6 2006-04-27 05:48:26 richard Exp $
+#$Id: indexer_common.py,v 1.7 2006-10-04 01:12:00 richard Exp $
 import re, sets
 
 from roundup import hyperdb
@@ -49,12 +49,17 @@ class Indexer:
         propspec = {}     # used to do the klass.find
         for propname in designator_propname.values():
             propspec[propname] = {}   # used as a set (value doesn't matter)
-        for classname, nodeid, property in hits:
+
+        # don't unpack hits entries as sqlite3's Row can't be unpacked :(
+        for entry in hits:
             # skip this result if we don't care about this class/property
+            classname = entry[0]
+            property = entry[2]
             if ignore.has_key((classname, property)):
                 continue
 
             # if it's a property on klass, it's easy
+            nodeid = entry[1]
             if classname == klass.classname:
                 if not nodeids.has_key(nodeid):
                     nodeids[nodeid] = {}

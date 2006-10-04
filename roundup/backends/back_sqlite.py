@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.46 2006-08-30 09:05:30 schlatterbeck Exp $
+# $Id: back_sqlite.py,v 1.47 2006-10-04 01:12:00 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -13,10 +13,15 @@ import os, base64, marshal, shutil, time, logging
 
 from roundup import hyperdb, date, password
 from roundup.backends import rdbms_common
+is_sqlite3 = False
 try:
     import sqlite
 except ImportError:
-    from pysqlite2 import dbapi2 as sqlite
+    try:
+        from pysqlite2 import dbapi2 as sqlite
+    except ImportError:
+        import sqlite3 as sqlite
+        is_sqlite3 = True
 
 def db_exists(config):
     return os.path.exists(os.path.join(config.DATABASE, 'db'))
@@ -26,7 +31,10 @@ def db_nuke(config):
 
 class Database(rdbms_common.Database):
     # char to use for positional arguments
-    arg = '%s'
+    if is_sqlite3:
+        arg = '?'
+    else:
+        arg = '%s'
 
     # used by some code to switch styles of query
     implements_intersect = 1
@@ -88,10 +96,14 @@ class Database(rdbms_common.Database):
 
         db = os.path.join(self.config.DATABASE, 'db')
         logging.getLogger('hyperdb').info('open database %r'%db)
-        conn = sqlite.connect(db=db)
         # set a 30 second timeout (extraordinarily generous) for handling
         # locked database
-        conn.db.sqlite_busy_handler(self.sqlite_busy_handler)
+        if is_sqlite3:
+            conn = sqlite.connect(db, 30)
+            conn.row_factory = sqlite.Row
+        else:
+            conn = sqlite.connect(db=db)
+            conn.db.sqlite_busy_handler(self.sqlite_busy_handler)
         cursor = conn.cursor()
         return (conn, cursor)
 
@@ -252,11 +264,21 @@ class Database(rdbms_common.Database):
                     # generate the new value for the Interval int column
                     if name.endswith('_int__'):
                         name = name[2:-6]
-                        if entry.has_key(name):
+                        if is_sqlite3:
+                            try:
+                                v = hyperdb.Interval(entry[name]).as_seconds()
+                            except IndexError:
+                                v = None
+                        elif entry.has_key(name):
                             v = hyperdb.Interval(entry[name]).as_seconds()
                         else:
                             v = None
-                    elif entry.has_key(name):
+                    elif is_sqlite3:
+                        try:
+                            v = entry[name]
+                        except IndexError:
+                            v = None
+                    elif (not is_sqlite3 and entry.has_key(name)):
                         v = entry[name]
                     else:
                         v = None
@@ -342,9 +364,18 @@ class Database(rdbms_common.Database):
 
     def create_class(self, spec):
         rdbms_common.Database.create_class(self, spec)
-        sql = 'insert into ids (name, num) values (%s, %s)'
+        sql = 'insert into ids (name, num) values (%s, %s)'%(self.arg, self.arg)
         vals = (spec.classname, 1)
         self.sql(sql, vals)
+
+    if is_sqlite3:
+        def load_journal(self, classname, cols, nodeid):
+            '''We need to turn the sqlite3.Row into a tuple so it can be
+            unpacked'''
+            l = rdbms_common.Database.load_journal(self,
+                classname, cols, nodeid)
+            cols = range(5)
+            return [[row[col] for col in cols] for row in l]
 
 class sqliteClass:
     def filter(self, search_matches, filterspec, sort=(None,None),

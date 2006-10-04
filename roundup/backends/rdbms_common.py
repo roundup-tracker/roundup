@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.181 2006-08-30 09:28:26 schlatterbeck Exp $
+#$Id: rdbms_common.py,v 1.182 2006-10-04 01:12:00 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -191,7 +191,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         '''
         s = repr(self.database_schema)
         self.sql('delete from schema')
-        self.sql('insert into schema values (%s)', (s,))
+        self.sql('insert into schema values (%s)'%self.arg, (s,))
 
     def post_init(self):
         ''' Called once the schema initialisation has finished.

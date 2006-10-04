@@ -1,29 +1,29 @@
-I'm proud to release version 1.1.2 of Roundup.
+I'm proud to release version 1.1.3 of Roundup.
 
 Feature:
+- supports Python 2.5, including the sqlite3 module
+- full timezone support (sf patch 1465296)
+- handle connection loss when responding to web requests
+- match incoming mail In-Reply-To against existing messages when no issue
+  id is specified in the Subject
+- added StringHTMLProperty wrapped() method to wrap long lines in issue
+  display
+- include the popcal in Date field editing and search fields by default
+- @required in forms may now specify properties of linked items (sf patch
+  1507093)
+- update for latest version of pysqlite (sf bug 1487098; patch 1534227)
+- update for latest version of psycopg2 (sf patch 1429391)
+- new "exporttables" command in roundup-admin (sf bug 1533791)
+- roundup-admin "export" may specify classes to exclude (sf bug 1533791)
+- sorting and grouping by multiple properties is now supported by the
+  backends *and* the classic template.
+- sorting, grouping, and searching by transitive properties (e.g.,
+  messages.author.supervisor) is now supported in all backends
+- added filter_sql to SQL backends which takes an arbitrary SQL statement
+  and returns a list of item ids
 
-- server-ctl script uses server configuration file (sf bug 1443805)
-
-Fixed:
-
-- indexing may be turned off for FileClass "content" now
-  ("content" and "type" properties are now automatically included in the
-  FileClass schema where previously the "content" property was faked and
-  "type" was optional)
-- reduced frequency of session timestamp update
-- progress display in roundup-admin reindex
-- bug in menu() permission filter (sf bug 1444440)
-- verbose output during import is optional now (sf bug 1475624)
-- escape *all* uses of "schema" in mysql backend (sf bug 1472120)
-- responses to user rego email (sf bug 1470254)
-- dangling connections in session handling (sf bug 1463359)
-- classhelp popup pagination forgot about "type" (sf bug 1465836)
-- umask is now configurable (with the same 0002 default)
-- sorting of entries in classhelp popup (sf bug 1449000)
-- allow single digit seconds in date spec (sf bug 1447141)
-- prevent generation of new single-digit seconds dates (sf bug 1429390)
-- implement close() on all indexers (sf bug 1242477)
-
+There was also a lot of bugfixes - see the bundled CHANGES.txt file for the
+list.
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.

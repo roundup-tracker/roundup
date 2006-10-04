@@ -490,11 +490,11 @@ Here is the interface provided by the hyperdatabase::
             1. String properties must match all elements in the list, and
             2. Other properties must match any of the elements in the list.
 
-            Note that now the propname in filterspec and prop in a 
-            sort/group spec may be transitive, i.e., it may contain
-            properties of the form link.link.link.name, e.g. you can search
-            for all issues where a message was added by a certain user in
-            the last week with a filterspec of
+            The propname in filterspec and prop in a sort/group spec may be
+            transitive, i.e., it may contain properties of the form
+            link.link.link.name, e.g. you can search for all issues where
+            a message was added by a certain user in the last week with a
+            filterspec of
             {'messages.author' : '42', 'messages.creation' : '.-1w;'}
             """
 

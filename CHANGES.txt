@@ -3,6 +3,7 @@ are given with the most recent entry first.
 
 2006-??-?? 1.1.3
 Feature:
+- supports Python 2.5, including the sqlite3 module
 - full timezone support (sf patch 1465296)
 - handle connection loss when responding to web requests
 - match incoming mail In-Reply-To against existing messages when no issue
@@ -22,6 +23,7 @@ Feature:
   messages.author.supervisor) is now supported in all backends
 - added filter_sql to SQL backends which takes an arbitrary SQL statement
   and returns a list of item ids
+
 
 Fixed:
 - Verbose option for import and export (sf bug 1505645)
