@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: __init__.py,v 1.37 2006-10-04 01:12:00 richard Exp $
+# $Id: __init__.py,v 1.38 2006-10-04 02:58:10 richard Exp $
 
 '''Container for the hyperdb storage backend implementations.
 '''
@@ -31,7 +31,7 @@ _modules = {
     'mysql': ('MySQLdb',),
     'postgresql': ('psycopg',),
     'tsearch2': ('psycopg',),
-    'sqlite': ('pysqlite', 'pysqlite2'),
+    'sqlite': ('pysqlite', 'pysqlite2', 'sqlite3'),
 }
 
 def get_backend(name):
