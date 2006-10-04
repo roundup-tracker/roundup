@@ -1,6 +1,7 @@
 I'm proud to release version 1.2.0 of Roundup.
 
 Feature:
+
 - supports Python 2.5, including the sqlite3 module
 - full timezone support (sf patch 1465296)
 - handle connection loss when responding to web requests

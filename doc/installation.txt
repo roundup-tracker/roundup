@@ -533,6 +533,11 @@ To test the mail gateway on unix systems, try::
 
     echo test |mail -s '[issue] test' support@YOUR_DOMAIN_HERE
 
+Be careful that some mail systems (postfix for example) will impost a
+limits on processes they spawn. In particular postfix can set a file size
+limit. *This can cause your Roundup database to become corrupted.*
+
+
 As a custom router/transport using a pipe process (Exim4 specific)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
