@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.78 2006-08-18 01:31:38 richard Exp $
+# $Id: test_mailgw.py,v 1.79 2006-10-05 23:08:21 richard Exp $
 
 # TODO: test bcc
 
@@ -1252,6 +1252,21 @@ Message-Id: <dummy_test_message_id>
         assert not os.path.exists(SENDMAILDEBUG)
         self.assertEqual(self.db.issue.get(nodeid, 'title'), 'testing')
         self.assertEqual(self.db.issue.get(nodeid, 'assignedto'), self.mary_id)
+
+    def testPrefixDelimiters(self):
+        self.instance.config.MAILGW_SUBJECT_SUFFIX_DELIMITERS = '{}'
+        self.db.keyword.create(name='Foo')
+        self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: richard <richard@test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: {keyword1} Testing... {name=Bar}
+
+''')
+        assert not os.path.exists(SENDMAILDEBUG)
+        self.assertEqual(self.db.keyword.get('1', 'name'), 'Bar')
 
     def testCommandDelimitersIgnore(self):
         self.instance.config.MAILGW_SUBJECT_SUFFIX_DELIMITERS = '{}'

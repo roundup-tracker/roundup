@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.177 2006-08-11 01:41:25 richard Exp $
+$Id: mailgw.py,v 1.178 2006-10-05 23:08:20 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -612,18 +612,20 @@ Emails to Roundup trackers must include a Subject: line!
         # Re: "[issue1234] title of issue [status=resolved]"
         open, close = config['MAILGW_SUBJECT_SUFFIX_DELIMITERS']
         delim_open = re.escape(open)
+        if delim_open in '[(': delim_open = '\\' + delim_open
         delim_close = re.escape(close)
-        subject_re = re.compile(r'''
+        if delim_close in '[(': delim_close = '\\' + delim_close
+        subject_re = r'''
         (?P<refwd>\s*\W?\s*(fw|fwd|re|aw)\W\s*)*\s*   # Re:
         (?P<quote>")?                                 # Leading "
-        (\[(?P<classname>[^\d\s]+)                    # [issue..
+        (%s(?P<classname>[^\d\s]+)                    # [issue..
            (?P<nodeid>\d+)?                           # ..1234]
-         \])?\s*
+         %s)?\s*
         (?P<title>[^%s]+)?                             # issue title
         "?                                            # Trailing "
         (?P<argswhole>%s(?P<args>.+?)%s)?             # [prop=value]
-        '''%(delim_open, delim_open, delim_close),
-        re.IGNORECASE|re.VERBOSE)
+        '''%(delim_open, delim_close, delim_open, delim_open, delim_close)
+        subject_re = re.compile(subject_re, re.IGNORECASE|re.VERBOSE)
 
         # figure subject line parsing modes
         pfxmode = config['MAILGW_SUBJECT_PREFIX_PARSING']
