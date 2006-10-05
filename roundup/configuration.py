@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.35 2006-05-06 17:15:11 a1s Exp $
+# $Id: configuration.py,v 1.36 2006-10-05 23:14:52 richard Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -643,8 +643,10 @@ SETTINGS = (
             "recognised. \"none\" will always pass any [suffix]\n"
             "through as part of the issue title."),
         (Option, "subject_suffix_delimiters", "[]",
-            "Defines the brackets used for delimiting the commands\n"
-            "suffix in a subject line."),
+            "Defines the brackets used for delimiting the prefix and \n"
+            'suffix in a subject line. The presence of "suffix" in\n'
+            "the config option name is a historical artifact and may\n"
+            "be ignored."),
         (Option, "subject_content_match", "always",
             "Controls matching of the incoming email subject line\n"
             "against issue titles in the case where there is no\n"
