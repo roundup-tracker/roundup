@@ -1,6 +1,11 @@
-I'm proud to release version 1.2.0 of Roundup.
+I'm proud to release version 1.2.1 of Roundup.
 
-Feature:
+Bugs fixed in 1.2.1:
+
+- E-mail subject line prefix delimiter configuration was being ignored.
+- Password confirm field in user editing.
+
+New Features in 1.2.x:
 
 - supports Python 2.5, including the sqlite3 module
 - full timezone support (sf patch 1465296)

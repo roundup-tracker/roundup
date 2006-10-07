@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.90 2006-10-04 01:14:37 richard Exp $
+# $Id: setup.py,v 1.91 2006-10-07 03:03:28 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -351,7 +351,12 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
 
-New Features in this release:
+Bugs fixed in 1.2.1:
+
+- E-mail subject line prefix delimiter configuration was being ignored.
+- Password confirm field in user editing.
+
+New Features in 1.2.x:
 
 - supports Python 2.5, including the sqlite3 module
 - full timezone support (sf patch 1465296)

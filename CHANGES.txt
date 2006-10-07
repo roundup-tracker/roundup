@@ -4,6 +4,7 @@ are given with the most recent entry first.
 2006-??-?? 1.2.1
 Fixed:
 - E-mail subject line prefix delimiter configuration was being ignored.
+- Password confirm field in user editing.
 
 
 2006-10-04 1.2.0

@@ -48,6 +48,7 @@ define="edit_ok context/is_edit_ok"
   src_input templates/page/macros/user_src_input;
   normal_input templates/page/macros/user_normal_input;
   pw_input templates/page/macros/user_pw_input;
+  confirm_input templates/page/macros/user_confirm_input;
   edit_ok context/is_edit_ok;
   ">
  <tr tal:define="name string:realname; label string:Name; value context/realname; edit_ok edit_ok">
@@ -59,13 +60,13 @@ define="edit_ok context/is_edit_ok"
    <td><input metal:use-macro="src_input"></td>
  </tr>
  <tal:if condition="edit_ok">
- <tr tal:define="name string:password; label string:Login Password; value string:context/password">
+ <tr tal:define="name string:password; label string:Login Password">
   <th metal:use-macro="th_label">Login Password</th>
   <td><input metal:use-macro="pw_input" type="password"></td>
  </tr>
- <tr tal:define="name string:confirm; label string:Confirm Password; value string:context/password">
+ <tr tal:define="name string:password; label string:Confirm Password">
   <th metal:use-macro="th_label">Confirm Password</th>
-  <td><input metal:use-macro="pw_input" type="password"></td>
+  <td><input metal:use-macro="confirm_input" type="password"></td>
  </tr>
  </tal:if>
  <tal:if condition="python:request.user.hasPermission('Web Roles')">

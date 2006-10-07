@@ -327,4 +327,6 @@ See user.item.html in the classic template for examples.
 <!-- password: type; no initial value -->
     <input metal:define-macro="user_pw_input" type="password"
     tal:attributes="id name; name name; readonly not:edit_ok" value="">
+    <input metal:define-macro="user_confirm_input" type="password"
+    tal:attributes="id name; name string:@confirm@$name; readonly not:edit_ok" value="">
 
