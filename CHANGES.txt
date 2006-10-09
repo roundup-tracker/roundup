@@ -1,7 +1,13 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2006-??-?? 1.2.1
+2006-??-?? 1.2.2
+Fixed:
+- sqlite module detection was broken for python 2.5 compiled without sqlite
+  support.
+
+
+2006-10-07 1.2.1
 Fixed:
 - E-mail subject line prefix delimiter configuration was being ignored.
 - Password confirm field in user editing.
