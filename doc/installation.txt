@@ -271,7 +271,7 @@ There's several to choose from, each with benefits and limitations:
 Name       Speed       Users   Support
 ========== =========== ===== ==============================
 anydbm     Slowest     Few   Always available
-sqlite     Fastest(*)  Few   May needs install (PySQLite_)
+sqlite     Fastest(*)  Few   May need install (PySQLite_)
 metakit    Fastest(*)  Few   Needs install (metakit_)
 postgresql Fast        Many  Needs install/admin (psycopg_)
 mysql      Fast        Many  Needs install/admin (MySQLdb_)
