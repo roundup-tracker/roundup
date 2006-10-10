@@ -5,6 +5,8 @@ are given with the most recent entry first.
 Fixed:
 - sqlite module detection was broken for python 2.5 compiled without sqlite
   support.
+- fixed support for pysqlite2 (version 2.1.0 is the minimum version
+  supported)
 
 
 2006-10-07 1.2.1

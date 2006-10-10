@@ -271,18 +271,23 @@ There's several to choose from, each with benefits and limitations:
 Name       Speed       Users   Support
 ========== =========== ===== ==============================
 anydbm     Slowest     Few   Always available
-sqlite     Fastest(*)  Few   Needs install (PySQLite_)
+sqlite     Fastest(*)  Few   May needs install (PySQLite_)
 metakit    Fastest(*)  Few   Needs install (metakit_)
 postgresql Fast        Many  Needs install/admin (psycopg_)
 mysql      Fast        Many  Needs install/admin (MySQLdb_)
 ========== =========== ===== ==============================
 
-**sqlite** and **metakit**
+**sqlite**
   These use the embedded database engines PySQLite_ and metakit_ to provide
   very fast backends. They are not suitable for trackers which will have
   many simultaneous users, but require much less installation and
   maintenance effort than more scalable postgresql and mysql backends.
-  If you are choosing from these two, please select sqlite.
+
+  SQLite is supported via PySQLite versions 1.1.7, 2.1.0 and sqlite3 (the last
+  being bundled with Python 2.5+)
+**metakit**
+  Similar performance to sqlite. If you are choosing between these two,
+  please select sqlite.
 **postgresql**
   Backend for popular RDBMS PostgreSQL. You must read doc/postgresql.txt for
   additional installation steps and requirements. You must also configure
