@@ -53,9 +53,9 @@ Optional Components
 You may optionally install and use:
 
 Timezone Definitions
-  Full timezone support requires pytz_ module which brings the
-  `Olson tz database`_ into Python.  If pytz_ is not installed,
-  timezones may be specified as numeric hour offsets only.
+  Full timezone support requires pytz_ module (version 2006j or later)
+  which brings the `Olson tz database`_ into Python.  If pytz_ is not
+  installed, timezones may be specified as numeric hour offsets only.
 
 An RDBMS
   Sqlite, MySQL and Postgresql are all supported by Roundup and will be
