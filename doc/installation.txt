@@ -53,7 +53,7 @@ Optional Components
 You may optionally install and use:
 
 Timezone Definitions
-  Full timezone support requires pytz_ module (version 2006j or later)
+  Full timezone support requires pytz_ module (version 2005i or later)
   which brings the `Olson tz database`_ into Python.  If pytz_ is not
   installed, timezones may be specified as numeric hour offsets only.
 
@@ -76,7 +76,7 @@ Xapian full-text indexer
   successfully.
 
 .. _Xapian: http://www.xapian.org/
-.. _pytz: http://pytz.sourceforge.net/
+.. _pytz: http://www.python.org/pypi/pytz
 .. _Olson tz database: http://www.twinsun.com/tz/tz-link.htm
 
 
