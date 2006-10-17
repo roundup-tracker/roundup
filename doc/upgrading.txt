@@ -13,10 +13,10 @@ steps.
 
 .. contents::
 
-Migrating from 1.1.2 to 1.X.X
+Migrating from 1.1.2 to 1.2.0
 =============================
 
-1.X.X Sorting and grouping by multiple properties
+1.2.0 Sorting and grouping by multiple properties
 -------------------------------------------------
 
 Starting with this version, sorting and grouping by multiple properties
