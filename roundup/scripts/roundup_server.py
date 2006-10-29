@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.83 2006-04-27 04:59:37 richard Exp $
+$Id: roundup_server.py,v 1.84 2006-10-29 05:01:15 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -324,6 +324,7 @@ def setuid(user):
 
     if os.getuid():
         print _('WARNING: ignoring "-u" argument, not root')
+        return
 
     try:
         import pwd
