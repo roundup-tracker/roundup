@@ -20,8 +20,8 @@
 #                   instead of mod_python FieldStorage
 # 29-apr-2004 [als] created
 
-__version__ = "$Revision: 1.4 $"[11:-2]
-__date__ = "$Date: 2004-11-22 07:33:34 $"[7:-2]
+__version__ = "$Revision: 1.5 $"[11:-2]
+__date__ = "$Date: 2006-11-03 05:43:00 $"[7:-2]
 
 import cgi
 import os
@@ -80,7 +80,7 @@ def handler(req):
     if _timing.lower() in ("no", "false"):
         _timing = ""
     _debug = _options.get("TrackerDebug", "no")
-    _debug = _debug.lower not in ("no", "false")
+    _debug = _debug.lower() not in ("no", "false")
     if not (_home and os.path.isdir(_home)):
         apache.log_error(
             "PythonOption TrackerHome missing or invalid for %(uri)s"
