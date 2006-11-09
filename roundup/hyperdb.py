@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: hyperdb.py,v 1.127 2006-08-30 09:35:31 schlatterbeck Exp $
+# $Id: hyperdb.py,v 1.128 2006-11-09 03:08:22 richard Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -1196,20 +1196,20 @@ class Class:
     #
     def audit(self, event, detector, priority = 100):
         """Register an auditor detector"""
-        self.auditors[event].append((priority, detector))
+        self.auditors[event].append((priority, detector.__name__, detector))
 
     def fireAuditors(self, event, nodeid, newvalues):
         """Fire all registered auditors"""
-        for prio, audit in self.auditors[event]:
+        for prio, name, audit in self.auditors[event]:
             audit(self.db, self, nodeid, newvalues)
 
     def react(self, event, detector, priority = 100):
         """Register a reactor detector"""
-        self.reactors[event].append((priority, detector))
+        self.reactors[event].append((priority, detector.__name__, detector))
 
     def fireReactors(self, event, nodeid, oldvalues):
         """Fire all registered reactors"""
-        for prio, react in self.reactors[event]:
+        for prio, name, react in self.reactors[event]:
             react(self.db, self, nodeid, oldvalues)
 
     #

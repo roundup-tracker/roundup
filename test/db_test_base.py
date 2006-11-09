@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.78 2006-08-30 08:50:44 schlatterbeck Exp $
+# $Id: db_test_base.py,v 1.79 2006-11-09 03:08:22 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
@@ -625,6 +625,41 @@ class DBTest(MyTestCase):
         ar(TypeError, self.db.user.set, nid, age='a')
         # invalid boolean value
         ar(TypeError, self.db.user.set, nid, assignable='true')
+
+    def testAuditors(self):
+        class test:
+            called = False
+            def call(self, *args): self.called = True
+        create = test()
+
+        self.db.user.audit('create', create.call)
+        self.db.user.create(username="mary")
+        self.assertEqual(create.called, True)
+
+        set = test()
+        self.db.user.audit('set', set.call)
+        self.db.user.set('1', username="joe")
+        self.assertEqual(set.called, True)
+
+        retire = test()
+        self.db.user.audit('retire', retire.call)
+        self.db.user.retire('1')
+        self.assertEqual(retire.called, True)
+
+    def testAuditorTwo(self):
+        class test:
+            n = 0
+            def a(self, *args): self.call_a = self.n; self.n += 1
+            def b(self, *args): self.call_b = self.n; self.n += 1
+            def c(self, *args): self.call_c = self.n; self.n += 1
+        test = test()
+        self.db.user.audit('create', test.b, 1)
+        self.db.user.audit('create', test.a, 1)
+        self.db.user.audit('create', test.c, 2)
+        self.db.user.create(username="mary")
+        self.assertEqual(test.call_a, 0)
+        self.assertEqual(test.call_b, 1)
+        self.assertEqual(test.call_c, 2)
 
     def testJournals(self):
         muid = self.db.user.create(username="mary")
@@ -1406,7 +1441,6 @@ class DBTest(MyTestCase):
             ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'])
 
 # XXX add sorting tests for other types
-# XXX test auditors and reactors
 
     def testImportExport(self):
         # use the filtering setup to create a bunch of items

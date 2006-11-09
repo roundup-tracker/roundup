@@ -16,6 +16,7 @@ Fixed:
 - fix email change note rendering of multiline properties (sf patch 1575223)
 - fix sidebar search links (sf patch 1574467)
 - nicer "permission required" messages (sf patch 1558183)
+- fix unstable ordering of detectors (sf bug 1585378)
 
 
 2006-10-07 1.2.1
