@@ -1,4 +1,4 @@
-<!-- $Id: issue.index.html,v 1.25 2006-09-18 00:03:02 tobias-herp Exp $ -->
+<!-- $Id: issue.index.html,v 1.26 2006-11-09 00:46:54 richard Exp $ -->
 <tal:block metal:use-macro="templates/page/macros/icing">
 <title metal:fill-slot="head_title" >
   <span tal:omit-tag="true" i18n:translate="" >List of issues</span>
@@ -119,8 +119,8 @@
     </select>
    </td>
    <th i18n:translate="">Descending:</th>
-   <td><input type="checkbox" name="@sortdir"
-              tal:attributes="checked python:key and key[0] == '-'">
+   <td><input type="checkbox" tal:attributes="name python:'@sortdir%d'%n;
+              checked python:key and key[0] == '-'">
    </td>
   </tr>
   </tal:block>
@@ -140,8 +140,8 @@
     </select>
    </td>
    <th i18n:translate="">Descending:</th>
-   <td><input type="checkbox" name="@groupdir"
-              tal:attributes="checked python:key and key[0] == '-'">
+   <td><input type="checkbox" tal:attributes="name python:'@groupdir%d'%n;
+              checked python:key and key[0] == '-'">
    </td>
   </tr>
   </tal:block>

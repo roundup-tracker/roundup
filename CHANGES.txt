@@ -11,6 +11,7 @@ Fixed:
 - fixed support for pysqlite2 (version 2.1.0 is the minimum version
   supported)
 - roundup-server called setuid when run by non-root user
+- fix sort/group direction checkbox in issue.index.html (sf bug 1593025)
 
 
 2006-10-07 1.2.1
