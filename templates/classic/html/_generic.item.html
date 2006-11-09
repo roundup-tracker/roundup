@@ -9,8 +9,13 @@
 
 <td class="content" metal:fill-slot="content">
 
-<p tal:condition="not:context/is_view_ok" i18n:translate="">You are not
-    allowed to view this page.</p>
+<p tal:condition="python:not (context.is_view_ok()
+ or request.user.hasRole('Anonymous'))" i18n:translate="">
+ You are not allowed to view this page.</p>
+
+<p tal:condition="python:not context.is_view_ok()
+ and request.user.hasRole('Anonymous')" i18n:translate="">
+ Please login with your username and password.</p>
 
 <div tal:condition="context/is_view_ok">
 

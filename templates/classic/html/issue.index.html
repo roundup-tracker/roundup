@@ -1,4 +1,4 @@
-<!-- $Id: issue.index.html,v 1.26 2006-11-09 00:46:54 richard Exp $ -->
+<!-- $Id: issue.index.html,v 1.27 2006-11-09 01:26:28 richard Exp $ -->
 <tal:block metal:use-macro="templates/page/macros/icing">
 <title metal:fill-slot="head_title" >
   <span tal:omit-tag="true" i18n:translate="" >List of issues</span>
@@ -13,8 +13,13 @@
 </span>
 <td class="content" metal:fill-slot="content">
 
-<p tal:condition="not:context/is_view_ok" i18n:translate="">You are not
-  allowed to view this page.</p>
+<p tal:condition="python:not (context.is_view_ok()
+ or request.user.hasRole('Anonymous'))" i18n:translate="">
+ You are not allowed to view this page.</p>
+
+<p tal:condition="python:not context.is_view_ok()
+ and request.user.hasRole('Anonymous')" i18n:translate="">
+ Please login with your username and password.</p>
 
 <tal:block tal:define="batch request/batch" tal:condition="context/is_view_ok">
  <table class="list">

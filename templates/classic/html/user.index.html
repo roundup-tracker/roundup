@@ -6,8 +6,13 @@
  i18n:translate="">User listing</span>
 <td class="content" metal:fill-slot="content">
 
-<span tal:condition="not:context/is_view_ok"
+<span tal:condition="python:not (context.is_view_ok()
+ or request.user.hasRole('Anonymous'))"
  i18n:translate="">You are not allowed to view this page.</span>
+
+<span tal:condition="python:not context.is_view_ok()
+ and request.user.hasRole('Anonymous')"
+ i18n:translate="">Please login with your username and password.</span>
 
 <table width="100%" tal:condition="context/is_view_ok" class="list">
 <tr>

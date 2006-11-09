@@ -11,8 +11,11 @@
 <tal:block tal:define=" editok python:request.user.username=='anonymous' and
            request.user.hasPermission('Web Registration')">
 
-<span tal:condition="python:not editok"
+<span tal:condition="python:not (editok or request.user.hasRole('Anonymous'))"
  i18n:translate="">You are not allowed to view this page.</span>
+
+<span tal:condition="python:not editok and request.user.hasRole('Anonymous')"
+ i18n:translate="">Please login with your username and password.</span>
 
 <tal:block tal:condition="editok">
 <form method="POST" onSubmit="return submit_once()" enctype="multipart/form-data">
