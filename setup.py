@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.92 2006-11-09 05:38:54 richard Exp $
+# $Id: setup.py,v 1.93 2006-11-09 06:13:18 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -344,14 +344,14 @@ def main():
             " with command-line, web and e-mail interfaces. Highly"
             " customisable.",
         'long_description':
-'''Roundup is a simple-to-use and -install issue-tracking system with
-command-line, web and e-mail interfaces. It is based on the winning design
-from Ka-Ping Yee in the Software Carpentry "Track" design competition.
-
+'''In this release
+===============
 New Features in 1.3.0:
+
 - WSGI support via roundup.cgi.wsgi_handler
 
 Fixed in 1.3.0:
+
 - sqlite module detection was broken for python 2.5 compiled without sqlite
   support
 - fixed support for pysqlite2 (version 2.1.0 is the minimum version
@@ -373,9 +373,7 @@ To give Roundup a try, just download (see below), unpack and run::
 
     roundup-demo
 
-Release info and download page:
-     http://cheeseshop.python.org/pypi/roundup
-Source and documentation is available at the website:
+Documentation is available at the website:
      http://roundup.sourceforge.net/
 Mailing lists - the place to ask questions:
      http://sourceforge.net/mail/?group_id=31577

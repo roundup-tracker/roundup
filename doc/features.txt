@@ -61,8 +61,8 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
    to register new users
  - authentication of user registration and user-driven password resetting
    using email and one time keys
- - may be run through CGI as a normal cgi script, as a stand-alone
-   web server, or through Zope
+ - may be run using WSGI or through CGI as a normal cgi script, as a
+   stand-alone web server, or through Zope
  - searching may be performed using many constraints, including a full-text
    search of messages attached to issues
  - file attachments (added through the web or email) are served up with the
