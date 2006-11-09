@@ -16,7 +16,7 @@ from __future__ import nested_scopes
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.125 2006-09-09 05:50:17 richard Exp $
+# $Id: roundupdb.py,v 1.126 2006-11-09 01:13:56 richard Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -496,6 +496,10 @@ class IssueClass:
                     value = [link.get(entry, key) for entry in value]
                 value.sort()
                 value = ', '.join(value)
+            else:
+                value = str(value)
+                if '\n' in value:
+                    value = '\n'+self.indentChangeNoteValue(value)
             m.append('%s: %s'%(propname, value))
         m.insert(0, '----------')
         m.insert(0, '')
@@ -587,10 +591,19 @@ class IssueClass:
                     change += ' -%s'%(', '.join(l))
             else:
                 change = '%s -> %s'%(oldvalue, value)
+                if '\n' in change:
+                    value = self.indentChangeNoteValue(str(value))
+                    oldvalue = self.indentChangeNoteValue(str(oldvalue))
+                    change = '\nNow:\n%s\nWas:\n%s'%(value, oldvalue)
             m.append('%s: %s'%(propname, change))
         if m:
             m.insert(0, '----------')
             m.insert(0, '')
         return '\n'.join(m)
+
+    def indentChangeNoteValue(self, text):
+        lines = text.rstrip('\n').split('\n')
+        lines = [ '  '+line for line in lines ]
+        return '\n'.join(lines)
 
 # vim: set filetype=python sts=4 sw=4 et si :
