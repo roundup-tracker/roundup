@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.209 $
+:Version: $Revision: 1.210 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1040,13 +1040,14 @@ See the `examples`_ section for longer examples of customisation.
  - they're *anonymous*.
 
 **automatic registration of users in the e-mail gateway**
- By giving the "anonymous" user the ("Create", "user" Permission, any
+ By giving the "anonymous" user the ("Create", "user") Permission, any
  unidentified user will automatically be registered with the tracker
  (with no password, so they won't be able to log in through
- the web until an admin sets their password). This is the default
- behaviour in the tracker templates that ship with Roundup. The new user
- is given the Roles list defined in the "new_email_user_roles" config
- variable.
+ the web until an admin sets their password). By default new Roundup
+ trackers don't allow this as it opens them up to spam. It may be enabled
+ by uncommenting the appropriate addPermissionToRole in your tracker's
+ ``schema.py`` file. The new user is given the Roles list defined in the
+"new_email_user_roles" config variable. 
 
 **only developers may be assigned issues**
  Create a new Permission called "Fixer" for the "issue" class. Create a
