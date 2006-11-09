@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.79 2006-11-09 03:08:22 richard Exp $
+# $Id: db_test_base.py,v 1.80 2006-11-09 05:44:51 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
@@ -1045,18 +1045,19 @@ class DBTest(MyTestCase):
         ae(filt(None, {'nosy': '2', 'status': '1'}, ('+','id'), (None,None)),
             ['3'])
 
-    def testFilteringRange(self):
+    def testFilteringRangeBasic(self):
         ae, filt = self.filteringSetup()
-        # Date ranges
         ae(filt(None, {'deadline': 'from 2003-02-10 to 2003-02-23'}), ['1','3'])
         ae(filt(None, {'deadline': '2003-02-10; 2003-02-23'}), ['1','3'])
         ae(filt(None, {'deadline': '; 2003-02-16'}), ['2'])
-        # Lets assume people won't invent a time machine, otherwise this test
-        # may fail :)
+
+    def testFilteringRangeTwoSyntaxes(self):
+        ae, filt = self.filteringSetup()
         ae(filt(None, {'deadline': 'from 2003-02-16'}), ['1', '3', '4'])
         ae(filt(None, {'deadline': '2003-02-16;'}), ['1', '3', '4'])
-        ae(filt(None, {'deadline': '2003-02-16;'}), ['1', '3', '4'])
-        # year and month granularity
+
+    def testFilteringRangeYearMonthDay(self):
+        ae, filt = self.filteringSetup()
         ae(filt(None, {'deadline': '2002'}), [])
         ae(filt(None, {'deadline': '2003'}), ['1', '2', '3'])
         ae(filt(None, {'deadline': '2004'}), ['4'])
@@ -1064,13 +1065,16 @@ class DBTest(MyTestCase):
         ae(filt(None, {'deadline': '2003-03'}), [])
         ae(filt(None, {'deadline': '2003-02-16'}), ['1'])
         ae(filt(None, {'deadline': '2003-02-17'}), [])
-        # Interval ranges
+
+    def testFilteringRangeInterval(self):
+        ae, filt = self.filteringSetup()
         ae(filt(None, {'foo': 'from 0:50 to 2:00'}), ['1'])
         ae(filt(None, {'foo': 'from 0:50 to 1d 2:00'}), ['1', '2'])
         ae(filt(None, {'foo': 'from 5:50'}), ['2'])
         ae(filt(None, {'foo': 'to 0:05'}), [])
 
-        # further
+    def testFilteringRangeGeekInterval(self):
+        ae, filt = self.filteringSetup()
         for issue in (
                 { 'deadline': date.Date('. -2d')},
                 { 'deadline': date.Date('. -1d')},
