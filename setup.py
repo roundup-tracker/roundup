@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.91 2006-10-07 03:03:28 richard Exp $
+# $Id: setup.py,v 1.92 2006-11-09 05:38:54 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -348,39 +348,67 @@ def main():
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
+New Features in 1.3.0:
+- WSGI support via roundup.cgi.wsgi_handler
+
+Fixed in 1.3.0:
+- sqlite module detection was broken for python 2.5 compiled without sqlite
+  support
+- fixed support for pysqlite2 (version 2.1.0 is the minimum version
+  supported)
+- roundup-server called setuid when run by non-root user
+- fix sort/group direction checkbox in issue.index.html (sf bug 1593025)
+- fix error detection for non-EN locales of postgres (sf bug 1592249)
+- fix email change note rendering of multiline properties (sf patch 1575223)
+- fix sidebar search links (sf patch 1574467)
+- nicer "permission required" messages (sf patch 1558183)
+- fix unstable ordering of detectors (sf bug 1585378)
+
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
 
-Bugs fixed in 1.2.1:
+Roundup requires python 2.3 or later for correct operation.
 
-- E-mail subject line prefix delimiter configuration was being ignored.
-- Password confirm field in user editing.
+To give Roundup a try, just download (see below), unpack and run::
 
-New Features in 1.2.x:
+    roundup-demo
 
-- supports Python 2.5, including the sqlite3 module
-- full timezone support (sf patch 1465296)
-- handle connection loss when responding to web requests
-- match incoming mail In-Reply-To against existing messages when no issue
-  id is specified in the Subject
-- added StringHTMLProperty wrapped() method to wrap long lines in issue
-  display
-- include the popcal in Date field editing and search fields by default
-- @required in forms may now specify properties of linked items (sf patch
-  1507093)
-- update for latest version of pysqlite (sf bug 1487098; patch 1534227)
-- update for latest version of psycopg2 (sf patch 1429391)
-- new "exporttables" command in roundup-admin (sf bug 1533791)
-- roundup-admin "export" may specify classes to exclude (sf bug 1533791)
-- sorting and grouping by multiple properties is now supported by the
-  backends *and* the classic template.
-- sorting, grouping, and searching by transitive properties (e.g.,
-  messages.author.supervisor) is now supported in all backends
-- added filter_sql to SQL backends which takes an arbitrary SQL statement
-  and returns a list of item ids
+Release info and download page:
+     http://cheeseshop.python.org/pypi/roundup
+Source and documentation is available at the website:
+     http://roundup.sourceforge.net/
+Mailing lists - the place to ask questions:
+     http://sourceforge.net/mail/?group_id=31577
 
-There was also a lot of bugfixes - see the bundled CHANGES.txt file for the
-list.
+
+About Roundup
+=============
+
+Roundup is a simple-to-use and -install issue-tracking system with
+command-line, web and e-mail interfaces. It is based on the winning design
+from Ka-Ping Yee in the Software Carpentry "Track" design competition.
+
+Note: Ping is not responsible for this project. The contact for this
+project is richard@users.sourceforge.net.
+
+Roundup manages a number of issues (with flexible properties such as
+"description", "priority", and so on) and provides the ability to:
+
+(a) submit new issues,
+(b) find and edit existing issues, and
+(c) discuss issues with other participants.
+
+The system will facilitate communication among the participants by managing
+discussions and notifying interested parties when issues are edited. One of
+the major design goals for Roundup that it be simple to get going. Roundup
+is therefore usable "out of the box" with any python 2.3+ installation. It
+doesn't even need to be "installed" to be operational, though a
+disutils-based install script is provided.
+
+It comes with two issue tracker templates (a classic bug/feature tracker and
+a minimal skeleton) and five database back-ends (anydbm, sqlite, metakit,
+mysql and postgresql).
+
 ''',
         'author': "Richard Jones",
         'author_email': "richard@users.sourceforge.net",

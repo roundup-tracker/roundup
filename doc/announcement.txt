@@ -1,35 +1,20 @@
-I'm proud to release version 1.2.1 of Roundup.
+I'm proud to release version 1.3.0 of Roundup.
 
-Bugs fixed in 1.2.1:
+New Features in 1.3.0:
+- WSGI support via roundup.cgi.wsgi_handler
 
-- E-mail subject line prefix delimiter configuration was being ignored.
-- Password confirm field in user editing.
-
-New Features in 1.2.x:
-
-- supports Python 2.5, including the sqlite3 module
-- full timezone support (sf patch 1465296)
-- handle connection loss when responding to web requests
-- match incoming mail In-Reply-To against existing messages when no issue
-  id is specified in the Subject
-- added StringHTMLProperty wrapped() method to wrap long lines in issue
-  display
-- include the popcal in Date field editing and search fields by default
-- @required in forms may now specify properties of linked items (sf patch
-  1507093)
-- update for latest version of pysqlite (sf bug 1487098; patch 1534227)
-- update for latest version of psycopg2 (sf patch 1429391)
-- new "exporttables" command in roundup-admin (sf bug 1533791)
-- roundup-admin "export" may specify classes to exclude (sf bug 1533791)
-- sorting and grouping by multiple properties is now supported by the
-  backends *and* the classic template.
-- sorting, grouping, and searching by transitive properties (e.g.,
-  messages.author.supervisor) is now supported in all backends
-- added filter_sql to SQL backends which takes an arbitrary SQL statement
-  and returns a list of item ids
-
-There was also a lot of bugfixes - see the bundled CHANGES.txt file for the
-list.
+Fixed in 1.3.0:
+- sqlite module detection was broken for python 2.5 compiled without sqlite
+  support
+- fixed support for pysqlite2 (version 2.1.0 is the minimum version
+  supported)
+- roundup-server called setuid when run by non-root user
+- fix sort/group direction checkbox in issue.index.html (sf bug 1593025)
+- fix error detection for non-EN locales of postgres (sf bug 1592249)
+- fix email change note rendering of multiline properties (sf patch 1575223)
+- fix sidebar search links (sf patch 1574467)
+- nicer "permission required" messages (sf patch 1558183)
+- fix unstable ordering of detectors (sf bug 1585378)
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
