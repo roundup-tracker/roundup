@@ -14,6 +14,7 @@ Fixed:
 - fix sort/group direction checkbox in issue.index.html (sf bug 1593025)
 - fix error detection for non-EN locales of postgres (sf bug 1592249)
 - fix email change note rendering of multiline properties (sf patch 1575223)
+- fix sidebar search links (sf patch 1574467)
 
 
 2006-10-07 1.2.1
