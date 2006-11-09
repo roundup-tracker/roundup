@@ -20,8 +20,8 @@
 #                   instead of mod_python FieldStorage
 # 29-apr-2004 [als] created
 
-__version__ = "$Revision: 1.5 $"[11:-2]
-__date__ = "$Date: 2006-11-03 05:43:00 $"[7:-2]
+__version__ = "$Revision: 1.6 $"[11:-2]
+__date__ = "$Date: 2006-11-09 00:36:21 $"[7:-2]
 
 import cgi
 import os
@@ -51,6 +51,12 @@ class Request(object):
         self.headers = Headers(request.headers_in)
         # .wfile.write()
         self.wfile = self._req
+
+    def start_response(self, headers, response):
+        self.send_response(response)
+        for key, value in headers:
+            self.send_header(key, value)
+        self.end_headers()
 
     def send_response(self, response_code):
         """Set HTTP response code"""

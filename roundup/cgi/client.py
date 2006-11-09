@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.227 2006-08-29 04:20:50 richard Exp $
+# $Id: client.py,v 1.228 2006-11-09 00:36:21 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -278,7 +278,7 @@ class Client:
             # the headers, otherwise the headers have been set before the
             # exception was raised
             if url:
-                self.additional_headers['Location'] = url
+                self.additional_headers['Location'] = str(url)
                 self.response_code = 302
             self.write_html('Redirecting to <a href="%s">%s</a>'%(url, url))
         except SendFile, designator:
@@ -286,15 +286,15 @@ class Client:
                 self.serve_file(designator)
             except NotModified:
                 # send the 304 response
-                self.request.send_response(304)
-                self.request.end_headers()
+                self.response_code = 304
+                self.header()
         except SendStaticFile, file:
             try:
                 self.serve_static_file(str(file))
             except NotModified:
                 # send the 304 response
-                self.request.send_response(304)
-                self.request.end_headers()
+                self.response_code = 304
+                self.header()
         except Unauthorised, message:
             # users may always see the front page
             self.classname = self.nodeid = None
@@ -693,11 +693,18 @@ class Client:
     def _serve_file(self, lmt, mime_type, content):
         ''' guts of serve_file() and serve_static_file()
         '''
+        # spit out headers
+        self.additional_headers['Content-Type'] = mime_type
+        self.additional_headers['Content-Length'] = str(len(content))
+        lmt = rfc822.formatdate(lmt)
+        self.additional_headers['Last-Modified'] = lmt
+
         ims = None
         # see if there's an if-modified-since...
-        if hasattr(self.request, 'headers'):
-            ims = self.request.headers.getheader('if-modified-since')
-        elif self.env.has_key('HTTP_IF_MODIFIED_SINCE'):
+        # XXX see which interfaces set this
+        #if hasattr(self.request, 'headers'):
+            #ims = self.request.headers.getheader('if-modified-since')
+        if self.env.has_key('HTTP_IF_MODIFIED_SINCE'):
             # cgi will put the header in the env var
             ims = self.env['HTTP_IF_MODIFIED_SINCE']
         if ims:
@@ -706,11 +713,6 @@ class Client:
             if lmtt <= ims:
                 raise NotModified
 
-        # spit out headers
-        self.additional_headers['Content-Type'] = mime_type
-        self.additional_headers['Content-Length'] = len(content)
-        lmt = rfc822.formatdate(lmt)
-        self.additional_headers['Last-Modified'] = lmt
         self.write(content)
 
     def renderContext(self):
@@ -870,15 +872,17 @@ class Client:
 
         if headers.get('Content-Type', 'text/html') == 'text/html':
             headers['Content-Type'] = 'text/html; charset=utf-8'
-        self.request.send_response(response)
-        for entry in headers.items():
-            self.request.send_header(*entry)
+
+        headers = headers.items()
+
         for ((path, name), (value, expire)) in self.add_cookies.items():
             cookie = "%s=%s; Path=%s;"%(name, value, path)
             if expire is not None:
                 cookie += " expires=%s;"%Cookie._getdate(expire)
-            self.request.send_header('Set-Cookie', cookie)
-        self.request.end_headers()
+            headers.append(('Set-Cookie', cookie))
+
+        self.request.start_response(headers, response)
+
         self.headers_done = 1
         if self.debug:
             self.headers_sent = headers

@@ -2119,7 +2119,7 @@ class HTMLRequest(HTMLInputMixin):
     - "search_text" text to perform a full-text search on for an index
     '''
     def __repr__(self):
-        return '<HTMLRequest %r>'%self.form
+        return '<HTMLRequest %r>'%self.__dict__
 
     def __init__(self, client):
         # _client is needed by HTMLInputMixin

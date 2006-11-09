@@ -1,8 +1,10 @@
 This directory contains alternate front-ends for Roundup.
 
-Zope - ZRoundup
----------------
+roundup.cgi
+   This is a cgi-bin script.
 
-This installs as a regular Zope product. See Roundup's doc/installation.txt
-for more info.
+ZRoundup
+   This is a simple Zope frontend that installs as a regular Zope product.
 
+See Roundup's doc/installation.txt for more info on installing these
+frontends.

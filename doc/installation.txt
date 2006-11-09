@@ -318,6 +318,7 @@ There are three web interfaces to choose from:
 2. `stand-alone web server`_
 3. `Zope product - ZRoundup`_
 4. `Apache HTTP Server with mod_python`_
+5. `WSGI handler`_
 
 You may need to give the web server user permission to access the tracker home
 - see the `UNIX environment steps`_ for information. You may also need to
@@ -347,7 +348,7 @@ More information about ISS setup may be found at:
 
    http://support.microsoft.com/default.aspx?scid=kb%3Ben-us%3B276494
 
-Copy the ``cgi-bin/roundup.cgi`` file to your web server's ``cgi-bin``
+Copy the ``frontends/roundup.cgi`` file to your web server's ``cgi-bin``
 directory. You will need to configure it to tell it where your tracker home
 is. You can do this either:
 
@@ -506,6 +507,25 @@ Example mod_python configuration::
     <Directory /var/db/roundup/devel>
       PythonOption TrackerHome /var/db/roundup/devel
     </Directory>
+
+WSGI Handler
+~~~~~~~~~~~~
+
+The WSGI handler is quite simple. The following sample code shows how
+to use it::
+
+    from wsgiref.simple_server import make_server
+
+    # obtain the WSGI request dispatcher
+    from roundup.cgi.wsgi_handler import RequestDispatcher
+    tracker_home = 'demo'
+    app = RequestDispatcher(tracker_home)
+
+    httpd = make_server('', 8917, app)
+    httpd.serve_forever()
+
+To test the above you should create a demo tracker with ``python demo.py``.
+Edit the ``config.ini`` to change the web URL to "http://localhost:8917/".
 
 
 Configure an Email Interface

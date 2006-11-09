@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.84 2006-10-29 05:01:15 a1s Exp $
+$Id: roundup_server.py,v 1.85 2006-11-09 00:36:21 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -281,6 +281,12 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         except IOError:
             # stderr is no longer viable
             pass
+
+    def start_response(self, headers, response):
+        self.send_response(response)
+        for key, value in headers:
+            self.send_header(key, value)
+        self.end_headers()
 
 def error():
     exc_type, exc_value = sys.exc_info()[:2]
