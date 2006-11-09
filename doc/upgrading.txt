@@ -248,9 +248,12 @@ The ``dbinit.py`` file has been split into two new files,
 You may remove the ``__init__.py`` module from the "detectors" directory as
 it is no longer used.
 
-There's a new way to write extension code for Roundup - the old
-``interfaces.py`` file will be ignored. See the `customisation
+There's a new way to write extension code for Roundup. If you have code in
+an ``interfaces.py`` file you should move it. See the `customisation
 documentation`_ for information about how extensions are now written.
+Note that some older trackers may use ``interfaces.py`` to customise the
+mail gateway behaviour. You will need to keep your ``interfaces.py`` file
+if this is the case.
 
 
 0.8.0 Permissions Changes
