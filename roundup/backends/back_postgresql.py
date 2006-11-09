@@ -1,4 +1,4 @@
-#$Id: back_postgresql.py,v 1.36 2006-10-03 23:28:51 richard Exp $
+#$Id: back_postgresql.py,v 1.37 2006-11-09 00:55:33 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -131,7 +131,7 @@ class Database(rdbms_common.Database):
         try:
             self.load_dbschema()
         except psycopg.ProgrammingError, message:
-            if str(message).find('"schema" does not exist') == -1:
+            if str(message).find('schema') == -1:
                 raise
             self.rollback()
             self.init_dbschema()

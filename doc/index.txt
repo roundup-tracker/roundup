@@ -153,6 +153,7 @@ Terrel Shumway,
 Emil Sit,
 Alexander Smishlajev,
 Nathaniel Smith,
+Leonardo Soto,
 Maciej Starzyk,
 Mitchell Surface,
 Jon C. Thomason
