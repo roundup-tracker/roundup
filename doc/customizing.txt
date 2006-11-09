@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.210 $
+:Version: $Revision: 1.211 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1047,7 +1047,7 @@ See the `examples`_ section for longer examples of customisation.
  trackers don't allow this as it opens them up to spam. It may be enabled
  by uncommenting the appropriate addPermissionToRole in your tracker's
  ``schema.py`` file. The new user is given the Roles list defined in the
-"new_email_user_roles" config variable. 
+ "new_email_user_roles" config variable. 
 
 **only developers may be assigned issues**
  Create a new Permission called "Fixer" for the "issue" class. Create a
