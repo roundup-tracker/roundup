@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.93 2006-11-09 06:13:18 richard Exp $
+# $Id: setup.py,v 1.94 2006-11-10 03:29:37 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -300,7 +300,7 @@ def main():
         'roundup.scripts',
     ]
     installdatafiles = [
-        ('share/roundup/cgi-bin', ['cgi-bin/roundup.cgi']),
+        ('share/roundup/cgi-bin', ['frontends/roundup.cgi']),
     ]
     py_modules = ['roundup.demo',]
 
