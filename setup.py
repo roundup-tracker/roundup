@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.94 2006-11-10 03:29:37 richard Exp $
+# $Id: setup.py,v 1.95 2006-11-11 03:23:45 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -346,23 +346,16 @@ def main():
         'long_description':
 '''In this release
 ===============
+
+Fixed in 1.3.1:
+
+- setup.py had broken reference to roundup.cgi (sf bug 1593573)
+- full-text search wasn't coping with multiple multilinks to the same class
+- unicode / sqlite 3 problem (sf bug 1589292)
+
 New Features in 1.3.0:
 
 - WSGI support via roundup.cgi.wsgi_handler
-
-Fixed in 1.3.0:
-
-- sqlite module detection was broken for python 2.5 compiled without sqlite
-  support
-- fixed support for pysqlite2 (version 2.1.0 is the minimum version
-  supported)
-- roundup-server called setuid when run by non-root user
-- fix sort/group direction checkbox in issue.index.html (sf bug 1593025)
-- fix error detection for non-EN locales of postgres (sf bug 1592249)
-- fix email change note rendering of multiline properties (sf patch 1575223)
-- fix sidebar search links (sf patch 1574467)
-- nicer "permission required" messages (sf patch 1558183)
-- fix unstable ordering of detectors (sf bug 1585378)
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
@@ -377,7 +370,6 @@ Documentation is available at the website:
      http://roundup.sourceforge.net/
 Mailing lists - the place to ask questions:
      http://sourceforge.net/mail/?group_id=31577
-
 
 About Roundup
 =============
@@ -406,7 +398,6 @@ disutils-based install script is provided.
 It comes with two issue tracker templates (a classic bug/feature tracker and
 a minimal skeleton) and five database back-ends (anydbm, sqlite, metakit,
 mysql and postgresql).
-
 ''',
         'author': "Richard Jones",
         'author_email': "richard@users.sourceforge.net",
