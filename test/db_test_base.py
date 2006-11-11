@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.80 2006-11-09 05:44:51 richard Exp $
+# $Id: db_test_base.py,v 1.81 2006-11-11 03:01:54 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
@@ -78,7 +78,7 @@ def setupSchema(db, create, module):
     issue = module.IssueClass(db, "issue", title=String(indexme="yes"),
         status=Link("status"), nosy=Multilink("user"), deadline=Date(),
         foo=Interval(), files=Multilink("file"), assignedto=Link('user'),
-        priority=Link('priority'))
+        priority=Link('priority'), spam=Multilink('msg'))
     stuff = module.Class(db, "stuff", stuff=String())
     session = module.Class(db, 'session', title=String())
     msg = module.FileClass(db, "msg", date=Date(),
@@ -771,6 +771,20 @@ class DBTest(MyTestCase):
 
         # unindexed stopword
         self.assertEquals(self.db.indexer.search(['the'], self.db.issue), {})
+
+    def testIndexerSearchMulti(self):
+        m1 = self.db.msg.create(content="one two")
+        m2 = self.db.msg.create(content="two three")
+        i1 = self.db.issue.create(messages=[m1])
+        i2 = self.db.issue.create(spam=[m2])
+        self.db.commit()
+        self.assertEquals(self.db.indexer.search([], self.db.issue), {})
+        self.assertEquals(self.db.indexer.search(['one'], self.db.issue),
+            {i1: {'messages': [m1]}})
+        self.assertEquals(self.db.indexer.search(['two'], self.db.issue),
+            {i1: {'messages': [m1]}, i2: {'spam': [m2]}})
+        self.assertEquals(self.db.indexer.search(['three'], self.db.issue),
+            {i2: {'spam': [m2]}})
 
     def testReindexingChange(self):
         search = self.db.indexer.search
@@ -1542,7 +1556,7 @@ class DBTest(MyTestCase):
         keys.sort()
         self.assertEqual(keys, ['activity', 'actor', 'assignedto', 'creation',
             'creator', 'deadline', 'files', 'fixer', 'foo', 'id', 'messages',
-            'nosy', 'priority', 'status', 'superseder', 'title'])
+            'nosy', 'priority', 'spam', 'status', 'superseder', 'title'])
         self.assertEqual(self.db.issue.get('1', "fixer"), None)
 
     def testRemoveProperty(self):
@@ -1556,7 +1570,7 @@ class DBTest(MyTestCase):
         keys.sort()
         self.assertEqual(keys, ['activity', 'actor', 'assignedto', 'creation',
             'creator', 'deadline', 'files', 'foo', 'id', 'messages',
-            'nosy', 'priority', 'status', 'superseder'])
+            'nosy', 'priority', 'spam', 'status', 'superseder'])
         self.assertEqual(self.db.issue.list(), ['1'])
 
     def testAddRemoveProperty(self):
@@ -1571,7 +1585,7 @@ class DBTest(MyTestCase):
         keys.sort()
         self.assertEqual(keys, ['activity', 'actor', 'assignedto', 'creation',
             'creator', 'deadline', 'files', 'fixer', 'foo', 'id', 'messages',
-            'nosy', 'priority', 'status', 'superseder'])
+            'nosy', 'priority', 'spam', 'status', 'superseder'])
         self.assertEqual(self.db.issue.list(), ['1'])
 
 class ROTest(MyTestCase):

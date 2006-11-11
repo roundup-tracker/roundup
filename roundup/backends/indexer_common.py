@@ -1,4 +1,4 @@
-#$Id: indexer_common.py,v 1.7 2006-10-04 01:12:00 richard Exp $
+#$Id: indexer_common.py,v 1.8 2006-11-11 03:01:54 richard Exp $
 import re, sets
 
 from roundup import hyperdb
@@ -41,14 +41,16 @@ class Indexer:
         designator_propname = {}
         for nm, propclass in klass.getprops().items():
             if _isLink(propclass):
-                designator_propname[propclass.classname] = nm
+                designator_propname.setdefault(propclass.classname,
+                    []).append(nm)
 
         # build a dictionary of nodes and their associated messages
         # and files
         nodeids = {}      # this is the answer
         propspec = {}     # used to do the klass.find
-        for propname in designator_propname.values():
-            propspec[propname] = {}   # used as a set (value doesn't matter)
+        for l in designator_propname.values():
+            for propname in l:
+                propspec[propname] = {}  # used as a set (value doesn't matter)
 
         # don't unpack hits entries as sqlite3's Row can't be unpacked :(
         for entry in hits:
@@ -70,14 +72,14 @@ class Indexer:
                 continue
 
             # it's a linked class - set up to do the klass.find
-            linkprop = designator_propname[classname]   # eg, msg -> messages
-            propspec[linkprop][nodeid] = 1
+            for linkprop in designator_propname[classname]:
+                propspec[linkprop][nodeid] = 1
 
         # retain only the meaningful entries
         for propname, idset in propspec.items():
             if not idset:
                 del propspec[propname]
-        
+
         # klass.find tells me the klass nodeids the linked nodes relate to
         for resid in klass.find(**propspec):
             resid = str(resid)
