@@ -5,6 +5,7 @@ are given with the most recent entry first.
 Fixed:
 - setup.py had broken reference to roundup.cgi (sf bug 1593573)
 - full-text search wasn't coping with multiple multilinks to the same class
+- unicode / sqlite 3 problem (sf bug 1589292)
 
 
 2006-09-11 1.3.0

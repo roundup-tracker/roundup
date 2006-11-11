@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.81 2006-11-11 03:01:54 richard Exp $
+# $Id: db_test_base.py,v 1.82 2006-11-11 03:21:12 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
@@ -201,6 +201,18 @@ class DBTest(MyTestCase):
             self.db.file.set(nid, content='eggs')
             if commit: self.db.commit()
             self.assertEqual(self.db.file.get(nid, 'content'), 'eggs')
+
+    def testStringUnicode(self):
+        # test set & retrieve
+        ustr = u'\xe4\xf6\xfc\u20ac'.encode('utf8')
+        nid = self.db.issue.create(title=ustr, status='1')
+        self.assertEqual(self.db.issue.get(nid, 'title'), ustr)
+
+        # change and make sure we retrieve the correct value
+        ustr2 = u'change \u20ac change'.encode('utf8')
+        self.db.issue.set(nid, title=ustr2)
+        self.db.commit()
+        self.assertEqual(self.db.issue.get(nid, 'title'), ustr2)
 
     # Link
     def testLinkChange(self):

@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.48 2006-10-10 03:55:31 richard Exp $
+# $Id: back_sqlite.py,v 1.49 2006-11-11 03:21:12 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -61,7 +61,7 @@ class Database(rdbms_common.Database):
         hyperdb.Multilink : lambda x: x,    # used in journal marshalling
     }
     sql_to_hyperdb_value = {
-        hyperdb.String : str,
+        hyperdb.String : lambda x: isinstance(x, unicode) and x.encode('utf8') or str(x),
         hyperdb.Date   : lambda x: date.Date(str(x)),
         hyperdb.Link   : str, # XXX numeric ids
         hyperdb.Interval  : date.Interval,
