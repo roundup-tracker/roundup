@@ -5,6 +5,7 @@ are given with the most recent entry first.
 2006-??-?? 1.3.2
 Fixed:
 - documentation cleanup from Luke Ross (sf patch 1594860)
+- updated Spanish translation from Ramiro Morales (sf patch 1594718)
 
 
 2006-11-11 1.3.1
