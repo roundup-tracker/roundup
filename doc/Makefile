@@ -14,6 +14,7 @@ all: ${COMPILED} ${WEBHT}
 
 website: ${WEBHT}
 	cp *.ht ${WEBDIR}
+	cp -r images ${WEBDIR}
 
 %.html: %.txt
 	${STXTOHTML} --report=warning -d $< $@
