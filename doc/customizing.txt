@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.211 $
+:Version: $Revision: 1.212 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -397,14 +397,15 @@ specifying (default) labelling and ordering of classes.)::
 
     user = Class(db, "user", username=String(), organisation=String(),
         password=String(), address=String(), realname=String(),
-        phone=String())
+        phone=String(), alternate_addresses=String(),
+        queries=Multilink('query'), roles=String(), timezone=String())
     user.setkey("username")
 
     msg = FileClass(db, "msg", author=Link("user"), summary=String(),
         date=Date(), recipients=Multilink("user"),
-        files=Multilink("file"))
+        files=Multilink("file"), messageid=String(), inreplyto=String())
 
-    file = FileClass(db, "file", name=String(), type=String())
+    file = FileClass(db, "file", name=String())
 
     issue = IssueClass(db, "issue", topic=Multilink("keyword"),
         status=Link("status"), assignedto=Link("user"),
@@ -535,7 +536,8 @@ the rest of the database. This reduces the number of large entries in
 the database, which generally makes databases more efficient, and also
 allows us to use command-line tools to operate on the files. They are
 stored in the files sub-directory of the ``'db'`` directory in your
-tracker.
+tracker. FileClasses also have a "type" attribute to store the MIME
+type of the file.
 
 
 IssueClass
@@ -640,7 +642,8 @@ property, or sorting will result in random ordering.
 Examples of adding to your schema
 ---------------------------------
 
-TODO
+The Roundup wiki has examples of how schemas can be customised to add
+new functionality.
 
 
 Detectors - adding behaviour to your tracker
@@ -799,7 +802,7 @@ Database Content
 ================
 
 .. note::
-   if you modify the content of definitional classes, you'll most
+   If you modify the content of definitional classes, you'll most
    likely need to edit the tracker `detectors`_ to reflect your changes.
 
 Customisation of the special "definitional" classes (eg. status,

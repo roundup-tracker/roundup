@@ -1,14 +1,20 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2006-??-?? 1.3.1
+
+2006-??-?? 1.3.2
+Fixed:
+- documentation cleanup from Luke Ross (sf patch 1594860)
+
+
+2006-11-11 1.3.1
 Fixed:
 - setup.py had broken reference to roundup.cgi (sf bug 1593573)
 - full-text search wasn't coping with multiple multilinks to the same class
 - unicode / sqlite 3 problem (sf bug 1589292)
 
 
-2006-09-11 1.3.0
+2006-11-09 1.3.0
 Feature:
 - WSGI support via roundup.cgi.wsgi_handler
 

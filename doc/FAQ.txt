@@ -2,7 +2,7 @@
 Roundup FAQ
 ===========
 
-:Version: $Revision: 1.22 $
+:Version: $Revision: 1.23 $
 
 .. contents::
 
@@ -13,7 +13,7 @@ Installation
 Living without a mailserver
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Remove the nosy reactor, means delete the tracker file
+Remove the nosy reactor - delete the tracker file
 ``detectors/nosyreactor.py`` from your tracker home.
 
 
@@ -23,10 +23,11 @@ The cgi-bin is very slow!
 Yep, it sure is. It has to start up Python and load all of the support
 libraries for *every* request.
 
-The solution is to use the built in server.
+The solution is to use the built in server (or possibly the mod_python
+or WSGI support).
 
 To make Roundup more seamless with your website, you may place the built
-in server behind apache and link it into your web tree
+in server behind apache and link it into your web tree (see below).
 
 
 How do I put Roundup behind Apache

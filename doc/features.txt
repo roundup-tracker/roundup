@@ -35,7 +35,7 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
    across all storages available
  - customised automatic auditors and reactors may be written that perform
    actions before and after changes are made to entries in the database,
-   or may veto the creation or modification of items int he database
+   or may veto the creation or modification of items in the database
  - samples are provided for all manner of configuration changes and
    customisations
 
@@ -62,7 +62,7 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
  - authentication of user registration and user-driven password resetting
    using email and one time keys
  - may be run using WSGI or through CGI as a normal cgi script, as a
-   stand-alone web server, or through Zope
+   stand-alone web server, under mod_python or through Zope
  - searching may be performed using many constraints, including a full-text
    search of messages attached to issues
  - file attachments (added through the web or email) are served up with the

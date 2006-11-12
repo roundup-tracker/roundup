@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: 1.76
+:Version: $Revision: 1.120 $
 
 .. contents::
    :depth: 2
@@ -312,7 +312,7 @@ privileges to create databases.
 Configure a Web Interface
 -------------------------
 
-There are three web interfaces to choose from:
+There are five web interfaces to choose from:
 
 1. `web server cgi-bin`_
 2. `stand-alone web server`_
@@ -332,7 +332,7 @@ A benefit of using the cgi-bin approach is that it's the easiest way to
 restrict access to your tracker to only use HTTPS. Access will be slower
 than through the `stand-alone web server`_ though.
 
-If your Python isn't install as "python" then you'll need to edit
+If your Python isn't installed as "python" then you'll need to edit
 the ``roundup.cgi`` script to fix the first line.
 
 If you're using IIS on a Windows platform, you'll need to run this command
@@ -368,7 +368,7 @@ part of the configuration is the tracker home directory.
 
 If you're using Apache, you can use an additional trick to hide the
 ``.cgi`` extension of the cgi script. Place the ``roundup.cgi`` script
-wherever you want it to be, renamed it to just ``roundup``, and add a
+wherever you want it to be, rename it to just ``roundup``, and add a
 couple lines to your Apache configuration::
  
  <Location /path/to/roundup>
@@ -379,7 +379,7 @@ couple lines to your Apache configuration::
 Stand-alone Web Server
 ~~~~~~~~~~~~~~~~~~~~~~
 
-This approach will give you the fastest of the three web interfaces. You may
+This approach will give you faster response than cgi-bin. You may
 investigate using ProxyPass or similar configuration in apache to have your
 tracker accessed through the same URL as other systems.
 
@@ -409,7 +409,7 @@ Apache HTTP Server with mod_python
 
 `Mod_python`_ is an `Apache`_ module that embeds the Python interpreter
 within the server.  Running Roundup this way is much faster than all
-above options and, like `web server cgi-bin`_, allows to use HTTPS
+above options and, like `web server cgi-bin`_, allows you to use HTTPS
 protocol.  The drawback is that this setup is more complicated.
 
 The following instructions were tested on apache 2.0 with mod_python 3.1.
@@ -462,7 +462,7 @@ directives:
     timing display is disabled.
 
 In the following example we have two trackers set up in
-``/var/db/roundup/support`` and ``var/db/roundup/devel`` and accessed
+``/var/db/roundup/support`` and ``/var/db/roundup/devel`` and accessed
 as ``https://my.host/roundup/support/`` and ``https://my.host/roundup/devel/``
 respectively.  Having them share same parent directory allows us to
 reduce the number of configuration directives.  Support tracker has
@@ -536,7 +536,7 @@ If you don't want to use the email component of Roundup, then remove the
 
 See `platform-specific notes`_ for steps that may be needed on your system.
 
-There are three supported ways to get emailed issues into the
+There are five supported ways to get emailed issues into the
 Roundup tracker.  You should pick ONE of the following, all
 of which will continue my example setup from above:
 
@@ -547,10 +547,10 @@ Set up a mail alias called "issue_tracker" as (include the quote marks):
 "``|/usr/bin/python /usr/bin/roundup-mailgw <tracker_home>``"
 (substitute ``/usr/bin`` for wherever roundup-mailgw is installed).
 
-In some installations (e.g. RedHat 6.2 I think) you'll need to set up smrsh so
-sendmail will accept the pipe command. In that case, symlink
-``/etc/smrsh/roundup-mailgw`` to "``/usr/bin/roundup-mailgw``" and change
-the command to::
+In some installations (e.g. RedHat Linux and Fedora Core) you'll need to
+set up smrsh so sendmail will accept the pipe command. In that case,
+symlink ``/etc/smrsh/roundup-mailgw`` to "``/usr/bin/roundup-mailgw``"
+and change the command to::
 
     |roundup-mailgw /opt/roundup/trackers/support
  
@@ -622,8 +622,8 @@ This config makes a few assumptions:
   user, in this case, 'roundup'.
 
 * That if the ``schema.py`` file exists, then the tracker is ready for
-  use. Another option is to use the ``config.ini`` file, but this recently
-  changed (in 0.8) from ``config.py``.
+  use. Another option is to use the ``config.ini`` file (this changed
+  in 0.8 from ``config.py``).
 
 Macros for Roundup router/transport. Should be placed in the macros
 section of the Exim4 config::
@@ -745,6 +745,12 @@ responsibility of running roundup. This user:
 3. runs regular checks (using cron) to ensure the daemon is up
 4. optionally has no login password so that nobody but the "root" user
    may actually login and play with the roundup setup.
+
+If you're using a Linux system (e.g. Fedora Core) with SELinux enabled,
+you will need to ensure that the db directory has a context that
+permits the web server to modify and create files. If you're using the
+mysql or postgresql backend you may also need to update your policy to
+allow the web server to access the database socket.
 
 
 Additional Language Codecs

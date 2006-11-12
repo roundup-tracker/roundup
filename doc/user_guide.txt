@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.34 $
+:Version: $Revision: 1.35 $
 
 .. contents::
 
@@ -21,7 +21,7 @@ issue-ness or user-ness is called the item's *class*. So, for bug
 reports and features, the class is "issue", and for users the class is
 "user".
 
-Each item in the tracker has an id number that identifies it along with
+Each item in the tracker has an ID number that identifies it along with
 its item class. To identify a particular issue or user, we combine the
 class with the number to create a unique label, so that user 1 (who,
 incidentally, is *always* the "admin" user) is referred to as "user1".
@@ -731,8 +731,8 @@ the command-line.
 Using with the shell
 --------------------
 
-With version 0.6.0 or newer of roundup which supports: multiple
-designators to display and the -d, -S and -s flags.
+With version 0.6.0 or newer of roundup (which introduced support for
+multiple designators to display and the -d, -S and -s flags):
 
 To find all messages regarding chatting issues that contain the word
 "spam", for example, you could execute the following command from the
