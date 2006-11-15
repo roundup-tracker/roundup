@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.228 2006-11-09 00:36:21 richard Exp $
+# $Id: client.py,v 1.229 2006-11-15 06:27:15 a1s Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -108,6 +108,24 @@ class Client:
     # Note: index page stuff doesn't appear here:
     # columns, sort, sortdir, filter, group, groupdir, search_text,
     # pagesize, startwith
+
+    # list of network error codes that shouldn't be reported to tracker admin
+    # (error descriptions from FreeBSD intro(2))
+    IGNORE_NET_ERRORS = (
+        # A write on a pipe, socket or FIFO for which there is
+        # no process to read the data.
+        errno.EPIPE,
+        # A connection was forcibly closed by a peer.
+        # This normally results from a loss of the connection
+        # on the remote socket due to a timeout or a reboot.
+        errno.ECONNRESET,
+        # Software caused connection abort.  A connection abort
+        # was caused internal to your host machine.
+        errno.ECONNABORTED,
+        # A connect or send request failed because the connected party
+        # did not properly respond after a period of time.
+        errno.ETIMEDOUT,
+    )
 
     def __init__(self, instance, request, env, form=None, translator=None):
         # re-seed the random number generator
@@ -819,16 +837,25 @@ class Client:
                 raise ValueError, 'No such action "%s"'%action_name
         return action_klass
 
+    def _socket_op(self, call, *args, **kwargs):
+        """Execute socket-related operation, catch common network errors
+
+        Parameters:
+            call: a callable to execute
+            args, kwargs: call arguments
+
+        """
+        try:
+            call(*args, **kwargs)
+        except socket.error, err:
+            if err.errno not in self.IGNORE_NET_ERRORS:
+                raise
+
     def write(self, content):
         if not self.headers_done:
             self.header()
         if self.env['REQUEST_METHOD'] != 'HEAD':
-            try:
-                self.request.wfile.write(content)
-            except socket.error, error:
-                # the end-user has gone away
-                if error.errno != errno.EPIPE:
-                    raise
+            self._socket_op(self.request.wfile.write, content)
 
     def write_html(self, content):
         if not self.headers_done:
@@ -847,12 +874,7 @@ class Client:
             content = content.encode(self.charset, 'xmlcharrefreplace')
 
         # and write
-        try:
-            self.request.wfile.write(content)
-        except socket.error, error:
-            # the end-user has gone away
-            if error.errno != errno.EPIPE:
-                raise
+        self._socket_op(self.request.wfile.write, content)
 
     def setHeader(self, header, value):
         '''Override a header to be returned to the user's browser.
@@ -881,7 +903,7 @@ class Client:
                 cookie += " expires=%s;"%Cookie._getdate(expire)
             headers.append(('Set-Cookie', cookie))
 
-        self.request.start_response(headers, response)
+        self._socket_op(self.request.start_response, headers, response)
 
         self.headers_done = 1
         if self.debug:
