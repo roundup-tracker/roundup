@@ -1,0 +1,58 @@
+#! /usr/bin/env python2.3
+
+# This script generates a simple report outlining the activity in one
+# tracker for the most recent week.
+
+# This script is free software, you may redistribute it
+# and/or modify under the same terms as Python.
+
+import sys, math
+from roundup import instance, date
+
+# open the instance
+if len(sys.argv) != 2:
+    print 'You need to specify an instance home dir'
+instance_home = sys.argv[1]
+instance = instance.open(instance_home)
+db = instance.open('admin')
+
+old = date.Date('-1w')
+
+created = []
+summary = {}
+messages = []
+
+# loop through all the recently-active issues
+for issue_id in db.issue.filter(None, {'activity': '-1w;'}):
+    num = 0
+    for x,ts,userid,action,data in db.issue.history(issue_id):
+        if ts < old: continue
+        if action == 'create':
+            created.append(issue_id)
+        elif action == 'set' and data.has_key('messages'):
+            num += 1
+    summary.setdefault(db.issue.get(issue_id, 'status'), []).append(issue_id)
+    messages.append((num, issue_id))
+
+#print 'STATUS SUMMARY:'
+#for k,v in summary.items():
+#    print k, len(v)
+
+print '\nCREATED:'
+print '\n'.join(['%s: %s'%(id, db.issue.get(id, 'title'))
+    for id in created])
+
+print '\nRESOLVED:'
+resolved_id = db.status.lookup('resolved')
+print '\n'.join(['%s: %s'%(id, db.issue.get(id, 'title'))
+    for id in summary.get(resolved_id, [])])
+
+print '\nTOP TEN MOST DISCUSSED:'
+messages.sort()
+messages.reverse()
+nmax = messages[0][0]
+fmt = '%%%dd - %%s: %%s'%(int(math.log(nmax, 10)) + 1)
+print '\n'.join([fmt%(num, id, db.issue.get(id, 'title'))
+    for num, id in messages[:10]])
+
+# vim: set filetype=python ts=4 sw=4 et si

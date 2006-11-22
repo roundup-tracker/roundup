@@ -8,6 +8,10 @@ roundup-reminder
  Generate an email that lists outstanding issues. Send in both plain text
  and HTML formats.
 
+weekly-report
+ Generate a simple report outlining the activity in one tracker for the
+ most recent week.
+
 schema_diagram.py
  Generate a schema diagram for a roundup tracker. It generates a 'dot file'
  that is then fed into the 'dot' tool (http://www.graphviz.org) to generate
