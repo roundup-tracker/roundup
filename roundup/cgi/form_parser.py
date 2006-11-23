@@ -536,7 +536,7 @@ class FormParser:
                                                           self.classname,
                                                           entry):
                         cl = self.db.classes[self.classname]
-                        if cl.get(nodeid, entry) is None:
+                        if cl.get(nodeid, entry) is not None:
                             required.remove(entry)
             
             # any required values not present?
