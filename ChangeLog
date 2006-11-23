@@ -1,3 +1,8 @@
+2006-11-22  Stefan Seefeld  <stefan@codesourcery.com>
+
+	* roundup/cgi/form_parser.py: Allow required fields to be ommitted
+	if user doesn't have edit permission and the value is already set.
+
 2001-08-03 11:54  richard
 
 	* BUILD.txt, CHANGES.txt, README.txt, setup.py,
@@ -872,7 +877,10 @@
 
 	* cgitb.py, config.py, date.py, hyperdb.py, roundup-mailgw.py,
 	roundup.py, roundup_cgi.py, roundupdb.py, server.py, template.py:
-	Added CVS keywords $Id: ChangeLog,v 1.7 2001-08-03 02:12:07 anthonybaxter Exp $ and $Log: not supported by cvs2svn $ to all python files.
+	Added CVS keywords $Id: ChangeLog,v 1.8 2006-11-23 00:44:48 stefan Exp $ and $Log: not supported by cvs2svn $
+	Added CVS keywords $Id: ChangeLog,v 1.8 2006-11-23 00:44:48 stefan Exp $ and Revision 1.7  2001/08/03 02:12:07  anthonybaxter
+	Added CVS keywords $Id: ChangeLog,v 1.8 2006-11-23 00:44:48 stefan Exp $ and regenerated on Fri Aug  3 12:12:00 EST 2001
+	Added CVS keywords $Id: ChangeLog,v 1.8 2006-11-23 00:44:48 stefan Exp $ and to all python files.
 
 2001-07-19 15:46  anthonybaxter
 

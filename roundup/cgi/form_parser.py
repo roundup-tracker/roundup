@@ -526,6 +526,19 @@ class FormParser:
                 if got.has_key(entry):
                     required.remove(entry)
 
+            # If a user doesn't have edit permission for a given property,
+            # but the property is already set in the database, we don't
+            # require a value.
+            if not (create or nodeid is None):
+                for entry in required[:]:
+                    if not self.db.security.hasPermission('Edit',
+                                                          self.client.userid,
+                                                          self.classname,
+                                                          entry):
+                        cl = self.db.classes[self.classname]
+                        if cl.get(nodeid, entry) is None:
+                            required.remove(entry)
+            
             # any required values not present?
             if not required:
                 continue
