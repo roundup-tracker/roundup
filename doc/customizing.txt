@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.213 $
+:Version: $Revision: 1.214 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -366,6 +366,14 @@ For example, the following in ``detectors/config.ini``::
 is accessible as::
 
     db.config.detectors['QA_RECIPIENTS']
+
+Note tha the name grouping applied to the main configuration file is
+applied to the extension config files, so if you instead have::
+
+    [qa]
+    recipients = email@example.com
+
+then the above ``db.config.detectors['QA_RECIPIENTS']`` will still work.
 
 
 Tracker Schema
