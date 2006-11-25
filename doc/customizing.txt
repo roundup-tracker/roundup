@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.212 $
+:Version: $Revision: 1.213 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -346,6 +346,26 @@ Configuration variables may be referred to in lower or upper case. In code,
 variables not in the "main" section are referred to using their section and
 name, so "domain" in the section "mail" becomes MAIL_DOMAIN. The
 configuration variables available are:
+
+Extending the configuration file
+--------------------------------
+
+You can't add new variables to the config.ini file in the tracker home but
+you can add two new config.ini files:
+
+- a config.ini in the ``extensions`` directory will be loaded and attached
+  to the config variable as "ext".
+- a config.ini in the ``detectors`` directory will be loaded and attached
+  to the config variable as "detectors".
+
+For example, the following in ``detectors/config.ini``::
+
+    [main]
+    qa_recipients = email@example.com
+
+is accessible as::
+
+    db.config.detectors['QA_RECIPIENTS']
 
 
 Tracker Schema
