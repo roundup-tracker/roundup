@@ -719,7 +719,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
 
         return self.input(type="hidden", name="@action", value="new") + \
             '\n' + \
-            self.input(type="submit", name="submit", value=self._(label))
+            self.input(type="submit", name="submit_button", value=self._(label))
 
     def history(self):
         if not self.is_view_ok():
@@ -847,7 +847,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         return self.input(type="hidden", name="@lastactivity",
             value=self.activity.local(0)) + '\n' + \
             self.input(type="hidden", name="@action", value="edit") + '\n' + \
-            self.input(type="submit", name="submit", value=self._(label))
+            self.input(type="submit", name="submit_button", value=self._(label))
 
     def journal(self, direction='descending'):
         ''' Return a list of HTMLJournalEntry instances.
