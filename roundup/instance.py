@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: instance.py,v 1.33 2004-11-29 02:55:46 richard Exp $
+# $Id: instance.py,v 1.34 2006-12-01 09:48:56 schlatterbeck Exp $
 
 '''Tracker handling (open tracker).
 
@@ -24,6 +24,7 @@ Backwards compatibility for the old-style "imported" trackers.
 __docformat__ = 'restructuredtext'
 
 import os
+import sys
 from roundup import configuration, mailgw
 from roundup import hyperdb, backends
 from roundup.cgi import client, templating
@@ -46,6 +47,9 @@ class Tracker:
         self.tracker_home = tracker_home
         self.optimize = optimize
         self.config = configuration.CoreConfig(tracker_home)
+        libdir = os.path.join(tracker_home, 'lib')
+        if os.path.isdir(libdir):
+            sys.path.insert(1, libdir)
         self.cgi_actions = {}
         self.templating_utils = {}
         self.load_interfaces()
@@ -142,12 +146,14 @@ class Tracker:
         extensions = []
         dirpath = os.path.join(self.tracker_home, dirname)
         if os.path.isdir(dirpath):
+            sys.path.insert(1, dirpath)
             for name in os.listdir(dirpath):
                 if not name.endswith('.py'):
                     continue
                 vars = {}
                 self._load_python(os.path.join(dirname, name), vars)
                 extensions.append(vars['init'])
+            del sys.path[1]
         return extensions
 
     def init(self, adminpw):
