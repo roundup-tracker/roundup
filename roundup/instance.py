@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: instance.py,v 1.35 2006-12-01 10:31:58 schlatterbeck Exp $
+# $Id: instance.py,v 1.36 2006-12-01 10:38:40 schlatterbeck Exp $
 
 '''Tracker handling (open tracker).
 
@@ -53,7 +53,7 @@ class Tracker:
         self.templates = templating.Templates(self.config["TEMPLATES"])
         self.backend = backends.get_backend(self.get_backend_name())
         if self.optimize:
-            libdir = os.path.join(tracker_home, 'lib')
+            libdir = os.path.join(self.tracker_home, 'lib')
             if os.path.isdir(libdir):
                 sys.path.insert(1, libdir)
             self.templates.precompileTemplates()
@@ -107,7 +107,7 @@ class Tracker:
             # use preloaded detectors
             detectors = self.detectors
         else:
-            libdir = os.path.join(tracker_home, 'lib')
+            libdir = os.path.join(self.tracker_home, 'lib')
             if os.path.isdir(libdir):
                 sys.path.insert(1, libdir)
             # execute the schema file
