@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: instance.py,v 1.34 2006-12-01 09:48:56 schlatterbeck Exp $
+# $Id: instance.py,v 1.35 2006-12-01 10:31:58 schlatterbeck Exp $
 
 '''Tracker handling (open tracker).
 
@@ -47,15 +47,15 @@ class Tracker:
         self.tracker_home = tracker_home
         self.optimize = optimize
         self.config = configuration.CoreConfig(tracker_home)
-        libdir = os.path.join(tracker_home, 'lib')
-        if os.path.isdir(libdir):
-            sys.path.insert(1, libdir)
         self.cgi_actions = {}
         self.templating_utils = {}
         self.load_interfaces()
         self.templates = templating.Templates(self.config["TEMPLATES"])
         self.backend = backends.get_backend(self.get_backend_name())
         if self.optimize:
+            libdir = os.path.join(tracker_home, 'lib')
+            if os.path.isdir(libdir):
+                sys.path.insert(1, libdir)
             self.templates.precompileTemplates()
             # initialize tracker extensions
             for extension in self.get_extensions('extensions'):
@@ -71,6 +71,7 @@ class Tracker:
             self.detectors = self.get_extensions('detectors')
             # db_open is set to True after first open()
             self.db_open = 0
+            sys.path.remove (libdir)
 
     def get_backend_name(self):
         o = __builtins__['open']
@@ -106,12 +107,16 @@ class Tracker:
             # use preloaded detectors
             detectors = self.detectors
         else:
+            libdir = os.path.join(tracker_home, 'lib')
+            if os.path.isdir(libdir):
+                sys.path.insert(1, libdir)
             # execute the schema file
             self._load_python('schema.py', vars)
             # reload extensions and detectors
             for extension in self.get_extensions('extensions'):
                 extension(self)
             detectors = self.get_extensions('detectors')
+            sys.path.remove (libdir)
         db = vars['db']
         # apply the detectors
         for detector in detectors:
@@ -153,7 +158,7 @@ class Tracker:
                 vars = {}
                 self._load_python(os.path.join(dirname, name), vars)
                 extensions.append(vars['init'])
-            del sys.path[1]
+            sys.path.remove(dirpath)
         return extensions
 
     def init(self, adminpw):
