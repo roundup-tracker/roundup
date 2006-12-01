@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.214 $
+:Version: $Revision: 1.215 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -49,6 +49,7 @@ db/backend_name     Names the database back-end for the tracker
 detectors/          Auditors and reactors for this tracker                   
 extensions/         Additional web actions and templating utilities.
 html/               Web interface templates, images and style sheets         
+lib/                optional common imports for detectors and extensions
 =================== ======================================================== 
 
 
@@ -367,7 +368,7 @@ is accessible as::
 
     db.config.detectors['QA_RECIPIENTS']
 
-Note tha the name grouping applied to the main configuration file is
+Note that the name grouping applied to the main configuration file is
 applied to the extension config files, so if you instead have::
 
     [qa]
