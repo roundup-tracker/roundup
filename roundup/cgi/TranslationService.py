@@ -13,8 +13,8 @@
 #   translate(domain, msgid, mapping, context, target_language, default)
 #
 
-__version__ = "$Revision: 1.2 $"[11:-2]
-__date__ = "$Date: 2004-10-23 14:04:23 $"[7:-2]
+__version__ = "$Revision: 1.3 $"[11:-2]
+__date__ = "$Date: 2006-12-02 23:41:28 $"[7:-2]
 
 from roundup import i18n
 from roundup.cgi.PageTemplates import Expressions, PathIterator, TALES
@@ -45,9 +45,15 @@ class TranslationService(TranslationServiceMixin, i18n.RoundupTranslations):
     pass
 
 class NullTranslationService(TranslationServiceMixin,
-    i18n.RoundupNullTranslations
-):
-    pass
+        i18n.RoundupNullTranslations):
+    def ugettext(self, message):
+        if self._fallback:
+            return self._fallback.ugettext(message)
+        # Sometimes the untranslatable message is a UTF-8 encoded string
+        # (thanks to PageTemplate's internals).
+        if not isinstance(message, unicode):
+            return unicode(message, 'utf8')
+        return message
 
 ### TAL patching
 #
