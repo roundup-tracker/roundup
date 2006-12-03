@@ -52,7 +52,7 @@ qs python:'&'.join([a for a in qs.split('&') if not a.startswith('@template=')])
 
 <tr tal:define="name string:roles;
                 onchange string:this.form.submit();
-                label string:Rollen:"
+                label string:Roles:"
                 >
   <th metal:use-macro="th_label">role</th>
   <td metal:use-macro="search_select_roles">
