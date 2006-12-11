@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: instance.py,v 1.36 2006-12-01 10:38:40 schlatterbeck Exp $
+# $Id: instance.py,v 1.37 2006-12-11 23:36:15 richard Exp $
 
 '''Tracker handling (open tracker).
 
@@ -71,7 +71,8 @@ class Tracker:
             self.detectors = self.get_extensions('detectors')
             # db_open is set to True after first open()
             self.db_open = 0
-            sys.path.remove (libdir)
+            if libdir in sys.path:
+                sys.path.remove(libdir)
 
     def get_backend_name(self):
         o = __builtins__['open']
@@ -116,7 +117,8 @@ class Tracker:
             for extension in self.get_extensions('extensions'):
                 extension(self)
             detectors = self.get_extensions('detectors')
-            sys.path.remove (libdir)
+            if libdir in sys.path:
+                sys.path.remove(libdir)
         db = vars['db']
         # apply the detectors
         for detector in detectors:

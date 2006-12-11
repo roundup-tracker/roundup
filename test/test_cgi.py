@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.28 2006-08-11 00:18:59 richard Exp $
+# $Id: test_cgi.py,v 1.29 2006-12-11 23:36:15 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
@@ -412,6 +412,14 @@ class FormTestCase(unittest.TestCase):
         self.assertEqual(self.parseForm({'boolean': ' '}, 'test', nodeid),
             ({('test', nodeid): {'boolean': None}}, []))
 
+    def testRequiredBoolean(self):
+        self.assertRaises(FormError, self.parseForm, {'boolean': '',
+            ':required': 'boolean'})
+        try:
+            self.parseForm({'boolean': 'no', ':required': 'boolean'})
+        except FormError:
+            self.fail('boolean "no" raised "required missing"')
+
     #
     # Number
     #
@@ -459,6 +467,14 @@ class FormTestCase(unittest.TestCase):
         nodeid = self.db.test.create(number=1)
         self.assertEqual(self.parseForm({'number': ' '}, 'test', nodeid),
             ({('test', nodeid): {'number': None}}, []))
+
+    def testRequiredNumber(self):
+        self.assertRaises(FormError, self.parseForm, {'number': '',
+            ':required': 'number'})
+        try:
+            self.parseForm({'number': '0', ':required': 'number'})
+        except FormError:
+            self.fail('number "no" raised "required missing"')
 
     #
     # Date

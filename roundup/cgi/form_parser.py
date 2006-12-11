@@ -465,7 +465,10 @@ class FormParser:
                     raise FormError, msg
 
             # register that we got this property
-            if value:
+            if isinstance(proptype, hyperdb.Multilink):
+                if value != []:
+                    got_props[this][propname] = 1
+            elif value is not None:
                 got_props[this][propname] = 1
 
             # get the old value

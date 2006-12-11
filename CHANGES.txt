@@ -8,6 +8,9 @@ Fixed:
 - documentation cleanup from Luke Ross (sf patch 1594860)
 - updated Spanish translation from Ramiro Morales (sf patch 1594718)
 - handle 8-bit untranslateable messages in tracker templates
+- handling of required for booelan False and numeric 0 (sf bug 1608200)
+- removed bogus args attr of ConfigurationError (sf bug 1608056)
+- implemented start_response in roundup.cgi (sf bug 1604304)
 
 
 2006-11-11 1.3.1

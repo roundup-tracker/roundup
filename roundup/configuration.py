@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.36 2006-10-05 23:14:52 richard Exp $
+# $Id: configuration.py,v 1.37 2006-12-11 23:36:15 richard Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -19,9 +19,7 @@ import roundup.date
 ### Exceptions
 
 class ConfigurationError(Exception):
-
-    # without this, pychecker complains about missing class attribute...
-    args = ()
+    pass
 
 class NoConfigError(ConfigurationError):
 

@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.1 2006-11-09 00:36:21 richard Exp $
+# $Id: roundup.cgi,v 1.2 2006-12-11 23:36:15 richard Exp $
 
 # python version check
 from roundup import version_check
@@ -129,6 +129,11 @@ class RequestWrapper:
         self.write("%s: %s\r\n" % (keyword, value))
     def end_headers(self):
         self.write("\r\n")
+    def start_response(self, headers, response):
+        self.send_response(response)
+        for key, value in headers:
+            self.send_header(key, value)
+        self.end_headers()
 
 #
 # Main CGI handler
