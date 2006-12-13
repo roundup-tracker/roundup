@@ -534,7 +534,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
                     value = []
                 else:
                     value = None
-            return htmlklass(self._client, self._classname, '', prop, item,
+            return htmlklass(self._client, self._classname, None, prop, item,
                 value, self._anonymous)
 
         # no good

@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundup_mailgw.py,v 1.22 2006-07-15 10:08:01 schlatterbeck Exp $
+# $Id: roundup_mailgw.py,v 1.23 2006-12-13 23:32:39 richard Exp $
 
 """Command-line script stub that calls the roundup.mailgw.
 """
@@ -77,6 +77,10 @@ POP:
     pop server
  are both valid. The username and/or password will be prompted for if
  not supplied on the command-line.
+
+POPS:
+ Connect to a POP server over ssl. This requires python 2.4 or later.
+ This supports the same notation as POP.
 
 APOP:
  Same as POP, but using Authenticated POP:
@@ -154,12 +158,15 @@ def main(argv):
 
         if source == 'mailbox':
             return handler.do_mailbox(specification)
-        elif source == 'pop':
+        elif source == 'pop' or source == 'pops':
             m = re.match(r'((?P<user>[^:]+)(:(?P<pass>.+))?@)?(?P<server>.+)',
                 specification)
             if m:
+                ssl = source.endswith('s')
+                if ssl and sys.version_info<(2,4):
+                    return usage(argv, _('Error: a later version of python is required'))
                 return handler.do_pop(m.group('server'), m.group('user'),
-                    m.group('pass'))
+                    m.group('pass'),ssl)
             return usage(argv, _('Error: pop specification not valid'))
         elif source == 'apop':
             m = re.match(r'((?P<user>[^:]+)(:(?P<pass>.+))?@)?(?P<server>.+)',
@@ -172,9 +179,7 @@ def main(argv):
             m = re.match(r'((?P<user>[^:]+)(:(?P<pass>.+))?@)?(?P<server>.+)',
                 specification)
             if m:
-                ssl = 0
-                if source == 'imaps':
-                    ssl = 1
+                ssl = source.endswith('s')
                 mailbox = ''
                 if len(args) > 3:
                     mailbox = args[3]

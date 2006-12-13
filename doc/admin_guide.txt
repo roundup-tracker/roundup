@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.20 $
+:Version: $Revision: 1.21 $
 
 .. contents::
 
@@ -322,7 +322,7 @@ therefore may be controlled through the Services control panel. The
 roundup-server program may also control the service directly:
 
 **install the service**
-  ``roundup-server -c install``
+  ``roundup-server -C /path/to/my/roundup-server.ini -c install``
 **start the service**
   ``roundup-server -c start``
 **stop the service**
@@ -334,6 +334,10 @@ Windows 2000 and later
   Start/Control Panel/Administrative Tools/Services
 Windows NT4
   Start/Control Panel/Services
+
+You will need a server configuration file (as described in `Configuring roundup-server`_)
+for specifying tracker homes and other roundup-server configuration. Specify the name of this
+file using the ``-C`` switch when installing the service.
 
 Running the Mail Gateway Script
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

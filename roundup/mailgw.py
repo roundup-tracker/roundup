@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.178 2006-10-05 23:08:20 richard Exp $
+$Id: mailgw.py,v 1.179 2006-12-13 23:32:38 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -428,12 +428,17 @@ class MailGW:
         return 0
 
 
-    def do_apop(self, server, user='', password=''):
+    def do_apop(self, server, user='', password='', ssl=False):
         ''' Do authentication POP
         '''
-        self.do_pop(server, user, password, apop=1)
+        self._do_pop(server, user, password, True, ssl)
 
-    def do_pop(self, server, user='', password='', apop=0):
+    def do_pop(self, server, user='', password='', ssl=False):
+        ''' Do plain POP
+        '''
+        self._do_pop(server, user, password, False, ssl)
+
+    def _do_pop(self, server, user, password, apop, ssl):
         '''Read a series of messages from the specified POP server.
         '''
         import getpass, poplib, socket
@@ -449,7 +454,11 @@ class MailGW:
 
         # open a connection to the server and retrieve all messages
         try:
-            server = poplib.POP3(server)
+            if ssl:
+                klass = poplib.POP3_SSL
+            else:
+                klass = poplib.POP3
+            server = klass(server)
         except socket.error:
             self.logger.exception('POP server error')
             return 1
