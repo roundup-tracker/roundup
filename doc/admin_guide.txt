@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.21 $
+:Version: $Revision: 1.22 $
 
 .. contents::
 
@@ -37,7 +37,7 @@ There's two "installations" that we talk about when using Roundup:
    installs configuration files, HTML templates, detector code and a new
    database. You have complete control over where this stuff goes through
    both choosing your "tracker home" and the ``main`` -> ``database`` variable
-   in the tracker's config.ini. 
+   in the tracker's config.ini.
 
 
 Configuring Roundup's Logging of Messages For Sysadmins
@@ -76,12 +76,12 @@ The basic configuration file layout is as follows (take from the
 
     [main]
     port = 8080
-    ;hostname = 
-    ;user = 
-    ;group = 
+    ;hostname =
+    ;user =
+    ;group =
     ;log_ip = yes
-    ;pidfile = 
-    ;logfile = 
+    ;pidfile =
+    ;logfile =
 
     [trackers]
     ; Add one of these per tracker being served
@@ -157,7 +157,7 @@ Tasks
 
 Maintenance of Roundup can involve one of the following:
 
-1. `tracker backup`_ 
+1. `tracker backup`_
 2. `software upgrade`_
 3. `migrating backends`_
 4. `moving a tracker`_
@@ -226,7 +226,7 @@ Migrating Backends
    the new tracker home
 7. test each of the admin tool, web interface and mail gateway using the new
    backend
-8. move the old tracker home out of the way (rename to "tracker.old") and 
+8. move the old tracker home out of the way (rename to "tracker.old") and
    move the new tracker home into its place
 9. restart web and email frontends
 
@@ -263,14 +263,14 @@ or you can write a simple Python script which uses the Roundup API
 directly. The latter is almost always simpler -- see the "scripts"
 directory in the Roundup source for some example uses of the API.
 
-"roundup-admin import" will import data into your tracker from a 
+"roundup-admin import" will import data into your tracker from a
 directory containing files with the following format:
 
 - one colon-separated-values file per Class with columns for each property,
   named <classname>.csv
 - one colon-separated-values file per Class with journal information,
   named <classname>-journals.csv (this is required, even if it's empty)
-- if the Class is a FileClass, you may have the "content" property 
+- if the Class is a FileClass, you may have the "content" property
   stored in separate files from the csv files. This goes in a directory
   structure::
 
@@ -317,7 +317,7 @@ to reflect your specific installation.
 Windows
 -------
 
-On Windows, the roundup-server program runs as a Windows Service, and 
+On Windows, the roundup-server program runs as a Windows Service, and
 therefore may be controlled through the Services control panel. The
 roundup-server program may also control the service directly:
 
@@ -335,9 +335,10 @@ Windows 2000 and later
 Windows NT4
   Start/Control Panel/Services
 
-You will need a server configuration file (as described in `Configuring roundup-server`_)
-for specifying tracker homes and other roundup-server configuration. Specify the name of this
-file using the ``-C`` switch when installing the service.
+You will need a server configuration file (as described in
+`Configuring roundup-server`_) for specifying tracker homes
+and other roundup-server configuration. Specify the name of
+this file using the ``-C`` switch when installing the service.
 
 Running the Mail Gateway Script
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -358,4 +359,3 @@ Back to `Table of Contents`_
 .. _`Table of Contents`: index.html
 .. _`customisation documentation`: customizing.html
 .. _`upgrading documentation`: upgrading.html
-
