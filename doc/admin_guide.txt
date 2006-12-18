@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.22 $
+:Version: $Revision: 1.23 $
 
 .. contents::
 
@@ -216,19 +216,23 @@ reinstall the older version of the sofware using the same install command::
 Migrating Backends
 ------------------
 
-1. stop the existing tracker web and email frontends (preventing changes)
-2. use the roundup-admin tool "export" command to export the contents of
-   your tracker to disk
-3. copy the tracker home to a new directory
-4. delete the "db" directory from the new directory
-5. enter the new backend name in the tracker home ``db/backend_name`` file
-6. use the roundup-admin "import" command to import the previous export with
-   the new tracker home
-7. test each of the admin tool, web interface and mail gateway using the new
-   backend
-8. move the old tracker home out of the way (rename to "tracker.old") and
-   move the new tracker home into its place
-9. restart web and email frontends
+1. Stop the existing tracker web and email frontends (preventing changes).
+2. Use the roundup-admin tool "export" command to export the contents of
+   your tracker to disk.
+3. Copy the tracker home to a new directory.
+4. Delete the "db" directory from the new directory.
+5. Enter the new backend name in the tracker home ``db/backend_name`` file.
+6. Use the roundup-admin "import" command to import the previous export with
+   the new tracker home. If non-interactively::
+     
+     roundup-admin -i <tracker home> import <tracker export dir>
+
+   If interactively, enter 'commit' before exitting.
+7. Test each of the admin tool, web interface and mail gateway using the new
+   backend.
+8. Move the old tracker home out of the way (rename to "tracker.old") and
+   move the new tracker home into its place.
+9. Restart web and email frontends.
 
 
 Moving a Tracker

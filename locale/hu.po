@@ -1,0 +1,2862 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: v0.1\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2006-12-02 14:40+0100\n"
+"Last-Translator: Gulácsi Tamás <T.Gulacsi@unosoft.hu>\n"
+"Language-Team: UNO-SOFT <info@unosoft.hu>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: Hungarian\n"
+"X-Poedit-Country: Hungary\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+# ../roundup/admin.py:85 :981 :1030 :1052
+#: ../roundup/admin.py:85
+#: ../roundup/admin.py:981
+#: ../roundup/admin.py:1030
+#: ../roundup/admin.py:1052
+#, python-format
+msgid "no such class \"%(classname)s\""
+msgstr "nincs ilyen osztály \"%(classname)s\""
+
+# ../roundup/admin.py:95 :99
+#: ../roundup/admin.py:95
+#: ../roundup/admin.py:99
+#, python-format
+msgid "argument \"%(arg)s\" not propname=value"
+msgstr "\"%(arg)s\" argumentum nem név=érték alakú"
+
+#: ../roundup/admin.py:112
+#, python-format
+msgid ""
+"Problem: %(message)s\n"
+"\n"
+msgstr "Probléma: %(message)s\n"
+
+#: ../roundup/admin.py:113
+#, python-format
+msgid ""
+"%(message)sUsage: roundup-admin [options] [<command> <arguments>]\n"
+"\n"
+"Options:\n"
+" -i instance home  -- specify the issue tracker \"home directory\" to administer\n"
+" -u                -- the user[:password] to use for commands\n"
+" -d                -- print full designators not just class id numbers\n"
+" -c                -- when outputting lists of data, comma-separate them.\n"
+"                      Same as '-S \",\"'.\n"
+" -S <string>       -- when outputting lists of data, string-separate them\n"
+" -s                -- when outputting lists of data, space-separate them.\n"
+"                      Same as '-S \" \"'.\n"
+" -V                -- be verbose when importing\n"
+" -v                -- report Roundup and Python versions (and quit)\n"
+"\n"
+" Only one of -s, -c or -S can be specified.\n"
+"\n"
+"Help:\n"
+" roundup-admin -h\n"
+" roundup-admin help                       -- this help\n"
+" roundup-admin help <command>             -- command-specific help\n"
+" roundup-admin help all                   -- all available help\n"
+msgstr ""
+"%(message)sHasználat: roundup-admin [opciók] [<parancs><argumentumok>]\n"
+"\n"
+"Opciók:\n"
+" -i példány elérési út  -- add meg az adminisztrálni kívánt hibakövető \"könyvtárát\"\n"
+" -u                -- a parancsoknál használt felhasználónév[:jelszó]\n"
+" -d                -- írd ki a teljes nevet, ne csak az osztály azonosítót\n"
+" -c                -- adatlistáknál vesszővel válaszd el az elemeket.\n"
+"                      Ugyanaz mint '-S \",\"'.\n"
+" -S <szöveg>       -- adatlistáknál a megadott szöveggel válaszd el az elemeket\n"
+" -s                -- when outputting lists of data, space-separate them.\n"
+"                      Same as '-S \" \"'.\n"
+" -V                -- importálásnál legyél bőbeszédű\n"
+" -v                -- írd ki a Roundup és a Python verziószámokat (és lépj ki)\n"
+"\n"
+" -s, -c vagy -S közül egyszerre csak egy adható meg.\n"
+"\n"
+"segítség:\n"
+" roundup-admin -h\n"
+" roundup-admin help                       -- ez a segítség\n"
+" roundup-admin help <command>             -- parancs-specifikus segítség\n"
+" roundup-admin help all                   -- minden elérhető segítség\n"
+
+#: ../roundup/admin.py:140
+msgid "Commands:"
+msgstr "Parancsok:"
+
+#: ../roundup/admin.py:147
+msgid ""
+"Commands may be abbreviated as long as the abbreviation\n"
+"matches only one command, e.g. l == li == lis == list."
+msgstr "A parancsok rövidíthetők mindaddig, amíg csak egy parancsra illenek, pl. l == li == lis == list."
+
+#: ../roundup/admin.py:177
+msgid ""
+"\n"
+"All commands (except help) require a tracker specifier. This is just\n"
+"the path to the roundup tracker you're working with. A roundup tracker\n"
+"is where roundup keeps the database and configuration file that defines\n"
+"an issue tracker. It may be thought of as the issue tracker's \"home\n"
+"directory\". It may be specified in the environment variable TRACKER_HOME\n"
+"or on the command line as \"-i tracker\".\n"
+"\n"
+"A designator is a classname and a nodeid concatenated, eg. bug1, user10, ...\n"
+"\n"
+"Property values are represented as strings in command arguments and in the\n"
+"printed results:\n"
+" . Strings are, well, strings.\n"
+" . Date values are printed in the full date format in the local time zone,\n"
+"   and accepted in the full format or any of the partial formats explained\n"
+"   below.\n"
+" . Link values are printed as node designators. When given as an argument,\n"
+"   node designators and key strings are both accepted.\n"
+" . Multilink values are printed as lists of node designators joined\n"
+"   by commas.  When given as an argument, node designators and key\n"
+"   strings are both accepted; an empty string, a single node, or a list\n"
+"   of nodes joined by commas is accepted.\n"
+"\n"
+"When property values must contain spaces, just surround the value with\n"
+"quotes, either ' or \". A single space may also be backslash-quoted. If a\n"
+"value must contain a quote character, it must be backslash-quoted or inside\n"
+"quotes. Examples:\n"
+"           hello world      (2 tokens: hello, world)\n"
+"           \"hello world\"    (1 token: hello world)\n"
+"           \"Roch'e\" Compaan (2 tokens: Roch'e Compaan)\n"
+"           Roch\\'e Compaan  (2 tokens: Roch'e Compaan)\n"
+"           address=\"1 2 3\"  (1 token: address=1 2 3)\n"
+"           \\\\               (1 token: \\)\n"
+"           \\n"
+"\\r\\t           (1 token: a newline, carriage-return and tab)\n"
+"\n"
+"When multiple nodes are specified to the roundup get or roundup set\n"
+"commands, the specified properties are retrieved or set on all the listed\n"
+"nodes.\n"
+"\n"
+"When multiple results are returned by the roundup get or roundup find\n"
+"commands, they are printed one per line (default) or joined by commas (with\n"
+"the -c) option.\n"
+"\n"
+"Where the command changes data, a login name/password is required. The\n"
+"login may be specified as either \"name\" or \"name:password\".\n"
+" . ROUNDUP_LOGIN environment variable\n"
+" . the -u command-line option\n"
+"If either the name or password is not supplied, they are obtained from the\n"
+"command-line.\n"
+"\n"
+"Date format examples:\n"
+"  \"2000-04-17.03:45\" means <Date 2000-04-17.08:45:00>\n"
+"  \"2000-04-17\" means <Date 2000-04-17.00:00:00>\n"
+"  \"01-25\" means <Date yyyy-01-25.00:00:00>\n"
+"  \"08-13.22:13\" means <Date yyyy-08-14.03:13:00>\n"
+"  \"11-07.09:32:43\" means <Date yyyy-11-07.14:32:43>\n"
+"  \"14:25\" means <Date yyyy-mm-dd.19:25:00>\n"
+"  \"8:47:11\" means <Date yyyy-mm-dd.13:47:11>\n"
+"  \".\" means \"right now\"\n"
+"\n"
+"Command help:\n"
+msgstr ""
+
+#: ../roundup/admin.py:240
+#, python-format
+msgid "%s:"
+msgstr "%s:"
+
+#: ../roundup/admin.py:245
+msgid ""
+"Usage: help topic\n"
+"        Give help about topic.\n"
+"\n"
+"        commands  -- list commands\n"
+"        <command> -- help specific to a command\n"
+"        initopts  -- init command options\n"
+"        all       -- all available help\n"
+"        "
+msgstr ""
+"Használat: help téma\n"
+"        Segítséget ad a témáról.\n"
+"\n"
+"        commands  -- parancsok listája\n"
+"        <command> -- segítség adott programhoz\n"
+"        initopts  -- kezdő parancs opciók\n"
+"        all       -- minden elérhető segítség\n"
+"        "
+
+#: ../roundup/admin.py:268
+#, python-format
+msgid "Sorry, no help for \"%(topic)s\""
+msgstr "Elnézést, \"%(topic)s\" témához nincs help"
+
+# ../roundup/admin.py:340 :396
+#: ../roundup/admin.py:340
+#: ../roundup/admin.py:396
+msgid "Templates:"
+msgstr "Sablonok:"
+
+# ../roundup/admin.py:343 :407
+#: ../roundup/admin.py:343
+#: ../roundup/admin.py:407
+msgid "Back ends:"
+msgstr "Adatbázis hátterek:"
+
+#: ../roundup/admin.py:346
+msgid ""
+"Usage: install [template [backend [admin password [key=val[,key=val]]]]]\n"
+"        Install a new Roundup tracker.\n"
+"\n"
+"        The command will prompt for the tracker home directory\n"
+"        (if not supplied through TRACKER_HOME or the -i option).\n"
+"        The template, backend and admin password may be specified\n"
+"        on the command-line as arguments, in that order.\n"
+"\n"
+"        The last command line argument allows to pass initial values\n"
+"        for config options.  For example, passing\n"
+"        \"web_http_auth=no,rdbms_user=dinsdale\" will override defaults\n"
+"        for options http_auth in section [web] and user in section [rdbms].\n"
+"        Please be careful to not use spaces in this argument! (Enclose\n"
+"        whole argument in quotes if you need spaces in option value).\n"
+"\n"
+"        The initialise command must be called after this command in order\n"
+"        to initialise the tracker's database. You may edit the tracker's\n"
+"        initial database contents before running that command by editing\n"
+"        the tracker's dbinit.py module init() function.\n"
+"\n"
+"        See also initopts help.\n"
+"        "
+msgstr ""
+
+# ../roundup/admin.py:369 :466 :527 :606 :656 :714 :735 :763 :834 :901 :972
+# :1020 :1042 :1069 :1136 :1207
+#: ../roundup/admin.py:369
+#: ../roundup/admin.py:466
+#: ../roundup/admin.py:527
+#: ../roundup/admin.py:606
+#: ../roundup/admin.py:656
+#: ../roundup/admin.py:714
+#: ../roundup/admin.py:735
+#: ../roundup/admin.py:763
+#: ../roundup/admin.py:834
+#: ../roundup/admin.py:901
+#: ../roundup/admin.py:972
+#: ../roundup/admin.py:1020
+#: ../roundup/admin.py:1042
+#: ../roundup/admin.py:1069
+#: ../roundup/admin.py:1136
+#: ../roundup/admin.py:1207
+msgid "Not enough arguments supplied"
+msgstr "Nincs megadva elég argumentum"
+
+#: ../roundup/admin.py:375
+#, python-format
+msgid "Instance home parent directory \"%(parent)s\" does not exist"
+msgstr "Példány könyvtár szülője (\"%(parent)s\") nem létezik"
+
+#: ../roundup/admin.py:383
+#, python-format
+msgid ""
+"WARNING: There appears to be a tracker in \"%(tracker_home)s\"!\n"
+"If you re-install it, you will lose all the data!\n"
+"Erase it? Y/N: "
+msgstr ""
+"FIGYELEM: Úgy tűnik, már létezik egy hibakövető a \"%(tracker_home)s\" könyvtárban!\n"
+"Ha újra installálod, minden adat elveszik!\n"
+"Töröljem? Y/N: "
+
+#: ../roundup/admin.py:398
+msgid "Select template [classic]: "
+msgstr "Sablon választása [classic]:"
+
+#: ../roundup/admin.py:409
+msgid "Select backend [anydbm]: "
+msgstr "Adatbázis háttér választása [anydbm]:"
+
+#: ../roundup/admin.py:419
+#, python-format
+msgid "Error in configuration settings: \"%s\""
+msgstr "Hiba a konfigurációs beállításokban: \"%s\""
+
+#: ../roundup/admin.py:428
+#, python-format
+msgid ""
+"\n"
+"---------------------------------------------------------------------------\n"
+" You should now edit the tracker configuration file:\n"
+"   %(config_file)s"
+msgstr ""
+"\n"
+"---------------------------------------------------------------------------\n"
+" Most kell szerkesztened a konfigurációs fájlt:\n"
+"   %(config_file)s"
+
+#: ../roundup/admin.py:438
+msgid " ... at a minimum, you must set following options:"
+msgstr " ... legkevesebb a következő opciókat kell beállítani:"
+
+#: ../roundup/admin.py:443
+#, python-format
+msgid ""
+"\n"
+" If you wish to modify the database schema,\n"
+" you should also edit the schema file:\n"
+"   %(database_config_file)s\n"
+" You may also change the database initialisation file:\n"
+"   %(database_init_file)s\n"
+" ... see the documentation on customizing for more information.\n"
+"\n"
+" You MUST run the \"roundup-admin initialise\" command once you've performed\n"
+" the above steps.\n"
+"---------------------------------------------------------------------------\n"
+msgstr ""
+
+#: ../roundup/admin.py:461
+msgid ""
+"Usage: genconfig <filename>\n"
+"        Generate a new tracker config file (ini style) with default values\n"
+"        in <filename>.\n"
+"        "
+msgstr ""
+"Használat: genconfig <fájlnév>\n"
+"        Új hibakövető konfigurációs fájl (ini stílusú) generálása alapértelmezett értékekkel\n"
+"        a <fájlnév> fájlba.\n"
+"        "
+
+#. password
+#: ../roundup/admin.py:471
+msgid ""
+"Usage: initialise [adminpw]\n"
+"        Initialise a new Roundup tracker.\n"
+"\n"
+"        The administrator details will be set at this step.\n"
+"\n"
+"        Execute the tracker's initialisation function dbinit.init()\n"
+"        "
+msgstr ""
+"Használat: initialise [adminpw]\n"
+"        Inicializál egy új Roundup hibakövetőt.\n"
+"\n"
+"        Az adminisztrátori részletek ebben a lépésben lesznek beállítva.\n"
+"\n"
+"        Végrehajtja az adatbázist inicializáló dbinit.init() rutint\n"
+"        "
+
+#: ../roundup/admin.py:485
+msgid "Admin Password: "
+msgstr "Adminisztrátori jelszó:"
+
+#: ../roundup/admin.py:486
+msgid "       Confirm: "
+msgstr "       Megerősítés: "
+
+#: ../roundup/admin.py:490
+msgid "Instance home does not exist"
+msgstr "A példány könyvtára nem létezik"
+
+#: ../roundup/admin.py:494
+msgid "Instance has not been installed"
+msgstr "A példány nem lett installálva"
+
+#: ../roundup/admin.py:499
+msgid ""
+"WARNING: The database is already initialised!\n"
+"If you re-initialise it, you will lose all the data!\n"
+"Erase it? Y/N: "
+msgstr ""
+"FIGYELEM: Az adatbázis már inicializált!\n"
+"Ha újrainicializálod, minden adat elveszik!\n"
+"Törlöd? Y/N:"
+
+#: ../roundup/admin.py:520
+msgid ""
+"Usage: get property designator[,designator]*\n"
+"        Get the given property of one or more designator(s).\n"
+"\n"
+"        Retrieves the property value of the nodes specified\n"
+"        by the designators.\n"
+"        "
+msgstr ""
+"Használat: get property designator[,designator]*\n"
+"        Visszaadja egy vagy több jelölő tulajdonságát.\n"
+"\n"
+"        Visszaadja az értékét a jelölő által\n"
+"        meghatározott csomópontnak.\n"
+"        "
+
+# ../roundup/admin.py:560 :575
+#: ../roundup/admin.py:560
+#: ../roundup/admin.py:575
+#, python-format
+msgid "property %s is not of type Multilink or Link so -d flag does not apply."
+msgstr ""
+
+# ../roundup/admin.py:583 :983 :1032 :1054
+#: ../roundup/admin.py:583
+#: ../roundup/admin.py:983
+#: ../roundup/admin.py:1032
+#: ../roundup/admin.py:1054
+#, python-format
+msgid "no such %(classname)s node \"%(nodeid)s\""
+msgstr ""
+
+#: ../roundup/admin.py:585
+#, python-format
+msgid "no such %(classname)s property \"%(propname)s\""
+msgstr ""
+
+#: ../roundup/admin.py:594
+msgid ""
+"Usage: set items property=value property=value ...\n"
+"        Set the given properties of one or more items(s).\n"
+"\n"
+"        The items are specified as a class or as a comma-separated\n"
+"        list of item designators (ie \"designator[,designator,...]\").\n"
+"\n"
+"        This command sets the properties to the values for all designators\n"
+"        given. If the value is missing (ie. \"property=\") then the property\n"
+"        is un-set. If the property is a multilink, you specify the linked\n"
+"        ids for the multilink as comma-separated numbers (ie \"1,2,3\").\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:648
+msgid ""
+"Usage: find classname propname=value ...\n"
+"        Find the nodes of the given class with a given link property value.\n"
+"\n"
+"        Find the nodes of the given class with a given link property value.\n"
+"        The value may be either the nodeid of the linked node, or its key\n"
+"        value.\n"
+"        "
+msgstr ""
+
+# ../roundup/admin.py:701 :854 :866 :920
+#: ../roundup/admin.py:701
+#: ../roundup/admin.py:854
+#: ../roundup/admin.py:866
+#: ../roundup/admin.py:920
+#, python-format
+msgid "%(classname)s has no property \"%(propname)s\""
+msgstr ""
+
+#: ../roundup/admin.py:708
+msgid ""
+"Usage: specification classname\n"
+"        Show the properties for a classname.\n"
+"\n"
+"        This lists the properties for a given class.\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:723
+#, python-format
+msgid "%(key)s: %(value)s (key property)"
+msgstr ""
+
+#: ../roundup/admin.py:725
+#, python-format
+msgid "%(key)s: %(value)s"
+msgstr ""
+
+#: ../roundup/admin.py:728
+msgid ""
+"Usage: display designator[,designator]*\n"
+"        Show the property values for the given node(s).\n"
+"\n"
+"        This lists the properties and their associated values for the given\n"
+"        node.\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:752
+#, python-format
+msgid "%(key)s: %(value)r"
+msgstr ""
+
+#: ../roundup/admin.py:755
+msgid ""
+"Usage: create classname property=value ...\n"
+"        Create a new entry of a given class.\n"
+"\n"
+"        This creates a new entry of the given class using the property\n"
+"        name=value arguments provided on the command line after the \"create\"\n"
+"        command.\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:782
+#, python-format
+msgid "%(propname)s (Password): "
+msgstr ""
+
+#: ../roundup/admin.py:784
+#, python-format
+msgid "   %(propname)s (Again): "
+msgstr ""
+
+#: ../roundup/admin.py:786
+msgid "Sorry, try again..."
+msgstr ""
+
+#: ../roundup/admin.py:790
+#, python-format
+msgid "%(propname)s (%(proptype)s): "
+msgstr ""
+
+#: ../roundup/admin.py:808
+#, python-format
+msgid "you must provide the \"%(propname)s\" property."
+msgstr ""
+
+#: ../roundup/admin.py:819
+msgid ""
+"Usage: list classname [property]\n"
+"        List the instances of a class.\n"
+"\n"
+"        Lists all instances of the given class. If the property is not\n"
+"        specified, the  \"label\" property is used. The label property is\n"
+"        tried in order: the key, \"name\", \"title\" and then the first\n"
+"        property, alphabetically.\n"
+"\n"
+"        With -c, -S or -s print a list of item id's if no property\n"
+"        specified.  If property specified, print list of that property\n"
+"        for every class instance.\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:832
+msgid "Too many arguments supplied"
+msgstr ""
+
+#: ../roundup/admin.py:868
+#, python-format
+msgid "%(nodeid)4s: %(value)s"
+msgstr ""
+
+#: ../roundup/admin.py:872
+msgid ""
+"Usage: table classname [property[,property]*]\n"
+"        List the instances of a class in tabular form.\n"
+"\n"
+"        Lists all instances of the given class. If the properties are not\n"
+"        specified, all properties are displayed. By default, the column\n"
+"        widths are the width of the largest value. The width may be\n"
+"        explicitly defined by defining the property as \"name:width\".\n"
+"        For example::\n"
+"\n"
+"          roundup> table priority id,name:10\n"
+"          Id Name\n"
+"          1  fatal-bug\n"
+"          2  bug\n"
+"          3  usability\n"
+"          4  feature\n"
+"\n"
+"        Also to make the width of the column the width of the label,\n"
+"        leave a trailing : without a width on the property. For example::\n"
+"\n"
+"          roundup> table priority id,name:\n"
+"          Id Name\n"
+"          1  fata\n"
+"          2  bug\n"
+"          3  usab\n"
+"          4  feat\n"
+"\n"
+"        will result in a the 4 character wide \"Name\" column.\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:916
+#, python-format
+msgid "\"%(spec)s\" not name:width"
+msgstr ""
+
+#: ../roundup/admin.py:966
+msgid ""
+"Usage: history designator\n"
+"        Show the history entries of a designator.\n"
+"\n"
+"        Lists the journal entries for the node identified by the designator.\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:987
+msgid ""
+"Usage: commit\n"
+"        Commit changes made to the database during an interactive session.\n"
+"\n"
+"        The changes made during an interactive session are not\n"
+"        automatically written to the database - they must be committed\n"
+"        using this command.\n"
+"\n"
+"        One-off commands on the command-line are automatically committed if\n"
+"        they are successful.\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:1001
+msgid ""
+"Usage: rollback\n"
+"        Undo all changes that are pending commit to the database.\n"
+"\n"
+"        The changes made during an interactive session are not\n"
+"        automatically written to the database - they must be committed\n"
+"        manually. This command undoes all those changes, so a commit\n"
+"        immediately after would make no changes to the database.\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:1013
+msgid ""
+"Usage: retire designator[,designator]*\n"
+"        Retire the node specified by designator.\n"
+"\n"
+"        This action indicates that a particular node is not to be retrieved\n"
+"        by the list or find commands, and its key value may be re-used.\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:1036
+msgid ""
+"Usage: restore designator[,designator]*\n"
+"        Restore the retired node specified by designator.\n"
+"\n"
+"        The given nodes will become available for users again.\n"
+"        "
+msgstr ""
+
+#. grab the directory to export to
+#: ../roundup/admin.py:1058
+msgid ""
+"Usage: export [class[,class]] export_dir\n"
+"        Export the database to colon-separated-value files.\n"
+"\n"
+"        Optionally limit the export to just the names classes.\n"
+"\n"
+"        This action exports the current data from the database into\n"
+"        colon-separated-value files that are placed in the nominated\n"
+"        destination directory.\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:1116
+msgid ""
+"Usage: import import_dir\n"
+"        Import a database from the directory containing CSV files,\n"
+"        two per class to import.\n"
+"\n"
+"        The files used in the import are:\n"
+"\n"
+"        <class>.csv\n"
+"          This must define the same properties as the class (including\n"
+"          having a \"header\" line with those property names.)\n"
+"        <class>-journals.csv\n"
+"          This defines the journals for the items being imported.\n"
+"\n"
+"        The imported nodes will have the same nodeid as defined in the\n"
+"        import file, thus replacing any existing content.\n"
+"\n"
+"        The new nodes are added to the existing database - if you want to\n"
+"        create a new database using the imported data, then create a new\n"
+"        database (or, tediously, retire all the old data.)\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:1189
+msgid ""
+"Usage: pack period | date\n"
+"\n"
+"        Remove journal entries older than a period of time specified or\n"
+"        before a certain date.\n"
+"\n"
+"        A period is specified using the suffixes \"y\", \"m\", and \"d\". The\n"
+"        suffix \"w\" (for \"week\") means 7 days.\n"
+"\n"
+"              \"3y\" means three years\n"
+"              \"2y 1m\" means two years and one month\n"
+"              \"1m 25d\" means one month and 25 days\n"
+"              \"2w 3d\" means two weeks and three days\n"
+"\n"
+"        Date format is \"YYYY-MM-DD\" eg:\n"
+"            2001-01-01\n"
+"\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:1217
+msgid "Invalid format"
+msgstr "Hibás formátum"
+
+#: ../roundup/admin.py:1227
+msgid ""
+"Usage: reindex [classname|designator]*\n"
+"        Re-generate a tracker's search indexes.\n"
+"\n"
+"        This will re-generate the search indexes for a tracker.\n"
+"        This will typically happen automatically.\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:1241
+#, python-format
+msgid "no such item \"%(designator)s\""
+msgstr ""
+
+#: ../roundup/admin.py:1251
+msgid ""
+"Usage: security [Role name]\n"
+"        Display the Permissions available to one or all Roles.\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:1259
+#, python-format
+msgid "No such Role \"%(role)s\""
+msgstr ""
+
+#: ../roundup/admin.py:1265
+#, python-format
+msgid "New Web users get the Roles \"%(role)s\""
+msgstr ""
+
+#: ../roundup/admin.py:1267
+#, python-format
+msgid "New Web users get the Role \"%(role)s\""
+msgstr ""
+
+#: ../roundup/admin.py:1270
+#, python-format
+msgid "New Email users get the Roles \"%(role)s\""
+msgstr ""
+
+#: ../roundup/admin.py:1272
+#, python-format
+msgid "New Email users get the Role \"%(role)s\""
+msgstr ""
+
+#: ../roundup/admin.py:1275
+#, python-format
+msgid "Role \"%(name)s\":"
+msgstr ""
+
+#: ../roundup/admin.py:1280
+#, python-format
+msgid " %(description)s (%(name)s for \"%(klass)s\": %(properties)s only)"
+msgstr ""
+
+#: ../roundup/admin.py:1283
+#, python-format
+msgid " %(description)s (%(name)s for \"%(klass)s\" only)"
+msgstr ""
+
+#: ../roundup/admin.py:1286
+#, python-format
+msgid " %(description)s (%(name)s)"
+msgstr ""
+
+#: ../roundup/admin.py:1315
+#, python-format
+msgid "Unknown command \"%(command)s\" (\"help commands\" for a list)"
+msgstr ""
+
+#: ../roundup/admin.py:1321
+#, python-format
+msgid "Multiple commands match \"%(command)s\": %(list)s"
+msgstr "Több parancs is illeszkedik a megadottra \"%(command)s\": %(list)s"
+
+#: ../roundup/admin.py:1328
+msgid "Enter tracker home: "
+msgstr "Add meg a hibakövető könyvtárát:"
+
+# ../roundup/admin.py:1335 :1341 :1361
+#: ../roundup/admin.py:1335
+#: ../roundup/admin.py:1341
+#: ../roundup/admin.py:1361
+#, python-format
+msgid "Error: %(message)s"
+msgstr "Hiba: %(message)s"
+
+#: ../roundup/admin.py:1349
+#, python-format
+msgid "Error: Couldn't open tracker: %(message)s"
+msgstr "Hiba: Nem tudtam megnyitni a hibakövetőt: %(message)s"
+
+#: ../roundup/admin.py:1374
+#, python-format
+msgid ""
+"Roundup %s ready for input.\n"
+"Type \"help\" for help."
+msgstr ""
+"Roundup %s fogadókész.\n"
+"Gépelj \"help\"-et a segítséghez."
+
+#: ../roundup/admin.py:1379
+msgid "Note: command history and editing not available"
+msgstr "Megjegyzés: a parancsok története és szerkesztése nem elérhető"
+
+#: ../roundup/admin.py:1383
+msgid "roundup> "
+msgstr "roundup> "
+
+#: ../roundup/admin.py:1385
+msgid "exit..."
+msgstr "kilépés..."
+
+#: ../roundup/admin.py:1395
+msgid "There are unsaved changes. Commit them (y/N)? "
+msgstr "Vannak nem mentett változtatások. Elmenti őket (y/N)? "
+
+#: ../roundup/backends/back_anydbm.py:2001
+#, python-format
+msgid "WARNING: invalid date tuple %r"
+msgstr "FIGYELEM: hibás dátum tuple %r"
+
+#: ../roundup/backends/rdbms_common.py:1434
+msgid "create"
+msgstr "létrehozás"
+
+#: ../roundup/backends/rdbms_common.py:1600
+msgid "unlink"
+msgstr "törlés"
+
+#: ../roundup/backends/rdbms_common.py:1604
+msgid "link"
+msgstr "kapcsolás"
+
+#: ../roundup/backends/rdbms_common.py:1724
+msgid "set"
+msgstr "beállítás"
+
+#: ../roundup/backends/rdbms_common.py:1748
+msgid "retired"
+msgstr "visszavonult"
+
+#: ../roundup/backends/rdbms_common.py:1778
+msgid "restored"
+msgstr "visszaállított"
+
+#: ../roundup/cgi/actions.py:58
+#, python-format
+msgid "You do not have permission to %(action)s the %(classname)s class."
+msgstr ""
+
+#: ../roundup/cgi/actions.py:89
+msgid "No type specified"
+msgstr "Típus nincs megadva"
+
+#: ../roundup/cgi/actions.py:91
+msgid "No ID entered"
+msgstr "Azonosító nincs megadva"
+
+#: ../roundup/cgi/actions.py:97
+#, python-format
+msgid "\"%(input)s\" is not an ID (%(classname)s ID required)"
+msgstr ""
+
+#: ../roundup/cgi/actions.py:117
+msgid "You may not retire the admin or anonymous user"
+msgstr "Az admin és anonymous felhasználókat nem nyugdíjazhatod"
+
+#: ../roundup/cgi/actions.py:124
+#, python-format
+msgid "%(classname)s %(itemid)s has been retired"
+msgstr "%(classname)s %(itemid)s visszavonásra került"
+
+# ../roundup/cgi/actions.py:174 :202
+#: ../roundup/cgi/actions.py:174
+#: ../roundup/cgi/actions.py:202
+msgid "You do not have permission to edit queries"
+msgstr "Nincs jogod a lekérdezések szerkesztéséhez"
+
+# ../roundup/cgi/actions.py:180 :209
+#: ../roundup/cgi/actions.py:180
+#: ../roundup/cgi/actions.py:209
+msgid "You do not have permission to store queries"
+msgstr "Nincs jogod a lekérdezések tárolásához"
+
+#: ../roundup/cgi/actions.py:297
+#, python-format
+msgid "Not enough values on line %(line)s"
+msgstr "Nincs elég érték a(z) %(line)s soron"
+
+#: ../roundup/cgi/actions.py:344
+msgid "Items edited OK"
+msgstr "Az elemek sikeresen szerkesztve"
+
+#: ../roundup/cgi/actions.py:404
+#, python-format
+msgid "%(class)s %(id)s %(properties)s edited ok"
+msgstr "%(class)s %(id)s %(properties)s sikeresen szerkesztve"
+
+#: ../roundup/cgi/actions.py:407
+#, python-format
+msgid "%(class)s %(id)s - nothing changed"
+msgstr "%(class)s %(id)s - semmi sem váltzozott"
+
+#: ../roundup/cgi/actions.py:419
+#, python-format
+msgid "%(class)s %(id)s created"
+msgstr "%(class)s %(id)s létrehozva"
+
+#: ../roundup/cgi/actions.py:451
+#, python-format
+msgid "You do not have permission to edit %(class)s"
+msgstr "Nincs jogod szerkeszteni %(class)s-t"
+
+#: ../roundup/cgi/actions.py:463
+#, python-format
+msgid "You do not have permission to create %(class)s"
+msgstr "Nincs jogod létrehozni %(class)s-t"
+
+#: ../roundup/cgi/actions.py:487
+msgid "You do not have permission to edit user roles"
+msgstr "Nincs jogod szerkeszteni a felhasználói szerepköröket"
+
+#: ../roundup/cgi/actions.py:537
+#, python-format
+msgid "Edit Error: someone else has edited this %s (%s). View <a target=\"new\" href=\"%s%s\">their changes</a> in a new window."
+msgstr "Szerkesztési hiba: valaki már szerkesztette %s (%s). Nézd meg a <a target=\"new\" href=\"%s%s\">változtatásait</a> egy új ablakban."
+
+#: ../roundup/cgi/actions.py:565
+#, python-format
+msgid "Edit Error: %s"
+msgstr "Szerkesztési hiba: %s"
+
+# ../roundup/cgi/actions.py:596 :607 :778 :797
+#: ../roundup/cgi/actions.py:596
+#: ../roundup/cgi/actions.py:607
+#: ../roundup/cgi/actions.py:778
+#: ../roundup/cgi/actions.py:797
+#, python-format
+msgid "Error: %s"
+msgstr "Hiba: %s"
+
+#: ../roundup/cgi/actions.py:633
+msgid ""
+"Invalid One Time Key!\n"
+"(a Mozilla bug may cause this message to show up erroneously, please check your email)"
+msgstr ""
+
+#: ../roundup/cgi/actions.py:675
+#, python-format
+msgid "Password reset and email sent to %s"
+msgstr "A jelszó törölve lett és emailt küldtünk %s-nek"
+
+#: ../roundup/cgi/actions.py:684
+msgid "Unknown username"
+msgstr "Ismeretlen felhasználónév"
+
+#: ../roundup/cgi/actions.py:692
+msgid "Unknown email address"
+msgstr "Ismeretlen email cím"
+
+#: ../roundup/cgi/actions.py:697
+msgid "You need to specify a username or address"
+msgstr "Meg kell adnond egy felhasználó nevet vagy címet"
+
+#: ../roundup/cgi/actions.py:722
+#, python-format
+msgid "Email sent to %s"
+msgstr "Email elküldve %s-nek"
+
+#: ../roundup/cgi/actions.py:741
+msgid "You are now registered, welcome!"
+msgstr "Regisztrálva lettél, isten hozott!"
+
+#: ../roundup/cgi/actions.py:786
+msgid "It is not permitted to supply roles at registration."
+msgstr "Szerepkörök nem adhatók meg regisztráláskor."
+
+#: ../roundup/cgi/actions.py:878
+msgid "You are logged out"
+msgstr "Kijelentkeztél"
+
+#: ../roundup/cgi/actions.py:895
+msgid "Username required"
+msgstr "A felhasználónév szükséges"
+
+# ../roundup/cgi/actions.py:930 :934
+#: ../roundup/cgi/actions.py:930
+#: ../roundup/cgi/actions.py:934
+msgid "Invalid login"
+msgstr "Hibás bejelentkezés"
+
+#: ../roundup/cgi/actions.py:940
+msgid "You do not have permission to login"
+msgstr "Nincs jogod bejelentkezni"
+
+#: ../roundup/cgi/cgitb.py:49
+#, python-format
+msgid ""
+"<h1>Templating Error</h1>\n"
+"<p><b>%(exc_type)s</b>: %(exc_value)s</p>\n"
+"<p class=\"help\">Debugging information follows</p>"
+msgstr ""
+"<h1>Template Hiba</h1>\n"
+"<p><b>%(exc_type)s</b>: %(exc_value)s</p>\n"
+"<p class=\"help\">Debug információk alább</p>"
+
+#: ../roundup/cgi/cgitb.py:64
+#, python-format
+msgid "<li>\"%(name)s\" (%(info)s)</li>"
+msgstr "<li>\"%(name)s\" (%(info)s)</li>"
+
+#: ../roundup/cgi/cgitb.py:67
+#, python-format
+msgid "<li>Looking for \"%(name)s\", current path:<ol>%(path)s</ol></li>"
+msgstr "<li>Keresett \"%(name)s\", aktuális elérési út:<ol>%(path)s</ol></li>"
+
+#: ../roundup/cgi/cgitb.py:71
+#, python-format
+msgid "<li>In %s</li>"
+msgstr "<li>%s-ban</li>"
+
+#: ../roundup/cgi/cgitb.py:76
+#, python-format
+msgid "A problem occurred in your template \"%s\"."
+msgstr "Probléma merült fel a(z) \"%s\"  template-el."
+
+#: ../roundup/cgi/cgitb.py:84
+#, python-format
+msgid ""
+"\n"
+"<li>While evaluating the %(info)r expression on line %(line)d\n"
+"<table class=\"otherinfo\" style=\"font-size: 90%%\">\n"
+" <tr><th colspan=\"2\" class=\"header\">Current variables:</th></tr>\n"
+" %(globals)s\n"
+" %(locals)s\n"
+"</table></li>\n"
+msgstr ""
+
+#: ../roundup/cgi/cgitb.py:103
+msgid "Full traceback:"
+msgstr "Teljes visszakövetés:"
+
+#: ../roundup/cgi/cgitb.py:116
+#, python-format
+msgid "<font size=+1><strong>%(exc_type)s</strong>: %(exc_value)s</font>"
+msgstr "<font size=+1><strong>%(exc_type)s</strong>: %(exc_value)s</font>"
+
+#: ../roundup/cgi/cgitb.py:120
+msgid "<p>A problem occurred while running a Python script. Here is the sequence of function calls leading up to the error, with the most recent (innermost) call first. The exception attributes are:"
+msgstr ""
+
+#: ../roundup/cgi/cgitb.py:129
+msgid "&lt;file is None - probably inside <tt>eval</tt> or <tt>exec</tt>&gt;"
+msgstr "&lt;file is None - probably inside <tt>eval</tt> or <tt>exec</tt>&gt;"
+
+#: ../roundup/cgi/cgitb.py:138
+#, python-format
+msgid "in <strong>%s</strong>"
+msgstr "<strong>%s</strong>-ban"
+
+# ../roundup/cgi/cgitb.py:172 :178
+#: ../roundup/cgi/cgitb.py:172
+#: ../roundup/cgi/cgitb.py:178
+msgid "<em>undefined</em>"
+msgstr "<em>nem definiált</em>"
+
+#: ../roundup/cgi/client.py:49
+msgid ""
+"<html><head><title>An error has occurred</title></head>\n"
+"<body><h1>An error has occurred</h1>\n"
+"<p>A problem was encountered processing your request.\n"
+"The tracker maintainers have been notified of the problem.</p>\n"
+"</body></html>"
+msgstr ""
+"<html><head><title>Hibat történt</title></head>\n"
+"<body><h1>Hiba történt</h1>\n"
+"<p>Probléma merült fel kérésének feldolgozása közben.\n"
+"A hibakövető karbantartóit értesítést kaptak a problémáról.</p>\n"
+"</body></html>"
+
+#: ../roundup/cgi/client.py:308
+msgid "Form Error: "
+msgstr "Űrlap hiba:"
+
+#: ../roundup/cgi/client.py:363
+#, python-format
+msgid "Unrecognized charset: %r"
+msgstr "Ismeretlen karakterkészlet: %r"
+
+#: ../roundup/cgi/client.py:491
+msgid "Anonymous users are not allowed to use the web interface"
+msgstr "Anonim felhasználók nem használhatják a webes felületet"
+
+#: ../roundup/cgi/client.py:646
+msgid "You are not allowed to view this file."
+msgstr "Nem nézheted meg ezt a fájlt."
+
+#: ../roundup/cgi/client.py:738
+#, python-format
+msgid "%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n"
+msgstr "%(starttag)sEltelt idő: %(seconds)fs%(endtag)s\n"
+
+#: ../roundup/cgi/client.py:742
+#, python-format
+msgid "%(starttag)sCache hits: %(cache_hits)d, misses %(cache_misses)d. Loading items: %(get_items)f secs. Filtering: %(filtering)f secs.%(endtag)s\n"
+msgstr "%(starttag)sCache találatok: %(cache_hits)d, tévedés %(cache_misses)d. Elemek betöltése: %(get_items)f mp. Szűrés: %(filtering)f mp.%(endtag)s\n"
+
+#: ../roundup/cgi/form_parser.py:283
+#, python-format
+msgid "link \"%(key)s\" value \"%(value)s\" not a designator"
+msgstr ""
+
+#: ../roundup/cgi/form_parser.py:290
+#, python-format
+msgid "%(class)s %(property)s is not a link or multilink property"
+msgstr ""
+
+#: ../roundup/cgi/form_parser.py:312
+#, python-format
+msgid "You have submitted a %(action)s action for the property \"%(property)s\" which doesn't exist"
+msgstr ""
+
+# ../roundup/cgi/form_parser.py:331 :357
+#: ../roundup/cgi/form_parser.py:331
+#: ../roundup/cgi/form_parser.py:357
+#, python-format
+msgid "You have submitted more than one value for the %s property"
+msgstr ""
+
+# ../roundup/cgi/form_parser.py:354 :360
+#: ../roundup/cgi/form_parser.py:354
+#: ../roundup/cgi/form_parser.py:360
+msgid "Password and confirmation text do not match"
+msgstr ""
+
+#: ../roundup/cgi/form_parser.py:395
+#, python-format
+msgid "property \"%(propname)s\": \"%(value)s\" not currently in list"
+msgstr ""
+
+#: ../roundup/cgi/form_parser.py:512
+#, python-format
+msgid "Required %(class)s property %(property)s not supplied"
+msgid_plural "Required %(class)s properties %(property)s not supplied"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../roundup/cgi/form_parser.py:535
+msgid "File is empty"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:72
+#, python-format
+msgid "You are not allowed to %(action)s items of class %(class)s"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:627
+msgid "(list)"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:696
+msgid "Submit New Entry"
+msgstr ""
+
+# ../roundup/cgi/templating.py:710 :829 :1236 :1257 :1304 :1327 :1361 :1400
+# :1453 :1470 :1549 :1569 :1587 :1619 :1629 :1683 :1875
+#: ../roundup/cgi/templating.py:710
+#: ../roundup/cgi/templating.py:829
+#: ../roundup/cgi/templating.py:1236
+#: ../roundup/cgi/templating.py:1257
+#: ../roundup/cgi/templating.py:1304
+#: ../roundup/cgi/templating.py:1327
+#: ../roundup/cgi/templating.py:1361
+#: ../roundup/cgi/templating.py:1400
+#: ../roundup/cgi/templating.py:1453
+#: ../roundup/cgi/templating.py:1470
+#: ../roundup/cgi/templating.py:1549
+#: ../roundup/cgi/templating.py:1569
+#: ../roundup/cgi/templating.py:1587
+#: ../roundup/cgi/templating.py:1619
+#: ../roundup/cgi/templating.py:1629
+#: ../roundup/cgi/templating.py:1683
+#: ../roundup/cgi/templating.py:1875
+msgid "[hidden]"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:711
+msgid "New node - no history"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:811
+msgid "Submit Changes"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:893
+msgid "<em>The indicated property no longer exists</em>"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:894
+#, python-format
+msgid "<em>%s: %s</em>\n"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:907
+#, python-format
+msgid "The linked class %(classname)s no longer exists"
+msgstr ""
+
+# ../roundup/cgi/templating.py:940 :964
+#: ../roundup/cgi/templating.py:940
+#: ../roundup/cgi/templating.py:964
+msgid "<strike>The linked node no longer exists</strike>"
+msgstr ""
+
+# ../roundup/cgi/templating.py:1006 :1404 :1425 :1431
+#: ../roundup/cgi/templating.py:1006
+#: ../roundup/cgi/templating.py:1404
+#: ../roundup/cgi/templating.py:1425
+#: ../roundup/cgi/templating.py:1431
+msgid "No"
+msgstr "Nem"
+
+# ../roundup/cgi/templating.py:1006 :1404 :1423 :1428
+#: ../roundup/cgi/templating.py:1006
+#: ../roundup/cgi/templating.py:1404
+#: ../roundup/cgi/templating.py:1423
+#: ../roundup/cgi/templating.py:1428
+msgid "Yes"
+msgstr "Igen"
+
+#: ../roundup/cgi/templating.py:1017
+#, python-format
+msgid "%s: (no value)"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:1029
+msgid "<strong><em>This event is not handled by the history display!</em></strong>"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:1041
+msgid "<tr><td colspan=4><strong>Note:</strong></td></tr>"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:1050
+msgid "History"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:1052
+msgid "<th>Date</th>"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:1053
+msgid "<th>User</th>"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:1054
+msgid "<th>Action</th>"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:1055
+msgid "<th>Args</th>"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:1097
+#, python-format
+msgid "Copy of %(class)s %(id)s"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:1331
+msgid "*encrypted*"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:1514
+msgid "default value for DateHTMLProperty must be either DateHTMLProperty or string date representation."
+msgstr ""
+
+#: ../roundup/cgi/templating.py:1674
+#, python-format
+msgid "Attempt to look up %(attr)s on a missing value"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:1750
+#, python-format
+msgid "<option %svalue=\"-1\">- no selection -</option>"
+msgstr ""
+
+#: ../roundup/date.py:186
+msgid "Not a date spec: \"yyyy-mm-dd\", \"mm-dd\", \"HH:MM\", \"HH:MM:SS\" or \"yyyy-mm-dd.HH:MM:SS.SSS\""
+msgstr ""
+
+#: ../roundup/date.py:240
+#, python-format
+msgid "%r not a date / time spec \"yyyy-mm-dd\", \"mm-dd\", \"HH:MM\", \"HH:MM:SS\" or \"yyyy-mm-dd.HH:MM:SS.SSS\""
+msgstr ""
+
+#: ../roundup/date.py:538
+msgid "Not an interval spec: [+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS] [date spec]"
+msgstr ""
+
+#: ../roundup/date.py:557
+msgid "Not an interval spec: [+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS]"
+msgstr ""
+
+#: ../roundup/date.py:694
+#, python-format
+msgid "%(number)s year"
+msgid_plural "%(number)s years"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../roundup/date.py:698
+#, python-format
+msgid "%(number)s month"
+msgid_plural "%(number)s months"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../roundup/date.py:702
+#, python-format
+msgid "%(number)s week"
+msgid_plural "%(number)s weeks"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../roundup/date.py:706
+#, python-format
+msgid "%(number)s day"
+msgid_plural "%(number)s days"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../roundup/date.py:710
+msgid "tomorrow"
+msgstr ""
+
+#: ../roundup/date.py:712
+msgid "yesterday"
+msgstr ""
+
+#: ../roundup/date.py:715
+#, python-format
+msgid "%(number)s hour"
+msgid_plural "%(number)s hours"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../roundup/date.py:719
+msgid "an hour"
+msgstr ""
+
+#: ../roundup/date.py:721
+msgid "1 1/2 hours"
+msgstr ""
+
+#: ../roundup/date.py:723
+#, python-format
+msgid "1 %(number)s/4 hours"
+msgid_plural "1 %(number)s/4 hours"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../roundup/date.py:727
+msgid "in a moment"
+msgstr ""
+
+#: ../roundup/date.py:729
+msgid "just now"
+msgstr ""
+
+#: ../roundup/date.py:732
+msgid "1 minute"
+msgstr ""
+
+#: ../roundup/date.py:735
+#, python-format
+msgid "%(number)s minute"
+msgid_plural "%(number)s minutes"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../roundup/date.py:738
+msgid "1/2 an hour"
+msgstr ""
+
+#: ../roundup/date.py:740
+#, python-format
+msgid "%(number)s/4 hour"
+msgid_plural "%(number)s/4 hours"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../roundup/date.py:744
+#, python-format
+msgid "%s ago"
+msgstr ""
+
+#: ../roundup/date.py:746
+#, python-format
+msgid "in %s"
+msgstr ""
+
+#: ../roundup/init.py:134
+#, python-format
+msgid ""
+"WARNING: directory '%s'\n"
+"\tcontains old-style template - ignored"
+msgstr ""
+
+#: ../roundup/mailgw.py:586
+msgid ""
+"\n"
+"Emails to Roundup trackers must include a Subject: line!\n"
+msgstr ""
+
+#: ../roundup/mailgw.py:674
+#, python-format
+msgid ""
+"\n"
+"The message you sent to roundup did not contain a properly formed subject\n"
+"line. The subject must contain a class name or designator to indicate the\n"
+"'topic' of the message. For example:\n"
+"    Subject: [issue] This is a new issue\n"
+"      - this will create a new issue in the tracker with the title 'This is\n"
+"        a new issue'.\n"
+"    Subject: [issue1234] This is a followup to issue 1234\n"
+"      - this will append the message's contents to the existing issue 1234\n"
+"        in the tracker.\n"
+"\n"
+"Subject was: '%(subject)s'\n"
+msgstr ""
+
+#: ../roundup/mailgw.py:705
+#, python-format
+msgid ""
+"\n"
+"The class name you identified in the subject line (\"%(classname)s\") does not exist in the\n"
+"database.\n"
+"\n"
+"Valid class names are: %(validname)s\n"
+"Subject was: \"%(subject)s\"\n"
+msgstr ""
+
+#: ../roundup/mailgw.py:733
+#, python-format
+msgid ""
+"\n"
+"I cannot match your message to a node in the database - you need to either\n"
+"supply a full designator (with number, eg \"[issue123]\" or keep the\n"
+"previous subject title intact so I can match that.\n"
+"\n"
+"Subject was: \"%(subject)s\"\n"
+msgstr ""
+
+#: ../roundup/mailgw.py:766
+#, python-format
+msgid ""
+"\n"
+"The node specified by the designator in the subject of your message\n"
+"(\"%(nodeid)s\") does not exist.\n"
+"\n"
+"Subject was: \"%(subject)s\"\n"
+msgstr ""
+
+#: ../roundup/mailgw.py:794
+#, python-format
+msgid ""
+"\n"
+"The mail gateway is not properly set up. Please contact\n"
+"%(mailadmin)s and have them fix the incorrect class specified as:\n"
+"  %(current_class)s\n"
+msgstr ""
+
+#: ../roundup/mailgw.py:817
+#, python-format
+msgid ""
+"\n"
+"The mail gateway is not properly set up. Please contact\n"
+"%(mailadmin)s and have them fix the incorrect properties:\n"
+"  %(errors)s\n"
+msgstr ""
+
+#: ../roundup/mailgw.py:847
+#, python-format
+msgid ""
+"\n"
+"You are not a registered user.\n"
+"\n"
+"Unknown address: %(from_address)s\n"
+msgstr ""
+
+#: ../roundup/mailgw.py:855
+msgid "You are not permitted to access this tracker."
+msgstr ""
+
+#: ../roundup/mailgw.py:862
+#, python-format
+msgid "You are not permitted to edit %(classname)s."
+msgstr ""
+
+#: ../roundup/mailgw.py:866
+#, python-format
+msgid "You are not permitted to create %(classname)s."
+msgstr ""
+
+#: ../roundup/mailgw.py:913
+#, python-format
+msgid ""
+"\n"
+"There were problems handling your subject line argument list:\n"
+"- %(errors)s\n"
+"\n"
+"Subject was: \"%(subject)s\"\n"
+msgstr ""
+
+#: ../roundup/mailgw.py:942
+msgid ""
+"\n"
+"Roundup requires the submission to be plain text. The message parser could\n"
+"not find a text/plain part to use.\n"
+msgstr ""
+
+#: ../roundup/mailgw.py:964
+msgid "You are not permitted to create files."
+msgstr ""
+
+#: ../roundup/mailgw.py:978
+#, python-format
+msgid "You are not permitted to add files to %(classname)s."
+msgstr ""
+
+#: ../roundup/mailgw.py:996
+msgid "You are not permitted to create messages."
+msgstr ""
+
+#: ../roundup/mailgw.py:1004
+#, python-format
+msgid ""
+"\n"
+"Mail message was rejected by a detector.\n"
+"%(error)s\n"
+msgstr ""
+
+#: ../roundup/mailgw.py:1012
+#, python-format
+msgid "You are not permitted to add messages to %(classname)s."
+msgstr ""
+
+#: ../roundup/mailgw.py:1039
+#, python-format
+msgid "You are not permitted to edit property %(prop)s of class %(classname)s."
+msgstr ""
+
+#: ../roundup/mailgw.py:1047
+#, python-format
+msgid ""
+"\n"
+"There was a problem with the message you sent:\n"
+"   %(message)s\n"
+msgstr ""
+
+#: ../roundup/mailgw.py:1069
+msgid "not of form [arg=value,value,...;arg=value,value,...]"
+msgstr ""
+
+#: ../roundup/roundupdb.py:142
+msgid "files"
+msgstr ""
+
+#: ../roundup/roundupdb.py:142
+msgid "messages"
+msgstr ""
+
+#: ../roundup/roundupdb.py:142
+msgid "nosy"
+msgstr ""
+
+#: ../roundup/roundupdb.py:142
+msgid "superseder"
+msgstr ""
+
+#: ../roundup/roundupdb.py:142
+msgid "title"
+msgstr ""
+
+#: ../roundup/roundupdb.py:143
+msgid "assignedto"
+msgstr ""
+
+#: ../roundup/roundupdb.py:143
+msgid "priority"
+msgstr ""
+
+#: ../roundup/roundupdb.py:143
+msgid "status"
+msgstr ""
+
+#: ../roundup/roundupdb.py:143
+msgid "topic"
+msgstr "téma"
+
+#: ../roundup/roundupdb.py:146
+msgid "activity"
+msgstr ""
+
+#. following properties are common for all hyperdb classes
+#. they are listed here to keep things in one place
+#: ../roundup/roundupdb.py:146
+msgid "actor"
+msgstr ""
+
+#: ../roundup/roundupdb.py:146
+msgid "creation"
+msgstr ""
+
+#: ../roundup/roundupdb.py:146
+msgid "creator"
+msgstr ""
+
+#: ../roundup/roundupdb.py:304
+#, python-format
+msgid "New submission from %(authname)s%(authaddr)s:"
+msgstr ""
+
+#: ../roundup/roundupdb.py:307
+#, python-format
+msgid "%(authname)s%(authaddr)s added the comment:"
+msgstr ""
+
+#: ../roundup/roundupdb.py:310
+msgid "System message:"
+msgstr ""
+
+#: ../roundup/scripts/roundup_demo.py:32
+#, python-format
+msgid "Enter directory path to create demo tracker [%s]: "
+msgstr ""
+
+#: ../roundup/scripts/roundup_gettext.py:22
+#, python-format
+msgid "Usage: %(program)s <tracker home>"
+msgstr ""
+
+#: ../roundup/scripts/roundup_gettext.py:37
+#, python-format
+msgid "No tracker templates found in directory %s"
+msgstr ""
+
+#: ../roundup/scripts/roundup_mailgw.py:36
+#, python-format
+msgid ""
+"Usage: %(program)s [-v] [-c] [[-C class] -S field=value]* <instance home> [method]\n"
+"\n"
+"Options:\n"
+" -v: print version and exit\n"
+" -c: default class of item to create (else the tracker's MAIL_DEFAULT_CLASS)\n"
+" -C / -S: see below\n"
+"\n"
+"The roundup mail gateway may be called in one of four ways:\n"
+" . with an instance home as the only argument,\n"
+" . with both an instance home and a mail spool file,\n"
+" . with both an instance home and a POP/APOP server account, or\n"
+" . with both an instance home and a IMAP/IMAPS server account.\n"
+"\n"
+"It also supports optional -C and -S arguments that allows you to set a\n"
+"fields for a class created by the roundup-mailgw. The default class if\n"
+"not specified is msg, but the other classes: issue, file, user can\n"
+"also be used. The -S or --set options uses the same\n"
+"property=value[;property=value] notation accepted by the command line\n"
+"roundup command or the commands that can be given on the Subject line\n"
+"of an email message.\n"
+"\n"
+"It can let you set the type of the message on a per email address basis.\n"
+"\n"
+"PIPE:\n"
+" In the first case, the mail gateway reads a single message from the\n"
+" standard input and submits the message to the roundup.mailgw module.\n"
+"\n"
+"UNIX mailbox:\n"
+" In the second case, the gateway reads all messages from the mail spool\n"
+" file and submits each in turn to the roundup.mailgw module. The file is\n"
+" emptied once all messages have been successfully handled. The file is\n"
+" specified as:\n"
+"   mailbox /path/to/mailbox\n"
+"\n"
+"POP:\n"
+" In the third case, the gateway reads all messages from the POP server\n"
+" specified and submits each in turn to the roundup.mailgw module. The\n"
+" server is specified as:\n"
+"    pop username:password@server\n"
+" The username and password may be omitted:\n"
+"    pop username@server\n"
+"    pop server\n"
+" are both valid. The username and/or password will be prompted for if\n"
+" not supplied on the command-line.\n"
+"\n"
+"APOP:\n"
+" Same as POP, but using Authenticated POP:\n"
+"    apop username:password@server\n"
+"\n"
+"IMAP:\n"
+" Connect to an IMAP server. This supports the same notation as that of\n"
+" POP mail.\n"
+"    imap username:password@server\n"
+" It also allows you to specify a specific mailbox other than INBOX using\n"
+" this format:\n"
+"    imap username:password@server mailbox\n"
+"\n"
+"IMAPS:\n"
+" Connect to an IMAP server over ssl.\n"
+" This supports the same notation as IMAP.\n"
+"    imaps username:password@server [mailbox]\n"
+"\n"
+msgstr ""
+
+#: ../roundup/scripts/roundup_mailgw.py:147
+msgid "Error: not enough source specification information"
+msgstr "Hiba: nincs elég forrás specifikációs informácó"
+
+#: ../roundup/scripts/roundup_mailgw.py:163
+msgid "Error: pop specification not valid"
+msgstr "Hiba: a pop specifikáció nem valós"
+
+#: ../roundup/scripts/roundup_mailgw.py:170
+msgid "Error: apop specification not valid"
+msgstr "Hiba: az apop specifikáció nem valós"
+
+#: ../roundup/scripts/roundup_mailgw.py:184
+msgid "Error: The source must be either \"mailbox\", \"pop\", \"apop\", \"imap\" or \"imaps\""
+msgstr "Hiba: A forrás a következők egyike kell legyen: \"mailbox\", \"pop\", \"apop\", \"imap\" vagy \"imaps\""
+
+#: ../roundup/scripts/roundup_server.py:157
+msgid ""
+"<html><head><title>Roundup trackers index</title></head>\n"
+"<body><h1>Roundup trackers index</h1><ol>\n"
+msgstr ""
+"<html><head><title>Roundup hibakövetők listája</title></head>\n"
+"<body><h1>Roundup hibakövetők listája</h1><ol>\n"
+
+#: ../roundup/scripts/roundup_server.py:287
+#, python-format
+msgid "Error: %s: %s"
+msgstr "Hiba: %s: %s"
+
+#: ../roundup/scripts/roundup_server.py:297
+msgid "WARNING: ignoring \"-g\" argument, not root"
+msgstr "FIGYELEM: \"-g\" opciót figyelmen kívül hagyom, nem root"
+
+#: ../roundup/scripts/roundup_server.py:303
+msgid "Can't change groups - no grp module"
+msgstr "Nem lehet csoportot váltani - nincs meg a grp modul"
+
+#: ../roundup/scripts/roundup_server.py:312
+#, python-format
+msgid "Group %(group)s doesn't exist"
+msgstr "%(group)s csoport nem létezik"
+
+#: ../roundup/scripts/roundup_server.py:323
+msgid "Can't run as root!"
+msgstr "Nem futhat root-ként!"
+
+#: ../roundup/scripts/roundup_server.py:326
+msgid "WARNING: ignoring \"-u\" argument, not root"
+msgstr "FIGYELEM: \"-u\" opciót figyelmen kívül hagyom, nem root"
+
+#: ../roundup/scripts/roundup_server.py:331
+msgid "Can't change users - no pwd module"
+msgstr ""
+
+#: ../roundup/scripts/roundup_server.py:340
+#, python-format
+msgid "User %(user)s doesn't exist"
+msgstr "A(z) %(user)s felhasználó nem létezik"
+
+#: ../roundup/scripts/roundup_server.py:471
+#, python-format
+msgid "Multiprocess mode \"%s\" is not available, switching to single-process"
+msgstr ""
+
+#: ../roundup/scripts/roundup_server.py:494
+#, python-format
+msgid "Unable to bind to port %s, port already in use."
+msgstr ""
+
+#: ../roundup/scripts/roundup_server.py:562
+msgid ""
+" -c <Command>  Windows Service options.\n"
+"               If you want to run the server as a Windows Service, you\n"
+"               must use configuration file to specify tracker homes.\n"
+"               Logfile option is required to run Roundup Tracker service.\n"
+"               Typing \"roundup-server -c help\" shows Windows Services\n"
+"               specifics."
+msgstr ""
+
+#: ../roundup/scripts/roundup_server.py:569
+msgid ""
+" -u <UID>      runs the Roundup web server as this UID\n"
+" -g <GID>      runs the Roundup web server as this GID\n"
+" -d <PIDfile>  run the server in the background and write the server's PID\n"
+"               to the file indicated by PIDfile. The -l option *must* be\n"
+"               specified if -d is used."
+msgstr ""
+
+#: ../roundup/scripts/roundup_server.py:576
+#, python-format
+msgid ""
+"%(message)sUsage: roundup-server [options] [name=tracker home]*\n"
+"\n"
+"Options:\n"
+" -v            print the Roundup version number and exit\n"
+" -h            print this text and exit\n"
+" -S            create or update configuration file and exit\n"
+" -C <fname>    use configuration file <fname>\n"
+" -n <name>     set the host name of the Roundup web server instance\n"
+" -p <port>     set the port to listen on (default: %(port)s)\n"
+" -l <fname>    log to the file indicated by fname instead of stderr/stdout\n"
+" -N            log client machine names instead of IP addresses (much slower)\n"
+" -t <mode>     multiprocess mode (default: %(mp_def)s).\n"
+"               Allowed values: %(mp_types)s.\n"
+"%(os_part)s\n"
+"\n"
+"Long options:\n"
+" --version          print the Roundup version number and exit\n"
+" --help             print this text and exit\n"
+" --save-config      create or update configuration file and exit\n"
+" --config <fname>   use configuration file <fname>\n"
+" All settings of the [main] section of the configuration file\n"
+" also may be specified in form --<name>=<value>\n"
+"\n"
+"Examples:\n"
+"\n"
+" roundup-server -S -C /opt/roundup/etc/roundup-server.ini \\\n"
+"    -n localhost -p 8917 -l /var/log/roundup.log \\\n"
+"    support=/var/spool/roundup-trackers/support\n"
+"\n"
+" roundup-server -C /opt/roundup/etc/roundup-server.ini\n"
+"\n"
+" roundup-server support=/var/spool/roundup-trackers/support\n"
+"\n"
+" roundup-server -d /var/run/roundup.pid -l /var/log/roundup.log \\\n"
+"    support=/var/spool/roundup-trackers/support\n"
+"\n"
+"Configuration file format:\n"
+"   Roundup Server configuration file has common .ini file format.\n"
+"   Configuration file created with 'roundup-server -S' contains\n"
+"   detailed explanations for each option.  Please see that file\n"
+"   for option descriptions.\n"
+"\n"
+"How to use \"name=tracker home\":\n"
+"   These arguments set the tracker home(s) to use. The name is how the\n"
+"   tracker is identified in the URL (it's the first part of the URL path).\n"
+"   The tracker home is the directory that was identified when you did\n"
+"   \"roundup-admin init\". You may specify any number of these name=home\n"
+"   pairs on the command-line. Make sure the name part doesn't include\n"
+"   any url-unsafe characters like spaces, as these confuse IE.\n"
+msgstr ""
+
+#: ../roundup/scripts/roundup_server.py:723
+msgid "Instances must be name=home"
+msgstr ""
+
+#: ../roundup/scripts/roundup_server.py:737
+#, python-format
+msgid "Configuration saved to %s"
+msgstr "A konfiguráció elmentve %s"
+
+#: ../roundup/scripts/roundup_server.py:755
+msgid "Sorry, you can't run the server as a daemon on this Operating System"
+msgstr "Elnézést, ezen az operációs rendszeren nem indíthatod el démonként a szervert"
+
+#: ../roundup/scripts/roundup_server.py:767
+#, python-format
+msgid "Roundup server started on %(HOST)s:%(PORT)s"
+msgstr "Roundup server a %(HOST)s:%(PORT)s gépen"
+
+#: ../templates/classic/html/_generic.collision.html:4
+#: ../templates/minimal/html/_generic.collision.html:4
+msgid "${class} Edit Collision - ${tracker}"
+msgstr "${class} ütközés szerkesztése - ${tracker}"
+
+#: ../templates/classic/html/_generic.collision.html:7
+#: ../templates/minimal/html/_generic.collision.html:7
+msgid "${class} Edit Collision"
+msgstr "${class} ütközés szerkesztése"
+
+#: ../templates/classic/html/_generic.collision.html:14
+#: ../templates/minimal/html/_generic.collision.html:14
+msgid ""
+"\n"
+"  There has been a collision. Another user updated this node\n"
+"  while you were editing. Please <a href='${context}'>reload</a>\n"
+"  the node and review your edits.\n"
+msgstr ""
+
+#: ../templates/classic/html/_generic.help.html:9
+#: ../templates/minimal/html/_generic.help.html:9
+msgid "${property} help - ${tracker}"
+msgstr "${property} segítség - ${tracker}"
+
+#: ../templates/classic/html/_generic.help.html:31
+#: ../templates/minimal/html/_generic.help.html:31
+msgid " Cancel "
+msgstr "Mégse"
+
+#: ../templates/classic/html/_generic.help.html:34
+#: ../templates/minimal/html/_generic.help.html:34
+msgid " Apply "
+msgstr "Alkalmaz"
+
+#: ../templates/classic/html/_generic.help.html:41
+#: ../templates/classic/html/issue.index.html:73
+#: ../templates/minimal/html/_generic.help.html:41
+msgid "&lt;&lt; previous"
+msgstr "&lt;&lt; előző"
+
+#: ../templates/classic/html/_generic.help.html:53
+#: ../templates/classic/html/issue.index.html:81
+#: ../templates/minimal/html/_generic.help.html:53
+msgid "${start}..${end} out of ${total}"
+msgstr "${start}..${end}, összesen ${total}"
+
+#: ../templates/classic/html/_generic.help.html:57
+#: ../templates/classic/html/issue.index.html:84
+#: ../templates/minimal/html/_generic.help.html:57
+msgid "next &gt;&gt;"
+msgstr "következő &gt;&gt;"
+
+#: ../templates/classic/html/_generic.index.html:6
+#: ../templates/classic/html/_generic.item.html:4
+#: ../templates/minimal/html/_generic.index.html:6
+#: ../templates/minimal/html/_generic.item.html:4
+msgid "${class} editing - ${tracker}"
+msgstr "${class} szerkesztése - ${tracker}"
+
+#: ../templates/classic/html/_generic.index.html:9
+#: ../templates/classic/html/_generic.item.html:7
+#: ../templates/minimal/html/_generic.index.html:9
+#: ../templates/minimal/html/_generic.item.html:7
+msgid "${class} editing"
+msgstr "${class} szerkesztése"
+
+#: ../templates/classic/html/_generic.index.html:14
+#: ../templates/classic/html/_generic.item.html:12
+#: ../templates/classic/html/file.item.html:9
+#: ../templates/classic/html/issue.index.html:16
+#: ../templates/classic/html/issue.item.html:28
+#: ../templates/classic/html/msg.item.html:26
+#: ../templates/classic/html/user.index.html:9
+#: ../templates/classic/html/user.item.html:28
+#: ../templates/minimal/html/_generic.index.html:14
+#: ../templates/minimal/html/_generic.item.html:12
+#: ../templates/minimal/html/user.index.html:9
+#: ../templates/minimal/html/user.item.html:28
+#: ../templates/minimal/html/user.register.html:14
+msgid "You are not allowed to view this page."
+msgstr "Nem nézheted meg ezt az oldalt."
+
+#: ../templates/classic/html/_generic.index.html:22
+#: ../templates/minimal/html/_generic.index.html:22
+msgid "<p class=\"form-help\"> You may edit the contents of the ${classname} class using this form. Commas, newlines and double quotes (\") must be handled delicately. You may include commas and newlines by enclosing the values in double-quotes (\"). Double quotes themselves must be quoted by doubling (\"\"). </p> <p class=\"form-help\"> Multilink properties have their multiple values colon (\":\") separated (... ,\"one:two:three\", ...) </p> <p class=\"form-help\"> Remove entries by deleting their line. Add new entries by appending them to the table - put an X in the id column. </p>"
+msgstr ""
+
+#: ../templates/classic/html/_generic.index.html:44
+#: ../templates/minimal/html/_generic.index.html:44
+msgid "Edit Items"
+msgstr "Elemek szerkesztése"
+
+#: ../templates/classic/html/file.index.html:4
+msgid "List of files - ${tracker}"
+msgstr "Fájlok listája - ${tracker}"
+
+#: ../templates/classic/html/file.index.html:5
+msgid "List of files"
+msgstr "Fájlok listája"
+
+#: ../templates/classic/html/file.index.html:10
+msgid "Download"
+msgstr "Letöltés"
+
+#: ../templates/classic/html/file.index.html:11
+#: ../templates/classic/html/file.item.html:22
+msgid "Content Type"
+msgstr "Tartalom típus"
+
+#: ../templates/classic/html/file.index.html:12
+msgid "Uploaded By"
+msgstr "Feltöltve"
+
+#: ../templates/classic/html/file.index.html:13
+#: ../templates/classic/html/msg.item.html:43
+msgid "Date"
+msgstr "Dátum"
+
+#: ../templates/classic/html/file.item.html:2
+msgid "File display - ${tracker}"
+msgstr "Fájl megjelenítés - ${tracker}"
+
+#: ../templates/classic/html/file.item.html:4
+msgid "File display"
+msgstr "Fájl megjelenítés"
+
+#: ../templates/classic/html/file.item.html:18
+#: ../templates/classic/html/user.item.html:39
+#: ../templates/classic/html/user.register.html:17
+msgid "Name"
+msgstr "Név"
+
+#: ../templates/classic/html/file.item.html:40
+msgid "download"
+msgstr "letöltés"
+
+#: ../templates/classic/html/home.classlist.html:2
+#: ../templates/minimal/html/home.classlist.html:2
+msgid "List of classes - ${tracker}"
+msgstr "Osztályok listája - ${tracker}"
+
+#: ../templates/classic/html/home.classlist.html:4
+#: ../templates/minimal/html/home.classlist.html:4
+msgid "List of classes"
+msgstr "Osztályok listája"
+
+#: ../templates/classic/html/issue.index.html:7
+msgid "List of issues - ${tracker}"
+msgstr "Ügyek listája - ${tracker}"
+
+#: ../templates/classic/html/issue.index.html:11
+msgid "List of issues"
+msgstr "Ügyek listája"
+
+#: ../templates/classic/html/issue.index.html:22
+#: ../templates/classic/html/issue.item.html:44
+msgid "Priority"
+msgstr "Prioritás"
+
+#: ../templates/classic/html/issue.index.html:23
+msgid "ID"
+msgstr "Azonosító"
+
+#: ../templates/classic/html/issue.index.html:24
+msgid "Creation"
+msgstr "Létrehozás"
+
+#: ../templates/classic/html/issue.index.html:25
+msgid "Activity"
+msgstr "Aktivitás"
+
+#: ../templates/classic/html/issue.index.html:26
+msgid "Actor"
+msgstr "Hozzászóló"
+
+#: ../templates/classic/html/issue.index.html:27
+msgid "Topic"
+msgstr "Téma"
+
+#: ../templates/classic/html/issue.index.html:28
+#: ../templates/classic/html/issue.item.html:39
+msgid "Title"
+msgstr "Cím"
+
+#: ../templates/classic/html/issue.index.html:29
+#: ../templates/classic/html/issue.item.html:46
+msgid "Status"
+msgstr "Állapt"
+
+#: ../templates/classic/html/issue.index.html:30
+msgid "Creator"
+msgstr "Készítő"
+
+#: ../templates/classic/html/issue.index.html:31
+msgid "Assigned&nbsp;To"
+msgstr "Hozzárendelve"
+
+#: ../templates/classic/html/issue.index.html:97
+msgid "Download as CSV"
+msgstr "Letöltés CSV-ként"
+
+#: ../templates/classic/html/issue.index.html:105
+msgid "Sort on:"
+msgstr "Rendezés:"
+
+#: ../templates/classic/html/issue.index.html:108
+#: ../templates/classic/html/issue.index.html:125
+msgid "- nothing -"
+msgstr "- semmi -"
+
+#: ../templates/classic/html/issue.index.html:116
+#: ../templates/classic/html/issue.index.html:133
+msgid "Descending:"
+msgstr "Csökkenőleg:"
+
+#: ../templates/classic/html/issue.index.html:122
+msgid "Group on:"
+msgstr "Csoportosítás:"
+
+#: ../templates/classic/html/issue.index.html:139
+msgid "Redisplay"
+msgstr "Megjelenítés újra"
+
+#: ../templates/classic/html/issue.item.html:7
+msgid "Issue ${id}: ${title} - ${tracker}"
+msgstr "${id}. ügy: ${title} - ${tracker}"
+
+#: ../templates/classic/html/issue.item.html:10
+msgid "New Issue - ${tracker}"
+msgstr "Új bejelentés - ${tracker}"
+
+#: ../templates/classic/html/issue.item.html:14
+msgid "New Issue"
+msgstr "Új bejelentés"
+
+#: ../templates/classic/html/issue.item.html:16
+msgid "New Issue Editing"
+msgstr "Új bejelentés szerkesztése"
+
+#: ../templates/classic/html/issue.item.html:19
+msgid "Issue${id}"
+msgstr "${id}. ügy"
+
+#: ../templates/classic/html/issue.item.html:22
+msgid "Issue${id} Editing"
+msgstr "${id}. ügy szerkesztése"
+
+#: ../templates/classic/html/issue.item.html:51
+msgid "Superseder"
+msgstr "Helyettesítő"
+
+#: ../templates/classic/html/issue.item.html:56
+msgid "View: ${link}"
+msgstr "Mitasd: ${link}"
+
+#: ../templates/classic/html/issue.item.html:60
+msgid "Nosy List"
+msgstr "Kíváncsiak listája"
+
+#: ../templates/classic/html/issue.item.html:69
+msgid "Assigned To"
+msgstr "Kiosztva"
+
+#: ../templates/classic/html/issue.item.html:71
+msgid "Topics"
+msgstr "Témák:"
+
+#: ../templates/classic/html/issue.item.html:79
+msgid "Change Note"
+msgstr "Megjegyzés módosítása"
+
+#: ../templates/classic/html/issue.item.html:87
+msgid "File"
+msgstr "Fájl"
+
+#: ../templates/classic/html/issue.item.html:99
+msgid "Make a copy"
+msgstr "Másolat készítése"
+
+#: ../templates/classic/html/issue.item.html:107
+#: ../templates/classic/html/user.item.html:106
+#: ../templates/classic/html/user.register.html:69
+#: ../templates/minimal/html/user.item.html:86
+msgid "<table class=\"form\"> <tr> <td>Note:&nbsp;</td> <th class=\"required\">highlighted</th> <td>&nbsp;fields are required.</td> </tr> </table>"
+msgstr "<table class=\"form\"> <tr> <td>Megjegyzés:&nbsp;</td> <th class=\"required\">a kiemelt</th> <td>&nbsp;mezők szükségesek.</td> </tr> </table>"
+
+#: ../templates/classic/html/issue.item.html:121
+msgid "Created on <b>${creation}</b> by <b>${creator}</b>, last changed <b>${activity}</b> by <b>${actor}</b>."
+msgstr "<b>${creation}</b> készítette <b>${creator}</b>, utoljára <b>${actor}</b> módosította <b>${activity}</b>-kor."
+
+#: ../templates/classic/html/issue.item.html:125
+#: ../templates/classic/html/msg.item.html:56
+msgid "Files"
+msgstr "Fájlok"
+
+#: ../templates/classic/html/issue.item.html:127
+#: ../templates/classic/html/msg.item.html:58
+msgid "File name"
+msgstr "Fájl neve"
+
+#: ../templates/classic/html/issue.item.html:128
+#: ../templates/classic/html/msg.item.html:59
+msgid "Uploaded"
+msgstr "Feltöltve"
+
+#: ../templates/classic/html/issue.item.html:129
+msgid "Type"
+msgstr "Típus"
+
+#: ../templates/classic/html/issue.item.html:130
+#: ../templates/classic/html/query.edit.html:30
+msgid "Edit"
+msgstr "Szerkesztés"
+
+#: ../templates/classic/html/issue.item.html:131
+msgid "Remove"
+msgstr "Eldobás"
+
+#: ../templates/classic/html/issue.item.html:151
+#: ../templates/classic/html/issue.item.html:172
+#: ../templates/classic/html/query.edit.html:50
+msgid "remove"
+msgstr "eldobás"
+
+#: ../templates/classic/html/issue.item.html:158
+#: ../templates/classic/html/msg.index.html:9
+msgid "Messages"
+msgstr "Üzenetek"
+
+#: ../templates/classic/html/issue.item.html:162
+msgid "msg${id} (view)"
+msgstr "${id}. üzenet (view)"
+
+#: ../templates/classic/html/issue.item.html:163
+msgid "Author: ${author}"
+msgstr "Szerző: ${author}"
+
+#: ../templates/classic/html/issue.item.html:165
+msgid "Date: ${date}"
+msgstr "Dátum: ${date}"
+
+#: ../templates/classic/html/issue.search.html:2
+msgid "Issue searching - ${tracker}"
+msgstr "Bejelentés keresése - ${tracker}"
+
+#: ../templates/classic/html/issue.search.html:4
+msgid "Issue searching"
+msgstr "Bejelentés keresése"
+
+#: ../templates/classic/html/issue.search.html:25
+msgid "Filter on"
+msgstr "Szűrés"
+
+#: ../templates/classic/html/issue.search.html:26
+msgid "Display"
+msgstr "Megjelenítés"
+
+#: ../templates/classic/html/issue.search.html:27
+msgid "Sort on"
+msgstr "Rendezés"
+
+#: ../templates/classic/html/issue.search.html:28
+msgid "Group on"
+msgstr "Csoportosítás"
+
+#: ../templates/classic/html/issue.search.html:32
+msgid "All text*:"
+msgstr "Minden szöveg*:"
+
+#: ../templates/classic/html/issue.search.html:40
+msgid "Title:"
+msgstr "Cím:"
+
+#: ../templates/classic/html/issue.search.html:50
+msgid "Topic:"
+msgstr "Téma:"
+
+#: ../templates/classic/html/issue.search.html:58
+msgid "ID:"
+msgstr "Azonosító:"
+
+#: ../templates/classic/html/issue.search.html:66
+msgid "Creation Date:"
+msgstr "Készítés dátuma:"
+
+#: ../templates/classic/html/issue.search.html:77
+msgid "Creator:"
+msgstr "Készítő:"
+
+#: ../templates/classic/html/issue.search.html:79
+msgid "created by me"
+msgstr "én készítettem"
+
+#: ../templates/classic/html/issue.search.html:88
+msgid "Activity:"
+msgstr "Aktivitás:"
+
+#: ../templates/classic/html/issue.search.html:99
+msgid "Actor:"
+msgstr "Hozzászóló:"
+
+#: ../templates/classic/html/issue.search.html:101
+msgid "done by me"
+msgstr "én tettem"
+
+#: ../templates/classic/html/issue.search.html:112
+msgid "Priority:"
+msgstr "Prioritás:"
+
+#: ../templates/classic/html/issue.search.html:114
+#: ../templates/classic/html/issue.search.html:130
+msgid "not selected"
+msgstr "nem kijelölt"
+
+#: ../templates/classic/html/issue.search.html:125
+msgid "Status:"
+msgstr "Állapot:"
+
+#: ../templates/classic/html/issue.search.html:128
+msgid "not resolved"
+msgstr "nem megoldott"
+
+#: ../templates/classic/html/issue.search.html:143
+msgid "Assigned to:"
+msgstr "Kiadva:"
+
+#: ../templates/classic/html/issue.search.html:146
+msgid "assigned to me"
+msgstr "nekem adva"
+
+#: ../templates/classic/html/issue.search.html:148
+msgid "unassigned"
+msgstr "gazdátlan"
+
+#: ../templates/classic/html/issue.search.html:158
+msgid "No Sort or group:"
+msgstr "Ne rendezd vagy csoportosítsd:"
+
+#: ../templates/classic/html/issue.search.html:166
+msgid "Pagesize:"
+msgstr "Oldalméret:"
+
+#: ../templates/classic/html/issue.search.html:172
+msgid "Start With:"
+msgstr "Kezdés:"
+
+#: ../templates/classic/html/issue.search.html:178
+msgid "Sort Descending:"
+msgstr "Csökkenőleg rendzve:"
+
+#: ../templates/classic/html/issue.search.html:185
+msgid "Group Descending:"
+msgstr "Csoport csökkenőleg:"
+
+#: ../templates/classic/html/issue.search.html:192
+msgid "Query name**:"
+msgstr "Lekérdezés neve**:"
+
+#: ../templates/classic/html/issue.search.html:204
+#: ../templates/classic/html/page.html:31
+#: ../templates/classic/html/page.html:60
+#: ../templates/minimal/html/page.html:31
+msgid "Search"
+msgstr "Keresés"
+
+#: ../templates/classic/html/issue.search.html:209
+msgid "*: The \"all text\" field will look in message bodies and issue titles"
+msgstr "*: The \"all text\" field will look in message bodies and issue titles"
+
+#: ../templates/classic/html/issue.search.html:212
+msgid "**: If you supply a name, the query will be saved off and available as a link in the sidebar"
+msgstr "**: Ha megadsz egy nevet, a lekérdezést elmentjük és az oldalsávon elérhető lesz"
+
+#: ../templates/classic/html/keyword.item.html:3
+msgid "Keyword editing - ${tracker}"
+msgstr "Kulcsszó szerkesztése - ${tracker}"
+
+#: ../templates/classic/html/keyword.item.html:5
+msgid "Keyword editing"
+msgstr "Kulcsszó szerkesztése"
+
+#: ../templates/classic/html/keyword.item.html:11
+msgid "Existing Keywords"
+msgstr "Létező kulcsszavak"
+
+#: ../templates/classic/html/keyword.item.html:20
+msgid "To edit an existing keyword (for spelling or typing errors), click on its entry above."
+msgstr "Meglévő kulcsszó szerkesztéséhez (helyesírási hibák) kattints a fenti elemre."
+
+#: ../templates/classic/html/keyword.item.html:27
+msgid "To create a new keyword, enter it below and click \"Submit New Entry\"."
+msgstr "Új kulcsszó létrehozásához add meg alább és kattints az \"Új elem küldése\" gombra."
+
+#: ../templates/classic/html/keyword.item.html:37
+msgid "Keyword"
+msgstr "Kulcsszó"
+
+#: ../templates/classic/html/msg.index.html:3
+msgid "List of messages - ${tracker}"
+msgstr "Üzenetek listája - ${tracker}"
+
+#: ../templates/classic/html/msg.index.html:5
+msgid "Message listing"
+msgstr "Üzenetek listázása"
+
+#: ../templates/classic/html/msg.item.html:6
+msgid "Message ${id} - ${tracker}"
+msgstr "${id}. üzenet  - ${tracker}"
+
+#: ../templates/classic/html/msg.item.html:9
+msgid "New Message - ${tracker}"
+msgstr "Új üzenet - ${tracker}"
+
+#: ../templates/classic/html/msg.item.html:13
+msgid "New Message"
+msgstr "Új üzenet"
+
+#: ../templates/classic/html/msg.item.html:15
+msgid "New Message Editing"
+msgstr "Új üzenet szerkesztése"
+
+#: ../templates/classic/html/msg.item.html:18
+msgid "Message${id}"
+msgstr "${id}. üzenet"
+
+#: ../templates/classic/html/msg.item.html:21
+msgid "Message${id} Editing"
+msgstr "${id}. üzenet szerkesztése"
+
+#: ../templates/classic/html/msg.item.html:33
+msgid "Author"
+msgstr "Szerző"
+
+#: ../templates/classic/html/msg.item.html:38
+msgid "Recipients"
+msgstr "Címzettek"
+
+#: ../templates/classic/html/msg.item.html:49
+msgid "Content"
+msgstr "Tartalom"
+
+#: ../templates/classic/html/page.html:41
+msgid "<b>Your Queries</b> (<a href=\"query?@template=edit\">edit</a>)"
+msgstr "<b>Te lekérdezéseid</b> (<a href=\"query?@template=edit\">szerkesztés</a>)"
+
+#: ../templates/classic/html/page.html:52
+msgid "Issues"
+msgstr "Témák"
+
+#: ../templates/classic/html/page.html:54
+#: ../templates/classic/html/page.html:74
+msgid "Create New"
+msgstr "Új létrehozása"
+
+#: ../templates/classic/html/page.html:56
+msgid "Show Unassigned"
+msgstr "Gazdátlanok mutatása"
+
+#: ../templates/classic/html/page.html:58
+msgid "Show All"
+msgstr "Mutasd mind"
+
+#: ../templates/classic/html/page.html:61
+msgid "Show issue:"
+msgstr "Téma mutatása:"
+
+#: ../templates/classic/html/page.html:72
+msgid "Keywords"
+msgstr "Kulcsszavak"
+
+#: ../templates/classic/html/page.html:78
+msgid "Edit Existing"
+msgstr "Meglévők szerkesztése"
+
+#: ../templates/classic/html/page.html:84
+#: ../templates/minimal/html/page.html:65
+msgid "Administration"
+msgstr "Adminisztráció"
+
+#: ../templates/classic/html/page.html:86
+#: ../templates/minimal/html/page.html:66
+msgid "Class List"
+msgstr "Osztálzok listája"
+
+#: ../templates/classic/html/page.html:90
+#: ../templates/minimal/html/page.html:68
+msgid "User List"
+msgstr "Felhasználók listája"
+
+#: ../templates/classic/html/page.html:92
+#: ../templates/minimal/html/page.html:71
+msgid "Add User"
+msgstr "Felhasználó hozzáadása"
+
+#: ../templates/classic/html/page.html:99
+#: ../templates/classic/html/page.html:105
+#: ../templates/minimal/html/page.html:46
+msgid "Login"
+msgstr "Bejelentkezés"
+
+#: ../templates/classic/html/page.html:104
+#: ../templates/minimal/html/page.html:45
+msgid "Remember me?"
+msgstr "Emlékezzek rád?"
+
+#: ../templates/classic/html/page.html:108
+#: ../templates/classic/html/user.register.html:63
+#: ../templates/minimal/html/page.html:50
+#: ../templates/minimal/html/user.register.html:58
+msgid "Register"
+msgstr "Regisztrálás"
+
+#: ../templates/classic/html/page.html:111
+msgid "Lost&nbsp;your&nbsp;login?"
+msgstr "Elveszett&nbsp;a&nbsp;jelszavad?"
+
+#: ../templates/classic/html/page.html:116
+msgid "Hello, ${user}"
+msgstr "Helló, ${user}"
+
+#: ../templates/classic/html/page.html:118
+msgid "Your Issues"
+msgstr "Témáid"
+
+#: ../templates/classic/html/page.html:119
+#: ../templates/minimal/html/page.html:57
+msgid "Your Details"
+msgstr "Adataid"
+
+#: ../templates/classic/html/page.html:121
+#: ../templates/minimal/html/page.html:59
+msgid "Logout"
+msgstr "Kijelentkezés"
+
+#: ../templates/classic/html/page.html:125
+msgid "Help"
+msgstr "Segítség"
+
+#: ../templates/classic/html/page.html:126
+msgid "Roundup docs"
+msgstr "Roundup dokumentáció"
+
+#: ../templates/classic/html/page.html:136
+#: ../templates/minimal/html/page.html:81
+msgid "clear this message"
+msgstr "üzenet törlése"
+
+#: ../templates/classic/html/page.html:181
+msgid "don't care"
+msgstr "ne törődj vele"
+
+#: ../templates/classic/html/page.html:183
+msgid "------------"
+msgstr "------------"
+
+#: ../templates/classic/html/page.html:210
+msgid "no value"
+msgstr "nincs érték"
+
+#: ../templates/classic/html/query.edit.html:4
+msgid "\"Your Queries\" Editing - ${tracker}"
+msgstr "\"Te lekérdezéseid\" szerkesztése - ${tracker}"
+
+#: ../templates/classic/html/query.edit.html:6
+msgid "\"Your Queries\" Editing"
+msgstr "\"Te lekérdezéseid\" szerkesztése"
+
+#: ../templates/classic/html/query.edit.html:11
+msgid "You are not allowed to edit queries."
+msgstr "Nem szerkeszthetsz lekérdezéseket."
+
+#: ../templates/classic/html/query.edit.html:28
+msgid "Query"
+msgstr "Lekérdezés"
+
+#: ../templates/classic/html/query.edit.html:29
+msgid "Include in \"Your Queries\""
+msgstr "Bevesz a \"Te lekérdezéseid\" közé"
+
+#: ../templates/classic/html/query.edit.html:31
+msgid "Private to you?"
+msgstr "Csak neked?"
+
+#: ../templates/classic/html/query.edit.html:44
+msgid "leave out"
+msgstr "kihagy"
+
+#: ../templates/classic/html/query.edit.html:45
+msgid "include"
+msgstr "bevesz"
+
+#: ../templates/classic/html/query.edit.html:49
+msgid "leave in"
+msgstr "bent hagy"
+
+#: ../templates/classic/html/query.edit.html:54
+msgid "[query is retired]"
+msgstr "[lekérdezés visszavonva]"
+
+#: ../templates/classic/html/query.edit.html:67
+#: ../templates/classic/html/query.edit.html:92
+msgid "edit"
+msgstr "szerkesztés"
+
+#: ../templates/classic/html/query.edit.html:71
+msgid "yes"
+msgstr "igen"
+
+#: ../templates/classic/html/query.edit.html:73
+msgid "no"
+msgstr "nem"
+
+#: ../templates/classic/html/query.edit.html:79
+msgid "Delete"
+msgstr "Törlés"
+
+#: ../templates/classic/html/query.edit.html:94
+msgid "[not yours to edit]"
+msgstr "[nem a tied hogy szerkeszd]"
+
+#: ../templates/classic/html/query.edit.html:102
+msgid "Save Selection"
+msgstr "Kijelölés mentése"
+
+#: ../templates/classic/html/user.forgotten.html:3
+msgid "Password reset request - ${tracker}"
+msgstr "Jelszó törlés kérése - ${tracker}"
+
+#: ../templates/classic/html/user.forgotten.html:5
+msgid "Password reset request"
+msgstr "Jelszó törlés kérése"
+
+#: ../templates/classic/html/user.forgotten.html:9
+msgid "You have two options if you have forgotten your password. If you know the email address you registered with, enter it below."
+msgstr "Két lehetőséged van, ha elfelejtetted a jelszavad. Ha tudod a regisztrációs jelszavad, add meg alább."
+
+#: ../templates/classic/html/user.forgotten.html:16
+msgid "Email Address:"
+msgstr "Email cím:"
+
+#: ../templates/classic/html/user.forgotten.html:24
+#: ../templates/classic/html/user.forgotten.html:34
+msgid "Request password reset"
+msgstr "Kérj jelszó törlést."
+
+#: ../templates/classic/html/user.forgotten.html:30
+msgid "Or, if you know your username, then enter it below."
+msgstr "Vagy, ha ismered a felhasználó nevet, add meg alább."
+
+#: ../templates/classic/html/user.forgotten.html:33
+msgid "Username:"
+msgstr "Felhasználó név:"
+
+#: ../templates/classic/html/user.forgotten.html:39
+msgid "A confirmation email will be sent to you - please follow the instructions within it to complete the reset process."
+msgstr "Egy megerősítő emailt küldünk neked - kérlek kövesd a benne foglaltakat hogy befejezhesd a törlést."
+
+#: ../templates/classic/html/user.index.html:3
+#: ../templates/minimal/html/user.index.html:3
+msgid "User listing - ${tracker}"
+msgstr "Felhasználók listája - ${tracker}"
+
+#: ../templates/classic/html/user.index.html:5
+#: ../templates/minimal/html/user.index.html:5
+msgid "User listing"
+msgstr "Felhasználók listája"
+
+#: ../templates/classic/html/user.index.html:14
+#: ../templates/minimal/html/user.index.html:14
+msgid "Username"
+msgstr "Felhasználónév"
+
+#: ../templates/classic/html/user.index.html:15
+msgid "Real name"
+msgstr "Valódi név"
+
+#: ../templates/classic/html/user.index.html:16
+#: ../templates/classic/html/user.item.html:70
+#: ../templates/classic/html/user.register.html:45
+msgid "Organisation"
+msgstr "Szervezet"
+
+#: ../templates/classic/html/user.index.html:17
+#: ../templates/minimal/html/user.index.html:15
+msgid "Email address"
+msgstr "Email cím"
+
+#: ../templates/classic/html/user.index.html:18
+msgid "Phone number"
+msgstr "Telefonszám"
+
+#: ../templates/classic/html/user.index.html:19
+msgid "Retire"
+msgstr "Visszavonulás"
+
+#: ../templates/classic/html/user.index.html:32
+msgid "retire"
+msgstr "visszavonulás"
+
+#: ../templates/classic/html/user.item.html:7
+#: ../templates/minimal/html/user.item.html:7
+msgid "User ${id}: ${title} - ${tracker}"
+msgstr "${id}. felhasználó: ${title} - ${tracker}"
+
+#: ../templates/classic/html/user.item.html:10
+#: ../templates/minimal/html/user.item.html:10
+msgid "New User - ${tracker}"
+msgstr "Új felhasználó - ${tracker}"
+
+#: ../templates/classic/html/user.item.html:14
+#: ../templates/minimal/html/user.item.html:14
+msgid "New User"
+msgstr "Új felhasználó"
+
+#: ../templates/classic/html/user.item.html:16
+#: ../templates/minimal/html/user.item.html:16
+msgid "New User Editing"
+msgstr "Új felhasználó szerkesztése"
+
+#: ../templates/classic/html/user.item.html:19
+#: ../templates/minimal/html/user.item.html:19
+msgid "User${id}"
+msgstr "${id}. felhasználó"
+
+#: ../templates/classic/html/user.item.html:22
+#: ../templates/minimal/html/user.item.html:22
+msgid "User${id} Editing"
+msgstr "${id}. felhasználó szerkesztése"
+
+#: ../templates/classic/html/user.item.html:43
+#: ../templates/classic/html/user.register.html:21
+#: ../templates/minimal/html/user.item.html:40
+#: ../templates/minimal/html/user.register.html:26
+msgid "Login Name"
+msgstr "Bejelentkezési név"
+
+#: ../templates/classic/html/user.item.html:47
+#: ../templates/classic/html/user.register.html:25
+#: ../templates/minimal/html/user.item.html:44
+#: ../templates/minimal/html/user.register.html:30
+msgid "Login Password"
+msgstr "Bejelentkezési jelszó"
+
+#: ../templates/classic/html/user.item.html:51
+#: ../templates/classic/html/user.register.html:29
+#: ../templates/minimal/html/user.item.html:48
+#: ../templates/minimal/html/user.register.html:34
+msgid "Confirm Password"
+msgstr "Jelszó megerősítése"
+
+#: ../templates/classic/html/user.item.html:55
+#: ../templates/classic/html/user.register.html:33
+#: ../templates/minimal/html/user.item.html:52
+#: ../templates/minimal/html/user.register.html:38
+msgid "Roles"
+msgstr "Szerepkörök"
+
+#: ../templates/classic/html/user.item.html:61
+#: ../templates/minimal/html/user.item.html:58
+msgid "(to give the user more than one role, enter a comma,separated,list)"
+msgstr "(egynél több szerepkör megadásához vesszővel,elválasztott,listát,adj,meg)"
+
+#: ../templates/classic/html/user.item.html:66
+#: ../templates/classic/html/user.register.html:41
+msgid "Phone"
+msgstr "Telefon"
+
+#: ../templates/classic/html/user.item.html:74
+msgid "Timezone"
+msgstr "Időzóna"
+
+#: ../templates/classic/html/user.item.html:78
+msgid "(this is a numeric hour offset, the default is ${zone})"
+msgstr "(ez egy numerikus óra eltolás, ${zone} az alapértelmezett)"
+
+#: ../templates/classic/html/user.item.html:83
+#: ../templates/classic/html/user.register.html:49
+#: ../templates/minimal/html/user.item.html:63
+#: ../templates/minimal/html/user.register.html:46
+msgid "E-mail address"
+msgstr "E-mail címek"
+
+#: ../templates/classic/html/user.item.html:91
+#: ../templates/classic/html/user.register.html:53
+#: ../templates/minimal/html/user.item.html:71
+#: ../templates/minimal/html/user.register.html:50
+msgid "Alternate E-mail addresses<br>One address per line"
+msgstr "Alternatív e-mail címek <br>soronként egy cím "
+
+#: ../templates/classic/html/user.register.html:4
+#: ../templates/classic/html/user.register.html:7
+#: ../templates/minimal/html/user.register.html:4
+#: ../templates/minimal/html/user.register.html:7
+msgid "Registering with ${tracker}"
+msgstr "Regisztrálás a következőnél: ${tracker}"
+
+#: ../templates/classic/html/user.rego_progress.html:4
+#: ../templates/minimal/html/user.rego_progress.html:4
+msgid "Registration in progress - ${tracker}"
+msgstr "Regisztráció folyamatban - ${tracker}"
+
+#: ../templates/classic/html/user.rego_progress.html:6
+#: ../templates/minimal/html/user.rego_progress.html:6
+msgid "Registration in progress..."
+msgstr "Regisztráció folyamatban..."
+
+#: ../templates/classic/html/user.rego_progress.html:10
+#: ../templates/minimal/html/user.rego_progress.html:10
+msgid "You will shortly receive an email to confirm your registration. To complete the registration process, visit the link indicated in the email."
+msgstr "Rövidesen kapni fog egy e-mailt a regisztrációjának megerősítésére.. A regisztrálás befejezéséhet kérem kövesse a levélben lévő linket.."
+
+#: ../templates/minimal/html/home.html:2
+msgid "Tracker home - ${tracker}"
+msgstr "Hibakövető - ${tracker}"
+
+#: ../templates/minimal/html/home.html:4
+msgid "Tracker home"
+msgstr "Hibakövető otthona"
+
+#: ../templates/minimal/html/home.html:16
+msgid "Please select from one of the menu options on the left."
+msgstr "Kérem válasson a bal oldali menüből."
+
+#: ../templates/minimal/html/home.html:19
+msgid "Please log in or register."
+msgstr "Kérem jelentkezzen be vagy regisztráljon."
+
+#: ../templates/minimal/html/page.html:55
+msgid "Hello,<br>${user}"
+msgstr "Helló, <br>${user}"
+
+# priority translations:
+#: ../templates/classic/initial_data.py:5
+#: ../templates/classic/html/page.html:246
+msgid "critical"
+msgstr "kritikus"
+
+#: ../templates/classic/initial_data.py:6
+#: ../templates/classic/html/page.html:246
+msgid "urgent"
+msgstr "sürgős"
+
+#: ../templates/classic/initial_data.py:7
+#: ../templates/classic/html/page.html:246
+msgid "bug"
+msgstr "hiba"
+
+#: ../templates/classic/initial_data.py:8
+#: ../templates/classic/html/page.html:246
+msgid "feature"
+msgstr "szolgáltatás"
+
+#: ../templates/classic/initial_data.py:9
+#: ../templates/classic/html/page.html:246
+msgid "wish"
+msgstr "óhaj"
+
+# status translations:
+#: status ../templates/classic/initial_data.py:12
+#: ../templates/classic/html/page.html:246
+msgid "unread"
+msgstr "nem olvasott"
+
+#: ../templates/classic/initial_data.py:13
+#: ../templates/classic/html/page.html:246
+msgid "deferred"
+msgstr "elutasítva"
+
+#: ../templates/classic/initial_data.py:14
+#: ../templates/classic/html/page.html:246
+msgid "chatting"
+msgstr "megbeszélés"
+
+#: ../templates/classic/initial_data.py:15
+#: ../templates/classic/html/page.html:246
+msgid "in-progress"
+msgstr "folyamatban"
+
+#: ../templates/classic/initial_data.py:16
+#: ../templates/classic/html/page.html:246
+msgid "need-eg"
+msgstr "megerősítésre vár"
+
+#: ../templates/classic/initial_data.py:17
+#: ../templates/classic/html/page.html:246
+msgid "testing"
+msgstr "tesztelés"
+
+#: ../templates/classic/initial_data.py:18
+#: ../templates/classic/html/page.html:246
+msgid "done-cbb"
+msgstr "elkészült"
+
+#: ../templates/classic/initial_data.py:19
+#: ../templates/classic/html/page.html:246
+msgid "resolved"
+msgstr "megoldva"
+
