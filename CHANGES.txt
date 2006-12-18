@@ -16,6 +16,7 @@ Fixed:
 - support POP over SSL (sf patch 1597703)
 - clean up input field generation and quoting of values (sf bug 1615616)
 - allow use of roundup-server pidfile without forking (sf bug 1614753)
+- allow translation of status/priority menu options (sf bug 1613976)
 
 
 2006-11-11 1.3.1

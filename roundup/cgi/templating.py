@@ -2041,7 +2041,7 @@ class MultilinkHTMLProperty(HTMLProperty):
                 lab = lab + ' (%s)'%', '.join(m)
 
             # and generate
-            lab = cgi.escape(lab)
+            lab = cgi.escape(self._(lab))
             l.append('<option %svalue="%s">%s</option>'%(s, optionid,
                 lab))
         l.append('</select>')
