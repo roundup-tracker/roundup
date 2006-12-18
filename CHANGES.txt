@@ -14,6 +14,7 @@ Fixed:
 - clarified windows service documentation (sf patch 1597713)
 - HTMLClass fixed to work with new item permissions check (sf bug 1602983)
 - support POP over SSL (sf patch 1597703)
+- clean up input field generation and quoting of values (sf bug 1615616)
 
 
 2006-11-11 1.3.1

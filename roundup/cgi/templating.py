@@ -410,12 +410,14 @@ def _set_input_default_args(dic):
 def input_html4(**attrs):
     """Generate an 'input' (html4) element with given attributes"""
     _set_input_default_args(attrs) 
-    return '<input %s>'%' '.join(['%s="%s"'%item for item in attrs.items()])
+    return '<input %s>'%' '.join(['%s="%s"'%(k,cgi.escape(str(v), True))
+        for k,v in attrs.items()])
 
 def input_xhtml(**attrs):
     """Generate an 'input' (xhtml) element with given attributes"""
     _set_input_default_args(attrs)
-    return '<input %s/>'%' '.join(['%s="%s"'%item for item in attrs.items()])
+    return '<input %s/>'%' '.join(['%s="%s"'%(k,cgi.escape(str(v), True))
+        for k,v in attrs.items()])
 
 class HTMLInputMixin:
     ''' requires a _client property '''
@@ -1328,12 +1330,9 @@ class StringHTMLProperty(HTMLProperty):
         if not self.is_edit_ok():
             return self.plain()
 
-        if self._value is None:
+        value = self._value
+        if value is None:
             value = ''
-        else:
-            value = cgi.escape(str(self._value))
-
-        value = '&quot;'.join(value.split('"'))
 
         kwargs.setdefault("size", 30)
         kwargs.update({"name": self._formname, "value": value})
@@ -1436,13 +1435,11 @@ class NumberHTMLProperty(HTMLProperty):
         if not self.is_edit_ok():
             return self.plain()
 
-        if self._value is None:
+        value = self._value
+        if value is None:
             value = ''
-        else:
-            value = cgi.escape(str(self._value))
 
-        value = '&quot;'.join(value.split('"'))
-        return self.input(name=self._formname,value=value,size=size)
+        return self.input(name=self._formname, value=value, size=size)
 
     def __int__(self):
         ''' Return an int of me
@@ -1582,7 +1579,7 @@ class DateHTMLProperty(HTMLProperty):
                         'or string date representation.')
         elif isinstance(value, str) or isinstance(value, unicode):
             # most likely erroneous input to be passed back to user
-            value = cgi.escape(str(value), 1)
+            if isinstance(value, unicode): value = value.encode('utf8')
             return self.input(name=self._formname, value=value, size=size)
         else:
             raw_value = value
@@ -1603,7 +1600,6 @@ class DateHTMLProperty(HTMLProperty):
             if format is not self._marker:
                 value = value.pretty(format)
 
-        value = cgi.escape(str(value), 1)
         s = self.input(name=self._formname, value=value, size=size)
         if popcal:
             s += self.popcal()
@@ -1707,13 +1703,11 @@ class IntervalHTMLProperty(HTMLProperty):
         if not self.is_edit_ok():
             return self.plain()
 
-        if self._value is None:
+        value = self._value
+        if value is None:
             value = ''
-        else:
-            value = cgi.escape(str(self._value))
 
-        value = '&quot;'.join(value.split('"'))
-        return self.input(name=self._formname,value=value,size=size)
+        return self.input(name=self._formname, value=value, size=size)
 
 class LinkHTMLProperty(HTMLProperty):
     ''' Link HTMLProperty
@@ -1778,11 +1772,7 @@ class LinkHTMLProperty(HTMLProperty):
                 value = linkcl.get(self._value, k)
             else:
                 value = self._value
-            value = cgi.escape(str(value))
-            value = '&quot;'.join(value.split('"'))
-        return self.input(name=self._formname,
-                          value=value,
-                          size=size)
+        return self.input(name=self._formname, value=value, size=size)
 
     def menu(self, size=None, height=None, showid=0, additional=[], value=None,
             sort_on=None, **conditions):
@@ -1973,8 +1963,8 @@ class MultilinkHTMLProperty(HTMLProperty):
         if not showid:
             k = linkcl.labelprop(1)
             value = lookupKeys(linkcl, k, value)
-        value = cgi.escape(','.join(value))
-        return self.input(name=self._formname,size=size,value=value)
+        value = ','.join(value)
+        return self.input(name=self._formname, size=size, value=value)
 
     def menu(self, size=None, height=None, showid=0, additional=[],
              value=None, sort_on=None, **conditions):
@@ -2328,9 +2318,10 @@ env: %(env)s
         ''' return the current index args as form elements '''
         l = []
         sc = self.special_char
-        s = self.input(type="hidden",name="%s",value="%s")
+        def add(k, v):
+            l.append(self.input(type="hidden", name=k, value=v))
         if columns and self.columns:
-            l.append(s%(sc+'columns', ','.join(self.columns)))
+            add(sc+'columns', ','.join(self.columns))
         if sort:
             val = []
             for dir, attr in self.sort:
@@ -2338,7 +2329,7 @@ env: %(env)s
                     val.append('-'+attr)
                 else:
                     val.append(attr)
-            l.append(s%(sc+'sort', ','.join (val)))
+            add(sc+'sort', ','.join (val))
         if group:
             val = []
             for dir, attr in self.group:
@@ -2346,23 +2337,23 @@ env: %(env)s
                     val.append('-'+attr)
                 else:
                     val.append(attr)
-            l.append(s%(sc+'group', ','.join (val)))
+            add(sc+'group', ','.join (val))
         if filter and self.filter:
-            l.append(s%(sc+'filter', ','.join(self.filter)))
+            add(sc+'filter', ','.join(self.filter))
         if self.classname and filterspec:
             props = self.client.db.getclass(self.classname).getprops()
             for k,v in self.filterspec.items():
                 if type(v) == type([]):
                     if isinstance(props[k], hyperdb.String):
-                        l.append(s%(k, ' '.join(v)))
+                        add(k, ' '.join(v))
                     else:
-                        l.append(s%(k, ','.join(v)))
+                        add(k, ','.join(v))
                 else:
-                    l.append(s%(k, v))
+                    add(k, v)
         if search_text and self.search_text:
-            l.append(s%(sc+'search_text', self.search_text))
-        l.append(s%(sc+'pagesize', self.pagesize))
-        l.append(s%(sc+'startwith', self.startwith))
+            add(sc+'search_text', self.search_text)
+        add(sc+'pagesize', self.pagesize)
+        add(sc+'startwith', self.startwith)
         return '\n'.join(l)
 
     def indexargs_url(self, url, args):
