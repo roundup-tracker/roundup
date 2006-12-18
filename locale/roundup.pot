@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2006-11-16 16:24+0200\n"
+"POT-Creation-Date: 2006-12-18 08:05+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1068,14 +1068,14 @@ msgstr ""
 msgid "property \"%(propname)s\": \"%(value)s\" not currently in list"
 msgstr ""
 
-#: ../roundup/cgi/form_parser.py:535
+#: ../roundup/cgi/form_parser.py:551
 #, python-format
 msgid "Required %(class)s property %(property)s not supplied"
 msgid_plural "Required %(class)s properties %(property)s not supplied"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../roundup/cgi/form_parser.py:558
+#: ../roundup/cgi/form_parser.py:574
 msgid "File is empty"
 msgstr ""
 
@@ -1084,122 +1084,122 @@ msgstr ""
 msgid "You are not allowed to %(action)s items of class %(class)s"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:643
+#: ../roundup/cgi/templating.py:645
 msgid "(list)"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:712
+#: ../roundup/cgi/templating.py:714
 msgid "Submit New Entry"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:726 ../roundup/cgi/templating.py:860
-#: ../roundup/cgi/templating.py:1267 ../roundup/cgi/templating.py:1296
-#: ../roundup/cgi/templating.py:1316 ../roundup/cgi/templating.py:1365
-#: ../roundup/cgi/templating.py:1388 ../roundup/cgi/templating.py:1424
-#: ../roundup/cgi/templating.py:1463 ../roundup/cgi/templating.py:1516
-#: ../roundup/cgi/templating.py:1533 ../roundup/cgi/templating.py:1618
-#: ../roundup/cgi/templating.py:1638 ../roundup/cgi/templating.py:1656
-#: ../roundup/cgi/templating.py:1688 ../roundup/cgi/templating.py:1698
-#: ../roundup/cgi/templating.py:1752 ../roundup/cgi/templating.py:1945
-#: ../roundup/cgi/templating.py:726:860 :1267:1296 :1316:1365 :1388:1424
-#: :1463:1516 :1533:1618 :1638:1656 :1688:1698 :1752:1945
+#: ../roundup/cgi/templating.py:728 ../roundup/cgi/templating.py:862
+#: ../roundup/cgi/templating.py:1269 ../roundup/cgi/templating.py:1298
+#: ../roundup/cgi/templating.py:1318 ../roundup/cgi/templating.py:1364
+#: ../roundup/cgi/templating.py:1387 ../roundup/cgi/templating.py:1423
+#: ../roundup/cgi/templating.py:1460 ../roundup/cgi/templating.py:1513
+#: ../roundup/cgi/templating.py:1530 ../roundup/cgi/templating.py:1614
+#: ../roundup/cgi/templating.py:1634 ../roundup/cgi/templating.py:1652
+#: ../roundup/cgi/templating.py:1684 ../roundup/cgi/templating.py:1694
+#: ../roundup/cgi/templating.py:1746 ../roundup/cgi/templating.py:1935
+#: ../roundup/cgi/templating.py:728:862 :1269:1298 :1318:1364 :1387:1423
+#: :1460:1513 :1530:1614 :1634:1652 :1684:1694 :1746:1935
 msgid "[hidden]"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:727
+#: ../roundup/cgi/templating.py:729
 msgid "New node - no history"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:842
+#: ../roundup/cgi/templating.py:844
 msgid "Submit Changes"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:924
+#: ../roundup/cgi/templating.py:926
 msgid "<em>The indicated property no longer exists</em>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:925
+#: ../roundup/cgi/templating.py:927
 #, python-format
 msgid "<em>%s: %s</em>\n"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:938
+#: ../roundup/cgi/templating.py:940
 #, python-format
 msgid "The linked class %(classname)s no longer exists"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:971 ../roundup/cgi/templating.py:995
-#: ../roundup/cgi/templating.py:971:995
+#: ../roundup/cgi/templating.py:973 ../roundup/cgi/templating.py:997
+#: ../roundup/cgi/templating.py:973:997
 msgid "<strike>The linked node no longer exists</strike>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1048
+#: ../roundup/cgi/templating.py:1050
 #, python-format
 msgid "%s: (no value)"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1060
+#: ../roundup/cgi/templating.py:1062
 msgid ""
 "<strong><em>This event is not handled by the history display!</em></strong>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1072
+#: ../roundup/cgi/templating.py:1074
 msgid "<tr><td colspan=4><strong>Note:</strong></td></tr>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1081
+#: ../roundup/cgi/templating.py:1083
 msgid "History"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1083
+#: ../roundup/cgi/templating.py:1085
 msgid "<th>Date</th>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1084
+#: ../roundup/cgi/templating.py:1086
 msgid "<th>User</th>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1085
+#: ../roundup/cgi/templating.py:1087
 msgid "<th>Action</th>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1086
+#: ../roundup/cgi/templating.py:1088
 msgid "<th>Args</th>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1128
+#: ../roundup/cgi/templating.py:1130
 #, python-format
 msgid "Copy of %(class)s %(id)s"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1392
+#: ../roundup/cgi/templating.py:1391
 msgid "*encrypted*"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1467 ../roundup/cgi/templating.py:1488
-#: ../roundup/cgi/templating.py:1494 ../roundup/cgi/templating.py:1037:1467
-#: :1488:1494
+#: ../roundup/cgi/templating.py:1464 ../roundup/cgi/templating.py:1485
+#: ../roundup/cgi/templating.py:1491 ../roundup/cgi/templating.py:1039:1464
+#: :1485:1491
 msgid "No"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1467 ../roundup/cgi/templating.py:1486
-#: ../roundup/cgi/templating.py:1491 ../roundup/cgi/templating.py:1037:1467
-#: :1486:1491
+#: ../roundup/cgi/templating.py:1464 ../roundup/cgi/templating.py:1483
+#: ../roundup/cgi/templating.py:1488 ../roundup/cgi/templating.py:1039:1464
+#: :1483:1488
 msgid "Yes"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1580
+#: ../roundup/cgi/templating.py:1577
 msgid ""
 "default value for DateHTMLProperty must be either DateHTMLProperty or string "
 "date representation."
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1743
+#: ../roundup/cgi/templating.py:1737
 #, python-format
 msgid "Attempt to look up %(attr)s on a missing value"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1820
+#: ../roundup/cgi/templating.py:1810
 #, python-format
 msgid "<option %svalue=\"-1\">- no selection -</option>"
 msgstr ""
@@ -1331,13 +1331,13 @@ msgid ""
 "\tcontains old-style template - ignored"
 msgstr ""
 
-#: ../roundup/mailgw.py:574
+#: ../roundup/mailgw.py:583
 msgid ""
 "\n"
 "Emails to Roundup trackers must include a Subject: line!\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:664
+#: ../roundup/mailgw.py:673
 #, python-format
 msgid ""
 "\n"
@@ -1354,7 +1354,7 @@ msgid ""
 "Subject was: '%(subject)s'\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:695
+#: ../roundup/mailgw.py:704
 #, python-format
 msgid ""
 "\n"
@@ -1366,7 +1366,7 @@ msgid ""
 "Subject was: \"%(subject)s\"\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:730
+#: ../roundup/mailgw.py:739
 #, python-format
 msgid ""
 "\n"
@@ -1377,7 +1377,7 @@ msgid ""
 "Subject was: \"%(subject)s\"\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:763
+#: ../roundup/mailgw.py:772
 #, python-format
 msgid ""
 "\n"
@@ -1387,7 +1387,7 @@ msgid ""
 "Subject was: \"%(subject)s\"\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:791
+#: ../roundup/mailgw.py:800
 #, python-format
 msgid ""
 "\n"
@@ -1396,7 +1396,7 @@ msgid ""
 "  %(current_class)s\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:814
+#: ../roundup/mailgw.py:823
 #, python-format
 msgid ""
 "\n"
@@ -1405,7 +1405,7 @@ msgid ""
 "  %(errors)s\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:844
+#: ../roundup/mailgw.py:853
 #, python-format
 msgid ""
 "\n"
@@ -1414,21 +1414,21 @@ msgid ""
 "Unknown address: %(from_address)s\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:852
+#: ../roundup/mailgw.py:861
 msgid "You are not permitted to access this tracker."
 msgstr ""
 
-#: ../roundup/mailgw.py:859
+#: ../roundup/mailgw.py:868
 #, python-format
 msgid "You are not permitted to edit %(classname)s."
 msgstr ""
 
-#: ../roundup/mailgw.py:863
+#: ../roundup/mailgw.py:872
 #, python-format
 msgid "You are not permitted to create %(classname)s."
 msgstr ""
 
-#: ../roundup/mailgw.py:910
+#: ../roundup/mailgw.py:919
 #, python-format
 msgid ""
 "\n"
@@ -1438,27 +1438,27 @@ msgid ""
 "Subject was: \"%(subject)s\"\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:938
+#: ../roundup/mailgw.py:947
 msgid ""
 "\n"
 "Roundup requires the submission to be plain text. The message parser could\n"
 "not find a text/plain part to use.\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:960
+#: ../roundup/mailgw.py:969
 msgid "You are not permitted to create files."
 msgstr ""
 
-#: ../roundup/mailgw.py:974
+#: ../roundup/mailgw.py:983
 #, python-format
 msgid "You are not permitted to add files to %(classname)s."
 msgstr ""
 
-#: ../roundup/mailgw.py:992
+#: ../roundup/mailgw.py:1001
 msgid "You are not permitted to create messages."
 msgstr ""
 
-#: ../roundup/mailgw.py:1000
+#: ../roundup/mailgw.py:1009
 #, python-format
 msgid ""
 "\n"
@@ -1466,17 +1466,17 @@ msgid ""
 "%(error)s\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:1008
+#: ../roundup/mailgw.py:1017
 #, python-format
 msgid "You are not permitted to add messages to %(classname)s."
 msgstr ""
 
-#: ../roundup/mailgw.py:1035
+#: ../roundup/mailgw.py:1044
 #, python-format
 msgid "You are not permitted to edit property %(prop)s of class %(classname)s."
 msgstr ""
 
-#: ../roundup/mailgw.py:1043
+#: ../roundup/mailgw.py:1052
 #, python-format
 msgid ""
 "\n"
@@ -1484,7 +1484,7 @@ msgid ""
 "   %(message)s\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:1065
+#: ../roundup/mailgw.py:1074
 msgid "not of form [arg=value,value,...;arg=value,value,...]"
 msgstr ""
 
@@ -1630,6 +1630,10 @@ msgid ""
 " are both valid. The username and/or password will be prompted for if\n"
 " not supplied on the command-line.\n"
 "\n"
+"POPS:\n"
+" Connect to a POP server over ssl. This requires python 2.4 or later.\n"
+" This supports the same notation as POP.\n"
+"\n"
 "APOP:\n"
 " Same as POP, but using Authenticated POP:\n"
 "    apop username:password@server\n"
@@ -1649,19 +1653,23 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../roundup/scripts/roundup_mailgw.py:147
+#: ../roundup/scripts/roundup_mailgw.py:151
 msgid "Error: not enough source specification information"
 msgstr ""
 
-#: ../roundup/scripts/roundup_mailgw.py:163
-msgid "Error: pop specification not valid"
+#: ../roundup/scripts/roundup_mailgw.py:167
+msgid "Error: a later version of python is required"
 msgstr ""
 
 #: ../roundup/scripts/roundup_mailgw.py:170
+msgid "Error: pop specification not valid"
+msgstr ""
+
+#: ../roundup/scripts/roundup_mailgw.py:177
 msgid "Error: apop specification not valid"
 msgstr ""
 
-#: ../roundup/scripts/roundup_mailgw.py:184
+#: ../roundup/scripts/roundup_mailgw.py:189
 msgid ""
 "Error: The source must be either \"mailbox\", \"pop\", \"apop\", \"imap\" or "
 "\"imaps\""
@@ -1708,17 +1716,17 @@ msgstr ""
 msgid "User %(user)s doesn't exist"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:478
+#: ../roundup/scripts/roundup_server.py:481
 #, python-format
 msgid "Multiprocess mode \"%s\" is not available, switching to single-process"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:501
+#: ../roundup/scripts/roundup_server.py:504
 #, python-format
 msgid "Unable to bind to port %s, port already in use."
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:569
+#: ../roundup/scripts/roundup_server.py:572
 msgid ""
 " -c <Command>  Windows Service options.\n"
 "               If you want to run the server as a Windows Service, you\n"
@@ -1728,7 +1736,7 @@ msgid ""
 "               specifics."
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:576
+#: ../roundup/scripts/roundup_server.py:579
 msgid ""
 " -u <UID>      runs the Roundup web server as this UID\n"
 " -g <GID>      runs the Roundup web server as this GID\n"
@@ -1737,7 +1745,7 @@ msgid ""
 "               specified if -d is used."
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:583
+#: ../roundup/scripts/roundup_server.py:586
 #, python-format
 msgid ""
 "%(message)sUsage: roundup-server [options] [name=tracker home]*\n"
@@ -1792,20 +1800,20 @@ msgid ""
 "   any url-unsafe characters like spaces, as these confuse IE.\n"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:730
+#: ../roundup/scripts/roundup_server.py:741
 msgid "Instances must be name=home"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:744
+#: ../roundup/scripts/roundup_server.py:755
 #, python-format
 msgid "Configuration saved to %s"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:762
+#: ../roundup/scripts/roundup_server.py:773
 msgid "Sorry, you can't run the server as a daemon on this Operating System"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:774
+#: ../roundup/scripts/roundup_server.py:788
 #, python-format
 msgid "Roundup server started on %(HOST)s:%(PORT)s"
 msgstr ""
