@@ -16,7 +16,7 @@ from __future__ import nested_scopes
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.127 2006-11-10 11:03:42 a1s Exp $
+# $Id: roundupdb.py,v 1.128 2006-12-18 11:34:41 a1s Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -594,7 +594,8 @@ class IssueClass:
                 if '\n' in change:
                     value = self.indentChangeNoteValue(str(value))
                     oldvalue = self.indentChangeNoteValue(str(oldvalue))
-                    change = _('\nNow:\n%s\nWas:\n%s') % (value, oldvalue)
+                    change = _('\nNow:\n%(new)s\nWas:\n%(old)s') % {
+                        "new": value, "old": oldvalue}
             m.append('%s: %s'%(propname, change))
         if m:
             m.insert(0, '----------')
