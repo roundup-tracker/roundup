@@ -1,18 +1,19 @@
 # German message file for Roundup Issue Tracker
 # Tobias Herp <tobias.herp@gmx.de>, 2006
 # Initial work by Stefan Niederhauser <stefan.niederhauser@unibas.ch>, 2004.
+# updated by Toni Mueller <toni@debian.org>
 #
-# $Id: de.po,v 1.4 2006-09-18 01:14:23 tobias-herp Exp $
+# $Id: de.po,v 1.5 2006-12-18 03:51:44 richard Exp $
 #
 # roundup.pot revision 1.8
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Roundup 1.1.2\n"
+"Project-Id-Version: Roundup 1.2.1\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2004-12-08 10:25+0200\n"
-"PO-Revision-Date: 2006-09-18 02:54Westeuropäische Normalzeit\n"
-"Last-Translator: Tobias Herp <tobias.herp@gmx.de>\n"
+"PO-Revision-Date: 2006-10-07 22:45Westeuropäische Normalzeit\n"
+"Last-Translator: Toni Mueller <toni@debian.org>\n"
 "Language-Team: German Translators <roundup-devel@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-1\n"
@@ -42,7 +43,7 @@ msgstr ""
 "Problem: %(message)s\n"
 "\n"
 
-#: ../roundup/admin.py:112
+#: ../roundup/admin.py:113
 #, python-format
 msgid ""
 "%(message)sUsage: roundup-admin [options] [<command> <arguments>]\n"
@@ -73,7 +74,7 @@ msgstr ""
 "Optionen:\n"
 " -i <Instanzverzeichnis> -- Tracker-Instanz zur Administration auswählen\n"
 " -u                -- Benutzer[:Paßwort] für das Ausführen von Befehlen\n"
-" -d                -- Lange Bezeichner anzeigen statt Klassen-Ids\n"
+" -d                -- lange Bezeichner statt Klassen-Ids anzeigen\n"
 " -c                -- Komma-getrennte Listenausgabe (CSV).\n"
 "                      Analog zu '-S \",\"'.\n"
 " -S <Zeichenkette> -- Trennzeichen bei der Listenausgabe.\n"
@@ -88,7 +89,7 @@ msgstr ""
 " roundup-admin -h\n"
 " roundup-admin help                       -- diese Kurzhilfe anzeigen\n"
 " roundup-admin help <Befehl>              -- Hilfe zu einem Befehl anzeigen\n"
-" roundup-admin help all                   -- Sämtliche Hilfe anzeigen\n"
+" roundup-admin help all                   -- sämtliche Hilfen anzeigen\n"
 
 #: ../roundup/admin.py:137
 msgid "Commands:"
@@ -183,11 +184,11 @@ msgstr ""
 "   ausgegeben und können im vollständigen Format oder in einem Teilformat\n"
 "   eingeben werden (siehe unten).\n"
 " . Links zu anderen Einträgen werden mit dem Bezeichner dargestellt.\n"
-"   Bei der Eingabe wird entweder der Bezeichner, oder nur der Schlüssel\n"
+"   Bei der Eingabe wird entweder der Bezeichner oder nur der Schlüssel\n"
 "   angegeben.\n"
-" . Bei Mehrfach-Links werden die verlinkten Bezeichner mit Komma getrennt\n"
+" . Bei Mehrfach-Links werden die verlinkten Bezeichner mit Kommata getrennt\n"
 "   ausgegeben. Bei der Eingabe können Bezeichner oder Schlüssel\n"
-"   mit Kommas getrennt eingegeben werden.\n"
+"   mit Kommata getrennt eingegeben werden.\n"
 "\n"
 "Falls Eigenschaften Leerzeichen enthalten, müssen die Werte in\n"
 "\"Anführungszeichen\" eingeschlossen werden. Leerzeichen können auch mit\n"
@@ -249,7 +250,7 @@ msgstr ""
 "        commands  -- Befehle auflisten\n"
 "        <command> -- Hilfe zu einem bestimmten Befehl\n"
 "        initopts  -- Optionen zur Initialisierung\n"
-"        all       -- Sämtlichen Hilfetext anzeigen\n"
+"        all       -- sämtlichen Hilfetext anzeigen\n"
 "        "
 
 #: ../roundup/admin.py:265
@@ -299,11 +300,11 @@ msgstr ""
 "        (falls Sie keines mit TRACKER_HOME oder -i angegeben haben),\n"
 "        sowie eine Vorlage, den Datenbanktyp und das Administrations-\n"
 "        paßwort anzugeben.\n"
-"        Sie können die Vorlage, den Datenbanktyp und das Paßwort\n"
-"        auch in dieser Reihenfolge auf der Kommandozeile angegen.\n"
+"        Sie können auch die Vorlage, den Datenbanktyp und das Paßwort\n"
+"        in dieser Reihenfolge auf der Kommandozeile angegen.\n"
 "\n"
 "        Das letzte Argument erlaubt die Angabe von Konfigurations-Optionen.\n"
-"        So wird z. B. durch Angabe von\n"
+"        So wird zum Beispiel durch Angabe von\n"
 "           \"web_http_auth=no,rdbms_user=dinsdale\"\n"
 "        die Option http_auth in der Sektion [web] ausgeschaltet und der\n"
 "        Name des Datenbank-Benutzers in der Sektion [rdbms] geändert.\n"
@@ -357,7 +358,7 @@ msgstr "Datenbank auswählen [anydbm]"
 #, python-format
 msgid "Error in configuration settings: \"%s\""
 msgstr ""
-"Fehler in Konfiguration: \"%s\""
+"Fehler in der Konfiguration: \"%s\""
 
 #: ../roundup/admin.py:408
 #, python-format
@@ -408,7 +409,7 @@ msgid ""
 msgstr ""
 "Verwendung: genconfig <filename>\n"
 "        Schreibt eine neue Tracker-Konfiguration (im \".ini\"-Format) mit \n"
-"        Vorgabe-Werten in die Datei <filename>.\n"
+"        Standard-Werten in die Datei <filename>.\n"
 "        "
 
 #. password
@@ -432,7 +433,7 @@ msgstr ""
 
 #: ../roundup/admin.py:460
 msgid "Admin Password: "
-msgstr "Admin-Paßwort: "
+msgstr "Administrator-Paßwort: "
 
 #: ../roundup/admin.py:461
 msgid "       Confirm: "
@@ -492,8 +493,8 @@ msgstr ""
 #, python-format
 msgid "no such %(classname)s property \"%(propname)s\""
 msgstr ""
-"Die Eigenschaft \"%(propname)s\" ist nicht definiert für die Klasse \"%"
-"(classname)s\""
+"Die Eigenschaft \"%(propname)s\" ist für die Klasse \"%"
+"(classname)s\" nicht definiert"
 
 #: ../roundup/admin.py:569
 msgid ""
@@ -513,14 +514,14 @@ msgstr ""
 "Verwendung: set Einträge Eigenschaft=Wert Eigenschaft=Wert ...\n"
 "        Bearbeitet den Eigenschaftswert eines oder mehrerer Einträge.\n"
 "\n"
-"        Für \"Einträge\" können Sie eine Klasse angeben, oder eine Liste\n"
-"        von einem oder mehreren kommagetrennten Bezeichnern aufführen\n"
+"        Für \"Einträge\" können Sie eine Klasse angeben oder eine Liste\n"
+"        von einem oder mehreren mit Kommata getrennten Bezeichnern aufführen\n"
 "        (\"Bezeichner[,Bezeichner]*\").\n"
 "\n"
 "        Der Wert der Eigenschaft wird für alle angegebenen Einträge gesetzt.\n"
 "        Wenn der Wert fehlt (Eigenschaft=), wird die Eigenschaft gelöscht.\n"
 "        Wenn die Eigenschaft ein Link/Multilink ist, werden die verlinkten\n"
-"        Einträge als kommagetrennte ID-Nummern angegeben (\"1,2,3\").\n"
+"        Einträge als mit Kommata getrennte ID-Nummern angegeben (\"1,2,3\").\n"
 "        "
 
 #: ../roundup/admin.py:623
@@ -557,9 +558,9 @@ msgid ""
 "        "
 msgstr ""
 "Verwendung: specification Klassenname\n"
-"        Gibt die Spezifikation der Klasseneigenschaften aus.\n"
+"        Gibt die Attribute der Klasse aus.\n"
 "\n"
-"        Listet sämtliche Eigenschaften der Klasse auf.\n"
+"        Zeigt sämtliche Eigenschaften der Klasse auf.\n"
 "        "
 
 #: ../roundup/admin.py:696
@@ -584,8 +585,8 @@ msgstr ""
 "Verwendung: display Bezeichner[,Bezeichner]*\n"
 "        Zeigt alle Eigenschaften eines oder mehrerer Eintrage an.\n"
 "\n"
-"        Der Befehl listet sämtliche Eigenschaften und Ihre Werte des\n"
-"        Eintrags an.\n"
+"        Der Befehl zeigt die Eigenschaften und Ihre Werte des\n"
+"        gewählten Eintrags an.\n"
 "        "
 
 #: ../roundup/admin.py:725
@@ -607,7 +608,7 @@ msgstr ""
 "Verwendung: create Klassenname Eigenschaft=Wert ...\n"
 "        Erstellt einen neuen Eintrag der angegebenen Klasse.\n"
 "\n"
-"        Ein neuer Eintrag der Klasse wird erstellt und die Eigenschaften\n"
+"        Ein neuer Eintrag der Klasse wird erstellt, und die Eigenschaften\n"
 "        werden mit den Werten initialisiert\n"
 "        "
 
@@ -654,14 +655,13 @@ msgstr ""
 "        Listet sämtliche Einträge einer Klasse auf.\n"
 "\n"
 "        Es werden sämtliche Einträge der Klasse ausgegeben. Wird keine\n"
-"        Eigenschaft angegeben, so wird ein Bezeichner verwendet. Falls ein\n"
-"        Schlüsselfeld existiert, wird dieses ausgegeben, sonst ein Feld "
-"namens \n"
-"        \"name\" oder \"title\". Falls auch diese Felder nicht existieren, "
-"wird \n"
+"        Eigenschaft angegeben, so wird ein Bezeichner aus der folgenden\n"
+"        Liste generiert, mit absteigender Priorität:\n"
+"        Schlüsselfeld, ein Feld namens \"name\" oder \"title\". Falls\n"
+"        auch diese Felder nicht existieren, wird das \n"
 "        erste Feld alphabetisch sortiert angezeigt.\n"
 "\n"
-"        Mit den Optionen -c, -S or -s wird eine Liste von ID's ausgegeben,\n"
+"        Mit den Optionen -c, -S or -s wird eine Liste von IDs ausgegeben,\n"
 "        falls keine Eigenschaft angegeben wird. Sonst werden die Werte\n"
 "        dieser Eigenschaften sämtlicher Instanzen dieser Klasse "
 "aufgelistet.\n"
@@ -708,13 +708,13 @@ msgid ""
 "        "
 msgstr ""
 "Verwendung: table Klassenname [Eigenschaft[,Eigenschaft]*]\n"
-"        Listet die Einträge einer Klasse in tabelarischer Form.\n"
+"        Listet die Einträge einer Klasse in tabellarischer Form.\n"
 "\n"
-"        Gibt eine Liste sämtlicher Instanzen einer Klasse aus.\n"
+"        Dieser Befehl gibt eine Liste sämtlicher Instanzen einer Klasse aus.\n"
 "        Werden die Eigenschaften nicht explizit angegeben, so werden\n"
 "        alle angezeigt. Die Spaltenbreite wird automatisch nach dem \n"
 "        grössten Wert jeder Spalte berechnet, oder sie kann explizit\n"
-"        angegeben als \"Eigenschaft:Breite\"\n"
+"        als \"Eigenschaft:Breite\" angegeben werden.\n"
 "        Beispiel:\n"
 "\n"
 "          roundup> table priority id,name:10\n"
@@ -724,9 +724,8 @@ msgstr ""
 "          3  usability\n"
 "          4  feature\n"
 "\n"
-"        Um die Spaltenbreite auf die Grösse des Spaltentitels zu "
-"bechränken,\n"
-"        lassen Sie die Breitenangabe hinter dem : weg.\n"
+"        Um die Spaltenbreite auf die Grösse des Spaltentitels zu bechränken,\n"
+"        lassen Sie die Breitenangabe hinter dem Doppelpunkt weg.\n"
 "        Beispiel:\n"
 "\n"
 "          roundup> table priority id,name:\n"
@@ -776,8 +775,7 @@ msgstr ""
 "        Speichern der Datenbank-Änderungen.\n"
 "\n"
 "        Falls die Datenbank Transaktionen unterstützt, werden Änderungen\n"
-"        während einer Bearbeitungs-Session erst nach einem \"commit\" an "
-"die\n"
+"        während einer Bearbeitungs-Session erst nach einem \"commit\" an die\n"
 "        Datenbank übermittelt.\n"
 "\n"
 "        Einzelbefehle über die Kommandozeile werden sofort in die Datenbank\n"
@@ -892,8 +890,8 @@ msgstr ""
 "          In dieser Datei wird der Bearbeitungs-Verlauf der Einträge\n"
 "          beschrieben.\n"
 "\n"
-"        Importierte Einträge übernehmen die ID's, welche in den Dateien\n"
-"        definiert sind. Existierende Einträge mit denselben ID's werden\n"
+"        Importierte Einträge übernehmen die IDs, welche in den Dateien\n"
+"        definiert sind. Existierende Einträge mit denselben IDs werden\n"
 "        überschrieben.\n"
 "        Die Einträge werden in die existierende Datenbank geschrieben.\n"
 "        Falls eine neue, leere Datenbank verwendet werden soll, so müssen\n"
@@ -956,7 +954,7 @@ msgstr ""
 "Verwendung: reindex [Klasse|Bezeichner]*\n"
 "        Der Volltext-Index eines Trackers wird neu erstellt.\n"
 "\n"
-"        Der Volltext-Index wird neu generiert. Dieser Prozeß geschieht \n"
+"        Der Volltext-Index wird neu generiert. Dies geschieht \n"
 "        normalerweise automatisch.\n"
 "        "
 
@@ -1008,7 +1006,7 @@ msgstr "Rolle \"%(name)s\":"
 #: ../roundup/admin.py:1280
 #, python-format
 msgid " %(description)s (%(name)s for \"%(klass)s\": %(properties)s only)"
-msgstr ""
+msgstr " %(description)s (%(name)s für \"%(klass)s\": ausschließlich %(properties)s)"
 
 #: ../roundup/admin.py:1241
 #, python-format
@@ -1081,7 +1079,7 @@ msgstr "erstellt"
 
 #: ../roundup/backends/rdbms_common.py:1588
 msgid "unlink"
-msgstr "link gelöscht"
+msgstr "Link gelöscht"
 
 #: ../roundup/backends/rdbms_common.py:1592
 msgid "link"
@@ -1103,8 +1101,8 @@ msgstr "wiederhergestellt"
 #, python-format
 msgid "You do not have permission to %(action)s the %(classname)s class."
 msgstr ""
-"Sie sind nicht berechtigt, die Aktion %(action)s auf die Klasse%"
-"(classname)s anzuwenden."
+"Sie sind nicht berechtigt, die Aktion(en) %(action)s auf die Klasse"
+" %(classname)s anzuwenden."
 
 #: ../roundup/cgi/actions.py:89
 msgid "No type specified"
@@ -1112,7 +1110,7 @@ msgstr "Typ nicht spezifiziert"
 
 #: ../roundup/cgi/actions.py:91
 msgid "No ID entered"
-msgstr "Keine ID spezifiziert"
+msgstr "keine ID spezifiziert"
 
 #: ../roundup/cgi/actions.py:97
 #, python-format
@@ -1131,17 +1129,17 @@ msgstr "%(classname)s %(itemid)s wurde gelöscht"
 # ../roundup/cgi/actions.py:174 :202
 #: ../roundup/cgi/actions.py:174 ../roundup/cgi/actions.py:202
 msgid "You do not have permission to edit queries"
-msgstr ""
+msgstr "Sie haben keine Berechtigung, Abfragen zu bearbeiten."
 
 # ../roundup/cgi/actions.py:180 :209
 #: ../roundup/cgi/actions.py:180 ../roundup/cgi/actions.py:209
 msgid "You do not have permission to store queries"
-msgstr ""
+msgstr "Sie haben keine Berechtigung, Abfragen zu speichern."
 
 #: ../roundup/cgi/actions.py:279
 #, python-format
 msgid "Not enough values on line %(line)s"
-msgstr "Nicht genügend Werte auf Zeile %(line)s"
+msgstr "Nicht genügend Werte in Zeile %(line)s"
 
 #: ../roundup/cgi/actions.py:326
 msgid "Items edited OK"
@@ -1186,8 +1184,8 @@ msgid ""
 "Edit Error: someone else has edited this %s (%s). View <a target=\"new\" href="
 "\"%s%s\">their changes</a> in a new window."
 msgstr ""
-"Fehler: jemand anders hat dieses %s bearbeitet (%s). Sehen Sie "
-"<a target=\"new\" href=\"%s%s\">dessen Änderungen</a> in einem neuen Fenster."
+"Fehler: Jemand anders hat dieses %s bearbeitet (%s). Sehen Sie "
+"<a target=\"_new\" href=\"%s%s\">dessen Änderungen</a> in einem neuen Fenster."
 
 #: ../roundup/cgi/actions.py:530
 #, python-format
@@ -1251,11 +1249,11 @@ msgstr "Benutzername notwendig"
 
 #: ../roundup/cgi/actions.py:873 ../roundup/cgi/actions.py:877
 msgid "Invalid login"
-msgstr "Ungültiges Login"
+msgstr "Ungültiger Benutzername"
 
 #: ../roundup/cgi/actions.py:883
 msgid "You do not have permission to login"
-msgstr "Sie sind nicht berechtigt sich anzumelden"
+msgstr "Sie sind nicht berechtigt, sich anzumelden"
 
 #: ../roundup/cgi/cgitb.py:49
 #, python-format
@@ -1264,7 +1262,7 @@ msgid ""
 "<p><b>%(exc_type)s</b>: %(exc_value)s</p>\n"
 "<p class=\"help\">Debugging information follows</p>"
 msgstr ""
-"<h1>Templating-Fehler</h1>\n"
+"<h1>Fehler in einer Vorlage:</h1>\n"
 "<p><b>%(exc_type)s</b>: %(exc_value)s</p>\n"
 "<p class=\"help\">Es folgen Informationen zum Fehler:</p>"
 
@@ -1286,7 +1284,7 @@ msgstr "<li>In %s</li>"
 #: ../roundup/cgi/cgitb.py:76
 #, python-format
 msgid "A problem occurred in your template \"%s\"."
-msgstr "Ein Problem ist im Template \"%s\" aufgetreten."
+msgstr "Ein Problem ist in der Vorlage \"%s\" aufgetreten."
 
 #: ../roundup/cgi/cgitb.py:84
 #, python-format
@@ -1425,7 +1423,7 @@ msgstr[0] ""
 "Die Eigenschaft \"%(property)s\" muß für die Klasse \"%(class)s\" angegeben "
 "werden"
 msgstr[1] ""
-"Die Eigenschaften \"%(property)s\" müssen für die Klasse \"%(class)s\" "
+"Die Eigenschaften \"%(property)\" müssen für die Klasse \"%(class)s\" "
 "angegeben werden"
 
 #: ../roundup/cgi/form_parser.py:529
@@ -2104,7 +2102,7 @@ msgstr "Die Gruppe %(group)s existiert nicht"
 
 #: ../roundup/scripts/roundup_server.py:278
 msgid "Can't run as root!"
-msgstr "Dieser Prozeß kann nicht unter dem Administrator (\"root\") laufen!"
+msgstr "Dieser Prozeß kann nicht unter dem Administrator-Konto (\"root\") laufen!"
 
 #: ../roundup/scripts/roundup_server.py:281
 msgid "WARNING: ignoring \"-u\" argument, not root"
@@ -2158,7 +2156,7 @@ msgstr ""
 " -u <UID>      Startet den Roundup-Server mit dieser Benutzer-Nummer\n"
 " -g <GID>      Startet den Roundup-Server mit dieser Gruppen-Nummer\n"
 " -d <PIDDatei> Startet den Server als Hintergrundprozeß und schreibt\n"
-"               die Prozeß-ID in die Datei PIDDatei\n"
+"               die Prozeß-ID in die Datei PIDDatei.\n"
 "               Die Option -l muß dann auch angegeben werden."
 
 #: ../roundup/scripts/roundup_server.py:521
@@ -2390,9 +2388,9 @@ msgstr ""
 "<p class=\"form-help\">Sie können hier die Einträge der Klasse \"${classname}\" "
 "bearbeiten. <strong>Hinweise:</strong></p>"
 "<ul>"
-"<li> Kommas, Zeilenumbrüche und "
+"<li> Kommata, Zeilenumbrüche und "
 "Anführungszeichen (\") mit Vorsicht verwenden:"
-"<ul><li> Kommas und Zeilenumbrüche "
+"<ul><li> Kommata und Zeilenumbrüche "
 "dürfen nur in Anführungszeichen (\") verwendet werden."
 "<li> Um Anführungszeichen in "
 "Werten zu verwenden, müssen sie verdoppelt werden (<q><tt>\"\"</tt></q>)</ul>"
@@ -2645,7 +2643,7 @@ msgstr "Typ"
 #: ../templates/classic/html/issue.item.html:123
 #: ../templates/classic/html/query.edit.html:30
 msgid "Edit"
-msgstr "Bearbeiten"
+msgstr "bearbeiten"
 
 #: ../templates/classic/html/issue.item.html:124
 msgid "Remove"
@@ -2688,15 +2686,15 @@ msgstr "Filtern"
 
 #: ../templates/classic/html/issue.search.html:26
 msgid "Display"
-msgstr "Anzeigen"
+msgstr "anzeigen"
 
 #: ../templates/classic/html/issue.search.html:27
 msgid "Sort on"
-msgstr "Sortieren"
+msgstr "sortieren"
 
 #: ../templates/classic/html/issue.search.html:28
 msgid "Group on"
-msgstr "Gruppieren"
+msgstr "gruppieren"
 
 #: ../templates/classic/html/issue.search.html:32
 msgid "All text*:"
@@ -2901,15 +2899,15 @@ msgstr "Aufgaben"
 #: ../templates/classic/html/page.html:41
 #: ../templates/classic/html/page.html:60
 msgid "Create New"
-msgstr "Neuer Eintrag"
+msgstr "neuer Eintrag"
 
 #: ../templates/classic/html/page.html:43
 msgid "Show Unassigned"
-msgstr "Nicht zugewiesen"
+msgstr "nicht zugewiesen"
 
 #: ../templates/classic/html/page.html:45
 msgid "Show All"
-msgstr "Alle anzeigen"
+msgstr "alle anzeigen"
 
 #: ../templates/classic/html/page.html:48
 msgid "Show issue:"
@@ -2922,7 +2920,7 @@ msgstr "Schlagwörter"
 
 #: ../templates/classic/html/page.html:64
 msgid "Edit Existing"
-msgstr "Bearbeiten"
+msgstr "bearbeiten"
 
 #: ../templates/classic/html/page.html:70
 #: ../templates/minimal/html/page.html:48
@@ -2948,19 +2946,19 @@ msgstr "Benutzer hinzufügen"
 #: ../templates/classic/html/page.html:89
 #: ../templates/minimal/html/page.html:30
 msgid "Login"
-msgstr "Anmelden"
+msgstr "anmelden"
 
 #: ../templates/classic/html/page.html:104
 #: ../templates/minimal/html/page.html:45
 msgid "Remember me?"
-msgstr "Dauerhaft anmelden?"
+msgstr "dauerhaft anmelden?"
 
 #: ../templates/classic/html/page.html:108
 #: ../templates/classic/html/user.register.html:63
 #: ../templates/minimal/html/page.html:50
 #: ../templates/minimal/html/user.register.html:58
 msgid "Register"
-msgstr "Registrieren"
+msgstr "registrieren"
 
 #: ../templates/classic/html/page.html:94
 msgid "Lost&nbsp;your&nbsp;login?"
@@ -2982,7 +2980,7 @@ msgstr "Ihr Konto"
 #: ../templates/classic/html/page.html:104
 #: ../templates/minimal/html/page.html:42
 msgid "Logout"
-msgstr "Abmelden"
+msgstr "abmelden"
 
 #: ../templates/classic/html/page.html:108
 msgid "Help"
@@ -3219,7 +3217,7 @@ msgstr "Rollen"
 #: ../templates/minimal/html/user.item.html:58
 msgid "(to give the user more than one role, enter a comma,separated,list)"
 msgstr ""
-"<tt>Verwenden,Sie,Kommas</tt>, um einem Benutzer mehrere Rollen zuzuteilen"
+"<tt>Verwenden,Sie,Kommata</tt>, um einem Benutzer mehrere Rollen zuzuteilen"
 
 #: ../templates/classic/html/user.item.html:61
 #: ../templates/classic/html/user.register.html:41
@@ -3308,7 +3306,7 @@ msgstr "Kopie von %(class)s%(id)s"
 
 #: ../templates/classic/html/...:123
 msgid "No Sort or group"
-msgstr "Nicht sortieren/gruppieren"
+msgstr "nicht sortieren/gruppieren"
 
 #: ../templates/classic/html/issue.search.html:170
 msgid "sort descending"
@@ -3328,11 +3326,11 @@ msgstr "nicht gruppieren"
 
 #: ../templates/classic(th)/html/issue.search.html:XXX
 msgid "Sort/Group Descending:"
-msgstr "Absteigend sortieren/gruppieren:"
+msgstr "absteigend sortieren/gruppieren:"
 
 #: ../templates/classic(th)/html/issue.search.html:XXX
 msgid "Paged Output:"
-msgstr "Seitenweise ausgeben:"
+msgstr "seitenweise ausgeben:"
 
 #: ../templates/classic(th)/html/issue.search.html:XXX
 msgid "Pagesize"
