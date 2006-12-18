@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.37 2006-12-11 23:36:15 richard Exp $
+# $Id: configuration.py,v 1.38 2006-12-18 03:53:39 richard Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -482,6 +482,8 @@ SETTINGS = (
         (TimezoneOption, "timezone", "UTC", "Default timezone offset,"
             " applied when user's timezone is not set.",
             ["DEFAULT_TIMEZONE"]),
+	(BooleanOption, "nodaemon", "no",
+	    "don't fork (this overrides the pidfile automatism).'"),
         (BooleanOption, "instant_registration", "no",
             "Register new users instantly, or require confirmation via\n"
             "email?"),

@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.85 2006-11-09 00:36:21 richard Exp $
+$Id: roundup_server.py,v 1.86 2006-12-18 03:53:39 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -378,6 +378,8 @@ class ServerConfig(configuration.Config):
                 "In order to use this option, "
                 "the server must be run initially as root.\n"
                 "Availability: Unix."),
+	    (configuration.BooleanOption, "nodaemon", "no",
+		"don't fork (this overrides the pidfile mechanism)'"),
             (configuration.BooleanOption, "log_hostnames", "no",
                 "Log client machine names instead of IP addresses "
                 "(much slower)"),
@@ -408,6 +410,7 @@ class ServerConfig(configuration.Config):
         "user": "u:",
         "logfile": "l:",
         "pidfile": "d:",
+        "nodaemon": "D",
         "log_hostnames": "N",
         "multiprocess": "t:",
     }
@@ -638,6 +641,14 @@ How to use "name=tracker home":
 }
 
 
+def writepidfile(pidfile):
+    ''' Write a pidfile (only). Do not daemonize. '''
+    pid = os.getpid()
+    if pid:
+	pidfile = open(pidfile, 'w')
+	pidfile.write(str(pid))
+	pidfile.close()
+
 def daemonize(pidfile):
     ''' Turn this process into a daemon.
         - make sure the sys.std(in|out|err) are completely cut off
@@ -763,7 +774,10 @@ def run(port=undefined, success_message=None):
                 " on this Operating System")
             sys.exit(0)
         else:
-            daemonize(config["PIDFILE"])
+	    if config['NODAEMON']:
+		writepidfile(config["PIDFILE"])
+	    else:
+		daemonize(config["PIDFILE"])
 
     # create the server
     httpd = config.get_server()
