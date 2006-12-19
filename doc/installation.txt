@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.120 $
+:Version: $Revision: 1.121 $
 
 .. contents::
    :depth: 2
@@ -285,6 +285,9 @@ mysql      Fast        Many  Needs install/admin (MySQLdb_)
 
   SQLite is supported via PySQLite versions 1.1.7, 2.1.0 and sqlite3 (the last
   being bundled with Python 2.5+)
+
+  Installed SQLite should be the latest version available (3.3.8 is known
+  to work, 3.1.3 is known to have problems).
 **metakit**
   Similar performance to sqlite. If you are choosing between these two,
   please select sqlite.

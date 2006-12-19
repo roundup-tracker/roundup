@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.49 2006-11-11 03:21:12 richard Exp $
+# $Id: back_sqlite.py,v 1.50 2006-12-19 03:01:37 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -20,6 +20,9 @@ try:
 except ImportError:
     try:
         from pysqlite2 import dbapi2 as sqlite
+        if sqlite.version_info < (2,1,0):
+            raise ValueError('pysqlite2 minimum version is 2.1.0+ '
+                '- %s found'%sqlite.version)
         sqlite_version = 2
     except ImportError:
         import sqlite3 as sqlite
