@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: date.py,v 1.88 2006-09-09 05:50:17 richard Exp $
+# $Id: date.py,v 1.89 2006-12-28 22:38:02 richard Exp $
 
 """Date, time and time interval handling.
 """
@@ -278,6 +278,7 @@ class Date:
                 self.second = _local_to_utc(y, m, d, H, M, S, offset)
             # we lost the fractional part
             self.second = self.second + frac
+            if str(self.second) == '60.0': self.second = 59.9
         except:
             raise ValueError, 'Unknown spec %r' % (spec,)
 
@@ -313,6 +314,7 @@ class Date:
         y,m,d,H,M,S,x,x,x = time.gmtime(ts)
         # gmtime loses the fractional seconds
         S = S + frac
+        if str(S) == '60.0': S = 59.9
 
         # whether we need to convert to UTC
         adjust = False
@@ -355,6 +357,7 @@ class Date:
             self.second = y, m, d, H, M, S
         # we lost the fractional part along the way
         self.second = self.second + frac
+        if str(self.second) == '60.0': self.second = 59.9
 
         if info.get('o', None):
             try:
