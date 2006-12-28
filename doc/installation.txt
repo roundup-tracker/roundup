@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.121 $
+:Version: $Revision: 1.122 $
 
 .. contents::
    :depth: 2
@@ -467,7 +467,8 @@ directives:
 In the following example we have two trackers set up in
 ``/var/db/roundup/support`` and ``/var/db/roundup/devel`` and accessed
 as ``https://my.host/roundup/support/`` and ``https://my.host/roundup/devel/``
-respectively.  Having them share same parent directory allows us to
+respectively (provided Apache has been set up for SSL of course).
+Having them share same parent directory allows us to
 reduce the number of configuration directives.  Support tracker has
 russian user interface.  The other tracker (devel) has english user
 interface (default).
@@ -510,6 +511,29 @@ Example mod_python configuration::
     <Directory /var/db/roundup/devel>
       PythonOption TrackerHome /var/db/roundup/devel
     </Directory>
+    
+Notice that the ``/var/db/roundup`` path shown above refer to the directory
+in which the tracker homes are stored. The actual value will thus depend on
+your system.
+ 
+On Windows the corresponding lines will look similar to these::
+
+    AliasMatch /roundup/(.+)/@@file/(.*) C:/DATA/roundup/$1/html/$2
+    AliasMatch /roundup/([^/]+)/(?!@@file/)(.*) C:/DATA/roundup/$1/dummy.py/$2
+    <Directory C:/DATA/roundup/*>
+    <Directory C:/DATA/roundup/support>
+    <Directory C:/DATA/roundup/devel>
+
+In this example the directory hosting all of the tracker homes is
+``C:\DATA\roundup`` (Notice that you must use forward slashes in paths
+inside the httpd.conf file!)
+
+The URL for accessing these trackers then become:
+`http://<roundupserver>/roundup/support/`` and
+``http://<roundupserver>/roundup/devel/``
+
+Note that in order to use https connections you must set up Apache for secure
+serving with SSL.
 
 WSGI Handler
 ~~~~~~~~~~~~
@@ -836,26 +860,87 @@ I do not believe this is possible to do in previous versions of Windows.
 Windows Server
 --------------
 
-To have the Roundup web server start up when your machine boots up, set the
-following up in Scheduled Tasks (note, the following is for a cygwin setup):
+To have the Roundup web server start up when your machine boots up, there
+are two different methods, the scheduler and installing the service.
 
-Run
- ``c:\cygwin\bin\bash.exe -c "roundup-server TheProject=/opt/roundup/trackers/support"``
-Start In
- ``C:\cygwin\opt\roundup\bin``
-Schedule
- At System Startup
+
+1. Using the Windows scheduler
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Set up the following in Scheduled Tasks (note, the following is for a
+cygwin setup):
+
+**Run**
+
+    ``c:\cygwin\bin\bash.exe -c "roundup-server TheProject=/opt/roundup/trackers/support"``
+
+**Start In**
+
+    ``C:\cygwin\opt\roundup\bin``
+
+**Schedule**
+
+    At System Startup
 
 To have the Roundup mail gateway run periodically to poll a POP email address,
-set the following up in Scheduled Tasks:
+set up the following in Scheduled Tasks:
 
-Run
- ``c:\cygwin\bin\bash.exe -c "roundup-mailgw /opt/roundup/trackers/support pop roundup:roundup@mail-server"``
-Start In
- ``C:\cygwin\opt\roundup\bin``
-Schedule
- Every 10 minutes from 5:00AM for 24 hours every day
- Stop the task if it runs for 8 minutes
+**Run**
+
+    ``c:\cygwin\bin\bash.exe -c "roundup-mailgw /opt/roundup/trackers/support pop roundup:roundup@mail-server"``
+
+**Start In**
+
+    ``C:\cygwin\opt\roundup\bin``
+
+**Schedule**
+
+    Every 10 minutes from 5:00AM for 24 hours every day
+
+    Stop the task if it runs for 8 minutes
+
+
+2. Installing the roundup server as a Windows service
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is more Windows oriented and will make the Roundup server run as
+soon as the PC starts up without any need for a login or such. It will
+also be available in the normal Windows Administrative Tools.
+
+For this you need first to create a service ini file containing the
+relevant settings.
+
+1. It is created if you execute the following command from within the
+   scripts directory (notice the use of backslashes)::
+
+     roundup-server -S -C <trackersdir>\server.ini -n <servername> -p 8080 -l <trackersdir>\trackerlog.log software=<trackersdir>\Software
+
+   where the item ``<trackersdir>`` is replaced with the physical directory
+   that hosts all of your trackers. The ``<servername>`` item is the name
+   of your roundup server PC, such as w2003srv or similar.
+
+2. Next open the now created file ``C:\DATA\roundup\server.ini`` file
+   (if your ``<trackersdir>`` is ``C:\DATA\roundup``).
+   Check the entries for correctness, especially this one::
+
+    [trackers]
+    software = C:\DATA\Roundup\Software
+
+   (this is an example where the tracker is named software and its home is
+   ``C:\DATA\Roundup\Software``)
+
+3. Next give the commands that actually installs and starts the service::
+
+    roundup-server -C C:\DATA\Roundup\server.ini -c install
+    roundup-server -c start
+
+4. Finally open the AdministrativeTools/Services applet and locate the
+   Roundup service entry. Open its properties and change it to start
+   automatically instead of manually.
+
+If you are using Apache as the webserver you might want to use it with
+mod_python instead to serve out Roundup. In that case see the mod_python
+instructions above for details.
 
 
 Sendmail smrsh
