@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.215 $
+:Version: $Revision: 1.216 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2925,8 +2925,7 @@ caches the schema).
 
 5. if you wish for the due date to appear in the standard views listed
     in the sidebar of the web interface then you'll need to add "due_date"
-    to the list of @columns in the links in the sidebar section of
-    ``page.html``.
+    to the columns and columns_showall lists in your ``page.html``.
 
 
 Adding a new constrained field to the classic schema
@@ -4067,16 +4066,33 @@ resolved. To achieve this:
    example, the existing "Show All" link in the "page" template (in the
    tracker's "html" directory) looks like this::
 
-     <a href="issue?@sort=-activity&@group=priority&@filter=status&
-        @columns=id,activity,title,creator,assignedto,status&
-        status=-1,1,2,3,4,5,6,7">Show All</a><br>
+    <a href="#"
+       tal:attributes="href python:request.indexargs_url('issue', {
+      '@sort': '-activity',
+      '@group': 'priority',
+      '@filter': 'status',
+      '@columns': columns_showall,
+      '@search_text': '',
+      'status': status_notresolved,
+      '@dispname': i18n.gettext('Show All'),
+     })"
+       i18n:translate="">Show All</a><br>
 
    modify it to add the "blockers" info to the URL (note, both the
    "@filter" *and* "blockers" values must be specified)::
 
-     <a href="issue?@sort=-activity&@group=priority&@filter=status,blockers&
-        blockers=-1&@columns=id,activity,title,creator,assignedto,status&
-        status=-1,1,2,3,4,5,6,7">Show All</a><br>
+    <a href="#"
+       tal:attributes="href python:request.indexargs_url('issue', {
+      '@sort': '-activity',
+      '@group': 'priority',
+      '@filter': 'status,blockers',
+      '@columns': columns_showall,
+      '@search_text': '',
+      'status': status_notresolved,
+      'blockers': '-1',
+      '@dispname': i18n.gettext('Show All'),
+     })"
+       i18n:translate="">Show All</a><br>
 
    The above examples are line-wrapped on the trailing & and should
    be unwrapped.

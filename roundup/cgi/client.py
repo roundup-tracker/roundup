@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.229 2006-11-15 06:27:15 a1s Exp $
+# $Id: client.py,v 1.230 2006-12-28 22:08:45 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -727,7 +727,7 @@ class Client:
             ims = self.env['HTTP_IF_MODIFIED_SINCE']
         if ims:
             ims = rfc822.parsedate(ims)[:6]
-            lmtt = time.gmtime(lmt)[:6]
+            lmtt = time.gmtime(ims)[:6]
             if lmtt <= ims:
                 raise NotModified
 
