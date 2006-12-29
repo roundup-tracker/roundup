@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.230 2006-12-28 22:08:45 richard Exp $
+# $Id: client.py,v 1.231 2006-12-29 08:00:21 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -714,8 +714,7 @@ class Client:
         # spit out headers
         self.additional_headers['Content-Type'] = mime_type
         self.additional_headers['Content-Length'] = str(len(content))
-        lmt = rfc822.formatdate(lmt)
-        self.additional_headers['Last-Modified'] = lmt
+        self.additional_headers['Last-Modified'] = rfc822.formatdate(lmt)
 
         ims = None
         # see if there's an if-modified-since...
@@ -727,7 +726,7 @@ class Client:
             ims = self.env['HTTP_IF_MODIFIED_SINCE']
         if ims:
             ims = rfc822.parsedate(ims)[:6]
-            lmtt = time.gmtime(ims)[:6]
+            lmtt = time.gmtime(lmt)[:6]
             if lmtt <= ims:
                 raise NotModified
 
