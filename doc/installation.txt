@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.122 $
+:Version: $Revision: 1.123 $
 
 .. contents::
    :depth: 2
@@ -343,7 +343,7 @@ for the cgi to work (it turns on the PATH_INFO cgi variable)::
 
     adsutil.vbs set w3svc/AllowPathInfoForScriptMappings TRUE
 
-The ``adsutil.vbs`` file can be found in either ``c:\inetpub\adminscripts`` 
+The ``adsutil.vbs`` file can be found in either ``c:\inetpub\adminscripts``
 or ``c:\winnt\system32\inetsrv\adminsamples\`` or
 ``c:\winnt\system32\inetsrv\adminscripts\`` depending on your installation.
 
@@ -373,7 +373,7 @@ If you're using Apache, you can use an additional trick to hide the
 ``.cgi`` extension of the cgi script. Place the ``roundup.cgi`` script
 wherever you want it to be, rename it to just ``roundup``, and add a
 couple lines to your Apache configuration::
- 
+
  <Location /path/to/roundup>
    SetHandler cgi-script
  </Location>
@@ -511,11 +511,11 @@ Example mod_python configuration::
     <Directory /var/db/roundup/devel>
       PythonOption TrackerHome /var/db/roundup/devel
     </Directory>
-    
+
 Notice that the ``/var/db/roundup`` path shown above refer to the directory
 in which the tracker homes are stored. The actual value will thus depend on
 your system.
- 
+
 On Windows the corresponding lines will look similar to these::
 
     AliasMatch /roundup/(.+)/@@file/(.*) C:/DATA/roundup/$1/html/$2
@@ -525,7 +525,7 @@ On Windows the corresponding lines will look similar to these::
     <Directory C:/DATA/roundup/devel>
 
 In this example the directory hosting all of the tracker homes is
-``C:\DATA\roundup`` (Notice that you must use forward slashes in paths
+``C:\DATA\roundup``. (Notice that you must use forward slashes in paths
 inside the httpd.conf file!)
 
 The URL for accessing these trackers then become:
@@ -567,7 +567,7 @@ There are five supported ways to get emailed issues into the
 Roundup tracker.  You should pick ONE of the following, all
 of which will continue my example setup from above:
 
-As a mail alias pipe process 
+As a mail alias pipe process
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Set up a mail alias called "issue_tracker" as (include the quote marks):
@@ -580,7 +580,7 @@ symlink ``/etc/smrsh/roundup-mailgw`` to "``/usr/bin/roundup-mailgw``"
 and change the command to::
 
     |roundup-mailgw /opt/roundup/trackers/support
- 
+
 To test the mail gateway on unix systems, try::
 
     echo test |mail -s '[issue] test' support@YOUR_DOMAIN_HERE
@@ -622,7 +622,7 @@ The matching is done in the line::
   require_files = /usr/bin/roundup-mailgw:ROUNDUP_HOME/$local_part/schema.py
 
 The following configuration has been tested on Debian Sarge with
-Exim4. 
+Exim4.
 
 .. note::
   Note that the Debian Exim4 packages don't allow pipes in alias files
