@@ -1,7 +1,7 @@
 # Lithuanian message file for Roundup Issue Tracker
 # Aiste Kesminaite <aiste@pov.lt>, 2005
 #
-# $Id: lt.po,v 1.7 2006-11-23 05:23:26 a1s Exp $
+# $Id: lt.po,v 1.8 2007-01-04 17:14:29 a1s Exp $
 #
 # roundup.pot revision 1.20
 #
@@ -2947,7 +2947,7 @@ msgstr "Paieška"
 
 #: ../templates/classic/html/issue.search.html:215
 msgid "*: The \"all text\" field will look in message bodies and issue titles"
-msgstr "*: Laukas „visas tekstas“ iššoks pranešimų tekste ir kreipinių pavadinimuose"
+msgstr "*: Laukas „visas tekstas“ ieškos pranešimų tekste ir kreipinių pavadinimuose"
 
 #: ../templates/classic/html/issue.search.html:218
 msgid "**: If you supply a name, the query will be saved off and available as a link in the sidebar"
