@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.105 2006-08-11 05:13:06 richard Exp $
+# $Id: admin.py,v 1.106 2007-01-10 18:17:47 schlatterbeck Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -1110,10 +1110,7 @@ Erase it? Y/N: """))
             # all nodes for this class
             for nodeid in cl.getnodeids():
                 if self.verbose:
-                    sys.stdout.write('Exporting %s - %s\r'%(classname, nodeid))
-                    sys.stdout.flush()
-                if self.verbose:
-                    sys.stdout.write('Exporting %s - %s\r'%(classname, nodeid))
+                    sys.stdout.write('\rExporting %s - %s'%(classname, nodeid))
                     sys.stdout.flush()
                 writer.writerow(cl.export_list(propnames, nodeid))
                 if export_files and hasattr(cl, 'export_files'):
@@ -1198,7 +1195,7 @@ Erase it? Y/N: """))
                     continue
 
                 if self.verbose:
-                    sys.stdout.write('Importing %s - %s\r'%(classname, n))
+                    sys.stdout.write('\rImporting %s - %s'%(classname, n))
                     sys.stdout.flush()
 
                 # do the import and figure the current highest nodeid
