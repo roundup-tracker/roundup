@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.62 2006-08-11 05:41:32 richard Exp $
+#$Id: actions.py,v 1.63 2007-01-10 20:16:17 schlatterbeck Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random, csv, codecs
 
@@ -150,19 +150,14 @@ class SearchAction(Action):
         queryname = self.getQueryName()
     
         # editing existing query name?
-        old_queryname = ''
-        for key in ('@old-queryname', ':old-queryname'):
-            if self.form.has_key(key):
-                old_queryname = self.form[key].value.strip()
+        old_queryname = self.getFromForm('old-queryname')
 
         # handle saving the query params
         if queryname:
             # parse the environment and figure what the query _is_
             req = templating.HTMLRequest(self.client)
 
-            # The [1:] strips off the '?' character, it isn't part of the
-            # query string.
-            url = req.indexargs_url('', {})[1:]
+            url = self.getCurrentURL(req)
 
             key = self.db.query.getkey()
             if key:
@@ -247,11 +242,25 @@ class SearchAction(Action):
 
             self.form.value.append(cgi.MiniFieldStorage('@filter', key))
 
-    def getQueryName(self):
-        for key in ('@queryname', ':queryname'):
+    def getCurrentURL(self, req):
+        """Get current URL for storing as a query.
+        The [1:] strips off the '?' character, it isn't part of the
+        query string.
+        But maybe the template should be part of the stored query:
+        template = self.getFromForm('template')
+        if template:
+            return req.indexargs_url('', {'@template' : template})[1:]
+        """
+        return req.indexargs_url('', {})[1:]
+
+    def getFromForm(self, name):
+        for key in ('@' + name, ':' + name):
             if self.form.has_key(key):
                 return self.form[key].value.strip()
         return ''
+
+    def getQueryName(self):
+        return self.getFromForm('queryname')
 
 class EditCSVAction(Action):
     name = 'edit'
