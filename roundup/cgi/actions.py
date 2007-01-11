@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.63 2007-01-10 20:16:17 schlatterbeck Exp $
+#$Id: actions.py,v 1.64 2007-01-11 07:34:02 schlatterbeck Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random, csv, codecs
 
@@ -244,8 +244,11 @@ class SearchAction(Action):
 
     def getCurrentURL(self, req):
         """Get current URL for storing as a query.
-        The [1:] strips off the '?' character, it isn't part of the
-        query string.
+
+        Note: We are removing the first character from the current URL,
+        because the leading '?' is not part of the query string.
+
+        Implementation note:
         But maybe the template should be part of the stored query:
         template = self.getFromForm('template')
         if template:
