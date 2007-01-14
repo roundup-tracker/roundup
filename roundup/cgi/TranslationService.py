@@ -13,8 +13,8 @@
 #   translate(domain, msgid, mapping, context, target_language, default)
 #
 
-__version__ = "$Revision: 1.3 $"[11:-2]
-__date__ = "$Date: 2006-12-02 23:41:28 $"[7:-2]
+__version__ = "$Revision: 1.4 $"[11:-2]
+__date__ = "$Date: 2007-01-14 22:54:15 $"[7:-2]
 
 from roundup import i18n
 from roundup.cgi.PageTemplates import Expressions, PathIterator, TALES
@@ -35,6 +35,8 @@ class TranslationServiceMixin:
         return _msg
 
     def gettext(self, msgid):
+        if not isinstance(msgid, unicode):
+            msgid = unicode(msgid, 'utf8')
         return self.ugettext(msgid).encode(self.OUTPUT_ENCODING)
 
     def ngettext(self, singular, plural, number):
