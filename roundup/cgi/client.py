@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.232 2007-01-15 21:10:26 schlatterbeck Exp $
+# $Id: client.py,v 1.233 2007-01-16 10:16:08 schlatterbeck Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -848,6 +848,11 @@ class Client:
             call(*args, **kwargs)
         except socket.error, err:
             err_errno = getattr (err, 'errno', None)
+            if err_errno is None:
+                try:
+                    err_errno = err[0]
+                except TypeError:
+                    pass
             if err_errno not in self.IGNORE_NET_ERRORS:
                 raise
 
