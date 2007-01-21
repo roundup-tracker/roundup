@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.79 2006-10-05 23:08:21 richard Exp $
+# $Id: test_mailgw.py,v 1.80 2007-01-21 15:18:25 forsberg Exp $
 
 # TODO: test bcc
 
@@ -1284,6 +1284,22 @@ Message-Id: <dummy_test_message_id>
         self.assertEqual(self.db.issue.get(nodeid, 'title'),
             'testing [assignedto=mary]')
         self.assertEqual(self.db.issue.get(nodeid, 'assignedto'), None)
+
+    def testReplytoMatch(self):
+        self.instance.config.MAILGW_SUBJECT_PREFIX_PARSING = 'loose'        
+        nodeid = self.doNewIssue()
+        nodeid2 = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id2>
+In-Reply-To: <dummy_test_message_id>
+Subject: Testing...
+
+Followup message.
+''')
+        self.assertEqual(nodeid, nodeid2)
+
 
 def test_suite():
     suite = unittest.TestSuite()
