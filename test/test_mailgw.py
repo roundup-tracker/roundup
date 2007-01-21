@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.82 2007-01-21 18:08:31 forsberg Exp $
+# $Id: test_mailgw.py,v 1.83 2007-01-21 18:14:35 forsberg Exp $
 
 # TODO: test bcc
 
@@ -21,7 +21,7 @@ if not os.environ.has_key('SENDMAILDEBUG'):
 SENDMAILDEBUG = os.environ['SENDMAILDEBUG']
 
 from roundup.mailgw import MailGW, Unauthorized, uidFromAddress, \
-    parseContent, IgnoreLoop, IgnoreBulk, MailUsageError
+    parseContent, IgnoreLoop, IgnoreBulk, MailUsageError, MailUsageHelp
 from roundup import init, instance, password, rfc2822, __version__
 
 import db_test_base
@@ -1312,6 +1312,20 @@ Yet another message in the same thread/issue.
 
         self.assertEqual(nodeid, nodeid2)
         self.assertEqual(nodeid, nodeid3)
+
+    def testHelpSubject(self):
+        message = '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id2>
+In-Reply-To: <dummy_test_message_id>
+Subject: hElp
+
+
+'''
+        self.assertRaises(MailUsageHelp, self._handle_mail, message)
+        
 
 def test_suite():
     suite = unittest.TestSuite()
