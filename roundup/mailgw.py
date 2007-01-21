@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.181 2007-01-21 15:18:26 forsberg Exp $
+$Id: mailgw.py,v 1.182 2007-01-21 18:08:31 forsberg Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -720,7 +720,7 @@ Subject was: "%(subject)s"
         if nodeid is None and inreplyto:
             l = self.db.getclass('msg').stringFind(messageid=inreplyto)
             if l:
-                nodeid = l[0]
+                nodeid = cl.filter(None, {'messages':l})[0]
 
         # title is optional too
         title = m.group('title')
