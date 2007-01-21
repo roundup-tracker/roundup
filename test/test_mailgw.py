@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.80 2007-01-21 15:18:25 forsberg Exp $
+# $Id: test_mailgw.py,v 1.81 2007-01-21 15:22:02 forsberg Exp $
 
 # TODO: test bcc
 
@@ -1083,7 +1083,7 @@ Cc: richard@test
 Message-Id: <dummy_test_message_id>
 Subject: Re: [issue] Out of office AutoReply: Back next week
 
-Hi, I'm back in the office next week
+Hi, I am back in the office next week
 ''')
 
     def testNoSubject(self):
