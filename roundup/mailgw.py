@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.182 2007-01-21 18:08:31 forsberg Exp $
+$Id: mailgw.py,v 1.183 2007-01-28 13:49:13 forsberg Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -619,57 +619,89 @@ Emails to Roundup trackers must include a Subject: line!
 
         # Matches subjects like:
         # Re: "[issue1234] title of issue [status=resolved]"
-        open, close = config['MAILGW_SUBJECT_SUFFIX_DELIMITERS']
-        delim_open = re.escape(open)
+
+        tmpsubject = subject # We need subject untouched for later use
+                             # in error messages
+
+        sd_open, sd_close = config['MAILGW_SUBJECT_SUFFIX_DELIMITERS']
+        delim_open = re.escape(sd_open)
         if delim_open in '[(': delim_open = '\\' + delim_open
-        delim_close = re.escape(close)
+        delim_close = re.escape(sd_close)
         if delim_close in '[(': delim_close = '\\' + delim_close
-        subject_re = r'''
-        (?P<refwd>\s*\W?\s*(fw|fwd|re|aw|sv|ang)\W\s*)*\s*   # Re:
-        (?P<quote>")?                                 # Leading "
-        (%s(?P<classname>[^\d\s]+)                    # [issue..
-           (?P<nodeid>\d+)?                           # ..1234]
-         %s)?\s*
-        (?P<title>[^%s]+)?                             # issue title
-        "?                                            # Trailing "
-        (?P<argswhole>%s(?P<args>.+?)%s)?             # [prop=value]
-        '''%(delim_open, delim_close, delim_open, delim_open, delim_close)
-        subject_re = re.compile(subject_re, re.IGNORECASE|re.VERBOSE)
+
+        matches = dict.fromkeys(['refwd', 'quote', 'classname',
+                                 'nodeid', 'title', 'args',
+                                 'argswhole'])
+
+
+        # Look for Re: et. al. Used later on for MAILGW_SUBJECT_CONTENT_MATCH
+        re_re = r'''(?P<refwd>(\s*\W?\s*(fw|fwd|re|aw|sv|ang)\W)+)\s*'''
+        m = re.match(re_re, tmpsubject, re.IGNORECASE|re.VERBOSE)
+        if m:
+            matches.update(m.groupdict())
+            tmpsubject = tmpsubject[len(matches['refwd']):] # Consume Re:
+
+        # Look for Leading "
+        m = re.match(r'''(?P<quote>\s*")''', tmpsubject,
+                     re.IGNORECASE|re.VERBOSE)
+        if m:
+            matches.update(m.groupdict())
+            tmpsubject = tmpsubject[len(matches['quote']):] # Consume quote
+
+        class_re = r'''%s(?P<classname>(%s))+(?P<nodeid>\d+)?%s''' % \
+                   (delim_open, "|".join(self.db.getclasses()), delim_close)
+        # Note: re.search, not re.match as there might be garbage
+        # (mailing list prefix, etc.) before the class identifier
+        m = re.search(class_re, tmpsubject, re.IGNORECASE|re.VERBOSE)
+        if m:
+            matches.update(m.groupdict())
+            # Skip to the end of the class identifier, including any
+            # garbage before it.
+            
+            tmpsubject = tmpsubject[m.end():]
+
+        m = re.match(r'''(?P<title>[^%s]+)''' % delim_open, tmpsubject,
+                     re.IGNORECASE|re.VERBOSE)
+        if m:
+            matches.update(m.groupdict())
+            tmpsubject = tmpsubject[len(matches['title']):] # Consume title
+
+        args_re = r'''(?P<argswhole>%s(?P<args>.+?)%s)?''' % (delim_open, delim_close)
+        m = re.search(args_re, tmpsubject, re.IGNORECASE|re.VERBOSE)
+        if m:
+            matches.update(m.groupdict())
 
         # figure subject line parsing modes
         pfxmode = config['MAILGW_SUBJECT_PREFIX_PARSING']
         sfxmode = config['MAILGW_SUBJECT_SUFFIX_PARSING']
 
-        # check for well-formed subject line
-        m = subject_re.match(subject)
-        if m:
-            # check for registration OTK
-            # or fallback on the default class
-            if self.db.config['EMAIL_REGISTRATION_CONFIRMATION']:
-                otk_re = re.compile('-- key (?P<otk>[a-zA-Z0-9]{32})')
-                otk = otk_re.search(m.group('title') or '')
-                if otk:
-                    self.db.confirm_registration(otk.group('otk'))
-                    subject = 'Your registration to %s is complete' % \
-                              config['TRACKER_NAME']
-                    sendto = [from_list[0][1]]
-                    self.mailer.standard_message(sendto, subject, '')
-                    return
-            # get the classname
-            if pfxmode == 'none':
-                classname = None
+        # check for registration OTK
+        # or fallback on the default class
+        if self.db.config['EMAIL_REGISTRATION_CONFIRMATION']:
+            otk_re = re.compile('-- key (?P<otk>[a-zA-Z0-9]{32})')
+            otk = otk_re.search(matches['title'] or '')
+            if otk:
+                self.db.confirm_registration(otk.group('otk'))
+                subject = 'Your registration to %s is complete' % \
+                          config['TRACKER_NAME']
+                sendto = [from_list[0][1]]
+                self.mailer.standard_message(sendto, subject, '')
+                return
+        # get the classname
+        if pfxmode == 'none':
+            classname = None
+        else:
+            classname = matches['classname']
+        if classname is None:
+            if self.default_class:
+                classname = self.default_class
             else:
-                classname = m.group('classname')
-            if classname is None:
-                if self.default_class:
-                    classname = self.default_class
-                else:
-                    classname = config['MAILGW_DEFAULT_CLASS']
-                    if not classname:
-                        # fail
-                        m = None
+                classname = config['MAILGW_DEFAULT_CLASS']
+                if not classname:
+                    # fail
+                    m = None
 
-        if not m and pfxmode == 'strict':
+        if not classname and pfxmode == 'strict':
             raise MailUsageError, _("""
 The message you sent to roundup did not contain a properly formed subject
 line. The subject must contain a class name or designator to indicate the
@@ -713,7 +745,7 @@ Subject was: "%(subject)s"
         if pfxmode == 'none':
             nodeid = None
         else:
-            nodeid = m.group('nodeid')
+            nodeid = matches['nodeid']
 
         # try in-reply-to to match the message if there's no nodeid
         inreplyto = message.getheader('in-reply-to') or ''
@@ -723,7 +755,7 @@ Subject was: "%(subject)s"
                 nodeid = cl.filter(None, {'messages':l})[0]
 
         # title is optional too
-        title = m.group('title')
+        title = matches['title']
         if title:
             title = title.strip()
         else:
@@ -731,7 +763,7 @@ Subject was: "%(subject)s"
 
         # strip off the quotes that dumb emailers put around the subject, like
         #      Re: "[issue1] bla blah"
-        if m.group('quote') and title.endswith('"'):
+        if matches['quote'] and title.endswith('"'):
             title = title[:-1]
 
         # but we do need either a title or a nodeid...
@@ -752,7 +784,7 @@ Subject was: "%(subject)s"
         # additional restriction based on the matched node's creation or
         # activity.
         tmatch_mode = config['MAILGW_SUBJECT_CONTENT_MATCH']
-        if tmatch_mode != 'never' and nodeid is None and m.group('refwd'):
+        if tmatch_mode != 'never' and nodeid is None and matches['refwd']:
             l = cl.stringFind(title=title)
             limit = None
             if (tmatch_mode.startswith('creation') or
@@ -905,8 +937,8 @@ Unknown address: %(from_address)s
         # figure what the properties of this Class are
         properties = cl.getprops()
         props = {}
-        args = m.group('args')
-        argswhole = m.group('argswhole')
+        args = matches['args']
+        argswhole = matches['argswhole']
         if args:
             if sfxmode == 'none':
                 title += ' ' + argswhole

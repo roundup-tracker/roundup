@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.83 2007-01-21 18:14:35 forsberg Exp $
+# $Id: test_mailgw.py,v 1.84 2007-01-28 13:49:21 forsberg Exp $
 
 # TODO: test bcc
 
@@ -402,6 +402,30 @@ Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 <http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
 _______________________________________________________________________
 ''')
+
+    def testFollowupTitleMatchMultiRe(self):
+        nodeid1 = self.doNewIssue()
+        nodeid2 = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: richard <richard@test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+Subject: Re: Testing... [assignedto=mary; nosy=+john]
+
+This is a followup
+''')
+
+        nodeid3 = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: richard <richard@test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup2_dummy_id>
+Subject: Ang: Re: Testing... 
+
+This is a followup
+''')        
+        self.assertEqual(nodeid1, nodeid2)
+        self.assertEqual(nodeid1, nodeid3)
 
     def testFollowupTitleMatchNever(self):
         nodeid = self.doNewIssue()
@@ -1173,6 +1197,40 @@ Message-Id: <dummy_test_message_id>
         assert not os.path.exists(SENDMAILDEBUG)
         self.assertEqual(self.db.keyword.get('1', 'name'), 'Bar')
 
+    def testClassStrictInvalid(self):
+        self.instance.config.MAILGW_SUBJECT_PREFIX_PARSING = 'strict'
+        self.instance.config.MAILGW_DEFAULT_CLASS = ''
+
+        message = '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Subject: Testing... 
+Cc: richard@test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+
+'''
+        self.assertRaises(MailUsageError, self._handle_mail, message)
+        
+    def testClassStrictValid(self):
+        self.instance.config.MAILGW_SUBJECT_PREFIX_PARSING = 'strict'
+        self.instance.config.MAILGW_DEFAULT_CLASS = ''
+
+        nodeid = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Subject: [issue] Testing... 
+Cc: richard@test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+
+''')
+
+        assert not os.path.exists(SENDMAILDEBUG)
+        self.assertEqual(self.db.issue.get(nodeid, 'title'), 'Testing...')
+        
     #
     # TEST FOR INVALID COMMANDS HANDLING
     #
@@ -1325,6 +1383,55 @@ Subject: hElp
 
 '''
         self.assertRaises(MailUsageHelp, self._handle_mail, message)
+
+    def testMaillistSubject(self):
+        self.instance.config.MAILGW_SUBJECT_SUFFIX_DELIMITERS = '[]'
+        self.db.keyword.create(name='Foo')        
+        self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Subject: [mailinglist-name] [keyword1] Testing.. [name=Bar]
+Cc: richard@test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+
+''')
+
+        assert not os.path.exists(SENDMAILDEBUG)
+        self.assertEqual(self.db.keyword.get('1', 'name'), 'Bar')
+
+    def testUnknownPrefixSubject(self):
+        self.db.keyword.create(name='Foo')
+        self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Subject: VeryStrangeRe: [keyword1] Testing.. [name=Bar]
+Cc: richard@test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+
+''')
+
+        assert not os.path.exists(SENDMAILDEBUG)
+        self.assertEqual(self.db.keyword.get('1', 'name'), 'Bar')
+
+    def testIssueidLast(self):
+        nodeid1 = self.doNewIssue()
+        nodeid2 = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: mary <mary@test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: New title [issue1]
+
+This is a second followup
+''')
+
+        assert nodeid1 == nodeid2
+        self.assertEqual(self.db.issue.get(nodeid2, 'title'), "Testing...")
         
 
 def test_suite():
