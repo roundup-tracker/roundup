@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.123 $
+:Version: $Revision: 1.124 $
 
 .. contents::
    :depth: 2
@@ -511,8 +511,8 @@ Example mod_python configuration::
     <Directory /var/db/roundup/devel>
       PythonOption TrackerHome /var/db/roundup/devel
     </Directory>
-
-Notice that the ``/var/db/roundup`` path shown above refer to the directory
+    
+Notice that the ``/var/db/roundup`` path shown above refers to the directory
 in which the tracker homes are stored. The actual value will thus depend on
 your system.
 
