@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.183 2007-01-28 13:49:13 forsberg Exp $
+$Id: mailgw.py,v 1.184 2007-02-15 03:09:53 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -620,8 +620,9 @@ Emails to Roundup trackers must include a Subject: line!
         # Matches subjects like:
         # Re: "[issue1234] title of issue [status=resolved]"
 
-        tmpsubject = subject # We need subject untouched for later use
-                             # in error messages
+        # Alias since we need a reference to the original subject for
+        # later use in error messages
+        tmpsubject = subject
 
         sd_open, sd_close = config['MAILGW_SUBJECT_SUFFIX_DELIMITERS']
         delim_open = re.escape(sd_open)
@@ -633,7 +634,6 @@ Emails to Roundup trackers must include a Subject: line!
                                  'nodeid', 'title', 'args',
                                  'argswhole'])
 
-
         # Look for Re: et. al. Used later on for MAILGW_SUBJECT_CONTENT_MATCH
         re_re = r'''(?P<refwd>(\s*\W?\s*(fw|fwd|re|aw|sv|ang)\W)+)\s*'''
         m = re.match(re_re, tmpsubject, re.IGNORECASE|re.VERBOSE)
@@ -642,17 +642,20 @@ Emails to Roundup trackers must include a Subject: line!
             tmpsubject = tmpsubject[len(matches['refwd']):] # Consume Re:
 
         # Look for Leading "
-        m = re.match(r'''(?P<quote>\s*")''', tmpsubject,
-                     re.IGNORECASE|re.VERBOSE)
+        m = re.match(r'(?P<quote>\s*")', tmpsubject,
+                     re.IGNORECASE)
         if m:
             matches.update(m.groupdict())
             tmpsubject = tmpsubject[len(matches['quote']):] # Consume quote
 
-        class_re = r'''%s(?P<classname>(%s))+(?P<nodeid>\d+)?%s''' % \
-                   (delim_open, "|".join(self.db.getclasses()), delim_close)
+        has_prefix = re.search(r'^%s(\w+)%s'%(delim_open,
+            delim_close), tmpsubject.strip())
+
+        class_re = r'%s(?P<classname>(%s))(?P<nodeid>\d+)?%s'%(delim_open,
+            "|".join(self.db.getclasses()), delim_close)
         # Note: re.search, not re.match as there might be garbage
         # (mailing list prefix, etc.) before the class identifier
-        m = re.search(class_re, tmpsubject, re.IGNORECASE|re.VERBOSE)
+        m = re.search(class_re, tmpsubject, re.IGNORECASE)
         if m:
             matches.update(m.groupdict())
             # Skip to the end of the class identifier, including any
@@ -660,14 +663,18 @@ Emails to Roundup trackers must include a Subject: line!
             
             tmpsubject = tmpsubject[m.end():]
 
-        m = re.match(r'''(?P<title>[^%s]+)''' % delim_open, tmpsubject,
-                     re.IGNORECASE|re.VERBOSE)
+        # if we've not found a valid classname prefix then force the
+        # scanning to handle there being a leading delimiter
+        title_re = r'(?P<title>%s[^%s]+)'%(
+            not matches['classname'] and '.' or '', delim_open)
+        m = re.match(title_re, tmpsubject.strip(), re.IGNORECASE)
         if m:
             matches.update(m.groupdict())
             tmpsubject = tmpsubject[len(matches['title']):] # Consume title
 
-        args_re = r'''(?P<argswhole>%s(?P<args>.+?)%s)?''' % (delim_open, delim_close)
-        m = re.search(args_re, tmpsubject, re.IGNORECASE|re.VERBOSE)
+        args_re = r'(?P<argswhole>%s(?P<args>.+?)%s)?'%(delim_open,
+            delim_close)
+        m = re.search(args_re, tmpsubject.strip(), re.IGNORECASE|re.VERBOSE)
         if m:
             matches.update(m.groupdict())
 
@@ -687,21 +694,14 @@ Emails to Roundup trackers must include a Subject: line!
                 sendto = [from_list[0][1]]
                 self.mailer.standard_message(sendto, subject, '')
                 return
+
         # get the classname
         if pfxmode == 'none':
             classname = None
         else:
             classname = matches['classname']
-        if classname is None:
-            if self.default_class:
-                classname = self.default_class
-            else:
-                classname = config['MAILGW_DEFAULT_CLASS']
-                if not classname:
-                    # fail
-                    m = None
 
-        if not classname and pfxmode == 'strict':
+        if not classname and has_prefix and pfxmode == 'strict':
             raise MailUsageError, _("""
 The message you sent to roundup did not contain a properly formed subject
 line. The subject must contain a class name or designator to indicate the
@@ -716,29 +716,50 @@ line. The subject must contain a class name or designator to indicate the
 Subject was: '%(subject)s'
 """) % locals()
 
-        # try to get the class specified - if "loose" then fall back on the
-        # default
-        attempts = [classname]
-        if pfxmode == 'loose':
-            if self.default_class:
-                attempts.append(self.default_class)
-            else:
-                attempts.append(config['MAILGW_DEFAULT_CLASS'])
+        # try to get the class specified - if "loose" or "none" then fall
+        # back on the default
+        attempts = []
+        if classname:
+            attempts.append(classname)
+
+        if self.default_class:
+            attempts.append(self.default_class)
+        else:
+            attempts.append(config['MAILGW_DEFAULT_CLASS'])
+
+        # first valid class name wins
         cl = None
         for trycl in attempts:
             try:
-                cl = self.db.getclass(classname)
+                cl = self.db.getclass(trycl)
+                classname = trycl
                 break
             except KeyError:
                 pass
+
         if not cl:
             validname = ', '.join(self.db.getclasses())
-            raise MailUsageError, _("""
-The class name you identified in the subject line ("%(classname)s") does not exist in the
-database.
+            if classname:
+                raise MailUsageError, _("""
+The class name you identified in the subject line ("%(classname)s") does
+not exist in the database.
 
 Valid class names are: %(validname)s
 Subject was: "%(subject)s"
+""") % locals()
+            else:
+                raise MailUsageError, _("""
+You did not identify a class name in the subject line and there is no
+default set for this tracker. The subject must contain a class name or
+designator to indicate the 'topic' of the message. For example:
+    Subject: [issue] This is a new issue
+      - this will create a new issue in the tracker with the title 'This is
+        a new issue'.
+    Subject: [issue1234] This is a followup to issue 1234
+      - this will append the message's contents to the existing issue 1234
+        in the tracker.
+
+Subject was: '%(subject)s'
 """) % locals()
 
         # get the optional nodeid
@@ -770,7 +791,7 @@ Subject was: "%(subject)s"
         if nodeid is None and not title:
             raise MailUsageError, _("""
 I cannot match your message to a node in the database - you need to either
-supply a full designator (with number, eg "[issue123]" or keep the
+supply a full designator (with number, eg "[issue123]") or keep the
 previous subject title intact so I can match that.
 
 Subject was: "%(subject)s"

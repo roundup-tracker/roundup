@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.84 2007-01-28 13:49:21 forsberg Exp $
+# $Id: test_mailgw.py,v 1.85 2007-02-15 03:09:53 richard Exp $
 
 # TODO: test bcc
 
@@ -1156,6 +1156,22 @@ Message-Id: <dummy_test_message_id>
 From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
 Subject: [frobulated] testing
+Cc: richard@test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+
+''')
+        assert not os.path.exists(SENDMAILDEBUG)
+        self.assertEqual(self.db.issue.get(nodeid, 'title'),
+            '[frobulated] testing')
+
+    def testInvalidClassLooseReply(self):
+        self.instance.config.MAILGW_SUBJECT_PREFIX_PARSING = 'loose'
+        nodeid = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Subject: Re: [frobulated] testing
 Cc: richard@test
 Reply-To: chef@bork.bork.bork
 Message-Id: <dummy_test_message_id>
