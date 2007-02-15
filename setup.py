@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.96 2006-12-19 03:03:36 richard Exp $
+# $Id: setup.py,v 1.97 2007-02-15 04:02:43 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -219,6 +219,11 @@ def check_manifest():
     finally:
         f.close()
     err = [line for line in manifest if not os.path.exists(line)]
+    err.sort()
+    # ignore auto-generated files
+    if err == ['roundup-admin', 'roundup-demo', 'roundup-gettext',
+            'roundup-mailgw', 'roundup-server']:
+        err = []
     if err:
         n = len(manifest)
         print '\n*** SOURCE WARNING: There are files missing (%d/%d found)!'%(
@@ -347,21 +352,15 @@ def main():
 '''In this release
 ===============
 
-Fixed in 1.3.2:
+Fixed in 1.3.3:
 
-- relax rules for required fields in form_parser.py (sf bug 1599740)
-- documentation cleanup from Luke Ross (sf patch 1594860)
-- updated Spanish translation from Ramiro Morales (sf patch 1594718)
-- handle 8-bit untranslateable messages in tracker templates
-- handling of required for boolean False and numeric 0 (sf bug 1608200)
-- removed bogus args attr of ConfigurationError (sf bug 1608056)
-- implemented start_response in roundup.cgi (sf bug 1604304)
-- clarified windows service documentation (sf patch 1597713)
-- HTMLClass fixed to work with new item permissions check (sf bug 1602983)
-- support POP over SSL (sf patch 1597703)
-- clean up input field generation and quoting of values (sf bug 1615616)
-- allow use of roundup-server pidfile without forking (sf bug 1614753)
-- allow translation of status/priority menu options (sf bug 1613976)
+- If-Modified-Since handling was broken
+- Updated documentation for customising hard-coded searches in page.html 
+- Updated Windows installation docs (thanks Bo Berglund)
+- Handle rounding of seconds generating invalid date values
+- Handle 8-bit untranslateable messages from database properties
+- Fix scripts/roundup-reminder date calculation (sf bug 1649979)
+- Improved due_date and timelog customisation docs (sf bug 1625124)
 
 New Features in 1.3.0:
 
