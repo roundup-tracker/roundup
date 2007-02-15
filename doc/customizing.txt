@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.216 $
+:Version: $Revision: 1.217 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2892,28 +2892,42 @@ Schema changes are automatically applied to the database on the next
 tracker access (note that roundup-server would need to be restarted as it
 caches the schema).
 
-1. modify the ``schema.py``::
+1. Modify the ``schema.py``::
 
     issue = IssueClass(db, "issue", 
                     assignedto=Link("user"), topic=Multilink("keyword"),
                     priority=Link("priority"), status=Link("status"),
                     due_date=Date())
 
-2. add an edit field to the ``issue.item.html`` template::
+2. Add an edit field to the ``issue.item.html`` template::
 
     <tr> 
      <th>Due Date</th> 
      <td tal:content="structure context/due_date/field" /> 
-    </tr> 
+    </tr>
+    
+   If you want to show only the date part of due_date then do this instead::
+   
+    <tr> 
+     <th>Due Date</th> 
+     <td tal:content="structure python:context.due_date.field(format='%Y-%m-%d')" /> 
+    </tr>
 
-3. add the property to the ``issue.index.html`` page::
+3. Add the property to the ``issue.index.html`` page::
 
     (in the heading row)
       <th tal:condition="request/show/due_date">Due Date</th>
     (in the data row)
-      <td tal:condition="request/show/due_date" tal:content="i/due_date" />
+      <td tal:condition="request/show/due_date" 
+          tal:content="i/due_date" />
+          
+   If you want format control of the display of the due date you can
+   enter the following in the data row to show only the actual due date::
+    
+      <td tal:condition="request/show/due_date" 
+          tal:content="python:i.due_date.pretty('%Y-%m-%d')">&nbsp;</td>
 
-4. add the property to the ``issue.search.html`` page::
+4. Add the property to the ``issue.search.html`` page::
 
      <tr tal:define="name string:due_date">
        <th i18n:translate="">Due Date:</th>
@@ -2923,10 +2937,12 @@ caches the schema).
        <td metal:use-macro="group_input"></td>
      </tr>
 
-5. if you wish for the due date to appear in the standard views listed
-    in the sidebar of the web interface then you'll need to add "due_date"
-    to the columns and columns_showall lists in your ``page.html``.
-
+5. If you wish for the due date to appear in the standard views listed
+   in the sidebar of the web interface then you'll need to add "due_date"
+   to the columns and columns_showall lists in your ``page.html``::
+    
+    columns string:id,activity,due_date,title,creator,status;
+    columns_showall string:id,activity,due_date,title,creator,assignedto,status;
 
 Adding a new constrained field to the classic schema
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -3391,7 +3407,7 @@ be able to give a summary of the total time spent on a particular issue.
     <tr> 
      <th>Time Log</th> 
      <td colspan=3><input type="text" name="timelog-1@period" /> 
-      <br />(enter as '3y 1m 4d 2:40:02' or parts thereof) 
+      (enter as '3y 1m 4d 2:40:02' or parts thereof) 
      </td> 
     </tr> 
          
@@ -3404,6 +3420,17 @@ be able to give a summary of the total time spent on a particular issue.
    On submission, the "-1" timelog item will be created and assigned a
    real item id. The "times" property of the issue will have the new id
    added to it.
+   
+   The full entry will now look like this::
+   
+    <tr> 
+     <th>Time Log</th> 
+     <td colspan=3><input type="text" name="timelog-1@period" /> 
+      (enter as '3y 1m 4d 2:40:02' or parts thereof)
+      <input type="hidden" name="@link@times" value="timelog-1" /> 
+     </td> 
+    </tr> 
+   
 
 4. We want to display a total of the timelog times that have been
    accumulated for an issue. To do this, we'll need to actually write
@@ -3450,7 +3477,7 @@ be able to give a summary of the total time spent on a particular issue.
    displayed in the template as text like "+ 1y 2:40" (1 year, 2 hours
    and 40 minutes).
 
-8. If you're using a persistent web server - ``roundup-server`` or
+6. If you're using a persistent web server - ``roundup-server`` or
    ``mod_python`` for example - then you'll need to restart that to pick up
    the code changes. When that's done, you'll be able to use the new
    time logging interface.
@@ -3458,7 +3485,7 @@ be able to give a summary of the total time spent on a particular issue.
 An extension of this modification attaches the timelog entries to any
 change message entered at the time of the timelog entry:
 
-1. Add a link to the timelog to the msg class:
+A. Add a link to the timelog to the msg class in ``schema.py``:
 
     msg = FileClass(db, "msg",
                     author=Link("user", do_journal='no'),
@@ -3467,19 +3494,51 @@ change message entered at the time of the timelog entry:
                     summary=String(),
                     files=Multilink("file"),
                     messageid=String(),
-                    inreplyto=String()
+                    inreplyto=String(),
                     times=Multilink("timelog"))
 
-2. Add a new hidden field that links that new timelog item (new
+B. Add a new hidden field that links that new timelog item (new
    because it's marked as having id "-1") to the new message.
-   It looks like this::
- 
-      <input type="hidden" name="msg-1@link@times" value="timelog-1" />
+   The link is placed in ``issue.item.html`` in the same section that
+   handles the timelog entry.
+   
+   It looks like this after this addition::
+
+    <tr> 
+     <th>Time Log</th> 
+     <td colspan=3><input type="text" name="timelog-1@period" /> 
+      (enter as '3y 1m 4d 2:40:02' or parts thereof)
+      <input type="hidden" name="@link@times" value="timelog-1" />
+      <input type="hidden" name="msg-1@link@times" value="timelog-1" /> 
+     </td> 
+    </tr> 
  
    The "times" property of the message will have the new id added to it.
 
-3. Add the timelog listing from step 5. to the ``msg.item.html`` template
-   so that the timelog entry appears on the message view page.
+C. Add the timelog listing from step 5. to the ``msg.item.html`` template
+   so that the timelog entry appears on the message view page. Note that
+   the call to totalTimeSpent is not used here since there will only be one
+   single timelog entry for each message.
+   
+   I placed it after the Date entry like this::
+   
+    <tr>
+     <th i18n:translate="">Date:</th>
+     <td tal:content="context/date"></td>
+    </tr>
+    </table>
+    
+    <table class="otherinfo" tal:condition="context/times">
+     <tr><th colspan="3" class="header">Time Log</th></tr>
+     <tr><th>Date</th><th>Period</th><th>Logged By</th></tr>
+     <tr tal:repeat="time context/times">
+      <td tal:content="time/creation"></td>
+      <td tal:content="time/period"></td>
+      <td tal:content="time/creator"></td>
+     </tr>
+    </table>
+    
+    <table class="messages">
 
 
 Tracking different types of issues
