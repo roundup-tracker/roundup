@@ -19,7 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: roundup-reminder,v 1.8 2004-02-11 00:21:46 richard Exp $
+# $Id: roundup-reminder,v 1.9 2007-02-15 03:52:35 richard Exp $
 
 '''
 Simple script that emails all users of a tracker with the issues that
@@ -96,7 +96,7 @@ for user_id in db.user.list():
     body = part.startbody('text/plain')
     
     # do the plain text bit
-    print >>body, 'Created     ID   Urgency   Title'
+    print >>body, 'Created     ID   Activity  Title'
     print >>body, '='*75
     #             '2 months    213  immediate cc_daemon barfage
     old_priority = None
@@ -106,10 +106,10 @@ for user_id in db.user.list():
             old_priority = priority
             print >>body, '    ', db.priority.get(priority,'name')
         # pretty creation
-        creation = (date.Date('.') - creation_date).pretty()
+        creation = (creation_date - date.Date('.')).pretty()
         if creation is None:
             creation = creation_date.pretty()
-        activity = (date.Date('.') - activity_date).pretty()
+        activity = (activity_date - date.Date('.')).pretty()
         title = db.issue.get(issue_id, 'title')
         if len(title) > 42:
             title = title[:38] + ' ...'
@@ -147,11 +147,11 @@ and click on "My Issues". Do NOT respond to this message.
            print >>body, '<tr><td>-></td><td>-></td><td>-></td><td><b>%s</b></td></tr>'%db.priority.get(priority,'name')
         creation = (date.Date('.') - creation_date).pretty()
         if creation is None:
-            creation = creation_date.pretty()
+            creation = (creation_date - date.Date('.')).pretty()
         title = db.issue.get(issue_id, 'title')
         issue_id = '<a href="%sissue%s">%s</a>'%(db.config.TRACKER_WEB,
             issue_id, issue_id)
-        activity = (date.Date('.') - activity_date).pretty()
+        activity = (activity_date - date.Date('.')).pretty()
         print >>body, '''<tr><td>%s</td><td>%s</td><td>%s</td>
     <td>%s</td></tr>'''%(creation, issue_id, activity, title)
     print >>body, '</table>'
