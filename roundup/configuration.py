@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.39 2006-12-18 06:06:03 richard Exp $
+# $Id: configuration.py,v 1.40 2007-02-19 20:27:53 a1s Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -39,7 +39,7 @@ class InvalidOptionError(ConfigurationError, KeyError, AttributeError):
 
     Configuration options may be accessed as configuration object
     attributes or items.  So this exception instances also are
-    instances of KeyError (invalid item access) and AttrributeError
+    instances of KeyError (invalid item access) and AttributeError
     (invalid attribute access).
 
     Constructor parameter: option name
@@ -192,7 +192,7 @@ class Option:
         return self._value == self._default_value
 
     def isset(self):
-        """Return True if the value is avaliable (either set or default)"""
+        """Return True if the value is available (either set or default)"""
         return self._value != NODEFAULT
 
     def __str__(self):
