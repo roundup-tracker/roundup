@@ -1,6 +1,11 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2007-??-??
+Fixed:
+- Handling of unset Link search in RDBMS backend
+
+
 2007-02-15 1.3.3
 Fixed:
 - If-Modified-Since handling was broken

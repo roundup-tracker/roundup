@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.182 2006-10-04 01:12:00 richard Exp $
+#$Id: rdbms_common.py,v 1.183 2007-02-20 05:30:17 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2175,7 +2175,7 @@ class Class(hyperdb.Class):
                                 d[entry] = entry
                             l = []
                             if d.has_key(None) or not d:
-                                del d[None]
+                                if d.has_key(None): del d[None]
                                 l.append('_%s._%s is NULL'%(pln, k))
                             if d:
                                 v = d.keys()
