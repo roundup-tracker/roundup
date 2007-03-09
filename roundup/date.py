@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: date.py,v 1.90 2007-03-09 10:25:09 schlatterbeck Exp $
+# $Id: date.py,v 1.91 2007-03-09 14:54:39 schlatterbeck Exp $
 
 """Date, time and time interval handling.
 """
@@ -498,7 +498,7 @@ class Date:
         '''
         dt = datetime.datetime(self.year, self.month, self.day, self.hour,
             self.minute, int(self.second),
-            (self.second - int (self.second)) * 1000000.)
+            int ((self.second - int (self.second)) * 1000000.))
         str = dt.strftime(format)
 
         # handle zero day by removing it
