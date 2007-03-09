@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: test_dates.py,v 1.39 2006-05-06 17:21:34 a1s Exp $
+# $Id: test_dates.py,v 1.40 2007-03-09 10:25:10 schlatterbeck Exp $
 from __future__ import nested_scopes
 
 import unittest, time
@@ -59,11 +59,13 @@ class DateTestCase(unittest.TestCase):
         ae(str(date), '%s-%02d-%02d.08:47:11'%(y, m, d))
         ae(str(Date('2003')), '2003-01-01.00:00:00')
         ae(str(Date('2004-06')), '2004-06-01.00:00:00')
+        ae(str(Date('1900-02-01')), '1900-02-01.00:00:00')
+        ae(str(Date('1800-07-15')), '1800-07-15.00:00:00')
 
     def testDateError(self):
         self.assertRaises(ValueError, Date, "12")
-        # Date cannot handle dates before UNIX epoch
-        self.assertRaises(ValueError, Date, (1, 1, 1, 0, 0, 0.0, 0, 1, -1))
+        # Date cannot handle dates before year 1
+        self.assertRaises(ValueError, Date, (0, 1, 1, 0, 0, 0.0, 0, 1, -1))
         self.assertRaises(ValueError, Date, "1/1/06")
 
     def testOffset(self):
@@ -128,6 +130,8 @@ class DateTestCase(unittest.TestCase):
         ae(str(date), '2000-02-29.00:00:00')
         date = Date('2001-02-28.22:58:59') + Interval('00:00:3661')
         ae(str(date), '2001-03-01.00:00:00')
+        date = Date('2001-03-01.00:00:00') + Interval('150y')
+        ae(str(date), '2151-03-01.00:00:00')
 
     def testOffsetSub(self):
         ae = self.assertEqual
@@ -162,6 +166,8 @@ class DateTestCase(unittest.TestCase):
         ae(str(date), '2000-02-28.22:58:59')
         date = Date('2001-03-01.00:00:00') - Interval('00:00:3661')
         ae(str(date), '2001-02-28.22:58:59')
+        date = Date('2001-03-01.00:00:00') - Interval('150y')
+        ae(str(date), '1851-03-01.00:00:00')
 
     def testDateLocal(self):
         ae = self.assertEqual
@@ -269,6 +275,10 @@ class DateTestCase(unittest.TestCase):
         # force the transition over a year boundary
         i = Date('2003-01-01.00:00:00') - Date('2002-01-01.00:00:00')
         self.assertEqual(i, Interval('365d'))
+        i = Date('1952-01-01') - Date('1953-01-01')
+        self.assertEqual(i, Interval('-366d'))
+        i = Date('1953-01-01') - Date('1952-01-01')
+        self.assertEqual(i, Interval('366d'))
 
     def testIntervalAdd(self):
         ae = self.assertEqual
@@ -389,6 +399,8 @@ class DateTestCase(unittest.TestCase):
             return
         d = datetime.datetime.now()
         Date(d)
+        toomuch = datetime.MAXYEAR + 1
+        self.assertRaises(ValueError, Date, (toomuch, 1, 1, 0, 0, 0, 0, 1, -1))
 
     def testSimpleTZ(self):
         ae = self.assertEqual
@@ -403,6 +415,31 @@ class DateTestCase(unittest.TestCase):
         date = Date('2006-04-04.12:00:00')
         date = Date(date, 2)
         ae(str(date), '2006-04-04.10:00:00')
+
+    def testTimestamp(self):
+        ae = self.assertEqual
+        date = Date('2038')
+        ae(date.timestamp(), 2145916800)
+        date = Date('1902')
+        ae(date.timestamp(), -2145916800)
+        try:
+            from time import gmtime
+        except:
+            return
+        date = Date(gmtime(0))
+        ae(date.timestamp(), 0)
+        ae(str(date), '1970-01-01.00:00:00')
+        date = Date(gmtime(0x7FFFFFFF))
+        ae(date.timestamp(), 2147483647)
+        ae(str(date), '2038-01-19.03:14:07')
+        date = Date('1901-12-13.20:45:52')
+        ae(date.timestamp(), -0x80000000L)
+        ae(str(date), '1901-12-13.20:45:52')
+        date = Date('9999')
+        ae (date.timestamp(), 253370764800.0)
+        date = Date('0033')
+        ae (date.timestamp(), -61125753600.0)
+        ae(str(date), '0033-01-01.00:00:00')
 
 class TimezoneTestCase(unittest.TestCase):
 

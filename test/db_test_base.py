@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.82 2006-11-11 03:21:12 richard Exp $
+# $Id: db_test_base.py,v 1.83 2007-03-09 10:25:10 schlatterbeck Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
@@ -277,6 +277,15 @@ class DBTest(MyTestCase):
             if commit: self.db.commit()
             self.assertNotEqual(a, b)
             self.assertNotEqual(b, date.Date('1970-1-1.00:00:00'))
+            # The 1970 date will fail for metakit -- it is used
+            # internally for storing NULL. The others would, too
+            # because metakit tries to convert date.timestamp to an int
+            # for storing and fails with an overflow.
+            for d in [date.Date (x) for x in '2038', '1970', '0033', '9999']:
+                self.db.issue.set(nid, deadline=d)
+                if commit: self.db.commit()
+                c = self.db.issue.get(nid, "deadline")
+                self.assertEqual(c, d)
 
     def testDateUnset(self):
         for commit in (0,1):

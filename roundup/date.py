@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: date.py,v 1.89 2006-12-28 22:38:02 richard Exp $
+# $Id: date.py,v 1.90 2007-03-09 10:25:09 schlatterbeck Exp $
 
 """Date, time and time interval handling.
 """
@@ -263,7 +263,6 @@ class Date:
         elif isinstance(spec, datetime.datetime):
             # Python 2.3+ datetime object
             y,m,d,H,M,S,x,x,x = spec.timetuple()
-            if y < 1970: raise ValueError, 'year must be > 1970'
             S += spec.microsecond/1000000.
             spec = (y,m,d,H,M,S,x,x,x)
         elif hasattr(spec, 'tuple'):
@@ -272,7 +271,6 @@ class Date:
             spec = spec.get_tuple()
         try:
             y,m,d,H,M,S,x,x,x = spec
-            if y < 1970: raise ValueError, 'year must be > 1970'
             frac = S - int(S)
             self.year, self.month, self.day, self.hour, self.minute, \
                 self.second = _local_to_utc(y, m, d, H, M, S, offset)
@@ -309,12 +307,9 @@ class Date:
             _add_granularity(info, 'SMHdmyab')
 
         # get the current date as our default
-        ts = time.time()
-        frac = ts - int(ts)
-        y,m,d,H,M,S,x,x,x = time.gmtime(ts)
-        # gmtime loses the fractional seconds
-        S = S + frac
-        if str(S) == '60.0': S = 59.9
+        dt = datetime.datetime.utcnow()
+        y,m,d,H,M,S,x,x,x = dt.timetuple()
+        S += dt.microsecond/1000000.
 
         # whether we need to convert to UTC
         adjust = False
@@ -322,7 +317,6 @@ class Date:
         if info['y'] is not None or info['a'] is not None:
             if info['y'] is not None:
                 y = int(info['y'])
-                if y < 1970: raise ValueError, 'year must be > 1970'
                 m,d = (1,1)
                 if info['m'] is not None:
                     m = int(info['m'])
@@ -344,20 +338,19 @@ class Date:
                 S = float(info['S'])
             adjust = True
 
-        if add_granularity:
-            S = S - 1
 
         # now handle the adjustment of hour
         frac = S - int(S)
-        ts = calendar.timegm((y,m,d,H,M,S,0,0,0))
-        y, m, d, H, M, S, x, x, x = time.gmtime(ts)
+        dt = datetime.datetime(y,m,d,H,M,int(S), int(frac * 1000000.))
+        if add_granularity:
+            dt = dt - datetime.timedelta(seconds=1)
+        y, m, d, H, M, S, x, x, x = dt.timetuple()
         if adjust:
             y, m, d, H, M, S = _local_to_utc(y, m, d, H, M, S, offset)
         self.year, self.month, self.day, self.hour, self.minute, \
             self.second = y, m, d, H, M, S
         # we lost the fractional part along the way
-        self.second = self.second + frac
-        if str(self.second) == '60.0': self.second = 59.9
+        self.second += dt.microsecond/1000000.
 
         if info.get('o', None):
             try:
@@ -493,7 +486,7 @@ class Date:
         return self.formal()
 
     def formal(self, sep='.', sec='%02d'):
-        f = '%%4d-%%02d-%%02d%s%%02d:%%02d:%s'%(sep, sec)
+        f = '%%04d-%%02d-%%02d%s%%02d:%%02d:%s'%(sep, sec)
         return f%(self.year, self.month, self.day, self.hour, self.minute,
             self.second)
 
@@ -503,13 +496,10 @@ class Date:
             Note that if the day is zero, and the day appears first in the
             format, then the day number will be removed from output.
         '''
-        # Python2.4 strftime() enforces the non-zero-ness of the day-of-year
-        # component of the time tuple, so we need to figure it out
-        t = (self.year, self.month, self.day, self.hour, self.minute,
-            int(self.second), 0, 0, 0)
-        t = calendar.timegm(t)
-        t = time.gmtime(t)
-        str = time.strftime(format, t)
+        dt = datetime.datetime(self.year, self.month, self.day, self.hour,
+            self.minute, int(self.second),
+            (self.second - int (self.second)) * 1000000.)
+        str = dt.strftime(format)
 
         # handle zero day by removing it
         if format.startswith('%d') and str[0] == '0':
@@ -535,7 +525,7 @@ class Date:
             self.second, 0, 0, 0)
 
     def serialise(self):
-        return '%4d%02d%02d%02d%02d%06.3f'%(self.year, self.month,
+        return '%04d%02d%02d%02d%02d%06.3f'%(self.year, self.month,
             self.day, self.hour, self.minute, self.second)
 
     def timestamp(self):
