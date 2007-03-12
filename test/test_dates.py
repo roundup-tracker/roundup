@@ -15,10 +15,12 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: test_dates.py,v 1.40 2007-03-09 10:25:10 schlatterbeck Exp $
+# $Id: test_dates.py,v 1.41 2007-03-12 17:53:38 schlatterbeck Exp $
 from __future__ import nested_scopes
 
-import unittest, time
+import unittest
+import time
+import datetime
 
 from roundup.date import Date, Interval, Range, fixTimeOverflow, get_timezone
 
@@ -393,10 +395,6 @@ class DateTestCase(unittest.TestCase):
         ae('-2y', '2 years ago')
 
     def testPyDatetime(self):
-        try:
-            import datetime
-        except:
-            return
         d = datetime.datetime.now()
         Date(d)
         toomuch = datetime.MAXYEAR + 1
@@ -422,14 +420,10 @@ class DateTestCase(unittest.TestCase):
         ae(date.timestamp(), 2145916800)
         date = Date('1902')
         ae(date.timestamp(), -2145916800)
-        try:
-            from time import gmtime
-        except:
-            return
-        date = Date(gmtime(0))
+        date = Date(time.gmtime(0))
         ae(date.timestamp(), 0)
         ae(str(date), '1970-01-01.00:00:00')
-        date = Date(gmtime(0x7FFFFFFF))
+        date = Date(time.gmtime(0x7FFFFFFF))
         ae(date.timestamp(), 2147483647)
         ae(str(date), '2038-01-19.03:14:07')
         date = Date('1901-12-13.20:45:52')
