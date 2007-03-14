@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: date.py,v 1.91 2007-03-09 14:54:39 schlatterbeck Exp $
+# $Id: date.py,v 1.92 2007-03-14 15:07:24 schlatterbeck Exp $
 
 """Date, time and time interval handling.
 """
@@ -547,6 +547,17 @@ class Date:
         self.translator = translator
         self._ = translator.gettext
         self.ngettext = translator.ngettext
+
+    def fromtimestamp(cls, ts):
+        """Create a date object from a timestamp.
+
+        The timestamp may be outside the gmtime year-range of
+        1902-2038.
+        """
+        usec = int((ts - int(ts)) * 1000000.)
+        delta = datetime.timedelta(seconds = int(ts), microseconds = usec)
+        return cls(datetime.datetime(1970, 1, 1) + delta)
+    fromtimestamp = classmethod(fromtimestamp)
 
 class Interval:
     '''
