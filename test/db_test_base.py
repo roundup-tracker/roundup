@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.83 2007-03-09 10:25:10 schlatterbeck Exp $
+# $Id: db_test_base.py,v 1.84 2007-03-14 15:23:11 schlatterbeck Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
@@ -1484,15 +1484,33 @@ class DBTest(MyTestCase):
     def testImportExport(self):
         # use the filtering setup to create a bunch of items
         ae, filt = self.filteringSetup()
+        # Get some stuff into the journal for testing import/export of
+        # journal data:
+        self.db.user.set('4', password = password.Password('xyzzy'))
+        self.db.user.set('4', age = 3)
+        self.db.user.set('4', assignable = True)
+        self.db.issue.set('1', title = 'i1', status = '3')
+        self.db.issue.set('1', deadline = date.Date('2007'))
+        self.db.issue.set('1', foo = date.Interval('1:20'))
+        p = self.db.priority.create(name = 'some_prio_without_order')
+        self.db.commit()
+        self.db.user.set('4', password = password.Password('123xyzzy'))
+        self.db.user.set('4', assignable = False)
+        self.db.priority.set(p, order = '4711')
+        self.db.commit()
+
         self.db.user.retire('3')
         self.db.issue.retire('2')
 
         # grab snapshot of the current database
         orig = {}
+        origj = {}
         for cn,klass in self.db.classes.items():
             cl = orig[cn] = {}
+            jn = origj[cn] = {}
             for id in klass.list():
                 it = cl[id] = {}
+                jn[id] = self.db.getjournal(cn, id)
                 for name in klass.getprops().keys():
                     it[name] = klass.get(id, name)
 
@@ -1531,11 +1549,13 @@ class DBTest(MyTestCase):
                     maxid = max(maxid, id)
                 self.db.setid(cn, str(maxid+1))
                 klass.import_journals(journals[cn])
+            # This is needed, otherwise journals won't be there for anydbm
+            self.db.commit()
         finally:
             shutil.rmtree('_test_export')
 
         # compare with snapshot of the database
-        for cn, items in orig.items():
+        for cn, items in orig.iteritems():
             klass = self.db.classes[cn]
             propdefs = klass.getprops(1)
             # ensure retired items are retired :)
@@ -1555,6 +1575,19 @@ class DBTest(MyTestCase):
                             raise
                         # don't get hung up on rounding errors
                         assert not l.__cmp__(value, int_seconds=1)
+        for jc, items in origj.iteritems():
+            for id, oj in items.iteritems():
+                rj = self.db.getjournal(jc, id)
+                # Both mysql and postgresql have some minor issues with
+                # rounded seconds on export/import, so we compare only
+                # the integer part.
+                for j in oj:
+                    j[1].second = float(int(j[1].second))
+                for j in rj:
+                    j[1].second = float(int(j[1].second))
+                oj.sort()
+                rj.sort()
+                ae(oj, rj)
 
         # make sure the retired items are actually imported
         ae(self.db.user.get('4', 'username'), 'blop')

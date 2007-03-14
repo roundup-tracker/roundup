@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: back_anydbm.py,v 1.202 2006-08-29 04:20:50 richard Exp $
+#$Id: back_anydbm.py,v 1.203 2007-03-14 15:23:11 schlatterbeck Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -1962,8 +1962,7 @@ class Class(hyperdb.Class):
                         prop = properties[propname]
                         # make sure the params are eval()'able
                         if value is None:
-                            # don't export empties
-                            continue
+                            pass
                         elif isinstance(prop, hyperdb.Date):
                             # this is a hack - some dates are stored as strings
                             if not isinstance(value, type('')):

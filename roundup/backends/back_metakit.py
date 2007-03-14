@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.113 2006-08-29 04:20:50 richard Exp $
+# $Id: back_metakit.py,v 1.114 2007-03-14 15:23:11 schlatterbeck Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -735,7 +735,10 @@ class Class(hyperdb.Class):
                 if value is None:
                     value = ''
                 setattr(row, key, str(value))
-                changes[key] = str(oldvalue)
+                if oldvalue is None:
+                    changes[key] = oldvalue
+                else:
+                    changes[key] = str(oldvalue)
                 propvalues[key] = str(value)
 
             elif isinstance(prop, hyperdb.Date):
@@ -1668,8 +1671,8 @@ class Class(hyperdb.Class):
         properties = self.getprops()
         r = []
         for nodeid in self.getnodeids():
-            for nodeid, date, user, action, params in self.history(nodeid):
-                date = date.get_tuple()
+            for nodeid, dt, user, action, params in self.history(nodeid):
+                dt = dt.get_tuple()
                 if action == 'set':
                     export_data = {}
                     for propname, value in params.items():
@@ -1682,14 +1685,18 @@ class Class(hyperdb.Class):
                         if value is None:
                             pass
                         elif isinstance(prop, Date):
+                            if isinstance(value, str):
+                                value = date.Date(value)
                             value = value.get_tuple()
                         elif isinstance(prop, Interval):
+                            if isinstance(value, str):
+                                value = date.Interval(value)
                             value = value.get_tuple()
                         elif isinstance(prop, Password):
                             value = str(value)
                         export_data[propname] = value
                     params = export_data
-                l = [nodeid, date, user, action, params]
+                l = [nodeid, dt, user, action, params]
                 r.append(map(repr, l))
         return r
 
@@ -1710,13 +1717,13 @@ class Class(hyperdb.Class):
                     if value is None:
                         pass
                     elif isinstance(prop, hyperdb.Date):
-                        value = date.Date(value)
+                        value = str(date.Date(value))
                     elif isinstance(prop, hyperdb.Interval):
-                        value = date.Interval(value)
+                        value = str (date.Interval(value))
                     elif isinstance(prop, hyperdb.Password):
                         pwd = password.Password()
                         pwd.unpack(value)
-                        value = pwd
+                        value = str(pwd)
                     params[propname] = value
             action = _names_to_actionnames[action]
             r.append((nodeid, jdate, user, action, params))

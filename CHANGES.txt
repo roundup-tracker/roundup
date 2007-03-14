@@ -7,6 +7,8 @@ Feature:
   still limited to 1970-2038.
 Fixed:
 - Handling of unset Link search in RDBMS backend
+- Journal import/export for metakit backend
+- Journal export of anydbm didn't correctly export previously empty values
 
 
 2007-02-15 1.3.3
