@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.114 2007-03-14 15:23:11 schlatterbeck Exp $
+# $Id: back_metakit.py,v 1.115 2007-03-14 15:51:03 schlatterbeck Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -1719,7 +1719,7 @@ class Class(hyperdb.Class):
                     elif isinstance(prop, hyperdb.Date):
                         value = str(date.Date(value))
                     elif isinstance(prop, hyperdb.Interval):
-                        value = str (date.Interval(value))
+                        value = str(date.Interval(value))
                     elif isinstance(prop, hyperdb.Password):
                         pwd = password.Password()
                         pwd.unpack(value)
