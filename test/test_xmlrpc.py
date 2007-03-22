@@ -74,9 +74,8 @@ class AuthenticationTestCase(TestCaseBase):
         # Wrong permissions (caught by roundup security module).
         results = self.server.list('joe', 'random', 'user', 'id')
         userid = 'user' + results[0] # admin
-        # FIXME: why doesn't the following raise an exception ?
-        # self.assertRaises(Unauthorised, self.server.set,
-        #                  'joe', 'random', userid, 'realname=someone')
+        self.assertRaises(Unauthorised, self.server.set,
+                          'joe', 'random', userid, 'realname=someone')
 
 
 def test_suite():
