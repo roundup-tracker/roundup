@@ -5,6 +5,8 @@ are given with the most recent entry first.
 Feature:
 - Dates can now be in the year-range 1-9999 except for metakit which is
   still limited to 1970-2038.
+- Add simple anti-spam recipe to docs
+
 Fixed:
 - Handling of unset Link search in RDBMS backend
 - Journal import/export for metakit backend

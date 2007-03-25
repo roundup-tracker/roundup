@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.217 $
+:Version: $Revision: 1.218 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -3833,6 +3833,37 @@ So you could reimplement this as something like::
 
 Changes to Tracker Behaviour
 ----------------------------
+
+Preventing SPAM
+~~~~~~~~~~~~~~~
+
+The following detector code may be installed in your tracker's
+``detectors`` directory. It will block any messages being created that
+have HTML attachments (a very common vector for spam and phishing)
+and any messages that have more than 2 HTTP URLs in them. Just copy
+the following into ``detectors/anti_spam.py`` in your tracker::
+
+    from roundup.exceptions import Reject
+
+    def reject_html(db, cl, nodeid, newvalues):
+        if newvalues['type'] == 'text/html':
+        raise Reject, 'not allowed'
+
+    def reject_manylinks(db, cl, nodeid, newvalues):
+        content = newvalues['content']
+        if content.count('http://') > 2:
+        raise Reject, 'not allowed'
+
+    def init(db):
+        db.file.audit('create', reject_html)
+        db.msg.audit('create', reject_manylinks)
+
+You may also wish to block image attachments if your tracker does not
+need that ability::
+
+    if newvalues['type'].startswith('image/'):
+        raise Reject, 'not allowed'
+
 
 Stop "nosy" messages going to people on vacation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

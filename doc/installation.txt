@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.124 $
+:Version: $Revision: 1.125 $
 
 .. contents::
    :depth: 2
@@ -787,6 +787,15 @@ If you intend to send messages to Roundup that use Chinese, Japanese or
 Korean encodings the you'll need to obtain CJKCodecs from
 http://cjkpython.berlios.de/
 
+
+Public Tracker Considerations
+-----------------------------
+
+If you run a public tracker, you will eventually have to think about
+dealing with spam entered through both the web and mail interfaces.
+
+The `customisation documentation`_ has a simple detector that will block
+a lot of spam attempts. Look for the example "Preventing SPAM".
 
 
 Maintenance
