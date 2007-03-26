@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.40 2007-02-19 20:27:53 a1s Exp $
+# $Id: configuration.py,v 1.41 2007-03-26 04:04:42 richard Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -653,6 +653,20 @@ SETTINGS = (
             "will match an issue for the interval after the issue's\n"
             "creation or last activity. The interval is a standard\n"
             "Roundup interval."),
+        (Option, "refwd_re", "\s*\W?\s*(fw|fwd|re|aw|sv|ang)\W\s*",
+            "Regular expression matching a single reply or forward\n"
+            "prefix prepended by the mailer. This is explicitly\n"
+            "stripped from the subject during parsing."),
+        (Option, "origmsg_re", "^[>|\s]*-----\s?Original Message\s?-----$",
+            "Regular expression matching start of an original message\n"
+            "if quoted the in body."),
+        (Option, "sign_re", "^[>|\s]*-- ?$",
+            "Regular expression matching the start of a signature\n"
+            "in the message body."),
+        (Option, "eol_re", r"[\r\n]+",
+            "Regular expression matching end of line."),
+        (Option, "blankline_re", r"[\r\n]+\s*[\r\n]+",
+            "Regular expression matching a blank line."),
     ), "Roundup Mail Gateway options"),
     ("nosy", (
         (RunDetectorOption, "messages_to_author", "no",

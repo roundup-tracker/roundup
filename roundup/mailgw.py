@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2001 Bizar Software Pty Ltd (http://www.bizarsoftware.com.au/)
 # This module is free software, and you may redistribute it and/or modify
@@ -72,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.184 2007-02-15 03:09:53 richard Exp $
+$Id: mailgw.py,v 1.185 2007-03-26 04:04:42 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -635,11 +636,14 @@ Emails to Roundup trackers must include a Subject: line!
                                  'argswhole'])
 
         # Look for Re: et. al. Used later on for MAILGW_SUBJECT_CONTENT_MATCH
-        re_re = r'''(?P<refwd>(\s*\W?\s*(fw|fwd|re|aw|sv|ang)\W)+)\s*'''
-        m = re.match(re_re, tmpsubject, re.IGNORECASE|re.VERBOSE)
+        refwd_re = config['MAILGW_REFWD_RE'].decode('iso8859-1')
+        re_re = r'''(?P<refwd>%s)*\s*''' % refwd_re
+        m = re.match(re_re, tmpsubject, re.IGNORECASE|re.VERBOSE|re.UNICODE)
         if m:
-            matches.update(m.groupdict())
-            tmpsubject = tmpsubject[len(matches['refwd']):] # Consume Re:
+            m = m.groupdict()
+            if m['refwd']:
+                matches.update(m)
+                tmpsubject = tmpsubject[len(m['refwd']):] # Consume Re:
 
         # Look for Leading "
         m = re.match(r'(?P<quote>\s*")', tmpsubject,
@@ -1005,10 +1009,14 @@ not find a text/plain part to use.
         # figure how much we should muck around with the email body
         keep_citations = config['MAILGW_KEEP_QUOTED_TEXT']
         keep_body = config['MAILGW_LEAVE_BODY_UNCHANGED']
+        blank_line = re.compile(r'%s' % config['MAILGW_BLANKLINE_RE'])
+        eol = re.compile(r'%s' % config['MAILGW_EOL_RE'])
+        signature = re.compile(r'%s' % config['MAILGW_SIGN_RE'])
+        original_msg = re.compile(r'%s' % config['MAILGW_ORIGMSG_RE'])
 
         # parse the body of the message, stripping out bits as appropriate
         summary, content = parseContent(content, keep_citations,
-            keep_body)
+            keep_body, blank_line, eol, signature, original_msg)
         content = content.strip()
 
         #
@@ -1209,12 +1217,7 @@ def uidFromAddress(db, address, create=1, **user_props):
     else:
         return 0
 
-
-def parseContent(content, keep_citations, keep_body,
-        blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
-        eol=re.compile(r'[\r\n]+'),
-        signature=re.compile(r'^[>|\s]*-- ?$'),
-        original_msg=re.compile(r'^[>|\s]*-----\s?Original Message\s?-----$')):
+def parseContent(content, keep_citations, keep_body, blank_line, eol, signature, original_msg):
     ''' The message body is divided into sections by blank lines.
         Sections where the second and all subsequent lines begin with a ">"
         or "|" character are considered "quoting sections". The first line of

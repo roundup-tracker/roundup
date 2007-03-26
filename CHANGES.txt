@@ -6,6 +6,8 @@ Feature:
 - Dates can now be in the year-range 1-9999 except for metakit which is
   still limited to 1970-2038.
 - Add simple anti-spam recipe to docs
+- Allow customisation of regular expressions used in email parsing, thanks
+  Bruno Damour
 
 Fixed:
 - Handling of unset Link search in RDBMS backend
