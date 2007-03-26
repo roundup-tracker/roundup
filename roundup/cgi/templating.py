@@ -1568,7 +1568,7 @@ class DateHTMLProperty(HTMLProperty):
                 raw_value = None
             else:
                 if isinstance(default, basestring):
-                    raw_value = Date(default, translator=self._client)
+                    raw_value = date.Date(default, translator=self._client)
                 elif isinstance(default, date.Date):
                     raw_value = default
                 elif isinstance(default, DateHTMLProperty):
