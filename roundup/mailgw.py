@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.185 2007-03-26 04:04:42 richard Exp $
+$Id: mailgw.py,v 1.186 2007-03-26 06:19:55 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -1009,10 +1009,10 @@ not find a text/plain part to use.
         # figure how much we should muck around with the email body
         keep_citations = config['MAILGW_KEEP_QUOTED_TEXT']
         keep_body = config['MAILGW_LEAVE_BODY_UNCHANGED']
-        blank_line = re.compile(r'%s' % config['MAILGW_BLANKLINE_RE'])
-        eol = re.compile(r'%s' % config['MAILGW_EOL_RE'])
-        signature = re.compile(r'%s' % config['MAILGW_SIGN_RE'])
-        original_msg = re.compile(r'%s' % config['MAILGW_ORIGMSG_RE'])
+        blank_line = re.compile(config['MAILGW_BLANKLINE_RE'])
+        eol = re.compile(config['MAILGW_EOL_RE'])
+        signature = re.compile(config['MAILGW_SIGN_RE'])
+        original_msg = re.compile(config['MAILGW_ORIGMSG_RE'])
 
         # parse the body of the message, stripping out bits as appropriate
         summary, content = parseContent(content, keep_citations,
