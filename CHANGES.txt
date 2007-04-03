@@ -3,6 +3,7 @@ are given with the most recent entry first.
 
 2007-??-??
 Feature:
+- Roundup has a new xmlrpc frontend that gives access to a tracker using XMLRPC.
 - Dates can now be in the year-range 1-9999 except for metakit which is
   still limited to 1970-2038.
 - Add simple anti-spam recipe to docs

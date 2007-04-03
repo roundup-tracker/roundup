@@ -1,10 +1,8 @@
 #
 # Copyright (C) 2007 Stefan Seefeld
 # All rights reserved.
-# Licensed to the public under the terms of the GNU LGPL (>= 2),
-# see the file COPYING for details.
+# For license terms see the file COPYING.txt.
 #
-
 
 import base64
 import roundup.instance
@@ -59,7 +57,7 @@ class RoundupRequest:
             raise Unauthorised, 'Invalid user.'
         self.db.setCurrentUser(username)
         
-    def __del__(self):
+    def close(self):
         """Close the database, after committing any changes, if needed."""
 
         if getattr(self, 'db'):
@@ -118,7 +116,9 @@ class RoundupServer:
         cl = r.get_class(classname)
         if not propname:
             propname = cl.labelprop()
-        return [cl.get(id, propname) for id in cl.list()]
+        result = [cl.get(id, propname) for id in cl.list()]
+        r.close()
+        return result
 
     def display(self, username, password, designator, *properties):
 
@@ -127,8 +127,9 @@ class RoundupServer:
         cl = r.get_class(classname)
         props = properties and list(properties) or cl.properties.keys()
         props.sort()
-        return dict([(property, cl.get(nodeid, property))
-                     for property in props])
+        result = [(property, cl.get(nodeid, property)) for property in props]
+        r.close()
+        return dict(result)
 
     def create(self, username, password, classname, *args):
 
@@ -145,9 +146,12 @@ class RoundupServer:
 
         # do the actual create
         try:
-            return cl.create(**props)
+            result = cl.create(**props)
         except (TypeError, IndexError, ValueError), message:
             raise UsageError, message
+        finally:
+            r.close()
+        return result
 
     def set(self, username, password, designator, *args):
 
@@ -161,5 +165,6 @@ class RoundupServer:
             cl.set(itemid, **props)
         except (TypeError, IndexError, ValueError), message:
             raise UsageError, message
-
+        finally:
+            r.close()
 

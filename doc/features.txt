@@ -102,6 +102,11 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
  - a variety of sample shell scripts are provided (weekly reports, issue
    generation, ...)
 
+*xmlrpc interface*
+ - simple remote tracker interface with basic HTTP authentication
+ - provides same access to tracker as roundup-admin, but based on
+   XMLRPC calls
+
 .. _sqlite: http://www.hwaci.com/sw/sqlite/
 .. _metakit: http://www.equi4.com/metakit/
 .. _mysql: http://sourceforge.net/projects/mysql-python

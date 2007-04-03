@@ -1,8 +1,7 @@
 #
 # Copyright (C) 2007 Stefan Seefeld
 # All rights reserved.
-# Licensed to the public under the terms of the GNU LGPL (>= 2),
-# see the file COPYING for details.
+# For license terms see the file COPYING.txt.
 #
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
