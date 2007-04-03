@@ -1,16 +1,17 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.41 2007-03-26 04:04:42 richard Exp $
+# $Id: configuration.py,v 1.42 2007-04-03 06:36:08 a1s Exp $
 #
 __docformat__ = "restructuredtext"
 
+import ConfigParser
 import getopt
 import imp
-import os
-import time
-import ConfigParser
 import logging, logging.config
+import os
+import re
 import sys
+import time
 
 import roundup.date
 
@@ -423,6 +424,37 @@ class TimezoneOption(Option):
                     "Timezone name or numeric hour offset required")
         return value
 
+class RegExpOption(Option):
+
+    """Regular Expression option (value is Regular Expression Object)"""
+
+    class_description = "Value is Python Regular Expression (UTF8-encoded)."
+
+    RE_TYPE = type(re.compile(""))
+
+    def __init__(self, config, section, setting,
+        default=NODEFAULT, description=None, aliases=None,
+        flags=0,
+    ):
+        self.flags = flags
+        Option.__init__(self, config, section, setting, default,
+            description, aliases)
+
+    def _value2str(self, value):
+        assert isinstance(value, self.RE_TYPE)
+        return value.pattern
+
+    def str2value(self, value):
+        if not isinstance(value, unicode):
+            value = str(value)
+            # if it is 7-bit ascii, use it as string,
+            # otherwise convert to unicode.
+            try:
+                value.decode("ascii")
+            except UnicodeError:
+                value = value.decode("utf-8")
+        return re.compile(value, self.flags)
+
 ### Main configuration layout.
 # Config is described as a sequence of sections,
 # where each section name is followed by a sequence
@@ -653,19 +685,20 @@ SETTINGS = (
             "will match an issue for the interval after the issue's\n"
             "creation or last activity. The interval is a standard\n"
             "Roundup interval."),
-        (Option, "refwd_re", "\s*\W?\s*(fw|fwd|re|aw|sv|ang)\W\s*",
+        (RegExpOption, "refwd_re", "\s*\W?\s*(fw|fwd|re|aw|sv|ang)\W\s*",
             "Regular expression matching a single reply or forward\n"
             "prefix prepended by the mailer. This is explicitly\n"
             "stripped from the subject during parsing."),
-        (Option, "origmsg_re", "^[>|\s]*-----\s?Original Message\s?-----$",
+        (RegExpOption, "origmsg_re",
+            "^[>|\s]*-----\s?Original Message\s?-----$",
             "Regular expression matching start of an original message\n"
             "if quoted the in body."),
-        (Option, "sign_re", "^[>|\s]*-- ?$",
+        (RegExpOption, "sign_re", "^[>|\s]*-- ?$",
             "Regular expression matching the start of a signature\n"
             "in the message body."),
-        (Option, "eol_re", r"[\r\n]+",
+        (RegExpOption, "eol_re", r"[\r\n]+",
             "Regular expression matching end of line."),
-        (Option, "blankline_re", r"[\r\n]+\s*[\r\n]+",
+        (RegExpOption, "blankline_re", r"[\r\n]+\s*[\r\n]+",
             "Regular expression matching a blank line."),
     ), "Roundup Mail Gateway options"),
     ("nosy", (
