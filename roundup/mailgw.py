@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.186 2007-03-26 06:19:55 richard Exp $
+$Id: mailgw.py,v 1.187 2007-04-03 06:43:30 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -81,7 +81,7 @@ import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
 import time, random, sys, logging
 import traceback, MimeWriter, rfc822
 
-from roundup import hyperdb, date, password, rfc2822, exceptions
+from roundup import configuration, hyperdb, date, password, rfc2822, exceptions
 from roundup.mailer import Mailer, MessageSendError
 from roundup.i18n import _
 
@@ -636,8 +636,7 @@ Emails to Roundup trackers must include a Subject: line!
                                  'argswhole'])
 
         # Look for Re: et. al. Used later on for MAILGW_SUBJECT_CONTENT_MATCH
-        refwd_re = config['MAILGW_REFWD_RE'].decode('iso8859-1')
-        re_re = r'''(?P<refwd>%s)*\s*''' % refwd_re
+        re_re = r"(?P<refwd>%s)*\s*" % config["MAILGW_REFWD_RE"].pattern
         m = re.match(re_re, tmpsubject, re.IGNORECASE|re.VERBOSE|re.UNICODE)
         if m:
             m = m.groupdict()
@@ -664,7 +663,7 @@ Emails to Roundup trackers must include a Subject: line!
             matches.update(m.groupdict())
             # Skip to the end of the class identifier, including any
             # garbage before it.
-            
+
             tmpsubject = tmpsubject[m.end():]
 
         # if we've not found a valid classname prefix then force the
@@ -1006,17 +1005,8 @@ Roundup requires the submission to be plain text. The message parser could
 not find a text/plain part to use.
 """)
 
-        # figure how much we should muck around with the email body
-        keep_citations = config['MAILGW_KEEP_QUOTED_TEXT']
-        keep_body = config['MAILGW_LEAVE_BODY_UNCHANGED']
-        blank_line = re.compile(config['MAILGW_BLANKLINE_RE'])
-        eol = re.compile(config['MAILGW_EOL_RE'])
-        signature = re.compile(config['MAILGW_SIGN_RE'])
-        original_msg = re.compile(config['MAILGW_ORIGMSG_RE'])
-
         # parse the body of the message, stripping out bits as appropriate
-        summary, content = parseContent(content, keep_citations,
-            keep_body, blank_line, eol, signature, original_msg)
+        summary, content = parseContent(content, config=config)
         content = content.strip()
 
         #
@@ -1217,25 +1207,45 @@ def uidFromAddress(db, address, create=1, **user_props):
     else:
         return 0
 
-def parseContent(content, keep_citations, keep_body, blank_line, eol, signature, original_msg):
-    ''' The message body is divided into sections by blank lines.
-        Sections where the second and all subsequent lines begin with a ">"
-        or "|" character are considered "quoting sections". The first line of
-        the first non-quoting section becomes the summary of the message.
+def parseContent(content, keep_citations=None, keep_body=None, config=None):
+    """Parse mail message; return message summary and stripped content
 
-        If keep_citations is true, then we keep the "quoting sections" in the
-        content.
-        If keep_body is true, we even keep the signature sections.
-    '''
+    The message body is divided into sections by blank lines.
+    Sections where the second and all subsequent lines begin with a ">"
+    or "|" character are considered "quoting sections". The first line of
+    the first non-quoting section becomes the summary of the message.
+
+    Arguments:
+
+        keep_citations: declared for backward compatibility.
+            If omitted or None, use config["MAILGW_KEEP_QUOTED_TEXT"]
+
+        keep_body: declared for backward compatibility.
+            If omitted or None, use config["MAILGW_LEAVE_BODY_UNCHANGED"]
+
+        config: tracker configuration object.
+            If omitted or None, use default configuration.
+
+    """
+    if config is None:
+        config = configuration.CoreConfig()
+    if keep_citations is None:
+        keep_citations = config["MAILGW_KEEP_QUOTED_TEXT"]
+    if keep_body is None:
+        keep_body = config["MAILGW_LEAVE_BODY_UNCHANGED"]
+    eol = config["MAILGW_EOL_RE"]
+    signature = config["MAILGW_SIGN_RE"]
+    original_msg = config["MAILGW_ORIGMSG_RE"]
+
     # strip off leading carriage-returns / newlines
     i = 0
     for i in range(len(content)):
         if content[i] not in '\r\n':
             break
     if i > 0:
-        sections = blank_line.split(content[i:])
+        sections = config["MAILGW_BLANKLINE_RE"].split(content[i:])
     else:
-        sections = blank_line.split(content)
+        sections = config["MAILGW_BLANKLINE_RE"].split(content)
 
     # extract out the summary from the message
     summary = ''
