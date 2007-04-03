@@ -1,4 +1,4 @@
-#$Id: messagesummary.py,v 1.1 2003-04-17 03:26:38 richard Exp $
+#$Id: messagesummary.py,v 1.2 2007-04-03 06:47:21 a1s Exp $
 
 from roundup.mailgw import parseContent
 
@@ -8,7 +8,7 @@ def summarygenerator(db, cl, nodeid, newvalues):
     if newvalues.has_key('summary') or not newvalues.has_key('content'):
         return
 
-    summary, content = parseContent(newvalues['content'], 1, 1)
+    summary, content = parseContent(newvalues['content'], config=db.config)
     newvalues['summary'] = summary
 
 
