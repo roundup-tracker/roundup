@@ -56,7 +56,7 @@ class RoundupRequest:
         if stored != password: # Wrong password
             raise Unauthorised, 'Invalid user.'
         self.db.setCurrentUser(username)
-        
+
     def close(self):
         """Close the database, after committing any changes, if needed."""
 
@@ -146,9 +146,10 @@ class RoundupServer:
 
         # do the actual create
         try:
-            result = cl.create(**props)
-        except (TypeError, IndexError, ValueError), message:
-            raise UsageError, message
+            try:
+                result = cl.create(**props)
+            except (TypeError, IndexError, ValueError), message:
+                raise UsageError, message
         finally:
             r.close()
         return result
@@ -162,9 +163,11 @@ class RoundupServer:
         # convert types
         props = r.props_from_args(cl, args)
         try:
-            cl.set(itemid, **props)
-        except (TypeError, IndexError, ValueError), message:
-            raise UsageError, message
+            try:
+                cl.set(itemid, **props)
+            except (TypeError, IndexError, ValueError), message:
+                raise UsageError, message
         finally:
             r.close()
 
+# vim: set et sts=4 sw=4 :
