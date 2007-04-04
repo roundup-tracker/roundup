@@ -51,9 +51,11 @@ class RoundupRequest:
         try:
             userid = self.db.user.lookup(username)
         except KeyError: # No such user
+            self.db.close()
             raise Unauthorised, 'Invalid user.'
         stored = self.db.user.get(userid, 'password')
         if stored != password: # Wrong password
+            self.db.close()
             raise Unauthorised, 'Invalid user.'
         self.db.setCurrentUser(username)
 
