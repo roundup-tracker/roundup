@@ -3,7 +3,7 @@ from __future__ import nested_scopes
 """Implements the API used in the HTML templating for the web interface.
 """
 
-todo = '''
+todo = """
 - Most methods should have a "default" arg to supply a value
   when none appears in the hyperdb or request.
 - Multilink property additions: change_note and new_upload
@@ -15,7 +15,7 @@ todo = '''
      values are found in the CGI environment.
   """
 - have menu() methods accept filtering arguments
-'''
+"""
 
 __docformat__ = 'restructuredtext'
 
@@ -75,8 +75,8 @@ class Unauthorised(Exception):
             'action': self.action, 'class': self.klass}
 
 def find_template(dir, name, view):
-    ''' Find a template in the nominated dir
-    '''
+    """ Find a template in the nominated dir
+    """
     # find the source
     if view:
         filename = '%s.%s'%(name, view)
@@ -122,8 +122,8 @@ class Templates:
         self.dir = dir
 
     def precompileTemplates(self):
-        ''' Go through a directory and precompile all the templates therein
-        '''
+        """ Go through a directory and precompile all the templates therein
+        """
         for filename in os.listdir(self.dir):
             # skip subdirs
             if os.path.isdir(filename):
@@ -147,7 +147,7 @@ class Templates:
                 self.get(filename, None)
 
     def get(self, name, extension=None):
-        ''' Interface to get a template, possibly loading a compiled template.
+        """ Interface to get a template, possibly loading a compiled template.
 
             "name" and "extension" indicate the template we're after, which in
             most cases will be "name.extension". If "extension" is None, then
@@ -155,7 +155,7 @@ class Templates:
 
             If the file "name.extension" doesn't exist, we look for
             "_generic.extension" as a fallback.
-        '''
+        """
         # default the name to "home"
         if name is None:
             name = 'home'
@@ -290,12 +290,12 @@ def context(client, template=None, classname=None, request=None):
     return c
 
 class RoundupPageTemplate(PageTemplate.PageTemplate):
-    '''A Roundup-specific PageTemplate.
+    """A Roundup-specific PageTemplate.
 
     Interrogate the client to set up Roundup-specific template variables
     to be available.  See 'context' function for the list of variables.
 
-    '''
+    """
 
     # 06-jun-2004 [als] i am not sure if this method is used yet
     def getContext(self, client, classname, request):
@@ -327,8 +327,8 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
         return '<Roundup PageTemplate %r>'%self.id
 
 class HTMLDatabase:
-    ''' Return HTMLClasses for valid class fetches
-    '''
+    """ Return HTMLClasses for valid class fetches
+    """
     def __init__(self, client):
         self._client = client
         self._ = client._
@@ -363,9 +363,9 @@ class HTMLDatabase:
         return m
 
 def lookupIds(db, prop, ids, fail_ok=0, num_re=re.compile('^-?\d+$')):
-    ''' "fail_ok" should be specified if we wish to pass through bad values
+    """ "fail_ok" should be specified if we wish to pass through bad values
         (most likely form values that we wish to represent back to the user)
-    '''
+    """
     cl = db.getclass(prop.classname)
     l = []
     for entry in ids:
@@ -379,9 +379,9 @@ def lookupIds(db, prop, ids, fail_ok=0, num_re=re.compile('^-?\d+$')):
     return l
 
 def lookupKeys(linkcl, key, ids, num_re=re.compile('^-?\d+$')):
-    ''' Look up the "key" values for "ids" list - though some may already
+    """ Look up the "key" values for "ids" list - though some may already
     be key values, not ids.
-    '''
+    """
     l = []
     for entry in ids:
         if num_re.match(entry):
@@ -420,7 +420,7 @@ def input_xhtml(**attrs):
         for k,v in attrs.items()])
 
 class HTMLInputMixin:
-    ''' requires a _client property '''
+    """ requires a _client property """
     def __init__(self):
         html_version = 'html4'
         if hasattr(self._client.instance.config, 'HTML_VERSION'):
@@ -445,25 +445,25 @@ class HTMLInputMixin:
 class HTMLPermissions:
 
     def view_check(self):
-        ''' Raise the Unauthorised exception if the user's not permitted to
+        """ Raise the Unauthorised exception if the user's not permitted to
             view this class.
-        '''
+        """
         if not self.is_view_ok():
             raise Unauthorised("view", self._classname,
                 translator=self._client.translator)
 
     def edit_check(self):
-        ''' Raise the Unauthorised exception if the user's not permitted to
+        """ Raise the Unauthorised exception if the user's not permitted to
             edit items of this class.
-        '''
+        """
         if not self.is_edit_ok():
             raise Unauthorised("edit", self._classname,
                 translator=self._client.translator)
 
 
 class HTMLClass(HTMLInputMixin, HTMLPermissions):
-    ''' Accesses through a class (either through *class* or *db.<classname>*)
-    '''
+    """ Accesses through a class (either through *class* or *db.<classname>*)
+    """
     def __init__(self, client, classname, anonymous=0):
         self._client = client
         self._ = client._
@@ -479,28 +479,28 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         HTMLInputMixin.__init__(self)
 
     def is_edit_ok(self):
-        ''' Is the user allowed to Create the current class?
-        '''
+        """ Is the user allowed to Create the current class?
+        """
         return self._db.security.hasPermission('Create', self._client.userid,
             self._classname)
 
     def is_view_ok(self):
-        ''' Is the user allowed to View the current class?
-        '''
+        """ Is the user allowed to View the current class?
+        """
         return self._db.security.hasPermission('View', self._client.userid,
             self._classname)
 
     def is_only_view_ok(self):
-        ''' Is the user only allowed to View (ie. not Create) the current class?
-        '''
+        """ Is the user only allowed to View (ie. not Create) the current class?
+        """
         return self.is_view_ok() and not self.is_edit_ok()
 
     def __repr__(self):
         return '<HTMLClass(0x%x) %s>'%(id(self), self.classname)
 
     def __getitem__(self, item):
-        ''' return an HTMLProperty instance
-        '''
+        """ return an HTMLProperty instance
+        """
        #print 'HTMLClass.getitem', (self, item)
 
         # we don't exist
@@ -543,19 +543,19 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         raise KeyError, item
 
     def __getattr__(self, attr):
-        ''' convenience access '''
+        """ convenience access """
         try:
             return self[attr]
         except KeyError:
             raise AttributeError, attr
 
     def designator(self):
-        ''' Return this class' designator (classname) '''
+        """ Return this class' designator (classname) """
         return self._classname
 
     def getItem(self, itemid, num_re=re.compile('^-?\d+$')):
-        ''' Get an item of this class by its item id.
-        '''
+        """ Get an item of this class by its item id.
+        """
         # make sure we're looking at an itemid
         if not isinstance(itemid, type(1)) and not num_re.match(itemid):
             itemid = self._klass.lookup(itemid)
@@ -563,8 +563,8 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         return HTMLItem(self._client, self.classname, itemid)
 
     def properties(self, sort=1):
-        ''' Return HTMLProperty for all of this class' properties.
-        '''
+        """ Return HTMLProperty for all of this class' properties.
+        """
         l = []
         for name, prop in self._props.items():
             for klass, htmlklass in propclasses:
@@ -580,8 +580,8 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         return l
 
     def list(self, sort_on=None):
-        ''' List all items in this class.
-        '''
+        """ List all items in this class.
+        """
         # get the list and sort it nicely
         l = self._klass.list()
         sortfunc = make_sort_function(self._db, self._classname, sort_on)
@@ -597,8 +597,8 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         return l
 
     def csv(self):
-        ''' Return the items of this class as a chunk of CSV text.
-        '''
+        """ Return the items of this class as a chunk of CSV text.
+        """
         props = self.propnames()
         s = StringIO.StringIO()
         writer = csv.writer(s)
@@ -617,18 +617,18 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         return s.getvalue()
 
     def propnames(self):
-        ''' Return the list of the names of the properties of this class.
-        '''
+        """ Return the list of the names of the properties of this class.
+        """
         idlessprops = self._klass.getprops(protected=0).keys()
         idlessprops.sort()
         return ['id'] + idlessprops
 
     def filter(self, request=None, filterspec={}, sort=[], group=[]):
-        ''' Return a list of items from this class, filtered and sorted
+        """ Return a list of items from this class, filtered and sorted
             by the current requested filterspec/filter/sort/group args
 
             "request" takes precedence over the other three arguments.
-        '''
+        """
         if request is not None:
             filterspec = request.filterspec
             sort = request.sort
@@ -645,7 +645,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
     def classhelp(self, properties=None, label=''"(list)", width='500',
             height='400', property='', form='itemSynopsis',
             pagesize=50, inputtype="checkbox", sort=None, filter=None):
-        '''Pop up a javascript window with class help
+        """Pop up a javascript window with class help
 
         This generates a link to a popup window which displays the
         properties indicated by "properties" of the class named by
@@ -674,7 +674,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         If the "form" arg is given, it's passed through to the
         javascript help_window function. - it's the name of the form
         the "property" belongs to.
-        '''
+        """
         if properties is None:
             properties = self._klass.getprops(protected=0).keys()
             properties.sort()
@@ -712,10 +712,10 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
                (help_url, onclick, self._(label))
 
     def submit(self, label=''"Submit New Entry"):
-        ''' Generate a submit button (and action hidden element)
+        """ Generate a submit button (and action hidden element)
 
         Generate nothing if we're not editable.
-        '''
+        """
         if not self.is_edit_ok():
             return ''
 
@@ -729,8 +729,8 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         return self._('New node - no history')
 
     def renderWith(self, name, **kwargs):
-        ''' Render this class with the given template.
-        '''
+        """ Render this class with the given template.
+        """
         # create a new request and override the specified args
         req = HTMLRequest(self._client)
         req.classname = self.classname
@@ -747,8 +747,8 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         return pt.render(self._client, self.classname, req, **args)
 
 class _HTMLItem(HTMLInputMixin, HTMLPermissions):
-    ''' Accesses through an *item*
-    '''
+    """ Accesses through an *item*
+    """
     def __init__(self, client, classname, nodeid, anonymous=0):
         self._client = client
         self._db = client.db
@@ -763,22 +763,22 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         HTMLInputMixin.__init__(self)
 
     def is_edit_ok(self):
-        ''' Is the user allowed to Edit the current class?
-        '''
+        """ Is the user allowed to Edit the current class?
+        """
         return self._db.security.hasPermission('Edit', self._client.userid,
             self._classname, itemid=self._nodeid)
 
     def is_view_ok(self):
-        ''' Is the user allowed to View the current class?
-        '''
+        """ Is the user allowed to View the current class?
+        """
         if self._db.security.hasPermission('View', self._client.userid,
                 self._classname, itemid=self._nodeid):
             return 1
         return self.is_edit_ok()
 
     def is_only_view_ok(self):
-        ''' Is the user only allowed to View (ie. not Edit) the current class?
-        '''
+        """ Is the user only allowed to View (ie. not Edit) the current class?
+        """
         return self.is_view_ok() and not self.is_edit_ok()
 
     def __repr__(self):
@@ -786,10 +786,10 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
             self._nodeid)
 
     def __getitem__(self, item):
-        ''' return an HTMLProperty instance
+        """ return an HTMLProperty instance
             this now can handle transitive lookups where item is of the
             form x.y.z
-        '''
+        """
         #print 'HTMLItem.getitem', (self, item)
         if item == 'id':
             return self._nodeid
@@ -827,7 +827,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         raise KeyError, item
 
     def __getattr__(self, attr):
-        ''' convenience access to properties '''
+        """ convenience access to properties """
         try:
             return self[attr]
         except KeyError:
@@ -852,8 +852,8 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
             self.input(type="submit", name="submit_button", value=self._(label))
 
     def journal(self, direction='descending'):
-        ''' Return a list of HTMLJournalEntry instances.
-        '''
+        """ Return a list of HTMLJournalEntry instances.
+        """
         # XXX do this
         return []
 
@@ -1091,8 +1091,8 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         return '\n'.join(l)
 
     def renderQueryForm(self):
-        ''' Render this item, which is a query, as a search form.
-        '''
+        """ Render this item, which is a query, as a search form.
+        """
         # create a new request and override the specified args
         req = HTMLRequest(self._client)
         req.classname = self._klass.get(self._nodeid, 'klass')
@@ -1107,9 +1107,9 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         return pt.render(self._client, req.classname, req)
 
     def download_url(self):
-        ''' Assume that this item is a FileClass and that it has a name
+        """ Assume that this item is a FileClass and that it has a name
         and content. Construct a URL for the download of the content.
-        '''
+        """
         name = self._klass.get(self._nodeid, 'name')
         url = '%s%s/%s'%(self._classname, self._nodeid, name)
         return urllib.quote(url)
@@ -1138,23 +1138,23 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                 for key, value in query.items()])
 
 class _HTMLUser(_HTMLItem):
-    '''Add ability to check for permissions on users.
-    '''
+    """Add ability to check for permissions on users.
+    """
     _marker = []
     def hasPermission(self, permission, classname=_marker,
             property=None, itemid=None):
-        '''Determine if the user has the Permission.
+        """Determine if the user has the Permission.
 
         The class being tested defaults to the template's class, but may
         be overidden for this test by suppling an alternate classname.
-        '''
+        """
         if classname is self._marker:
             classname = self._client.classname
         return self._db.security.hasPermission(permission,
             self._nodeid, classname, property, itemid)
 
     def hasRole(self, rolename):
-        '''Determine whether the user has the Role.'''
+        """Determine whether the user has the Role."""
         roles = self._db.user.get(self._nodeid, 'roles').split(',')
         for role in roles:
             if role.strip() == rolename: return True
@@ -1167,7 +1167,7 @@ def HTMLItem(client, classname, nodeid, anonymous=0):
         return _HTMLItem(client, classname, nodeid, anonymous)
 
 class HTMLProperty(HTMLInputMixin, HTMLPermissions):
-    ''' String, Number, Date, Interval HTMLProperty
+    """ String, Number, Date, Interval HTMLProperty
 
         Has useful attributes:
 
@@ -1175,7 +1175,7 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
          _value the value of the property if any
 
         A wrapper object which may be stringified for the plain() behaviour.
-    '''
+    """
     def __init__(self, client, classname, nodeid, prop, name, value,
             anonymous=0):
         self._client = client
@@ -1208,14 +1208,14 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
         return not not self._value
 
     def isset(self):
-        '''Is my _value not None?'''
+        """Is my _value not None?"""
         return self._value is not None
 
     def is_edit_ok(self):
-        '''Should the user be allowed to use an edit form field for this
+        """Should the user be allowed to use an edit form field for this
         property. Check "Create" for new items, or "Edit" for existing
         ones.
-        '''
+        """
         if self._nodeid:
             return self._db.security.hasPermission('Edit', self._client.userid,
                 self._classname, self._name, self._nodeid)
@@ -1223,8 +1223,8 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
             self._classname, self._name)
 
     def is_view_ok(self):
-        ''' Is the user allowed to View the current class?
-        '''
+        """ Is the user allowed to View the current class?
+        """
         if self._db.security.hasPermission('View', self._client.userid,
                 self._classname, self._name, self._nodeid):
             return 1
@@ -1255,16 +1255,16 @@ class StringHTMLProperty(HTMLProperty):
                 return s
 
     def hyperlinked(self):
-        ''' Render a "hyperlinked" version of the text '''
+        """ Render a "hyperlinked" version of the text """
         return self.plain(hyperlink=1)
 
     def plain(self, escape=0, hyperlink=0):
-        '''Render a "plain" representation of the property
+        """Render a "plain" representation of the property
 
         - "escape" turns on/off HTML quoting
         - "hyperlink" turns on/off in-text hyperlinking of URLs, email
           addresses and designators
-        '''
+        """
         if not self.is_view_ok():
             return self._('[hidden]')
 
@@ -1282,7 +1282,7 @@ class StringHTMLProperty(HTMLProperty):
         return s
 
     def wrapped(self, escape=1, hyperlink=1):
-        '''Render a "wrapped" representation of the property.
+        """Render a "wrapped" representation of the property.
 
         We wrap long lines at 80 columns on the nearest whitespace. Lines
         with no whitespace are not broken to force wrapping.
@@ -1293,7 +1293,7 @@ class StringHTMLProperty(HTMLProperty):
         - "escape" turns on/off HTML quoting
         - "hyperlink" turns on/off in-text hyperlinking of URLs, email
           addresses and designators
-        '''
+        """
         if not self.is_view_ok():
             return self._('[hidden]')
 
@@ -1310,10 +1310,10 @@ class StringHTMLProperty(HTMLProperty):
         return s
 
     def stext(self, escape=0, hyperlink=1):
-        ''' Render the value of the property as StructuredText.
+        """ Render the value of the property as StructuredText.
 
             This requires the StructureText module to be installed separately.
-        '''
+        """
         if not self.is_view_ok():
             return self._('[hidden]')
 
@@ -1323,10 +1323,10 @@ class StringHTMLProperty(HTMLProperty):
         return StructuredText(s,level=1,header=0)
 
     def field(self, **kwargs):
-        ''' Render the property as a field in HTML.
+        """ Render the property as a field in HTML.
 
             If not editable, just display the value via plain().
-        '''
+        """
         if not self.is_edit_ok():
             return self.plain()
 
@@ -1339,10 +1339,10 @@ class StringHTMLProperty(HTMLProperty):
         return self.input(**kwargs)
 
     def multiline(self, escape=0, rows=5, cols=40):
-        ''' Render a multiline form edit field for the property.
+        """ Render a multiline form edit field for the property.
 
             If not editable, just display the plain() value in a <pre> tag.
-        '''
+        """
         if not self.is_edit_ok():
             return '<pre>%s</pre>'%self.plain()
 
@@ -1358,8 +1358,8 @@ class StringHTMLProperty(HTMLProperty):
                  '%(value)s</textarea>') % locals()
 
     def email(self, escape=1):
-        ''' Render the value of the property as an obscured email address
-        '''
+        """ Render the value of the property as an obscured email address
+        """
         if not self.is_view_ok():
             return self._('[hidden]')
 
@@ -1381,8 +1381,8 @@ class StringHTMLProperty(HTMLProperty):
 
 class PasswordHTMLProperty(HTMLProperty):
     def plain(self):
-        ''' Render a "plain" representation of the property
-        '''
+        """ Render a "plain" representation of the property
+        """
         if not self.is_view_ok():
             return self._('[hidden]')
 
@@ -1391,22 +1391,22 @@ class PasswordHTMLProperty(HTMLProperty):
         return self._('*encrypted*')
 
     def field(self, size=30):
-        ''' Render a form edit field for the property.
+        """ Render a form edit field for the property.
 
             If not editable, just display the value via plain().
-        '''
+        """
         if not self.is_edit_ok():
             return self.plain()
 
         return self.input(type="password", name=self._formname, size=size)
 
     def confirm(self, size=30):
-        ''' Render a second form edit field for the property, used for
+        """ Render a second form edit field for the property, used for
             confirmation that the user typed the password correctly. Generates
             a field with name "@confirm@name".
 
             If not editable, display nothing.
-        '''
+        """
         if not self.is_edit_ok():
             return ''
 
@@ -1417,8 +1417,8 @@ class PasswordHTMLProperty(HTMLProperty):
 
 class NumberHTMLProperty(HTMLProperty):
     def plain(self):
-        ''' Render a "plain" representation of the property
-        '''
+        """ Render a "plain" representation of the property
+        """
         if not self.is_view_ok():
             return self._('[hidden]')
 
@@ -1428,10 +1428,10 @@ class NumberHTMLProperty(HTMLProperty):
         return str(self._value)
 
     def field(self, size=30):
-        ''' Render a form edit field for the property.
+        """ Render a form edit field for the property.
 
             If not editable, just display the value via plain().
-        '''
+        """
         if not self.is_edit_ok():
             return self.plain()
 
@@ -1442,20 +1442,20 @@ class NumberHTMLProperty(HTMLProperty):
         return self.input(name=self._formname, value=value, size=size)
 
     def __int__(self):
-        ''' Return an int of me
-        '''
+        """ Return an int of me
+        """
         return int(self._value)
 
     def __float__(self):
-        ''' Return a float of me
-        '''
+        """ Return a float of me
+        """
         return float(self._value)
 
 
 class BooleanHTMLProperty(HTMLProperty):
     def plain(self):
-        ''' Render a "plain" representation of the property
-        '''
+        """ Render a "plain" representation of the property
+        """
         if not self.is_view_ok():
             return self._('[hidden]')
 
@@ -1464,10 +1464,10 @@ class BooleanHTMLProperty(HTMLProperty):
         return self._value and self._("Yes") or self._("No")
 
     def field(self):
-        ''' Render a form edit field for the property
+        """ Render a form edit field for the property
 
             If not editable, just display the value via plain().
-        '''
+        """
         if not self.is_edit_ok():
             return self.plain()
 
@@ -1507,8 +1507,8 @@ class DateHTMLProperty(HTMLProperty):
             self._offset = self._prop.offset (self._db)
 
     def plain(self):
-        ''' Render a "plain" representation of the property
-        '''
+        """ Render a "plain" representation of the property
+        """
         if not self.is_view_ok():
             return self._('[hidden]')
 
@@ -1521,11 +1521,11 @@ class DateHTMLProperty(HTMLProperty):
         return str(self._value.local(offset))
 
     def now(self, str_interval=None):
-        ''' Return the current time.
+        """ Return the current time.
 
             This is useful for defaulting a new value. Returns a
             DateHTMLProperty.
-        '''
+        """
         if not self.is_view_ok():
             return self._('[hidden]')
 
@@ -1546,7 +1546,7 @@ class DateHTMLProperty(HTMLProperty):
             self._prop, self._formname, ret)
 
     def field(self, size=30, default=None, format=_marker, popcal=True):
-        '''Render a form edit field for the property
+        """Render a form edit field for the property
 
         If not editable, just display the value via plain().
 
@@ -1554,7 +1554,7 @@ class DateHTMLProperty(HTMLProperty):
         Default=yes.
 
         The format string is a standard python strftime format string.
-        '''
+        """
         if not self.is_edit_ok():
             if format is self._marker:
                 return self.plain()
@@ -1606,10 +1606,10 @@ class DateHTMLProperty(HTMLProperty):
         return s
 
     def reldate(self, pretty=1):
-        ''' Render the interval between the date and now.
+        """ Render the interval between the date and now.
 
             If the "pretty" flag is true, then make the display pretty.
-        '''
+        """
         if not self.is_view_ok():
             return self._('[hidden]')
 
@@ -1623,13 +1623,13 @@ class DateHTMLProperty(HTMLProperty):
         return str(interval)
 
     def pretty(self, format=_marker):
-        ''' Render the date in a pretty format (eg. month names, spaces).
+        """ Render the date in a pretty format (eg. month names, spaces).
 
             The format string is a standard python strftime format string.
             Note that if the day is zero, and appears at the start of the
             string, then it'll be stripped from the output. This is handy
             for the situation when a date only specifies a month and a year.
-        '''
+        """
         if not self.is_view_ok():
             return self._('[hidden]')
 
@@ -1646,8 +1646,8 @@ class DateHTMLProperty(HTMLProperty):
             return self._value.local(offset).pretty()
 
     def local(self, offset):
-        ''' Return the date/time as a local (timezone offset) date/time.
-        '''
+        """ Return the date/time as a local (timezone offset) date/time.
+        """
         if not self.is_view_ok():
             return self._('[hidden]')
 
@@ -1678,8 +1678,8 @@ class IntervalHTMLProperty(HTMLProperty):
             self._value.setTranslator(self._client.translator)
 
     def plain(self):
-        ''' Render a "plain" representation of the property
-        '''
+        """ Render a "plain" representation of the property
+        """
         if not self.is_view_ok():
             return self._('[hidden]')
 
@@ -1688,18 +1688,18 @@ class IntervalHTMLProperty(HTMLProperty):
         return str(self._value)
 
     def pretty(self):
-        ''' Render the interval in a pretty format (eg. "yesterday")
-        '''
+        """ Render the interval in a pretty format (eg. "yesterday")
+        """
         if not self.is_view_ok():
             return self._('[hidden]')
 
         return self._value.pretty()
 
     def field(self, size=30):
-        ''' Render a form edit field for the property
+        """ Render a form edit field for the property
 
             If not editable, just display the value via plain().
-        '''
+        """
         if not self.is_edit_ok():
             return self.plain()
 
@@ -1710,7 +1710,7 @@ class IntervalHTMLProperty(HTMLProperty):
         return self.input(name=self._formname, value=value, size=size)
 
 class LinkHTMLProperty(HTMLProperty):
-    ''' Link HTMLProperty
+    """ Link HTMLProperty
         Include the above as well as being able to access the class
         information. Stringifying the object itself results in the value
         from the item being displayed. Accessing attributes of this object
@@ -1718,7 +1718,7 @@ class LinkHTMLProperty(HTMLProperty):
         property accessed (so item/assignedto/name would look up the user
         entry identified by the assignedto property on item, and then the
         name property of that user)
-    '''
+    """
     def __init__(self, *args, **kw):
         HTMLProperty.__init__(self, *args, **kw)
         # if we're representing a form value, then the -1 from the form really
@@ -1727,7 +1727,7 @@ class LinkHTMLProperty(HTMLProperty):
             self._value = None
 
     def __getattr__(self, attr):
-        ''' return a new HTMLItem '''
+        """ return a new HTMLItem """
         if not self._value:
             # handle a special page templates lookup
             if attr == '__render_with_namespace__':
@@ -1740,8 +1740,8 @@ class LinkHTMLProperty(HTMLProperty):
         return getattr(i, attr)
 
     def plain(self, escape=0):
-        ''' Render a "plain" representation of the property
-        '''
+        """ Render a "plain" representation of the property
+        """
         if not self.is_view_ok():
             return self._('[hidden]')
 
@@ -1755,10 +1755,10 @@ class LinkHTMLProperty(HTMLProperty):
         return value
 
     def field(self, showid=0, size=None):
-        ''' Render a form edit field for the property
+        """ Render a form edit field for the property
 
             If not editable, just display the value via plain().
-        '''
+        """
         if not self.is_edit_ok():
             return self.plain()
 
@@ -1776,7 +1776,7 @@ class LinkHTMLProperty(HTMLProperty):
 
     def menu(self, size=None, height=None, showid=0, additional=[], value=None,
             sort_on=None, **conditions):
-        ''' Render a form select list for this property
+        """ Render a form select list for this property
 
             "size" is used to limit the length of the list labels
             "height" is used to set the <select> tag's "size" attribute
@@ -1794,7 +1794,7 @@ class LinkHTMLProperty(HTMLProperty):
             "filterspec" argument to a Class.filter() call.
 
             If not editable, just display the value via plain().
-        '''
+        """
         if not self.is_edit_ok():
             return self.plain()
 
@@ -1863,11 +1863,11 @@ class LinkHTMLProperty(HTMLProperty):
 
 
 class MultilinkHTMLProperty(HTMLProperty):
-    ''' Multilink HTMLProperty
+    """ Multilink HTMLProperty
 
         Also be iterable, returning a wrapper object like the Link case for
         each entry in the multilink.
-    '''
+    """
     def __init__(self, *args, **kwargs):
         HTMLProperty.__init__(self, *args, **kwargs)
         if self._value:
@@ -1884,15 +1884,15 @@ class MultilinkHTMLProperty(HTMLProperty):
             self._value = display_value
 
     def __len__(self):
-        ''' length of the multilink '''
+        """ length of the multilink """
         return len(self._value)
 
     def __getattr__(self, attr):
-        ''' no extended attribute accesses make sense here '''
+        """ no extended attribute accesses make sense here """
         raise AttributeError, attr
 
     def viewableGenerator(self, values):
-        '''Used to iterate over only the View'able items in a class.'''
+        """Used to iterate over only the View'able items in a class."""
         check = self._db.security.hasPermission
         userid = self._client.userid
         classname = self._prop.classname
@@ -1901,36 +1901,36 @@ class MultilinkHTMLProperty(HTMLProperty):
                 yield HTMLItem(self._client, classname, value)
 
     def __iter__(self):
-        ''' iterate and return a new HTMLItem
-        '''
+        """ iterate and return a new HTMLItem
+        """
         return self.viewableGenerator(self._value)
 
     def reverse(self):
-        ''' return the list in reverse order
-        '''
+        """ return the list in reverse order
+        """
         l = self._value[:]
         l.reverse()
         return self.viewableGenerator(l)
 
     def sorted(self, property):
-        ''' Return this multilink sorted by the given property '''
+        """ Return this multilink sorted by the given property """
         value = list(self.__iter__())
         value.sort(lambda a,b:cmp(a[property], b[property]))
         return value
 
     def __contains__(self, value):
-        ''' Support the "in" operator. We have to make sure the passed-in
+        """ Support the "in" operator. We have to make sure the passed-in
             value is a string first, not a HTMLProperty.
-        '''
+        """
         return str(value) in self._value
 
     def isset(self):
-        '''Is my _value not []?'''
+        """Is my _value not []?"""
         return self._value != []
 
     def plain(self, escape=0):
-        ''' Render a "plain" representation of the property
-        '''
+        """ Render a "plain" representation of the property
+        """
         if not self.is_view_ok():
             return self._('[hidden]')
 
@@ -1948,10 +1948,10 @@ class MultilinkHTMLProperty(HTMLProperty):
         return value
 
     def field(self, size=30, showid=0):
-        ''' Render a form edit field for the property
+        """ Render a form edit field for the property
 
             If not editable, just display the value via plain().
-        '''
+        """
         if not self.is_edit_ok():
             return self.plain()
 
@@ -1968,7 +1968,7 @@ class MultilinkHTMLProperty(HTMLProperty):
 
     def menu(self, size=None, height=None, showid=0, additional=[],
              value=None, sort_on=None, **conditions):
-        ''' Render a form <select> list for this property.
+        """ Render a form <select> list for this property.
 
             "size" is used to limit the length of the list labels
             "height" is used to set the <select> tag's "size" attribute
@@ -1986,7 +1986,7 @@ class MultilinkHTMLProperty(HTMLProperty):
             "filterspec" argument to a Class.filter() call.
 
             If not editable, just display the value via plain().
-        '''
+        """
         if not self.is_edit_ok():
             return self.plain()
 
@@ -2060,8 +2060,8 @@ propclasses = (
 )
 
 def make_sort_function(db, classname, sort_on=None):
-    '''Make a sort function for a given class
-    '''
+    """Make a sort function for a given class
+    """
     linkcl = db.getclass(classname)
     if sort_on is None:
         sort_on = find_sort_key(linkcl)
@@ -2076,9 +2076,9 @@ def find_sort_key(linkcl):
         return linkcl.labelprop()
 
 def handleListCGIValue(value):
-    ''' Value is either a single item or a list of items. Each item has a
+    """ Value is either a single item or a list of items. Each item has a
         .value that we're actually interested in.
-    '''
+    """
     if isinstance(value, type([])):
         return [value.value for value in value]
     else:
@@ -2088,7 +2088,7 @@ def handleListCGIValue(value):
         return value.split(',')
 
 class HTMLRequest(HTMLInputMixin):
-    '''The *request*, holding the CGI form and environment.
+    """The *request*, holding the CGI form and environment.
 
     - "form" the CGI form as a cgi.FieldStorage
     - "env" the CGI environment variables
@@ -2107,7 +2107,7 @@ class HTMLRequest(HTMLInputMixin):
     - "filter" properties to filter the index on
     - "filterspec" values to filter the index on
     - "search_text" text to perform a full-text search on for an index
-    '''
+    """
     def __repr__(self):
         return '<HTMLRequest %r>'%self.__dict__
 
@@ -2145,8 +2145,8 @@ class HTMLRequest(HTMLInputMixin):
         return self.indexargs_url(url, args)
 
     def _parse_sort(self, var, name):
-        ''' Parse sort/group options. Append to var
-        '''
+        """ Parse sort/group options. Append to var
+        """
         fields = []
         dirs = []
         for special in '@:':
@@ -2180,8 +2180,8 @@ class HTMLRequest(HTMLInputMixin):
                 var.append(('+', f))
 
     def _post_init(self):
-        ''' Set attributes based on self.form
-        '''
+        """ Set attributes based on self.form
+        """
         # extract the index display information from the form
         self.columns = []
         for name in ':columns @columns'.split():
@@ -2254,24 +2254,24 @@ class HTMLRequest(HTMLInputMixin):
             self.dispname = None
 
     def updateFromURL(self, url):
-        ''' Parse the URL for query args, and update my attributes using the
+        """ Parse the URL for query args, and update my attributes using the
             values.
-        '''
+        """
         env = {'QUERY_STRING': url}
         self.form = cgi.FieldStorage(environ=env)
 
         self._post_init()
 
     def update(self, kwargs):
-        ''' Update my attributes using the keyword args
-        '''
+        """ Update my attributes using the keyword args
+        """
         self.__dict__.update(kwargs)
         if kwargs.has_key('columns'):
             self.show = support.TruthDict(self.columns)
 
     def description(self):
-        ''' Return a description of the request - handle for the page title.
-        '''
+        """ Return a description of the request - handle for the page title.
+        """
         s = [self.client.db.config.TRACKER_NAME]
         if self.classname:
             if self.client.nodeid:
@@ -2298,7 +2298,7 @@ class HTMLRequest(HTMLInputMixin):
         for k,v in self.env.items():
             e += '\n     %r=%r'%(k, v)
         d['env'] = e
-        return '''
+        return """
 form: %(form)s
 base: %(base)r
 classname: %(classname)r
@@ -2311,11 +2311,11 @@ search_text: %(search_text)r
 pagesize: %(pagesize)r
 startwith: %(startwith)r
 env: %(env)s
-'''%d
+"""%d
 
     def indexargs_form(self, columns=1, sort=1, group=1, filter=1,
             filterspec=1, search_text=1):
-        ''' return the current index args as form elements '''
+        """ return the current index args as form elements """
         l = []
         sc = self.special_char
         def add(k, v):
@@ -2357,8 +2357,8 @@ env: %(env)s
         return '\n'.join(l)
 
     def indexargs_url(self, url, args):
-        ''' Embed the current index args in a URL
-        '''
+        """ Embed the current index args in a URL
+        """
         q = urllib.quote
         sc = self.special_char
         l = ['%s=%s'%(k,v) for k,v in args.items()]
@@ -2414,7 +2414,7 @@ env: %(env)s
     indexargs_href = indexargs_url
 
     def base_javascript(self):
-        return '''
+        return """
 <script type="text/javascript">
 submitted = false;
 function submit_once() {
@@ -2431,11 +2431,11 @@ function help_window(helpurl, width, height) {
     HelpWin = window.open('%s' + helpurl, 'RoundupHelpWindow', 'scrollbars=yes,resizable=yes,toolbar=no,height='+height+',width='+width);
 }
 </script>
-'''%self.base
+"""%self.base
 
     def batch(self):
-        ''' Return a batch object for results from the "current search"
-        '''
+        """ Return a batch object for results from the "current search"
+        """
         filterspec = self.filterspec
         sort = self.sort
         group = self.group
@@ -2464,7 +2464,7 @@ function help_window(helpurl, width, height) {
 # extend the standard ZTUtils Batch object to remove dependency on
 # Acquisition and add a couple of useful methods
 class Batch(ZTUtils.Batch):
-    ''' Use me to turn a list of items, or item ids of a given class, into a
+    """ Use me to turn a list of items, or item ids of a given class, into a
         series of batches.
 
         ========= ========================================================
@@ -2486,7 +2486,7 @@ class Batch(ZTUtils.Batch):
         the batch.
 
         "sequence_length" is the length of the original, unbatched, sequence.
-    '''
+    """
     def __init__(self, client, sequence, size, start, end=0, orphan=0,
             overlap=0, classname=None):
         self.client = client
@@ -2520,9 +2520,9 @@ class Batch(ZTUtils.Batch):
         return item
 
     def propchanged(self, *properties):
-        ''' Detect if one of the properties marked as being a group
+        """ Detect if one of the properties marked as being a group
             property changed in the last iteration fetch
-        '''
+        """
         # we poke directly at the _value here since MissingValue can screw
         # us up and cause Nones to compare strangely
         if self.last_item is None:
@@ -2555,8 +2555,8 @@ class Batch(ZTUtils.Batch):
             self.end - self.overlap, 0, self.orphan, self.overlap)
 
 class TemplatingUtils:
-    ''' Utilities for templating
-    '''
+    """ Utilities for templating
+    """
     def __init__(self, client):
         self.client = client
     def Batch(self, sequence, size, start, end=0, orphan=0, overlap=0):
@@ -2564,15 +2564,15 @@ class TemplatingUtils:
             overlap)
 
     def url_quote(self, url):
-        '''URL-quote the supplied text.'''
+        """URL-quote the supplied text."""
         return urllib.quote(url)
 
     def html_quote(self, html):
-        '''HTML-quote the supplied text.'''
+        """HTML-quote the supplied text."""
         return cgi.escape(html)
 
     def __getattr__(self, name):
-        '''Try the tracker's templating_utils.'''
+        """Try the tracker's templating_utils."""
         if not hasattr(self.client.instance, 'templating_utils'):
             # backwards-compatibility
             raise AttributeError, name
