@@ -11,9 +11,9 @@ todo = """
 - NumberHTMLProperty should support numeric operations
 - LinkHTMLProperty should handle comparisons to strings (cf. linked name)
 - HTMLRequest.default(self, sort, group, filter, columns, **filterspec):
-  """Set the request's view arguments to the given values when no
+  '''Set the request's view arguments to the given values when no
      values are found in the CGI environment.
-  """
+  '''
 - have menu() methods accept filtering arguments
 """
 
