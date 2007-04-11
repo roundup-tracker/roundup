@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.184 2007-04-01 18:48:06 forsberg Exp $
+#$Id: rdbms_common.py,v 1.185 2007-04-11 20:04:06 forsberg Exp $
 """ Relational database (SQL) backend common code.
 
 Basics:
@@ -2636,7 +2636,7 @@ class FileClass(hyperdb.FileClass, Class):
         Note that the content prop is indexed separately, hence no indexme.
         """
         d = Class.getprops(self, protected=protected).copy()
-        d['content'] = hyperdb.String()
+        d['content'] = hyperdb.String(indexme='yes')
         return d
 
     def set(self, itemid, **propvalues):

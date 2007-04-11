@@ -15,13 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.84 2007-03-14 15:23:11 schlatterbeck Exp $
+# $Id: db_test_base.py,v 1.85 2007-04-11 20:04:06 forsberg Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval, DatabaseError, Boolean, Number, Node
-from roundup import date, password, init, instance, configuration
+from roundup import date, password, init, instance, configuration, support
 
 from mocknull import MockNull
 
@@ -878,6 +878,51 @@ class DBTest(MyTestCase):
         self.db.indexer.quiet = 9
         self.assertEquals(self.db.indexer.search(['flebble'], self.db.issue),
             {'1': {}})
+
+    def testIndexingOnImport(self):
+        msgcontent = 'Glrk'
+        msgid = self.db.msg.import_list(['content'], [repr(msgcontent)])
+        msg_filename = self.db.filename(self.db.msg.classname, msgid,
+                                        create=1)
+        support.ensureParentsExist(msg_filename)
+        msg_file = open(msg_filename, 'w')
+        msg_file.write(msgcontent)
+        msg_file.close()
+        
+
+        filecontent = 'Brrk'
+        fileid = self.db.file.import_list(['content'], [repr(filecontent)])
+        file_filename = self.db.filename(self.db.file.classname, fileid,
+                                         create=1)
+        support.ensureParentsExist(file_filename)
+        file_file = open(file_filename, 'w')
+        file_file.write(filecontent)
+        file_file.close()        
+
+        title = 'Bzzt'
+        nodeid = self.db.issue.import_list(['title', 'messages', 'files',
+                                            'spam',
+                                            'nosy',
+                                            'superseder'],
+                                           [repr(title),
+                                            repr([msgid]),
+                                            repr([fileid]),
+                                            repr([]),
+                                            repr([]),
+                                            repr([])])
+        self.db.commit()
+
+        # Content of title attribute is indexed
+        self.assertEquals(self.db.indexer.search([title], self.db.issue),
+                          {str(nodeid):{}})
+        # Content of message is indexed
+        self.assertEquals(self.db.indexer.search([msgcontent], self.db.issue),
+                          {str(nodeid):{'messages':[str(msgid)]}})
+        # Content of file is indexed
+        self.assertEquals(self.db.indexer.search([filecontent], self.db.issue),
+                          {str(nodeid):{'files':[str(fileid)]}})
+
+        
 
     #
     # searching tests follow
