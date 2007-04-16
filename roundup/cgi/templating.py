@@ -501,7 +501,6 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
     def __getitem__(self, item):
         """ return an HTMLProperty instance
         """
-       #print 'HTMLClass.getitem', (self, item)
 
         # we don't exist
         if item == 'id':
@@ -790,7 +789,6 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
             this now can handle transitive lookups where item is of the
             form x.y.z
         """
-        #print 'HTMLItem.getitem', (self, item)
         if item == 'id':
             return self._nodeid
 
