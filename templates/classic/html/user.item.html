@@ -43,6 +43,7 @@ define="edit_ok context/is_edit_ok"
 <div tal:condition="context/is_view_ok">
 
 <form method="POST"
+      name="itemSynopsis"
       tal:define="required python:'username address'.split()"
       enctype="multipart/form-data"
       tal:attributes="action context/designator;

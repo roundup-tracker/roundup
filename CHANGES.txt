@@ -15,6 +15,7 @@ Fixed:
 - Journal import/export for metakit backend
 - Journal export of anydbm didn't correctly export previously empty values
 - Fix handling of defaults for date fields
+- Fix <form> name in user editing to allow multilink popups to work
 
 
 2007-02-15 1.3.3
