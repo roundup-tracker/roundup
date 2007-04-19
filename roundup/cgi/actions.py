@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.64 2007-01-11 07:34:02 schlatterbeck Exp $
+#$Id: actions.py,v 1.65 2007-04-19 12:18:50 stefan Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random, csv, codecs
 
@@ -772,7 +772,7 @@ class ConfRegoAction(RegoCommon):
         except (ValueError, KeyError), message:
             self.client.error_message.append(str(message))
             return
-        self.finishRego()
+        return self.finishRego()
 
 class RegisterAction(RegoCommon, EditCommon):
     name = 'register'
