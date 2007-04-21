@@ -1,4 +1,4 @@
-#$Id: sessions_rdbms.py,v 1.4 2006-04-27 04:03:11 richard Exp $
+#$Id: sessions_rdbms.py,v 1.5 2007-04-21 15:27:57 forsberg Exp $
 """This module defines a very basic store that's used by the CGI interface
 to store session and one-time-key information.
 
@@ -77,7 +77,7 @@ class BasicDatabase:
             self.name, self.db.arg), (infoid,))
 
     def updateTimestamp(self, infoid):
-        ''' don't update every hit - once a minute should be OK '''
+        """ don't update every hit - once a minute should be OK """
         now = time.time()
         self.cursor.execute('''update %ss set %s_time=%s where %s_key=%s
             and %s_time < %s'''%(self.name, self.name, self.db.arg,
