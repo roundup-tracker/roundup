@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.87 2006-12-18 05:56:49 a1s Exp $
+$Id: roundup_server.py,v 1.88 2007-04-23 19:35:41 forsberg Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -149,6 +149,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         if len(keys) == 1:
             self.send_response(302)
             self.send_header('Location', urllib.quote(keys[0]) + '/index')
+            self.end_headers()
         else:
             self.send_response(200)
         self.send_header('Content-Type', 'text/html')
