@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.65 2007-04-19 12:18:50 stefan Exp $
+#$Id: actions.py,v 1.66 2007-04-27 00:17:11 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random, csv, codecs
 
@@ -367,13 +367,16 @@ class EditCommon(Action):
         deps = {}
         links = {}
         for cn, nodeid, propname, vlist in all_links:
-            if not all_props.has_key((cn, nodeid)):
+            if not (nodeid or all_props.has_key((cn, nodeid))):
                 # link item to link to doesn't (and won't) exist
                 continue
-            for value in vlist:
-                if not all_props.has_key(value):
+
+            for vcn, vid in vlist:
+                if vid == '-1': vid = None
+                if not (vid or all_props.has_key((vcn, vid))):
                     # link item to link to doesn't (and won't) exist
                     continue
+                value = (vcn, vid)
                 deps.setdefault((cn, nodeid), []).append(value)
                 links.setdefault(value, []).append((cn, nodeid, propname))
 
@@ -401,36 +404,34 @@ class EditCommon(Action):
         m = []
         for needed in order:
             props = all_props[needed]
-            if not props:
-                # nothing to do
-                continue
-            cn, nodeid = needed
+            if props:
+                cn, nodeid = needed
 
-            if nodeid is not None and int(nodeid) > 0:
-                # make changes to the node
-                props = self._changenode(cn, nodeid, props)
+                if nodeid is not None and int(nodeid) > 0:
+                    # make changes to the node
+                    props = self._changenode(cn, nodeid, props)
 
-                # and some nice feedback for the user
-                if props:
-                    info = ', '.join(map(self._, props.keys()))
-                    m.append(
-                        self._('%(class)s %(id)s %(properties)s edited ok')
-                        % {'class':cn, 'id':nodeid, 'properties':info})
+                    # and some nice feedback for the user
+                    if props:
+                        info = ', '.join(map(self._, props.keys()))
+                        m.append(
+                            self._('%(class)s %(id)s %(properties)s edited ok')
+                            % {'class':cn, 'id':nodeid, 'properties':info})
+                    else:
+                        m.append(self._('%(class)s %(id)s - nothing changed')
+                            % {'class':cn, 'id':nodeid})
                 else:
-                    m.append(self._('%(class)s %(id)s - nothing changed')
-                        % {'class':cn, 'id':nodeid})
-            else:
-                assert props
+                    assert props
 
-                # make a new node
-                newid = self._createnode(cn, props)
-                if nodeid is None:
-                    self.nodeid = newid
-                nodeid = newid
+                    # make a new node
+                    newid = self._createnode(cn, props)
+                    if nodeid is None:
+                        self.nodeid = newid
+                    nodeid = newid
 
-                # and some nice feedback for the user
-                m.append(self._('%(class)s %(id)s created')
-                    % {'class':cn, 'id':newid})
+                    # and some nice feedback for the user
+                    m.append(self._('%(class)s %(id)s created')
+                        % {'class':cn, 'id':newid})
 
             # fill in new ids in links
             if links.has_key(needed):

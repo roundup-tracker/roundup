@@ -16,6 +16,7 @@ Fixed:
 - Journal export of anydbm didn't correctly export previously empty values
 - Fix handling of defaults for date fields
 - Fix <form> name in user editing to allow multilink popups to work
+- Fix form handling of editing existing hyperdb items from a new item page.
 
 
 2007-02-15 1.3.3
