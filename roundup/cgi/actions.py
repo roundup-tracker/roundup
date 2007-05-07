@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.66 2007-04-27 00:17:11 richard Exp $
+#$Id: actions.py,v 1.67 2007-05-07 14:03:30 schlatterbeck Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random, csv, codecs
 
@@ -404,9 +404,8 @@ class EditCommon(Action):
         m = []
         for needed in order:
             props = all_props[needed]
+            cn, nodeid = needed
             if props:
-                cn, nodeid = needed
-
                 if nodeid is not None and int(nodeid) > 0:
                     # make changes to the node
                     props = self._changenode(cn, nodeid, props)
