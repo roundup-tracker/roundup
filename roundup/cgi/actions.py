@@ -1,6 +1,7 @@
-#$Id: actions.py,v 1.67 2007-05-07 14:03:30 schlatterbeck Exp $
+#$Id: actions.py,v 1.68 2007-05-08 20:54:56 schlatterbeck Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random, csv, codecs
+import sys
 
 from roundup import hyperdb, token, date, password
 from roundup.i18n import _
@@ -371,12 +372,10 @@ class EditCommon(Action):
                 # link item to link to doesn't (and won't) exist
                 continue
 
-            for vcn, vid in vlist:
-                if vid == '-1': vid = None
-                if not (vid or all_props.has_key((vcn, vid))):
+            for value in vlist:
+                if not all_props.has_key(value):
                     # link item to link to doesn't (and won't) exist
                     continue
-                value = (vcn, vid)
                 deps.setdefault((cn, nodeid), []).append(value)
                 links.setdefault(value, []).append((cn, nodeid, propname))
 

@@ -225,6 +225,59 @@ class LoginTestCase(ActionTestCase):
 
         self.assertLoginLeavesMessages([], 'foo', 'right')
 
+class EditItemActionTestCase(ActionTestCase):
+    def setUp(self):
+        ActionTestCase.setUp(self)
+        self.result = []
+        class AppendResult:
+            def __init__(inner_self, name):
+                inner_self.name = name
+            def __call__(inner_self, *args, **kw):
+                self.result.append((inner_self.name, args, kw))
+                if inner_self.name == 'set':
+                    return kw
+                return '17'
+
+        self.client.db.security.hasPermission = true
+        self.client.classname = 'issue'
+        self.client.base = 'http://tracker/'
+        self.client.nodeid = '4711'
+        self.client.template = 'item'
+        self.client.db.classes.create = AppendResult('create')
+        self.client.db.classes.set = AppendResult('set')
+        self.client.db.classes.getprops = lambda: \
+            ({'messages':hyperdb.Multilink('msg'), 'content':hyperdb.String()})
+        self.action = EditItemAction(self.client)
+
+    def testMessageAttach(self):
+        expect = \
+            [ ('create',(),{'content':'t'})
+            , ('set',('4711',), {'messages':['23','42','17']})
+            ]
+        self.client.db.classes.get = lambda a, b:['23','42']
+        self.client.parsePropsFromForm = lambda: \
+            ( {('msg','-1'):{'content':'t'},('issue','4711'):{}}
+            , [('issue','4711','messages',[('msg','-1')])]
+            )
+        try :
+            self.action.handle()
+        except Redirect, msg:
+            pass
+        self.assertEqual(expect, self.result)
+
+    def testLinkExisting(self):
+        expect = [('set',('4711',),{'messages':['23','42','1']})]
+        self.client.db.classes.get = lambda a, b:['23','42']
+        self.client.parsePropsFromForm = lambda: \
+            ( {('issue','4711'):{},('msg','1'):{}}
+            , [('issue','4711','messages',[('msg','1')])]
+            )
+        try :
+            self.action.handle()
+        except Redirect, msg:
+            pass
+        self.assertEqual(expect, self.result)
+
 def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(RetireActionTestCase))
@@ -233,6 +286,7 @@ def test_suite():
     suite.addTest(unittest.makeSuite(ShowActionTestCase))
     suite.addTest(unittest.makeSuite(CollisionDetectionTestCase))
     suite.addTest(unittest.makeSuite(LoginTestCase))
+    suite.addTest(unittest.makeSuite(EditItemActionTestCase))
     return suite
 
 if __name__ == '__main__':
