@@ -1,7 +1,6 @@
-#$Id: actions.py,v 1.68 2007-05-08 20:54:56 schlatterbeck Exp $
+#$Id: actions.py,v 1.69 2007-05-09 06:18:52 schlatterbeck Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random, csv, codecs
-import sys
 
 from roundup import hyperdb, token, date, password
 from roundup.i18n import _
