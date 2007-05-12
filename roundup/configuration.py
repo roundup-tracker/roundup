@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.42 2007-04-03 06:36:08 a1s Exp $
+# $Id: configuration.py,v 1.43 2007-05-12 16:14:54 forsberg Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -685,7 +685,7 @@ SETTINGS = (
             "will match an issue for the interval after the issue's\n"
             "creation or last activity. The interval is a standard\n"
             "Roundup interval."),
-        (RegExpOption, "refwd_re", "\s*\W?\s*(fw|fwd|re|aw|sv|ang)\W\s*",
+        (RegExpOption, "refwd_re", "(\s*\W?\s*(fw|fwd|re|aw|sv|ang)\W)+",
             "Regular expression matching a single reply or forward\n"
             "prefix prepended by the mailer. This is explicitly\n"
             "stripped from the subject during parsing."),

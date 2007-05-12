@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.187 2007-04-03 06:43:30 a1s Exp $
+$Id: mailgw.py,v 1.188 2007-05-12 16:14:54 forsberg Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -636,7 +636,7 @@ Emails to Roundup trackers must include a Subject: line!
                                  'argswhole'])
 
         # Look for Re: et. al. Used later on for MAILGW_SUBJECT_CONTENT_MATCH
-        re_re = r"(?P<refwd>%s)*\s*" % config["MAILGW_REFWD_RE"].pattern
+        re_re = r"(?P<refwd>%s)\s*" % config["MAILGW_REFWD_RE"].pattern
         m = re.match(re_re, tmpsubject, re.IGNORECASE|re.VERBOSE|re.UNICODE)
         if m:
             m = m.groupdict()
