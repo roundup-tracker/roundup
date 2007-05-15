@@ -246,7 +246,10 @@ class EditItemActionTestCase(ActionTestCase):
         self.client.db.classes.create = AppendResult('create')
         self.client.db.classes.set = AppendResult('set')
         self.client.db.classes.getprops = lambda: \
-            ({'messages':hyperdb.Multilink('msg'), 'content':hyperdb.String()})
+            ({'messages':hyperdb.Multilink('msg')
+             ,'content':hyperdb.String()
+             ,'files':hyperdb.Multilink('file')
+             })
         self.action = EditItemAction(self.client)
 
     def testMessageAttach(self):
@@ -258,6 +261,27 @@ class EditItemActionTestCase(ActionTestCase):
         self.client.parsePropsFromForm = lambda: \
             ( {('msg','-1'):{'content':'t'},('issue','4711'):{}}
             , [('issue','4711','messages',[('msg','-1')])]
+            )
+        try :
+            self.action.handle()
+        except Redirect, msg:
+            pass
+        self.assertEqual(expect, self.result)
+
+    def testFileAttach(self):
+        expect = \
+            [('create',(),{'content':'t','type':'text/plain','name':'t.txt'})
+            ,('set',('4711',),{'files':['23','42','17']})
+            ]
+        self.client.db.classes.get = lambda a, b:['23','42']
+        self.client.parsePropsFromForm = lambda: \
+            ( {('file','-1'):{'content':'t','type':'text/plain','name':'t.txt'}
+              ,('issue','4711'):{}
+              }
+            , [('issue','4711','messages',[('msg','-1')])
+              ,('issue','4711','files',[('file','-1')])
+              ,('msg','-1','files',[('file','-1')])
+              ]
             )
         try :
             self.action.handle()

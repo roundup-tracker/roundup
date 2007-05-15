@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.69 2007-05-09 06:18:52 schlatterbeck Exp $
+#$Id: actions.py,v 1.70 2007-05-15 16:23:39 schlatterbeck Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random, csv, codecs
 
@@ -367,7 +367,8 @@ class EditCommon(Action):
         deps = {}
         links = {}
         for cn, nodeid, propname, vlist in all_links:
-            if not (nodeid or all_props.has_key((cn, nodeid))):
+            numeric_id = int (nodeid or 0)
+            if not (numeric_id > 0 or all_props.has_key((cn, nodeid))):
                 # link item to link to doesn't (and won't) exist
                 continue
 
