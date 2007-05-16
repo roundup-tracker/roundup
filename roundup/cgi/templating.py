@@ -710,7 +710,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         return '<a class="classhelp" href="%s" onclick="%s">%s</a>' % \
                (help_url, onclick, self._(label))
 
-    def submit(self, label=''"Submit New Entry"):
+    def submit(self, label=''"Submit New Entry", action="new"):
         """ Generate a submit button (and action hidden element)
 
         Generate nothing if we're not editable.
@@ -718,7 +718,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         if not self.is_edit_ok():
             return ''
 
-        return self.input(type="hidden", name="@action", value="new") + \
+        return self.input(type="hidden", name="@action", value=action) + \
             '\n' + \
             self.input(type="submit", name="submit_button", value=self._(label))
 
