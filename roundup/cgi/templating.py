@@ -839,14 +839,14 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         """Is this item retired?"""
         return self._klass.is_retired(self._nodeid)
 
-    def submit(self, label=''"Submit Changes"):
+    def submit(self, label=''"Submit Changes", action="edit"):
         """Generate a submit button.
 
         Also sneak in the lastactivity and action hidden elements.
         """
         return self.input(type="hidden", name="@lastactivity",
             value=self.activity.local(0)) + '\n' + \
-            self.input(type="hidden", name="@action", value="edit") + '\n' + \
+            self.input(type="hidden", name="@action", value=action) + '\n' + \
             self.input(type="submit", name="submit_button", value=self._(label))
 
     def journal(self, direction='descending'):
