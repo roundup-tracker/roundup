@@ -1,4 +1,4 @@
-#$Id: back_postgresql.py,v 1.37 2006-11-09 00:55:33 richard Exp $
+#$Id: back_postgresql.py,v 1.38 2007-06-21 07:35:50 schlatterbeck Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -161,6 +161,9 @@ class Database(rdbms_common.Database):
         self.sql('''CREATE TABLE __words (_word VARCHAR(30), 
             _textid integer)''')
         self.sql('CREATE INDEX words_word_idx ON __words(_word)')
+        self.sql('CREATE INDEX words_by_id ON __words (_textid)')
+        self.sql('CREATE UNIQUE INDEX __textids_by_props ON '
+                 '__textids (_class, _itemid, _prop)')
 
     def fix_version_2_tables(self):
         # Convert journal date column to TIMESTAMP, params column to TEXT

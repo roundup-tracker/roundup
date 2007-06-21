@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.185 2007-04-11 20:04:06 forsberg Exp $
+#$Id: rdbms_common.py,v 1.186 2007-06-21 07:35:50 schlatterbeck Exp $
 """ Relational database (SQL) backend common code.
 
 Basics:
@@ -2626,18 +2626,6 @@ class FileClass(hyperdb.FileClass, Class):
             return Class.get(self, nodeid, propname, default)
         else:
             return Class.get(self, nodeid, propname)
-
-    def getprops(self, protected=1):
-        """In addition to the actual properties on the node, these methods
-        provide the "content" property. If the "protected" flag is true,
-        we include protected properties - those which may not be
-        modified.
-
-        Note that the content prop is indexed separately, hence no indexme.
-        """
-        d = Class.getprops(self, protected=protected).copy()
-        d['content'] = hyperdb.String(indexme='yes')
-        return d
 
     def set(self, itemid, **propvalues):
         """ Snarf the "content" propvalue and update it in a file

@@ -32,6 +32,14 @@ update the messagesummary detector as follows::
     +    summary, content = parseContent(newvalues['content'], config=db.config)
 	 newvalues['summary'] = summary
 
+In the latest version we have added some database indexes to the
+SQL-backends (mysql, postgresql, sqlite) for speeding up building the
+roundup-index for full-text search. We recommend that you create the
+following database indexes on the database by hand::
+
+ CREATE INDEX words_by_id ON __words (_textid)
+ CREATE UNIQUE INDEX __textids_by_props ON __textids (_class, _itemid, _prop)
+
 Migrating from 1.2.x to 1.3.0
 =============================
 

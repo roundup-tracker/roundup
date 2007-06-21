@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.50 2006-12-19 03:01:37 richard Exp $
+# $Id: back_sqlite.py,v 1.51 2007-06-21 07:35:50 schlatterbeck Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -144,6 +144,9 @@ class Database(rdbms_common.Database):
         self.sql('CREATE TABLE __words (_word varchar, '
             '_textid integer)')
         self.sql('CREATE INDEX words_word_ids ON __words(_word)')
+        self.sql('CREATE INDEX words_by_id ON __words (_textid)')
+        self.sql('CREATE UNIQUE INDEX __textids_by_props ON '
+                 '__textids (_class, _itemid, _prop)')
         sql = 'insert into ids (name, num) values (%s,%s)'%(self.arg, self.arg)
         self.sql(sql, ('__textids', 1))
 

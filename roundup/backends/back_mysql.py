@@ -1,4 +1,4 @@
-#$Id: back_mysql.py,v 1.71 2006-08-29 04:20:50 richard Exp $
+#$Id: back_mysql.py,v 1.72 2007-06-21 07:35:50 schlatterbeck Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -211,6 +211,9 @@ class Database(Database):
         self.sql('''CREATE TABLE __words (_word VARCHAR(30),
             _textid INT) TYPE=%s'''%self.mysql_backend)
         self.sql('CREATE INDEX words_word_ids ON __words(_word)')
+        self.sql('CREATE INDEX words_by_id ON __words (_textid)')
+        self.sql('CREATE UNIQUE INDEX __textids_by_props ON '
+                 '__textids (_class, _itemid, _prop)')
         sql = 'insert into ids (name, num) values (%s,%s)'%(self.arg, self.arg)
         self.sql(sql, ('__textids', 1))
 
