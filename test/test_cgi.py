@@ -8,12 +8,13 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.29 2006-12-11 23:36:15 richard Exp $
+# $Id: test_cgi.py,v 1.30 2007-07-05 19:21:57 schlatterbeck Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
 from roundup.cgi import client
 from roundup.cgi.exceptions import FormError
+from roundup.cgi.templating import HTMLItem
 from roundup.cgi.form_parser import FormParser
 from roundup import init, instance, password, hyperdb, date
 
@@ -190,6 +191,42 @@ class FormTestCase(unittest.TestCase):
         nodeid = self.db.issue.create(title='foo')
         self.assertEqual(self.parseForm({'title': ' '}, 'issue', nodeid),
             ({('issue', nodeid): {'title': None}}, []))
+
+    def testStringLinkId(self):
+        self.db.status.set('1', name='2')
+        self.db.status.set('2', name='1')
+        issue = self.db.issue.create(title='i1-status1', status='1')
+        self.assertEqual(self.db.issue.get(issue,'status'),'1')
+        self.assertEqual(self.db.status.lookup('1'),'2')
+        self.assertEqual(self.db.status.lookup('2'),'1')
+        form = cgi.FieldStorage()
+        cl = client.Client(self.instance, None, {'PATH_INFO':'/'}, form)
+        cl.classname = 'issue'
+        cl.nodeid = issue
+        cl.db = self.db
+        item = HTMLItem(cl, 'issue', issue)
+        self.assertEqual(item.status.id, '1')
+        self.assertEqual(item.status.name, '2')
+
+    def testStringMultilinkId(self):
+        id = self.db.keyword.create(name='2')
+        self.assertEqual(id,'1')
+        id = self.db.keyword.create(name='1')
+        self.assertEqual(id,'2')
+        issue = self.db.issue.create(title='i1-status1', topic=['1'])
+        self.assertEqual(self.db.issue.get(issue,'topic'),['1'])
+        self.assertEqual(self.db.keyword.lookup('1'),'2')
+        self.assertEqual(self.db.keyword.lookup('2'),'1')
+        form = cgi.FieldStorage()
+        cl = client.Client(self.instance, None, {'PATH_INFO':'/'}, form)
+        cl.classname = 'issue'
+        cl.nodeid = issue
+        cl.db = self.db
+        cl.userid = '1'
+        item = HTMLItem(cl, 'issue', issue)
+        for topic in item.topic:
+            self.assertEqual(topic.id, '1')
+            self.assertEqual(topic.name, '2')
 
     def testFileUpload(self):
         file = FileUpload('foo', 'foo.txt')
