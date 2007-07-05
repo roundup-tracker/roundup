@@ -362,23 +362,30 @@ class HTMLDatabase:
             m.append(HTMLClass(self._client, item))
         return m
 
-def lookupIds(db, prop, ids, fail_ok=0, num_re=re.compile('^-?\d+$')):
+num_re = re.compile('^-?\d+$')
+
+def lookupIds(db, prop, ids, fail_ok=0, num_re=num_re, do_lookup=True):
     """ "fail_ok" should be specified if we wish to pass through bad values
         (most likely form values that we wish to represent back to the user)
+        "do_lookup" is there for preventing lookup by key-value (if we
+        know that the value passed *is* an id)
     """
     cl = db.getclass(prop.classname)
     l = []
     for entry in ids:
         try:
-            l.append(cl.lookup(entry))
+            if do_lookup:
+                l.append(cl.lookup(entry))
+                continue
         except (TypeError, KeyError):
-            # if fail_ok, ignore lookup error
-            # otherwise entry must be existing object id rather than key value
-            if fail_ok or num_re.match(entry):
-                l.append(entry)
+            pass
+        # if fail_ok, ignore lookup error
+        # otherwise entry must be existing object id rather than key value
+        if fail_ok or num_re.match(entry):
+            l.append(entry)
     return l
 
-def lookupKeys(linkcl, key, ids, num_re=re.compile('^-?\d+$')):
+def lookupKeys(linkcl, key, ids, num_re=num_re):
     """ Look up the "key" values for "ids" list - though some may already
     be key values, not ids.
     """
@@ -552,7 +559,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         """ Return this class' designator (classname) """
         return self._classname
 
-    def getItem(self, itemid, num_re=re.compile('^-?\d+$')):
+    def getItem(self, itemid, num_re=num_re):
         """ Get an item of this class by its item id.
         """
         # make sure we're looking at an itemid
@@ -1870,7 +1877,7 @@ class MultilinkHTMLProperty(HTMLProperty):
         HTMLProperty.__init__(self, *args, **kwargs)
         if self._value:
             display_value = lookupIds(self._db, self._prop, self._value,
-                fail_ok=1)
+                fail_ok=1, do_lookup=False)
             sortfun = make_sort_function(self._db, self._prop.classname)
             # sorting fails if the value contains
             # items not yet stored in the database
