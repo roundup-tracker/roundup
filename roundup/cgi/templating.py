@@ -373,12 +373,14 @@ def lookupIds(db, prop, ids, fail_ok=0, num_re=num_re, do_lookup=True):
     cl = db.getclass(prop.classname)
     l = []
     for entry in ids:
-        try:
-            if do_lookup:
-                l.append(cl.lookup(entry))
+        if do_lookup:
+            try:
+                item = cl.lookup(entry)
+            except (TypeError, KeyError):
+                pass
+            else:
+                l.append(item)
                 continue
-        except (TypeError, KeyError):
-            pass
         # if fail_ok, ignore lookup error
         # otherwise entry must be existing object id rather than key value
         if fail_ok or num_re.match(entry):
