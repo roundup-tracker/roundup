@@ -42,6 +42,10 @@ except ImportError:
         import StructuredText
     except ImportError:
         StructuredText = None
+try:
+    from docutils.core import publish_parts as ReStructuredText
+except ImportError:
+    ReStructuredText = None
 
 # bring in the templating support
 from roundup.cgi.PageTemplates import PageTemplate, GlobalTranslationService
@@ -1241,6 +1245,19 @@ class StringHTMLProperty(HTMLProperty):
     hyper_re = re.compile(r'((?P<url>\w{3,6}://\S+)|'
                           r'(?P<email>[-+=%/\w\.]+@[\w\.\-]+)|'
                           r'(?P<item>(?P<class>[A-Za-z_]+)(\s*)(?P<id>\d+)))')
+    def _hyper_repl_item(self,match,replacement):
+        item = match.group('item')
+        cls = match.group('class').lower()
+        id = match.group('id')
+        try:
+            # make sure cls is a valid tracker classname
+            cl = self._db.getclass(cls)
+            if not cl.hasnode(id):
+                return item
+            return replacement % locals()
+        except KeyError:
+            return item
+
     def _hyper_repl(self, match):
         if match.group('url'):
             s = match.group('url')
@@ -1249,17 +1266,18 @@ class StringHTMLProperty(HTMLProperty):
             s = match.group('email')
             return '<a href="mailto:%s">%s</a>'%(s, s)
         else:
-            s = match.group('item')
-            s1 = match.group('class').lower()
-            s2 = match.group('id')
-            try:
-                # make sure s1 is a valid tracker classname
-                cl = self._db.getclass(s1)
-                if not cl.hasnode(s2):
-                    return s
-                return '<a href="%s%s">%s</a>'%(s1, s2, s)
-            except KeyError:
-                return s
+            return self._hyper_repl_item(match,
+                '<a href="%(cls)s%(id)s">%(item)s</a>')
+
+    def _hyper_repl_rst(self, match):
+        if match.group('url'):
+            s = match.group('url')
+            return '`%s <%s>`_'%(s, s)
+        elif match.group('email'):
+            s = match.group('email')
+            return '`%s <mailto:%s>`_'%(s, s)
+        else:
+            return self._hyper_repl_item(match,'`%(item)s <%(cls)s%(id)s>`_')
 
     def hyperlinked(self):
         """ Render a "hyperlinked" version of the text """
@@ -1328,6 +1346,22 @@ class StringHTMLProperty(HTMLProperty):
         if not StructuredText:
             return s
         return StructuredText(s,level=1,header=0)
+
+    def rst(self, hyperlink=1):
+        """ Render the value of the property as ReStructuredText.
+
+            This requires docutils to be installed separately.
+        """
+        if not self.is_view_ok():
+            return self._('[hidden]')
+
+        if not ReStructuredText:
+            return self.plain(escape=0, hyperlink=hyperlink)
+        s = self.plain(escape=0, hyperlink=0)
+        if hyperlink:
+            s = self.hyper_re.sub(self._hyper_repl_rst, s)
+        return ReStructuredText(s, writer_name="html")["body"].encode("utf-8",
+            "replace")
 
     def field(self, **kwargs):
         """ Render the property as a field in HTML.
