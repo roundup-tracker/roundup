@@ -1,4 +1,4 @@
-#$Id: back_postgresql.py,v 1.38 2007-06-21 07:35:50 schlatterbeck Exp $
+#$Id: back_postgresql.py,v 1.39 2007-08-09 08:58:42 schlatterbeck Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -79,7 +79,7 @@ def pg_command(cursor, command):
         response = str(err).split('\n')[0]
         if response.find('FATAL') != -1:
             raise RuntimeError, response
-        elif response.find('ERROR') != -1:
+        else:
             msgs = [
                 'is being accessed by other users',
                 'could not serialize access due to concurrent update',
