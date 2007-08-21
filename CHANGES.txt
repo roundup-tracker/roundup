@@ -9,6 +9,7 @@ Feature:
 - Add simple anti-spam recipe to docs
 - Allow customisation of regular expressions used in email parsing, thanks
   Bruno Damour
+- Italian translation by Marco Ghidinelli
 
 Fixed:
 - Handling of unset Link search in RDBMS backend
