@@ -22,6 +22,9 @@ Fixed:
   reindexing.
 - Turning off indexing for content properties of FileClass instance
   (e.g., "file" and "msg") now works for SQL backends.
+- Enabled over-riding of content-type in web interface (thanks  
+  John Mitchell)
+
 
 2007-02-15 1.3.3
 Fixed:

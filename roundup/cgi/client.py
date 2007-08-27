@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.233 2007-01-16 10:16:08 schlatterbeck Exp $
+# $Id: client.py,v 1.234 2007-08-27 10:27:31 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -865,8 +865,9 @@ class Client:
     def write_html(self, content):
         if not self.headers_done:
             # at this point, we are sure about Content-Type
-            self.additional_headers['Content-Type'] = \
-                'text/html; charset=%s' % self.charset
+            if not self.additional_headers.has_key('Content-Type'):
+                self.additional_headers['Content-Type'] = \
+                    'text/html; charset=%s' % self.charset
             self.header()
 
         if self.env['REQUEST_METHOD'] == 'HEAD':
