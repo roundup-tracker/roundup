@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 #
-# $Id: demo.py,v 1.25 2006-08-07 07:15:05 richard Exp $
+# $Id: demo.py,v 1.26 2007-08-28 22:37:45 jpend Exp $
 
 import errno
 import os
@@ -103,6 +103,13 @@ def run_demo(home):
 2. Hit Control-C to stop the server.
 3. Re-start the server by running "roundup-demo" again.
 4. Re-initialise the server by running "roundup-demo nuke".
+
+Demo tracker is set up to be accessed by localhost browser.  If you
+run demo on a server host, please stop the demo, open file
+"demo/config.ini" with your editor, change the host name in the "web"
+option in section "[tracker]", save the file, then re-run the demo
+program.
+
 ''' % url
 
     # disable command line processing in roundup_server
