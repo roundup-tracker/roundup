@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.85 2007-04-11 20:04:06 forsberg Exp $
+# $Id: db_test_base.py,v 1.86 2007-08-29 16:40:20 jpend Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
@@ -252,6 +252,31 @@ class DBTest(MyTestCase):
             l = [u1,u2]; l.sort()
             m = self.db.issue.get(nid, "nosy"); m.sort()
             self.assertEqual(l, m)
+
+    def testMultilinkChangeIterable(self):
+        for commit in (0,1):
+            # invalid nosy value assertion
+            self.assertRaises(IndexError, self.db.issue.create, title='spam',
+                nosy=['foo%s'%commit])
+            # invalid type for nosy create
+            self.assertRaises(TypeError, self.db.issue.create, title='spam',
+                nosy=1)
+            u1 = self.db.user.create(username='foo%s'%commit)
+            u2 = self.db.user.create(username='bar%s'%commit)
+            nid = self.db.issue.create(title="spam", nosy=set(u1)) # set
+            if commit: self.db.commit()
+            self.assertEqual(self.db.issue.get(nid, "nosy"), [u1])
+            self.assertRaises(TypeError, self.db.issue.set, nid,
+                nosy='invalid type')
+            self.db.issue.set(nid, nosy=tuple()) # tuple
+            if commit: self.db.commit()
+            self.assertEqual(self.db.issue.get(nid, "nosy"), [])
+            self.db.issue.set(nid, nosy=frozenset([u1,u2])) # frozenset
+            if commit: self.db.commit()
+            l = [u1,u2]; l.sort()
+            m = self.db.issue.get(nid, "nosy"); m.sort()
+            self.assertEqual(l, m)
+       
 
 # XXX one day, maybe...
 #    def testMultilinkOrdering(self):

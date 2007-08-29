@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: back_anydbm.py,v 1.203 2007-03-14 15:23:11 schlatterbeck Exp $
+#$Id: back_anydbm.py,v 1.204 2007-08-29 16:40:20 jpend Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -840,8 +840,8 @@ class Class(hyperdb.Class):
                         (self.classname, newid, key))
 
             elif isinstance(prop, hyperdb.Multilink):
-                if type(value) != type([]):
-                    raise TypeError, 'new property "%s" not a list of ids'%key
+                if not hasattr(value, '__iter__'):
+                    raise TypeError, 'new property "%s" not an iterable of ids'%key
 
                 # clean up and validate the list of links
                 link_class = self.properties[key].classname
@@ -1132,8 +1132,8 @@ class Class(hyperdb.Class):
                             (self.classname, nodeid, propname))
 
             elif isinstance(prop, hyperdb.Multilink):
-                if type(value) != type([]):
-                    raise TypeError, 'new property "%s" not a list of'\
+                if not hasattr(value, '__iter__'):
+                    raise TypeError, 'new property "%s" not an iterable of'\
                         ' ids'%propname
                 link_class = self.properties[propname].classname
                 l = []
