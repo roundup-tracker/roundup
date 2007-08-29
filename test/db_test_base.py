@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.86 2007-08-29 16:40:20 jpend Exp $
+# $Id: db_test_base.py,v 1.87 2007-08-29 17:35:41 jpend Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
@@ -263,15 +263,20 @@ class DBTest(MyTestCase):
                 nosy=1)
             u1 = self.db.user.create(username='foo%s'%commit)
             u2 = self.db.user.create(username='bar%s'%commit)
-            nid = self.db.issue.create(title="spam", nosy=set(u1)) # set
+            # try a couple of the built-in iterable types to make
+            # sure that we accept them and handle them properly
+            # try a set as input for the multilink
+            nid = self.db.issue.create(title="spam", nosy=set(u1))
             if commit: self.db.commit()
             self.assertEqual(self.db.issue.get(nid, "nosy"), [u1])
             self.assertRaises(TypeError, self.db.issue.set, nid,
                 nosy='invalid type')
-            self.db.issue.set(nid, nosy=tuple()) # tuple
+            # test with a tuple
+            self.db.issue.set(nid, nosy=tuple())
             if commit: self.db.commit()
             self.assertEqual(self.db.issue.get(nid, "nosy"), [])
-            self.db.issue.set(nid, nosy=frozenset([u1,u2])) # frozenset
+            # make sure we accept a frozen set
+            self.db.issue.set(nid, nosy=frozenset([u1,u2]))
             if commit: self.db.commit()
             l = [u1,u2]; l.sort()
             m = self.db.issue.get(nid, "nosy"); m.sort()
