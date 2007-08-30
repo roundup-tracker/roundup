@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-#$Id: userauditor.py,v 1.2 2003-11-11 22:25:37 richard Exp $
+#$Id: userauditor.py,v 1.3 2007-08-30 00:31:16 jpend Exp $
 
 def audit_user_fields(db, cl, nodeid, newvalues):
     ''' Make sure user properties are valid.
@@ -29,12 +29,26 @@ def audit_user_fields(db, cl, nodeid, newvalues):
     if newvalues.has_key('address') and ' ' in newvalues['address']:
         raise ValueError, 'Email address must not contain spaces'
 
-    if newvalues.has_key('roles'):
+    if newvalues.has_key('roles') and newvalues['roles']:
         roles = [x.lower().strip() for x in newvalues['roles'].split(',')]
         for rolename in roles:
             if not db.security.role.has_key(rolename):
                 raise ValueError, 'Role "%s" does not exist'%rolename
 
+    if newvalues.has_key('timezone'):
+        # validate the timezone by attempting to use it
+        # before we store it to the db
+        import roundup.date
+        import datetime
+        try:
+            tz = newvalues['timezone']
+            TZ = roundup.date.get_timezone(tz)
+            dt = datetime.datetime.now()
+            local = TZ.localize(dt).utctimetuple()
+        except IOError:
+            raise ValueError, 'Timezone "%s" does not exist' % tz
+        except ValueError:
+            raise ValueError, 'Timezone "%s" exceeds valid range [-23...23]' % tz
 
 def init(db):
     # fire before changes are made

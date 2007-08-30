@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-#$Id: userauditor.py,v 1.3 2006-09-18 03:24:38 tobias-herp Exp $
+#$Id: userauditor.py,v 1.4 2007-08-30 00:31:15 jpend Exp $
 
 def audit_user_fields(db, cl, nodeid, newvalues):
     ''' Make sure user properties are valid.
@@ -35,10 +35,23 @@ def audit_user_fields(db, cl, nodeid, newvalues):
             if not db.security.role.has_key(rolename):
                 raise ValueError, 'Role "%s" does not exist'%rolename
 
+    if newvalues.has_key('timezone'):
+        # validate the timezone by attempting to use it
+        # before we store it to the db.
+        import roundup.date
+        import datetime
+        try:
+            tz = newvalues['timezone']
+            TZ = roundup.date.get_timezone(tz)
+            dt = datetime.datetime.now()
+            local = TZ.localize(dt).utctimetuple()
+        except IOError:
+            raise ValueError, 'Timezone "%s" does not exist' % tz
+        except ValueError:
+            raise ValueError, 'Timezone "%s" exceeds valid range [-23...23]' % tz
 
 def init(db):
     # fire before changes are made
     db.user.audit('set', audit_user_fields)
-    db.user.audit('create', audit_user_fields)
-
+    db.user.audit('create', audit_user_fields) 
 # vim: set filetype=python ts=4 sw=4 et si
