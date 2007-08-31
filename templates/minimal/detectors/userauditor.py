@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-#$Id: userauditor.py,v 1.4 2007-08-31 15:57:47 jpend Exp $
+#$Id: userauditor.py,v 1.5 2007-08-31 17:45:17 jpend Exp $
 
 def audit_user_fields(db, cl, nodeid, newvalues):
     ''' Make sure user properties are valid.
@@ -30,8 +30,8 @@ def audit_user_fields(db, cl, nodeid, newvalues):
     if newvalues.has_key('address') and ' ' in newvalues['address']:
         raise ValueError, 'Email address must not contain spaces'
 
-    for rolename in newvalues.get('roles', '').split(','):
-            if rolename and not db.security.role.has_key(rolename.lower().strip()):
+    for rolename in [r.lower().strip() for r in newvalues.get('roles', '').split(',')]:
+            if rolename and not db.security.role.has_key(rolename):
                 raise ValueError, 'Role "%s" does not exist'%rolename
 
     if newvalues.has_key('timezone'):
@@ -54,4 +54,4 @@ def init(db):
     db.user.audit('set', audit_user_fields)
     db.user.audit('create', audit_user_fields)
 
-# vim: filetype=python ts=4 sw=4 et si
+# vim: sts=4 sw=4 et si

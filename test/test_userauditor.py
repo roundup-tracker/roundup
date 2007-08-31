@@ -1,4 +1,4 @@
-# $Id: test_userauditor.py,v 1.1 2007-08-31 15:57:47 jpend Exp $
+# $Id: test_userauditor.py,v 1.2 2007-08-31 17:45:17 jpend Exp $
 
 import os, unittest, shutil
 from db_test_base import setupTracker
@@ -67,11 +67,14 @@ class UserAuditorTest(unittest.TestCase):
         self.assertRaises(ValueError, self.db.user.set, userid, roles='User,BadRole')
 
     def testGoodRoles(self):
+        userid = self.db.user.lookup('kyle')
         # make sure we handle commas in weird places
         self.db.user.set(userid, roles='User,')
         self.db.user.set(userid, roles=',User')
         # make sure we strip whitespace
         self.db.user.set(userid, roles='    User   ')
+        # check for all-whitespace (treat as no role)
+        self.db.user.set(userid, roles='   ')
 
 def test_suite():
     suite = unittest.TestSuite()
