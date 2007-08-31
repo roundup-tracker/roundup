@@ -54,7 +54,10 @@
                 db_klass string:keyword;
                 db_content string:name;">
   <th i18n:translate="">Topic:</th>
-  <td metal:use-macro="search_select"></td>
+  <td metal:use-macro="search_select">
+    <option metal:fill-slot="extra_options" value="-1" i18n:translate=""
+            tal:attributes="selected python:value == '-1'">not selected</option>
+  </td>
   <td metal:use-macro="column_input"></td>
   <td metal:use-macro="sort_input"></td>
   <td metal:use-macro="group_input"></td>
