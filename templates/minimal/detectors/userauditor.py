@@ -18,26 +18,25 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-#$Id: userauditor.py,v 1.3 2007-08-30 00:31:16 jpend Exp $
+#$Id: userauditor.py,v 1.4 2007-08-31 15:57:47 jpend Exp $
 
 def audit_user_fields(db, cl, nodeid, newvalues):
     ''' Make sure user properties are valid.
 
         - email address has no spaces in it
         - roles specified exist
+        - timezone is valid
     '''
     if newvalues.has_key('address') and ' ' in newvalues['address']:
         raise ValueError, 'Email address must not contain spaces'
 
-    if newvalues.has_key('roles') and newvalues['roles']:
-        roles = [x.lower().strip() for x in newvalues['roles'].split(',')]
-        for rolename in roles:
-            if not db.security.role.has_key(rolename):
+    for rolename in newvalues.get('roles', '').split(','):
+            if rolename and not db.security.role.has_key(rolename.lower().strip()):
                 raise ValueError, 'Role "%s" does not exist'%rolename
 
     if newvalues.has_key('timezone'):
         # validate the timezone by attempting to use it
-        # before we store it to the db
+        # before we store it to the db.
         import roundup.date
         import datetime
         try:
@@ -55,4 +54,4 @@ def init(db):
     db.user.audit('set', audit_user_fields)
     db.user.audit('create', audit_user_fields)
 
-# vim: set filetype=python ts=4 sw=4 et si
+# vim: filetype=python ts=4 sw=4 et si
