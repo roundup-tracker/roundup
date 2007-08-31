@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.187 2007-08-29 16:40:20 jpend Exp $
+#$Id: rdbms_common.py,v 1.188 2007-08-31 15:44:02 jpend Exp $
 """ Relational database (SQL) backend common code.
 
 Basics:
@@ -1363,6 +1363,8 @@ class Class(hyperdb.Class):
                         (self.classname, newid, key))
 
             elif isinstance(prop, Multilink):
+                if value is None:
+                    value = []
                 if not hasattr(value, '__iter__'):
                     raise TypeError, 'new property "%s" not an iterable of ids'%key
 
@@ -1613,6 +1615,8 @@ class Class(hyperdb.Class):
                             (self.classname, nodeid, propname))
 
             elif isinstance(prop, Multilink):
+                if value is None:
+                    value = []
                 if not hasattr(value, '__iter__'):
                     raise TypeError, 'new property "%s" not an iterable of'\
                         ' ids'%propname

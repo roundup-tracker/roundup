@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.87 2007-08-29 17:35:41 jpend Exp $
+# $Id: db_test_base.py,v 1.88 2007-08-31 15:44:03 jpend Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets
 
@@ -252,6 +252,12 @@ class DBTest(MyTestCase):
             l = [u1,u2]; l.sort()
             m = self.db.issue.get(nid, "nosy"); m.sort()
             self.assertEqual(l, m)
+
+            # verify that when we pass None to an Multilink it sets
+            # it to an empty list
+            self.db.issue.set(nid, nosy=None)
+            if commit: self.db.commit()
+            self.assertEqual(self.db.issue.get(nid, "nosy"), [])
 
     def testMultilinkChangeIterable(self):
         for commit in (0,1):

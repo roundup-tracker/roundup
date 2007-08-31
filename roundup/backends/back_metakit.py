@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.116 2007-08-29 16:40:20 jpend Exp $
+# $Id: back_metakit.py,v 1.117 2007-08-31 15:44:02 jpend Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -647,6 +647,8 @@ class Class(hyperdb.Class):
                             (self.classname, str(row.id), key))
 
             elif isinstance(prop, hyperdb.Multilink):
+                if value is None:
+                    value = []
                 if not hasattr(value, '__iter__'):
                     raise TypeError, 'new property "%s" not an iterable of ids'%key
                 link_class = prop.classname
