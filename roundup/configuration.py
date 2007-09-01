@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.43 2007-05-12 16:14:54 forsberg Exp $
+# $Id: configuration.py,v 1.44 2007-09-01 16:30:11 forsberg Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -635,6 +635,12 @@ SETTINGS = (
             "messages to this file *instead* of sending them.\n"
             "This option has the same effect as environment variable"
             " SENDMAILDEBUG.\nEnvironment variable takes precedence."),
+        (BooleanOption, "add_authorinfo", "yes",
+            "Add a line with author information at top of all messages\n"
+            "sent by roundup"),
+        (BooleanOption, "add_authoremail", "yes",
+            "Add the mail address of the author to the author information at\n"
+            "added if add_authorinfo is true."),
     ), "Outgoing email options.\nUsed for nozy messages and approval requests"),
     ("mailgw", (
         (BooleanOption, "keep_quoted_text", "yes",

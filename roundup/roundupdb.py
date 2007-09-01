@@ -16,7 +16,7 @@ from __future__ import nested_scopes
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.128 2006-12-18 11:34:41 a1s Exp $
+# $Id: roundupdb.py,v 1.129 2007-09-01 16:30:11 forsberg Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -292,8 +292,10 @@ class IssueClass:
             authname = 'admin'
             authaddr = self.db.config.ADMIN_EMAIL
 
-        if authaddr:
+        if authaddr and self.db.config.MAIL_ADD_AUTHOREMAIL:
             authaddr = " <%s>" % straddr( ('',authaddr) )
+        elif authaddr:
+            authaddr = ""
 
         # make the message body
         m = ['']
@@ -303,16 +305,18 @@ class IssueClass:
             m.append(self.email_signature(nodeid, msgid))
 
         # add author information
-        if authid:
+        if authid and self.db.config.MAIL_ADD_AUTHORINFO:
             if len(self.get(nodeid,'messages')) == 1:
+                
                 m.append(_("New submission from %(authname)s%(authaddr)s:")
                     % locals())
             else:
                 m.append(_("%(authname)s%(authaddr)s added the comment:")
                     % locals())
-        else:
+            m.append('')
+        elif self.db.config.MAIL_ADD_AUTHORINFO:
             m.append(_("System message:"))
-        m.append('')
+            m.append('')
 
         # add the content
         if msgid is not None:

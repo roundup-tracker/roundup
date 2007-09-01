@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.86 2007-09-01 16:14:21 forsberg Exp $
+# $Id: test_mailgw.py,v 1.87 2007-09-01 16:30:11 forsberg Exp $
 
 # TODO: test bcc
 
@@ -257,6 +257,88 @@ Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 <http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
 _______________________________________________________________________
 ''')
+
+    def testNewIssueNoAuthorInfo(self):
+        self.db.config.MAIL_ADD_AUTHORINFO = 'no'
+        self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id>
+Subject: [issue] Testing... [nosy=mary; assignedto=richard]
+
+This is a test submission of a new issue.
+''')
+        self.compareMessages(self._get_mail(),
+'''FROM: roundup-admin@your.tracker.email.domain.example
+TO: chef@bork.bork.bork, mary@test, richard@test
+Content-Type: text/plain; charset=utf-8
+Subject: [issue1] Testing...
+To: mary@test, richard@test
+From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+MIME-Version: 1.0
+Message-Id: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+Content-Transfer-Encoding: quoted-printable
+
+This is a test submission of a new issue.
+
+----------
+assignedto: richard
+messages: 1
+nosy: Chef, mary, richard
+status: unread
+title: Testing...
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
+_______________________________________________________________________
+''')
+
+    def testNewIssueNoAuthorEmail(self):
+        self.db.config.MAIL_ADD_AUTHOREMAIL = 'no'
+        self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id>
+Subject: [issue] Testing... [nosy=mary; assignedto=richard]
+
+This is a test submission of a new issue.
+''')
+        self.compareMessages(self._get_mail(),
+'''FROM: roundup-admin@your.tracker.email.domain.example
+TO: chef@bork.bork.bork, mary@test, richard@test
+Content-Type: text/plain; charset=utf-8
+Subject: [issue1] Testing...
+To: mary@test, richard@test
+From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+MIME-Version: 1.0
+Message-Id: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+Content-Transfer-Encoding: quoted-printable
+
+New submission from Bork, Chef:
+
+This is a test submission of a new issue.
+
+----------
+assignedto: richard
+messages: 1
+nosy: Chef, mary, richard
+status: unread
+title: Testing...
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
+_______________________________________________________________________
+''')                
 
     # BUG
     # def testMultipart(self):
