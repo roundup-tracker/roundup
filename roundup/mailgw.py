@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.188 2007-05-12 16:14:54 forsberg Exp $
+$Id: mailgw.py,v 1.189 2007-09-01 16:14:21 forsberg Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -906,8 +906,18 @@ The mail gateway is not properly set up. Please contact
             if author == anonid:
                 # we're anonymous and we need to be a registered user
                 from_address = from_list[0][1]
+                registration_info = ""
+                if self.db.security.hasPermission('Web Access', author) and \
+                   self.db.security.hasPermission('Create', anonid, 'user'):
+                    tracker_web = self.instance.config.TRACKER_WEB
+                    registration_info = """ Please register at:
+
+%(tracker_web)suser?template=register
+
+...before sending mail to the tracker.""" % locals()
+                        
                 raise Unauthorized, _("""
-You are not a registered user.
+You are not a registered user.%(registration_info)s
 
 Unknown address: %(from_address)s
 """) % locals()

@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.85 2007-02-15 03:09:53 richard Exp $
+# $Id: test_mailgw.py,v 1.86 2007-09-01 16:14:21 forsberg Exp $
 
 # TODO: test bcc
 
@@ -766,7 +766,48 @@ Subject: [issue] Testing...
 
 This is a test submission of a new issue.
 '''
-        self.assertRaises(Unauthorized, self._handle_mail, message)
+        try:
+            self._handle_mail(message)
+        except Unauthorized, value:
+            body_diff = self.compareMessages(str(value), """
+You are not a registered user. 
+
+Unknown address: fubar@bork.bork.bork
+""")
+
+            assert not body_diff, body_diff
+
+        else:
+            raise AssertionError, "Unathorized not raised when handling mail"
+
+        # Add Web Access role to anonymous, and try again to make sure
+        # we get a "please register at:" message this time.
+        p = [
+            self.db.security.getPermission('Create', 'user'),
+            self.db.security.getPermission('Web Access', None),
+        ]
+
+        self.db.security.role['anonymous'].permissions=p
+
+        try:
+            self._handle_mail(message)
+        except Unauthorized, value:
+            body_diff = self.compareMessages(str(value), """
+You are not a registered user. Please register at:
+
+http://tracker.example/cgi-bin/roundup.cgi/bugs/user?template=register
+
+...before sending mail to the tracker.
+
+Unknown address: fubar@bork.bork.bork
+""")
+
+            assert not body_diff, body_diff
+
+        else:
+            raise AssertionError, "Unathorized not raised when handling mail"
+
+        # Make sure list of users is the same as before.
         m = self.db.user.list()
         m.sort()
         self.assertEqual(l, m)
