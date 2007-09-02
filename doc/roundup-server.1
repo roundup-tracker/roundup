@@ -21,6 +21,11 @@ Daemonize, and write the server's PID to the nominated file.
 Sets a filename to log to (instead of stdout). This is required if the -d
 option is used.
 .TP
+\fB-i\fP \fIfile\fP
+Sets a filename to use as a template for generating the tracker index page.
+The variable "trackers" is available to the template and is a dict of all
+configured trackers.
+.TP
 \fB-h\fP
 print help
 .TP

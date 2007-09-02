@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.88 2007-04-23 19:35:41 forsberg Exp $
+$Id: roundup_server.py,v 1.89 2007-09-02 16:05:36 jpend Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -30,6 +30,7 @@ from roundup import __version__ as roundup_version
 
 # Roundup modules of use here
 from roundup.cgi import cgitb, client
+from roundup.cgi.PageTemplates.PageTemplate import PageTemplate
 import roundup.instance
 from roundup.i18n import _
 
@@ -152,17 +153,26 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.end_headers()
         else:
             self.send_response(200)
+
         self.send_header('Content-Type', 'text/html')
         self.end_headers()
         w = self.wfile.write
-        w(_('<html><head><title>Roundup trackers index</title></head>\n'
-            '<body><h1>Roundup trackers index</h1><ol>\n'))
-        keys.sort()
-        for tracker in keys:
-            w('<li><a href="%(tracker_url)s/index">%(tracker_name)s</a>\n'%{
-                'tracker_url': urllib.quote(tracker),
-                'tracker_name': cgi.escape(tracker)})
-        w('</ol></body></html>')
+
+        if self.CONFIG and self.CONFIG['TEMPLATE']:
+            template = open(self.CONFIG['TEMPLATE']).read()
+            pt = PageTemplate()
+            pt.write(template)
+            extra = { 'trackers': self.TRACKERS }
+            w(pt.pt_render(extra_context=extra))
+        else:
+            w(_('<html><head><title>Roundup trackers index</title></head>\n'
+                '<body><h1>Roundup trackers index</h1><ol>\n'))
+            keys.sort()
+            for tracker in keys:
+                w('<li><a href="%(tracker_url)s/index">%(tracker_name)s</a>\n'%{
+                    'tracker_url': urllib.quote(tracker),
+                    'tracker_name': cgi.escape(tracker)})
+            w('</ol></body></html>')
 
     def inner_run_cgi(self):
         ''' This is the inner part of the CGI handling
@@ -394,6 +404,8 @@ class ServerConfig(configuration.Config):
             (configuration.Option, "multiprocess", DEFAULT_MULTIPROCESS,
                 "Set processing of each request in separate subprocess.\n"
                 "Allowed values: %s." % ", ".join(MULTIPROCESS_TYPES)),
+            (configuration.NullableFilePathOption, "template", "",
+                "Tracker index template. If unset, built-in will be used."),
         )),
         ("trackers", (), "Roundup trackers to serve.\n"
             "Each option in this section defines single Roundup tracker.\n"
@@ -414,6 +426,7 @@ class ServerConfig(configuration.Config):
         "nodaemon": "D",
         "log_hostnames": "N",
         "multiprocess": "t:",
+        "template": "i:",
     }
 
     def __init__(self, config_file=None):
@@ -595,6 +608,7 @@ Options:
  -p <port>     set the port to listen on (default: %(port)s)
  -l <fname>    log to the file indicated by fname instead of stderr/stdout
  -N            log client machine names instead of IP addresses (much slower)
+ -i            set tracker index template
  -t <mode>     multiprocess mode (default: %(mp_def)s).
                Allowed values: %(mp_types)s.
 %(os_part)s

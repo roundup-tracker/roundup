@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.23 $
+:Version: $Revision: 1.24 $
 
 .. contents::
 
@@ -82,6 +82,7 @@ The basic configuration file layout is as follows (take from the
     ;log_ip = yes
     ;pidfile =
     ;logfile =
+    ;template =
 
     [trackers]
     ; Add one of these per tracker being served
@@ -109,6 +110,10 @@ are as follows:
   written to this file. It must be specified if **pidfile** is specified.
   If per-tracker logging is specified, then very little will be written to
   this file.
+**template**
+  Specifies a template used for displaying the tracker index when
+  multiple trackers are being used. The variable "trackers" is available
+  to the template and is a dict of all configured trackers.
 **trackers** section
   Each line denotes a mapping from a URL component to a tracker home.
   Make sure the name part doesn't include any url-unsafe characters like
