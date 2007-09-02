@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.218 $
+:Version: $Revision: 1.219 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -239,6 +239,15 @@ Section **mail**
  password -- default *blank*
   SMTP login password.
   Set this if your mail host requires authenticated access.
+
+ port -- default *25*
+  SMTP port on mail host.
+  Set this if your mail host runs on a different port.
+
+ local_hostname -- default *blank*
+  The fully qualified domain name (FQDN) to use during SMTP sessions. If left
+  blank, the underlying SMTP library will attempt to detect your FQDN. If your
+  mail host requires something specific, specify the FQDN to use.
 
  tls -- ``no``
   If your SMTP mail host provides or requires TLS (Transport Layer Security)

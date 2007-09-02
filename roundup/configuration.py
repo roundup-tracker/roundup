@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.44 2007-09-01 16:30:11 forsberg Exp $
+# $Id: configuration.py,v 1.45 2007-09-02 05:54:46 jpend Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -12,6 +12,7 @@ import os
 import re
 import sys
 import time
+import smtplib
 
 import roundup.date
 
@@ -614,6 +615,12 @@ SETTINGS = (
             "If username is not empty, password (below) MUST be set!"),
         (Option, "password", NODEFAULT, "SMTP login password.\n"
             "Set this if your mail host requires authenticated access."),
+        (IntegerNumberOption, "port", smtplib.SMTP_PORT,
+            "Default port to send SMTP on.\n"
+            "Set this if your mail server runs on a different port."),
+        (NullableOption, "local_hostname", '',
+            "The local hostname to use during SMTP transmission.\n"
+            "Set this if your mail server requires something specific."),
         (BooleanOption, "tls", "no",
             "If your SMTP mail host provides or requires TLS\n"
             "(Transport Layer Security) then set this option to 'yes'."),

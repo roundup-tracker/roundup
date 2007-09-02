@@ -1,7 +1,7 @@
 """Sending Roundup-specific mail over SMTP.
 """
 __docformat__ = 'restructuredtext'
-# $Id: mailer.py,v 1.18 2006-08-11 01:41:25 richard Exp $
+# $Id: mailer.py,v 1.19 2007-09-02 05:54:46 jpend Exp $
 
 import time, quopri, os, socket, smtplib, re, sys, traceback
 
@@ -190,8 +190,8 @@ class SMTPConnection(smtplib.SMTP):
     ''' Open an SMTP connection to the mailhost specified in the config
     '''
     def __init__(self, config):
-
-        smtplib.SMTP.__init__(self, config.MAILHOST)
+        smtplib.SMTP.__init__(self, config.MAILHOST, port=config['MAIL_PORT'],
+                              local_hostname=config['MAIL_LOCAL_HOSTNAME'])
 
         # start the TLS if requested
         if config["MAIL_TLS"]:
