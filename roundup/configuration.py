@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.45 2007-09-02 05:54:46 jpend Exp $
+# $Id: configuration.py,v 1.46 2007-09-02 06:48:13 forsberg Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -647,7 +647,10 @@ SETTINGS = (
             "sent by roundup"),
         (BooleanOption, "add_authoremail", "yes",
             "Add the mail address of the author to the author information at\n"
-            "added if add_authorinfo is true."),
+            "the top of all messages.\n"
+            "If this is false but add_authorinfo is true, only the name\n"
+            "of the actor is added which protects the mail address of the\n"
+            "actor from being exposed at mail archives, etc."),
     ), "Outgoing email options.\nUsed for nozy messages and approval requests"),
     ("mailgw", (
         (BooleanOption, "keep_quoted_text", "yes",
