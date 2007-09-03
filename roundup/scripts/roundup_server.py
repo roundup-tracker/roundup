@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.90 2007-09-03 17:20:07 jpend Exp $
+$Id: roundup_server.py,v 1.91 2007-09-03 17:26:42 jpend Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -512,9 +512,9 @@ class ServerConfig(configuration.Config):
         "nodaemon": "D",
         "log_hostnames": "N",
         "multiprocess": "t:",
-	"template": "i:",
-	"ssl": "s",
-	"pem": "e:",
+        "template": "i:",
+        "ssl": "s",
+        "pem": "e:",
     }
 
     def __init__(self, config_file=None):
