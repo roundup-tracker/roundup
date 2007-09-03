@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.125 $
+:Version: $Revision: 1.126 $
 
 .. contents::
    :depth: 2
@@ -75,9 +75,16 @@ Xapian full-text indexer
   you to install a snapshot. Snapshot "0.9.2_svn6532" has been tried
   successfully.
 
+pyopenssl
+  If pyopenssl_ is installed the roundup-server can be configured
+  to serve trackers over SSL. If you are going to serve roundup via
+  proxy through a server with SSL support (e.g. apache) then this is
+  unnecessary.
+
 .. _Xapian: http://www.xapian.org/
 .. _pytz: http://www.python.org/pypi/pytz
 .. _Olson tz database: http://www.twinsun.com/tz/tz-link.htm
+.. _pyopenssl: http://pyopenssl.sourceforge.net
 
 
 Getting Roundup
