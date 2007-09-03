@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.46 2007-09-02 06:48:13 forsberg Exp $
+# $Id: configuration.py,v 1.47 2007-09-03 17:14:08 jpend Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -744,6 +744,10 @@ SETTINGS = (
             "\"multiple\" then a separate email is sent to each\n"
             "recipient. If \"single\" then a single email is sent with\n"
             "each recipient as a CC address."),
+        (IntegerNumberOption, "max_attachment_size", sys.maxint,
+            "Attachments larger than the given number of bytes\n"
+            "won't be attached to nosy mails. They will be replaced by\n"
+            "a link to the tracker's download page for the file.")
     ), "Nosy messages sending"),
 )
 

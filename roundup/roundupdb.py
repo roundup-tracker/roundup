@@ -16,7 +16,7 @@ from __future__ import nested_scopes
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.129 2007-09-01 16:30:11 forsberg Exp $
+# $Id: roundupdb.py,v 1.130 2007-09-03 17:14:08 jpend Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -24,6 +24,7 @@ __docformat__ = 'restructuredtext'
 
 import re, os, smtplib, socket, time, random
 import cStringIO, base64, quopri, mimetypes
+import os.path
 
 from rfc2822 import encode_header
 
@@ -322,6 +323,29 @@ class IssueClass:
         if msgid is not None:
             m.append(messages.get(msgid, 'content', ''))
 
+        # get the files for this message
+        message_files = []
+        if msgid :
+            for fileid in messages.get(msgid, 'files') :
+                # try to avoid reading in the file contents just to check the size
+                # backends that inherit from blobfiles.FileStorage have a filename class
+                if hasattr(self.db, 'filename'):
+                    filename = self.db.filename('file', fileid, None)
+                    filesize = os.path.getsize(filename)
+                else:
+                    # metakit doesn't inherit from FileStorage so we read the
+                    # full file contents to get the size :-/
+                    filesize = len(self.db.file.get(fileid, 'content'))
+
+                if filesize <= self.db.config.NOSY_MAX_ATTACHMENT_SIZE:
+                    message_files.append(fileid)
+                else:
+                    base = self.db.config.TRACKER_WEB
+                    link = "".join((base, files.classname, fileid))
+                    filename = files.get(fileid, 'name')
+                    m.append(_("File '%(filename)s' not attached - you can "
+                               "download it from %(link)s." % locals()))
+
         # add the change note
         if note:
             m.append(note)
@@ -339,12 +363,6 @@ class IssueClass:
         content_encoded = cStringIO.StringIO()
         quopri.encode(content, content_encoded, 0)
         content_encoded = content_encoded.getvalue()
-
-        # get the files for this message
-        if msgid is None:
-            message_files = None
-        else:
-            message_files = messages.get(msgid, 'files')
 
         # make sure the To line is always the same (for testing mostly)
         sendto.sort()

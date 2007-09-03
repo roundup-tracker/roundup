@@ -15,12 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.88 2007-08-31 15:44:03 jpend Exp $
+# $Id: db_test_base.py,v 1.89 2007-09-03 17:14:09 jpend Exp $
 
-import unittest, os, shutil, errno, imp, sys, time, pprint, sets
+import unittest, os, shutil, errno, imp, sys, time, pprint, sets, base64
 
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval, DatabaseError, Boolean, Number, Node
+from roundup.mailer import Mailer
 from roundup import date, password, init, instance, configuration, support
 
 from mocknull import MockNull
@@ -69,8 +70,8 @@ def setupSchema(db, create, module):
     priority = module.Class(db, "priority", name=String(), order=String())
     priority.setkey("name")
     user = module.Class(db, "user", username=String(), password=Password(),
-        assignable=Boolean(), age=Number(), roles=String(),
-        supervisor=Link('user'))
+        assignable=Boolean(), age=Number(), roles=String(), address=String(),
+        supervisor=Link('user'),realname=String())
     user.setkey("username")
     file = module.FileClass(db, "file", name=String(), type=String(),
         comment=String(indexme="yes"), fooz=Password())
@@ -82,14 +83,18 @@ def setupSchema(db, create, module):
     stuff = module.Class(db, "stuff", stuff=String())
     session = module.Class(db, 'session', title=String())
     msg = module.FileClass(db, "msg", date=Date(),
-                           author=Link("user", do_journal='no'))
+                           author=Link("user", do_journal='no'),
+                           files=Multilink('file'), inreplyto=String(),
+                           messageid=String(),
+                           recipients=Multilink("user", do_journal='no')
+                           )
     session.disableJournalling()
     db.post_init()
     if create:
         user.create(username="admin", roles='Admin',
             password=password.Password('sekrit'))
         user.create(username="fred", roles='User',
-            password=password.Password('sekrit'))
+            password=password.Password('sekrit'), address='fred@example.com')
         status.create(name="unread")
         status.create(name="in-progress")
         status.create(name="testing")
@@ -917,14 +922,15 @@ class DBTest(MyTestCase):
 
     def testIndexingOnImport(self):
         msgcontent = 'Glrk'
-        msgid = self.db.msg.import_list(['content'], [repr(msgcontent)])
+        msgid = self.db.msg.import_list(['content', 'files', 'recipients'],
+                                        [repr(msgcontent), '[]', '[]'])
         msg_filename = self.db.filename(self.db.msg.classname, msgid,
                                         create=1)
         support.ensureParentsExist(msg_filename)
         msg_file = open(msg_filename, 'w')
         msg_file.write(msgcontent)
         msg_file.close()
-        
+
 
         filecontent = 'Brrk'
         fileid = self.db.file.import_list(['content'], [repr(filecontent)])
@@ -933,7 +939,7 @@ class DBTest(MyTestCase):
         support.ensureParentsExist(file_filename)
         file_file = open(file_filename, 'w')
         file_file.write(filecontent)
-        file_file.close()        
+        file_file.close()
 
         title = 'Bzzt'
         nodeid = self.db.issue.import_list(['title', 'messages', 'files',
@@ -958,7 +964,7 @@ class DBTest(MyTestCase):
         self.assertEquals(self.db.indexer.search([filecontent], self.db.issue),
                           {str(nodeid):{'files':[str(fileid)]}})
 
-        
+
 
     #
     # searching tests follow
@@ -1240,8 +1246,8 @@ class DBTest(MyTestCase):
 
     def testFilteringMultilinkSort(self):
         # 1: []                 Reverse:  1: []
-        # 2: []                           2: []              
-        # 3: ['admin','fred']             3: ['fred','admin']       
+        # 2: []                           2: []
+        # 3: ['admin','fred']             3: ['fred','admin']
         # 4: ['admin','bleep','fred']     4: ['fred','bleep','admin']
         # Note the sort order for the multilink doen't change when
         # reversing the sort direction due to the re-sorting of the
@@ -1532,7 +1538,7 @@ class DBTest(MyTestCase):
             ['1', '2', '3', '4', '5', '8', '6', '7'])
         ae(filt(None, {}, [('+','messages.author'), ('+','messages')]),
             ['6', '7', '8', '5', '4', '3', '1', '2'])
-        # The following will sort by 
+        # The following will sort by
         # author.supervisor.username and then by
         # author.username
         # I've resited the tempation to implement recursive orderprop
@@ -1722,6 +1728,38 @@ class DBTest(MyTestCase):
             'creator', 'deadline', 'files', 'fixer', 'foo', 'id', 'messages',
             'nosy', 'priority', 'spam', 'status', 'superseder'])
         self.assertEqual(self.db.issue.list(), ['1'])
+
+    def testNosyMail(self) :
+        """Creates one issue with two attachments, one smaller and one larger
+           than the set max_attachment_size.
+        """
+        db = self.db
+        db.config.NOSY_MAX_ATTACHMENT_SIZE = 4096
+        res = dict(mail_to = None, mail_msg = None)
+        def dummy_snd(s, to, msg, res=res) :
+            res["mail_to"], res["mail_msg"] = to, msg
+        backup, Mailer.smtp_send = Mailer.smtp_send, dummy_snd
+        try :
+            f1 = db.file.create(name="test1.txt", content="x" * 20)
+            f2 = db.file.create(name="test2.txt", content="y" * 5000)
+            m  = db.msg.create(content="one two", author="admin",
+                files = [f1, f2])
+            i  = db.issue.create(title='spam', files = [f1, f2],
+                messages = [m], nosy = [db.user.lookup("fred")])
+
+            db.issue.nosymessage(i, m, {})
+            mail_msg = res["mail_msg"].getvalue()
+            self.assertEqual(res["mail_to"], ["fred@example.com"])
+            self.failUnless("From: admin" in mail_msg)
+            self.failUnless("Subject: [issue1] spam" in mail_msg)
+            self.failUnless("New submission from admin" in mail_msg)
+            self.failUnless("one two" in mail_msg)
+            self.failIf("File 'test1.txt' not attached" in mail_msg)
+            self.failUnless(base64.b64encode("xxx") in mail_msg)
+            self.failUnless("File 'test2.txt' not attached" in mail_msg)
+            self.failIf(base64.b64encode("yyy") in mail_msg)
+        finally :
+            Mailer.smtp_send = backup
 
 class ROTest(MyTestCase):
     def setUp(self):
