@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.219 $
+:Version: $Revision: 1.220 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -4072,12 +4072,14 @@ resolved. To achieve this:
     <td>
      <span tal:replace="structure python:context.blockers.field(showid=1,
                                   size=20)" />
-     <span tal:replace="structure python:db.issue.classhelp('id,title')" />
+     <span tal:replace="structure python:db.issue.classhelp('id,title',
+                                  property='blockers')" />
      <span tal:condition="context/blockers"
            tal:repeat="blk context/blockers">
       <br>View: <a tal:attributes="href string:issue${blk/id}"
                    tal:content="blk/id"></a>
      </span>
+    </td>
 
    You'll need to fiddle with your item page layout to find an
    appropriate place to put it - I'll leave that fun part up to you.
