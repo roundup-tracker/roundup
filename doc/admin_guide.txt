@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.24 $
+:Version: $Revision: 1.25 $
 
 .. contents::
 
@@ -83,6 +83,8 @@ The basic configuration file layout is as follows (take from the
     ;pidfile =
     ;logfile =
     ;template =
+    ;ssl = no
+    ;pem =
 
     [trackers]
     ; Add one of these per tracker being served
@@ -114,6 +116,14 @@ are as follows:
   Specifies a template used for displaying the tracker index when
   multiple trackers are being used. The variable "trackers" is available
   to the template and is a dict of all configured trackers.
+**ssl**
+  Enables the use of SSL to secure the connection to the roundup-server.
+  If you enable this, ensure that your tracker's config.ini specifies
+  an *https* URL.
+**pem**
+  If specified, the SSL PEM file containing the private key and certificate.
+  If not specified, roundup will generate a temporary, self-signed certificate
+  for use.
 **trackers** section
   Each line denotes a mapping from a URL component to a tracker home.
   Make sure the name part doesn't include any url-unsafe characters like

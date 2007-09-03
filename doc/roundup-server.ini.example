@@ -9,6 +9,8 @@ port = 8080
 ;pidfile = 
 ;logfile = 
 ;template =
+;ssl = no
+;pem =
 
 
 ; Add one of these per tracker being served

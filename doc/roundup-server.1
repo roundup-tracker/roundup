@@ -26,6 +26,13 @@ Sets a filename to use as a template for generating the tracker index page.
 The variable "trackers" is available to the template and is a dict of all
 configured trackers.
 .TP
+\fB-s\fP
+Enables to use of SSL.
+.TP
+\fB-e\fP \fIfile\fP
+Sets a filename containing the PEM file to use for SSL. If left blank, a
+temporary self-signed certificate will be used.
+.TP
 \fB-h\fP
 print help
 .TP
