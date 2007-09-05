@@ -1,4 +1,4 @@
-#$Id: indexer_xapian.py,v 1.4 2006-02-10 00:16:13 richard Exp $
+#$Id: indexer_xapian.py,v 1.5 2007-09-05 18:46:39 jpend Exp $
 ''' This implements the full-text indexer using the Xapian indexer.
 '''
 import re, os
@@ -32,7 +32,7 @@ class Indexer(IndexerBase):
     def close(self):
         '''close the indexing database'''
         pass
-  
+
     def rollback(self):
         if not self.transaction_active:
             return
@@ -92,7 +92,7 @@ class Indexer(IndexerBase):
             word = match.group(0)
             if self.is_stopword(word):
                 continue
-            term = stemmer.stem_word(word)
+            term = stemmer(word)
             doc.add_posting(term, match.start(0))
         if docid:
             database.replace_document(docid, doc)
@@ -103,7 +103,7 @@ class Indexer(IndexerBase):
         '''look up all the words in the wordlist.
         If none are found return an empty dictionary
         * more rules here
-        '''        
+        '''
         if not wordlist:
             return {}
 
