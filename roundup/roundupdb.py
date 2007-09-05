@@ -16,7 +16,7 @@ from __future__ import nested_scopes
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.130 2007-09-03 17:14:08 jpend Exp $
+# $Id: roundupdb.py,v 1.131 2007-09-05 06:13:56 a1s Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -343,8 +343,8 @@ class IssueClass:
                     base = self.db.config.TRACKER_WEB
                     link = "".join((base, files.classname, fileid))
                     filename = files.get(fileid, 'name')
-                    m.append(_("File '%(filename)s' not attached - you can "
-                               "download it from %(link)s." % locals()))
+                    m.append(_("File '%(filename)s' not attached - "
+                        "you can download it from %(link)s.") % locals())
 
         # add the change note
         if note:
