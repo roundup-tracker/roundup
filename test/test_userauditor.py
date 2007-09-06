@@ -1,4 +1,4 @@
-# $Id: test_userauditor.py,v 1.2 2007-08-31 17:45:17 jpend Exp $
+# $Id: test_userauditor.py,v 1.3 2007-09-06 16:52:20 jpend Exp $
 
 import os, unittest, shutil
 from db_test_base import setupTracker
@@ -60,6 +60,12 @@ class UserAuditorTest(unittest.TestCase):
     def testBadEmailAddresses(self):
         userid = self.db.user.lookup('kyle')
         self.assertRaises(ValueError, self.db.user.set, userid, address='kyle @ example.com')
+
+    def testUniqueEmailAddresses(self):
+        self.db.user.create(username='kenny', address='kenny@example.com')
+        self.assertRaises(ValueError, self.db.user.create, username='test_user01', address='kenny@example.com')
+        uid = self.db.user.create(username='eric', address='eric@example.com')
+        self.assertRaises(ValueError, self.db.user.set, uid, address='kenny@example.com')
 
     def testBadRoles(self):
         userid = self.db.user.lookup('kyle')

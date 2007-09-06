@@ -18,17 +18,23 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-#$Id: userauditor.py,v 1.5 2007-08-31 17:45:17 jpend Exp $
+#$Id: userauditor.py,v 1.6 2007-09-06 16:52:20 jpend Exp $
 
 def audit_user_fields(db, cl, nodeid, newvalues):
     ''' Make sure user properties are valid.
 
         - email address has no spaces in it
+        - email address is unique
         - roles specified exist
         - timezone is valid
     '''
-    if newvalues.has_key('address') and ' ' in newvalues['address']:
-        raise ValueError, 'Email address must not contain spaces'
+    if newvalues.has_key('address'):
+        address = newvalues['address']
+        if ' ' in address:
+            raise ValueError, 'Email address must not contain spaces'
+        user = db.user.stringFind(address=address)
+        if len(user):
+            raise ValueError, 'Email address already in use'
 
     for rolename in [r.lower().strip() for r in newvalues.get('roles', '').split(',')]:
             if rolename and not db.security.role.has_key(rolename):
