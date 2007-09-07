@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.106 2007-01-10 18:17:47 schlatterbeck Exp $
+# $Id: admin.py,v 1.107 2007-09-07 20:18:15 jpend Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -75,6 +75,7 @@ class AdminTool:
                 self.help[k[5:]] = getattr(self, k)
         self.tracker_home = ''
         self.db = None
+        self.db_uncommitted = False
 
     def get_class(self, classname):
         '''Get the class - raise an exception if it doesn't exist.
@@ -642,6 +643,7 @@ Erase it? Y/N: """))
             except (TypeError, IndexError, ValueError), message:
                 import traceback; traceback.print_exc()
                 raise UsageError, message
+        self.db_uncommitted = True
         return 0
 
     def do_find(self, args):
@@ -813,6 +815,7 @@ Erase it? Y/N: """))
             print apply(cl.create, (), props)
         except (TypeError, IndexError, ValueError), message:
             raise UsageError, message
+        self.db_uncommitted = True
         return 0
 
     def do_list(self, args):
@@ -995,6 +998,7 @@ Erase it? Y/N: """))
         they are successful.
         '''
         self.db.commit()
+        self.db_uncommitted = False
         return 0
 
     def do_rollback(self, args):
@@ -1007,6 +1011,7 @@ Erase it? Y/N: """))
         immediately after would make no changes to the database.
         '''
         self.db.rollback()
+        self.db_uncommitted = False
         return 0
 
     def do_retire(self, args):
@@ -1030,6 +1035,7 @@ Erase it? Y/N: """))
                 raise UsageError, _('no such class "%(classname)s"')%locals()
             except IndexError:
                 raise UsageError, _('no such %(classname)s node "%(nodeid)s"')%locals()
+        self.db_uncommitted = True
         return 0
 
     def do_restore(self, args):
@@ -1052,6 +1058,7 @@ Erase it? Y/N: """))
                 raise UsageError, _('no such class "%(classname)s"')%locals()
             except IndexError:
                 raise UsageError, _('no such %(classname)s node "%(nodeid)s"')%locals()
+        self.db_uncommitted = True
         return 0
 
     def do_export(self, args, export_files=True):
@@ -1216,6 +1223,7 @@ Erase it? Y/N: """))
             print 'setting', classname, maxid+1
             self.db.setid(classname, str(maxid+1))
 
+        self.db_uncommitted = True
         return 0
 
     def do_pack(self, args):
@@ -1254,6 +1262,7 @@ Erase it? Y/N: """))
         elif m['date']:
             pack_before = date.Date(value)
         self.db.pack(pack_before)
+        self.db_uncommitted = True
         return 0
 
     def do_reindex(self, args, desre=re.compile('([A-Za-z]+)([0-9]+)')):
@@ -1424,7 +1433,7 @@ Erase it? Y/N: """))
             self.run_command(args)
 
         # exit.. check for transactions
-        if self.db and self.db.transactions:
+        if self.db and self.db_uncommitted:
             commit = raw_input(_('There are unsaved changes. Commit them (y/N)? '))
             if commit and commit[0].lower() == 'y':
                 self.db.commit()
