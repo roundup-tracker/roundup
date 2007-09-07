@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.91 2007-09-03 17:26:42 jpend Exp $
+$Id: roundup_server.py,v 1.92 2007-09-07 20:27:46 jpend Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -243,7 +243,11 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             template = open(self.CONFIG['TEMPLATE']).read()
             pt = PageTemplate()
             pt.write(template)
-            extra = { 'trackers': self.TRACKERS }
+            extra = { 'trackers': self.TRACKERS,
+                'nothing' : None,
+                'true' : 1,
+                'false' : 0,
+            }
             w(pt.pt_render(extra_context=extra))
         else:
             w(_('<html><head><title>Roundup trackers index</title></head>\n'
