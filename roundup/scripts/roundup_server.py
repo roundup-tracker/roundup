@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.92 2007-09-07 20:27:46 jpend Exp $
+$Id: roundup_server.py,v 1.93 2007-09-09 16:03:13 jpend Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -120,12 +120,12 @@ class SecureHTTPServer(BaseHTTPServer.HTTPServer):
                 def __init__(self, fileobj):
                     self.__fileobj = fileobj
 
-                def readline(self):
+                def readline(self, *args):
                     """ SSL.Connection can return WantRead """
                     line = None
                     while not line:
                         try:
-                            line = self.__fileobj.readline()
+                            line = self.__fileobj.readline(*args)
                         except SSL.WantReadError:
                             line = None
                     return line
