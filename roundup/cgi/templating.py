@@ -2272,7 +2272,13 @@ class HTMLRequest(HTMLInputMixin):
         for name in ':search_text @search_text'.split():
             if self.form.has_key(name):
                 self.special_char = name[0]
-                self.search_text = self.form[name].value
+                try:
+                    self.search_text = self.form[name].value
+                except AttributeError:
+                    # http://psf.upfronthosting.co.za/roundup/meta/issue111
+                    # Multiple search_text, probably some kind of spambot.
+                    # Use first value.
+                    self.search_text = self.form[name][0].value
 
         # pagination - size and start index
         # figure batch args
