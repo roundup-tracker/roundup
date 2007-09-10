@@ -16,7 +16,7 @@ from __future__ import nested_scopes
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.131 2007-09-05 06:13:56 a1s Exp $
+# $Id: roundupdb.py,v 1.132 2007-09-10 19:18:31 forsberg Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -283,15 +283,12 @@ class IssueClass:
         # figure author information
         if msgid:
             authid = messages.get(msgid, 'author')
-            authname = users.get(authid, 'realname')
-            if not authname:
-                authname = users.get(authid, 'username', '')
-            authaddr = users.get(authid, 'address', '')
         else:
-            # "system message"
-            authid = None
-            authname = 'admin'
-            authaddr = self.db.config.ADMIN_EMAIL
+            authid = self.db.getuid()
+        authname = users.get(authid, 'realname')
+        if not authname:
+            authname = users.get(authid, 'username', '')
+        authaddr = users.get(authid, 'address', '')
 
         if authaddr and self.db.config.MAIL_ADD_AUTHOREMAIL:
             authaddr = " <%s>" % straddr( ('',authaddr) )
@@ -311,12 +308,11 @@ class IssueClass:
                 
                 m.append(_("New submission from %(authname)s%(authaddr)s:")
                     % locals())
-            else:
+            elif msgid:
                 m.append(_("%(authname)s%(authaddr)s added the comment:")
                     % locals())
-            m.append('')
-        elif self.db.config.MAIL_ADD_AUTHORINFO:
-            m.append(_("System message:"))
+            else:
+                m.append(_("Change by %(authname)s%(authaddr)s:") % locals())
             m.append('')
 
         # add the content

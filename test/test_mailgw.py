@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.87 2007-09-01 16:30:11 forsberg Exp $
+# $Id: test_mailgw.py,v 1.88 2007-09-10 19:18:39 forsberg Exp $
 
 # TODO: test bcc
 
@@ -439,6 +439,50 @@ Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 _______________________________________________________________________
 ''')
 
+    def testPropertyChangeOnly(self):
+        self.doNewIssue()
+        oldvalues = self.db.getnode('issue', '1').copy()
+        oldvalues['assignedto'] = None
+        self.db.issue.set('1', assignedto=self.chef_id)
+        self.db.commit()
+        self.db.issue.nosymessage('1', None, oldvalues)
+
+
+        new_mail = ""
+        for line in self._get_mail().split("\n"):
+            if "Message-Id: " in line:
+                continue
+            if "Date: " in line:
+                continue
+            new_mail+=line+"\n"
+
+        self.compareMessages(new_mail, """
+FROM: roundup-admin@your.tracker.email.domain.example
+TO: chef@bork.bork.bork, richard@test
+Content-Type: text/plain; charset=utf-8
+Subject: [issue1] Testing...
+To: chef@bork.bork.bork, richard@test
+From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+X-Roundup-Version: 1.3.3
+MIME-Version: 1.0
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+Content-Transfer-Encoding: quoted-printable
+
+
+Change by Bork, Chef <chef@bork.bork.bork>:
+
+
+----------
+assignedto:  -> Chef
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
+_______________________________________________________________________
+""")
+        
 
     #
     # FOLLOWUP TITLE MATCH
