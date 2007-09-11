@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-#$Id: userauditor.py,v 1.7 2007-09-06 16:52:19 jpend Exp $
+#$Id: userauditor.py,v 1.8 2007-09-11 21:28:29 jpend Exp $
 
 def audit_user_fields(db, cl, nodeid, newvalues):
     ''' Make sure user properties are valid.
@@ -42,19 +42,20 @@ def audit_user_fields(db, cl, nodeid, newvalues):
                 raise ValueError, 'Role "%s" does not exist'%rolename
 
     if newvalues.has_key('timezone'):
-        # validate the timezone by attempting to use it
-        # before we store it to the db.
-        import roundup.date
-        import datetime
-        try:
-            tz = newvalues['timezone']
-            TZ = roundup.date.get_timezone(tz)
-            dt = datetime.datetime.now()
-            local = TZ.localize(dt).utctimetuple()
-        except IOError:
-            raise ValueError, 'Timezone "%s" does not exist' % tz
-        except ValueError:
-            raise ValueError, 'Timezone "%s" exceeds valid range [-23...23]' % tz
+        tz = newvalues['timezone']
+        if tz:
+            # if they set a new timezone validate the timezone by attempting to
+            # use it before we store it to the db.
+            import roundup.date
+            import datetime
+            try:
+                TZ = roundup.date.get_timezone(tz)
+                dt = datetime.datetime.now()
+                local = TZ.localize(dt).utctimetuple()
+            except IOError:
+                raise ValueError, 'Timezone "%s" does not exist' % tz
+            except ValueError:
+                raise ValueError, 'Timezone "%s" exceeds valid range [-23...23]' % tz
 
 def init(db):
     # fire before changes are made
