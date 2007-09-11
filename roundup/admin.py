@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.107 2007-09-07 20:18:15 jpend Exp $
+# $Id: admin.py,v 1.108 2007-09-11 04:12:17 jpend Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -287,26 +287,31 @@ Command help:
 
         Look in the following places, where the later rules take precedence:
 
-         1. <prefix>/share/roundup/templates/*
+         1. <roundup.admin.__file__>/../../share/roundup/templates/*
+            this is where they will be if we installed an egg via easy_install
+         2. <prefix>/share/roundup/templates/*
             this should be the standard place to find them when Roundup is
             installed
-         2. <roundup.admin.__file__>/../templates/*
+         3. <roundup.admin.__file__>/../templates/*
             this will be used if Roundup's run in the distro (aka. source)
             directory
-         3. <current working dir>/*
+         4. <current working dir>/*
             this is for when someone unpacks a 3rd-party template
-         4. <current working dir>
+         5. <current working dir>
             this is for someone who "cd"s to the 3rd-party template dir
         '''
         # OK, try <prefix>/share/roundup/templates
+        #     and <egg-directory>/share/roundup/templates
         # -- this module (roundup.admin) will be installed in something
         # like:
-        #    /usr/lib/python2.2/site-packages/roundup/admin.py  (5 dirs up)
-        #    c:\python22\lib\site-packages\roundup\admin.py     (4 dirs up)
-        # we're interested in where the "lib" directory is - ie. the /usr/
-        # part
+        #    /usr/lib/python2.5/site-packages/roundup/admin.py  (5 dirs up)
+        #    c:\python25\lib\site-packages\roundup\admin.py     (4 dirs up)
+        #    /usr/lib/python2.5/site-packages/roundup-1.3.3-py2.5-egg/roundup/admin.py
+        #    (2 dirs up)
+        #
+        # we're interested in where the directory containing "share" is
         templates = {}
-        for N in 4, 5:
+        for N in 2, 4, 5:
             path = __file__
             # move up N elements in the path
             for i in range(N):
