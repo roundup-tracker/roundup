@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.234 2007-08-27 10:27:31 richard Exp $
+# $Id: client.py,v 1.235 2007-09-11 21:30:14 jpend Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -287,7 +287,11 @@ class Client:
             self.additional_headers['Expires'] = rfc822.formatdate(date)
 
             # render the content
-            self.write_html(self.renderContext())
+            try:
+                self.write_html(self.renderContext())
+            except IOError:
+                # IOErrors here are due to the client disconnecting before recieving the reply.
+                pass
 
         except SeriousError, message:
             self.write_html(str(message))
