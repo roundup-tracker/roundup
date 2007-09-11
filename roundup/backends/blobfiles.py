@@ -14,8 +14,8 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-#$Id: blobfiles.py,v 1.19 2005-06-08 03:35:18 anthonybaxter Exp $
+#
+#$Id: blobfiles.py,v 1.20 2007-09-11 21:33:30 jpend Exp $
 '''This module exports file storage for roundup backends.
 Files are stored into a directory hierarchy.
 '''
@@ -36,22 +36,25 @@ def files_in_dir(dir):
     return num_files
 
 class FileStorage:
-    """Store files in some directory structure"""    
+    def __init__(self, umask):
+        self.umask = umask
+
+    """Store files in some directory structure"""
     def subdirFilename(self, classname, nodeid, property=None):
         """Determine what the filename and subdir for nodeid + classname is."""
         if property:
             name = '%s%s.%s'%(classname, nodeid, property)
         else:
-            # roundupdb.FileClass never specified the property name, so don't 
+            # roundupdb.FileClass never specified the property name, so don't
             # include it
             name = '%s%s'%(classname, nodeid)
-        
+
         # have a separate subdir for every thousand messages
         subdir = str(int(nodeid) / 1000)
         return os.path.join(subdir, name)
-    
+
     def filename(self, classname, nodeid, property=None, create=0):
-        '''Determine what the filename for the given node and optionally 
+        '''Determine what the filename for the given node and optionally
         property is.
 
         Try a variety of different filenames - the file could be in the
@@ -101,6 +104,10 @@ class FileStorage:
             # save off the rename action
             self.transactions.append((self.doStoreFile, (classname, nodeid,
                 property)))
+	# always set umask before writing to make sure we have the proper one
+	# in multi-tracker (i.e. multi-umask) or modpython scenarios
+	# the umask may have changed since last we set it.
+        os.umask(self.umask)
         open(name, 'wb').write(content)
 
     def getfile(self, classname, nodeid, property):

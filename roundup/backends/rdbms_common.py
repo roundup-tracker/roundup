@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.188 2007-08-31 15:44:02 jpend Exp $
+#$Id: rdbms_common.py,v 1.189 2007-09-11 21:33:30 jpend Exp $
 """ Relational database (SQL) backend common code.
 
 Basics:
@@ -106,6 +106,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def __init__(self, config, journaltag=None):
         """ Open the database and load the schema from it.
         """
+        FileStorage.__init__(self, config.UMASK)
         self.config, self.journaltag = config, journaltag
         self.dir = config.DATABASE
         self.classes = {}
