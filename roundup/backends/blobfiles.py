@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: blobfiles.py,v 1.20 2007-09-11 21:33:30 jpend Exp $
+#$Id: blobfiles.py,v 1.21 2007-09-12 16:15:40 jpend Exp $
 '''This module exports file storage for roundup backends.
 Files are stored into a directory hierarchy.
 '''
@@ -36,10 +36,11 @@ def files_in_dir(dir):
     return num_files
 
 class FileStorage:
+    """Store files in some directory structure"""
+
     def __init__(self, umask):
         self.umask = umask
 
-    """Store files in some directory structure"""
     def subdirFilename(self, classname, nodeid, property=None):
         """Determine what the filename and subdir for nodeid + classname is."""
         if property:
@@ -104,9 +105,9 @@ class FileStorage:
             # save off the rename action
             self.transactions.append((self.doStoreFile, (classname, nodeid,
                 property)))
-	# always set umask before writing to make sure we have the proper one
-	# in multi-tracker (i.e. multi-umask) or modpython scenarios
-	# the umask may have changed since last we set it.
+        # always set umask before writing to make sure we have the proper one
+        # in multi-tracker (i.e. multi-umask) or modpython scenarios
+        # the umask may have changed since last we set it.
         os.umask(self.umask)
         open(name, 'wb').write(content)
 
