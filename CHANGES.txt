@@ -10,6 +10,18 @@ Feature:
 - Allow customisation of regular expressions used in email parsing, thanks
   Bruno Damour
 - Italian translation by Marco Ghidinelli
+- Multilinks take any iterable
+- config option: specify port and local hostname for SMTP connections
+- Tracker index templating (i.e. when roundup_server is serving multiple
+  trackers) (sf bug 1058020)
+- config option: Limit nosy attachments based on size (Philipp Gortan)
+- roundup_server supports SSL via pyopenssl
+- templatable 404 not found messages (sf bug 1403287)
+- Unauthorized email includes a link to the registration page for
+  the tracker
+- config options: control whether author info/email is included in email
+  sent by roundup
+
 
 Fixed:
 - Handling of unset Link search in RDBMS backend
@@ -24,6 +36,19 @@ Fixed:
   (e.g., "file" and "msg") now works for SQL backends.
 - Enabled over-riding of content-type in web interface (thanks  
   John Mitchell)
+- Validate user timezones to filter bad entries (sf bug 1738470)
+- Classic template allows searching for issues with no topic set
+  (sf bug 1610787)
+- xapian_indexer uses current API for stemming (Rick Benavidez)
+  (sf bug 1771414)
+- Ensure email addresses are unique (sf bug 1611787)
+- roundup_admin tracks uncommitted changes in interactive mode
+  for all backends (sf bug 1297014)
+- add template search path for easy_install (Marek Kubica)
+- don't spam the roundup admin on client shutdowns (Ulrik Mikaelsson)
+- respect umask on filestorage backends (Ulrik Mikaelsson) (sf bug 1744328)
+- cope with spam robots posting multiple instances of the same form
+- include the author of property-only changes in generated messages
 
 
 2007-02-15 1.3.3
