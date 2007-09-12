@@ -1,4 +1,4 @@
-# $Id: test_userauditor.py,v 1.3 2007-09-06 16:52:20 jpend Exp $
+# $Id: test_userauditor.py,v 1.4 2007-09-12 21:11:14 jpend Exp $
 
 import os, unittest, shutil
 from db_test_base import setupTracker
@@ -60,12 +60,26 @@ class UserAuditorTest(unittest.TestCase):
     def testBadEmailAddresses(self):
         userid = self.db.user.lookup('kyle')
         self.assertRaises(ValueError, self.db.user.set, userid, address='kyle @ example.com')
+        self.assertRaises(ValueError, self.db.user.set, userid, address='one@example.com,two@example.com')
+        self.assertRaises(ValueError, self.db.user.set, userid, address='weird@@example.com')
+        self.assertRaises(ValueError, self.db.user.set, userid, address='embedded\nnewline@example.com')
+        # verify that we check alternates as well
+        self.assertRaises(ValueError, self.db.user.set, userid, alternate_addresses='kyle @ example.com')
+        # make sure we accept local style addresses
+        self.db.user.set(userid, address='kyle')
+        # verify we are case insensitive
+        self.db.user.set(userid, address='kyle@EXAMPLE.COM')
 
     def testUniqueEmailAddresses(self):
-        self.db.user.create(username='kenny', address='kenny@example.com')
+        self.db.user.create(username='kenny', address='kenny@example.com', alternate_addresses='sp_ken@example.com')
         self.assertRaises(ValueError, self.db.user.create, username='test_user01', address='kenny@example.com')
         uid = self.db.user.create(username='eric', address='eric@example.com')
         self.assertRaises(ValueError, self.db.user.set, uid, address='kenny@example.com')
+
+        # make sure we check alternates
+        self.assertRaises(ValueError, self.db.user.set, uid, address='kenny@example.com')
+        self.assertRaises(ValueError, self.db.user.set, uid, address='sp_ken@example.com')
+        self.assertRaises(ValueError, self.db.user.set, uid, alternate_addresses='kenny@example.com')
 
     def testBadRoles(self):
         userid = self.db.user.lookup('kyle')

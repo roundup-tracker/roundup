@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.30 2007-07-05 19:21:57 schlatterbeck Exp $
+# $Id: test_cgi.py,v 1.31 2007-09-12 21:11:14 jpend Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
@@ -70,7 +70,7 @@ class FormTestCase(unittest.TestCase):
         self.db = self.instance.open('admin')
         self.db.user.create(username='Chef', address='chef@bork.bork.bork',
             realname='Bork, Chef', roles='User')
-        self.db.user.create(username='mary', address='mary@test',
+        self.db.user.create(username='mary', address='mary@test.test',
             roles='User', realname='Contrary, Mary')
 
         test = self.instance.backend.Class(self.db, "test",

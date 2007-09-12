@@ -49,6 +49,7 @@ Fixed:
 - respect umask on filestorage backends (Ulrik Mikaelsson) (sf bug 1744328)
 - cope with spam robots posting multiple instances of the same form
 - include the author of property-only changes in generated messages
+- fuller email validation in templates (sf feature 1216291)
 
 
 2007-02-15 1.3.3
