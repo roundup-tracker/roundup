@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.236 2007-09-12 01:15:07 jpend Exp $
+# $Id: client.py,v 1.237 2007-09-12 16:16:49 jpend Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -290,7 +290,8 @@ class Client:
             try:
                 self.write_html(self.renderContext())
             except IOError:
-                # IOErrors here are due to the client disconnecting before recieving the reply.
+                # IOErrors here are due to the client disconnecting before
+                # recieving the reply.
                 pass
 
         except SeriousError, message:
