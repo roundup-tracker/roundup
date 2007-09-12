@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.235 2007-09-11 21:30:14 jpend Exp $
+# $Id: client.py,v 1.236 2007-09-12 01:15:07 jpend Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -323,9 +323,17 @@ class Client:
             self.template = ''
             self.error_message.append(message)
             self.write_html(self.renderContext())
-        except NotFound:
-            # pass through
-            raise
+        except NotFound, e:
+            self.response_code = 404
+            self.template = '404'
+            try:
+                cl = self.db.getclass(self.classname)
+                self.write_html(self.renderContext())
+            except KeyError:
+                # we can't map the URL to a class we know about
+                # reraise the NotFound and let roundup_server
+                # handle it
+                raise NotFound, e
         except FormError, e:
             self.error_message.append(self._('Form Error: ') + str(e))
             self.write_html(self.renderContext())
