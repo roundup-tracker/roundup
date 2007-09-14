@@ -1895,7 +1895,7 @@ class LinkHTMLProperty(HTMLProperty):
                 lab = lab + ' (%s)'%', '.join(map(str, m))
 
             # and generate
-            lab = cgi.escape(lab)
+            lab = cgi.escape(self._(lab))
             l.append('<option %svalue="%s">%s</option>'%(s, optionid, lab))
         l.append('</select>')
         return '\n'.join(l)
