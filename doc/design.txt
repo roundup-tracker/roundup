@@ -819,7 +819,7 @@ software bug tracker.  The database is set up like this::
     Class(db, "keyword", name=hyperdb.String())
 
     Class(db, "issue", fixer=hyperdb.Multilink("user"),
-                       topic=hyperdb.Multilink("keyword"),
+                       keyword=hyperdb.Multilink("keyword"),
                        priority=hyperdb.Link("priority"),
                        status=hyperdb.Link("status"))
 
@@ -1250,10 +1250,10 @@ An index view specifier looks like this (whitespace has been added for
 clarity)::
 
     /issue?status=unread,in-progress,resolved&
-        topic=security,ui&
+        keyword=security,ui&
         :group=priority,-status&
         :sort=-activity&
-        :filters=status,topic&
+        :filters=status,keyword&
         :columns=title,status,fixer
 
 
@@ -1274,11 +1274,11 @@ of issues with values matching any specified Multilink properties.
 
 The example specifies an index of "issue" items. Only issues with a
 "status" of either "unread" or "in-progres" or "resolved" are displayed,
-and only issues with "topic" values including both "security" and "ui"
+and only issues with "keyword" values including both "security" and "ui"
 are displayed.  The items are grouped by priority arranged in ascending
 order and in descending order by status; and within groups, sorted by
 activity, arranged in descending order. The filter section shows
-filters for the "status" and "topic" properties, and the table includes
+filters for the "status" and "keyword" properties, and the table includes
 columns for the "title", "status", and "fixer" properties.
 
 Associated with each issue class is a default layout specifier.  The

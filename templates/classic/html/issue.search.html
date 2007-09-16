@@ -50,10 +50,10 @@
   <td>&nbsp;</td>
 </tr>
 
-<tr tal:define="name string:topic;
+<tr tal:define="name string:keyword;
                 db_klass string:keyword;
                 db_content string:name;">
-  <th i18n:translate="">Topic:</th>
+  <th i18n:translate="">Keyword:</th>
   <td metal:use-macro="search_select">
     <option metal:fill-slot="extra_options" value="-1" i18n:translate=""
             tal:attributes="selected python:value == '-1'">not selected</option>

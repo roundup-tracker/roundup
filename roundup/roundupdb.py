@@ -16,7 +16,7 @@ from __future__ import nested_scopes
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.132 2007-09-10 19:18:31 forsberg Exp $
+# $Id: roundupdb.py,v 1.133 2007-09-16 02:45:11 jpend Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -142,10 +142,10 @@ class IssueClass:
     #
     # Note that this list also includes properties
     # defined in the classic template:
-    # assignedto, topic, priority, status.
+    # assignedto, keyword, priority, status.
     (
         ''"title", ''"messages", ''"files", ''"nosy", ''"superseder",
-        ''"assignedto", ''"topic", ''"priority", ''"status",
+        ''"assignedto", ''"keyword", ''"priority", ''"status",
         # following properties are common for all hyperdb classes
         # they are listed here to keep things in one place
         ''"actor", ''"activity", ''"creator", ''"creation",

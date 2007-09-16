@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.31 2007-09-12 21:11:14 jpend Exp $
+# $Id: test_cgi.py,v 1.32 2007-09-16 02:45:11 jpend Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
@@ -213,8 +213,8 @@ class FormTestCase(unittest.TestCase):
         self.assertEqual(id,'1')
         id = self.db.keyword.create(name='1')
         self.assertEqual(id,'2')
-        issue = self.db.issue.create(title='i1-status1', topic=['1'])
-        self.assertEqual(self.db.issue.get(issue,'topic'),['1'])
+        issue = self.db.issue.create(title='i1-status1', keyword=['1'])
+        self.assertEqual(self.db.issue.get(issue,'keyword'),['1'])
         self.assertEqual(self.db.keyword.lookup('1'),'2')
         self.assertEqual(self.db.keyword.lookup('2'),'1')
         form = cgi.FieldStorage()
@@ -224,9 +224,9 @@ class FormTestCase(unittest.TestCase):
         cl.db = self.db
         cl.userid = '1'
         item = HTMLItem(cl, 'issue', issue)
-        for topic in item.topic:
-            self.assertEqual(topic.id, '1')
-            self.assertEqual(topic.name, '2')
+        for keyword in item.keyword:
+            self.assertEqual(keyword.id, '1')
+            self.assertEqual(keyword.name, '2')
 
     def testFileUpload(self):
         file = FileUpload('foo', 'foo.txt')

@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.36 $
+:Version: $Revision: 1.37 $
 
 .. contents::
 
@@ -112,7 +112,7 @@ These fields take a value which indicates "yes"/"no", "true"/"false",
 Constrained (link and multilink) properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Fields like "Assigned To" and "Topics" hold references to items in other
+Fields like "Assigned To" and "Keywords" hold references to items in other
 classes ("user" and "keyword" in those two cases.)
 
 Sometimes, the selection is done through a menu, like in the "Assigned
@@ -130,13 +130,13 @@ not set. For example, the following searches on the issues:
   match issues that are not assigned to a user.
 ``assignedto=2,3,40``
   match issues that are assigned to users 2, 3 or 40.
-``topic=user interface``
-  match issues with the keyword "user interface" in their topic list
-``topic=web interface,e-mail interface``
+``keyword=user interface``
+  match issues with the keyword "user interface" in their keyword list
+``keyword=web interface,e-mail interface``
   match issues with the keyword "web interface" or "e-mail interface" in
-  their topic list
-``topic=-1``
-  match issues with no topics set
+  their keyword list
+``keyword=-1``
+  match issues with no keywords set
 
 
 Date properties
@@ -350,10 +350,10 @@ You may manually write URLS that contain these arguments, like so
 (whitespace has been added for clarity)::
 
     /issue?status=unread,in-progress,resolved&
-        topic=security,ui&
+        keyword=security,ui&
         @group=priority,-status&
         @sort=-activity&
-        @filters=status,topic&
+        @filters=status,keyword&
         @columns=title,status,fixer
 
 

@@ -1,4 +1,4 @@
-// initial values for either Nosy, Superseder, Topic and Waiting On,
+// initial values for either Nosy, Superseder, Keyword and Waiting On,
 // depending on which has called
 original_field = form[field].value;
 

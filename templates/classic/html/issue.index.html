@@ -1,4 +1,4 @@
-<!-- $Id: issue.index.html,v 1.27 2006-11-09 01:26:28 richard Exp $ -->
+<!-- $Id: issue.index.html,v 1.28 2007-09-16 02:45:11 jpend Exp $ -->
 <tal:block metal:use-macro="templates/page/macros/icing">
 <title metal:fill-slot="head_title" >
   <span tal:omit-tag="true" i18n:translate="" >List of issues</span>
@@ -29,7 +29,7 @@
    <th tal:condition="request/show/creation" i18n:translate="">Creation</th>
    <th tal:condition="request/show/activity" i18n:translate="">Activity</th>
    <th tal:condition="request/show/actor" i18n:translate="">Actor</th>
-   <th tal:condition="request/show/topic" i18n:translate="">Topic</th>
+   <th tal:condition="request/show/keyword" i18n:translate="">Keyword</th>
    <th tal:condition="request/show/title" i18n:translate="">Title</th>
    <th tal:condition="request/show/status" i18n:translate="">Status</th>
    <th tal:condition="request/show/creator" i18n:translate="">Creator</th>
@@ -55,8 +55,8 @@
        tal:content="i/activity/reldate">&nbsp;</td>
    <td class="date" tal:condition="request/show/actor"
        tal:content="python:i.actor.plain() or default">&nbsp;</td>
-   <td tal:condition="request/show/topic"
-       tal:content="python:i.topic.plain() or default">&nbsp;</td>
+   <td tal:condition="request/show/keyword"
+       tal:content="python:i.keyword.plain() or default">&nbsp;</td>
    <td tal:condition="request/show/title">
     <a tal:attributes="href string:issue${i/id}"
 		tal:content="python:str(i.title.plain(hyperlink=0)) or '[no title]'">title</a>

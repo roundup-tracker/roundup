@@ -224,7 +224,7 @@ def import_xml(tracker_home, xml_file, file_dir):
         d['creator'] = users[artifact['submitted_by']]
         actor = d['creator']
         if categories[artifact['category']]:
-            d['topic'] = [categories[artifact['category']]]
+            d['keyword'] = [categories[artifact['category']]]
         issue_journal.append((
             d['id'], d['creation'].get_tuple(), d['creator'], "'create'", {}
         ))

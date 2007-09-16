@@ -147,7 +147,7 @@ or to fit it into a rigid hierarchy.  Yet things
 only sometimes fall into one category; often,
 a piece of information may be related to several concepts.
 
-For example, forcing each item into a single topic
+For example, forcing each item into a single keyword
 category is not just suboptimal but counterproductive:
 seekers of that
 item may expect to find it in a different category
@@ -245,7 +245,7 @@ possessing the property to the item representing the chosen option.
 The *multilink* type is for a list of links to any
 number of other items in the in the database.  A *multilink*
 property, for example, can be used to refer to related items
-or topic categories relevant to an item.
+or keyword categories relevant to an item.
 
 For Roundup, all items have four properties that are not customizable:
 
@@ -314,13 +314,13 @@ options make it tougher for someone to make a good choice::
     #   superseder = Multilink("issue")
     #   (it also gets the Class properties creation, activity and creator)
     issue = IssueClass(db, "issue", 
-                    assignedto=Link("user"), topic=Multilink("keyword"),
+                    assignedto=Link("user"), keyword=Multilink("keyword"),
                     priority=Link("priority"), status=Link("status"))
 
 The **assignedto** property assigns
 responsibility for an item to a person or a list of people.
-The **topic** property places the
-item in an arbitrary number of relevant topic sets (see
+The **keyword** property places the
+item in an arbitrary number of relevant keyword sets (see
 the section on `Browsing and Searching`_).
 
 The **prority** and **status** values are initially:
@@ -449,11 +449,11 @@ look at the mail spool on an item to catch up on any
 messages they might have missed.
 
 We can take this a step further and
-permit users to monitor particular topics or classifications of items
+permit users to monitor particular keywords or classifications of items
 by allowing other kinds of items to also have their own nosy lists.
 For example, a manager could be on the
 nosy list of the priority value item for "critical", or a
-developer could be on the nosy list of the topic value item for "security".
+developer could be on the nosy list of the keyword value item for "security".
 The recipients are then determined by the union of the nosy lists on the
 item and all the items it links to.
 
@@ -552,7 +552,7 @@ Each type of property has its own appropriate filtering widget:
   (the filter selects the *intersection* of the sets of items
   associated with the active options)
 
-For a *multilink* property like **topic**,
+For a *multilink* property like **keyword**,
 one possibility is to show, as hyperlinks, the keywords whose
 sets have non-empty intersections with the currently displayed set of
 items.  Sorting the keywords by popularity seems

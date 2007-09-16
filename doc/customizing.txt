@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.220 $
+:Version: $Revision: 1.221 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -445,7 +445,7 @@ specifying (default) labelling and ordering of classes.)::
 
     file = FileClass(db, "file", name=String())
 
-    issue = IssueClass(db, "issue", topic=Multilink("keyword"),
+    issue = IssueClass(db, "issue", keyword=Multilink("keyword"),
         status=Link("status"), assignedto=Link("user"),
         priority=Link("priority"))
     issue.setkey('title')
@@ -2481,10 +2481,10 @@ An index view specifier (URL fragment) looks like this (whitespace has
 been added for clarity)::
 
     /issue?status=unread,in-progress,resolved&
-        topic=security,ui&
+        keyword=security,ui&
         @group=priority,-status&
         @sort=-activity&
-        @filters=status,topic&
+        @filters=status,keyword&
         @columns=title,status,fixer
 
 The index view is determined by two parts of the specifier: the layout
@@ -2503,11 +2503,11 @@ of items with values matching any specified Multilink properties.
 
 The example specifies an index of "issue" items. Only items with a
 "status" of either "unread" or "in-progress" or "resolved" are
-displayed, and only items with "topic" values including both "security"
+displayed, and only items with "keyword" values including both "security"
 and "ui" are displayed. The items are grouped by priority arranged in
 ascending order and in descending order by status; and within
 groups, sorted by activity, arranged in descending order. The filter
-section shows filters for the "status" and "topic" properties, and the
+section shows filters for the "status" and "keyword" properties, and the
 table includes columns for the "title", "status", and "fixer"
 properties.
 
@@ -2904,7 +2904,7 @@ caches the schema).
 1. Modify the ``schema.py``::
 
     issue = IssueClass(db, "issue", 
-                    assignedto=Link("user"), topic=Multilink("keyword"),
+                    assignedto=Link("user"), keyword=Multilink("keyword"),
                     priority=Link("priority"), status=Link("status"),
                     due_date=Date())
 
@@ -3398,7 +3398,7 @@ be able to give a summary of the total time spent on a particular issue.
    ``schema.py``)::
 
     issue = IssueClass(db, "issue", 
-                    assignedto=Link("user"), topic=Multilink("keyword"),
+                    assignedto=Link("user"), keyword=Multilink("keyword"),
                     priority=Link("priority"), status=Link("status"),
                     times=Multilink("timelog"))
 
@@ -3571,7 +3571,7 @@ a system support issue class to a tracker.
 
     # store issues related to those systems
     support = IssueClass(db, "support", 
-                    assignedto=Link("user"), topic=Multilink("keyword"),
+                    assignedto=Link("user"), keyword=Multilink("keyword"),
                     status=Link("status"), deadline=Date(),
                     affects=Multilink("system"))
 
@@ -4055,14 +4055,14 @@ resolved. To achieve this:
    this class in your tracker's ``schema.py`` file. Change this::
 
     issue = IssueClass(db, "issue", 
-                    assignedto=Link("user"), topic=Multilink("keyword"),
+                    assignedto=Link("user"), keyword=Multilink("keyword"),
                     priority=Link("priority"), status=Link("status"))
 
    to this, adding the blockers entry::
 
     issue = IssueClass(db, "issue", 
                     blockers=Multilink("issue"),
-                    assignedto=Link("user"), topic=Multilink("keyword"),
+                    assignedto=Link("user"), keyword=Multilink("keyword"),
                     priority=Link("priority"), status=Link("status"))
 
 2. Add the new ``blockers`` property to the ``issue.item.html`` edit
@@ -4204,33 +4204,32 @@ on it (i.e. it's in their blockers list) you can look at the journal
 history at the bottom of the issue page - look for a "link" event to
 another issue's "blockers" property.
 
-Add users to the nosy list based on the topic
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Add users to the nosy list based on the keyword
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Let's say we need the ability to automatically add users to the nosy
 list based
-on the occurance of a topic. Every user should be allowed to edit their
-own list of topics for which they want to be added to the nosy list.
+on the occurance of a keyword. Every user should be allowed to edit their
+own list of keywords for which they want to be added to the nosy list.
 
 Below, we'll show that this change can be done with minimal
 understanding of the Roundup system, using only copy and paste.
 
 This requires three changes to the tracker: a change in the database to
-allow per-user recording of the lists of topics for which he wants to
+allow per-user recording of the lists of keywords for which he wants to
 be put on the nosy list, a change in the user view allowing them to edit
-this list of topics, and addition of an auditor which updates the nosy
-list when a topic is set.
+this list of keywords, and addition of an auditor which updates the nosy
+list when a keyword is set.
 
-Adding the nosy topic list
-::::::::::::::::::::::::::
+Adding the nosy keyword list
+::::::::::::::::::::::::::::
 
-The change to make in the database, is that for any user there should be
-a list of topics for which he wants to be put on the nosy list. Adding
-a ``Multilink`` of ``keyword`` seems to fullfill this (note that within
-the code, topics are called ``keywords``.) As such, all that has to be
-done is to add a new field to the definition of ``user`` within the
-file ``schema.py``.  We will call this new field ``nosy_keywords``, and
-the updated definition of user will be::
+The change to make in the database, is that for any user there should be a list
+of keywords for which he wants to be put on the nosy list. Adding a
+``Multilink`` of ``keyword`` seems to fullfill this. As such, all that has to
+be done is to add a new field to the definition of ``user`` within the file
+``schema.py``.  We will call this new field ``nosy_keywords``, and the updated
+definition of user will be::
 
     user = Class(db, "user", 
                     username=String(),   password=Password(),
@@ -4241,22 +4240,22 @@ the updated definition of user will be::
                     timezone=String(),
                     nosy_keywords=Multilink('keyword'))
  
-Changing the user view to allow changing the nosy topic list
-::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+Changing the user view to allow changing the nosy keyword list
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-We want any user to be able to change the list of topics for which
+We want any user to be able to change the list of keywords for which
 he will by default be added to the nosy list. We choose to add this
 to the user view, as is generated by the file ``html/user.item.html``.
 We can easily 
-see that the topic field in the issue view has very similar editing
-requirements as our nosy topics, both being lists of topics. As
-such, we look for Topics in ``issue.item.html``, and extract the
+see that the keyword field in the issue view has very similar editing
+requirements as our nosy keywords, both being lists of keywords. As
+such, we look for Keywords in ``issue.item.html``, and extract the
 associated parts from there. We add this to ``user.item.html`` at the 
 bottom of the list of viewed items (i.e. just below the 'Alternate
 E-mail addresses' in the classic template)::
 
  <tr>
-  <th>Nosy Topics</th>
+  <th>Nosy Keywords</th>
   <td>
   <span tal:replace="structure context/nosy_keywords/field" />
   <span tal:replace="structure python:db.keyword.classhelp(property='nosy_keywords')" />
@@ -4269,7 +4268,7 @@ Addition of an auditor to update the nosy list
 
 The more difficult part is the logic to add
 the users to the nosy list when required. 
-We choose to perform this action whenever the topics on an
+We choose to perform this action whenever the keywords on an
 item are set (this includes the creation of items).
 Here we choose to start out with a copy of the 
 ``detectors/nosyreaction.py`` detector, which we copy to the file
@@ -4290,8 +4289,8 @@ functionality is left in the new auditor. The following block of
 code, which handled adding the assignedto user(s) to the nosy list in
 ``updatenosy``, should be replaced by a block of code to add the
 interested users to the nosy list. We choose here to loop over all
-new topics, than looping over all users,
-and assign the user to the nosy list when the topic occurs in the user's
+new keywords, than looping over all users,
+and assign the user to the nosy list when the keyword occurs in the user's
 ``nosy_keywords``. The next part in ``updatenosy`` -- adding the author
 and/or recipients of a message to the nosy list -- is obviously not
 relevant here and is thus deleted from the new auditor. The last
@@ -4299,7 +4298,7 @@ part, copying the new nosy list to ``newvalues``, can stay as is.
 This results in the following function::
 
     def update_kw_nosy(db, cl, nodeid, newvalues):
-        '''Update the nosy list for changes to the topics
+        '''Update the nosy list for changes to the keywords
         '''
         # nodeid will be None if this is a new node
         current = {}
@@ -4324,17 +4323,17 @@ This results in the following function::
                 if not current.has_key(value):
                     current[value] = 1
 
-        # add users with topic in nosy_keywords to the nosy list
-        if newvalues.has_key('topic') and newvalues['topic'] is not None:
-            topic_ids = newvalues['topic']
-            for topic in topic_ids:
+        # add users with keyword in nosy_keywords to the nosy list
+        if newvalues.has_key('keyword') and newvalues['keyword'] is not None:
+            keyword_ids = newvalues['keyword']
+            for keyword in keyword_ids:
                 # loop over all users,
-                # and assign user to nosy when topic in nosy_keywords
+                # and assign user to nosy when keyword in nosy_keywords
                 for user_id in db.user.list():
                     nosy_kw = db.user.get(user_id, "nosy_keywords")
                     found = 0
                     for kw in nosy_kw:
-                        if kw == topic:
+                        if kw == keyword:
                             found = 1
                     if found:
                         current[user_id] = 1
@@ -4354,10 +4353,10 @@ A few problems with the design here can be noted:
 Multiple additions
     When a user, after automatic selection, is manually removed
     from the nosy list, he is added to the nosy list again when the
-    topic list of the issue is updated. A better design might be
-    to only check which topics are new compared to the old list
-    of topics, and only add users when they have indicated
-    interest on a new topic.
+    keyword list of the issue is updated. A better design might be
+    to only check which keywords are new compared to the old list
+    of keywords, and only add users when they have indicated
+    interest on a new keyword.
 
     The code could also be changed to only trigger on the ``create()``
     event, rather than also on the ``set()`` event, thus only setting
@@ -4367,8 +4366,8 @@ Scalability
     In the auditor, there is a loop over all users. For a site with
     only few users this will pose no serious problem; however, with
     many users this will be a serious performance bottleneck.
-    A way out would be to link from the topics to the users who
-    selected these topics as nosy topics. This will eliminate the
+    A way out would be to link from the keywords to the users who
+    selected these keywords as nosy keywords. This will eliminate the
     loop over all users.
 
 Changes to Security and Permissions

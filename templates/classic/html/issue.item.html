@@ -75,10 +75,10 @@ python:db.user.classhelp('username,realname,address', property='nosy', width='60
 <tr>
  <th i18n:translate="">Assigned To</th>
  <td tal:content="structure context/assignedto/menu">assignedto menu</td>
- <th i18n:translate="">Topics</th>
+ <th i18n:translate="">Keywords</th>
  <td>
-  <span tal:replace="structure context/topic/field" />
-  <span tal:condition="context/is_edit_ok" tal:replace="structure python:db.keyword.classhelp(property='topic')" />
+  <span tal:replace="structure context/keyword/field" />
+  <span tal:condition="context/is_edit_ok" tal:replace="structure python:db.keyword.classhelp(property='keyword')" />
  </td>
 </tr>
 

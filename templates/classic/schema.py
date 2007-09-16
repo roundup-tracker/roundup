@@ -71,7 +71,7 @@ file = FileClass(db, "file",
 #   superseder = Multilink("issue")
 issue = IssueClass(db, "issue",
                 assignedto=Link("user"),
-                topic=Multilink("keyword"),
+                keyword=Multilink("keyword"),
                 priority=Link("priority"),
                 status=Link("status"))
 
