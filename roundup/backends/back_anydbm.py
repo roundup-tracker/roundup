@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: back_anydbm.py,v 1.206 2007-09-11 21:33:30 jpend Exp $
+#$Id: back_anydbm.py,v 1.207 2007-09-16 06:51:48 jpend Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -377,6 +377,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         # add the destroy commit action
         self.transactions.append((self.doDestroyNode, (classname, nodeid)))
+        self.transactions.append((FileStorage.destroy, (self, classname, nodeid)))
 
     def serialise(self, classname, node):
         '''Copy the node contents, converting non-marshallable data into
@@ -717,9 +718,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         db = self.getCachedJournalDB(classname)
         if db.has_key(nodeid):
             del db[nodeid]
-
-        # return the classname, nodeid so we reindex this content
-        return (classname, nodeid)
 
     def rollback(self):
         ''' Reverse all actions from the current transaction.
@@ -1522,7 +1520,7 @@ class Class(hyperdb.Class):
         must_close = False
         if db is None:
             db = self.db.getclassdb(self.classname)
-            must_close = True 
+            must_close = True
         try:
             res = res + db.keys()
 
@@ -1561,7 +1559,7 @@ class Class(hyperdb.Class):
 
         The filter must match all properties specificed. If the property
         value to match is a list:
-        
+
         1. String properties must match all elements in the list, and
         2. Other properties must match any of the elements in the list.
         """

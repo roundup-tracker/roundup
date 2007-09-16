@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: blobfiles.py,v 1.21 2007-09-12 16:15:40 jpend Exp $
+#$Id: blobfiles.py,v 1.22 2007-09-16 06:51:48 jpend Exp $
 '''This module exports file storage for roundup backends.
 Files are stored into a directory hierarchy.
 '''
@@ -162,5 +162,22 @@ class FileStorage:
         if not name.endswith('.tmp'):
             name += '.tmp'
         os.remove(name)
+
+    def isStoreFile(self, classname, nodeid):
+        '''See if there is actually any FileStorage for this node.
+           Is there a better way than using self.filename?
+        '''
+        try:
+            fname = self.filename(classname, nodeid)
+            return True
+        except IOError:
+            return False
+
+    def destroy(self, classname, nodeid):
+        '''If there is actually FileStorage for this node
+           remove it from the filesystem
+        '''
+        if self.isStoreFile(classname, nodeid):
+            os.remove(self.filename(classname, nodeid))
 
 # vim: set filetype=python ts=4 sw=4 et si

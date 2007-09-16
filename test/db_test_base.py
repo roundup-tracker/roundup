@@ -15,9 +15,9 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.89 2007-09-03 17:14:09 jpend Exp $
+# $Id: db_test_base.py,v 1.90 2007-09-16 06:51:48 jpend Exp $
 
-import unittest, os, shutil, errno, imp, sys, time, pprint, sets, base64
+import unittest, os, shutil, errno, imp, sys, time, pprint, sets, base64, os.path
 
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval, DatabaseError, Boolean, Number, Node
@@ -547,6 +547,15 @@ class DBTest(MyTestCase):
         self.db.rollback()
         name2 = self.db.user.get('1', 'username')
         self.assertEqual(name1, name2)
+
+    def testDestroyBlob(self):
+        # destroy an uncommitted blob
+        f1 = self.db.file.create(content='hello', type="text/plain")
+        self.db.commit()
+        fn = self.db.filename('file', f1)
+        self.db.file.destroy(f1)
+        self.db.commit()
+        self.assertEqual(os.path.exists(fn), False)
 
     def testDestroyNoJournalling(self):
         self.innerTestDestroy(klass=self.db.session)

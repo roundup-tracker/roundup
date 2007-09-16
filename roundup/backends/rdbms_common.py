@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.189 2007-09-11 21:33:30 jpend Exp $
+#$Id: rdbms_common.py,v 1.190 2007-09-16 06:51:48 jpend Exp $
 """ Relational database (SQL) backend common code.
 
 Basics:
@@ -1024,6 +1024,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # remove journal entries
         sql = 'delete from %s__journal where nodeid=%s'%(classname, self.arg)
         self.sql(sql, (nodeid,))
+
+        # cleanup any blob filestorage when we commit
+        self.transactions.append((FileStorage.destroy, (self, classname, nodeid)))
 
     def hasnode(self, classname, nodeid):
         """ Determine if the database has a given node.
