@@ -1379,7 +1379,7 @@ class StringHTMLProperty(HTMLProperty):
         kwargs.update({"name": self._formname, "value": value})
         return self.input(**kwargs)
 
-    def multiline(self, escape=0, rows=5, cols=40):
+    def multiline(self, escape=0, rows=5, cols=40, **kwargs):
         """ Render a multiline form edit field for the property.
 
             If not editable, just display the plain() value in a <pre> tag.
@@ -1394,7 +1394,9 @@ class StringHTMLProperty(HTMLProperty):
 
             value = '&quot;'.join(value.split('"'))
         name = self._formname
-        return ('<textarea name="%(name)s" id="%(name)s"'
+        passthrough_args = ' '.join(['%s="%s"' % (k, cgi.escape(str(v), True))
+            for k,v in kwargs.items()])
+        return ('<textarea %(passthrough_args)s name="%(name)s" id="%(name)s"'
                 ' rows="%(rows)s" cols="%(cols)s">'
                  '%(value)s</textarea>') % locals()
 
