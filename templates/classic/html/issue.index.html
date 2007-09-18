@@ -1,4 +1,4 @@
-<!-- $Id: issue.index.html,v 1.28 2007-09-16 02:45:11 jpend Exp $ -->
+<!-- $Id: issue.index.html,v 1.29 2007-09-18 17:44:26 jpend Exp $ -->
 <tal:block metal:use-macro="templates/page/macros/icing">
 <title metal:fill-slot="head_title" >
   <span tal:omit-tag="true" i18n:translate="" >List of issues</span>
@@ -40,7 +40,7 @@
       tal:condition="python:group and batch.propchanged(*group)">
    <th tal:attributes="colspan python:len(request.columns)" class="group">
     <tal:block tal:repeat="g group">
-     <tal:block tal:content="python:str(i[g]) or '(no %s set)'%g"/>
+     <tal:block i18n:translate="" tal:content="python:str(i[g]) or '(no %s set)'%g"/>
     </tal:block>
    </th>
   </tr>
@@ -62,6 +62,7 @@
 		tal:content="python:str(i.title.plain(hyperlink=0)) or '[no title]'">title</a>
    </td>
    <td tal:condition="request/show/status"
+       i18n:translate=""
        tal:content="python:i.status.plain() or default">&nbsp;</td>
    <td tal:condition="request/show/creator"
        tal:content="python:i.creator.plain() or default">&nbsp;</td>
