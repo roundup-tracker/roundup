@@ -422,7 +422,7 @@ def _set_input_default_args(dic):
 
 def input_html4(**attrs):
     """Generate an 'input' (html4) element with given attributes"""
-    _set_input_default_args(attrs) 
+    _set_input_default_args(attrs)
     return '<input %s>'%' '.join(['%s="%s"'%(k,cgi.escape(str(v), True))
         for k,v in attrs.items()])
 
@@ -2453,7 +2453,7 @@ env: %(env)s
                 if not args.has_key(k):
                     if type(v) == type([]):
                         prop = cls.get_transitive_prop(k)
-                        if isinstance(prop, hyperdb.String):
+                        if k != 'id' and isinstance(prop, hyperdb.String):
                             l.append('%s=%s'%(k, '%20'.join([q(i) for i in v])))
                         else:
                             l.append('%s=%s'%(k, ','.join([q(i) for i in v])))
