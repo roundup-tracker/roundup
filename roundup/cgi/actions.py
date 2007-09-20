@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.70 2007-05-15 16:23:39 schlatterbeck Exp $
+#$Id: actions.py,v 1.71 2007-09-20 23:44:58 jpend Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random, csv, codecs
 
@@ -148,7 +148,7 @@ class SearchAction(Action):
         """
         self.fakeFilterVars()
         queryname = self.getQueryName()
-    
+
         # editing existing query name?
         old_queryname = self.getFromForm('old-queryname')
 

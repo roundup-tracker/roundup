@@ -57,8 +57,8 @@ function retire(qid) {
  </tal:block>
 </tr>
 
-<tr tal:define="queries python:db.query.filter(filterspec={'private_for':uid})"
-     tal:repeat="query queries">
+<tr tal:repeat="query mine">
+ <tal:block condition="not:query/is_retired">
  <td><a tal:attributes="href string:${query/klass}?${query/url}"
         tal:content="query/name">query</a></td>
 
@@ -79,10 +79,12 @@ function retire(qid) {
   <input type="button" value="Delete" i18n:attributes="value"
   tal:attributes="onClick python:'''retire('%s')'''%query.id">
   </td>
+  </tal:block>
 </tr>
 
 <tr tal:define="queries python:db.query.filter(filterspec={'private_for':None})"
      tal:repeat="query queries">
+ <tal:block condition="python: query.creator != uid">
  <td><a tal:attributes="href string:${query/klass}?${query/url}"
         tal:content="query/name">query</a></td>
 
@@ -93,7 +95,7 @@ function retire(qid) {
  </td>
  <td tal:condition="not:query/is_edit_ok" colspan="3"
     i18n:translate="">[not yours to edit]</td>
-
+ </tal:block>
 </tr>
 
 <tr><td colspan="5">
