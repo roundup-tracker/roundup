@@ -37,14 +37,20 @@ temporary self-signed certificate will be used.
 print help
 .TP
 \fBname=\fP\fItracker home\fP
-Sets the tracker home(s) to use. The name is how the tracker is
-identified in the URL (it's the first part of the URL path). The
-tracker home is the directory that was identified when you did
-"roundup-admin init". You may specify any number of these name=home
-pairs on the command-line. For convenience, you may edit the
-TRACKER_HOMES variable in the roundup-server file instead.
-Make sure the name part doesn't include any url-unsafe characters like
-spaces, as these confuse the cookie handling in browsers like IE.
+Sets the tracker home(s) to use. The \fBname\fP variable is how the tracker is
+identified in the URL (it's the first part of the URL path). The \fItracker
+home\fP variable is the directory that was identified when you did
+"roundup-admin init". You may specify any number of these name=home pairs on
+the command-line. For convenience, you may edit the TRACKER_HOMES variable in
+the roundup-server file instead.  Make sure the name part doesn't include any
+url-unsafe characters like spaces, as these confuse the cookie handling in
+browsers like IE.
+.SH EXAMPLES
+.TP
+.B roundup-server -p 9000 bugs=/var/tracker reqs=/home/roundup/group1
+Start the server on port \fB9000\fP serving two trackers; one under
+\fB/bugs\fP and one under \fB/reqs\fP.
+
 .SH CONFIGURATION FILE
 See the "admin_guide" in the Roundup "doc" directory.
 .SH AUTHOR
