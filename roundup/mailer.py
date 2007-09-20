@@ -1,7 +1,7 @@
 """Sending Roundup-specific mail over SMTP.
 """
 __docformat__ = 'restructuredtext'
-# $Id: mailer.py,v 1.19 2007-09-02 05:54:46 jpend Exp $
+# $Id: mailer.py,v 1.20 2007-09-20 19:42:48 jpend Exp $
 
 import time, quopri, os, socket, smtplib, re, sys, traceback
 
@@ -10,6 +10,7 @@ from MimeWriter import MimeWriter
 
 from roundup.rfc2822 import encode_header
 from roundup import __version__
+from roundup.date import get_timezone
 
 try:
     from email.Utils import formatdate
@@ -29,6 +30,11 @@ class Mailer:
         # this var must contain a file to write the mail to
         self.debug = os.environ.get('SENDMAILDEBUG', '') \
             or config["MAIL_DEBUG"]
+
+        # set timezone so that things like formatdate(localtime=True)
+        # use the configured timezone
+        os.environ['TZ'] = get_timezone(self.config.TIMEZONE).tzname(None)
+        time.tzset()
 
     def get_standard_message(self, to, subject, author=None):
         '''Form a standard email message from Roundup.
@@ -60,7 +66,7 @@ class Mailer:
         writer.addheader('Subject', encode_header(subject, charset))
         writer.addheader('To', ', '.join(to))
         writer.addheader('From', author)
-        writer.addheader('Date', formatdate())
+        writer.addheader('Date', formatdate(localtime=True))
 
         # Add a unique Roundup header to help filtering
         writer.addheader('X-Roundup-Name', encode_header(tracker_name,
