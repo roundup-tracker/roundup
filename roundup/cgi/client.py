@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.237 2007-09-12 16:16:49 jpend Exp $
+# $Id: client.py,v 1.238 2007-09-22 21:20:57 jpend Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -7,6 +7,7 @@ __docformat__ = 'restructuredtext'
 import base64, binascii, cgi, codecs, mimetypes, os
 import random, re, rfc822, stat, time, urllib, urlparse
 import Cookie, socket, errno
+from Cookie import CookieError, BaseCookie, SimpleCookie
 
 from roundup import roundupdb, date, hyperdb, password
 from roundup.cgi import templating, cgitb, TranslationService
@@ -46,11 +47,46 @@ def clean_message_callback(match, ok={'a':1,'i':1,'b':1,'br':1}):
         return match.group(1)
     return '&lt;%s&gt;'%match.group(2)
 
+
 error_message = ""'''<html><head><title>An error has occurred</title></head>
 <body><h1>An error has occurred</h1>
 <p>A problem was encountered processing your request.
 The tracker maintainers have been notified of the problem.</p>
 </body></html>'''
+
+
+class LiberalCookie(SimpleCookie):
+    ''' Python's SimpleCookie throws an exception if the cookie uses invalid
+        syntax.  Other applications on the same server may have done precisely
+        this, preventing roundup from working through no fault of roundup.
+        Numerous other python apps have run into the same problem:
+
+        trac: http://trac.edgewall.org/ticket/2256
+        mailman: http://bugs.python.org/issue472646
+
+        This particular implementation comes from trac's solution to the
+        problem. Unfortunately it requires some hackery in SimpleCookie's
+        internals to provide a more liberal __set method.
+    '''
+    def load(self, rawdata, ignore_parse_errors=True):
+        if ignore_parse_errors:
+            self.bad_cookies = []
+            self._BaseCookie__set = self._loose_set
+        SimpleCookie.load(self, rawdata)
+        if ignore_parse_errors:
+            self._BaseCookie__set = self._strict_set
+            for key in self.bad_cookies:
+                del self[key]
+
+    _strict_set = BaseCookie._BaseCookie__set
+
+    def _loose_set(self, key, real_value, coded_value):
+        try:
+            self._strict_set(key, real_value, coded_value)
+        except CookieError:
+            self.bad_cookies.append(key)
+            dict.__setitem__(self, key, None)
+
 
 class Client:
     '''Instantiate to handle one CGI request.
@@ -181,7 +217,9 @@ class Client:
         self.charset = self.STORAGE_CHARSET
 
         # parse cookies (used in charset and session lookups)
-        self.cookie = Cookie.SimpleCookie(self.env.get('HTTP_COOKIE', ''))
+        # use our own LiberalCookie to handle bad apps on the same
+        # server that have set cookies that are out of spec
+        self.cookie = LiberalCookie(self.env.get('HTTP_COOKIE', ''))
 
         self.user = None
         self.userid = None
