@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.189 2007-09-01 16:14:21 forsberg Exp $
+$Id: mailgw.py,v 1.190 2007-09-22 07:25:34 jpend Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -84,6 +84,11 @@ import traceback, MimeWriter, rfc822
 from roundup import configuration, hyperdb, date, password, rfc2822, exceptions
 from roundup.mailer import Mailer, MessageSendError
 from roundup.i18n import _
+
+try:
+    import pyme, pyme.core, pyme.gpgme
+except ImportError:
+    pyme = None
 
 SENDMAILDEBUG = os.environ.get('SENDMAILDEBUG', '')
 
@@ -141,6 +146,29 @@ def getparam(str, param):
                 return rfc822.unquote(f[i+1:].strip())
     return None
 
+def check_pgp_sigs(sig):
+    ''' Theoretically a PGP message can have several signatures. GPGME returns
+        status on all signatures in a linked list. Walk that linked list making
+        sure all signatures are valid.
+    '''
+    while sig != None:
+        if not sig.summary & pyme.gpgme.GPGME_SIGSUM_VALID:
+            # try to narrow down the actual problem to give a more useful
+            # message in our bounce
+            if sig.summary & pyme.gpgme.GPGME_SIGSUM_KEY_MISSING:
+                raise MailUsageError, \
+                    _(''"Message signed with unknown key: " + sig.fpr)
+            elif sig.summary & pyme.gpgme.GPGME_SIGSUM_KEY_EXPIRED:
+                raise MailUsageError, \
+                    _(''"Message signed with an expired key: " + sig.fpr)
+            elif sig.summary & pyme.gpgme.GPGME_SIGSUM_KEY_REVOKED:
+                raise MailUsageError, \
+                    _(''"Message signed with a revoked key: " + sig.fpr)
+            else:
+                raise MailUsageError, \
+                    _(''"Invalid PGP signature detected.")
+        sig = sig.next
+
 class Message(mimetools.Message):
     ''' subclass mimetools.Message so we can retrieve the parts of the
         message...
@@ -157,6 +185,17 @@ class Message(mimetools.Message):
             if not line:
                 break
             if line.strip() in (mid, end):
+                # according to rfc 1431 the preceding line ending is part of
+                # the boundary so we need to strip that
+                length = s.tell()
+                s.seek(-2, 1)
+                lineending = s.read(2)
+                if lineending == '\r\n':
+                    s.truncate(length - 2)
+                elif lineending[1] in ('\r', '\n'):
+                    s.truncate(length - 1)
+                else:
+                    raise ValueError('Unknown line ending in message.')
                 break
             s.write(line)
         if not s.getvalue().strip():
@@ -167,6 +206,7 @@ class Message(mimetools.Message):
     def getparts(self):
         """Get all parts of this multipart message."""
         # skip over the intro to the first boundary
+        self.fp.seek(0)
         self.getpart()
 
         # accumulate the other parts
@@ -296,6 +336,90 @@ class Message(mimetools.Message):
     def as_attachment(self):
         """Return this message as an attachment."""
         return (self.getname(), self.gettype(), self.getbody())
+
+    def pgp_signed(self):
+        ''' RFC 3156 requires OpenPGP MIME mail to have the protocol parameter
+        '''
+        return self.gettype() == 'multipart/signed' \
+            and self.typeheader.find('protocol="application/pgp-signature"') != -1
+
+    def pgp_encrypted(self):
+        ''' RFC 3156 requires OpenPGP MIME mail to have the protocol parameter
+        '''
+        return self.gettype() == 'multipart/encrypted' \
+            and self.typeheader.find('protocol="application/pgp-encrypted"') != -1
+
+    def decrypt(self):
+        ''' decrypt an OpenPGP MIME message
+            This message must be signed as well as encrypted using the "combined"
+            method. The decrypted contents are returned as a new message.
+        '''
+        (hdr, msg) = self.getparts()
+        # According to the RFC 3156 encrypted mail must have exactly two parts.
+        # The first part contains the control information. Let's verify that
+        # the message meets the RFC before we try to decrypt it.
+        if hdr.getbody() != 'Version: 1' or hdr.gettype() != 'application/pgp-encrypted':
+            raise MailUsageError, \
+                _(''"Unknown multipart/encrypted version.")
+
+        context = pyme.core.Context()
+        ciphertext = pyme.core.Data(msg.getbody())
+        plaintext = pyme.core.Data()
+
+        result = context.op_decrypt_verify(ciphertext, plaintext)
+
+        if result:
+            raise MailUsageError, _(''"Unable to decrypt your message.")
+
+        # we've decrypted it but that just means they used our public
+        # key to send it to us. now check the signatures to see if it
+        # was signed by someone we trust
+        result = context.op_verify_result()
+        check_pgp_sigs(result.signatures)
+
+        plaintext.seek(0,0)
+        # pyme.core.Data implements a seek method with a different signature
+        # than roundup can handle. So we'll put the data in a container that
+        # the Message class can work with.
+        c = cStringIO.StringIO()
+        c.write(plaintext.read())
+        c.seek(0)
+        return Message(c)
+
+    def verify_signature(self):
+        ''' verify the signature of an OpenPGP MIME message
+            This only handles detached signatures. Old style
+            PGP mail (i.e. '-----BEGIN PGP SIGNED MESSAGE----')
+            is archaic and not supported :)
+        '''
+        # we don't check the micalg parameter...gpgme seems to
+        # figure things out on its own
+        (msg, sig) = self.getparts()
+
+        if sig.gettype() != 'application/pgp-signature':
+            raise MailUsageError, \
+                _(''"No PGP signature found in message.")
+
+        context = pyme.core.Context()
+        # msg.getbody() is skipping over some headers that are
+        # required to be present for verification to succeed so
+        # we'll do this by hand
+        msg.fp.seek(0)
+        # according to rfc 3156 the data "MUST first be converted
+        # to its content-type specific canonical form. For
+        # text/plain this means conversion to an appropriate
+        # character set and conversion of line endings to the
+        # canonical <CR><LF> sequence."
+        # TODO: what about character set conversion?
+        canonical_msg = re.sub('(?<!\r)\n', '\r\n', msg.fp.read())
+        msg_data = pyme.core.Data(canonical_msg)
+        sig_data = pyme.core.Data(sig.getbody())
+
+        context.op_verify(sig_data, msg_data, None)
+
+        # check all signatures for validity
+        result = context.op_verify_result()
+        check_pgp_sigs(result.signatures)
 
 class MailGW:
 
@@ -915,7 +1039,7 @@ The mail gateway is not properly set up. Please contact
 %(tracker_web)suser?template=register
 
 ...before sending mail to the tracker.""" % locals()
-                        
+
                 raise Unauthorized, _("""
 You are not a registered user.%(registration_info)s
 
@@ -1007,6 +1131,25 @@ Subject was: "%(subject)s"
             messageid = "<%s.%s.%s%s@%s>"%(time.time(), random.random(),
                 classname, nodeid, config['MAIL_DOMAIN'])
 
+        # if they've enabled PGP processing then verify the signature
+        # or decrypt the message
+        if self.instance.config.PGP_ENABLE:
+            assert pyme, 'pyme is not installed'
+            if self.instance.config.PGP_HOMEDIR:
+                os.environ['GNUPGHOME'] = self.instance.config.PGP_HOMEDIR
+            if message.pgp_signed():
+                message.verify_signature()
+            elif message.pgp_encrypted():
+                # replace message with the contents of the decrypted
+                # message for content extraction
+                # TODO: encrypted message handling is far from perfect
+                # bounces probably include the decrypted message, for
+                # instance :(
+                message = message.decrypt()
+            else:
+                raise MailUsageError, _("""
+This tracker has been configured to require all email be PGP signed or
+encrypted.""")
         # now handle the body - find the message
         content, attachments = message.extract_content()
         if content is None:

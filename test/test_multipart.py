@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_multipart.py,v 1.7 2004-01-17 13:49:06 jlgijsbers Exp $ 
+# $Id: test_multipart.py,v 1.8 2007-09-22 07:25:35 jpend Exp $ 
 
 import unittest
 from cStringIO import StringIO
@@ -30,7 +30,7 @@ class TestMessage(Message):
              'application/pgp-signature': '    name="foo.gpg"\nfoo\n',
              'application/pdf': '    name="foo.pdf"\nfoo\n',
              'message/rfc822': 'Subject: foo\n\nfoo\n'}
-    
+
     def __init__(self, spec):
         """Create a basic MIME message according to 'spec'.
 
@@ -44,10 +44,10 @@ class TestMessage(Message):
             content_type = line.strip()
             if not content_type:
                 continue
-            
+
             indent = self.getIndent(line)
             if indent:
-                parts.append('--boundary-%s\n' % indent)
+                parts.append('\n--boundary-%s\n' % indent)
             parts.append('Content-type: %s;\n' % content_type)
             parts.append(self.table[content_type] % {'indent': indent + 1})
 
@@ -68,7 +68,7 @@ class MultipartTestCase(unittest.TestCase):
         w = self.fp.write
         w('Content-Type: multipart/mixed; boundary="foo"\r\n\r\n')
         w('This is a multipart message. Ignore this bit.\r\n')
-        w('--foo\r\n')
+        w('\r\n--foo\r\n')
 
         w('Content-Type: text/plain\r\n\r\n')
         w('Hello, world!\r\n')
@@ -76,26 +76,26 @@ class MultipartTestCase(unittest.TestCase):
         w('Blah blah\r\n')
         w('foo\r\n')
         w('-foo\r\n')
-        w('--foo\r\n')
+        w('\r\n--foo\r\n')
 
         w('Content-Type: multipart/alternative; boundary="bar"\r\n\r\n')
         w('This is a multipart message. Ignore this bit.\r\n')
-        w('--bar\r\n')
+        w('\r\n--bar\r\n')
 
         w('Content-Type: text/plain\r\n\r\n')
         w('Hello, world!\r\n')
         w('\r\n')
         w('Blah blah\r\n')
-        w('--bar\r\n')
+        w('\r\n--bar\r\n')
 
         w('Content-Type: text/html\r\n\r\n')
         w('<b>Hello, world!</b>\r\n')
-        w('--bar--\r\n')
-        w('--foo\r\n')
+        w('\r\n--bar--\r\n')
+        w('\r\n--foo\r\n')
 
         w('Content-Type: text/plain\r\n\r\n')
         w('Last bit\n')
-        w('--foo--\r\n')
+        w('\r\n--foo--\r\n')
         self.fp.seek(0)
 
     def testMultipart(self):
@@ -185,7 +185,7 @@ multipart/mixed
         text/plain
         application/pdf
 """, ('foo\n', [('foo.pdf', 'application/pdf', 'foo\n')]))
-    
+
     def testSignedText(self):
         self.TestExtraction("""
 multipart/signed

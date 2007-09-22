@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.47 2007-09-03 17:14:08 jpend Exp $
+# $Id: configuration.py,v 1.48 2007-09-22 07:25:34 jpend Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -717,6 +717,13 @@ SETTINGS = (
         (RegExpOption, "blankline_re", r"[\r\n]+\s*[\r\n]+",
             "Regular expression matching a blank line."),
     ), "Roundup Mail Gateway options"),
+    ("pgp", (
+        (BooleanOption, "enable", "no",
+            "Enable PGP processing. Requires pyme."),
+        (NullableOption, "homedir", "",
+            "Location of PGP directory. Defaults to $HOME/.gnupg if\n"
+            "not specified."),
+    ), "OpenPGP mail processing options"),
     ("nosy", (
         (RunDetectorOption, "messages_to_author", "no",
             "Send nosy messages to the author of the message.",
