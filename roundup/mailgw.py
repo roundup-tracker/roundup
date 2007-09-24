@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.190 2007-09-22 07:25:34 jpend Exp $
+$Id: mailgw.py,v 1.191 2007-09-24 09:52:18 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -157,16 +157,16 @@ def check_pgp_sigs(sig):
             # message in our bounce
             if sig.summary & pyme.gpgme.GPGME_SIGSUM_KEY_MISSING:
                 raise MailUsageError, \
-                    _(''"Message signed with unknown key: " + sig.fpr)
+                    _("Message signed with unknown key: %s") % sig.fpr
             elif sig.summary & pyme.gpgme.GPGME_SIGSUM_KEY_EXPIRED:
                 raise MailUsageError, \
-                    _(''"Message signed with an expired key: " + sig.fpr)
+                    _("Message signed with an expired key: %s") % sig.fpr
             elif sig.summary & pyme.gpgme.GPGME_SIGSUM_KEY_REVOKED:
                 raise MailUsageError, \
-                    _(''"Message signed with a revoked key: " + sig.fpr)
+                    _("Message signed with a revoked key: %s") % sig.fpr
             else:
                 raise MailUsageError, \
-                    _(''"Invalid PGP signature detected.")
+                    _("Invalid PGP signature detected.")
         sig = sig.next
 
 class Message(mimetools.Message):
@@ -360,7 +360,7 @@ class Message(mimetools.Message):
         # the message meets the RFC before we try to decrypt it.
         if hdr.getbody() != 'Version: 1' or hdr.gettype() != 'application/pgp-encrypted':
             raise MailUsageError, \
-                _(''"Unknown multipart/encrypted version.")
+                _("Unknown multipart/encrypted version.")
 
         context = pyme.core.Context()
         ciphertext = pyme.core.Data(msg.getbody())
@@ -369,7 +369,7 @@ class Message(mimetools.Message):
         result = context.op_decrypt_verify(ciphertext, plaintext)
 
         if result:
-            raise MailUsageError, _(''"Unable to decrypt your message.")
+            raise MailUsageError, _("Unable to decrypt your message.")
 
         # we've decrypted it but that just means they used our public
         # key to send it to us. now check the signatures to see if it
@@ -398,7 +398,7 @@ class Message(mimetools.Message):
 
         if sig.gettype() != 'application/pgp-signature':
             raise MailUsageError, \
-                _(''"No PGP signature found in message.")
+                _("No PGP signature found in message.")
 
         context = pyme.core.Context()
         # msg.getbody() is skipping over some headers that are
