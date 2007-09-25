@@ -1,4 +1,4 @@
-#$Id: sessions_rdbms.py,v 1.6 2007-09-25 02:44:50 jpend Exp $
+#$Id: sessions_rdbms.py,v 1.7 2007-09-25 19:49:19 jpend Exp $
 """This module defines a very basic store that's used by the CGI interface
 to store session and one-time-key information.
 
@@ -97,4 +97,4 @@ class Sessions(BasicDatabase):
 class OneTimeKeys(BasicDatabase):
     name = 'otk'
 
-# vim: set et sts=4 sw=4
+# vim: set et sts=4 sw=4 :

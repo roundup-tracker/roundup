@@ -1,4 +1,4 @@
-#$Id: back_postgresql.py,v 1.40 2007-09-25 02:44:50 jpend Exp $
+#$Id: back_postgresql.py,v 1.41 2007-09-25 19:49:19 jpend Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -285,4 +285,4 @@ class IssueClass(PostgresqlClass, rdbms_common.IssueClass):
 class FileClass(PostgresqlClass, rdbms_common.FileClass):
     pass
 
-# vim: set et sts=4 sw=4
+# vim: set et sts=4 sw=4 :
