@@ -1,4 +1,4 @@
-#$Id: back_postgresql.py,v 1.39 2007-08-09 08:58:42 schlatterbeck Exp $
+#$Id: back_postgresql.py,v 1.40 2007-09-25 02:44:50 jpend Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -13,13 +13,16 @@ import os, shutil, popen2, time
 try:
     import psycopg
     from psycopg import QuotedString
+    from psycopg import ProgrammingError
 except:
     from psycopg2 import psycopg1 as psycopg
     from psycopg2.extensions import QuotedString
+    from psycopg2.psycopg1 import ProgrammingError
 import logging
 
 from roundup import hyperdb, date
 from roundup.backends import rdbms_common
+from roundup.backends import sessions_rdbms
 
 def connection_dict(config, dbnamestr=None):
     ''' read_default_group is MySQL-specific, ignore it '''
@@ -51,12 +54,12 @@ def db_command(config, command):
     '''
     template1 = connection_dict(config)
     template1['database'] = 'template1'
-    
+
     try:
         conn = psycopg.connect(**template1)
     except psycopg.OperationalError, message:
         raise hyperdb.DatabaseError, message
-    
+
     conn.set_isolation_level(0)
     cursor = conn.cursor()
     try:
@@ -70,7 +73,7 @@ def db_command(config, command):
 def pg_command(cursor, command):
     '''Execute the postgresql command, which may be blocked by some other
     user connecting to the database, and return a true value if it succeeds.
-    
+
     If there is a concurrent update, retry the command.
     '''
     try:
@@ -104,11 +107,27 @@ def db_exists(config):
     except:
         return 0
 
+class Sessions(sessions_rdbms.Sessions):
+    def set(*args, **kwargs):
+        try:
+            sessions_rdbms.Sessions.set(*args, **kwargs)
+        except ProgrammingError, err:
+            response = str(err).split('\n')[0]
+            if -1 != response.find('ERROR') and \
+               -1 != response.find('could not serialize access due to concurrent update'):
+                # another client just updated, and we're running on
+                # serializable isolation.
+                # see http://www.postgresql.org/docs/7.4/interactive/transaction-iso.html
+                self.db.rollback()
+
 class Database(rdbms_common.Database):
     arg = '%s'
 
     # used by some code to switch styles of query
     implements_intersect = 1
+
+    def getSessionManager(self):
+        return Sessions(self)
 
     def sql_open_connection(self):
         db = connection_dict(self.config, 'database')
@@ -158,7 +177,7 @@ class Database(rdbms_common.Database):
         self.sql('''CREATE TABLE __textids (
             _textid integer primary key, _class VARCHAR(255),
             _itemid VARCHAR(255), _prop VARCHAR(255))''')
-        self.sql('''CREATE TABLE __words (_word VARCHAR(30), 
+        self.sql('''CREATE TABLE __words (_word VARCHAR(30),
             _textid integer)''')
         self.sql('CREATE INDEX words_word_idx ON __words(_word)')
         self.sql('CREATE INDEX words_by_id ON __words (_textid)')
@@ -266,3 +285,4 @@ class IssueClass(PostgresqlClass, rdbms_common.IssueClass):
 class FileClass(PostgresqlClass, rdbms_common.FileClass):
     pass
 
+# vim: set et sts=4 sw=4
