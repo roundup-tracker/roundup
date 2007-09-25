@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.93 2007-09-09 16:03:13 jpend Exp $
+$Id: roundup_server.py,v 1.94 2007-09-25 04:27:12 jpend Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -312,7 +312,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
         # figure the tracker
         l_path = rest.split('/')
-        tracker_name = urllib.unquote(l_path[1])
+        tracker_name = urllib.unquote(l_path[1]).lower()
 
         # handle missing trailing '/'
         if len(l_path) == 2:
