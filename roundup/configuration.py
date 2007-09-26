@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.48 2007-09-22 07:25:34 jpend Exp $
+# $Id: configuration.py,v 1.49 2007-09-26 03:20:21 jpend Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -720,6 +720,10 @@ SETTINGS = (
     ("pgp", (
         (BooleanOption, "enable", "no",
             "Enable PGP processing. Requires pyme."),
+        (NullableOption, "roles", "",
+            "If specified, a comma-separated list of roles to perform\n"
+            "PGP processing on. If not specified, it happens for all\n"
+            "users."),
         (NullableOption, "homedir", "",
             "Location of PGP directory. Defaults to $HOME/.gnupg if\n"
             "not specified."),

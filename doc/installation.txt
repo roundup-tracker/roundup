@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.126 $
+:Version: $Revision: 1.127 $
 
 .. contents::
    :depth: 2
@@ -81,10 +81,17 @@ pyopenssl
   proxy through a server with SSL support (e.g. apache) then this is
   unnecessary.
 
+pyme
+  If pyme_ is installed you can configure the mail gateway to perform
+  verification or decryption of incoming OpenPGP MIME messages. When
+  configured, you can require email to be cryptographically signed
+  before roundup will allow it to make modifications to issues.
+
 .. _Xapian: http://www.xapian.org/
 .. _pytz: http://www.python.org/pypi/pytz
 .. _Olson tz database: http://www.twinsun.com/tz/tz-link.htm
 .. _pyopenssl: http://pyopenssl.sourceforge.net
+.. _pyme: http://pyme.sourceforge.net
 
 
 Getting Roundup

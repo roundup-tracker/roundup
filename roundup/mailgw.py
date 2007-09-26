@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.191 2007-09-24 09:52:18 a1s Exp $
+$Id: mailgw.py,v 1.192 2007-09-26 03:20:21 jpend Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -146,28 +146,69 @@ def getparam(str, param):
                 return rfc822.unquote(f[i+1:].strip())
     return None
 
-def check_pgp_sigs(sig):
-    ''' Theoretically a PGP message can have several signatures. GPGME returns
-        status on all signatures in a linked list. Walk that linked list making
-        sure all signatures are valid.
+def gpgh_key_getall(key, attr):
+    ''' return list of given attribute for all uids in
+        a key
     '''
-    while sig != None:
-        if not sig.summary & pyme.gpgme.GPGME_SIGSUM_VALID:
-            # try to narrow down the actual problem to give a more useful
-            # message in our bounce
-            if sig.summary & pyme.gpgme.GPGME_SIGSUM_KEY_MISSING:
-                raise MailUsageError, \
-                    _("Message signed with unknown key: %s") % sig.fpr
-            elif sig.summary & pyme.gpgme.GPGME_SIGSUM_KEY_EXPIRED:
-                raise MailUsageError, \
-                    _("Message signed with an expired key: %s") % sig.fpr
-            elif sig.summary & pyme.gpgme.GPGME_SIGSUM_KEY_REVOKED:
-                raise MailUsageError, \
-                    _("Message signed with a revoked key: %s") % sig.fpr
-            else:
-                raise MailUsageError, \
-                    _("Invalid PGP signature detected.")
+    u = key.uids
+    while u:
+        yield getattr(u, attr)
+        u = u.next
+
+def gpgh_sigs(sig):
+    ''' more pythonic iteration over GPG signatures '''
+    while sig:
+        yield sig
         sig = sig.next
+
+
+def iter_roles(roles):
+    ''' handle the text processing of turning the roles list
+        into something python can use more easily
+    '''
+    for role in [x.lower().strip() for x in roles.split(',')]:
+        yield role
+
+def user_has_role(db, userid, role_list):
+    ''' see if the given user has any roles that appear
+        in the role_list
+    '''
+    for role in iter_roles(db.user.get(userid, 'roles')):
+        if role in iter_roles(role_list):
+            return True
+    return False
+
+
+def check_pgp_sigs(sig, gpgctx, author):
+    ''' Theoretically a PGP message can have several signatures. GPGME
+        returns status on all signatures in a linked list. Walk that
+        linked list looking for the author's signature
+    '''
+    for sig in gpgh_sigs(sig):
+        key = gpgctx.get_key(sig.fpr, False)
+        # we really only care about the signature of the user who
+        # submitted the email
+        if key and (author in gpgh_key_getall(key, 'email')):
+            if sig.summary & pyme.gpgme.GPGME_SIGSUM_VALID:
+                return True
+            else:
+                # try to narrow down the actual problem to give a more useful
+                # message in our bounce
+                if sig.summary & pyme.gpgme.GPGME_SIGSUM_KEY_MISSING:
+                    raise MailUsageError, \
+                        _("Message signed with unknown key: %s") % sig.fpr
+                elif sig.summary & pyme.gpgme.GPGME_SIGSUM_KEY_EXPIRED:
+                    raise MailUsageError, \
+                        _("Message signed with an expired key: %s") % sig.fpr
+                elif sig.summary & pyme.gpgme.GPGME_SIGSUM_KEY_REVOKED:
+                    raise MailUsageError, \
+                        _("Message signed with a revoked key: %s") % sig.fpr
+                else:
+                    raise MailUsageError, \
+                        _("Invalid PGP signature detected.")
+
+    # we couldn't find a key belonging to the author of the email
+    raise MailUsageError, _("Message signed with unknown key: %s") % sig.fpr
 
 class Message(mimetools.Message):
     ''' subclass mimetools.Message so we can retrieve the parts of the
@@ -349,7 +390,7 @@ class Message(mimetools.Message):
         return self.gettype() == 'multipart/encrypted' \
             and self.typeheader.find('protocol="application/pgp-encrypted"') != -1
 
-    def decrypt(self):
+    def decrypt(self, author):
         ''' decrypt an OpenPGP MIME message
             This message must be signed as well as encrypted using the "combined"
             method. The decrypted contents are returned as a new message.
@@ -375,7 +416,7 @@ class Message(mimetools.Message):
         # key to send it to us. now check the signatures to see if it
         # was signed by someone we trust
         result = context.op_verify_result()
-        check_pgp_sigs(result.signatures)
+        check_pgp_sigs(result.signatures, context, author)
 
         plaintext.seek(0,0)
         # pyme.core.Data implements a seek method with a different signature
@@ -386,7 +427,7 @@ class Message(mimetools.Message):
         c.seek(0)
         return Message(c)
 
-    def verify_signature(self):
+    def verify_signature(self, author):
         ''' verify the signature of an OpenPGP MIME message
             This only handles detached signatures. Old style
             PGP mail (i.e. '-----BEGIN PGP SIGNED MESSAGE----')
@@ -419,7 +460,7 @@ class Message(mimetools.Message):
 
         # check all signatures for validity
         result = context.op_verify_result()
-        check_pgp_sigs(result.signatures)
+        check_pgp_sigs(result.signatures, context, author)
 
 class MailGW:
 
@@ -1133,19 +1174,31 @@ Subject was: "%(subject)s"
 
         # if they've enabled PGP processing then verify the signature
         # or decrypt the message
-        if self.instance.config.PGP_ENABLE:
+
+        # if PGP_ROLES is specified the user must have a Role in the list
+        # or we will skip PGP processing
+        def pgp_role():
+            if self.instance.config.PGP_ROLES:
+                return user_has_role(self.db, author,
+                    self.instance.config.PGP_ROLES)
+            else:
+                return True
+
+        if self.instance.config.PGP_ENABLE and pgp_role():
             assert pyme, 'pyme is not installed'
+            # signed/encrypted mail must come from the primary address
+            author_address = self.db.user.get(author, 'address')
             if self.instance.config.PGP_HOMEDIR:
                 os.environ['GNUPGHOME'] = self.instance.config.PGP_HOMEDIR
             if message.pgp_signed():
-                message.verify_signature()
+                message.verify_signature(author_address)
             elif message.pgp_encrypted():
                 # replace message with the contents of the decrypted
                 # message for content extraction
                 # TODO: encrypted message handling is far from perfect
                 # bounces probably include the decrypted message, for
                 # instance :(
-                message = message.decrypt()
+                message = message.decrypt(author_address)
             else:
                 raise MailUsageError, _("""
 This tracker has been configured to require all email be PGP signed or

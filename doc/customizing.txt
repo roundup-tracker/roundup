@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.221 $
+:Version: $Revision: 1.222 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -95,6 +95,14 @@ Section **main**
   Path to the HTML templates directory. The path may be either absolute
   or relative to the directory containig this config file.
 
+ static_files -- default *blank*
+  Path to directory holding additional static files available via Web
+  UI.  This directory may contain sitewide images, CSS stylesheets etc.
+  and is searched for these files prior to the TEMPLATES directory
+  specified above.  If this option is not set, all static files are
+  taken from the TEMPLATES directory The path may be either absolute or
+  relative to the directory containig this config file.
+
  admin_email -- ``roundup-admin``
   Email address that roundup will complain to if it runs into trouble. If
   the email address doesn't contain an ``@`` part, the MAIL_DOMAIN defined
@@ -150,6 +158,9 @@ Section **main**
   your tracker. See the indexer source for the default list of
   stop-words (e.g. ``A,AND,ARE,AS,AT,BE,BUT,BY, ...``).
 
+ umask -- ``02``
+  Defines the file creation mode mask.
+
 Section **tracker**
  name -- ``Roundup issue tracker``
   A descriptive name for your roundup instance.
@@ -163,6 +174,11 @@ Section **tracker**
 
  email -- ``issue_tracker``
   Email address that mail to roundup should go to.
+
+ language -- default *blank*
+  Default locale name for this tracker. If this option is not set, the
+  language is determined by the environment variable LANGUAGE, LC_ALL,
+  LC_MESSAGES, or LANG, in that order of preference.
 
 Section **web**
  http_auth -- ``yes``
@@ -203,6 +219,13 @@ Section **rdbms**
 
  password -- ``roundup``
   Database user password.
+
+ read_default_file -- ``~/.my.cnf``
+  Name of the MySQL defaults file. Only used in MySQL connections.
+
+ read_default_group -- ``roundup``
+  Name of the group to use in the MySQL defaults file. Only used in
+  MySQL connections.
 
 Section **logging**
  config -- default *blank*
@@ -277,6 +300,16 @@ Section **mail**
   precedence. The path may be either absolute or relative to the directory
   containig this config file.
 
+ add_authorinfo -- ``yes``
+  Add a line with author information at top of all messages send by
+  roundup.
+
+ add_authoremail -- ``yes``
+  Add the mail address of the author to the author information at the
+  top of all messages.  If this is false but add_authorinfo is true,
+  only the name of the actor is added which protects the mail address
+  of the actor from being exposed at mail archives, etc.
+
 Section **mailgw**
  Roundup Mail Gateway options
 
@@ -293,6 +326,10 @@ Section **mailgw**
  default_class -- ``issue``
   Default class to use in the mailgw if one isn't supplied in email subjects.
   To disable, leave the value blank.
+
+ language -- default *blank*
+  Default locale name for the tracker mail gateway.  If this option is
+  not set, mail gateway will use the language of the tracker instance.
 
  subject_prefix_parsing -- ``strict``
   Controls the parsing of the [prefix] on subject lines in incoming emails.
@@ -318,6 +355,42 @@ Section **mailgw**
   matching. ``creation + interval`` or ``activity + interval`` will match
   an issue for the interval after the issue's creation or last activity.
   The interval is a standard Roundup interval.
+
+ refwd_re -- ``(\s*\W?\s*(fw|fwd|re|aw|sv|ang)\W)+``
+  Regular expression matching a single reply or forward prefix
+  prepended by the mailer. This is explicitly stripped from the
+  subject during parsing.  Value is Python Regular Expression
+  (UTF8-encoded).
+
+ origmsg_re -- `` ^[>|\s]*-----\s?Original Message\s?-----$``
+  Regular expression matching start of an original message if quoted
+  the in body.  Value is Python Regular Expression (UTF8-encoded).
+
+ sign_re -- ``^[>|\s]*-- ?$``
+  Regular expression matching the start of a signature in the message
+  body.  Value is Python Regular Expression (UTF8-encoded).
+
+ eol_re -- ``[\r\n]+``
+  Regular expression matching end of line.  Value is Python Regular
+  Expression (UTF8-encoded).
+
+ blankline_re -- ``[\r\n]+\s*[\r\n]+``
+  Regular expression matching a blank line.  Value is Python Regular
+  Expression (UTF8-encoded).
+
+Section **pgp**
+ OpenPGP mail processing options
+
+ enable -- ``no``
+  Enable PGP processing. Requires pyme.
+
+ roles -- default *blank*
+  If specified, a comma-separated list of roles to perform PGP
+  processing on. If not specified, it happens for all users.
+
+ homedir -- default *blank*
+  Location of PGP directory. Defaults to $HOME/.gnupg if not
+  specified.
 
 Section **nosy**
  Nosy messages sending
@@ -348,6 +421,12 @@ Section **nosy**
   Controls the email sending from the nosy reactor. If ``multiple`` then
   a separate email is sent to each recipient. If ``single`` then a single
   email is sent with each recipient as a CC address.
+
+ max_attachment_size -- ``2147483647``
+  Attachments larger than the given number of bytes won't be attached
+  to nosy mails. They will be replaced by a link to the tracker's
+  download page for the file.
+
 
 You may generate a new default config file using the ``roundup-admin
 genconfig`` command.
