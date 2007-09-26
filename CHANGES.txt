@@ -3,7 +3,8 @@ are given with the most recent entry first.
 
 2007-??-??
 Feature:
-- Roundup has a new xmlrpc frontend that gives access to a tracker using XMLRPC.
+- Roundup has a new xmlrpc frontend that gives access to a tracker using
+  XMLRPC.
 - Dates can now be in the year-range 1-9999 except for metakit which is
   still limited to 1970-2038.
 - Add simple anti-spam recipe to docs
@@ -21,6 +22,7 @@ Feature:
   the tracker
 - config options: control whether author info/email is included in email
   sent by roundup
+- support for receiving OpenPGP MIME messages (signed or encrypted)
 
 
 Fixed:
@@ -50,7 +52,13 @@ Fixed:
 - cope with spam robots posting multiple instances of the same form
 - include the author of property-only changes in generated messages
 - fuller email validation in templates (sf feature 1216291)
-
+- cope with bad cookies from other apps on same domain (sf bug 1691708)
+- updated Spanish translation from Ramiro Morales
+- clean up query display of "Private to you items" (sf bug 1481394)
+- use local timezone for mail date header (sf bug 1658173)
+- allow CSV export of queries on selected issues (sf bug 1783492)
+- remove blobfiles on destroy (sf bug 1654132)
+- handle postgres exceptions during session cleanup (sf bug 1703116)
 
 2007-02-15 1.3.3
 Fixed:
