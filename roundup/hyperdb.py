@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: hyperdb.py,v 1.129 2007-01-10 18:17:00 schlatterbeck Exp $
+# $Id: hyperdb.py,v 1.130 2007-09-27 06:12:56 jpend Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -81,7 +81,7 @@ class Password(_Type):
             try:
                 value = password.Password(value)
             except password.PasswordValueError, message:
-                raise HyperdbValueError, 'property %s: %s'%(propname, message)
+                raise HyperdbValueError, 'property %s: %s'%(kw['propname'], message)
         return value
     def sort_repr (self, cls, val, name):
         if not val:
@@ -487,7 +487,7 @@ class Proptree(object):
         else:
             self._val = val
         self.has_values = True
-    
+
     val = property(lambda self: self._val, _set_val)
 
     def _sort(self, val):
@@ -1136,7 +1136,7 @@ class Class:
         for all issues where a message was added by a certain user in
         the last week with a filterspec of
         {'messages.author' : '42', 'messages.creation' : '.-1w;'}
-        
+
         Implementation note:
         This implements a non-optimized version of Transitive search
         using _filter implemented in a backend class. A more efficient
@@ -1291,7 +1291,7 @@ class FileClass:
         property.
         '''
         if not properties.has_key('content'):
-            properties['content'] = hyperdb.String(indexme='yes')
+            properties['content'] = String(indexme='yes')
 
     def export_propnames(self):
         ''' Don't export the "content" property
@@ -1390,6 +1390,6 @@ def Choice(name, db, *options):
     cl = Class(db, name, name=String(), order=String())
     for i in range(len(options)):
         cl.create(name=options[i], order=i)
-    return hyperdb.Link(name)
+    return Link(name)
 
 # vim: set filetype=python sts=4 sw=4 et si :

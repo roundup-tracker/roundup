@@ -1,4 +1,4 @@
-#$Id: sessions_dbm.py,v 1.7 2006-04-27 04:59:37 richard Exp $
+#$Id: sessions_dbm.py,v 1.8 2007-09-27 06:12:57 jpend Exp $
 """This module defines a very basic store that's used by the CGI interface
 to store session and one-time-key information.
 
@@ -8,6 +8,7 @@ class. It's now also used for One Time Key handling too.
 __docformat__ = 'restructuredtext'
 
 import anydbm, whichdb, os, marshal, time
+from roundup import hyperdb
 
 class BasicDatabase:
     ''' Provide a nice encapsulation of an anydbm store.

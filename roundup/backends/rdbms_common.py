@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.190 2007-09-16 06:51:48 jpend Exp $
+#$Id: rdbms_common.py,v 1.191 2007-09-27 06:12:57 jpend Exp $
 """ Relational database (SQL) backend common code.
 
 Basics:
@@ -637,7 +637,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         properties = spec[1]
         # figure the multilinks
         mls = []
-        for propanme, prop in properties:
+        for propname, prop in properties:
             if isinstance(prop, Multilink):
                 mls.append(propname)
 
