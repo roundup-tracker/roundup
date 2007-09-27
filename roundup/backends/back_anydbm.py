@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: back_anydbm.py,v 1.207 2007-09-16 06:51:48 jpend Exp $
+#$Id: back_anydbm.py,v 1.208 2007-09-27 06:18:53 jpend Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -215,7 +215,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if os.path.exists(path):
             db_type = whichdb.whichdb(path)
             if not db_type:
-                raise hyperdb.DatabaseError, "Couldn't identify database type"
+                raise hyperdb.DatabaseError, \
+                    _("Couldn't identify database type")
         elif os.path.exists(path+'.db'):
             # if the path ends in '.db', it's a dbm database, whether
             # anydbm says it's dbhash or not!
@@ -241,8 +242,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             dbm = __import__(db_type)
         except ImportError:
             raise hyperdb.DatabaseError, \
-                "Couldn't open database - the required module '%s'"\
-                " is not available"%db_type
+                _("Couldn't open database - the required module '%s'"\
+                " is not available")%db_type
         if __debug__:
             logging.getLogger('hyperdb').debug("opendb %r.open(%r, %r)"%(db_type, path,
                 mode))
@@ -791,7 +792,7 @@ class Class(hyperdb.Class):
             raise KeyError, '"id" is reserved'
 
         if self.db.journaltag is None:
-            raise hyperdb.DatabaseError, 'Database open read-only'
+            raise hyperdb.DatabaseError, _('Database open read-only')
 
         if propvalues.has_key('creation') or propvalues.has_key('activity'):
             raise KeyError, '"creation" and "activity" are reserved'
@@ -1066,7 +1067,7 @@ class Class(hyperdb.Class):
             raise KeyError, '"id" is reserved'
 
         if self.db.journaltag is None:
-            raise hyperdb.DatabaseError, 'Database open read-only'
+            raise hyperdb.DatabaseError, _('Database open read-only')
 
         node = self.db.getnode(self.classname, nodeid)
         if node.has_key(self.db.RETIRED_FLAG):
@@ -1263,7 +1264,7 @@ class Class(hyperdb.Class):
         to modify the "creation" or "activity" properties cause a KeyError.
         '''
         if self.db.journaltag is None:
-            raise hyperdb.DatabaseError, 'Database open read-only'
+            raise hyperdb.DatabaseError, _('Database open read-only')
 
         self.fireAuditors('retire', nodeid, None)
 
@@ -1281,7 +1282,7 @@ class Class(hyperdb.Class):
         Make node available for all operations like it was before retirement.
         '''
         if self.db.journaltag is None:
-            raise hyperdb.DatabaseError, 'Database open read-only'
+            raise hyperdb.DatabaseError, _('Database open read-only')
 
         node = self.db.getnode(self.classname, nodeid)
         # check if key property was overrided
@@ -1327,7 +1328,7 @@ class Class(hyperdb.Class):
         support the session storage of the cgi interface.
         '''
         if self.db.journaltag is None:
-            raise hyperdb.DatabaseError, 'Database open read-only'
+            raise hyperdb.DatabaseError, _('Database open read-only')
         self.db.destroynode(self.classname, nodeid)
 
     def history(self, nodeid):
@@ -1897,7 +1898,7 @@ class Class(hyperdb.Class):
             Return the nodeid of the node imported.
         '''
         if self.db.journaltag is None:
-            raise hyperdb.DatabaseError, 'Database open read-only'
+            raise hyperdb.DatabaseError, _('Database open read-only')
         properties = self.getprops()
 
         # make the new node's property map

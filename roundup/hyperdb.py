@@ -15,19 +15,20 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: hyperdb.py,v 1.130 2007-09-27 06:12:56 jpend Exp $
+# $Id: hyperdb.py,v 1.131 2007-09-27 06:18:53 jpend Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
 __docformat__ = 'restructuredtext'
 
 # standard python modules
-import sys, os, time, re, shutil, weakref
+import os, re, shutil, weakref
 from sets import Set
 
 # roundup modules
 import date, password
 from support import ensureParentsExist, PrioList, sorted, reversed
+from roundup.i18n import _
 
 #
 # Types
@@ -73,15 +74,17 @@ class Password(_Type):
             p = password.Password()
             p.scheme = m.group(1)
             if p.scheme not in 'SHA crypt plaintext'.split():
-                raise HyperdbValueError, 'property %s: unknown encryption '\
-                    'scheme %r'%(kw['propname'], p.scheme)
+                raise HyperdbValueError, \
+                        ('property %s: unknown encryption scheme %r') %\
+                        (kw['propname'], p.scheme)
             p.password = m.group(2)
             value = p
         else:
             try:
                 value = password.Password(value)
             except password.PasswordValueError, message:
-                raise HyperdbValueError, 'property %s: %s'%(kw['propname'], message)
+                raise HyperdbValueError, \
+                        _('property %s: %s')%(kw['propname'], message)
         return value
     def sort_repr (self, cls, val, name):
         if not val:
@@ -101,8 +104,8 @@ class Date(_Type):
         try:
             value = date.Date(value, self.offset(db))
         except ValueError, message:
-            raise HyperdbValueError, 'property %s: %r is an invalid '\
-                'date (%s)'%(kw['propname'], value, message)
+            raise HyperdbValueError, _('property %s: %r is an invalid '\
+                'date (%s)')%(kw['propname'], value, message)
         return value
     def range_from_raw(self, value, db):
         """return Range value from given raw value with offset correction"""
@@ -118,8 +121,8 @@ class Interval(_Type):
         try:
             value = date.Interval(value)
         except ValueError, message:
-            raise HyperdbValueError, 'property %s: %r is an invalid '\
-                'date interval (%s)'%(kw['propname'], value, message)
+            raise HyperdbValueError, _('property %s: %r is an invalid '\
+                'date interval (%s)')%(kw['propname'], value, message)
         return value
     def sort_repr (self, cls, val, name):
         if not val:
@@ -213,8 +216,8 @@ class Multilink(_Pointer):
                 try:
                     curvalue.remove(itemid)
                 except ValueError:
-                    raise HyperdbValueError, 'property %s: %r is not ' \
-                        'currently an element'%(propname, item)
+                    raise HyperdbValueError, _('property %s: %r is not ' \
+                        'currently an element')%(propname, item)
             else:
                 newvalue.append(itemid)
                 if itemid not in curvalue:
@@ -257,7 +260,7 @@ class Number(_Type):
         try:
             value = float(value)
         except ValueError:
-            raise HyperdbValueError, 'property %s: %r is not a number'%(
+            raise HyperdbValueError, _('property %s: %r is not a number')%(
                 kw['propname'], value)
         return value
 #
@@ -270,7 +273,7 @@ def splitDesignator(designator, dre=re.compile(r'([^\d]+)(\d+)')):
     '''
     m = dre.match(designator)
     if m is None:
-        raise DesignatorError, '"%s" not a node designator'%designator
+        raise DesignatorError, _('"%s" not a node designator')%designator
     return m.group(1), m.group(2)
 
 class Proptree(object):
@@ -943,7 +946,7 @@ class Class:
            resolution order.
         """
         if labelprop not in self.getprops():
-            raise ValueError, "Not a property name: %s" % labelprop
+            raise ValueError, _("Not a property name: %s") % labelprop
         self._labelprop = labelprop
 
     def setorderprop(self, orderprop):
@@ -951,7 +954,7 @@ class Class:
            resolution order
         """
         if orderprop not in self.getprops():
-            raise ValueError, "Not a property name: %s" % orderprop
+            raise ValueError, _("Not a property name: %s") % orderprop
         self._orderprop = orderprop
 
     def getkey(self):
@@ -1234,11 +1237,11 @@ def convertLinkValue(db, propname, prop, value, idre=re.compile('^\d+$')):
             try:
                 value = linkcl.lookup(value)
             except KeyError, message:
-                raise HyperdbValueError, 'property %s: %r is not a %s.'%(
+                raise HyperdbValueError, _('property %s: %r is not a %s.')%(
                     propname, value, prop.classname)
         else:
-            raise HyperdbValueError, 'you may only enter ID values '\
-                'for property %s'%propname
+            raise HyperdbValueError, _('you may only enter ID values '\
+                'for property %s')%propname
     return value
 
 def fixNewlines(text):
@@ -1267,7 +1270,7 @@ def rawToHyperdb(db, klass, itemid, propname, value, **kw):
     try:
         proptype =  properties[propname]
     except KeyError:
-        raise HyperdbValueError, '%r is not a property of %s'%(propname,
+        raise HyperdbValueError, _('%r is not a property of %s')%(propname,
             klass.classname)
 
     # if we got a string, strip it now

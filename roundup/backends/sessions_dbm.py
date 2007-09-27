@@ -1,4 +1,4 @@
-#$Id: sessions_dbm.py,v 1.8 2007-09-27 06:12:57 jpend Exp $
+#$Id: sessions_dbm.py,v 1.9 2007-09-27 06:18:53 jpend Exp $
 """This module defines a very basic store that's used by the CGI interface
 to store session and one-time-key information.
 
@@ -9,6 +9,7 @@ __docformat__ = 'restructuredtext'
 
 import anydbm, whichdb, os, marshal, time
 from roundup import hyperdb
+from roundup.i18n import _
 
 class BasicDatabase:
     ''' Provide a nice encapsulation of an anydbm store.
@@ -45,7 +46,8 @@ class BasicDatabase:
         if os.path.exists(path):
             db_type = whichdb.whichdb(path)
             if not db_type:
-                raise hyperdb.DatabaseError, "Couldn't identify database type"
+                raise hyperdb.DatabaseError, \
+                    _("Couldn't identify database type")
         elif os.path.exists(path+'.db'):
             # if the path ends in '.db', it's a dbm database, whether
             # anydbm says it's dbhash or not!
@@ -156,3 +158,4 @@ class Sessions(BasicDatabase):
 class OneTimeKeys(BasicDatabase):
     name = 'otks'
 
+# vim: set sts ts=4 sw=4 et si :

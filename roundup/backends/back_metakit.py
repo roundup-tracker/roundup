@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.117 2007-08-31 15:44:02 jpend Exp $
+# $Id: back_metakit.py,v 1.118 2007-09-27 06:18:53 jpend Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -51,6 +51,7 @@ from indexer_common import Indexer as CommonIndexer
 import locking
 from roundup.date import Range
 from blobfiles import files_in_dir
+from roundup.i18n import _
 
 # view modes for opening
 # XXX FIXME BPK -> these don't do anything, they are ignored
@@ -563,7 +564,7 @@ class Class(hyperdb.Class):
         if propvalues.has_key('id'):
             raise KeyError, '"id" is reserved'
         if self.db.journaltag is None:
-            raise hyperdb.DatabaseError, 'Database open read-only'
+            raise hyperdb.DatabaseError, _('Database open read-only')
         view = self.getview(READWRITE)
 
         # node must exist & not be retired
@@ -830,7 +831,7 @@ class Class(hyperdb.Class):
         methods, and other nodes may reuse the values of their key properties.
         '''
         if self.db.journaltag is None:
-            raise hyperdb.DatabaseError, 'Database open read-only'
+            raise hyperdb.DatabaseError, _('Database open read-only')
         self.fireAuditors('retire', nodeid, None)
         view = self.getview(READWRITE)
         ndx = view.find(id=int(nodeid))
@@ -862,7 +863,7 @@ class Class(hyperdb.Class):
         Make node available for all operations like it was before retirement.
         '''
         if self.db.journaltag is None:
-            raise hyperdb.DatabaseError, 'Database open read-only'
+            raise hyperdb.DatabaseError, _('Database open read-only')
 
         # check if key property was overrided
         key = self.getkey()
@@ -1597,7 +1598,7 @@ class Class(hyperdb.Class):
             Return the nodeid of the node imported.
         '''
         if self.db.journaltag is None:
-            raise hyperdb.DatabaseError, 'Database open read-only'
+            raise hyperdb.DatabaseError, _('Database open read-only')
         properties = self.getprops()
 
         d = {}

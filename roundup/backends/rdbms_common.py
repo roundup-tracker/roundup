@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.191 2007-09-27 06:12:57 jpend Exp $
+#$Id: rdbms_common.py,v 1.192 2007-09-27 06:18:53 jpend Exp $
 """ Relational database (SQL) backend common code.
 
 Basics:
@@ -54,6 +54,7 @@ from roundup.hyperdb import String, Password, Date, Interval, Link, \
     Multilink, DatabaseError, Boolean, Number, Node
 from roundup.backends import locking
 from roundup.support import reversed
+from roundup.i18n import _
 
 # support
 from blobfiles import FileStorage
@@ -1316,7 +1317,7 @@ class Class(hyperdb.Class):
             raise KeyError, '"id" is reserved'
 
         if self.db.journaltag is None:
-            raise DatabaseError, 'Database open read-only'
+            raise DatabaseError, _('Database open read-only')
 
         if propvalues.has_key('creator') or propvalues.has_key('actor') or \
              propvalues.has_key('creation') or propvalues.has_key('activity'):
@@ -1545,7 +1546,7 @@ class Class(hyperdb.Class):
             raise KeyError, '"id" is reserved'
 
         if self.db.journaltag is None:
-            raise DatabaseError, 'Database open read-only'
+            raise DatabaseError, _('Database open read-only')
 
         node = self.db.getnode(self.classname, nodeid)
         if self.is_retired(nodeid):
@@ -1751,7 +1752,7 @@ class Class(hyperdb.Class):
         methods, and other nodes may reuse the values of their key properties.
         """
         if self.db.journaltag is None:
-            raise DatabaseError, 'Database open read-only'
+            raise DatabaseError, _('Database open read-only')
 
         self.fireAuditors('retire', nodeid, None)
 
@@ -1771,7 +1772,7 @@ class Class(hyperdb.Class):
         Make node available for all operations like it was before retirement.
         """
         if self.db.journaltag is None:
-            raise DatabaseError, 'Database open read-only'
+            raise DatabaseError, _('Database open read-only')
 
         node = self.db.getnode(self.classname, nodeid)
         # check if key property was overrided
@@ -1824,7 +1825,7 @@ class Class(hyperdb.Class):
         if there are any references to the node.
         """
         if self.db.journaltag is None:
-            raise DatabaseError, 'Database open read-only'
+            raise DatabaseError, _('Database open read-only')
         self.db.destroynode(self.classname, nodeid)
 
     def history(self, nodeid):
@@ -2432,7 +2433,7 @@ class Class(hyperdb.Class):
             Return the nodeid of the node imported.
         """
         if self.db.journaltag is None:
-            raise DatabaseError, 'Database open read-only'
+            raise DatabaseError, _('Database open read-only')
         properties = self.getprops()
 
         # make the new node's property map
