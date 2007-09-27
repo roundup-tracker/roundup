@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2007-09-16 09:48+0300\n"
+"POT-Creation-Date: 2007-09-27 11:18+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -373,7 +373,7 @@ msgstr ""
 msgid "%(key)s: %(value)s (key property)"
 msgstr ""
 
-#: ../roundup/admin.py:732
+#: ../roundup/admin.py:732 ../roundup/admin.py:759 ../roundup/admin.py:732:759
 #, python-format
 msgid "%(key)s: %(value)s"
 msgstr ""
@@ -386,11 +386,6 @@ msgid ""
 "        This lists the properties and their associated values for the given\n"
 "        node.\n"
 "        "
-msgstr ""
-
-#: ../roundup/admin.py:759
-#, python-format
-msgid "%(key)s: %(value)r"
 msgstr ""
 
 #: ../roundup/admin.py:762
@@ -743,32 +738,65 @@ msgstr ""
 msgid "There are unsaved changes. Commit them (y/N)? "
 msgstr ""
 
-#: ../roundup/backends/back_anydbm.py:2004
+#: ../roundup/backends/back_anydbm.py:219
+#: ../roundup/backends/sessions_dbm.py:50
+msgid "Couldn't identify database type"
+msgstr ""
+
+#: ../roundup/backends/back_anydbm.py:245
+#, python-format
+msgid "Couldn't open database - the required module '%s' is not available"
+msgstr ""
+
+#: ../roundup/backends/back_anydbm.py:795
+#: ../roundup/backends/back_anydbm.py:1070
+#: ../roundup/backends/back_anydbm.py:1267
+#: ../roundup/backends/back_anydbm.py:1285
+#: ../roundup/backends/back_anydbm.py:1331
+#: ../roundup/backends/back_anydbm.py:1901
+#: ../roundup/backends/back_anydbm.py:795:1070
+#: ../roundup/backends/back_metakit.py:567
+#: ../roundup/backends/back_metakit.py:834
+#: ../roundup/backends/back_metakit.py:866
+#: ../roundup/backends/back_metakit.py:1601
+#: ../roundup/backends/back_metakit.py:567:834
+#: ../roundup/backends/rdbms_common.py:1320
+#: ../roundup/backends/rdbms_common.py:1549
+#: ../roundup/backends/rdbms_common.py:1755
+#: ../roundup/backends/rdbms_common.py:1775
+#: ../roundup/backends/rdbms_common.py:1828
+#: ../roundup/backends/rdbms_common.py:2436
+#: ../roundup/backends/rdbms_common.py:1320:1549 :1267:1285 :1331:1901
+#: :1755:1775 :1828:2436 :866:1601
+msgid "Database open read-only"
+msgstr ""
+
+#: ../roundup/backends/back_anydbm.py:2003
 #, python-format
 msgid "WARNING: invalid date tuple %r"
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:1445
+#: ../roundup/backends/rdbms_common.py:1449
 msgid "create"
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:1611
+#: ../roundup/backends/rdbms_common.py:1615
 msgid "unlink"
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:1615
+#: ../roundup/backends/rdbms_common.py:1619
 msgid "link"
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:1737
+#: ../roundup/backends/rdbms_common.py:1741
 msgid "set"
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:1761
+#: ../roundup/backends/rdbms_common.py:1765
 msgid "retired"
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:1791
+#: ../roundup/backends/rdbms_common.py:1795
 msgid "restored"
 msgstr ""
 
@@ -990,7 +1018,7 @@ msgstr ""
 msgid "<em>undefined</em>"
 msgstr ""
 
-#: ../roundup/cgi/client.py:49
+#: ../roundup/cgi/client.py:51
 msgid ""
 "<html><head><title>An error has occurred</title></head>\n"
 "<body><h1>An error has occurred</h1>\n"
@@ -999,29 +1027,29 @@ msgid ""
 "</body></html>"
 msgstr ""
 
-#: ../roundup/cgi/client.py:339
+#: ../roundup/cgi/client.py:377
 msgid "Form Error: "
 msgstr ""
 
-#: ../roundup/cgi/client.py:394
+#: ../roundup/cgi/client.py:432
 #, python-format
 msgid "Unrecognized charset: %r"
 msgstr ""
 
-#: ../roundup/cgi/client.py:522
+#: ../roundup/cgi/client.py:560
 msgid "Anonymous users are not allowed to use the web interface"
 msgstr ""
 
-#: ../roundup/cgi/client.py:677
+#: ../roundup/cgi/client.py:715
 msgid "You are not allowed to view this file."
 msgstr ""
 
-#: ../roundup/cgi/client.py:770
+#: ../roundup/cgi/client.py:808
 #, python-format
 msgid "%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n"
 msgstr ""
 
-#: ../roundup/cgi/client.py:774
+#: ../roundup/cgi/client.py:812
 #, python-format
 msgid ""
 "%(starttag)sCache hits: %(cache_hits)d, misses %(cache_misses)d. Loading "
@@ -1325,6 +1353,57 @@ msgstr ""
 msgid "in %s"
 msgstr ""
 
+#: ../roundup/hyperdb.py:87
+#, python-format
+msgid "property %s: %s"
+msgstr ""
+
+#: ../roundup/hyperdb.py:107
+#, python-format
+msgid "property %s: %r is an invalid date (%s)"
+msgstr ""
+
+#: ../roundup/hyperdb.py:124
+#, python-format
+msgid "property %s: %r is an invalid date interval (%s)"
+msgstr ""
+
+#: ../roundup/hyperdb.py:219
+#, python-format
+msgid "property %s: %r is not currently an element"
+msgstr ""
+
+#: ../roundup/hyperdb.py:263
+#, python-format
+msgid "property %s: %r is not a number"
+msgstr ""
+
+#: ../roundup/hyperdb.py:276
+#, python-format
+msgid "\"%s\" not a node designator"
+msgstr ""
+
+#: ../roundup/hyperdb.py:949 ../roundup/hyperdb.py:957
+#: ../roundup/hyperdb.py:949:957
+#, python-format
+msgid "Not a property name: %s"
+msgstr ""
+
+#: ../roundup/hyperdb.py:1240
+#, python-format
+msgid "property %s: %r is not a %s."
+msgstr ""
+
+#: ../roundup/hyperdb.py:1243
+#, python-format
+msgid "you may only enter ID values for property %s"
+msgstr ""
+
+#: ../roundup/hyperdb.py:1273
+#, python-format
+msgid "%r is not a property of %s"
+msgstr ""
+
 #: ../roundup/init.py:134
 #, python-format
 msgid ""
@@ -1332,13 +1411,45 @@ msgid ""
 "\tcontains old-style template - ignored"
 msgstr ""
 
-#: ../roundup/mailgw.py:584
+#: ../roundup/mailgw.py:199 ../roundup/mailgw.py:211
+#: ../roundup/mailgw.py:199:211
+#, python-format
+msgid "Message signed with unknown key: %s"
+msgstr ""
+
+#: ../roundup/mailgw.py:202
+#, python-format
+msgid "Message signed with an expired key: %s"
+msgstr ""
+
+#: ../roundup/mailgw.py:205
+#, python-format
+msgid "Message signed with a revoked key: %s"
+msgstr ""
+
+#: ../roundup/mailgw.py:208
+msgid "Invalid PGP signature detected."
+msgstr ""
+
+#: ../roundup/mailgw.py:404
+msgid "Unknown multipart/encrypted version."
+msgstr ""
+
+#: ../roundup/mailgw.py:413
+msgid "Unable to decrypt your message."
+msgstr ""
+
+#: ../roundup/mailgw.py:442
+msgid "No PGP signature found in message."
+msgstr ""
+
+#: ../roundup/mailgw.py:749
 msgid ""
 "\n"
 "Emails to Roundup trackers must include a Subject: line!\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:708
+#: ../roundup/mailgw.py:873
 #, python-format
 msgid ""
 "\n"
@@ -1355,7 +1466,7 @@ msgid ""
 "Subject was: '%(subject)s'\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:746
+#: ../roundup/mailgw.py:911
 #, python-format
 msgid ""
 "\n"
@@ -1366,7 +1477,7 @@ msgid ""
 "Subject was: \"%(subject)s\"\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:754
+#: ../roundup/mailgw.py:919
 #, python-format
 msgid ""
 "\n"
@@ -1383,7 +1494,7 @@ msgid ""
 "Subject was: '%(subject)s'\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:795
+#: ../roundup/mailgw.py:960
 #, python-format
 msgid ""
 "\n"
@@ -1394,7 +1505,7 @@ msgid ""
 "Subject was: \"%(subject)s\"\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:828
+#: ../roundup/mailgw.py:993
 #, python-format
 msgid ""
 "\n"
@@ -1404,7 +1515,7 @@ msgid ""
 "Subject was: \"%(subject)s\"\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:856
+#: ../roundup/mailgw.py:1021
 #, python-format
 msgid ""
 "\n"
@@ -1413,7 +1524,7 @@ msgid ""
 "  %(current_class)s\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:879
+#: ../roundup/mailgw.py:1044
 #, python-format
 msgid ""
 "\n"
@@ -1422,7 +1533,7 @@ msgid ""
 "  %(errors)s\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:919
+#: ../roundup/mailgw.py:1084
 #, python-format
 msgid ""
 "\n"
@@ -1431,21 +1542,21 @@ msgid ""
 "Unknown address: %(from_address)s\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:927
+#: ../roundup/mailgw.py:1092
 msgid "You are not permitted to access this tracker."
 msgstr ""
 
-#: ../roundup/mailgw.py:934
+#: ../roundup/mailgw.py:1099
 #, python-format
 msgid "You are not permitted to edit %(classname)s."
 msgstr ""
 
-#: ../roundup/mailgw.py:938
+#: ../roundup/mailgw.py:1103
 #, python-format
 msgid "You are not permitted to create %(classname)s."
 msgstr ""
 
-#: ../roundup/mailgw.py:985
+#: ../roundup/mailgw.py:1150
 #, python-format
 msgid ""
 "\n"
@@ -1455,27 +1566,34 @@ msgid ""
 "Subject was: \"%(subject)s\"\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:1013
+#: ../roundup/mailgw.py:1203
+msgid ""
+"\n"
+"This tracker has been configured to require all email be PGP signed or\n"
+"encrypted."
+msgstr ""
+
+#: ../roundup/mailgw.py:1209
 msgid ""
 "\n"
 "Roundup requires the submission to be plain text. The message parser could\n"
 "not find a text/plain part to use.\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:1030
+#: ../roundup/mailgw.py:1226
 msgid "You are not permitted to create files."
 msgstr ""
 
-#: ../roundup/mailgw.py:1044
+#: ../roundup/mailgw.py:1240
 #, python-format
 msgid "You are not permitted to add files to %(classname)s."
 msgstr ""
 
-#: ../roundup/mailgw.py:1062
+#: ../roundup/mailgw.py:1258
 msgid "You are not permitted to create messages."
 msgstr ""
 
-#: ../roundup/mailgw.py:1070
+#: ../roundup/mailgw.py:1266
 #, python-format
 msgid ""
 "\n"
@@ -1483,17 +1601,17 @@ msgid ""
 "%(error)s\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:1078
+#: ../roundup/mailgw.py:1274
 #, python-format
 msgid "You are not permitted to add messages to %(classname)s."
 msgstr ""
 
-#: ../roundup/mailgw.py:1105
+#: ../roundup/mailgw.py:1301
 #, python-format
 msgid "You are not permitted to edit property %(prop)s of class %(classname)s."
 msgstr ""
 
-#: ../roundup/mailgw.py:1113
+#: ../roundup/mailgw.py:1309
 #, python-format
 msgid ""
 "\n"
@@ -1501,7 +1619,7 @@ msgid ""
 "   %(message)s\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:1135
+#: ../roundup/mailgw.py:1331
 msgid "not of form [arg=value,value,...;arg=value,value,...]"
 msgstr ""
 
@@ -1918,21 +2036,21 @@ msgstr ""
 
 #: ../templates/classic/html/_generic.help.html:41
 #: ../templates/classic/html/help.html:21
-#: ../templates/classic/html/issue.index.html:80
+#: ../templates/classic/html/issue.index.html:81
 #: ../templates/minimal/html/_generic.help.html:41
 msgid "&lt;&lt; previous"
 msgstr ""
 
 #: ../templates/classic/html/_generic.help.html:53
 #: ../templates/classic/html/help.html:28
-#: ../templates/classic/html/issue.index.html:88
+#: ../templates/classic/html/issue.index.html:89
 #: ../templates/minimal/html/_generic.help.html:53
 msgid "${start}..${end} out of ${total}"
 msgstr ""
 
 #: ../templates/classic/html/_generic.help.html:57
 #: ../templates/classic/html/help.html:32
-#: ../templates/classic/html/issue.index.html:91
+#: ../templates/classic/html/issue.index.html:92
 #: ../templates/minimal/html/_generic.help.html:57
 msgid "next &gt;&gt;"
 msgstr ""
@@ -2087,29 +2205,29 @@ msgstr ""
 msgid "Assigned&nbsp;To"
 msgstr ""
 
-#: ../templates/classic/html/issue.index.html:104
+#: ../templates/classic/html/issue.index.html:105
 msgid "Download as CSV"
 msgstr ""
 
-#: ../templates/classic/html/issue.index.html:114
+#: ../templates/classic/html/issue.index.html:115
 msgid "Sort on:"
 msgstr ""
 
-#: ../templates/classic/html/issue.index.html:118
-#: ../templates/classic/html/issue.index.html:139
+#: ../templates/classic/html/issue.index.html:119
+#: ../templates/classic/html/issue.index.html:140
 msgid "- nothing -"
 msgstr ""
 
-#: ../templates/classic/html/issue.index.html:126
-#: ../templates/classic/html/issue.index.html:147
+#: ../templates/classic/html/issue.index.html:127
+#: ../templates/classic/html/issue.index.html:148
 msgid "Descending:"
 msgstr ""
 
-#: ../templates/classic/html/issue.index.html:135
+#: ../templates/classic/html/issue.index.html:136
 msgid "Group on:"
 msgstr ""
 
-#: ../templates/classic/html/issue.index.html:154
+#: ../templates/classic/html/issue.index.html:155
 msgid "Redisplay"
 msgstr ""
 
@@ -2619,7 +2737,7 @@ msgid "[query is retired]"
 msgstr ""
 
 #: ../templates/classic/html/query.edit.html:67
-#: ../templates/classic/html/query.edit.html:92
+#: ../templates/classic/html/query.edit.html:94
 msgid "edit"
 msgstr ""
 
@@ -2635,11 +2753,11 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
-#: ../templates/classic/html/query.edit.html:94
+#: ../templates/classic/html/query.edit.html:96
 msgid "[not yours to edit]"
 msgstr ""
 
-#: ../templates/classic/html/query.edit.html:102
+#: ../templates/classic/html/query.edit.html:104
 msgid "Save Selection"
 msgstr ""
 
