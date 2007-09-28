@@ -1,4 +1,4 @@
-#$Id: back_postgresql.py,v 1.42 2007-09-27 06:12:57 jpend Exp $
+#$Id: back_postgresql.py,v 1.43 2007-09-28 15:15:06 jpend Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -110,7 +110,7 @@ def db_exists(config):
 class Sessions(sessions_rdbms.Sessions):
     def set(self, *args, **kwargs):
         try:
-            sessions_rdbms.Sessions.set(*args, **kwargs)
+            sessions_rdbms.Sessions.set(self, *args, **kwargs)
         except ProgrammingError, err:
             response = str(err).split('\n')[0]
             if -1 != response.find('ERROR') and \
