@@ -2,7 +2,7 @@
 MySQL Backend
 =============
 
-:version: $Revision: 1.12 $
+:version: $Revision: 1.13 $
 
 This notes detail the MySQL backend for the Roundup issue tracker.
 
@@ -13,18 +13,12 @@ Prerequisites
 To use MySQL as the backend for storing roundup data, you also need 
 to install:
 
-1. MySQL RDBMS 4.0.16 or higher - http://www.mysql.com. Your MySQL
+1. MySQL RDBMS 4.0.18 or higher - http://www.mysql.com. Your MySQL
    installation MUST support InnoDB tables (or Berkeley DB (BDB) tables
-   if you have no other choice). If you're running < 4.0.16 (but not <4.0)
+   if you have no other choice). If you're running < 4.0.18 (but not <4.0)
    then you'll need to use BDB to pass all unit tests. Edit the
    ``roundup/backends/back_mysql.py`` file to enable DBD instead of InnoDB.
 2. Python MySQL interface - http://sourceforge.net/projects/mysql-python
-
-.. note::
-   The InnoDB implementation has a bug__ that Roundup tickles. See
-
-__ http://bugs.mysql.com/bug.php?id=1810
-
 
 Running the MySQL tests
 =======================

@@ -1,4 +1,4 @@
-#$Id: back_mysql.py,v 1.72 2007-06-21 07:35:50 schlatterbeck Exp $
+#$Id: back_mysql.py,v 1.73 2007-09-28 15:26:10 jpend Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -166,10 +166,10 @@ class Database(Database):
             if message[0] != ER.NO_SUCH_TABLE:
                 raise DatabaseError, message
             self.init_dbschema()
-            self.sql("CREATE TABLE `schema` (`schema` TEXT) TYPE=%s"%
+            self.sql("CREATE TABLE `schema` (`schema` TEXT) ENGINE=%s"%
                 self.mysql_backend)
             self.sql('''CREATE TABLE ids (name VARCHAR(255),
-                num INTEGER) TYPE=%s'''%self.mysql_backend)
+                num INTEGER) ENGINE=%s'''%self.mysql_backend)
             self.sql('create index ids_name_idx on ids(name)')
             self.create_version_2_tables()
 
@@ -194,22 +194,22 @@ class Database(Database):
         # OTK store
         self.sql('''CREATE TABLE otks (otk_key VARCHAR(255),
             otk_value TEXT, otk_time FLOAT(20))
-            TYPE=%s'''%self.mysql_backend)
+            ENGINE=%s'''%self.mysql_backend)
         self.sql('CREATE INDEX otks_key_idx ON otks(otk_key)')
 
         # Sessions store
         self.sql('''CREATE TABLE sessions (session_key VARCHAR(255),
             session_time FLOAT(20), session_value TEXT)
-            TYPE=%s'''%self.mysql_backend)
+            ENGINE=%s'''%self.mysql_backend)
         self.sql('''CREATE INDEX sessions_key_idx ON
             sessions(session_key)''')
 
         # full-text indexing store
         self.sql('''CREATE TABLE __textids (_class VARCHAR(255),
             _itemid VARCHAR(255), _prop VARCHAR(255), _textid INT)
-            TYPE=%s'''%self.mysql_backend)
+            ENGINE=%s'''%self.mysql_backend)
         self.sql('''CREATE TABLE __words (_word VARCHAR(30),
-            _textid INT) TYPE=%s'''%self.mysql_backend)
+            _textid INT) ENGINE=%s'''%self.mysql_backend)
         self.sql('CREATE INDEX words_word_ids ON __words(_word)')
         self.sql('CREATE INDEX words_by_id ON __words (_textid)')
         self.sql('CREATE UNIQUE INDEX __textids_by_props ON '
@@ -467,7 +467,7 @@ class Database(Database):
 
     def create_multilink_table(self, spec, ml):
         sql = '''CREATE TABLE `%s_%s` (linkid VARCHAR(255),
-            nodeid VARCHAR(255)) TYPE=%s'''%(spec.classname, ml,
+            nodeid VARCHAR(255)) ENGINE=%s'''%(spec.classname, ml,
                 self.mysql_backend)
         self.sql(sql)
         self.create_multilink_table_indexes(spec, ml)
