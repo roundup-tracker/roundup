@@ -8,11 +8,11 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.32 2007-09-16 02:45:11 jpend Exp $
+# $Id: test_cgi.py,v 1.33 2007-10-05 03:07:14 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
-from roundup.cgi import client
+from roundup.cgi import client, actions, exceptions
 from roundup.cgi.exceptions import FormError
 from roundup.cgi.templating import HTMLItem
 from roundup.cgi.form_parser import FormParser
@@ -594,6 +594,41 @@ class FormTestCase(unittest.TestCase):
             ({('issue', None): {}, ('file', '-1'): {'content': 'foo',
             'name': 'foo.txt', 'type': 'text/plain'}},
             [('issue', None, 'files', [('file', '-1')])]))
+
+    #
+    # SECURITY
+    #
+    # XXX test all default permissions
+    def _make_client(self, form, classname='user', nodeid='2', userid='2'):
+        cl = client.Client(self.instance, None, {'PATH_INFO':'/'},
+            makeForm(form))
+        cl.classname = 'user'
+        cl.nodeid = '1'
+        cl.db = self.db
+        cl.userid = '2'
+        return cl
+
+    def testClassPermission(self):
+        cl = self._make_client(dict(username='bob'))
+        self.failUnlessRaises(exceptions.Unauthorised,
+            actions.EditItemAction(cl).handle)
+        cl.nodeid = '1'
+        self.assertRaises(exceptions.Unauthorised,
+            actions.EditItemAction(cl).handle)
+
+    def testCheckAndPropertyPermission(self):
+        self.db.security.permissions = {}
+        def own_record(db, userid, itemid): return userid == itemid
+        p = self.db.security.addPermission(name='Edit', klass='user',
+            check=own_record, properties=("password", ))
+        self.db.security.addPermissionToRole('User', p)
+
+        cl = self._make_client(dict(username='bob'))
+        self.assertRaises(exceptions.Unauthorised,
+            actions.EditItemAction(cl).handle)
+        cl = self._make_client({'password':'bob', '@confirm@password':'bob'})
+        self.failUnlessRaises(exceptions.Unauthorised,
+            actions.EditItemAction(cl).handle)
 
 def test_suite():
     suite = unittest.TestSuite()
