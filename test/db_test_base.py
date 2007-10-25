@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.90 2007-09-16 06:51:48 jpend Exp $
+# $Id: db_test_base.py,v 1.91 2007-10-25 05:24:50 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets, base64, os.path
 
@@ -55,7 +55,8 @@ def setupTracker(dirname, backend="anydbm"):
     except OSError, error:
         if error.errno not in (errno.ENOENT, errno.ESRCH): raise
     # create the instance
-    init.install(dirname, 'templates/classic')
+    init.install(dirname, os.path.join(os.path.dirname(__file__), '..',
+        'templates/classic'))
     init.write_select_db(dirname, backend)
     config.save(os.path.join(dirname, 'config.ini'))
     tracker = instance.open(dirname)
