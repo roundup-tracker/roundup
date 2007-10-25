@@ -36,7 +36,7 @@ Fixed:
   reindexing.
 - Turning off indexing for content properties of FileClass instance
   (e.g., "file" and "msg") now works for SQL backends.
-- Enabled over-riding of content-type in web interface (thanks  
+- Enabled over-riding of content-type in web interface (thanks
   John Mitchell)
 - Validate user timezones to filter bad entries (sf bug 1738470)
 - Classic template allows searching for issues with no topic set
@@ -59,11 +59,13 @@ Fixed:
 - allow CSV export of queries on selected issues (sf bug 1783492)
 - remove blobfiles on destroy (sf bug 1654132)
 - handle postgres exceptions during session cleanup (sf bug 1703116)
+- update Xapian indexer to use current API
+
 
 2007-02-15 1.3.3
 Fixed:
 - If-Modified-Since handling was broken
-- Updated documentation for customising hard-coded searches in page.html 
+- Updated documentation for customising hard-coded searches in page.html
 - Updated Windows installation docs (thanks Bo Berglund)
 - Handle rounding of seconds generating invalid date values
 - Handle 8-bit untranslateable messages from database properties
@@ -829,9 +831,9 @@ Fixed:
 - anonymous user can no longer edit or view itself (sf bug 828901).
 - corrected typo in installation.html (sf bug 822967).
 - clarified listTemplates docstring.
-- print a nicer error message when the address is already in use 
+- print a nicer error message when the address is already in use
   (sf bug 798659).
-- remove empty lines before sending strings off to the csv parser 
+- remove empty lines before sending strings off to the csv parser
   (sf bug 821364).
 - centralised conversion of user-input data to hyperdb values (sf bug
   802405, sf bug 817217, sf rfe 816994)
@@ -855,7 +857,7 @@ Cleanup:
 - tidied up forms in default stylesheet
 - force textareas to use monospace fonts, lessening surprise on the user
 - moved out parts of client.py to new modules:
-  * actions.py - the xxxAction and xxxPermission functions refactored into 
+  * actions.py - the xxxAction and xxxPermission functions refactored into
     Action classes
   * exceptions.py - all exceptions
   * form_parser.py - parsePropsFromForm & extractFormList in a FormParser
@@ -1013,7 +1015,7 @@ Fixed:
 - audit some user properties for valid values (roles, address) (sf bugs
   742968 and 739653)
 - fix HTML file detection (hence history xref linking) (sf bug 741478)
-- session database caches it's type, rather than calling whichdb each time 
+- session database caches it's type, rather than calling whichdb each time
   around.
 - changed rdbms_common to fix sql backends for new Boolean types under Py2.3
 
@@ -1048,7 +1050,7 @@ Feature:
   cc addresses, different from address and different nosy list property)
   (thanks John Rouillard)
 - applied patch for nicer history display (sf feature 638280)
-- cleaning old unused sessions only once per hour, not on every cgi 
+- cleaning old unused sessions only once per hour, not on every cgi
   request. It is greatly improves web interface performance, especially
   on trackers under high load
 - added mysql backend (see doc/mysql.txt for details)
@@ -1106,7 +1108,7 @@ Feature:
 
 Fixed:
 - applied unicode patch. All data is stored in utf-8. Incoming messages
-  converted from any encoding to utf-8, outgoing messages are encoded 
+  converted from any encoding to utf-8, outgoing messages are encoded
   according to rfc2822 (sf bug 568873)
 - fixed layout issues with forms in sidebar
 - fixed timelog example so it handles new issues (sf bug 678908)
@@ -1189,7 +1191,7 @@ Fixed:
 - handle :add: better in cgi form parsing (sf bug 663235)
 - handle all-whitespace multilink values in forms (sf bug 663855)
 - fixed searching on date / interval fields (sf bug 658157)
-- fixed form elements names in search form to allow grouping and sorting 
+- fixed form elements names in search form to allow grouping and sorting
   on "creation" field
 - display of saved queries is now performed correctly
 
@@ -1379,7 +1381,7 @@ Feature:
 -  daemonify roundup-server (fork, logfile, pidfile)
 -  modify cgitb to display PageTemplate errors better
 -  rename to "instance" to "tracker"
--  have roundup.cgi pick up tracker config from the environment 
+-  have roundup.cgi pick up tracker config from the environment
 -  revamped look and feel in web interface
 -  cleaned up stylesheet usage
 -  several bug fixes and documentation fixes
@@ -1413,7 +1415,7 @@ Feature:
      done in the default templates.
    - the regeneration of the indexes (if necessary) is done once the schema is
      set up in the dbinit.
-   - new "reindex" command in roundup-admin used to force regeneration of the 
+   - new "reindex" command in roundup-admin used to force regeneration of the
      index
 -  added email display function - mangles email addrs so they're not so easily
    scraped from the web
@@ -1491,7 +1493,7 @@ Fixed:
    wants to ignore
 -  fixed the example addresses in the templates to use correct example domains
 -  cleaned out the template stylesheets, removing a bunch of junk that really
-   wasn't necessary (font specs, styles never used) and added a style for 
+   wasn't necessary (font specs, styles never used) and added a style for
    message content
 -  build htmlbase if tests are run using CVS checkout
 -  #565979 ] code error in hyperdb.Class.find
@@ -1504,7 +1506,7 @@ Fixed:
 -  #565992 ] if ISSUE_TRACKER_WEB doesn't have the trailing '/', add it
 -  use the rfc822 module to ensure that every (oddball) email address and
    real-name is properly quoted
--  #558867 ] ZRoundup redirect /instance requests to /instance/ 
+-  #558867 ] ZRoundup redirect /instance requests to /instance/
 -  #569415 ] {version}
 -  #569178 ] type error
    was fixed as part of the general cleanup of reactors
@@ -1568,13 +1570,13 @@ Fixed:
 2002-01-24 - 0.4.0
 Feature:
 -  much nicer history display (actualy real handling of property types etc)
--  journal entries for link and mutlilink properties can be switched on or 
+-  journal entries for link and mutlilink properties can be switched on or
    off
 -  properties in change note are now sorted
 -  you can now use the roundup-admin tool pack the database
 
 Fixed:
--  the mail gateway now responds with an error message when invalid values 
+-  the mail gateway now responds with an error message when invalid values
    for arguments are specified for link or mutlilink properties
 -  modified unit test to check nosy and assignedto when specified as arguments
 -  handle attachments with no name (eg tnef)
@@ -1681,7 +1683,7 @@ Fixed:
 -  added tests for mailgw
 
 
-2001-11-23 - 0.3.0 
+2001-11-23 - 0.3.0
 Feature:
 -  #467129 ] Lossage when username=e-mail-address
 -  #473123 ] Change message generation for author
@@ -1989,7 +1991,7 @@ Features:
 -  Added the "classic" template - a direct implementation of the Roundup
    spec. Well, as close as we're going to get, anyway.
 -  Added an issue priority of support to "extended"
--  Added command-line arg handling to roundup-server so it's more useful 
+-  Added command-line arg handling to roundup-server so it's more useful
    out-of-the-box.
 -  Added distutils-style installation of "lib" files.
 -  Added some unit tests.

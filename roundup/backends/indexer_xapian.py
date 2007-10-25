@@ -1,4 +1,4 @@
-#$Id: indexer_xapian.py,v 1.5 2007-09-05 18:46:39 jpend Exp $
+#$Id: indexer_xapian.py,v 1.6 2007-10-25 07:02:42 richard Exp $
 ''' This implements the full-text indexer using the Xapian indexer.
 '''
 import re, os
@@ -113,7 +113,7 @@ class Indexer(IndexerBase):
         stemmer = xapian.Stem("english")
         terms = []
         for term in [word.upper() for word in wordlist if 26 > len(word) > 2]:
-            terms.append(stemmer.stem_word(term.upper()))
+            terms.append(stemmer(term.upper()))
         query = xapian.Query(xapian.Query.OP_AND, terms)
 
         enquire.set_query(query)
