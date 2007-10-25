@@ -24,7 +24,6 @@ Feature:
   sent by roundup
 - support for receiving OpenPGP MIME messages (signed or encrypted)
 
-
 Fixed:
 - Handling of unset Link search in RDBMS backend
 - Journal import/export for metakit backend
@@ -60,6 +59,8 @@ Fixed:
 - remove blobfiles on destroy (sf bug 1654132)
 - handle postgres exceptions during session cleanup (sf bug 1703116)
 - update Xapian indexer to use current API
+- handle export and import of old trackers that have data attached to
+  journal "create" events
 
 
 2007-02-15 1.3.3

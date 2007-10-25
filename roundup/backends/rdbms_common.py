@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.192 2007-09-27 06:18:53 jpend Exp $
+#$Id: rdbms_common.py,v 1.193 2007-10-25 07:26:11 richard Exp $
 """ Relational database (SQL) backend common code.
 
 Basics:
@@ -2537,6 +2537,9 @@ class Class(hyperdb.Class):
                             value = str(value)
                         export_data[propname] = value
                     params = export_data
+                elif action == 'create' and params:
+                    # old tracker with data stored in the create!
+                    params = {}
                 l = [nodeid, date, user, action, params]
                 r.append(map(repr, l))
         return r
@@ -2565,6 +2568,9 @@ class Class(hyperdb.Class):
                         pwd.unpack(value)
                         value = pwd
                     params[propname] = value
+            elif action == 'create' and params:
+                # old tracker with data stored in the create!
+                params = {}
             r.append((nodeid, date.Date(jdate), user, action, params))
 
         for nodeid, l in d.items():
