@@ -1,4 +1,4 @@
-#$Id: back_mysql.py,v 1.73 2007-09-28 15:26:10 jpend Exp $
+#$Id: back_mysql.py,v 1.74 2007-10-26 01:34:43 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -13,7 +13,7 @@
 How to implement AUTO_INCREMENT:
 
 mysql> create table foo (num integer auto_increment primary key, name
-varchar(255)) AUTO_INCREMENT=1 type=InnoDB;
+varchar(255)) AUTO_INCREMENT=1 ENGINE=InnoDB;
 
 ql> insert into foo (name) values ('foo5');
 Query OK, 1 row affected (0.00 sec)
@@ -392,7 +392,7 @@ class Database(Database):
 
         # create the base table
         scols = ','.join(['%s %s'%x for x in cols])
-        sql = 'create table _%s (%s) type=%s'%(spec.classname, scols,
+        sql = 'create table _%s (%s) ENGINE=%s'%(spec.classname, scols,
             self.mysql_backend)
         self.sql(sql)
 
@@ -453,7 +453,7 @@ class Database(Database):
             for x in 'nodeid date tag action params'.split()])
         sql = '''create table %s__journal (
             nodeid integer, date datetime, tag varchar(255),
-            action varchar(255), params text) type=%s'''%(
+            action varchar(255), params text) ENGINE=%s'''%(
             spec.classname, self.mysql_backend)
         self.sql(sql)
         self.create_journal_table_indexes(spec)
