@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: blobfiles.py,v 1.22 2007-09-16 06:51:48 jpend Exp $
+#$Id: blobfiles.py,v 1.23 2007-10-26 06:52:26 richard Exp $
 '''This module exports file storage for roundup backends.
 Files are stored into a directory hierarchy.
 '''
@@ -133,7 +133,7 @@ class FileStorage:
         '''Store the file as part of a transaction commit.
         '''
         # determine the name of the file to write to
-        name = self.filename(classname, nodeid, property)
+        name = self.filename(classname, nodeid, property, 1)
 
         # the file is currently ".tmp" - move it to its real name to commit
         if name.endswith('.tmp'):

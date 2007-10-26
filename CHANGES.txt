@@ -5,8 +5,8 @@ are given with the most recent entry first.
 Feature:
 - Roundup has a new xmlrpc frontend that gives access to a tracker using
   XMLRPC.
-- Dates can now be in the year-range 1-9999 except for metakit which is
-  still limited to 1970-2038.
+- Dates can now be in the year-range 1-9999
+- The metakit backend has been removed
 - Add simple anti-spam recipe to docs
 - Allow customisation of regular expressions used in email parsing, thanks
   Bruno Damour
@@ -26,7 +26,6 @@ Feature:
 
 Fixed:
 - Handling of unset Link search in RDBMS backend
-- Journal import/export for metakit backend
 - Journal export of anydbm didn't correctly export previously empty values
 - Fix handling of defaults for date fields
 - Fix <form> name in user editing to allow multilink popups to work
