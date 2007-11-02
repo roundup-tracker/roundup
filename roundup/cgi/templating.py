@@ -1792,7 +1792,10 @@ class LinkHTMLProperty(HTMLProperty):
             return ''
         linkcl = self._db.classes[self._prop.classname]
         k = linkcl.labelprop(1)
-        value = str(linkcl.get(self._value, k))
+        if num_re.match(self._value):
+            value = str(linkcl.get(self._value, k))
+        else :
+            value = self._value
         if escape:
             value = cgi.escape(value)
         return value
@@ -1811,7 +1814,7 @@ class LinkHTMLProperty(HTMLProperty):
             value = ''
         else:
             k = linkcl.getkey()
-            if k:
+            if k and num_re.match(self._value):
                 value = linkcl.get(self._value, k)
             else:
                 value = self._value
