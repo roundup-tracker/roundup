@@ -49,14 +49,15 @@ class RoundupRequest:
         self.tracker = tracker
         self.db = self.tracker.open('admin')
         try:
-            userid = self.db.user.lookup(username)
+            self.userid = self.db.user.lookup(username)
         except KeyError: # No such user
             self.db.close()
-            raise Unauthorised, 'Invalid user.'
-        stored = self.db.user.get(userid, 'password')
-        if stored != password: # Wrong password
+            raise Unauthorised, 'Invalid user'
+        stored = self.db.user.get(self.userid, 'password')
+        if stored != password:
+            # Wrong password
             self.db.close()
-            raise Unauthorised, 'Invalid user.'
+            raise Unauthorised, 'Invalid user'
         self.db.setCurrentUser(username)
 
     def close(self):
@@ -112,30 +113,41 @@ class RoundupServer:
         self.tracker = roundup.instance.open(tracker)
         self.verbose = verbose
 
-    def list(self, username, password, classname, propname = None):
-
+    def list(self, username, password, classname, propname=None):
         r = RoundupRequest(self.tracker, username, password)
         cl = r.get_class(classname)
         if not propname:
             propname = cl.labelprop()
-        result = [cl.get(id, propname) for id in cl.list()]
+        def has_perm(itemid):
+            return True
+            r.db.security.hasPermission('View', r.userid, classname,
+                itemid=itemid, property=propname)
+        result = [cl.get(id, propname) for id in cl.list()
+            if has_perm(id)]
         r.close()
         return result
 
     def display(self, username, password, designator, *properties):
-
         r = RoundupRequest(self.tracker, username, password)
-        classname, nodeid = hyperdb.splitDesignator(designator)
+        classname, itemid = hyperdb.splitDesignator(designator)
+
+        if not r.db.security.hasPermission('View', r.userid, classname,
+                itemid=itemid):
+            raise Unauthorised('Permission to view %s denied'%designator)
+
         cl = r.get_class(classname)
         props = properties and list(properties) or cl.properties.keys()
         props.sort()
-        result = [(property, cl.get(nodeid, property)) for property in props]
+        result = [(property, cl.get(itemid, property)) for property in props]
         r.close()
         return dict(result)
 
     def create(self, username, password, classname, *args):
-
         r = RoundupRequest(self.tracker, username, password)
+
+        if not r.db.security.hasPermission('Create', r.userid, classname):
+            raise Unauthorised('Permission to create %s denied'%classname)
+
         cl = r.get_class(classname)
 
         # convert types
@@ -157,9 +169,13 @@ class RoundupServer:
         return result
 
     def set(self, username, password, designator, *args):
-
         r = RoundupRequest(self.tracker, username, password)
         classname, itemid = hyperdb.splitDesignator(designator)
+
+        if not r.db.security.hasPermission('Edit', r.userid, classname,
+                itemid=itemid):
+            raise Unauthorised('Permission to edit %s denied'%designator)
+
         cl = r.get_class(classname)
 
         # convert types
