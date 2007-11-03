@@ -13,7 +13,7 @@ steps.
 
 .. contents::
 
-Migrating from 1.3.3 to 1.3.4
+Migrating from 1.3.3 to 1.4.0
 =============================
 
 Value of the "refwd_re" tracker configuration option (section "mailgw")

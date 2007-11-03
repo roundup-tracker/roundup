@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.97 2007-02-15 04:02:43 richard Exp $
+# $Id: setup.py,v 1.98 2007-11-03 00:56:51 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -352,19 +352,32 @@ def main():
 '''In this release
 ===============
 
-Fixed in 1.3.3:
+The metakit backend has been removed due to lack of maintenance and
+presence of good alternatives (in particular sqlite built into Python 2.5)
 
-- If-Modified-Since handling was broken
-- Updated documentation for customising hard-coded searches in page.html 
-- Updated Windows installation docs (thanks Bo Berglund)
-- Handle rounding of seconds generating invalid date values
-- Handle 8-bit untranslateable messages from database properties
-- Fix scripts/roundup-reminder date calculation (sf bug 1649979)
-- Improved due_date and timelog customisation docs (sf bug 1625124)
+New Features in 1.4.0:
 
-New Features in 1.3.0:
+- Roundup has a new xmlrpc frontend that gives access to a tracker using
+  XMLRPC.
+- Dates can now be in the year-range 1-9999
+- Add simple anti-spam recipe to docs
+- Allow customisation of regular expressions used in email parsing, thanks
+  Bruno Damour
+- Italian translation by Marco Ghidinelli
+- Multilinks take any iterable
+- config option: specify port and local hostname for SMTP connections
+- Tracker index templating (i.e. when roundup_server is serving multiple
+  trackers) (sf bug 1058020)
+- config option: Limit nosy attachments based on size (Philipp Gortan)
+- roundup_server supports SSL via pyopenssl
+- templatable 404 not found messages (sf bug 1403287)
+- Unauthorized email includes a link to the registration page for
+  the tracker
+- config options: control whether author info/email is included in email
+  sent by roundup
+- support for receiving OpenPGP MIME messages (signed or encrypted)
 
-- WSGI support via roundup.cgi.wsgi_handler
+There's also a ton of bugfixes.
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.

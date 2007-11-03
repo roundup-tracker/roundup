@@ -14,8 +14,8 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-# $Id: __init__.py,v 1.46 2007-02-15 04:02:43 richard Exp $
+#
+# $Id: __init__.py,v 1.47 2007-11-03 00:56:52 richard Exp $
 
 '''Roundup - issue tracking for knowledge workers.
 
@@ -27,14 +27,14 @@ Roundup manages a number of issues (with properties such as
 new issues, (b) find and edit existing issues, and (c) discuss issues with
 other participants. The system will facilitate communication among the
 participants by managing discussions and notifying interested parties when
-issues are edited. 
+issues are edited.
 
 Roundup's structure is that of a cake::
 
   _________________________________________________________________________
  |  E-mail Client   |   Web Browser   |   Detector Scripts   |    Shell    |
  |------------------+-----------------+----------------------+-------------|
- |   E-mail User    |    Web User     |      Detector        |   Command   | 
+ |   E-mail User    |    Web User     |      Detector        |   Command   |
  |-------------------------------------------------------------------------|
  |                         Roundup Database Layer                          |
  |-------------------------------------------------------------------------|
@@ -68,6 +68,6 @@ much prettier cake :)
 '''
 __docformat__ = 'restructuredtext'
 
-__version__ = '1.3.3'
+__version__ = '1.4.0'
 
 # vim: set filetype=python ts=4 sw=4 et si
