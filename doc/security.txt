@@ -1,0 +1,159 @@
+===================
+Security Mechanisms
+===================
+
+:Version: $Revision: 1.16 $
+
+Current situation
+=================
+
+Current logical controls:
+
+ANONYMOUS_ACCESS = 'deny'
+ Deny or allow anonymous access to the web interface
+ANONYMOUS_REGISTER = 'deny'
+ Deny or allow anonymous users to register through the web interface
+ANONYMOUS_REGISTER_MAIL = 'deny'
+ Deny or allow anonymous users to register through the mail interface
+
+Current user interface authentication and controls:
+
+- command-line tool access controlled with passwords, but no logical controls
+- CGI access is by username and password and has some logical controls
+- mailgw access is through identification using sender email address, with
+  limited functionality available
+
+The web interface implements has specific logical controls,
+preventing non-admin users from accessing:
+
+ - other user's details pages
+ - listing the base classes (not issues or their user page)
+ - editing base classes
+
+Issues
+======
+
+1. The current implementation is ad-hoc, and not complete for all `use cases`_.
+2. Currently it is not possible to allow submission of issues through email
+   but restrict those users from accessing the web interface.
+3. Only one user may perform admin functions.
+4. There is no verification of users in the mail gateway by any means other
+   than the From address. Support for strong identification through digital
+   signatures should be added.
+5. The command-line tool has no logical controls.
+6. The anonymous control needs revising - there should only be one way to be
+   an anonymous user, not two (currently there is user==None and
+   user=='anonymous').
+
+
+Possible approaches
+===================
+
+Security controls in Roundup could be approached in three ways:
+
+1) at the hyperdb level, with read/write/modify permissions on classes, items
+   and item properties for all or specific transitions.
+2) at the user interface level, with access permissions on CGI interface
+   methods, mailgw methods, roundup-admin methods, and so on.
+3) at a logical permission level, checked as needed.
+
+In all cases, the security built into roundup assumes restricted access to the
+hyperdatabase itself, through Operating System controls such as user or group
+permissions.
+
+
+Hyperdb-level control
+---------------------
+
+Control is implemented at the Class.get, Class.set and Class.create level. All
+other methods must access items through these methods. Since all accesses go
+through the database, we can implement deny by default.
+
+Pros:
+
+   - easier to implement as it only affects one module
+   - smaller number of permissions to worry about
+
+Cons:
+
+   - harder to determine the relationship between user interaction and hyperdb
+     permission.
+   - a lot of work to define
+   - must special-case to handle by-item permissions (editing user details,
+     having private messages)
+
+
+User-interface control
+----------------------
+
+The user interfaces would have an extra layer between that which
+parses the request to determine action and the action method. This layer
+controls access. Since it is possible to require methods be registered
+with the security mechanisms to be accessed by the user, deny by default
+is possible.
+
+Pros:
+
+   - much more obvious at the user level what the controls are
+
+Cons:
+
+   - much more work to implement
+   - most user interfaces have multiple uses which can't be covered by a
+     single permission
+
+Logical control
+---------------
+
+At each point that requires an action to be performed, the security mechanisms
+are asked if the current user has permission. Since code must call the
+check function to raise a denial, there is no possibility to have automatic
+default of deny in this situation.
+
+Pros:
+
+   - quite obvious what is going on
+   - is very similar to the current system
+
+Cons:
+
+   - large number of possible permissions that may be defined, possibly
+     mirroring actual user interface controls.
+   - access to the hyperdb must be strictly controlled through program code
+     that implements the logical controls.
+
+
+Action
+======
+
+The CGI interface must be changed to:
+
+- authenticate over a secure connection
+- use unique tokens as a result of authentication, rather than pass the user's
+  real credentials (username/password) around for each request (this means
+  sessions and hence a session database)
+- use the new logical control mechanisms
+
+  - implement the permission module
+  - implement a Role editing interface for users
+  - implement htmltemplate tests on permissions
+  - switch all code over from using config vars for permission checks to using
+    permissions
+  - change all explicit admin user checks for Role checks
+  - include config vars for initial Roles for anonymous web, new web and new
+    email users
+
+The mail gateway must be changed to:
+
+- use digital signatures
+- use the new logical control mechanisms
+
+  - switch all code over from using config vars for permission checks to using
+    permissions
+
+The command-line tool must be changed to:
+
+- use the new logical control mechanisms (only allowing write
+  access by admin users, and read-only by everyone else)
+
+
