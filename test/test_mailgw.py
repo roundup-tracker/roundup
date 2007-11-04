@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.89 2007-09-12 21:11:14 jpend Exp $
+# $Id: test_mailgw.py,v 1.90 2007-11-04 06:11:19 richard Exp $
 
 # TODO: test bcc
 
@@ -447,14 +447,13 @@ _______________________________________________________________________
         self.db.commit()
         self.db.issue.nosymessage('1', None, oldvalues)
 
-
         new_mail = ""
         for line in self._get_mail().split("\n"):
             if "Message-Id: " in line:
                 continue
             if "Date: " in line:
                 continue
-            new_mail+=line+"\n"
+            new_mail += line+"\n"
 
         self.compareMessages(new_mail, """
 FROM: roundup-admin@your.tracker.email.domain.example
@@ -482,7 +481,7 @@ Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 <http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
 _______________________________________________________________________
 """)
-        
+
 
     #
     # FOLLOWUP TITLE MATCH

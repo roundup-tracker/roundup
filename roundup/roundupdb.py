@@ -16,7 +16,7 @@ from __future__ import nested_scopes
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.133 2007-09-16 02:45:11 jpend Exp $
+# $Id: roundupdb.py,v 1.134 2007-11-04 06:11:18 richard Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -304,8 +304,7 @@ class IssueClass:
 
         # add author information
         if authid and self.db.config.MAIL_ADD_AUTHORINFO:
-            if len(self.get(nodeid,'messages')) == 1:
-                
+            if msgid and len(self.get(nodeid, 'messages')) == 1:
                 m.append(_("New submission from %(authname)s%(authaddr)s:")
                     % locals())
             elif msgid:
