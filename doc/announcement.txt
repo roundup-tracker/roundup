@@ -1,7 +1,10 @@
-I'm proud to release version 1.4.0 of Roundup.
+I'm proud to release version 1.4.1 of Roundup.
 
 The metakit backend has been removed due to lack of maintenance and
 presence of good alternatives (in particular sqlite built into Python 2.5)
+
+Release 1.4.1 removes an old trace of the metakit backend that was
+preventing new tracker installation.
 
 New Features in 1.4.0:
 

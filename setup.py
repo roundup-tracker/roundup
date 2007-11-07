@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.98 2007-11-03 00:56:51 richard Exp $
+# $Id: setup.py,v 1.99 2007-11-07 21:24:24 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -354,6 +354,9 @@ def main():
 
 The metakit backend has been removed due to lack of maintenance and
 presence of good alternatives (in particular sqlite built into Python 2.5)
+
+Release 1.4.1 removes an old trace of the metakit backend that was
+preventing new tracker installation.
 
 New Features in 1.4.0:
 
