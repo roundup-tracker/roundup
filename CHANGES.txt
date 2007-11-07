@@ -1,6 +1,11 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2007-11-?? 1.4.1
+Fixed:
+- Removed some metakit references
+
+
 2007-11-04 1.4.0
 Feature:
 - Roundup has a new xmlrpc frontend that gives access to a tracker using

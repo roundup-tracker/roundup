@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: __init__.py,v 1.39 2006-10-09 23:49:32 richard Exp $
+# $Id: __init__.py,v 1.40 2007-11-07 20:47:12 richard Exp $
 
 '''Container for the hyperdb storage backend implementations.
 '''
@@ -80,7 +80,7 @@ def list_backends():
 
     '''
     l = []
-    for name in 'anydbm', 'mysql', 'sqlite', 'metakit', 'postgresql':
+    for name in 'anydbm', 'mysql', 'sqlite', 'postgresql':
         if have_backend(name):
             l.append(name)
     return l

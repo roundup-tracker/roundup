@@ -16,7 +16,7 @@ from __future__ import nested_scopes
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.134 2007-11-04 06:11:18 richard Exp $
+# $Id: roundupdb.py,v 1.135 2007-11-07 20:47:12 richard Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -322,16 +322,9 @@ class IssueClass:
         message_files = []
         if msgid :
             for fileid in messages.get(msgid, 'files') :
-                # try to avoid reading in the file contents just to check the size
-                # backends that inherit from blobfiles.FileStorage have a filename class
-                if hasattr(self.db, 'filename'):
-                    filename = self.db.filename('file', fileid, None)
-                    filesize = os.path.getsize(filename)
-                else:
-                    # metakit doesn't inherit from FileStorage so we read the
-                    # full file contents to get the size :-/
-                    filesize = len(self.db.file.get(fileid, 'content'))
-
+                # check the attachment size
+                filename = self.db.filename('file', fileid, None)
+                filesize = os.path.getsize(filename)
                 if filesize <= self.db.config.NOSY_MAX_ATTACHMENT_SIZE:
                     message_files.append(fileid)
                 else:
