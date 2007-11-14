@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.91 2007-11-14 14:57:47 schlatterbeck Exp $
+# $Id: test_mailgw.py,v 1.92 2007-11-14 16:19:41 schlatterbeck Exp $
 
 # TODO: test bcc
 
@@ -1170,7 +1170,7 @@ SnVzdCBhIHRlc3QgAQo=
         messages.sort()
         file = self.db.file.getnode (self.db.msg.get(messages[-1], 'files')[0])
         self.assertEqual(file.name, 'main.dvi')
-        self.assertEqual(file.content, 'Just a test \001')
+        self.assertEqual(file.content, 'Just a test \001\n')
 
     def testFollowupStupidQuoting(self):
         self.doNewIssue()
