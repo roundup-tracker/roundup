@@ -1,7 +1,7 @@
 """Sending Roundup-specific mail over SMTP.
 """
 __docformat__ = 'restructuredtext'
-# $Id: mailer.py,v 1.20 2007-09-20 19:42:48 jpend Exp $
+# $Id: mailer.py,v 1.21 2007-11-14 05:53:20 jpend Exp $
 
 import time, quopri, os, socket, smtplib, re, sys, traceback
 
@@ -33,8 +33,13 @@ class Mailer:
 
         # set timezone so that things like formatdate(localtime=True)
         # use the configured timezone
-        os.environ['TZ'] = get_timezone(self.config.TIMEZONE).tzname(None)
-        time.tzset()
+        # apparently tzset doesn't exist in python under Windows, my bad.
+        # my pathetic attempts at googling a Windows-solution failed
+        # so if you're on Windows your mail won't use your configured
+        # timezone.
+        if hasattr(time, 'tzset'):
+            os.environ['TZ'] = get_timezone(self.config.TIMEZONE).tzname(None)
+            time.tzset()
 
     def get_standard_message(self, to, subject, author=None):
         '''Form a standard email message from Roundup.
