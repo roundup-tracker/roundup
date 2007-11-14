@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.49 2007-09-26 03:20:21 jpend Exp $
+# $Id: configuration.py,v 1.50 2007-11-14 14:57:47 schlatterbeck Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -716,6 +716,12 @@ SETTINGS = (
             "Regular expression matching end of line."),
         (RegExpOption, "blankline_re", r"[\r\n]+\s*[\r\n]+",
             "Regular expression matching a blank line."),
+        (BooleanOption, "ignore_alternatives", "no",
+            "When parsing incoming mails, roundup uses the first\n"
+            "text/plain part it finds. If this part is inside a\n"
+            "multipart/alternative, and this option is set, all other\n"
+            "parts of the multipart/alternative are ignored. The default\n"
+            "is to keep all parts and attach them to the issue."),
     ), "Roundup Mail Gateway options"),
     ("pgp", (
         (BooleanOption, "enable", "no",

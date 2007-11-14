@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.90 2007-11-04 06:11:19 richard Exp $
+# $Id: test_mailgw.py,v 1.91 2007-11-14 14:57:47 schlatterbeck Exp $
 
 # TODO: test bcc
 
@@ -340,14 +340,106 @@ Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 _______________________________________________________________________
 ''')
 
-    # BUG
-    # def testMultipart(self):
-    #         '''With more than one part'''
-    #        see MultipartEnc tests: but if there is more than one part
-    #        we return a multipart/mixed and the boundary contains
-    #        the ip address of the test machine.
+    multipart_msg = '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: mary <mary@test.test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: [issue1] Testing...
+Content-Type: multipart/mixed; boundary="bxyzzy"
+Content-Disposition: inline
 
-    # BUG should test some binary attamchent too.
+
+--bxyzzy
+Content-Type: multipart/alternative; boundary="bCsyhTFzCvuiizWE"
+Content-Disposition: inline
+
+--bCsyhTFzCvuiizWE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+test attachment first text/plain
+
+--bCsyhTFzCvuiizWE
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename="first.dvi"
+Content-Transfer-Encoding: base64
+
+SnVzdCBhIHRlc3QgAQo=
+
+--bCsyhTFzCvuiizWE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+test attachment second text/plain
+
+--bCsyhTFzCvuiizWE
+Content-Type: text/html
+Content-Disposition: inline
+
+<html>
+to be ignored.
+</html>
+
+--bCsyhTFzCvuiizWE--
+
+--bxyzzy
+Content-Type: multipart/alternative; boundary="bCsyhTFzCvuiizWF"
+Content-Disposition: inline
+
+--bCsyhTFzCvuiizWF
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+test attachment third text/plain
+
+--bCsyhTFzCvuiizWF
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename="second.dvi"
+Content-Transfer-Encoding: base64
+
+SnVzdCBhIHRlc3QK
+
+--bCsyhTFzCvuiizWF--
+
+--bxyzzy--
+'''
+
+    def testMultipartKeepAlternatives(self):
+        self.doNewIssue()
+        self._handle_mail(self.multipart_msg)
+        messages = self.db.issue.get('1', 'messages')
+        messages.sort()
+        msg = self.db.msg.getnode (messages[-1])
+        assert(len(msg.files) == 5)
+        names = {0 : 'first.dvi', 4 : 'second.dvi'}
+        content = {3 : 'test attachment third text/plain\n',
+                   4 : 'Just a test\n'}
+        for n, id in enumerate (msg.files):
+            f = self.db.file.getnode (id)
+            self.assertEqual(f.name, names.get (n, 'unnamed'))
+            if n in content :
+                self.assertEqual(f.content, content [n])
+        self.assertEqual(msg.content, 'test attachment second text/plain')
+
+    def testMultipartDropAlternatives(self):
+        self.doNewIssue()
+        self.db.config.MAILGW_IGNORE_ALTERNATIVES = True
+        self._handle_mail(self.multipart_msg)
+        messages = self.db.issue.get('1', 'messages')
+        messages.sort()
+        msg = self.db.msg.getnode (messages[-1])
+        assert(len(msg.files) == 2)
+        names = {1 : 'second.dvi'}
+        content = {0 : 'test attachment third text/plain\n',
+                   1 : 'Just a test\n'}
+        for n, id in enumerate (msg.files):
+            f = self.db.file.getnode (id)
+            self.assertEqual(f.name, names.get (n, 'unnamed'))
+            if n in content :
+                self.assertEqual(f.content, content [n])
+        self.assertEqual(msg.content, 'test attachment second text/plain')
 
     def testSimpleFollowup(self):
         self.doNewIssue()
@@ -1068,15 +1160,17 @@ test attachment binary
 --bCsyhTFzCvuiizWE
 Content-Type: application/octet-stream
 Content-Disposition: attachment; filename="main.dvi"
+Content-Transfer-Encoding: base64
 
-xxxxxx
+SnVzdCBhIHRlc3QgAQo=
 
 --bCsyhTFzCvuiizWE--
 ''')
         messages = self.db.issue.get('1', 'messages')
         messages.sort()
-        file = self.db.msg.get(messages[-1], 'files')[0]
-        self.assertEqual(self.db.file.get(file, 'name'), 'main.dvi')
+        file = self.db.file.getnode (self.db.msg.get(messages[-1], 'files')[0])
+        self.assertEqual(file.name, 'main.dvi')
+        self.assertEqual(file.content, 'Just a test \001')
 
     def testFollowupStupidQuoting(self):
         self.doNewIssue()

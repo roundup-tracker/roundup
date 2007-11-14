@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.192 2007-09-26 03:20:21 jpend Exp $
+$Id: mailgw.py,v 1.193 2007-11-14 14:57:47 schlatterbeck Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -346,8 +346,13 @@ class Message(mimetools.Message):
     # multipart/form-data:
     #   For web forms only.
 
-    def extract_content(self, parent_type=None):
-        """Extract the body and the attachments recursively."""
+    def extract_content(self, parent_type=None, ignore_alternatives = False):
+        """Extract the body and the attachments recursively.
+        
+           If the content is hidden inside a multipart/alternative part,
+           we use the *last* text/plain part of the *first*
+           multipart/alternative in the whole message.
+        """
         content_type = self.gettype()
         content = None
         attachments = []
@@ -355,17 +360,35 @@ class Message(mimetools.Message):
         if content_type == 'text/plain':
             content = self.getbody()
         elif content_type[:10] == 'multipart/':
+            content_found = bool (content)
+            ig = ignore_alternatives and not content_found
             for part in self.getparts():
-                new_content, new_attach = part.extract_content(content_type)
+                new_content, new_attach = part.extract_content(content_type,
+                    not content and ig)
 
                 # If we haven't found a text/plain part yet, take this one,
                 # otherwise make it an attachment.
                 if not content:
                     content = new_content
+                    cpart   = part
                 elif new_content:
-                    attachments.append(part.as_attachment())
+                    if content_found or content_type != 'multipart/alternative':
+                        attachments.append(part.text_as_attachment())
+                    else:
+                        # if we have found a text/plain in the current
+                        # multipart/alternative and find another one, we
+                        # use the first as an attachment (if configured)
+                        # and use the second one because rfc 2046, sec.
+                        # 5.1.4. specifies that later parts are better
+                        # (thanks to Philipp Gortan for pointing this
+                        # out)
+                        attachments.append(cpart.text_as_attachment())
+                        content = new_content
+                        cpart   = part
 
                 attachments.extend(new_attach)
+            if ig and content_type == 'multipart/alternative' and content:
+                attachments = []
         elif (parent_type == 'multipart/signed' and
               content_type == 'application/pgp-signature'):
             # ignore it so it won't be saved as an attachment
@@ -373,6 +396,20 @@ class Message(mimetools.Message):
         else:
             attachments.append(self.as_attachment())
         return content, attachments
+
+    def text_as_attachment(self):
+        """Return first text/plain part as Message"""
+        if not self.gettype().startswith ('multipart/'):
+            return self.as_attachment()
+        for part in self.getparts():
+            content_type = part.gettype()
+            if content_type == 'text/plain':
+                return part.as_attachment()
+            elif content_type.startswith ('multipart/'):
+                p = part.text_as_attachment()
+                if p:
+                    return p
+        return None
 
     def as_attachment(self):
         """Return this message as an attachment."""
@@ -1204,7 +1241,8 @@ Subject was: "%(subject)s"
 This tracker has been configured to require all email be PGP signed or
 encrypted.""")
         # now handle the body - find the message
-        content, attachments = message.extract_content()
+        ig = self.instance.config.MAILGW_IGNORE_ALTERNATIVES
+        content, attachments = message.extract_content(ignore_alternatives = ig)
         if content is None:
             raise MailUsageError, _("""
 Roundup requires the submission to be plain text. The message parser could

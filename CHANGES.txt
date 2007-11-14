@@ -4,6 +4,9 @@ are given with the most recent entry first.
 2007-11-?? 1.4.1
 Fixed:
 - Removed some metakit references
+- New config option in mail section: ignore_alternatives allows to
+  ignore alternatives besides the text/plain part used for the content
+  of a message in multipart/alternative attachments.
 
 
 2007-11-04 1.4.0
