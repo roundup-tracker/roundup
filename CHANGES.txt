@@ -7,6 +7,7 @@ Fixed:
 - New config option in mail section: ignore_alternatives allows to
   ignore alternatives besides the text/plain part used for the content
   of a message in multipart/alternative attachments.
+- Handle no time.tzset under Windows (sf #1825643)
 
 
 2007-11-04 1.4.0
