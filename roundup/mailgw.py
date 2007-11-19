@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.193 2007-11-14 14:57:47 schlatterbeck Exp $
+$Id: mailgw.py,v 1.194 2007-11-19 20:45:57 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -764,12 +764,15 @@ class MailGW:
 
             # bounce the message back to the sender with the error message
             # let the admin know that something very bad is happening
-            sendto = [sendto[0][1], self.instance.config.ADMIN_EMAIL]
             m = ['']
             m.append('An unexpected error occurred during the processing')
             m.append('of your message. The tracker administrator is being')
             m.append('notified.\n')
-            self.mailer.bounce_message(message, sendto, m)
+            self.mailer.bounce_message(message, sendto[0][1], m)
+
+            m.append('----------------')
+            m.append(traceback.format_exc())
+            self.mailer.bounce_message(message, [self.instance.config.ADMIN_EMAIL], m)
 
     def handle_message(self, message):
         ''' message - a Message instance

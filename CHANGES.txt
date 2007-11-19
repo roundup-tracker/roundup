@@ -1,13 +1,19 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2007-11-?? 1.4.1
-Fixed:
-- Removed some metakit references
+2007-??-?? 1.4.2
+Feature:
 - New config option in mail section: ignore_alternatives allows to
   ignore alternatives besides the text/plain part used for the content
   of a message in multipart/alternative attachments.
 - Handle no time.tzset under Windows (sf #1825643)
+- Admin copy of error email from mailgw includes traceback (thanks Ulrik
+  Mikaelsson)
+
+
+2007-11-09 1.4.1
+Fixed:
+- Removed some metakit references
 
 
 2007-11-04 1.4.0
