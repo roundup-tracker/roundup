@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.128 $
+:Version: $Revision: 1.129 $
 
 .. contents::
    :depth: 2
@@ -160,7 +160,7 @@ for these locations, eg. being root on unix::
 
 If you would like to place the Roundup scripts in a directory other
 than ``/usr/bin``, then specify the preferred location with
-``--install-script``. For example, to install them in
+``--install-scripts``. For example, to install them in
 ``/opt/roundup/bin``::
 
     python setup.py install --install-scripts=/opt/roundup/bin

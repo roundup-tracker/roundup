@@ -31,11 +31,14 @@ directory.
 Upgrading
 =========
 For upgrading instructions, please see upgrading.txt in the "doc" directory.
-
+ 
 
 Usage and Other Information
 ===========================
 See the index.txt file in the "doc" directory.
+The *.txt files in the "doc" directory are written in reStructedText. If
+you have rst2html installed (part of the docutils suite) you can convert
+these to HTML by running "make html" in the "doc" directory.
 
 
 License

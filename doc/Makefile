@@ -10,7 +10,9 @@ SOURCE = announcement.txt customizing.txt developers.txt FAQ.txt features.txt \
 COMPILED := $(SOURCE:.txt=.html)
 WEBHT := $(SOURCE:.txt=.ht)
 
-all: ${COMPILED} ${WEBHT}
+html: ${COMPILED}
+ht: ${WEBHT}
+all: html ht
 
 website: ${WEBHT}
 	cp *.ht ${WEBDIR}
