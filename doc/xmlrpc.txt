@@ -80,7 +80,7 @@ sample python client
         {'assignedto' : None, 'files' : [], 'title' = 'yes, ..... }
         >>> roundup_server.display('issue1', 'priority', 'status')
         {'priority' : '1', 'status' : '2'}
-        >>> roundup_server.set('issue1', 'status=3'
+        >>> roundup_server.set('issue1', 'status=3')
         >>> roundup_server.display('issue1', 'status')
         {'status' : '3' }
         >>> roundup_server.create('issue', "title='another bug'", "status=2")
