@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: test_dates.py,v 1.41 2007-03-12 17:53:38 schlatterbeck Exp $
+# $Id: test_dates.py,v 1.42 2007-12-20 01:01:49 richard Exp $
 from __future__ import nested_scopes
 
 import unittest
@@ -466,9 +466,25 @@ class TimezoneTestCase(unittest.TestCase):
         date = Date(date, tz)
         ae(str(date), '2006-01-01.11:00:00')
 
+class RangeTestCase(unittest.TestCase):
+    def testRange(self):
+        ae = self.assertEqual
+        r = Range('2006', Date)
+        ae(str(r.from_value), '2006-01-01.00:00:00')
+        ae(str(r.to_value), '2006-12-31.23:59:59')
+        # XXX this is probably in the calendar module
+        days = (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+        for i in range(1, 13):
+            print i
+            r = Range('2006-%02d'%i, Date)
+            ae(str(r.from_value), '2006-%02d-01.00:00:00'%i)
+            ae(str(r.to_value), '2006-%02d-%02d.23:59:59'%(i, days[i-1]))
+
+
 def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(DateTestCase))
+    suite.addTest(unittest.makeSuite(RangeTestCase))
     try:
         import pytz
     except ImportError:

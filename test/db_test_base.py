@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.92 2007-10-26 06:52:26 richard Exp $
+# $Id: db_test_base.py,v 1.93 2007-12-20 01:01:49 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets, base64, os.path
 
@@ -1184,14 +1184,25 @@ class DBTest(MyTestCase):
         ae(filt(None, {'deadline': '2003-02-16;'}), ['1', '3', '4'])
 
     def testFilteringRangeYearMonthDay(self):
-        ae, filt = self.filteringSetup()
         ae(filt(None, {'deadline': '2002'}), [])
         ae(filt(None, {'deadline': '2003'}), ['1', '2', '3'])
         ae(filt(None, {'deadline': '2004'}), ['4'])
-        ae(filt(None, {'deadline': '2003-02'}), ['1', '3'])
-        ae(filt(None, {'deadline': '2003-03'}), [])
         ae(filt(None, {'deadline': '2003-02-16'}), ['1'])
         ae(filt(None, {'deadline': '2003-02-17'}), [])
+
+    def testFilteringRangeMonths(self):
+        ae, filt = self.filteringSetup()
+        for month in range(1, 5): #13):
+            print 'MONTH', month
+            for n in range(1, month+1):
+                i = self.db.issue.create(title='%d.%d'%(month, n),
+                    deadline=date.Date('2004-%02d-%02d.00:00'%(month, n)))
+                print 'CREATE', i, self.db.issue.get(i, 'deadline')
+        self.db.commit()
+
+        for month in range(1, 13):
+            r = filt(None, dict(deadline='2004-%02d'%month))
+            assert len(r) == month, 'month %d != length %d'%(month, len(r))
 
     def testFilteringRangeInterval(self):
         ae, filt = self.filteringSetup()
