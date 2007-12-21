@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.93 2007-12-20 01:01:49 richard Exp $
+# $Id: db_test_base.py,v 1.94 2007-12-21 11:21:08 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets, base64, os.path
 
@@ -1184,6 +1184,7 @@ class DBTest(MyTestCase):
         ae(filt(None, {'deadline': '2003-02-16;'}), ['1', '3', '4'])
 
     def testFilteringRangeYearMonthDay(self):
+        ae, filt = self.filteringSetup()
         ae(filt(None, {'deadline': '2002'}), [])
         ae(filt(None, {'deadline': '2003'}), ['1', '2', '3'])
         ae(filt(None, {'deadline': '2004'}), ['4'])

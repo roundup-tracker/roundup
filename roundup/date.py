@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: date.py,v 1.92 2007-03-14 15:07:24 schlatterbeck Exp $
+# $Id: date.py,v 1.93 2007-12-21 11:21:08 richard Exp $
 
 """Date, time and time interval handling.
 """
@@ -33,13 +33,18 @@ except ImportError:
 
 from roundup import i18n
 
-def _add_granularity(src, order, value = 1):
+def _add_granularity(src, order, value=1):
     '''Increment first non-None value in src dictionary ordered by 'order'
     parameter
     '''
     for gran in order:
         if src[gran]:
             src[gran] = int(src[gran]) + value
+            # XXX test and handle other cases
+            if gran == 'm' and src['m'] > 12:
+                y, m = divmod(src['m'], 12)
+                src['m'] = m
+                src['y'] = int(src['y']) + y
             break
 
 # no, I don't know why we must anchor the date RE when we only ever use it

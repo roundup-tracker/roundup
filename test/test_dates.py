@@ -15,16 +15,29 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: test_dates.py,v 1.42 2007-12-20 01:01:49 richard Exp $
+# $Id: test_dates.py,v 1.43 2007-12-21 11:21:09 richard Exp $
 from __future__ import nested_scopes
 
 import unittest
 import time
 import datetime
+import calendar
 
-from roundup.date import Date, Interval, Range, fixTimeOverflow, get_timezone
+from roundup.date import Date, Interval, Range, fixTimeOverflow, \
+    get_timezone, _add_granularity
+
 
 class DateTestCase(unittest.TestCase):
+    def testAddGranularity(self):
+        def d(m=None, d=None, H=None, M=None, S=None, value=1):
+            d = dict(y='2006', m=m, d=d, H=H, M=M, S=S)
+            _add_granularity(d, 'SMHdmy', value)
+            return d
+        ae = self.assertEqual
+        ae(d(), dict(y=2007, m=None, d=None, H=None, M=None, S=None))
+        ae(d(m='1'), dict(y='2006', m=2, d=None, H=None, M=None, S=None))
+        ae(d(m='12'), dict(y=2007, m=1, d=None, H=None, M=None, S=None))
+
     def testDateInterval(self):
         ae = self.assertEqual
         date = Date("2000-06-26.00:34:02 + 2d")
@@ -472,13 +485,11 @@ class RangeTestCase(unittest.TestCase):
         r = Range('2006', Date)
         ae(str(r.from_value), '2006-01-01.00:00:00')
         ae(str(r.to_value), '2006-12-31.23:59:59')
-        # XXX this is probably in the calendar module
-        days = (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
         for i in range(1, 13):
-            print i
             r = Range('2006-%02d'%i, Date)
             ae(str(r.from_value), '2006-%02d-01.00:00:00'%i)
-            ae(str(r.to_value), '2006-%02d-%02d.23:59:59'%(i, days[i-1]))
+            ae(str(r.to_value), '2006-%02d-%02d.23:59:59'%(i,
+                calendar.mdays[i]))
 
 
 def test_suite():
