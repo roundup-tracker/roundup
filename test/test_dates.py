@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: test_dates.py,v 1.43 2007-12-21 11:21:09 richard Exp $
+# $Id: test_dates.py,v 1.44 2007-12-23 00:23:23 richard Exp $
 from __future__ import nested_scopes
 
 import unittest
@@ -24,19 +24,10 @@ import datetime
 import calendar
 
 from roundup.date import Date, Interval, Range, fixTimeOverflow, \
-    get_timezone, _add_granularity
+    get_timezone
 
 
 class DateTestCase(unittest.TestCase):
-    def testAddGranularity(self):
-        def d(m=None, d=None, H=None, M=None, S=None, value=1):
-            d = dict(y='2006', m=m, d=d, H=H, M=M, S=S)
-            _add_granularity(d, 'SMHdmy', value)
-            return d
-        ae = self.assertEqual
-        ae(d(), dict(y=2007, m=None, d=None, H=None, M=None, S=None))
-        ae(d(m='1'), dict(y='2006', m=2, d=None, H=None, M=None, S=None))
-        ae(d(m='12'), dict(y=2007, m=1, d=None, H=None, M=None, S=None))
 
     def testDateInterval(self):
         ae = self.assertEqual
@@ -371,6 +362,7 @@ class DateTestCase(unittest.TestCase):
         ae(str(Date('2003-1-1.23:00', add_granularity=1)), '2003-01-01.23:00:59')
         ae(str(Date('2003', add_granularity=1)), '2003-12-31.23:59:59')
         ae(str(Date('2003-5', add_granularity=1)), '2003-05-31.23:59:59')
+        ae(str(Date('2003-12', add_granularity=1)), '2003-12-31.23:59:59')
         ae(str(Interval('+1w', add_granularity=1)), '+ 14d')
         ae(str(Interval('-2m 3w', add_granularity=1)), '- 2m 14d')
 
@@ -479,7 +471,9 @@ class TimezoneTestCase(unittest.TestCase):
         date = Date(date, tz)
         ae(str(date), '2006-01-01.11:00:00')
 
+
 class RangeTestCase(unittest.TestCase):
+
     def testRange(self):
         ae = self.assertEqual
         r = Range('2006', Date)
