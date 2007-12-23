@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.94 2007-12-21 11:21:08 richard Exp $
+# $Id: db_test_base.py,v 1.95 2007-12-23 01:52:07 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets, base64, os.path
 
@@ -1193,16 +1193,14 @@ class DBTest(MyTestCase):
 
     def testFilteringRangeMonths(self):
         ae, filt = self.filteringSetup()
-        for month in range(1, 5): #13):
-            print 'MONTH', month
+        for month in range(1, 13):
             for n in range(1, month+1):
                 i = self.db.issue.create(title='%d.%d'%(month, n),
-                    deadline=date.Date('2004-%02d-%02d.00:00'%(month, n)))
-                print 'CREATE', i, self.db.issue.get(i, 'deadline')
+                    deadline=date.Date('2001-%02d-%02d.00:00'%(month, n)))
         self.db.commit()
 
         for month in range(1, 13):
-            r = filt(None, dict(deadline='2004-%02d'%month))
+            r = filt(None, dict(deadline='2001-%02d'%month))
             assert len(r) == month, 'month %d != length %d'%(month, len(r))
 
     def testFilteringRangeInterval(self):

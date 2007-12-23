@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: back_anydbm.py,v 1.208 2007-09-27 06:18:53 jpend Exp $
+#$Id: back_anydbm.py,v 1.209 2007-12-23 01:52:07 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -1644,7 +1644,7 @@ class Class(hyperdb.Class):
                 l.append((OTHER, k, [float(val) for val in v]))
 
         filterspec = l
-
+        
         # now, find all the nodes that are active and pass filtering
         matches = []
         cldb = self.db.getclassdb(cn)
