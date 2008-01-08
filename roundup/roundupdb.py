@@ -16,7 +16,7 @@ from __future__ import nested_scopes
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.136 2008-01-08 20:55:26 richard Exp $
+# $Id: roundupdb.py,v 1.137 2008-01-08 20:56:23 richard Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -397,9 +397,6 @@ class IssueClass:
             if inreplyto:
                 writer.addheader('In-Reply-To', inreplyto)
 
-            # Additional headers for bugs.python.org
-            # 20080106 mvl
-
             # Generate a header for each link or multilink to
             # a class that has a name attribute
             for propname, prop in self.getprops().items():
@@ -428,7 +425,6 @@ class IssueClass:
                 if msgs[0] != nodeid:
                     inreplyto = messages.get(msgs[0], 'messageid')
                     writer.addheader('In-Reply-To', inreplyto)
-            # end additional headers
 
             # attach files
             if message_files:
