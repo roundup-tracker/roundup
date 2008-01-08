@@ -8,6 +8,10 @@ Feature:
   of a message in multipart/alternative attachments.
 - Admin copy of error email from mailgw includes traceback (thanks Ulrik
   Mikaelsson)
+- Messages created through the web are now given an in-reply-to header
+  when email out to nosy (thanks Martin v. Löwis)
+- Nosy messages now include more information about issues (all link
+  properties with a "name" attribute) (thanks Martin v. Löwis)
 
 Fixed:
 - Searching date range by supplying just a date as the filter spec
