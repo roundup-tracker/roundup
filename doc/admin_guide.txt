@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.25 $
+:Version: $Revision: 1.26 $
 
 .. contents::
 
@@ -183,8 +183,15 @@ Maintenance of Roundup can involve one of the following:
 Tracker Backup
 --------------
 
-Stop the web and email frontends and to copy the contents of the tracker home
-directory to some other place using standard backup tools.
+The roundup-admin import and export commands are **not** recommended for
+performing backup.
+
+Optionally stop the web and email frontends and to copy the contents of the
+tracker home directory to some other place using standard backup tools.
+This means using
+*pg_dump* to take a snapshot of your Postgres backend database, for example.
+A simple copy of the tracker home (and files storage area if you've configured
+it to be elsewhere) will then complete the backup.
 
 
 Software Upgrade
