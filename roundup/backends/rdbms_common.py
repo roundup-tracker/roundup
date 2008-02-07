@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.194 2008-02-07 03:28:34 richard Exp $
+#$Id: rdbms_common.py,v 1.195 2008-02-07 05:01:42 richard Exp $
 """ Relational database (SQL) backend common code.
 
 Basics:
@@ -595,7 +595,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # and now the retired unique index too
         index_name = '_%s_key_retired_idx'%cn
         if self.sql_index_exists(table_name, index_name):
-            sql = 'drop index _%s_key_retired_idx'%cn
+            sql = 'drop index '+index_name
             self.sql(sql)
 
     def create_journal_table(self, spec):
