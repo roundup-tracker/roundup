@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.194 2007-11-19 20:45:57 richard Exp $
+$Id: mailgw.py,v 1.195 2008-02-07 03:33:31 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -1346,7 +1346,7 @@ Mail message was rejected by a detector.
                 cl.set(nodeid, **props)
             else:
                 nodeid = cl.create(**props)
-        except (TypeError, IndexError, ValueError), message:
+        except (TypeError, IndexError, ValueError, exceptions.Reject), message:
             raise MailUsageError, _("""
 There was a problem with the message you sent:
    %(message)s

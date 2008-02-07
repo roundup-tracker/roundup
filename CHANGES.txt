@@ -20,6 +20,7 @@ Fixed:
 - Make user utils JS work with firstname/lastname again (sf #1868323)
 - Fix ZRoundup to work with Zope 2.8.5 (sf #1806125)
 - Fix race condition for key properties in rdbms backends (sf #1876683)
+- Handle Reject in mailgw final set/create (sf #1826425)
 
 
 2007-11-09 1.4.1
