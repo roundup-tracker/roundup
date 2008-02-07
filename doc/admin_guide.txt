@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.26 $
+:Version: $Revision: 1.27 $
 
 .. contents::
 
@@ -209,6 +209,12 @@ take:
 4. Stop the tracker web and email frontends.
 5. Follow the steps in the `upgrading documentation`_ for the new version of
    the software in the copied.
+
+   Usually you will be asked to run `roundup_admin migrate` on your tracker
+   before you allow users to start accessing the tracker.
+
+   It's safe to run this even if it's not required, so just get into the
+   habit.
 6. You may test each of the admin tool, web interface and mail gateway using
    the new version of the software. To do this, invoke the scripts directly
    in the source directory with::

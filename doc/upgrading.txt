@@ -13,6 +13,24 @@ steps.
 
 .. contents::
 
+Migrating from 1.4.x to 1.4.2
+=============================
+
+You should run the "roundup-admin migrate" command for your tracker once
+you've installed the latest codebase. 
+
+Do this before you use the web, command-line or mail interface and before
+any users access the tracker.
+
+This command will respond with either "Tracker updated" (if you've not
+previously run it on an RDBMS backend) or "No migration action required"
+(if you have run it, or have used another interface to the tracker,
+or are using anydbm).
+
+It's safe to run this even if it's not required, so just get into the
+habit.
+
+
 Migrating from 1.3.3 to 1.4.0
 =============================
 
@@ -25,12 +43,12 @@ update the messagesummary detector as follows::
     --- detectors/messagesummary.py 17 Apr 2003 03:26:38 -0000      1.1
     +++ detectors/messagesummary.py 3 Apr 2007 06:47:21 -0000       1.2
     @@ -8,7 +8,7 @@
-	 if newvalues.has_key('summary') or not newvalues.has_key('content'):
-	     return
+     if newvalues.has_key('summary') or not newvalues.has_key('content'):
+         return
 
     -    summary, content = parseContent(newvalues['content'], 1, 1)
     +    summary, content = parseContent(newvalues['content'], config=db.config)
-	 newvalues['summary'] = summary
+     newvalues['summary'] = summary
 
 In the latest version we have added some database indexes to the
 SQL-backends (mysql, postgresql, sqlite) for speeding up building the

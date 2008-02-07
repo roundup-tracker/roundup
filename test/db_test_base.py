@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.95 2007-12-23 01:52:07 richard Exp $
+# $Id: db_test_base.py,v 1.96 2008-02-07 03:28:34 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets, base64, os.path
 
@@ -2054,12 +2054,15 @@ class ClassicInitTest(unittest.TestCase):
 
         # check the basics of the schema and initial data set
         l = db.priority.list()
+        l.sort()
         ae(l, ['1', '2', '3', '4', '5'])
         l = db.status.list()
+        l.sort()
         ae(l, ['1', '2', '3', '4', '5', '6', '7', '8'])
         l = db.keyword.list()
         ae(l, [])
         l = db.user.list()
+        l.sort()
         ae(l, ['1', '2'])
         l = db.msg.list()
         ae(l, [])

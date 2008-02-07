@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.109 2007-09-26 14:09:59 jpend Exp $
+# $Id: admin.py,v 1.110 2008-02-07 03:28:33 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -1331,6 +1331,33 @@ Erase it? Y/N: """))
                             'only)')%d
                 else:
                     print _(' %(description)s (%(name)s)')%d
+        return 0
+
+
+    def do_migrate(self, args):
+        '''Usage: migrate
+        Update a tracker's database to be compatible with the Roundup
+        codebase.
+
+        You should run the "migrate" command for your tracker once you've
+        installed the latest codebase. 
+
+        Do this before you use the web, command-line or mail interface and
+        before any users access the tracker.
+
+        This command will respond with either "Tracker updated" (if you've
+        not previously run it on an RDBMS backend) or "No migration action
+        required" (if you have run it, or have used another interface to the
+        tracker, or possibly because you are using anydbm).
+
+        It's safe to run this even if it's not required, so just get into
+        the habit.
+        '''
+        if getattr(self.db, 'db_version_updated'):
+            print _('Tracker updated')
+            self.db_uncommitted = True
+        else:
+            print _('No migration action required')
         return 0
 
     def run_command(self, args):
