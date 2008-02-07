@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: back_anydbm.py,v 1.209 2007-12-23 01:52:07 richard Exp $
+#$Id: back_anydbm.py,v 1.210 2008-02-07 00:57:59 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -621,6 +621,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             for db in self.databases.values():
                 db.close()
             del self.databases
+
+        # clear the transactions list now so the blobfile implementation
+        # doesn't think there's still pending file commits when it tries
+        # to access the file data
+        self.transactions = []
 
         # reindex the nodes that request it
         for classname, nodeid in filter(None, reindex.keys()):

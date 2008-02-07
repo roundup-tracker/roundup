@@ -16,6 +16,8 @@ Feature:
 Fixed:
 - Searching date range by supplying just a date as the filter spec
 - Handle no time.tzset under Windows (sf #1825643)
+- Work around race condition in file storage during transaction commit
+  (sf #1883580)
 
 
 2007-11-09 1.4.1
