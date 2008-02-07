@@ -18,7 +18,7 @@ Fixed:
 - Handle no time.tzset under Windows (sf #1825643)
 - Work around race condition in file storage during transaction commit
   (sf #1883580)
-
+- Make user utils JS work with firstname/lastname again (sf #1868323)
 
 2007-11-09 1.4.1
 Fixed:
