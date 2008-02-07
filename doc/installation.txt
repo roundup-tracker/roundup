@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.129 $
+:Version: $Revision: 1.130 $
 
 .. contents::
    :depth: 2
@@ -500,7 +500,7 @@ Example mod_python configuration::
     # everything else is handled by roundup web UI
     AliasMatch /roundup/([^/]+)/(?!@@file/)(.*) /var/db/roundup/$1/dummy.py/$2
     # roundup requires a slash after tracker name - add it if missing
-    RedirectMatch permanent /roundup/([^/]+)$ /roundup/$1/
+    RedirectMatch permanent ^/roundup/([^/]+)$ /roundup/$1/
     # common settings for all roundup trackers
     <Directory /var/db/roundup/*>
       Order allow,deny
@@ -521,7 +521,7 @@ Example mod_python configuration::
     <Directory /var/db/roundup/devel>
       PythonOption TrackerHome /var/db/roundup/devel
     </Directory>
-    
+
 Notice that the ``/var/db/roundup`` path shown above refers to the directory
 in which the tracker homes are stored. The actual value will thus depend on
 your system.
