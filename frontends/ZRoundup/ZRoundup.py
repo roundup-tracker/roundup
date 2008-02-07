@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: ZRoundup.py,v 1.22 2006-01-25 03:43:04 richard Exp $
+# $Id: ZRoundup.py,v 1.23 2008-02-07 01:03:39 richard Exp $
 #
 ''' ZRoundup module - exposes the roundup web interface to Zope
 
@@ -67,6 +67,11 @@ class RequestWrapper:
     def end_headers(self):
         # not needed - the RESPONSE object handles this internally on write()
         pass
+    def start_response(self, headers, response):
+        self.send_response(response)
+        for key, value in headers:
+            self.send_header(key, value)
+        self.end_headers()
 
 class FormItem:
     '''Make a Zope form item look like a cgi.py one
@@ -89,6 +94,8 @@ class FormWrapper:
         else:
             entry = FormItem(entry)
         return entry
+    def __iter__(self):
+        return iter(self.__form)
     def getvalue(self, key, default=None):
         if self.__form.has_key(key):
             return self.__form[key]

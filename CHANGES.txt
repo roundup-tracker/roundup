@@ -19,6 +19,8 @@ Fixed:
 - Work around race condition in file storage during transaction commit
   (sf #1883580)
 - Make user utils JS work with firstname/lastname again (sf #1868323)
+- Fix ZRoundup to work with Zope 2.8.5 (sf #1806125)
+
 
 2007-11-09 1.4.1
 Fixed:
