@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.92 2007-11-14 16:19:41 schlatterbeck Exp $
+# $Id: test_mailgw.py,v 1.93 2008-02-07 03:55:14 richard Exp $
 
 # TODO: test bcc
 
@@ -50,8 +50,9 @@ class DiffHelper:
                     if new[key] != __version__:
                         res.append('  %s: %s != %s' % (key, __version__,
                             new[key]))
-                elif new[key] != old[key]:
-                    res.append('  %s: %s != %s' % (key, old[key], new[key]))
+                elif new.get(key, '') != old.get(key, ''):
+                    res.append('  %s: %s != %s' % (key, old.get(key, ''),
+                        new.get(key, '')))
 
             body_diff = self.compareStrings(new.fp.read(), old.fp.read())
             if body_diff:
@@ -238,6 +239,7 @@ MIME-Version: 1.0
 Message-Id: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Status: unread
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -281,6 +283,7 @@ MIME-Version: 1.0
 Message-Id: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Status: unread
 Content-Transfer-Encoding: quoted-printable
 
 This is a test submission of a new issue.
@@ -321,6 +324,7 @@ MIME-Version: 1.0
 Message-Id: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Status: unread
 Content-Transfer-Encoding: quoted-printable
 
 New submission from Bork, Chef:
@@ -466,6 +470,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -513,6 +518,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -556,6 +562,7 @@ To: chef@bork.bork.bork, richard@test.test
 From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Status: unread
 X-Roundup-Version: 1.3.3
 MIME-Version: 1.0
 Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
@@ -602,6 +609,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -711,6 +719,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -756,6 +765,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -801,6 +811,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -845,6 +856,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -889,6 +901,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -1069,6 +1082,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -1122,6 +1136,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -1198,6 +1213,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
 

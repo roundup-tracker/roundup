@@ -1,34 +1,24 @@
-I'm proud to release version 1.4.1 of Roundup.
+I'm proud to release version 1.4.2 of Roundup.
 
-The metakit backend has been removed due to lack of maintenance and
-presence of good alternatives (in particular sqlite built into Python 2.5)
+New Features in 1.4.2:
+- New config option in mail section: ignore_alternatives allows to
+  ignore alternatives besides the text/plain part used for the content
+  of a message in multipart/alternative attachments.
+- Admin copy of error email from mailgw includes traceback (thanks Ulrik
+  Mikaelsson)
+- Messages created through the web are now given an in-reply-to header
+  when email out to nosy (thanks Martin v. Löwis)
+- Nosy messages now include more information about issues (all link
+  properties with a "name" attribute) (thanks Martin v. Löwis)
 
-Release 1.4.1 removes an old trace of the metakit backend that was
-preventing new tracker installation.
-
-New Features in 1.4.0:
-
-- Roundup has a new xmlrpc frontend that gives access to a tracker using
-  XMLRPC.
-- Dates can now be in the year-range 1-9999
-- Add simple anti-spam recipe to docs
-- Allow customisation of regular expressions used in email parsing, thanks
-  Bruno Damour
-- Italian translation by Marco Ghidinelli
-- Multilinks take any iterable
-- config option: specify port and local hostname for SMTP connections
-- Tracker index templating (i.e. when roundup_server is serving multiple
-  trackers) (sf bug 1058020)
-- config option: Limit nosy attachments based on size (Philipp Gortan)
-- roundup_server supports SSL via pyopenssl
-- templatable 404 not found messages (sf bug 1403287)
-- Unauthorized email includes a link to the registration page for
-  the tracker
-- config options: control whether author info/email is included in email
-  sent by roundup
-- support for receiving OpenPGP MIME messages (signed or encrypted)
-
-There's also a ton of bugfixes.
+And things fixed:
+- Searching date range by supplying just a date as the filter spec
+- Handle no time.tzset under Windows (sf #1825643)
+- Fix race condition in file storage transaction commit (sf #1883580)
+- Make user utils JS work with firstname/lastname again (sf #1868323)
+- Fix ZRoundup to work with Zope 2.8.5 (sf #1806125)
+- Fix race condition for key properties in rdbms backends (sf #1876683)
+- Handle Reject in mailgw final set/create (sf #1826425)
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
