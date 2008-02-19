@@ -1,6 +1,7 @@
 I'm proud to release version 1.4.2 of Roundup.
 
 New Features in 1.4.2:
+
 - New config option in mail section: ignore_alternatives allows to
   ignore alternatives besides the text/plain part used for the content
   of a message in multipart/alternative attachments.
@@ -12,6 +13,7 @@ New Features in 1.4.2:
   properties with a "name" attribute) (thanks Martin v. Löwis)
 
 And things fixed:
+
 - Searching date range by supplying just a date as the filter spec
 - Handle no time.tzset under Windows (sf #1825643)
 - Fix race condition in file storage transaction commit (sf #1883580)

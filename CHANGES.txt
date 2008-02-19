@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2008-02-07 1.4.2
+2008-02-08 1.4.2
 Feature:
 - New config option in mail section: ignore_alternatives allows to
   ignore alternatives besides the text/plain part used for the content

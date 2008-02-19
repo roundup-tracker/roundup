@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.222 $
+:Version: $Revision: 1.223 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1875,10 +1875,15 @@ The following variables are available to templates.
    - the current index information (``filterspec``, ``filter`` args,
      ``properties``, etc) parsed out of the form. 
    - methods for easy filterspec link generation
-   - *user*, the current user item as an HTMLItem instance
-   - *form*
+   - "form"
      The current CGI form information as a mapping of form argument name
-     to value
+     to value (specifically a cgi.FieldStorage)
+   - "env" the CGI environment variables
+   - "base" the base URL for this instance
+   - "user" a HTMLItem instance for the current user
+   - "language" as determined by the browser or config
+   - "classname" the current classname (possibly None)
+   - "template" the current template (suffix, also possibly None)
 **config**
   This variable holds all the values defined in the tracker config.ini
   file (eg. TRACKER_NAME, etc.)

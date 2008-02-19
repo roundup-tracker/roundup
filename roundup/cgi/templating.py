@@ -2140,6 +2140,7 @@ class HTMLRequest(HTMLInputMixin):
     - "env" the CGI environment variables
     - "base" the base URL for this instance
     - "user" a HTMLItem instance for this user
+    - "language" as determined by the browser or config
     - "classname" the current classname (possibly None)
     - "template" the current template (suffix, also possibly None)
 
@@ -2166,6 +2167,7 @@ class HTMLRequest(HTMLInputMixin):
         self.env = client.env
         self.base = client.base
         self.user = HTMLItem(client, 'user', client.userid)
+        self.language = client.language
 
         # store the current class name and action
         self.classname = client.classname
