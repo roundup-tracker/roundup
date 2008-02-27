@@ -1,6 +1,12 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2008-02-27 1.4.3
+Fixed:
+- MySQL backend bug introduced in 1.4.2 (TEXT columns need a size when
+  being indexed)
+
+
 2008-02-08 1.4.2
 Feature:
 - New config option in mail section: ignore_alternatives allows to

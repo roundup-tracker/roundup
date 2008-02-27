@@ -13,6 +13,18 @@ steps.
 
 .. contents::
 
+Migrating from 1.4.2 to 1.4.3
+=============================
+
+If you are using the MySQL backend you will need to replace some indexes
+that may have been created by version 1.4.2.
+
+You should to access your MySQL database directly and remove any indexes
+with a name ending in "_key_retired_idx". You should then re-add them with
+the same spec except the key column name needs a size. So an index on
+"_user (__retired, _name)" should become "_user (__retired, _name(255))".
+
+
 Migrating from 1.4.x to 1.4.2
 =============================
 

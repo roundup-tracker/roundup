@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.195 2008-02-07 05:01:42 richard Exp $
+#$Id: rdbms_common.py,v 1.196 2008-02-27 08:32:50 richard Exp $
 """ Relational database (SQL) backend common code.
 
 Basics:
@@ -562,7 +562,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # they're more likely to be used for lookup
 
     def add_class_key_required_unique_constraint(self, cn, key):
-        sql = '''create unique index _%s_key_retired_idx 
+        sql = '''create unique index _%s_key_retired_idx
             on _%s(__retired__, _%s)'''%(cn, cn, key)
         self.sql(sql)
 

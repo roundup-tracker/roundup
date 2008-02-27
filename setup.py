@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.99 2007-11-07 21:24:24 richard Exp $
+# $Id: setup.py,v 1.100 2008-02-27 08:32:45 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -352,33 +352,9 @@ def main():
 '''In this release
 ===============
 
-The metakit backend has been removed due to lack of maintenance and
-presence of good alternatives (in particular sqlite built into Python 2.5)
+Just one bug was fixed in 1.4.3:
 
-Release 1.4.1 removes an old trace of the metakit backend that was
-preventing new tracker installation.
-
-New Features in 1.4.0:
-
-- Roundup has a new xmlrpc frontend that gives access to a tracker using
-  XMLRPC.
-- Dates can now be in the year-range 1-9999
-- Add simple anti-spam recipe to docs
-- Allow customisation of regular expressions used in email parsing, thanks
-  Bruno Damour
-- Italian translation by Marco Ghidinelli
-- Multilinks take any iterable
-- config option: specify port and local hostname for SMTP connections
-- Tracker index templating (i.e. when roundup_server is serving multiple
-  trackers) (sf bug 1058020)
-- config option: Limit nosy attachments based on size (Philipp Gortan)
-- roundup_server supports SSL via pyopenssl
-- templatable 404 not found messages (sf bug 1403287)
-- Unauthorized email includes a link to the registration page for
-  the tracker
-- config options: control whether author info/email is included in email
-  sent by roundup
-- support for receiving OpenPGP MIME messages (signed or encrypted)
+- MySQL backend bug introduced in 1.4.2
 
 There's also a ton of bugfixes.
 

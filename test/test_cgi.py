@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.33 2007-10-05 03:07:14 richard Exp $
+# $Id: test_cgi.py,v 1.34 2008-02-27 08:32:51 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
@@ -89,6 +89,7 @@ class FormTestCase(unittest.TestCase):
             makeForm(form))
         cl.classname = classname
         cl.nodeid = nodeid
+        cl.language = ('en',)
         cl.db = self.db
         return cl.parsePropsFromForm(create=1)
 
@@ -204,6 +205,7 @@ class FormTestCase(unittest.TestCase):
         cl.classname = 'issue'
         cl.nodeid = issue
         cl.db = self.db
+        cl.language = ('en',)
         item = HTMLItem(cl, 'issue', issue)
         self.assertEqual(item.status.id, '1')
         self.assertEqual(item.status.name, '2')
@@ -222,6 +224,7 @@ class FormTestCase(unittest.TestCase):
         cl.classname = 'issue'
         cl.nodeid = issue
         cl.db = self.db
+        cl.language = ('en',)
         cl.userid = '1'
         item = HTMLItem(cl, 'issue', issue)
         for keyword in item.keyword:
@@ -304,6 +307,7 @@ class FormTestCase(unittest.TestCase):
         cl.classname = 'issue'
         cl.nodeid = None
         cl.db = self.db
+        cl.language = ('en',)
         self.assertEqual(cl.parsePropsFromForm(create=1),
             ({('issue', None): {'nosy': ['1','2', '3']}}, []))
 
@@ -606,6 +610,7 @@ class FormTestCase(unittest.TestCase):
         cl.nodeid = '1'
         cl.db = self.db
         cl.userid = '2'
+        cl.language = ('en',)
         return cl
 
     def testClassPermission(self):

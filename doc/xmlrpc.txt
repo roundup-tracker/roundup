@@ -36,35 +36,35 @@ The server currently implements four methods. Each method requires that the
 user provide a username and password in the HTTP authorization header in order
 to authenticate the request against the tracker.
 
-list
-        :arguments: classname, [property_name]
+======= ====================================================================
+Command Description
+======= ====================================================================
+list    arguments: *classname, [property_name]*
 
         List all elements of a given ``classname``. If ``property_name`` is
         specified, that is the property that will be displayed for each
         element. If ``property_name`` is not specified the default label
         property will be used.
 
-display
-        :arguments: designator, [property_1, ..., property_N]
+display arguments: *designator, [property_1, ..., property_N]*
 
         Display a single item in the tracker as specified by ``designator``
         (e.g. issue20 or user5). The default is to display all properties
         for the item. Alternatively, a list of properties to display can be
         specified.
 
-create
-        :arguments: classname, arg_1 ... arg_N
+create  arguments: *classname, arg_1 ... arg_N*
 
         Create a new instance of ``classname`` with ``arg_1`` through
         ``arg_N`` as the values of the new instance. The arguments are
         name=value pairs (e.g. ``status='3'``).
 
-set
-        :arguments: designator, arg_1 ... arg_N
+set     arguments: *designator, arg_1 ... arg_N*
 
         Set the values of an existing item in the tracker as specified by
         ``designator``. The new values are specified in ``arg_1`` through
         ``arg_N``. The arguments are name=value pairs (e.g. ``status='3'``).
+======= ====================================================================
 
 sample python client
 ====================

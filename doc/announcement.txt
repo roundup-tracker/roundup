@@ -1,26 +1,8 @@
-I'm proud to release version 1.4.2 of Roundup.
+I'm proud to release version 1.4.3 of Roundup.
 
-New Features in 1.4.2:
+Just one bug was fixed in 1.4.3:
 
-- New config option in mail section: ignore_alternatives allows to
-  ignore alternatives besides the text/plain part used for the content
-  of a message in multipart/alternative attachments.
-- Admin copy of error email from mailgw includes traceback (thanks Ulrik
-  Mikaelsson)
-- Messages created through the web are now given an in-reply-to header
-  when email out to nosy (thanks Martin v. Löwis)
-- Nosy messages now include more information about issues (all link
-  properties with a "name" attribute) (thanks Martin v. Löwis)
-
-And things fixed:
-
-- Searching date range by supplying just a date as the filter spec
-- Handle no time.tzset under Windows (sf #1825643)
-- Fix race condition in file storage transaction commit (sf #1883580)
-- Make user utils JS work with firstname/lastname again (sf #1868323)
-- Fix ZRoundup to work with Zope 2.8.5 (sf #1806125)
-- Fix race condition for key properties in rdbms backends (sf #1876683)
-- Handle Reject in mailgw final set/create (sf #1826425)
+- MySQL backend bug introduced in 1.4.2
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.

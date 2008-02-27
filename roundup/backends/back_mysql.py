@@ -1,4 +1,4 @@
-#$Id: back_mysql.py,v 1.74 2007-10-26 01:34:43 richard Exp $
+#$Id: back_mysql.py,v 1.75 2008-02-27 08:32:50 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -421,9 +421,19 @@ class Database(Database):
         # TODO: create indexes on (selected?) Link property columns, as
         # they're more likely to be used for lookup
 
+    def add_class_key_required_unique_constraint(self, cn, key):
+        # mysql requires sizes on TEXT indexes
+        prop = self.classes[cn].getprops()[key]
+        if isinstance(prop, String):
+            sql = '''create unique index _%s_key_retired_idx
+                on _%s(__retired__, _%s(255))'''%(cn, cn, key)
+        else:
+            sql = '''create unique index _%s_key_retired_idx
+                on _%s(__retired__, _%s)'''%(cn, cn, key)
+        self.sql(sql)
+
     def create_class_table_key_index(self, cn, key):
-        ''' create the class table for the given spec
-        '''
+        # mysql requires sizes on TEXT indexes
         prop = self.classes[cn].getprops()[key]
         if isinstance(prop, String):
             sql = 'create index _%s_%s_idx on _%s(_%s(255))'%(cn, key, cn, key)
