@@ -1,8 +1,7 @@
-I'm proud to release version 1.4.3 of Roundup.
+I'm proud to release version 1.4.4 of Roundup.
 
-Just one bug was fixed in 1.4.3:
-
-- MySQL backend bug introduced in 1.4.2
+1.4.4 is a security fix release. All installations of Roundup are strongly
+encouraged to update.
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.

@@ -1,6 +1,11 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2008-03-01 1.4.4
+Fixed:
+- Security fixes (thanks Roland Meister)
+
+
 2008-02-27 1.4.3
 Fixed:
 - MySQL backend bug introduced in 1.4.2 (TEXT columns need a size when

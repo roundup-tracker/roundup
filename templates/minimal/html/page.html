@@ -143,7 +143,7 @@ status_notresolved string:-1,1,2,3,4,5,6,7;
 
   <p class="userblock" tal:condition="python:request.user.username != 'anonymous'">
    <b i18n:translate="">Hello, <span i18n:name="user"
-    tal:replace="request/user/username">username</span></b><br>
+    tal:replace="python:request.user.username.plain(escape=1)">username</span></b><br>
    <a href="#" tal:attributes="href string:user${request/user/id}"
     i18n:translate="">Your Details</a><br>
    <a href="#" tal:attributes="href python:request.indexargs_url('',

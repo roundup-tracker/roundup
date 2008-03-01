@@ -878,7 +878,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
             prop = self[prop_n]
             if not isinstance(prop, HTMLProperty):
                 continue
-            current[prop_n] = prop.plain()
+            current[prop_n] = prop.plain(escape=1)
             # make link if hrefable
             if (self._props.has_key(prop_n) and
                     isinstance(self._props[prop_n], hyperdb.Link)):
@@ -979,6 +979,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                                     if labelprop is not None and \
                                             labelprop != 'id':
                                         label = linkcl.get(linkid, labelprop)
+                                        label = cgi.escape(label)
                                 except IndexError:
                                     comments['no_link'] = self._(
                                         "<strike>The linked node"
@@ -1002,7 +1003,8 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                         # there's no labelprop!
                         if labelprop is not None and labelprop != 'id':
                             try:
-                                label = linkcl.get(args[k], labelprop)
+                                label = cgi.escape(linkcl.get(args[k],
+                                    labelprop))
                             except IndexError:
                                 comments['no_link'] = self._(
                                     "<strike>The linked node"
@@ -1012,7 +1014,8 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                                 label = None
                         if label is not None:
                             if hrefable:
-                                old = '<a href="%s%s">%s</a>'%(classname, args[k], label)
+                                old = '<a href="%s%s">%s</a>'%(classname,
+                                    args[k], label)
                             else:
                                 old = label;
                             cell.append('%s: %s' % (self._(k), old))
@@ -1369,7 +1372,7 @@ class StringHTMLProperty(HTMLProperty):
             If not editable, just display the value via plain().
         """
         if not self.is_edit_ok():
-            return self.plain()
+            return self.plain(escape=1)
 
         value = self._value
         if value is None:
@@ -1423,7 +1426,7 @@ class StringHTMLProperty(HTMLProperty):
         return value
 
 class PasswordHTMLProperty(HTMLProperty):
-    def plain(self):
+    def plain(self, escape=0):
         """ Render a "plain" representation of the property
         """
         if not self.is_view_ok():
@@ -1439,7 +1442,7 @@ class PasswordHTMLProperty(HTMLProperty):
             If not editable, just display the value via plain().
         """
         if not self.is_edit_ok():
-            return self.plain()
+            return self.plain(escape=1)
 
         return self.input(type="password", name=self._formname, size=size)
 
@@ -1459,7 +1462,7 @@ class PasswordHTMLProperty(HTMLProperty):
             size=size)
 
 class NumberHTMLProperty(HTMLProperty):
-    def plain(self):
+    def plain(self, escape=0):
         """ Render a "plain" representation of the property
         """
         if not self.is_view_ok():
@@ -1476,7 +1479,7 @@ class NumberHTMLProperty(HTMLProperty):
             If not editable, just display the value via plain().
         """
         if not self.is_edit_ok():
-            return self.plain()
+            return self.plain(escape=1)
 
         value = self._value
         if value is None:
@@ -1496,7 +1499,7 @@ class NumberHTMLProperty(HTMLProperty):
 
 
 class BooleanHTMLProperty(HTMLProperty):
-    def plain(self):
+    def plain(self, escape=0):
         """ Render a "plain" representation of the property
         """
         if not self.is_view_ok():
@@ -1512,7 +1515,7 @@ class BooleanHTMLProperty(HTMLProperty):
             If not editable, just display the value via plain().
         """
         if not self.is_edit_ok():
-            return self.plain()
+            return self.plain(escape=1)
 
         value = self._value
         if isinstance(value, str) or isinstance(value, unicode):
@@ -1549,7 +1552,7 @@ class DateHTMLProperty(HTMLProperty):
         if self._offset is None :
             self._offset = self._prop.offset (self._db)
 
-    def plain(self):
+    def plain(self, escape=0):
         """ Render a "plain" representation of the property
         """
         if not self.is_view_ok():
@@ -1600,7 +1603,7 @@ class DateHTMLProperty(HTMLProperty):
         """
         if not self.is_edit_ok():
             if format is self._marker:
-                return self.plain()
+                return self.plain(escape=1)
             else:
                 return self.pretty(format)
 
@@ -1720,7 +1723,7 @@ class IntervalHTMLProperty(HTMLProperty):
         if self._value and not isinstance(self._value, (str, unicode)):
             self._value.setTranslator(self._client.translator)
 
-    def plain(self):
+    def plain(self, escape=0):
         """ Render a "plain" representation of the property
         """
         if not self.is_view_ok():
@@ -1744,7 +1747,7 @@ class IntervalHTMLProperty(HTMLProperty):
             If not editable, just display the value via plain().
         """
         if not self.is_edit_ok():
-            return self.plain()
+            return self.plain(escape=1)
 
         value = self._value
         if value is None:
@@ -1806,7 +1809,7 @@ class LinkHTMLProperty(HTMLProperty):
             If not editable, just display the value via plain().
         """
         if not self.is_edit_ok():
-            return self.plain()
+            return self.plain(escape=1)
 
         # edit field
         linkcl = self._db.getclass(self._prop.classname)
@@ -1842,7 +1845,7 @@ class LinkHTMLProperty(HTMLProperty):
             If not editable, just display the value via plain().
         """
         if not self.is_edit_ok():
-            return self.plain()
+            return self.plain(escape=1)
 
         if value is None:
             value = self._value
@@ -1999,7 +2002,7 @@ class MultilinkHTMLProperty(HTMLProperty):
             If not editable, just display the value via plain().
         """
         if not self.is_edit_ok():
-            return self.plain()
+            return self.plain(escape=1)
 
         linkcl = self._db.getclass(self._prop.classname)
         value = self._value[:]
@@ -2034,7 +2037,7 @@ class MultilinkHTMLProperty(HTMLProperty):
             If not editable, just display the value via plain().
         """
         if not self.is_edit_ok():
-            return self.plain()
+            return self.plain(escape=1)
 
         if value is None:
             value = self._value

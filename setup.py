@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.101 2008-02-27 20:57:56 richard Exp $
+# $Id: setup.py,v 1.102 2008-03-01 08:18:06 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -352,9 +352,8 @@ def main():
 '''In this release
 ===============
 
-Just one bug was fixed in 1.4.3:
-
-- MySQL backend bug introduced in 1.4.2
+1.4.4 is a security fix release. All installations of Roundup are strongly
+encouraged to update.
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
