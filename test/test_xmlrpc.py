@@ -9,16 +9,20 @@ import unittest, os, shutil, errno, sys, difflib, cgi, re
 from roundup.cgi.exceptions import *
 from roundup import init, instance, password, hyperdb, date
 from roundup.xmlrpc import RoundupServer
+from roundup.backends import list_backends
 
 import db_test_base
 
 NEEDS_INSTANCE = 1
 
 class TestCase(unittest.TestCase):
+
+    backend = None
+
     def setUp(self):
         self.dirname = '_test_xmlrpc'
         # set up and open a tracker
-        self.instance = db_test_base.setupTracker(self.dirname)
+        self.instance = db_test_base.setupTracker(self.dirname, self.backend)
 
         # open the database
         self.db = self.instance.open('admin')
@@ -55,6 +59,10 @@ class TestCase(unittest.TestCase):
             'realname')
         self.assertEqual(results['realname'], 'Joe Doe')
 
+        # check we can't change admin's details
+        self.assertRaises(Unauthorised, self.server.set, 'joe', 'random',
+            'user1', 'realname=Joe Doe')
+
     def testCreate(self):
         results = self.server.create('joe', 'random', 'issue', 'title=foo')
         issueid = 'issue' + results
@@ -89,10 +97,12 @@ class TestCase(unittest.TestCase):
 
 def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestCase))
+    for l in list_backends():
+        dct = dict(backend = l)
+        subcls = type(TestCase)('TestCase_%s'%l, (TestCase,), dct)
+        suite.addTest(unittest.makeSuite(subcls))
     return suite
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     unittest.main(testRunner=runner)
-

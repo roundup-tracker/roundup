@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: test_dates.py,v 1.44 2007-12-23 00:23:23 richard Exp $
+# $Id: test_dates.py,v 1.45 2008-03-07 01:11:55 richard Exp $
 from __future__ import nested_scopes
 
 import unittest
@@ -67,6 +67,9 @@ class DateTestCase(unittest.TestCase):
         ae(str(Date('2004-06')), '2004-06-01.00:00:00')
         ae(str(Date('1900-02-01')), '1900-02-01.00:00:00')
         ae(str(Date('1800-07-15')), '1800-07-15.00:00:00')
+
+    def testLeapYear(self):
+        self.assertEquals(str(Date('2008-02-29')), '2008-02-29.00:00:00')
 
     def testDateError(self):
         self.assertRaises(ValueError, Date, "12")

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.96 2008-02-07 03:28:34 richard Exp $
+# $Id: db_test_base.py,v 1.97 2008-03-07 01:11:55 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets, base64, os.path
 
@@ -62,6 +62,7 @@ def setupTracker(dirname, backend="anydbm"):
     tracker = instance.open(dirname)
     if tracker.exists():
         tracker.nuke()
+        init.write_select_db(dirname, backend)
     tracker.init(password.Password('sekrit'))
     return tracker
 
@@ -293,7 +294,7 @@ class DBTest(MyTestCase):
             l = [u1,u2]; l.sort()
             m = self.db.issue.get(nid, "nosy"); m.sort()
             self.assertEqual(l, m)
-       
+
 
 # XXX one day, maybe...
 #    def testMultilinkOrdering(self):
@@ -328,6 +329,18 @@ class DBTest(MyTestCase):
                 if commit: self.db.commit()
                 c = self.db.issue.get(nid, "deadline")
                 self.assertEqual(c, d)
+
+    def testDateLeapYear(self):
+        nid = self.db.issue.create(title='spam', status='1',
+            deadline=date.Date('2008-02-29'))
+        self.assertEquals(str(self.db.issue.get(nid, 'deadline')),
+            '2008-02-29.00:00:00')
+        self.db.issue.set(nid, deadline=date.Date('2008-02-29'))
+        self.assertEquals(str(self.db.issue.get(nid, 'deadline')),
+            '2008-02-29.00:00:00')
+        self.assertEquals(self.db.issue.filter(None, {'deadline': '2008-02-29'}),
+            [nid])
+
 
     def testDateUnset(self):
         for commit in (0,1):

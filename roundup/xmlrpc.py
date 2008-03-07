@@ -63,13 +63,10 @@ class RoundupRequest:
     def close(self):
         """Close the database, after committing any changes, if needed."""
 
-        if getattr(self, 'db'):
-            try:
-                if self.db.transactions:
-                    self.db.commit()
-            finally:
-                self.db.close()
-
+        try:
+            self.db.commit()
+        finally:
+            self.db.close()
 
     def get_class(self, classname):
         """Return the class for the given classname."""
@@ -94,7 +91,7 @@ class RoundupRequest:
             if value:
                 try:
                     props[key] = hyperdb.rawToHyperdb(self.db, cl, None,
-                                                      key, value)
+                        key, value)
                 except hyperdb.HyperdbValueError, message:
                     raise UsageError, message
             else:
@@ -115,51 +112,53 @@ class RoundupServer:
 
     def list(self, username, password, classname, propname=None):
         r = RoundupRequest(self.tracker, username, password)
-        cl = r.get_class(classname)
-        if not propname:
-            propname = cl.labelprop()
-        def has_perm(itemid):
-            return True
-            r.db.security.hasPermission('View', r.userid, classname,
-                itemid=itemid, property=propname)
-        result = [cl.get(id, propname) for id in cl.list()
-            if has_perm(id)]
-        r.close()
+        try:
+            cl = r.get_class(classname)
+            if not propname:
+                propname = cl.labelprop()
+            result = [cl.get(itemid, propname)
+                for itemid in cl.list()
+                     if r.db.security.hasPermission('View', r.userid,
+                         classname, propname, itemid)
+            ]
+        finally:
+            r.close()
         return result
 
     def display(self, username, password, designator, *properties):
         r = RoundupRequest(self.tracker, username, password)
-        classname, itemid = hyperdb.splitDesignator(designator)
-
-        if not r.db.security.hasPermission('View', r.userid, classname,
-                itemid=itemid):
-            raise Unauthorised('Permission to view %s denied'%designator)
-
-        cl = r.get_class(classname)
-        props = properties and list(properties) or cl.properties.keys()
-        props.sort()
-        result = [(property, cl.get(itemid, property)) for property in props]
-        r.close()
+        try:
+            classname, itemid = hyperdb.splitDesignator(designator)
+            cl = r.get_class(classname)
+            props = properties and list(properties) or cl.properties.keys()
+            props.sort()
+            for p in props:
+                if not r.db.security.hasPermission('View', r.userid,
+                        classname, p, itemid):
+                    raise Unauthorised('Permission to view %s of %s denied'%
+                            (p, designator))
+            result = [(prop, cl.get(itemid, prop)) for prop in props]
+        finally:
+            r.close()
         return dict(result)
 
     def create(self, username, password, classname, *args):
         r = RoundupRequest(self.tracker, username, password)
-
-        if not r.db.security.hasPermission('Create', r.userid, classname):
-            raise Unauthorised('Permission to create %s denied'%classname)
-
-        cl = r.get_class(classname)
-
-        # convert types
-        props = r.props_from_args(cl, args)
-
-        # check for the key property
-        key = cl.getkey()
-        if key and not props.has_key(key):
-            raise UsageError, 'you must provide the "%s" property.'%key
-
-        # do the actual create
         try:
+            if not r.db.security.hasPermission('Create', r.userid, classname):
+                raise Unauthorised('Permission to create %s denied'%classname)
+
+            cl = r.get_class(classname)
+
+            # convert types
+            props = r.props_from_args(cl, args)
+
+            # check for the key property
+            key = cl.getkey()
+            if key and not props.has_key(key):
+                raise UsageError, 'you must provide the "%s" property.'%key
+
+            # do the actual create
             try:
                 result = cl.create(**props)
             except (TypeError, IndexError, ValueError), message:
@@ -170,19 +169,17 @@ class RoundupServer:
 
     def set(self, username, password, designator, *args):
         r = RoundupRequest(self.tracker, username, password)
-        classname, itemid = hyperdb.splitDesignator(designator)
-
-        if not r.db.security.hasPermission('Edit', r.userid, classname,
-                itemid=itemid):
-            raise Unauthorised('Permission to edit %s denied'%designator)
-
-        cl = r.get_class(classname)
-
-        # convert types
-        props = r.props_from_args(cl, args)
         try:
+            classname, itemid = hyperdb.splitDesignator(designator)
+            cl = r.get_class(classname)
+            props = r.props_from_args(cl, args) # convert types
+            for p in props.iterkeys ():
+                if not r.db.security.hasPermission('Edit', r.userid,
+                        classname, p, itemid):
+                    raise Unauthorised('Permission to edit %s of %s denied'%
+                        (p, designator))
             try:
-                cl.set(itemid, **props)
+                return cl.set(itemid, **props)
             except (TypeError, IndexError, ValueError), message:
                 raise UsageError, message
         finally:
