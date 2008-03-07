@@ -1,6 +1,11 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2008-03-01 1.4.5
+Fixed:
+- 'Make a Copy' failed with more than one person in nosy list (sf #1906147)
+
+
 2008-03-01 1.4.4
 Fixed:
 - Security fixes (thanks Roland Meister)

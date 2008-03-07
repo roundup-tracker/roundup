@@ -12,7 +12,8 @@ class TemplatingTestCase(unittest.TestCase):
     def setUp(self):
         self.form = FieldStorage()
         self.client = MockNull()
-        self.client.db = MockDatabase()
+        self.client.db = db = MockDatabase()
+        db.security.hasPermission = lambda *args, **kw: True
         self.client.form = self.form
 
 class HTMLDatabaseTestCase(TemplatingTestCase):
@@ -68,6 +69,24 @@ class FunctionsTestCase(TemplatingTestCase):
             ['green', 'eggs'])
         self.assertEqual(lookupKeys(shrubbery, 'spam', ['ok','2']), ['ok',
             'eggs'])
+
+class HTMLClassTestCase(TemplatingTestCase) :
+
+    def test_multilink(self):
+        """`lookup` of an item will fail if leading or trailing whitespace
+           has not been stripped.
+        """
+        def lookup(key) :
+            self.assertEqual(key, key.strip())
+            return "User%s"%key
+        self.form.list.append(MiniFieldStorage("nosy", "1, 2"))
+        nosy = hyperdb.Multilink("user")
+        self.client.db.classes = dict \
+            ( issue = MockNull(getprops = lambda : dict(nosy = nosy))
+            , user  = MockNull(get = lambda id, name : id, lookup = lookup)
+            )
+        cls = HTMLClass(self.client, "issue")
+        cls["nosy"]
 
 '''
 class HTMLPermissions:
@@ -243,6 +262,7 @@ def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(HTMLDatabaseTestCase))
     suite.addTest(unittest.makeSuite(FunctionsTestCase))
+    suite.addTest(unittest.makeSuite(HTMLClassTestCase))
     return suite
 
 if __name__ == '__main__':

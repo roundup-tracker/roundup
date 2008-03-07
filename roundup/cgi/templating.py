@@ -2134,7 +2134,7 @@ def handleListCGIValue(value):
         value = value.value.strip()
         if not value:
             return []
-        return value.split(',')
+        return [v.strip() for v in value.split(',')]
 
 class HTMLRequest(HTMLInputMixin):
     """The *request*, holding the CGI form and environment.
