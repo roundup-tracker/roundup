@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.93 2008-02-07 03:55:14 richard Exp $
+# $Id: test_mailgw.py,v 1.94 2008-04-11 10:54:00 schlatterbeck Exp $
 
 # TODO: test bcc
 
@@ -344,9 +344,7 @@ Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 _______________________________________________________________________
 ''')
 
-    multipart_msg = '''Content-Type: text/plain;
-  charset="iso-8859-1"
-From: mary <mary@test.test>
+    multipart_msg = '''From: mary <mary@test.test>
 To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
