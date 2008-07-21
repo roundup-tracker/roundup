@@ -1,10 +1,11 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2008-03-01 1.4.5
+2008-??-?? 1.4.5
 Fixed:
 - 'Make a Copy' failed with more than one person in nosy list (sf #1906147)
 - xml-rpc security checks and tests across all backends (sf #1907211)
+- Send a Precedence header in email so autoresponders don't
 
 
 2008-03-01 1.4.4

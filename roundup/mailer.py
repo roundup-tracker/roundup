@@ -1,7 +1,7 @@
 """Sending Roundup-specific mail over SMTP.
 """
 __docformat__ = 'restructuredtext'
-# $Id: mailer.py,v 1.21 2007-11-14 05:53:20 jpend Exp $
+# $Id: mailer.py,v 1.22 2008-07-21 01:44:58 richard Exp $
 
 import time, quopri, os, socket, smtplib, re, sys, traceback
 
@@ -72,6 +72,9 @@ class Mailer:
         writer.addheader('To', ', '.join(to))
         writer.addheader('From', author)
         writer.addheader('Date', formatdate(localtime=True))
+
+        # add a Precedence header so autoresponders ignore us
+        writer.addheader('Precedence', 'bulk')
 
         # Add a unique Roundup header to help filtering
         writer.addheader('X-Roundup-Name', encode_header(tracker_name,
