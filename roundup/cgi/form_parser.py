@@ -563,11 +563,11 @@ class FormParser:
         # either have a non-empty content property or no property at all. In
         # the latter case, nothing will change.
         for (cn, id), props in all_props.items():
-            if (id == '-1') and not props:
+            if id and id.startswith('-') and not props:
                 # new item (any class) with no content - ignore
                 del all_props[(cn, id)]
             elif isinstance(self.db.classes[cn], hyperdb.FileClass):
-                if id == '-1':
+                if id and id.startswith('-'):
                     if not props.get('content', ''):
                         del all_props[(cn, id)]
                 elif props.has_key('content') and not props['content']:

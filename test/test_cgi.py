@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.34 2008-02-27 08:32:51 richard Exp $
+# $Id: test_cgi.py,v 1.35 2008-08-07 05:59:18 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
@@ -568,7 +568,6 @@ class FormTestCase(unittest.TestCase):
             }),
             ({('test', None): {'string': 'a'},
               ('issue', '-1'): {'nosy': ['1']},
-              ('issue', '-2'): {}
              },
              [('issue', '-2', 'superseder', [('issue', '-1')])
              ]
