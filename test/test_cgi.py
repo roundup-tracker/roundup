@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.35 2008-08-07 05:59:18 richard Exp $
+# $Id: test_cgi.py,v 1.36 2008-08-07 06:12:57 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
@@ -77,7 +77,7 @@ class FormTestCase(unittest.TestCase):
             string=hyperdb.String(), number=hyperdb.Number(),
             boolean=hyperdb.Boolean(), link=hyperdb.Link('test'),
             multilink=hyperdb.Multilink('test'), date=hyperdb.Date(),
-            interval=hyperdb.Interval())
+            messages=hyperdb.Multilink('msg'), interval=hyperdb.Interval())
 
         # compile the labels re
         classes = '|'.join(self.db.classes.keys())
@@ -571,6 +571,18 @@ class FormTestCase(unittest.TestCase):
              },
              [('issue', '-2', 'superseder', [('issue', '-1')])
              ]
+            )
+        )
+
+    def testMessages(self):
+        self.assertEqual(self.parseForm({
+            'msg-1@content': 'asdf',
+            'msg-2@content': 'qwer',
+            '@link@messages': 'msg-1, msg-2'}),
+            ({('test', None): {},
+              ('msg', '-2'): {'content': 'qwer'},
+              ('msg', '-1'): {'content': 'asdf'}},
+             [('test', None, 'messages', [('msg', '-1'), ('msg', '-2')])]
             )
         )
 
