@@ -8,6 +8,7 @@ Fixed:
 - Send a Precedence header in email so autoresponders don't
 - Fix mailgw total failure bounce message generation (thanks  Bradley Dean)
 - Fix for postgres 8.3 compatibility (and bug) (sf patch #2030479)
+- Fix for translations (sf patch #2032526)
 
 
 2008-03-01 1.4.4
