@@ -1,4 +1,4 @@
-#$Id: indexer_rdbms.py,v 1.15 2006-10-04 01:12:00 richard Exp $
+#$Id: indexer_rdbms.py,v 1.16 2008-08-07 06:05:53 richard Exp $
 ''' This implements the full-text indexer over two RDBMS tables. The first
 is a mapping of words to occurance IDs. The second maps the IDs to (Class,
 propname, itemid) instances.
@@ -37,6 +37,11 @@ class Indexer(IndexerBase):
         ''' "identifier" is  (classname, itemid, property) '''
         if mime_type != 'text/plain':
             return
+
+        # Ensure all elements of the identifier are integers 'cos the itemid
+        # column is varchar even if item ids may be numbers elsewhere in the
+        # code. ugh.
+        identifier = map(str, identifier)
 
         # first, find the id of the (classname, itemid, property)
         a = self.db.arg
