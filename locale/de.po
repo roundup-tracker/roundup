@@ -3,7 +3,7 @@
 # Initial work by Stefan Niederhauser <stefan.niederhauser@unibas.ch>, 2004.
 # updated by Toni Mueller <toni@debian.org>
 #
-# $Id: de.po,v 1.6 2008-08-07 06:15:19 richard Exp $
+# $Id: de.po,v 1.7 2008-08-07 06:17:23 richard Exp $
 #
 # roundup.pot revision 1.8
 #
@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: Roundup 1.2.1\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2004-12-08 10:25+0200\n"
-"PO-Revision-Date: 2006-10-07 22:45Westeuropäische Normalzeit\n"
+"PO-Revision-Date: 2008-03-19 11:34+0100\n"
 "Last-Translator: Toni Mueller <toni@debian.org>\n"
 "Language-Team: German Translators <roundup-devel@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -73,7 +73,7 @@ msgstr ""
 "\n"
 "Optionen:\n"
 " -i <Instanzverzeichnis> -- Tracker-Instanz zur Administration auswählen\n"
-" -u                -- Benutzer[:Paßwort] für das Ausführen von Befehlen\n"
+" -u                -- Benutzer[:Passwort] für das Ausführen von Befehlen\n"
 " -d                -- lange Bezeichner statt Klassen-Ids anzeigen\n"
 " -c                -- Komma-getrennte Listenausgabe (CSV).\n"
 "                      Analog zu '-S \",\"'.\n"
@@ -211,10 +211,10 @@ msgstr ""
 "werden diese Zeile für Zeile oder (mit der Option -c) kommagetrennt\n"
 "ausgegeben.\n"
 "\n"
-"Bei Änderungen wird ein Benutzername und ein Paßwort benötigt.\n"
+"Bei Änderungen wird ein Benutzername und ein Passwort benötigt.\n"
 "Diese Angaben können in der Umgebungsvariable ROUNDUP_LOGIN oder mit der\n"
 "Option -u gemacht werden, entweder als \"Benutzername\" oder als\n"
-"\"benutzername:paßwort\".\n"
+"\"benutzername:passwort\".\n"
 "\n"
 "Beispiele für Datumsformate:\n"
 "  \"2000-04-17.03:45\" ergibt <Date 2000-04-17.08:45:00>\n"
@@ -299,8 +299,8 @@ msgstr ""
 "        Sie werden aufgefordert, ein Tracker-Verzeichnis zu wählen\n"
 "        (falls Sie keines mit TRACKER_HOME oder -i angegeben haben),\n"
 "        sowie eine Vorlage, den Datenbanktyp und das Administrations-\n"
-"        paßwort anzugeben.\n"
-"        Sie können auch die Vorlage, den Datenbanktyp und das Paßwort\n"
+"        passwort anzugeben.\n"
+"        Sie können auch die Vorlage, den Datenbanktyp und das Passwort\n"
 "        in dieser Reihenfolge auf der Kommandozeile angegen.\n"
 "\n"
 "        Das letzte Argument erlaubt die Angabe von Konfigurations-Optionen.\n"
@@ -433,7 +433,7 @@ msgstr ""
 
 #: ../roundup/admin.py:460
 msgid "Admin Password: "
-msgstr "Administrator-Paßwort: "
+msgstr "Administratorpasswort: "
 
 #: ../roundup/admin.py:461
 msgid "       Confirm: "
@@ -615,7 +615,7 @@ msgstr ""
 #: ../roundup/admin.py:755
 #, python-format
 msgid "%(propname)s (Password): "
-msgstr "%(propname)s (Paßwort):"
+msgstr "%(propname)s (Passwort):"
 
 #: ../roundup/admin.py:757
 #, python-format
@@ -813,7 +813,7 @@ msgstr ""
 "Verwendung: retire Bezeichner[,Bezeichner]*\n"
 "        Verbirgt einen oder mehrere Einträge.\n"
 "\n"
-"        Das Verbergen eines Eintrags bewirkt, daß dieser bei einer Suche\n"
+"        Das Verbergen eines Eintrags bewirkt, dass dieser bei einer Suche\n"
 "        nicht mehr angezeigt wird. Der Schlüssel des verborgenen Eintrags\n"
 "        kann zudem wiederverwendet werden.\n"
 "        "
@@ -884,7 +884,7 @@ msgstr ""
 "\n"
 "        <Klasse>.csv\n"
 "          In dieser Datei sind die Daten zu den Einträgen einer Klasse.\n"
-"          Für sämtliche Eigenschaften der Klasse muß eine Spalte \n"
+"          Für sämtliche Eigenschaften der Klasse muss eine Spalte \n"
 "          exisitieren. In der ersten Zeile stehen die Eigenschaftsnamen.\n"
 "        <Klasse>-journals.csv\n"
 "          In dieser Datei wird der Bearbeitungs-Verlauf der Einträge\n"
@@ -991,12 +991,12 @@ msgstr "Neue Web-Benutzer erhalten die Rolle \"%(role)s\""
 #: ../roundup/admin.py:1233
 #, python-format
 msgid "New Email users get the Roles \"%(role)s\""
-msgstr "Neue Email-Benutzer erhalten die Rollen \"%(role)s\""
+msgstr "Neue E-Mail-Benutzer erhalten die Rollen \"%(role)s\""
 
 #: ../roundup/admin.py:1235
 #, python-format
 msgid "New Email users get the Role \"%(role)s\""
-msgstr "Neue Email-Benutzer erhalten die Rolle \"%(role)s\""
+msgstr "Neue E-Mail-Benutzer erhalten die Rolle \"%(role)s\""
 
 #: ../roundup/admin.py:1238
 #, python-format
@@ -1206,13 +1206,12 @@ msgid ""
 "your email)"
 msgstr ""
 "Ungültiger Authentifizierungscode!\n"
-"(Ein Fehler in Mozilla kann diese Meldung hervorrufen, bitte prüfen Sie Ihr "
-"Email-Konto)"
+"(Ein Fehler in Mozilla kann diese Meldung hervorrufen, bitte prüfen Sie Ihr E-Mail-Konto)"
 
 #: ../roundup/cgi/actions.py:640
 #, python-format
 msgid "Password reset and email sent to %s"
-msgstr "Ihr Paßwort wurde zurückgesetzt und per Email an %s versandt"
+msgstr "Ihr Passwort wurde zurückgesetzt und per E-Mail an %s versandt"
 
 #: ../roundup/cgi/actions.py:649
 msgid "Unknown username"
@@ -1220,16 +1219,16 @@ msgstr "Benutzername unbekannt"
 
 #: ../roundup/cgi/actions.py:657
 msgid "Unknown email address"
-msgstr "Email-Adresse unbekannt"
+msgstr "E-Mail-Adresse unbekannt"
 
 #: ../roundup/cgi/actions.py:662
 msgid "You need to specify a username or address"
-msgstr "Sie müssen einen Benutzernamen oder eine Email-Adresse angeben"
+msgstr "Sie müssen einen Benutzernamen oder eine E-Mail-Adresse angeben"
 
 #: ../roundup/cgi/actions.py:687
 #, python-format
 msgid "Email sent to %s"
-msgstr "Eine Email wurde an %s versandt"
+msgstr "Eine E-Mail wurde an %s versandt"
 
 #: ../roundup/cgi/actions.py:706
 msgid "You are now registered, welcome!"
@@ -1408,7 +1407,7 @@ msgstr "Sie haben mehr als einen Wert für die Eigenschaft \"%s\" übermittelt"
 # ../roundup/cgi/form_parser.py:354 :360
 #: ../roundup/cgi/form_parser.py:354 ../roundup/cgi/form_parser.py:360
 msgid "Password and confirmation text do not match"
-msgstr "Die beiden Paßwort-Felder stimmen nicht überein"
+msgstr "Die beiden Passwortfelder stimmen nicht überein"
 
 #: ../roundup/cgi/form_parser.py:395
 #, python-format
@@ -1419,12 +1418,8 @@ msgstr "Der Wert \"%(value)s\" ist nicht in der Liste für \"%(propname)s\""
 #, python-format
 msgid "Required %(class)s property %(property)s not supplied"
 msgid_plural "Required %(class)s properties %(property)s not supplied"
-msgstr[0] ""
-"Die Eigenschaft \"%(property)s\" muß für die Klasse \"%(class)s\" angegeben "
-"werden"
-msgstr[1] ""
-"Die Eigenschaften \"%(property)\" müssen für die Klasse \"%(class)s\" "
-"angegeben werden"
+msgstr[0] "Die Eigenschaft \"%(property)s\" muss für die Klasse \"%(class)s\" angegeben werden"
+msgstr[1] "Die Eigenschaften \"%(property)s\" müssen für die Klasse \"%(class)s\" angegeben werden"
 
 #: ../roundup/cgi/form_parser.py:529
 msgid "File is empty"
@@ -1530,7 +1525,7 @@ msgid ""
 "default value for DateHTMLProperty must be either DateHTMLProperty or string "
 "date representation."
 msgstr ""
-"Der voreingestellte Wert einer DateHTML-Eigenschaft muß entweder ein\n"
+"Der voreingestellte Wert einer DateHTML-Eigenschaft muss entweder ein\n"
 "DateHTML-Objekt sein oder ein Datum repräsentieren."
 
 #: ../roundup/cgi/templating.py:1674
@@ -1991,8 +1986,7 @@ msgid ""
 "    imaps username:password@server [mailbox]\n"
 "\n"
 msgstr ""
-"Verwendung: %(program)s [-v] [[-C Klasse] -S Eigenschaft=Wert]* <Tracker-"
-"Verzeichnis> [Methode]\n"
+"Verwendung: %(program)s [-v] [[-C Klasse] -S Eigenschaft=Wert]* <Tracker-Verzeichnis> [Methode]\n"
 "\n"
 "Optionen:\n"
 " -v: Versionsnummer ausgeben und beenden\n"
@@ -2008,11 +2002,11 @@ msgstr ""
 "Optional kann mit -C die Klasse des zu erstellenden Eintrags spezifiziert \n"
 "werden. Zudem können Sie mit -S oder --set Eigenschaften der Einträge\n"
 "als Eigenschaft=Wert[;Eigenschaft=Wert]* setzen, analog zum Roundup-\n"
-"Kommandozeilen Programm, resp. zur Syntax in der Betreffszeile einer Email.\n"
+"Kommandozeilen Programm, resp. zur Syntax in der Betreffszeile einer E-Mail.\n"
 "Voreingestellt ist die Klasse \"msg\", aber auch Klassen wie \"issue\",\n"
 "\"user\" oder \"file\" können verwendet werden.\n"
 "\n"
-"Sie können dadurch mehrere Email-Konten für einen Tracker verwenden und\n"
+"Sie können dadurch mehrere E-Mail-Konten für einen Tracker verwenden und\n"
 "unterschiedliche Eintragstypen aus den Nachrichten erstellen.\n"
 "\n"
 "PIPE:\n"
@@ -2023,39 +2017,38 @@ msgstr ""
 " Die angegebene Mailbox-Datei wird ausgelesen, und alle Nachrichten werden\n"
 " an das Modul roundup.mailgw übergeben. Nach erfolgreicher Verarbeitung \n"
 " wird die Mail-Spooldatei geleert.\n"
-" Die Mailbox-Datei wird folgendermaßen angegeben:  mailbox /pfad/zur/"
-"mailbox\n"
+" Die Mailbox-Datei wird folgendermaßen angegeben:  mailbox /pfad/zur/mailbox\n"
 "\n"
 "POP:\n"
 " Das Gateway liest alle Nachrichten vom POP3-Konto und leitet sie weiter an \n"
 " das Modul roundup.mailgw. \n"
 " Das Konto wird folgendermaßen angegeben:\n"
-"    pop benutzername:paßwort@server\n"
-" Benutzername und Paßwort können weggelassen werden:\n"
+"    pop benutzername:passwort@server\n"
+" Benutzername und Passwort können weggelassen werden:\n"
 "    pop benutzername@server\n"
 "    pop server\n"
 " In diesem Fall werden die Anmeldungs-Daten zur Laufzeit erfragt.\n"
 "\n"
 "APOP:\n"
 " Wie POP, aber unter Verwendung von authentifiziertem POP:\n"
-"    apop benutzername:paßwort@server\n"
+"    apop benutzername:passwort@server\n"
 "\n"
 "IMAP:\n"
 " Verbindung mit einem IMAP-Server. Die Syntax entspricht der POP-\n"
 " Spezifikation:\n"
-"    imap benutzername:paßwort@server\n"
+"    imap benutzername:passwort@server\n"
 " Um eine andere Mailbox anstelle von \"INBOX\" zu verwenden, benutzen Sie:\n"
-"    imap benutzername:paßwort@server mailbox\n"
+"    imap benutzername:passwort@server mailbox\n"
 "\n"
 "IMAPS:\n"
 " Verbindung zu einem IMAP-Server über eine sichere SSL-Verbindung.\n"
 " Die Syntax entspricht der IMAP-Spezifikation:\n"
-"    imaps benutzername:paßwort@server [mailbox]\n"
+"    imaps benutzername:passwort@server [mailbox]\n"
 "\n"
 
 #: ../roundup/scripts/roundup_mailgw.py:147
 msgid "Error: not enough source specification information"
-msgstr "Sie haben nicht genügend Angaben zur Mail-Quelle gemacht"
+msgstr "Sie haben nicht genügend Angaben zur E-Mail-Quelle gemacht"
 
 #: ../roundup/scripts/roundup_mailgw.py:157
 msgid "Error: pop specification not valid"
@@ -2069,9 +2062,7 @@ msgstr "Fehler: apop Optionen ungültig"
 msgid ""
 "Error: The source must be either \"mailbox\", \"pop\", \"apop\", \"imap\" or "
 "\"imaps\""
-msgstr ""
-"Fehler: Als Mail-Quelle muß \"mailbox\", \"pop\", \"apop\", \"imap\" oder "
-"\"imaps\" gewählt werden"
+msgstr "Fehler: Als E-Mail-Quelle muss \"mailbox\", \"pop\", \"apop\", \"imap\" oder \"imaps\" gewählt werden"
 
 #: ../roundup/scripts/roundup_server.py:140
 msgid ""
@@ -2102,7 +2093,7 @@ msgstr "Die Gruppe %(group)s existiert nicht"
 
 #: ../roundup/scripts/roundup_server.py:278
 msgid "Can't run as root!"
-msgstr "Dieser Prozeß kann nicht unter dem Administrator-Konto (\"root\") laufen!"
+msgstr "Dieser Prozess kann nicht unter dem Administrator-Konto (\"root\") laufen!"
 
 #: ../roundup/scripts/roundup_server.py:281
 msgid "WARNING: ignoring \"-u\" argument, not root"
@@ -2121,8 +2112,7 @@ msgstr "Der Benutzer %(user)s existiert nicht"
 #: ../roundup/scripts/roundup_server.py:417
 #, python-format
 msgid "Multiprocess mode \"%s\" is not available, switching to single-process"
-msgstr "Der Multiprozeß-Modus \"%s\" ist nicht verfügbar, Einprozeß-Modus"
-"aktiviert"
+msgstr "Der Multiprozessmodus \"%s\" ist nicht verfügbar, Einprozessmodus aktiviert"
 
 #: ../roundup/scripts/roundup_server.py:440
 #, python-format
@@ -2153,11 +2143,11 @@ msgid ""
 "               to the file indicated by PIDfile. The -l option *must* be\n"
 "               specified if -d is used."
 msgstr ""
-" -u <UID>      Startet den Roundup-Server mit dieser Benutzer-Nummer\n"
-" -g <GID>      Startet den Roundup-Server mit dieser Gruppen-Nummer\n"
-" -d <PIDDatei> Startet den Server als Hintergrundprozeß und schreibt\n"
-"               die Prozeß-ID in die Datei PIDDatei.\n"
-"               Die Option -l muß dann auch angegeben werden."
+" -u <UID>      Startet den Roundup-Server mit dieser Benutzernummer\n"
+" -g <GID>      Startet den Roundup-Server mit dieser Gruppennummer\n"
+" -d <PIDDatei> Startet den Server als Hintergrundprozess und schreibt\n"
+"               die Prozess-ID in die Datei PIDDatei.\n"
+"               Die Option -l muss dann auch angegeben werden."
 
 #: ../roundup/scripts/roundup_server.py:521
 #, python-format
@@ -2213,8 +2203,7 @@ msgid ""
 "   pairs on the command-line. Make sure the name part doesn't include\n"
 "   any url-unsafe characters like spaces, as these confuse IE.\n"
 msgstr ""
-"%(message)s"
-"Benutzung: roundup-server [Optionen] [Tracker-Name=Tracker-Verzeichnis]*\n"
+"%(message)sBenutzung: roundup-server [Optionen] [Tracker-Name=Tracker-Verzeichnis]*\n"
 "\n"
 "Optionen:\n"
 " -v            Versionsnummer ausgeben und beenden\n"
@@ -2225,7 +2214,7 @@ msgstr ""
 " -p            Port bestimmen (Voreinstellung: %(port)s)\n"
 " -l            Logdatei bestimmen (anstelle \"stderr\" / \"stdout\")\n"
 " -N            Domainnamen in der Logdatei auflösen (viel langsamer)\n"
-" -t <Modus>    Multiprozeß-Modus (Voreinstellung: %(mp_def)s).\n"
+" -t <Modus>    Multiprozessmodus (Voreinstellung: %(mp_def)s).\n"
 "               Verfügbare Modi: %(mp_types)s.\n"
 "%(os_part)s\n"
 "\n"
@@ -2278,8 +2267,7 @@ msgstr "Konfiguration in der Datei %s gespeichert"
 
 #: ../roundup/scripts/roundup_server.py:694
 msgid "Sorry, you can't run the server as a daemon on this Operating System"
-msgstr ""
-"Auf diesem Betriebssystem kann der Server nicht als Hintergrundprozeß laufen"
+msgstr "Auf diesem Betriebssystem kann der Server nicht als Hintergrundprozess laufen"
 
 #: ../roundup/scripts/roundup_server.py:706
 #, python-format
@@ -2962,7 +2950,7 @@ msgstr "registrieren"
 
 #: ../templates/classic/html/page.html:94
 msgid "Lost&nbsp;your&nbsp;login?"
-msgstr "Paßwort&nbsp;vergessen?"
+msgstr "Passwort&nbsp;vergessen?"
 
 #: ../templates/classic/html/page.html:99
 msgid "Hello, ${user}"
@@ -3074,28 +3062,26 @@ msgstr "Auswahl speichern"
 
 #: ../templates/classic/html/user.forgotten.html:3
 msgid "Password reset request - ${tracker}"
-msgstr "Paßwort zurücksetzen - ${tracker}"
+msgstr "Passwort zurücksetzen - ${tracker}"
 
 #: ../templates/classic/html/user.forgotten.html:5
 msgid "Password reset request"
-msgstr "Paßwort zurücksetzen"
+msgstr "Passwort zurücksetzen"
 
 #: ../templates/classic/html/user.forgotten.html:9
 msgid ""
 "You have two options if you have forgotten your password. If you know the "
 "email address you registered with, enter it below."
-msgstr ""
-"Um Ihr Paßwort zurückzusetzen, geben Sie entweder die Email-Adresse an, mit "
-"der Sie sich registriert haben..."
+msgstr "Um Ihr Passwort zurückzusetzen, geben Sie entweder die E-Mail-Adresse an, mit der Sie sich registriert haben..."
 
 #: ../templates/classic/html/user.forgotten.html:16
 msgid "Email Address:"
-msgstr "Email-Adresse"
+msgstr "E-Mail-Adresse"
 
 #: ../templates/classic/html/user.forgotten.html:24
 #: ../templates/classic/html/user.forgotten.html:34
 msgid "Request password reset"
-msgstr "Paßwort zurücksetzen"
+msgstr "Passwort zurücksetzen"
 
 #: ../templates/classic/html/user.forgotten.html:30
 msgid "Or, if you know your username, then enter it below."
@@ -3109,9 +3095,7 @@ msgstr "Benutzername:"
 msgid ""
 "A confirmation email will be sent to you - please follow the instructions "
 "within it to complete the reset process."
-msgstr ""
-"Danach wird eine Bestätigungs-Mail verschickt. Bitte folgen Sie den "
-"Anweisungen darin, um ihr Paßwort zurückzusetzen."
+msgstr "Danach wird eine Bestätigungs-E-Mail verschickt. Bitte folgen Sie den Anweisungen darin, um ihr Passwort zurückzusetzen."
 
 #: ../templates/classic/html/user.index.html:3
 #: ../templates/minimal/html/user.index.html:3
@@ -3141,7 +3125,7 @@ msgstr "Organisation"
 #: ../templates/classic/html/user.index.html:17
 #: ../templates/minimal/html/user.index.html:15
 msgid "Email address"
-msgstr "Email-Adresse"
+msgstr "E-Mail-Adresse"
 
 #: ../templates/classic/html/user.index.html:18
 msgid "Phone number"
@@ -3197,14 +3181,14 @@ msgstr "Benutzername"
 #: ../templates/minimal/html/user.item.html:31
 #: ../templates/minimal/html/user.register.html:30
 msgid "Login Password"
-msgstr "Paßwort"
+msgstr "Passwort"
 
 #: ../templates/classic/html/user.item.html:46
 #: ../templates/classic/html/user.register.html:29
 #: ../templates/minimal/html/user.item.html:35
 #: ../templates/minimal/html/user.register.html:34
 msgid "Confirm Password"
-msgstr "Paßwort bestätigen"
+msgstr "Passwort bestätigen"
 
 #: ../templates/classic/html/user.item.html:50
 #: ../templates/classic/html/user.register.html:33
@@ -3237,14 +3221,14 @@ msgstr "(als Differenz zu GMT/UTC in Stunden - Voreinstellung: ${zone})"
 #: ../templates/minimal/html/user.item.html:63
 #: ../templates/minimal/html/user.register.html:46
 msgid "E-mail address"
-msgstr "Email-Adresse"
+msgstr "E-Mail-Adresse"
 
 #: ../templates/classic/html/user.item.html:82
 #: ../templates/classic/html/user.register.html:53
 #: ../templates/minimal/html/user.item.html:51
 #: ../templates/minimal/html/user.register.html:50
 msgid "Alternate E-mail addresses<br>One address per line"
-msgstr "<div title=\"alle, von denen Mails an den Bugtracker geschickt werden sollen\">Alternative Email-Adressen</div><i>(eine pro Zeile)</i>"
+msgstr "<div title=\"alle, von denen E-Mails an den Bugtracker geschickt werden sollen\">Alternative E-Mail-Adressen</div><i>(eine pro Zeile)</i>"
 
 #: ../templates/classic/html/user.register.html:4
 #: ../templates/classic/html/user.register.html:7
@@ -3268,9 +3252,7 @@ msgstr "Die Registrierung ist im Gange..."
 msgid ""
 "You will shortly receive an email to confirm your registration. To complete "
 "the registration process, visit the link indicated in the email."
-msgstr ""
-"Sie werden in Kürze eine Bestätigungs-Mail erhalten. Um die Registrierung "
-"abzuschließen, klicken Sie auf den enthaltenen Link."
+msgstr "Sie werden in Kürze eine Bestätigungs-E-Mail erhalten. Um die Registrierung abzuschließen, klicken Sie auf den enthaltenen Link."
 
 #: ../templates/minimal/html/home.html:2
 msgid "Tracker home - ${tracker}"
@@ -3299,10 +3281,6 @@ msgstr "Benutzer bearbeiten - ${tracker}"
 #: ../templates/classic/html/issue.item.html:120;
 msgid "Copy item"
 msgstr "kopieren"
-
-#: ../templating.py:1099;
-msgid "Copy of %(class)s %(id)s"
-msgstr "Kopie von %(class)s%(id)s"
 
 #: ../templates/classic/html/...:123
 msgid "No Sort or group"
