@@ -16,6 +16,7 @@ Fixed:
 - More improvements to German translation (sf #1919446)
 - Add filter() to XML-RPC interface (sf patch #1966456)
 - Fix indexerror when there are no messages to an issue (sf patch #1894249)
+- Prevent broken pipe errors in csv export (sf patch #1911449)
 
 
 2008-03-01 1.4.4

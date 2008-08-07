@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.71 2007-09-20 23:44:58 jpend Exp $
+#$Id: actions.py,v 1.72 2008-08-07 06:33:00 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random, csv, codecs
 
@@ -998,11 +998,11 @@ class ExportCSVAction(Action):
                 self.client.STORAGE_CHARSET, self.client.charset, 'replace')
 
         writer = csv.writer(wfile)
-        writer.writerow(columns)
+        self.client._socket_op(writer.writerow, columns)
 
         # and search
         for itemid in klass.filter(matches, filterspec, sort, group):
-            writer.writerow([str(klass.get(itemid, col)) for col in columns])
+            self.client._socket_op(writer.writerow, [str(klass.get(itemid, col)) for col in columns])
 
         return '\n'
 
