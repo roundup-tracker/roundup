@@ -76,7 +76,7 @@ class RoundupRequest:
         except KeyError:
             raise UsageError, 'no such class "%s"'%classname
 
-    def props_from_args(self, cl, args):
+    def props_from_args(self, cl, args, itemid=None):
         """Construct a list of properties from the given arguments,
         and return them after validation."""
 
@@ -90,7 +90,7 @@ class RoundupRequest:
             key, value = l[0], '='.join(l[1:])
             if value:
                 try:
-                    props[key] = hyperdb.rawToHyperdb(self.db, cl, None,
+                    props[key] = hyperdb.rawToHyperdb(self.db, cl, itemid,
                         key, value)
                 except hyperdb.HyperdbValueError, message:
                     raise UsageError, message
@@ -121,6 +121,16 @@ class RoundupServer:
                      if r.db.security.hasPermission('View', r.userid,
                          classname, propname, itemid)
             ]
+        finally:
+            r.close()
+        return result
+
+    def filter(self, username, password, classname, search_matches, filterspec,
+            sort=[], group=[]):
+        r = RoundupRequest(self.tracker, username, password)
+        try:
+            cl = r.get_class(classname)
+            result = cl.filter(search_matches, filterspec, sort=sort, group=group)
         finally:
             r.close()
         return result
@@ -172,7 +182,7 @@ class RoundupServer:
         try:
             classname, itemid = hyperdb.splitDesignator(designator)
             cl = r.get_class(classname)
-            props = r.props_from_args(cl, args) # convert types
+            props = r.props_from_args(cl, args, itemid) # convert types
             for p in props.iterkeys ():
                 if not r.db.security.hasPermission('Edit', r.userid,
                         classname, p, itemid):
