@@ -1,4 +1,4 @@
-#$Id: back_postgresql.py,v 1.43 2007-09-28 15:15:06 jpend Exp $
+#$Id: back_postgresql.py,v 1.44 2008-08-07 05:50:03 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -261,7 +261,7 @@ class Database(rdbms_common.Database):
     def newid(self, classname):
         sql = "select nextval('_%s_ids') from dual"%classname
         self.sql(sql)
-        return self.cursor.fetchone()[0]
+        return str(self.cursor.fetchone()[0])
 
     def setid(self, classname, setid):
         sql = "select setval('_%s_ids', %s) from dual"%(classname, int(setid))

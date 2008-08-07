@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.196 2008-02-27 08:32:50 richard Exp $
+#$Id: rdbms_common.py,v 1.197 2008-08-07 05:50:03 richard Exp $
 """ Relational database (SQL) backend common code.
 
 Basics:
@@ -1920,7 +1920,7 @@ class Class(hyperdb.Class):
         # sqlite)
         sql = "select id from _%s where _%s=%s and __retired__=%s"%(
             self.classname, self.key, self.db.arg, self.db.arg)
-        self.db.sql(sql, (keyvalue, 0))
+        self.db.sql(sql, (str(keyvalue), 0))
 
         # see if there was a result that's not retired
         row = self.db.sql_fetchone()
