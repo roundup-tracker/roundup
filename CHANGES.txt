@@ -15,6 +15,7 @@ Fixed:
 - Better German translation for retiring users (sf #1998701)
 - More improvements to German translation (sf #1919446)
 - Add filter() to XML-RPC interface (sf patch #1966456)
+- Fix indexerror when there are no messages to an issue (sf patch #1894249)
 
 
 2008-03-01 1.4.4
