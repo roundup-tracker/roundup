@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.197 2008-08-07 05:50:03 richard Exp $
+#$Id: rdbms_common.py,v 1.198 2008-08-07 05:53:14 richard Exp $
 """ Relational database (SQL) backend common code.
 
 Basics:
@@ -2656,11 +2656,12 @@ class FileClass(hyperdb.FileClass, Class):
             self.db.indexer.add_text((self.classname, newid, 'content'),
                 content, mime_type)
 
+        # store off the content as a file
+        self.db.storefile(self.classname, newid, None, content)
+
         # fire reactors
         self.fireReactors('create', newid, None)
 
-        # store off the content as a file
-        self.db.storefile(self.classname, newid, None, content)
         return newid
 
     def get(self, nodeid, propname, default=_marker, cache=1):

@@ -9,6 +9,7 @@ Fixed:
 - Fix mailgw total failure bounce message generation (thanks  Bradley Dean)
 - Fix for postgres 8.3 compatibility (and bug) (sf patch #2030479)
 - Fix for translations (sf patch #2032526)
+- Fire reactors after file storage is all done (sf patch #2001243)
 
 
 2008-03-01 1.4.4

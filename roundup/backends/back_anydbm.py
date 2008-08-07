@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: back_anydbm.py,v 1.210 2008-02-07 00:57:59 richard Exp $
+#$Id: back_anydbm.py,v 1.211 2008-08-07 05:53:14 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -2056,11 +2056,12 @@ class FileClass(hyperdb.FileClass, Class):
         # do the database create
         newid = self.create_inner(**propvalues)
 
+        # store off the content as a file
+        self.db.storefile(self.classname, newid, None, content)
+
         # fire reactors
         self.fireReactors('create', newid, None)
 
-        # store off the content as a file
-        self.db.storefile(self.classname, newid, None, content)
         return newid
 
     def get(self, nodeid, propname, default=_marker, cache=1):
