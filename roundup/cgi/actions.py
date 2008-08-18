@@ -1,6 +1,6 @@
-#$Id: actions.py,v 1.72 2008-08-07 06:33:00 richard Exp $
+#$Id: actions.py,v 1.73 2008-08-18 05:04:01 richard Exp $
 
-import re, cgi, StringIO, urllib, Cookie, time, random, csv, codecs
+import re, cgi, StringIO, urllib, time, random, csv, codecs
 
 from roundup import hyperdb, token, date, password
 from roundup.i18n import _
@@ -741,13 +741,8 @@ class RegoCommon(Action):
         # re-open the database for real, using the user
         self.client.opendb(user)
 
-        # if we have a session, update it
-        if hasattr(self.client, 'session'):
-            self.client.db.getSessionManager().set(self.client.session,
-                user=user, last_use=time.time())
-        else:
-            # new session cookie
-            self.client.set_cookie(user, expire=None)
+        # update session data
+        self.client.session_api.set(user=user)
 
         # nice message
         message = self._('You are now registered, welcome!')
@@ -779,7 +774,7 @@ class RegisterAction(RegoCommon, EditCommon):
 
     def handle(self):
         """Attempt to create a new user based on the contents of the form
-        and then set the cookie.
+        and then remember it in session.
 
         Return 1 on successful login.
         """
@@ -876,15 +871,10 @@ reply's additional "Re:" is ok),
 
 class LogoutAction(Action):
     def handle(self):
-        """Make us really anonymous - nuke the cookie too."""
+        """Make us really anonymous - nuke the session too."""
         # log us out
         self.client.make_user_anonymous()
-
-        # construct the logout cookie
-        now = Cookie._getdate()
-        self.client.additional_headers['Set-Cookie'] = \
-           '%s=deleted; Max-Age=0; expires=%s; Path=%s;' % (
-               self.client.cookie_name, now, self.client.cookie_path)
+        self.client.session_api.destroy()
 
         # Let the user know what's going on
         self.client.ok_message.append(self._('You are logged out'))
@@ -924,11 +914,10 @@ class LoginAction(Action):
         # now we're OK, re-open the database for real, using the user
         self.client.opendb(self.client.user)
 
-        # set the session cookie
+        # save user in session
+        self.client.session_api.set(user=self.client.user)
         if self.form.has_key('remember'):
-            self.client.set_cookie(self.client.user, expire=86400*365)
-        else:
-            self.client.set_cookie(self.client.user, expire=None)
+            self.client.session_api.update(set_cookie=True, expire=24*3600*365)
 
         # If we came from someplace, go back there
         if self.form.has_key('__came_from'):

@@ -1,4 +1,4 @@
-#$Id: sessions_dbm.py,v 1.9 2007-09-27 06:18:53 jpend Exp $
+#$Id: sessions_dbm.py,v 1.10 2008-08-18 05:04:01 richard Exp $
 """This module defines a very basic store that's used by the CGI interface
 to store session and one-time-key information.
 
@@ -139,15 +139,15 @@ class BasicDatabase:
         if sess is None or now > sess + 60:
             self.set(sessid, __timestamp=now)
 
-    def clean(self, now):
-        """Age sessions, remove when they haven't been used for a week.
-        """
+    def clean(self):
+        ''' Remove session records that haven't been used for a week. '''
+        now = time.time()
         week = 60*60*24*7
         for sessid in self.list():
             sess = self.get(sessid, '__timestamp', None)
             if sess is None:
-                sess=time.time()
                 self.updateTimestamp(sessid)
+                continue
             interval = now - sess
             if interval > week:
                 self.destroy(sessid)

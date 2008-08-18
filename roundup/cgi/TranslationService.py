@@ -13,8 +13,8 @@
 #   translate(domain, msgid, mapping, context, target_language, default)
 #
 
-__version__ = "$Revision: 1.5 $"[11:-2]
-__date__ = "$Date: 2008-08-07 05:51:32 $"[7:-2]
+__version__ = "$Revision: 1.6 $"[11:-2]
+__date__ = "$Date: 2008-08-18 05:04:01 $"[7:-2]
 
 from roundup import i18n
 from roundup.cgi.PageTemplates import Expressions, PathIterator, TALES
@@ -38,8 +38,6 @@ class TranslationServiceMixin:
         if not isinstance(msgid, unicode):
             msgid = unicode(msgid, 'utf8')
         msgtrans=self.ugettext(msgid)
-        if not isinstance(msgtrans,unicode):
-            msgtrans=unicode(msgtrans, 'utf8')
         return msgtrans.encode(self.OUTPUT_ENCODING)
 
     def ngettext(self, singular, plural, number):
@@ -48,8 +46,6 @@ class TranslationServiceMixin:
         if not isinstance(plural, unicode):
             plural = unicode(plural, 'utf8')
         msgtrans=self.ungettext(singular, plural, number)
-        if not isinstance(msgtrans,unicode):
-            msgtrans=unicode(msgtrans, 'utf8')
         return msgtrans.encode(self.OUTPUT_ENCODING)
 
 class TranslationService(TranslationServiceMixin, i18n.RoundupTranslations):

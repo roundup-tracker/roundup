@@ -1,4 +1,4 @@
-#$Id: sessions_rdbms.py,v 1.7 2007-09-25 19:49:19 jpend Exp $
+#$Id: sessions_rdbms.py,v 1.8 2008-08-18 05:04:01 richard Exp $
 """This module defines a very basic store that's used by the CGI interface
 to store session and one-time-key information.
 
@@ -84,10 +84,11 @@ class BasicDatabase:
             self.name, self.db.arg, self.name, self.db.arg),
             (now, infoid, now-60))
 
-    def clean(self, now):
-        """Age sessions, remove when they haven't been used for a week.
-        """
-        old = now - 60*60*24*7
+    def clean(self):
+        ''' Remove session records that haven't been used for a week. '''
+        now = time.time()
+        week = 60*60*24*7
+        old = now - week
         self.cursor.execute('delete from %ss where %s_time < %s'%(self.name,
             self.name, self.db.arg), (old, ))
 

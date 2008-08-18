@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.238 2007-09-22 21:20:57 jpend Exp $
+# $Id: client.py,v 1.239 2008-08-18 05:04:02 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -88,6 +88,112 @@ class LiberalCookie(SimpleCookie):
             dict.__setitem__(self, key, None)
 
 
+class Session:
+    '''
+    Needs DB to be already opened by client
+
+    Session attributes at instantiation:
+
+    - "client" - reference to client for add_cookie function
+    - "session_db" - session DB manager
+    - "cookie_name" - name of the cookie with session id
+    - "_sid" - session id for current user
+    - "_data" - session data cache
+
+    session = Session(client)
+    session.set(name=value)
+    value = session.get(name)
+
+    session.destroy()  # delete current session
+    session.clean_up() # clean up session table
+
+    session.update(set_cookie=True, expire=3600*24*365)
+                       # refresh session expiration time, setting persistent
+                       # cookie if needed to last for 'expire' seconds
+
+    '''
+
+    def __init__(self, client):
+        self._data = {}
+        self._sid  = None
+
+        self.client = client
+        self.session_db = client.db.getSessionManager()
+
+        # parse cookies for session id
+        self.cookie_name = 'roundup_session_%s' % \
+            re.sub('[^a-zA-Z]', '', client.instance.config.TRACKER_NAME)
+        cookies = LiberalCookie(client.env.get('HTTP_COOKIE', ''))
+        if self.cookie_name in cookies:
+            if not self.session_db.exists(cookies[self.cookie_name].value):
+                self._sid = None
+                # remove old cookie
+                self.client.add_cookie(self.cookie_name, None)
+            else:
+                self._sid = cookies[self.cookie_name].value
+                self._data = self.session_db.getall(self._sid)
+
+    def _gen_sid(self):
+        ''' generate a unique session key '''
+        while 1:
+            s = '%s%s'%(time.time(), random.random())
+            s = binascii.b2a_base64(s).strip()
+            if not self.session_db.exists(s):
+                break
+
+        # clean up the base64
+        if s[-1] == '=':
+            if s[-2] == '=':
+                s = s[:-2]
+            else:
+                s = s[:-1]
+        return s
+
+    def clean_up(self):
+        '''Remove expired sessions'''
+        self.session_db.clean()
+
+    def destroy(self):
+        self.client.add_cookie(self.cookie_name, None)
+        self._data = {}
+        self.session_db.destroy(self._sid)
+        self.client.db.commit()
+
+    def get(self, name, default=None):
+        return self._data.get(name, default)
+
+    def set(self, **kwargs):
+        self._data.update(kwargs)
+        if not self._sid:
+            self._sid = self._gen_sid()
+            self.session_db.set(self._sid, **self._data)
+            # add session cookie
+            self.update(set_cookie=True)
+
+            # XXX added when patching 1.4.4 for backward compatibility
+            # XXX remove
+            self.client.session = self._sid
+        else:
+            self.session_db.set(self._sid, **self._data)
+            self.client.db.commit()
+
+    def update(self, set_cookie=False, expire=None):
+        ''' update timestamp in db to avoid expiration
+
+            if 'set_cookie' is True, set cookie with 'expire' seconds lifetime
+            if 'expire' is None - session will be closed with the browser
+             
+            XXX the session can be purged within a week even if a cookie
+                lifetime is longer
+        '''
+        self.session_db.updateTimestamp(self._sid)
+        self.client.db.commit()
+
+        if set_cookie:
+            self.client.add_cookie(self.cookie_name, self._sid, expire=expire)
+
+
+
 class Client:
     '''Instantiate to handle one CGI request.
 
@@ -106,9 +212,11 @@ class Client:
 
     During the processing of a request, the following attributes are used:
 
+    - "db" 
     - "error_message" holds a list of error messages
     - "ok_message" holds a list of OK messages
-    - "session" is the current user session id
+    - "session" is deprecated in favor of session_api (XXX remove)
+    - "session_api" is the interface to store data in session
     - "user" is the current user's name
     - "userid" is the current user's id
     - "template" is the current :template context
@@ -116,12 +224,12 @@ class Client:
     - "nodeid" is the current context item id
 
     User Identification:
-     If the user has no login cookie, then they are anonymous and are logged
+     Users that are absent in session data are anonymous and are logged
      in as that user. This typically gives them all Permissions assigned to the
      Anonymous Role.
 
-     Once a user logs in, they are assigned a session. The Client instance
-     keeps the nodeid of the session as the "session" attribute.
+     Every user is assigned a session. "session_api" is the interface to work
+     with session data.
 
     Special form variables:
      Note that in various places throughout this code, special form
@@ -186,11 +294,9 @@ class Client:
         # this is the "cookie path" for this tracker (ie. the path part of
         # the "base" url)
         self.cookie_path = urlparse.urlparse(self.base)[2]
-        self.cookie_name = 'roundup_session_' + re.sub('[^a-zA-Z]', '',
-            self.instance.config.TRACKER_NAME)
         # cookies to set in http responce
         # {(path, name): (value, expire)}
-        self.add_cookies = {}
+        self._cookies = {}
 
         # see if we need to re-parse the environment for the form (eg Zope)
         if form is None:
@@ -216,7 +322,7 @@ class Client:
         # default character set
         self.charset = self.STORAGE_CHARSET
 
-        # parse cookies (used in charset and session lookups)
+        # parse cookies (used for charset lookups)
         # use our own LiberalCookie to handle bad apps on the same
         # server that have set cookies that are out of spec
         self.cookie = LiberalCookie(self.env.get('HTTP_COOKIE', ''))
@@ -384,25 +490,28 @@ class Client:
                 return self.write_html(self._(error_message))
 
     def clean_sessions(self):
-        """Age sessions, remove when they haven't been used for a week.
-
-        Do it only once an hour.
-
-        Note: also cleans One Time Keys, and other "session" based stuff.
+        """Deprecated
+           XXX remove
         """
-        sessions = self.db.getSessionManager()
-        last_clean = sessions.get('last_clean', 'last_use', 0)
+        self.clean_up()
 
-        # time to clean?
-        #week = 60*60*24*7
+    def clean_up(self):
+        """Remove expired sessions and One Time Keys.
+
+           Do it only once an hour.
+        """
         hour = 60*60
         now = time.time()
+
+        # XXX: hack - use OTK table to store last_clean time information
+        #      'last_clean' string is used instead of otk key
+        last_clean = self.db.getOTKManager().get('last_clean', 'last_use', 0)
         if now - last_clean < hour:
             return
 
-        sessions.clean(now)
-        self.db.getOTKManager().clean(now)
-        sessions.set('last_clean', last_use=time.time())
+        self.session_api.clean_up()
+        self.db.getOTKManager().clean()
+        self.db.getOTKManager().set('last_clean', last_use=now)
         self.db.commit(fail_ok=True)
 
     def determine_charset(self):
@@ -495,9 +604,12 @@ class Client:
         """Determine who the user is"""
         self.opendb('admin')
 
-        # make sure we have the session Class
-        self.clean_sessions()
-        sessions = self.db.getSessionManager()
+        # get session data from db
+        # XXX: rename
+        self.session_api = Session(self)
+
+        # take the opportunity to cleanup expired sessions and otks
+        self.clean_up()
 
         user = None
         # first up, try http authorization if enabled
@@ -526,22 +638,14 @@ class Client:
 
                     user = username
 
-        # if user was not set by http authorization, try session cookie
-        if (not user and self.cookie.has_key(self.cookie_name)
-                and (self.cookie[self.cookie_name].value != 'deleted')):
-            # get the session key from the cookie
-            self.session = self.cookie[self.cookie_name].value
-            # get the user from the session
-            try:
-                # update the lifetime datestamp
-                sessions.updateTimestamp(self.session)
-                self.db.commit()
-                user = sessions.get(self.session, 'user')
-            except KeyError:
-                # not valid, ignore id
-                pass
+        # if user was not set by http authorization, try session lookup
+        if not user:
+            user = self.session_api.get('user')
+            if user:
+                # update session lifetime datestamp
+                self.session_api.update()
 
-        # if no user name set by http authorization or session cookie
+        # if no user name set by http authorization or session lookup
         # the user is anonymous
         if not user:
             user = 'anonymous'
@@ -954,7 +1058,7 @@ class Client:
 
         headers = headers.items()
 
-        for ((path, name), (value, expire)) in self.add_cookies.items():
+        for ((path, name), (value, expire)) in self._cookies.items():
             cookie = "%s=%s; Path=%s;"%(name, value, path)
             if expire is not None:
                 cookie += " expires=%s;"%Cookie._getdate(expire)
@@ -989,36 +1093,18 @@ class Client:
             path = self.cookie_path
         if not value:
             expire = -1
-        self.add_cookies[(path, name)] = (value, expire)
+        self._cookies[(path, name)] = (value, expire)
 
     def set_cookie(self, user, expire=None):
-        """Set up a session cookie for the user.
+        """Deprecated. Use session_api calls directly
 
-        Also store away the user's login info against the session.
+        XXX remove
         """
-        sessions = self.db.getSessionManager()
 
-        # generate a unique session key
-        while 1:
-            s = '%s%s'%(time.time(), random.random())
-            s = binascii.b2a_base64(s).strip()
-            if not sessions.exists(s):
-                break
-        self.session = s
-
-        # clean up the base64
-        if self.session[-1] == '=':
-            if self.session[-2] == '=':
-                self.session = self.session[:-2]
-            else:
-                self.session = self.session[:-1]
-
-        # insert the session in the sessiondb
-        sessions.set(self.session, user=user)
-        self.db.commit()
-
-        # add session cookie
-        self.add_cookie(self.cookie_name, self.session, expire=expire)
+        # insert the session in the session db
+        self.session_api.set(user=user)
+        # refresh session cookie
+        self.session_api.update(set_cookie=True, expire=expire)
 
     def make_user_anonymous(self):
         ''' Make us anonymous
