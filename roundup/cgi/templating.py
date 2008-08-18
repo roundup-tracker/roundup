@@ -1245,9 +1245,19 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
         return self.is_edit_ok()
 
 class StringHTMLProperty(HTMLProperty):
-    hyper_re = re.compile(r'((?P<url>\w{3,6}://\S+)|'
-                          r'(?P<email>[-+=%/\w\.]+@[\w\.\-]+)|'
-                          r'(?P<item>(?P<class>[A-Za-z_]+)(\s*)(?P<id>\d+)))')
+    hyper_re = re.compile(r'''(
+        (?P<url>
+          ((ht|f)tp(s?)://|www\.)?          # prefix
+          ([\w]+:\w+@)?                     # username/password
+          (([\w\-]+\.)+([\w]{2,5}))         # hostname
+          (:[\d]{1,5})?                     # port
+          (/[\w\-$.+!*(),;:@&=?/~\\#%]*)?   # path etc.
+        )|
+        (?P<email>[-+=%/\w\.]+@[\w\.\-]+)|
+        (?P<item>(?P<class>[A-Za-z_]+)(\s*)(?P<id>\d+))
+    )''', re.X | re.I)
+    protocol_re = re.compile('^(ht|f)tp(s?)://', re.I)
+
     def _hyper_repl_item(self,match,replacement):
         item = match.group('item')
         cls = match.group('class').lower()
@@ -1263,8 +1273,16 @@ class StringHTMLProperty(HTMLProperty):
 
     def _hyper_repl(self, match):
         if match.group('url'):
-            s = match.group('url')
-            return '<a href="%s">%s</a>'%(s, s)
+            u = s = match.group('url')
+            if not self.protocol_re.search(s):
+                u = 'http://' + s
+            # catch an escaped ">" at the end of the URL
+            if s.endswith('&gt;'):
+                u = s = s[:-4]
+                e = '&gt;'
+            else:
+                e = ''
+            return '<a href="%s">%s</a>%s'%(u, s, e)
         elif match.group('email'):
             s = match.group('email')
             return '<a href="mailto:%s">%s</a>'%(s, s)

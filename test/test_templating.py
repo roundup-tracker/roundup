@@ -88,6 +88,38 @@ class HTMLClassTestCase(TemplatingTestCase) :
         cls = HTMLClass(self.client, "issue")
         cls["nosy"]
 
+    def test_url_match(self):
+        '''Test the URL regular expression in StringHTMLProperty.
+        '''
+        def t(s, **groups):
+            m = StringHTMLProperty.hyper_re.search(s)
+            self.assertNotEquals(m, None, '%r did not match'%s)
+            d = m.groupdict()
+            for g in groups:
+                self.assertEquals(d[g], groups[g], '%s %r != %r in %r'%(g, d[g],
+                    groups[g], s))
+
+        #t('123.321.123.321', 'url')
+        t('http://roundup.net/', url='http://roundup.net/')
+        t('<HTTP://roundup.net/>', url='HTTP://roundup.net/')
+        t('www.a.ex', url='www.a.ex')
+        t('http://a.ex', url='http://a.ex')
+        t('http://a.ex/?foo&bar=baz\\.@!$%()qwerty',
+            url='http://a.ex/?foo&bar=baz\\.@!$%()qwerty')
+        t('www.net', url='www.net')
+        t('richard@com.example', email='richard@com.example')
+        t('r@a.com', email='r@a.com')
+        t('i1', **{'class':'i', 'id':'1'})
+        t('item123', **{'class':'item', 'id':'123'})
+
+    def test_url_replace(self):
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', '')
+        def t(s): return p.hyper_re.sub(p._hyper_repl, s)
+        ae = self.assertEquals
+        ae(t('http://roundup.net/'), '<a href="http://roundup.net/">http://roundup.net/</a>')
+        ae(t('&lt;HTTP://roundup.net/&gt;'), '&lt;<a href="HTTP://roundup.net/">HTTP://roundup.net/</a>&gt;')
+        ae(t('&lt;www.roundup.net&gt;'), '&lt;<a href="http://www.roundup.net">www.roundup.net</a>&gt;')
+
 '''
 class HTMLPermissions:
     def is_edit_ok(self):
