@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.97 2008-03-07 01:11:55 richard Exp $
+# $Id: db_test_base.py,v 1.98 2008-08-18 06:41:32 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets, base64, os.path
 
@@ -335,12 +335,13 @@ class DBTest(MyTestCase):
             deadline=date.Date('2008-02-29'))
         self.assertEquals(str(self.db.issue.get(nid, 'deadline')),
             '2008-02-29.00:00:00')
-        self.db.issue.set(nid, deadline=date.Date('2008-02-29'))
+        self.assertEquals(self.db.issue.filter(None,
+            {'deadline': '2008-02-29'}), [nid])
+        self.db.issue.set(nid, deadline=date.Date('2008-03-01'))
         self.assertEquals(str(self.db.issue.get(nid, 'deadline')),
-            '2008-02-29.00:00:00')
-        self.assertEquals(self.db.issue.filter(None, {'deadline': '2008-02-29'}),
-            [nid])
-
+            '2008-03-01.00:00:00')
+        self.assertEquals(self.db.issue.filter(None,
+            {'deadline': '2008-02-29'}), [])
 
     def testDateUnset(self):
         for commit in (0,1):
