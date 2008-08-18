@@ -18,6 +18,7 @@ Fixed:
 - Fix indexerror when there are no messages to an issue (sf patch #1894249)
 - Prevent broken pipe errors in csv export (sf patch #1911449)
 - Session API and cleanup thanks anatoly t.
+- Make WSGI handler threadsafe (sf #1968027)
 
 
 2008-03-01 1.4.4

@@ -37,27 +37,28 @@ class RequestDispatcher(object):
     def __call__(self, environ, start_response):
         """Initialize with `apache.Request` object"""
         self.environ = environ
-        self.__start_response = start_response
+        request = RequestDispatcher(self.home, self.debug, self.timing)
+        request.__start_response = start_response
 
-        self.wfile = Writer(self)
-        self.__wfile = None
+        request.wfile = Writer(request)
+        request.__wfile = None
 
         tracker = roundup.instance.open(self.home, not self.debug)
 
         # need to strip the leading '/'
         environ["PATH_INFO"] = environ["PATH_INFO"][1:]
-        if self.timing:
-            environ["CGI_SHOW_TIMING"] = self.timing
+        if request.timing:
+            environ["CGI_SHOW_TIMING"] = request.timing
 
         form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ)
 
-        client = tracker.Client(tracker, self, environ, form,
-            self.translator)
+        client = tracker.Client(tracker, request, environ, form,
+            request.translator)
         try:
             client.main()
         except roundup.cgi.client.NotFound:
-            self.start_response([('Content-Type', 'text/html')], 404)
-            self.wfile.write('Not found: %s'%client.path)
+            request.start_response([('Content-Type', 'text/html')], 404)
+            request.wfile.write('Not found: %s'%client.path)
 
         # all body data has been written using wfile
         return []
