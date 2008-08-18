@@ -4,9 +4,9 @@ define="edit_ok context/is_edit_ok"
 >
 <title metal:fill-slot="head_title">
 <tal:if condition="context/id" i18n:translate=""
- >User <span tal:replace="context/id" i18n:name="id"
- />: <span tal:replace="context/username" i18n:name="title"
- /> - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
+ >User <tal:x content="context/id" i18n:name="id"
+ />: <tal:x content="context/username" i18n:name="title"
+ /> - <tal:x content="config/TRACKER_NAME" i18n:name="tracker"
 /></tal:if>
 <tal:if condition="not:context/id" i18n:translate=""
  >New User - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"

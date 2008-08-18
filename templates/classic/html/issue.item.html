@@ -2,9 +2,9 @@
 <tal:block metal:use-macro="templates/page/macros/icing">
 <title metal:fill-slot="head_title">
 <tal:block condition="context/id" i18n:translate=""
- >Issue <span tal:replace="context/id" i18n:name="id"
- />: <span tal:replace="context/title" i18n:name="title"
- /> - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
+ >Issue <tal:x tal:content="context/id" i18n:name="id"
+ />: <tal:x content="context/title" i18n:name="title"
+ /> - <tal:x content="config/TRACKER_NAME" i18n:name="tracker"
 /></tal:block>
 <tal:block condition="not:context/id" i18n:translate=""
  >New Issue - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
@@ -122,10 +122,10 @@ python:db.user.classhelp('username,realname,address', property='nosy', width='60
 </tal:block>
 
 <p tal:condition="context/id" i18n:translate="">
- Created on <b><tal:x replace="context/creation" i18n:name="creation" /></b>
- by <b><tal:x replace="context/creator" i18n:name="creator" /></b>,
- last changed <b><tal:x replace="context/activity" i18n:name="activity" /></b>
- by <b><tal:x replace="context/actor" i18n:name="actor" /></b>.
+ Created on <b tal:content="context/creation" i18n:name="creation" />
+ by <b tal:content="context/creator" i18n:name="creator" />,
+ last changed <b content="context/activity" i18n:name="activity" />
+ by <b tal:content="context/actor" i18n:name="actor" />.
 </p>
 
 <table class="files" tal:condition="context/files">

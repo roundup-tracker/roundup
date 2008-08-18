@@ -22,6 +22,7 @@ Fixed:
 - Improved URL matching RE (sf #2038858)
 - Allow binary file content submission via XML-RPC (sf #1995623)
 - Don't run old code on newer database (sf #1979556)
+- Fix HTML injection into page title
 
 
 2008-03-01 1.4.4
