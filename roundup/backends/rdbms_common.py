@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.198 2008-08-07 05:53:14 richard Exp $
+#$Id: rdbms_common.py,v 1.199 2008-08-18 06:25:47 richard Exp $
 """ Relational database (SQL) backend common code.
 
 Basics:
@@ -254,6 +254,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             Return boolean whether we need to save the schema.
         """
         version = self.database_schema.get('version', 1)
+        if version > self.current_db_version:
+            raise DatabaseError('attempting to run rev %d DATABASE with rev '
+                '%d CODE!'%(version, self.current_db_version))
         if version == self.current_db_version:
             # nothing to do
             return 0
