@@ -1,4 +1,4 @@
-#$Id: indexer_common.py,v 1.8 2006-11-11 03:01:54 richard Exp $
+#$Id: indexer_common.py,v 1.9 2008-08-18 06:57:49 richard Exp $
 import re, sets
 
 from roundup import hyperdb
@@ -8,7 +8,7 @@ STOPWORDS = [
     "FOR", "IF", "IN", "INTO", "IS", "IT",
     "NO", "NOT", "OF", "ON", "OR", "SUCH",
     "THAT", "THE", "THEIR", "THEN", "THERE", "THESE",
-    "THEY", "THIS", "TO", "WAS", "WILL", "WITH" 
+    "THEY", "THIS", "TO", "WAS", "WILL", "WITH"
 ]
 
 def _isLink(propclass):
@@ -26,7 +26,7 @@ class Indexer:
 
     def getHits(self, search_terms, klass):
         return self.find(search_terms)
-    
+
     def search(self, search_terms, klass, ignore={}):
         '''Display search results looking for [search, terms] associated
         with the hyperdb Class "klass". Ignore hits on {class: property}.
@@ -81,6 +81,7 @@ class Indexer:
                 del propspec[propname]
 
         # klass.find tells me the klass nodeids the linked nodes relate to
+        propdefs = klass.getprops()
         for resid in klass.find(**propspec):
             resid = str(resid)
             if not nodeids.has_key(id):
@@ -88,7 +89,12 @@ class Indexer:
             node_dict = nodeids[resid]
             # now figure out where it came from
             for linkprop in propspec.keys():
-                for nodeid in klass.get(resid, linkprop):
+                v = klass.get(resid, linkprop)
+                # the link might be a Link so deal with a single result or None
+                if isinstance(propdefs[linkprop], hyperdb.Link):
+                    if v is None: continue
+                    v = [v]
+                for nodeid in v:
                     if propspec[linkprop].has_key(nodeid):
                         # OK, this node[propname] has a winner
                         if not node_dict.has_key(linkprop):

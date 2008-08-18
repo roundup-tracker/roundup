@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.98 2008-08-18 06:41:32 richard Exp $
+# $Id: db_test_base.py,v 1.99 2008-08-18 06:57:49 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets, base64, os.path
 
@@ -81,7 +81,8 @@ def setupSchema(db, create, module):
     issue = module.IssueClass(db, "issue", title=String(indexme="yes"),
         status=Link("status"), nosy=Multilink("user"), deadline=Date(),
         foo=Interval(), files=Multilink("file"), assignedto=Link('user'),
-        priority=Link('priority'), spam=Multilink('msg'))
+        priority=Link('priority'), spam=Multilink('msg'),
+        feedback=Link('msg'))
     stuff = module.Class(db, "stuff", stuff=String())
     session = module.Class(db, 'session', title=String())
     msg = module.FileClass(db, "msg", date=Date(),
@@ -857,6 +858,15 @@ class DBTest(MyTestCase):
 
         # unindexed stopword
         self.assertEquals(self.db.indexer.search(['the'], self.db.issue), {})
+
+    def testIndexerSearchingLink(self):
+        m1 = self.db.msg.create(content="one two")
+        i1 = self.db.issue.create(messages=[m1])
+        m2 = self.db.msg.create(content="two three")
+        i2 = self.db.issue.create(feedback=m2)
+        self.db.commit()
+        self.assertEquals(self.db.indexer.search(['two'], self.db.issue),
+            {i1: {'messages': [m1]}, i2: {'feedback': [m2]}})
 
     def testIndexerSearchMulti(self):
         m1 = self.db.msg.create(content="one two")
@@ -1725,7 +1735,7 @@ class DBTest(MyTestCase):
         keys = props.keys()
         keys.sort()
         self.assertEqual(keys, ['activity', 'actor', 'assignedto', 'creation',
-            'creator', 'deadline', 'files', 'fixer', 'foo', 'id', 'messages',
+            'creator', 'deadline', 'feedback', 'files', 'fixer', 'foo', 'id', 'messages',
             'nosy', 'priority', 'spam', 'status', 'superseder', 'title'])
         self.assertEqual(self.db.issue.get('1', "fixer"), None)
 
@@ -1739,7 +1749,7 @@ class DBTest(MyTestCase):
         keys = props.keys()
         keys.sort()
         self.assertEqual(keys, ['activity', 'actor', 'assignedto', 'creation',
-            'creator', 'deadline', 'files', 'foo', 'id', 'messages',
+            'creator', 'deadline', 'feedback', 'files', 'foo', 'id', 'messages',
             'nosy', 'priority', 'spam', 'status', 'superseder'])
         self.assertEqual(self.db.issue.list(), ['1'])
 
