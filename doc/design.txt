@@ -599,7 +599,7 @@ practice::
     4
     >>> db.issue.create(title="abuse", status=1)
     5
-    >>> hyperdb.Class(db, "user", username=hyperdb.Key(),
+    >>> hyperdb.Class(db, "user", username=hyperdb.String(),
     ... password=hyperdb.String())
     <hyperdb.Class "user">
     >>> db.issue.addprop(fixer=hyperdb.Link("user"))
