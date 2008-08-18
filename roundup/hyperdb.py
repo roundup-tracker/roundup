@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: hyperdb.py,v 1.131 2007-09-27 06:18:53 jpend Exp $
+# $Id: hyperdb.py,v 1.132 2008-08-18 06:21:53 richard Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -53,8 +53,12 @@ class String(_Type):
     def __init__(self, indexme='no', required=False):
         super(String, self).__init__(required)
         self.indexme = indexme == 'yes'
-    def from_raw(self, value, **kw):
+    def from_raw(self, value, propname='', **kw):
         """fix the CRLF/CR -> LF stuff"""
+        if propname == 'content':
+            # Why oh why wasn't the FileClass content property a File
+            # type from the beginning?
+            return value
         return fixNewlines(value)
     def sort_repr (self, cls, val, name):
         if not val:

@@ -69,6 +69,12 @@ class TestCase(unittest.TestCase):
         results = self.server.display('joe', 'random', issueid, 'title')
         self.assertEqual(results['title'], 'foo')
 
+    def testFileCreate(self):
+        results = self.server.create('joe', 'random', 'file', 'content=hello\r\nthere')
+        fileid = 'file' + results
+        results = self.server.display('joe', 'random', fileid, 'content')
+        self.assertEqual(results['content'], 'hello\r\nthere')
+
     def testAuthUnknown(self):
         # Unknown user (caught in XMLRPC frontend).
         self.assertRaises(Unauthorised, self.server.list,
