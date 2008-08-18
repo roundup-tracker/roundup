@@ -1,4 +1,4 @@
-#$Id: indexer_common.py,v 1.9 2008-08-18 06:57:49 richard Exp $
+#$Id: indexer_common.py,v 1.10 2008-08-18 07:03:44 richard Exp $
 import re, sets
 
 from roundup import hyperdb
@@ -61,7 +61,9 @@ class Indexer:
                 continue
 
             # if it's a property on klass, it's easy
-            nodeid = entry[1]
+            # (make sure the nodeid is str() not unicode() as returned by some
+            # backends as that can cause problems down the track)
+            nodeid = str(entry[1])
             if classname == klass.classname:
                 if not nodeids.has_key(nodeid):
                     nodeids[nodeid] = {}
