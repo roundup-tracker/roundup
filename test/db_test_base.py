@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.99 2008-08-18 06:57:49 richard Exp $
+# $Id: db_test_base.py,v 1.100 2008-08-19 00:52:01 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets, base64, os.path
 
@@ -1764,8 +1764,8 @@ class DBTest(MyTestCase):
         keys = props.keys()
         keys.sort()
         self.assertEqual(keys, ['activity', 'actor', 'assignedto', 'creation',
-            'creator', 'deadline', 'files', 'fixer', 'foo', 'id', 'messages',
-            'nosy', 'priority', 'spam', 'status', 'superseder'])
+            'creator', 'deadline', 'feedback', 'files', 'fixer', 'foo', 'id',
+            'messages', 'nosy', 'priority', 'spam', 'status', 'superseder'])
         self.assertEqual(self.db.issue.list(), ['1'])
 
     def testNosyMail(self) :
