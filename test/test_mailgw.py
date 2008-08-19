@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.94 2008-04-11 10:54:00 schlatterbeck Exp $
+# $Id: test_mailgw.py,v 1.95 2008-08-19 01:10:35 richard Exp $
 
 # TODO: test bcc
 
@@ -39,6 +39,11 @@ class DiffHelper:
     def compareMessages(self, new, old):
         """Compare messages for semantic equivalence."""
         new, old = Message(new), Message(old)
+
+        # all Roundup-generated messages have "Precedence: bulk"
+        old['Precedence'] = 'bulk'
+
+        # don't try to compare the date
         del new['date'], old['date']
 
         if not new == old:
@@ -48,10 +53,10 @@ class DiffHelper:
                 if key.lower() == 'x-roundup-version':
                     # version changes constantly, so handle it specially
                     if new[key] != __version__:
-                        res.append('  %s: %s != %s' % (key, __version__,
+                        res.append('  %s: %r != %r' % (key, __version__,
                             new[key]))
                 elif new.get(key, '') != old.get(key, ''):
-                    res.append('  %s: %s != %s' % (key, old.get(key, ''),
+                    res.append('  %s: %r != %r' % (key, old.get(key, ''),
                         new.get(key, '')))
 
             body_diff = self.compareStrings(new.fp.read(), old.fp.read())
