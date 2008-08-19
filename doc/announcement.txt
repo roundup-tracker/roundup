@@ -1,6 +1,6 @@
-I'm proud to release version 1.4.5 of Roundup.
+I'm proud to release version 1.4.5.1 of Roundup.
 
-1.4.5 has one new feature:
+1.4.5.1 has one new feature:
 
 - Add use of username/password stored in ~/.netrc in mailgw (sf patch
   #1912105)

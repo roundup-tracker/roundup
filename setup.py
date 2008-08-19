@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.103 2008-08-19 01:25:16 richard Exp $
+# $Id: setup.py,v 1.104 2008-08-19 01:52:58 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -352,7 +352,7 @@ def main():
 '''In this release
 ===============
 
-1.4.5 has one new feature:
+1.4.5.1 has one new feature:
 
 - Add use of username/password stored in ~/.netrc in mailgw (sf patch
   #1912105)
