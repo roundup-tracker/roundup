@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2008-??-?? 1.4.5
+2008-08-19 1.4.5
 Feature:
 - Add use of username/password stored in ~/.netrc in mailgw (sf patch
   #1912105)
@@ -9,8 +9,8 @@ Feature:
 Fixed:
 - 'Make a Copy' failed with more than one person in nosy list (sf #1906147)
 - xml-rpc security checks and tests across all backends (sf #1907211)
-- Send a Precedence header in email so autoresponders don't
-- Fix mailgw total failure bounce message generation (thanks  Bradley Dean)
+- Send a Precedence header in email so (well-written) autoresponders don't
+- Fix mailgw total failure bounce message generation (thanks Bradley Dean)
 - Fix for postgres 8.3 compatibility (and bug) (sf patch #2030479 and bug
   #1959261)
 - Fix for translations (sf patch #2032526)
@@ -19,9 +19,9 @@ Fixed:
 - Better German translation for retiring users (sf #1998701)
 - More improvements to German translation (sf #1919446)
 - Add filter() to XML-RPC interface (sf patch #1966456)
-- Fix indexerror when there are no messages to an issue (sf patch #1894249)
+- Fix IndexError when there are no messages to an issue (sf patch #1894249)
 - Prevent broken pipe errors in csv export (sf patch #1911449)
-- Session API and cleanup thanks anatoly t.
+- New session API and cleanup thanks anatoly t.
 - Make WSGI handler threadsafe (sf #1968027)
 - Improved URL matching RE (sf #2038858)
 - Allow binary file content submission via XML-RPC (sf #1995623)

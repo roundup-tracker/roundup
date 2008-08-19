@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: __init__.py,v 1.51 2008-03-01 08:18:06 richard Exp $
+# $Id: __init__.py,v 1.52 2008-08-19 01:25:16 richard Exp $
 
 '''Roundup - issue tracking for knowledge workers.
 
@@ -68,6 +68,6 @@ much prettier cake :)
 '''
 __docformat__ = 'restructuredtext'
 
-__version__ = '1.4.4'
+__version__ = '1.4.5'
 
 # vim: set filetype=python ts=4 sw=4 et si
