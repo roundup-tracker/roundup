@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.100 2008-08-19 00:52:01 richard Exp $
+# $Id: db_test_base.py,v 1.101 2008-08-19 01:40:59 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, sets, base64, os.path
 
@@ -280,7 +280,7 @@ class DBTest(MyTestCase):
             # try a couple of the built-in iterable types to make
             # sure that we accept them and handle them properly
             # try a set as input for the multilink
-            nid = self.db.issue.create(title="spam", nosy=set(u1))
+            nid = self.db.issue.create(title="spam", nosy=sets.Set(u1))
             if commit: self.db.commit()
             self.assertEqual(self.db.issue.get(nid, "nosy"), [u1])
             self.assertRaises(TypeError, self.db.issue.set, nid,
@@ -290,7 +290,7 @@ class DBTest(MyTestCase):
             if commit: self.db.commit()
             self.assertEqual(self.db.issue.get(nid, "nosy"), [])
             # make sure we accept a frozen set
-            self.db.issue.set(nid, nosy=frozenset([u1,u2]))
+            self.db.issue.set(nid, nosy=sets.Set([u1,u2]))
             if commit: self.db.commit()
             l = [u1,u2]; l.sort()
             m = self.db.issue.get(nid, "nosy"); m.sort()
@@ -1794,9 +1794,9 @@ class DBTest(MyTestCase):
             self.failUnless("New submission from admin" in mail_msg)
             self.failUnless("one two" in mail_msg)
             self.failIf("File 'test1.txt' not attached" in mail_msg)
-            self.failUnless(base64.b64encode("xxx") in mail_msg)
+            self.failUnless(base64.encodestring("xxx").rstrip() in mail_msg)
             self.failUnless("File 'test2.txt' not attached" in mail_msg)
-            self.failIf(base64.b64encode("yyy") in mail_msg)
+            self.failIf(base64.encodestring("yyy").rstrip() in mail_msg)
         finally :
             Mailer.smtp_send = backup
 

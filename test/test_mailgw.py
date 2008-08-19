@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.95 2008-08-19 01:10:35 richard Exp $
+# $Id: test_mailgw.py,v 1.96 2008-08-19 01:40:59 richard Exp $
 
 # TODO: test bcc
 
@@ -682,7 +682,10 @@ Subject: Re: Testing...
 
 This is a followup
 '''), nodeid)
-        # now try a longer interval
+
+
+    def testFollowupTitleMatchInterval(self):
+        nodeid = self.doNewIssue()
         self.db.config.MAILGW_SUBJECT_CONTENT_MATCH = 'creation +1d'
         self.assertEqual(self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
