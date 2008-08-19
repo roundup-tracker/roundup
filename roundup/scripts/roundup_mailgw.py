@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundup_mailgw.py,v 1.24 2008-08-19 01:01:32 richard Exp $
+# $Id: roundup_mailgw.py,v 1.25 2008-08-19 01:06:01 richard Exp $
 
 """Command-line script stub that calls the roundup.mailgw.
 """
@@ -165,8 +165,10 @@ def main(argv):
         if source == 'mailbox':
             return handler.do_mailbox(specification)
 
-        # Try parsing the netrc file first.
+        # the source will be a network server, so obtain the credentials to
+        # use in connecting to the server
         try:
+            # attempt to obtain credentials from a ~/.netrc file
             authenticator = netrc.netrc().authenticators(specification)
             username = authenticator[0]
             password = authenticator[2]
@@ -183,14 +185,15 @@ def main(argv):
             else:
                 return usage(argv, _('Error: %s specification not valid') % source)
 
-        if source == 'pop' or source == 'pops':
+        # now invoke the mailgw handler depending on the server handler requested
+        if source.startswith('pop'):
             ssl = source.endswith('s')
             if ssl and sys.version_info<(2,4):
                 return usage(argv, _('Error: a later version of python is required'))
             return handler.do_pop(server, username, password, ssl)
         elif source == 'apop':
             return handler.do_apop(server, username, password)
-        elif source == 'imap' or source == 'imaps':
+        elif source.startswith('imap'):
             ssl = source.endswith('s')
             mailbox = ''
             if len(args) > 3:
@@ -198,7 +201,7 @@ def main(argv):
             return handler.do_imap(server, username, password, mailbox, ssl)
 
         return usage(argv, _('Error: The source must be either "mailbox",'
-            ' "pop", "apop", "imap" or "imaps"'))
+            ' "pop", "pops", "apop", "imap" or "imaps"'))
     finally:
         # handler might have closed the initial db and opened a new one
         handler.db.close()
