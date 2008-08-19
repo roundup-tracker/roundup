@@ -3,7 +3,7 @@
 # updated by Toni Mueller <toni@debian.org>
 # updated by Tobias Herp <tobias.herp@gmx.de>
 #
-# $Id: de.po,v 1.8 2008-08-07 06:31:16 richard Exp $
+# $Id: de.po,v 1.9 2008-08-19 01:51:10 richard Exp $
 #
 # roundup.pot revision 1.8
 #
@@ -1681,7 +1681,7 @@ msgstr ""
 #: ../roundup/cgi/templating.py:1085
 #: ../roundup/cgi/templating.py:979
 msgid "<tr><td colspan=4><strong>Note:</strong></td></tr>"
-msgstr "<tr><td colspan="4"><strong>Bitte beachten:</strong></td></tr>"
+msgstr "<tr><td colspan=\"4\"><strong>Bitte beachten:</strong></td></tr>"
 
 #: ../roundup/cgi/templating.py:1094
 #: ../roundup/cgi/templating.py:988
