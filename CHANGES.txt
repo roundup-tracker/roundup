@@ -2,6 +2,10 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
 2008-??-?? 1.4.5
+Feature:
+- Add use of username/password stored in ~/.netrc in mailgw (sf patch
+  #1912105)
+
 Fixed:
 - 'Make a Copy' failed with more than one person in nosy list (sf #1906147)
 - xml-rpc security checks and tests across all backends (sf #1907211)

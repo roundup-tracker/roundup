@@ -34,6 +34,13 @@ emptied once all messages have been successfully handled. The file is
 specified as:
  \fImailbox /path/to/mailbox\fP
 
+In all of the following the username and password can be stored in a
+~/.netrc file. In this case only the server name need be specified on
+the command-line.
+
+The username and/or password will be prompted for if not supplied on
+the command-line or in ~/.netrc.
+
 \fBPOP\fP
 .br
 In the third case, the gateway reads all messages from the POP server
@@ -45,8 +52,7 @@ The username and password may be omitted:
  \fIpop username@server\fP
  \fIpop server\fP
 .br
-are both valid. The username and/or password will be prompted for if
-not supplied on the command-line.
+are both valid.
 
 \fBAPOP\fP
 Same as POP, but using Authenticated POP:

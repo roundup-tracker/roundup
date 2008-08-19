@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundup_mailgw.py,v 1.23 2006-12-13 23:32:39 richard Exp $
+# $Id: roundup_mailgw.py,v 1.24 2008-08-19 01:01:32 richard Exp $
 
 """Command-line script stub that calls the roundup.mailgw.
 """
@@ -24,7 +24,7 @@ __docformat__ = 'restructuredtext'
 from roundup import version_check
 from roundup import __version__ as roundup_version
 
-import sys, os, re, cStringIO, getopt, socket
+import sys, os, re, cStringIO, getopt, socket, netrc
 
 from roundup import mailgw
 from roundup.i18n import _
@@ -67,16 +67,22 @@ UNIX mailbox:
  specified as:
    mailbox /path/to/mailbox
 
+In all of the following the username and password can be stored in a
+~/.netrc file. In this case only the server name need be specified on
+the command-line.
+
+The username and/or password will be prompted for if not supplied on
+the command-line or in ~/.netrc.
+
 POP:
  In the third case, the gateway reads all messages from the POP server
  specified and submits each in turn to the roundup.mailgw module. The
  server is specified as:
     pop username:password@server
- The username and password may be omitted:
+ Alternatively, one can omit one or both of username and password:
     pop username@server
     pop server
- are both valid. The username and/or password will be prompted for if
- not supplied on the command-line.
+ are both valid.
 
 POPS:
  Connect to a POP server over ssl. This requires python 2.4 or later.
@@ -158,33 +164,38 @@ def main(argv):
 
         if source == 'mailbox':
             return handler.do_mailbox(specification)
-        elif source == 'pop' or source == 'pops':
-            m = re.match(r'((?P<user>[^:]+)(:(?P<pass>.+))?@)?(?P<server>.+)',
-                specification)
-            if m:
-                ssl = source.endswith('s')
-                if ssl and sys.version_info<(2,4):
-                    return usage(argv, _('Error: a later version of python is required'))
-                return handler.do_pop(m.group('server'), m.group('user'),
-                    m.group('pass'),ssl)
-            return usage(argv, _('Error: pop specification not valid'))
+
+        # Try parsing the netrc file first.
+        try:
+            authenticator = netrc.netrc().authenticators(specification)
+            username = authenticator[0]
+            password = authenticator[2]
+            server = specification
+            # IOError if no ~/.netrc file, TypeError if the hostname
+            # not found in the ~/.netrc file:
+        except (IOError, TypeError):
+            match = re.match(r'((?P<user>[^:]+)(:(?P<pass>.+))?@)?(?P<server>.+)',
+                             specification)
+            if match:
+                username = match.group('user')
+                password = match.group('pass')
+                server = match.group('server')
+            else:
+                return usage(argv, _('Error: %s specification not valid') % source)
+
+        if source == 'pop' or source == 'pops':
+            ssl = source.endswith('s')
+            if ssl and sys.version_info<(2,4):
+                return usage(argv, _('Error: a later version of python is required'))
+            return handler.do_pop(server, username, password, ssl)
         elif source == 'apop':
-            m = re.match(r'((?P<user>[^:]+)(:(?P<pass>.+))?@)?(?P<server>.+)',
-                specification)
-            if m:
-                return handler.do_apop(m.group('server'), m.group('user'),
-                    m.group('pass'))
-            return usage(argv, _('Error: apop specification not valid'))
+            return handler.do_apop(server, username, password)
         elif source == 'imap' or source == 'imaps':
-            m = re.match(r'((?P<user>[^:]+)(:(?P<pass>.+))?@)?(?P<server>.+)',
-                specification)
-            if m:
-                ssl = source.endswith('s')
-                mailbox = ''
-                if len(args) > 3:
-                    mailbox = args[3]
-                return handler.do_imap(m.group('server'), m.group('user'),
-                    m.group('pass'), mailbox, ssl)
+            ssl = source.endswith('s')
+            mailbox = ''
+            if len(args) > 3:
+                mailbox = args[3]
+            return handler.do_imap(server, username, password, mailbox, ssl)
 
         return usage(argv, _('Error: The source must be either "mailbox",'
             ' "pop", "apop", "imap" or "imaps"'))
