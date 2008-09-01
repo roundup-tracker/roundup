@@ -4,6 +4,7 @@ are given with the most recent entry first.
 2008-09-01 1.4.6
 Fixed:
 - Bug introduced in 1.4.5 in RDBMS full-text indexing
+- Make URL matching code less matchy
 
 
 2008-08-19 1.4.5

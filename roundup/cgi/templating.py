@@ -1247,11 +1247,18 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
 class StringHTMLProperty(HTMLProperty):
     hyper_re = re.compile(r'''(
         (?P<url>
-          ((ht|f)tp(s?)://|www\.)?          # prefix
+         (
+          (ht|f)tp(s?)://                   # protocol
           ([\w]+:\w+@)?                     # username/password
-          (([\w\-]+\.)+([\w]{2,5}))         # hostname
-          (:[\d]{1,5})?                     # port
-          (/[\w\-$.+!*(),;:@&=?/~\\#%]*)?   # path etc.
+          ([\w\-]+\.)+                      # hostname
+          [\w]{2,5}                         # TLD
+         |                                  # ... or ...
+          www\.                             # "www."
+          ([\w\-]+\.)+                      # hostname
+          [\w]{2,5}                         # TLD
+         )
+         (:[\d]{1,5})?                     # port
+         (/[\w\-$.+!*(),;:@&=?/~\\#%]*)?   # path etc.
         )|
         (?P<email>[-+=%/\w\.]+@[\w\.\-]+)|
         (?P<item>(?P<class>[A-Za-z_]+)(\s*)(?P<id>\d+))
