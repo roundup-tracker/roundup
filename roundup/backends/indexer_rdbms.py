@@ -1,4 +1,4 @@
-#$Id: indexer_rdbms.py,v 1.17 2008-08-07 22:02:30 richard Exp $
+#$Id: indexer_rdbms.py,v 1.18 2008-09-01 00:43:02 richard Exp $
 ''' This implements the full-text indexer over two RDBMS tables. The first
 is a mapping of words to occurance IDs. The second maps the IDs to (Class,
 propname, itemid) instances.
@@ -41,7 +41,7 @@ class Indexer(IndexerBase):
         # Ensure all elements of the identifier are strings 'cos the itemid
         # column is varchar even if item ids may be numbers elsewhere in the
         # code. ugh.
-        identifier = map(str, identifier)
+        identifier = tuple(map(str, identifier))
 
         # first, find the id of the (classname, itemid, property)
         a = self.db.arg
@@ -82,12 +82,12 @@ class Indexer(IndexerBase):
         * more rules here
         '''
         if not wordlist:
-            return {}
+            return []
 
         l = [word.upper() for word in wordlist if 26 > len(word) > 2]
 
         if not l:
-            return {}
+            return []
 
         if self.db.implements_intersect:
             # simple AND search
@@ -96,7 +96,7 @@ class Indexer(IndexerBase):
             self.db.cursor.execute(sql, tuple(l))
             r = self.db.cursor.fetchall()
             if not r:
-                return {}
+                return []
             a = ','.join([self.db.arg] * len(r))
             sql = 'select _class, _itemid, _prop from __textids '\
                 'where _textid in (%s)'%a
@@ -125,7 +125,7 @@ class Indexer(IndexerBase):
 
             r = map(lambda x: x[0], self.db.cursor.fetchall())
             if not r:
-                return {}
+                return []
 
             a = ','.join([self.db.arg] * len(r))
             sql = 'select _class, _itemid, _prop from __textids '\

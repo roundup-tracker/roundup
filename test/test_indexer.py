@@ -18,9 +18,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: test_indexer.py,v 1.10 2006-02-07 04:59:05 richard Exp $
+# $Id: test_indexer.py,v 1.11 2008-09-01 00:43:02 richard Exp $
 
 import os, unittest, shutil
+
+from roundup.backends import get_backend, have_backend
+from roundup.backends.indexer_rdbms import Indexer
+
+# borrow from other tests
+from db_test_base import setupSchema, config
+from test_postgresql import postgresqlOpener
+from test_mysql import mysqlOpener
+from test_sqlite import sqliteOpener
 
 class db:
     class config(dict):
@@ -38,29 +47,35 @@ class IndexerTest(unittest.TestCase):
         self.dex = Indexer(db)
         self.dex.load_index()
 
+    def assertSeqEqual(self, s1, s2):
+        # first argument is the db result we're testing, second is the desired result
+        # some db results don't have iterable rows, so we have to work around that
+        if [i for x,y in zip(s1, s2) for i,j in enumerate(y) if x[i] != j]:
+            self.fail('contents of %r != %r'%(s1, s2))
+
     def test_basics(self):
         self.dex.add_text(('test', '1', 'foo'), 'a the hello world')
         self.dex.add_text(('test', '2', 'foo'), 'blah blah the world')
-        self.assertEqual(self.dex.find(['world']), [('test', '1', 'foo'),
+        self.assertSeqEqual(self.dex.find(['world']), [('test', '1', 'foo'),
                                                     ('test', '2', 'foo')])
-        self.assertEqual(self.dex.find(['blah']), [('test', '2', 'foo')])
-        self.assertEqual(self.dex.find(['blah', 'hello']), [])
+        self.assertSeqEqual(self.dex.find(['blah']), [('test', '2', 'foo')])
+        self.assertSeqEqual(self.dex.find(['blah', 'hello']), [])
 
     def test_change(self):
         self.dex.add_text(('test', '1', 'foo'), 'a the hello world')
         self.dex.add_text(('test', '2', 'foo'), 'blah blah the world')
-        self.assertEqual(self.dex.find(['world']), [('test', '1', 'foo'),
+        self.assertSeqEqual(self.dex.find(['world']), [('test', '1', 'foo'),
                                                     ('test', '2', 'foo')])
         self.dex.add_text(('test', '1', 'foo'), 'a the hello')
-        self.assertEqual(self.dex.find(['world']), [('test', '2', 'foo')])
+        self.assertSeqEqual(self.dex.find(['world']), [('test', '2', 'foo')])
 
     def test_clear(self):
         self.dex.add_text(('test', '1', 'foo'), 'a the hello world')
         self.dex.add_text(('test', '2', 'foo'), 'blah blah the world')
-        self.assertEqual(self.dex.find(['world']), [('test', '1', 'foo'),
+        self.assertSeqEqual(self.dex.find(['world']), [('test', '1', 'foo'),
                                                     ('test', '2', 'foo')])
         self.dex.add_text(('test', '1', 'foo'), '')
-        self.assertEqual(self.dex.find(['world']), [('test', '2', 'foo')])
+        self.assertSeqEqual(self.dex.find(['world']), [('test', '2', 'foo')])
 
     def tearDown(self):
         shutil.rmtree('test-index')
@@ -75,15 +90,74 @@ class XapianIndexerTest(IndexerTest):
     def tearDown(self):
         shutil.rmtree('test-index')
 
+class RDBMSIndexerTest(IndexerTest):
+    def setUp(self):
+        # remove previous test, ignore errors
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+        self.db = self.module.Database(config, 'admin')
+        self.dex = Indexer(self.db)
+    def tearDown(self):
+        if hasattr(self, 'db'):
+            self.db.close()
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+
+class postgresqlIndexerTest(postgresqlOpener, RDBMSIndexerTest):
+    def setUp(self):
+        postgresqlOpener.setUp(self)
+        RDBMSIndexerTest.setUp(self)
+    def tearDown(self):
+        RDBMSIndexerTest.tearDown(self)
+        postgresqlOpener.tearDown(self)
+
+class mysqlIndexerTest(mysqlOpener, RDBMSIndexerTest):
+    def setUp(self):
+        mysqlOpener.setUp(self)
+        RDBMSIndexerTest.setUp(self)
+    def tearDown(self):
+        RDBMSIndexerTest.tearDown(self)
+        mysqlOpener.tearDown(self)
+
+class sqliteIndexerTest(sqliteOpener, RDBMSIndexerTest):
+    pass
+
 def test_suite():
     suite = unittest.TestSuite()
+
     suite.addTest(unittest.makeSuite(IndexerTest))
+
     try:
         import xapian
         suite.addTest(unittest.makeSuite(XapianIndexerTest))
     except ImportError:
         print "Skipping Xapian indexer tests"
         pass
+
+    if have_backend('postgresql'):
+        # make sure we start with a clean slate
+        if postgresqlOpener.module.db_exists(config):
+            postgresqlOpener.module.db_nuke(config, 1)
+        suite.addTest(unittest.makeSuite(postgresqlIndexerTest))
+    else:
+        print "Skipping postgresql indexer tests"
+
+    if have_backend('mysql'):
+        # make sure we start with a clean slate
+        if mysqlOpener.module.db_exists(config):
+            mysqlOpener.module.db_nuke(config)
+        suite.addTest(unittest.makeSuite(mysqlIndexerTest))
+    else:
+        print "Skipping mysql indexer tests"
+
+    if have_backend('sqlite'):
+        # make sure we start with a clean slate
+        if sqliteOpener.module.db_exists(config):
+            sqliteOpener.module.db_nuke(config)
+        suite.addTest(unittest.makeSuite(sqliteIndexerTest))
+    else:
+        print "Skipping sqlite indexer tests"
+
     return suite
 
 if __name__ == '__main__':

@@ -1,6 +1,11 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2008-09-01 1.4.6
+Fixed:
+- Bug introduced in 1.4.5 in RDBMS full-text indexing
+
+
 2008-08-19 1.4.5
 Feature:
 - Add use of username/password stored in ~/.netrc in mailgw (sf patch
