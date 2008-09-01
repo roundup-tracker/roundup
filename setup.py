@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.104 2008-08-19 01:52:58 richard Exp $
+# $Id: setup.py,v 1.105 2008-09-01 01:58:32 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -352,34 +352,10 @@ def main():
 '''In this release
 ===============
 
-1.4.5.1 has one new feature:
+1.4.6 is a bugfix release:
 
-- Add use of username/password stored in ~/.netrc in mailgw (sf patch
-  #1912105)
-
-It is otherwise mostly a bugfix release:
-
-- 'Make a Copy' failed with more than one person in nosy list (sf #1906147)
-- xml-rpc security checks and tests across all backends (sf #1907211)
-- Send a Precedence header in email so (well-written) autoresponders don't
-- Fix mailgw total failure bounce message generation (thanks Bradley Dean)
-- Fix for postgres 8.3 compatibility (and bug) (sf patch #2030479 and bug
-  #1959261)
-- Fix for translations (sf patch #2032526)
-- Fire reactors after file storage is all done (sf patch #2001243)
-- Allow negative ids other than -1 for item generation (sf patch #1982481)
-- Better German translation for retiring users (sf #1998701)
-- More improvements to German translation (sf #1919446)
-- Add filter() to XML-RPC interface (sf patch #1966456)
-- Fix IndexError when there are no messages to an issue (sf patch #1894249)
-- Prevent broken pipe errors in csv export (sf patch #1911449)
-- New session API and cleanup thanks anatoly t.
-- Make WSGI handler threadsafe (sf #1968027)
-- Improved URL matching RE (sf #2038858)
-- Allow binary file content submission via XML-RPC (sf #1995623)
-- Don't run old code on newer database (sf #1979556)
-- Fix HTML injection into page title
-- Fix indexer handling of indexed Link properties (sf #1936876)
+- Fix bug introduced in 1.4.5 in RDBMS full-text indexing
+- Make URL matching code less matchy
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
