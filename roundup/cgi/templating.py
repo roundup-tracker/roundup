@@ -1249,10 +1249,11 @@ class StringHTMLProperty(HTMLProperty):
         (?P<url>
          (
           (ht|f)tp(s?)://                   # protocol
-          ([\w]+:\w+@)?                     # username/password
-          ([\w\-]+\.)+                      # hostname
-          [\w]{2,5}                         # TLD
+          ([\w]+(:\w+)?@)?                  # username/password
+          ([\w\-]+)                         # hostname
+          ((\.[\w-]+)+)?                    # .domain.etc
          |                                  # ... or ...
+          ([\w]+(:\w+)?@)?                  # username/password
           www\.                             # "www."
           ([\w\-]+\.)+                      # hostname
           [\w]{2,5}                         # TLD

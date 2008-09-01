@@ -94,7 +94,8 @@ class HTMLClassTestCase(TemplatingTestCase) :
         def t(s, nothing=False, **groups):
             m = StringHTMLProperty.hyper_re.search(s)
             if nothing:
-                self.assertEquals(m, None, '%r matched'%s)
+                if m:
+                    self.assertEquals(m, None, '%r matched (%r)'%(s, m.groupdict()))
                 return
             else:
                 self.assertNotEquals(m, None, '%r did not match'%s)
@@ -104,7 +105,11 @@ class HTMLClassTestCase(TemplatingTestCase) :
                     groups[g], s))
 
         #t('123.321.123.321', 'url')
+        t('http://localhost/', url='http://localhost/')
         t('http://roundup.net/', url='http://roundup.net/')
+        t('http://richard@localhost/', url='http://richard@localhost/')
+        t('http://richard:sekrit@localhost/',
+            url='http://richard:sekrit@localhost/')
         t('<HTTP://roundup.net/>', url='HTTP://roundup.net/')
         t('www.a.ex', url='www.a.ex')
         t('foo.a.ex', nothing=True)
@@ -117,6 +122,8 @@ class HTMLClassTestCase(TemplatingTestCase) :
         t('r@a.com', email='r@a.com')
         t('i1', **{'class':'i', 'id':'1'})
         t('item123', **{'class':'item', 'id':'123'})
+        t('www.user:pass@host.net', email='pass@host.net')
+        t('user:pass@www.host.net', url='user:pass@www.host.net')
 
     def test_url_replace(self):
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', '')
