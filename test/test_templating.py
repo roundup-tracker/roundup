@@ -124,6 +124,8 @@ class HTMLClassTestCase(TemplatingTestCase) :
         t('item123', **{'class':'item', 'id':'123'})
         t('www.user:pass@host.net', email='pass@host.net')
         t('user:pass@www.host.net', url='user:pass@www.host.net')
+        t('123.35', nothing=True)
+        t('-.3535', nothing=True)
 
     def test_url_replace(self):
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', '')
