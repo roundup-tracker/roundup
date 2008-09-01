@@ -5,6 +5,7 @@ are given with the most recent entry first.
 Fixed:
 - Fix bug introduced in 1.4.5 in RDBMS full-text indexing
 - Make URL matching code less matchy
+- Try to clarify mail_domain config setting
 
 
 2008-08-19 1.4.5
