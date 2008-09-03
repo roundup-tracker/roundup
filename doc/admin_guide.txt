@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.27 $
+:Version: $Revision: 1.28 $
 
 .. contents::
 
@@ -207,7 +207,11 @@ take:
 2. If you're using an RDBMS backend, make a backup of its contents now.
 3. Make a backup of the tracker home itself.
 4. Stop the tracker web and email frontends.
-5. Follow the steps in the `upgrading documentation`_ for the new version of
+5. Install the new version of the software::
+
+    python setup.py install
+
+6. Follow the steps in the `upgrading documentation`_ for the new version of
    the software in the copied.
 
    Usually you will be asked to run `roundup_admin migrate` on your tracker
@@ -215,25 +219,7 @@ take:
 
    It's safe to run this even if it's not required, so just get into the
    habit.
-6. You may test each of the admin tool, web interface and mail gateway using
-   the new version of the software. To do this, invoke the scripts directly
-   in the source directory with::
-
-    PYTHONPATH=. python roundup/scripts/roundup_server.py <normal arguments>
-    PYTHONPATH=. python roundup/scripts/roundup_admin.py <normal arguments>
-    PYTHONPATH=. python roundup/scripts/roundup_mailgw.py <normal arguments>
-
-   Note that on Windows, this would read::
-
-    C:\sources\roundup-0.7.4> SET PYTHONPATH=.
-    C:\sources\roundup-0.7.4> python roundup/scripts/roundup_server.py <normal arguments>
-
-7. Once you're comfortable that the upgrade will work using that copy, you
-   should install the new version of the software::
-
-    python setup.py install
-
-8. Restart your tracker web and email frontends.
+7. Restart your tracker web and email frontends.
 
 If something bad happens, you may reinstate your backup of the tracker and
 reinstall the older version of the sofware using the same install command::
