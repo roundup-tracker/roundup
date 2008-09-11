@@ -1,4 +1,4 @@
-#$Id: indexer_common.py,v 1.10 2008-08-18 07:03:44 richard Exp $
+#$Id: indexer_common.py,v 1.11 2008-09-11 19:41:07 schlatterbeck Exp $
 import re, sets
 
 from roundup import hyperdb
@@ -86,8 +86,9 @@ class Indexer:
         propdefs = klass.getprops()
         for resid in klass.find(**propspec):
             resid = str(resid)
-            if not nodeids.has_key(id):
-                nodeids[resid] = {}
+            if resid in nodeids:
+                continue # we ignore duplicate resids
+            nodeids[resid] = {}
             node_dict = nodeids[resid]
             # now figure out where it came from
             for linkprop in propspec.keys():
