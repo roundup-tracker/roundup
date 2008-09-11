@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: test_indexer.py,v 1.11 2008-09-01 00:43:02 richard Exp $
+# $Id: test_indexer.py,v 1.12 2008-09-11 18:48:07 schlatterbeck Exp $
 
 import os, unittest, shutil
 
@@ -48,9 +48,14 @@ class IndexerTest(unittest.TestCase):
         self.dex.load_index()
 
     def assertSeqEqual(self, s1, s2):
-        # first argument is the db result we're testing, second is the desired result
-        # some db results don't have iterable rows, so we have to work around that
-        if [i for x,y in zip(s1, s2) for i,j in enumerate(y) if x[i] != j]:
+        # first argument is the db result we're testing, second is the
+        # desired result some db results don't have iterable rows, so we
+        # have to work around that
+        # Also work around some dbs not returning items in the expected
+        # order. This would be *so* much easier with python2.4's sorted.
+        s1 = list(s1)
+        s1.sort()
+        if s1 != s2:
             self.fail('contents of %r != %r'%(s1, s2))
 
     def test_basics(self):
