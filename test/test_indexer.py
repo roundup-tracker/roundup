@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: test_indexer.py,v 1.12 2008-09-11 18:48:07 schlatterbeck Exp $
+# $Id: test_indexer.py,v 1.13 2008-09-11 19:10:30 schlatterbeck Exp $
 
 import os, unittest, shutil
 
@@ -55,7 +55,7 @@ class IndexerTest(unittest.TestCase):
         # order. This would be *so* much easier with python2.4's sorted.
         s1 = list(s1)
         s1.sort()
-        if s1 != s2:
+        if [i for x,y in zip(s1, s2) for i,j in enumerate(y) if x[i] != j]:
             self.fail('contents of %r != %r'%(s1, s2))
 
     def test_basics(self):
