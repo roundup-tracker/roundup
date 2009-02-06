@@ -4,28 +4,26 @@ Code
 Changelog
 ----------
 
-The changelog is available `here <http://cvs.roundup-tracker.org/roundup/roundup/CHANGES.txt?view=markup&content-type=text/vnd.viewcvs-markup&revision=HEAD>`_
+The changelog is available `here <http://svn.roundup-tracker.org/viewvc/roundup/roundup/trunk/CHANGES.txt?view=markup>`_
 
 ViewVC
 ------
 
-You may browse the repository via `viewvc <http://cvs.roundup-tracker.org/roundup/>`_
+You may browse the repository via `viewvc <http://svn.roundup-tracker.org/viewvc/roundup/>`_
 
 Read-only Access
 ----------------
 
-The code can be checked out through anonymous (pserver) CVS with the following commands::
+Read-only repository access is provided through http://svn.roundup-tracker.org/svnroot/roundup 
 
-  cvs -d:pserver:anonymous@cvs.roundup-tracker.org:/cvsroot/roundup login
- 
-  cvs -z3 -d:pserver:anonymous@cvs.roundup-tracker.org:/cvsroot/roundup co -P modulename 
+The development branch can be checked out via::
+
+  svn co http://svn.roundup-tracker.org/svnroot/roundup/roundup/trunk roundup
+
 
 Read-write Access
 -----------------
 
 Developers may also make use of shared SSH keys for authentication::
 
-  export CVS_RSH=ssh
- 
-  cvs -z3 -d:ext:developername@cvs.roundup-tracker.org:/cvsroot/roundup co -P modulename
-
+  svn co https://svn.roundup-tracker.org/svnroot/roundup/rountup/trunk roundup
