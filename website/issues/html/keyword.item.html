@@ -1,0 +1,78 @@
+<tal:doc metal:use-macro="templates/page/macros/icing"
+define="edit_ok context/is_edit_ok"
+>
+<title metal:fill-slot="head_title">
+<tal:if condition="context/id" i18n:translate=""
+ >Keyword <span tal:replace="context/id" i18n:name="id"
+ />: <span tal:replace="context/name" i18n:name="title"
+ /> - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
+/></tal:if>
+<tal:if condition="not:context/id" i18n:translate=""
+ >New Keyword - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
+/></tal:if>
+</title>
+<metal:slot fill-slot="more-javascript">
+<script type="text/javascript" src="@@file/help_controls.js"></script>
+</metal:slot>
+<tal:block metal:fill-slot="body_title"
+  define="edit_ok context/is_edit_ok">
+ <span tal:condition="python: not (context.id or edit_ok)"
+  tal:omit-tag="python:1" i18n:translate="">New Keyword</span>
+ <span tal:condition="python: not context.id and edit_ok"
+  tal:omit-tag="python:1" i18n:translate="">New Keyword Editing</span>
+ <span tal:condition="python: context.id and not edit_ok"
+  tal:omit-tag="python:1" i18n:translate="">Keyword<tal:x
+  replace="context/id" i18n:name="id" /></span>
+ <span tal:condition="python: context.id and edit_ok"
+  tal:omit-tag="python:1" i18n:translate="">Keyword<tal:x
+  replace="context/id" i18n:name="id" /> Editing</span>
+</tal:block>
+
+<td class="content" metal:fill-slot="content">
+
+<p tal:condition="python:not (context.is_view_ok()
+ or request.user.hasRole('Anonymous'))" i18n:translate="">
+ You are not allowed to view this page.</p>
+
+<p tal:condition="python:not context.is_view_ok()
+ and request.user.hasRole('Anonymous')" i18n:translate="">
+ Please login with your username and password.</p>
+
+<div tal:condition="context/is_view_ok">
+
+<form method="POST"
+      tal:define="required python:'name description'.split()"
+      enctype="multipart/form-data"
+      tal:attributes="action context/designator;">
+
+<table class="form">
+
+<tr>
+ <th class="required" i18n:translate="">Keyword:</th>
+ <td tal:content="structure
+ python:context.name.field(size=60)">title</td>
+</tr>
+
+<tr>
+ <th class="required" i18n:translate="">Description:</th>
+ <td tal:content="structure python:context.description.field(size=60)">description</td>
+
+</tr>
+
+ <tr tal:condition="context/is_edit_ok">
+  <td>
+   &nbsp;
+   <input type="hidden" name="@template" value="item">
+   <input type="hidden" name="@required" value="name,description"
+          tal:attributes="value python:','.join(required)">
+  </td>
+  <td><input type="submit" value="save" tal:replace="structure context/submit"><!--submit button here-->
+    <input type="reset">
+  </td>
+ </tr>
+
+</table>
+</form>
+</div>
+</td>
+</tal:doc>

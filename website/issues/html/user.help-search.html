@@ -1,0 +1,85 @@
+<html
+  tal:define="form request/form/form/value;
+  field request/form/property/value"
+  >
+  <head>
+    <title>Search input for user helper</title>
+    <script language="Javascript" type="text/javascript"
+        tal:content="structure string:<!--
+        // this is the name of the field in the original form that we're working on
+        form  = parent.opener.document.${form};
+        field  = '${field}';
+        //-->">
+    </script>
+    <script type="text/javascript" src="@@file/help_controls.js"></script>
+    <link rel="stylesheet" type="text/css" href="@@file/style.css" />
+  </head>
+  <body onload="parent.submit.url='...'"
+    tal:define="
+qs request/env/QUERY_STRING;
+qs python:'&'.join([a for a in qs.split('&') if not a.startswith('@template=')])"
+>
+    <pre tal:content="request/env/QUERY_STRING" tal:condition=false />
+    <form method="get" name="itemSynopsis"
+      target="list"
+      tal:attributes="action request/classname"
+      tal:define="
+      property request/form/property/value;
+   cols python:request.columns or 'id username address realname roles'.split();
+   sort_on request/sort | nothing;
+   sort_desc python:sort_on and request.sort[0][0] == '-';
+   sort_on python:sort_on and request.sort[0][1] or 'lastname';
+
+   search_input templates/page/macros/search_input;
+   search_select templates/page/macros/search_select;
+   search_select_roles templates/page/macros/search_select_roles;
+   required python:[];
+   th_label templates/page/macros/th_label;
+   ">
+   <input type="hidden" name="@template" value="help-list">
+   <input type="hidden" name="property" value="" tal:attributes="value property">
+   <input type="hidden" name="form" value="" tal:attributes="value request/form/form/value">
+   <table>
+<tr tal:define="name string:username; label string:Username:">
+  <th metal:use-macro="th_label">Name</th>
+  <td metal:use-macro="search_input"><input type=text></td>
+</tr>
+
+<tr tal:define="name string:phone; label string:Phone number">
+  <th metal:use-macro="th_label">Phone</th>
+  <td metal:use-macro="search_input"><input type=text></td>
+</tr>
+
+<tr tal:define="name string:roles;
+                onchange string:this.form.submit();
+                label string:Roles:"
+                >
+  <th metal:use-macro="th_label">role</th>
+  <td metal:use-macro="search_select_roles">
+    <select>
+      <option value="">jokester</option>
+    </select>
+  </td>
+</tr>
+
+<tr>
+  <td>&nbsp;</td>
+  <td>
+    <input type="hidden" name="@action" value="search">
+    <input type="submit" value="Search" i18n:attributes="value">
+    <input type="reset">
+    <input type="hidden" value="username,realname,phone,organisation,roles" name="properties">
+    <input type="text" name="@pagesize" id="sp-pagesize" value="25" size="2">
+    <label for="sp-pagesize" i18n:translate="">Pagesize</label>
+  </td>
+</tr>
+
+   </table>
+
+</form>
+<pre tal:content="request" tal:condition=false />
+<script type="text/javascript"><!--
+  focus2id('username');
+//--></script>
+  </body>
+</html>

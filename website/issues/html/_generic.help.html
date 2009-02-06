@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+      <link media="screen" href="http://python.org/styles/screen-switcher-default.css" type="text/css" id="screen-switcher-stylesheet" rel="stylesheet" />
+      <link rel="stylesheet" type="text/css" href="@@file/style.css" />
+      <meta http-equiv="Content-Type"
+       tal:attributes="content string:text/html;; charset=${request/client/charset}" />
+      <tal:block tal:condition="python:request.form.has_key('property')">
+      <tal:block tal:define="property request/form/property/value">
+      <title i18n:translate=""><tal:x i18n:name="property"
+       tal:content="property" i18n:translate="" /> help - <span i18n:name="tracker"
+       tal:replace="config/TRACKER_NAME" /></title>
+      <script language="Javascript" type="text/javascript"
+          tal:content="structure string:
+          // this is the name of the field in the original form that we're working on
+          form  = window.opener.document.${request/form/form/value};
+          field  = '${request/form/property/value}';">
+      </script>
+      <script src="@@file/help_controls.js" type="text/javascript"><!--
+      //--></script>
+      </tal:block>
+      </tal:block>
+  </head>
+ <body class="body" onload="resetList();">
+ <h1 id="logoheader">
+   <img src="http://python.org/images/python-logo.gif" alt="logo" border="0" />
+ </h1>
+<div id="content-body">
+<div id="content">
+<div id="breadcrumb">Python Issue Tracker: Help - <tal:block tal:content="context/classname">item</tal:block></div>
+<tal:block tal:condition="python:request.form.has_key('property')">
+ <form name="frm_help" action="#"
+       tal:define="batch request/batch;
+                   props python:request.form['properties'].value.split(',')">
+
+     <div id="classhelp-controls">
+       <!--input type="button" name="btn_clear"
+              value="Clear" onClick="clearList()"/ -->
+       <input type="text" name="text_preview" size="24" class="preview"
+              onchange="reviseList(this.value);"/>
+       <input type="button" name="btn_reset"
+              value=" Cancel " onclick="resetList(); window.close();"
+              i18n:attributes="value" />
+       <input type="button" name="btn_apply" class="apply"
+              value=" Apply " onclick="updateList(); window.close();"
+              i18n:attributes="value" />
+     </div>
+     <table width="100%">
+      <tr class="navigation">
+       <th>
+        <a tal:define="prev batch/previous" tal:condition="prev"
+           tal:attributes="href python:request.indexargs_url(request.classname,
+           {'@template':'help', 'property': request.form['property'].value,
+            'properties': request.form['properties'].value,
+            'form': request.form['form'].value,
+            'type': request.form['type'].value,
+            '@startwith':prev.first, '@pagesize':prev.size})"
+           i18n:translate="" >&lt;&lt; previous</a>
+        &nbsp;
+       </th>
+       <th i18n:translate=""><span tal:replace="batch/start" i18n:name="start"
+        />..<span tal:replace="python: batch.start + batch.length -1" i18n:name="end"
+        /> out of <span tal:replace="batch/sequence_length" i18n:name="total"
+        />
+       </th>
+       <th>
+        <a tal:define="next batch/next" tal:condition="next"
+           tal:attributes="href python:request.indexargs_url(request.classname,
+           {'@template':'help', 'property': request.form['property'].value,
+            'properties': request.form['properties'].value,
+            'form': request.form['form'].value,
+            'type': request.form['type'].value,
+            '@startwith':next.first, '@pagesize':next.size})"
+           i18n:translate="" >next &gt;&gt;</a>
+        &nbsp;
+       </th>
+      </tr>
+     </table>
+
+     <table class="classhelp">
+       <tr>
+           <th>&nbsp;<b>x</b></th>
+           <th tal:repeat="prop props" tal:content="prop" i18n:translate=""></th>
+       </tr>
+       <tr tal:repeat="item batch">
+         <tal:block tal:define="attr python:item[props[0]]" >
+           <td>
+             <input name="check"
+                 onclick="updatePreview();"
+                 tal:attributes="type python:request.form['type'].value;
+                                 value attr; id string:id_$attr" />
+             </td>
+             <td tal:repeat="prop props">
+                 <label class="classhelp-label"
+                        tal:attributes="for string:id_$attr"
+                        tal:content="structure python:item[prop]"></label>
+             </td>
+           </tal:block>
+       </tr>
+       <tr>
+           <th>&nbsp;<b>x</b></th>
+           <th tal:repeat="prop props" tal:content="prop" i18n:translate=""></th>
+       </tr>
+     </table>
+
+ </form>
+ </tal:block>
+ <tal:block tal:condition="python:not request.form.has_key('property')">
+ <tal:block tal:define="batch request/batch;
+                        props python:request.form['properties'].value.split(',')">
+     <table width="100%">
+      <tr class="navigation">
+       <th>
+        <a tal:define="prev batch/previous" tal:condition="prev"
+           tal:attributes="href python:request.indexargs_url(request.classname,
+           {'@template':'help', 'property': request.form['property'].value,
+            'properties': request.form['properties'].value,
+            'form': request.form['form'].value,
+            'type': request.form['type'].value,
+            '@startwith':prev.first, '@pagesize':prev.size})"
+           i18n:translate="" >&lt;&lt; previous</a>
+        &nbsp;
+       </th>
+       <th i18n:translate=""><span tal:replace="batch/start" i18n:name="start"
+        />..<span tal:replace="python: batch.start + batch.length -1" i18n:name="end"
+        /> out of <span tal:replace="batch/sequence_length" i18n:name="total"
+        />
+       </th>
+       <th>
+        <a tal:define="next batch/next" tal:condition="next"
+           tal:attributes="href python:request.indexargs_url(request.classname,
+           {'@template':'help', 'property': request.form['property'].value,
+            'properties': request.form['properties'].value,
+            'form': request.form['form'].value,
+            'type': request.form['type'].value,
+            '@startwith':next.first, '@pagesize':next.size})"
+           i18n:translate="" >next &gt;&gt;</a>
+        &nbsp;
+       </th>
+      </tr>
+     </table>
+
+     <table class="classhelp">
+       <tr>
+           <th tal:repeat="prop props" tal:content="prop" i18n:translate=""></th>
+       </tr>
+       <tr tal:repeat="item batch">
+         <tal:block tal:define="attr python:item[props[0]]" >
+             <td tal:repeat="prop props">
+                 <label class="classhelp-label"
+                        tal:attributes="for string:id_$attr"
+                        tal:content="structure python:item[prop]"></label>
+             </td>
+           </tal:block>
+       </tr>
+       <tr>
+           <th tal:repeat="prop props" tal:content="prop" i18n:translate=""></th>
+       </tr>
+     </table>
+ </tal:block>
+ </tal:block>
+</div> <!-- content-body -->
+</div> <!-- content -->
+ </body>
+</html>

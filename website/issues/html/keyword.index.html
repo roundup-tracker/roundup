@@ -1,0 +1,46 @@
+<tal:block metal:use-macro="templates/page/macros/icing">
+<title metal:fill-slot="head_title" >
+  <span tal:omit-tag="true" i18n:translate="" >List of keywords</span>
+  <span tal:condition="request/dispname"
+   tal:replace="python:' - %s '%request.dispname"
+  /> - <span tal:replace="config/TRACKER_NAME" />
+</title>
+<span metal:fill-slot="body_title" tal:omit-tag="true">
+  <span tal:omit-tag="true" i18n:translate="" >List of keywords</span>
+  <span tal:condition="request/dispname"
+   tal:replace="python:' - %s' % request.dispname" />
+</span>
+<tal:block metal:fill-slot="content">
+
+<p tal:condition="python:not (context.is_view_ok()
+ or request.user.hasRole('Anonymous'))" i18n:translate="">
+ You are not allowed to view this page.</p>
+
+<p tal:condition="python:not context.is_view_ok()
+ and request.user.hasRole('Anonymous')" i18n:translate="">
+ Please login with your username and password.</p>
+
+<table width="100%" tal:condition="context/is_view_ok" class="list">
+<tr>
+ <th i18n:translate="">Keyword</th>
+ <th i18n:translate="">Description</th>
+</tr>
+
+<tal:block repeat="keyword context/list">
+<tr tal:attributes="class python:['normal', 'alt'][repeat['keyword'].index%6/3]">
+ <td>
+  <a tal:attributes="href string:keyword${keyword/id}"
+     tal:content="keyword/name">keyword name</a>
+ </td>
+ <td tal:content="python:keyword.description.plain() or
+     default">&nbsp;</td>
+</tr>
+</tal:block>
+
+<tr tal:condition="context/is_edit_ok">
+   <td colspan="2"><a href="keyword?@template=item">New Keyword</a></td>
+</tr>
+</table>
+
+</tal:block>
+</tal:block>

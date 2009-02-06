@@ -1,0 +1,25 @@
+<tal:block metal:use-macro="templates/page/macros/icing">
+<title metal:fill-slot="head_title" i18n:translate="">List of classes - <span
+ i18n:name="tracker" tal:replace="config/TRACKER_NAME" /></title>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1"
+ i18n:translate="">List of classes</span>
+<td class="content" metal:fill-slot="content">
+<table class="classlist">
+
+<tal:block tal:repeat="cl db/classes">
+ <tr>
+  <th class="header" colspan="2" align="left">
+   <a tal:attributes="href string:${cl/classname}"
+      tal:content="python:cl.classname.capitalize()">classname</a>
+  </th>
+ </tr>
+ <tr tal:repeat="prop cl/properties">
+  <th tal:content="prop/_name">name</th>
+  <td tal:content="prop/_prop">type</td>
+ </tr>
+</tal:block>
+
+</table>
+</td>
+
+</tal:block>
