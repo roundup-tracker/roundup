@@ -1,0 +1,10 @@
+These are the sources of the Roundup website. 
+To build them, you need Sphinx (http://sphinx.pocoo.org/).
+
+The content of the 'docs' section are mirrored in from the roundup package,
+so make sure you have created a 'docs/' directory with the right files in it
+(see 'docs.rst') from the last roundup release.
+
+Good luck !
+
+                Stefan

@@ -1,0 +1,44 @@
+Roundup Issue Tracker
+=====================
+
+.. note::
+
+        Latest stable release: `download`_
+
+
+Roundup is a simple-to-use and -install issue-tracking system with command-line, web and e-mail interfaces. 
+It is based on the winning design from Ka-Ping Yee in the Software Carpentry "Track" design competition.
+
+The current stable version of Roundup is 1.4.x which has quite a comprehensive `feature set`_. For more information 
+see the `design overview`_, and all the other `documentation`_. Roundup has been deployed for:
+
+    * bug tracking and TODO list management (the classic installation)
+    * customer help desk support (with a wizard for the phone answerers, linking to networking, system and development issue trackers)
+    * issue management for IETF working groups
+    * sales lead tracking
+    * conference paper submission and double-blind referee management
+    * weblogging (well, almost :) 
+
+...and so on. It's been designed with `flexibility`_ in mind - it's not just another bug tracker. 
+Roundup ships with a *demo tracker* to play with - after you've unpacked the source, just run 
+"python demo.py" and load up the URL it prints out!
+
+Roundup was originally released as version 0.1.1 in late August, 2001. The first `change note`_ I wrote says:
+
+    Needed a bug tracking system. Looked around. Tried to install many Perl-based systems, to no avail.
+    Got tired of waiting for Roundup to be released. Had just finished major product project, so needed
+    something different for a while. Roundup here I come... 
+
+So I've been working on this thing for over seven years. Do you like Roundup? 
+Want to say thanks? You can just send me a note (I always appreciate them) or better yet, `send me a gift`_ :)
+
+-- Richard Jones, project lead developer, September 2008.
+
+
+.. _`download`: http://cheeseshop.python.org/pypi/roundup
+.. _`feature set`: docs/features.html
+.. _`design overview`: docs/design.html
+.. _`documentation`: docs
+.. _`flexibility`: docs/customizing.html
+.. _`change note`: http://roundup.cvs.sourceforge.net/roundup/roundup/CHANGES.txt?revision=HEAD&view=markup
+.. _`send me a gift`: http://www.amazon.com/o/registry/J96FJCMBG774
