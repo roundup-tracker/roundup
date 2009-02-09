@@ -448,7 +448,8 @@ def walk_with_symlinks(top, func, arg):
     cycles in your Zope sandbox, so don't do that.
     """
     try:
-        names = os.listdir(top)
+        # Prevent 'hidden' files (those starting with '.') from being considered.
+        names = [f for f in os.listdir(top) if not f.startswith('.')]
     except os.error:
         return
     func(arg, top, names)

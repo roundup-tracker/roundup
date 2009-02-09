@@ -30,7 +30,7 @@ from roundup.i18n import _
 def copytree(src, dst, symlinks=0):
     """Recursively copy a directory tree using copyDigestedFile().
 
-    The destination directory os allowed to exist.
+    The destination directory is allowed to exist.
 
     If the optional symlinks flag is true, symbolic links in the
     source tree result in symbolic links in the destination tree; if
@@ -39,7 +39,9 @@ def copytree(src, dst, symlinks=0):
 
     This was copied from shutil.py in std lib.
     """
-    names = os.listdir(src)
+
+    # Prevent 'hidden' files (those starting with '.') from being considered.
+    names = [f for f in os.listdir(src) if not f.startswith('.')]
     try:
         os.mkdir(dst)
     except OSError, error:
