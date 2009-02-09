@@ -892,7 +892,6 @@ class Client:
         '''
         name = self.classname
         extension = self.template
-        pt = self.instance.templates.get(name, extension)
 
         # catch errors so we can handle PT rendering errors more nicely
         args = {
@@ -900,6 +899,7 @@ class Client:
             'error_message': self.error_message
         }
         try:
+            pt = self.instance.templates.get(name, extension)
             # let the template render figure stuff out
             result = pt.render(self, None, None, **args)
             self.additional_headers['Content-Type'] = pt.content_type
