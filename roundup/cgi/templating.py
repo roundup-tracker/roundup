@@ -695,7 +695,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
             if 'username' in properties.split( ',' ):
                 sort = 'username'
             else:
-                sort = find_sort_key(self._klass)
+                sort = self._klass.orderprop()
         sort = '&amp;@sort=' + sort
         if property:
             property = '&amp;property=%s'%property
@@ -1891,7 +1891,7 @@ class LinkHTMLProperty(HTMLProperty):
                 else:
                     sort_on = ('+', sort_on)
         else:
-            sort_on = ('+', find_sort_key(linkcl))
+            sort_on = ('+', linkcl.orderprop())
 
         options = [opt
             for opt in linkcl.filter(None, conditions, sort_on, (None, None))
@@ -2077,7 +2077,7 @@ class MultilinkHTMLProperty(HTMLProperty):
                 else:
                     sort_on = ('+', sort_on)
         else:
-            sort_on = ('+', find_sort_key(linkcl))
+            sort_on = ('+', linkcl.orderprop())
 
         options = [opt
             for opt in linkcl.filter(None, conditions, sort_on)
@@ -2139,16 +2139,10 @@ def make_sort_function(db, classname, sort_on=None):
     """
     linkcl = db.getclass(classname)
     if sort_on is None:
-        sort_on = find_sort_key(linkcl)
+        sort_on = linkcl.orderprop()
     def sortfunc(a, b):
         return cmp(linkcl.get(a, sort_on), linkcl.get(b, sort_on))
     return sortfunc
-
-def find_sort_key(linkcl):
-    if linkcl.getprops().has_key('order'):
-        return 'order'
-    else:
-        return linkcl.labelprop()
 
 def handleListCGIValue(value):
     """ Value is either a single item or a list of items. Each item has a
