@@ -4,8 +4,6 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.223 $
-
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
 
@@ -4857,11 +4855,4 @@ in which it reloads edited templates immediately when they are changed,
 rather than requiring a web server restart.
 
 
--------------------
-
-Back to `Table of Contents`_
-
-.. _`Table of Contents`: index.html
 .. _`design documentation`: design.html
-.. _`admin guide`: admin_guide.html
-

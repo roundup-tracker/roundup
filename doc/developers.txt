@@ -2,8 +2,6 @@
 Developing Roundup
 ==================
 
-:Version: $Revision: 1.16 $
-
 .. note::
    The intended audience of this document is the developers of the core
    Roundup code. If you just wish to alter some behaviour of your Roundup
@@ -429,11 +427,6 @@ Translatable Messages`_.)
 At run time, Roundup automatically compiles message catalogs whenever
 `PO`_ file is changed.
 
------------------
-
-Back to `Table of Contents`_
-
-.. _`Table of Contents`: index.html
 .. _`Customising Roundup`: customizing.html
 .. _`Roundup's Design Document`: spec.html
 .. _`implementation notes`: implementation.html

@@ -1652,10 +1652,5 @@ Changes to this document
 - Access Controls
 - Added "actor" property
 
-------------------
-
-Back to `Table of Contents`_
-
-.. _`Table of Contents`: index.html
 .. _customisation: customizing.html
 

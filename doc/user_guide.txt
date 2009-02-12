@@ -2,8 +2,6 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.38 $
-
 .. contents::
 
 .. hint::
@@ -804,9 +802,3 @@ Also the tautological::
 Remember the roundup commands that accept multiple designators accept
 them ',' separated so using '-dc' is almost always required.
 
------------------
-
-Back to `Table of Contents`_
-
-.. _`Table of Contents`: index.html
-.. _`customisation documentation`: customizing.html

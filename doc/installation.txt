@@ -2,8 +2,6 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.130 $
-
 .. contents::
    :depth: 2
 
@@ -1009,12 +1007,6 @@ If the above fails, you may be using the wrong version of python. Try
 ``python2`` for ``python`` in all further commands you use in relation to
 Roundup -- from installation and scripts.
 
-
--------------------------------------------------------------------------------
-
-Back to `Table of Contents`_
-
-Next: `User Guide`_
 
 .. _`table of contents`: index.html
 .. _`user guide`: user_guide.html

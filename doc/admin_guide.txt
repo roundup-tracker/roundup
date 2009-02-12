@@ -2,8 +2,6 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.28 $
-
 .. contents::
 
 What does Roundup install?
@@ -370,10 +368,5 @@ solution to this is to:
    of your normal login
 
 
--------------------
-
-Back to `Table of Contents`_
-
-.. _`Table of Contents`: index.html
 .. _`customisation documentation`: customizing.html
 .. _`upgrading documentation`: upgrading.html

@@ -2,8 +2,6 @@
 Roundup FAQ
 ===========
 
-:Version: $Revision: 1.23 $
-
 .. contents::
 
 
@@ -204,10 +202,5 @@ Note that if an "order" property is defined on a Class that is used for
 sorting, all items of that Class *must* have a value against the "order"
 property, or sorting will result in random ordering.
 
------------------
-
-Back to `Table of Contents`_
-
-.. _`Table of Contents`: index.html
 .. _`customisation`: customizing.html
 
