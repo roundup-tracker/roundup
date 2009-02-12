@@ -65,13 +65,15 @@ body
 .menu > ul > li > ul,
 .menu > ul > li.current > ul
 {
-  border:none;
+  border: none;
   background-color: inherit;
+  margin: 0;
 }
 .menu ul ul 
 {
   margin-left: 2em;
   font-size: smaller;
+  margin: 0 0 0 5pt;
 }
 
 /* sub-menu items draw a separator */
