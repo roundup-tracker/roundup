@@ -1,0 +1,5 @@
+License
+=======
+
+See COPYING.txt in the software distribution for the licensing terms.
+

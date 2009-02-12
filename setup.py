@@ -18,6 +18,8 @@
 #
 # $Id: setup.py,v 1.105 2008-09-01 01:58:32 richard Exp $
 
+
+from roundup.dist.command.build_doc import build_doc
 from distutils.core import setup, Extension
 from distutils.util import get_platform
 from distutils.file_util import write_file
@@ -36,6 +38,15 @@ if not hasattr(DistributionMetadata, 'classifiers'):
     DistributionMetadata.download_url = None
 
 from roundup import msgfmt
+
+def include(d, e):
+    """Generate a pair of (directory, file-list) for installation.
+
+    'd' -- A directory
+
+    'e' -- A glob pattern"""
+    
+    return (d, [f for f in glob('%s/%s'%(d, e)) if os.path.isfile(f)])
 
 #############################################################################
 ### Build script files
@@ -340,6 +351,9 @@ def main():
         installdatafiles.append((os.path.dirname(_mo_file),
             [os.path.join("build", _mo_file)]))
 
+    # add docs
+    installdatafiles.append(include(os.path.join('share', 'doc', 'roundup', 'html'), '*'))
+
     # perform the setup action
     from roundup import __version__
     setup_args = {
@@ -422,6 +436,7 @@ mysql and postgresql).
 
         # Override certain command classes with our own ones
         'cmdclass': {
+        'build_doc': build_doc,
             'build_scripts': build_scripts_roundup,
             'build_py': build_py_roundup,
             'build': build_roundup,

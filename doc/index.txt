@@ -5,192 +5,20 @@ Roundup: an Issue-Tracking System for Knowledge Workers
 Contents
 ========
 
-- Features__
-- Installation__ and Upgrading__ existing installs
-- `Frequently Asked Questions`__
-- `User Guide`__
-- `Configuring and Customising Roundup`__
-- `Administering Roundup Trackers`__
-- `Roundup's Design`__ (original__)
-- `Developing Roundup`__
-- `Roundup Tracker Templates`__
-- Contact_
-- Acknowledgements_
-- License_
+.. toctree::
+   :maxdepth: 2
 
-__ features.html
-__ installation.html
-__ upgrading.html
-__ FAQ.html
-__ user_guide.html
-__ customizing.html
-__ admin_guide.html
-__ design.html
-__ spec.html
-__ developers.html
-__ tracker_templates.html
-
-Contact
-=======
-
-For general support enquiries about usage, a mailing list is available:
-
-    roundup-users@sourceforge.net
-
-If you've got a great idea for roundup, or have found a bug, please
-submit an issue to the tracker at: 
-
-    http://sourceforge.net/tracker/?group_id=31577
-
-For discussions about developing or enhancing roundup:
-
-    roundup-devel@sourceforge.net
-
-The admin for this project is Richard Jones:
-
-    richard@users.sourceforge.net
-
-but he should only be contacted directly when none of the
-above avenues of contact are suitable.
-
-
-Acknowledgements
-================
-
-Go Ping, you rock! Also, go Common Ground, ekit.com and Bizar Software for
-letting me implement this system on their time.
-
-Thanks also to the many people on the mailing list, in the sourceforge
-project and those who just report bugs:
-Thomas Arendsen Hein,
-Nerijus Baliunas,
-Anthony Baxter,
-Marlon van den Berg,
-Bo Berglund,
-Stéphane Bidoul,
-Cameron Blackwood,
-Jeff Blaine,
-Duncan Booth,
-Seb Brezel,
-J Alan Brogan,
-Titus Brown,
-Steve Byan,
-Brett Cannon,
-Godefroid Chapelle,
-Roch'e Compaan,
-Wil Cooley,
-Joe Cooper,
-Kelley Dagley,
-Bruno Damour,
-Bradley Dean,
-Toby Dickenson,
-Paul F. Dubois,
-Eric Earnst,
-Peter Eisentraut,
-Andrew Eland,
-Jeff Epler,
-Tom Epperly,
-Tamer Fahmy,
-Vickenty Fesunov,
-Hernan Martinez Foffani,
-Stuart D. Gathman,
-Martin Geisler,
-Ajit George,
-Frank Gibbons,
-Johannes Gijsbers,
-Gus Gollings,
-Philipp Gortan,
-Dan Grassi,
-Robin Green,
-Jason Grout,
-Charles Groves,
-Engelbert Gruber,
-Bruce Guenter,
-Tamás Gulácsi,
-Thomas Arendsen Hein,
-Juergen Hermann,
-Tobias Herp,
-Uwe Hoffmann,
-Alex Holkner,
-Tobias Hunger,
-Simon Hyde,
-Paul Jimenez,
-Christophe Kalt,
-Timo Kankare,
-Brian Kelley,
-James Kew,
-Sheila King,
-Michael Klatt,
-Bastian Kleineidam,
-Axel Kollmorgen,
-Cedric Krier,
-Detlef Lannert,
-Andrey Lebedev,
-Henrik Levkowetz,
-David Linke,
-Martin v. Löwis,
-Fredrik Lundh,
-Will Maier,
-Ksenia Marasanova,
-Georges Martin,
-Gordon McMillan,
-John F Meinel Jr,
-Roland Meister,
-Ulrik Mikaelsson,
-John Mitchell,
-Ramiro Morales,
-Toni Mueller,
-Stefan Niederhauser,
-Truls E. Næss,
-Patrick Ohly,
-Luke Opperman,
-Eddie Parker,
-Will Partain,
-Ewout Prangsma,
-Marcus Priesch,
-Bernhard Reiter,
-Roy Rapoport,
-John P. Rouillard,
-Luke Ross,
-Ollie Rutherfurd,
-Toby Sargeant,
-Giuseppe Scelsi,
-Ralf Schlatterbeck,
-Gregor Schmid,
-Florian Schulze,
-Klamer Schutte,
-Dougal Scott,
-Stefan Seefeld,
-Jouni K Seppänen,
-Jeffrey P Shell,
-Dan Shidlovsky,
-Joel Shprentz,
-Terrel Shumway,
-Emil Sit,
-Alexander Smishlajev,
-Nathaniel Smith,
-Leonardo Soto,
-Maciej Starzyk,
-Mitchell Surface,
-Anatoly T.,
-Jon C. Thomason
-Mike Thompson,
-Michael Twomey,
-Karl Ulbrich,
-Martin Uzak,
-Darryl VanDorp,
-J Vickroy,
-Timothy J. Warren,
-William (Wilk),
-Tue Wennerberg,
-Matt Wilbert,
-Chris Withers,
-Milan Zamazal.
-
-
-
-License
-=======
-
-See COPYING.txt in the software distribution for the licensing terms.
-
+   features
+   installation
+   upgrading
+   FAQ
+   user_guide
+   customizing
+   admin_guide
+   spec
+   original design <design>
+   developers
+   tracker_templates
+   contact
+   acknowledgements
+   license

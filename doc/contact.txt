@@ -1,0 +1,22 @@
+Contact
+=======
+
+For general support enquiries about usage, a mailing list is available:
+
+    roundup-users@sourceforge.net
+
+If you've got a great idea for roundup, or have found a bug, please
+submit an issue to the tracker at: 
+
+    http://sourceforge.net/tracker/?group_id=31577
+
+For discussions about developing or enhancing roundup:
+
+    roundup-devel@sourceforge.net
+
+The admin for this project is Richard Jones:
+
+    richard@users.sourceforge.net
+
+but he should only be contacted directly when none of the
+above avenues of contact are suitable.
