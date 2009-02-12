@@ -1073,6 +1073,12 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def hasnode(self, classname, nodeid):
         """ Determine if the database has a given node.
         """
+        # If this node is in the cache, then we do not need to go to
+        # the database.  (We don't consider this an LRU hit, though.)
+        if self.cache.has_key((classname, nodeid)):
+            # Return 1, not True, to match the type of the result of
+            # the SQL operation below.
+            return 1
         sql = 'select count(*) from _%s where id=%s'%(classname, self.arg)
         self.sql(sql, (nodeid,))
         return int(self.cursor.fetchone()[0])
@@ -1705,6 +1711,12 @@ class Class(hyperdb.Class):
 
                 # handle additions
                 for id in value:
+                    # If this node is in the cache, then we do not need to go to
+                    # the database.  (We don't consider this an LRU hit, though.)
+                    if self.cache.has_key((classname, nodeid)):
+                        # Return 1, not True, to match the type of the result of
+                        # the SQL operation below.
+                        return 1
                     if not self.db.getclass(link_class).hasnode(id):
                         raise IndexError, '%s has no node %s'%(link_class, id)
                     if id in l:
