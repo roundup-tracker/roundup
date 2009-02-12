@@ -7,8 +7,6 @@ Sitemap
 
 Contents:
 
-.. directive:: bla
-
 .. toctree::
    :maxdepth: 2
 

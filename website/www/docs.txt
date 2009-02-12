@@ -6,7 +6,7 @@ Docs
 
    docs/features
    docs/installation
-   docs/faq
+   docs/FAQ
    docs/user_guide
    docs/customizing
    docs/admin_guide
