@@ -59,12 +59,12 @@ class Action:
                 '%(action)s the %(classname)s class.')%info
 
     _marker = []
-    def hasPermission(self, permission, classname=_marker, itemid=None):
+    def hasPermission(self, permission, classname=_marker, itemid=None, property=None):
         """Check whether the user has 'permission' on the current class."""
         if classname is self._marker:
             classname = self.client.classname
         return self.db.security.hasPermission(permission, self.client.userid,
-            classname=classname, itemid=itemid)
+            classname=classname, itemid=itemid, property=property)
 
     def gettext(self, msgid):
         """Return the localized translation of msgid"""
@@ -486,26 +486,22 @@ class EditCommon(Action):
 
     _cn_marker = []
     def editItemPermission(self, props, classname=_cn_marker, itemid=None):
-        """Determine whether the user has permission to edit this item.
-
-        Base behaviour is to check the user can edit this class. If we're
-        editing the "user" class, users are allowed to edit their own details.
-        Unless it's the "roles" property, which requires the special Permission
-        "Web Roles".
-        """
-        if self.classname == 'user':
-            if props.has_key('roles') and not self.hasPermission('Web Roles'):
-                raise exceptions.Unauthorised, self._(
-                    "You do not have permission to edit user roles")
-            if self.isEditingSelf():
-                return 1
+        """Determine whether the user has permission to edit this item."""
         if itemid is None:
             itemid = self.nodeid
         if classname is self._cn_marker:
             classname = self.classname
-        if self.hasPermission('Edit', itemid=itemid, classname=classname):
-            return 1
-        return 0
+        # The user must have permission to edit each of the properties
+        # being changed.
+        for p in props:
+            if not self.hasPermission('Edit',
+                                      itemid=itemid,
+                                      classname=classname,
+                                      property=p):
+                return 0
+        # Since the user has permission to edit all of the properties,
+        # the edit is OK.
+        return 1
 
     def newItemPermission(self, props, classname=None):
         """Determine whether the user has permission to create this item.
