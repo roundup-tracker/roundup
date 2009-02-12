@@ -1,3 +1,4 @@
+recursive-include share *
 recursive-include roundup *.*
 recursive-include frontends *.*
 recursive-include scripts *.* *-*
@@ -6,7 +7,7 @@ recursive-include test *.py *.txt
 recursive-include doc *.html *.png *.txt *.css *.1 *.example
 recursive-include detectors *.py
 recursive-include templates *.* home* page*
-global-exclude .cvsignore *.pyc *.pyo .DS_Store
+global-exclude .svn .cvsignore *.pyc *.pyo .DS_Store
 include run_tests.py *.txt demo.py MANIFEST.in MANIFEST
 exclude BUILD.txt I18N_PROGRESS.txt TODO.txt
 exclude doc/security.txt doc/templating.txt
