@@ -234,7 +234,7 @@ class SearchAction(Action):
                 if isinstance(prop, hyperdb.String):
                     v = self.form[key].value
                     l = token.token_split(v)
-                    if len(l) > 1 or l[0] != v:
+                    if len(l) != 1 or l[0] != v:
                         self.form.value.remove(self.form[key])
                         # replace the single value with the split list
                         for v in l:
