@@ -535,14 +535,14 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
                     value = lookupIds(self._db, prop,
                         handleListCGIValue(form[item]), fail_ok=1)
                 elif isinstance(prop, hyperdb.Link):
-                    value = form[item].value.strip()
+                    value = form.getfirst(item).strip()
                     if value:
                         value = lookupIds(self._db, prop, [value],
                             fail_ok=1)[0]
                     else:
                         value = None
                 else:
-                    value = form[item].value.strip() or None
+                    value = form.getfirst(item).strip() or None
             else:
                 if isinstance(prop, hyperdb.Multilink):
                     value = []
@@ -2225,10 +2225,10 @@ class HTMLRequest(HTMLInputMixin):
             key = '%s%s%d'%(special, name, idx)
             while key in self.form:
                 self.special_char = special
-                fields.append (self.form[key].value)
+                fields.append(self.form.getfirst(key))
                 dirkey = '%s%sdir%d'%(special, name, idx)
                 if dirkey in self.form:
-                    dirs.append(self.form[dirkey].value)
+                    dirs.append(self.form.getfirst(dirkey))
                 else:
                     dirs.append(None)
                 idx += 1
@@ -2239,7 +2239,7 @@ class HTMLRequest(HTMLInputMixin):
             if key in self.form and not fields:
                 fields = handleListCGIValue(self.form[key])
                 if dirkey in self.form:
-                    dirs.append(self.form[dirkey].value)
+                    dirs.append(self.form.getfirst(dirkey))
             if fields: # only try other special char if nothing found
                 break
         for f, d in map(None, fields, dirs):
@@ -2302,13 +2302,7 @@ class HTMLRequest(HTMLInputMixin):
         for name in ':search_text @search_text'.split():
             if self.form.has_key(name):
                 self.special_char = name[0]
-                try:
-                    self.search_text = self.form[name].value
-                except AttributeError:
-                    # http://psf.upfronthosting.co.za/roundup/meta/issue111
-                    # Multiple search_text, probably some kind of spambot.
-                    # Use first value.
-                    self.search_text = self.form[name][0].value
+                self.search_text = self.form.getfirst(name)
 
         # pagination - size and start index
         # figure batch args
@@ -2316,17 +2310,17 @@ class HTMLRequest(HTMLInputMixin):
         for name in ':pagesize @pagesize'.split():
             if self.form.has_key(name):
                 self.special_char = name[0]
-                self.pagesize = int(self.form[name].value)
+                self.pagesize = int(self.form.getfirst(name))
 
         self.startwith = 0
         for name in ':startwith @startwith'.split():
             if self.form.has_key(name):
                 self.special_char = name[0]
-                self.startwith = int(self.form[name].value)
+                self.startwith = int(self.form.getfirst(name))
 
         # dispname
         if self.form.has_key('@dispname'):
-            self.dispname = self.form['@dispname'].value
+            self.dispname = self.form.getfirst('@dispname')
         else:
             self.dispname = None
 

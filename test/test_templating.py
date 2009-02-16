@@ -72,6 +72,22 @@ class FunctionsTestCase(TemplatingTestCase):
 
 class HTMLClassTestCase(TemplatingTestCase) :
 
+    def test_link(self):
+        """Make sure lookup of a Link property works even in the
+        presence of multiple values in the form."""
+        def lookup(key) :
+            self.assertEqual(key, key.strip())
+            return "Status%s"%key
+        self.form.list.append(MiniFieldStorage("status", "1"))
+        self.form.list.append(MiniFieldStorage("status", "2"))
+        status = hyperdb.Link("status")
+        self.client.db.classes = dict \
+            ( issue = MockNull(getprops = lambda : dict(status = status))
+            , status  = MockNull(get = lambda id, name : id, lookup = lookup)
+            )
+        cls = HTMLClass(self.client, "issue")
+        cls["status"]
+
     def test_multilink(self):
         """`lookup` of an item will fail if leading or trailing whitespace
            has not been stripped.
