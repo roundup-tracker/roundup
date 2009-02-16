@@ -1012,7 +1012,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             # get the link ids
             sql = 'select linkid from %s_%s where nodeid=%s'%(classname, col,
                 self.arg)
-            self.cursor.execute(sql, (nodeid,))
+            self.sql(sql, (nodeid,))
             # extract the first column from the result
             # XXX numeric ids
             items = [int(x[0]) for x in self.cursor.fetchall()]
