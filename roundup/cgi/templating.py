@@ -2083,7 +2083,18 @@ class MultilinkHTMLProperty(HTMLProperty):
             for opt in linkcl.filter(None, conditions, sort_on)
             if self._db.security.hasPermission("View", self._client.userid,
                 linkcl.classname, itemid=opt)]
-        height = height or min(len(options), 7)
+        
+        # make sure we list the current values if they're retired
+        for val in value:
+            if val not in options:
+                options.insert(0, val)
+
+        if not height:
+            height = len(options)
+            if value:
+                # The "no selection" option.
+                height += 1
+            height = min(height, 7)
         l = ['<select multiple name="%s" size="%s">'%(self._formname, height)]
         k = linkcl.labelprop(1)
 
