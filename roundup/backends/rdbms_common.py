@@ -944,11 +944,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                     # XXX numeric ids
                     self.sql(sql, (int(nodeid), int(addid)))
             if remove:
-                sql = 'delete from %s where nodeid=%s and linkid=%s'%(tn,
-                    self.arg, self.arg)
-                for removeid in remove:
-                    # XXX numeric ids
-                    self.sql(sql, (int(nodeid), int(removeid)))
+                s = ','.join([self.arg]*len(remove))
+                sql = 'delete from %s where nodeid=%s and linkid in (%s)'%(tn,
+                    self.arg, s)
+                # XXX numeric ids
+                self.sql(sql, [int(nodeid)] + remove)
 
     sql_to_hyperdb_value = {
         hyperdb.String : str,
