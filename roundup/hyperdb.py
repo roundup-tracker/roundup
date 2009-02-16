@@ -707,7 +707,7 @@ All methods except __repr__ must be implemented by a concrete backend Database.
         raise NotImplementedError
 
     def getfile(self, classname, nodeid, property):
-        '''Store the content of the file in the database.
+        '''Get the content of the file in the database.
         '''
         raise NotImplementedError
 
@@ -1129,7 +1129,7 @@ class Class:
         backward-compatibility reasons a single (dir, prop) tuple is
         also allowed.
 
-        "search_matches" is {nodeid: marker}
+        "search_matches" is a sequence type
 
         The filter must match all properties specificed. If the property
         value to match is a list:

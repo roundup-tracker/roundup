@@ -2114,7 +2114,7 @@ class Class(hyperdb.Class):
         backward-compatibility reasons a single (dir, prop) tuple is
         also allowed.
 
-        "search_matches" is {nodeid: marker} or None
+        "search_matches" is a sequence type or None
 
         The filter must match all properties specificed. If the property
         value to match is a list:
@@ -2123,7 +2123,7 @@ class Class(hyperdb.Class):
         2. Other properties must match any of the elements in the list.
         """
         # we can't match anything if search_matches is empty
-        if search_matches == {}:
+        if not search_matches and search_matches is not None:
             return []
 
         if __debug__:
@@ -2334,8 +2334,7 @@ class Class(hyperdb.Class):
 
         # add results of full text search
         if search_matches is not None:
-            v = search_matches.keys()
-            s = ','.join([a for x in v])
+            s = ','.join([a for x in search_matches])
             where.append('_%s.id in (%s)'%(icn, s))
             args = args + v
 

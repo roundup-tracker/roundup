@@ -1561,7 +1561,7 @@ class Class(hyperdb.Class):
         "sort" and "group" are (dir, prop) where dir is '+', '-' or None
         and prop is a prop name or None
 
-        "search_matches" is {nodeid: marker} or None
+        "search_matches" is a sequence type or None
 
         The filter must match all properties specificed. If the property
         value to match is a list:
@@ -1721,7 +1721,7 @@ class Class(hyperdb.Class):
             if search_matches is not None:
                 k = []
                 for v in matches:
-                    if search_matches.has_key(v[0]):
+                    if v[0] in search_matches:
                         k.append(v)
                 matches = k
 
