@@ -1873,8 +1873,14 @@ class LinkHTMLProperty(HTMLProperty):
         if not self.is_edit_ok():
             return self.plain(escape=1)
 
+        # Since None indicates the default, we need another way to
+        # indicate "no selection".  We use -1 for this purpose, as
+        # that is the value we use when submitting a form without the
+        # value set.
         if value is None:
             value = self._value
+        elif value == '-1':
+            value = None
 
         linkcl = self._db.getclass(self._prop.classname)
         l = ['<select name="%s">'%self._formname]
