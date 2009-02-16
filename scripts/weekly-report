@@ -1,4 +1,4 @@
-#! /usr/bin/env python2.3
+#! /usr/bin/env python
 
 # This script generates a simple report outlining the activity in one
 # tracker for the most recent week.

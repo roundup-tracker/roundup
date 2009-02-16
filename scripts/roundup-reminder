@@ -1,4 +1,4 @@
-#! /usr/bin/env python2.2
+#! /usr/bin/env python
 # Copyright (c) 2002 ekit.com Inc (http://www.ekit-inc.com/)
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -18,8 +18,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
-# $Id: roundup-reminder,v 1.9 2007-02-15 03:52:35 richard Exp $
 
 '''
 Simple script that emails all users of a tracker with the issues that
