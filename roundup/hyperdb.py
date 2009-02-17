@@ -1129,7 +1129,7 @@ class Class:
         backward-compatibility reasons a single (dir, prop) tuple is
         also allowed.
 
-        "search_matches" is a sequence type
+        "search_matches" is a container type
 
         The filter must match all properties specificed. If the property
         value to match is a list:

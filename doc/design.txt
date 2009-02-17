@@ -475,14 +475,14 @@ Here is the interface provided by the hyperdatabase::
             match the 'filter' spec, sorted by the group spec and then the
             sort spec.
 
+            "search_matches" is a container type
+
             "filterspec" is {propname: value(s)}
 
             "sort" and "group" are [(dir, prop), ...] where dir is '+', '-'
             or None and prop is a prop name or None. Note that for
             backward-compatibility reasons a single (dir, prop) tuple is
             also allowed.
-
-            "search_matches" is {nodeid: marker}
 
             The filter must match all properties specificed. If the property
             value to match is a list:
