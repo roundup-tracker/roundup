@@ -1,13 +1,12 @@
-# $Id: client.py,v 1.239 2008-08-18 05:04:02 richard Exp $
-
 """WWW request handler (also used in the stand-alone server).
 """
 __docformat__ = 'restructuredtext'
 
 import base64, binascii, cgi, codecs, mimetypes, os
-import random, re, rfc822, stat, time, urllib, urlparse
+import quopri random, re, rfc822, stat, sys, time, urllib, urlparse
 import Cookie, socket, errno
 from Cookie import CookieError, BaseCookie, SimpleCookie
+from cStringIO import StringIO
 
 from roundup import roundupdb, date, hyperdb, password
 from roundup.cgi import templating, cgitb, TranslationService
@@ -927,7 +926,30 @@ class Client:
             raise Unauthorised, str(message)
         except:
             # everything else
-            return cgitb.pt_html(i18n=self.translator)
+            if self.instance.config.WEB_DEBUG:
+                return cgitb.pt_html(i18n=self.translator)
+            exc_info = sys.exc_info()
+            try:
+                # If possible, send the HTML page template traceback
+                # to the administrator.
+                to = [self.mailer.config.ADMIN_EMAIL]
+                subject = "Templating Error: %s" % exc_info[1]
+                content = cgitb.pt_html()
+                message, writer = self.mailer.get_standard_message(
+                    to, subject)
+                writer.addheader('Content-Transfer-Encoding', 'quoted-printable')
+                body = writer.startbody('text/html; charset=utf-8')
+                content = StringIO(content)
+                quopri.encode(content, body, 0)
+                self.mailer.smtp_send(to, message)
+                # Now report the error to the user.
+                return self._(error_message)
+            except:
+                # Reraise the original exception.  The user will
+                # receive an error message, and the adminstrator will
+                # receive a traceback, albeit with less information
+                # than the one we tried to generate above.
+                raise exc_info[0], exc_info[1], exc_info[2]
 
     # these are the actions that are available
     actions = (
