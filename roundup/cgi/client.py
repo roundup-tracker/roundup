@@ -3,7 +3,7 @@
 __docformat__ = 'restructuredtext'
 
 import base64, binascii, cgi, codecs, mimetypes, os
-import quopri random, re, rfc822, stat, sys, time, urllib, urlparse
+import quopri, random, re, rfc822, stat, sys, time, urllib, urlparse
 import Cookie, socket, errno
 from Cookie import CookieError, BaseCookie, SimpleCookie
 from cStringIO import StringIO
