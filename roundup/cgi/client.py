@@ -819,10 +819,30 @@ class Client:
                 "this file.")
 
         mime_type = klass.get(nodeid, 'type')
-        content = klass.get(nodeid, 'content')
+
+        # If this object is a file (i.e., an instance of FileClass),
+        # see if we can find it in the filesystem.  If so, we may be
+        # able to use the more-efficient request.sendfile method of
+        # sending the file.  If not, just get the "content" property
+        # in the usual way, and use that.
+        content = None
+        filename = None
+        if isinstance(klass, hyperdb.FileClass):
+            try:
+                filename = self.db.filename(classname, nodeid)
+            except AttributeError:
+                # The database doesn't store files in the filesystem
+                # and therefore doesn't provide the "filename" method.
+                pass
+            except IOError:
+                # The file does not exist.
+                pass
+        if not filename:
+            content = klass.get(nodeid, 'content')
+        
         lmt = klass.get(nodeid, 'activity').timestamp()
 
-        self._serve_file(lmt, mime_type, content)
+        self._serve_file(lmt, mime_type, content, filename)
 
     def serve_static_file(self, file):
         ''' Serve up the file named from the templates dir
@@ -853,21 +873,20 @@ class Client:
             else:
                 mime_type = 'text/plain'
 
-        # snarf the content
-        f = open(filename, 'rb')
-        try:
-            content = f.read()
-        finally:
-            f.close()
+        self._serve_file(lmt, mime_type, '', filename)
 
-        self._serve_file(lmt, mime_type, content)
-
-    def _serve_file(self, lmt, mime_type, content):
+    def _serve_file(self, lmt, mime_type, content=None, filename=None):
         ''' guts of serve_file() and serve_static_file()
         '''
+
+        if not content:
+            length = os.stat(filename)[stat.ST_SIZE]
+        else:
+            length = len(content)
+
         # spit out headers
         self.additional_headers['Content-Type'] = mime_type
-        self.additional_headers['Content-Length'] = str(len(content))
+        self.additional_headers['Content-Length'] = str(length)
         self.additional_headers['Last-Modified'] = rfc822.formatdate(lmt)
 
         ims = None
@@ -884,7 +903,27 @@ class Client:
             if lmtt <= ims:
                 raise NotModified
 
-        self.write(content)
+        if not self.headers_done:
+            self.header()
+
+        if self.env['REQUEST_METHOD'] == 'HEAD':
+            return
+
+        # If we have a file, and the 'sendfile' method is available,
+        # we can bypass reading and writing the content into application
+        # memory entirely.
+        if filename:
+            if hasattr(self.request, 'sendfile'):
+                self._socket_op(self.request.sendfile, filename)
+                return
+            f = open(filename, 'rb')
+            try:
+                content = f.read()
+            finally:
+                f.close()
+
+        self._socket_op(self.request.wfile.write, content)
+
 
     def renderContext(self):
         ''' Return a PageTemplate for the named page
@@ -1058,6 +1097,7 @@ class Client:
 
         # and write
         self._socket_op(self.request.wfile.write, content)
+
 
     def setHeader(self, header, value):
         '''Override a header to be returned to the user's browser.

@@ -77,6 +77,13 @@ class Request(object):
         """NOOP. There aint no such thing as 'end_headers' in mod_python"""
         pass
 
+ 
+    def sendfile(self, filename, offset = 0, len = -1):
+        """Send 'filename' to the user."""
+
+        return self._req.sendfile(filename, offset, len)
+
+
 def handler(req):
     """HTTP request handler"""
     _options = req.get_options()
