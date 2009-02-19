@@ -1737,7 +1737,7 @@ class DateHTMLProperty(HTMLProperty):
         else :
             date = ""
         return ('<a class="classhelp" href="javascript:help_window('
-            "'%s?@template=calendar&property=%s&form=%s%s', %d, %d)"
+            "'%s?@template=calendar&amp;property=%s&amp;form=%s%s', %d, %d)"
             '">%s</a>'%(self._classname, self._name, form, date, width,
             height, label))
 
