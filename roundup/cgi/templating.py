@@ -2429,10 +2429,10 @@ env: %(env)s
         if filter and self.filter:
             add(sc+'filter', ','.join(self.filter))
         if self.classname and filterspec:
-            props = self.client.db.getclass(self.classname).getprops()
+            cls = self.client.db.getclass(self.classname)
             for k,v in self.filterspec.items():
                 if type(v) == type([]):
-                    if isinstance(props[k], hyperdb.String):
+                    if isinstance(cls.get_transitive_prop(k), hyperdb.String):
                         add(k, ' '.join(v))
                     else:
                         add(k, ','.join(v))
