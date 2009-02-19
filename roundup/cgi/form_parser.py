@@ -425,7 +425,9 @@ class FormParser:
                             if entry not in existing:
                                 existing.append(entry)
                     value = existing
-                    value.sort()
+                    # Sort the value in the same order used by
+                    # Multilink.from_raw.
+                    value.sort(key = lambda x: int(x))
 
             elif value == '':
                 # other types should be None'd if there's no value
@@ -483,9 +485,13 @@ class FormParser:
                 except IndexError, message:
                     raise FormError(str(message))
 
-                # make sure the existing multilink is sorted
+                # make sure the existing multilink is sorted.  We must
+                # be sure to use the same sort order in all places,
+                # since we want to compare values with "=" or "!=".
+                # The canonical order (given in Multilink.from_raw) is
+                # by the numeric value of the IDs.
                 if isinstance(proptype, hyperdb.Multilink):
-                    existing.sort()
+                    existing.sort(key = lambda x: int(x))
 
                 # "missing" existing values may not be None
                 if not existing:
