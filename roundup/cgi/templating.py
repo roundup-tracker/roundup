@@ -1908,6 +1908,21 @@ class LinkHTMLProperty(HTMLProperty):
         if value and value not in options:
             options.insert(0, value)
 
+        if additional:
+            additional_fns = []
+            props = linkcl.getprops()
+            for propname in additional:
+                prop = props[propname]
+                if isinstance(prop, hyperdb.Link):
+                    cl = self._db.getclass(prop.classname)
+                    labelprop = cl.labelprop()
+                    fn = lambda optionid: cl.get(linkcl.get(optionid,
+                                                            propname),
+                                                 labelprop)
+                else:
+                    fn = lambda optionid: linkcl.get(optionid, propname)
+            additional_fns.append(fn)
+            
         for optionid in options:
             # get the option value, and if it's None use an empty string
             option = linkcl.get(optionid, k) or ''
@@ -1930,9 +1945,9 @@ class LinkHTMLProperty(HTMLProperty):
                 lab = lab[:size-3] + '...'
             if additional:
                 m = []
-                for propname in additional:
-                    m.append(linkcl.get(optionid, propname))
-                lab = lab + ' (%s)'%', '.join(map(str, m))
+                for fn in additional_fns:
+                    m.append(str(fn(optionid)))
+                lab = lab + ' (%s)'%', '.join(m)
 
             # and generate
             lab = cgi.escape(self._(lab))
@@ -2109,6 +2124,21 @@ class MultilinkHTMLProperty(HTMLProperty):
             if val not in options:
                 options.insert(0, val)
 
+        if additional:
+            additional_fns = []
+            props = linkcl.getprops()
+            for propname in additional:
+                prop = props[propname]
+                if isinstance(prop, hyperdb.Link):
+                    cl = self._db.getclass(prop.classname)
+                    labelprop = cl.labelprop()
+                    fn = lambda optionid: cl.get(linkcl.get(optionid,
+                                                            propname),
+                                                 labelprop)
+                else:
+                    fn = lambda optionid: linkcl.get(optionid, propname)
+            additional_fns.append(fn)
+            
         for optionid in options:
             # get the option value, and if it's None use an empty string
             option = linkcl.get(optionid, k) or ''
@@ -2128,8 +2158,8 @@ class MultilinkHTMLProperty(HTMLProperty):
                 lab = lab[:size-3] + '...'
             if additional:
                 m = []
-                for propname in additional:
-                    m.append(linkcl.get(optionid, propname))
+                for fn in additional_fns:
+                    m.append(str(fn(optionid)))
                 lab = lab + ' (%s)'%', '.join(m)
 
             # and generate
