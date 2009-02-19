@@ -530,24 +530,10 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         for klass, htmlklass in propclasses:
             if not isinstance(prop, klass):
                 continue
-            if form.has_key(item):
-                if isinstance(prop, hyperdb.Multilink):
-                    value = lookupIds(self._db, prop,
-                        handleListCGIValue(form[item]), fail_ok=1)
-                elif isinstance(prop, hyperdb.Link):
-                    value = form.getfirst(item).strip()
-                    if value:
-                        value = lookupIds(self._db, prop, [value],
-                            fail_ok=1)[0]
-                    else:
-                        value = None
-                else:
-                    value = form.getfirst(item).strip() or None
+            if isinstance(prop, hyperdb.Multilink):
+                value = []
             else:
-                if isinstance(prop, hyperdb.Multilink):
-                    value = []
-                else:
-                    value = None
+                value = None
             return htmlklass(self._client, self._classname, None, prop, item,
                 value, self._anonymous)
 
@@ -1205,6 +1191,25 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
             self._formname = '%s%s@%s'%(classname, nodeid, name)
         else:
             self._formname = name
+
+        # If no value is already present for this property, see if one
+        # is specified in the current form.
+        form = self._client.form
+        if not self._value and form.has_key(self._formname):
+            if isinstance(prop, hyperdb.Multilink):
+                value = lookupIds(self._db, prop,
+                                  handleListCGIValue(form[self._formname]),
+                                  fail_ok=1)
+            elif isinstance(prop, hyperdb.Link):
+                value = form.getfirst(self._formname).strip()
+                if value:
+                    value = lookupIds(self._db, prop, [value],
+                                      fail_ok=1)[0]
+                else:
+                    value = None
+            else:
+                value = form.getfirst(self._formname).strip() or None
+            self._value = value
 
         HTMLInputMixin.__init__(self)
 
