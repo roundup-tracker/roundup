@@ -341,7 +341,7 @@ class HTMLDatabase:
         # we want config to be exposed
         self.config = client.db.config
 
-    def __getitem__(self, item, desre=re.compile(r'(?P<cl>\w+)(?P<id>[-\d]+)')):
+    def __getitem__(self, item, desre=re.compile(r'(?P<cl>[a-zA-Z_]+)(?P<id>[-\d]+)')):
         # check to see if we're actually accessing an item
         m = desre.match(item)
         if m:
