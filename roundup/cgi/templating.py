@@ -2119,10 +2119,9 @@ class MultilinkHTMLProperty(HTMLProperty):
         l = ['<select multiple name="%s" size="%s">'%(self._formname, height)]
         k = linkcl.labelprop(1)
 
-        # make sure we list the current values if they're retired
-        for val in value:
-            if val not in options:
-                options.insert(0, val)
+        if value:
+            l.append('<option value="%s">- no selection -</option>'
+                     % ','.join(['-' + v for v in value]))
 
         if additional:
             additional_fns = []
