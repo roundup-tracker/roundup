@@ -2206,7 +2206,7 @@ class Class(hyperdb.Class):
                 if p.sort_type < 2:
                     mlfilt = 1
                     tn = '%s_%s'%(pcn, k)
-                    if v in ('-1', ['-1']):
+                    if v in ('-1', ['-1'], []):
                         # only match rows that have count(linkid)=0 in the
                         # corresponding multilink table)
                         where.append(self._subselect(pcn, tn))
