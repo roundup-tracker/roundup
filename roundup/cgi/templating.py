@@ -1830,7 +1830,10 @@ class LinkHTMLProperty(HTMLProperty):
         linkcl = self._db.classes[self._prop.classname]
         k = linkcl.labelprop(1)
         if num_re.match(self._value):
-            value = str(linkcl.get(self._value, k))
+            try:
+                value = str(linkcl.get(self._value, k))
+            except IndexError:
+                value = self._value
         else :
             value = self._value
         if escape:
@@ -2042,9 +2045,15 @@ class MultilinkHTMLProperty(HTMLProperty):
         k = linkcl.labelprop(1)
         labels = []
         for v in self._value:
-            label = linkcl.get(v, k)
-            # fall back to designator if label is None
-            if label is None: label = '%s%s'%(self._prop.classname, k)
+            if num_re.match(v):
+                try:
+                    label = linkcl.get(v, k)
+                except IndexError:
+                    label = None
+                # fall back to designator if label is None
+                if label is None: label = '%s%s'%(self._prop.classname, k)
+            else:
+                label = v
             labels.append(label)
         value = ', '.join(labels)
         if escape:
