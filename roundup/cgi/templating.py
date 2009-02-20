@@ -1102,7 +1102,10 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
 
         # new template, using the specified classname and request
         pt = self._client.instance.templates.get(req.classname, 'search')
-
+        # The context for a search page should be the class, not any
+        # node.
+        self._client.nodeid = None
+        
         # use our fabricated request
         return pt.render(self._client, req.classname, req)
 
