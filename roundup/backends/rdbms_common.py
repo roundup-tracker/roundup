@@ -387,6 +387,19 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         hyperdb.Boolean   : 'BOOLEAN',
         hyperdb.Number    : 'REAL',
     }
+
+    def hyperdb_to_sql_datatype(self, propclass):
+
+        datatype = self.hyperdb_to_sql_datatypes.get(propclass)
+        if datatype:
+            return datatype
+        
+        for k, v in self.hyperdb_to_sql_datatypes.iteritems():
+            if issubclass(propclass, k):
+                return v
+
+        raise ValueError, '%r is not a hyperdb property class' % propclass
+    
     def determine_columns(self, properties):
         """ Figure the column names and multilink properties from the spec
 
@@ -394,10 +407,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             instance of a hyperdb "type" _or_ a string repr of that type.
         """
         cols = [
-            ('_actor', self.hyperdb_to_sql_datatypes[hyperdb.Link]),
-            ('_activity', self.hyperdb_to_sql_datatypes[hyperdb.Date]),
-            ('_creator', self.hyperdb_to_sql_datatypes[hyperdb.Link]),
-            ('_creation', self.hyperdb_to_sql_datatypes[hyperdb.Date]),
+            ('_actor', self.hyperdb_to_sql_datatype(hyperdb.Link)),
+            ('_activity', self.hyperdb_to_sql_datatype(hyperdb.Date)),
+            ('_creator', self.hyperdb_to_sql_datatype(hyperdb.Link)),
+            ('_creation', self.hyperdb_to_sql_datatype(hyperdb.Date)),
         ]
         mls = []
         # add the multilinks separately
@@ -411,7 +424,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 #and prop.find('Multilink') != -1:
                 #mls.append(col)
 
-            datatype = self.hyperdb_to_sql_datatypes[prop.__class__]
+            datatype = self.hyperdb_to_sql_datatype(prop.__class__)
             cols.append(('_'+col, datatype))
 
             # Intervals stored as two columns
@@ -489,7 +502,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 self.create_multilink_table(spec, propname)
             else:
                 # add the column
-                coltype = self.hyperdb_to_sql_datatypes[prop.__class__]
+                coltype = self.hyperdb_to_sql_datatype(prop.__class__)
                 sql = 'alter table _%s add column _%s %s'%(
                     spec.classname, propname, coltype)
                 self.sql(sql)
@@ -607,7 +620,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         sql = """create table %s__journal (
             nodeid integer, date %s, tag varchar(255),
             action varchar(255), params text)""" % (spec.classname,
-            self.hyperdb_to_sql_datatypes[hyperdb.Date])
+            self.hyperdb_to_sql_datatype(hyperdb.Date))
         self.sql(sql)
         self.create_journal_table_indexes(spec)
 
@@ -768,6 +781,19 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         hyperdb.Number    : lambda x: x,
         hyperdb.Multilink : lambda x: x,    # used in journal marshalling
     }
+
+    def to_sql_value(self, propklass):
+
+        fn = self.hyperdb_to_sql_value.get(propklass)
+        if fn:
+            return fn
+
+        for k, v in self.hyperdb_to_sql_value.iteritems():
+            if issubclass(propklass, k):
+                return v
+
+        raise ValueError, '%r is not a hyperdb property class' % propklass
+
     def addnode(self, classname, nodeid, node):
         """ Add the specified node to its class's db.
         """
@@ -821,7 +847,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             prop = props[col[1:]]
             value = values[col[1:]]
             if value is not None:
-                value = self.hyperdb_to_sql_value[prop.__class__](value)
+                value = self.to_sql_value(prop.__class__)(value)
             vals.append(value)
         vals.append(nodeid)
         vals = tuple(vals)
@@ -892,7 +918,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 if value is None:
                     e = None
                 else:
-                    e = self.hyperdb_to_sql_value[prop.__class__](value)
+                    e = self.to_sql_value(prop.__class__)(value)
                 vals.append(e)
 
         vals.append(int(nodeid))
@@ -955,6 +981,19 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         hyperdb.Number    : _num_cvt,
         hyperdb.Multilink : lambda x: x,    # used in journal marshalling
     }
+
+    def to_hyperdb_value(self, propklass):
+
+        fn = self.sql_to_hyperdb_value.get(propklass)
+        if fn:
+            return fn
+
+        for k, v in self.sql_to_hyperdb_value.iteritems():
+            if issubclass(propklass, k):
+                return v
+
+        raise ValueError, '%r is not a hyperdb property class' % propklass
+
     def getnode(self, classname, nodeid):
         """ Get a node from the database.
         """
@@ -997,7 +1036,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 continue
             value = values[col]
             if value is not None:
-                value = self.sql_to_hyperdb_value[props[name].__class__](value)
+                value = self.to_hyperdb_value(props[name].__class__)(value)
             node[name] = value
 
 
@@ -1116,7 +1155,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         params = repr(params)
 
-        dc = self.hyperdb_to_sql_value[hyperdb.Date]
+        dc = self.to_sql_value(hyperdb.Date)
         journaldate = dc(journaldate)
 
         self.save_journal(classname, cols, nodeid, journaldate,
@@ -1131,7 +1170,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # create the journal entry
         cols = 'nodeid,date,tag,action,params'
 
-        dc = self.hyperdb_to_sql_value[hyperdb.Date]
+        dc = self.to_sql_value(hyperdb.Date)
         for nodeid, journaldate, journaltag, action, params in journal:
             self.log_debug('addjournal %s%s %r %s %s %r'%(
                 classname, nodeid, journaldate, journaltag, action,
@@ -1153,7 +1192,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             if not value:
                 continue
             property = properties[param]
-            cvt = self.hyperdb_to_sql_value[property.__class__]
+            cvt = self.to_sql_value(property.__class__)
             if isinstance(property, Password):
                 params[param] = cvt(value)
             elif isinstance(property, Date):
@@ -1174,7 +1213,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         journal = self.load_journal(classname, cols, nodeid)
 
         # now unmarshal the data
-        dc = self.sql_to_hyperdb_value[hyperdb.Date]
+        dc = self.to_hyperdb_value(hyperdb.Date)
         res = []
         properties = self.getclass(classname).getprops()
         for nodeid, date_stamp, user, action, params in journal:
@@ -1187,7 +1226,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                     if property is None:
                         # deleted property
                         continue
-                    cvt = self.sql_to_hyperdb_value[property.__class__]
+                    cvt = self.to_hyperdb_value(property.__class__)
                     if isinstance(property, Password):
                         params[param] = cvt(value)
                     elif isinstance(property, Date):
@@ -1224,7 +1263,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def pack(self, pack_before):
         """ Delete all journal entries except "create" before 'pack_before'.
         """
-        date_stamp = self.hyperdb_to_sql_value[Date](pack_before)
+        date_stamp = self.to_sql_value(Date)(pack_before)
 
         # do the delete
         for classname in self.classes.keys():
@@ -2256,7 +2295,7 @@ class Class(hyperdb.Class):
                                 cn, ln, pln, k, ln))
                         oc = '_%s._%s'%(ln, lp)
             elif isinstance(propclass, Date) and p.sort_type < 2:
-                dc = self.db.hyperdb_to_sql_value[hyperdb.Date]
+                dc = self.db.to_sql_value(hyperdb.Date)
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
                     where.append('_%s._%s in (%s)'%(pln, k, s))

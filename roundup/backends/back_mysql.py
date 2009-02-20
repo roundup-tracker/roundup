@@ -297,7 +297,7 @@ class Database(Database):
                     # convert to new MySQL data type
                     prop = properties[name]
                     if v is not None:
-                        e = self.hyperdb_to_sql_value[prop.__class__](v)
+                        e = self.to_sql_value(prop.__class__)(v)
                     else:
                         e = None
                     l.append(e)
@@ -349,7 +349,7 @@ class Database(Database):
 
             # re-create journal table
             self.create_journal_table(klass)
-            dc = self.hyperdb_to_sql_value[hyperdb.Date]
+            dc = self.to_sql_value(hyperdb.Date)
             for nodeid, journaldate, journaltag, action, params in olddata:
                 self.save_journal(cn, cols, nodeid, dc(journaldate),
                     journaltag, action, params)
