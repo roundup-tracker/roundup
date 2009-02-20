@@ -260,7 +260,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             return 0
 
         if version < 2:
-            log_info('upgrade to version 2')
+            self.log_info('upgrade to version 2')
             # change the schema structure
             self.database_schema = {'tables': self.database_schema}
 
@@ -273,7 +273,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             self.create_version_2_tables()
 
         if version < 3:
-            log_info('upgrade to version 3')
+            self.log_info('upgrade to version 3')
             self.fix_version_2_tables()
 
         if version < 4:
