@@ -1,4 +1,3 @@
-#$Id: back_mysql.py,v 1.75 2008-02-27 08:32:50 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -67,11 +66,10 @@ def db_nuke(config):
             # stupid MySQL bug requires us to drop all the tables first
             for table in tables:
                 command = 'DROP TABLE `%s`'%table[0]
-                if __debug__:
-                    logging.getLogger('hyperdb').debug(command)
+                self.log_debug(command)
                 cursor.execute(command)
             command = "DROP DATABASE %s"%config.RDBMS_NAME
-            logging.getLogger('hyperdb').info(command)
+            self.log_info(command)
             cursor.execute(command)
             conn.commit()
         conn.close()
@@ -85,7 +83,7 @@ def db_create(config):
     conn = MySQLdb.connect(**kwargs)
     cursor = conn.cursor()
     command = "CREATE DATABASE %s"%config.RDBMS_NAME
-    logging.getLogger('hyperdb').info(command)
+    self.log_info(command)
     cursor.execute(command)
     conn.commit()
     conn.close()
@@ -140,7 +138,7 @@ class Database(Database):
 
     def sql_open_connection(self):
         kwargs = connection_dict(self.config, 'db')
-        logging.getLogger('hyperdb').info('open database %r'%(kwargs['db'],))
+        self.log_info('open database %r'%(kwargs['db'],))
         try:
             conn = MySQLdb.connect(**kwargs)
         except MySQLdb.OperationalError, message:
@@ -544,7 +542,7 @@ class Database(Database):
     def sql_commit(self, fail_ok=False):
         ''' Actually commit to the database.
         '''
-        logging.getLogger('hyperdb').info('commit')
+        self.log_info('commit')
 
         # MySQL commits don't seem to ever fail, the latest update winning.
         # makes you wonder why they have transactions...
@@ -558,7 +556,7 @@ class Database(Database):
         self.sql("START TRANSACTION")
 
     def sql_close(self):
-        logging.getLogger('hyperdb').info('close')
+        self.log_info('close')
         try:
             self.conn.close()
         except MySQLdb.ProgrammingError, message:

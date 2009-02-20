@@ -15,7 +15,6 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: rdbms_common.py,v 1.199 2008-08-18 06:25:47 richard Exp $
 """ Relational database (SQL) backend common code.
 
 Basics:
@@ -157,8 +156,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def sql(self, sql, args=None):
         """ Execute the sql with the optional args.
         """
-        if __debug__:
-            logging.getLogger('hyperdb').debug('SQL %r %r'%(sql, args))
+        self.log_debug('SQL %r %r'%(sql, args))
         if args:
             self.cursor.execute(sql, args)
         else:
@@ -262,8 +260,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             return 0
 
         if version < 2:
-            if __debug__:
-                logging.getLogger('hyperdb').info('upgrade to version 2')
+            log_info('upgrade to version 2')
             # change the schema structure
             self.database_schema = {'tables': self.database_schema}
 
@@ -276,8 +273,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             self.create_version_2_tables()
 
         if version < 3:
-            if __debug__:
-                logging.getLogger('hyperdb').info('upgrade to version 3')
+            log_info('upgrade to version 3')
             self.fix_version_2_tables()
 
         if version < 4:
@@ -775,9 +771,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def addnode(self, classname, nodeid, node):
         """ Add the specified node to its class's db.
         """
-        if __debug__:
-            logging.getLogger('hyperdb').debug('addnode %s%s %r'%(classname,
-                nodeid, node))
+        self.log_debug('addnode %s%s %r'%(classname,
+            nodeid, node))
 
         # determine the column definitions and multilink tables
         cl = self.classes[classname]
@@ -850,9 +845,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def setnode(self, classname, nodeid, values, multilink_changes={}):
         """ Change the specified node.
         """
-        if __debug__:
-            logging.getLogger('hyperdb').debug('setnode %s%s %r'
-                % (classname, nodeid, values))
+        self.log_debug('setnode %s%s %r'
+            % (classname, nodeid, values))
 
         # clear this node out of the cache if it's in there
         key = (classname, nodeid)
@@ -1113,9 +1107,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # create the journal entry
         cols = 'nodeid,date,tag,action,params'
 
-        if __debug__:
-            logging.getLogger('hyperdb').debug('addjournal %s%s %r %s %s %r'%(classname,
-                nodeid, journaldate, journaltag, action, params))
+        self.log_debug('addjournal %s%s %r %s %s %r'%(classname,
+            nodeid, journaldate, journaltag, action, params))
 
         # make the journalled data marshallable
         if isinstance(params, type({})):
@@ -1140,10 +1133,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         dc = self.hyperdb_to_sql_value[hyperdb.Date]
         for nodeid, journaldate, journaltag, action, params in journal:
-            if __debug__:
-                logging.getLogger('hyperdb').debug('addjournal %s%s %r %s %s %r'%(
-                    classname, nodeid, journaldate, journaltag, action,
-                    params))
+            self.log_debug('addjournal %s%s %r %s %s %r'%(
+                classname, nodeid, journaldate, journaltag, action,
+                params))
 
             # make the journalled data marshallable
             if isinstance(params, type({})):
@@ -2114,7 +2106,7 @@ class Class(hyperdb.Class):
         backward-compatibility reasons a single (dir, prop) tuple is
         also allowed.
 
-        "search_matches" is a sequence type or None
+        "search_matches" is a container type or None
 
         The filter must match all properties specificed. If the property
         value to match is a list:

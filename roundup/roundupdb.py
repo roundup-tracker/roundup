@@ -25,6 +25,7 @@ __docformat__ = 'restructuredtext'
 import re, os, smtplib, socket, time, random
 import cStringIO, base64, quopri, mimetypes
 import os.path
+import logging
 
 from rfc2822 import encode_header
 
@@ -113,6 +114,29 @@ class Database:
         self.commit()
 
         return userid
+
+
+    def log_debug(self, msg, *args, **kwargs):
+        """Log a message with level DEBUG."""
+  	 
+        logger = self.get_logger()
+        logger.debug(msg, *args, **kwargs)
+  	 
+    def log_info(self, msg, *args, **kwargs):
+        """Log a message with level INFO."""
+  	 
+        logger = self.get_logger()
+        logger.info(msg, *args, **kwargs)
+  	 
+    def get_logger(self):
+        """Return the logger for this database."""
+  	 
+        # Because getting a logger requires acquiring a lock, we want
+        # to do it only once.
+        if not hasattr(self, '__logger'):
+            self.__logger = logging.getLogger('hyperdb')
+  	 
+        return self.__logger
 
 
 class DetectorError(RuntimeError):
