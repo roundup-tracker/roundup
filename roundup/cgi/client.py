@@ -40,22 +40,22 @@ CLEAN_MESSAGE_RE = r'(<(/?(.*?)(\s*href="[^"]")?\s*/?)>)'
 def clean_message(message, mc=re.compile(CLEAN_MESSAGE_RE, re.I)):
     return mc.sub(clean_message_callback, message)
 def clean_message_callback(match, ok={'a':1,'i':1,'b':1,'br':1}):
-    ''' Strip all non <a>,<i>,<b> and <br> tags from a string
-    '''
+    """ Strip all non <a>,<i>,<b> and <br> tags from a string
+    """
     if ok.has_key(match.group(3).lower()):
         return match.group(1)
     return '&lt;%s&gt;'%match.group(2)
 
 
-error_message = ""'''<html><head><title>An error has occurred</title></head>
+error_message = """<html><head><title>An error has occurred</title></head>
 <body><h1>An error has occurred</h1>
 <p>A problem was encountered processing your request.
 The tracker maintainers have been notified of the problem.</p>
-</body></html>'''
+</body></html>"""
 
 
 class LiberalCookie(SimpleCookie):
-    ''' Python's SimpleCookie throws an exception if the cookie uses invalid
+    """ Python's SimpleCookie throws an exception if the cookie uses invalid
         syntax.  Other applications on the same server may have done precisely
         this, preventing roundup from working through no fault of roundup.
         Numerous other python apps have run into the same problem:
@@ -66,7 +66,7 @@ class LiberalCookie(SimpleCookie):
         This particular implementation comes from trac's solution to the
         problem. Unfortunately it requires some hackery in SimpleCookie's
         internals to provide a more liberal __set method.
-    '''
+    """
     def load(self, rawdata, ignore_parse_errors=True):
         if ignore_parse_errors:
             self.bad_cookies = []
@@ -88,7 +88,7 @@ class LiberalCookie(SimpleCookie):
 
 
 class Session:
-    '''
+    """
     Needs DB to be already opened by client
 
     Session attributes at instantiation:
@@ -110,7 +110,7 @@ class Session:
                        # refresh session expiration time, setting persistent
                        # cookie if needed to last for 'expire' seconds
 
-    '''
+    """
 
     def __init__(self, client):
         self._data = {}
@@ -133,7 +133,7 @@ class Session:
                 self._data = self.session_db.getall(self._sid)
 
     def _gen_sid(self):
-        ''' generate a unique session key '''
+        """ generate a unique session key """
         while 1:
             s = '%s%s'%(time.time(), random.random())
             s = binascii.b2a_base64(s).strip()
@@ -149,7 +149,7 @@ class Session:
         return s
 
     def clean_up(self):
-        '''Remove expired sessions'''
+        """Remove expired sessions"""
         self.session_db.clean()
 
     def destroy(self):
@@ -177,14 +177,14 @@ class Session:
             self.client.db.commit()
 
     def update(self, set_cookie=False, expire=None):
-        ''' update timestamp in db to avoid expiration
+        """ update timestamp in db to avoid expiration
 
             if 'set_cookie' is True, set cookie with 'expire' seconds lifetime
             if 'expire' is None - session will be closed with the browser
              
             XXX the session can be purged within a week even if a cookie
                 lifetime is longer
-        '''
+        """
         self.session_db.updateTimestamp(self._sid)
         self.client.db.commit()
 
@@ -194,7 +194,7 @@ class Session:
 
 
 class Client:
-    '''Instantiate to handle one CGI request.
+    """Instantiate to handle one CGI request.
 
     See inner_main for request processing.
 
@@ -234,7 +234,7 @@ class Client:
      Note that in various places throughout this code, special form
      variables of the form :<name> are used. The colon (":") part may
      actually be one of either ":" or "@".
-    '''
+    """
 
     # charset used for data storage and form templates
     # Note: must be in lower case for comparisons!
@@ -351,16 +351,16 @@ class Client:
         self.ngettext = translator.ngettext
 
     def main(self):
-        ''' Wrap the real main in a try/finally so we always close off the db.
-        '''
+        """ Wrap the real main in a try/finally so we always close off the db.
+        """
         try:
             self.inner_main()
         finally:
             if hasattr(self, 'db'):
                 self.db.close()
-
+        
     def inner_main(self):
-        '''Process a request.
+        """Process a request.
 
         The most common requests are handled like so:
 
@@ -390,7 +390,7 @@ class Client:
           doesn't have permission
         - NotFound       (raised wherever it needs to be)
           percolates up to the CGI interface that called the client
-        '''
+        """
         self.ok_message = []
         self.error_message = []
         try:
@@ -795,8 +795,8 @@ class Client:
             self.template = template_override
 
     def serve_file(self, designator, dre=re.compile(r'([^\d]+)(\d+)')):
-        ''' Serve the file from the content property of the designated item.
-        '''
+        """ Serve the file from the content property of the designated item.
+        """
         m = dre.match(str(designator))
         if not m:
             raise NotFound, str(designator)
@@ -844,8 +844,8 @@ class Client:
         self._serve_file(lmt, mime_type, content, filename)
 
     def serve_static_file(self, file):
-        ''' Serve up the file named from the templates dir
-        '''
+        """ Serve up the file named from the templates dir
+        """
         # figure the filename - try STATIC_FILES, then TEMPLATES dir
         for dir_option in ('STATIC_FILES', 'TEMPLATES'):
             prefix = self.instance.config[dir_option]
@@ -875,8 +875,8 @@ class Client:
         self._serve_file(lmt, mime_type, '', filename)
 
     def _serve_file(self, lmt, mime_type, content=None, filename=None):
-        ''' guts of serve_file() and serve_static_file()
-        '''
+        """ guts of serve_file() and serve_static_file()
+        """
 
         # spit out headers
         self.additional_headers['Content-Type'] = mime_type
@@ -903,8 +903,8 @@ class Client:
             self.write(content)
 
     def renderContext(self):
-        ''' Return a PageTemplate for the named page
-        '''
+        """ Return a PageTemplate for the named page
+        """
         name = self.classname
         extension = self.template
 
@@ -983,7 +983,7 @@ class Client:
         ('export_csv',  ExportCSVAction),
     )
     def handle_action(self):
-        ''' Determine whether there should be an Action called.
+        """ Determine whether there should be an Action called.
 
             The action is defined by the form variable :action which
             identifies the method on this object to call. The actions
@@ -994,7 +994,7 @@ class Client:
 
             We explicitly catch Reject and ValueError exceptions and
             present their messages to the user.
-        '''
+        """
         if self.form.has_key(':action'):
             action = self.form[':action'].value.lower()
         elif self.form.has_key('@action'):
@@ -1252,7 +1252,7 @@ class Client:
         return (first, last - first + 1)
 
     def write_file(self, filename):
-        '''Send the contents of 'filename' to the user.'''
+        """Send the contents of 'filename' to the user."""
 
         # Determine the length of the file.
         stat_info = os.stat(filename)
@@ -1306,13 +1306,13 @@ class Client:
         self.write(content)
 
     def setHeader(self, header, value):
-        '''Override a header to be returned to the user's browser.
-        '''
+        """Override a header to be returned to the user's browser.
+        """
         self.additional_headers[header] = value
 
     def header(self, headers=None, response=None):
-        '''Put up the appropriate header.
-        '''
+        """Put up the appropriate header.
+        """
         if headers is None:
             headers = {'Content-Type':'text/html; charset=utf-8'}
         if response is None:
@@ -1375,16 +1375,16 @@ class Client:
         self.session_api.update(set_cookie=True, expire=expire)
 
     def make_user_anonymous(self):
-        ''' Make us anonymous
+        """ Make us anonymous
 
             This method used to handle non-existence of the 'anonymous'
             user, but that user is mandatory now.
-        '''
+        """
         self.userid = self.db.user.lookup('anonymous')
         self.user = 'anonymous'
 
     def standard_message(self, to, subject, body, author=None):
-        '''Send a standard email message from Roundup.
+        """Send a standard email message from Roundup.
 
         "to"      - recipients list
         "subject" - Subject
@@ -1392,7 +1392,7 @@ class Client:
         "author"  - (name, address) tuple or None for admin email
 
         Arguments are passed to the Mailer.standard_message code.
-        '''
+        """
         try:
             self.mailer.standard_message(to, subject, body, author)
         except MessageSendError, e:
