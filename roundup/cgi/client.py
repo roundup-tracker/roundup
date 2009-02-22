@@ -2,7 +2,7 @@
 """
 __docformat__ = 'restructuredtext'
 
-import base64, binascii, cgi, codecs, mimetypes, os
+import base64, binascii, cgi, codecs, httplib, mimetypes, os
 import quopri, random, re, rfc822, stat, sys, time, urllib, urlparse
 import Cookie, socket, errno
 from Cookie import CookieError, BaseCookie, SimpleCookie
@@ -463,6 +463,7 @@ class Client:
                 self.header()
         except Unauthorised, message:
             # users may always see the front page
+            self.response_code = 403
             self.classname = self.nodeid = None
             self.template = ''
             self.error_message.append(message)
@@ -632,9 +633,7 @@ class Client:
                         login.verifyLogin(username, password)
                     except LoginError, err:
                         self.make_user_anonymous()
-                        self.response_code = 403
                         raise Unauthorised, err
-
                     user = username
 
         # if user was not set by http authorization, try session lookup
@@ -879,14 +878,8 @@ class Client:
         ''' guts of serve_file() and serve_static_file()
         '''
 
-        if not content:
-            length = os.stat(filename)[stat.ST_SIZE]
-        else:
-            length = len(content)
-
         # spit out headers
         self.additional_headers['Content-Type'] = mime_type
-        self.additional_headers['Content-Length'] = str(length)
         self.additional_headers['Last-Modified'] = rfc822.formatdate(lmt)
 
         ims = None
@@ -903,27 +896,11 @@ class Client:
             if lmtt <= ims:
                 raise NotModified
 
-        if not self.headers_done:
-            self.header()
-
-        if self.env['REQUEST_METHOD'] == 'HEAD':
-            return
-
-        # If we have a file, and the 'sendfile' method is available,
-        # we can bypass reading and writing the content into application
-        # memory entirely.
         if filename:
-            if hasattr(self.request, 'sendfile'):
-                self._socket_op(self.request.sendfile, filename)
-                return
-            f = open(filename, 'rb')
-            try:
-                content = f.read()
-            finally:
-                f.close()
-
-        self._socket_op(self.request.wfile.write, content)
-
+            self.write_file(filename)
+        else:
+            self.additional_headers['Content-Length'] = str(len(content))
+            self.write(content)
 
     def renderContext(self):
         ''' Return a PageTemplate for the named page
@@ -1071,6 +1048,14 @@ class Client:
                     pass
             if err_errno not in self.IGNORE_NET_ERRORS:
                 raise
+        except IOError:
+            # Apache's mod_python will raise IOError -- without an
+            # accompanying errno -- when a write to the client fails.
+            # A common case is that the client has closed the
+            # connection.  There's no way to be certain that this is
+            # the situation that has occurred here, but that is the
+            # most likely case.
+            pass
 
     def write(self, content):
         if not self.headers_done:
@@ -1098,6 +1083,227 @@ class Client:
         # and write
         self._socket_op(self.request.wfile.write, content)
 
+    def http_strip(self, content):
+        """Remove HTTP Linear White Space from 'content'.
+
+        'content' -- A string.
+
+        returns -- 'content', with all leading and trailing LWS
+        removed."""
+
+        # RFC 2616 2.2: Basic Rules
+        #
+        # LWS = [CRLF] 1*( SP | HT )
+        return content.strip(" \r\n\t")
+
+    def http_split(self, content):
+        """Split an HTTP list.
+
+        'content' -- A string, giving a list of items.
+
+        returns -- A sequence of strings, containing the elements of
+        the list."""
+
+        # RFC 2616 2.1: Augmented BNF
+        #
+        # Grammar productions of the form "#rule" indicate a
+        # comma-separated list of elements matching "rule".  LWS
+        # is then removed from each element, and empty elements
+        # removed.
+
+        # Split at commas.
+        elements = content.split(",")
+        # Remove linear whitespace at either end of the string.
+        elements = [self.http_strip(e) for e in elements]
+        # Remove any now-empty elements.
+        return [e for e in elements if e]
+        
+    def handle_range_header(self, length, etag):
+        """Handle the 'Range' and 'If-Range' headers.
+
+        'length' -- the length of the content available for the
+        resource.
+
+        'etag' -- the entity tag for this resources.
+
+        returns -- If the request headers (including 'Range' and
+        'If-Range') indicate that only a portion of the entity should
+        be returned, then the return value is a pair '(offfset,
+        length)' indicating the first byte and number of bytes of the
+        content that should be returned to the client.  In addition,
+        this method will set 'self.response_code' to indicate Partial
+        Content.  In all other cases, the return value is 'None'.  If
+        appropriate, 'self.response_code' will be
+        set to indicate 'REQUESTED_RANGE_NOT_SATISFIABLE'.  In that
+        case, the caller should not send any data to the client."""
+
+        # RFC 2616 14.35: Range
+        #
+        # See if the Range header is present.
+        ranges_specifier = self.env.get("HTTP_RANGE")
+        if ranges_specifier is None:
+            return None
+        # RFC 2616 14.27: If-Range
+        #
+        # Check to see if there is an If-Range header.
+        # Because the specification says:
+        #
+        #  The If-Range header ... MUST be ignored if the request
+        #  does not include a Range header, we check for If-Range
+        #  after checking for Range.
+        if_range = self.env.get("HTTP_IF_RANGE")
+        if if_range:
+            # The grammar for the If-Range header is:
+            # 
+            #   If-Range = "If-Range" ":" ( entity-tag | HTTP-date )
+            #   entity-tag = [ weak ] opaque-tag
+            #   weak = "W/"
+            #   opaque-tag = quoted-string
+            #
+            # We only support strong entity tags.
+            if_range = self.http_strip(if_range)
+            if (not if_range.startswith('"')
+                or not if_range.endswith('"')):
+                return None
+            # If the condition doesn't match the entity tag, then we
+            # must send the client the entire file.
+            if if_range != etag:
+                return
+        # The grammar for the Range header value is:
+        #
+        #   ranges-specifier = byte-ranges-specifier
+        #   byte-ranges-specifier = bytes-unit "=" byte-range-set
+        #   byte-range-set = 1#( byte-range-spec | suffix-byte-range-spec )
+        #   byte-range-spec = first-byte-pos "-" [last-byte-pos]
+        #   first-byte-pos = 1*DIGIT
+        #   last-byte-pos = 1*DIGIT
+        #   suffix-byte-range-spec = "-" suffix-length
+        #   suffix-length = 1*DIGIT
+        #
+        # Look for the "=" separating the units from the range set.
+        specs = ranges_specifier.split("=", 1)
+        if len(specs) != 2:
+            return None
+        # Check that the bytes-unit is in fact "bytes".  If it is not,
+        # we do not know how to process this range.
+        bytes_unit = self.http_strip(specs[0])
+        if bytes_unit != "bytes":
+            return None
+        # Seperate the range-set into range-specs.
+        byte_range_set = self.http_strip(specs[1])
+        byte_range_specs = self.http_split(byte_range_set)
+        # We only handle exactly one range at this time.
+        if len(byte_range_specs) != 1:
+            return None
+        # Parse the spec.
+        byte_range_spec = byte_range_specs[0]
+        pos = byte_range_spec.split("-", 1)
+        if len(pos) != 2:
+            return None
+        # Get the first and last bytes.
+        first = self.http_strip(pos[0])
+        last = self.http_strip(pos[1])
+        # We do not handle suffix ranges.
+        if not first:
+            return None
+       # Convert the first and last positions to integers.
+        try:
+            first = int(first)
+            if last:
+                last = int(last)
+            else:
+                last = length - 1
+        except:
+            # The positions could not be parsed as integers.
+            return None
+        # Check that the range makes sense.
+        if (first < 0 or last < 0 or last < first):
+            return None
+        if last >= length:
+            # RFC 2616 10.4.17: 416 Requested Range Not Satisfiable
+            #
+            # If there is an If-Range header, RFC 2616 says that we
+            # should just ignore the invalid Range header.
+            if if_range:
+                return None
+            # Return code 416 with a Content-Range header giving the
+            # allowable range.
+            self.response_code = httplib.REQUESTED_RANGE_NOT_SATISFIABLE
+            self.setHeader("Content-Range", "bytes */%d" % length)
+            return None
+        # RFC 2616 10.2.7: 206 Partial Content
+        #
+        # Tell the client that we are honoring the Range request by
+        # indicating that we are providing partial content.
+        self.response_code = httplib.PARTIAL_CONTENT
+        # RFC 2616 14.16: Content-Range
+        #
+        # Tell the client what data we are providing.
+        #
+        #   content-range-spec = byte-content-range-spec
+        #   byte-content-range-spec = bytes-unit SP
+        #                             byte-range-resp-spec "/"
+        #                             ( instance-length | "*" )
+        #   byte-range-resp-spec = (first-byte-pos "-" last-byte-pos)
+        #                          | "*"
+        #   instance-length      = 1 * DIGIT
+        self.setHeader("Content-Range",
+                       "bytes %d-%d/%d" % (first, last, length))
+        return (first, last - first + 1)
+
+    def write_file(self, filename):
+        '''Send the contents of 'filename' to the user.'''
+
+        # Determine the length of the file.
+        stat_info = os.stat(filename)
+        length = stat_info[stat.ST_SIZE]
+        # Assume we will return the entire file.
+        offset = 0
+        # If the headers have not already been finalized, 
+        if not self.headers_done:
+            # RFC 2616 14.19: ETag
+            #
+            # Compute the entity tag, in a format similar to that
+            # used by Apache.
+            etag = '"%x-%x-%x"' % (stat_info[stat.ST_INO],
+                                   length,
+                                   stat_info[stat.ST_MTIME])
+            self.setHeader("ETag", etag)
+            # RFC 2616 14.5: Accept-Ranges
+            #
+            # Let the client know that we will accept range requests.
+            self.setHeader("Accept-Ranges", "bytes")
+            # RFC 2616 14.35: Range
+            #
+            # If there is a Range header, we may be able to avoid
+            # sending the entire file.
+            content_range = self.handle_range_header(length, etag)
+            if content_range:
+                offset, length = content_range
+            # RFC 2616 14.13: Content-Length
+            #
+            # Tell the client how much data we are providing.
+            self.setHeader("Content-Length", length)
+            # Send the HTTP header.
+            self.header()
+        # If the client doesn't actually want the body, or if we are
+        # indicating an invalid range.
+        if (self.env['REQUEST_METHOD'] == 'HEAD'
+            or self.response_code == httplib.REQUESTED_RANGE_NOT_SATISFIABLE):
+            return
+        # Use the optimized "sendfile" operation, if possible.
+        if hasattr(self.request, "sendfile"):
+            self._socket_op(self.request.sendfile, filename, offset, length)
+            return
+        # Fallback to the "write" operation.
+        f = open(filename, 'rb')
+        try:
+            if offset:
+                f.seek(offset)
+                content = f.read(length)
+        finally:
+            f.close()
+        self.write(content)
 
     def setHeader(self, header, value):
         '''Override a header to be returned to the user's browser.

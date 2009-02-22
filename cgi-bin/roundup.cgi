@@ -123,6 +123,11 @@ class RequestWrapper:
         self.wfile = wfile
     def write(self, data):
         self.wfile.write(data)
+    def start_response(self, headers, response):
+        self.send_response(response)
+        for key, value in headers:
+            self.send_header(key, value)
+        self.end_headers()
     def send_response(self, code):
         self.write('Status: %s\r\n'%code)
     def send_header(self, keyword, value):
