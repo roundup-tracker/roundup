@@ -16,4 +16,7 @@ class Reject(Exception):
     '''
     pass
 
+class UsageError(ValueError):
+    pass
+
 # vim: set filetype=python ts=4 sw=4 et si

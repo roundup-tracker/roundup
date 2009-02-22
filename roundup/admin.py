@@ -29,6 +29,7 @@ from roundup import __version__ as roundup_version
 import roundup.instance
 from roundup.configuration import CoreConfig
 from roundup.i18n import _
+from roundup.exception import UsageError
 
 class CommandDict(UserDict.UserDict):
     '''Simple dictionary that lets us do lookups using partial keys.
@@ -48,9 +49,6 @@ class CommandDict(UserDict.UserDict):
         if not l and default is self._marker:
             raise KeyError, key
         return l
-
-class UsageError(ValueError):
-    pass
 
 class AdminTool:
     ''' A collection of methods used in maintaining Roundup trackers.
