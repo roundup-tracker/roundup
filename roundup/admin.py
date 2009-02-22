@@ -16,10 +16,9 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.110 2008-02-07 03:28:33 richard Exp $
 
-'''Administration commands for maintaining Roundup trackers.
-'''
+"""Administration commands for maintaining Roundup trackers.
+"""
 __docformat__ = 'restructuredtext'
 
 import csv, getopt, getpass, os, re, shutil, sys, UserDict
@@ -29,13 +28,13 @@ from roundup import __version__ as roundup_version
 import roundup.instance
 from roundup.configuration import CoreConfig
 from roundup.i18n import _
-from roundup.exception import UsageError
+from roundup.exceptions import UsageError
 
 class CommandDict(UserDict.UserDict):
-    '''Simple dictionary that lets us do lookups using partial keys.
+    """Simple dictionary that lets us do lookups using partial keys.
 
     Original code submitted by Engelbert Gruber.
-    '''
+    """
     _marker = []
     def get(self, key, default=_marker):
         if self.data.has_key(key):
@@ -51,7 +50,7 @@ class CommandDict(UserDict.UserDict):
         return l
 
 class AdminTool:
-    ''' A collection of methods used in maintaining Roundup trackers.
+    """ A collection of methods used in maintaining Roundup trackers.
 
         Typically these methods are accessed through the roundup-admin
         script. The main() method provided on this class gives the main
@@ -61,7 +60,7 @@ class AdminTool:
         given in the method docstring.
 
         Additional help may be supplied by help_*() methods.
-    '''
+    """
     def __init__(self):
         self.commands = CommandDict()
         for k in AdminTool.__dict__.keys():
@@ -76,18 +75,18 @@ class AdminTool:
         self.db_uncommitted = False
 
     def get_class(self, classname):
-        '''Get the class - raise an exception if it doesn't exist.
-        '''
+        """Get the class - raise an exception if it doesn't exist.
+        """
         try:
             return self.db.getclass(classname)
         except KeyError:
             raise UsageError, _('no such class "%(classname)s"')%locals()
 
     def props_from_args(self, args):
-        ''' Produce a dictionary of prop: value from the args list.
+        """ Produce a dictionary of prop: value from the args list.
 
             The args list is specified as ``prop=value prop=value ...``.
-        '''
+        """
         props = {}
         for arg in args:
             if arg.find('=') == -1:
@@ -105,11 +104,11 @@ class AdminTool:
         return props
 
     def usage(self, message=''):
-        ''' Display a simple usage message.
-        '''
+        """ Display a simple usage message.
+        """
         if message:
             message = _('Problem: %(message)s\n\n')%locals()
-        print _('''%(message)sUsage: roundup-admin [options] [<command> <arguments>]
+        print _("""%(message)sUsage: roundup-admin [options] [<command> <arguments>]
 
 Options:
  -i instance home  -- specify the issue tracker "home directory" to administer
@@ -130,12 +129,12 @@ Help:
  roundup-admin help                       -- this help
  roundup-admin help <command>             -- command-specific help
  roundup-admin help all                   -- all available help
-''')%locals()
+""")%locals()
         self.help_commands()
 
     def help_commands(self):
-        ''' List the commands available with their help summary.
-        '''
+        """List the commands available with their help summary.
+        """
         print _('Commands:'),
         commands = ['']
         for command in self.commands.values():
@@ -149,8 +148,8 @@ matches only one command, e.g. l == li == lis == list."""))
         print
 
     def help_commands_html(self, indent_re=re.compile(r'^(\s+)\S+')):
-        ''' Produce an HTML command list.
-        '''
+        """ Produce an HTML command list.
+        """
         commands = self.commands.values()
         def sortfun(a, b):
             return cmp(a.__name__, b.__name__)
@@ -159,10 +158,10 @@ matches only one command, e.g. l == li == lis == list."""))
             h = _(command.__doc__).split('\n')
             name = command.__name__[3:]
             usage = h[0]
-            print '''
+            print """
 <tr><td valign=top><strong>%(name)s</strong></td>
     <td><tt>%(usage)s</tt><p>
-<pre>''' % locals()
+<pre>""" % locals()
             indent = indent_re.match(h[3])
             if indent: indent = len(indent.group(1))
             for line in h[3:]:
@@ -173,7 +172,7 @@ matches only one command, e.g. l == li == lis == list."""))
             print '</pre></td></tr>\n'
 
     def help_all(self):
-        print _('''
+        print _("""
 All commands (except help) require a tracker specifier. This is just
 the path to the roundup tracker you're working with. A roundup tracker
 is where roundup keeps the database and configuration file that defines
@@ -234,21 +233,21 @@ Date format examples:
   "." means "right now"
 
 Command help:
-''')
+""")
         for name, command in self.commands.items():
             print _('%s:')%name
             print '   ', _(command.__doc__)
 
     def do_help(self, args, nl_re=re.compile('[\r\n]'),
             indent_re=re.compile(r'^(\s+)\S+')):
-        ""'''Usage: help topic
+        """Usage: help topic
         Give help about topic.
 
         commands  -- list commands
         <command> -- help specific to a command
         initopts  -- init command options
         all       -- all available help
-        '''
+        """
         if len(args)>0:
             topic = args[0]
         else:
@@ -281,7 +280,7 @@ Command help:
         return 0
 
     def listTemplates(self):
-        ''' List all the available templates.
+        """ List all the available templates.
 
         Look in the following places, where the later rules take precedence:
 
@@ -297,7 +296,7 @@ Command help:
             this is for when someone unpacks a 3rd-party template
          5. <current working dir>
             this is for someone who "cd"s to the 3rd-party template dir
-        '''
+        """
         # OK, try <prefix>/share/roundup/templates
         #     and <egg-directory>/share/roundup/templates
         # -- this module (roundup.admin) will be installed in something
@@ -347,7 +346,7 @@ Command help:
         print _('Back ends:'), ', '.join(backends)
 
     def do_install(self, tracker_home, args):
-        ""'''Usage: install [template [backend [key=val[,key=val]]]]
+        """Usage: install [template [backend [key=val[,key=val]]]]
         Install a new Roundup tracker.
 
         The command will prompt for the tracker home directory
@@ -368,7 +367,7 @@ Command help:
         the tracker's dbinit.py module init() function.
 
         See also initopts help.
-        '''
+        """
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
 
@@ -462,23 +461,23 @@ Erase it? Y/N: """) % locals())
         return 0
 
     def do_genconfig(self, args):
-        ""'''Usage: genconfig <filename>
+        """Usage: genconfig <filename>
         Generate a new tracker config file (ini style) with default values
         in <filename>.
-        '''
+        """
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
         config = CoreConfig()
         config.save(args[0])
 
     def do_initialise(self, tracker_home, args):
-        ""'''Usage: initialise [adminpw]
+        """Usage: initialise [adminpw]
         Initialise a new Roundup tracker.
 
         The administrator details will be set at this step.
 
         Execute the tracker's initialisation function dbinit.init()
-        '''
+        """
         # password
         if len(args) > 1:
             adminpw = args[1]
@@ -521,12 +520,12 @@ Erase it? Y/N: """))
 
 
     def do_get(self, args):
-        ""'''Usage: get property designator[,designator]*
+        """Usage: get property designator[,designator]*
         Get the given property of one or more designator(s).
 
         Retrieves the property value of the nodes specified
         by the designators.
-        '''
+        """
         if len(args) < 2:
             raise UsageError, _('Not enough arguments supplied')
         propname = args[0]
@@ -595,7 +594,7 @@ Erase it? Y/N: """))
 
 
     def do_set(self, args):
-        ""'''Usage: set items property=value property=value ...
+        """Usage: set items property=value property=value ...
         Set the given properties of one or more items(s).
 
         The items are specified as a class or as a comma-separated
@@ -605,7 +604,7 @@ Erase it? Y/N: """))
         given. If the value is missing (ie. "property=") then the property
         is un-set. If the property is a multilink, you specify the linked
         ids for the multilink as comma-separated numbers (ie "1,2,3").
-        '''
+        """
         if len(args) < 2:
             raise UsageError, _('Not enough arguments supplied')
         from roundup import hyperdb
@@ -650,13 +649,13 @@ Erase it? Y/N: """))
         return 0
 
     def do_find(self, args):
-        ""'''Usage: find classname propname=value ...
+        """Usage: find classname propname=value ...
         Find the nodes of the given class with a given link property value.
 
         Find the nodes of the given class with a given link property value.
         The value may be either the nodeid of the linked node, or its key
         value.
-        '''
+        """
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
         classname = args[0]
@@ -710,11 +709,11 @@ Erase it? Y/N: """))
         return 0
 
     def do_specification(self, args):
-        ""'''Usage: specification classname
+        """Usage: specification classname
         Show the properties for a classname.
 
         This lists the properties for a given class.
-        '''
+        """
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
         classname = args[0]
@@ -730,12 +729,12 @@ Erase it? Y/N: """))
                 print _('%(key)s: %(value)s')%locals()
 
     def do_display(self, args):
-        ""'''Usage: display designator[,designator]*
+        """Usage: display designator[,designator]*
         Show the property values for the given node(s).
 
         This lists the properties and their associated values for the given
         node.
-        '''
+        """
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
 
@@ -757,13 +756,13 @@ Erase it? Y/N: """))
                 print _('%(key)s: %(value)s')%locals()
 
     def do_create(self, args):
-        ""'''Usage: create classname property=value ...
+        """Usage: create classname property=value ...
         Create a new entry of a given class.
 
         This creates a new entry of the given class using the property
         name=value arguments provided on the command line after the "create"
         command.
-        '''
+        """
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
         from roundup import hyperdb
@@ -822,7 +821,7 @@ Erase it? Y/N: """))
         return 0
 
     def do_list(self, args):
-        ""'''Usage: list classname [property]
+        """Usage: list classname [property]
         List the instances of a class.
 
         Lists all instances of the given class. If the property is not
@@ -833,7 +832,7 @@ Erase it? Y/N: """))
         With -c, -S or -s print a list of item id's if no property
         specified.  If property specified, print list of that property
         for every class instance.
-        '''
+        """
         if len(args) > 2:
             raise UsageError, _('Too many arguments supplied')
         if len(args) < 1:
@@ -875,7 +874,7 @@ Erase it? Y/N: """))
         return 0
 
     def do_table(self, args):
-        ""'''Usage: table classname [property[,property]*]
+        """Usage: table classname [property[,property]*]
         List the instances of a class in tabular form.
 
         Lists all instances of the given class. If the properties are not
@@ -902,7 +901,7 @@ Erase it? Y/N: """))
           4  feat
 
         will result in a the 4 character wide "Name" column.
-        '''
+        """
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
         classname = args[0]
@@ -969,11 +968,11 @@ Erase it? Y/N: """))
         return 0
 
     def do_history(self, args):
-        ""'''Usage: history designator
+        """Usage: history designator
         Show the history entries of a designator.
 
         Lists the journal entries for the node identified by the designator.
-        '''
+        """
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
         try:
@@ -990,7 +989,7 @@ Erase it? Y/N: """))
         return 0
 
     def do_commit(self, args):
-        ""'''Usage: commit
+        """Usage: commit
         Commit changes made to the database during an interactive session.
 
         The changes made during an interactive session are not
@@ -999,31 +998,31 @@ Erase it? Y/N: """))
 
         One-off commands on the command-line are automatically committed if
         they are successful.
-        '''
+        """
         self.db.commit()
         self.db_uncommitted = False
         return 0
 
     def do_rollback(self, args):
-        ""'''Usage: rollback
+        """Usage: rollback
         Undo all changes that are pending commit to the database.
 
         The changes made during an interactive session are not
         automatically written to the database - they must be committed
         manually. This command undoes all those changes, so a commit
         immediately after would make no changes to the database.
-        '''
+        """
         self.db.rollback()
         self.db_uncommitted = False
         return 0
 
     def do_retire(self, args):
-        ""'''Usage: retire designator[,designator]*
+        """Usage: retire designator[,designator]*
         Retire the node specified by designator.
 
         This action indicates that a particular node is not to be retrieved
         by the list or find commands, and its key value may be re-used.
-        '''
+        """
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
         designators = args[0].split(',')
@@ -1042,11 +1041,11 @@ Erase it? Y/N: """))
         return 0
 
     def do_restore(self, args):
-        ""'''Usage: restore designator[,designator]*
+        """Usage: restore designator[,designator]*
         Restore the retired node specified by designator.
 
         The given nodes will become available for users again.
-        '''
+        """
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
         designators = args[0].split(',')
@@ -1065,7 +1064,7 @@ Erase it? Y/N: """))
         return 0
 
     def do_export(self, args, export_files=True):
-        ""'''Usage: export [[-]class[,class]] export_dir
+        """Usage: export [[-]class[,class]] export_dir
         Export the database to colon-separated-value files.
         To exclude the files (e.g. for the msg or file class),
         use the exporttables command.
@@ -1076,7 +1075,7 @@ Erase it? Y/N: """))
         This action exports the current data from the database into
         colon-separated-value files that are placed in the nominated
         destination directory.
-        '''
+        """
         # grab the directory to export to
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
@@ -1140,7 +1139,7 @@ Erase it? Y/N: """))
         return 0
 
     def do_exporttables(self, args):
-        ""'''Usage: exporttables [[-]class[,class]] export_dir
+        """Usage: exporttables [[-]class[,class]] export_dir
         Export the database to colon-separated-value files, excluding the
         files below $TRACKER_HOME/db/files/ (which can be archived separately).
         To include the files, use the export command.
@@ -1151,11 +1150,11 @@ Erase it? Y/N: """))
         This action exports the current data from the database into
         colon-separated-value files that are placed in the nominated
         destination directory.
-        '''
+        """
         return self.do_export(args, export_files=False)
 
     def do_import(self, args):
-        ""'''Usage: import import_dir
+        """Usage: import import_dir
         Import a database from the directory containing CSV files,
         two per class to import.
 
@@ -1173,7 +1172,7 @@ Erase it? Y/N: """))
         The new nodes are added to the existing database - if you want to
         create a new database using the imported data, then create a new
         database (or, tediously, retire all the old data.)
-        '''
+        """
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
         from roundup import hyperdb
@@ -1230,7 +1229,7 @@ Erase it? Y/N: """))
         return 0
 
     def do_pack(self, args):
-        ""'''Usage: pack period | date
+        """Usage: pack period | date
 
         Remove journal entries older than a period of time specified or
         before a certain date.
@@ -1246,16 +1245,16 @@ Erase it? Y/N: """))
         Date format is "YYYY-MM-DD" eg:
             2001-01-01
 
-        '''
+        """
         if len(args) <> 1:
             raise UsageError, _('Not enough arguments supplied')
 
         # are we dealing with a period or a date
         value = args[0]
-        date_re = re.compile(r'''
+        date_re = re.compile(r"""
               (?P<date>\d\d\d\d-\d\d?-\d\d?)? # yyyy-mm-dd
               (?P<period>(\d+y\s*)?(\d+m\s*)?(\d+d\s*)?)?
-              ''', re.VERBOSE)
+              """, re.VERBOSE)
         m = date_re.match(value)
         if not m:
             raise ValueError, _('Invalid format')
@@ -1269,12 +1268,12 @@ Erase it? Y/N: """))
         return 0
 
     def do_reindex(self, args, desre=re.compile('([A-Za-z]+)([0-9]+)')):
-        ""'''Usage: reindex [classname|designator]*
+        """Usage: reindex [classname|designator]*
         Re-generate a tracker's search indexes.
 
         This will re-generate the search indexes for a tracker.
         This will typically happen automatically.
-        '''
+        """
         if args:
             for arg in args:
                 m = desre.match(arg)
@@ -1293,9 +1292,9 @@ Erase it? Y/N: """))
         return 0
 
     def do_security(self, args):
-        ""'''Usage: security [Role name]
+        """Usage: security [Role name]
         Display the Permissions available to one or all Roles.
-        '''
+        """
         if len(args) == 1:
             role = args[0]
             try:
@@ -1333,7 +1332,7 @@ Erase it? Y/N: """))
 
 
     def do_migrate(self, args):
-        '''Usage: migrate
+        """Usage: migrate
         Update a tracker's database to be compatible with the Roundup
         codebase.
 
@@ -1350,7 +1349,7 @@ Erase it? Y/N: """))
 
         It's safe to run this even if it's not required, so just get into
         the habit.
-        '''
+        """
         if getattr(self.db, 'db_version_updated'):
             print _('Tracker updated')
             self.db_uncommitted = True
@@ -1359,8 +1358,8 @@ Erase it? Y/N: """))
         return 0
 
     def run_command(self, args):
-        '''Run a single command
-        '''
+        """Run a single command
+        """
         command = args[0]
 
         # handle help now
@@ -1441,8 +1440,8 @@ Erase it? Y/N: """))
         return ret
 
     def interactive(self):
-        '''Run in an interactive mode
-        '''
+        """Run in an interactive mode
+        """
         print _('Roundup %s ready for input.\nType "help" for help.'
             % roundup_version)
         try:
