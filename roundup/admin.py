@@ -240,7 +240,7 @@ Command help:
 
     def do_help(self, args, nl_re=re.compile('[\r\n]'),
             indent_re=re.compile(r'^(\s+)\S+')):
-        """Usage: help topic
+        ''"""Usage: help topic
         Give help about topic.
 
         commands  -- list commands
@@ -346,7 +346,7 @@ Command help:
         print _('Back ends:'), ', '.join(backends)
 
     def do_install(self, tracker_home, args):
-        """Usage: install [template [backend [key=val[,key=val]]]]
+        ''"""Usage: install [template [backend [key=val[,key=val]]]]
         Install a new Roundup tracker.
 
         The command will prompt for the tracker home directory
@@ -461,7 +461,7 @@ Erase it? Y/N: """) % locals())
         return 0
 
     def do_genconfig(self, args):
-        """Usage: genconfig <filename>
+        ''"""Usage: genconfig <filename>
         Generate a new tracker config file (ini style) with default values
         in <filename>.
         """
@@ -471,7 +471,7 @@ Erase it? Y/N: """) % locals())
         config.save(args[0])
 
     def do_initialise(self, tracker_home, args):
-        """Usage: initialise [adminpw]
+        ''"""Usage: initialise [adminpw]
         Initialise a new Roundup tracker.
 
         The administrator details will be set at this step.
@@ -520,7 +520,7 @@ Erase it? Y/N: """))
 
 
     def do_get(self, args):
-        """Usage: get property designator[,designator]*
+        ''"""Usage: get property designator[,designator]*
         Get the given property of one or more designator(s).
 
         Retrieves the property value of the nodes specified
@@ -594,7 +594,7 @@ Erase it? Y/N: """))
 
 
     def do_set(self, args):
-        """Usage: set items property=value property=value ...
+        ''"""Usage: set items property=value property=value ...
         Set the given properties of one or more items(s).
 
         The items are specified as a class or as a comma-separated
@@ -649,7 +649,7 @@ Erase it? Y/N: """))
         return 0
 
     def do_find(self, args):
-        """Usage: find classname propname=value ...
+        ''"""Usage: find classname propname=value ...
         Find the nodes of the given class with a given link property value.
 
         Find the nodes of the given class with a given link property value.
@@ -709,7 +709,7 @@ Erase it? Y/N: """))
         return 0
 
     def do_specification(self, args):
-        """Usage: specification classname
+        ''"""Usage: specification classname
         Show the properties for a classname.
 
         This lists the properties for a given class.
@@ -756,7 +756,7 @@ Erase it? Y/N: """))
                 print _('%(key)s: %(value)s')%locals()
 
     def do_create(self, args):
-        """Usage: create classname property=value ...
+        ''"""Usage: create classname property=value ...
         Create a new entry of a given class.
 
         This creates a new entry of the given class using the property
@@ -821,7 +821,7 @@ Erase it? Y/N: """))
         return 0
 
     def do_list(self, args):
-        """Usage: list classname [property]
+        ''"""Usage: list classname [property]
         List the instances of a class.
 
         Lists all instances of the given class. If the property is not
@@ -838,7 +838,7 @@ Erase it? Y/N: """))
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
         classname = args[0]
-
+        
         # get the class
         cl = self.get_class(classname)
 
@@ -850,7 +850,7 @@ Erase it? Y/N: """))
 
         if self.separator:
             if len(args) == 2:
-               # create a list of propnames since user specified propname
+                # create a list of propnames since user specified propname
                 proplist=[]
                 for nodeid in cl.list():
                     try:
@@ -874,7 +874,7 @@ Erase it? Y/N: """))
         return 0
 
     def do_table(self, args):
-        """Usage: table classname [property[,property]*]
+        ''"""Usage: table classname [property[,property]*]
         List the instances of a class in tabular form.
 
         Lists all instances of the given class. If the properties are not
@@ -968,7 +968,7 @@ Erase it? Y/N: """))
         return 0
 
     def do_history(self, args):
-        """Usage: history designator
+        ''"""Usage: history designator
         Show the history entries of a designator.
 
         Lists the journal entries for the node identified by the designator.
@@ -989,7 +989,7 @@ Erase it? Y/N: """))
         return 0
 
     def do_commit(self, args):
-        """Usage: commit
+        ''"""Usage: commit
         Commit changes made to the database during an interactive session.
 
         The changes made during an interactive session are not
@@ -1004,7 +1004,7 @@ Erase it? Y/N: """))
         return 0
 
     def do_rollback(self, args):
-        """Usage: rollback
+        ''"""Usage: rollback
         Undo all changes that are pending commit to the database.
 
         The changes made during an interactive session are not
@@ -1017,7 +1017,7 @@ Erase it? Y/N: """))
         return 0
 
     def do_retire(self, args):
-        """Usage: retire designator[,designator]*
+        ''"""Usage: retire designator[,designator]*
         Retire the node specified by designator.
 
         This action indicates that a particular node is not to be retrieved
@@ -1041,7 +1041,7 @@ Erase it? Y/N: """))
         return 0
 
     def do_restore(self, args):
-        """Usage: restore designator[,designator]*
+        ''"""Usage: restore designator[,designator]*
         Restore the retired node specified by designator.
 
         The given nodes will become available for users again.
@@ -1064,7 +1064,7 @@ Erase it? Y/N: """))
         return 0
 
     def do_export(self, args, export_files=True):
-        """Usage: export [[-]class[,class]] export_dir
+        ''"""Usage: export [[-]class[,class]] export_dir
         Export the database to colon-separated-value files.
         To exclude the files (e.g. for the msg or file class),
         use the exporttables command.
@@ -1139,7 +1139,7 @@ Erase it? Y/N: """))
         return 0
 
     def do_exporttables(self, args):
-        """Usage: exporttables [[-]class[,class]] export_dir
+        ''"""Usage: exporttables [[-]class[,class]] export_dir
         Export the database to colon-separated-value files, excluding the
         files below $TRACKER_HOME/db/files/ (which can be archived separately).
         To include the files, use the export command.
@@ -1154,7 +1154,7 @@ Erase it? Y/N: """))
         return self.do_export(args, export_files=False)
 
     def do_import(self, args):
-        """Usage: import import_dir
+        ''"""Usage: import import_dir
         Import a database from the directory containing CSV files,
         two per class to import.
 
@@ -1229,7 +1229,7 @@ Erase it? Y/N: """))
         return 0
 
     def do_pack(self, args):
-        """Usage: pack period | date
+        ''"""Usage: pack period | date
 
         Remove journal entries older than a period of time specified or
         before a certain date.
@@ -1268,7 +1268,7 @@ Erase it? Y/N: """))
         return 0
 
     def do_reindex(self, args, desre=re.compile('([A-Za-z]+)([0-9]+)')):
-        """Usage: reindex [classname|designator]*
+        ''"""Usage: reindex [classname|designator]*
         Re-generate a tracker's search indexes.
 
         This will re-generate the search indexes for a tracker.
@@ -1292,7 +1292,7 @@ Erase it? Y/N: """))
         return 0
 
     def do_security(self, args):
-        """Usage: security [Role name]
+        ''"""Usage: security [Role name]
         Display the Permissions available to one or all Roles.
         """
         if len(args) == 1:
@@ -1332,7 +1332,7 @@ Erase it? Y/N: """))
 
 
     def do_migrate(self, args):
-        """Usage: migrate
+        ''"""Usage: migrate
         Update a tracker's database to be compatible with the Roundup
         codebase.
 
