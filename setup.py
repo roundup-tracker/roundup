@@ -78,7 +78,7 @@ def main():
 
     # add the templates to the data files lists
     from roundup.init import listTemplates
-    templates = [t['path'] for t in listTemplates('templates').values()]
+    templates = [t['path'] for t in listTemplates(os.path.join('share','roundup','templates')).values()]
     for tdir in templates:
         # scan for data files
         for idir in '. detectors extensions html'.split():

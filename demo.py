@@ -127,7 +127,7 @@ def demo_main():
             backend = sys.argv[-2]
         else:
             backend = 'anydbm'
-        install_demo(home, backend, os.path.join('templates', 'classic'))
+        install_demo(home, backend, os.path.join('share', 'roundup', 'templates', 'classic'))
     run_demo(home)
 
 if __name__ == '__main__':
