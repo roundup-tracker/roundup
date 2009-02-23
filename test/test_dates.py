@@ -37,7 +37,9 @@ class DateTestCase(unittest.TestCase):
         ae(str(date), '2000-02-29.00:00:00')
         date = Date("2001-02-27 + 2d")
         ae(str(date), '2001-03-01.00:00:00')
-
+        date = Date("2009", add_granularity=True)
+        self.assertRaises(ValueError, Date, ". +30d", add_granularity=True)
+        
     def testDate(self):
         ae = self.assertEqual
         date = Date("2000-04-17")

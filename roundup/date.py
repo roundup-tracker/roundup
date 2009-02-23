@@ -295,7 +295,10 @@ class Date:
 
         info = m.groupdict()
 
-        # determine whether we need to add anything at the end
+        # If add_granularity is true, construct the maximum time given
+        # the precision of the input.  For example, given the input
+        # "12:15", construct "12:15:59".  Or, for "2008", construct
+        # "2008-12-31.23:59:59".
         if add_granularity:
             for gran in 'SMHdmy':
                 if info[gran] is not None:
@@ -308,6 +311,8 @@ class Date:
                     else:
                         add_granularity = Interval('+1%s'%gran)
                     break
+            else:
+                raise ValueError(self._('Could not determine granularity'))
 
         # get the current date as our default
         dt = datetime.datetime.utcnow()
