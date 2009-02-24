@@ -625,28 +625,27 @@ def main(module_filter, test_filter, libdir):
     # Hmm...
     logini = os.path.abspath("log.ini")
 
-    from setup import check_manifest
+    from roundup.dist.command.build import check_manifest
     check_manifest()
 
     # Initialize the path and cwd
     global pathinit
     pathinit = PathInit(build, build_inplace, libdir)
 
-# No logging module in py 2.1
-#    # Initialize the logging module.
+    # Initialize the logging module.
 
-#    import logging.config
-#    logging.basicConfig()
+    import logging.config
+    logging.basicConfig()
 
-#    level = os.getenv("LOGGING")
-#    if level:
-#        level = int(level)
-#    else:
-#        level = logging.CRITICAL
-#    logging.root.setLevel(level)
+    level = os.getenv("LOGGING")
+    if level:
+        level = int(level)
+    else:
+        level = logging.CRITICAL
+    logging.root.setLevel(level)
 
-#    if os.path.exists(logini):
-#        logging.config.fileConfig(logini)
+    if os.path.exists(logini):
+        logging.config.fileConfig(logini)
 
     files = find_tests(module_filter)
     files.sort()
