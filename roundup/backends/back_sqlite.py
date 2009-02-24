@@ -1,12 +1,11 @@
-# $Id: back_sqlite.py,v 1.51 2007-06-21 07:35:50 schlatterbeck Exp $
-'''Implements a backend for SQLite.
+"""Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
 
 
 NOTE: we use the rdbms_common table creation methods which define datatypes
 for the columns, but sqlite IGNORES these specifications.
-'''
+"""
 __docformat__ = 'restructuredtext'
 
 import os, base64, marshal, shutil, time, logging
@@ -90,10 +89,10 @@ class Database(rdbms_common.Database):
         return 1
 
     def sql_open_connection(self):
-        '''Open a standard, non-autocommitting connection.
+        """Open a standard, non-autocommitting connection.
 
         pysqlite will automatically BEGIN TRANSACTION for us.
-        '''
+        """
         # make sure the database directory exists
         # database itself will be created by sqlite if needed
         if not os.path.isdir(self.config.DATABASE):
@@ -165,14 +164,14 @@ class Database(rdbms_common.Database):
         pass
 
     def update_class(self, spec, old_spec, force=0, adding_v2=0):
-        ''' Determine the differences between the current spec and the
+        """ Determine the differences between the current spec and the
             database version of the spec, and update where necessary.
 
             If 'force' is true, update the database anyway.
 
             SQLite doesn't have ALTER TABLE, so we have to copy and
             regenerate the tables with the new schema.
-        '''
+        """
         new_has = spec.properties.has_key
         new_spec = spec.schema()
         new_spec[1].sort()
@@ -222,8 +221,8 @@ class Database(rdbms_common.Database):
 
                     # re-create and populate the new table
                     self.create_multilink_table(spec, propname)
-                    sql = '''insert into %s (linkid, nodeid) values
-                        (%s, %s)'''%(tn, self.arg, self.arg)
+                    sql = """insert into %s (linkid, nodeid) values
+                        (%s, %s)"""%(tn, self.arg, self.arg)
                     for linkid, nodeid in rows:
                         self.sql(sql, (int(linkid), int(nodeid)))
             elif old_has(propname):
@@ -296,9 +295,9 @@ class Database(rdbms_common.Database):
         return 1
 
     def sql_close(self):
-        ''' Squash any error caused by us already having closed the
+        """ Squash any error caused by us already having closed the
             connection.
-        '''
+        """
         try:
             self.conn.close()
         except sqlite.ProgrammingError, value:
@@ -306,9 +305,9 @@ class Database(rdbms_common.Database):
                 raise
 
     def sql_rollback(self):
-        ''' Squash any error caused by us having closed the connection (and
+        """ Squash any error caused by us having closed the connection (and
             therefore not having anything to roll back)
-        '''
+        """
         try:
             self.conn.rollback()
         except sqlite.ProgrammingError, value:
@@ -319,10 +318,10 @@ class Database(rdbms_common.Database):
         return '<roundlite 0x%x>'%id(self)
 
     def sql_commit(self, fail_ok=False):
-        ''' Actually commit to the database.
+        """ Actually commit to the database.
 
             Ignore errors if there's nothing to commit.
-        '''
+        """
         try:
             self.conn.commit()
         except sqlite.DatabaseError, error:
@@ -340,8 +339,8 @@ class Database(rdbms_common.Database):
 
     # old-skool id generation
     def newid(self, classname):
-        ''' Generate a new id for the given class
-        '''
+        """ Generate a new id for the given class
+        """
         # get the next ID
         sql = 'select num from ids where name=%s'%self.arg
         self.sql(sql, (classname, ))
@@ -356,10 +355,10 @@ class Database(rdbms_common.Database):
         return str(newid)
 
     def setid(self, classname, setid):
-        ''' Set the id counter: used during import of database
+        """ Set the id counter: used during import of database
 
         We add one to make it behave like the sequences in postgres.
-        '''
+        """
         sql = 'update ids set num=%s where name=%s'%(self.arg, self.arg)
         vals = (int(setid)+1, classname)
         self.sql(sql, vals)
@@ -378,8 +377,8 @@ class Database(rdbms_common.Database):
 
     if sqlite_version in (2,3):
         def load_journal(self, classname, cols, nodeid):
-            '''We need to turn the sqlite3.Row into a tuple so it can be
-            unpacked'''
+            """We need to turn the sqlite3.Row into a tuple so it can be
+            unpacked"""
             l = rdbms_common.Database.load_journal(self,
                 classname, cols, nodeid)
             cols = range(5)
@@ -388,9 +387,9 @@ class Database(rdbms_common.Database):
 class sqliteClass:
     def filter(self, search_matches, filterspec, sort=(None,None),
             group=(None,None)):
-        ''' If there's NO matches to a fetch, sqlite returns NULL
+        """ If there's NO matches to a fetch, sqlite returns NULL
             instead of nothing
-        '''
+        """
         return filter(None, rdbms_common.Class.filter(self, search_matches,
             filterspec, sort=sort, group=group))
 
