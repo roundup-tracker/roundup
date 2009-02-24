@@ -15,12 +15,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: back_anydbm.py,v 1.211 2008-08-07 05:53:14 richard Exp $
-'''This module defines a backend that saves the hyperdatabase in a
+"""This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
 serious bugs, and is not available)
-'''
+"""
 __docformat__ = 'restructuredtext'
 
 try:
@@ -62,16 +61,16 @@ def db_nuke(config):
 # Now the database
 #
 class Database(FileStorage, hyperdb.Database, roundupdb.Database):
-    '''A database for storing records containing flexible data types.
+    """A database for storing records containing flexible data types.
 
     Transaction stuff TODO:
 
     - check the timestamp of the class file and nuke the cache if it's
       modified. Do some sort of conflict checking on the dirty stuff.
     - perhaps detect write collisions (related to above)?
-    '''
+    """
     def __init__(self, config, journaltag=None):
-        '''Open a hyperdatabase given a specifier to some storage.
+        """Open a hyperdatabase given a specifier to some storage.
 
         The 'storagelocator' is obtained from config.DATABASE.
         The meaning of 'storagelocator' depends on the particular
@@ -84,7 +83,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         None, the database is opened in read-only mode: the Class.create(),
         Class.set(), Class.retire(), and Class.restore() methods are
         disabled.
-        '''
+        """
         FileStorage.__init__(self, config.UMASK)
         self.config, self.journaltag = config, journaltag
         self.dir = config.DATABASE
@@ -107,8 +106,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.lockfile.flush()
 
     def post_init(self):
-        '''Called once the schema initialisation has finished.
-        '''
+        """Called once the schema initialisation has finished.
+        """
         # reindex the db if necessary
         if self.indexer.should_reindex():
             self.reindex()
@@ -146,7 +145,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     # Classes
     #
     def __getattr__(self, classname):
-        '''A convenient way of calling self.getclass(classname).'''
+        """A convenient way of calling self.getclass(classname)."""
         if self.classes.has_key(classname):
             return self.classes[classname]
         raise AttributeError, classname
@@ -166,16 +165,16 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             description="User is allowed to access "+cn)
 
     def getclasses(self):
-        '''Return a list of the names of all existing classes.'''
+        """Return a list of the names of all existing classes."""
         l = self.classes.keys()
         l.sort()
         return l
 
     def getclass(self, classname):
-        '''Get the Class object representing a particular class.
+        """Get the Class object representing a particular class.
 
         If 'classname' is not a valid class name, a KeyError is raised.
-        '''
+        """
         try:
             return self.classes[classname]
         except KeyError:
@@ -185,8 +184,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     # Class DBs
     #
     def clear(self):
-        '''Delete all database contents
-        '''
+        """Delete all database contents
+        """
         logging.getLogger('hyperdb').info('clear')
         for cn in self.classes.keys():
             for dummy in 'nodes', 'journals':
@@ -203,14 +202,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             os.remove(path+'.db')
 
     def getclassdb(self, classname, mode='r'):
-        ''' grab a connection to the class db that will be used for
+        """ grab a connection to the class db that will be used for
             multiple actions
-        '''
+        """
         return self.opendb('nodes.%s'%classname, mode)
 
     def determine_db_type(self, path):
-        ''' determine which DB wrote the class file
-        '''
+        """ determine which DB wrote the class file
+        """
         db_type = ''
         if os.path.exists(path):
             db_type = whichdb.whichdb(path)
@@ -224,9 +223,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         return db_type
 
     def opendb(self, name, mode):
-        '''Low-level database opener that gets around anydbm/dbm
+        """Low-level database opener that gets around anydbm/dbm
            eccentricities.
-        '''
+        """
         # figure the class db type
         path = os.path.join(os.getcwd(), self.dir, name)
         db_type = self.determine_db_type(path)
@@ -253,8 +252,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     # Node IDs
     #
     def newid(self, classname):
-        ''' Generate a new id for the given class
-        '''
+        """ Generate a new id for the given class
+        """
         # open the ids DB - create if if doesn't exist
         db = self.opendb('_ids', 'c')
         if db.has_key(classname):
@@ -267,8 +266,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         return newid
 
     def setid(self, classname, setid):
-        ''' Set the id counter: used during import of database
-        '''
+        """ Set the id counter: used during import of database
+        """
         # open the ids DB - create if if doesn't exist
         db = self.opendb('_ids', 'c')
         db[classname] = str(setid)
@@ -278,8 +277,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     # Nodes
     #
     def addnode(self, classname, nodeid, node):
-        ''' add the specified node to its class's db
-        '''
+        """ add the specified node to its class's db
+        """
         # we'll be supplied these props if we're doing an import
         if not node.has_key('creator'):
             # add in the "calculated" properties (dupe so we don't affect
@@ -294,8 +293,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.savenode(classname, nodeid, node)
 
     def setnode(self, classname, nodeid, node):
-        ''' change the specified node
-        '''
+        """ change the specified node
+        """
         self.dirtynodes.setdefault(classname, {})[nodeid] = 1
 
         # can't set without having already loaded the node
@@ -303,18 +302,18 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.savenode(classname, nodeid, node)
 
     def savenode(self, classname, nodeid, node):
-        ''' perform the saving of data specified by the set/addnode
-        '''
+        """ perform the saving of data specified by the set/addnode
+        """
         if __debug__:
             logging.getLogger('hyperdb').debug('save %s%s %r'%(classname, nodeid, node))
         self.transactions.append((self.doSaveNode, (classname, nodeid, node)))
 
     def getnode(self, classname, nodeid, db=None, cache=1):
-        ''' get a node from the database
+        """ get a node from the database
 
             Note the "cache" parameter is not used, and exists purely for
             backward compatibility!
-        '''
+        """
         # try the cache
         cache_dict = self.cache.setdefault(classname, {})
         if cache_dict.has_key(nodeid):
@@ -355,9 +354,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         return res
 
     def destroynode(self, classname, nodeid):
-        '''Remove a node from the database. Called exclusively by the
+        """Remove a node from the database. Called exclusively by the
            destroy() method on Class.
-        '''
+        """
         logging.getLogger('hyperdb').info('destroy %s%s'%(classname, nodeid))
 
         # remove from cache and newnodes if it's there
@@ -381,9 +380,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.transactions.append((FileStorage.destroy, (self, classname, nodeid)))
 
     def serialise(self, classname, node):
-        '''Copy the node contents, converting non-marshallable data into
+        """Copy the node contents, converting non-marshallable data into
            marshallable data.
-        '''
+        """
         properties = self.getclass(classname).getprops()
         d = {}
         for k, v in node.items():
@@ -409,8 +408,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         return d
 
     def unserialise(self, classname, node):
-        '''Decode the marshalled node data
-        '''
+        """Decode the marshalled node data
+        """
         properties = self.getclass(classname).getprops()
         d = {}
         for k, v in node.items():
@@ -436,8 +435,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         return d
 
     def hasnode(self, classname, nodeid, db=None):
-        ''' determine if the database has a given node
-        '''
+        """ determine if the database has a given node
+        """
         # try the cache
         cache = self.cache.setdefault(classname, {})
         if cache.has_key(nodeid):
@@ -474,7 +473,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     #
     def addjournal(self, classname, nodeid, action, params, creator=None,
             creation=None):
-        ''' Journal the Action
+        """ Journal the Action
         'action' may be:
 
             'create' or 'set' -- 'params' is a dictionary of property values
@@ -483,7 +482,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
             'creator' -- the user performing the action, which defaults to
             the current user.
-        '''
+        """
         if __debug__:
             logging.getLogger('hyperdb').debug('addjournal %s%s %s %r %s %r'%(classname,
                 nodeid, action, params, creator, creation))
@@ -493,7 +492,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             action, params, creator, creation)))
 
     def setjournal(self, classname, nodeid, journal):
-        '''Set the journal to the "journal" list.'''
+        """Set the journal to the "journal" list."""
         if __debug__:
             logging.getLogger('hyperdb').debug('setjournal %s%s %r'%(classname,
                 nodeid, journal))
@@ -501,11 +500,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             journal)))
 
     def getjournal(self, classname, nodeid):
-        ''' get the journal for id
+        """ get the journal for id
 
             Raise IndexError if the node doesn't exist (as per history()'s
             API)
-        '''
+        """
         # our journal result
         res = []
 
@@ -554,8 +553,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         return res
 
     def pack(self, pack_before):
-        ''' Delete all journal entries except "create" before 'pack_before'.
-        '''
+        """ Delete all journal entries except "create" before 'pack_before'.
+        """
         pack_before = pack_before.serialise()
         for classname in self.getclasses():
             packed = 0
@@ -594,7 +593,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     # Basic transaction support
     #
     def commit(self, fail_ok=False):
-        ''' Commit the current transactions.
+        """ Commit the current transactions.
 
         Save all data changed since the database was opened or since the
         last commit() or rollback().
@@ -604,7 +603,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         database. We don't care if there's a concurrency issue there.
 
         The only backend this seems to affect is postgres.
-        '''
+        """
         logging.getLogger('hyperdb').info('commit %s transactions'%(
             len(self.transactions)))
 
@@ -645,8 +644,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.transactions = []
 
     def getCachedClassDB(self, classname):
-        ''' get the class db, looking in our cache of databases for commit
-        '''
+        """ get the class db, looking in our cache of databases for commit
+        """
         # get the database handle
         db_name = 'nodes.%s'%classname
         if not self.databases.has_key(db_name):
@@ -663,8 +662,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         return (classname, nodeid)
 
     def getCachedJournalDB(self, classname):
-        ''' get the journal db, looking in our cache of databases for commit
-        '''
+        """ get the journal db, looking in our cache of databases for commit
+        """
         # get the database handle
         db_name = 'journals.%s'%classname
         if not self.databases.has_key(db_name):
@@ -726,8 +725,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             del db[nodeid]
 
     def rollback(self):
-        ''' Reverse all actions from the current transaction.
-        '''
+        """ Reverse all actions from the current transaction.
+        """
         logging.getLogger('hyperdb').info('rollback %s transactions'%(
             len(self.transactions)))
 
@@ -742,8 +741,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.transactions = []
 
     def close(self):
-        ''' Nothing to do
-        '''
+        """ Nothing to do
+        """
         if self.lockfile is not None:
             locking.release_lock(self.lockfile)
             self.lockfile.close()
@@ -751,22 +750,22 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
 _marker = []
 class Class(hyperdb.Class):
-    '''The handle to a particular class of nodes in a hyperdatabase.'''
+    """The handle to a particular class of nodes in a hyperdatabase."""
 
     def enableJournalling(self):
-        '''Turn journalling on for this class
-        '''
+        """Turn journalling on for this class
+        """
         self.do_journal = 1
 
     def disableJournalling(self):
-        '''Turn journalling off for this class
-        '''
+        """Turn journalling off for this class
+        """
         self.do_journal = 0
 
     # Editing nodes:
 
     def create(self, **propvalues):
-        '''Create a new node of this class and return its id.
+        """Create a new node of this class and return its id.
 
         The keyword arguments in 'propvalues' map property names to values.
 
@@ -784,15 +783,15 @@ class Class(hyperdb.Class):
 
         These operations trigger detectors and can be vetoed.  Attempts
         to modify the "creation" or "activity" properties cause a KeyError.
-        '''
+        """
         self.fireAuditors('create', None, propvalues)
         newid = self.create_inner(**propvalues)
         self.fireReactors('create', newid, None)
         return newid
 
     def create_inner(self, **propvalues):
-        ''' Called by create, in-between the audit and react calls.
-        '''
+        """ Called by create, in-between the audit and react calls.
+        """
         if propvalues.has_key('id'):
             raise KeyError, '"id" is reserved'
 
@@ -926,7 +925,7 @@ class Class(hyperdb.Class):
         return newid
 
     def get(self, nodeid, propname, default=_marker, cache=1):
-        '''Get the value of a property on an existing node of this class.
+        """Get the value of a property on an existing node of this class.
 
         'nodeid' must be the id of an existing node of this class or an
         IndexError is raised.  'propname' must be the name of a property
@@ -936,7 +935,7 @@ class Class(hyperdb.Class):
 
         Attempts to get the "creation" or "activity" properties should
         do the right thing.
-        '''
+        """
         if propname == 'id':
             return nodeid
 
@@ -1026,7 +1025,7 @@ class Class(hyperdb.Class):
         return d[propname]
 
     def set(self, nodeid, **propvalues):
-        '''Modify a property on an existing node of this class.
+        """Modify a property on an existing node of this class.
 
         'nodeid' must be the id of an existing node of this class or an
         IndexError is raised.
@@ -1045,7 +1044,7 @@ class Class(hyperdb.Class):
 
         These operations trigger detectors and can be vetoed.  Attempts
         to modify the "creation" or "activity" properties cause a KeyError.
-        '''
+        """
         self.fireAuditors('set', nodeid, propvalues)
         oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid))
         for name,prop in self.getprops(protected=0).items():
@@ -1060,8 +1059,8 @@ class Class(hyperdb.Class):
         return propvalues
 
     def set_inner(self, nodeid, **propvalues):
-        ''' Called by set, in-between the audit and react calls.
-        '''
+        """ Called by set, in-between the audit and react calls.
+        """
         if not propvalues:
             return propvalues
 
@@ -1257,7 +1256,7 @@ class Class(hyperdb.Class):
         return propvalues
 
     def retire(self, nodeid):
-        '''Retire a node.
+        """Retire a node.
 
         The properties on the node remain available from the get() method,
         and the node's id is never reused.
@@ -1267,7 +1266,7 @@ class Class(hyperdb.Class):
 
         These operations trigger detectors and can be vetoed.  Attempts
         to modify the "creation" or "activity" properties cause a KeyError.
-        '''
+        """
         if self.db.journaltag is None:
             raise hyperdb.DatabaseError, _('Database open read-only')
 
@@ -1282,10 +1281,10 @@ class Class(hyperdb.Class):
         self.fireReactors('retire', nodeid, None)
 
     def restore(self, nodeid):
-        '''Restpre a retired node.
+        """Restpre a retired node.
 
         Make node available for all operations like it was before retirement.
-        '''
+        """
         if self.db.journaltag is None:
             raise hyperdb.DatabaseError, _('Database open read-only')
 
@@ -1309,15 +1308,15 @@ class Class(hyperdb.Class):
         self.fireReactors('restore', nodeid, None)
 
     def is_retired(self, nodeid, cldb=None):
-        '''Return true if the node is retired.
-        '''
+        """Return true if the node is retired.
+        """
         node = self.db.getnode(self.classname, nodeid, cldb)
         if node.has_key(self.db.RETIRED_FLAG):
             return 1
         return 0
 
     def destroy(self, nodeid):
-        '''Destroy a node.
+        """Destroy a node.
 
         WARNING: this method should never be used except in extremely rare
                  situations where there could never be links to the node being
@@ -1331,13 +1330,13 @@ class Class(hyperdb.Class):
 
         Well, I think that's enough warnings. This method exists mostly to
         support the session storage of the cgi interface.
-        '''
+        """
         if self.db.journaltag is None:
             raise hyperdb.DatabaseError, _('Database open read-only')
         self.db.destroynode(self.classname, nodeid)
 
     def history(self, nodeid):
-        '''Retrieve the journal of edits on a particular node.
+        """Retrieve the journal of edits on a particular node.
 
         'nodeid' must be the id of an existing node of this class or an
         IndexError is raised.
@@ -1348,43 +1347,43 @@ class Class(hyperdb.Class):
 
         'date' is a Timestamp object specifying the time of the change and
         'tag' is the journaltag specified when the database was opened.
-        '''
+        """
         if not self.do_journal:
             raise ValueError, 'Journalling is disabled for this class'
         return self.db.getjournal(self.classname, nodeid)
 
     # Locating nodes:
     def hasnode(self, nodeid):
-        '''Determine if the given nodeid actually exists
-        '''
+        """Determine if the given nodeid actually exists
+        """
         return self.db.hasnode(self.classname, nodeid)
 
     def setkey(self, propname):
-        '''Select a String property of this class to be the key property.
+        """Select a String property of this class to be the key property.
 
         'propname' must be the name of a String property of this class or
         None, or a TypeError is raised.  The values of the key property on
         all existing nodes must be unique or a ValueError is raised. If the
         property doesn't exist, KeyError is raised.
-        '''
+        """
         prop = self.getprops()[propname]
         if not isinstance(prop, hyperdb.String):
             raise TypeError, 'key properties must be String'
         self.key = propname
 
     def getkey(self):
-        '''Return the name of the key property for this class or None.'''
+        """Return the name of the key property for this class or None."""
         return self.key
 
     # TODO: set up a separate index db file for this? profile?
     def lookup(self, keyvalue):
-        '''Locate a particular node by its key property and return its id.
+        """Locate a particular node by its key property and return its id.
 
         If this class has no key property, a TypeError is raised.  If the
         'keyvalue' matches one of the values for the key property among
         the nodes in this class, the matching node's id is returned;
         otherwise a KeyError is raised.
-        '''
+        """
         if not self.key:
             raise TypeError, 'No key property set for class %s'%self.classname
         cldb = self.db.getclassdb(self.classname)
@@ -1404,7 +1403,7 @@ class Class(hyperdb.Class):
 
     # change from spec - allows multiple props to match
     def find(self, **propspec):
-        '''Get the ids of nodes in this class which link to the given nodes.
+        """Get the ids of nodes in this class which link to the given nodes.
 
         'propspec' consists of keyword args propname=nodeid or
                    propname={nodeid:1, }
@@ -1417,7 +1416,7 @@ class Class(hyperdb.Class):
 
             db.issue.find(messages='1')
             db.issue.find(messages={'1':1,'3':1}, files={'7':1})
-        '''
+        """
         propspec = propspec.items()
         for propname, itemids in propspec:
             # check the prop is OK
@@ -1464,13 +1463,13 @@ class Class(hyperdb.Class):
         return l
 
     def stringFind(self, **requirements):
-        '''Locate a particular node by matching a set of its String
+        """Locate a particular node by matching a set of its String
         properties in a caseless search.
 
         If the property is not a String property, a TypeError is raised.
 
         The return is a list of the id of all nodes that match.
-        '''
+        """
         for propname in requirements.keys():
             prop = self.properties[propname]
             if not isinstance(prop, hyperdb.String):
@@ -1495,8 +1494,8 @@ class Class(hyperdb.Class):
         return l
 
     def list(self):
-        ''' Return a list of the ids of the active nodes in this class.
-        '''
+        """ Return a list of the ids of the active nodes in this class.
+        """
         l = []
         cn = self.classname
         cldb = self.db.getclassdb(cn)
@@ -1512,11 +1511,11 @@ class Class(hyperdb.Class):
         return l
 
     def getnodeids(self, db=None, retired=None):
-        ''' Return a list of ALL nodeids
+        """ Return a list of ALL nodeids
 
             Set retired=None to get all nodes. Otherwise it'll get all the
             retired or non-retired nodes, depending on the flag.
-        '''
+        """
         res = []
 
         # start off with the new nodes
@@ -1811,18 +1810,18 @@ class Class(hyperdb.Class):
         return matches
 
     def count(self):
-        '''Get the number of nodes in this class.
+        """Get the number of nodes in this class.
 
         If the returned integer is 'numnodes', the ids of all the nodes
         in this class run from 1 to numnodes, and numnodes+1 will be the
         id of the next node to be created in this class.
-        '''
+        """
         return self.db.countnodes(self.classname)
 
     # Manipulating properties:
 
     def getprops(self, protected=1):
-        '''Return a dictionary mapping property names to property objects.
+        """Return a dictionary mapping property names to property objects.
            If the "protected" flag is true, we include protected properties -
            those which may not be modified.
 
@@ -1830,7 +1829,7 @@ class Class(hyperdb.Class):
            methods provide the "creation" and "activity" properties. If the
            "protected" flag is true, we include protected properties - those
            which may not be modified.
-        '''
+        """
         d = self.properties.copy()
         if protected:
             d['id'] = hyperdb.String()
@@ -1841,20 +1840,20 @@ class Class(hyperdb.Class):
         return d
 
     def addprop(self, **properties):
-        '''Add properties to this class.
+        """Add properties to this class.
 
         The keyword arguments in 'properties' must map names to property
         objects, or a TypeError is raised.  None of the keys in 'properties'
         may collide with the names of existing properties, or a ValueError
         is raised before any properties have been added.
-        '''
+        """
         for key in properties.keys():
             if self.properties.has_key(key):
                 raise ValueError, key
         self.properties.update(properties)
 
     def index(self, nodeid):
-        ''' Add (or refresh) the node to search indexes '''
+        """ Add (or refresh) the node to search indexes """
         # find all the String properties that have indexme
         for prop, propclass in self.getprops().items():
             if isinstance(propclass, hyperdb.String) and propclass.indexme:
@@ -1870,9 +1869,9 @@ class Class(hyperdb.Class):
     # import / export support
     #
     def export_list(self, propnames, nodeid):
-        ''' Export a node - generate a list of CSV-able data in the order
+        """ Export a node - generate a list of CSV-able data in the order
             specified by propnames for the given node.
-        '''
+        """
         properties = self.getprops()
         l = []
         for prop in propnames:
@@ -1895,13 +1894,13 @@ class Class(hyperdb.Class):
         return l
 
     def import_list(self, propnames, proplist):
-        ''' Import a node - all information including "id" is present and
+        """ Import a node - all information including "id" is present and
             should not be sanity checked. Triggers are not triggered. The
             journal should be initialised using the "creator" and "created"
             information.
 
             Return the nodeid of the node imported.
-        '''
+        """
         if self.db.journaltag is None:
             raise hyperdb.DatabaseError, _('Database open read-only')
         properties = self.getprops()
@@ -1949,13 +1948,13 @@ class Class(hyperdb.Class):
         return newid
 
     def export_journals(self):
-        '''Export a class's journal - generate a list of lists of
+        """Export a class's journal - generate a list of lists of
         CSV-able data:
 
             nodeid, date, user, action, params
 
         No heading here - the columns are fixed.
-        '''
+        """
         properties = self.getprops()
         r = []
         for nodeid in self.getnodeids():
@@ -1989,9 +1988,9 @@ class Class(hyperdb.Class):
         return r
 
     def import_journals(self, entries):
-        '''Import a class's journal.
+        """Import a class's journal.
 
-        Uses setjournal() to set the journal for each item.'''
+        Uses setjournal() to set the journal for each item."""
         properties = self.getprops()
         d = {}
         for l in entries:
@@ -2021,18 +2020,18 @@ class Class(hyperdb.Class):
             self.db.setjournal(self.classname, nodeid, l)
 
 class FileClass(hyperdb.FileClass, Class):
-    '''This class defines a large chunk of data. To support this, it has a
+    """This class defines a large chunk of data. To support this, it has a
        mandatory String property "content" which is typically saved off
        externally to the hyperdb.
 
        The default MIME type of this data is defined by the
        "default_mime_type" class attribute, which may be overridden by each
        node if the class defines a "type" String property.
-    '''
+    """
     def __init__(self, db, classname, **properties):
-        '''The newly-created class automatically includes the "content"
+        """The newly-created class automatically includes the "content"
         and "type" properties.
-        '''
+        """
         if not properties.has_key('content'):
             properties['content'] = hyperdb.String(indexme='yes')
         if not properties.has_key('type'):
@@ -2040,8 +2039,8 @@ class FileClass(hyperdb.FileClass, Class):
         Class.__init__(self, db, classname, **properties)
 
     def create(self, **propvalues):
-        ''' Snarf the "content" propvalue and store in a file
-        '''
+        """ Snarf the "content" propvalue and store in a file
+        """
         # we need to fire the auditors now, or the content property won't
         # be in propvalues for the auditors to play with
         self.fireAuditors('create', None, propvalues)
@@ -2065,10 +2064,10 @@ class FileClass(hyperdb.FileClass, Class):
         return newid
 
     def get(self, nodeid, propname, default=_marker, cache=1):
-        ''' Trap the content propname and get it from the file
+        """ Trap the content propname and get it from the file
 
         'cache' exists for backwards compatibility, and is not used.
-        '''
+        """
         poss_msg = 'Possibly an access right configuration problem.'
         if propname == 'content':
             try:
@@ -2083,8 +2082,8 @@ class FileClass(hyperdb.FileClass, Class):
             return Class.get(self, nodeid, propname)
 
     def set(self, itemid, **propvalues):
-        ''' Snarf the "content" propvalue and update it in a file
-        '''
+        """ Snarf the "content" propvalue and update it in a file
+        """
         self.fireAuditors('set', itemid, propvalues)
 
         # create the oldvalues dict - fill in any missing values
@@ -2121,10 +2120,10 @@ class FileClass(hyperdb.FileClass, Class):
         return propvalues
 
     def index(self, nodeid):
-        ''' Add (or refresh) the node to search indexes.
+        """ Add (or refresh) the node to search indexes.
 
         Use the content-type property for the content property.
-        '''
+        """
         # find all the String properties that have indexme
         for prop, propclass in self.getprops().items():
             if prop == 'content' and propclass.indexme:
@@ -2144,11 +2143,11 @@ class FileClass(hyperdb.FileClass, Class):
 class IssueClass(Class, roundupdb.IssueClass):
     # Overridden methods:
     def __init__(self, db, classname, **properties):
-        '''The newly-created class automatically includes the "messages",
+        """The newly-created class automatically includes the "messages",
         "files", "nosy", and "superseder" properties.  If the 'properties'
         dictionary attempts to specify any of these properties or a
         "creation" or "activity" property, a ValueError is raised.
-        '''
+        """
         if not properties.has_key('title'):
             properties['title'] = hyperdb.String(indexme='yes')
         if not properties.has_key('messages'):
