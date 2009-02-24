@@ -1300,7 +1300,7 @@ class Client:
         try:
             if offset:
                 f.seek(offset)
-                content = f.read(length)
+            content = f.read(length)
         finally:
             f.close()
         self.write(content)
