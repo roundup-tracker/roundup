@@ -370,7 +370,7 @@ class OctalNumberOption(Option):
 
 class NullableOption(Option):
 
-    """Option that is set to None if it's string value is one of NULL strings
+    """Option that is set to None if its string value is one of NULL strings
 
     Default nullable strings list contains empty string only.
     There is constructor parameter allowing to specify different nullables.
@@ -592,8 +592,10 @@ SETTINGS = (
         (NullableOption, 'read_default_group', 'roundup',
             "Name of the group to use in the MySQL defaults file (.my.cnf).\n"
             "Only used in MySQL connections."),
+        (IntegerNumberOption, 'cache_size', '100',
+            "Size of the node cache (in elements)"),
     ), "Settings in this section are used"
-        " by Postgresql and MySQL backends only"
+        " by RDBMS backends only"
     ),
     ("logging", (
         (FilePathOption, "config", "",
@@ -874,7 +876,7 @@ class Config:
             _options.append(_name)
         # (section, name) key is used for writing .ini file
         self.options[(_section, _name)] = option
-        # make the option known under all of it's A.K.A.s
+        # make the option known under all of its A.K.A.s
         for _name in option.aliases:
             self.options[_name] = option
 

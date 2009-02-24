@@ -71,9 +71,6 @@ except ImportError:
 from sessions_rdbms import Sessions, OneTimeKeys
 from roundup.date import Range
 
-# number of rows to keep in memory
-ROW_CACHE_SIZE = 100
-
 # dummy value meaning "argument not passed"
 _marker = []
 
@@ -108,7 +105,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         - some functionality is specific to the actual SQL database, hence
           the sql_* methods that are NotImplemented
-        - we keep a cache of the latest ROW_CACHE_SIZE row fetches.
+        - we keep a cache of the latest N row fetches (where N is configurable).
     """
     def __init__(self, config, journaltag=None):
         """ Open the database and load the schema from it.
@@ -125,6 +122,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         # keep a cache of the N most recently retrieved rows of any kind
         # (classname, nodeid) = row
+        self.cache_size = config.RDBMS_CACHE_SIZE
         self.cache = {}
         self.cache_lru = []
         self.stats = {'cache_hits': 0, 'cache_misses': 0, 'get_items': 0,
@@ -1057,7 +1055,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.cache[key] = node
         # update the LRU
         self.cache_lru.insert(0, key)
-        if len(self.cache_lru) > ROW_CACHE_SIZE:
+        if len(self.cache_lru) > self.cache_size:
             del self.cache[self.cache_lru.pop()]
 
         if __debug__:
