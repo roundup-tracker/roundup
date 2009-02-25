@@ -16,6 +16,7 @@ from roundup.cgi.exceptions import *
 from roundup.cgi.form_parser import FormParser
 from roundup.mailer import Mailer, MessageSendError
 from roundup.cgi import accept_language
+from roundup import xmlrpc
 
 def initialiseSecurity(security):
     '''Create some Permissions and Roles on the security object
@@ -354,10 +355,41 @@ class Client:
         """ Wrap the real main in a try/finally so we always close off the db.
         """
         try:
-            self.inner_main()
+            if self.env.get('CONTENT_TYPE') == 'text/xml':
+                self.handle_xmlrpc()
+            else:
+                self.inner_main()
         finally:
             if hasattr(self, 'db'):
                 self.db.close()
+
+
+    def handle_xmlrpc(self):
+
+        # Pull the raw XML out of the form.  The "value" attribute
+        # will be the raw content of the POST request.
+        assert self.form.file
+        input = self.form.value
+        # So that the rest of Roundup can query the form in the
+        # usual way, we create an empty list of fields.
+        self.form.list = []
+
+        # Set the charset and language, since other parts of
+        # Roundup may depend upon that.
+        self.determine_charset()
+        self.determine_language()
+        # Open the database as the correct user.
+        self.determine_user()
+
+        # Call the appropriate XML-RPC method.
+        handler = xmlrpc.RoundupDispatcher(self.db, self.userid, self.translator,
+                                           allow_none=True)
+        output = handler.dispatch(input)
+        self.db.commit()
+
+        self.setHeader("Content-Type", "text/xml")
+        self.setHeader("Content-Length", str(len(output)))
+        self.write(output)
         
     def inner_main(self):
         """Process a request.
