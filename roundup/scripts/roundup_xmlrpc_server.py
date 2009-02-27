@@ -51,7 +51,10 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
 
         if scheme.lower() == 'basic':
             decoded = base64.decodestring(challenge)
-            username, password = decoded.split(':')
+            if ':' in decoded:
+                username, password = decoded.split(':')
+            else:
+                username = decoded
         if not username:
             username = 'anonymous'
         db = tracker.open('admin')
@@ -79,7 +82,7 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
             tracker = self.get_tracker(tracker_name)
             db = self.authenticate(tracker)
 
-            instance = RoundupInstance(db, None)
+            instance = RoundupInstance(db, tracker.actions, None)
             self.server.register_instance(instance)
             SimpleXMLRPCRequestHandler.do_POST(self)
         except Unauthorised, message:

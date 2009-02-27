@@ -1,18 +1,12 @@
-#$Id: exceptions.py,v 1.6 2004-11-18 14:10:27 a1s Exp $
-'''Exceptions for use in Roundup's web interface.
-'''
+"""Exceptions for use in Roundup's web interface.
+"""
 
 __docformat__ = 'restructuredtext'
 
+from roundup.exceptions import LoginError, Unauthorised
 import cgi
 
 class HTTPException(Exception):
-    pass
-
-class LoginError(HTTPException):
-    pass
-
-class Unauthorised(HTTPException):
     pass
 
 class Redirect(HTTPException):
@@ -50,13 +44,13 @@ class SeriousError(Exception):
     escaped.
     """
     def __str__(self):
-        return '''
+        return """
 <html><head><title>Roundup issue tracker: An error has occurred</title>
  <link rel="stylesheet" type="text/css" href="@@file/style.css">
 </head>
 <body class="body" marginwidth="0" marginheight="0">
  <p class="error-message">%s</p>
 </body></html>
-'''%cgi.escape(self.args[0])
+"""%cgi.escape(self.args[0])
 
 # vim: set filetype=python sts=4 sw=4 et si :

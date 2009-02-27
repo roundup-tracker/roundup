@@ -1,8 +1,7 @@
-#$Id: actions.py,v 1.73 2008-08-18 05:04:01 richard Exp $
-
 import re, cgi, StringIO, urllib, time, random, csv, codecs
 
 from roundup import hyperdb, token, date, password
+from roundup.actions import Action as BaseAction
 from roundup.i18n import _
 import roundup.exceptions
 from roundup.cgi import exceptions, templating
@@ -990,5 +989,47 @@ class ExportCSVAction(Action):
             self.client._socket_op(writer.writerow, [str(klass.get(itemid, col)) for col in columns])
 
         return '\n'
+
+
+class Bridge(BaseAction):
+    """Make roundup.actions.Action executable via CGI request.
+
+    Using this allows users to write actions executable from multiple frontends.
+    CGI Form content is translated into a dictionary, which then is passed as
+    argument to 'handle()'. XMLRPC requests have to pass this dictionary
+    directly.
+    """
+
+    def __init__(self, *args):
+
+        # As this constructor is callable from multiple frontends, each with
+        # different Action interfaces, we have to look at the arguments to
+        # figure out how to complete construction.
+        if (len(args) == 1 and
+            hasattr(args[0], '__class__') and
+            args[0].__class__.__name__ == 'Client'):
+            self.cgi = True
+            self.execute = self.execute_cgi
+            self.client = args[0]
+            self.form = self.client.form
+        else:
+            self.cgi = False
+
+    def execute_cgi(self):
+        args = {}
+        for key in self.form.keys():
+            args[key] = self.form.getvalue(key)
+        self.permission(args)
+        return self.handle(args)
+
+    def permission(self, args):
+        """Raise Unauthorised if the current user is not allowed to execute
+        this action. Users may override this method."""
+        
+        pass
+
+    def handle(self, args):
+        
+        raise NotImplementedError
 
 # vim: set filetype=python sts=4 sw=4 et si :

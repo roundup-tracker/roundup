@@ -15,19 +15,19 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: instance.py,v 1.37 2006-12-11 23:36:15 richard Exp $
 
-'''Tracker handling (open tracker).
+"""Tracker handling (open tracker).
 
 Backwards compatibility for the old-style "imported" trackers.
-'''
+"""
 __docformat__ = 'restructuredtext'
 
 import os
 import sys
 from roundup import configuration, mailgw
-from roundup import hyperdb, backends
+from roundup import hyperdb, backends, actions
 from roundup.cgi import client, templating
+from roundup.cgi import actions as cgi_actions
 
 class Vars:
     def __init__(self, vars):
@@ -47,6 +47,7 @@ class Tracker:
         self.tracker_home = tracker_home
         self.optimize = optimize
         self.config = configuration.CoreConfig(tracker_home)
+        self.actions = {}
         self.cgi_actions = {}
         self.templating_utils = {}
         self.load_interfaces()
@@ -182,7 +183,20 @@ class Tracker:
         return vars
 
     def registerAction(self, name, action):
-        self.cgi_actions[name] = action
+
+        # The logic here is this:
+        # * if `action` derives from actions.Action,
+        #   it is executable as a generic action.
+        # * if, moreover, it also derives from cgi.actions.Bridge,
+        #   it may in addition be called via CGI
+        # * in all other cases we register it as a CGI action, without
+        #   any check (for backward compatibility).
+        if issubclass(action, actions.Action):
+            self.actions[name] = action
+            if issubclass(action, cgi_actions.Bridge):
+                self.cgi_actions[name] = action
+        else:
+            self.cgi_actions[name] = action
 
     def registerUtil(self, name, function):
         self.templating_utils[name] = function

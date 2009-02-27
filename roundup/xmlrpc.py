@@ -8,6 +8,7 @@ from roundup import hyperdb
 from roundup.cgi.exceptions import *
 from roundup.exceptions import UsageError
 from roundup.date import Date, Range, Interval
+from roundup import actions
 from SimpleXMLRPCServer import *
 
 def translate(value):
@@ -52,10 +53,10 @@ class RoundupInstance:
     """The RoundupInstance provides the interface accessible through
     the Python XMLRPC mapping."""
 
-    def __init__(self, db, translator):
+    def __init__(self, db, actions, translator):
 
         self.db = db
-        self.userid = db.getuid()
+        self.actions = actions
         self.translator = translator
 
     def list(self, classname, propname=None):
@@ -125,15 +126,30 @@ class RoundupInstance:
             raise UsageError, message
 
 
+    builtin_actions = {'retire': actions.Retire}
+
+    def action(self, name, *args):
+        """"""
+        
+        if name in self.actions:
+            action_type = self.actions[name]
+        elif name in self.builtin_actions:
+            action_type = self.builtin_actions[name]
+        else:
+            raise Exception('action "%s" is not supported %s' % (name, ','.join(self.actions.keys())))
+        action = action_type(self.db, self.translator)
+        return action.execute(*args)
+
+
 class RoundupDispatcher(SimpleXMLRPCDispatcher):
     """RoundupDispatcher bridges from cgi.client to RoundupInstance.
     It expects user authentication to be done."""
 
-    def __init__(self, db, userid, translator,
+    def __init__(self, db, actions, translator,
                  allow_none=False, encoding=None):
 
         SimpleXMLRPCDispatcher.__init__(self, allow_none, encoding)
-        self.register_instance(RoundupInstance(db, userid, translator))
+        self.register_instance(RoundupInstance(db, actions, translator))
                  
 
     def dispatch(self, input):

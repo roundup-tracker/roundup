@@ -382,7 +382,9 @@ class Client:
         self.determine_user()
 
         # Call the appropriate XML-RPC method.
-        handler = xmlrpc.RoundupDispatcher(self.db, self.userid, self.translator,
+        handler = xmlrpc.RoundupDispatcher(self.db,
+                                           self.instance.actions,
+                                           self.translator,
                                            allow_none=True)
         output = handler.dispatch(input)
         self.db.commit()
