@@ -55,8 +55,12 @@ def setupTracker(dirname, backend="anydbm"):
     except OSError, error:
         if error.errno not in (errno.ENOENT, errno.ESRCH): raise
     # create the instance
-    init.install(dirname, os.path.join(os.path.dirname(__file__), '..',
-        'templates/classic'))
+    init.install(dirname, os.path.join(os.path.dirname(__file__),
+                                       '..',
+                                       'share',
+                                       'roundup',
+                                       'templates',
+                                       'classic'))
     init.write_select_db(dirname, backend)
     config.save(os.path.join(dirname, 'config.ini'))
     tracker = instance.open(dirname)
