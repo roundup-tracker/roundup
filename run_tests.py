@@ -625,9 +625,6 @@ def main(module_filter, test_filter, libdir):
     # Hmm...
     logini = os.path.abspath("log.ini")
 
-    from roundup.dist.command.build import check_manifest
-    check_manifest()
-
     # Initialize the path and cwd
     global pathinit
     pathinit = PathInit(build, build_inplace, libdir)
