@@ -15,10 +15,9 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: blobfiles.py,v 1.24 2008-02-07 00:57:59 richard Exp $
-'''This module exports file storage for roundup backends.
+"""This module exports file storage for roundup backends.
 Files are stored into a directory hierarchy.
-'''
+"""
 __docformat__ = 'restructuredtext'
 
 import os
@@ -232,14 +231,28 @@ class FileStorage:
 
         return filename + self.tempext
 
+    def _editInProgress(self, classname, nodeid, property):
+        """Return true if the file indicated is being edited.
+
+        returns -- True if the current transaction includes an edit to
+        the file indicated."""
+
+        for method, args in self.transactions:
+            if (method == self.doStoreFile and
+                args == (classname, nodeid, property)):
+                return True
+
+        return False
+    
+
     def filename(self, classname, nodeid, property=None, create=0):
-        '''Determine what the filename for the given node and optionally
+        """Determine what the filename for the given node and optionally
         property is.
 
         Try a variety of different filenames - the file could be in the
         usual place, or it could be in a temp file pre-commit *or* it
         could be in an old-style, backwards-compatible flat directory.
-        '''
+        """
         filename  = os.path.join(self.dir, 'files', classname,
                                  self.subdirFilename(classname, nodeid, property))
         # If the caller is going to create the file, return the
@@ -252,13 +265,10 @@ class FileStorage:
 
         # If an edit to this file is in progress, then return the name
         # of the temporary file containing the edited content.
-        for method, args in self.transactions:
-            if (method == self.doStoreFile and
-                    args == (classname, nodeid, property)):
-                # There is an edit in progress for this file.
-                if not os.path.exists(tempfile):
-                    raise IOError('content file for %s not found'%tempfile)
-                return tempfile
+        if self._editInProgress(classname, nodeid, property):
+            if not os.path.exists(tempfile):
+                raise IOError('content file for %s not found'%tempfile)
+            return tempfile
 
         if os.path.exists(filename):
             return filename
@@ -295,10 +305,10 @@ class FileStorage:
         raise IOError('content file for %s not found'%filename)
 
     def storefile(self, classname, nodeid, property, content):
-        '''Store the content of the file in the database. The property may be
+        """Store the content of the file in the database. The property may be
            None, in which case the filename does not indicate which property
            is being saved.
-        '''
+        """
         # determine the name of the file to write to
         name = self.filename(classname, nodeid, property, create=1)
 
@@ -310,7 +320,7 @@ class FileStorage:
         name = self._tempfile(name)
 
         # make sure we don't register the rename action more than once
-        if not os.path.exists(name):
+        if not self._editInProgress(classname, nodeid, property):
             # save off the rename action
             self.transactions.append((self.doStoreFile, (classname, nodeid,
                 property)))
@@ -321,8 +331,8 @@ class FileStorage:
         open(name, 'wb').write(content)
 
     def getfile(self, classname, nodeid, property):
-        '''Get the content of the file in the database.
-        '''
+        """Get the content of the file in the database.
+        """
         filename = self.filename(classname, nodeid, property)
 
         f = open(filename, 'rb')
@@ -333,14 +343,14 @@ class FileStorage:
             f.close()
 
     def numfiles(self):
-        '''Get number of files in storage, even across subdirectories.
-        '''
+        """Get number of files in storage, even across subdirectories.
+        """
         files_dir = os.path.join(self.dir, 'files')
         return files_in_dir(files_dir)
 
     def doStoreFile(self, classname, nodeid, property, **databases):
-        '''Store the file as part of a transaction commit.
-        '''
+        """Store the file as part of a transaction commit.
+        """
         # determine the name of the file to write to
         name = self.filename(classname, nodeid, property, 1)
 
@@ -364,8 +374,8 @@ class FileStorage:
         return (classname, nodeid)
 
     def rollbackStoreFile(self, classname, nodeid, property, **databases):
-        '''Remove the temp file as a part of a rollback
-        '''
+        """Remove the temp file as a part of a rollback
+        """
         # determine the name of the file to delete
         name = self.filename(classname, nodeid, property)
         if not name.endswith(self.tempext):
@@ -373,9 +383,9 @@ class FileStorage:
         os.remove(name)
 
     def isStoreFile(self, classname, nodeid):
-        '''See if there is actually any FileStorage for this node.
+        """See if there is actually any FileStorage for this node.
            Is there a better way than using self.filename?
-        '''
+        """
         try:
             fname = self.filename(classname, nodeid)
             return True
@@ -383,9 +393,9 @@ class FileStorage:
             return False
 
     def destroy(self, classname, nodeid):
-        '''If there is actually FileStorage for this node
+        """If there is actually FileStorage for this node
            remove it from the filesystem
-        '''
+        """
         if self.isStoreFile(classname, nodeid):
             os.remove(self.filename(classname, nodeid))
 
