@@ -110,7 +110,7 @@ def usage():
     print """Usage: %s: [options] [name=tracker home]+
 
 Options:
- -i instance home  -- specify the issue tracker "home directory" to administer
+ -e, --encoding    -- specify the encoding to use
  -V                -- be verbose when importing
  -p, --port <port> -- port to listen on
 
