@@ -36,7 +36,11 @@ class UserAuditorTest(unittest.TestCase):
         self.assertRaises(ValueError, self.db.user.set, userid, timezone='-3000')
 
         if self.pytz:
-            self.assertRaises(ValueError, self.db.user.set, userid, timezone='MiddleOf/Nowhere')
+            try:
+                from pytz import UnknownTimeZoneError
+            except:
+                UnknownTimeZoneError = ValueError
+            self.assertRaises(UnknownTimeZoneError, self.db.user.set, userid, timezone='MiddleOf/Nowhere')
 
     def testGoodTimezones(self):
         self.db.user.create(username='test_user01', timezone='12')
