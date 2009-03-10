@@ -66,10 +66,10 @@ def db_nuke(config):
             # stupid MySQL bug requires us to drop all the tables first
             for table in tables:
                 command = 'DROP TABLE `%s`'%table[0]
-                self.log_debug(command)
+                logging.debug(command)
                 cursor.execute(command)
             command = "DROP DATABASE %s"%config.RDBMS_NAME
-            self.log_info(command)
+            logging.info(command)
             cursor.execute(command)
             conn.commit()
         conn.close()
@@ -83,7 +83,7 @@ def db_create(config):
     conn = MySQLdb.connect(**kwargs)
     cursor = conn.cursor()
     command = "CREATE DATABASE %s"%config.RDBMS_NAME
-    self.log_info(command)
+    logging.info(command)
     cursor.execute(command)
     conn.commit()
     conn.close()
