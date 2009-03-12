@@ -12,7 +12,7 @@ PYTHON ?= python
 
 TEMPLATE=roundup.pot
 
-PACKAGES=$(shell find ../roundup ../templates -name '*.py' \
+PACKAGES=$(shell find ../roundup ../share/roundup/templates -name '*.py' \
 	 | sed -e 's,/[^/]*$$,,' | sort | uniq)
 SOURCES=$(PACKAGES:=/*.py)
 PO_FILES=$(wildcard *.po)
@@ -40,7 +40,8 @@ dist:
 template:
 	${XPOT} -n -o $(TEMPLATE) $(SOURCES)
 	${RUN_PYTHON} ../roundup/cgi/TAL/talgettext.py -u $(TEMPLATE) \
-	  ../templates/classic/html/*.html ../templates/minimal/html/*.html
+	  ../share/roundup/templates/classic/html/*.html \
+	  ../share/roundup/templates/minimal/html/*.html
 	${XGETTEXT} -j -w 80 -F \
 	  --msgid-bugs-address=roundup-devel@lists.sourceforge.net \
 	  --copyright-holder="See Roundup README.txt" \
@@ -48,7 +49,7 @@ template:
 
 # helps to check template file before check in
 diff:
-	cvs diff roundup.pot|grep -v '^[-+]#'|vim -Rv -
+	svn diff roundup.pot|grep -v '^[-+]#'|vim -Rv -
 
 %.po: $(TEMPLATE)
 	${MSGMERGE} -U --suffix=.bak $@ $<
