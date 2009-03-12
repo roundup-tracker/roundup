@@ -77,17 +77,19 @@ def main():
 
     # add the templates to the data files lists
     from roundup.init import listTemplates
-    templates = [t['path'] for t in listTemplates(os.path.join('share','roundup','templates')).values()]
+    templates = [t['path']
+                 for t in listTemplates('share/roundup/templates').values()]
     for tdir in templates:
         for idir in '. detectors extensions html'.split():
             data_files.append(include(os.path.join(tdir, idir), '*'))
 
     # add message files
     for (_dist_file, _mo_file) in list_message_files():
-        data_files.append((os.path.dirname(_mo_file), [os.path.join("build", _mo_file)]))
+        data_files.append((os.path.dirname(_mo_file),
+                           [os.path.join("build", _mo_file)]))
 
     # add docs
-    data_files.append(include(os.path.join('share', 'doc', 'roundup', 'html'), '*'))
+    data_files.append(include(os.path.join('share/doc/roundup/html'), '*'))
 
     # perform the setup action
     from roundup import __version__
@@ -97,7 +99,8 @@ def main():
           author="Richard Jones",
           author_email="richard@users.sourceforge.net",
           description='Issue-tracking System.',
-          long_description="""Roundup is a simple-to-use and -install issue-tracking system
+          long_description=
+          """Roundup is a simple-to-use and -install issue-tracking system
 with command-line, web and e-mail interfaces. Highly customisable.""",
           url='http://www.roundup-tracker.org',
           download_url='http://pypi.python.org/pypi/roundup',
