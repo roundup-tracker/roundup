@@ -1740,10 +1740,17 @@ class Class(hyperdb.Class):
 
                 # handle additions
                 for id in value:
-                    if not self.db.getclass(link_class).hasnode(id):
-                        raise IndexError, '%s has no node %s'%(link_class, id)
                     if id in l:
                         continue
+                    # We can safely check this condition after
+                    # checking that this is an addition to the
+                    # multilink since the condition was checked for
+                    # existing entries at the point they were added to
+                    # the multilink.  Since the hasnode call will
+                    # result in a SQL query, it is more efficient to
+                    # avoid the check if possible.
+                    if not self.db.getclass(link_class).hasnode(id):
+                        raise IndexError, '%s has no node %s'%(link_class, id)
                     # register the link with the newly linked node
                     if self.do_journal and self.properties[propname].do_journal:
                         self.db.addjournal(link_class, id, 'link',
