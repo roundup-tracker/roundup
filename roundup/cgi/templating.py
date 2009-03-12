@@ -615,9 +615,16 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         s = StringIO.StringIO()
         writer = csv.writer(s)
         writer.writerow(props)
+        check = self._client.db.security.hasPermission
         for nodeid in self._klass.list():
             l = []
             for name in props:
+                # check permission to view this property on this item
+                if not check('View', self._client.userid, itemid=nodeid,
+                        classname=self._klass.classname, property=name):
+                    raise Unauthorised('view', self._klass.classname,
+                        translator=self._client.translator)
+                row.append(str(klass.get(itemid, name)))
                 value = self._klass.get(nodeid, name)
                 if value is None:
                     l.append('')
