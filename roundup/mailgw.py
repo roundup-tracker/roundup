@@ -81,6 +81,8 @@ import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
 import time, random, sys, logging
 import traceback, MimeWriter, rfc822
 
+from email.Header import decode_header
+
 from roundup import configuration, hyperdb, date, password, rfc2822, exceptions
 from roundup.mailer import Mailer, MessageSendError
 from roundup.i18n import _
@@ -261,9 +263,30 @@ class Message(mimetools.Message):
 
     def getheader(self, name, default=None):
         hdr = mimetools.Message.getheader(self, name, default)
+        if not hdr:
+            return ''
         if hdr:
             hdr = hdr.replace('\n','') # Inserted by rfc822.readheaders
-        return rfc2822.decode_header(hdr)
+        # historically this method has returned utf-8 encoded string
+        l = []
+        for part, encoding in decode_header(hdr):
+            if encoding:
+                part = part.decode(encoding)
+            l.append(part)
+        return ''.join([s.encode('utf-8') for s in l])
+
+    def getaddrlist(self, name):
+        # overload to decode the name part of the address
+        l = []
+        for (name, addr) in mimetools.Message.getaddrlist(self, name):
+            p = []
+            for part, encoding in decode_header(name):
+                if encoding:
+                    part = part.decode(encoding)
+                p.append(part)
+            name = ''.join([s.encode('utf-8') for s in p])
+            l.append((name, addr))
+        return l
 
     def getname(self):
         """Find an appropriate name for this message."""
