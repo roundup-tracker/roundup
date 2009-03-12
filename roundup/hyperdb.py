@@ -22,7 +22,8 @@ __docformat__ = 'restructuredtext'
 
 # standard python modules
 import os, re, shutil, weakref
-from sets import Set
+# Python 2.3 ... 2.6 compatibility:
+from roundup.anypy.sets_ import set
 
 # roundup modules
 import date, password
@@ -193,7 +194,7 @@ class Multilink(_Pointer):
         # definitely in the new list (in case of e.g.
         # <propname>=A,+B, which should replace the old
         # list with A,B)
-        set = 1
+        do_set = 1
         newvalue = []
         for item in value:
             item = item.strip()
@@ -206,10 +207,10 @@ class Multilink(_Pointer):
             if item.startswith('-'):
                 remove = 1
                 item = item[1:]
-                set = 0
+                do_set = 0
             elif item.startswith('+'):
                 item = item[1:]
-                set = 0
+                do_set = 0
 
             # look up the value
             itemid = convertLinkValue(db, propname, self, item)
@@ -228,7 +229,7 @@ class Multilink(_Pointer):
 
         # that's it, set the new Multilink property value,
         # or overwrite it completely
-        if set:
+        if do_set:
             value = newvalue
         else:
             value = curvalue
@@ -487,7 +488,7 @@ class Proptree(object):
             v = self._val
             if not isinstance(self._val, type([])):
                 v = [self._val]
-            vals = Set(v)
+            vals = set(v)
             vals.intersection_update(val)
             self._val = [v for v in vals]
         else:

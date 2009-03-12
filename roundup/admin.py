@@ -729,7 +729,7 @@ Erase it? Y/N: """))
                 print _('%(key)s: %(value)s')%locals()
 
     def do_display(self, args):
-        """Usage: display designator[,designator]*
+        ''"""Usage: display designator[,designator]*
         Show the property values for the given node(s).
 
         This lists the properties and their associated values for the given

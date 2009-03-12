@@ -10,7 +10,8 @@
 #
 # $Id: test_hyperdbvals.py,v 1.3 2006-08-18 01:26:19 richard Exp $
 
-import unittest, os, shutil, errno, sys, difflib, cgi, re, sha
+import unittest, os, shutil, errno, sys, difflib, cgi, re
+from roundup.anypy.hashlib_ import sha1
 
 from roundup import init, instance, password, hyperdb, date
 
@@ -80,7 +81,7 @@ class RawToHyperdbTest(unittest.TestCase):
         self.assert_(isinstance(val, password.Password))
         val = self._test('password', '{crypt}a string')
         self.assert_(isinstance(val, password.Password))
-        s = sha.sha('a string').hexdigest()
+        s = sha1('a string').hexdigest()
         val = self._test('password', '{SHA}'+s)
         self.assert_(isinstance(val, password.Password))
         self.assertEqual(val, 'a string')

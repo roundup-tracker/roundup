@@ -21,26 +21,26 @@
 """
 __docformat__ = 'restructuredtext'
 
-import sha, md5, re, string, random
+import re, string, random
+from roundup.anypy.hashlib_ import md5, sha1
 try:
     import crypt
-except:
+except ImportError:
     crypt = None
-    pass
 
 class PasswordValueError(ValueError):
-    ''' The password value is not valid '''
+    """ The password value is not valid """
     pass
 
 def encodePassword(plaintext, scheme, other=None):
-    '''Encrypt the plaintext password.
-    '''
+    """Encrypt the plaintext password.
+    """
     if plaintext is None:
         plaintext = ""
     if scheme == 'SHA':
-        s = sha.sha(plaintext).hexdigest()
+        s = sha1(plaintext).hexdigest()
     elif scheme == 'MD5':
-        s = md5.md5(plaintext).hexdigest()
+        s = md5(plaintext).hexdigest()
     elif scheme == 'crypt' and crypt is not None:
         if other is not None:
             salt = other
@@ -59,7 +59,7 @@ def generatePassword(length=8):
     return ''.join([random.choice(chars) for x in range(length)])
 
 class Password:
-    '''The class encapsulates a Password property type value in the database.
+    """The class encapsulates a Password property type value in the database.
 
     The encoding of the password is one if None, 'SHA', 'MD5' or 'plaintext'.
     The encodePassword function is used to actually encode the password from
@@ -79,13 +79,13 @@ class Password:
     1
     >>> 'not sekrit' != p
     1
-    '''
+    """
 
     default_scheme = 'SHA'        # new encryptions use this scheme
     pwre = re.compile(r'{(\w+)}(.+)')
 
     def __init__(self, plaintext=None, scheme=None, encrypted=None):
-        '''Call setPassword if plaintext is not None.'''
+        """Call setPassword if plaintext is not None."""
         if scheme is None:
             scheme = self.default_scheme
         if plaintext is not None:
@@ -98,9 +98,9 @@ class Password:
             self.plaintext = None
 
     def unpack(self, encrypted, scheme=None):
-        '''Set the password info from the scheme:<encryted info> string
+        """Set the password info from the scheme:<encryted info> string
            (the inverse of __str__)
-        '''
+        """
         m = self.pwre.match(encrypted)
         if m:
             self.scheme = m.group(1)
@@ -111,7 +111,7 @@ class Password:
             self.setPassword(encrypted, scheme)
 
     def setPassword(self, plaintext, scheme=None):
-        '''Sets encrypts plaintext.'''
+        """Sets encrypts plaintext."""
         if scheme is None:
             scheme = self.default_scheme
         self.scheme = scheme
@@ -119,7 +119,7 @@ class Password:
         self.plaintext = plaintext
 
     def __cmp__(self, other):
-        '''Compare this password against another password.'''
+        """Compare this password against another password."""
         # check to see if we're comparing instances
         if isinstance(other, Password):
             if self.scheme != other.scheme:
@@ -133,7 +133,7 @@ class Password:
             self.password))
 
     def __str__(self):
-        '''Stringify the encrypted password for database storage.'''
+        """Stringify the encrypted password for database storage."""
         if self.password is None:
             raise ValueError, 'Password not set'
         return '{%s}%s'%(self.scheme, self.password)

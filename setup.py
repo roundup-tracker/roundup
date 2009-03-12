@@ -58,6 +58,7 @@ def main():
     # template munching
     packagelist = [
         'roundup',
+        'roundup.anypy',
         'roundup.cgi',
         'roundup.cgi.PageTemplates',
         'roundup.cgi.TAL',

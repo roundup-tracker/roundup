@@ -10,6 +10,7 @@ Fixes:
 - HTML file uploads served as application/octet-stream
 - New item action reject creation of new users
 - Item retirement was not being controlled
+- Roundup is now compatible with Python 2.6
 - XXX need to include Stefan's changes in here too
 
 

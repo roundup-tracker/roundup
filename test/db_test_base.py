@@ -17,7 +17,9 @@
 #
 # $Id: db_test_base.py,v 1.101 2008-08-19 01:40:59 richard Exp $
 
-import unittest, os, shutil, errno, imp, sys, time, pprint, sets, base64, os.path
+import unittest, os, shutil, errno, imp, sys, time, pprint, base64, os.path
+# Python 2.3 ... 2.6 compatibility:
+from roundup.anypy.sets_ import set
 
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval, DatabaseError, Boolean, Number, Node
@@ -284,7 +286,7 @@ class DBTest(MyTestCase):
             # try a couple of the built-in iterable types to make
             # sure that we accept them and handle them properly
             # try a set as input for the multilink
-            nid = self.db.issue.create(title="spam", nosy=sets.Set(u1))
+            nid = self.db.issue.create(title="spam", nosy=set(u1))
             if commit: self.db.commit()
             self.assertEqual(self.db.issue.get(nid, "nosy"), [u1])
             self.assertRaises(TypeError, self.db.issue.set, nid,
@@ -294,7 +296,7 @@ class DBTest(MyTestCase):
             if commit: self.db.commit()
             self.assertEqual(self.db.issue.get(nid, "nosy"), [])
             # make sure we accept a frozen set
-            self.db.issue.set(nid, nosy=sets.Set([u1,u2]))
+            self.db.issue.set(nid, nosy=set([u1,u2]))
             if commit: self.db.commit()
             l = [u1,u2]; l.sort()
             m = self.db.issue.get(nid, "nosy"); m.sort()
@@ -487,12 +489,12 @@ class DBTest(MyTestCase):
         others = nodeids[:]
         others.remove('1')
 
-        self.assertEqual(sets.Set(self.db.status.getnodeids()),
-            sets.Set(nodeids))
-        self.assertEqual(sets.Set(self.db.status.getnodeids(retired=True)),
-            sets.Set(['1']))
-        self.assertEqual(sets.Set(self.db.status.getnodeids(retired=False)),
-            sets.Set(others))
+        self.assertEqual(set(self.db.status.getnodeids()),
+            set(nodeids))
+        self.assertEqual(set(self.db.status.getnodeids(retired=True)),
+            set(['1']))
+        self.assertEqual(set(self.db.status.getnodeids(retired=False)),
+            set(others))
 
         self.assert_(self.db.status.is_retired('1'))
 
@@ -2054,7 +2056,7 @@ class SchemaTest(MyTestCase):
         self.db.getjournal('a', aid)
 
 class RDBMSTest:
-    ''' tests specific to RDBMS backends '''
+    """ tests specific to RDBMS backends """
     def test_indexTest(self):
         self.assertEqual(self.db.sql_index_exists('_issue', '_issue_id_idx'), 1)
         self.assertEqual(self.db.sql_index_exists('_issue', '_issue_x_idx'), 0)

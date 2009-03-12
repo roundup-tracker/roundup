@@ -61,6 +61,22 @@ Should be replaced with::
      </form>
 
 
+Fix for Python 2.6+ users
+-------------------------
+
+If you use Python 2.6 you should edit your tracker's
+``detectors/nosyreaction.py`` file to change::
+
+   import sets
+
+at the top to::
+
+   from roundup.anypy.sets_ import set
+
+and then all instances of ``sets.Set()`` to ``set()`` in the later code.
+
+
+
 Trackers currently allowing HTML file uploading
 -----------------------------------------------
 

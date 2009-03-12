@@ -1,5 +1,7 @@
 #$Id: indexer_common.py,v 1.11 2008-09-11 19:41:07 schlatterbeck Exp $
-import re, sets
+import re
+# Python 2.3 ... 2.6 compatibility:
+from roundup.anypy.sets_ import set
 
 from roundup import hyperdb
 
@@ -17,7 +19,7 @@ def _isLink(propclass):
 
 class Indexer:
     def __init__(self, db):
-        self.stopwords = sets.Set(STOPWORDS)
+        self.stopwords = set(STOPWORDS)
         for word in db.config[('main', 'indexer_stopwords')]:
             self.stopwords.add(word)
 
@@ -28,11 +30,11 @@ class Indexer:
         return self.find(search_terms)
 
     def search(self, search_terms, klass, ignore={}):
-        '''Display search results looking for [search, terms] associated
+        """Display search results looking for [search, terms] associated
         with the hyperdb Class "klass". Ignore hits on {class: property}.
 
         "dre" is a helper, not an argument.
-        '''
+        """
         # do the index lookup
         hits = self.getHits(search_terms, klass)
         if not hits:

@@ -1,4 +1,4 @@
-''' Import tracker data from Sourceforge.NET
+""" Import tracker data from Sourceforge.NET
 
 This script needs four steps to work:
 
@@ -19,9 +19,11 @@ This script needs four steps to work:
     roundup-admin -i <tracker home> import /tmp/imported
 
 And you're done!
-'''
+"""
 
-import sys, sets, os, csv, time, urllib2, httplib, mimetypes, urlparse
+import sys, os, csv, time, urllib2, httplib, mimetypes, urlparse
+# Python 2.3 ... 2.6 compatibility:
+from roundup.anypy.sets_ import set
 
 try:
     import cElementTree as ElementTree
@@ -53,8 +55,8 @@ def get_url(aid):
 def fetch_files(xml_file, file_dir):
     """ Fetch files referenced in the xml_file into the dir file_dir. """
     root = ElementTree.parse(xml_file).getroot()
-    to_fetch = sets.Set()
-    deleted = sets.Set()
+    to_fetch = set()
+    deleted = set()
     for artifact in root.find('artifacts'):
         for field in artifact.findall('field'):
             if field.get('name') == 'artifact_id':
@@ -73,7 +75,7 @@ def fetch_files(xml_file, file_dir):
                     deleted.add((aid, fid))
     to_fetch = to_fetch - deleted
 
-    got = sets.Set(os.listdir(file_dir))
+    got = set(os.listdir(file_dir))
     to_fetch = to_fetch - got
 
     # load cached urls (sigh)
@@ -122,10 +124,10 @@ def import_xml(tracker_home, xml_file, file_dir):
 
     # parse out the XML
     artifacts = []
-    categories = sets.Set()
-    users = sets.Set()
-    add_files = sets.Set()
-    remove_files = sets.Set()
+    categories = set()
+    users = set()
+    add_files = set()
+    remove_files = set()
     for artifact in root.find('artifacts'):
         d = {}
         op = {}
@@ -254,7 +256,7 @@ def import_xml(tracker_home, xml_file, file_dir):
         else:
             d['status'] = unread
 
-        nosy = sets.Set()
+        nosy = set()
         for message in artifact.get('messages', []):
             authid = users[message['user_name']]
             if not message['body']: continue
@@ -338,7 +340,7 @@ def import_xml(tracker_home, xml_file, file_dir):
     f.close()
 
 def convert_message(content, id):
-    ''' Strip off the useless sf message header crap '''
+    """ Strip off the useless sf message header crap """
     if content[:14] == 'Logged In: YES':
         return '\n'.join(content.splitlines()[3:]).strip()
     return content

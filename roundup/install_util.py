@@ -21,7 +21,8 @@
 """
 __docformat__ = 'restructuredtext'
 
-import os, sha, shutil
+import os, shutil
+from roundup.anypy.hashlib_ import sha1
 
 sgml_file_types = [".xml", ".ent", ".html"]
 hash_file_types = [".py", ".sh", ".conf", ".cgi"]
@@ -59,7 +60,7 @@ def checkDigest(filename):
     del lines[-1]
 
     # calculate current digest
-    digest = sha.new()
+    digest = sha1()
     for line in lines:
         digest.update(line)
 
@@ -74,7 +75,7 @@ class DigestFile:
 
     def __init__(self, filename):
         self.filename = filename
-        self.digest = sha.new()
+        self.digest = sha1()
         self.file = open(self.filename, "w")
 
     def write(self, data):

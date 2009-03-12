@@ -1,0 +1,27 @@
+Python compatiblity TODO
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+- the popen2 module is deprecated as of Python 2.6;
+  the subprocess module is available since Python 2.4,
+  thus a roundup.anypy.subprocess_ module is needed
+
+- the MimeWriter module is deprecated as of Python 2.6.  The email package is
+  available since Python 2.2, thus we should manage without a ...email_
+  module;  however, it has suffered some API changes over the time
+  (http://docs.python.org/library/email.html#package-history),
+  so this is not sure.
+
+  Here's an incomplete replacement table:
+
+  MimeWriter usage                        checked for
+  -> email usage                          Python ...
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~
+  MimeWriter.MimeWriter
+  -> email.Message.Message                (2.3)
+
+  MimeWriter.MimeWrite.addheader
+  -> email.Message.Message.add_header     (2.3)
+
+- test.test_sqlite.sqliteDBTest.testStringUnicode fails
+
+# vim: si
