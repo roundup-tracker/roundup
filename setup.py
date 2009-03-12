@@ -52,11 +52,8 @@ def scriptname(path):
     return script
 
 def main():
-    # build list of scripts from their implementation modules
-    roundup_scripts = map(scriptname, glob('roundup/scripts/[!_]*.py'))
-
     # template munching
-    packagelist = [
+    packages = [
         'roundup',
         'roundup.anypy',
         'roundup.cgi',
@@ -66,44 +63,31 @@ def main():
         'roundup.backends',
         'roundup.scripts',
     ]
-    installdatafiles = [
-        ('share/roundup/cgi-bin', ['frontends/roundup.cgi']),
-    ]
     py_modules = ['roundup.demo',]
 
+    # build list of scripts from their implementation modules
+    scripts = [scriptname(f) for f in glob('roundup/scripts/[!_]*.py')]
+
+    data_files = [
+        ('share/roundup/cgi-bin', ['frontends/roundup.cgi']),
+    ]
     # install man pages on POSIX platforms
     if os.name == 'posix':
-        installdatafiles.append(('man/man1', ['doc/roundup-admin.1',
-            'doc/roundup-mailgw.1', 'doc/roundup-server.1',
-            'doc/roundup-demo.1']))
+        data_files.append(include('share/man/man1', '*'))
 
     # add the templates to the data files lists
     from roundup.init import listTemplates
     templates = [t['path'] for t in listTemplates(os.path.join('share','roundup','templates')).values()]
     for tdir in templates:
-        # scan for data files
         for idir in '. detectors extensions html'.split():
-            idir = os.path.join(tdir, idir)
-            if not os.path.isdir(idir):
-                continue
-            tfiles = []
-            for f in os.listdir(idir):
-                if f.startswith('.'):
-                    continue
-                ifile = os.path.join(idir, f)
-                if os.path.isfile(ifile):
-                    tfiles.append(ifile)
-            installdatafiles.append(
-                (os.path.join('share', 'roundup', idir), tfiles)
-            )
+            data_files.append(include(os.path.join(tdir, idir), '*'))
 
     # add message files
     for (_dist_file, _mo_file) in list_message_files():
-        installdatafiles.append((os.path.dirname(_mo_file),
-            [os.path.join("build", _mo_file)]))
+        data_files.append((os.path.dirname(_mo_file), [os.path.join("build", _mo_file)]))
 
     # add docs
-    installdatafiles.append(include(os.path.join('share', 'doc', 'roundup', 'html'), '*'))
+    data_files.append(include(os.path.join('share', 'doc', 'roundup', 'html'), '*'))
 
     # perform the setup action
     from roundup import __version__
@@ -140,10 +124,10 @@ with command-line, web and e-mail interfaces. Highly customisable.""",
                      'build': build,
                      'bdist_rpm': bdist_rpm,
                      },
-          packages=packagelist,
+          packages=packages,
           py_modules=py_modules,
-          scripts=roundup_scripts,
-          data_files=installdatafiles)
+          scripts=scripts,
+          data_files=data_files)
 
 if __name__ == '__main__':
     main()
