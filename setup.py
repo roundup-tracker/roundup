@@ -89,7 +89,7 @@ def main():
                            [os.path.join("build", _mo_file)]))
 
     # add docs
-    data_files.append(include(os.path.join('share/doc/roundup/html'), '*'))
+    data_files.append(include('share/doc/roundup/html', '*'))
 
     # perform the setup action
     from roundup import __version__
