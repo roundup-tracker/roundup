@@ -65,8 +65,8 @@ class Indexer(IndexerBase):
 
         # ok, find all the unique words in the text
         text = unicode(text, "utf-8", "replace").upper()
-        wordlist = [w.encode("utf-8", "replace")
-                for w in re.findall(r'(?u)\b\w{2,25}\b', text)]
+        wordlist = [w.encode("utf-8")
+            for w in re.findall(r'(?u)\b\w{2,25}\b', text)]
         words = set()
         for word in wordlist:
             if self.is_stopword(word): continue
