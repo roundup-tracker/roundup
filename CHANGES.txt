@@ -1,6 +1,18 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2009-03-?? 1.4.7
+
+Fixes:
+- a number of security issues were discovered by Daniel Diniz
+- EditCSV and ExportCSV altered to include permission checks
+- HTTP POST required on actions which alter data
+- HTML file uploads served as application/octet-stream
+- New item action reject creation of new users
+- Item retirement was not being controlled
+- XXX need to include Stefan's changes in here too
+
+
 2008-09-01 1.4.6
 Fixed:
 - Fix bug introduced in 1.4.5 in RDBMS full-text indexing

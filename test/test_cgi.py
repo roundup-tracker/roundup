@@ -85,8 +85,8 @@ class FormTestCase(unittest.TestCase):
             re.VERBOSE)
 
     def parseForm(self, form, classname='test', nodeid=None):
-        cl = client.Client(self.instance, None, {'PATH_INFO':'/'},
-            makeForm(form))
+        cl = client.Client(self.instance, None, {'PATH_INFO':'/',
+            'REQUEST_METHOD':'POST'}, makeForm(form))
         cl.classname = classname
         cl.nodeid = nodeid
         cl.language = ('en',)
@@ -615,8 +615,8 @@ class FormTestCase(unittest.TestCase):
     #
     # XXX test all default permissions
     def _make_client(self, form, classname='user', nodeid='2', userid='2'):
-        cl = client.Client(self.instance, None, {'PATH_INFO':'/'},
-            makeForm(form))
+        cl = client.Client(self.instance, None, {'PATH_INFO':'/',
+            'REQUEST_METHOD':'POST'}, makeForm(form))
         cl.classname = 'user'
         cl.nodeid = '1'
         cl.db = self.db

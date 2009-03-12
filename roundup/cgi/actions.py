@@ -103,30 +103,37 @@ class RetireAction(Action):
 
     def handle(self):
         """Retire the context item."""
-        # if we want to view the index template now, then unset the nodeid
+        # ensure modification comes via POST
+        if self.client.env['REQUEST_METHOD'] != 'POST':
+            self.client.error_message.append(self._('Invalid request'))
+
+        # if we want to view the index template now, then unset the itemid
         # context info (a special-case for retire actions on the index page)
-        nodeid = self.nodeid
+        itemid = self.nodeid
         if self.template == 'index':
             self.client.nodeid = None
 
         # make sure we don't try to retire admin or anonymous
         if self.classname == 'user' and \
-                self.db.user.get(nodeid, 'username') in ('admin', 'anonymous'):
+                self.db.user.get(itemid, 'username') in ('admin', 'anonymous'):
             raise ValueError, self._(
                 'You may not retire the admin or anonymous user')
 
+        # check permission
+        if not self.hasPermission('Retire', classname=self.classname,
+                itemid=itemid):
+            raise exceptions.Unauthorised, self._(
+                'You do not have permission to retire %(class)s'
+            ) % {'class': self.classname}
+
         # do the retire
-        self.db.getclass(self.classname).retire(nodeid)
+        self.db.getclass(self.classname).retire(itemid)
         self.db.commit()
 
         self.client.ok_message.append(
             self._('%(classname)s %(itemid)s has been retired')%{
-                'classname': self.classname.capitalize(), 'itemid': nodeid})
+                'classname': self.classname.capitalize(), 'itemid': itemid})
 
-    def hasPermission(self, permission, classname=Action._marker, itemid=None):
-        if itemid is None:
-            itemid = self.nodeid
-        return Action.hasPermission(self, permission, classname, itemid)
 
 class SearchAction(Action):
     name = 'search'
@@ -274,12 +281,19 @@ class EditCSVAction(Action):
         The "rows" CGI var defines the CSV-formatted entries for the class. New
         nodes are identified by the ID 'X' (or any other non-existent ID) and
         removed lines are retired.
-
         """
+        # ensure modification comes via POST
+        if self.client.env['REQUEST_METHOD'] != 'POST':
+            self.client.error_message.append(self._('Invalid request'))
+
+        # figure the properties list for the class
         cl = self.db.classes[self.classname]
-        idlessprops = cl.getprops(protected=0).keys()
-        idlessprops.sort()
-        props = ['id'] + idlessprops
+        props_without_id = cl.getprops(protected=0).keys()
+
+        # the incoming CSV data will always have the properties in colums
+        # sorted and starting with the "id" column
+        props_without_id.sort()
+        props = ['id'] + props_without_id
 
         # do the edit
         rows = StringIO.StringIO(self.form['rows'].value)
@@ -293,25 +307,38 @@ class EditCSVAction(Action):
             if values == props:
                 continue
 
-            # extract the nodeid
-            nodeid, values = values[0], values[1:]
-            found[nodeid] = 1
+            # extract the itemid
+            itemid, values = values[0], values[1:]
+            found[itemid] = 1
 
             # see if the node exists
-            if nodeid in ('x', 'X') or not cl.hasnode(nodeid):
+            if itemid in ('x', 'X') or not cl.hasnode(itemid):
                 exists = 0
+
+                # check permission to create this item
+                if not self.hasPermission('Create', classname=self.classname):
+                    raise exceptions.Unauthorised, self._(
+                        'You do not have permission to create %(class)s'
+                    ) % {'class': self.classname}
             else:
                 exists = 1
 
             # confirm correct weight
-            if len(idlessprops) != len(values):
+            if len(props_without_id) != len(values):
                 self.client.error_message.append(
                     self._('Not enough values on line %(line)s')%{'line':line})
                 return
 
             # extract the new values
             d = {}
-            for name, value in zip(idlessprops, values):
+            for name, value in zip(props_without_id, values):
+                # check permission to edit this property on this item
+                if exists and not self.hasPermission('Edit', itemid=itemid,
+                        classname=self.classname, property=name):
+                    raise exceptions.Unauthorised, self._(
+                        'You do not have permission to edit %(class)s'
+                    ) % {'class': self.classname}
+
                 prop = cl.properties[name]
                 value = value.strip()
                 # only add the property if it has a value
@@ -340,15 +367,21 @@ class EditCSVAction(Action):
             # perform the edit
             if exists:
                 # edit existing
-                cl.set(nodeid, **d)
+                cl.set(itemid, **d)
             else:
                 # new node
                 found[cl.create(**d)] = 1
 
         # retire the removed entries
-        for nodeid in cl.list():
-            if not found.has_key(nodeid):
-                cl.retire(nodeid)
+        for itemid in cl.list():
+            if not found.has_key(itemid):
+                # check permission to retire this item
+                if not self.hasPermission('Retire', itemid=itemid,
+                        classname=self.classname):
+                    raise exceptions.Unauthorised, self._(
+                        'You do not have permission to retire %(class)s'
+                    ) % {'class': self.classname}
+                cl.retire(itemid)
 
         # all OK
         self.db.commit()
@@ -493,10 +526,8 @@ class EditCommon(Action):
         # The user must have permission to edit each of the properties
         # being changed.
         for p in props:
-            if not self.hasPermission('Edit',
-                                      itemid=itemid,
-                                      classname=classname,
-                                      property=p):
+            if not self.hasPermission('Edit', itemid=itemid,
+                    classname=classname, property=p):
                 return 0
         # Since the user has permission to edit all of the properties,
         # the edit is OK.
@@ -554,6 +585,10 @@ class EditItemAction(EditCommon):
         See parsePropsFromForm and _editnodes for special variables.
 
         """
+        # ensure modification comes via POST
+        if self.client.env['REQUEST_METHOD'] != 'POST':
+            self.client.error_message.append(self._('Invalid request'))
+
         user_activity = self.lastUserActivity()
         if user_activity:
             props = self.detectCollision(user_activity, self.lastNodeActivity())
@@ -596,6 +631,10 @@ class NewItemAction(EditCommon):
             This follows the same form as the EditItemAction, with the same
             special form values.
         '''
+        # ensure modification comes via POST
+        if self.client.env['REQUEST_METHOD'] != 'POST':
+            self.client.error_message.append(self._('Invalid request'))
+
         # parse the props from the form
         try:
             props, links = self.client.parsePropsFromForm(create=1)
@@ -603,6 +642,11 @@ class NewItemAction(EditCommon):
             self.client.error_message.append(self._('Error: %s')
                 % str(message))
             return
+
+        # guard against new user creation that would bypass security checks
+        for key in props:
+            if 'user' in key:
+                return
 
         # handle the props - edit or create
         try:
@@ -773,6 +817,10 @@ class RegisterAction(RegoCommon, EditCommon):
 
         Return 1 on successful login.
         """
+        # ensure modification comes via POST
+        if self.client.env['REQUEST_METHOD'] != 'POST':
+            self.client.error_message.append(self._('Invalid request'))
+
         # parse the props from the form
         try:
             props, links = self.client.parsePropsFromForm(create=1)
@@ -887,6 +935,10 @@ class LoginAction(Action):
         Sets up a session for the user which contains the login credentials.
 
         """
+        # ensure modification comes via POST
+        if self.client.env['REQUEST_METHOD'] != 'POST':
+            self.client.error_message.append(self._('Invalid request'))
+
         # we need the username at a minimum
         if not self.form.has_key('__login_name'):
             self.client.error_message.append(self._('Username required'))
@@ -986,7 +1038,16 @@ class ExportCSVAction(Action):
 
         # and search
         for itemid in klass.filter(matches, filterspec, sort, group):
-            self.client._socket_op(writer.writerow, [str(klass.get(itemid, col)) for col in columns])
+            row = []
+            for name in columns:
+                # check permission to view this property on this item
+                if exists and not self.hasPermission('View', itemid=itemid,
+                        classname=request.classname, property=name):
+                    raise exceptions.Unauthorised, self._(
+                        'You do not have permission to view %(class)s'
+                    ) % {'class': request.classname}
+                row.append(str(klass.get(itemid, name)))
+            self.client._socket_op(writer.writerow, row)
 
         return '\n'
 

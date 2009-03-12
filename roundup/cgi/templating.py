@@ -473,6 +473,14 @@ class HTMLPermissions:
             raise Unauthorised("edit", self._classname,
                 translator=self._client.translator)
 
+    def retire_check(self):
+        """ Raise the Unauthorised exception if the user's not permitted to
+            retire items of this class.
+        """
+        if not self.is_retire_ok():
+            raise Unauthorised("retire", self._classname,
+                translator=self._client.translator)
+
 
 class HTMLClass(HTMLInputMixin, HTMLPermissions):
     """ Accesses through a class (either through *class* or *db.<classname>*)
@@ -495,6 +503,12 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         """ Is the user allowed to Create the current class?
         """
         return self._db.security.hasPermission('Create', self._client.userid,
+            self._classname)
+
+    def is_retire_ok(self):
+        """ Is the user allowed to retire items of the current class?
+        """
+        return self._db.security.hasPermission('Retire', self._client.userid,
             self._classname)
 
     def is_view_ok(self):
@@ -761,13 +775,19 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         HTMLInputMixin.__init__(self)
 
     def is_edit_ok(self):
-        """ Is the user allowed to Edit the current class?
+        """ Is the user allowed to Edit this item?
         """
         return self._db.security.hasPermission('Edit', self._client.userid,
             self._classname, itemid=self._nodeid)
 
+    def is_retire_ok(self):
+        """ Is the user allowed to Reture this item?
+        """
+        return self._db.security.hasPermission('Retire', self._client.userid,
+            self._classname, itemid=self._nodeid)
+
     def is_view_ok(self):
-        """ Is the user allowed to View the current class?
+        """ Is the user allowed to View this item?
         """
         if self._db.security.hasPermission('View', self._client.userid,
                 self._classname, itemid=self._nodeid):
@@ -775,7 +795,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         return self.is_edit_ok()
 
     def is_only_view_ok(self):
-        """ Is the user only allowed to View (ie. not Edit) the current class?
+        """ Is the user only allowed to View (ie. not Edit) this item?
         """
         return self.is_view_ok() and not self.is_edit_ok()
 

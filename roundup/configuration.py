@@ -551,6 +551,11 @@ SETTINGS = (
             "or LANG, in that order of preference."),
     )),
     ("web", (
+        (BooleanOption, "allow_html_file", "no",
+            "Setting this option enables Roundup to serve uploaded HTML\n"
+            "file content *as HTML*. This is a potential security risk\n"
+            "and is therefore disabled by default. Set to 'yes' if you\n"
+            "trust *all* users uploading content to your tracker."),
         (BooleanOption, 'http_auth', "yes",
             "Whether to use HTTP Basic Authentication, if present.\n"
             "Roundup will use either the REMOTE_USER or HTTP_AUTHORIZATION\n"

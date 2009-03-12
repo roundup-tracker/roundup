@@ -181,6 +181,12 @@ Section **tracker**
   LC_MESSAGES, or LANG, in that order of preference.
 
 Section **web**
+ allow_html_file -- ``no``
+  Setting this option enables Roundup to serve uploaded HTML
+  file content *as HTML*. This is a potential security risk
+  and is therefore disabled by default. Set to 'yes' if you
+  trust *all* users uploading content to your tracker.
+
  http_auth -- ``yes``
   Whether to use HTTP Basic Authentication, if present.
   Roundup will use either the REMOTE_USER or HTTP_AUTHORIZATION

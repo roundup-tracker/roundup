@@ -103,15 +103,11 @@ class Security:
         self.addRole(name="Admin", description="An admin user, full privs")
         self.addRole(name="Anonymous", description="An anonymous user")
 
-        ce = self.addPermission(name="Create",
-            description="User may create everthing")
-        self.addPermissionToRole('Admin', ce)
-        ee = self.addPermission(name="Edit",
-            description="User may edit everthing")
-        self.addPermissionToRole('Admin', ee)
-        ae = self.addPermission(name="View",
-            description="User may access everything")
-        self.addPermissionToRole('Admin', ae)
+        # default permissions - Admin may do anything
+        for p in 'create edit retire view'.split():
+            p = self.addPermission(name=p.title(),
+                description="User may %s everthing"%p)
+            self.addPermissionToRole('Admin', p)
 
         # initialise the permissions and roles needed for the UIs
         from roundup.cgi import client
