@@ -1424,7 +1424,7 @@ class StringHTMLProperty(HTMLProperty):
         s = self.plain(escape=0, hyperlink=0)
         if hyperlink:
             s = self.hyper_re.sub(self._hyper_repl_rst, s)
-        return ReStructuredText(s, writer_name="html")["body"].encode("utf-8",
+        return ReStructuredText(s, writer_name="html")["html_body"].encode("utf-8",
             "replace")
 
     def field(self, **kwargs):
