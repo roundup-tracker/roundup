@@ -1347,6 +1347,7 @@ Mail message was rejected by a detector.
             else:
                 nodeid = cl.create(**props)
         except (TypeError, IndexError, ValueError, exceptions.Reject), message:
+            raise
             raise MailUsageError, _("""
 There was a problem with the message you sent:
    %(message)s

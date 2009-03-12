@@ -50,6 +50,9 @@ class DiffHelper:
             res = []
 
             for key in new.keys():
+                if key.startswith('from '):
+                    # skip the unix from line
+                    continue
                 if key.lower() == 'x-roundup-version':
                     # version changes constantly, so handle it specially
                     if new[key] != __version__:
@@ -235,7 +238,7 @@ This is a test submission of a new issue.
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, mary@test.test, richard@test.test
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, mary@test.test, richard@test.test
 From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
@@ -279,7 +282,7 @@ This is a test submission of a new issue.
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, mary@test.test, richard@test.test
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: mary@test.test, richard@test.test
 From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
@@ -320,7 +323,7 @@ This is a test submission of a new issue.
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, mary@test.test, richard@test.test
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: mary@test.test, richard@test.test
 From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
@@ -463,7 +466,7 @@ This is a second followup
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test.test
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test.test
 From: "Contrary, Mary" <issue_tracker@your.tracker.email.domain.example>
@@ -511,7 +514,7 @@ This is a followup
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, john@test.test, mary@test.test
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, john@test.test, mary@test.test
 From: richard <issue_tracker@your.tracker.email.domain.example>
@@ -559,7 +562,7 @@ _______________________________________________________________________
         self.compareMessages(new_mail, """
 FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test.test
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test.test
 From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
@@ -602,7 +605,7 @@ This is a followup
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, john@test.test, mary@test.test
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, john@test.test, mary@test.test
 From: richard <issue_tracker@your.tracker.email.domain.example>
@@ -715,7 +718,7 @@ This is a followup
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test.test
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test.test
 From: John Doe <issue_tracker@your.tracker.email.domain.example>
@@ -761,7 +764,7 @@ This is a followup
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork
 From: richard <issue_tracker@your.tracker.email.domain.example>
@@ -807,7 +810,7 @@ This is a followup
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, john@test.test, richard@test.test
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, john@test.test, richard@test.test
 From: John Doe <issue_tracker@your.tracker.email.domain.example>
@@ -852,7 +855,7 @@ This is a followup
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test.test
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test.test
 From: John Doe <issue_tracker@your.tracker.email.domain.example>
@@ -897,7 +900,7 @@ This is a followup
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork
 From: richard <issue_tracker@your.tracker.email.domain.example>
@@ -1078,7 +1081,7 @@ A message with encoding (encoded oe =F6)
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test.test
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test.test
 From: "Contrary, Mary" <issue_tracker@your.tracker.email.domain.example>
@@ -1132,7 +1135,7 @@ A message with first part encoded (encoded oe =F6)
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test.test
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test.test
 From: "Contrary, Mary" <issue_tracker@your.tracker.email.domain.example>
@@ -1209,7 +1212,7 @@ This is a followup
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork
 From: richard <issue_tracker@your.tracker.email.domain.example>
