@@ -1793,7 +1793,7 @@ class DBTest(MyTestCase):
                 messages = [m], nosy = [db.user.lookup("fred")])
 
             db.issue.nosymessage(i, m, {})
-            mail_msg = res["mail_msg"].getvalue()
+            mail_msg = str(res["mail_msg"])
             self.assertEqual(res["mail_to"], ["fred@example.com"])
             self.failUnless("From: admin" in mail_msg)
             self.failUnless("Subject: [issue1] spam" in mail_msg)
