@@ -2,7 +2,6 @@
 #
 # Copyright 2004 Richard Jones (richard@mechanicalcat.net)
 #
-# $Id: roundup_demo.py,v 1.1 2004-10-18 07:56:09 a1s Exp $
 
 import sys
 
@@ -10,9 +9,11 @@ from roundup import admin, configuration, demo, instance
 from roundup.i18n import _
 
 DEFAULT_HOME = './demo'
+DEFAULT_TEMPLATE = 'classic'
 
 def run():
     home = DEFAULT_HOME
+    template = DEFAULT_TEMPLATE
     nuke = sys.argv[-1] == 'nuke'
     # if there is no tracker in home, force nuke
     try:
@@ -32,9 +33,15 @@ def run():
             _('Enter directory path to create demo tracker [%s]: ') % home)
         if not home:
             home = DEFAULT_HOME
+        templates = admin.AdminTool().listTemplates().keys()
+        template = raw_input(
+            _('Enter tracker template to use (one of (%s)) [%s]: ') %
+            (','.join(templates),template))
+        if not template:
+            template = DEFAULT_TEMPLATE
         # install
         demo.install_demo(home, backend,
-            admin.AdminTool().listTemplates()['classic']['path'])
+            admin.AdminTool().listTemplates()[template]['path'])
     # run
     demo.run_demo(home)
 
