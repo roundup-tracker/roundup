@@ -11,7 +11,13 @@ Fixes:
 - New item action reject creation of new users
 - Item retirement was not being controlled
 - Roundup is now compatible with Python 2.6
-- XXX need to include Stefan's changes in here too
+- Improved French and German translations
+- Improve consistency of item sorting in HTML interface
+- Support sendfile() in mod_python for better file transfer
+- Provide a "no selection" option in web interface selection widgets
+- Debug logging now uses the logging module rather than print
+- Enable XML-RPC through regular web interface
+- Various other small bug fixes, robustification and optimisation
 
 
 2008-09-01 1.4.6
