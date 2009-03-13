@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2009-03-13 1.4.7 (r4197)
+2009-03-13 1.4.7 (r4202)
 
 Features:
 - Provide a "no selection" option in web interface selection widgets
@@ -16,6 +16,7 @@ Fixes:
 - EditCSV and ExportCSV altered to include permission checks
 - HTTP POST required on actions which alter data
 - HTML file uploads served as application/octet-stream
+- Handle Unauthorised in file serving correctly
 - New item action reject creation of new users
 - Item retirement was not being controlled
 - Roundup is now compatible with Python 2.6

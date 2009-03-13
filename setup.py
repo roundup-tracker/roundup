@@ -40,7 +40,7 @@ def include(d, e):
     'd' -- A directory
 
     'e' -- A glob pattern"""
-    
+
     return (d, [f for f in glob('%s/%s'%(d, e)) if os.path.isfile(f)])
 
 def scriptname(path):
@@ -93,7 +93,7 @@ def main():
 
     # perform the setup action
     from roundup import __version__
-    
+
     setup(name='roundup',
           version=__version__,
           author="Richard Jones",
@@ -112,16 +112,22 @@ fixes:
 - EditCSV and ExportCSV altered to include permission checks
 - HTTP POST required on actions which alter data
 - HTML file uploads served as application/octet-stream
+- Handle Unauthorised in file serving correctly
 - New item action reject creation of new users
 - Item retirement was not being controlled
 - Roundup is now compatible with Python 2.6
 - Improved French and German translations
 - Improve consistency of item sorting in HTML interface
-- Support sendfile() in mod_python for better file transfer
+- Various other small bug fixes, robustification and optimisation
+
+Though some new features made it in also:
+
 - Provide a "no selection" option in web interface selection widgets
 - Debug logging now uses the logging module rather than print
-- Enable XML-RPC through regular web interface
-- Various other small bug fixes, robustification and optimisation
+- Allow CGI frontend to serve XMLRPC requests.
+- Added XMLRPC actions, as well as bridging CGI actions to XMLRPC actions.
+- Optimized large file serving via mod_python / sendfile().
+- Support resuming downloads for (large) files.
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
