@@ -48,7 +48,7 @@ def clean_message_callback(match, ok={'a':1,'i':1,'b':1,'br':1}):
     return '&lt;%s&gt;'%match.group(2)
 
 
-error_message = """<html><head><title>An error has occurred</title></head>
+error_message = ''"""<html><head><title>An error has occurred</title></head>
 <body><h1>An error has occurred</h1>
 <p>A problem was encountered processing your request.
 The tracker maintainers have been notified of the problem.</p>
@@ -431,41 +431,50 @@ class Client:
             self.determine_charset()
             self.determine_language()
 
-            # make sure we're identified (even anonymously)
-            self.determine_user()
-
-            # figure out the context and desired content template
-            self.determine_context()
-
-            # possibly handle a form submit action (may change self.classname
-            # and self.template, and may also append error/ok_messages)
-            html = self.handle_action()
-
-            if html:
-                self.write_html(html)
-                return
-
-            # now render the page
-            # we don't want clients caching our dynamic pages
-            self.additional_headers['Cache-Control'] = 'no-cache'
-# Pragma: no-cache makes Mozilla and its ilk double-load all pages!!
-#            self.additional_headers['Pragma'] = 'no-cache'
-
-            # pages with messages added expire right now
-            # simple views may be cached for a small amount of time
-            # TODO? make page expire time configurable
-            # <rj> always expire pages, as IE just doesn't seem to do the
-            # right thing here :(
-            date = time.time() - 1
-            #if self.error_message or self.ok_message:
-            #    date = time.time() - 1
-            #else:
-            #    date = time.time() + 5
-            self.additional_headers['Expires'] = rfc822.formatdate(date)
-
-            # render the content
             try:
+                # make sure we're identified (even anonymously)
+                self.determine_user()
+
+                # figure out the context and desired content template
+                self.determine_context()
+
+                # possibly handle a form submit action (may change self.classname
+                # and self.template, and may also append error/ok_messages)
+                html = self.handle_action()
+
+                if html:
+                    self.write_html(html)
+                    return
+
+                # now render the page
+                # we don't want clients caching our dynamic pages
+                self.additional_headers['Cache-Control'] = 'no-cache'
+                # Pragma: no-cache makes Mozilla and its ilk
+                # double-load all pages!!
+                #            self.additional_headers['Pragma'] = 'no-cache'
+
+                # pages with messages added expire right now
+                # simple views may be cached for a small amount of time
+                # TODO? make page expire time configurable
+                # <rj> always expire pages, as IE just doesn't seem to do the
+                # right thing here :(
+                date = time.time() - 1
+                #if self.error_message or self.ok_message:
+                #    date = time.time() - 1
+                #else:
+                #    date = time.time() + 5
+                self.additional_headers['Expires'] = rfc822.formatdate(date)
+
+                # render the content
                 self.write_html(self.renderContext())
+            except SendFile, designator:
+                # The call to serve_file may result in an Unauthorised
+                # exception or a NotModified exception.  Those
+                # exceptions will be handled by the outermost set of
+                # exception handlers.
+                self.serve_file(designator)
+            except SendStaticFile, file:
+                self.serve_static_file(str(file))
             except IOError:
                 # IOErrors here are due to the client disconnecting before
                 # recieving the reply.
@@ -481,20 +490,6 @@ class Client:
                 self.additional_headers['Location'] = str(url)
                 self.response_code = 302
             self.write_html('Redirecting to <a href="%s">%s</a>'%(url, url))
-        except SendFile, designator:
-            try:
-                self.serve_file(designator)
-            except NotModified:
-                # send the 304 response
-                self.response_code = 304
-                self.header()
-        except SendStaticFile, file:
-            try:
-                self.serve_static_file(str(file))
-            except NotModified:
-                # send the 304 response
-                self.response_code = 304
-                self.header()
         except Unauthorised, message:
             # users may always see the front page
             self.response_code = 403
@@ -502,6 +497,10 @@ class Client:
             self.template = ''
             self.error_message.append(message)
             self.write_html(self.renderContext())
+        except NotModified:
+            # send the 304 response
+            self.response_code = 304
+            self.header()
         except NotFound, e:
             self.response_code = 404
             self.template = '404'
