@@ -36,6 +36,7 @@ class TestCase(unittest.TestCase):
         self.server = RoundupInstance(self.db, self.instance.actions, None)
 
     def tearDown(self):
+        self.db.close()
         try:
             shutil.rmtree(self.dirname)
         except OSError, error:

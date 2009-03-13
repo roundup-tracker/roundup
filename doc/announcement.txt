@@ -1,9 +1,22 @@
-I'm proud to release version 1.4.6 of Roundup.
+I'm proud to release version 1.4.7 of Roundup.
 
-1.4.6 is a bugfix release:
+1.4.7 is primarily a bugfix release which contains important security
+fixes:
 
-- Fix bug introduced in 1.4.5 in RDBMS full-text indexing
-- Make URL matching code less matchy
+- a number of security issues were discovered by Daniel Diniz
+- EditCSV and ExportCSV altered to include permission checks
+- HTTP POST required on actions which alter data
+- HTML file uploads served as application/octet-stream
+- New item action reject creation of new users
+- Item retirement was not being controlled
+- Roundup is now compatible with Python 2.6
+- Improved French and German translations
+- Improve consistency of item sorting in HTML interface
+- Support sendfile() in mod_python for better file transfer
+- Provide a "no selection" option in web interface selection widgets
+- Debug logging now uses the logging module rather than print
+- Enable XML-RPC through regular web interface
+- Various other small bug fixes, robustification and optimisation
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.

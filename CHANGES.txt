@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2009-03-?? 1.4.7
+2009-03-13 1.4.7 (r4195)
 
 Fixes:
 - a number of security issues were discovered by Daniel Diniz

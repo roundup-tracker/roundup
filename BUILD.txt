@@ -9,7 +9,7 @@ to find out how to install this software.
 Building and distributing a release of Roundup is done by running:
 
 1.  Make sure the unit tests run! "./run_tests.py"
-2.  Tag the CVS for the release, eg. "cvs tag -R release-0-6-3"
+2.  XXX "tag" SVN??
 3.  Edit roundup/__init__.py and doc/announcement.txt to reflect the new
     version and appropriate announcements. Add truncated announcement to
     setup.py description field.
