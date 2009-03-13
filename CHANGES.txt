@@ -3,6 +3,14 @@ are given with the most recent entry first.
 
 2009-03-13 1.4.7 (r4197)
 
+Features:
+- Provide a "no selection" option in web interface selection widgets
+- Debug logging now uses the logging module rather than print
+- Allow CGI frontend to serve XMLRPC requests.
+- Added XMLRPC actions, as well as bridging CGI actions to XMLRPC actions.
+- Optimized large file serving via mod_python / sendfile().
+- Support resuming downloads for (large) files.
+
 Fixes:
 - a number of security issues were discovered by Daniel Diniz
 - EditCSV and ExportCSV altered to include permission checks
@@ -13,10 +21,6 @@ Fixes:
 - Roundup is now compatible with Python 2.6
 - Improved French and German translations
 - Improve consistency of item sorting in HTML interface
-- Support sendfile() in mod_python for better file transfer
-- Provide a "no selection" option in web interface selection widgets
-- Debug logging now uses the logging module rather than print
-- Enable XML-RPC through regular web interface
 - Various other small bug fixes, robustification and optimisation
 
 
