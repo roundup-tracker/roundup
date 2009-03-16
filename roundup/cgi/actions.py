@@ -1041,7 +1041,7 @@ class ExportCSVAction(Action):
             row = []
             for name in columns:
                 # check permission to view this property on this item
-                if exists and not self.hasPermission('View', itemid=itemid,
+                if not self.hasPermission('View', itemid=itemid,
                         classname=request.classname, property=name):
                     raise exceptions.Unauthorised, self._(
                         'You do not have permission to view %(class)s'

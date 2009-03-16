@@ -1,6 +1,12 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2009-03-?? 1.4.8
+
+Fixes:
+- bug introduced into CVS export and view
+
+
 2009-03-13 1.4.7 (r4202)
 
 Features:

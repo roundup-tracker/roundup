@@ -10,13 +10,15 @@
 #
 # $Id: test_cgi.py,v 1.36 2008-08-07 06:12:57 richard Exp $
 
-import unittest, os, shutil, errno, sys, difflib, cgi, re
+import unittest, os, shutil, errno, sys, difflib, cgi, re, StringIO
 
 from roundup.cgi import client, actions, exceptions
 from roundup.cgi.exceptions import FormError
 from roundup.cgi.templating import HTMLItem
 from roundup.cgi.form_parser import FormParser
 from roundup import init, instance, password, hyperdb, date
+
+from mocknull import MockNull
 
 import db_test_base
 
@@ -614,13 +616,13 @@ class FormTestCase(unittest.TestCase):
     # SECURITY
     #
     # XXX test all default permissions
-    def _make_client(self, form, classname='user', nodeid='2', userid='2'):
+    def _make_client(self, form, classname='user', nodeid='1', userid='2'):
         cl = client.Client(self.instance, None, {'PATH_INFO':'/',
             'REQUEST_METHOD':'POST'}, makeForm(form))
         cl.classname = 'user'
-        cl.nodeid = '1'
+        cl.nodeid = nodeid
         cl.db = self.db
-        cl.userid = '2'
+        cl.userid = userid
         cl.language = ('en',)
         return cl
 
@@ -645,6 +647,33 @@ class FormTestCase(unittest.TestCase):
         cl = self._make_client({'password':'bob', '@confirm@password':'bob'})
         self.failUnlessRaises(exceptions.Unauthorised,
             actions.EditItemAction(cl).handle)
+
+    def testCSVExport(self):
+        cl = self._make_client({'@columns': 'id,name'}, nodeid=None,
+            userid='1')
+        cl.classname = 'status'
+        output = StringIO.StringIO()
+        cl.request = MockNull()
+        cl.request.wfile = output
+        actions.ExportCSVAction(cl).handle()
+        self.assertEquals('id,name\r\n1,unread\r\n2,deferred\r\n3,chatting\r\n'
+            '4,need-eg\r\n5,in-progress\r\n6,testing\r\n7,done-cbb\r\n'
+            '8,resolved\r\n',
+            output.getvalue())
+
+    def testCSVExportFailPermission(self):
+        cl = self._make_client({'@columns': 'id,email,password'}, nodeid=None,
+            userid='2')
+        cl.classname = 'user'
+        output = StringIO.StringIO()
+        cl.request = MockNull()
+        cl.request.wfile = output
+        self.assertRaises(exceptions.Unauthorised,
+            actions.ExportCSVAction(cl).handle)
+
+
+def test_suite():
+    suite = unittest.TestSuite()
 
 def test_suite():
     suite = unittest.TestSuite()

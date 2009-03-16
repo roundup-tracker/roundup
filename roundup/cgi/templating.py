@@ -624,7 +624,6 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
                         classname=self._klass.classname, property=name):
                     raise Unauthorised('view', self._klass.classname,
                         translator=self._client.translator)
-                row.append(str(klass.get(itemid, name)))
                 value = self._klass.get(nodeid, name)
                 if value is None:
                     l.append('')
