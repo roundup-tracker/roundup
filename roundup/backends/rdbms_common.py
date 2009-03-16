@@ -2366,7 +2366,7 @@ class Class(hyperdb.Class):
         if search_matches is not None:
             s = ','.join([a for x in search_matches])
             where.append('_%s.id in (%s)'%(icn, s))
-            args = args + v
+            args = args + [x for x in search_matches]
 
         # construct the SQL
         frum.append('_'+icn)
