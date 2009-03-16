@@ -98,11 +98,10 @@ def main():
           version=__version__,
           author="Richard Jones",
           author_email="richard@users.sourceforge.net",
-        'description': "A simple-to-use and -install issue-tracking system"
+          description="A simple-to-use and -install issue-tracking system"
             " with command-line, web and e-mail interfaces. Highly"
             " customisable.",
-        'long_description':
-'''In this release
+          long_description='''In this release
 ===============
 
 1.4.7 is primarily a bugfix release which contains important security
