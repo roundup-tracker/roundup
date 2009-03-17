@@ -1131,7 +1131,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         # The context for a search page should be the class, not any
         # node.
         self._client.nodeid = None
-        
+
         # use our fabricated request
         return pt.render(self._client, req.classname, req)
 
@@ -1959,7 +1959,7 @@ class LinkHTMLProperty(HTMLProperty):
                 else:
                     fn = lambda optionid: linkcl.get(optionid, propname)
             additional_fns.append(fn)
-            
+
         for optionid in options:
             # get the option value, and if it's None use an empty string
             option = linkcl.get(optionid, k) or ''
@@ -2147,7 +2147,7 @@ class MultilinkHTMLProperty(HTMLProperty):
             for opt in linkcl.filter(None, conditions, sort_on)
             if self._db.security.hasPermission("View", self._client.userid,
                 linkcl.classname, itemid=opt)]
-        
+
         # make sure we list the current values if they're retired
         for val in value:
             if val not in options:
@@ -2180,7 +2180,7 @@ class MultilinkHTMLProperty(HTMLProperty):
                 else:
                     fn = lambda optionid: linkcl.get(optionid, propname)
             additional_fns.append(fn)
-            
+
         for optionid in options:
             # get the option value, and if it's None use an empty string
             option = linkcl.get(optionid, k) or ''
@@ -2399,13 +2399,21 @@ class HTMLRequest(HTMLInputMixin):
         for name in ':pagesize @pagesize'.split():
             if self.form.has_key(name):
                 self.special_char = name[0]
-                self.pagesize = int(self.form.getfirst(name))
+                try:
+                    self.pagesize = int(self.form.getfirst(name))
+                except ValueError:
+                    # not an integer - ignore
+                    pass
 
         self.startwith = 0
         for name in ':startwith @startwith'.split():
             if self.form.has_key(name):
                 self.special_char = name[0]
-                self.startwith = int(self.form.getfirst(name))
+                try:
+                    self.startwith = int(self.form.getfirst(name))
+                except ValueError:
+                    # not an integer - ignore
+                    pass
 
         # dispname
         if self.form.has_key('@dispname'):
