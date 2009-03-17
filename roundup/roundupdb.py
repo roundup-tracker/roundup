@@ -499,9 +499,9 @@ class IssueClass:
                 encode_quopri(message)
 
             if first:
-                mailer.smtp_send(sendto + bcc_sendto, message)
+                mailer.smtp_send(sendto + bcc_sendto, str(message))
             else:
-                mailer.smtp_send(sendto, message)
+                mailer.smtp_send(sendto, str(message))
             first = False
 
     def email_signature(self, nodeid, msgid):

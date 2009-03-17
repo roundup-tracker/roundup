@@ -5,6 +5,7 @@ are given with the most recent entry first.
 
 Fixes:
 - bug introduced into CVS export and view
+- bugs introduced in the migration to the email package (issue 2550531)
 
 
 2009-03-13 1.4.7 (r4202)

@@ -23,6 +23,7 @@ def encode_quopri(msg):
     orig = msg.get_payload()
     encdata = quopri.encodestring(orig)
     msg.set_payload(encdata)
+    del msg['Content-Transfer-Encoding']
     msg['Content-Transfer-Encoding'] = 'quoted-printable'
 
 class Mailer:
@@ -55,7 +56,7 @@ class Mailer:
         Subject and author are encoded using the EMAIL_CHARSET from the
         config (default UTF-8).
 
-        Returns a Message object and body part writer.
+        Returns a Message object.
         '''
         # encode header values if they need to be
         charset = getattr(self.config, 'EMAIL_CHARSET', 'utf-8')
@@ -70,8 +71,8 @@ class Mailer:
             message = MIMEMultipart()
         else:
             message = Message()
+            message.set_type('text/plain')
             message.set_charset(charset)
-            message['Content-Type'] = 'text/plain; charset="%s"'%charset
 
         try:
             message['Subject'] = subject.encode('ascii')
@@ -115,6 +116,7 @@ class Mailer:
         """
         message = self.get_standard_message(to, subject, author)
         message.set_payload(content)
+        encode_quopri(message)
         self.smtp_send(to, str(message))
 
     def bounce_message(self, bounced_message, to, error,
