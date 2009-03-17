@@ -7,6 +7,7 @@ Fixes:
 - bug introduced into CVS export and view
 - bugs introduced in the migration to the email package (issue 2550531)
 - handle bogus pagination values (issue 2550530)
+- fix TLS handling with some SMTP servers (issues 2484879 and 1912923)
 
 
 2009-03-13 1.4.7 (r4202)

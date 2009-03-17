@@ -214,6 +214,7 @@ class SMTPConnection(smtplib.SMTP):
 
         # start the TLS if requested
         if config["MAIL_TLS"]:
+            self.ehlo()
             self.starttls(config["MAIL_TLS_KEYFILE"],
                 config["MAIL_TLS_CERTFILE"])
 
