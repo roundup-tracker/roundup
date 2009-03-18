@@ -1,19 +1,16 @@
-I'm proud to release version 1.4.7 of Roundup.
+I'm proud to release version 1.4.8 of Roundup.
 
-1.4.7 is primarily a bugfix release which contains important security
-fixes:
+This release fixes some regressions:
 
-- a number of security issues were discovered by Daniel Diniz
-- EditCSV and ExportCSV altered to include permission checks
-- HTTP POST required on actions which alter data
-- HTML file uploads served as application/octet-stream
-- Handle Unauthorised in file serving correctly
-- New item action reject creation of new users
-- Item retirement was not being controlled
-- Roundup is now compatible with Python 2.6
-- Improved French and German translations
-- Improve consistency of item sorting in HTML interface
-- Various other small bug fixes, robustification and optimisation
+- bug introduced into hyperdb filter (issue 2550505)
+- bug introduced into CVS export and view (issue 2550529)
+- bugs introduced in the migration to the email package (issue 2550531)
+
+And adds a couple of other fixes:
+
+- handle bogus pagination values (issue 2550530)
+- fix TLS handling with some SMTP servers (issues 2484879 and 1912923)
+
 
 Though some new features made it in also:
 

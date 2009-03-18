@@ -1,10 +1,11 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2009-03-?? 1.4.8
+2009-03-18 1.4.8 (r4209)
 
 Fixes:
-- bug introduced into CVS export and view
+- bug introduced into hyperdb filter (issue 2550505)
+- bug introduced into CVS export and view (issue 2550529)
 - bugs introduced in the migration to the email package (issue 2550531)
 - handle bogus pagination values (issue 2550530)
 - fix TLS handling with some SMTP servers (issues 2484879 and 1912923)

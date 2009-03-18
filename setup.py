@@ -101,32 +101,17 @@ def main():
           description="A simple-to-use and -install issue-tracking system"
             " with command-line, web and e-mail interfaces. Highly"
             " customisable.",
-          long_description='''In this release
-===============
+          long_description='''
+1.4.8 fixes some regressions:
 
-1.4.7 is primarily a bugfix release which contains important security
-fixes:
+- bug introduced into hyperdb filter (issue 2550505)
+- bug introduced into CVS export and view (issue 2550529)
+- bugs introduced in the migration to the email package (issue 2550531)
 
-- a number of security issues were discovered by Daniel Diniz
-- EditCSV and ExportCSV altered to include permission checks
-- HTTP POST required on actions which alter data
-- HTML file uploads served as application/octet-stream
-- Handle Unauthorised in file serving correctly
-- New item action reject creation of new users
-- Item retirement was not being controlled
-- Roundup is now compatible with Python 2.6
-- Improved French and German translations
-- Improve consistency of item sorting in HTML interface
-- Various other small bug fixes, robustification and optimisation
+And adds a couple of other fixes:
 
-Though some new features made it in also:
-
-- Provide a "no selection" option in web interface selection widgets
-- Debug logging now uses the logging module rather than print
-- Allow CGI frontend to serve XMLRPC requests.
-- Added XMLRPC actions, as well as bridging CGI actions to XMLRPC actions.
-- Optimized large file serving via mod_python / sendfile().
-- Support resuming downloads for (large) files.
+- handle bogus pagination values (issue 2550530)
+- fix TLS handling with some SMTP servers (issues 2484879 and 1912923)
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
