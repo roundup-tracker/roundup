@@ -13,6 +13,56 @@ steps.
 
 .. contents::
 
+Migrating from 1.4.x to 1.4.9
+=============================
+
+Fix the "remove" button in issue files and messages lists
+---------------------------------------------------------
+
+The "remove" button(s) in the issue messages list needs to be altered. Find
+the following in your tracker's ``html/issue.item.html`` template::
+
+  <td>
+   <form style="padding:0" tal:condition="context/is_edit_ok"
+         tal:attributes="action string:issue${context/id}">
+    <input type="hidden" name="@remove@files" tal:attributes="value file/id">
+
+and add ``method="POST"`` as shown below::
+
+  <td>
+   <form style="padding:0" method="POST" tal:condition="context/is_edit_ok"
+         tal:attributes="action string:issue${context/id}">
+    <input type="hidden" name="@remove@files" tal:attributes="value file/id">
+
+Then also find::
+
+  <td>
+   <form style="padding:0" tal:condition="context/is_edit_ok"
+         tal:attributes="action string:issue${context/id}">
+    <input type="hidden" name="@remove@messages" tal:attributes="value msg/id">
+
+and add ``method="POST"`` as shown below::
+
+  <td>
+   <form style="padding:0" method="POST" tal:condition="context/is_edit_ok"
+         tal:attributes="action string:issue${context/id}">
+    <input type="hidden" name="@remove@messages" tal:attributes="value msg/id">
+
+
+Fixing the "retire" button in user management list
+--------------------------------------------------
+
+If you made the change to the "reture" link in the user management list as
+listed below in `Migrating from 1.4.x to 1.4.7`_ then you'll need to fix that
+change by adding ``method="POST"`` to the ``<form>`` tag::
+
+     <form style="padding:0" method="POST"
+           tal:attributes="action string:user${user/id}">
+      <input type="hidden" name="@template" value="index">
+      <input type="hidden" name="@action" value="retire">
+      <input type="submit" value="retire" i18n:attributes="value">
+     </form>
+
 
 Migrating from 1.4.x to 1.4.7
 =============================
@@ -53,7 +103,7 @@ The "retire" link found in the file ``html/users.index.html``::
 Should be replaced with::
 
   <td tal:condition="context/is_retire_ok">
-     <form style="padding:0"
+     <form style="padding:0" method="POST"
            tal:attributes="action string:user${user/id}">
       <input type="hidden" name="@template" value="index">
       <input type="hidden" name="@action" value="retire">
