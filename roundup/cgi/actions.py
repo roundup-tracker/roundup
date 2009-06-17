@@ -659,11 +659,6 @@ class NewItemAction(EditCommon):
                 % str(message))
             return
 
-        # guard against new user creation that would bypass security checks
-        for key in props:
-            if 'user' in key:
-                return
-
         # handle the props - edit or create
         try:
             # when it hits the None element, it'll set self.nodeid
