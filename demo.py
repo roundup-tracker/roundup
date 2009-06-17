@@ -49,12 +49,12 @@ def install_demo(home, backend, template):
     template_dir = os.path.join('share', 'roundup', 'templates', template)
     init.install(home, template_dir)
     # don't have email flying around
-    os.remove(os.path.join(home, 'detectors', 'nosyreaction.py'))
-    try:
-        os.remove(os.path.join(home, 'detectors', 'nosyreaction.pyc'))
-    except os.error, error:
-        if error.errno != errno.ENOENT:
-            raise
+    nosyreaction = os.path.join(home, 'detectors', 'nosyreaction.py')
+    if os.path.exists(nosyreaction):
+        os.remove(nosyreaction)
+    nosyreaction += 'c'
+    if os.path.exists(nosyreaction):
+        os.remove(nosyreaction)
     init.write_select_db(home, backend)
 
     # figure basic params for server
@@ -88,8 +88,13 @@ def install_demo(home, backend, template):
 
     # add the "demo" user
     db = tracker.open('admin')
-    db.user.create(username='demo', password=password.Password('demo'),
-        realname='Demo User', roles='User')
+    # FIXME: Move tracker-specific demo initialization into the tracker templates.
+    if (template == 'minimal'):
+        db.user.create(username='demo', password=password.Password('demo'),
+                       roles='User')
+    else:
+        db.user.create(username='demo', password=password.Password('demo'),
+                       realname='Demo User', roles='User')
     db.commit()
     db.close()
 
