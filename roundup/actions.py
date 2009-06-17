@@ -64,5 +64,5 @@ class Retire(Action):
         if not self.db.security.hasPermission('Edit', self.db.getuid(),
                                               classname=classname, itemid=itemid):
             raise Unauthorised(self._('You do not have permission to '
-                                      '%(action)s the %(classname)s class.')%info)
+                                      'retire the %(classname)s class.')%classname)
             
