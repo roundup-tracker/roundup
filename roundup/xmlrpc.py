@@ -90,6 +90,7 @@ class RoundupInstance:
         return dict(result)
 
     def create(self, classname, *args):
+        
         if not self.db.security.hasPermission('Create', self.db.getuid(), classname):
             raise Unauthorised('Permission to create %s denied'%classname)
 
@@ -102,6 +103,11 @@ class RoundupInstance:
         key = cl.getkey()
         if key and not props.has_key(key):
             raise UsageError, 'you must provide the "%s" property.'%key
+
+        for key in props:
+            if not self.db.security.hasPermission('Edit', self.db.getuid(), classname,
+                                                  property=key):
+                raise Unauthorised('Permission to create %s denied'%classname)
 
         # do the actual create
         try:
@@ -129,7 +135,7 @@ class RoundupInstance:
     builtin_actions = {'retire': actions.Retire}
 
     def action(self, name, *args):
-        """"""
+        """Execute a named action."""
         
         if name in self.actions:
             action_type = self.actions[name]
