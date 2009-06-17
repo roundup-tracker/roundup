@@ -2,7 +2,6 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 #
-# $Id: demo.py,v 1.26 2007-08-28 22:37:45 jpend Exp $
 
 import errno
 import os
@@ -10,6 +9,7 @@ import socket
 import sys
 import urlparse
 from glob import glob
+import getopt
 
 from roundup import configuration
 from roundup.scripts import roundup_server
@@ -23,9 +23,10 @@ def install_demo(home, backend, template):
         backend:
             database backend name
         template:
-            full path to the tracker template directory
+            tracker template
 
     """
+
     from roundup import init, instance, password, backends
 
     # set up the config for this tracker
@@ -45,7 +46,8 @@ def install_demo(home, backend, template):
     if module.db_exists(config):
         module.db_nuke(config)
 
-    init.install(home, template)
+    template_dir = os.path.join('share', 'roundup', 'templates', template)
+    init.install(home, template_dir)
     # don't have email flying around
     os.remove(os.path.join(home, 'detectors', 'nosyreaction.py'))
     try:
@@ -116,21 +118,59 @@ program.
     sys.argv = sys.argv[:1] + ['-p', str(port), 'demo=' + home]
     roundup_server.run(success_message=success_message)
 
-def demo_main():
+
+def usage(msg = ''):
+
+    if msg: print msg
+    print 'Usage: %s [options] [nuke]'%sys.argv[0]
+    print """
+Options:
+ -h                -- print this help message
+ -t template       -- specify the tracker template to use
+ -b backend        -- specify the database backend to use
+"""
+
+
+def main():
     """Run a demo server for users to play with for instant gratification.
 
     Sets up the web service on localhost. Disables nosy lists.
     """
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 't:b:h')
+    except getopt.GetoptError, e:
+        usage(str(e))
+        return 1
+
     home = os.path.abspath('demo')
-    if not os.path.exists(home) or (sys.argv[-1] == 'nuke'):
-        if len(sys.argv) > 2:
-            backend = sys.argv[-2]
-        else:
-            backend = 'anydbm'
-        install_demo(home, backend, os.path.join('share', 'roundup', 'templates', 'classic'))
+    nuke = args and args[0] == 'nuke'
+    if not os.path.exists(home) or nuke:
+        backend = 'anydbm'
+        template = 'classic'
+        for opt, arg in opts:
+            if opt == '-h':
+                usage()
+                return 0
+            elif opt == '-t':
+                template = arg
+            elif opt == '-b':
+                backend = arg
+        if (len(args) > 1 or
+            (len(args) == 1 and args[0] != 'nuke')):
+            usage()
+            return 1
+
+        install_demo(home, backend, template)
+    elif opts:
+        print "Error: Arguments are not allowed when running an existing demo."
+        print "       Use the 'nuke' command to start over."
+        sys.exit(1)
+
     run_demo(home)
 
+
 if __name__ == '__main__':
-    demo_main()
+    sys.exit(main())
 
 # vim: set filetype=python sts=4 sw=4 et si :
