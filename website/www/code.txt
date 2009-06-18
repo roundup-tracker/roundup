@@ -26,4 +26,4 @@ Read-write Access
 
 Developers may also make use of shared SSH keys for authentication::
 
-  svn co https://svn.roundup-tracker.org/svnroot/roundup/rountup/trunk roundup
+  svn co https://svn.roundup-tracker.org/svnroot/roundup/roundup/trunk roundup
