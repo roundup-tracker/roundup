@@ -59,6 +59,14 @@ class RoundupInstance:
         self.actions = actions
         self.translator = translator
 
+    def schema(self):
+        s = {}
+        for c in self.db.classes:
+            cls = self.db.classes[c]
+            props = [(n,repr(v)) for n,v in cls.properties.items()]
+            s[c] = props
+        return s
+
     def list(self, classname, propname=None):
         cl = self.db.getclass(classname)
         if not propname:
@@ -107,7 +115,7 @@ class RoundupInstance:
         for key in props:
             if not self.db.security.hasPermission('Edit', self.db.getuid(), classname,
                                                   property=key):
-                raise Unauthorised('Permission to create %s denied'%classname)
+                raise Unauthorised('Permission to set %s.%s denied'%(classname, key))
 
         # do the actual create
         try:
