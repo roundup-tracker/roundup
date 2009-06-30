@@ -1323,7 +1323,7 @@ class Client:
             # RFC 2616 14.13: Content-Length
             #
             # Tell the client how much data we are providing.
-            self.setHeader("Content-Length", length)
+            self.setHeader("Content-Length", str(length))
             # Send the HTTP header.
             self.header()
         # If the client doesn't actually want the body, or if we are
