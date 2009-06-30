@@ -47,6 +47,8 @@ user = Class(db, "user",
                 roles=String(),     # comma-separated string of Role names
                 timezone=String())
 user.setkey("username")
+db.security.addPermission(name='Register', klass='user',
+                          description='User is allowed to register new user')
 
 # FileClass automatically gets this property in addition to the Class ones:
 #   content = String()    [saved to disk in <tracker home>/db/files/]
@@ -154,7 +156,7 @@ db.security.addPermissionToRole('Anonymous', 'Web Access')
 # Assign the appropriate permissions to the anonymous user's Anonymous
 # Role. Choices here are:
 # - Allow anonymous users to register
-db.security.addPermissionToRole('Anonymous', 'Create', 'user')
+db.security.addPermissionToRole('Anonymous', 'Register', 'user')
 
 # Allow anonymous users access to view issues (and the related, linked
 # information)

@@ -820,7 +820,7 @@ class ConfRegoAction(RegoCommon):
 
 class RegisterAction(RegoCommon, EditCommon):
     name = 'register'
-    permissionType = 'Create'
+    permissionType = 'Register'
 
     def handle(self):
         """Attempt to create a new user based on the contents of the form

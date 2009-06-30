@@ -60,6 +60,6 @@ db.security.addPermissionToRole('Anonymous', 'Email Access')
 # Assign the appropriate permissions to the anonymous user's
 # Anonymous Role. Choices here are:
 # - Allow anonymous users to register
-db.security.addPermissionToRole('Anonymous', 'Create', 'user')
+db.security.addPermissionToRole('Anonymous', 'Register', 'user')
 
 # vim: set et sts=4 sw=4 :

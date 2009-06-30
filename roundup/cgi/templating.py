@@ -1268,7 +1268,9 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
             return self._db.security.hasPermission('Edit', self._client.userid,
                 self._classname, self._name, self._nodeid)
         return self._db.security.hasPermission('Create', self._client.userid,
-            self._classname, self._name)
+            self._classname, self._name) or \
+            self._db.security.hasPermission('Register', self._client.userid,
+                                            self._classname, self._name)
 
     def is_view_ok(self):
         """ Is the user allowed to View the current class?
