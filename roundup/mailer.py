@@ -1,7 +1,6 @@
 """Sending Roundup-specific mail over SMTP.
 """
 __docformat__ = 'restructuredtext'
-# $Id: mailer.py,v 1.22 2008-07-21 01:44:58 richard Exp $
 
 import time, quopri, os, socket, smtplib, re, sys, traceback, email
 
@@ -117,7 +116,7 @@ class Mailer:
         message = self.get_standard_message(to, subject, author)
         message.set_payload(content)
         encode_quopri(message)
-        self.smtp_send(to, str(message))
+        self.smtp_send(to, message.as_string())
 
     def bounce_message(self, bounced_message, to, error,
                        subject='Failed issue tracker submission'):
@@ -163,7 +162,7 @@ class Mailer:
 
         # send
         try:
-            self.smtp_send(to, str(message))
+            self.smtp_send(to, message.as_string())
         except MessageSendError:
             # squash mail sending errors when bouncing mail
             # TODO this *could* be better, as we could notify admin of the

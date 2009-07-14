@@ -16,7 +16,6 @@ from __future__ import nested_scopes
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.139 2008-08-07 06:31:16 richard Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -499,9 +498,9 @@ class IssueClass:
                 encode_quopri(message)
 
             if first:
-                mailer.smtp_send(sendto + bcc_sendto, str(message))
+                mailer.smtp_send(sendto + bcc_sendto, message.as_string())
             else:
-                mailer.smtp_send(sendto, str(message))
+                mailer.smtp_send(sendto, message.as_string())
             first = False
 
     def email_signature(self, nodeid, msgid):
