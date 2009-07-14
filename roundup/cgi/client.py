@@ -721,6 +721,10 @@ class Client:
             else:
                 self.db.close()
                 self.db = self.instance.open(username)
+                # The old session API refers to the closed database;
+                # we can no longer use it.
+                self.session_api = Session(self)
+ 
 
     def determine_context(self, dre=re.compile(r'([^\d]+)0*(\d+)')):
         """Determine the context of this page from the URL:
