@@ -524,9 +524,8 @@ class Message(mimetools.Message):
 
 class MailGW:
 
-    def __init__(self, instance, db, arguments=()):
+    def __init__(self, instance, arguments=()):
         self.instance = instance
-        self.db = db
         self.arguments = arguments
         self.default_class = None
         for option, value in self.arguments:
@@ -801,6 +800,21 @@ class MailGW:
         ''' message - a Message instance
 
         Parse the message as per the module docstring.
+        '''
+        # get database handle for handling one email
+        self.db = self.instance.open ('admin')
+        try:
+            return self._handle_message (message)
+        finally:
+            self.db.close()
+
+    def _handle_message(self, message):
+        ''' message - a Message instance
+
+        Parse the message as per the module docstring.
+
+        The implementation expects an opened database and a try/finally
+        that closes the database.
         '''
         # detect loops
         if message.getheader('x-roundup-loop', ''):

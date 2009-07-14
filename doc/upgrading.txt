@@ -16,6 +16,18 @@ steps.
 Migrating from 1.4.x to 1.4.9
 =============================
 
+Customized MailGW Class
+-----------------------
+
+If you have customized the MailGW class in your tracker: The new MailGW
+class opens the database for each message in the method handle_message
+(instance.open) instead of passing the opened database as a parameter to
+the MailGW constructor. The old handle_message has been renamed to
+_handle_message. The new method opens the database and wraps the call to
+the old method into a try/finally.
+
+Your customized MailGW class needs to mirror this behavior.
+
 Fix the "remove" button in issue files and messages lists
 ---------------------------------------------------------
 

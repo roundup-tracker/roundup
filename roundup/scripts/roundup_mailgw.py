@@ -138,73 +138,65 @@ def main(argv):
     import roundup.instance
     instance = roundup.instance.open(instance_home)
 
-    # get a mail handler
-    db = instance.open('admin')
+    if hasattr(instance, 'MailGW'):
+        handler = instance.MailGW(instance, optionsList)
+    else:
+        handler = mailgw.MailGW(instance, optionsList)
 
-    # now wrap in try/finally so we always close the database
+    # if there's no more arguments, read a single message from stdin
+    if len(args) == 1:
+        return handler.do_pipe()
+
+    # otherwise, figure what sort of mail source to handle
+    if len(args) < 3:
+        return usage(argv, _('Error: not enough source specification information'))
+    source, specification = args[1:3]
+
+    # time out net connections after a minute if we can
+    if source not in ('mailbox', 'imaps'):
+        if hasattr(socket, 'setdefaulttimeout'):
+            socket.setdefaulttimeout(60)
+
+    if source == 'mailbox':
+        return handler.do_mailbox(specification)
+
+    # the source will be a network server, so obtain the credentials to
+    # use in connecting to the server
     try:
-        if hasattr(instance, 'MailGW'):
-            handler = instance.MailGW(instance, db, optionsList)
+        # attempt to obtain credentials from a ~/.netrc file
+        authenticator = netrc.netrc().authenticators(specification)
+        username = authenticator[0]
+        password = authenticator[2]
+        server = specification
+        # IOError if no ~/.netrc file, TypeError if the hostname
+        # not found in the ~/.netrc file:
+    except (IOError, TypeError):
+        match = re.match(r'((?P<user>[^:]+)(:(?P<pass>.+))?@)?(?P<server>.+)',
+                         specification)
+        if match:
+            username = match.group('user')
+            password = match.group('pass')
+            server = match.group('server')
         else:
-            handler = mailgw.MailGW(instance, db, optionsList)
+            return usage(argv, _('Error: %s specification not valid') % source)
 
-        # if there's no more arguments, read a single message from stdin
-        if len(args) == 1:
-            return handler.do_pipe()
+    # now invoke the mailgw handler depending on the server handler requested
+    if source.startswith('pop'):
+        ssl = source.endswith('s')
+        if ssl and sys.version_info<(2,4):
+            return usage(argv, _('Error: a later version of python is required'))
+        return handler.do_pop(server, username, password, ssl)
+    elif source == 'apop':
+        return handler.do_apop(server, username, password)
+    elif source.startswith('imap'):
+        ssl = source.endswith('s')
+        mailbox = ''
+        if len(args) > 3:
+            mailbox = args[3]
+        return handler.do_imap(server, username, password, mailbox, ssl)
 
-        # otherwise, figure what sort of mail source to handle
-        if len(args) < 3:
-            return usage(argv, _('Error: not enough source specification information'))
-        source, specification = args[1:3]
-
-        # time out net connections after a minute if we can
-        if source not in ('mailbox', 'imaps'):
-            if hasattr(socket, 'setdefaulttimeout'):
-                socket.setdefaulttimeout(60)
-
-        if source == 'mailbox':
-            return handler.do_mailbox(specification)
-
-        # the source will be a network server, so obtain the credentials to
-        # use in connecting to the server
-        try:
-            # attempt to obtain credentials from a ~/.netrc file
-            authenticator = netrc.netrc().authenticators(specification)
-            username = authenticator[0]
-            password = authenticator[2]
-            server = specification
-            # IOError if no ~/.netrc file, TypeError if the hostname
-            # not found in the ~/.netrc file:
-        except (IOError, TypeError):
-            match = re.match(r'((?P<user>[^:]+)(:(?P<pass>.+))?@)?(?P<server>.+)',
-                             specification)
-            if match:
-                username = match.group('user')
-                password = match.group('pass')
-                server = match.group('server')
-            else:
-                return usage(argv, _('Error: %s specification not valid') % source)
-
-        # now invoke the mailgw handler depending on the server handler requested
-        if source.startswith('pop'):
-            ssl = source.endswith('s')
-            if ssl and sys.version_info<(2,4):
-                return usage(argv, _('Error: a later version of python is required'))
-            return handler.do_pop(server, username, password, ssl)
-        elif source == 'apop':
-            return handler.do_apop(server, username, password)
-        elif source.startswith('imap'):
-            ssl = source.endswith('s')
-            mailbox = ''
-            if len(args) > 3:
-                mailbox = args[3]
-            return handler.do_imap(server, username, password, mailbox, ssl)
-
-        return usage(argv, _('Error: The source must be either "mailbox",'
-            ' "pop", "pops", "apop", "imap" or "imaps"'))
-    finally:
-        # handler might have closed the initial db and opened a new one
-        handler.db.close()
+    return usage(argv, _('Error: The source must be either "mailbox",'
+        ' "pop", "pops", "apop", "imap" or "imaps"'))
 
 def run():
     sys.exit(main(sys.argv))
