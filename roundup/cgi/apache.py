@@ -10,21 +10,10 @@
 # This module operates with only one tracker
 # and must be placed in the tracker directory.
 #
-# History (most recent first):
-# 11-jul-2004 [als] added 'TrackerLanguage' option;
-#                   pass message translator to the tracker client instance
-# 04-jul-2004 [als] tracker lookup moved from module global to request handler;
-#                   use PythonOption TrackerHome (configured in apache)
-#                   to open the tracker
-# 06-may-2004 [als] use cgi.FieldStorage from Python library
-#                   instead of mod_python FieldStorage
-# 29-apr-2004 [als] created
-
-__version__ = "$Revision: 1.6 $"[11:-2]
-__date__ = "$Date: 2006-11-09 00:36:21 $"[7:-2]
 
 import cgi
 import os
+import threading
 
 from mod_python import apache
 
@@ -83,6 +72,15 @@ class Request(object):
 
         return self._req.sendfile(filename, offset, len)
 
+__tracker_cache = {}
+"""A cache of optimized tracker instances.
+ 
+The keys are strings giving the directories containing the trackers.
+The values are tracker instances."""
+
+__tracker_cache_lock = threading.Lock()
+"""A lock used to guard access to the cache."""
+
 
 def handler(req):
     """HTTP request handler"""
@@ -94,12 +92,31 @@ def handler(req):
         _timing = ""
     _debug = _options.get("TrackerDebug", "no")
     _debug = _debug.lower() not in ("no", "false")
-    if not (_home and os.path.isdir(_home)):
-        apache.log_error(
-            "PythonOption TrackerHome missing or invalid for %(uri)s"
-            % {'uri': req.uri})
-        return apache.HTTP_INTERNAL_SERVER_ERROR
-    _tracker = roundup.instance.open(_home, not _debug)
+
+    # We do not need to take a lock here (the fast path) because reads
+    # from dictionaries are atomic.
+    if not _debug and _home in __tracker_cache:
+        _tracker = __tracker_cache[_home]
+    else:
+        if not (_home and os.path.isdir(_home)):
+            apache.log_error(
+                "PythonOption TrackerHome missing or invalid for %(uri)s"
+                % {'uri': req.uri})
+            return apache.HTTP_INTERNAL_SERVER_ERROR
+        if _debug:
+            _tracker = roundup.instance.open(_home, optimize=0)
+        else:
+            __tracker_cache_lock.acquire()
+            try:
+                # The tracker may have been added while we were acquiring
+                # the lock.
+                if _home in __tracker_cache:
+                    _tracker = __tracker_cache[home]
+                else:
+                    _tracker = roundup.instance.open(_home, optimize=1)
+                    __tracker_cache[_home] = _tracker
+            finally:
+                __tracker_cache_lock.release()
     # create environment
     # Note: cookies are read from HTTP variables, so we need all HTTP vars
     req.add_common_vars()
