@@ -51,6 +51,7 @@ class DiffHelper:
         if not new == old:
             res = []
 
+            replace = {}
             for key in new.keys():
                 if key.startswith('from '):
                     # skip the unix from line
@@ -60,11 +61,18 @@ class DiffHelper:
                     if new[key] != __version__:
                         res.append('  %s: %r != %r' % (key, __version__,
                             new[key]))
+                elif key.lower() == 'content-type' and 'boundary=' in new[key]:
+                    # handle mime messages
+                    newmime = new[key].split('=',1)[-1].strip('"')
+                    oldmime = old.get(key, '').split('=',1)[-1].strip('"')
+                    replace ['--' + newmime] = '--' + oldmime
+                    replace ['--' + newmime + '--'] = '--' + oldmime + '--'
                 elif new.get(key, '') != old.get(key, ''):
                     res.append('  %s: %r != %r' % (key, old.get(key, ''),
                         new.get(key, '')))
 
-            body_diff = self.compareStrings(new.fp.read(), old.fp.read())
+            body_diff = self.compareStrings(new.fp.read(), old.fp.read(),
+                replace=replace)
             if body_diff:
                 res.append('')
                 res.extend(body_diff)
@@ -73,13 +81,14 @@ class DiffHelper:
                 res.insert(0, 'Generated message not correct (diff follows):')
                 raise AssertionError, '\n'.join(res)
 
-    def compareStrings(self, s2, s1):
+    def compareStrings(self, s2, s1, replace={}):
         '''Note the reversal of s2 and s1 - difflib.SequenceMatcher wants
            the first to be the "original" but in the calls in this file,
            the second arg is the original. Ho hum.
+           Do replacements over the replace dict -- used for mime boundary
         '''
         l1 = s1.strip().split('\n')
-        l2 = s2.strip().split('\n')
+        l2 = [replace.get(i,i) for i in s2.strip().split('\n')]
         if l1 == l2:
             return
         s = difflib.SequenceMatcher(None, l1, l2)
@@ -1104,6 +1113,66 @@ This is a test submission of a new issue.
         new = list(m - l)[0]
         name = self.db.user.get(new, 'realname')
         self.assertEquals(name, 'H€llo')
+
+    def testUnknownUser(self):
+        l = set(self.db.user.list())
+        message = '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Nonexisting User <nonexisting@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id>
+Subject: [issue] Testing nonexisting user...
+
+This is a test submission of a new issue.
+'''
+        self.db.close()
+        handler = self.instance.MailGW(self.instance)
+        # we want a bounce message:
+        handler.trapExceptions = 1
+        ret = handler.main(StringIO(message))
+        self.compareMessages(self._get_mail(),
+'''FROM: Roundup issue tracker <roundup-admin@your.tracker.email.domain.example>
+TO: nonexisting@bork.bork.bork
+From nobody Tue Jul 14 12:04:11 2009
+Content-Type: multipart/mixed; boundary="===============0639262320=="
+MIME-Version: 1.0
+Subject: Failed issue tracker submission
+To: nonexisting@bork.bork.bork
+From: Roundup issue tracker <roundup-admin@your.tracker.email.domain.example>
+Date: Tue, 14 Jul 2009 12:04:11 +0000
+Precedence: bulk
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+X-Roundup-Version: 1.4.8
+MIME-Version: 1.0
+
+--===============0639262320==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+
+
+
+You are not a registered user.
+
+Unknown address: nonexisting@bork.bork.bork
+
+--===============0639262320==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Nonexisting User <nonexisting@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id>
+Subject: [issue] Testing nonexisting user...
+
+This is a test submission of a new issue.
+
+--===============0639262320==--
+''')
 
     def testEnc01(self):
         self.doNewIssue()

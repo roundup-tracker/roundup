@@ -140,24 +140,25 @@ class Mailer:
         elif error_messages_to == "both":
             to.append(dispatcher_email)
 
-        message = self.get_standard_message(to, subject)
+        message = self.get_standard_message(to, subject, multipart=True)
 
         # add the error text
-        part = MIMEText(error)
+        part = MIMEText('\n'.join(error))
         message.attach(part)
 
         # attach the original message to the returned message
+        body = []
+        for header in bounced_message.headers:
+            body.append(header)
         try:
             bounced_message.rewindbody()
-        except IOError, message:
-            body.write("*** couldn't include message body: %s ***"
-                       % bounced_message)
+        except IOError, errmessage:
+            body.append("*** couldn't include message body: %s ***" %
+                errmessage)
         else:
-            body.write(bounced_message.fp.read())
-        part = MIMEText(bounced_message.fp.read())
-        part['Content-Disposition'] = 'attachment'
-        for header in bounced_message.headers:
-            part.write(header)
+            body.append('\n')
+            body.append(bounced_message.fp.read())
+        part = MIMEText(''.join(body))
         message.attach(part)
 
         # send

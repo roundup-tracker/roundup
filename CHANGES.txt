@@ -10,6 +10,8 @@ Fixes:
 - fix problems with french and german locale files (issue 2550546)
 - Run each message of the mail-gateway in a separate transaction,
   see http://thread.gmane.org/gmane.comp.bug-tracking.roundup.user/9500
+- fix problem with bounce-message if incoming mail has insufficient
+  privilege, e.g., user not existing (issue 2550534)
 
 
 2009-03-18 1.4.8 (r4209)
