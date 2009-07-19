@@ -120,6 +120,7 @@ class RoundupInstance:
         # do the actual create
         try:
             result = cl.create(**props)
+            self.db.commit()
         except (TypeError, IndexError, ValueError), message:
             raise UsageError, message
         return result
@@ -135,9 +136,11 @@ class RoundupInstance:
                 raise Unauthorised('Permission to edit %s of %s denied'%
                                    (p, designator))
         try:
-            return cl.set(itemid, **props)
+            result = cl.set(itemid, **props)
+            self.db.commit()
         except (TypeError, IndexError, ValueError), message:
             raise UsageError, message
+        return result
 
 
     builtin_actions = {'retire': actions.Retire}

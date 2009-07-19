@@ -387,7 +387,6 @@ class Client:
                                            self.translator,
                                            allow_none=True)
         output = handler.dispatch(input)
-        self.db.commit()
 
         self.setHeader("Content-Type", "text/xml")
         self.setHeader("Content-Length", str(len(output)))
