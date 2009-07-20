@@ -372,7 +372,7 @@ class IssueClass:
         charset = getattr(self.db.config, 'EMAIL_CHARSET', 'utf-8')
 
         # construct the content and convert to unicode object
-        content = unicode('\n'.join(m), 'utf-8').encode(charset)
+        body = unicode('\n'.join(m), 'utf-8').encode(charset)
 
         # make sure the To line is always the same (for testing mostly)
         sendto.sort()
@@ -459,7 +459,7 @@ class IssueClass:
             # attach files
             if message_files:
                 # first up the text as a part
-                part = MIMEText(content)
+                part = MIMEText(body)
                 encode_quopri(part)
                 message.attach(part)
 
@@ -494,7 +494,7 @@ class IssueClass:
                     message.attach(part)
 
             else:
-                message.set_payload(content)
+                message.set_payload(body)
                 encode_quopri(message)
 
             if first:

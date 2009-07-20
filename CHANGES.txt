@@ -12,6 +12,8 @@ Fixes:
   see http://thread.gmane.org/gmane.comp.bug-tracking.roundup.user/9500
 - fix problem with bounce-message if incoming mail has insufficient
   privilege, e.g., user not existing (issue 2550534)
+- fix construction of individual messages to nosy recipents with
+  attachments (issue 2550568)
 
 
 2009-03-18 1.4.8 (r4209)
