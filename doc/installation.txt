@@ -30,8 +30,8 @@ Roundup scripts
 Prerequisites
 =============
 
-Roundup requires Python 2.3 or newer with a functioning anydbm
-module. Download the latest version from http://www.python.org/.
+Roundup requires Python 2.3 or newer (but not Python 3) with a functioning
+anydbm module. Download the latest version from http://www.python.org/.
 It is highly recommended that users install the latest patch version
 of python as these contain many fixes to serious bugs.
 

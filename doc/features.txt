@@ -12,7 +12,7 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
  - two templates included in the distribution for you to base your tracker on
  - play with the demo, customise it and then use *it* as the template for
    your production tracker
- - requires *no* additional support software - python (2.3+) is
+ - requires *no* additional support software - python (2.3+ but not 3+) is
    enough to get you going
  - easy to set up higher-performance storage backends like sqlite_,
    mysql_ and postgresql_

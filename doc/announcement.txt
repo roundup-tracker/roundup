@@ -24,7 +24,7 @@ Though some new features made it in also:
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
 
-Roundup requires python 2.3 or later for correct operation.
+Roundup requires python 2.3 or later (but not 3+) for correct operation.
 
 To give Roundup a try, just download (see below), unpack and run::
 
@@ -58,9 +58,9 @@ Roundup manages a number of issues (with flexible properties such as
 The system will facilitate communication among the participants by managing
 discussions and notifying interested parties when issues are edited. One of
 the major design goals for Roundup that it be simple to get going. Roundup
-is therefore usable "out of the box" with any python 2.3+ installation. It
-doesn't even need to be "installed" to be operational, though a
-disutils-based install script is provided.
+is therefore usable "out of the box" with any python 2.3+ (but not 3+)
+installation. It doesn't even need to be "installed" to be operational,
+though an install script is provided.
 
 It comes with two issue tracker templates (a classic bug/feature tracker and
 a minimal skeleton) and four database back-ends (anydbm, sqlite, mysql
