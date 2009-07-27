@@ -14,6 +14,8 @@ Fixes:
   privilege, e.g., user not existing (issue 2550534)
 - fix construction of individual messages to nosy recipents with
   attachments (issue 2550568)
+- re-order sqlite imports to handle multiple installed versions (issue
+  2550570)
 
 
 2009-03-18 1.4.8 (r4209)

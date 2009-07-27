@@ -14,8 +14,8 @@ from roundup import hyperdb, date, password
 from roundup.backends import rdbms_common
 sqlite_version = None
 try:
-    import sqlite
-    sqlite_version = 1
+    import sqlite3 as sqlite
+    sqlite_version = 3
 except ImportError:
     try:
         from pysqlite2 import dbapi2 as sqlite
@@ -24,8 +24,8 @@ except ImportError:
                 '- %s found'%sqlite.version)
         sqlite_version = 2
     except ImportError:
-        import sqlite3 as sqlite
-        sqlite_version = 3
+        import sqlite
+        sqlite_version = 1
 
 def db_exists(config):
     return os.path.exists(os.path.join(config.DATABASE, 'db'))
