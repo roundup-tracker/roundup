@@ -5,11 +5,11 @@ substitutions = [ (re.compile('debian:\#(?P<id>\d+)'),
                   (re.compile('\#(?P<ws>\s*)(?P<id>\d+)'),
                    "<a href='issue\g<id>'>#\g<ws>\g<id></a>" ),
                   (re.compile('(?P<prews>\s+)revision(?P<ws>\s*)(?P<revision>\d+)'),
-                   "\g<prews><a href='http://svn.roundup-tracker.org/view?rev=\g<revision>&view=rev'>revision\g<ws>\g<revision></a>"),
+                   "\g<prews><a href='http://svn.roundup-tracker.org/viewvc/roundup?view=rev&rev=\g<revision>'>revision\g<ws>\g<revision></a>"),
                   (re.compile('(?P<prews>\s+)rev(?P<ws>\s*)(?P<revision>\d+)'),
-                   "\g<prews><a href='http://svn.roundup-tracker.org/view?rev=\g<revision>&view=rev'>rev\g<ws>\g<revision></a>"),
+                   "\g<prews><a href='http://svn.roundup-tracker.org/viewvc/roundup?view=rev&rev=\g<revision>'>rev\g<ws>\g<revision></a>"),
                   (re.compile('(?P<prews>\s+)(?P<revstr>r|r\s+)(?P<revision>\d+)'),
-                   "\g<prews><a href='http://svn.roundup-tracker.org/view?rev=\g<revision>&view=rev'>\g<revstr>\g<revision></a>"),
+                   "\g<prews><a href='http://svn.roundup-tracker.org/viewvc/roundup?view=rev&rev=\g<revision>'>\g<revstr>\g<revision></a>"),
                   ]
 
 def local_replace(message):
