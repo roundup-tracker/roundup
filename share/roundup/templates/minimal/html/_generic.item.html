@@ -9,18 +9,18 @@
 
 <td class="content" metal:fill-slot="content">
 
-<span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok()
- or request.user.hasRole('Anonymous'))"
- tal:omit-tag="python:1" i18n:translate=""
->You are not allowed to view this page.</span>
+<p tal:condition="python:not (context.is_view_ok()
+ or request.user.hasRole('Anonymous'))" i18n:translate="">
+ You are not allowed to view this page.</p>
 
-<span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())
- and request.user.hasRole('Anonymous')"
- tal:omit-tag="python:1" i18n:translate=""
->Please login with your username and password.</span>
+<p tal:condition="python:not context.is_view_ok()
+ and request.user.hasRole('Anonymous')" i18n:translate="">
+ Please login with your username and password.</p>
+
+<div tal:condition="context/is_view_ok">
 
 <form method="POST" onSubmit="return submit_once()"
-      enctype="multipart/form-data" tal:condition="context/is_edit_ok"
+      enctype="multipart/form-data" tal:condition="context/is_view_ok"
       tal:attributes="action context/designator">
 
 <input type="hidden" name="@template" value="item">
@@ -44,21 +44,14 @@
 
 </form>
 
-<table class="form" tal:condition="context/is_only_view_ok">
+<tal:block tal:condition="context/id"
+    tal:define="limit python:[10, None][request.form.has_key('show_all_history')]"
+    tal:replace="structure python:context.history(limit=limit)" />
+<p tal:condition="not:exists:request/form/show_all_history" i18n:translate="">Showing 10 items.
+<a tal:attributes="href string:${context/_classname}${context/id}?show_all_history=yes">Show all history</a>
+(warning: this could be VERY long)</p>
 
-<tr tal:repeat="prop python:db[context._classname].properties()">
- <tal:block tal:condition="python:prop._name not in ('id', 'creator',
-                                  'creation', 'activity')">
-  <th tal:content="prop/_name"></th>
-  <td tal:content="structure python:context[prop._name].field()"></td>
- </tal:block>
-</tr>
-</table>
-
-
-<tal:block tal:condition="python:context.id and context.is_view_ok()">
- <tal:block tal:replace="structure context/history" />
-</tal:block>
+</div>
 
 </td>
 

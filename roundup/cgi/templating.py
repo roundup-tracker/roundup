@@ -880,7 +880,8 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         # XXX do this
         return []
 
-    def history(self, direction='descending', dre=re.compile('^\d+$')):
+    def history(self, direction='descending', dre=re.compile('^\d+$'),
+            limit=None):
         if not self.is_view_ok():
             return self._('[hidden]')
 
@@ -911,6 +912,10 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         history = self._klass.history(self._nodeid)
         history.sort()
         history.reverse()
+
+        # restrict the volume
+        if limit:
+            history = history[:limit]
 
         timezone = self._db.getUserTimezone()
         l = []

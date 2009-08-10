@@ -44,7 +44,12 @@
 
 </form>
 
-<tal:block tal:condition="context/id" tal:replace="structure context/history" />
+<tal:block tal:condition="context/id"
+    tal:define="limit python:[10, None][request.form.has_key('show_all_history')]"
+    tal:replace="structure python:context.history(limit=limit)" />
+<p tal:condition="not:exists:request/form/show_all_history" i18n:translate="">Showing 10 items.
+<a tal:attributes="href string:${context/_classname}${context/id}?show_all_history=yes">Show all history</a>
+(warning: this could be VERY long)</p>
 
 </div>
 
