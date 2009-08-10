@@ -69,8 +69,7 @@ class Mailer:
         if multipart:
             message = MIMEMultipart()
         else:
-            message = Message()
-            message.set_type('text/plain')
+            message = MIMEText("")
             message.set_charset(charset)
 
         try:
@@ -97,8 +96,6 @@ class Mailer:
         message['X-Roundup-Loop'] = 'hello'
         # finally, an aid to debugging problems
         message['X-Roundup-Version'] = __version__
-
-        message['MIME-Version'] = '1.0'
 
         return message
 
