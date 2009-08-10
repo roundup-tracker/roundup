@@ -101,17 +101,22 @@ def main():
           description="A simple-to-use and -install issue-tracking system"
             " with command-line, web and e-mail interfaces. Highly"
             " customisable.",
-          long_description='''
-1.4.8 fixes some regressions:
+          long_description='''This version of Roundup fixes some bugs:
 
-- bug introduced into hyperdb filter (issue 2550505)
-- bug introduced into CVS export and view (issue 2550529)
-- bugs introduced in the migration to the email package (issue 2550531)
-
-And adds a couple of other fixes:
-
-- handle bogus pagination values (issue 2550530)
-- fix TLS handling with some SMTP servers (issues 2484879 and 1912923)
+- fixed action taken in response to invalid GET request
+- fixed classic tracker template to submit POST requests when appropriate
+- fix problems with french and german locale files (issue 2550546)
+- Run each message of the mail-gateway in a separate transaction,
+  see http://thread.gmane.org/gmane.comp.bug-tracking.roundup.user/9500
+- fix problem with bounce-message if incoming mail has insufficient
+  privilege, e.g., user not existing (issue 2550534)
+- fix construction of individual messages to nosy recipents with
+  attachments (issue 2550568)
+- re-order sqlite imports to handle multiple installed versions (issue
+  2550570)
+- don't show entire history by default
+  (fixes http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=540629)
+- remove use of string exception
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.

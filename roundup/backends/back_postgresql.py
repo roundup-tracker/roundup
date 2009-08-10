@@ -9,7 +9,7 @@
 '''Postgresql backend via psycopg for Roundup.'''
 __docformat__ = 'restructuredtext'
 
-import os, shutil, popen2, time
+import os, shutil, time
 try:
     import psycopg
     from psycopg import QuotedString
