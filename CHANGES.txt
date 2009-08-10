@@ -16,6 +16,8 @@ Fixes:
   attachments (issue 2550568)
 - re-order sqlite imports to handle multiple installed versions (issue
   2550570)
+- don't show entire history by default
+  (fixes http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=540629)
 
 
 2009-03-18 1.4.8 (r4209)
