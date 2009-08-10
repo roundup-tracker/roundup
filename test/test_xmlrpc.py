@@ -98,18 +98,20 @@ class TestCase(unittest.TestCase):
     def testAuthAllowedEdit(self):
         self.db.setCurrentUser('admin')
         try:
-            self.server.set('user2', 'realname=someone')
-        except Unauthorised, err:
-            self.fail('raised %s'%err)
+            try:
+                self.server.set('user2', 'realname=someone')
+            except Unauthorised, err:
+                self.fail('raised %s'%err)
         finally:
             self.db.setCurrentUser('joe')
 
     def testAuthAllowedCreate(self):
         self.db.setCurrentUser('admin')
         try:
-            self.server.create('user', 'username=blah')
-        except Unauthorised, err:
-            self.fail('raised %s'%err)
+            try:
+                self.server.create('user', 'username=blah')
+            except Unauthorised, err:
+                self.fail('raised %s'%err)
         finally:
             self.db.setCurrentUser('joe')
 
