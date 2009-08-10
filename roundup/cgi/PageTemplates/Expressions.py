@@ -53,7 +53,8 @@ guarded_getattr = getattr
 try:
     from zExceptions import Unauthorized
 except ImportError:
-    Unauthorized = "Unauthorized"
+    class Unauthorized(Exception):
+        pass
 
 def acquisition_security_filter(orig, inst, name, v, real_validate):
     if real_validate(orig, inst, name, v):
