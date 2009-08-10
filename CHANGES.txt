@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2009-08-10 1.4.9 (r4340)
+2009-08-10 1.4.9 (r4344)
 
 Fixes:
 

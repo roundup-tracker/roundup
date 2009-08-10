@@ -109,10 +109,10 @@ class Database(rdbms_common.Database):
             conn = sqlite.connect(db, timeout=30)
             conn.row_factory = sqlite.Row
 
-        # sqlite3 wants us to store Unicode in the db but that's not what's
-        # been done historically and it's definitely not what the other
-        # backends do, so we'll stick with UTF-8
-        if sqlite_version == 3:
+        # pysqlite2 / sqlite3 want us to store Unicode in the db but
+        # that's not what's been done historically and it's definitely
+        # not what the other backends do, so we'll stick with UTF-8
+        if sqlite_version in (2, 3):
             conn.text_factory = str
 
         cursor = conn.cursor()
