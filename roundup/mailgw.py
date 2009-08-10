@@ -79,7 +79,7 @@ __docformat__ = 'restructuredtext'
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
 import time, random, sys, logging
-import traceback, MimeWriter, rfc822
+import traceback, rfc822
 
 from email.Header import decode_header
 
