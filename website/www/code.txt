@@ -24,6 +24,9 @@ The development branch can be checked out via::
 Read-write Access
 -----------------
 
-Developers may also make use of shared SSH keys for authentication::
+When attempting to write, you will be prompted for your SourceForge.net 
+username and password. (See `SF's site documentation on svn authorisation <http://sourceforge.net/apps/trac/sourceforge/wiki/Subversion#Authentication>`_)
+Of course a roundup developer must have granted
+you write access first - ask for it on the roundup-devel list.
 
   svn co https://svn.roundup-tracker.org/svnroot/roundup/roundup/trunk roundup
