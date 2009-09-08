@@ -1,6 +1,13 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2009-xx-xx 1.4.X
+
+Fixes:
+
+- fixed typos in the installation instructions (thanks Thomas Arendsen Hein)
+  (issue 2550573) 
+
 2009-08-10 1.4.9 (r4346)
 
 Fixes:

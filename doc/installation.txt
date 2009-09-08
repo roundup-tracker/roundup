@@ -441,14 +441,14 @@ Example for FreeBSD (``envvars`` is in ``/usr/local/sbin/``)::
   export LD_PRELOAD
 
 Next, you have to add Roundup trackers configuration to apache config.
-Roundup apache interface uses two options specified with ``PythonOption``
-directives:
+Roundup apache interface uses the following options specified with
+``PythonOption`` directives:
 
   TrackerHome:
     defines the tracker home directory - the directory that was specified
     when you did ``roundup-admin init``.  This option is required.
 
-  TrackerLaguage:
+  TrackerLanguage:
     defines web user interface language.  mod_python applications do not
     receive OS environment variables in the same way as command-line
     programs, so the language cannot be selected by setting commonly
@@ -482,7 +482,7 @@ russian user interface.  The other tracker (devel) has english user
 interface (default).
 
 Static files from ``html`` directory are served by apache itself - this
-is quickier and generally more robust than doing that from python.
+is quicker and generally more robust than doing that from python.
 Everything else is aliased to dummy (non-existing) ``py`` file,
 which is handled by mod_python and our roundup module.
 
