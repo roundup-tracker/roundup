@@ -4,7 +4,8 @@ are given with the most recent entry first.
 2009-xx-xx 1.4.X
 
 Fixes:
-
+- Indexers behaviour made more consistent regarding length of indexed words
+  and stopwords (thanks Thomas Arendsen Hein, Bernhard Reiter)(issue 2550584)
 - fixed typos in the installation instructions (thanks Thomas Arendsen Hein)
   (issue 2550573) 
 

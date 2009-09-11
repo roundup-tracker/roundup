@@ -22,6 +22,10 @@ class Indexer:
         self.stopwords = set(STOPWORDS)
         for word in db.config[('main', 'indexer_stopwords')]:
             self.stopwords.add(word)
+        # Do not index anything longer than 25 characters since that'll be
+        # gibberish (encoded text or somesuch) or shorter than 2 characters
+        self.minlength = 2
+        self.maxlength = 25
 
     def is_stopword(self, word):
         return word in self.stopwords

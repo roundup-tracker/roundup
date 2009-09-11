@@ -66,11 +66,11 @@ class Indexer(IndexerBase):
         # ok, find all the unique words in the text
         text = unicode(text, "utf-8", "replace").upper()
         wordlist = [w.encode("utf-8")
-            for w in re.findall(r'(?u)\b\w{2,25}\b', text)]
+            for w in re.findall(r'(?u)\b\w{%d,%d}\b'
+                                % (self.minlength, self.maxlength), text)]
         words = set()
         for word in wordlist:
             if self.is_stopword(word): continue
-            if len(word) > 25: continue
             words.add(word)
 
         # for each word, add an entry in the db
@@ -86,7 +86,9 @@ class Indexer(IndexerBase):
         if not wordlist:
             return []
 
-        l = [word.upper() for word in wordlist if 26 > len(word) > 2]
+        l = [word.upper() for word in wordlist
+             if self.minlength <= len(word) <= self.maxlength]
+        l = [word for word in l if not self.is_stopword(word)]
 
         if not l:
             return []

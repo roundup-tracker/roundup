@@ -88,7 +88,9 @@ class Indexer(IndexerBase):
         doc.set_data(identifier)
         doc.add_posting(identifier, 0)
 
-        for match in re.finditer(r'\b\w{2,25}\b', text.upper()):
+        for match in re.finditer(r'\b\w{%d,%d}\b'
+                                 % (self.minlength, self.maxlength),
+                                 text.upper()):
             word = match.group(0)
             if self.is_stopword(word):
                 continue
@@ -112,8 +114,10 @@ class Indexer(IndexerBase):
         enquire = xapian.Enquire(database)
         stemmer = xapian.Stem("english")
         terms = []
-        for term in [word.upper() for word in wordlist if 26 > len(word) > 2]:
-            terms.append(stemmer(term.upper()))
+        for term in [word.upper() for word in wordlist
+                          if self.minlength <= len(word) <= self.maxlength]:
+            if not self.is_stopword(term):
+                terms.append(stemmer(term))
         query = xapian.Query(xapian.Query.OP_AND, terms)
 
         enquire.set_query(query)

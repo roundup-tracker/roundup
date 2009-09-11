@@ -135,14 +135,12 @@ class Indexer(IndexerBase):
         # case insensitive
         text = str(text).upper()
 
-        # Split the raw text, losing anything longer than 25 characters
-        # since that'll be gibberish (encoded text or somesuch) or shorter
-        # than 3 characters since those short words appear all over the
-        # place
-        return re.findall(r'\b\w{2,25}\b', text)
+        # Split the raw text
+        return re.findall(r'\b\w{%d,%d}\b' % (self.minlength, self.maxlength),
+                          text)
 
-    # we override this to ignore not 2 < word < 25 and also to fix a bug -
-    # the (fail) case.
+    # we override this to ignore too short and too long words
+    # and also to fix a bug - the (fail) case.
     def find(self, wordlist):
         '''Locate files that match ALL the words in wordlist
         '''
@@ -152,10 +150,12 @@ class Indexer(IndexerBase):
         entries = {}
         hits = None
         for word in wordlist:
-            if not 2 < len(word) < 25:
+            if not self.minlength <= len(word) <= self.maxlength:
                 # word outside the bounds of what we index - ignore
                 continue
             word = word.upper()
+            if self.is_stopword(word):
+                continue
             entry = self.words.get(word)    # For each word, get index
             entries[word] = entry           #   of matching files
             if not entry:                   # Nothing for this one word (fail)
