@@ -82,6 +82,48 @@ class IndexerTest(unittest.TestCase):
         self.dex.add_text(('test', '1', 'foo'), '')
         self.assertSeqEqual(self.dex.find(['world']), [('test', '2', 'foo')])
 
+    def test_stopwords(self):
+        """Test that we can find a text with a stopword in it."""
+        stopword = "with"
+        self.assert_(self.dex.is_stopword(stopword.upper()))
+        self.dex.add_text(('test', '1', 'bar'), '%s hello world' % stopword)
+        self.dex.add_text(('test', '2', 'bar'), 'blah a %s world' % stopword)
+        self.dex.add_text(('test', '3', 'bar'), 'blah Blub river')
+        self.dex.add_text(('test', '4', 'bar'), 'blah river %s' % stopword)
+        self.assertSeqEqual(self.dex.find(['with','world']),
+                                                    [('test', '1', 'bar'),
+                                                     ('test', '2', 'bar')])
+    def test_extremewords(self):
+        """Testing too short or too long words."""
+        short = "b"
+        long = "abcdefghijklmnopqrstuvwxyz"
+        self.dex.add_text(('test', '1', 'a'), '%s hello world' % short)
+        self.dex.add_text(('test', '2', 'a'), 'blah a %s world' % short)
+        self.dex.add_text(('test', '3', 'a'), 'blah Blub river')
+        self.dex.add_text(('test', '4', 'a'), 'blah river %s %s'
+                                                        % (short, long))
+        self.assertSeqEqual(self.dex.find([short,'world', long, short]),
+                                                    [('test', '1', 'a'),
+                                                     ('test', '2', 'a')])
+        self.assertSeqEqual(self.dex.find([long]),[])
+
+        # special test because some faulty code indexed length(word)>=2
+        # but only considered length(word)>=3 to be significant
+        self.dex.add_text(('test', '5', 'a'), 'blah py %s %s'
+                                                        % (short, long))
+        self.assertSeqEqual(self.dex.find(["py"]), [('test', '5', 'a')])
+
+    def test_casesensitity(self):
+        """Test if searches are case-in-sensitive."""
+        self.dex.add_text(('test', '1', 'a'), 'aaaa bbbb')
+        self.dex.add_text(('test', '2', 'a'), 'aAaa BBBB')
+        self.assertSeqEqual(self.dex.find(['aaaa']),
+                                                    [('test', '1', 'a'),
+                                                     ('test', '2', 'a')])
+        self.assertSeqEqual(self.dex.find(['BBBB']),
+                                                    [('test', '1', 'a'),
+                                                     ('test', '2', 'a')])
+
     def tearDown(self):
         shutil.rmtree('test-index')
 
