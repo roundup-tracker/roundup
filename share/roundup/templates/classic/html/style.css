@@ -50,14 +50,6 @@ td.page-header-top {
   padding: 5px;
   border-bottom: 1px solid #444;
 }
-#searchbox {
-    float: right;
-}
-
-div#body-title {
-  float: left;
-}
-
 
 div#searchbox {
   float: right;

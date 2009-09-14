@@ -4,6 +4,8 @@ are given with the most recent entry first.
 2009-xx-xx 1.4.X
 
 Fixes:
+- Small CSS improvements regaring the search box (thanks Thomas Arendsan Hein)
+  (issue 2550589)
 - Indexers behaviour made more consistent regarding length of indexed words
   and stopwords (thanks Thomas Arendsen Hein, Bernhard Reiter)(issue 2550584)
 - fixed typos in the installation instructions (thanks Thomas Arendsen Hein)
@@ -12,7 +14,6 @@ Fixes:
 2009-08-10 1.4.9 (r4346)
 
 Fixes:
-
 - fixed action taken in response to invalid GET request
 - fixed classic tracker template to submit POST requests when appropriate
 - fix problems with french and german locale files (issue 2550546)

@@ -28,9 +28,6 @@ status_notresolved string:-1,1,2,3,4,5,6,7;
 <tr>
  <td class="page-header-left">&nbsp;</td>
  <td class="page-header-top">
-   <div id="body-title">
-     <h2><span metal:define-slot="body_title">body title</span></h2>
-   </div>
    <div id="searchbox">
      <form method="GET" action="issue">
        <input type="hidden" name="@columns"
@@ -43,7 +40,10 @@ status_notresolved string:-1,1,2,3,4,5,6,7;
        <input type="submit" id="submit" name="submit" value="Search"
               i18n:attributes="value" />
      </form>
-  </div>
+   </div>
+   <div id="body-title">
+     <h2><span metal:define-slot="body_title">body title</span></h2>
+   </div>
  </td>
 </tr>
 
