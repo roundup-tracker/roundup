@@ -4,6 +4,8 @@ are given with the most recent entry first.
 2009-xx-xx 1.4.X
 
 Fixes:
+- Minor update of doc/developers.txt to point to the new resources
+  on www.roundup-tracker.org (Bernhard Reiter)
 - Small CSS improvements regaring the search box (thanks Thomas Arendsan Hein)
   (issue 2550589)
 - Indexers behaviour made more consistent regarding length of indexed words
