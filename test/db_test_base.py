@@ -1613,6 +1613,18 @@ class DBTest(MyTestCase):
 
 # XXX add sorting tests for other types
 
+    # nuke and re-create db for restore
+    def nukeAndCreate(self):
+        # shut down this db and nuke it
+        self.db.close()
+        self.nuke_database()
+
+        # open a new, empty database
+        os.makedirs(config.DATABASE + '/files')
+        self.db = self.module.Database(config, 'admin')
+        setupSchema(self.db, 0, self.module)
+
+
     def testImportExport(self):
         # use the filtering setup to create a bunch of items
         ae, filt = self.filteringSetup()
@@ -1660,14 +1672,7 @@ class DBTest(MyTestCase):
                         klass.export_files('_test_export', id)
                 journals[cn] = klass.export_journals()
 
-            # shut down this db and nuke it
-            self.db.close()
-            self.nuke_database()
-
-            # open a new, empty database
-            os.makedirs(config.DATABASE + '/files')
-            self.db = self.module.Database(config, 'admin')
-            setupSchema(self.db, 0, self.module)
+            self.nukeAndCreate()
 
             # import
             for cn, items in export.items():
@@ -1729,6 +1734,58 @@ class DBTest(MyTestCase):
         maxid = max([int(id) for id in self.db.user.list()])
         newid = self.db.user.create(username='testing')
         assert newid > maxid
+
+    # test import/export via admin interface
+    def testAdminImportExport(self):
+        import roundup.admin
+        import csv
+        # use the filtering setup to create a bunch of items
+        ae, filt = self.filteringSetup()
+        # create large field
+        self.db.priority.create(name = 'X' * 500)
+        self.db.config.CSV_FIELD_SIZE = 400
+        self.db.commit()
+        output = []
+        # ugly hack to get stderr output and disable stdout output
+        # during regression test. Depends on roundup.admin not using
+        # anything but stdout/stderr from sys (which is currently the
+        # case)
+        def stderrwrite(s):
+            output.append(s)
+        roundup.admin.sys = MockNull ()
+        try:
+            roundup.admin.sys.stderr.write = stderrwrite
+            tool = roundup.admin.AdminTool()
+            home = '.'
+            tool.tracker_home = home
+            tool.db = self.db
+            tool.verbose = False
+            tool.do_export (['_test_export'])
+            self.assertEqual(len(output), 2)
+            self.assertEqual(output [1], '\n')
+            self.failUnless(output [0].startswith
+                ('Warning: config csv_field_size should be at least'))
+            self.failUnless(int(output[0].split()[-1]) > 500)
+
+            if hasattr(roundup.admin.csv, 'field_size_limit'):
+                self.nukeAndCreate()
+                self.db.config.CSV_FIELD_SIZE = 400
+                tool = roundup.admin.AdminTool()
+                tool.tracker_home = home
+                tool.db = self.db
+                tool.verbose = False
+                self.assertRaises(csv.Error, tool.do_import, ['_test_export'])
+
+            self.nukeAndCreate()
+            self.db.config.CSV_FIELD_SIZE = 3200
+            tool = roundup.admin.AdminTool()
+            tool.tracker_home = home
+            tool.db = self.db
+            tool.verbose = False
+            tool.do_import(['_test_export'])
+        finally:
+            roundup.admin.sys = sys
+            shutil.rmtree('_test_export')
 
     def testAddProperty(self):
         self.db.issue.create(title="spam", status='1')

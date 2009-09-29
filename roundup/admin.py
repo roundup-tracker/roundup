@@ -1099,6 +1099,9 @@ Erase it? Y/N: """))
         if not os.path.exists(dir):
             os.makedirs(dir)
 
+        # maximum csv field length exceeding configured size?
+        max_len = self.db.config.CSV_FIELD_SIZE
+
         # do all the classes specified
         for classname in classes:
             cl = self.get_class(classname)
@@ -1121,7 +1124,18 @@ Erase it? Y/N: """))
                 if self.verbose:
                     sys.stdout.write('\rExporting %s - %s'%(classname, nodeid))
                     sys.stdout.flush()
-                writer.writerow(cl.export_list(propnames, nodeid))
+                node = cl.getnode(nodeid)
+                exp = cl.export_list(propnames, nodeid)
+                lensum = sum (len (repr(node[p])) for p in propnames)
+                # for a safe upper bound of field length we add
+                # difference between CSV len and sum of all field lengths
+                d = sum (len(x) for x in exp) - lensum
+                assert (d > 0)
+                for p in propnames:
+                    ll = len(repr(node[p])) + d
+                    if ll > max_len:
+                        max_len = ll
+                writer.writerow(exp)
                 if export_files and hasattr(cl, 'export_files'):
                     cl.export_files(dir, nodeid)
 
@@ -1136,6 +1150,9 @@ Erase it? Y/N: """))
             journals = csv.writer(jf, colon_separated)
             map(journals.writerow, cl.export_journals())
             jf.close()
+        if max_len > self.db.config.CSV_FIELD_SIZE:
+            print >> sys.stderr, \
+                "Warning: config csv_field_size should be at least %s"%max_len
         return 0
 
     def do_exporttables(self, args):
@@ -1177,6 +1194,9 @@ Erase it? Y/N: """))
             raise UsageError, _('Not enough arguments supplied')
         from roundup import hyperdb
 
+        if hasattr (csv, 'field_size_limit'):
+            csv.field_size_limit(self.db.config.CSV_FIELD_SIZE)
+
         # directory to import from
         dir = args[0]
 
@@ -1212,7 +1232,7 @@ Erase it? Y/N: """))
                 if hasattr(cl, 'import_files'):
                     cl.import_files(dir, nodeid)
                 maxid = max(maxid, int(nodeid))
-            print
+            print >> sys.stdout
             f.close()
 
             # import the journals
@@ -1222,7 +1242,7 @@ Erase it? Y/N: """))
             f.close()
 
             # set the id counter
-            print 'setting', classname, maxid+1
+            print >> sys.stdout, 'setting', classname, maxid+1
             self.db.setid(classname, str(maxid+1))
 
         self.db_uncommitted = True

@@ -12,6 +12,11 @@ Fixes:
   and stopwords (thanks Thomas Arendsen Hein, Bernhard Reiter)(issue 2550584)
 - fixed typos in the installation instructions (thanks Thomas Arendsen Hein)
   (issue 2550573) 
+- New config option csv_field_size: Pythons csv module (which is used
+  for export/import) has a new field size limit starting with python2.5.
+  We now issue a warning during export if the limit is too small and use
+  the csv_field_size configuration during import to set the limit for
+  the csv module.
 
 2009-08-10 1.4.9 (r4346)
 

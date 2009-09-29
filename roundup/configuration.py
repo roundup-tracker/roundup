@@ -530,6 +530,13 @@ SETTINGS = (
             "stop-words (eg. A,AND,ARE,AS,AT,BE,BUT,BY, ...)"),
         (OctalNumberOption, "umask", "02",
             "Defines the file creation mode mask."),
+        (IntegerNumberOption, 'csv_field_size', '131072',
+            "Maximum size of a csv-field during import. Roundups export\n"
+            "format is a csv (comma separated values) variant. The csv\n"
+            "reader has a limit on the size of individual fields\n"
+            "starting with python 2.5. Set this to a higher value if you\n"
+            "get the error 'Error: field larger than field limit' during\n"
+            "import."),
     )),
     ("tracker", (
         (Option, "name", "Roundup issue tracker",
