@@ -20,6 +20,7 @@ Fixes:
 - Small fix for CGI-handling of XMLRPC requests for python2.4, this
   worked only for 2.5 and beyond due to a change in the xmlrpc interface
   in python
+- Document filter method of xmlrpc interface
 
 2009-08-10 1.4.9 (r4346)
 

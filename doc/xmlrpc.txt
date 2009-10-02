@@ -64,6 +64,13 @@ set     arguments: *designator, arg_1 ... arg_N*
         Set the values of an existing item in the tracker as specified by
         ``designator``. The new values are specified in ``arg_1`` through
         ``arg_N``. The arguments are name=value pairs (e.g. ``status='3'``).
+
+filter  arguments: *classname, list or None, attributes*
+        
+        list can be None (requires ``allow_none=True`` when
+        instantiating the ServerProxy) to indicate search for all values,
+        or a list of ids. The attributes are given as a dictionary of
+        name value pairs to search for.
 ======= ====================================================================
 
 sample python client
@@ -71,7 +78,7 @@ sample python client
 ::
 
         >>> import xmlrpclib
-        >>> roundup_server = xmlrpclib.ServerProxy('http://username:password@localhost:8000')
+        >>> roundup_server = xmlrpclib.ServerProxy('http://username:password@localhost:8000', allow_none=True)
         >>> roundup_server.list('user')
         ['admin', 'anonymous', 'demo']
         >>> roundup_server.list('issue', 'id')
@@ -85,4 +92,11 @@ sample python client
         {'status' : '3' }
         >>> roundup_server.create('issue', "title='another bug'", "status=2")
         '2'
-
+        >>> roundup_server.filter('user',None,{'username':'adm'})
+        ['1']
+        >>> roundup_server.filter('user',['1','2'],{'username':'adm'})
+        ['1']
+        >>> roundup_server.filter('user',['2'],{'username':'adm'})
+        []
+        >>> roundup_server.filter('user',[],{'username':'adm'})
+        []
