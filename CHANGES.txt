@@ -17,6 +17,9 @@ Fixes:
   We now issue a warning during export if the limit is too small and use
   the csv_field_size configuration during import to set the limit for
   the csv module.
+- Small fix for CGI-handling of XMLRPC requests for python2.4, this
+  worked only for 2.5 and beyond due to a change in the xmlrpc interface
+  in python
 
 2009-08-10 1.4.9 (r4346)
 
