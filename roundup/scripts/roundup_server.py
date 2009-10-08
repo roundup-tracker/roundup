@@ -29,6 +29,8 @@ try:
 except ImportError:
     SSL = None
 
+from time import sleep
+
 # python version check
 from roundup import configuration, version_check
 from roundup import __version__ as roundup_version
@@ -127,8 +129,17 @@ class SecureHTTPServer(BaseHTTPServer.HTTPServer):
                         try:
                             line = self.__fileobj.readline(*args)
                         except SSL.WantReadError:
+                            sleep (.1)
                             line = None
                     return line
+
+                def read(self, *args):
+                    """ SSL.Connection can return WantRead """
+                    while True:
+                        try:
+                            return self.__fileobj.read(*args)
+                        except SSL.WantReadError:
+                            sleep (.1)
 
                 def __getattr__(self, attrib):
                     return getattr(self.__fileobj, attrib)
