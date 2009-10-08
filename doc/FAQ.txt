@@ -96,8 +96,18 @@ following should be useful as a starting template::
 How do I run Roundup through SSL (HTTPS)?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You should proxy through apache and use its SSL service. See the previous
-question on how to proxy through apache.
+The preferred way of using SSL is to proxy through apache and use its
+SSL service. See the previous question on how to proxy through apache.
+
+The standalone roundup-server now also has SSL support which is still
+considered experimental. For details refer to the documentation of
+roundup server, in particular to the generated configuration file
+generated with ::
+
+    roundup-server --save-config
+
+that describes the needed option in detail. With the standalone server
+now XMLRPC over SSL works, too.
 
 
 Roundup runs very slowly on my XP machine when accessed from the Internet
@@ -107,7 +117,7 @@ The issue is probably related to host name resolution for the client
 performing the request. You can turn off the resolution of the names
 when it's so slow like this. To do so, edit the module
 roundup/scripts/roundup_server.py around line 77 to add the following
-to the RoundupRequestHandler class:
+to the RoundupRequestHandler class::
 
      def address_string(self):
          return self.client_address[0]
@@ -133,7 +143,8 @@ Page Templates".
 But I just want a select/option list for ....
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Really easy... edit ``html/issue.item``. For 'nosy', change line 53 from::
+Really easy... edit ``html/issue.item.html``. For ``nosy``, change the line
+(around line 69) from::
 
   <span tal:replace="structure context/nosy/field" />
 
@@ -141,11 +152,7 @@ to::
 
   <span tal:replace="structure context/nosy/menu" />
 
-For 'assigned to', change line 61 from::
-
-  <td tal:content="structure context/assignedto/field">assignedto menu</td>
-
-to::
+For ``assigned to``, this is already done around line 77::
 
   <td tal:content="structure context/assignedto/menu">assignedto menu</td>
 
@@ -156,7 +163,7 @@ Great! But now the select/option list is too big
 
 Thats a little harder (but only a little ;^)
 
-Again, edit ``html/issue.item``. For nosy, change line 53 from:
+Again, edit ``html/issue.item``. For nosy, change line (around line 69) from::
 
   <span tal:replace="structure context/nosy/field" />
 
