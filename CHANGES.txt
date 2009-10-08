@@ -21,6 +21,7 @@ Fixes:
   worked only for 2.5 and beyond due to a change in the xmlrpc interface
   in python
 - Document filter method of xmlrpc interface
+- Fix interaction of SSL and XMLRPC, now XMLRPC works with SSL
 
 2009-08-10 1.4.9 (r4346)
 
