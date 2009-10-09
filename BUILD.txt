@@ -12,23 +12,24 @@ Building and distributing a release of Roundup is done by running:
 2.  Edit roundup/__init__.py and doc/announcement.txt to reflect the new
     version and appropriate announcements. Add truncated announcement to
     setup.py description field.
-3.  Clean out all *.orig, *.rej, .#* files from the source.
-4.  python setup.py clean --all
-5.  Edit setup.py to ensure that all information therein (version, contact
+3.  Note the SVN revision in the CHANGES.txt file.
+4.  Clean out all *.orig, *.rej, .#* files from the source.
+5.  python setup.py clean --all
+6.  Edit setup.py to ensure that all information therein (version, contact
     information etc) is correct.
-6.  python setup.py sdist --manifest-only
-7.  Check the MANIFEST to make sure that any new files are included. If
+7.  python setup.py sdist --manifest-only
+8.  Check the MANIFEST to make sure that any new files are included. If
     they are not, edit MANIFEST.in to include them. "Documentation" for
     MANIFEST.in may be found in disutils.filelist._parse_template_line.
-8.  python setup.py sdist
+9.  python setup.py sdist
     (if you find sdist a little verbose, add "--quiet" to the end of the
      command)
-9.  Unpack the new dist file in /tmp then a) run_test.py and b) demo.py
+10. Unpack the new dist file in /tmp then a) run_test.py and b) demo.py
     with all available Python versions.
-10. Generate gpg signature with "gpg -a --detach-sign"
-11. python setup.py bdist_rpm
-12. python setup.py bdist_wininst
-13. Send doc/announcement.txt to python-announce@python.org
+11. Generate gpg signature with "gpg -a --detach-sign"
+12. python setup.py bdist_rpm
+13. python setup.py bdist_wininst
+14. Send doc/announcement.txt to python-announce@python.org
 
 So, those commands in a nice, cut'n'pasteable form::
 
