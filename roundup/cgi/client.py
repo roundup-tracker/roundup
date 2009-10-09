@@ -838,7 +838,12 @@ class Client:
             raise NotFound, str(designator)
         classname, nodeid = m.group(1), m.group(2)
 
-        klass = self.db.getclass(classname)
+        try:
+            klass = self.db.getclass(classname)
+        except KeyError:
+            # The classname was not valid.
+            raise NotFound, str(designator)
+            
 
         # make sure we have the appropriate properties
         props = klass.getprops()
