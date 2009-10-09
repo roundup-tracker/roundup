@@ -31,7 +31,7 @@ _modules = {
     'mysql': ('MySQLdb',),
     'postgresql': ('psycopg',),
     'tsearch2': ('psycopg',),
-    'sqlite': ('pysqlite', 'pysqlite2', 'sqlite3', '_sqlite3'),
+    'sqlite': ('pysqlite', 'pysqlite2', 'sqlite3', '_sqlite3', 'sqlite'),
 }
 
 def get_backend(name):

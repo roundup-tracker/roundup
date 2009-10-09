@@ -1126,10 +1126,10 @@ Erase it? Y/N: """))
                     sys.stdout.flush()
                 node = cl.getnode(nodeid)
                 exp = cl.export_list(propnames, nodeid)
-                lensum = sum (len (repr(node[p])) for p in propnames)
+                lensum = sum ([len (repr(node[p])) for p in propnames])
                 # for a safe upper bound of field length we add
                 # difference between CSV len and sum of all field lengths
-                d = sum (len(x) for x in exp) - lensum
+                d = sum ([len(x) for x in exp]) - lensum
                 assert (d > 0)
                 for p in propnames:
                     ll = len(repr(node[p])) + d

@@ -39,7 +39,7 @@ if not ((sha or md5) and hashlib):
 class TestCase_anypy_hashlib(unittest.TestCase):
     """test the hashlib compatibility layer"""
 
-    testdata = (
+    data_for_test = (
            ('',
             'da39a3ee5e6b4b0d3255bfef95601890afd80709',
             'd41d8cd98f00b204e9800998ecf8427e'),
@@ -58,12 +58,12 @@ class TestCase_anypy_hashlib(unittest.TestCase):
     # the following two are always excecuted: 
     def test_sha1_expected_anypy(self):
         """...anypy.hashlib_.sha1().hexdigest() yields expected results"""
-        for src, SHA, MD5 in self.testdata:
+        for src, SHA, MD5 in self.data_for_test:
             self.assertEqual(roundup.anypy.hashlib_.sha1(src).hexdigest(), SHA)
 
     def test_md5_expected_anypy(self):
         """...anypy.hashlib_.md5().hexdigest() yields expected results"""
-        for src, SHA, MD5 in self.testdata:
+        for src, SHA, MD5 in self.data_for_test:
             self.assertEqual(roundup.anypy.hashlib_.md5(src).hexdigest(), MD5)
 
     # execution depending on availability of modules: 
@@ -73,14 +73,14 @@ class TestCase_anypy_hashlib(unittest.TestCase):
             if md5.md5 is hashlib.md5:
                 return
             else:
-                for s, i1, i2 in self.testdata:
+                for s, i1, i2 in self.data_for_test:
                     self.assertEqual(md5.md5(s).digest(),
                                      hashlib.md5().digest())
 
     if md5:
         def test_md5_expected(self):
             """md5.md5().hexdigest() yields expected results"""
-            for src, SHA, MD5 in self.testdata:
+            for src, SHA, MD5 in self.data_for_test:
                 self.assertEqual(md5.md5(src).hexdigest(), MD5)
 
         def test_md5_new_expected(self):
@@ -88,7 +88,7 @@ class TestCase_anypy_hashlib(unittest.TestCase):
             if md5.new is md5.md5:
                 return
             else:
-                for src, SHA, MD5 in self.testdata:
+                for src, SHA, MD5 in self.data_for_test:
                     self.assertEqual(md5.new(src).hexdigest(), MD5)
 
     if sha and hashlib:
@@ -97,14 +97,14 @@ class TestCase_anypy_hashlib(unittest.TestCase):
             if sha.sha is hashlib.sha1:
                 return
             else:
-                for s in self.testdata:
+                for s in self.data_for_test:
                     self.assertEqual(sha.sha(s).digest(),
                                      hashlib.sha1().digest())
 
     if sha:
         def test_sha_expected(self):
             """sha.sha().hexdigest() yields expected results"""
-            for src, SHA, MD5 in self.testdata:
+            for src, SHA, MD5 in self.data_for_test:
                 self.assertEqual(sha.sha(src).hexdigest(), SHA)
 
         # fails for me with Python 2.3; unittest module bug?
@@ -113,18 +113,18 @@ class TestCase_anypy_hashlib(unittest.TestCase):
             if sha.new is sha.sha:
                 return
             else:
-                for src, SHA, MD5 in self.testdata:
+                for src, SHA, MD5 in self.data_for_test:
                     self.assertEqual(sha.new(src).hexdigest(), SHA)
 
     if hashlib:
         def test_sha1_expected_hashlib(self):
             """hashlib.sha1().hexdigest() yields expected results"""
-            for src, SHA, MD5 in self.testdata:
+            for src, SHA, MD5 in self.data_for_test:
                 self.assertEqual(hashlib.sha1(src).hexdigest(), SHA)
 
         def test_md5_expected_hashlib(self):
             """hashlib.md5().hexdigest() yields expected results"""
-            for src, SHA, MD5 in self.testdata:
+            for src, SHA, MD5 in self.data_for_test:
                 self.assertEqual(hashlib.md5(src).hexdigest(), MD5)
 
 def test_suite():
