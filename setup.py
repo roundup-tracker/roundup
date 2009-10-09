@@ -103,20 +103,24 @@ def main():
             " customisable.",
           long_description='''This version of Roundup fixes some bugs:
 
-- fixed action taken in response to invalid GET request
-- fixed classic tracker template to submit POST requests when appropriate
-- fix problems with french and german locale files (issue 2550546)
-- Run each message of the mail-gateway in a separate transaction,
-  see http://thread.gmane.org/gmane.comp.bug-tracking.roundup.user/9500
-- fix problem with bounce-message if incoming mail has insufficient
-  privilege, e.g., user not existing (issue 2550534)
-- fix construction of individual messages to nosy recipents with
-  attachments (issue 2550568)
-- re-order sqlite imports to handle multiple installed versions (issue
-  2550570)
-- don't show entire history by default
-  (fixes http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=540629)
-- remove use of string exception
+- Minor update of doc/developers.txt to point to the new resources
+  on www.roundup-tracker.org (Bernhard Reiter)
+- Small CSS improvements regaring the search box (thanks Thomas Arendsan Hein)
+  (issue 2550589)
+- Indexers behaviour made more consistent regarding length of indexed words
+  and stopwords (thanks Thomas Arendsen Hein, Bernhard Reiter)(issue 2550584)
+- fixed typos in the installation instructions (thanks Thomas Arendsen Hein)
+  (issue 2550573) 
+- New config option csv_field_size: Pythons csv module (which is used
+  for export/import) has a new field size limit starting with python2.5.
+  We now issue a warning during export if the limit is too small and use
+  the csv_field_size configuration during import to set the limit for
+  the csv module.
+- Small fix for CGI-handling of XMLRPC requests for python2.4, this
+  worked only for 2.5 and beyond due to a change in the xmlrpc interface
+  in python
+- Document filter method of xmlrpc interface
+- Fix interaction of SSL and XMLRPC, now XMLRPC works with SSL
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.

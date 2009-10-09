@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2009-xx-xx 1.4.X
+2009-10-09 1.4.10 (r4374)
 
 Fixes:
 - Minor update of doc/developers.txt to point to the new resources
