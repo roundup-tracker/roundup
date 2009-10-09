@@ -183,12 +183,28 @@ class Templates:
             return self.templates[src]
 
         # compile the template
-        self.templates[src] = pt = RoundupPageTemplate()
+        pt = RoundupPageTemplate()
         # use pt_edit so we can pass the content_type guess too
         content_type = mimetypes.guess_type(filename)[0] or 'text/html'
         pt.pt_edit(open(src).read(), content_type)
         pt.id = filename
         pt.mtime = stime
+        # Add it to the cache.  We cannot do this until the template
+        # is fully initialized, as we could otherwise have a race
+        # condition when running with multiple threads:
+        #
+        # 1. Thread A notices the template is not in the cache,
+        #    adds it, but has not yet set "mtime".
+        #
+        # 2. Thread B notices the template is in the cache, checks
+        #    "mtime" (above) and crashes.
+        #
+        # Since Python dictionary access is atomic, as long as we
+        # insert "pt" only after it is fully initialized, we avoid
+        # this race condition.  It's possible that two separate
+        # threads will both do the work of initializing the template,
+        # but the risk of wasted work is offset by avoiding a lock.
+        self.templates[src] = pt
         return pt
 
     def __getitem__(self, name):
