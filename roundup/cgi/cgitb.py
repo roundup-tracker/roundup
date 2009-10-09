@@ -37,7 +37,10 @@ def breaker():
 
 def niceDict(indent, dict):
     l = []
-    for k,v in dict.items():
+    keys = dict.keys()
+    keys.sort()
+    for k in keys:
+        v = dict[k]
         l.append('<tr><td><strong>%s</strong></td><td>%s</td></tr>'%(k,
             cgi.escape(repr(v))))
     return '\n'.join(l)

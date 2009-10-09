@@ -515,11 +515,22 @@ class Client:
             self.error_message.append(self._('Form Error: ') + str(e))
             self.write_html(self.renderContext())
         except:
-            if self.instance.config.WEB_DEBUG:
-                self.write_html(cgitb.html(i18n=self.translator))
+            # Something has gone badly wrong.  Therefore, we should
+            # make sure that the response code indicates failure.
+            if self.response_code == httplib.OK:
+                self.response_code = httplib.INTERNAL_SERVER_ERROR
+            # Help the administrator work out what went wrong.
+            html = ("<h1>Traceback</h1>"
+                    + cgitb.html(i18n=self.translator)
+                    + ("<h1>Environment Variables</h1><table>%s</table>"
+                       % cgitb.niceDict("", self.env)))
+            if not self.instance.config.WEB_DEBUG:
+                exc_info = sys.exc_info()
+                subject = "Error: %s" % exc_info[1]
+                self.send_html_to_admin(subject, html)
+                self.write_html(self._(error_message))
             else:
-                self.mailer.exception_message()
-                return self.write_html(self._(error_message))
+                self.write_html(html)
 
     def clean_sessions(self):
         """Deprecated
@@ -950,6 +961,17 @@ class Client:
             self.additional_headers['Content-Length'] = str(len(content))
             self.write(content)
 
+    def send_html_to_admin(self, subject, content):
+
+        to = [self.mailer.config.ADMIN_EMAIL]
+        message = self.mailer.get_standard_message(to, subject)
+        # delete existing content-type headers
+        del message['Content-type']
+        message['Content-type'] = 'text/html; charset=utf-8'
+        message.set_payload(content)
+        encode_quopri(message)
+        self.mailer.smtp_send(to, str(message))
+    
     def renderContext(self):
         """ Return a PageTemplate for the named page
         """
@@ -996,16 +1018,8 @@ class Client:
             try:
                 # If possible, send the HTML page template traceback
                 # to the administrator.
-                to = [self.mailer.config.ADMIN_EMAIL]
                 subject = "Templating Error: %s" % exc_info[1]
-                content = cgitb.pt_html()
-                message = self.mailer.get_standard_message(to, subject)
-                # delete existing content-type headers
-                del message['Content-type']
-                message['Content-type'] = 'text/html; charset=utf-8'
-                message.set_payload(content)
-                encode_quopri(message)
-                self.mailer.smtp_send(to, str(message))
+                self.send_html_to_admin(subject, cgitb.pt_html())
                 # Now report the error to the user.
                 return self._(error_message)
             except:
