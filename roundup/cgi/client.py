@@ -489,13 +489,23 @@ class Client:
                 self.additional_headers['Location'] = str(url)
                 self.response_code = 302
             self.write_html('Redirecting to <a href="%s">%s</a>'%(url, url))
+        except LoginError, message:
+            # The user tried to log in, but did not provide a valid
+            # username and password.  If we support HTTP
+            # authorization, send back a response that will cause the
+            # browser to prompt the user again.
+            if self.instance.config.WEB_HTTP_AUTH:
+                self.response_code = httplib.UNAUTHORIZED
+                realm = self.instance.config.TRACKER_NAME
+                self.setHeader("WWW-Authenticate",
+                               "Basic realm=\"%s\"" % realm)
+            else:
+                self.response_code = httplib.FORBIDDEN
+            self.renderFrontPage(message)
         except Unauthorised, message:
             # users may always see the front page
             self.response_code = 403
-            self.classname = self.nodeid = None
-            self.template = ''
-            self.error_message.append(message)
-            self.write_html(self.renderContext())
+            self.renderFrontPage(message)
         except NotModified:
             # send the 304 response
             self.response_code = 304
@@ -676,7 +686,7 @@ class Client:
                         login.verifyLogin(username, password)
                     except LoginError, err:
                         self.make_user_anonymous()
-                        raise Unauthorised, err
+                        raise
                     user = username
 
         # if user was not set by http authorization, try session lookup
@@ -972,6 +982,14 @@ class Client:
         encode_quopri(message)
         self.mailer.smtp_send(to, str(message))
     
+    def renderFrontPage(self, message):
+        """Return the front page of the tracker."""
+    
+        self.classname = self.nodeid = None
+        self.template = ''
+        self.error_message.append(message)
+        self.write_html(self.renderContext())
+
     def renderContext(self):
         """ Return a PageTemplate for the named page
         """
