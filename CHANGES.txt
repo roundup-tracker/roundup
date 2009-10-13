@@ -1,6 +1,16 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2009-XX-XX 1.4.XX (rXXXX)
+
+Fixes:
+- More SSL fixes. SSL wants the underlying socket non-blocking. So we
+  don't call socket.setdefaulttimeout in case of SSL. This apparently
+  never raises a WantReadError from SSL.
+  This also fixes a case where a WantReadError is raised and apparently
+  the bytes already read are dropped (seems the WantReadError is really
+  an error, not just an indication to retry).
+
 2009-10-09 1.4.10 (r4374)
 
 Fixes:

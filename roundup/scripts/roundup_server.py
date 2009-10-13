@@ -124,14 +124,11 @@ class SecureHTTPServer(BaseHTTPServer.HTTPServer):
 
                 def readline(self, *args):
                     """ SSL.Connection can return WantRead """
-                    line = None
-                    while not line:
+                    while True:
                         try:
-                            line = self.__fileobj.readline(*args)
+                            return self.__fileobj.readline(*args)
                         except SSL.WantReadError:
                             sleep (.1)
-                            line = None
-                    return line
 
                 def read(self, *args):
                     """ SSL.Connection can return WantRead """
@@ -596,6 +593,11 @@ class ServerConfig(configuration.Config):
         if self["SSL"]:
             base_server = SecureHTTPServer
         else:
+            # time out after a minute if we can
+            # This sets the socket to non-blocking. SSL needs a blocking
+            # socket, so we do this only for non-SSL connections.
+            if hasattr(socket, 'setdefaulttimeout'):
+                socket.setdefaulttimeout(60)
             base_server = BaseHTTPServer.HTTPServer
 
         # obtain request server class
@@ -817,10 +819,6 @@ undefined = []
 def run(port=undefined, success_message=None):
     ''' Script entry point - handle args and figure out what to to.
     '''
-    # time out after a minute if we can
-    if hasattr(socket, 'setdefaulttimeout'):
-        socket.setdefaulttimeout(60)
-
     config = ServerConfig()
     # additional options
     short_options = "hvS"
