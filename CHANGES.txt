@@ -10,6 +10,7 @@ Fixes:
   This also fixes a case where a WantReadError is raised and apparently
   the bytes already read are dropped (seems the WantReadError is really
   an error, not just an indication to retry).
+- Correct initial- and end-handshakes for SSL
 
 2009-10-09 1.4.10 (r4374)
 

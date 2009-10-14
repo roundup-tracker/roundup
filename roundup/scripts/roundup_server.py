@@ -29,8 +29,6 @@ try:
 except ImportError:
     SSL = None
 
-from time import sleep
-
 # python version check
 from roundup import configuration, version_check
 from roundup import __version__ as roundup_version
@@ -76,7 +74,7 @@ DEFAULT_MULTIPROCESS = MULTIPROCESS_TYPES[-1]
 
 def auto_ssl():
     print _('WARNING: generating temporary SSL certificate')
-    import OpenSSL, time, random, sys
+    import OpenSSL, random
     pkey = OpenSSL.crypto.PKey()
     pkey.generate_key(OpenSSL.crypto.TYPE_RSA, 768)
     cert = OpenSSL.crypto.X509()
@@ -128,7 +126,7 @@ class SecureHTTPServer(BaseHTTPServer.HTTPServer):
                         try:
                             return self.__fileobj.readline(*args)
                         except SSL.WantReadError:
-                            sleep (.1)
+                            time.sleep(.1)
 
                 def read(self, *args):
                     """ SSL.Connection can return WantRead """
@@ -136,7 +134,7 @@ class SecureHTTPServer(BaseHTTPServer.HTTPServer):
                         try:
                             return self.__fileobj.read(*args)
                         except SSL.WantReadError:
-                            sleep (.1)
+                            time.sleep(.1)
 
                 def __getattr__(self, attrib):
                     return getattr(self.__fileobj, attrib)
@@ -589,6 +587,20 @@ class ServerConfig(configuration.Config):
             TRACKERS = trackers
             DEBUG_MODE = self["MULTIPROCESS"] == "debug"
             CONFIG = self
+
+            def setup(self):
+                if self.CONFIG["SSL"]:
+                    # perform initial ssl handshake. This will set
+                    # internal state correctly so that later closing SSL
+                    # socket works (with SSL end-handshake started)
+                    self.request.do_handshake()
+                RoundupRequestHandler.setup(self)
+
+            def finish(self):
+                RoundupRequestHandler.finish(self)
+                if self.CONFIG["SSL"]:
+                    self.request.shutdown()
+                    self.request.close()
 
         if self["SSL"]:
             base_server = SecureHTTPServer
