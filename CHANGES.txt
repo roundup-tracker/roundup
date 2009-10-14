@@ -16,7 +16,7 @@ Fixes:
 Fixes:
 - Minor update of doc/developers.txt to point to the new resources
   on www.roundup-tracker.org (Bernhard Reiter)
-- Small CSS improvements regaring the search box (thanks Thomas Arendsan Hein)
+- Small CSS improvements regaring the search box (thanks Thomas Arendsen Hein)
   (issue 2550589)
 - Indexers behaviour made more consistent regarding length of indexed words
   and stopwords (thanks Thomas Arendsen Hein, Bernhard Reiter)(issue 2550584)
@@ -26,12 +26,13 @@ Fixes:
   for export/import) has a new field size limit starting with python2.5.
   We now issue a warning during export if the limit is too small and use
   the csv_field_size configuration during import to set the limit for
-  the csv module.
+  the csv module. (Ralf Schlatterbeck)
 - Small fix for CGI-handling of XMLRPC requests for python2.4, this
   worked only for 2.5 and beyond due to a change in the xmlrpc interface
-  in python
-- Document filter method of xmlrpc interface
-- Fix interaction of SSL and XMLRPC, now XMLRPC works with SSL
+  in python (Ralf Schlatterbeck)
+- Document filter method of xmlrpc interface (Ralf Schlatterbeck)
+- Fix interaction of SSL and XMLRPC, now XMLRPC works with SSL 
+  (Ralf Schlatterbeck)
 
 2009-08-10 1.4.9 (r4346)
 
