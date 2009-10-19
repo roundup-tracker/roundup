@@ -29,7 +29,8 @@ Building and distributing a release of Roundup is done by running:
 11. python setup.py bdist_rpm
 12. python setup.py bdist_wininst
 13. Send doc/announcement.txt to python-announce@python.org and
-    roundup-users@lists.sourceforge.net
+    roundup-users@lists.sourceforge.net and
+    roundup-devel@lists.sourceforge.net
 
 So, those commands in a nice, cut'n'pasteable form::
 
