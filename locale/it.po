@@ -5,7 +5,6 @@
 #
 # roundup.pot revision 1.22
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: roundup cvs\n"
@@ -798,7 +797,7 @@ msgstr "ripristina"
 #: ../roundup/cgi/actions.py:58
 #, python-format
 msgid "You do not have permission to %(action)s the %(classname)s class."
-msgstr "Non hai i permessi per %{action) la classe %(classname)."
+msgstr "Non hai i permessi per %(action)s la classe %(classname)s."
 
 #: ../roundup/cgi/actions.py:89
 msgid "No type specified"
@@ -811,7 +810,7 @@ msgstr "Non hai fornito alcun ID"
 #: ../roundup/cgi/actions.py:97
 #, python-format
 msgid "\"%(input)s\" is not an ID (%(classname)s ID required)"
-msgstr "\"%(input)\" non è un ID (%(ID della %(classname) è obbligatorio"
+msgstr "\"%(input)s\" non è un ID (ID della %(classname)s è obbligatorio)"
 
 #: ../roundup/cgi/actions.py:117
 msgid "You may not retire the admin or anonymous user"
@@ -835,7 +834,7 @@ msgstr "Non hai il permesso di archiviare delle query"
 #: ../roundup/cgi/actions.py:298
 #, python-format
 msgid "Not enough values on line %(line)s"
-msgstr "Non abbastanza valori alla riga %(line)"
+msgstr "Non abbastanza valori alla riga %(line)s"
 
 #: ../roundup/cgi/actions.py:345
 msgid "Items edited OK"
@@ -859,12 +858,12 @@ msgstr "%(class)s %(id)s creata"
 #: ../roundup/cgi/actions.py:452
 #, python-format
 msgid "You do not have permission to edit %(class)s"
-msgstr "Non hai i permessi per modificare i $(class)s"
+msgstr "Non hai i permessi per modificare i %(class)s"
 
 #: ../roundup/cgi/actions.py:464
 #, python-format
 msgid "You do not have permission to create %(class)s"
-msgstr "Non hai il permesso per creare $(class)s"
+msgstr "Non hai il permesso per creare %(class)s"
 
 #: ../roundup/cgi/actions.py:488
 msgid "You do not have permission to edit user roles"
@@ -978,7 +977,7 @@ msgstr "<li>In %s</li>"
 #: ../roundup/cgi/cgitb.py:76
 #, python-format
 msgid "A problem occurred in your template \"%s\"."
-msgstr "È occorso un problema nel tuo template"
+msgstr "È occorso un problema nel tuo template \"%s\"."
 
 #: ../roundup/cgi/cgitb.py:84
 #, python-format
@@ -1067,7 +1066,7 @@ msgstr "Non si dispone dei permessi per visualizzare questo file."
 #: ../roundup/cgi/client.py:758
 #, python-format
 msgid "%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n"
-msgstr "%(starttag)sTempo trascorso: %(seconds)fs%(endtad)s\n"
+msgstr "%(starttag)sTempo trascorso: %(seconds)fs%(endtag)s\n"
 
 #: ../roundup/cgi/client.py:762
 #, python-format
@@ -1298,7 +1297,7 @@ msgstr "Non specifica un intervallo: [+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS]"
 msgid "%(number)s year"
 msgid_plural "%(number)s years"
 msgstr[0] "%(number)s anno"
-msgstr[1] "%(numeber)s anni"
+msgstr[1] "%(number)s anni"
 
 #: ../roundup/date.py:822
 #, python-format
@@ -1852,13 +1851,13 @@ msgstr "Non è possibile cambiare utente - nessun modulo pwd"
 #: ../roundup/scripts/roundup_server.py:347
 #, python-format
 msgid "User %(user)s doesn't exist"
-msgstr "L'utente $(user)s non esiste"
+msgstr "L'utente %(user)s non esiste"
 
 #: ../roundup/scripts/roundup_server.py:481
 #, python-format
 msgid "Multiprocess mode \"%s\" is not available, switching to single-process"
 msgstr ""
-"La modalità multiprocesso non è disponibile, viene utilizzata quella a "
+"La modalità multiprocesso \"%s\" non è disponibile, viene utilizzata quella a "
 "singolo processo"
 
 #: ../roundup/scripts/roundup_server.py:504
