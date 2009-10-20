@@ -190,6 +190,12 @@ I keep getting logged out
 Make sure that the ``tracker`` -> ``web`` setting in your tracker's
 config.ini is set to the URL of the tracker.
 
+I'm getting infinite redirects in the browser
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A wrong value for the ``tracker`` -> ``web`` setting may also result in
+infinite redirects, see http://issues.roundup-tracker.org/issue2537286
+
 
 How is sorting performed, and why does it seem to fail sometimes?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
