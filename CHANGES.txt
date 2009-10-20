@@ -14,6 +14,7 @@ Fixes:
 - Update FAQ to mention infinite redirects with pathological settings of
   the tracker->web variable. Closes issue2537286, thanks to "stuidge"
   for reporting.
+- Fix some format errors in italian translation file
 
 2009-10-09 1.4.10 (r4374)
 
