@@ -36,8 +36,6 @@ class Indexer:
     def search(self, search_terms, klass, ignore={}):
         """Display search results looking for [search, terms] associated
         with the hyperdb Class "klass". Ignore hits on {class: property}.
-
-        "dre" is a helper, not an argument.
         """
         # do the index lookup
         hits = self.getHits(search_terms, klass)
