@@ -572,6 +572,70 @@ class MysqlClass:
         s = ','.join([x[0] for x in self.db.sql_fetchall()])
         return '_%s.id not in (%s)'%(classname, s)
 
+    def create_inner(self, **propvalues):
+        try:
+            return rdbms_common.Class.create_inner(self, **propvalues)
+        except MySQLdb.IntegrityError, e:
+            self._handle_integrity_error(e, propvalues)
+
+    def set_inner(self, nodeid, **propvalues):
+        try:
+            return rdbms_common.Class.set_inner(self, nodeid,
+                                                **propvalues)
+        except MySQLdb.IntegrityError, e:
+            self._handle_integrity_error(e, propvalues)
+
+    def _handle_integrity_error(self, e, propvalues):
+        ''' Handle a MySQL IntegrityError.
+
+        If the error is recognized, then it may be converted into an
+        alternative exception.  Otherwise, it is raised unchanged from
+        this function.'''
+
+        # There are checks in create_inner/set_inner to see if a node
+        # is being created with the same key as an existing node.
+        # But, there is a race condition -- we may pass those checks,
+        # only to find out that a parallel session has created the
+        # node by by the time we actually issue the SQL command to
+        # create the node.  Fortunately, MySQL gives us a unique error
+        # code for this situation, so we can detect it here and handle
+        # it appropriately.
+        # 
+        # The details of the race condition are as follows, where
+        # "X" is a classname, and the term "thread" is meant to
+        # refer generically to both threads and processes:
+        #
+        # Thread A                    Thread B
+        # --------                    --------
+        #                             read table for X
+        # create new X object
+        # commit
+        #                             create new X object
+        #
+        # In Thread B, the check in create_inner does not notice that
+        # the new X object is a duplicate of that committed in Thread
+        # A because MySQL's default "consistent nonlocking read"
+        # behavior means that Thread B sees a snapshot of the database
+        # at the point at which its transaction began -- which was
+        # before Thread A created the object.  However, the attempt
+        # to *write* to the table for X, creating a duplicate entry,
+        # triggers an error at the point of the write.
+        #
+        # If both A and B's transaction begins with creating a new X
+        # object, then this bug cannot occur because creating the
+        # object requires getting a new ID, and newid() locks the id
+        # table until the transaction is committed or rolledback.  So,
+        # B will block until A's commit is complete, and will not
+        # actually get its snapshot until A's transaction completes.
+        # But, if the transaction has begun prior to calling newid,
+        # then the snapshot has already been established.
+        if e[0] == ER.DUP_ENTRY:
+            key = propvalues[self.key]
+            raise ValueError, 'node with key "%s" exists' % key
+        # We don't know what this exception is; reraise it.
+        raise
+        
+
 class Class(MysqlClass, rdbms_common.Class):
     pass
 class IssueClass(MysqlClass, rdbms_common.IssueClass):
