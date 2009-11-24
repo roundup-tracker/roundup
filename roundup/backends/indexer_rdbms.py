@@ -69,7 +69,7 @@ class Indexer(IndexerBase):
                 str = str.encode("utf-8", "replace")
             return str
         text = tryencode(text).upper()
-        wordlist = [tryencode(w)
+        wordlist = [w.encode("utf-8")
                     for w in re.findall(r'(?u)\b\w{%d,%d}\b'
                                         % (self.minlength, self.maxlength), text)]
         words = set()
