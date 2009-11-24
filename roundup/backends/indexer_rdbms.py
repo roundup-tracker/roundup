@@ -64,10 +64,14 @@ class Indexer(IndexerBase):
             self.db.cursor.execute(sql, (id, ))
 
         # ok, find all the unique words in the text
-        text = unicode(text, "utf-8", "replace").upper()
-        wordlist = [w.encode("utf-8")
-            for w in re.findall(r'(?u)\b\w{%d,%d}\b'
-                                % (self.minlength, self.maxlength), text)]
+        def tryencode(str):
+            if not isinstance(str, unicode):
+                str = str.encode("utf-8", "replace")
+            return str
+        text = tryencode(text).upper()
+        wordlist = [tryencode(w)
+                    for w in re.findall(r'(?u)\b\w{%d,%d}\b'
+                                        % (self.minlength, self.maxlength), text)]
         words = set()
         for word in wordlist:
             if self.is_stopword(word): continue
