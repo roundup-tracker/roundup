@@ -1240,7 +1240,12 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
         self._anonymous = anonymous
         self._name = name
         if not anonymous:
-            self._formname = '%s%s@%s'%(classname, nodeid, name)
+            if nodeid:
+                self._formname = '%s%s@%s'%(classname, nodeid, name)
+            else:
+                # This case occurs when creating a property for a
+                # non-anonymous class.
+                self._formname = '%s@%s'%(classname, name)
         else:
             self._formname = name
 
