@@ -177,17 +177,22 @@ class Mailer:
         content = '\n'.join(traceback.format_exception(*sys.exc_info()))
         self.standard_message(to, subject, content)
 
-    def smtp_send(self, to, message):
+    def smtp_send(self, to, message, sender=None):
         """Send a message over SMTP, using roundup's config.
 
         Arguments:
         - to: a list of addresses usable by rfc822.parseaddr().
         - message: a StringIO instance with a full message.
+        - sender: if not 'None', the email address to use as the
+        envelope sender.  If 'None', the admin email is used.
         """
+
+        if not sender:
+            sender = self.config.ADMIN_EMAIL
         if self.debug:
             # don't send - just write to a file
             open(self.debug, 'a').write('FROM: %s\nTO: %s\n%s\n' %
-                                        (self.config.ADMIN_EMAIL,
+                                        (sender,
                                          ', '.join(to), message))
         else:
             # now try to send the message
@@ -195,7 +200,7 @@ class Mailer:
                 # send the message as admin so bounces are sent there
                 # instead of to roundup
                 smtp = SMTPConnection(self.config)
-                smtp.sendmail(self.config.ADMIN_EMAIL, to, message)
+                smtp.sendmail(sender, to, message)
             except socket.error, value:
                 raise MessageSendError("Error: couldn't send email: "
                                        "mailhost %s"%value)
