@@ -1358,9 +1358,12 @@ class StringHTMLProperty(HTMLProperty):
         elif match.group('email'):
             s = match.group('email')
             return '<a href="mailto:%s">%s</a>'%(s, s)
-        else:
+        elif len(match.group('id')) < 10:
             return self._hyper_repl_item(match,
                 '<a href="%(cls)s%(id)s">%(item)s</a>')
+        else:
+            # just return the matched text
+            return match.group(0)
 
     def _hyper_repl_rst(self, match):
         if match.group('url'):
@@ -1369,8 +1372,11 @@ class StringHTMLProperty(HTMLProperty):
         elif match.group('email'):
             s = match.group('email')
             return '`%s <mailto:%s>`_'%(s, s)
-        else:
+        elif len(match.group('id')) < 10:
             return self._hyper_repl_item(match,'`%(item)s <%(cls)s%(id)s>`_')
+        else:
+            # just return the matched text
+            return match.group(0)
 
     def hyperlinked(self):
         """ Render a "hyperlinked" version of the text """

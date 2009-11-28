@@ -150,6 +150,7 @@ class HTMLClassTestCase(TemplatingTestCase) :
         ae(t('http://roundup.net/'), '<a href="http://roundup.net/">http://roundup.net/</a>')
         ae(t('&lt;HTTP://roundup.net/&gt;'), '&lt;<a href="HTTP://roundup.net/">HTTP://roundup.net/</a>&gt;')
         ae(t('&lt;www.roundup.net&gt;'), '&lt;<a href="http://www.roundup.net">www.roundup.net</a>&gt;')
+        ae(t('item123123123123'), 'item123123123123')
 
 '''
 class HTMLPermissions:
