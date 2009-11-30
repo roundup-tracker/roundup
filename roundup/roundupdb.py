@@ -237,7 +237,7 @@ class IssueClass:
             """ Make sure we don't send mail to either the anonymous
                 user or a user who has already seen the message.
                 Also check permissions on the message if not a system
-                message: A user must have view permisson on content and
+                message: A user must have view permission on content and
                 files to be on the receiver list. We do *not* check the 
                 author etc. for now.
             """

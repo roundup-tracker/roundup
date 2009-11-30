@@ -358,7 +358,10 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         env['SCRIPT_NAME'] = ''
         env['SERVER_NAME'] = self.server.server_name
         env['SERVER_PORT'] = str(self.server.server_port)
-        env['HTTP_HOST'] = self.headers['host']
+        try:
+            env['HTTP_HOST'] = self.headers ['host']
+        except KeyError:
+            env['HTTP_HOST'] = ''
         if os.environ.has_key('CGI_SHOW_TIMING'):
             env['CGI_SHOW_TIMING'] = os.environ['CGI_SHOW_TIMING']
         env['HTTP_ACCEPT_LANGUAGE'] = self.headers.get('accept-language')
