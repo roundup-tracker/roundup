@@ -880,6 +880,9 @@ class Client:
                 "this file.")
 
         mime_type = klass.get(nodeid, 'type')
+        # Can happen for msg class:
+        if not mime_type:
+            mime_type = 'text/plain'
 
         # if the mime_type is HTML-ish then make sure we're allowed to serve up
         # HTML-ish content
