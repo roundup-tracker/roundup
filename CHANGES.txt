@@ -16,6 +16,11 @@ Fixes:
   for reporting.
 - Fix some format errors in italian translation file
 - Some bugs issue classifiers were causing database lookup errors
+- Fix security-problem: If user hasn't permission on a message (notably
+  files and content properties) and is on the nosy list, the content was
+  sent via email. We now check that user has permission on the message
+  content and files properties. Thanks to Intevation for funding this
+  fix.
 
 
 2009-10-09 1.4.10 (r4374)

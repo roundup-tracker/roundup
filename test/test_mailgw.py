@@ -1893,6 +1893,55 @@ This is a second followup
         assert nodeid1 == nodeid2
         self.assertEqual(self.db.issue.get(nodeid2, 'title'), "Testing...")
 
+    def testSecurityMessagePermissionContent(self):
+        id = self.doNewIssue()
+        issue = self.db.issue.getnode (id)
+        self.db.security.addRole(name='Nomsg')
+        self.db.security.addPermissionToRole('Nomsg', 'Email Access')
+        for cl in 'issue', 'file', 'keyword':
+            for p in 'View', 'Edit', 'Create':
+                self.db.security.addPermissionToRole('Nomsg', p, cl)
+        self.db.user.set(self.mary_id, roles='Nomsg')
+        nodeid = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id>
+Subject: [issue%(id)s] Testing... [nosy=+mary]
+
+Just a test reply
+'''%locals())
+        assert os.path.exists(SENDMAILDEBUG)
+        self.compareMessages(self._get_mail(),
+'''FROM: roundup-admin@your.tracker.email.domain.example
+TO: chef@bork.bork.bork, richard@test.test
+Content-Type: text/plain; charset="utf-8"
+Subject: [issue1] Testing...
+To: richard@test.test
+From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+MIME-Version: 1.0
+Message-Id: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
+Content-Transfer-Encoding: quoted-printable
+
+
+Bork, Chef <chef@bork.bork.bork> added the comment:
+
+Just a test reply
+
+----------
+nosy: +mary
+status: unread -> chatting
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
+_______________________________________________________________________
+''')
+
 
 def test_suite():
     suite = unittest.TestSuite()

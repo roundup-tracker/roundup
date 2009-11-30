@@ -227,18 +227,29 @@ class IssueClass:
             seen_message[recipient] = 1
 
         def add_recipient(userid, to):
-            # make sure they have an address
+            """ make sure they have an address """
             address = self.db.user.get(userid, 'address')
             if address:
                 to.append(address)
                 recipients.append(userid)
 
         def good_recipient(userid):
-            # Make sure we don't send mail to either the anonymous
-            # user or a user who has already seen the message.
+            """ Make sure we don't send mail to either the anonymous
+                user or a user who has already seen the message.
+                Also check permissions on the message if not a system
+                message: A user must have view permisson on content and
+                files to be on the receiver list. We do *not* check the 
+                author etc. for now.
+            """
+            allowed = True
+            if msgid:
+                for prop in 'content', 'files':
+                    if prop in self.db.msg.properties:
+                        allowed = allowed and self.db.security.hasPermission(
+                            'View', userid, 'msg', prop, msgid)
             return (userid and
                     (self.db.user.get(userid, 'username') != 'anonymous') and
-                    not seen_message.has_key(userid))
+                    allowed and not seen_message.has_key(userid))
 
         # possibly send the message to the author, as long as they aren't
         # anonymous
