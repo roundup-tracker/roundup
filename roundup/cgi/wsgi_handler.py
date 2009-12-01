@@ -10,7 +10,7 @@ import weakref
 
 import roundup.instance
 from roundup.cgi import TranslationService
-from BaseHTTPServer import BaseHTTPRequestHandler
+from BaseHTTPServer import BaseHTTPRequestHandler, DEFAULT_ERROR_MESSAGE
 
 
 class Writer(object):
@@ -42,6 +42,14 @@ class RequestDispatcher(object):
 
         request.wfile = Writer(request)
         request.__wfile = None
+
+        if environ ['REQUEST_METHOD'] == 'OPTIONS':
+            code = 501
+            message, explain = BaseHTTPRequestHandler.responses[code]
+            request.start_response([('Content-Type', 'text/html'),
+                ('Connection', 'close')], code)
+            request.wfile.write(DEFAULT_ERROR_MESSAGE % locals())
+            return []
 
         tracker = roundup.instance.open(self.home, not self.debug)
 

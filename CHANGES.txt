@@ -23,8 +23,11 @@ Fixes:
   fix.
 - Fix traceback on .../msgN/ url, this requests the file content and for
   apache mod_wsgi produced a traceback because the mime type is None for
-  messages, fixes issue2550586, thanks to ThomasAH for reporting and to
-  Intevation for funding the fix.
+  messages, fixes issue2550586, thanks to Thomas Arendsen Hein for
+  reporting and to Intevation for funding the fix.
+- Handle OPTIONS http request method in wsgi handler, fixes issue2550587.
+  Thanks to Thomas Arendsen Hein for reporting and to Intevation for
+  funding the fix.
 
 
 2009-10-09 1.4.10 (r4374)
