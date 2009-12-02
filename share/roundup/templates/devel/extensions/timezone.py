@@ -20,7 +20,7 @@ def tzfield(prop, name, default):
             except ValueError:
                 pass
 
-        l = ['<select name="%s"' % name]
+        l = ['<select name="%s">' % name]
         for zone in pytz.all_timezones:
             s = ' '
             if zone == value:
