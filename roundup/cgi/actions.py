@@ -320,6 +320,11 @@ class EditCSVAction(Action):
                     raise exceptions.Unauthorised, self._(
                         'You do not have permission to create %(class)s'
                     ) % {'class': self.classname}
+            elif cl.hasnode(itemid) and cl.is_retired(itemid):
+                # If a CSV line just mentions an id and the corresponding
+                # item is retired, then the item is restored.
+                cl.restore(itemid)
+                continue
             else:
                 exists = 1
 
