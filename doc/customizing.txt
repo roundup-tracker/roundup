@@ -4606,6 +4606,22 @@ for the "issue", "file" and "msg" classes with the following::
         db.security.addPermissionToRole('User', 'Create', cl)
 
 
+Moderating user registration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You could set up new-user moderation in a public tracker by:
+
+1. creating a new highly-restricted user role "Pending",
+2. set the config new_web_user_roles and/or new_email_user_roles to that
+   role,
+3. have an auditor that emails you when new users are created with that
+   role using roundup.mailer
+4. edit the role to "User" for valid users.
+
+Some simple javascript might help in the last step. If you have high volume
+you could search for all currently-Pending users and do a bulk edit of all
+their roles at once (again probably with some simple javascript help).
+
 
 Changes to the Web User Interface
 ---------------------------------
