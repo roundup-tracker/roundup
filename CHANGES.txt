@@ -31,6 +31,8 @@ Fixes:
 - Handle OPTIONS http request method in wsgi handler, fixes issue2550587.
   Thanks to Thomas Arendsen Hein for reporting and to Intevation for
   funding the fix.
+- Add documentation for migrating to the Register permission and
+  fix mailgw to use Register permission, fixes issue2550599
 
 
 2009-10-09 1.4.10 (r4374)

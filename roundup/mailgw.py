@@ -1130,7 +1130,7 @@ The mail gateway is not properly set up. Please contact
         # Don't create users if anonymous isn't allowed to register
         create = 1
         anonid = self.db.user.lookup('anonymous')
-        if not (self.db.security.hasPermission('Create', anonid, 'user')
+        if not (self.db.security.hasPermission('Register', anonid, 'user')
                 and self.db.security.hasPermission('Email Access', anonid)):
             create = 0
 
@@ -1150,7 +1150,7 @@ The mail gateway is not properly set up. Please contact
                 from_address = from_list[0][1]
                 registration_info = ""
                 if self.db.security.hasPermission('Web Access', author) and \
-                   self.db.security.hasPermission('Create', anonid, 'user'):
+                   self.db.security.hasPermission('Register', anonid, 'user'):
                     tracker_web = self.instance.config.TRACKER_WEB
                     registration_info = """ Please register at:
 

@@ -13,6 +13,31 @@ steps.
 
 .. contents::
 
+Migrating from 1.4.x to 1.4.10
+==============================
+
+Grant the "Register" permission to the Anonymous role
+-----------------------------------------------------
+
+A separate "Register" permission has been introduced to allow
+anonymous users to register. This means you will need to add the
+following to your tracker's ``schema.py`` to add the permission and
+assign it to the Anonymous role (replacing any previously assigned
+"Create user" permission for the Anonymous role):
+
+  +db.security.addPermission(name='Register', klass='user',
+  +                          description='User is allowed to register new user')
+ 
+   # Assign the appropriate permissions to the anonymous user's Anonymous
+   # Role. Choices here are:
+   # - Allow anonymous users to register
+  -db.security.addPermissionToRole('Anonymous', 'Create', 'user')
+  +db.security.addPermissionToRole('Anonymous', 'Register', 'user')
+
+The lines marked "+" should be added and lines marked "-" should be
+deleted (minus the "+"/"-" signs).
+
+
 Migrating from 1.4.x to 1.4.9
 =============================
 
