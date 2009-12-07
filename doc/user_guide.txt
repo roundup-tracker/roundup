@@ -440,7 +440,7 @@ For example,
 
 - setting the priority of an issue::
 
-   Subject: Re: [issue1] the coffee machine is broken! [priority=urgent]
+   Subject: Re: [issue2] the coffee machine is broken! [priority=urgent]
 
 - adding yourself to a nosy list::
 
