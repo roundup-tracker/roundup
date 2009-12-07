@@ -523,6 +523,9 @@ Erase it? Y/N: """))
         ''"""Usage: get property designator[,designator]*
         Get the given property of one or more designator(s).
 
+        A designator is a classname and a nodeid concatenated,
+        eg. bug1, user10, ...
+
         Retrieves the property value of the nodes specified
         by the designators.
         """
@@ -599,6 +602,9 @@ Erase it? Y/N: """))
 
         The items are specified as a class or as a comma-separated
         list of item designators (ie "designator[,designator,...]").
+
+        A designator is a classname and a nodeid concatenated,
+        eg. bug1, user10, ...
 
         This command sets the properties to the values for all designators
         given. If the value is missing (ie. "property=") then the property
@@ -731,6 +737,9 @@ Erase it? Y/N: """))
     def do_display(self, args):
         ''"""Usage: display designator[,designator]*
         Show the property values for the given node(s).
+
+        A designator is a classname and a nodeid concatenated,
+        eg. bug1, user10, ...
 
         This lists the properties and their associated values for the given
         node.
@@ -971,6 +980,9 @@ Erase it? Y/N: """))
         ''"""Usage: history designator
         Show the history entries of a designator.
 
+        A designator is a classname and a nodeid concatenated,
+        eg. bug1, user10, ...
+
         Lists the journal entries for the node identified by the designator.
         """
         if len(args) < 1:
@@ -1020,6 +1032,9 @@ Erase it? Y/N: """))
         ''"""Usage: retire designator[,designator]*
         Retire the node specified by designator.
 
+        A designator is a classname and a nodeid concatenated,
+        eg. bug1, user10, ...
+
         This action indicates that a particular node is not to be retrieved
         by the list or find commands, and its key value may be re-used.
         """
@@ -1043,6 +1058,9 @@ Erase it? Y/N: """))
     def do_restore(self, args):
         ''"""Usage: restore designator[,designator]*
         Restore the retired node specified by designator.
+
+        A designator is a classname and a nodeid concatenated,
+        eg. bug1, user10, ...
 
         The given nodes will become available for users again.
         """

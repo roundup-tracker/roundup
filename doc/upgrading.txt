@@ -13,7 +13,7 @@ steps.
 
 .. contents::
 
-Migrating from 1.4.x to 1.4.10
+Migrating from 1.4.x to 1.4.11
 ==============================
 
 Grant the "Register" permission to the Anonymous role
