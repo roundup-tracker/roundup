@@ -1296,8 +1296,8 @@ not find a text/plain part to use.
         #
         # handle the attachments
         #
-        if properties.has_key('files'):
-            files = []
+        files = []
+        if attachments and properties.has_key('files'):
             for (name, mime_type, data) in attachments:
                 if not self.db.security.hasPermission('Create', author, 'file'):
                     raise Unauthorized, _(
@@ -1311,8 +1311,8 @@ not find a text/plain part to use.
                     pass
                 else:
                     files.append(fileid)
-            # attach the files to the issue
-            if not self.db.security.hasPermission('Edit', author,
+            # allowed to attach the files to an existing node?
+            if nodeid and not self.db.security.hasPermission('Edit', author,
                     classname, 'files'):
                 raise Unauthorized, _(
                     'You are not permitted to add files to %(classname)s.'
@@ -1345,8 +1345,8 @@ not find a text/plain part to use.
 Mail message was rejected by a detector.
 %(error)s
 """) % locals()
-            # attach the message to the node
-            if not self.db.security.hasPermission('Edit', author,
+            # allowed to attach the message to the existing node?
+            if nodeid and not self.db.security.hasPermission('Edit', author,
                     classname, 'messages'):
                 raise Unauthorized, _(
                     'You are not permitted to add messages to %(classname)s.'
@@ -1372,16 +1372,21 @@ Mail message was rejected by a detector.
                 if not props.has_key(prop) :
                     props[prop] = issue_props[prop]
 
-            # Check permissions for each property
-            for prop in props.keys():
-                if not self.db.security.hasPermission('Edit', author,
-                        classname, prop):
-                    raise Unauthorized, _('You are not permitted to edit '
-                        'property %(prop)s of class %(classname)s.') % locals()
-
             if nodeid:
+                # Check permissions for each property
+                for prop in props.keys():
+                    if not self.db.security.hasPermission('Edit', author,
+                            classname, prop):
+                        raise Unauthorized, _('You are not permitted to edit '
+                            'property %(prop)s of class %(classname)s.') % locals()
                 cl.set(nodeid, **props)
             else:
+                # Check permissions for each property
+                for prop in props.keys():
+                    if not self.db.security.hasPermission('Create', author,
+                            classname, prop):
+                        raise Unauthorized, _('You are not permitted to set '
+                            'property %(prop)s of class %(classname)s.') % locals()
                 nodeid = cl.create(**props)
         except (TypeError, IndexError, ValueError, exceptions.Reject), message:
             raise MailUsageError, _("""

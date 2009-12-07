@@ -113,6 +113,9 @@ def setupSchema(db, create, module):
         priority.create(name="bug", order="1")
     db.commit()
 
+    # nosy tests require this
+    db.security.addPermissionToRole('User', 'View', 'msg')
+
 class MyTestCase(unittest.TestCase):
     def tearDown(self):
         if hasattr(self, 'db'):

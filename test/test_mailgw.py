@@ -1046,7 +1046,7 @@ Unknown address: fubar@bork.bork.bork
             # Add Web Access role to anonymous, and try again to make sure
             # we get a "please register at:" message this time.
             p = [
-                db.security.getPermission('Create', 'user'),
+                db.security.getPermission('Register', 'user'),
                 db.security.getPermission('Web Access', None),
             ]
             db.security.role['anonymous'].permissions=p
@@ -1078,7 +1078,7 @@ Unknown address: fubar@bork.bork.bork
             ''' set up callback for db open '''
             # now with the permission
             p = [
-                db.security.getPermission('Create', 'user'),
+                db.security.getPermission('Register', 'user'),
                 db.security.getPermission('Email Access', None),
             ]
             db.security.role['anonymous'].permissions=p
@@ -1088,7 +1088,7 @@ Unknown address: fubar@bork.bork.bork
         m.sort()
         self.assertNotEqual(l, m)
 
-    def testNewUserAuthorHighBit(self):
+    def testNewUserAuthorEncodedName(self):
         l = set(self.db.user.list())
         # From: name has Euro symbol in it
         message = '''Content-Type: text/plain;
@@ -1103,10 +1103,12 @@ This is a test submission of a new issue.
         def hook (db, **kw):
             ''' set up callback for db open '''
             p = [
-                db.security.getPermission('Create', 'user'),
+                db.security.getPermission('Register', 'user'),
                 db.security.getPermission('Email Access', None),
+                db.security.getPermission('Create', 'issue'),
+                db.security.getPermission('Create', 'msg'),
             ]
-            db.security.role['anonymous'].permissions=p
+            db.security.role['anonymous'].permissions = p
         self.instance.schema_hook = hook
         self._handle_mail(message)
         m = set(self.db.user.list())
@@ -1153,7 +1155,11 @@ Content-Transfer-Encoding: 7bit
 
 
 
-You are not a registered user.
+You are not a registered user. Please register at:
+
+http://tracker.example/cgi-bin/roundup.cgi/bugs/user?template=register
+
+...before sending mail to the tracker.
 
 Unknown address: nonexisting@bork.bork.bork
 
