@@ -33,6 +33,7 @@ Fixes:
   funding the fix.
 - Add documentation for migrating to the Register permission and
   fix mailgw to use Register permission, fixes issue2550599
+- Fix styling of calendar to make it more usable, fixes issue2550608
 
 
 2009-10-09 1.4.10 (r4374)

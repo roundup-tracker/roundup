@@ -421,5 +421,17 @@ textarea:focus, select:focus {
   background-color: #ffffc0;
 }
 
+.calendar_display {
+  text-align: center;
+}
+
+.calendar_display td {
+  padding: 1px 4px 1px 4px;
+}
+
+.calendar_display .today {
+  background-color: #afafaf;
+}
+
 /* vim: sts=2 sw=2 et
 */
