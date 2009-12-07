@@ -958,6 +958,7 @@ A set of Permissions is built into the security module by default:
 - Create (everything)
 - Edit (everything)
 - View (everything)
+- Register (User class only)
 
 These are assigned to the "Admin" Role by default, and allow a user to do
 anything. Every Class you define in your `tracker schema`_ also gets an
@@ -995,7 +996,7 @@ For the "User" Role, the "classic" tracker defines:
 And the "Anonymous" Role is defined as:
 
 - Web interface access
-- Create user (for registration)
+- Register user (for registration)
 - View issue, file, msg, query, keyword, priority, status
 
 Put together, these settings appear in the tracker's ``schema.py`` file::
@@ -1166,7 +1167,7 @@ See the `examples`_ section for longer examples of customisation.
  - they're *anonymous*.
 
 **automatic registration of users in the e-mail gateway**
- By giving the "anonymous" user the ("Create", "user") Permission, any
+ By giving the "anonymous" user the ("Register", "user") Permission, any
  unidentified user will automatically be registered with the tracker
  (with no password, so they won't be able to log in through
  the web until an admin sets their password). By default new Roundup
