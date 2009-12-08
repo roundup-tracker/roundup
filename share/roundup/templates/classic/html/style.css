@@ -413,6 +413,7 @@ table.otherinfo th {
   font-weight: bold;
   text-align: left;
 }
+
 input[type="text"]:focus,
 input[type="checkbox"]:focus,
 input[type="radio"]:focus,
