@@ -73,9 +73,9 @@ class RequestDispatcher(object):
 
     def start_response(self, headers, response_code):
         """Set HTTP response code"""
-        description = BaseHTTPRequestHandler.responses[response_code]
+        message, explain = BaseHTTPRequestHandler.responses[response_code]
         self.__wfile = self.__start_response('%d %s'%(response_code,
-            description), headers)
+            message), headers)
 
     def get_wfile(self):
         if self.__wfile is None:
