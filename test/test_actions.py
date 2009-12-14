@@ -249,6 +249,7 @@ class EditItemActionTestCase(ActionTestCase):
             ({'messages':hyperdb.Multilink('msg')
              ,'content':hyperdb.String()
              ,'files':hyperdb.Multilink('file')
+             ,'msg':hyperdb.Link('msg')
              })
         self.action = EditItemAction(self.client)
 
@@ -295,6 +296,19 @@ class EditItemActionTestCase(ActionTestCase):
         self.client.parsePropsFromForm = lambda: \
             ( {('issue','4711'):{},('msg','1'):{}}
             , [('issue','4711','messages',[('msg','1')])]
+            )
+        try :
+            self.action.handle()
+        except Redirect, msg:
+            pass
+        self.assertEqual(expect, self.result)
+
+    def testLinkNewToExisting(self):
+        expect = [('create',(),{'msg':'1','title':'TEST'})]
+        self.client.db.classes.get = lambda a, b:['23','42']
+        self.client.parsePropsFromForm = lambda: \
+            ( {('issue','-1'):{'title':'TEST'},('msg','1'):{}}
+            , [('issue','-1','msg',[('msg','1')])]
             )
         try :
             self.action.handle()

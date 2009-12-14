@@ -36,7 +36,10 @@ Fixes:
 - Fix styling of calendar to make it more usable, fixes issue2550608
 - Fix typo in email section of user guide, fixes issue2550607
 - Fix WSGI response code (thanks Peter Pöml)
-
+- Fix linking of an existing item to a newly created item, e.g.
+  edit action in web template is name="issue-1@link@msg" value="msg1"
+  would trigger a traceback about an unbound variable.
+  Add new regression test for this case.
 
 2009-10-09 1.4.10 (r4374)
 

@@ -478,9 +478,9 @@ class EditCommon(Action):
                         if linkid is None or linkid.startswith('-'):
                             # linking to a new item
                             if isinstance(propdef, hyperdb.Multilink):
-                                props[linkprop] = [newid]
+                                props[linkprop] = [nodeid]
                             else:
-                                props[linkprop] = newid
+                                props[linkprop] = nodeid
                         else:
                             # linking to an existing item
                             if isinstance(propdef, hyperdb.Multilink):
@@ -488,7 +488,7 @@ class EditCommon(Action):
                                 existing.append(nodeid)
                                 props[linkprop] = existing
                             else:
-                                props[linkprop] = newid
+                                props[linkprop] = nodeid
 
         return '<br>'.join(m)
 
