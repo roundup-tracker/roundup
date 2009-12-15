@@ -41,6 +41,11 @@ Fixes:
   would trigger a traceback about an unbound variable.
   Add new regression test for this case. May be related to (now closed)
   issue1177477. Thanks to Intevation for funding the fix.
+- Clean up all the places where role processing occurs. This is now in a
+  central place in hyperdb.Class and is used consistently throughout.
+  This also means now a template can override the way role processing
+  occurs (e.g. for elaborate permission schemes). Thanks to intevation
+  for funding the change.
 
 2009-10-09 1.4.10 (r4374)
 

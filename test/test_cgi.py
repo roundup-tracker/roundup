@@ -648,6 +648,24 @@ class FormTestCase(unittest.TestCase):
         self.failUnlessRaises(exceptions.Unauthorised,
             actions.EditItemAction(cl).handle)
 
+    def testRoles(self):
+        cl = self._make_client({})
+        self.db.user.set('1', roles='aDmin,    uSer')
+        item = HTMLItem(cl, 'user', '1')
+        self.assert_(item.hasRole('Admin'))
+        self.assert_(item.hasRole('User'))
+        self.assert_(item.hasRole('AdmiN'))
+        self.assert_(item.hasRole('UseR'))
+        self.assert_(item.hasRole('UseR','Admin'))
+        self.assert_(item.hasRole('UseR','somethingelse'))
+        self.assert_(item.hasRole('somethingelse','Admin'))
+        self.assert_(not item.hasRole('userr'))
+        self.assert_(not item.hasRole('adminn'))
+        self.assert_(not item.hasRole(''))
+        self.assert_(not item.hasRole(' '))
+        self.db.user.set('1', roles='')
+        self.assert_(not item.hasRole(''))
+
     def testCSVExport(self):
         cl = self._make_client({'@columns': 'id,name'}, nodeid=None,
             userid='1')

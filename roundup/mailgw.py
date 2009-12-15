@@ -86,6 +86,7 @@ from email.Header import decode_header
 from roundup import configuration, hyperdb, date, password, rfc2822, exceptions
 from roundup.mailer import Mailer, MessageSendError
 from roundup.i18n import _
+from roundup.hyperdb import iter_roles
 
 try:
     import pyme, pyme.core, pyme.gpgme
@@ -162,24 +163,6 @@ def gpgh_sigs(sig):
     while sig:
         yield sig
         sig = sig.next
-
-
-def iter_roles(roles):
-    ''' handle the text processing of turning the roles list
-        into something python can use more easily
-    '''
-    for role in [x.lower().strip() for x in roles.split(',')]:
-        yield role
-
-def user_has_role(db, userid, role_list):
-    ''' see if the given user has any roles that appear
-        in the role_list
-    '''
-    for role in iter_roles(db.user.get(userid, 'roles')):
-        if role in iter_roles(role_list):
-            return True
-    return False
-
 
 def check_pgp_sigs(sig, gpgctx, author):
     ''' Theoretically a PGP message can have several signatures. GPGME
@@ -1256,8 +1239,8 @@ Subject was: "%(subject)s"
         # or we will skip PGP processing
         def pgp_role():
             if self.instance.config.PGP_ROLES:
-                return user_has_role(self.db, author,
-                    self.instance.config.PGP_ROLES)
+                return self.db.user.has_role(author,
+                    iter_roles(self.instance.config.PGP_ROLES))
             else:
                 return True
 

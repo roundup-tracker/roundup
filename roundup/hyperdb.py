@@ -760,6 +760,16 @@ All methods except __repr__ must be implemented by a concrete backend Database.
 
         """
 
+def iter_roles(roles):
+    ''' handle the text processing of turning the roles list
+        into something python can use more easily
+    '''
+    if not roles or not roles.strip():
+        raise StopIteration, "Empty roles given"
+    for role in [x.lower().strip() for x in roles.split(',')]:
+        yield role
+
+
 #
 # The base Class class
 #
@@ -1227,6 +1237,35 @@ class Class:
         propnames = self.getprops().keys()
         propnames.sort()
         return propnames
+    #
+    # convenience methods
+    #
+    def get_roles(self, nodeid):
+        """Return iterator for all roles for this nodeid.
+
+           Yields string-processed roles.
+           This method can be overridden to provide a hook where we can
+           insert other permission models (e.g. get roles from database)
+           In standard schemas only a user has a roles property but
+           this may be different in customized schemas.
+           Note that this is the *central place* where role
+           processing happens!
+        """
+        node = self.db.getnode(self.classname, nodeid)
+        return iter_roles(node['roles'])
+
+    def has_role(self, nodeid, *roles):
+        '''See if this node has any roles that appear in roles.
+           
+           For convenience reasons we take a list.
+           In standard schemas only a user has a roles property but
+           this may be different in customized schemas.
+        '''
+        roles = dict.fromkeys ([r.strip().lower() for r in roles])
+        for role in self.get_roles(nodeid):
+            if role in roles:
+                return True
+        return False
 
 
 class HyperdbValueError(ValueError):

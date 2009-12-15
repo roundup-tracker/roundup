@@ -1205,12 +1205,9 @@ class _HTMLUser(_HTMLItem):
         return self._db.security.hasPermission(permission,
             self._nodeid, classname, property, itemid)
 
-    def hasRole(self, rolename):
-        """Determine whether the user has the Role."""
-        roles = self._db.user.get(self._nodeid, 'roles').split(',')
-        for role in roles:
-            if role.strip() == rolename: return True
-        return False
+    def hasRole(self, *rolenames):
+        """Determine whether the user has any role in rolenames."""
+        return self._db.user.has_role(self._nodeid, *rolenames)
 
 def HTMLItem(client, classname, nodeid, anonymous=0):
     if classname == 'user':

@@ -162,12 +162,9 @@ class Security:
            Note that this functionality is actually implemented by the
            Permission.test() method.
         '''
-        roles = self.db.user.get(userid, 'roles')
-        if roles is None:
-            return 0
         if itemid and classname is None:
             raise ValueError, 'classname must accompany itemid'
-        for rolename in [x.lower().strip() for x in roles.split(',')]:
+        for rolename in self.db.user.get_roles(userid):
             if not rolename or not self.role.has_key(rolename):
                 continue
             # for each of the user's Roles, check the permissions
