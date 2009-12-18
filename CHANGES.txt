@@ -46,6 +46,14 @@ Fixes:
   This also means now a template can override the way role processing
   occurs (e.g. for elaborate permission schemes). Thanks to intevation
   for funding the change.
+- Fix issue2550606 (german translation bug) "an hour" is only used in
+  the context "in an hour" or "an hour ago" which translates to german
+  "in einer Stunde" or "vor einer Stunde".  So "an hour" is translated
+  "einer Stunde" (which sounds wrong at first).  Also note that date.py
+  already has a comment saying "XXX this is internationally broken" --
+  but at least there's a workaround for german :-) Thanks to Chris
+  (radioking) for reporting.
+
 
 2009-10-09 1.4.10 (r4374)
 

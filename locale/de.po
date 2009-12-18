@@ -1788,7 +1788,7 @@ msgstr[1] "%(number)s Stunden"
 
 #: ../roundup/date.py:861
 msgid "an hour"
-msgstr "eine Stunde"
+msgstr "einer Stunde"
 
 #: ../roundup/date.py:863
 msgid "1 1/2 hours"
