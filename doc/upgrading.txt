@@ -16,6 +16,28 @@ steps.
 Migrating from 1.4.x to 1.4.11
 ==============================
 
+Close poential security hole
+----------------------------
+
+If your tracker has untrusted users you should examine its ``schema.py``
+file and look for the section granting the "Edit" permission to your users.
+This should look something like::
+
+    p = db.security.addPermission(name='Edit', klass='user', check=own_record,
+        description="User is allowed to edit their own user details")
+
+and should be modified to restrict the list of properties they are allowed
+to edit by adding the ``properties=`` section like::
+
+    p = db.security.addPermission(name='Edit', klass='user', check=own_record,
+        properties=('username', 'password', 'address', 'realname', 'phone',
+            'organisation', 'alternate_addresses', 'queries', 'timezone'),
+        description="User is allowed to edit their own user details")
+
+Most importantly the "roles" property should not be editable - thus not
+appear in that list of properties.
+
+
 Grant the "Register" permission to the Anonymous role
 -----------------------------------------------------
 

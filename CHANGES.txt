@@ -7,6 +7,8 @@ Features:
 - Generic class editor may now restore retired items (thanks Ralf Hemmecke)
 
 Fixes:
+- Fix security hole allowing user permission escalation (thanks Ralf
+  Schlatterbeck)
 - More SSL fixes. SSL wants the underlying socket non-blocking. So we
   don't call socket.setdefaulttimeout in case of SSL. This apparently
   never raises a WantReadError from SSL.

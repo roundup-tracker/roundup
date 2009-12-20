@@ -112,6 +112,8 @@ p = db.security.addPermission(name='View', klass='user', check=own_record,
     description="User is allowed to view their own user details")
 db.security.addPermissionToRole('User', p)
 p = db.security.addPermission(name='Edit', klass='user', check=own_record,
+    properties=('username', 'password', 'address', 'realname', 'phone',
+        'organisation', 'alternate_addresses', 'queries', 'timezone'),
     description="User is allowed to edit their own user details")
 db.security.addPermissionToRole('User', p)
 

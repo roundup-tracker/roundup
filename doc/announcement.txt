@@ -1,23 +1,60 @@
-I'm proud to release version 1.4.10 of Roundup which fixes some bugs:
+I'm proud to release version 1.4.11 of Roundup which fixes a number bugs
+and closes a potential security hole.
 
-- Minor update of doc/developers.txt to point to the new resources
-  on www.roundup-tracker.org (Bernhard Reiter)
-- Small CSS improvements regaring the search box (thanks Thomas Arendsan Hein)
-  (issue 2550589)
-- Indexers behaviour made more consistent regarding length of indexed words
-  and stopwords (thanks Thomas Arendsen Hein, Bernhard Reiter)(issue 2550584)
-- fixed typos in the installation instructions (thanks Thomas Arendsen Hein)
-  (issue 2550573) 
-- New config option csv_field_size: Pythons csv module (which is used
-  for export/import) has a new field size limit starting with python2.5.
-  We now issue a warning during export if the limit is too small and use
-  the csv_field_size configuration during import to set the limit for
-  the csv module.
-- Small fix for CGI-handling of XMLRPC requests for python2.4, this
-  worked only for 2.5 and beyond due to a change in the xmlrpc interface
-  in python
-- Document filter method of xmlrpc interface
-- Fix interaction of SSL and XMLRPC, now XMLRPC works with SSL
+All tracker maintainers must read the upgrading documentation to make sure
+the hole is fixed in their tracker.
+
+Other changes in this release:
+
+- Generic class editor may now restore retired items (thanks Ralf Hemmecke)
+- Fix security hole allowing user permission escalation (thanks Ralf
+  Schlatterbeck)
+- More SSL fixes. SSL wants the underlying socket non-blocking. So we
+  don't call socket.setdefaulttimeout in case of SSL. This apparently
+  never raises a WantReadError from SSL.
+  This also fixes a case where a WantReadError is raised and apparently
+  the bytes already read are dropped (seems the WantReadError is really
+  an error, not just an indication to retry).
+- Correct initial- and end-handshakes for SSL
+- Update FAQ to mention infinite redirects with pathological settings of
+  the tracker->web variable. Closes issue2537286, thanks to "stuidge"
+  for reporting.
+- Fix some format errors in italian translation file
+- Some bugs issue classifiers were causing database lookup errors
+- Fix security-problem: If user hasn't permission on a message (notably
+  files and content properties) and is on the nosy list, the content was
+  sent via email. We now check that user has permission on the message
+  content and files properties. Thanks to Intevation for funding this
+  fix.
+- Fix traceback on .../msgN/ url, this requests the file content and for
+  apache mod_wsgi produced a traceback because the mime type is None for
+  messages, fixes issue2550586, thanks to Thomas Arendsen Hein for
+  reporting and to Intevation for funding the fix.
+- Handle OPTIONS http request method in wsgi handler, fixes issue2550587.
+  Thanks to Thomas Arendsen Hein for reporting and to Intevation for
+  funding the fix.
+- Add documentation for migrating to the Register permission and
+  fix mailgw to use Register permission, fixes issue2550599
+- Fix styling of calendar to make it more usable, fixes issue2550608
+- Fix typo in email section of user guide, fixes issue2550607
+- Fix WSGI response code (thanks Peter Pöml)
+- Fix linking of an existing item to a newly created item, e.g.
+  edit action in web template is name="issue-1@link@msg" value="msg1"
+  would trigger a traceback about an unbound variable.
+  Add new regression test for this case. May be related to (now closed)
+  issue1177477. Thanks to Intevation for funding the fix.
+- Clean up all the places where role processing occurs. This is now in a
+  central place in hyperdb.Class and is used consistently throughout.
+  This also means now a template can override the way role processing
+  occurs (e.g. for elaborate permission schemes). Thanks to intevation
+  for funding the change.
+- Fix issue2550606 (german translation bug) "an hour" is only used in
+  the context "in an hour" or "an hour ago" which translates to german
+  "in einer Stunde" or "vor einer Stunde".  So "an hour" is translated
+  "einer Stunde" (which sounds wrong at first).  Also note that date.py
+  already has a comment saying "XXX this is internationally broken" --
+  but at least there's a workaround for german :-) Thanks to Chris
+  (radioking) for reporting.
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
