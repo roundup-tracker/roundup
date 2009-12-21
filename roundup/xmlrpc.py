@@ -113,9 +113,9 @@ class RoundupInstance:
             raise UsageError, 'you must provide the "%s" property.'%key
 
         for key in props:
-            if not self.db.security.hasPermission('Edit', self.db.getuid(), classname,
-                                                  property=key):
-                raise Unauthorised('Permission to set %s.%s denied'%(classname, key))
+            if not self.db.security.hasPermission('Create', self.db.getuid(),
+                classname, property=key):
+                raise Unauthorised('Permission to create %s.%s denied'%(classname, key))
 
         # do the actual create
         try:

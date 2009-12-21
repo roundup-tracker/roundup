@@ -5,8 +5,8 @@ are given with the most recent entry first.
 
 Fixes:
 - Proper handling of 'Create' permissions in both mail gateway (earlier
-  commit r4405 by Richard) and web interface, this used to check 'Edit'
-  permission previously. See
+  commit r4405 by Richard), web interface, and xmlrpc. This used to
+  check 'Edit' permission previously. See
   http://thread.gmane.org/gmane.comp.bug-tracking.roundup.devel/5133
   Add regression tests for proper handling of 'Create' and 'Edit'
   permissions.
