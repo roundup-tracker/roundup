@@ -620,10 +620,13 @@ class FormTestCase(unittest.TestCase):
         cl = client.Client(self.instance, None, {'PATH_INFO':'/',
             'REQUEST_METHOD':'POST'}, makeForm(form))
         cl.classname = 'user'
-        cl.nodeid = nodeid
+        if nodeid is not None:
+            cl.nodeid = nodeid
         cl.db = self.db
         cl.userid = userid
         cl.language = ('en',)
+        cl.error_message = []
+        cl.template = 'item'
         return cl
 
     def testClassPermission(self):
@@ -636,7 +639,8 @@ class FormTestCase(unittest.TestCase):
 
     def testCheckAndPropertyPermission(self):
         self.db.security.permissions = {}
-        def own_record(db, userid, itemid): return userid == itemid
+        def own_record(db, userid, itemid):
+            return userid == itemid
         p = self.db.security.addPermission(name='Edit', klass='user',
             check=own_record, properties=("password", ))
         self.db.security.addPermissionToRole('User', p)
@@ -644,8 +648,80 @@ class FormTestCase(unittest.TestCase):
         cl = self._make_client(dict(username='bob'))
         self.assertRaises(exceptions.Unauthorised,
             actions.EditItemAction(cl).handle)
+        cl = self._make_client(dict(roles='User,Admin'), userid='4', nodeid='4')
+        self.assertRaises(exceptions.Unauthorised,
+            actions.EditItemAction(cl).handle)
+        cl = self._make_client(dict(roles='User,Admin'), userid='4')
+        self.assertRaises(exceptions.Unauthorised,
+            actions.EditItemAction(cl).handle)
+        cl = self._make_client(dict(roles='User,Admin'))
+        self.assertRaises(exceptions.Unauthorised,
+            actions.EditItemAction(cl).handle)
+        # working example, mary may change her pw
+        cl = self._make_client({'password':'ob', '@confirm@password':'ob'},
+            nodeid='4', userid='4')
+        self.assertRaises(exceptions.Redirect,
+            actions.EditItemAction(cl).handle)
         cl = self._make_client({'password':'bob', '@confirm@password':'bob'})
         self.failUnlessRaises(exceptions.Unauthorised,
+            actions.EditItemAction(cl).handle)
+
+    def testCreatePermission(self):
+        # this checks if we properly differentiate between create and
+        # edit permissions
+        self.db.security.permissions = {}
+        self.db.security.addRole(name='UserAdd')
+        # Don't allow roles
+        p = self.db.security.addPermission(name='Create', klass='user',
+            properties=("username", "password", "address",
+            "alternate_address", "realname", "phone", "organisation",
+            "timezone"))
+        self.db.security.addPermissionToRole('UserAdd', p)
+        # Don't allow roles *and* don't allow username
+        p = self.db.security.addPermission(name='Edit', klass='user',
+            properties=("password", "address", "alternate_address",
+            "realname", "phone", "organisation", "timezone"))
+        self.db.security.addPermissionToRole('UserAdd', p)
+        self.db.user.set('4', roles='UserAdd')
+
+        # anonymous may not
+        cl = self._make_client({'username':'new_user', 'password':'secret',
+            '@confirm@password':'secret', 'address':'new_user@bork.bork',
+            'roles':'Admin'}, nodeid=None, userid='2')
+        self.assertRaises(exceptions.Unauthorised,
+            actions.NewItemAction(cl).handle)
+        # Don't allow creating new user with roles
+        cl = self._make_client({'username':'new_user', 'password':'secret',
+            '@confirm@password':'secret', 'address':'new_user@bork.bork',
+            'roles':'Admin'}, nodeid=None, userid='4')
+        self.assertRaises(exceptions.Unauthorised,
+            actions.NewItemAction(cl).handle)
+        self.assertEqual(cl.error_message,[])
+        # this should work
+        cl = self._make_client({'username':'new_user', 'password':'secret',
+            '@confirm@password':'secret', 'address':'new_user@bork.bork'},
+            nodeid=None, userid='4')
+        self.assertRaises(exceptions.Redirect,
+            actions.NewItemAction(cl).handle)
+        self.assertEqual(cl.error_message,[])
+        # don't allow changing (my own) username (in this example)
+        cl = self._make_client(dict(username='new_user42'), userid='4')
+        self.assertRaises(exceptions.Unauthorised,
+            actions.EditItemAction(cl).handle)
+        cl = self._make_client(dict(username='new_user42'), userid='4',
+            nodeid='4')
+        self.assertRaises(exceptions.Unauthorised,
+            actions.EditItemAction(cl).handle)
+        # don't allow changing (my own) roles
+        cl = self._make_client(dict(roles='User,Admin'), userid='4',
+            nodeid='4')
+        self.assertRaises(exceptions.Unauthorised,
+            actions.EditItemAction(cl).handle)
+        cl = self._make_client(dict(roles='User,Admin'), userid='4')
+        self.assertRaises(exceptions.Unauthorised,
+            actions.EditItemAction(cl).handle)
+        cl = self._make_client(dict(roles='User,Admin'))
+        self.assertRaises(exceptions.Unauthorised,
             actions.EditItemAction(cl).handle)
 
     def testRoles(self):

@@ -13,6 +13,15 @@ steps.
 
 .. contents::
 
+Migrating from 1.4.x to 1.4.12
+==============================
+
+Item creation now checks the "Create" permission instead of the "Edit"
+permission for individual properties. If you have modified your tracker
+permissions from the default distribution, you should check that
+"Create" permissions exist for all properties you want users to be able
+to create.
+
 Migrating from 1.4.x to 1.4.11
 ==============================
 

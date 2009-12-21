@@ -551,16 +551,11 @@ class EditCommon(Action):
         if not self.hasPermission('Create', classname=classname):
             return 0
 
-        # Check Edit permission for each property, to avoid being able
+        # Check Create permission for each property, to avoid being able
         # to set restricted ones on new item creation
         for key in props:
-            if not self.hasPermission('Edit', classname=classname,
+            if not self.hasPermission('Create', classname=classname,
                                       property=key):
-                # We restrict by default and special-case allowed properties
-                if key == 'date' or key == 'content':
-                    continue
-                elif key == 'author' and props[key] == self.userid:
-                    continue
                 return 0
         return 1
 

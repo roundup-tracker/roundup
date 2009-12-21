@@ -1,6 +1,16 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2010-XX-XX 1.4.12 (rXXXX)
+
+Fixes:
+- Proper handling of 'Create' permissions in both mail gateway (earlier
+  commit r4405 by Richard) and web interface, this used to check 'Edit'
+  permission previously. See
+  http://thread.gmane.org/gmane.comp.bug-tracking.roundup.devel/5133
+  Add regression tests for proper handling of 'Create' and 'Edit'
+  permissions.
+
 2009-12-21 1.4.11 (r4411)
 
 Features:
