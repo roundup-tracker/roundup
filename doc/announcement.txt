@@ -1,7 +1,7 @@
 I'm proud to release version 1.4.11 of Roundup which fixes a number bugs
 and closes a potential security hole.
 
-All tracker maintainers must read the upgrading documentation to make sure
+ALL tracker maintainers MUST read the upgrading documentation to make sure
 the hole is fixed in their tracker.
 
 Other changes in this release:

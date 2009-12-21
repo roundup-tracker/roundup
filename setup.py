@@ -101,69 +101,7 @@ def main():
           description="A simple-to-use and -install issue-tracking system"
             " with command-line, web and e-mail interfaces. Highly"
             " customisable.",
-          long_description='''This version of Roundup fixes some bugs:
-
-- Minor update of doc/developers.txt to point to the new resources
-  on www.roundup-tracker.org (Bernhard Reiter)
-- Small CSS improvements regaring the search box (thanks Thomas Arendsan Hein)
-  (issue 2550589)
-- Indexers behaviour made more consistent regarding length of indexed words
-  and stopwords (thanks Thomas Arendsen Hein, Bernhard Reiter)(issue 2550584)
-- fixed typos in the installation instructions (thanks Thomas Arendsen Hein)
-  (issue 2550573) 
-- New config option csv_field_size: Pythons csv module (which is used
-  for export/import) has a new field size limit starting with python2.5.
-  We now issue a warning during export if the limit is too small and use
-  the csv_field_size configuration during import to set the limit for
-  the csv module.
-- Small fix for CGI-handling of XMLRPC requests for python2.4, this
-  worked only for 2.5 and beyond due to a change in the xmlrpc interface
-  in python
-- Document filter method of xmlrpc interface
-- Fix interaction of SSL and XMLRPC, now XMLRPC works with SSL
-
-If you're upgrading from an older version of Roundup you *must* follow
-the "Software Upgrade" guidelines given in the maintenance documentation.
-
-Roundup requires python 2.3 or later (but not 3+) for correct operation.
-
-To give Roundup a try, just download (see below), unpack and run::
-
-    roundup-demo
-
-Documentation is available at the website:
-     http://roundup.sourceforge.net/
-Mailing lists - the place to ask questions:
-     http://sourceforge.net/mail/?group_id=31577
-
-About Roundup
-=============
-
-Roundup is a simple-to-use and -install issue-tracking system with
-command-line, web and e-mail interfaces. It is based on the winning design
-from Ka-Ping Yee in the Software Carpentry "Track" design competition.
-
-Note: Ping is not responsible for this project. The contact for this
-project is richard@users.sourceforge.net.
-
-Roundup manages a number of issues (with flexible properties such as
-"description", "priority", and so on) and provides the ability to:
-
-(a) submit new issues,
-(b) find and edit existing issues, and
-(c) discuss issues with other participants.
-
-The system will facilitate communication among the participants by managing
-discussions and notifying interested parties when issues are edited. One of
-the major design goals for Roundup that it be simple to get going. Roundup
-is therefore usable "out of the box" with any python 2.3+ (but not 3+)
-installation. It doesn't even need to be "installed" to be operational,
-though an install script is provided.
-
-It comes with two issue tracker templates (a classic bug/feature tracker and
-a minimal skeleton) and five database back-ends (anydbm, sqlite, metakit,
-mysql and postgresql).
-''',
+          long_description=open('doc/announcement.txt').read(),
           url='http://www.roundup-tracker.org',
           download_url='http://pypi.python.org/pypi/roundup',
           classifiers=['Development Status :: 5 - Production/Stable',

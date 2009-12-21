@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2009-12-XX 1.4.11 (rXXXX)
+2009-12-21 1.4.11 (r4411)
 
 Features:
 - Generic class editor may now restore retired items (thanks Ralf Hemmecke)
