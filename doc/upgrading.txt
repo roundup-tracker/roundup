@@ -25,8 +25,8 @@ to create.
 Migrating from 1.4.x to 1.4.11
 ==============================
 
-Close poential security hole
-----------------------------
+Close potential security hole
+-----------------------------
 
 If your tracker has untrusted users you should examine its ``schema.py``
 file and look for the section granting the "Edit" permission to your users.
@@ -54,10 +54,10 @@ A separate "Register" permission has been introduced to allow
 anonymous users to register. This means you will need to add the
 following to your tracker's ``schema.py`` to add the permission and
 assign it to the Anonymous role (replacing any previously assigned
-"Create user" permission for the Anonymous role):
+"Create user" permission for the Anonymous role)::
 
   +db.security.addPermission(name='Register', klass='user',
-  +                          description='User is allowed to register new user')
+  +     description='User is allowed to register new user')
  
    # Assign the appropriate permissions to the anonymous user's Anonymous
    # Role. Choices here are:
