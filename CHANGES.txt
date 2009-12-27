@@ -10,6 +10,9 @@ Fixes:
   http://thread.gmane.org/gmane.comp.bug-tracking.roundup.devel/5133
   Add regression tests for proper handling of 'Create' and 'Edit'
   permissions.
+- Fix handling of non-ascii in realname in the nosy mailer, this used to
+  mangle the email address making it unusable when replying. Thanks to
+  intevation for funding the fix.
 
 2009-12-21 1.4.11 (r4411)
 

@@ -1181,6 +1181,9 @@ This is a test submission of a new issue.
 ''')
 
     def testEnc01(self):
+        self.db.user.set(self.mary_id,
+            realname='\xe4\xf6\xfc\xc4\xd6\xdc\xdf, Mary'.decode
+            ('latin-1').encode('utf-8'))
         self.doNewIssue()
         self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
@@ -1202,7 +1205,8 @@ TO: chef@bork.bork.bork, richard@test.test
 Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test.test
-From: "Contrary, Mary" <issue_tracker@your.tracker.email.domain.example>
+From: =?utf-8?b?w6TDtsO8w4TDlsOcw58sIE1hcnk=?=
+ <issue_tracker@your.tracker.email.domain.example>
 Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
@@ -1213,7 +1217,8 @@ X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
 
-Contrary, Mary <mary@test.test> added the comment:
+=C3=A4=C3=B6=C3=BC=C3=84=C3=96=C3=9C=C3=9F, Mary <mary@test.test> added the=
+ comment:
 
 A message with encoding (encoded oe =C3=B6)
 

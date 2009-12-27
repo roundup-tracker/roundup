@@ -61,10 +61,15 @@ class Mailer:
         charset = getattr(self.config, 'EMAIL_CHARSET', 'utf-8')
         tracker_name = unicode(self.config.TRACKER_NAME, 'utf-8')
         if not author:
-            author = formataddr((tracker_name, self.config.ADMIN_EMAIL))
+            author = (tracker_name, self.config.ADMIN_EMAIL)
+            name = author[0]
         else:
             name = unicode(author[0], 'utf-8')
-            author = formataddr((name, author[1]))
+        try:
+            name = name.encode('ascii')
+        except UnicodeError:
+            name = Header(name, charset).encode()
+        author = formataddr((name, author[1]))
 
         if multipart:
             message = MIMEMultipart()
@@ -77,10 +82,7 @@ class Mailer:
         except UnicodeError:
             message['Subject'] = Header(subject, charset)
         message['To'] = ', '.join(to)
-        try:
-            message['From'] = author.encode('ascii')
-        except UnicodeError:
-            message['From'] = Header(author, charset)
+        message['From'] = author
         message['Date'] = formatdate(localtime=True)
 
         # add a Precedence header so autoresponders ignore us
