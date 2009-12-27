@@ -124,6 +124,14 @@ class IndexerTest(unittest.TestCase):
                                                     [('test', '1', 'a'),
                                                      ('test', '2', 'a')])
 
+    def test_wordsplitting(self):
+        """Test if word splitting works."""
+        self.dex.add_text(('test', '1', 'a'), 'aaaa-aaa bbbb*bbb')
+        self.dex.add_text(('test', '2', 'a'), 'aaaA-aaa BBBB*BBB')
+        for k in 'aaaa', 'aaa', 'bbbb', 'bbb':
+            self.assertSeqEqual(self.dex.find([k]),
+                [('test', '1', 'a'), ('test', '2', 'a')])
+
     def tearDown(self):
         shutil.rmtree('test-index')
 
