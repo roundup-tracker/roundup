@@ -13,6 +13,9 @@ Fixes:
 - Fix handling of non-ascii in realname in the nosy mailer, this used to
   mangle the email address making it unusable when replying. Thanks to
   intevation for funding the fix.
+- Fix documentation on user required to run the tests, fixes 
+  issue2550618, thanks to Chris aka 'radioking'
+
 
 2009-12-21 1.4.11 (r4411)
 

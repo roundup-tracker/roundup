@@ -998,6 +998,12 @@ Problems? Testing your Python...
    - users of the Windows installer, other binary distributions or
    pre-installed Roundup will need to download the source to use it.
 
+   Remember to have a database user 'rounduptest' prepared. This user
+   must have at least the rights to create and drop databases.
+   Documentation: details on `adding MySQL users`_,
+   for PostgreSQL you want to call the ``createuser`` command with the
+   ``-d`` option to allow database creation.
+
 Once you've unpacked roundup's source, run ``python run_tests.py`` in the
 source directory and make sure there are no errors. If there are errors,
 please let us know!
@@ -1029,3 +1035,5 @@ Roundup -- from installation and scripts.
 .. _MySQLdb: http://sourceforge.net/projects/mysql-python
 .. _Psycopg: http://initd.org/software/initd/psycopg
 .. _pysqlite: http://pysqlite.org/
+.. _`adding MySQL users`:
+    http://dev.mysql.com/doc/refman/5.1/en/adding-users.html
