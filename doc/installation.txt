@@ -998,7 +998,8 @@ Problems? Testing your Python...
    - users of the Windows installer, other binary distributions or
    pre-installed Roundup will need to download the source to use it.
 
-   Remember to have a database user 'rounduptest' prepared. This user
+   Remember to have a database user 'rounduptest' prepared (with
+   password 'rounduptest'). This user
    must have at least the rights to create and drop databases.
    Documentation: details on `adding MySQL users`_,
    for PostgreSQL you want to call the ``createuser`` command with the
@@ -1009,9 +1010,11 @@ source directory and make sure there are no errors. If there are errors,
 please let us know!
 
 If the above fails, you may be using the wrong version of python. Try
-``python2 run_tests.py``. If that works, you will need to substitute
-``python2`` for ``python`` in all further commands you use in relation to
-Roundup -- from installation and scripts.
+``python2 run_tests.py`` or ``python2.X run_tests.py`` where ``X`` is in
+the set 3,4,5,6 depending on the version(s) of python installed.
+If that works, you will need to substitute ``python2`` or ``python2.X``
+for ``python`` in all further commands you use in relation to Roundup --
+from installation and scripts.
 
 
 .. _`table of contents`: index.html
