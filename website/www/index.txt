@@ -38,5 +38,5 @@ Want to say thanks? You can just send me a note (I always appreciate them) or be
 
 
 .. _`download`: http://cheeseshop.python.org/pypi/roundup
-.. _`change note`: http://roundup.cvs.sourceforge.net/roundup/roundup/CHANGES.txt?revision=HEAD&view=markup
+.. _`change note`: http://svn.roundup-tracker.org/viewvc/roundup/roundup/trunk/CHANGES.txt?view=markup
 .. _`send me a gift`: http://www.amazon.com/o/registry/J96FJCMBG774
