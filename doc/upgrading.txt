@@ -69,6 +69,14 @@ The lines marked "+" should be added and lines marked "-" should be
 deleted (minus the "+"/"-" signs).
 
 
+Generic class editor may now restore retired items
+--------------------------------------------------
+
+The instructions for doing so won't be present in your tracker unless you copy
+the ``_generic.index.html`` template from the roundup distribution in
+``share/roundup/templates/classic/html`` to your tracker's ``html`` directory.
+
+
 Migrating from 1.4.x to 1.4.9
 =============================
 
