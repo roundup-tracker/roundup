@@ -17,7 +17,7 @@ Fixes:
   issue2550618, thanks to Chris aka 'radioking'
 
 
-2009-12-21 1.4.11 (r4411)
+2009-12-21 1.4.11 (r4413)
 
 Features:
 - Generic class editor may now restore retired items (thanks Ralf Hemmecke)
