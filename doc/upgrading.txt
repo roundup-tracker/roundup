@@ -22,6 +22,25 @@ permissions from the default distribution, you should check that
 "Create" permissions exist for all properties you want users to be able
 to create.
 
+Fixing some potential security holes
+------------------------------------
+
+Some HTML templates were found to have formatting security problems:
+
+``html/page.html``::
+
+  -tal:replace="request/user/username">username</span></b><br>
+  +tal:replace="python:request.user.username.plain(escape=1)">username</span></b><br>
+
+``html/_generic.help-list.html``::
+
+  -tal:content="structure python:item[prop]"></label>
+  +tal:content="python:item[prop]"></label>
+
+The lines marked "+" should be added and lines marked "-" should be
+deleted (minus the "+"/"-" signs).
+
+
 Migrating from 1.4.x to 1.4.11
 ==============================
 
@@ -67,6 +86,12 @@ assign it to the Anonymous role (replacing any previously assigned
 
 The lines marked "+" should be added and lines marked "-" should be
 deleted (minus the "+"/"-" signs).
+
+You should also modify the ``html/page.py`` template to change the
+permission tested there::
+
+   -tal:condition="python:request.user.hasPermission('Create', 'user')"
+   +tal:condition="python:request.user.hasPermission('Register', 'user')"
 
 
 Generic class editor may now restore retired items
