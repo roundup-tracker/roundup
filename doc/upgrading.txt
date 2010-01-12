@@ -22,8 +22,17 @@ permissions from the default distribution, you should check that
 "Create" permissions exist for all properties you want users to be able
 to create.
 
+
 Fixing some potential security holes
 ------------------------------------
+
+Enhanced checking was added to the user registration auditor. If you
+run a public tracker you should update your tracker's
+``detectors/userauditor.py`` using the new code from
+``share/roundup/templates/classic/detectors/userauditor.py``. In most
+cases you may just copy the file over, but if you've made changes to
+the auditor in your tracker then you'll need to manually integrate
+the new code.
 
 Some HTML templates were found to have formatting security problems:
 
