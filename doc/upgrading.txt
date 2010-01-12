@@ -41,6 +41,17 @@ The lines marked "+" should be added and lines marked "-" should be
 deleted (minus the "+"/"-" signs).
 
 
+Some HTML interface tweaks
+--------------------------
+
+You may wish to copy the ``user_utils.js`` and ``style.css` files from the
+source distribution ``share/roundup/templates/classic/html/`` directory to the
+``html`` directory of your trackers as it includes a small improvement.
+
+If you have made local changes to those files you'll need to manually work
+the differences in to your versions or ignore the changes.
+
+
 Migrating from 1.4.x to 1.4.11
 ==============================
 
