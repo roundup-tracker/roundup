@@ -107,7 +107,7 @@ assign it to the Anonymous role (replacing any previously assigned
 The lines marked "+" should be added and lines marked "-" should be
 deleted (minus the "+"/"-" signs).
 
-You should also modify the ``html/page.py`` template to change the
+You should also modify the ``html/page.html`` template to change the
 permission tested there::
 
    -tal:condition="python:request.user.hasPermission('Create', 'user')"
