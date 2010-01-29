@@ -15,6 +15,10 @@ Fixes:
   intevation for funding the fix.
 - Fix documentation on user required to run the tests, fixes 
   issue2550618, thanks to Chris aka 'radioking'
+- Add simple doc about translating customised tracker content
+- Add "flup" setup documentation, thanks Christian Glass
+- Fix "Web Access" permission check to allow serving of static files to
+  Anonymous again
 
 
 2009-12-21 1.4.11 (r4413)

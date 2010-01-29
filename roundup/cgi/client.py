@@ -380,6 +380,7 @@ class Client:
         self.determine_language()
         # Open the database as the correct user.
         self.determine_user()
+        self.check_web_access()
 
         # Call the appropriate XML-RPC method.
         handler = xmlrpc.RoundupDispatcher(self.db,
@@ -436,6 +437,11 @@ class Client:
 
                 # figure out the context and desired content template
                 self.determine_context()
+
+                # if we've made it this far the context is to a bit of
+                # Roundup's real web interface (not a file being served up)
+                # so do the Anonymous Web Acess check now
+                self.check_web_access()
 
                 # possibly handle a form submit action (may change self.classname
                 # and self.template, and may also append error/ok_messages)
@@ -711,14 +717,20 @@ class Client:
         # make sure the anonymous user is valid if we're using it
         if user == 'anonymous':
             self.make_user_anonymous()
-            if not self.db.security.hasPermission('Web Access', self.userid):
-                raise Unauthorised, self._("Anonymous users are not "
-                    "allowed to use the web interface")
         else:
             self.user = user
 
         # reopen the database as the correct user
         self.opendb(self.user)
+
+    def check_web_access(self):
+        """Check that the Anonymous user is actually allowed to use the web
+        interface and short-circuit all further processing if they're not.
+        """
+        if self.user == 'anonymous':
+            if not self.db.security.hasPermission('Web Access', self.userid):
+                raise Unauthorised, self._("Anonymous users are not "
+                    "allowed to use the web interface")
 
     def opendb(self, username):
         """Open the database and set the current user.
@@ -865,6 +877,8 @@ class Client:
             # The classname was not valid.
             raise NotFound, str(designator)
             
+        # perform the Anonymous user access check
+        self.check_web_access()
 
         # make sure we have the appropriate properties
         props = klass.getprops()
