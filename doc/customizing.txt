@@ -2548,6 +2548,15 @@ An example of batching::
 the "keyword" class (well, their "name" anyway).
 
 
+Translations
+~~~~~~~~~~~~
+
+Should you wish to enable multiple languages in template content that you
+create you'll need to add new locale files in the tracker home under a
+``locale`` directory. Use the instructions in the ``developer's guide`` to
+create the locale files.
+
+
 Displaying Properties
 ---------------------
 
@@ -4879,3 +4888,4 @@ rather than requiring a web server restart.
 
 
 .. _`design documentation`: design.html
+.. _`developer's guide`: developers.html
