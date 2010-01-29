@@ -21,6 +21,8 @@ Fixes:
   Anonymous again
 - Add check for "Web Access" permission in all web templating permission
   checks
+- Fix typo in upgrading documentation, thanks Christian Glass
+- Display 'today' in the account user's timezone, thanks David Wolever
 
 
 2009-12-21 1.4.11 (r4413)

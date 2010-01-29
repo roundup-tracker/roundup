@@ -2827,7 +2827,9 @@ class TemplatingUtils:
 
         html will simply be a table.
         """
-        date_str  = request.form.getfirst("date", ".")
+        tz = request.client.db.getUserTimezone())
+        current_date = date.Date(".").local(tz)
+        date_str  = request.form.getfirst("date", current_date)
         display   = request.form.getfirst("display", date_str)
         template  = request.form.getfirst("@template", "calendar")
         form      = request.form.getfirst("form")
