@@ -19,6 +19,8 @@ Fixes:
 - Add "flup" setup documentation, thanks Christian Glass
 - Fix "Web Access" permission check to allow serving of static files to
   Anonymous again
+- Add check for "Web Access" permission in all web templating permission
+  checks
 
 
 2009-12-21 1.4.11 (r4413)

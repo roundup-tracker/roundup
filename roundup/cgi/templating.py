@@ -520,20 +520,23 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
     def is_edit_ok(self):
         """ Is the user allowed to Create the current class?
         """
-        return self._db.security.hasPermission('Create', self._client.userid,
-            self._classname)
+        perm = self._db.security.hasPermission
+        return perm('Web Access', self._client.userid) and perm('Create',
+            self._client.userid, self._classname)
 
     def is_retire_ok(self):
         """ Is the user allowed to retire items of the current class?
         """
-        return self._db.security.hasPermission('Retire', self._client.userid,
-            self._classname)
+        perm = self._db.security.hasPermission
+        return perm('Web Access', self._client.userid) and perm('Retire',
+            self._client.userid, self._classname)
 
     def is_view_ok(self):
         """ Is the user allowed to View the current class?
         """
-        return self._db.security.hasPermission('View', self._client.userid,
-            self._classname)
+        perm = self._db.security.hasPermission
+        return perm('Web Access', self._client.userid) and perm('View',
+            self._client.userid, self._classname)
 
     def is_only_view_ok(self):
         """ Is the user only allowed to View (ie. not Create) the current class?
@@ -620,6 +623,8 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         # check perms
         check = self._client.db.security.hasPermission
         userid = self._client.userid
+        if not check('Web Access', userid):
+            return []
 
         l = [HTMLItem(self._client, self._classname, id) for id in l
             if check('View', userid, self._classname, itemid=id)]
@@ -634,11 +639,14 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         writer = csv.writer(s)
         writer.writerow(props)
         check = self._client.db.security.hasPermission
+        userid = self._client.userid
+        if not check('Web Access', userid):
+            return ''
         for nodeid in self._klass.list():
             l = []
             for name in props:
                 # check permission to view this property on this item
-                if not check('View', self._client.userid, itemid=nodeid,
+                if not check('View', userid, itemid=nodeid,
                         classname=self._klass.classname, property=name):
                     raise Unauthorised('view', self._klass.classname,
                         translator=self._client.translator)
@@ -672,6 +680,8 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
 
         check = self._db.security.hasPermission
         userid = self._client.userid
+        if not check('Web Access', userid):
+            return []
 
         l = [HTMLItem(self._client, self.classname, id)
              for id in self._klass.filter(None, filterspec, sort, group)
@@ -801,20 +811,23 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
     def is_edit_ok(self):
         """ Is the user allowed to Edit this item?
         """
-        return self._db.security.hasPermission('Edit', self._client.userid,
-            self._classname, itemid=self._nodeid)
+        perm = self._db.security.hasPermission
+        return perm('Web Access', self._client.userid) and perm('Edit',
+            self._client.userid, self._classname, itemid=self._nodeid)
 
     def is_retire_ok(self):
         """ Is the user allowed to Reture this item?
         """
-        return self._db.security.hasPermission('Retire', self._client.userid,
-            self._classname, itemid=self._nodeid)
+        perm = self._db.security.hasPermission
+        return perm('Web Access', self._client.userid) and perm('Retire',
+            self._client.userid, self._classname, itemid=self._nodeid)
 
     def is_view_ok(self):
         """ Is the user allowed to View this item?
         """
-        if self._db.security.hasPermission('View', self._client.userid,
-                self._classname, itemid=self._nodeid):
+        perm = self._db.security.hasPermission
+        if perm('Web Access', self._client.userid) and perm('View',
+                self._client.userid, self._classname, itemid=self._nodeid):
             return 1
         return self.is_edit_ok()
 
@@ -1289,19 +1302,22 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
         property. Check "Create" for new items, or "Edit" for existing
         ones.
         """
+        perm = self._db.security.hasPermission
+        userid = self._client.userid
+        if not perm('Web Access', userid):
+            return False
         if self._nodeid:
-            return self._db.security.hasPermission('Edit', self._client.userid,
-                self._classname, self._name, self._nodeid)
-        return self._db.security.hasPermission('Create', self._client.userid,
-            self._classname, self._name) or \
-            self._db.security.hasPermission('Register', self._client.userid,
-                                            self._classname, self._name)
+            return perm('Edit', userid, self._classname, self._name,
+                self._nodeid)
+        return perm('Create', userid, self._classname, self._name) or \
+            perm('Register', userid, self._classname, self._name)
 
     def is_view_ok(self):
         """ Is the user allowed to View the current class?
         """
-        if self._db.security.hasPermission('View', self._client.userid,
-                self._classname, self._name, self._nodeid):
+        perm = self._db.security.hasPermission
+        if perm('Web Access',  self._client.userid) and perm('View',
+                self._client.userid, self._classname, self._name, self._nodeid):
             return 1
         return self.is_edit_ok()
 
@@ -2071,9 +2087,10 @@ class MultilinkHTMLProperty(HTMLProperty):
         check = self._db.security.hasPermission
         userid = self._client.userid
         classname = self._prop.classname
-        for value in values:
-            if check('View', userid, classname, itemid=value):
-                yield HTMLItem(self._client, classname, value)
+        if check('Web Access', userid):
+            for value in values:
+                if check('View', userid, classname, itemid=value):
+                    yield HTMLItem(self._client, classname, value)
 
     def __iter__(self):
         """ iterate and return a new HTMLItem
@@ -2649,6 +2666,12 @@ function help_window(helpurl, width, height) {
     def batch(self):
         """ Return a batch object for results from the "current search"
         """
+        check = self._client.db.security.hasPermission
+        userid = self._client.userid
+        if not check('Web Access', userid):
+            return Batch(self.client, [], self.pagesize, self.startwith,
+                classname=self.classname)
+
         filterspec = self.filterspec
         sort = self.sort
         group = self.group
@@ -2665,8 +2688,6 @@ function help_window(helpurl, width, height) {
             matches = None
 
         # filter for visibility
-        check = self._client.db.security.hasPermission
-        userid = self._client.userid
         l = [id for id in klass.filter(matches, filterspec, sort, group)
             if check('View', userid, self.classname, itemid=id)]
 
