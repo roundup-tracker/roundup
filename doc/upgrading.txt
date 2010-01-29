@@ -215,7 +215,7 @@ The lines marked "+" should be added, minus the "+" sign.
 Fix the "retire" link in the users list for admin users
 -------------------------------------------------------
 
-The "retire" link found in the file ``html/users.index.html``::
+The "retire" link found in the file ``html/user.index.html``::
 
   <td tal:condition="context/is_edit_ok">
    <a tal:attributes="href string:user${user/id}?@action=retire&@template=index"
