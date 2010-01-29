@@ -326,10 +326,11 @@ Configure a Web Interface
 There are five web interfaces to choose from:
 
 1. `web server cgi-bin`_
-2. `stand-alone web server`_
-3. `Zope product - ZRoundup`_
-4. `Apache HTTP Server with mod_python`_
-5. `WSGI handler`_
+2. `cgi-bin for limited-access hosting`_
+3. `stand-alone web server`_
+4. `Zope product - ZRoundup`_
+5. `Apache HTTP Server with mod_python`_
+6. `WSGI handler`_
 
 You may need to give the web server user permission to access the tracker home
 - see the `UNIX environment steps`_ for information. You may also need to
@@ -385,6 +386,48 @@ couple lines to your Apache configuration::
  <Location /path/to/roundup>
    SetHandler cgi-script
  </Location>
+
+
+CGI-bin for Limited-Access Hosting
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you are running in a shared-hosting environment or otherwise don't have
+permissiong to edit the system web server's configuration, but can create a
+``.htaccess`` file then you may be able to use this approach.
+
+1. Install flup_
+2. Create a script ``roundup_stub`` in your server's ``cgi-bin`` directory
+   containing::
+
+    #!/usr/bin/env python
+
+    # if necessary modify the Python path to include the place you
+    # installed Roundup
+    #import sys
+    #sys.path.append('...')
+
+    # cgitb is needed for debugging in browser only
+    #import cgitb
+    #cgitb.enable()
+
+    # obtain the WSGI request dispatcher
+    from roundup.cgi.wsgi_handler import RequestDispatcher
+    tracker_home = '/path/to/tracker/home'
+    app = RequestDispatcher(tracker_home)
+
+    from flup.server.cgi import WSGIServer
+    WSGIServer(app).run()
+
+3. Modify or created the ``.htaccess`` file in the desired (sub-)domain
+   directory to contain::
+
+    RewriteEngine On
+    RewriteBase /
+    RewriteRule ^(.*)$      /cgi-bin/roundup_stub/$1 [L]
+
+Now loading the (sub-)domain in a browser should load the tracker web
+interface. If you get a "500" error then enable the "cgitb" lines in the
+stub to get some debugging information.
 
 
 Stand-alone Web Server
@@ -1034,6 +1077,7 @@ from installation and scripts.
 .. _External hyperlink targets:
 
 .. _apache: http://httpd.apache.org/
+.. _flup: http://pypi.python.org/pypi/flup
 .. _mod_python: http://www.modpython.org/
 .. _MySQLdb: http://sourceforge.net/projects/mysql-python
 .. _Psycopg: http://initd.org/software/initd/psycopg
