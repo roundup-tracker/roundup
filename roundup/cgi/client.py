@@ -738,6 +738,12 @@ class Client:
         if action in ('login', 'register'):
             return
 
+        # allow Anonymous to view the "user" "register" template if they're
+        # allowed to register
+        if (self.db.security.hasPermission('Register', self.userid, 'user')
+                and self.classname == 'user' and self.template == 'register'):
+            return
+
         # otherwise for everything else
         if self.user == 'anonymous':
             if not self.db.security.hasPermission('Web Access', self.userid):

@@ -1304,9 +1304,9 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
         """
         perm = self._db.security.hasPermission
         userid = self._client.userid
-        if not perm('Web Access', userid):
-            return False
         if self._nodeid:
+            if not perm('Web Access', userid):
+                return False
             return perm('Edit', userid, self._classname, self._name,
                 self._nodeid)
         return perm('Create', userid, self._classname, self._name) or \

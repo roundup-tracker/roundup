@@ -840,12 +840,6 @@ class RegisterAction(RegoCommon, EditCommon):
                 % str(message))
             return
 
-        # registration isn't allowed to supply roles
-        user_props = props[('user', None)]
-        if user_props.has_key('roles'):
-            raise exceptions.Unauthorised, self._(
-                "It is not permitted to supply roles at registration.")
-
         # skip the confirmation step?
         if self.db.config['INSTANT_REGISTRATION']:
             # handle the create now
@@ -922,6 +916,17 @@ reply's additional "Re:" is ok),
 
         # redirect to the "you're almost there" page
         raise exceptions.Redirect, '%suser?@template=rego_progress'%self.base
+
+    def newItemPermission(self, props, classname=None):
+        """Just check the "Register" permission.
+        """
+        # registration isn't allowed to supply roles
+        if props.has_key('roles'):
+            raise exceptions.Unauthorised, self._(
+                "It is not permitted to supply roles at registration.")
+
+        # technically already checked, but here for clarity
+        return self.hasPermission('Register', classname=classname)
 
 class LogoutAction(Action):
     def handle(self):
