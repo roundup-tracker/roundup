@@ -126,6 +126,9 @@ issue = IssueClass(db, "issue",
                    resolution=Link('resolution'),
                    superseder=Link('issue'),
                    keywords=Multilink("keyword"))
+db.security.addPermission(name='Register', klass='user',
+    description='User is allowed to register new user')
+
 
 #
 # TRACKER SECURITY SETTINGS
@@ -327,7 +330,7 @@ db.security.addPermissionToRole('Anonymous', 'Web Access')
 # Assign the appropriate permissions to the anonymous user's Anonymous
 # Role. Choices here are:
 # - Allow anonymous users to register
-db.security.addPermissionToRole('Anonymous', 'Create', 'user')
+db.security.addPermissionToRole('Anonymous', 'Register', 'user')
 
 # Allow anonymous users access to view issues (and the related, linked
 # information).
