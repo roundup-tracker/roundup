@@ -28,17 +28,20 @@ def encode_quopri(msg):
 def nice_sender_header(name, address, charset):
     # construct an address header so it's as human-readable as possible
     # even in the presence of a non-ASCII name part
-    h = Header(charset=charset)
-    # the important bits of formataddr()
-    if specialsre.search(name):
-        name = '"%s"'%escapesre.sub(r'\\\g<0>', name)
+    if not name:
+        return address
     try:
-        name.encode('ASCII')
-        h.append(name, 'ASCII')
+        encname = name.encode('ASCII')
     except UnicodeEncodeError:
-        h.append(name)
-    h.append('<%s>'%address, 'ASCII')
-    return str(h)
+        # use Header to encode correctly.
+        encname = Header(name, charset=charset).encode()
+
+    # the important bits of formataddr()
+    if specialsre.search(encname):
+        encname = '"%s"'%escapesre.sub(r'\\\g<0>', encname)
+
+    # now use Header again to wrap the line if necessary
+    return '%s <%s>'%(encname, address)
 
 class Mailer:
     """Roundup-specific mail sending."""

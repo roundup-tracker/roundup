@@ -78,7 +78,7 @@ class DiffHelper:
                 res.extend(body_diff)
 
             if res:
-                res.insert(0, 'Generated message not correct (diff follows):')
+                res.insert(0, 'Generated message not correct (diff follows, expected vs. actual):')
                 raise AssertionError, '\n'.join(res)
 
     def compareStrings(self, s2, s1, replace={}):
@@ -257,7 +257,8 @@ Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, mary@test.test, richard@test.test
 From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
@@ -301,7 +302,8 @@ Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: mary@test.test, richard@test.test
 From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
@@ -342,7 +344,8 @@ Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: mary@test.test, richard@test.test
 From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
@@ -485,7 +488,8 @@ Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test.test
 From: "Contrary, Mary" <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -533,7 +537,8 @@ Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, john@test.test, mary@test.test
 From: richard <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -591,7 +596,8 @@ X-Roundup-Loop: hello
 X-Roundup-Issue-Status: unread
 X-Roundup-Version: 1.3.3
 MIME-Version: 1.0
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -629,7 +635,8 @@ Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, john@test.test, mary@test.test
 From: richard <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -742,7 +749,8 @@ Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test.test
 From: John Doe <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -788,7 +796,8 @@ Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork
 From: richard <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -834,7 +843,8 @@ Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, john@test.test, richard@test.test
 From: John Doe <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -879,7 +889,8 @@ Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test.test
 From: John Doe <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -924,7 +935,8 @@ Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork
 From: richard <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -1207,7 +1219,8 @@ Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test.test
 From: =?utf-8?b?w6TDtsO8w4TDlsOcw58sIE1hcnk=?=
  <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -1255,7 +1268,8 @@ Content-Type: text/plain; charset="iso-8859-1"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test.test
 From: "Contrary, Mary" <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -1309,7 +1323,8 @@ Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test.test
 From: "Contrary, Mary" <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -1386,7 +1401,8 @@ Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork
 From: richard <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -1930,7 +1946,8 @@ Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: richard@test.test
 From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
