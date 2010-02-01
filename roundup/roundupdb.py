@@ -35,7 +35,8 @@ from roundup import password, date, hyperdb
 from roundup.i18n import _
 
 # MessageSendError is imported for backwards compatibility
-from roundup.mailer import Mailer, MessageSendError, encode_quopri
+from roundup.mailer import Mailer, MessageSendError, encode_quopri, \
+    nice_sender_header
 
 class Database:
 
@@ -406,9 +407,10 @@ class IssueClass:
         else:
             sendto = [sendto]
 
+        # tracker sender info
         tracker_name = unicode(self.db.config.TRACKER_NAME, 'utf-8')
-        tracker_name = formataddr((tracker_name, from_address))
-        tracker_name = Header(tracker_name, charset)
+        tracker_name = nice_sender_header(tracker_name, from_address,
+            charset)
 
         # now send one or more messages
         # TODO: I believe we have to create a new message each time as we

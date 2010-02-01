@@ -9,7 +9,7 @@ from cStringIO import StringIO
 from roundup import __version__
 from roundup.date import get_timezone
 
-from email.Utils import formatdate, formataddr
+from email.Utils import formatdate, formataddr, specialsre, escapesre
 from email.Message import Message
 from email.Header import Header
 from email.MIMEText import MIMEText
@@ -24,6 +24,21 @@ def encode_quopri(msg):
     msg.set_payload(encdata)
     del msg['Content-Transfer-Encoding']
     msg['Content-Transfer-Encoding'] = 'quoted-printable'
+
+def nice_sender_header(name, address, charset):
+    # construct an address header so it's as human-readable as possible
+    # even in the presence of a non-ASCII name part
+    h = Header(charset=charset)
+    # the important bits of formataddr()
+    if specialsre.search(name):
+        name = '"%s"'%escapesre.sub(r'\\\g<0>', name)
+    try:
+        name.encode('ASCII')
+        h.append(name, 'ASCII')
+    except UnicodeEncodeError:
+        h.append(name)
+    h.append('<%s>'%address, 'ASCII')
+    return str(h)
 
 class Mailer:
     """Roundup-specific mail sending."""
@@ -65,11 +80,7 @@ class Mailer:
             name = author[0]
         else:
             name = unicode(author[0], 'utf-8')
-        try:
-            name = name.encode('ascii')
-        except UnicodeError:
-            name = Header(name, charset).encode()
-        author = formataddr((name, author[1]))
+        author = nice_sender_header(name, author[1], charset)
 
         if multipart:
             message = MIMEMultipart()
