@@ -1288,6 +1288,9 @@ class CoreConfig(Config):
             '%(asctime)s %(levelname)s %(message)s')
         hdlr.setFormatter(formatter)
         # no logging API to remove all existing handlers!?!
+        for h in logger.handlers:
+            h.close()
+            logger.removeHandler(hdlr)
         logger.handlers = [hdlr]
         logger.setLevel(logging._levelNames[self["LOGGING_LEVEL"] or "ERROR"])
 

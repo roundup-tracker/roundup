@@ -23,6 +23,8 @@ Fixes:
   checks
 - Improvements in upgrading documentation, thanks Christian Glass
 - Display 'today' in the account user's timezone, thanks David Wolever
+- Fix file handle leak in some web interfaces with logging turned on,
+  fixes issue1675845
 
 
 2009-12-21 1.4.11 (r4413)
