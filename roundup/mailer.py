@@ -40,7 +40,8 @@ def nice_sender_header(name, address, charset):
     if specialsre.search(encname):
         encname = '"%s"'%escapesre.sub(r'\\\g<0>', encname)
 
-    # now use Header again to wrap the line if necessary
+    # now format the header as a string - don't return a Header as anonymous
+    # headers play poorly with Messages (eg. won't get wrapped properly)
     return '%s <%s>'%(encname, address)
 
 class Mailer:
