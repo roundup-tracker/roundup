@@ -2154,16 +2154,18 @@ class MultilinkHTMLProperty(HTMLProperty):
             return self.plain(escape=1)
 
         linkcl = self._db.getclass(self._prop.classname)
-        value = self._value[:]
-        # map the id to the label property
-        if not linkcl.getkey():
-            showid=1
-        if not showid:
-            k = linkcl.labelprop(1)
-            value = lookupKeys(linkcl, k, value)
-        value = ','.join(value)
-        return self.input(name=self._formname, size=size, value=value,
-                          **kwargs)
+
+        if 'value' not in kwargs:
+            value = self._value[:]
+            # map the id to the label property
+            if not linkcl.getkey():
+                showid=1
+            if not showid:
+                k = linkcl.labelprop(1)
+                value = lookupKeys(linkcl, k, value)
+            value = ','.join(value)
+
+        return self.input(name=self._formname, size=size, **kwargs)
 
     def menu(self, size=None, height=None, showid=0, additional=[],
              value=None, sort_on=None, html_kwargs = {}, **conditions):

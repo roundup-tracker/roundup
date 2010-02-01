@@ -27,6 +27,8 @@ Fixes:
   fixes issue1675845
 - Attempt to generate more human-readable addresses in email, fixes
   issue2550632
+- Allow value to be specified to multilink form element templating, fixes
+  issue2550613, thanks David Wolever
 
 
 2009-12-21 1.4.11 (r4413)
