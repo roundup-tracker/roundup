@@ -1249,6 +1249,14 @@ class CoreConfig(Config):
         if home_dir is None:
             self.init_logging()
 
+    def copy(self):
+        new = CoreConfig()
+        new.sections = list(self.sections)
+        new.section_descriptions = dict(self.section_descriptions)
+        new.section_options = dict(self.section_options)
+        new.options = dict(self.options)
+        return new
+
     def _get_unset_options(self):
         need_set = Config._get_unset_options(self)
         # remove MAIL_PASSWORD if MAIL_USER is empty

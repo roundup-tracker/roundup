@@ -950,7 +950,7 @@ class Class(hyperdb.Class):
                 raise ValueError, 'Journalling is disabled for this class'
             journal = self.db.getjournal(self.classname, nodeid)
             if journal:
-                return self.db.getjournal(self.classname, nodeid)[0][1]
+                return journal[0][1]
             else:
                 # on the strange chance that there's no journal
                 return date.Date()
