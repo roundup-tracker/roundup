@@ -182,8 +182,8 @@ Subject: [issue] Testing...
 From here to there!
 ''')
         assert not os.path.exists(SENDMAILDEBUG)
-        msgid = self.db.issue.get(nodeid, 'msg')[0]
-        self.assertEqual(self.db.issue.get(msgid, 'content'), 'From here to there!')
+        msgid = self.db.issue.get(nodeid, 'messages')[0]
+        self.assertEqual(self.db.msg.get(msgid, 'content'), 'From here to there!')
 
     def doNewIssue(self):
         nodeid = self._handle_mail('''Content-Type: text/plain;
