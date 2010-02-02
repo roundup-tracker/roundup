@@ -300,7 +300,7 @@ class Client:
 
         # see if we need to re-parse the environment for the form (eg Zope)
         if form is None:
-            self.form = cgi.FieldStorage(environ=env)
+            self.form = cgi.FieldStorage(fp=request.rfile, environ=env)
         else:
             self.form = form
 

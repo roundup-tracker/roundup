@@ -188,8 +188,6 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         """ Execute the CGI command. Wrap an innner call in an error
             handler so all errors can be caught.
         """
-        save_stdin = sys.stdin
-        sys.stdin = self.rfile
         try:
             self.inner_run_cgi()
         except client.NotFound:
@@ -226,7 +224,6 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                     # out to the logfile
                     print 'EXCEPTION AT', ts
                     traceback.print_exc()
-        sys.stdin = save_stdin
 
     do_GET = do_POST = do_HEAD = run_cgi
 

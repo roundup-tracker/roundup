@@ -29,6 +29,8 @@ Fixes:
   issue2550632
 - Allow value to be specified to multilink form element templating, fixes
   issue2550613, thanks David Wolever
+- Fix thread safety with stdin in roundup-server, fixes issue2550596
+  (thanks Werner Hunger)
 
 
 2009-12-21 1.4.11 (r4413)
