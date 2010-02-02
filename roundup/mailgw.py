@@ -569,7 +569,8 @@ class MailGW:
         fcntl.flock(f.fileno(), FCNTL.LOCK_UN)
         return 0
 
-    def do_imap(self, server, user='', password='', mailbox='', ssl=0):
+    def do_imap(self, server, user='', password='', mailbox='', ssl=0,
+            cram=0):
         ''' Do an IMAP connection
         '''
         import getpass, imaplib, socket
@@ -595,7 +596,10 @@ class MailGW:
             return 1
 
         try:
-            server.login(user, password)
+            if cram:
+                server.login_cram_md5(user, password)
+            else:
+                server.login(user, password)
         except imaplib.IMAP4.error, e:
             self.logger.exception('IMAP login failure')
             return 1

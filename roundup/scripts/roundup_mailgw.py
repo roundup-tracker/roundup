@@ -105,6 +105,11 @@ IMAPS:
  This supports the same notation as IMAP.
     imaps username:password@server [mailbox]
 
+IMAPS_CRAM:
+ Connect to an IMAP server over ssl using CRAM-MD5 authentication.
+ This supports the same notation as IMAP.
+    imaps_cram username:password@server [mailbox]
+
 """)%{'program': args[0]}
     return 1
 
@@ -153,7 +158,7 @@ def main(argv):
     source, specification = args[1:3]
 
     # time out net connections after a minute if we can
-    if source not in ('mailbox', 'imaps'):
+    if source not in ('mailbox', 'imaps', 'imaps_cram'):
         if hasattr(socket, 'setdefaulttimeout'):
             socket.setdefaulttimeout(60)
 
@@ -189,14 +194,19 @@ def main(argv):
     elif source == 'apop':
         return handler.do_apop(server, username, password)
     elif source.startswith('imap'):
-        ssl = source.endswith('s')
+        ssl = cram = 0
+        if source.endswith('s'):
+            ssl = 1
+        elif source.endswith('s_cram'):
+            ssl = cram = 1
         mailbox = ''
         if len(args) > 3:
             mailbox = args[3]
-        return handler.do_imap(server, username, password, mailbox, ssl)
+        return handler.do_imap(server, username, password, mailbox, ssl,
+            cram)
 
     return usage(argv, _('Error: The source must be either "mailbox",'
-        ' "pop", "pops", "apop", "imap" or "imaps"'))
+        ' "pop", "pops", "apop", "imap", "imaps" or "imaps_cram'))
 
 def run():
     sys.exit(main(sys.argv))

@@ -3,6 +3,9 @@ are given with the most recent entry first.
 
 2010-XX-XX 1.4.12 (rXXXX)
 
+Features:
+- Support IMAP CRAM-MD5, thanks Jochen Maes
+
 Fixes:
 - Proper handling of 'Create' permissions in both mail gateway (earlier
   commit r4405 by Richard), web interface, and xmlrpc. This used to
