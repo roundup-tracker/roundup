@@ -1855,14 +1855,14 @@ class DBTest(MyTestCase):
             db.issue.nosymessage(i, m, {})
             mail_msg = str(res["mail_msg"])
             self.assertEqual(res["mail_to"], ["fred@example.com"])
-            self.failUnless("From: admin" in mail_msg)
-            self.failUnless("Subject: [issue1] spam" in mail_msg)
-            self.failUnless("New submission from admin" in mail_msg)
-            self.failUnless("one two" in mail_msg)
-            self.failIf("File 'test1.txt' not attached" in mail_msg)
-            self.failUnless(base64.encodestring("xxx").rstrip() in mail_msg)
-            self.failUnless("File 'test2.txt' not attached" in mail_msg)
-            self.failIf(base64.encodestring("yyy").rstrip() in mail_msg)
+            self.assert_("From: admin" in mail_msg)
+            self.assert_("Subject: [issue1] spam" in mail_msg)
+            self.assert_("New submission from admin" in mail_msg)
+            self.assert_("one two" in mail_msg)
+            self.assert_("File 'test1.txt' not attached" not in mail_msg)
+            self.assert_(base64.encodestring("xxx").rstrip() in mail_msg)
+            self.assert_("File 'test2.txt' not attached" in mail_msg)
+            self.assert_(base64.encodestring("yyy").rstrip() not in mail_msg)
         finally :
             Mailer.smtp_send = backup
 

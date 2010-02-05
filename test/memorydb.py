@@ -183,6 +183,9 @@ class Database(hyperdb.Database, roundupdb.Database):
         shutil.copyfile(__file__, __file__+'.dummy')
         return __file__+'.dummy'
 
+    def filesize(self, classname, nodeid, property=None, create=0):
+        return len(self.getnode(classname, nodeid)[property or 'content'])
+
     def post_init(self):
         pass
 
@@ -269,6 +272,8 @@ class Database(hyperdb.Database, roundupdb.Database):
     def newid(self, classname):
         self.ids[classname] += 1
         return str(self.ids[classname])
+    def setid(self, classname, id):
+        self.ids[classname] = id
 
     #
     # Nodes
@@ -282,7 +287,10 @@ class Database(hyperdb.Database, roundupdb.Database):
     def getnode(self, classname, nodeid, db=None):
         if db is not None:
             return db[nodeid]
-        return self.getclassdb(classname)[nodeid]
+        d = self.getclassdb(classname)
+        if nodeid not in d:
+            raise IndexError(nodeid)
+        return d[nodeid]
 
     def destroynode(self, classname, nodeid):
         del self.getclassdb(classname)[nodeid]
@@ -328,7 +336,10 @@ class Database(hyperdb.Database, roundupdb.Database):
 
 class Class(back_anydbm.Class):
     def getnodeids(self, db=None, retired=None):
-        return self.db.getclassdb(self.classname).keys()
+        d = self.db.getclassdb(self.classname)
+        if retired is None:
+            return d.keys()
+        return [k for k in d if d[k].get(self.db.RETIRED_FLAG, False) == retired]
 
 class FileClass(back_anydbm.Class):
     def __init__(self, db, classname, **properties):

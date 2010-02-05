@@ -784,6 +784,8 @@ class Class(hyperdb.Class):
         These operations trigger detectors and can be vetoed.  Attempts
         to modify the "creation" or "activity" properties cause a KeyError.
         """
+        if self.db.journaltag is None:
+            raise hyperdb.DatabaseError, _('Database open read-only')
         self.fireAuditors('create', None, propvalues)
         newid = self.create_inner(**propvalues)
         self.fireReactors('create', newid, None)
@@ -1045,6 +1047,9 @@ class Class(hyperdb.Class):
         These operations trigger detectors and can be vetoed.  Attempts
         to modify the "creation" or "activity" properties cause a KeyError.
         """
+        if self.db.journaltag is None:
+            raise hyperdb.DatabaseError, _('Database open read-only')
+
         self.fireAuditors('set', nodeid, propvalues)
         oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid))
         for name,prop in self.getprops(protected=0).items():
@@ -1390,6 +1395,7 @@ class Class(hyperdb.Class):
         try:
             for nodeid in self.getnodeids(cldb):
                 node = self.db.getnode(self.classname, nodeid, cldb)
+                print (nodeid, node, node[self.key], keyvalue)
                 if node.has_key(self.db.RETIRED_FLAG):
                     continue
                 if not node.has_key(self.key):

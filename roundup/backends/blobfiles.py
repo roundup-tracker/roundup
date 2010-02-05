@@ -304,6 +304,10 @@ class FileStorage:
         # file just ain't there
         raise IOError('content file for %s not found'%filename)
 
+    def filesize(self, classname, nodeid, property=None, create=0):
+        filename = self.filename(classname, nodeid, property, create)
+        return os.path.getsize(filename)
+
     def storefile(self, classname, nodeid, property, content):
         """Store the content of the file in the database. The property may be
            None, in which case the filename does not indicate which property

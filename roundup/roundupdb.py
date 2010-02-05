@@ -361,8 +361,7 @@ class IssueClass:
         if msgid :
             for fileid in messages.get(msgid, 'files') :
                 # check the attachment size
-                filename = self.db.filename('file', fileid, None)
-                filesize = os.path.getsize(filename)
+                filesize = self.db.filesize('file', fileid, None)
                 if filesize <= self.db.config.NOSY_MAX_ATTACHMENT_SIZE:
                     message_files.append(fileid)
                 else:
