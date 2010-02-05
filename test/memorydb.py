@@ -1,3 +1,4 @@
+# $Id: test_memorydb.py,v 1.4 2004-11-03 01:34:21 richard Exp $ 
 '''Implement an in-memory hyperdb for testing purposes.
 '''
 
@@ -278,9 +279,9 @@ class Database(hyperdb.Database, roundupdb.Database):
     def setnode(self, classname, nodeid, node):
         self.getclassdb(classname)[nodeid] = node
 
-    def getnode(self, classname, nodeid, cldb=None):
-        if cldb is not None:
-            return cldb[nodeid]
+    def getnode(self, classname, nodeid, db=None):
+        if db is not None:
+            return db[nodeid]
         return self.getclassdb(classname)[nodeid]
 
     def destroynode(self, classname, nodeid):
