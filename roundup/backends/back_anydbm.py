@@ -1395,7 +1395,6 @@ class Class(hyperdb.Class):
         try:
             for nodeid in self.getnodeids(cldb):
                 node = self.db.getnode(self.classname, nodeid, cldb)
-                print (nodeid, node, node[self.key], keyvalue)
                 if node.has_key(self.db.RETIRED_FLAG):
                     continue
                 if not node.has_key(self.key):
@@ -2009,9 +2008,6 @@ class Class(hyperdb.Class):
                     if value is None:
                         pass
                     elif isinstance(prop, hyperdb.Date):
-                        if type(value) == type(()):
-                            print _('WARNING: invalid date tuple %r')%(value,)
-                            value = date.Date( "2000-1-1" )
                         value = date.Date(value)
                     elif isinstance(prop, hyperdb.Interval):
                         value = date.Interval(value)
