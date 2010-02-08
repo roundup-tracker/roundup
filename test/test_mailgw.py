@@ -143,8 +143,16 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
             os.remove(SENDMAILDEBUG)
         self.db.close()
 
+    def _create_mailgw(self, message):
+        class MailGW(self.instance.MailGW):
+            def handle_message(self, message):
+                return self._handle_message(message)
+        handler = MailGW(self.instance)
+        handler.db = self.db
+        return handler
+
     def _handle_mail(self, message):
-        handler = self.instance.MailGW(self.instance)
+        handler = self._create_mailgw(message)
         handler.trapExceptions = 0
         return handler.main(StringIO(message))
 
@@ -582,7 +590,7 @@ _______________________________________________________________________
         # reconstruct old behaviour: This would reuse the
         # database-handle from the doNewIssue above which has committed
         # as user "Chef". So we close and reopen the db as that user.
-        self.db.close()
+        #self.db.close() actually don't close 'cos this empties memorydb
         self.db = self.instance.open('Chef')
         self.db.issue.set('1', assignedto=self.chef_id)
         self.db.commit()
@@ -1032,6 +1040,7 @@ Subject: [issue1] Testing... [nosy=-richard]
         assert not os.path.exists(SENDMAILDEBUG)
 
     def testNewUserAuthor(self):
+        self.db.commit()
         l = self.db.user.list()
         l.sort()
         message = '''Content-Type: text/plain;
@@ -1133,8 +1142,7 @@ Subject: [issue] Testing nonexisting user...
 
 This is a test submission of a new issue.
 '''
-        self.db.close()
-        handler = self.instance.MailGW(self.instance)
+        handler = self._create_mailgw(message)
         # we want a bounce message:
         handler.trapExceptions = 1
         ret = handler.main(StringIO(message))

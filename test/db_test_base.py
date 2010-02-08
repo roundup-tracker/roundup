@@ -1863,6 +1863,9 @@ class SchemaTest(MyTestCase):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
 
+    def open_database(self):
+        self.db = self.module.Database(config, 'admin')
+
     def test_reservedProperties(self):
         self.open_database()
         self.assertRaises(ValueError, self.module.Class, self.db, "a",

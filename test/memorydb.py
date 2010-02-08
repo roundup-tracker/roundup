@@ -184,7 +184,6 @@ class Database(back_anydbm.Database):
         self.sessions = Sessions()
         self.otks = OneTimeKeys()
         self.indexer = Indexer(self)
-        self.sessions = Sessions()
 
         # anydbm bits
         self.cache = {}         # cache of nodes loaded or created
@@ -192,7 +191,6 @@ class Database(back_anydbm.Database):
         self.newnodes = {}      # keep track of the new nodes by class
         self.destroyednodes = {}# keep track of the destroyed nodes by class
         self.transactions = []
-
 
     def filename(self, classname, nodeid, property=None, create=0):
         shutil.copyfile(__file__, __file__+'.dummy')
