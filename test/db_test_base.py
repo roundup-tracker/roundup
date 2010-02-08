@@ -135,8 +135,11 @@ class DBTest(MyTestCase):
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
-        self.db = self.module.Database(config, 'admin')
+        self.open_database()
         setupSchema(self.db, 1, self.module)
+
+    def open_database(self):
+        self.db = self.module.Database(config, 'admin')
 
     def testRefresh(self):
         self.db.refresh_database()
@@ -147,11 +150,7 @@ class DBTest(MyTestCase):
     def testCreatorProperty(self):
         i = self.db.issue
         id1 = i.create(title='spam')
-        self.db.commit()
-        self.db.close()
-        self.db = self.module.Database(config, 'fred')
-        setupSchema(self.db, 0, self.module)
-        i = self.db.issue
+        self.db.journaltag = 'fred'
         id2 = i.create(title='spam')
         self.assertNotEqual(id1, id2)
         self.assertNotEqual(i.get(id1, 'creator'), i.get(id2, 'creator'))
@@ -159,11 +158,7 @@ class DBTest(MyTestCase):
     def testActorProperty(self):
         i = self.db.issue
         id1 = i.create(title='spam')
-        self.db.commit()
-        self.db.close()
-        self.db = self.module.Database(config, 'fred')
-        setupSchema(self.db, 0, self.module)
-        i = self.db.issue
+        self.db.journaltag = 'fred'
         i.set(id1, title='asfasd')
         self.assertNotEqual(i.get(id1, 'creator'), i.get(id1, 'actor'))
 
@@ -855,6 +850,7 @@ class DBTest(MyTestCase):
         self.assertEquals(self.db.indexer.search([], self.db.issue), {})
         self.assertEquals(self.db.indexer.search(['hello'], self.db.issue),
             {i1: {'files': [f1]}})
+        # content='world' has the wrong content-type and shouldn't be indexed
         self.assertEquals(self.db.indexer.search(['world'], self.db.issue), {})
         self.assertEquals(self.db.indexer.search(['frooz'], self.db.issue),
             {i2: {}})
@@ -963,45 +959,17 @@ class DBTest(MyTestCase):
         self.assertEquals(self.db.indexer.search(['flebble'], self.db.issue),
             {'1': {}})
 
-    def testIndexingOnImport(self):
-        # import a message
-        msgcontent = 'Glrk'
-        msgid = self.db.msg.import_list(['content', 'files', 'recipients'],
-                                        [repr(msgcontent), '[]', '[]'])
-        msg_filename = self.db.filename(self.db.msg.classname, msgid,
-                                        create=1)
-        support.ensureParentsExist(msg_filename)
-        msg_file = open(msg_filename, 'w')
-        msg_file.write(msgcontent)
-        msg_file.close()
-
-        # import a file
-        filecontent = 'Brrk'
-        fileid = self.db.file.import_list(['content'], [repr(filecontent)])
-        file_filename = self.db.filename(self.db.file.classname, fileid,
-                                         create=1)
-        support.ensureParentsExist(file_filename)
-        file_file = open(file_filename, 'w')
-        file_file.write(filecontent)
-        file_file.close()
-
+    def testIndexingPropertiesOnImport(self):
         # import an issue
         title = 'Bzzt'
         nodeid = self.db.issue.import_list(['title', 'messages', 'files',
-            'spam', 'nosy', 'superseder'], [repr(title), repr([msgid]),
-            repr([fileid]), '[]', '[]', '[]'])
+            'spam', 'nosy', 'superseder'], [repr(title), '[]', '[]',
+            '[]', '[]', '[]'])
         self.db.commit()
 
         # Content of title attribute is indexed
         self.assertEquals(self.db.indexer.search([title], self.db.issue),
             {str(nodeid):{}})
-        # Content of message is indexed
-        self.assertEquals(self.db.indexer.search([msgcontent], self.db.issue),
-            {str(nodeid):{'messages':[str(msgid)]}})
-        # Content of file is indexed
-        self.assertEquals(self.db.indexer.search([filecontent], self.db.issue),
-            {str(nodeid):{'files':[str(fileid)]}})
-
 
 
     #
@@ -1627,7 +1595,6 @@ class DBTest(MyTestCase):
         self.db = self.module.Database(config, 'admin')
         setupSchema(self.db, 0, self.module)
 
-
     def testImportExport(self):
         # use the filtering setup to create a bunch of items
         ae, filt = self.filteringSetup()
@@ -1897,7 +1864,7 @@ class SchemaTest(MyTestCase):
         os.makedirs(config.DATABASE + '/files')
 
     def test_reservedProperties(self):
-        self.db = self.module.Database(config, 'admin')
+        self.open_database()
         self.assertRaises(ValueError, self.module.Class, self.db, "a",
             creation=String())
         self.assertRaises(ValueError, self.module.Class, self.db, "a",
@@ -1908,13 +1875,13 @@ class SchemaTest(MyTestCase):
             actor=String())
 
     def init_a(self):
-        self.db = self.module.Database(config, 'admin')
+        self.open_database()
         a = self.module.Class(self.db, "a", name=String())
         a.setkey("name")
         self.db.post_init()
 
     def test_fileClassProps(self):
-        self.db = self.module.Database(config, 'admin')
+        self.open_database()
         a = self.module.FileClass(self.db, 'a')
         l = a.getprops().keys()
         l.sort()
@@ -1922,7 +1889,7 @@ class SchemaTest(MyTestCase):
             'creation', 'type'])
 
     def init_ab(self):
-        self.db = self.module.Database(config, 'admin')
+        self.open_database()
         a = self.module.Class(self.db, "a", name=String())
         a.setkey("name")
         b = self.module.Class(self.db, "b", name=String(),
@@ -1960,7 +1927,7 @@ class SchemaTest(MyTestCase):
         self.db.getjournal('b', bid)
 
     def init_amod(self):
-        self.db = self.module.Database(config, 'admin')
+        self.open_database()
         a = self.module.Class(self.db, "a", name=String(), newstr=String(),
             newint=Interval(), newnum=Number(), newbool=Boolean(),
             newdate=Date())
@@ -2004,7 +1971,7 @@ class SchemaTest(MyTestCase):
         self.db.getjournal('a', aid2)
 
     def init_amodkey(self):
-        self.db = self.module.Database(config, 'admin')
+        self.open_database()
         a = self.module.Class(self.db, "a", name=String(), newstr=String())
         a.setkey("newstr")
         b = self.module.Class(self.db, "b", name=String())
@@ -2047,7 +2014,7 @@ class SchemaTest(MyTestCase):
 
 
     def init_amodml(self):
-        self.db = self.module.Database(config, 'admin')
+        self.open_database()
         a = self.module.Class(self.db, "a", name=String(),
             newml=Multilink('a'))
         a.setkey('name')
