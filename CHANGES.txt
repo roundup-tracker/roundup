@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2010-02-09 1.4.12 (r4450)
+2010-02-09 1.4.12 (r4455)
 
 Features:
 - Support IMAP CRAM-MD5, thanks Jochen Maes
