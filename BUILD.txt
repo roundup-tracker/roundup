@@ -26,6 +26,11 @@ Building and distributing a release of Roundup is done by running:
      command)
 10. Unpack the new dist file in /tmp then a) run_test.py and b) demo.py
     with all available Python versions.
+11. Assuming all is well tag the release in SVN::
+
+      svn cp https://roundup.svn.sourceforge.net/svnroot/roundup/roundup/trunk \
+      https://roundup.svn.sourceforge.net/svnroot/roundup/roundup/tags/release-1.4.12
+
 11. python setup.py bdist_rpm
 12. python setup.py bdist_wininst
 13. Send doc/announcement.txt to python-announce@python.org and
