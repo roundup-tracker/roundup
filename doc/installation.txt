@@ -234,7 +234,7 @@ Configuring your first tracker
                  Confirm:
 
       Note: running this command will *destroy any existing data in the
-      database*. In the case of MySQL and PostgreSQL, any exsting database
+      database*. In the case of MySQL and PostgreSQL, any existing database
       will be dropped and re-created.
 
       Once this is done, the tracker has been created.
