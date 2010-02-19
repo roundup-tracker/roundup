@@ -2164,6 +2164,7 @@ class MultilinkHTMLProperty(HTMLProperty):
                 k = linkcl.labelprop(1)
                 value = lookupKeys(linkcl, k, value)
             value = ','.join(value)
+            kwargs["value"] = value
 
         return self.input(name=self._formname, size=size, **kwargs)
 
