@@ -129,7 +129,7 @@ class Indexer(IndexerBase):
             sql = sql%(' '.join(join_list), self.db.arg, ' '.join(match_list))
             self.db.cursor.execute(sql, l)
 
-            r = map(lambda x: x[0], self.db.cursor.fetchall())
+            r = [x[0] for x in self.db.cursor.fetchall()]
             if not r:
                 return []
 

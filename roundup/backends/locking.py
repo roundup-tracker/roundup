@@ -28,12 +28,11 @@ It should work on Unix and Windows.
 '''
 __docformat__ = 'restructuredtext'
 
-import portalocker
+from roundup.backends import portalocker
 
 def acquire_lock(path, block=1):
     '''Acquire a lock for the given path
     '''
-    import portalocker
     file = open(path, 'w')
     if block:
         portalocker.lock(file, portalocker.LOCK_EX)

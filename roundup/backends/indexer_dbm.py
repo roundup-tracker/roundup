@@ -81,7 +81,7 @@ class Indexer(IndexerBase):
         self.load_index()
 
         # remove old entries for this identifier
-        if self.files.has_key(identifier):
+        if identifier in self.files:
             self.purge_entry(identifier)
 
         # split into words
@@ -99,15 +99,15 @@ class Indexer(IndexerBase):
         for word in words:
             if self.is_stopword(word):
                 continue
-            if filedict.has_key(word):
+            if word in filedict:
                 filedict[word] = filedict[word]+1
             else:
                 filedict[word] = 1
 
         # now add to the totals
-        for word in filedict.keys():
+        for word in filedict:
             # each word has a dict of {identifier: count}
-            if self.words.has_key(word):
+            if word in self.words:
                 entry = self.words[word]
             else:
                 # new word
@@ -162,18 +162,18 @@ class Indexer(IndexerBase):
                 return {}
             if hits is None:
                 hits = {}
-                for k in entry.keys():
-                    if not self.fileids.has_key(k):
-                        raise ValueError, 'Index is corrupted: re-generate it'
+                for k in entry:
+                    if k not in self.fileids:
+                        raise ValueError('Index is corrupted: re-generate it')
                     hits[k] = self.fileids[k]
             else:
                 # Eliminate hits for every non-match
-                for fileid in hits.keys():
-                    if not entry.has_key(fileid):
+                for fileid in hits:
+                    if fileid not in entry:
                         del hits[fileid]
         if hits is None:
             return {}
-        return hits.values()
+        return list(hits.values())
 
     segments = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ#_-!"
     def load_index(self, reload=0, wordlist=None):
@@ -205,7 +205,7 @@ class Indexer(IndexerBase):
                 dbslice = marshal.loads(pickle_str)
                 if dbslice.get('WORDS'):
                     # if it has some words, add them
-                    for word, entry in dbslice['WORDS'].items():
+                    for word, entry in dbslice['WORDS'].iteritems():
                         db['WORDS'][word] = entry
                 if dbslice.get('FILES'):
                     # if it has some files, add them
@@ -241,7 +241,7 @@ class Indexer(IndexerBase):
         segdicts = {}                           # Need batch of empty dicts
         for segment in letters:
             segdicts[segment] = {}
-        for word, entry in self.words.items():  # Split into segment dicts
+        for word, entry in self.words.iteritems():  # Split into segment dicts
             initchar = word[0].upper()
             segdicts[initchar][word] = entry
 
@@ -262,7 +262,7 @@ class Indexer(IndexerBase):
         '''
         self.load_index()
 
-        if not self.files.has_key(identifier):
+        if identifier not in self.files:
             return
 
         file_index = self.files[identifier][0]
@@ -270,8 +270,8 @@ class Indexer(IndexerBase):
         del self.fileids[file_index]
 
         # The much harder part, cleanup the word index
-        for key, occurs in self.words.items():
-            if occurs.has_key(file_index):
+        for key, occurs in self.words.iteritems():
+            if file_index in occurs:
                 del occurs[file_index]
 
         # save needed

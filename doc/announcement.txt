@@ -1,38 +1,10 @@
-I'm proud to release version 1.4.12 of Roundup which fixes a number bugs.
+I'm proud to release version 1.4.13 of Roundup which includes a single
+fix for a regression introduced in 1.4.12:
+
+- Multilink edit fields lose their values (thanks Will Maier)
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
-
-This release includes:
-
-- Support IMAP CRAM-MD5, thanks Jochen Maes
-- Proper handling of 'Create' permissions in both mail gateway (earlier
-  commit r4405 by Richard), web interface, and xmlrpc. This used to
-  check 'Edit' permission previously. See
-  http://thread.gmane.org/gmane.comp.bug-tracking.roundup.devel/5133
-  Add regression tests for proper handling of 'Create' and 'Edit'
-  permissions.
-- Fix handling of non-ascii in realname in the nosy mailer, this used to
-  mangle the email address making it unusable when replying. Thanks to
-  intevation for funding the fix.
-- Fix documentation on user required to run the tests, fixes 
-  issue2550618, thanks to Chris aka 'radioking'
-- Add simple doc about translating customised tracker content
-- Add "flup" setup documentation, thanks Christian Glass
-- Fix "Web Access" permission check to allow serving of static files to
-  Anonymous again
-- Add check for "Web Access" permission in all web templating permission
-  checks
-- Improvements in upgrading documentation, thanks Christian Glass
-- Display 'today' in the account user's timezone, thanks David Wolever
-- Fix file handle leak in some web interfaces with logging turned on,
-  fixes issue1675845
-- Attempt to generate more human-readable addresses in email, fixes
-  issue2550632
-- Allow value to be specified to multilink form element templating, fixes
-  issue2550613, thanks David Wolever
-- Fix thread safety with stdin in roundup-server, fixes issue2550596
-  (thanks Werner Hunger)
 
 Roundup requires python 2.3 or later (but not 3+) for correct operation.
 

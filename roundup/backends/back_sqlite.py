@@ -160,7 +160,7 @@ class Database(rdbms_common.Database):
         # update existing tables to have the new actor column
         tables = self.database_schema['tables']
         for classname, spec in self.classes.items():
-            if tables.has_key(classname):
+            if classname in tables:
                 dbspec = tables[classname]
                 self.update_class(spec, dbspec, force=1, adding_v2=1)
                 # we've updated - don't try again
@@ -179,7 +179,6 @@ class Database(rdbms_common.Database):
             SQLite doesn't have ALTER TABLE, so we have to copy and
             regenerate the tables with the new schema.
         """
-        new_has = spec.properties.has_key
         new_spec = spec.schema()
         new_spec[1].sort()
         old_spec[1].sort()
@@ -193,14 +192,13 @@ class Database(rdbms_common.Database):
         old_has = {}
         for name, prop in old_spec[1]:
             old_has[name] = 1
-            if new_has(name) or not isinstance(prop, hyperdb.Multilink):
+            if name in spec.properties or not isinstance(prop, hyperdb.Multilink):
                 continue
             # it's a multilink, and it's been removed - drop the old
             # table. First drop indexes.
             self.drop_multilink_table_indexes(spec.classname, name)
             sql = 'drop table %s_%s'%(spec.classname, prop)
             self.sql(sql)
-        old_has = old_has.has_key
 
         # now figure how we populate the new table
         if adding_v2:
@@ -211,7 +209,7 @@ class Database(rdbms_common.Database):
         for propname,x in new_spec[1]:
             prop = properties[propname]
             if isinstance(prop, hyperdb.Multilink):
-                if not old_has(propname):
+                if propname not in old_has:
                     # we need to create the new table
                     self.create_multilink_table(spec, propname)
                 elif force:
@@ -232,7 +230,7 @@ class Database(rdbms_common.Database):
                         (%s, %s)"""%(tn, self.arg, self.arg)
                     for linkid, nodeid in rows:
                         self.sql(sql, (int(linkid), int(nodeid)))
-            elif old_has(propname):
+            elif propname in old_has:
                 # we copy this col over from the old table
                 fetch.append('_'+propname)
 
@@ -263,7 +261,7 @@ class Database(rdbms_common.Database):
                 elif isinstance(prop, hyperdb.Interval):
                     inscols.append('_'+propname)
                     inscols.append('__'+propname+'_int__')
-                elif old_has(propname):
+                elif propname in old_has:
                     # we copy this col over from the old table
                     inscols.append('_'+propname)
 
@@ -283,7 +281,7 @@ class Database(rdbms_common.Database):
                                 v = hyperdb.Interval(entry[name]).as_seconds()
                             except IndexError:
                                 v = None
-                        elif entry.has_key(name):
+                        elif name in entry:
                             v = hyperdb.Interval(entry[name]).as_seconds()
                         else:
                             v = None
@@ -292,7 +290,7 @@ class Database(rdbms_common.Database):
                             v = entry[name]
                         except IndexError:
                             v = None
-                    elif (sqlite_version == 1 and entry.has_key(name)):
+                    elif (sqlite_version == 1 and name in entry):
                         v = entry[name]
                     else:
                         v = None
@@ -397,8 +395,8 @@ class sqliteClass:
         """ If there's NO matches to a fetch, sqlite returns NULL
             instead of nothing
         """
-        return filter(None, rdbms_common.Class.filter(self, search_matches,
-            filterspec, sort=sort, group=group))
+        return [f for f in rdbms_common.Class.filter(self, search_matches,
+            filterspec, sort=sort, group=group) if f]
 
 class Class(sqliteClass, rdbms_common.Class):
     pass

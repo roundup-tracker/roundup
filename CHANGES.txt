@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2010-02-?? 1.4.13
+2010-02-19 1.4.13
 
 Fixed:
 - Multilink edit fields lose their values (thanks Will Maier)

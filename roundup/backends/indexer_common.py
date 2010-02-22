@@ -43,7 +43,7 @@ class Indexer:
             return {}
 
         designator_propname = {}
-        for nm, propclass in klass.getprops().items():
+        for nm, propclass in klass.getprops().iteritems():
             if _isLink(propclass):
                 designator_propname.setdefault(propclass.classname,
                     []).append(nm)
@@ -52,7 +52,7 @@ class Indexer:
         # and files
         nodeids = {}      # this is the answer
         propspec = {}     # used to do the klass.find
-        for l in designator_propname.values():
+        for l in designator_propname.itervalues():
             for propname in l:
                 propspec[propname] = {}  # used as a set (value doesn't matter)
 
@@ -61,7 +61,7 @@ class Indexer:
             # skip this result if we don't care about this class/property
             classname = entry[0]
             property = entry[2]
-            if ignore.has_key((classname, property)):
+            if (classname, property) in ignore:
                 continue
 
             # if it's a property on klass, it's easy
@@ -69,12 +69,12 @@ class Indexer:
             # backends as that can cause problems down the track)
             nodeid = str(entry[1])
             if classname == klass.classname:
-                if not nodeids.has_key(nodeid):
+                if nodeid not in nodeids:
                     nodeids[nodeid] = {}
                 continue
 
             # make sure the class is a linked one, otherwise ignore
-            if not designator_propname.has_key(classname):
+            if classname not in designator_propname:
                 continue
 
             # it's a linked class - set up to do the klass.find
@@ -82,7 +82,7 @@ class Indexer:
                 propspec[linkprop][nodeid] = 1
 
         # retain only the meaningful entries
-        for propname, idset in propspec.items():
+        for propname, idset in propspec.iteritems():
             if not idset:
                 del propspec[propname]
 
@@ -95,16 +95,16 @@ class Indexer:
             nodeids[resid] = {}
             node_dict = nodeids[resid]
             # now figure out where it came from
-            for linkprop in propspec.keys():
+            for linkprop in propspec:
                 v = klass.get(resid, linkprop)
                 # the link might be a Link so deal with a single result or None
                 if isinstance(propdefs[linkprop], hyperdb.Link):
                     if v is None: continue
                     v = [v]
                 for nodeid in v:
-                    if propspec[linkprop].has_key(nodeid):
+                    if nodeid in propspec[linkprop]:
                         # OK, this node[propname] has a winner
-                        if not node_dict.has_key(linkprop):
+                        if linkprop not in node_dict:
                             node_dict[linkprop] = [nodeid]
                         else:
                             node_dict[linkprop].append(nodeid)

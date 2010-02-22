@@ -49,8 +49,8 @@ class Retire(Action):
         # make sure we don't try to retire admin or anonymous
         if (classname == 'user' and
             self.db.user.get(itemid, 'username') in ('admin', 'anonymous')):
-            raise ValueError, self._(
-                'You may not retire the admin or anonymous user')
+            raise ValueError(self._(
+                'You may not retire the admin or anonymous user'))
 
         # do the retire
         self.db.getclass(classname).retire(itemid)

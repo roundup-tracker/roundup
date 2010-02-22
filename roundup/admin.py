@@ -21,7 +21,7 @@
 """
 __docformat__ = 'restructuredtext'
 
-import csv, getopt, getpass, os, re, shutil, sys, UserDict
+import csv, getopt, getpass, os, re, shutil, sys, UserDict, operator
 
 from roundup import date, hyperdb, roundupdb, init, password, token
 from roundup import __version__ as roundup_version
@@ -37,16 +37,15 @@ class CommandDict(UserDict.UserDict):
     """
     _marker = []
     def get(self, key, default=_marker):
-        if self.data.has_key(key):
+        if key in self.data:
             return [(key, self.data[key])]
-        keylist = self.data.keys()
-        keylist.sort()
+        keylist = sorted(self.data)
         l = []
         for ki in keylist:
             if ki.startswith(key):
                 l.append((ki, self.data[ki]))
         if not l and default is self._marker:
-            raise KeyError, key
+            raise KeyError(key)
         return l
 
 class AdminTool:
@@ -63,11 +62,11 @@ class AdminTool:
     """
     def __init__(self):
         self.commands = CommandDict()
-        for k in AdminTool.__dict__.keys():
+        for k in AdminTool.__dict__:
             if k[:3] == 'do_':
                 self.commands[k[3:]] = getattr(self, k)
         self.help = {}
-        for k in AdminTool.__dict__.keys():
+        for k in AdminTool.__dict__:
             if k[:5] == 'help_':
                 self.help[k[5:]] = getattr(self, k)
         self.tracker_home = ''
@@ -80,7 +79,7 @@ class AdminTool:
         try:
             return self.db.getclass(classname)
         except KeyError:
-            raise UsageError, _('no such class "%(classname)s"')%locals()
+            raise UsageError(_('no such class "%(classname)s"')%locals())
 
     def props_from_args(self, args):
         """ Produce a dictionary of prop: value from the args list.
@@ -90,12 +89,12 @@ class AdminTool:
         props = {}
         for arg in args:
             if arg.find('=') == -1:
-                raise UsageError, _('argument "%(arg)s" not propname=value'
-                    )%locals()
+                raise UsageError(_('argument "%(arg)s" not propname=value'
+                    )%locals())
             l = arg.split('=')
             if len(l) < 2:
-                raise UsageError, _('argument "%(arg)s" not propname=value'
-                    )%locals()
+                raise UsageError(_('argument "%(arg)s" not propname=value'
+                    )%locals())
             key, value = l[0], '='.join(l[1:])
             if value:
                 props[key] = value
@@ -137,7 +136,7 @@ Help:
         """
         print _('Commands:'),
         commands = ['']
-        for command in self.commands.values():
+        for command in self.commands.itervalues():
             h = _(command.__doc__).split('\n')[0]
             commands.append(' '+h[7:])
         commands.sort()
@@ -150,10 +149,8 @@ matches only one command, e.g. l == li == lis == list."""))
     def help_commands_html(self, indent_re=re.compile(r'^(\s+)\S+')):
         """ Produce an HTML command list.
         """
-        commands = self.commands.values()
-        def sortfun(a, b):
-            return cmp(a.__name__, b.__name__)
-        commands.sort(sortfun)
+        commands = sorted(self.commands.itervalues(),
+            operator.attrgetter('__name__'))
         for command in commands:
             h = _(command.__doc__).split('\n')
             name = command.__name__[3:]
@@ -255,7 +252,7 @@ Command help:
 
 
         # try help_ methods
-        if self.help.has_key(topic):
+        if topic in self.help:
             self.help[topic]()
             return 0
 
@@ -340,7 +337,7 @@ Command help:
 
     def help_initopts(self):
         templates = self.listTemplates()
-        print _('Templates:'), ', '.join(templates.keys())
+        print _('Templates:'), ', '.join(templates)
         import roundup.backends
         backends = roundup.backends.list_backends()
         print _('Back ends:'), ', '.join(backends)
@@ -369,19 +366,19 @@ Command help:
         See also initopts help.
         """
         if len(args) < 1:
-            raise UsageError, _('Not enough arguments supplied')
+            raise UsageError(_('Not enough arguments supplied'))
 
         # make sure the tracker home can be created
         tracker_home = os.path.abspath(tracker_home)
         parent = os.path.split(tracker_home)[0]
         if not os.path.exists(parent):
-            raise UsageError, _('Instance home parent directory "%(parent)s"'
-                ' does not exist')%locals()
+            raise UsageError(_('Instance home parent directory "%(parent)s"'
+                ' does not exist')%locals())
 
         config_ini_file = os.path.join(tracker_home, CoreConfig.INI_FILE)
         # check for both old- and new-style configs
-        if filter(os.path.exists, [config_ini_file,
-                os.path.join(tracker_home, 'config.py')]):
+        if list(filter(os.path.exists, [config_ini_file,
+                os.path.join(tracker_home, 'config.py')])):
             ok = raw_input(_(
 """WARNING: There appears to be a tracker in "%(tracker_home)s"!
 If you re-install it, you will lose all the data!
@@ -395,9 +392,9 @@ Erase it? Y/N: """) % locals())
         # select template
         templates = self.listTemplates()
         template = len(args) > 1 and args[1] or ''
-        if not templates.has_key(template):
-            print _('Templates:'), ', '.join(templates.keys())
-        while not templates.has_key(template):
+        if template not in templates:
+            print _('Templates:'), ', '.join(templates)
+        while template not in templates:
             template = raw_input(_('Select template [classic]: ')).strip()
             if not template:
                 template = 'classic'
@@ -439,8 +436,8 @@ Erase it? Y/N: """) % locals())
         need_set = CoreConfig(tracker_home)._get_unset_options()
         if need_set:
             print _(" ... at a minimum, you must set following options:")
-            for section, options in need_set.items():
-                print "   [%s]: %s" % (section, ", ".join(options))
+            for section in need_set:
+                print "   [%s]: %s" % (section, ", ".join(need_set[section]))
 
         # note about schema modifications
         print _("""
@@ -466,7 +463,7 @@ Erase it? Y/N: """) % locals())
         in <filename>.
         """
         if len(args) < 1:
-            raise UsageError, _('Not enough arguments supplied')
+            raise UsageError(_('Not enough arguments supplied'))
         config = CoreConfig()
         config.save(args[0])
 
@@ -490,11 +487,11 @@ Erase it? Y/N: """) % locals())
 
         # make sure the tracker home is installed
         if not os.path.exists(tracker_home):
-            raise UsageError, _('Instance home does not exist')%locals()
+            raise UsageError(_('Instance home does not exist')%locals())
         try:
             tracker = roundup.instance.open(tracker_home)
         except roundup.instance.TrackerError:
-            raise UsageError, _('Instance has not been installed')%locals()
+            raise UsageError(_('Instance has not been installed')%locals())
 
         # is there already a database?
         if tracker.exists():
@@ -530,7 +527,7 @@ Erase it? Y/N: """))
         by the designators.
         """
         if len(args) < 2:
-            raise UsageError, _('Not enough arguments supplied')
+            raise UsageError(_('Not enough arguments supplied'))
         propname = args[0]
         designators = args[1].split(',')
         l = []
@@ -539,7 +536,7 @@ Erase it? Y/N: """))
             try:
                 classname, nodeid = hyperdb.splitDesignator(designator)
             except hyperdb.DesignatorError, message:
-                raise UsageError, message
+                raise UsageError(message)
 
             # get the class
             cl = self.get_class(classname)
@@ -563,7 +560,9 @@ Erase it? Y/N: """))
                         property = properties[propname]
                         if not (isinstance(property, hyperdb.Multilink) or
                           isinstance(property, hyperdb.Link)):
-                            raise UsageError, _('property %s is not of type Multilink or Link so -d flag does not apply.')%propname
+                            raise UsageError(_('property %s is not of type'
+                                ' Multilink or Link so -d flag does not '
+                                'apply.')%propname)
                         propclassname = self.db.getclass(property.classname).classname
                         id = cl.get(nodeid, propname)
                         for i in id:
@@ -578,7 +577,9 @@ Erase it? Y/N: """))
                         property = properties[propname]
                         if not (isinstance(property, hyperdb.Multilink) or
                           isinstance(property, hyperdb.Link)):
-                            raise UsageError, _('property %s is not of type Multilink or Link so -d flag does not apply.')%propname
+                            raise UsageError(_('property %s is not of type'
+                                ' Multilink or Link so -d flag does not '
+                                'apply.')%propname)
                         propclassname = self.db.getclass(property.classname).classname
                         id = cl.get(nodeid, propname)
                         for i in id:
@@ -586,10 +587,11 @@ Erase it? Y/N: """))
                     else:
                         print cl.get(nodeid, propname)
             except IndexError:
-                raise UsageError, _('no such %(classname)s node "%(nodeid)s"')%locals()
+                raise UsageError(_('no such %(classname)s node '
+                    '"%(nodeid)s"')%locals())
             except KeyError:
-                raise UsageError, _('no such %(classname)s property '
-                    '"%(propname)s"')%locals()
+                raise UsageError(_('no such %(classname)s property '
+                    '"%(propname)s"')%locals())
         if self.separator:
             print self.separator.join(l)
 
@@ -612,7 +614,7 @@ Erase it? Y/N: """))
         ids for the multilink as comma-separated numbers (ie "1,2,3").
         """
         if len(args) < 2:
-            raise UsageError, _('Not enough arguments supplied')
+            raise UsageError(_('Not enough arguments supplied'))
         from roundup import hyperdb
 
         designators = args[0].split(',')
@@ -628,7 +630,7 @@ Erase it? Y/N: """))
             try:
                 designators = [hyperdb.splitDesignator(x) for x in designators]
             except hyperdb.DesignatorError, message:
-                raise UsageError, message
+                raise UsageError(message)
 
         # get the props from the args
         props = self.props_from_args(args[1:])
@@ -643,14 +645,14 @@ Erase it? Y/N: """))
                     props[key] = hyperdb.rawToHyperdb(self.db, cl, itemid,
                         key, value)
                 except hyperdb.HyperdbValueError, message:
-                    raise UsageError, message
+                    raise UsageError(message)
 
             # try the set
             try:
-                apply(cl.set, (itemid, ), props)
+                cl.set(itemid, **props)
             except (TypeError, IndexError, ValueError), message:
                 import traceback; traceback.print_exc()
-                raise UsageError, message
+                raise UsageError(message)
         self.db_uncommitted = True
         return 0
 
@@ -663,7 +665,7 @@ Erase it? Y/N: """))
         value.
         """
         if len(args) < 1:
-            raise UsageError, _('Not enough arguments supplied')
+            raise UsageError(_('Not enough arguments supplied'))
         classname = args[0]
         # get the class
         cl = self.get_class(classname)
@@ -672,7 +674,7 @@ Erase it? Y/N: """))
         props = self.props_from_args(args[1:])
 
         # convert the user-input value to a value used for find()
-        for propname, value in props.items():
+        for propname, value in props.iteritems():
             if ',' in value:
                 values = value.split(',')
             else:
@@ -692,26 +694,26 @@ Erase it? Y/N: """))
             designator = []
             if self.separator:
                 if self.print_designator:
-                    id=apply(cl.find, (), props)
+                    id = cl.find(**props)
                     for i in id:
                         designator.append(classname + i)
                     print self.separator.join(designator)
                 else:
-                    print self.separator.join(apply(cl.find, (), props))
+                    print self.separator.join(cl.find(**props))
 
             else:
                 if self.print_designator:
-                    id=apply(cl.find, (), props)
+                    id = cl.find(**props)
                     for i in id:
                         designator.append(classname + i)
                     print designator
                 else:
-                    print apply(cl.find, (), props)
+                    print cl.find(**props)
         except KeyError:
-            raise UsageError, _('%(classname)s has no property '
-                '"%(propname)s"')%locals()
+            raise UsageError(_('%(classname)s has no property '
+                '"%(propname)s"')%locals())
         except (ValueError, TypeError), message:
-            raise UsageError, message
+            raise UsageError(message)
         return 0
 
     def do_specification(self, args):
@@ -721,14 +723,15 @@ Erase it? Y/N: """))
         This lists the properties for a given class.
         """
         if len(args) < 1:
-            raise UsageError, _('Not enough arguments supplied')
+            raise UsageError(_('Not enough arguments supplied'))
         classname = args[0]
         # get the class
         cl = self.get_class(classname)
 
         # get the key property
         keyprop = cl.getkey()
-        for key, value in cl.properties.items():
+        for key in cl.properties:
+            value = cl.properties[key]
             if keyprop == key:
                 print _('%(key)s: %(value)s (key property)')%locals()
             else:
@@ -745,21 +748,20 @@ Erase it? Y/N: """))
         node.
         """
         if len(args) < 1:
-            raise UsageError, _('Not enough arguments supplied')
+            raise UsageError(_('Not enough arguments supplied'))
 
         # decode the node designator
         for designator in args[0].split(','):
             try:
                 classname, nodeid = hyperdb.splitDesignator(designator)
             except hyperdb.DesignatorError, message:
-                raise UsageError, message
+                raise UsageError(message)
 
             # get the class
             cl = self.get_class(classname)
 
             # display the values
-            keys = cl.properties.keys()
-            keys.sort()
+            keys = sorted(cl.properties)
             for key in keys:
                 value = cl.get(nodeid, key)
                 print _('%(key)s: %(value)s')%locals()
@@ -773,7 +775,7 @@ Erase it? Y/N: """))
         command.
         """
         if len(args) < 1:
-            raise UsageError, _('Not enough arguments supplied')
+            raise UsageError(_('Not enough arguments supplied'))
         from roundup import hyperdb
 
         classname = args[0]
@@ -786,8 +788,9 @@ Erase it? Y/N: """))
         properties = cl.getprops(protected = 0)
         if len(args) == 1:
             # ask for the properties
-            for key, value in properties.items():
+            for key in properties:
                 if key == 'id': continue
+                value = properties[key]
                 name = value.__class__.__name__
                 if isinstance(value , hyperdb.Password):
                     again = None
@@ -808,24 +811,24 @@ Erase it? Y/N: """))
             props = self.props_from_args(args[1:])
 
         # convert types
-        for propname, value in props.items():
+        for propname in props:
             try:
                 props[propname] = hyperdb.rawToHyperdb(self.db, cl, None,
-                    propname, value)
+                    propname, props[propname])
             except hyperdb.HyperdbValueError, message:
-                raise UsageError, message
+                raise UsageError(message)
 
         # check for the key property
         propname = cl.getkey()
-        if propname and not props.has_key(propname):
-            raise UsageError, _('you must provide the "%(propname)s" '
-                'property.')%locals()
+        if propname and propname not in props:
+            raise UsageError(_('you must provide the "%(propname)s" '
+                'property.')%locals())
 
         # do the actual create
         try:
-            print apply(cl.create, (), props)
+            print cl.create(**props)
         except (TypeError, IndexError, ValueError), message:
-            raise UsageError, message
+            raise UsageError(message)
         self.db_uncommitted = True
         return 0
 
@@ -843,9 +846,9 @@ Erase it? Y/N: """))
         for every class instance.
         """
         if len(args) > 2:
-            raise UsageError, _('Too many arguments supplied')
+            raise UsageError(_('Too many arguments supplied'))
         if len(args) < 1:
-            raise UsageError, _('Not enough arguments supplied')
+            raise UsageError(_('Not enough arguments supplied'))
         classname = args[0]
         
         # get the class
@@ -865,8 +868,8 @@ Erase it? Y/N: """))
                     try:
                         proplist.append(cl.get(nodeid, propname))
                     except KeyError:
-                        raise UsageError, _('%(classname)s has no property '
-                            '"%(propname)s"')%locals()
+                        raise UsageError(_('%(classname)s has no property '
+                            '"%(propname)s"')%locals())
                 print self.separator.join(proplist)
             else:
                 # create a list of index id's since user didn't specify
@@ -877,8 +880,8 @@ Erase it? Y/N: """))
                 try:
                     value = cl.get(nodeid, propname)
                 except KeyError:
-                    raise UsageError, _('%(classname)s has no property '
-                        '"%(propname)s"')%locals()
+                    raise UsageError(_('%(classname)s has no property '
+                        '"%(propname)s"')%locals())
                 print _('%(nodeid)4s: %(value)s')%locals()
         return 0
 
@@ -912,7 +915,7 @@ Erase it? Y/N: """))
         will result in a the 4 character wide "Name" column.
         """
         if len(args) < 1:
-            raise UsageError, _('Not enough arguments supplied')
+            raise UsageError(_('Not enough arguments supplied'))
         classname = args[0]
 
         # get the class
@@ -927,14 +930,15 @@ Erase it? Y/N: """))
                     try:
                         propname, width = spec.split(':')
                     except (ValueError, TypeError):
-                        raise UsageError, _('"%(spec)s" not name:width')%locals()
+                        raise UsageError(_('"%(spec)s" not '
+                            'name:width')%locals())
                 else:
                     propname = spec
-                if not all_props.has_key(propname):
-                    raise UsageError, _('%(classname)s has no property '
-                        '"%(propname)s"')%locals()
+                if propname not in all_props:
+                    raise UsageError(_('%(classname)s has no property '
+                        '"%(propname)s"')%locals())
         else:
-            prop_names = cl.getprops().keys()
+            prop_names = cl.getprops()
 
         # now figure column widths
         props = []
@@ -986,18 +990,19 @@ Erase it? Y/N: """))
         Lists the journal entries for the node identified by the designator.
         """
         if len(args) < 1:
-            raise UsageError, _('Not enough arguments supplied')
+            raise UsageError(_('Not enough arguments supplied'))
         try:
             classname, nodeid = hyperdb.splitDesignator(args[0])
         except hyperdb.DesignatorError, message:
-            raise UsageError, message
+            raise UsageError(message)
 
         try:
             print self.db.getclass(classname).history(nodeid)
         except KeyError:
-            raise UsageError, _('no such class "%(classname)s"')%locals()
+            raise UsageError(_('no such class "%(classname)s"')%locals())
         except IndexError:
-            raise UsageError, _('no such %(classname)s node "%(nodeid)s"')%locals()
+            raise UsageError(_('no such %(classname)s node '
+                '"%(nodeid)s"')%locals())
         return 0
 
     def do_commit(self, args):
@@ -1039,19 +1044,20 @@ Erase it? Y/N: """))
         by the list or find commands, and its key value may be re-used.
         """
         if len(args) < 1:
-            raise UsageError, _('Not enough arguments supplied')
+            raise UsageError(_('Not enough arguments supplied'))
         designators = args[0].split(',')
         for designator in designators:
             try:
                 classname, nodeid = hyperdb.splitDesignator(designator)
             except hyperdb.DesignatorError, message:
-                raise UsageError, message
+                raise UsageError(message)
             try:
                 self.db.getclass(classname).retire(nodeid)
             except KeyError:
-                raise UsageError, _('no such class "%(classname)s"')%locals()
+                raise UsageError(_('no such class "%(classname)s"')%locals())
             except IndexError:
-                raise UsageError, _('no such %(classname)s node "%(nodeid)s"')%locals()
+                raise UsageError(_('no such %(classname)s node '
+                    '"%(nodeid)s"')%locals())
         self.db_uncommitted = True
         return 0
 
@@ -1065,19 +1071,20 @@ Erase it? Y/N: """))
         The given nodes will become available for users again.
         """
         if len(args) < 1:
-            raise UsageError, _('Not enough arguments supplied')
+            raise UsageError(_('Not enough arguments supplied'))
         designators = args[0].split(',')
         for designator in designators:
             try:
                 classname, nodeid = hyperdb.splitDesignator(designator)
             except hyperdb.DesignatorError, message:
-                raise UsageError, message
+                raise UsageError(message)
             try:
                 self.db.getclass(classname).restore(nodeid)
             except KeyError:
-                raise UsageError, _('no such class "%(classname)s"')%locals()
+                raise UsageError(_('no such class "%(classname)s"')%locals())
             except IndexError:
-                raise UsageError, _('no such %(classname)s node "%(nodeid)s"')%locals()
+                raise UsageError(_('no such %(classname)s node '
+                    '"%(nodeid)s"')%locals())
         self.db_uncommitted = True
         return 0
 
@@ -1096,19 +1103,19 @@ Erase it? Y/N: """))
         """
         # grab the directory to export to
         if len(args) < 1:
-            raise UsageError, _('Not enough arguments supplied')
+            raise UsageError(_('Not enough arguments supplied'))
 
         dir = args[-1]
 
         # get the list of classes to export
         if len(args) == 2:
             if args[0].startswith('-'):
-                classes = [ c for c in self.db.classes.keys()
+                classes = [ c for c in self.db.classes
                             if not c in args[0][1:].split(',') ]
             else:
                 classes = args[0].split(',')
         else:
-            classes = self.db.classes.keys()
+            classes = self.db.classes
 
         class colon_separated(csv.excel):
             delimiter = ':'
@@ -1166,7 +1173,8 @@ Erase it? Y/N: """))
                 sys.stdout.write("\nExporting Journal for %s\n" % classname)
                 sys.stdout.flush()
             journals = csv.writer(jf, colon_separated)
-            map(journals.writerow, cl.export_journals())
+            for row in cl.export_journals():
+                journals.writerow(row)
             jf.close()
         if max_len > self.db.config.CSV_FIELD_SIZE:
             print >> sys.stderr, \
@@ -1209,7 +1217,7 @@ Erase it? Y/N: """))
         database (or, tediously, retire all the old data.)
         """
         if len(args) < 1:
-            raise UsageError, _('Not enough arguments supplied')
+            raise UsageError(_('Not enough arguments supplied'))
         from roundup import hyperdb
 
         if hasattr (csv, 'field_size_limit'):
@@ -1250,7 +1258,10 @@ Erase it? Y/N: """))
                 if hasattr(cl, 'import_files'):
                     cl.import_files(dir, nodeid)
                 maxid = max(maxid, int(nodeid))
+
+            # (print to sys.stdout here to allow tests to squash it .. ugh)
             print >> sys.stdout
+
             f.close()
 
             # import the journals
@@ -1259,8 +1270,10 @@ Erase it? Y/N: """))
             cl.import_journals(reader)
             f.close()
 
-            # set the id counter
+            # (print to sys.stdout here to allow tests to squash it .. ugh)
             print >> sys.stdout, 'setting', classname, maxid+1
+
+            # set the id counter
             self.db.setid(classname, str(maxid+1))
 
         self.db_uncommitted = True
@@ -1284,8 +1297,8 @@ Erase it? Y/N: """))
             2001-01-01
 
         """
-        if len(args) <> 1:
-            raise UsageError, _('Not enough arguments supplied')
+        if len(args) != 1:
+            raise UsageError(_('Not enough arguments supplied'))
 
         # are we dealing with a period or a date
         value = args[0]
@@ -1295,7 +1308,7 @@ Erase it? Y/N: """))
               """, re.VERBOSE)
         m = date_re.match(value)
         if not m:
-            raise ValueError, _('Invalid format')
+            raise ValueError(_('Invalid format'))
         m = m.groupdict()
         if m['period']:
             pack_before = date.Date(". - %s"%value)
@@ -1320,8 +1333,8 @@ Erase it? Y/N: """))
                     try:
                         cl.index(m.group(2))
                     except IndexError:
-                        raise UsageError, _('no such item "%(designator)s"')%{
-                            'designator': arg}
+                        raise UsageError(_('no such item "%(designator)s"')%{
+                            'designator': arg})
                 else:
                     cl = self.get_class(arg)
                     self.db.reindex(arg)
@@ -1341,7 +1354,7 @@ Erase it? Y/N: """))
                 print _('No such Role "%(role)s"')%locals()
                 return 1
         else:
-            roles = self.db.security.role.items()
+            roles = list(self.db.security.role.items())
             role = self.db.config.NEW_WEB_USER_ROLES
             if ',' in role:
                 print _('New Web users get the Roles "%(role)s"')%locals()
@@ -1517,7 +1530,7 @@ Erase it? Y/N: """))
         self.tracker_home = os.environ.get('TRACKER_HOME', '')
         # TODO: reinstate the user/password stuff (-u arg too)
         name = password = ''
-        if os.environ.has_key('ROUNDUP_LOGIN'):
+        if 'ROUNDUP_LOGIN' in os.environ:
             l = os.environ['ROUNDUP_LOGIN'].split(':')
             name = l[0]
             if len(l) > 1:

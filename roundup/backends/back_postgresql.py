@@ -27,9 +27,9 @@ from roundup.backends import sessions_rdbms
 def connection_dict(config, dbnamestr=None):
     ''' read_default_group is MySQL-specific, ignore it '''
     d = rdbms_common.connection_dict(config, dbnamestr)
-    if d.has_key('read_default_group'):
+    if 'read_default_group' in d:
         del d['read_default_group']
-    if d.has_key('read_default_file'):
+    if 'read_default_file' in d:
         del d['read_default_file']
     return d
 
@@ -58,7 +58,7 @@ def db_command(config, command):
     try:
         conn = psycopg.connect(**template1)
     except psycopg.OperationalError, message:
-        raise hyperdb.DatabaseError, message
+        raise hyperdb.DatabaseError(message)
 
     conn.set_isolation_level(0)
     cursor = conn.cursor()
@@ -68,7 +68,7 @@ def db_command(config, command):
                 return
     finally:
         conn.close()
-    raise RuntimeError, '10 attempts to create database failed'
+    raise RuntimeError('10 attempts to create database failed')
 
 def pg_command(cursor, command):
     '''Execute the postgresql command, which may be blocked by some other
@@ -81,7 +81,7 @@ def pg_command(cursor, command):
     except psycopg.ProgrammingError, err:
         response = str(err).split('\n')[0]
         if response.find('FATAL') != -1:
-            raise RuntimeError, response
+            raise RuntimeError(response)
         else:
             msgs = [
                 'is being accessed by other users',
@@ -94,7 +94,7 @@ def pg_command(cursor, command):
             if can_retry:
                 time.sleep(1)
                 return 0
-            raise RuntimeError, response
+            raise RuntimeError(response)
     return 1
 
 def db_exists(config):
@@ -135,7 +135,7 @@ class Database(rdbms_common.Database):
         try:
             conn = psycopg.connect(**db)
         except psycopg.OperationalError, message:
-            raise hyperdb.DatabaseError, message
+            raise hyperdb.DatabaseError(message)
 
         cursor = conn.cursor()
 
@@ -209,7 +209,7 @@ class Database(rdbms_common.Database):
     def add_actor_column(self):
         # update existing tables to have the new actor column
         tables = self.database_schema['tables']
-        for name in tables.keys():
+        for name in tables:
             self.sql('ALTER TABLE _%s add __actor VARCHAR(255)'%name)
 
     def __repr__(self):
@@ -271,7 +271,7 @@ class Database(rdbms_common.Database):
         rdbms_common.Database.clear(self)
 
         # reset the sequences
-        for cn in self.classes.keys():
+        for cn in self.classes:
             self.cursor.execute('DROP SEQUENCE _%s_ids'%cn)
             self.cursor.execute('CREATE SEQUENCE _%s_ids'%cn)
 

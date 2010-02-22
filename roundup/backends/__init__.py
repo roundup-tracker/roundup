@@ -38,7 +38,7 @@ def get_backend(name):
     '''Get a specific backend by name.'''
     vars = globals()
     # if requested backend has been imported yet, return current instance
-    if vars.has_key(name):
+    if name in vars:
         return vars[name]
     # import the backend module
     module_name = 'back_%s' % name

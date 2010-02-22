@@ -136,10 +136,9 @@ elif os.name =='posix':
 if __name__ == '__main__':
     from time import time, strftime, localtime
     import sys
-    import portalocker
 
     log = open('log.txt', "a+")
-    portalocker.lock(log, portalocker.LOCK_EX)
+    lock(log, LOCK_EX)
 
     timestamp = strftime("%m/%d/%Y %H:%M:%S\n", localtime(time()))
     log.write( timestamp )

@@ -169,8 +169,8 @@ htmlhelp_basename = 'Roundupdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
 latex_documents = [
-  ('docs/index', 'Roundup.tex', ur'Roundup Documentation',
-   ur'Richard Jones', 'manual'),
+  ('docs/index', 'Roundup.tex', u'Roundup Documentation',
+   u'Richard Jones', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
