@@ -16,17 +16,19 @@ from roundup.backends import indexer_common
 from roundup.hyperdb import *
 from roundup.support import ensureParentsExist
 
-def new_config():
+def new_config(debug=False):
     config = configuration.CoreConfig()
     config.DATABASE = "db"
     #config.logging = MockNull()
     # these TRACKER_WEB and MAIL_DOMAIN values are used in mailgw tests
+    if debug:
+        config.LOGGING_LEVEL = "DEBUG"
     config.MAIL_DOMAIN = "your.tracker.email.domain.example"
     config.TRACKER_WEB = "http://tracker.example/cgi-bin/roundup.cgi/bugs/"
     return config
 
-def create(journaltag, create=True):
-    db = Database(new_config(), journaltag)
+def create(journaltag, create=True, debug=False):
+    db = Database(new_config(debug), journaltag)
 
     # load standard schema
     schema = os.path.join(os.path.dirname(__file__),

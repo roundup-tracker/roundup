@@ -1,6 +1,13 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2010-02-23 1.5.0
+
+Fixed:
+- The email for the first message on an issue was having its In-Reply-To
+  set to itself (thanks Eric Kow)
+
+
 2010-02-19 1.4.13
 
 Fixed:

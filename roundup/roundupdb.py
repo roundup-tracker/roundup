@@ -179,7 +179,7 @@ class IssueClass:
     )
 
     # New methods:
-    def addmessage(self, nodeid, summary, text):
+    def addmessage(self, issueid, summary, text):
         """Add a message to an issue's mail spool.
 
         A new "msg" node is constructed using the current date, the user that
@@ -192,7 +192,7 @@ class IssueClass:
         appended to the "messages" field of the specified issue.
         """
 
-    def nosymessage(self, nodeid, msgid, oldvalues, whichnosy='nosy',
+    def nosymessage(self, issueid, msgid, oldvalues, whichnosy='nosy',
             from_address=None, cc=[], bcc=[]):
         """Send a message to the members of an issue's nosy list.
 
@@ -263,7 +263,7 @@ class IssueClass:
             seen_message[authid] = 1
 
         # now deal with the nosy and cc people who weren't recipients.
-        for userid in cc + self.get(nodeid, whichnosy):
+        for userid in cc + self.get(issueid, whichnosy):
             if good_recipient(userid):
                 add_recipient(userid, sendto)
 
@@ -273,24 +273,24 @@ class IssueClass:
                 add_recipient(userid, bcc_sendto)
 
         if oldvalues:
-            note = self.generateChangeNote(nodeid, oldvalues)
+            note = self.generateChangeNote(issueid, oldvalues)
         else:
-            note = self.generateCreateNote(nodeid)
+            note = self.generateCreateNote(issueid)
 
         # If we have new recipients, update the message's recipients
         # and send the mail.
         if sendto or bcc_sendto:
             if msgid is not None:
                 self.db.msg.set(msgid, recipients=recipients)
-            self.send_message(nodeid, msgid, note, sendto, from_address,
+            self.send_message(issueid, msgid, note, sendto, from_address,
                 bcc_sendto)
 
     # backwards compatibility - don't remove
     sendmessage = nosymessage
 
-    def send_message(self, nodeid, msgid, note, sendto, from_address=None,
+    def send_message(self, issueid, msgid, note, sendto, from_address=None,
             bcc_sendto=[]):
-        '''Actually send the nominated message from this node to the sendto
+        '''Actually send the nominated message from this issue to the sendto
            recipients, with the note appended.
         '''
         users = self.db.user
@@ -309,14 +309,14 @@ class IssueClass:
             # this is an old message that didn't get a messageid, so
             # create one
             messageid = "<%s.%s.%s%s@%s>"%(time.time(), random.random(),
-                                           self.classname, nodeid,
+                                           self.classname, issueid,
                                            self.db.config.MAIL_DOMAIN)
             if msgid is not None:
                 messages.set(msgid, messageid=messageid)
 
         # compose title
         cn = self.classname
-        title = self.get(nodeid, 'title') or '%s message copy'%cn
+        title = self.get(issueid, 'title') or '%s message copy'%cn
 
         # figure author information
         if msgid:
@@ -338,11 +338,11 @@ class IssueClass:
 
         # put in roundup's signature
         if self.db.config.EMAIL_SIGNATURE_POSITION == 'top':
-            m.append(self.email_signature(nodeid, msgid))
+            m.append(self.email_signature(issueid, msgid))
 
         # add author information
         if authid and self.db.config.MAIL_ADD_AUTHORINFO:
-            if msgid and len(self.get(nodeid, 'messages')) == 1:
+            if msgid and len(self.get(issueid, 'messages')) == 1:
                 m.append(_("New submission from %(authname)s%(authaddr)s:")
                     % locals())
             elif msgid:
@@ -377,7 +377,7 @@ class IssueClass:
 
         # put in roundup's signature
         if self.db.config.EMAIL_SIGNATURE_POSITION == 'bottom':
-            m.append(self.email_signature(nodeid, msgid))
+            m.append(self.email_signature(issueid, msgid))
 
         # figure the encoding
         charset = getattr(self.db.config, 'EMAIL_CHARSET', 'utf-8')
@@ -397,7 +397,7 @@ class IssueClass:
         if from_tag:
             from_tag = ' ' + from_tag
 
-        subject = '[%s%s] %s'%(cn, nodeid, title)
+        subject = '[%s%s] %s'%(cn, issueid, title)
         author = (authname + from_tag, from_address)
 
         # send an individual message per recipient?
@@ -441,12 +441,12 @@ class IssueClass:
                 if not 'name' in cl.getprops():
                     continue
                 if isinstance(prop, hyperdb.Link):
-                    value = self.get(nodeid, propname)
+                    value = self.get(issueid, propname)
                     if value is None:
                         continue
                     values = [value]
                 else:
-                    values = self.get(nodeid, propname)
+                    values = self.get(issueid, propname)
                     if not values:
                         continue
                 values = [cl.get(v, 'name') for v in values]
@@ -459,11 +459,11 @@ class IssueClass:
 
             if not inreplyto:
                 # Default the reply to the first message
-                msgs = self.get(nodeid, 'messages')
+                msgs = self.get(issueid, 'messages')
                 # Assume messages are sorted by increasing message number here
                 # If the issue is just being created, and the submitter didn't
                 # provide a message, then msgs will be empty.
-                if msgs and msgs[0] != nodeid:
+                if msgs and msgs[0] != msgid:
                     inreplyto = messages.get(msgs[0], 'messageid')
                     if inreplyto:
                         message['In-Reply-To'] = inreplyto
@@ -515,7 +515,7 @@ class IssueClass:
                 mailer.smtp_send(sendto, message.as_string())
             first = False
 
-    def email_signature(self, nodeid, msgid):
+    def email_signature(self, issueid, msgid):
         ''' Add a signature to the e-mail with some useful information
         '''
         # simplistic check to see if the url is valid,
@@ -528,7 +528,7 @@ class IssueClass:
         else:
             if not base.endswith('/'):
                 base = base + '/'
-            web = base + self.classname + nodeid
+            web = base + self.classname + issueid
 
         # ensure the email address is properly quoted
         email = formataddr((self.db.config.TRACKER_NAME,
@@ -538,7 +538,7 @@ class IssueClass:
         return '\n%s\n%s\n<%s>\n%s'%(line, email, web, line)
 
 
-    def generateCreateNote(self, nodeid):
+    def generateCreateNote(self, issueid):
         """Generate a create note that lists initial property values
         """
         cn = self.classname
@@ -550,7 +550,7 @@ class IssueClass:
         prop_items = props.items()
         prop_items.sort()
         for propname, prop in prop_items:
-            value = cl.get(nodeid, propname, None)
+            value = cl.get(issueid, propname, None)
             # skip boring entries
             if not value:
                 continue
@@ -580,7 +580,7 @@ class IssueClass:
         m.insert(0, '')
         return '\n'.join(m)
 
-    def generateChangeNote(self, nodeid, oldvalues):
+    def generateChangeNote(self, issueid, oldvalues):
         """Generate a change note that lists property changes
         """
         if not isinstance(oldvalues, type({})):
@@ -601,7 +601,7 @@ class IssueClass:
             # not all keys from oldvalues might be available in database
             # this happens when property was deleted
             try:
-                new_value = cl.get(nodeid, key)
+                new_value = cl.get(issueid, key)
             except KeyError:
                 continue
             # the old value might be non existent
@@ -622,7 +622,7 @@ class IssueClass:
         changed_items.sort()
         for propname, oldvalue in changed_items:
             prop = props[propname]
-            value = cl.get(nodeid, propname, None)
+            value = cl.get(issueid, propname, None)
             if isinstance(prop, hyperdb.Link):
                 link = self.db.classes[prop.classname]
                 key = link.labelprop(default_to_id=1)

@@ -583,6 +583,49 @@ Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 _______________________________________________________________________
 ''')
 
+    def testNosyGeneration(self):
+        self.db.issue.create(title='test')
+
+        # create a nosy message
+        msg = self.db.msg.create(content='This is a test',
+            author=self.richard_id, messageid='<dummy_test_message_id>')
+        self.db.journaltag = 'richard'
+        l = self.db.issue.create(title='test', messages=[msg],
+            nosy=[self.chef_id, self.mary_id, self.john_id])
+
+        self.compareMessages(self._get_mail(),
+'''FROM: roundup-admin@your.tracker.email.domain.example
+TO: chef@bork.bork.bork, john@test.test, mary@test.test
+Content-Type: text/plain; charset="utf-8"
+Subject: [issue2] test
+To: chef@bork.bork.bork, john@test.test, mary@test.test
+From: richard <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
+MIME-Version: 1.0
+Message-Id: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+X-Roundup-Issue-Status: unread
+Content-Transfer-Encoding: quoted-printable
+
+
+New submission from richard <richard@test.test>:
+
+This is a test
+
+----------
+messages: 1
+nosy: Chef, john, mary, richard
+status: unread
+title: test
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue2>
+_______________________________________________________________________
+''')
+
     def testPropertyChangeOnly(self):
         self.doNewIssue()
         oldvalues = self.db.getnode('issue', '1').copy()
@@ -615,6 +658,7 @@ X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
 X-Roundup-Issue-Status: unread
 X-Roundup-Version: 1.3.3
+In-Reply-To: <dummy_test_message_id>
 MIME-Version: 1.0
 Reply-To: Roundup issue tracker
  <issue_tracker@your.tracker.email.domain.example>
@@ -1935,7 +1979,7 @@ This is a second followup
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
-Message-Id: <dummy_test_message_id>
+Message-Id: <dummy_test_message_id_2>
 Subject: [issue%(id)s] Testing... [nosy=+mary]
 
 Just a test reply
@@ -1951,7 +1995,8 @@ From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
 Reply-To: Roundup issue tracker
  <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
-Message-Id: <dummy_test_message_id>
+Message-Id: <dummy_test_message_id_2>
+In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
 X-Roundup-Issue-Status: chatting
