@@ -82,7 +82,7 @@ class Indexer:
                 propspec[linkprop][nodeid] = 1
 
         # retain only the meaningful entries
-        for propname, idset in propspec.iteritems():
+        for propname, idset in list(propspec.items()):
             if not idset:
                 del propspec[propname]
 

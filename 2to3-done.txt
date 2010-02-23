@@ -6,7 +6,6 @@ CAN'T VERIFY
 
 TODO
 
-./roundup/backends/rdbms_common.py
 ./roundup/backends/sessions_dbm.py
 ./roundup/backends/sessions_rdbms.py
 ./roundup/backends/tsearch2_setup.py
@@ -154,3 +153,4 @@ DONE
 ./roundup/backends/indexer_rdbms.py
 ./roundup/backends/locking.py
 ./roundup/backends/portalocker.py
+./roundup/backends/rdbms_common.py
