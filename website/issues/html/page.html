@@ -107,7 +107,7 @@ status_notresolved string:-1,1,2,4;
        </li>
        <li>
        <a href="user?@template=register"
-          tal:condition="python:request.user.hasPermission('Create', 'user')"
+          tal:condition="python:request.user.hasPermission('Register', 'user')"
           i18n:translate="">Register</a>
 	</li>
        <li><a href="user?@template=forgotten" i18n:translate="">Lost&nbsp;your&nbsp;login?</a>
