@@ -46,7 +46,7 @@ class BasicDatabase:
         '''
         db_type = ''
         if os.path.exists(path):
-            db_type = whichdb.whichdb(path)
+            db_type = whichdb(path)
             if not db_type:
                 raise hyperdb.DatabaseError(
                     _("Couldn't identify database type"))
