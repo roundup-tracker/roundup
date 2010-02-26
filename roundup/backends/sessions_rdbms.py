@@ -36,7 +36,7 @@ class BasicDatabase:
         if not res:
             if default != self._marker:
                 return default
-            raise KeyError, 'No such %s "%s"'%(self.name, infoid)
+            raise KeyError('No such %s "%s"'%(self.name, infoid))
         values = eval(res[0])
         return values.get(value, None)
 
@@ -46,7 +46,7 @@ class BasicDatabase:
             n, n, self.db.arg), (infoid,))
         res = self.cursor.fetchone()
         if not res:
-            raise KeyError, 'No such %s "%s"'%(self.name, infoid)
+            raise KeyError('No such %s "%s"'%(self.name, infoid))
         return eval(res[0])
 
     def set(self, infoid, **newvalues):

@@ -35,7 +35,7 @@ qlre  = "([A-Za-z]+[-[A-Za-z]+]*);q=([\d\.]+)"
 # both
 lre   = re.compile(nqlre + "|" + qlre)
 
-ascii = ''.join([chr(x) for x in xrange(256)])
+ascii = ''.join([chr(x) for x in range(256)])
 whitespace = ' \t\n\r\v\f'
 
 def parse(language_header):

@@ -2,11 +2,9 @@
 """
 __docformat__ = 'restructuredtext'
 
-import base64, binascii, cgi, codecs, httplib, mimetypes, os
-import quopri, random, re, rfc822, stat, sys, time, urllib, urlparse
-import Cookie, socket, errno
-from Cookie import CookieError, BaseCookie, SimpleCookie
-from cStringIO import StringIO
+import base64, binascii, cgi, codecs, mimetypes, os
+import quopri, random, re, rfc822, stat, sys, time
+import socket, errno
 
 from roundup import roundupdb, date, hyperdb, password
 from roundup.cgi import templating, cgitb, TranslationService
@@ -17,6 +15,12 @@ from roundup.cgi.form_parser import FormParser
 from roundup.mailer import Mailer, MessageSendError, encode_quopri
 from roundup.cgi import accept_language
 from roundup import xmlrpc
+
+from roundup.anypy.cookie_ import CookieError, BaseCookie, SimpleCookie, \
+    get_cookie_date
+from roundup.anypy.io_ import StringIO
+from roundup.anypy import http_
+from roundup.anypy import urllib_
 
 def initialiseSecurity(security):
     '''Create some Permissions and Roles on the security object
@@ -43,7 +47,7 @@ def clean_message(message, mc=re.compile(CLEAN_MESSAGE_RE, re.I)):
 def clean_message_callback(match, ok={'a':1,'i':1,'b':1,'br':1}):
     """ Strip all non <a>,<i>,<b> and <br> tags from a string
     """
-    if ok.has_key(match.group(3).lower()):
+    if match.group(3).lower() in ok:
         return match.group(1)
     return '&lt;%s&gt;'%match.group(2)
 
@@ -293,7 +297,7 @@ class Client:
 
         # this is the "cookie path" for this tracker (ie. the path part of
         # the "base" url)
-        self.cookie_path = urlparse.urlparse(self.base)[2]
+        self.cookie_path = urllib_.urlparse(self.base)[2]
         # cookies to set in http responce
         # {(path, name): (value, expire)}
         self._cookies = {}
@@ -501,12 +505,12 @@ class Client:
             # authorization, send back a response that will cause the
             # browser to prompt the user again.
             if self.instance.config.WEB_HTTP_AUTH:
-                self.response_code = httplib.UNAUTHORIZED
+                self.response_code = http_.client.UNAUTHORIZED
                 realm = self.instance.config.TRACKER_NAME
                 self.setHeader("WWW-Authenticate",
                                "Basic realm=\"%s\"" % realm)
             else:
-                self.response_code = httplib.FORBIDDEN
+                self.response_code = http_.client.FORBIDDEN
             self.renderFrontPage(message)
         except Unauthorised, message:
             # users may always see the front page
@@ -526,15 +530,15 @@ class Client:
                 # we can't map the URL to a class we know about
                 # reraise the NotFound and let roundup_server
                 # handle it
-                raise NotFound, e
+                raise NotFound(e)
         except FormError, e:
             self.error_message.append(self._('Form Error: ') + str(e))
             self.write_html(self.renderContext())
         except:
             # Something has gone badly wrong.  Therefore, we should
             # make sure that the response code indicates failure.
-            if self.response_code == httplib.OK:
-                self.response_code = httplib.INTERNAL_SERVER_ERROR
+            if self.response_code == http_.client.OK:
+                self.response_code = http_.client.INTERNAL_SERVER_ERROR
             # Help the administrator work out what went wrong.
             html = ("<h1>Traceback</h1>"
                     + cgitb.html(i18n=self.translator)
@@ -583,12 +587,12 @@ class Client:
         """
         # look for client charset
         charset_parameter = 0
-        if self.form.has_key('@charset'):
+        if '@charset' in self.form:
             charset = self.form['@charset'].value
             if charset.lower() == "none":
                 charset = ""
             charset_parameter = 1
-        elif self.cookie.has_key('roundup_charset'):
+        elif 'roundup_charset' in self.cookie:
             charset = self.cookie['roundup_charset'].value
         else:
             charset = None
@@ -625,7 +629,7 @@ class Client:
                     uc = int(num)
                 return unichr(uc)
 
-            for field_name in self.form.keys():
+            for field_name in self.form:
                 field = self.form[field_name]
                 if (field.type == 'text/plain') and not field.filename:
                     try:
@@ -640,12 +644,12 @@ class Client:
         # look for language parameter
         # then for language cookie
         # last for the Accept-Language header
-        if self.form.has_key("@language"):
+        if "@language" in self.form:
             language = self.form["@language"].value
             if language.lower() == "none":
                 language = ""
             self.add_cookie("roundup_language", language)
-        elif self.cookie.has_key("roundup_language"):
+        elif "roundup_language" in self.cookie:
             language = self.cookie["roundup_language"].value
         elif self.instance.config["WEB_USE_BROWSER_LANGUAGE"]:
             hal = self.env.get('HTTP_ACCEPT_LANGUAGE')
@@ -673,7 +677,7 @@ class Client:
         user = None
         # first up, try http authorization if enabled
         if self.instance.config['WEB_HTTP_AUTH']:
-            if self.env.has_key('REMOTE_USER'):
+            if 'REMOTE_USER' in self.env:
                 # we have external auth (e.g. by Apache)
                 user = self.env['REMOTE_USER']
             elif self.env.get('HTTP_AUTHORIZATION', ''):
@@ -729,9 +733,9 @@ class Client:
         """
         # allow Anonymous to use the "login" and "register" actions (noting
         # that "register" has its own "Register" permission check)
-        if self.form.has_key(':action'):
+        if ':action' in self.form:
             action = self.form[':action'].value.lower()
-        elif self.form.has_key('@action'):
+        elif '@action' in self.form:
             action = self.form['@action'].value.lower()
         else:
             action = None
@@ -747,8 +751,8 @@ class Client:
         # otherwise for everything else
         if self.user == 'anonymous':
             if not self.db.security.hasPermission('Web Access', self.userid):
-                raise Unauthorised, self._("Anonymous users are not "
-                    "allowed to use the web interface")
+                raise Unauthorised(self._("Anonymous users are not "
+                    "allowed to use the web interface"))
 
     def opendb(self, username):
         """Open the database and set the current user.
@@ -822,7 +826,7 @@ class Client:
 
         # see if a template or messages are specified
         template_override = ok_message = error_message = None
-        for key in self.form.keys():
+        for key in self.form:
             if self.FV_TEMPLATE.match(key):
                 template_override = self.form[key].value
             elif self.FV_OK_MESSAGE.match(key):
@@ -847,12 +851,12 @@ class Client:
                 self.template = ''
             return
         elif path[0] in ('_file', '@@file'):
-            raise SendStaticFile, os.path.join(*path[1:])
+            raise SendStaticFile(os.path.join(*path[1:]))
         else:
             self.classname = path[0]
             if len(path) > 1:
                 # send the file identified by the designator in path[0]
-                raise SendFile, path[0]
+                raise SendFile(path[0])
 
         # see if we got a designator
         m = dre.match(self.classname)
@@ -862,9 +866,9 @@ class Client:
             try:
                 klass = self.db.getclass(self.classname)
             except KeyError:
-                raise NotFound, '%s/%s'%(self.classname, self.nodeid)
+                raise NotFound('%s/%s'%(self.classname, self.nodeid))
             if not klass.hasnode(self.nodeid):
-                raise NotFound, '%s/%s'%(self.classname, self.nodeid)
+                raise NotFound('%s/%s'%(self.classname, self.nodeid))
             # with a designator, we default to item view
             self.template = 'item'
         else:
@@ -875,7 +879,7 @@ class Client:
         try:
             self.db.getclass(self.classname)
         except KeyError:
-            raise NotFound, self.classname
+            raise NotFound(self.classname)
 
         # see if we have a template override
         if template_override is not None:
@@ -886,30 +890,30 @@ class Client:
         """
         m = dre.match(str(designator))
         if not m:
-            raise NotFound, str(designator)
+            raise NotFound(str(designator))
         classname, nodeid = m.group(1), m.group(2)
 
         try:
             klass = self.db.getclass(classname)
         except KeyError:
             # The classname was not valid.
-            raise NotFound, str(designator)
+            raise NotFound(str(designator))
             
         # perform the Anonymous user access check
         self.check_anonymous_access()
 
         # make sure we have the appropriate properties
         props = klass.getprops()
-        if not props.has_key('type'):
-            raise NotFound, designator
-        if not props.has_key('content'):
-            raise NotFound, designator
+        if 'type' not in props:
+            raise NotFound(designator)
+        if 'content' not in props:
+            raise NotFound(designator)
 
         # make sure we have permission
         if not self.db.security.hasPermission('View', self.userid,
                 classname, 'content', nodeid):
-            raise Unauthorised, self._("You are not allowed to view "
-                "this file.")
+            raise Unauthorised(self._("You are not allowed to view "
+                "this file."))
 
         mime_type = klass.get(nodeid, 'type')
         # Can happen for msg class:
@@ -962,7 +966,7 @@ class Client:
             if os.path.isfile(filename) and filename.startswith(prefix):
                 break
         else:
-            raise NotFound, file
+            raise NotFound(file)
 
         # last-modified time
         lmt = os.stat(filename)[stat.ST_MTIME]
@@ -991,7 +995,7 @@ class Client:
         # XXX see which interfaces set this
         #if hasattr(self.request, 'headers'):
             #ims = self.request.headers.getheader('if-modified-since')
-        if self.env.has_key('HTTP_IF_MODIFIED_SINCE'):
+        if 'HTTP_IF_MODIFIED_SINCE' in self.env:
             # cgi will put the header in the env var
             ims = self.env['HTTP_IF_MODIFIED_SINCE']
         if ims:
@@ -1062,7 +1066,7 @@ class Client:
         except templating.NoTemplate, message:
             return '<strong>%s</strong>'%message
         except templating.Unauthorised, message:
-            raise Unauthorised, str(message)
+            raise Unauthorised(str(message))
         except:
             # everything else
             if self.instance.config.WEB_DEBUG:
@@ -1080,7 +1084,7 @@ class Client:
                 # receive an error message, and the adminstrator will
                 # receive a traceback, albeit with less information
                 # than the one we tried to generate above.
-                raise exc_info[0], exc_info[1], exc_info[2]
+                raise exc_info[0](exc_info[1]).with_traceback(exc_info[2])
 
     # these are the actions that are available
     actions = (
@@ -1110,9 +1114,9 @@ class Client:
             We explicitly catch Reject and ValueError exceptions and
             present their messages to the user.
         """
-        if self.form.has_key(':action'):
+        if ':action' in self.form:
             action = self.form[':action'].value.lower()
-        elif self.form.has_key('@action'):
+        elif '@action' in self.form:
             action = self.form['@action'].value.lower()
         else:
             return None
@@ -1132,7 +1136,7 @@ class Client:
 
     def get_action_class(self, action_name):
         if (hasattr(self.instance, 'cgi_actions') and
-                self.instance.cgi_actions.has_key(action_name)):
+                action_name in self.instance.cgi_actions):
             # tracker-defined action
             action_klass = self.instance.cgi_actions[action_name]
         else:
@@ -1141,7 +1145,7 @@ class Client:
                 if name == action_name:
                     break
             else:
-                raise ValueError, 'No such action "%s"'%action_name
+                raise ValueError('No such action "%s"'%action_name)
         return action_klass
 
     def _socket_op(self, call, *args, **kwargs):
@@ -1181,7 +1185,7 @@ class Client:
     def write_html(self, content):
         if not self.headers_done:
             # at this point, we are sure about Content-Type
-            if not self.additional_headers.has_key('Content-Type'):
+            if 'Content-Type' not in self.additional_headers:
                 self.additional_headers['Content-Type'] = \
                     'text/html; charset=%s' % self.charset
             self.header()
@@ -1343,14 +1347,14 @@ class Client:
                 return None
             # Return code 416 with a Content-Range header giving the
             # allowable range.
-            self.response_code = httplib.REQUESTED_RANGE_NOT_SATISFIABLE
+            self.response_code = http_.client.REQUESTED_RANGE_NOT_SATISFIABLE
             self.setHeader("Content-Range", "bytes */%d" % length)
             return None
         # RFC 2616 10.2.7: 206 Partial Content
         #
         # Tell the client that we are honoring the Range request by
         # indicating that we are providing partial content.
-        self.response_code = httplib.PARTIAL_CONTENT
+        self.response_code = http_.client.PARTIAL_CONTENT
         # RFC 2616 14.16: Content-Range
         #
         # Tell the client what data we are providing.
@@ -1404,7 +1408,7 @@ class Client:
         # If the client doesn't actually want the body, or if we are
         # indicating an invalid range.
         if (self.env['REQUEST_METHOD'] == 'HEAD'
-            or self.response_code == httplib.REQUESTED_RANGE_NOT_SATISFIABLE):
+            or self.response_code == http_.client.REQUESTED_RANGE_NOT_SATISFIABLE):
             return
         # Use the optimized "sendfile" operation, if possible.
         if hasattr(self.request, "sendfile"):
@@ -1439,12 +1443,12 @@ class Client:
         if headers.get('Content-Type', 'text/html') == 'text/html':
             headers['Content-Type'] = 'text/html; charset=utf-8'
 
-        headers = headers.items()
+        headers = list(headers.items())
 
-        for ((path, name), (value, expire)) in self._cookies.items():
+        for ((path, name), (value, expire)) in self._cookies.iteritems():
             cookie = "%s=%s; Path=%s;"%(name, value, path)
             if expire is not None:
-                cookie += " expires=%s;"%Cookie._getdate(expire)
+                cookie += " expires=%s;"%get_cookie_date(expire)
             headers.append(('Set-Cookie', cookie))
 
         self._socket_op(self.request.start_response, headers, response)

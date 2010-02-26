@@ -1,4 +1,4 @@
-import re, cgi, StringIO, urllib, time, random, csv, codecs
+import re, cgi, time, random, csv, codecs
 
 from roundup import hyperdb, token, date, password
 from roundup.actions import Action as BaseAction
@@ -6,6 +6,7 @@ from roundup.i18n import _
 import roundup.exceptions
 from roundup.cgi import exceptions, templating
 from roundup.mailgw import uidFromAddress
+from roundup.anypy import io_, urllib_
 
 __all__ = ['Action', 'ShowAction', 'RetireAction', 'SearchAction',
            'EditCSVAction', 'EditItemAction', 'PassResetAction',
@@ -53,9 +54,9 @@ class Action:
         if (self.permissionType and
                 not self.hasPermission(self.permissionType)):
             info = {'action': self.name, 'classname': self.classname}
-            raise exceptions.Unauthorised, self._(
+            raise exceptions.Unauthorised(self._(
                 'You do not have permission to '
-                '%(action)s the %(classname)s class.')%info
+                '%(action)s the %(classname)s class.')%info)
 
     _marker = []
     def hasPermission(self, permission, classname=_marker, itemid=None, property=None):
@@ -79,23 +80,23 @@ class ShowAction(Action):
     def handle(self):
         """Show a node of a particular class/id."""
         t = n = ''
-        for key in self.form.keys():
+        for key in self.form:
             if self.typere.match(key):
                 t = self.form[key].value.strip()
             elif self.numre.match(key):
                 n = self.form[key].value.strip()
         if not t:
-            raise ValueError, self._('No type specified')
+            raise ValueError(self._('No type specified'))
         if not n:
-            raise exceptions.SeriousError, self._('No ID entered')
+            raise exceptions.SeriousError(self._('No ID entered'))
         try:
             int(n)
         except ValueError:
             d = {'input': n, 'classname': t}
-            raise exceptions.SeriousError, self._(
-                '"%(input)s" is not an ID (%(classname)s ID required)')%d
+            raise exceptions.SeriousError(self._(
+                '"%(input)s" is not an ID (%(classname)s ID required)')%d)
         url = '%s%s%s'%(self.base, t, n)
-        raise exceptions.Redirect, url
+        raise exceptions.Redirect(url)
 
 class RetireAction(Action):
     name = 'retire'
@@ -116,15 +117,15 @@ class RetireAction(Action):
         # make sure we don't try to retire admin or anonymous
         if self.classname == 'user' and \
                 self.db.user.get(itemid, 'username') in ('admin', 'anonymous'):
-            raise ValueError, self._(
-                'You may not retire the admin or anonymous user')
+            raise ValueError(self._(
+                'You may not retire the admin or anonymous user'))
 
         # check permission
         if not self.hasPermission('Retire', classname=self.classname,
                 itemid=itemid):
-            raise exceptions.Unauthorised, self._(
+            raise exceptions.Unauthorised(self._(
                 'You do not have permission to retire %(class)s'
-            ) % {'class': self.classname}
+            ) % {'class': self.classname})
 
         # do the retire
         self.db.getclass(self.classname).retire(itemid)
@@ -171,14 +172,14 @@ class SearchAction(Action):
                 try:
                     qid = self.db.query.lookup(old_queryname)
                     if not self.hasPermission('Edit', 'query', itemid=qid):
-                        raise exceptions.Unauthorised, self._(
-                            "You do not have permission to edit queries")
+                        raise exceptions.Unauthorised(self._(
+                            "You do not have permission to edit queries"))
                     self.db.query.set(qid, klass=self.classname, url=url)
                 except KeyError:
                     # create a query
                     if not self.hasPermission('Create', 'query'):
-                        raise exceptions.Unauthorised, self._(
-                            "You do not have permission to store queries")
+                        raise exceptions.Unauthorised(self._(
+                            "You do not have permission to store queries"))
                     qid = self.db.query.create(name=queryname,
                         klass=self.classname, url=url)
             else:
@@ -199,15 +200,15 @@ class SearchAction(Action):
                         if old_queryname != self.db.query.get(qid, 'name'):
                             continue
                         if not self.hasPermission('Edit', 'query', itemid=qid):
-                            raise exceptions.Unauthorised, self._(
-                            "You do not have permission to edit queries")
+                            raise exceptions.Unauthorised(self._(
+                            "You do not have permission to edit queries"))
                         self.db.query.set(qid, klass=self.classname,
                             url=url, name=queryname)
                 else:
                     # create a query
                     if not self.hasPermission('Create', 'query'):
-                        raise exceptions.Unauthorised, self._(
-                            "You do not have permission to store queries")
+                        raise exceptions.Unauthorised(self._(
+                            "You do not have permission to store queries"))
                     qid = self.db.query.create(name=queryname,
                         klass=self.classname, url=url, private_for=uid)
 
@@ -223,7 +224,7 @@ class SearchAction(Action):
     def fakeFilterVars(self):
         """Add a faked :filter form variable for each filtering prop."""
         cls = self.db.classes[self.classname]
-        for key in self.form.keys():
+        for key in self.form:
             prop = cls.get_transitive_prop(key)
             if not prop:
                 continue
@@ -264,7 +265,7 @@ class SearchAction(Action):
 
     def getFromForm(self, name):
         for key in ('@' + name, ':' + name):
-            if self.form.has_key(key):
+            if key in self.form:
                 return self.form[key].value.strip()
         return ''
 
@@ -288,7 +289,7 @@ class EditCSVAction(Action):
 
         # figure the properties list for the class
         cl = self.db.classes[self.classname]
-        props_without_id = cl.getprops(protected=0).keys()
+        props_without_id = list(cl.getprops(protected=0))
 
         # the incoming CSV data will always have the properties in colums
         # sorted and starting with the "id" column
@@ -296,7 +297,7 @@ class EditCSVAction(Action):
         props = ['id'] + props_without_id
 
         # do the edit
-        rows = StringIO.StringIO(self.form['rows'].value)
+        rows = io_.StringIO(self.form['rows'].value)
         reader = csv.reader(rows)
         found = {}
         line = 0
@@ -317,9 +318,9 @@ class EditCSVAction(Action):
 
                 # check permission to create this item
                 if not self.hasPermission('Create', classname=self.classname):
-                    raise exceptions.Unauthorised, self._(
+                    raise exceptions.Unauthorised(self._(
                         'You do not have permission to create %(class)s'
-                    ) % {'class': self.classname}
+                    ) % {'class': self.classname})
             elif cl.hasnode(itemid) and cl.is_retired(itemid):
                 # If a CSV line just mentions an id and the corresponding
                 # item is retired, then the item is restored.
@@ -340,9 +341,9 @@ class EditCSVAction(Action):
                 # check permission to edit this property on this item
                 if exists and not self.hasPermission('Edit', itemid=itemid,
                         classname=self.classname, property=name):
-                    raise exceptions.Unauthorised, self._(
+                    raise exceptions.Unauthorised(self._(
                         'You do not have permission to edit %(class)s'
-                    ) % {'class': self.classname}
+                    ) % {'class': self.classname})
 
                 prop = cl.properties[name]
                 value = value.strip()
@@ -379,13 +380,13 @@ class EditCSVAction(Action):
 
         # retire the removed entries
         for itemid in cl.list():
-            if not found.has_key(itemid):
+            if itemid not in found:
                 # check permission to retire this item
                 if not self.hasPermission('Retire', itemid=itemid,
                         classname=self.classname):
-                    raise exceptions.Unauthorised, self._(
+                    raise exceptions.Unauthorised(self._(
                         'You do not have permission to retire %(class)s'
-                    ) % {'class': self.classname}
+                    ) % {'class': self.classname})
                 cl.retire(itemid)
 
         # all OK
@@ -405,12 +406,12 @@ class EditCommon(Action):
         links = {}
         for cn, nodeid, propname, vlist in all_links:
             numeric_id = int (nodeid or 0)
-            if not (numeric_id > 0 or all_props.has_key((cn, nodeid))):
+            if not (numeric_id > 0 or (cn, nodeid) in all_props):
                 # link item to link to doesn't (and won't) exist
                 continue
 
             for value in vlist:
-                if not all_props.has_key(value):
+                if value not in all_props:
                     # link item to link to doesn't (and won't) exist
                     continue
                 deps.setdefault((cn, nodeid), []).append(value)
@@ -422,19 +423,19 @@ class EditCommon(Action):
         # loop detection
         change = 0
         while len(all_props) != len(done):
-            for needed in all_props.keys():
-                if done.has_key(needed):
+            for needed in all_props:
+                if needed in done:
                     continue
                 tlist = deps.get(needed, [])
                 for target in tlist:
-                    if not done.has_key(target):
+                    if target not in done:
                         break
                 else:
                     done[needed] = 1
                     order.append(needed)
                     change = 1
             if not change:
-                raise ValueError, 'linking must not loop!'
+                raise ValueError('linking must not loop!')
 
         # now, edit / create
         m = []
@@ -448,7 +449,7 @@ class EditCommon(Action):
 
                     # and some nice feedback for the user
                     if props:
-                        info = ', '.join(map(self._, props.keys()))
+                        info = ', '.join(map(self._, props))
                         m.append(
                             self._('%(class)s %(id)s %(properties)s edited ok')
                             % {'class':cn, 'id':nodeid, 'properties':info})
@@ -469,12 +470,12 @@ class EditCommon(Action):
                         % {'class':cn, 'id':newid})
 
             # fill in new ids in links
-            if links.has_key(needed):
+            if needed in links:
                 for linkcn, linkid, linkprop in links[needed]:
                     props = all_props[(linkcn, linkid)]
                     cl = self.db.classes[linkcn]
                     propdef = cl.getprops()[linkprop]
-                    if not props.has_key(linkprop):
+                    if linkprop not in props:
                         if linkid is None or linkid.startswith('-'):
                             # linking to a new item
                             if isinstance(propdef, hyperdb.Multilink):
@@ -496,9 +497,9 @@ class EditCommon(Action):
         """Change the node based on the contents of the form."""
         # check for permission
         if not self.editItemPermission(props, classname=cn, itemid=nodeid):
-            raise exceptions.Unauthorised, self._(
+            raise exceptions.Unauthorised(self._(
                 'You do not have permission to edit %(class)s'
-            ) % {'class': cn}
+            ) % {'class': cn})
 
         # make the changes
         cl = self.db.classes[cn]
@@ -508,9 +509,9 @@ class EditCommon(Action):
         """Create a node based on the contents of the form."""
         # check for permission
         if not self.newItemPermission(props, classname=cn):
-            raise exceptions.Unauthorised, self._(
+            raise exceptions.Unauthorised(self._(
                 'You do not have permission to create %(class)s'
-            ) % {'class': cn}
+            ) % {'class': cn})
 
         # create the node and return its id
         cl = self.db.classes[cn]
@@ -561,9 +562,9 @@ class EditCommon(Action):
 
 class EditItemAction(EditCommon):
     def lastUserActivity(self):
-        if self.form.has_key(':lastactivity'):
+        if ':lastactivity' in self.form:
             d = date.Date(self.form[':lastactivity'].value)
-        elif self.form.has_key('@lastactivity'):
+        elif '@lastactivity' in self.form:
             d = date.Date(self.form['@lastactivity'].value)
         else:
             return None
@@ -583,7 +584,7 @@ class EditItemAction(EditCommon):
             props, links = self.client.parsePropsFromForm()
             key = (self.classname, self.nodeid)
             # we really only collide for direct prop edit conflicts
-            return props[key].keys()
+            return list(props[key])
         else:
             return []
 
@@ -633,12 +634,12 @@ class EditItemAction(EditCommon):
         # we will want to include index-page args in this URL too
         if self.nodeid is not None:
             url += self.nodeid
-        url += '?@ok_message=%s&@template=%s'%(urllib.quote(message),
-            urllib.quote(self.template))
+        url += '?@ok_message=%s&@template=%s'%(urllib_.quote(message),
+            urllib_.quote(self.template))
         if self.nodeid is None:
             req = templating.HTMLRequest(self.client)
             url += '&' + req.indexargs_url('', {})[1:]
-        raise exceptions.Redirect, url
+        raise exceptions.Redirect(url)
 
 class NewItemAction(EditCommon):
     def handle(self):
@@ -673,9 +674,9 @@ class NewItemAction(EditCommon):
         self.db.commit()
 
         # redirect to the new item's page
-        raise exceptions.Redirect, '%s%s%s?@ok_message=%s&@template=%s' % (
-            self.base, self.classname, self.nodeid, urllib.quote(messages),
-            urllib.quote(self.template))
+        raise exceptions.Redirect('%s%s%s?@ok_message=%s&@template=%s' % (
+            self.base, self.classname, self.nodeid, urllib_.quote(messages),
+            urllib_.quote(self.template)))
 
 class PassResetAction(Action):
     def handle(self):
@@ -686,7 +687,7 @@ class PassResetAction(Action):
 
         """
         otks = self.db.getOTKManager()
-        if self.form.has_key('otk'):
+        if 'otk' in self.form:
             # pull the rego information out of the otk database
             otk = self.form['otk'].value
             uid = otks.get(otk, 'uid', default=None)
@@ -738,7 +739,7 @@ Your password is now: %(password)s
             return
 
         # no OTK, so now figure the user
-        if self.form.has_key('username'):
+        if 'username' in self.form:
             name = self.form['username'].value
             try:
                 uid = self.db.user.lookup(name)
@@ -746,7 +747,7 @@ Your password is now: %(password)s
                 self.client.error_message.append(self._('Unknown username'))
                 return
             address = self.db.user.get(uid, 'address')
-        elif self.form.has_key('address'):
+        elif 'address' in self.form:
             address = self.form['address'].value
             uid = uidFromAddress(self.db, ('', address), create=0)
             if not uid:
@@ -797,7 +798,7 @@ class RegoCommon(Action):
         # nice message
         message = self._('You are now registered, welcome!')
         url = '%suser%s?@ok_message=%s'%(self.base, self.userid,
-            urllib.quote(message))
+            urllib._quote(message))
 
         # redirect to the user's page (but not 302, as some email clients seem
         # to want to reload the page, or something)
@@ -865,7 +866,7 @@ class RegisterAction(RegoCommon, EditCommon):
 
         # generate the one-time-key and store the props for later
         user_props = props[('user', None)]
-        for propname, proptype in self.db.user.getprops().items():
+        for propname, proptype in self.db.user.getprops().iteritems():
             value = user_props.get(propname, None)
             if value is None:
                 pass
@@ -916,15 +917,15 @@ reply's additional "Re:" is ok),
         self.db.commit()
 
         # redirect to the "you're almost there" page
-        raise exceptions.Redirect, '%suser?@template=rego_progress'%self.base
+        raise exceptions.Redirect('%suser?@template=rego_progress'%self.base)
 
     def newItemPermission(self, props, classname=None):
         """Just check the "Register" permission.
         """
         # registration isn't allowed to supply roles
-        if props.has_key('roles'):
-            raise exceptions.Unauthorised, self._(
-                "It is not permitted to supply roles at registration.")
+        if 'roles' in props:
+            raise exceptions.Unauthorised(self._(
+                "It is not permitted to supply roles at registration."))
 
         # technically already checked, but here for clarity
         return self.hasPermission('Register', classname=classname)
@@ -957,13 +958,13 @@ class LoginAction(Action):
             raise roundup.exceptions.Reject(self._('Invalid request'))
 
         # we need the username at a minimum
-        if not self.form.has_key('__login_name'):
+        if '__login_name' not in self.form:
             self.client.error_message.append(self._('Username required'))
             return
 
         # get the login info
         self.client.user = self.form['__login_name'].value
-        if self.form.has_key('__login_password'):
+        if '__login_password' in self.form:
             password = self.form['__login_password'].value
         else:
             password = ''
@@ -980,29 +981,29 @@ class LoginAction(Action):
 
         # save user in session
         self.client.session_api.set(user=self.client.user)
-        if self.form.has_key('remember'):
+        if 'remember' in self.form:
             self.client.session_api.update(set_cookie=True, expire=24*3600*365)
 
         # If we came from someplace, go back there
-        if self.form.has_key('__came_from'):
-            raise exceptions.Redirect, self.form['__came_from'].value
+        if '__came_from' in self.form:
+            raise exceptions.Redirect(self.form['__came_from'].value)
 
     def verifyLogin(self, username, password):
         # make sure the user exists
         try:
             self.client.userid = self.db.user.lookup(username)
         except KeyError:
-            raise exceptions.LoginError, self._('Invalid login')
+            raise exceptions.LoginError(self._('Invalid login'))
 
         # verify the password
         if not self.verifyPassword(self.client.userid, password):
-            raise exceptions.LoginError, self._('Invalid login')
+            raise exceptions.LoginError(self._('Invalid login'))
 
         # Determine whether the user has permission to log in.
         # Base behaviour is to check the user has "Web Access".
         if not self.hasPermission("Web Access"):
-            raise exceptions.LoginError, self._(
-                "You do not have permission to login")
+            raise exceptions.LoginError(self._(
+                "You do not have permission to login"))
 
     def verifyPassword(self, userid, password):
         '''Verify the password that the user has supplied'''
@@ -1060,9 +1061,9 @@ class ExportCSVAction(Action):
                 # check permission to view this property on this item
                 if not self.hasPermission('View', itemid=itemid,
                         classname=request.classname, property=name):
-                    raise exceptions.Unauthorised, self._(
+                    raise exceptions.Unauthorised(self._(
                         'You do not have permission to view %(class)s'
-                    ) % {'class': request.classname}
+                    ) % {'class': request.classname})
                 row.append(str(klass.get(itemid, name)))
             self.client._socket_op(writer.writerow, row)
 
@@ -1095,7 +1096,7 @@ class Bridge(BaseAction):
 
     def execute_cgi(self):
         args = {}
-        for key in self.form.keys():
+        for key in self.form:
             args[key] = self.form.getvalue(key)
         self.permission(args)
         return self.handle(args)

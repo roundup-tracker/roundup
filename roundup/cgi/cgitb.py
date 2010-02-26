@@ -37,9 +37,7 @@ def breaker():
 
 def niceDict(indent, dict):
     l = []
-    keys = dict.keys()
-    keys.sort()
-    for k in keys:
+    for k in sorted(dict):
         v = dict[k]
         l.append('<tr><td><strong>%s</strong></td><td>%s</td></tr>'%(k,
             cgi.escape(repr(v))))
@@ -59,7 +57,7 @@ def pt_html(context=5, i18n=None):
     t.reverse()
     for frame, file, lnum, func, lines, index in t:
         args, varargs, varkw, locals = inspect.getargvalues(frame)
-        if locals.has_key('__traceback_info__'):
+        if '__traceback_info__' in locals:
             ti = locals['__traceback_info__']
             if isinstance(ti, TraversalError):
                 s = []
@@ -72,7 +70,7 @@ def pt_html(context=5, i18n=None):
                 ) % {'name': ti.name, 'path': s})
             else:
                 l.append(_('<li>In %s</li>') % esc(str(ti)))
-        if locals.has_key('__traceback_supplement__'):
+        if '__traceback_supplement__' in locals:
             ts = locals['__traceback_supplement__']
             if len(ts) == 2:
                 supp, context = ts
@@ -111,8 +109,8 @@ def pt_html(context=5, i18n=None):
 
 def html(context=5, i18n=None):
     _ = get_translator(i18n)
-    etype, evalue = sys.exc_type, sys.exc_value
-    if type(etype) is types.ClassType:
+    etype, evalue = sys.exc_info()[0], sys.exc_info()[1]
+    if type(etype) is type:
         etype = etype.__name__
     pyver = 'Python ' + string.split(sys.version)[0] + '<br>' + sys.executable
     head = pydoc.html.heading(
@@ -169,13 +167,13 @@ def html(context=5, i18n=None):
         lvals = []
         for name in names:
             if name in frame.f_code.co_varnames:
-                if locals.has_key(name):
+                if name in locals:
                     value = pydoc.html.repr(locals[name])
                 else:
                     value = _('<em>undefined</em>')
                 name = '<strong>%s</strong>' % name
             else:
-                if frame.f_globals.has_key(name):
+                if name in frame.f_globals:
                     value = pydoc.html.repr(frame.f_globals[name])
                 else:
                     value = _('<em>undefined</em>')

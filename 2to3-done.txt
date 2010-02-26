@@ -2,19 +2,9 @@ CAN'T VERIFY
 
 ./roundup/backends/back_mysql.py
 ./roundup/backends/back_tsearch2.py
-./roundup/backends/indexer_xapian.py
 
 TODO
 
-./roundup/backends/sessions_dbm.py
-./roundup/backends/sessions_rdbms.py
-./roundup/backends/tsearch2_setup.py
-./roundup/cgi/__init__.py
-./roundup/cgi/accept_language.py
-./roundup/cgi/actions.py
-./roundup/cgi/apache.py
-./roundup/cgi/cgitb.py
-./roundup/cgi/client.py
 ./roundup/cgi/exceptions.py
 ./roundup/cgi/form_parser.py
 ./roundup/cgi/MultiMapping.py
@@ -133,24 +123,37 @@ TODO
 ./frontends/ZRoundup/ZRoundup.py
 
 
-
 DONE
 
 ./doc/conf.py
-./roundup/__init__.py
 ./roundup/admin.py
-./roundup/actions.py
-./roundup/anypy/__init__.py
-./roundup/anypy/hashlib_.py
-./roundup/anypy/sets_.py
 ./roundup/backends/__init__.py
 ./roundup/backends/back_anydbm.py
 ./roundup/backends/back_postgresql.py
 ./roundup/backends/back_sqlite.py
-./roundup/backends/blobfiles.py
 ./roundup/backends/indexer_common.py
 ./roundup/backends/indexer_dbm.py
 ./roundup/backends/indexer_rdbms.py
 ./roundup/backends/locking.py
 ./roundup/backends/portalocker.py
 ./roundup/backends/rdbms_common.py
+./roundup/backends/sessions_dbm.py
+./roundup/backends/sessions_rdbms.py
+./roundup/cgi/accept_language.py
+./roundup/cgi/actions.py
+./roundup/cgi/cgitb.py
+
+
+NOTHING DONE
+
+./roundup/__init__.py
+./roundup/actions.py
+./roundup/anypy/__init__.py
+./roundup/anypy/hashlib_.py
+./roundup/anypy/sets_.py
+./roundup/backends/blobfiles.py
+./roundup/backends/indexer_xapian.py
+./roundup/backends/tsearch2_setup.py
+./roundup/cgi/__init__.py
+./roundup/cgi/apache.py
+./roundup/cgi/client.py

@@ -168,7 +168,7 @@ class Indexer(IndexerBase):
                     hits[k] = self.fileids[k]
             else:
                 # Eliminate hits for every non-match
-                for fileid in hits:
+                for fileid in list(hits):
                     if fileid not in entry:
                         del hits[fileid]
         if hits is None:
