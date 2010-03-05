@@ -1647,7 +1647,10 @@ class Class(hyperdb.Class):
 
             elif isinstance(propclass, hyperdb.Number):
                 if type(v) != type([]):
-                    v = v.split(',')
+                    try :
+                        v = v.split(',')
+                    except AttributeError :
+                        v = [v]
                 l.append((OTHER, k, [float(val) for val in v]))
 
         filterspec = l

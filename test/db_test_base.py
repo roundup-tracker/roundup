@@ -1123,6 +1123,8 @@ class DBTest(MyTestCase):
         ae(filt(None, {'age': '1.5'}, ('+','id'), (None,None)), ['4'])
         ae(filt(None, {'age': '2'}, ('+','id'), (None,None)), ['5'])
         ae(filt(None, {'age': ['1','2']}, ('+','id'), (None,None)), ['3','5'])
+        ae(filt(None, {'age': 2}, ('+','id'), (None,None)), ['5'])
+        ae(filt(None, {'age': [1,2]}, ('+','id'), (None,None)), ['3','5'])
 
     def testFilteringString(self):
         ae, filt = self.filteringSetup()
