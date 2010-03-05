@@ -1630,12 +1630,14 @@ class Class(hyperdb.Class):
                     pass
 
             elif isinstance(propclass, hyperdb.Boolean):
-                if type(v) != type([]):
+                if type(v) == type(""):
                     v = v.split(',')
+                if type(v) != type([]):
+                    v = [v]
                 bv = []
                 for val in v:
                     if type(val) is type(''):
-                        bv.append(val.lower() in ('yes', 'true', 'on', '1'))
+                        bv.append(propclass.from_raw (val))
                     else:
                         bv.append(val)
                 l.append((OTHER, k, bv))

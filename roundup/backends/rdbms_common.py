@@ -2330,6 +2330,24 @@ class Class(hyperdb.Class):
                             pass
                 if p.sort_type > 0:
                     oc = ac = '_%s.__%s_int__'%(pln,k)
+            elif isinstance(propclass, Boolean) and p.sort_type < 2:
+                if type(v) == type(""):
+                    v = v.split(',')
+                if type(v) != type([]):
+                    v = [v]
+                bv = []
+                for val in v:
+                    if type(val) is type(''):
+                        bv.append(propclass.from_raw (val))
+                    else:
+                        bv.append(bool(val))
+                if len(bv) == 1:
+                    where.append('_%s._%s=%s'%(pln, k, a))
+                    args = args + bv
+                else:
+                    s = ','.join([a for x in v])
+                    where.append('_%s._%s in (%s)'%(pln, k, s))
+                    args = args + bv
             elif p.sort_type < 2:
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])

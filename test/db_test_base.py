@@ -1086,9 +1086,9 @@ class DBTest(MyTestCase):
 
     def filteringSetup(self):
         for user in (
-                {'username': 'bleep', 'age': 1},
-                {'username': 'blop', 'age': 1.5},
-                {'username': 'blorp', 'age': 2}):
+                {'username': 'bleep', 'age': 1, 'assignable': True},
+                {'username': 'blop', 'age': 1.5, 'assignable': True},
+                {'username': 'blorp', 'age': 2, 'assignable': False}):
             self.db.user.create(**user)
         iss = self.db.issue
         file_content = ''.join([chr(i) for i in range(255)])
@@ -1115,6 +1115,33 @@ class DBTest(MyTestCase):
         ae(filt(None, {'id': '1'}, ('+','id'), (None,None)), ['1'])
         ae(filt(None, {'id': '2'}, ('+','id'), (None,None)), ['2'])
         ae(filt(None, {'id': '100'}, ('+','id'), (None,None)), [])
+
+    def testFilteringBoolean(self):
+        self.filteringSetup()
+        ae, filt = self.assertEqual, self.db.user.filter
+        a = 'assignable'
+        ae(filt(None, {a: '1'}, ('+','id'), (None,None)), ['3','4'])
+        ae(filt(None, {a: '0'}, ('+','id'), (None,None)), ['5'])
+        ae(filt(None, {a: ['1']}, ('+','id'), (None,None)), ['3','4'])
+        ae(filt(None, {a: ['0']}, ('+','id'), (None,None)), ['5'])
+        ae(filt(None, {a: ['0','1']}, ('+','id'), (None,None)), ['3','4','5'])
+        ae(filt(None, {a: 'True'}, ('+','id'), (None,None)), ['3','4'])
+        ae(filt(None, {a: 'False'}, ('+','id'), (None,None)), ['5'])
+        ae(filt(None, {a: ['True']}, ('+','id'), (None,None)), ['3','4'])
+        ae(filt(None, {a: ['False']}, ('+','id'), (None,None)), ['5'])
+        ae(filt(None, {a: ['False','True']}, ('+','id'), (None,None)),
+            ['3','4','5'])
+        ae(filt(None, {a: True}, ('+','id'), (None,None)), ['3','4'])
+        ae(filt(None, {a: False}, ('+','id'), (None,None)), ['5'])
+        ae(filt(None, {a: 1}, ('+','id'), (None,None)), ['3','4'])
+        ae(filt(None, {a: 0}, ('+','id'), (None,None)), ['5'])
+        ae(filt(None, {a: [1]}, ('+','id'), (None,None)), ['3','4'])
+        ae(filt(None, {a: [0]}, ('+','id'), (None,None)), ['5'])
+        ae(filt(None, {a: [0,1]}, ('+','id'), (None,None)), ['3','4','5'])
+        ae(filt(None, {a: [True]}, ('+','id'), (None,None)), ['3','4'])
+        ae(filt(None, {a: [False]}, ('+','id'), (None,None)), ['5'])
+        ae(filt(None, {a: [False,True]}, ('+','id'), (None,None)),
+            ['3','4','5'])
 
     def testFilteringNumber(self):
         self.filteringSetup()
