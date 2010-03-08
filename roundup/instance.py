@@ -81,7 +81,7 @@ class Tracker:
 
     def get_backend_name(self):
         o = __builtins__['open']
-        f = o(os.path.join(self.tracker_home, 'db', 'backend_name'))
+        f = o(os.path.join(self.config.DATABASE, 'backend_name'))
         name = f.readline().strip()
         f.close()
         return name

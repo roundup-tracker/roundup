@@ -176,10 +176,12 @@ def saveTemplateInfo(dir, info):
     finally:
         f.close()
 
-def write_select_db(instance_home, backend):
+def write_select_db(instance_home, backend, dbdir = 'db'):
     ''' Write the file that selects the backend for the tracker
     '''
-    dbdir = os.path.join(instance_home, 'db')
+    # dbdir may be a relative pathname, os.path.join does the right
+    # thing when the second component of a join is an absolute path
+    dbdir = os.path.join (instance_home, dbdir)
     if not os.path.exists(dbdir):
         os.makedirs(dbdir)
     f = open(os.path.join(dbdir, 'backend_name'), 'w')

@@ -508,7 +508,7 @@ Erase it? Y/N: """))
             tracker.nuke()
 
             # re-write the backend select file
-            init.write_select_db(tracker_home, backend)
+            init.write_select_db(tracker_home, backend, tracker.config.DATABASE)
 
         # GO
         tracker.init(password.Password(adminpw))
