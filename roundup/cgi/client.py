@@ -733,12 +733,17 @@ class Client:
         """
         # allow Anonymous to use the "login" and "register" actions (noting
         # that "register" has its own "Register" permission check)
+
         if ':action' in self.form:
-            action = self.form[':action'].value.lower()
+            action = self.form[':action']
         elif '@action' in self.form:
-            action = self.form['@action'].value.lower()
+            action = self.form['@action']
         else:
-            action = None
+            action = ''
+        if isinstance(action, list):
+            raise SeriousError('broken form: multiple @action values submitted')
+        else:
+            action = action.value.lower()
         if action in ('login', 'register'):
             return
 
@@ -1115,11 +1120,16 @@ class Client:
             present their messages to the user.
         """
         if ':action' in self.form:
-            action = self.form[':action'].value.lower()
+            action = self.form[':action']
         elif '@action' in self.form:
-            action = self.form['@action'].value.lower()
+            action = self.form['@action']
         else:
             return None
+
+        if isinstance(action, list):
+            raise SeriousError('broken form: multiple @action values submitted')
+        else:
+            action = action.value.lower()
 
         try:
             action_klass = self.get_action_class(action)
