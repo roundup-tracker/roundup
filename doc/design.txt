@@ -1008,7 +1008,7 @@ module.)
 Command Interface Specification
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A single command, roundup, provides basic access to the hyperdatabase
+A single command, ``roundup-admin``, provides basic access to the hyperdatabase
 from the command line::
 
     roundup-admin help
@@ -1039,11 +1039,12 @@ the printed results:
   are both accepted; an empty string, a single item, or a list of items
   joined by commas is accepted.
 
-When multiple items are specified to the roundup get or roundup set
+When multiple items are specified to the roundup-admin get or roundup-admin set
 commands, the specified properties are retrieved or set on all the
 listed items.
 
-When multiple results are returned by the roundup get or roundup find
+When multiple results are returned by the roundup-admin get or
+roundup-admin find
 commands, they are printed one per line (default) or joined by commas
 (with the -list) option.
 
@@ -1055,8 +1056,8 @@ To find all messages regarding in-progress issues that contain the word
 "spam", for example, you could execute the following command from the
 directory where the database dumps its files::
 
-    shell% for issue in `roundup find issue status=in-progress`; do
-    > grep -l spam `roundup get $issue messages`
+    shell% for issue in `roundup-admin find issue status=in-progress`; do
+    > grep -l spam `roundup-admin get $issue messages`
     > done
     msg23
     msg49
@@ -1066,8 +1067,8 @@ directory where the database dumps its files::
 
 Or, using the -list option, this can be written as a single command::
 
-    shell% grep -l spam `roundup get \
-        \`roundup find -list issue status=in-progress\` messages`
+    shell% grep -l spam `roundup-admin get \
+        \`roundup-admin find -list issue status=in-progress\` messages`
     msg23
     msg49
     msg50
@@ -1156,7 +1157,7 @@ Setting Properties
 The e-mail interface also provides a simple way to set properties on
 issues.  At the end of the subject line, ``propname=value`` pairs can be
 specified in square brackets, using the same conventions as for the
-roundup ``set`` shell command.
+roundup-admin ``set`` shell command.
 
 
 Web User Interface
