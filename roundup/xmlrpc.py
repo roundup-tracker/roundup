@@ -34,10 +34,17 @@ def props_from_args(db, cl, args, itemid=None):
     for arg in args:
         if arg.find('=') == -1:
             raise UsageError, 'argument "%s" not propname=value'%arg
-        l = arg.split('=')
-        if len(l) < 2:
+        try :
+            key, value = arg.split('=', 1)
+        except ValueError :
             raise UsageError, 'argument "%s" not propname=value'%arg
-        key, value = l[0], '='.join(l[1:])
+        if isinstance (key, unicode) :
+            try :
+                key = key.encode ('ascii')
+            except UnicodeEncodeError:
+                raise UsageError, 'argument %r is no valid ascii keyword'%key
+        if isinstance (value, unicode) :
+            value = value.encode ('utf-8')
         if value:
             try:
                 props[key] = hyperdb.rawToHyperdb(db, cl, itemid,
