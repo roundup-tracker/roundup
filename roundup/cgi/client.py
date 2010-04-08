@@ -742,7 +742,7 @@ class Client:
             action = ''
         if isinstance(action, list):
             raise SeriousError('broken form: multiple @action values submitted')
-        else:
+        elif action:
             action = action.value.lower()
         if action in ('login', 'register'):
             return
