@@ -10,6 +10,7 @@ from roundup.exceptions import UsageError
 from roundup.date import Date, Range, Interval
 from roundup import actions
 from SimpleXMLRPCServer import *
+from xmlrpclib import Binary
 
 def translate(value):
     """Translate value to becomes valid for XMLRPC transmission."""
@@ -32,19 +33,19 @@ def props_from_args(db, cl, args, itemid=None):
 
     props = {}
     for arg in args:
-        if arg.find('=') == -1:
-            raise UsageError, 'argument "%s" not propname=value'%arg
+        if isinstance(arg, Binary):
+            arg = arg.data
         try :
             key, value = arg.split('=', 1)
         except ValueError :
             raise UsageError, 'argument "%s" not propname=value'%arg
-        if isinstance (key, unicode) :
-            try :
+        if isinstance(key, unicode):
+            try:
                 key = key.encode ('ascii')
             except UnicodeEncodeError:
                 raise UsageError, 'argument %r is no valid ascii keyword'%key
-        if isinstance (value, unicode) :
-            value = value.encode ('utf-8')
+        if isinstance(value, unicode):
+            value = value.encode('utf-8')
         if value:
             try:
                 props[key] = hyperdb.rawToHyperdb(db, cl, itemid,
