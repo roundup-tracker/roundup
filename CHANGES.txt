@@ -5,8 +5,9 @@ are given with the most recent entry first.
 
 Fixed:
 - Handle multiple @action values from broken trackers.
-- xmlrpc handling of unicode characters, see
+- xmlrpc handling of unicode characters and binary values, see
   http://thread.gmane.org/gmane.comp.bug-tracking.roundup.user/10040
+  thanks to Hauke Duden for reporting these.
 
 
 2010-02-23 1.5.0
