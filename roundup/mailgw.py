@@ -897,7 +897,7 @@ Emails to Roundup trackers must include a Subject: line!
 
         # if we've not found a valid classname prefix then force the
         # scanning to handle there being a leading delimiter
-        title_re = r'(?P<title>%s[^%s]+)'%(
+        title_re = r'(?P<title>%s[^%s]*)'%(
             not matches['classname'] and '.' or '', delim_open)
         m = re.match(title_re, tmpsubject.strip(), re.IGNORECASE)
         if m:

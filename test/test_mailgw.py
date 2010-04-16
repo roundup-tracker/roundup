@@ -137,6 +137,8 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
         self.john_id = self.db.user.create(username='john',
             address='john@test.test', roles='User', realname='John Doe',
             alternate_addresses='jondoe@test.test\njohn.doe@test.test')
+        self.rgg_id = self.db.user.create(username='rgg',
+            address='rgg@test.test', roles='User')
 
     def tearDown(self):
         if os.path.exists(SENDMAILDEBUG):
@@ -1950,6 +1952,22 @@ Message-Id: <dummy_test_message_id>
         assert not os.path.exists(SENDMAILDEBUG)
         self.assertEqual(self.db.keyword.get('1', 'name'), 'Bar')
 
+    def testOneCharSubject(self):
+        message = '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Subject: b
+Cc: richard@test.test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+
+'''
+        try:
+            self._handle_mail(message)
+        except MailUsageError:
+            self.fail('MailUsageError raised')
+
     def testIssueidLast(self):
         nodeid1 = self.doNewIssue()
         nodeid2 = self._handle_mail('''Content-Type: text/plain;
@@ -2017,6 +2035,239 @@ Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 _______________________________________________________________________
 ''')
 
+    def testOutlookAttachment(self):
+        message = '''X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_001_01CACA65.40A51CBC"
+Subject: Example of a failed outlook attachment e-mail
+Date: Tue, 23 Mar 2010 01:43:44 -0700
+Message-ID: <CA37F17219784343816CA6613D2E339205E7D0F9@nrcwstexb1.nrc.ca>
+X-MS-Has-Attach: yes
+X-MS-TNEF-Correlator: 
+Thread-Topic: Example of a failed outlook attachment e-mail
+Thread-Index: AcrKJo/t3pUBBwTpSwWNE3LE67UBDQ==
+From: "Hugh" <richard@test.test>
+To: <richard@test.test>
+X-OriginalArrivalTime: 23 Mar 2010 08:45:57.0350 (UTC) FILETIME=[41893860:01CACA65]
+
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01CACA65.40A51CBC
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_002_01CACA65.40A51CBC"
+
+
+------_=_NextPart_002_01CACA65.40A51CBC
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+
+Hi Richard,
+
+I suppose this isn't the exact message that was sent but is a resend of
+one of my trial messages that failed.  For your benefit I changed the
+subject line and am adding these words to the message body.  Should
+still be as problematic, but if you like I can resend an exact copy of a
+failed message changing nothing except putting your address instead of
+our tracker.
+
+Thanks very much for taking time to look into this.  Much appreciated.
+
+ <<battery backup>>=20
+
+------_=_NextPart_002_01CACA65.40A51CBC
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7654.12">
+<TITLE>Example of a failed outlook attachment e-mail</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/rtf format -->
+<BR>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">Hi Richard,</FONT>
+</P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">I suppose this isn't the exact message =
+that was sent but is a resend of one of my trial messages that =
+failed.&nbsp; For your benefit I changed the subject line and am adding =
+these words to the message body.&nbsp; Should still be as problematic, =
+but if you like I can resend an exact copy of a failed message changing =
+nothing except putting your address instead of our tracker.</FONT></P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">Thanks very much for taking time to =
+look into this.&nbsp; Much appreciated.</FONT>
+</P>
+<BR>
+
+<P><FONT FACE=3D"Arial" SIZE=3D2 COLOR=3D"#000000"> &lt;&lt;battery =
+backup&gt;&gt; </FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_002_01CACA65.40A51CBC--
+
+------_=_NextPart_001_01CACA65.40A51CBC
+Content-Type: message/rfc822
+Content-Transfer-Encoding: 7bit
+
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_003_01CAC15A.29717800"
+X-OriginalArrivalTime: 11 Mar 2010 20:33:51.0249 (UTC) FILETIME=[28FEE010:01CAC15A]
+Content-class: urn:content-classes:message
+Subject: battery backup
+Date: Thu, 11 Mar 2010 13:33:43 -0700
+Message-ID: <p06240809c7bf02f9624c@[128.114.22.203]>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: battery backup
+Thread-Index: AcrBWimtulTrSvBdQ2CcfZ8lyQdxmQ==
+From: "Jerry" <jerry@test.test>
+To: "Hugh" <hugh@test.test>
+
+This is a multi-part message in MIME format.
+
+------_=_NextPart_003_01CAC15A.29717800
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+Dear Hugh,
+	A car batter has an energy capacity of ~ 500Wh.  A UPS=20
+battery is worse than this.
+
+if we need to provied 100kW for 30 minutes that will take 100 car=20
+batteries.  This seems like an awful lot of batteries.
+
+Of course I like your idea of making the time 1 minute, so we get to=20
+a more modest number of batteries
+
+Jerry
+
+
+------_=_NextPart_003_01CAC15A.29717800
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7654.12">
+<TITLE>battery backup</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+
+<P><FONT SIZE=3D2>Dear Hugh,</FONT>
+
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT SIZE=3D2>A car =
+batter has an energy capacity of ~ 500Wh.&nbsp; A UPS </FONT>
+
+<BR><FONT SIZE=3D2>battery is worse than this.</FONT>
+</P>
+
+<P><FONT SIZE=3D2>if we need to provied 100kW for 30 minutes that will =
+take 100 car </FONT>
+
+<BR><FONT SIZE=3D2>batteries.&nbsp; This seems like an awful lot of =
+batteries.</FONT>
+</P>
+
+<P><FONT SIZE=3D2>Of course I like your idea of making the time 1 =
+minute, so we get to </FONT>
+
+<BR><FONT SIZE=3D2>a more modest number of batteries</FONT>
+</P>
+
+<P><FONT SIZE=3D2>Jerry</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_003_01CAC15A.29717800--
+
+------_=_NextPart_001_01CACA65.40A51CBC--
+'''
+        nodeid = self._handle_mail(message)
+        assert not os.path.exists(SENDMAILDEBUG)
+        msgid = self.db.issue.get(nodeid, 'messages')[0]
+        self.assert_(self.db.msg.get(msgid, 'content').startswith('Hi Richard'))
+        self.assertEqual(self.db.msg.get(msgid, 'files'), ['1', '2'])
+        fileid = self.db.msg.get(msgid, 'files')[0]
+        self.assertEqual(self.db.file.get(fileid, 'type'), 'text/html')
+        fileid = self.db.msg.get(msgid, 'files')[1]
+        self.assertEqual(self.db.file.get(fileid, 'type'), 'message/rfc822')
+
+    def testForwardedMessageAttachment(self):
+        message = '''Return-Path: <rgg@test.test>
+Received: from localhost(127.0.0.1), claiming to be "[115.130.26.69]"
+via SMTP by localhost, id smtpdAAApLaWrq; Tue Apr 13 23:10:05 2010
+Message-ID: <4BC4F9C7.50409@test.test>
+Date: Wed, 14 Apr 2010 09:09:59 +1000
+From: Rupert Goldie <rgg@test.test>
+User-Agent: Thunderbird 2.0.0.24 (Windows/20100228)
+MIME-Version: 1.0
+To: ekit issues <issues@test.test>
+Subject: [Fwd: PHP ERROR (fb)] post limit reached
+Content-Type: multipart/mixed; boundary="------------000807090608060304010403"
+
+This is a multi-part message in MIME format.
+--------------000807090608060304010403
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Catch this exception and log it without emailing.
+
+--------------000807090608060304010403
+Content-Type: message/rfc822; name="PHP ERROR (fb).eml"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline; filename="PHP ERROR (fb).eml"
+
+Return-Path: <ektravj@test.test>
+X-Sieve: CMU Sieve 2.2
+via SMTP by crown.off.ekorp.com, id smtpdAAA1JaW1o; Tue Apr 13 23:01:04 2010
+X-Virus-Scanned: by amavisd-new at ekit.com
+To: facebook-errors@test.test
+From: ektravj@test.test
+Subject: PHP ERROR (fb)
+Message-Id: <20100413230100.D601D27E84@mail2.elax3.ekorp.com>
+Date: Tue, 13 Apr 2010 23:01:00 +0000 (UTC)
+
+[13-Apr-2010 22:49:02] PHP Fatal error:  Uncaught exception 'Exception' with message 'Facebook Error Message: Feed action request limit reached' in /app/01/www/virtual/fb.ekit.com/htdocs/includes/functions.php:280
+Stack trace:
+#0 /app/01/www/virtual/fb.ekit.com/htdocs/gateway/ekit/feed/index.php(178): fb_exceptions(Object(FacebookRestClientException))
+#1 {main}
+ thrown in /app/01/www/virtual/fb.ekit.com/htdocs/includes/functions.php on line 280
+
+
+--------------000807090608060304010403--
+'''
+        nodeid = self._handle_mail(message)
+        assert not os.path.exists(SENDMAILDEBUG)
+        msgid = self.db.issue.get(nodeid, 'messages')[0]
+        self.assertEqual(self.db.msg.get(msgid, 'content'),
+            'Catch this exception and log it without emailing.')
+        self.assertEqual(self.db.msg.get(msgid, 'files'), ['1'])
+        fileid = self.db.msg.get(msgid, 'files')[0]
+        self.assertEqual(self.db.file.get(fileid, 'type'), 'message/rfc822')
 
 def test_suite():
     suite = unittest.TestSuite()
@@ -2028,3 +2279,7 @@ if __name__ == '__main__':
     unittest.main(testRunner=runner)
 
 # vim: set filetype=python sts=4 sw=4 et si :
+
+
+
+

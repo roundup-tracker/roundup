@@ -25,7 +25,7 @@ All development is coordinated through two resources:
 Website, wiki
 -------------
 
-1. Log into <username>,roundup@shell.sourceforge.net
+1. ssh -t <username>,roundup@shell.sourceforge.net create
 2. cd /home/groups/r/ro/roundup
 3. follow instructions in README.txt
 
