@@ -246,6 +246,10 @@ class Message(mimetools.Message):
 
     def getheader(self, name, default=None):
         hdr = mimetools.Message.getheader(self, name, default)
+        # TODO are there any other False values possible?
+        # TODO if not hdr: return hdr
+        if hdr is None:
+            return None
         if not hdr:
             return ''
         if hdr:

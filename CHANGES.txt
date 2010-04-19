@@ -10,6 +10,8 @@ Fixed:
   http://thread.gmane.org/gmane.comp.bug-tracking.roundup.user/10040
   thanks to Hauke Duden for reporting these.
 - frontends/roundup.cgi got out of sync with the roundup.cgi.Client API
+- Default to "text/plain" if no Content-Type header is present in email
+  (thanks Hauke Duden)
 
 
 2010-02-23 1.5.0
