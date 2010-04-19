@@ -120,6 +120,7 @@ class RequestWrapper:
     '''Used to make the CGI server look like a BaseHTTPRequestHandler
     '''
     def __init__(self, wfile):
+        self.rfile = sys.stdin
         self.wfile = wfile
     def write(self, data):
         self.wfile.write(data)

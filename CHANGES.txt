@@ -9,6 +9,7 @@ Fixed:
 - xmlrpc handling of unicode characters and binary values, see
   http://thread.gmane.org/gmane.comp.bug-tracking.roundup.user/10040
   thanks to Hauke Duden for reporting these.
+- frontends/roundup.cgi got out of sync with the roundup.cgi.Client API
 
 
 2010-02-23 1.5.0
