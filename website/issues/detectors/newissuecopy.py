@@ -11,7 +11,8 @@ def newissuecopy(db, cl, nodeid, oldvalues):
         try:
             # note: last arg must be a list
             cl.send_message(nodeid, msgid, change_note,
-                ['r1chardj0n3s@gmail.com'])
+                ['r1chardj0n3s@gmail.com', 
+                    'roundup-devel@lists.sourceforge.net'])
         except roundupdb.MessageSendError, message:
             raise roundupdb.DetectorError, message
 
