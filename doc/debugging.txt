@@ -1,31 +1,23 @@
-Debugging Flags
----------------
+Debugging Aids
+--------------
 
-Roundup uses a number of debugging environment variables to help you
-figure out what the heck it's doing. 
+Try turning on logging of DEBUG level messages. This may be done a number
+of ways, depending on what it is you're testing:
 
-HYPERDBDEBUG 
-============
+1. If you're testing the database unit tests, then set the environment
+   variable ``LOGGING_LEVEL=DEBUG``. This may be done like so:
 
-This environment variable should be set to a filename - the hyperdb will
-write debugging information for various events (including, for instance,
-the SQL used).
+    LOGGING_LEVEL=DEBUG python run_tests.py
 
-This is only obeyed when python is _not_ running in -O mode. 
+   This variable replaces the older HYPERDBDEBUG environment var.
 
-HYPERDBTRACE
-============
-
-This environment variable should be set to a filename - the hyperdb will
-write a timestamp entry for various events. This appears to be suffering
-rather extreme bit-rot and may go away soon.
-
-This is only obeyed when python is _not_ running in -O mode. 
+2. If you're testing a particular tracker, then set the logging level in
+   your tracker's ``config.ini``.
 
 SENDMAILDEBUG
 =============
 
-Set to a filename and roundup will write a copy of each email message
-that it sends to that file. This environment variable is independent of
-the python -O flag.
+Set to a filename and roundup will write each email message
+that it sends to that file instead to the internet. 
+This environment variable is independent of the python -O flag.
 

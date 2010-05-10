@@ -12,6 +12,7 @@ Fixed:
 - frontends/roundup.cgi got out of sync with the roundup.cgi.Client API
 - Default to "text/plain" if no Content-Type header is present in email
   (thanks Hauke Duden)
+- Small documentation update regarding debugging aids (Bernhard Reiter)
 
 
 2010-02-23 1.5.0
