@@ -24,7 +24,6 @@ class Indexer(IndexerBase):
         '''Save the changes to the index.'''
         if not self.transaction_active:
             return
-        # XXX: Xapian databases don't actually implement transactions yet
         database = self._get_database()
         database.commit_transaction()
         self.transaction_active = False
@@ -36,7 +35,6 @@ class Indexer(IndexerBase):
     def rollback(self):
         if not self.transaction_active:
             return
-        # XXX: Xapian databases don't actually implement transactions yet
         database = self._get_database()
         database.cancel_transaction()
         self.transaction_active = False
@@ -59,7 +57,9 @@ class Indexer(IndexerBase):
 
         # open the database and start a transaction if needed
         database = self._get_database()
-        # XXX: Xapian databases don't actually implement transactions yet
+
+        # XXX: Xapian now supports transactions, 
+        #  but there is a call to save_index() missing.
         #if not self.transaction_active:
             #database.begin_transaction()
             #self.transaction_active = True
@@ -77,9 +77,8 @@ class Indexer(IndexerBase):
         query = xapian.Query(xapian.Query.OP_AND, [identifier])
         enquire.set_query(query)
         matches = enquire.get_mset(0, 10)
-        if matches.size():      # would it killya to implement __len__()??
-            b = matches.begin()
-            docid = b.get_docid()
+        if len(matches):
+            docid = matches[0].docid
         else:
             docid = None
 

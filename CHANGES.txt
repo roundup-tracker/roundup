@@ -13,6 +13,8 @@ Fixed:
 - Default to "text/plain" if no Content-Type header is present in email
   (thanks Hauke Duden)
 - Small documentation update regarding debugging aids (Bernhard Reiter)
+- Indexer Xapian, made Xapian 1.2 compatible. Needs at least Xapian 1.0.0 now.
+  (Bernhard Reiter; Thanks to Olly Betts for providing the patch Issue2550647.)
 
 
 2010-02-23 1.5.0
