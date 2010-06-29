@@ -1,9 +1,14 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2010-??0?? 1.5.1
+2010-??0?? 1.4.X
+
+Features:
+- Preparations for getting 2to3 work, not completed yet. (Richard Jones)
 
 Fixed:
+- The email for the first message on an issue was having its In-Reply-To
+  set to itself (thanks Eric Kow)
 - Handle multiple @action values from broken trackers.
 - Accept single-character subject lines
 - xmlrpc handling of unicode characters and binary values, see
@@ -15,13 +20,6 @@ Fixed:
 - Small documentation update regarding debugging aids (Bernhard Reiter)
 - Indexer Xapian, made Xapian 1.2 compatible. Needs at least Xapian 1.0.0 now.
   (Bernhard Reiter; Thanks to Olly Betts for providing the patch Issue2550647.)
-
-
-2010-02-23 1.5.0
-
-Fixed:
-- The email for the first message on an issue was having its In-Reply-To
-  set to itself (thanks Eric Kow)
 
 
 2010-02-19 1.4.13
