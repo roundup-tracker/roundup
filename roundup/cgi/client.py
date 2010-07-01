@@ -1069,9 +1069,9 @@ class Client:
                 result = result.replace('</body>', s)
             return result
         except templating.NoTemplate, message:
-            return '<strong>%s</strong>'%message
+            return '<strong>%s</strong>'%cgi.escape(str(message))
         except templating.Unauthorised, message:
-            raise Unauthorised(str(message))
+            raise Unauthorised(cgi.escape(str(message)))
         except:
             # everything else
             if self.instance.config.WEB_DEBUG:

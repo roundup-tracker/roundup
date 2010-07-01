@@ -115,9 +115,9 @@ def find_template(dir, name, view):
     if os.path.exists(src):
         return (src, generic)
 
-    raise NoTemplate, 'No template file exists for templating "%s" '\
+    raise NoTemplate('No template file exists for templating "%s" '
         'with template "%s" (neither "%s" nor "%s")'%(name, view,
-        filename, generic)
+        filename, generic))
 
 class Templates:
     templates = {}
