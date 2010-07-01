@@ -1,12 +1,14 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2010-??0?? 1.4.X
+2010-07-01 1.4.14
 
 Features:
 - Preparations for getting 2to3 work, not completed yet. (Richard Jones)
 
 Fixed:
+- User input not escaped when a bad template name is supplied (thanks
+  Benjamin Pollack)
 - The email for the first message on an issue was having its In-Reply-To
   set to itself (thanks Eric Kow)
 - Handle multiple @action values from broken trackers.
