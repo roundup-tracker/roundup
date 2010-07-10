@@ -20,6 +20,23 @@ class SessionTest(unittest.TestCase):
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
 
+    def testList(self):
+        self.sessions.list()
+        self.sessions.set('random_key', text='hello, world!')
+        self.sessions.list()
+
+    def testGetAll(self):
+        self.sessions.set('random_key', text='hello, world!')
+        self.assertEqual(self.sessions.getall('random_key'),
+            {'text': 'hello, world!'})
+
+    def testDestroy(self):
+        self.sessions.set('random_key', text='hello, world!')
+        self.assertEquals(self.sessions.getall('random_key'),
+            {'text': 'hello, world!'})
+        self.sessions.destroy('random_key')
+        self.assertRaises(KeyError, self.sessions.getall, 'random_key')
+
     def testSetSession(self):
         self.sessions.set('random_key', text='hello, world!')
         self.assertEqual(self.sessions.get('random_key', 'text'),
