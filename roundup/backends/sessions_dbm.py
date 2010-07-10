@@ -97,7 +97,7 @@ class BasicDatabase:
     def list(self):
         db = self.opendb('r')
         try:
-            return list(db)
+            return list(db.keys())
         finally:
             db.close()
 
