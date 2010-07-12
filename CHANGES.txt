@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2010-07-?? 1.4.15
+2010-07-12 1.4.15
 
 Fixed:
 - A bunch of regressions were introduced in the last release making Roundup

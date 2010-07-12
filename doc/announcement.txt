@@ -1,25 +1,11 @@
-I'm proud to release version 1.4.14 of Roundup which includes a security
-fix and some other fixes:
-
-Features:
-- Preparations for getting 2to3 work, not completed yet. (Richard Jones)
+I'm proud to release version 1.4.15 of Roundup which mostly fixes some
+regressions in the last release:
 
 Fixed:
-- User input not escaped when a bad template name is supplied (thanks
-  Benjamin Pollack)
-- The email for the first message on an issue was having its In-Reply-To
-  set to itself (thanks Eric Kow)
-- Handle multiple @action values from broken trackers.
-- Accept single-character subject lines
-- xmlrpc handling of unicode characters and binary values, see
-  http://thread.gmane.org/gmane.comp.bug-tracking.roundup.user/10040
-  thanks to Hauke Duden for reporting these.
-- frontends/roundup.cgi got out of sync with the roundup.cgi.Client API
-- Default to "text/plain" if no Content-Type header is present in email
-  (thanks Hauke Duden)
-- Small documentation update regarding debugging aids (Bernhard Reiter)
-- Indexer Xapian, made Xapian 1.2 compatible. Needs at least Xapian 1.0.0 now.
-  (Bernhard Reiter; Thanks to Olly Betts for providing the patch Issue2550647.)
+- A bunch of regressions were introduced in the last release making Roundup
+  no longer work in Python releases prior to 2.6
+- make URL detection a little smarter about brackets per issue2550657
+  (thanks Ezio Melotti)
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
