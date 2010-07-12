@@ -118,6 +118,8 @@ class BasicDatabase(dict):
     def get(self, infoid, value, default=None):
         return self[infoid].get(value, default)
     def getall(self, infoid):
+        if infoid not in self:
+            raise KeyError(infoid)
         return self[infoid]
     def set(self, infoid, **newvalues):
         self[infoid].update(newvalues)
