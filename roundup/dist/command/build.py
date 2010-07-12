@@ -32,12 +32,10 @@ def check_manifest():
         manifest = [l.strip() for l in f.readlines()]
     finally:
         f.close()
-    err = [line for line in manifest if not os.path.exists(line)]
-    err.sort()
+    err = set([line for line in manifest if not os.path.exists(line)])
     # ignore auto-generated files
-    if err == ['roundup-admin', 'roundup-demo', 'roundup-gettext',
-            'roundup-mailgw', 'roundup-server']:
-        err = []
+    err = err - set(['roundup-admin', 'roundup-demo', 'roundup-gettext',
+        'roundup-mailgw', 'roundup-server', 'roundup-xmlrpc-server'])
     if err:
         n = len(manifest)
         print '\n*** SOURCE WARNING: There are files missing (%d/%d found)!'%(

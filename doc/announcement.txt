@@ -2,6 +2,7 @@ I'm proud to release version 1.4.15 of Roundup which mostly fixes some
 regressions in the last release:
 
 Fixed:
+
 - A bunch of regressions were introduced in the last release making Roundup
   no longer work in Python releases prior to 2.6
 - make URL detection a little smarter about brackets per issue2550657
