@@ -72,6 +72,12 @@ class BasicDatabase:
             args = (infoid, time.time(), repr(values))
         c.execute(sql, args)
 
+    def list(self):
+        c = self.cursor
+        n = self.name
+        c.execute('select %s_key from %ss'%(n, n))
+        return [res[0] for res in c.fetchall()]
+
     def destroy(self, infoid):
         self.cursor.execute('delete from %ss where %s_key=%s'%(self.name,
             self.name, self.db.arg), (infoid,))
