@@ -16,9 +16,15 @@
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-"""Tracker handling (open tracker).
+"""Top-level tracker interface.
 
-Backwards compatibility for the old-style "imported" trackers.
+Open a tracker with:
+
+    >>> from roundup import instance
+    >>> db = instance.open('path to tracker home')
+
+The "db" handle you get back is the tracker's hyperdb which has the interface
+desciribed in `roundup.hyperdb.Database`.
 """
 __docformat__ = 'restructuredtext'
 
