@@ -147,10 +147,24 @@ class HTMLClassTestCase(TemplatingTestCase) :
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', '')
         def t(s): return p.hyper_re.sub(p._hyper_repl, s)
         ae = self.assertEquals
-        ae(t('http://roundup.net/'), '<a href="http://roundup.net/">http://roundup.net/</a>')
-        ae(t('&lt;HTTP://roundup.net/&gt;'), '&lt;<a href="HTTP://roundup.net/">HTTP://roundup.net/</a>&gt;')
-        ae(t('&lt;www.roundup.net&gt;'), '&lt;<a href="http://www.roundup.net">www.roundup.net</a>&gt;')
         ae(t('item123123123123'), 'item123123123123')
+        ae(t('http://roundup.net/'),
+           '<a href="http://roundup.net/">http://roundup.net/</a>')
+        ae(t('&lt;HTTP://roundup.net/&gt;'),
+           '&lt;<a href="HTTP://roundup.net/">HTTP://roundup.net/</a>&gt;')
+        ae(t('&lt;www.roundup.net&gt;'),
+           '&lt;<a href="http://www.roundup.net">www.roundup.net</a>&gt;')
+        ae(t('(www.roundup.net)'),
+           '(<a href="http://www.roundup.net">www.roundup.net</a>)')
+        ae(t('foo http://msdn.microsoft.com/en-us/library/ms741540(VS.85).aspx bar'),
+           'foo <a href="http://msdn.microsoft.com/en-us/library/ms741540(VS.85).aspx">'
+           'http://msdn.microsoft.com/en-us/library/ms741540(VS.85).aspx</a> bar')
+        ae(t('(e.g. http://en.wikipedia.org/wiki/Python_(programming_language))'),
+           '(e.g. <a href="http://en.wikipedia.org/wiki/Python_(programming_language)">'
+           'http://en.wikipedia.org/wiki/Python_(programming_language)</a>)')
+        ae(t('(e.g. http://en.wikipedia.org/wiki/Python_(programming_language)).'),
+           '(e.g. <a href="http://en.wikipedia.org/wiki/Python_(programming_language)">'
+           'http://en.wikipedia.org/wiki/Python_(programming_language)</a>).')
 
 '''
 class HTMLPermissions:

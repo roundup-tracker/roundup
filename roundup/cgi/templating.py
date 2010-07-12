@@ -1361,16 +1361,21 @@ class StringHTMLProperty(HTMLProperty):
             u = s = match.group('url')
             if not self.protocol_re.search(s):
                 u = 'http://' + s
-            # catch an escaped ">" at the end of the URL
             if s.endswith('&gt;'):
+                # catch an escaped ">" at the end of the URL
                 u = s = s[:-4]
                 e = '&gt;'
+            elif s.count('(') != s.count(')'):
+                # don't include extraneous ')' in the link
+                pos = s.rfind(')')
+                e = s[pos:]
+                u = s = s[:pos]
             else:
                 e = ''
-            return '<a href="%s">%s</a>%s'%(u, s, e)
+            return '<a href="%s">%s</a>%s' % (u, s, e)
         elif match.group('email'):
             s = match.group('email')
-            return '<a href="mailto:%s">%s</a>'%(s, s)
+            return '<a href="mailto:%s">%s</a>' % (s, s)
         elif len(match.group('id')) < 10:
             return self._hyper_repl_item(match,
                 '<a href="%(cls)s%(id)s">%(item)s</a>')
