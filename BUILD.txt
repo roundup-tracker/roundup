@@ -10,8 +10,7 @@ Building and distributing a release of Roundup is done by running:
 
 1.  Make sure the unit tests run! "./run_tests.py"
 2.  Edit roundup/__init__.py and doc/announcement.txt to reflect the new
-    version and appropriate announcements. Add truncated announcement to
-    setup.py description field.
+    version and appropriate announcements.
 3.  Note the SVN revision in the CHANGES.txt file.
 4.  Clean out all *.orig, *.rej, .#* files from the source.
 5.  python setup.py clean --all
