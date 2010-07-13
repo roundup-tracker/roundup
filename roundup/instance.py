@@ -24,7 +24,7 @@ Open a tracker with:
     >>> db = instance.open('path to tracker home')
 
 The "db" handle you get back is the tracker's hyperdb which has the interface
-desciribed in `roundup.hyperdb.Database`.
+described in `roundup.hyperdb.Database`.
 """
 __docformat__ = 'restructuredtext'
 
