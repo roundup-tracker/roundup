@@ -13,7 +13,7 @@ Roundup Issue Tracker
 
    <script type="text/javascript">
     $.getJSON('http://pypi.python.org/pypi/roundup/json?callback=?', function(data) {
-     $('#release_info').html('Version: ' + data.version);
+     $('#release_info').html('Version: ' + data.info.version);
     });
    </script>
 
