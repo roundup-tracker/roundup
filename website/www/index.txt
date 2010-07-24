@@ -1,19 +1,16 @@
 Roundup Issue Tracker
 =====================
 
-.. note::
-
-        Latest stable release: `download`_
-
-        .. raw:: html
-
-           <span id="release_info">Version: [unknown]</span>
-
 .. raw:: html
 
+   <span id="release_info" class="note">Download: `download`_</span>
    <script type="text/javascript">
     $.getJSON('http://pypi.python.org/pypi/roundup/json?callback=?', function(data) {
-     $('#release_info').html('Version: ' + data.info.version);
+     h = 'Download: ' + data.info.version;
+     for (var i=0, url; url=data.urls[i]; ++i) {
+       h += '<br><a href="' + url.url + '">' + url.filename + '</a>';
+     }
+     $('#release_info').html(h);
     });
    </script>
 
