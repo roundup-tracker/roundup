@@ -1343,7 +1343,42 @@ class StringHTMLProperty(HTMLProperty):
     )''', re.X | re.I)
     protocol_re = re.compile('^(ht|f)tp(s?)://', re.I)
 
-    def _hyper_repl_item(self,match,replacement):
+
+
+    def _hyper_repl(self, match):
+        if match.group('url'):
+            return self._hyper_repl_url(match, '<a href="%s">%s</a>%s')
+        elif match.group('email'):
+            return self._hyper_repl_email(match, '<a href="mailto:%s">%s</a>')
+        elif len(match.group('id')) < 10:
+            return self._hyper_repl_item(match,
+                '<a href="%(cls)s%(id)s">%(item)s</a>')
+        else:
+            # just return the matched text
+            return match.group(0)
+
+    def _hyper_repl_url(self, match, replacement):
+        u = s = match.group('url')
+        if not self.protocol_re.search(s):
+            u = 'http://' + s
+        if s.endswith('&gt;'):
+            # catch an escaped ">" at the end of the URL
+            u = s = s[:-4]
+            e = '&gt;'
+        elif s.count('(') != s.count(')'):
+            # don't include extraneous ')' in the link
+            pos = s.rfind(')')
+            e = s[pos:]
+            u = s = s[:pos]
+        else:
+            e = ''
+        return replacement % (u, s, e)
+
+    def _hyper_repl_email(self, match, replacement):
+        s = match.group('email')
+        return replacement % (s, s)
+
+    def _hyper_repl_item(self, match, replacement):
         item = match.group('item')
         cls = match.group('class').lower()
         id = match.group('id')
@@ -1356,32 +1391,6 @@ class StringHTMLProperty(HTMLProperty):
         except KeyError:
             return item
 
-    def _hyper_repl(self, match):
-        if match.group('url'):
-            u = s = match.group('url')
-            if not self.protocol_re.search(s):
-                u = 'http://' + s
-            if s.endswith('&gt;'):
-                # catch an escaped ">" at the end of the URL
-                u = s = s[:-4]
-                e = '&gt;'
-            elif s.count('(') != s.count(')'):
-                # don't include extraneous ')' in the link
-                pos = s.rfind(')')
-                e = s[pos:]
-                u = s = s[:pos]
-            else:
-                e = ''
-            return '<a href="%s">%s</a>%s' % (u, s, e)
-        elif match.group('email'):
-            s = match.group('email')
-            return '<a href="mailto:%s">%s</a>' % (s, s)
-        elif len(match.group('id')) < 10:
-            return self._hyper_repl_item(match,
-                '<a href="%(cls)s%(id)s">%(item)s</a>')
-        else:
-            # just return the matched text
-            return match.group(0)
 
     def _hyper_repl_rst(self, match):
         if match.group('url'):
@@ -2281,8 +2290,9 @@ class MultilinkHTMLProperty(HTMLProperty):
         l.append('</select>')
         return '\n'.join(l)
 
+
 # set the propclasses for HTMLItem
-propclasses = (
+propclasses = [
     (hyperdb.String, StringHTMLProperty),
     (hyperdb.Number, NumberHTMLProperty),
     (hyperdb.Boolean, BooleanHTMLProperty),
@@ -2291,7 +2301,17 @@ propclasses = (
     (hyperdb.Password, PasswordHTMLProperty),
     (hyperdb.Link, LinkHTMLProperty),
     (hyperdb.Multilink, MultilinkHTMLProperty),
-)
+]
+
+def register_propclass(prop, cls):
+    for index,propclass in enumerate(propclasses):
+        p, c = propclass
+        if prop == p:
+            propclasses[index] = (prop, cls)
+            break
+    else:
+        propclasses.append((prop, cls))
+
 
 def make_sort_function(db, classname, sort_on=None):
     """Make a sort function for a given class
