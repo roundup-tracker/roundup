@@ -3,7 +3,8 @@ Roundup Issue Tracker
 
 .. raw:: html
 
-   <span id="release_info" class="note">Download: `download`_</span>
+   <span id="release_info" class="note">Download:
+     <a href="http://pypi.python.org/pypi/roundup">latest</a></span>
    <script type="text/javascript">
     $.getJSON('http://pypi.python.org/pypi/roundup/json?callback=?', function(data) {
      h = 'Download: ' + data.info.version;
