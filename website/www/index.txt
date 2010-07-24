@@ -7,13 +7,13 @@ Roundup Issue Tracker
 
         .. raw:: html
 
-           <span id="release_info">release info</span>
+           <span id="release_info">Version: [unknown]</span>
 
 .. raw:: html
 
    <script type="text/javascript">
-    $.getJSON('http://pypi.python.org/pypi/roundup/json', function(data) {
-     $('#release_info').html('<p>Version: ' + data.version + '</p>');
+    $.getJSON('http://pypi.python.org/pypi/roundup/json?callback=?', function(data) {
+     $('#release_info').html('Version: ' + data.version);
     });
    </script>
 
