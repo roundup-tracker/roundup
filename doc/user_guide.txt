@@ -616,11 +616,39 @@ POP:
  are both valid. The username and/or password will be prompted for if
  not supplied on the command-line.
 
+POPS:
+ Connect to a POP server over ssl. This requires python 2.4 or later.
+ This supports the same notation as POP::
+
+    pops username:password@server
+
 APOP:
  Same as POP, but using Authenticated POP::
 
     apop username:password@server
 
+IMAP:
+ Connect to an IMAP server. This supports the same notation as that of
+ POP mail::
+
+    imap username:password@server
+
+ It also allows you to specify a specific mailbox other than INBOX using
+ this format::
+
+    imap username:password@server mailbox
+
+IMAPS:
+ Connect to an IMAP server over ssl.
+ This supports the same notation as IMAP::
+
+    imaps username:password@server [mailbox]
+
+IMAPS_CRAM:
+ Connect to an IMAP server over ssl using CRAM-MD5 authentication.
+ This supports the same notation as IMAP::
+
+    imaps_cram username:password@server [mailbox]
 
 Command Line Tool
 =================
