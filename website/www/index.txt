@@ -40,10 +40,10 @@ Roundup was originally released as version 0.1.1 in late August, 2001. The first
     Got tired of waiting for Roundup to be released. Had just finished major product project, so needed
     something different for a while. Roundup here I come... 
 
-So I've been working on this thing for over seven years. Do you like Roundup? 
+So I've been working on this thing for nine years. Do you like Roundup? 
 Want to say thanks? You can just send me a note (I always appreciate them) or better yet, `send me a gift`_ :)
 
--- Richard Jones, project lead developer, September 2008.
+-- Richard Jones, project lead developer, July 2010.
 
 
 .. _`download`: http://cheeseshop.python.org/pypi/roundup
