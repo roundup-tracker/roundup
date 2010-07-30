@@ -1,19 +1,9 @@
 Roundup Issue Tracker
 =====================
 
-.. raw:: html
-
-   <span id="release_info" class="note">Download:
-     <a href="http://pypi.python.org/pypi/roundup">latest</a></span>
-   <script type="text/javascript">
-    $.getJSON('http://pypi.python.org/pypi/roundup/json?callback=?', function(data) {
-     h = 'Download: ' + data.info.version;
-     for (var i=0, url; url=data.urls[i]; ++i) {
-       h += '<br><a href="' + url.url + '">' + url.filename + '</a>';
-     }
-     $('#release_info').html(h);
-    });
-   </script>
+.. pypi-release:: Roundup
+   :prefix: Download
+   :class: note
 
 Roundup is a simple-to-use and -install issue-tracking system with command-line, web and e-mail interfaces. 
 It is based on the winning design from Ka-Ping Yee in the Software Carpentry "Track" design competition.
