@@ -585,6 +585,111 @@ Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 _______________________________________________________________________
 ''')
 
+    def testFollowupNoSubjectChange(self):
+        self.db.config.MAILGW_SUBJECT_UPDATES_TITLE = 'no'
+        self.doNewIssue()
+
+        self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: richard <richard@test.test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: [issue1] Wrzlbrmft... [assignedto=mary; nosy=+john]
+
+This is a followup
+''')
+        l = self.db.issue.get('1', 'nosy')
+        l.sort()
+        self.assertEqual(l, [self.chef_id, self.richard_id, self.mary_id,
+            self.john_id])
+
+        self.compareMessages(self._get_mail(),
+'''FROM: roundup-admin@your.tracker.email.domain.example
+TO: chef@bork.bork.bork, john@test.test, mary@test.test
+Content-Type: text/plain; charset="utf-8"
+Subject: [issue1] Testing...
+To: chef@bork.bork.bork, john@test.test, mary@test.test
+From: richard <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
+MIME-Version: 1.0
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
+Content-Transfer-Encoding: quoted-printable
+
+
+richard <richard@test.test> added the comment:
+
+This is a followup
+
+----------
+assignedto:  -> mary
+nosy: +john, mary
+status: unread -> chatting
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
+_______________________________________________________________________
+''')
+        self.assertEqual(self.db.issue.get('1','title'), 'Testing...')
+
+    def testFollowupExplicitSubjectChange(self):
+        self.doNewIssue()
+
+        self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: richard <richard@test.test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: [issue1] Wrzlbrmft... [assignedto=mary; nosy=+john; title=new title]
+
+This is a followup
+''')
+        l = self.db.issue.get('1', 'nosy')
+        l.sort()
+        self.assertEqual(l, [self.chef_id, self.richard_id, self.mary_id,
+            self.john_id])
+
+        self.compareMessages(self._get_mail(),
+'''FROM: roundup-admin@your.tracker.email.domain.example
+TO: chef@bork.bork.bork, john@test.test, mary@test.test
+Content-Type: text/plain; charset="utf-8"
+Subject: [issue1] new title
+To: chef@bork.bork.bork, john@test.test, mary@test.test
+From: richard <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
+MIME-Version: 1.0
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
+Content-Transfer-Encoding: quoted-printable
+
+
+richard <richard@test.test> added the comment:
+
+This is a followup
+
+----------
+assignedto:  -> mary
+nosy: +john, mary
+status: unread -> chatting
+title: Testing... -> new title
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
+_______________________________________________________________________
+''')
+
     def testNosyGeneration(self):
         self.db.issue.create(title='test')
 

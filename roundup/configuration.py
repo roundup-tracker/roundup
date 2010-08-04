@@ -725,6 +725,10 @@ SETTINGS = (
             "will match an issue for the interval after the issue's\n"
             "creation or last activity. The interval is a standard\n"
             "Roundup interval."),
+        (BooleanOption, "subject_updates_title", "yes",
+            "Update issue title if incoming subject of email is different.\n"
+            "Setting this to \"no\" will ignore the title part of"
+            " the subject\nof incoming email messages.\n"),
         (RegExpOption, "refwd_re", "(\s*\W?\s*(fw|fwd|re|aw|sv|ang)\W)+",
             "Regular expression matching a single reply or forward\n"
             "prefix prepended by the mailer. This is explicitly\n"

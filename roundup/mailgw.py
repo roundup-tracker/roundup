@@ -1230,6 +1230,9 @@ Subject was: "%(subject)s"
         if (title and properties.has_key('title') and not
                 issue_props.has_key('title')):
             issue_props['title'] = title
+        if (nodeid and properties.has_key('title') and not
+                config['MAILGW_SUBJECT_UPDATES_TITLE']):
+            issue_props['title'] = cl.get(nodeid,'title')
 
         #
         # handle message-id and in-reply-to

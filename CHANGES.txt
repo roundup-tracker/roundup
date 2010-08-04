@@ -7,6 +7,11 @@ Features:
 
 - allow trackers to override the classes used to render properties in
   templating per issue2550659 (thanks Ezio Melotti)
+- new mailgw configuration item "subject_updates_title": If set to "no"
+  a changed subject in a reply to an issue will not update the issue
+  title with the changed subject. Thanks to Arkadiusz Kita and Peter
+  Funk for requesting the feature and discussing the implementation.
+  http://thread.gmane.org/gmane.comp.bug-tracking.roundup.user/10169
 
 Fixed:
 
