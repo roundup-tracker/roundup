@@ -362,6 +362,11 @@ Section **mailgw**
   an issue for the interval after the issue's creation or last activity.
   The interval is a standard Roundup interval.
 
+ subject_updates_title -- ``yes``
+  Update issue title if incoming subject of email is different.
+  Setting this to ``no`` will ignore the title part of
+  the subject of incoming email messages.
+
  refwd_re -- ``(\s*\W?\s*(fw|fwd|re|aw|sv|ang)\W)+``
   Regular expression matching a single reply or forward prefix
   prepended by the mailer. This is explicitly stripped from the
@@ -383,6 +388,13 @@ Section **mailgw**
  blankline_re -- ``[\r\n]+\s*[\r\n]+``
   Regular expression matching a blank line.  Value is Python Regular
   Expression (UTF8-encoded).
+
+ ignore_alternatives -- ``no``
+  When parsing incoming mails, roundup uses the first
+  text/plain part it finds. If this part is inside a
+  multipart/alternative, and this option is set, all other
+  parts of the multipart/alternative are ignored. The default
+  is to keep all parts and attach them to the issue.
 
 Section **pgp**
  OpenPGP mail processing options
