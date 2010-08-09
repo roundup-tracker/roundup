@@ -1,5 +1,6 @@
 This file contains the changes to the Roundup system over time. The entries
-are given with the most recent entry first.
+are given with the most recent entry first. If no other name is given,
+Richard Jones did the change.
 
 2010-??-?? 1.4.16
 
@@ -16,6 +17,8 @@ Features:
 Fixed:
 
 - fixed reporting of source missing warnings
+- relevant tests made locale independent, issue2550660 (thanks
+  Benni Bärmann for reporting).
 - fix for incorrect except: syntax, issue2550661 (thanks Jakub Wilk)
 - No longer use the root logger, use a logger with prefix "roundup",
   see http://thread.gmane.org/gmane.comp.bug-tracking.roundup.devel/5356
