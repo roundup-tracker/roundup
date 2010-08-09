@@ -1101,7 +1101,7 @@ class Class:
         for k in propname_path.split('.'):
             try:
                 prop = props[k]
-            except KeyError, TypeError:
+            except (KeyError, TypeError):
                 return default
             cl = getattr(prop, 'classname', None)
             props = None
