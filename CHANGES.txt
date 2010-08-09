@@ -17,6 +17,8 @@ Fixed:
 
 - fixed reporting of source missing warnings
 - fix for incorrect except: syntax, issue2550661 (thanks Jakub Wilk)
+- No longer use the root logger, use a logger with prefix "roundup",
+  see http://thread.gmane.org/gmane.comp.bug-tracking.roundup.devel/5356
 
 
 2010-07-12 1.4.15

@@ -1290,8 +1290,8 @@ class CoreConfig(Config):
             return
 
         _file = self["LOGGING_FILENAME"]
-        # set file & level on the root logger
-        logger = logging.getLogger()
+        # set file & level on the roundup logger
+        logger = logging.getLogger('roundup')
         if _file:
             hdlr = logging.FileHandler(_file)
         else:
