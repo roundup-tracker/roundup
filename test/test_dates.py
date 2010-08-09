@@ -23,11 +23,21 @@ import time
 import datetime
 import calendar
 
+from roundup import date, i18n
 from roundup.date import Date, Interval, Range, fixTimeOverflow, \
     get_timezone
 
 
 class DateTestCase(unittest.TestCase):
+    def setUp(self):
+        self.old_gettext_ = i18n.gettext
+        self.old_ngettext_ = i18n.ngettext
+        i18n.gettext = i18n.get_translation(language='C').gettext
+        i18n.ngettext = i18n.get_translation(language='C').ngettext
+
+    def tearDown(self):
+        i18n.gettext = self.old_gettext_
+        i18n.ngettext = self.old_ngettext_
 
     def testDateInterval(self):
         ae = self.assertEqual

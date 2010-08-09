@@ -21,6 +21,7 @@ if not os.environ.has_key('SENDMAILDEBUG'):
     os.environ['SENDMAILDEBUG'] = 'mail-test.log'
 SENDMAILDEBUG = os.environ['SENDMAILDEBUG']
 
+from roundup import mailgw, i18n, roundupdb
 from roundup.mailgw import MailGW, Unauthorized, uidFromAddress, \
     parseContent, IgnoreLoop, IgnoreBulk, MailUsageError, MailUsageHelp
 from roundup import init, instance, password, rfc2822, __version__
@@ -119,6 +120,8 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
     count = 0
     schema = 'classic'
     def setUp(self):
+        self.old_translate_ = mailgw._
+        roundupdb._ = mailgw._ = i18n.get_translation(language='C').gettext
         MailgwTestCase.count = MailgwTestCase.count + 1
 
         # and open the database / "instance"
@@ -141,6 +144,7 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
             address='rgg@test.test', roles='User')
 
     def tearDown(self):
+        roundupdb._ = mailgw._ = self.old_translate_
         if os.path.exists(SENDMAILDEBUG):
             os.remove(SENDMAILDEBUG)
         self.db.close()

@@ -24,7 +24,8 @@ from roundup.anypy.sets_ import set
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval, DatabaseError, Boolean, Number, Node
 from roundup.mailer import Mailer
-from roundup import date, password, init, instance, configuration, support
+from roundup import date, password, init, instance, configuration, \
+    roundupdb, i18n
 
 from mocknull import MockNull
 
@@ -1834,6 +1835,8 @@ class DBTest(MyTestCase):
         """Creates one issue with two attachments, one smaller and one larger
            than the set max_attachment_size.
         """
+        old_translate_ = roundupdb._
+        roundupdb._ = i18n.get_translation(language='C').gettext
         db = self.db
         db.config.NOSY_MAX_ATTACHMENT_SIZE = 4096
         res = dict(mail_to = None, mail_msg = None)
@@ -1860,6 +1863,7 @@ class DBTest(MyTestCase):
             self.assert_("File 'test2.txt' not attached" in mail_msg)
             self.assert_(base64.encodestring("yyy").rstrip() not in mail_msg)
         finally :
+            roundupdb._ = old_translate_
             Mailer.smtp_send = backup
 
 class ROTest(MyTestCase):
