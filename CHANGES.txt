@@ -16,6 +16,7 @@ Features:
 Fixed:
 
 - fixed reporting of source missing warnings
+- fix for incorrect except: syntax, issue2550661 (thanks Jakub Wilk)
 
 
 2010-07-12 1.4.15
