@@ -1361,18 +1361,18 @@ class StringHTMLProperty(HTMLProperty):
         u = s = match.group('url')
         if not self.protocol_re.search(s):
             u = 'http://' + s
-        if s.endswith('&gt;'):
-            # catch an escaped ">" at the end of the URL
-            u = s = s[:-4]
-            e = '&gt;'
-        elif s.count('(') != s.count(')'):
+        end = ''
+        if '&gt;' in s:
+            # catch an escaped ">" in the URL
+            pos = s.find('&gt;')
+            end = s[pos:]
+            u = s = s[:pos]
+        if ')' in s and s.count('(') != s.count(')'):
             # don't include extraneous ')' in the link
             pos = s.rfind(')')
-            e = s[pos:]
+            end = s[pos:] + end
             u = s = s[:pos]
-        else:
-            e = ''
-        return replacement % (u, s, e)
+        return replacement % (u, s, end)
 
     def _hyper_repl_email(self, match, replacement):
         s = match.group('email')
