@@ -152,7 +152,7 @@ class HTMLClassTestCase(TemplatingTestCase) :
            '<a href="http://roundup.net/">http://roundup.net/</a>')
         ae(t('&lt;HTTP://roundup.net/&gt;'),
            '&lt;<a href="HTTP://roundup.net/">HTTP://roundup.net/</a>&gt;')
-         ae(t('&lt;http://roundup.net/&gt;.'),
+        ae(t('&lt;http://roundup.net/&gt;.'),
             '&lt;<a href="http://roundup.net/">http://roundup.net/</a>&gt;.')
         ae(t('&lt;www.roundup.net&gt;'),
            '&lt;<a href="http://www.roundup.net">www.roundup.net</a>&gt;')
