@@ -75,11 +75,11 @@ class Database(rdbms_common.Database):
 
     def sqlite_busy_handler(self, data, table, count):
         """invoked whenever SQLite tries to access a database that is locked"""
+        now = time.time()
         if count == 1:
-            # use a 30 second timeout (extraordinarily generous)
-            # for handling locked database
-            self._busy_handler_endtime = time.time() + 30
-        elif time.time() > self._busy_handler_endtime:
+            # Timeout for handling locked database (default 30s)
+            self._busy_handler_endtime = now + self.config.RDBMS_SQLITE_TIMEOUT
+        elif now > self._busy_handler_endtime:
             # timeout expired - no more retries
             return 0
         # sleep adaptively as retry count grows,
@@ -100,13 +100,13 @@ class Database(rdbms_common.Database):
 
         db = os.path.join(self.config.DATABASE, 'db')
         logging.getLogger('hyperdb').info('open database %r'%db)
-        # set a 30 second timeout (extraordinarily generous) for handling
-        # locked database
+        # set timeout (30 second default is extraordinarily generous)
+        # for handling locked database
         if sqlite_version == 1:
             conn = sqlite.connect(db=db)
             conn.db.sqlite_busy_handler(self.sqlite_busy_handler)
         else:
-            conn = sqlite.connect(db, timeout=30)
+            conn = sqlite.connect(db, timeout=self.config.RDBMS_SQLITE_TIMEOUT)
             conn.row_factory = sqlite.Row
 
         # pysqlite2 / sqlite3 want us to store Unicode in the db but

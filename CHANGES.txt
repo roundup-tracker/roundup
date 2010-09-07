@@ -13,6 +13,10 @@ Features:
   title with the changed subject. Thanks to Arkadiusz Kita and Peter
   Funk for requesting the feature and discussing the implementation.
   http://thread.gmane.org/gmane.comp.bug-tracking.roundup.user/10169
+- new rdbms config item sqlite_timeout makes the previously hard-coded
+  timeout of 30 seconds configurable. This is the time a client waits
+  for the locked database to become free before giving up. Used only for
+  SQLite backend.
 
 Fixed:
 

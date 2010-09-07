@@ -604,6 +604,10 @@ SETTINGS = (
         (NullableOption, 'read_default_group', 'roundup',
             "Name of the group to use in the MySQL defaults file (.my.cnf).\n"
             "Only used in MySQL connections."),
+        (IntegerNumberOption, 'sqlite_timeout', '30',
+            "Number of seconds to wait when the SQLite database is locked\n"
+            "Default: use a 30 second timeout (extraordinarily generous)\n"
+            "Only used in SQLite connections."),
         (IntegerNumberOption, 'cache_size', '100',
             "Size of the node cache (in elements)"),
     ), "Settings in this section are used"
