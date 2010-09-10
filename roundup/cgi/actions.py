@@ -798,7 +798,7 @@ class RegoCommon(Action):
         # nice message
         message = self._('You are now registered, welcome!')
         url = '%suser%s?@ok_message=%s'%(self.base, self.userid,
-            urllib._quote(message))
+            urllib_.quote(message))
 
         # redirect to the user's page (but not 302, as some email clients seem
         # to want to reload the page, or something)

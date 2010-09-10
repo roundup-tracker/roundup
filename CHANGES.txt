@@ -28,6 +28,7 @@ Fixed:
   see http://thread.gmane.org/gmane.comp.bug-tracking.roundup.devel/5356
 - improve handling of '&gt;' when URLs are converted to links, issue2550664
   (thanks Ezio Melotti)
+- fixed registration, issue2550665 (thanks Timo Paulssen)
 
 
 2010-07-12 1.4.15
