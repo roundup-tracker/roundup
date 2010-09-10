@@ -29,6 +29,7 @@ Fixed:
 - improve handling of '&gt;' when URLs are converted to links, issue2550664
   (thanks Ezio Melotti)
 - fixed registration, issue2550665 (thanks Timo Paulssen)
+- make sorting of multilinks in the web interface more robust, issue2550663
 
 
 2010-07-12 1.4.15
