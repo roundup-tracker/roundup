@@ -2314,13 +2314,19 @@ def register_propclass(prop, cls):
 
 
 def make_sort_function(db, classname, sort_on=None):
-    """Make a sort function for a given class
+    """Make a sort function for a given class.
+
+    The list being sorted may contain mixed ids and labels.
     """
     linkcl = db.getclass(classname)
     if sort_on is None:
         sort_on = linkcl.orderprop()
     def sortfunc(a, b):
-        return cmp(linkcl.get(a, sort_on), linkcl.get(b, sort_on))
+        if num_re.match(a):
+            a = linkcl.get(a, sort_on)
+        if num_re.match(b):
+            b = linkcl.get(b, sort_on)
+        return cmp(a, b)
     return sortfunc
 
 def handleListCGIValue(value):
