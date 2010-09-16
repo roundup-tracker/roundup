@@ -176,7 +176,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def clear(self):
         """Delete all database contents
         """
-        logging.getLogger('hyperdb').info('clear')
+        logging.getLogger('roundup.hyperdb').info('clear')
         for cn in self.classes:
             for dummy in 'nodes', 'journals':
                 path = os.path.join(self.dir, 'journals.%s'%cn)

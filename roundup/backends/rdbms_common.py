@@ -445,7 +445,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             # no changes
             return 0
 
-        logger = logging.getLogger('hyperdb')
+        logger = logging.getLogger('roundup.hyperdb')
         logger.info('update_class %s'%spec.classname)
 
         logger.debug('old_spec %r'%(old_spec,))

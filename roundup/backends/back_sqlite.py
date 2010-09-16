@@ -99,7 +99,7 @@ class Database(rdbms_common.Database):
             os.makedirs(self.config.DATABASE)
 
         db = os.path.join(self.config.DATABASE, 'db')
-        logging.getLogger('hyperdb').info('open database %r'%db)
+        logging.getLogger('roundup.hyperdb').info('open database %r'%db)
         # set timeout (30 second default is extraordinarily generous)
         # for handling locked database
         if sqlite_version == 1:

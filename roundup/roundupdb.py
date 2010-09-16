@@ -137,7 +137,7 @@ class Database:
         # Because getting a logger requires acquiring a lock, we want
         # to do it only once.
         if not hasattr(self, '__logger'):
-            self.__logger = logging.getLogger('hyperdb')
+            self.__logger = logging.getLogger('roundup.hyperdb')
 
         return self.__logger
 

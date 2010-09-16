@@ -520,7 +520,7 @@ class MailGW:
                 self.default_class = value.strip()
 
         self.mailer = Mailer(instance.config)
-        self.logger = logging.getLogger('mailgw')
+        self.logger = logging.getLogger('roundup.mailgw')
 
         # should we trap exceptions (normal usage) or pass them through
         # (for testing)
