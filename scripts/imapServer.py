@@ -39,7 +39,7 @@ import re
 import time
 
 logging.basicConfig()
-log = logging.getLogger('IMAPServer')
+log = logging.getLogger('roundup.IMAPServer')
 
 version = '0.1.2'
 

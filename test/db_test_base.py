@@ -128,7 +128,7 @@ if os.environ.has_key('LOGGING_LEVEL'):
     from roundup import rlog
     config.logging = rlog.BasicLogging()
     config.logging.setLevel(os.environ['LOGGING_LEVEL'])
-    config.logging.getLogger('hyperdb').setFormat('%(message)s')
+    config.logging.getLogger('roundup.hyperdb').setFormat('%(message)s')
 
 class DBTest(MyTestCase):
     def setUp(self):

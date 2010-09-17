@@ -186,7 +186,8 @@ class Database(rdbms_common.Database):
             # no changes
             return 0
 
-        logging.getLogger('hyperdb').info('update_class %s'%spec.classname)
+        logging.getLogger('roundup.hyperdb').info(
+            'update_class %s'%spec.classname)
 
         # detect multilinks that have been removed, and drop their table
         old_has = {}

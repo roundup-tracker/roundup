@@ -42,7 +42,7 @@ def db_create(config):
 def db_nuke(config, fail_ok=0):
     """Clear all database contents and drop database itself"""
     command = 'DROP DATABASE %s'% config.RDBMS_NAME
-    logging.getLogger('hyperdb').info(command)
+    logging.getLogger('roundup.hyperdb').info(command)
     db_command(config, command)
 
     if os.path.exists(config.DATABASE):
@@ -131,7 +131,8 @@ class Database(rdbms_common.Database):
 
     def sql_open_connection(self):
         db = connection_dict(self.config, 'database')
-        logging.getLogger('hyperdb').info('open database %r'%db['database'])
+        logging.getLogger('roundup.hyperdb').info(
+            'open database %r'%db['database'])
         try:
             conn = psycopg.connect(**db)
         except psycopg.OperationalError, message:
@@ -218,7 +219,7 @@ class Database(rdbms_common.Database):
     def sql_commit(self, fail_ok=False):
         ''' Actually commit to the database.
         '''
-        logging.getLogger('hyperdb').info('commit')
+        logging.getLogger('roundup.hyperdb').info('commit')
 
         try:
             self.conn.commit()
@@ -226,7 +227,8 @@ class Database(rdbms_common.Database):
             # we've been instructed that this commit is allowed to fail
             if fail_ok and str(message).endswith('could not serialize '
                     'access due to concurrent update'):
-                logging.getLogger('hyperdb').info('commit FAILED, but fail_ok')
+                logging.getLogger('roundup.hyperdb').info(
+                    'commit FAILED, but fail_ok')
             else:
                 raise
 

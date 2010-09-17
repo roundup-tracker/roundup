@@ -755,7 +755,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         Note: I don't commit here, which is different behaviour to the
               "nuke from orbit" behaviour in the dbs.
         """
-        logging.getLogger('hyperdb').info('clear')
+        logging.getLogger('roundup.hyperdb').info('clear')
         for cn in self.classes:
             sql = 'delete from _%s'%cn
             self.sql(sql)
@@ -1063,7 +1063,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """Remove a node from the database. Called exclusively by the
            destroy() method on Class.
         """
-        logging.getLogger('hyperdb').info('destroynode %s%s'%(classname, nodeid))
+        logging.getLogger('roundup.hyperdb').info('destroynode %s%s'%(
+            classname, nodeid))
 
         # make sure the node exists
         if not self.hasnode(classname, nodeid):
@@ -1268,7 +1269,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def sql_commit(self, fail_ok=False):
         """ Actually commit to the database.
         """
-        logging.getLogger('hyperdb').info('commit')
+        logging.getLogger('roundup.hyperdb').info('commit')
 
         self.conn.commit()
 
@@ -1309,7 +1310,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         Undo all the changes made since the database was opened or the last
         commit() or rollback() was performed.
         """
-        logging.getLogger('hyperdb').info('rollback')
+        logging.getLogger('roundup.hyperdb').info('rollback')
 
         self.sql_rollback()
 
@@ -1324,7 +1325,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.clearCache()
 
     def sql_close(self):
-        logging.getLogger('hyperdb').info('close')
+        logging.getLogger('roundup.hyperdb').info('close')
         self.conn.close()
 
     def close(self):
