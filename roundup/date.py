@@ -522,6 +522,7 @@ class Date:
 
     def local(self, offset):
         """ Return this date as yyyy-mm-dd.hh:mm:ss in a local time zone.
+            The offset is a pytz tz offset if pytz is installed.
         """
         y, m, d, H, M, S = _utc_to_local(self.year, self.month, self.day,
                 self.hour, self.minute, self.second, offset)
