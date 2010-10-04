@@ -460,6 +460,29 @@ SnVzdCBhIHRlc3QK
 --bxyzzy--
 '''
 
+    multipart_msg_latin1 = '''From: mary <mary@test.test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: [issue1] Testing...
+Content-Type: multipart/alternative; boundary=001485f339f8f361fb049188dbba
+
+
+--001485f339f8f361fb049188dbba
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+umlaut =E4=F6=FC=C4=D6=DC=DF
+
+--001485f339f8f361fb049188dbba
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+<html>umlaut =E4=F6=FC=C4=D6=DC=DF</html>
+
+--001485f339f8f361fb049188dbba--
+'''
+
     def testMultipartKeepAlternatives(self):
         self.doNewIssue()
         self._handle_mail(self.multipart_msg)
@@ -494,6 +517,234 @@ SnVzdCBhIHRlc3QK
             if n in content :
                 self.assertEqual(f.content, content [n])
         self.assertEqual(msg.content, 'test attachment second text/plain')
+
+    def testMultipartCharsetUTF8NoAttach(self):
+        c = 'umlaut \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f'
+        self.doNewIssue()
+        self.db.config.NOSY_MAX_ATTACHMENT_SIZE = 0
+        self._handle_mail(self.multipart_msg_latin1)
+        messages = self.db.issue.get('1', 'messages')
+        messages.sort()
+        msg = self.db.msg.getnode (messages[-1])
+        assert(len(msg.files) == 1)
+        name = 'unnamed'
+        content = '<html>' + c + '</html>\n'
+        for n, id in enumerate (msg.files):
+            f = self.db.file.getnode (id)
+            self.assertEqual(f.name, name)
+            self.assertEqual(f.content, content)
+        self.assertEqual(msg.content, c)
+        self.compareMessages(self._get_mail(),
+'''FROM: roundup-admin@your.tracker.email.domain.example
+TO: chef@bork.bork.bork, richard@test.test
+Content-Type: text/plain; charset="utf-8"
+Subject: [issue1] Testing...
+To: chef@bork.bork.bork, richard@test.test
+From: "Contrary, Mary" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
+MIME-Version: 1.0
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
+X-Roundup-Issue-Files: unnamed
+Content-Transfer-Encoding: quoted-printable
+
+
+Contrary, Mary <mary@test.test> added the comment:
+
+umlaut =C3=A4=C3=B6=C3=BC=C3=84=C3=96=C3=9C=C3=9F
+File 'unnamed' not attached - you can download it from http://tracker.examp=
+le/cgi-bin/roundup.cgi/bugs/file1.
+
+----------
+status: unread -> chatting
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
+_______________________________________________________________________
+''')
+
+    def testMultipartCharsetLatin1NoAttach(self):
+        c = 'umlaut \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f'
+        self.doNewIssue()
+        self.db.config.NOSY_MAX_ATTACHMENT_SIZE = 0
+        self.db.config.MAIL_CHARSET = 'iso-8859-1'
+        self._handle_mail(self.multipart_msg_latin1)
+        messages = self.db.issue.get('1', 'messages')
+        messages.sort()
+        msg = self.db.msg.getnode (messages[-1])
+        assert(len(msg.files) == 1)
+        name = 'unnamed'
+        content = '<html>' + c + '</html>\n'
+        for n, id in enumerate (msg.files):
+            f = self.db.file.getnode (id)
+            self.assertEqual(f.name, name)
+            self.assertEqual(f.content, content)
+        self.assertEqual(msg.content, c)
+        self.compareMessages(self._get_mail(),
+'''FROM: roundup-admin@your.tracker.email.domain.example
+TO: chef@bork.bork.bork, richard@test.test
+Content-Type: text/plain; charset="iso-8859-1"
+Subject: [issue1] Testing...
+To: chef@bork.bork.bork, richard@test.test
+From: "Contrary, Mary" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
+MIME-Version: 1.0
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
+X-Roundup-Issue-Files: unnamed
+Content-Transfer-Encoding: quoted-printable
+
+
+Contrary, Mary <mary@test.test> added the comment:
+
+umlaut =E4=F6=FC=C4=D6=DC=DF
+File 'unnamed' not attached - you can download it from http://tracker.examp=
+le/cgi-bin/roundup.cgi/bugs/file1.
+
+----------
+status: unread -> chatting
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
+_______________________________________________________________________
+''')
+
+    def testMultipartCharsetUTF8AttachFile(self):
+        c = 'umlaut \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f'
+        self.doNewIssue()
+        self._handle_mail(self.multipart_msg_latin1)
+        messages = self.db.issue.get('1', 'messages')
+        messages.sort()
+        msg = self.db.msg.getnode (messages[-1])
+        assert(len(msg.files) == 1)
+        name = 'unnamed'
+        content = '<html>' + c + '</html>\n'
+        for n, id in enumerate (msg.files):
+            f = self.db.file.getnode (id)
+            self.assertEqual(f.name, name)
+            self.assertEqual(f.content, content)
+        self.assertEqual(msg.content, c)
+        self.compareMessages(self._get_mail(),
+'''FROM: roundup-admin@your.tracker.email.domain.example
+TO: chef@bork.bork.bork, richard@test.test
+Content-Type: multipart/mixed; boundary="utf-8"
+Subject: [issue1] Testing...
+To: chef@bork.bork.bork, richard@test.test
+From: "Contrary, Mary" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
+MIME-Version: 1.0
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
+X-Roundup-Issue-Files: unnamed
+Content-Transfer-Encoding: quoted-printable
+
+
+--utf-8
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+
+Contrary, Mary <mary@test.test> added the comment:
+
+umlaut =C3=A4=C3=B6=C3=BC=C3=84=C3=96=C3=9C=C3=9F
+
+----------
+status: unread -> chatting
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
+_______________________________________________________________________
+--utf-8
+Content-Type: text/html
+MIME-Version: 1.0
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="unnamed"
+
+PGh0bWw+dW1sYXV0IMOkw7bDvMOEw5bDnMOfPC9odG1sPgo=
+
+--utf-8--
+''')
+
+    def testMultipartCharsetLatin1AttachFile(self):
+        c = 'umlaut \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f'
+        self.doNewIssue()
+        self.db.config.MAIL_CHARSET = 'iso-8859-1'
+        self._handle_mail(self.multipart_msg_latin1)
+        messages = self.db.issue.get('1', 'messages')
+        messages.sort()
+        msg = self.db.msg.getnode (messages[-1])
+        assert(len(msg.files) == 1)
+        name = 'unnamed'
+        content = '<html>' + c + '</html>\n'
+        for n, id in enumerate (msg.files):
+            f = self.db.file.getnode (id)
+            self.assertEqual(f.name, name)
+            self.assertEqual(f.content, content)
+        self.assertEqual(msg.content, c)
+        self.compareMessages(self._get_mail(),
+'''FROM: roundup-admin@your.tracker.email.domain.example
+TO: chef@bork.bork.bork, richard@test.test
+Content-Type: multipart/mixed; boundary="utf-8"
+Subject: [issue1] Testing...
+To: chef@bork.bork.bork, richard@test.test
+From: "Contrary, Mary" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
+MIME-Version: 1.0
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
+X-Roundup-Issue-Files: unnamed
+Content-Transfer-Encoding: quoted-printable
+
+
+--utf-8
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+
+Contrary, Mary <mary@test.test> added the comment:
+
+umlaut =E4=F6=FC=C4=D6=DC=DF
+
+----------
+status: unread -> chatting
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
+_______________________________________________________________________
+--utf-8
+Content-Type: text/html
+MIME-Version: 1.0
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="unnamed"
+
+PGh0bWw+dW1sYXV0IMOkw7bDvMOEw5bDnMOfPC9odG1sPgo=
+
+--utf-8--
+''')
 
     def testSimpleFollowup(self):
         self.doNewIssue()

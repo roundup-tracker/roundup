@@ -472,6 +472,7 @@ class IssueClass:
             if message_files:
                 # first up the text as a part
                 part = MIMEText(body)
+                part.set_charset(charset)
                 encode_quopri(part)
                 message.attach(part)
 

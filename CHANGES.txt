@@ -30,6 +30,9 @@ Fixed:
   (thanks Ezio Melotti)
 - fixed registration, issue2550665 (thanks Timo Paulssen)
 - make sorting of multilinks in the web interface more robust, issue2550663
+- Fix charset of first text-part of outgoing multipart messages, thanks Dirk
+  Geschke for reporting, see
+  http://thread.gmane.org/gmane.comp.bug-tracking.roundup.user/10223
 
 
 2010-07-12 1.4.15
