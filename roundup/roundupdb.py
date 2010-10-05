@@ -30,6 +30,7 @@ from email.Utils import formataddr
 from email.Header import Header
 from email.MIMEText import MIMEText
 from email.MIMEBase import MIMEBase
+from email.parser   import FeedParser
 
 from roundup import password, date, hyperdb
 from roundup.i18n import _
@@ -492,6 +493,12 @@ class IssueClass:
                         else:
                             part = MIMEText(content)
                             part['Content-Transfer-Encoding'] = '7bit'
+                    elif mime_type == 'message/rfc822':
+                        main, sub = mime_type.split('/')
+                        p = FeedParser()
+                        p.feed(content)
+                        part = MIMEBase(main, sub)
+                        part.set_payload([p.close()])
                     else:
                         # some other type, so encode it
                         if not mime_type:
@@ -503,7 +510,8 @@ class IssueClass:
                         part = MIMEBase(main, sub)
                         part.set_payload(content)
                         Encoders.encode_base64(part)
-                    part['Content-Disposition'] = 'attachment;\n filename="%s"'%name
+                    cd = 'Content-Disposition'
+                    part[cd] = 'attachment;\n filename="%s"'%name
                     message.attach(part)
 
             else:

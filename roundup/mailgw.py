@@ -27,6 +27,9 @@ Incoming messages are examined for multiple parts:
    and given "file" class nodes that are linked to the "msg" node.
  . In a multipart/alternative message or part, we look for a text/plain
    subpart and ignore the other parts.
+ . A message/rfc822 is treated similar tomultipart/mixed (except for
+   special handling of the first text part) if unpack_rfc822 is set in
+   the mailgw config section.
 
 Summary
 -------
@@ -277,12 +280,17 @@ class Message(mimetools.Message):
 
     def getname(self):
         """Find an appropriate name for this message."""
+        name = None
         if self.gettype() == 'message/rfc822':
             # handle message/rfc822 specially - the name should be
             # the subject of the actual e-mail embedded here
+            # we add a '.eml' extension like other email software does it
             self.fp.seek(0)
-            name = Message(self.fp).getheader('subject')
-        else:
+            s = cStringIO.StringIO(self.getbody())
+            name = Message(s).getheader('subject')
+            if name:
+                name = name + '.eml'
+        if not name:
             # try name on Content-Type
             name = self.getparam('name')
             if not name:
@@ -355,8 +363,11 @@ class Message(mimetools.Message):
     #   flagging.
     # multipart/form-data:
     #   For web forms only.
+    # message/rfc822:
+    #   Only if configured in [mailgw] unpack_rfc822
 
-    def extract_content(self, parent_type=None, ignore_alternatives = False):
+    def extract_content(self, parent_type=None, ignore_alternatives=False,
+        unpack_rfc822=False):
         """Extract the body and the attachments recursively.
 
            If the content is hidden inside a multipart/alternative part,
@@ -374,7 +385,7 @@ class Message(mimetools.Message):
             ig = ignore_alternatives and not content_found
             for part in self.getparts():
                 new_content, new_attach = part.extract_content(content_type,
-                    not content and ig)
+                    not content and ig, unpack_rfc822)
 
                 # If we haven't found a text/plain part yet, take this one,
                 # otherwise make it an attachment.
@@ -399,6 +410,13 @@ class Message(mimetools.Message):
                 attachments.extend(new_attach)
             if ig and content_type == 'multipart/alternative' and content:
                 attachments = []
+        elif unpack_rfc822 and content_type == 'message/rfc822':
+            s = cStringIO.StringIO(self.getbody())
+            m = Message(s)
+            ig = ignore_alternatives and not content
+            new_content, attachments = m.extract_content(m.gettype(), ig,
+                unpack_rfc822)
+            attachments.insert(0, m.text_as_attachment())
         elif (parent_type == 'multipart/signed' and
               content_type == 'application/pgp-signature'):
             # ignore it so it won't be saved as an attachment
@@ -1276,7 +1294,8 @@ This tracker has been configured to require all email be PGP signed or
 encrypted.""")
         # now handle the body - find the message
         ig = self.instance.config.MAILGW_IGNORE_ALTERNATIVES
-        content, attachments = message.extract_content(ignore_alternatives = ig)
+        content, attachments = message.extract_content(ignore_alternatives=ig,
+            unpack_rfc822 = self.instance.config.MAILGW_UNPACK_RFC822)
         if content is None:
             raise MailUsageError, _("""
 Roundup requires the submission to be plain text. The message parser could

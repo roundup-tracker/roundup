@@ -483,6 +483,54 @@ Content-Transfer-Encoding: quoted-printable
 --001485f339f8f361fb049188dbba--
 '''
 
+    multipart_msg_rfc822 = '''From: mary <mary@test.test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: [issue1] Testing...
+Content-Type: multipart/mixed; boundary=001485f339f8f361fb049188dbba
+
+This is a multi-part message in MIME format.
+--001485f339f8f361fb049188dbba
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+
+First part: Text
+
+--001485f339f8f361fb049188dbba
+Content-Type: message/rfc822; name="Fwd: Original email subject.eml"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="Fwd: Original email subject.eml"
+
+Message-Id: <followup_dummy_id_2>
+In-Reply-To: <dummy_test_message_id_2>
+MIME-Version: 1.0
+Subject: Fwd: Original email subject
+Date: Mon, 23 Aug 2010 08:23:33 +0200
+Content-Type: multipart/alternative; boundary="090500050101020406060002"
+
+This is a multi-part message in MIME format.
+--090500050101020406060002
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+
+some text in inner email
+========================
+
+--090500050101020406060002
+Content-Type: text/html; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+
+<html>
+some text in inner email
+========================
+</html>
+
+--090500050101020406060002--
+
+--001485f339f8f361fb049188dbba--
+'''
+
     def testMultipartKeepAlternatives(self):
         self.doNewIssue()
         self._handle_mail(self.multipart_msg)
@@ -745,6 +793,105 @@ PGh0bWw+dW1sYXV0IMOkw7bDvMOEw5bDnMOfPC9odG1sPgo=
 
 --utf-8--
 ''')
+
+    def testMultipartRFC822(self):
+        self.doNewIssue()
+        self._handle_mail(self.multipart_msg_rfc822)
+        messages = self.db.issue.get('1', 'messages')
+        messages.sort()
+        msg = self.db.msg.getnode (messages[-1])
+        assert(len(msg.files) == 1)
+        name = "Fwd: Original email subject.eml"
+        for n, id in enumerate (msg.files):
+            f = self.db.file.getnode (id)
+            self.assertEqual(f.name, name)
+        self.assertEqual(msg.content, 'First part: Text')
+        self.compareMessages(self._get_mail(),
+'''TO: chef@bork.bork.bork, richard@test.test
+Content-Type: text/plain; charset="utf-8"
+Subject: [issue1] Testing...
+To: chef@bork.bork.bork, richard@test.test
+From: "Contrary, Mary" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
+MIME-Version: 1.0
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
+X-Roundup-Issue-Files: Fwd: Original email subject.eml
+Content-Transfer-Encoding: quoted-printable
+
+
+--utf-8
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+
+Contrary, Mary <mary@test.test> added the comment:
+
+First part: Text
+
+----------
+status: unread -> chatting
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
+_______________________________________________________________________
+--utf-8
+Content-Type: message/rfc822
+MIME-Version: 1.0
+Content-Disposition: attachment;
+ filename="Fwd: Original email subject.eml"
+
+Message-Id: <followup_dummy_id_2>
+In-Reply-To: <dummy_test_message_id_2>
+MIME-Version: 1.0
+Subject: Fwd: Original email subject
+Date: Mon, 23 Aug 2010 08:23:33 +0200
+Content-Type: multipart/alternative; boundary="090500050101020406060002"
+
+This is a multi-part message in MIME format.
+--090500050101020406060002
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+
+some text in inner email
+========================
+
+--090500050101020406060002
+Content-Type: text/html; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+
+<html>
+some text in inner email
+========================
+</html>
+
+--090500050101020406060002--
+
+--utf-8--
+''')
+
+    def testMultipartRFC822Unpack(self):
+        self.doNewIssue()
+        self.db.config.MAILGW_UNPACK_RFC822 = True
+        self._handle_mail(self.multipart_msg_rfc822)
+        messages = self.db.issue.get('1', 'messages')
+        messages.sort()
+        msg = self.db.msg.getnode (messages[-1])
+        self.assertEqual(len(msg.files), 2)
+        t = 'some text in inner email\n========================\n'
+        content = {0 : t, 1 : '<html>\n' + t + '</html>\n'}
+        for n, id in enumerate (msg.files):
+            f = self.db.file.getnode (id)
+            self.assertEqual(f.name, 'unnamed')
+            if n in content :
+                self.assertEqual(f.content, content [n])
+        self.assertEqual(msg.content, 'First part: Text')
 
     def testSimpleFollowup(self):
         self.doNewIssue()

@@ -17,6 +17,9 @@ Features:
   timeout of 30 seconds configurable. This is the time a client waits
   for the locked database to become free before giving up. Used only for
   SQLite backend.
+- new mailgw config item unpack_rfc822 that unpacks message attachments
+  of type message/rfc822 and attaches the individual parts instead of
+  attaching the whole message/rfc822 attachment to the roundup issue.
 
 Fixed:
 
@@ -33,6 +36,12 @@ Fixed:
 - Fix charset of first text-part of outgoing multipart messages, thanks Dirk
   Geschke for reporting, see
   http://thread.gmane.org/gmane.comp.bug-tracking.roundup.user/10223
+- Fix handling of incoming message/rfc822 attachments. These resulted in
+  a weird mail usage error because the email module threw a TypeError
+  which roundup interprets as a Reject exception. Fixes issue2550667.
+  Added regression tests for message/rfc822 attachments with and without
+  configured unpacking (mailgw unpack_rfc822, see Features above)
+  Thanks to Benni Bärmann for reporting.
 
 
 2010-07-12 1.4.15

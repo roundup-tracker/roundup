@@ -748,6 +748,10 @@ SETTINGS = (
             "Regular expression matching end of line."),
         (RegExpOption, "blankline_re", r"[\r\n]+\s*[\r\n]+",
             "Regular expression matching a blank line."),
+        (BooleanOption, "unpack_rfc822", "no",
+            "Unpack attached messages (encoded as message/rfc822 in MIME)\n"
+            "as multiple parts attached as files to the issue, if not\n"
+            "set we handle message/rfc822 attachments as a single file."),
         (BooleanOption, "ignore_alternatives", "no",
             "When parsing incoming mails, roundup uses the first\n"
             "text/plain part it finds. If this part is inside a\n"
