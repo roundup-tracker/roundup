@@ -23,13 +23,25 @@ from cStringIO import StringIO
 from roundup.mailgw import Message
 
 class TestMessage(Message):
+    # A note on message/rfc822: The content of such an attachment is an
+    # email with at least one header line. RFC2046 tells us: """   A
+    # media type of "message/rfc822" indicates that the body contains an
+    # encapsulated message, with the syntax of an RFC 822 message.
+    # However, unlike top-level RFC 822 messages, the restriction that
+    # each "message/rfc822" body must include a "From", "Date", and at
+    # least one destination header is removed and replaced with the
+    # requirement that at least one of "From", "Subject", or "Date" must
+    # be present."""
+    # This means we have to add a newline after the mime-header before
+    # the subject, otherwise the subject is part of the mime header not
+    # part of the email header.
     table = {'multipart/signed': '    boundary="boundary-%(indent)s";\n',
              'multipart/mixed': '    boundary="boundary-%(indent)s";\n',
              'multipart/alternative': '    boundary="boundary-%(indent)s";\n',
              'text/plain': '    name="foo.txt"\nfoo\n',
              'application/pgp-signature': '    name="foo.gpg"\nfoo\n',
              'application/pdf': '    name="foo.pdf"\nfoo\n',
-             'message/rfc822': 'Subject: foo\n\nfoo\n'}
+             'message/rfc822': '\nSubject: foo\n\nfoo\n'}
 
     def __init__(self, spec):
         """Create a basic MIME message according to 'spec'.
@@ -215,7 +227,7 @@ multipart/mixed
 multipart/mixed
     message/rfc822""",
                   (None,
-                   [('foo', 'message/rfc822', 'foo\n')]))
+                   [('foo.eml', 'message/rfc822', 'Subject: foo\n\nfoo\n')]))
 
 def test_suite():
     suite = unittest.TestSuite()

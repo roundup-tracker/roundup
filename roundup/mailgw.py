@@ -1295,7 +1295,7 @@ encrypted.""")
         # now handle the body - find the message
         ig = self.instance.config.MAILGW_IGNORE_ALTERNATIVES
         content, attachments = message.extract_content(ignore_alternatives=ig,
-            unpack_rfc822 = self.instance.config.MAILGW_UNPACK_RFC822)
+            unpack_rfc822=self.instance.config.MAILGW_UNPACK_RFC822)
         if content is None:
             raise MailUsageError, _("""
 Roundup requires the submission to be plain text. The message parser could
