@@ -1262,7 +1262,7 @@ class Class:
             assert (str(n) == nodeid)
             if n != last:
                 if r:
-                    self.db.setjournal(self.classname, nodeid, r)
+                    self.db.setjournal(self.classname, str(last), r)
                 last = n
                 r = []
 
