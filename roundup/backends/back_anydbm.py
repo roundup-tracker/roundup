@@ -2000,34 +2000,6 @@ class Class(hyperdb.Class):
                     repr(action), repr(params)])
         return r
 
-    def import_journals(self, entries):
-        """Import a class's journal.
-
-        Uses setjournal() to set the journal for each item."""
-        properties = self.getprops()
-        d = {}
-        for l in entries:
-            nodeid, jdate, user, action, params = tuple(map(eval, l))
-            r = d.setdefault(nodeid, [])
-            if action == 'set':
-                for propname, value in params.iteritems():
-                    prop = properties[propname]
-                    if value is None:
-                        pass
-                    elif isinstance(prop, hyperdb.Date):
-                        value = date.Date(value)
-                    elif isinstance(prop, hyperdb.Interval):
-                        value = date.Interval(value)
-                    elif isinstance(prop, hyperdb.Password):
-                        pwd = password.Password()
-                        pwd.unpack(value)
-                        value = pwd
-                    params[propname] = value
-            r.append((nodeid, date.Date(jdate), user, action, params))
-
-        for nodeid, l in d.iteritems():
-            self.db.setjournal(self.classname, nodeid, l)
-
 class FileClass(hyperdb.FileClass, Class):
     """This class defines a large chunk of data. To support this, it has a
        mandatory String property "content" which is typically saved off

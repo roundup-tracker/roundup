@@ -2641,55 +2641,6 @@ class Class(hyperdb.Class):
                 r.append(list(map(repr, l)))
         return r
 
-    def import_journals(self, entries):
-        """Import a class's journal.
-
-        Uses setjournal() to set the journal for each item.
-        Strategy for import: Sort first by id, then import journals for
-        each id, this way the memory footprint is a lot smaller than the
-        initial implementation which stored everything in a big hash by
-        id and then proceeded to import journals for each id."""
-        properties = self.getprops()
-        a = []
-        for l in entries:
-            # first element in sorted list is the (numeric) id
-            # in python2.4 and up we would use sorted with a key...
-            a.append ((int (l [0].strip ("'")), l))
-        a.sort ()
-
-
-        last = 0
-        r = []
-        for n, l in a:
-            nodeid, jdate, user, action, params = map(eval, l)
-            assert (str(n) == nodeid)
-            if n != last:
-                if r:
-                    self.db.setjournal(self.classname, nodeid, r)
-                last = n
-                r = []
-
-            if action == 'set':
-                for propname, value in params.iteritems():
-                    prop = properties[propname]
-                    if value is None:
-                        pass
-                    elif isinstance(prop, Date):
-                        value = date.Date(value)
-                    elif isinstance(prop, Interval):
-                        value = date.Interval(value)
-                    elif isinstance(prop, Password):
-                        pwd = password.Password()
-                        pwd.unpack(value)
-                        value = pwd
-                    params[propname] = value
-            elif action == 'create' and params:
-                # old tracker with data stored in the create!
-                params = {}
-            r.append((nodeid, date.Date(jdate), user, action, params))
-        if r:
-            self.db.setjournal(self.classname, nodeid, r)
-
 class FileClass(hyperdb.FileClass, Class):
     """This class defines a large chunk of data. To support this, it has a
        mandatory String property "content" which is typically saved off
