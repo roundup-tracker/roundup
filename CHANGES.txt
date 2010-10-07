@@ -44,6 +44,8 @@ Fixed:
   Thanks to Benni Bärmann for reporting.
 - Allow search_popup macro to work with all db classes, issue2550567
   (thanks John Kristensen)
+- lower memory footprint for (journal-) import -- only for rdbms
+  backends, other backends shouldn't have that much data anyway.
 
 
 2010-07-12 1.4.15

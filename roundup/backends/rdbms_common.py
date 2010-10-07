@@ -2644,12 +2644,31 @@ class Class(hyperdb.Class):
     def import_journals(self, entries):
         """Import a class's journal.
 
-        Uses setjournal() to set the journal for each item."""
+        Uses setjournal() to set the journal for each item.
+        Strategy for import: Sort first by id, then import journals for
+        each id, this way the memory footprint is a lot smaller than the
+        initial implementation which stored everything in a big hash by
+        id and then proceeded to import journals for each id."""
         properties = self.getprops()
-        d = {}
+        a = []
         for l in entries:
+            # first element in sorted list is the (numeric) id
+            # in python2.4 and up we would use sorted with a key...
+            a.append ((int (l [0].strip ("'")), l))
+        a.sort ()
+
+
+        last = 0
+        r = []
+        for n, l in a:
             nodeid, jdate, user, action, params = map(eval, l)
-            r = d.setdefault(nodeid, [])
+            assert (str(n) == nodeid)
+            if n != last:
+                if r:
+                    self.db.setjournal(self.classname, nodeid, r)
+                last = n
+                r = []
+
             if action == 'set':
                 for propname, value in params.iteritems():
                     prop = properties[propname]
@@ -2668,9 +2687,8 @@ class Class(hyperdb.Class):
                 # old tracker with data stored in the create!
                 params = {}
             r.append((nodeid, date.Date(jdate), user, action, params))
-
-        for nodeid, l in d.iteritems():
-            self.db.setjournal(self.classname, nodeid, l)
+        if r:
+            self.db.setjournal(self.classname, nodeid, r)
 
 class FileClass(hyperdb.FileClass, Class):
     """This class defines a large chunk of data. To support this, it has a
