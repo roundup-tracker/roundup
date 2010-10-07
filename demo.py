@@ -115,7 +115,7 @@ Demo tracker is set up to be accessed by localhost browser.  If you
 run demo on a server host, please stop the demo, open file
 "demo/config.ini" with your editor, change the host name in the "web"
 option in section "[tracker]", save the file, then re-run the demo
-program.
+program. If you want to change backend types, you must use "nuke".
 
 ''' % url
 
