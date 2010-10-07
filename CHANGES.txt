@@ -42,6 +42,8 @@ Fixed:
   Added regression tests for message/rfc822 attachments with and without
   configured unpacking (mailgw unpack_rfc822, see Features above)
   Thanks to Benni Bärmann for reporting.
+- Allow search_popup macro to work with all db classes, issue2550567
+  (thanks John Kristensen)
 
 
 2010-07-12 1.4.15

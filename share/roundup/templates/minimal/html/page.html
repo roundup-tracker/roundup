@@ -218,7 +218,7 @@ See issue.search.html in the classic template for examples.
   <input tal:attributes="value python:request.form.getvalue(name) or nothing;
                          name name;
                          id name">
-  <span tal:replace="structure python:db.issue.classhelp(columns,
+  <span tal:replace="structure python:db[db_klass].classhelp(columns,
                                       property=name)" />
 </td>
 
