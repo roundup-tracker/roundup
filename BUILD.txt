@@ -28,7 +28,7 @@ Building and distributing a release of Roundup is done by running:
 11. Assuming all is well tag the release in SVN::
 
       svn cp https://roundup.svn.sourceforge.net/svnroot/roundup/roundup/trunk \
-      https://roundup.svn.sourceforge.net/svnroot/roundup/roundup/tags/release-1.4.12
+      https://roundup.svn.sourceforge.net/svnroot/roundup/roundup/tags/release-1-4-16
 
 11. python setup.py bdist_rpm
 12. python setup.py bdist_wininst
