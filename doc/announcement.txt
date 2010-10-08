@@ -1,12 +1,47 @@
-I'm proud to release version 1.4.15 of Roundup which mostly fixes some
-regressions in the last release:
+I'm proud to release version 1.4.16 of Roundup which introduces some
+minor features and, as usual, fixes some bugs:
+
+Features:
+
+- allow trackers to override the classes used to render properties in
+  templating per issue2550659 (thanks Ezio Melotti)
+- new mailgw configuration item "subject_updates_title": If set to "no"
+  a changed subject in a reply to an issue will not update the issue
+  title with the changed subject. Thanks to Arkadiusz Kita and Peter
+  Funk for requesting the feature and discussing the implementation.
+  http://thread.gmane.org/gmane.comp.bug-tracking.roundup.user/10169
+- new rdbms config item sqlite_timeout makes the previously hard-coded
+  timeout of 30 seconds configurable. This is the time a client waits
+  for the locked database to become free before giving up. Used only for
+  SQLite backend.
+- new mailgw config item unpack_rfc822 that unpacks message attachments
+  of type message/rfc822 and attaches the individual parts instead of
+  attaching the whole message/rfc822 attachment to the roundup issue.
 
 Fixed:
 
-- A bunch of regressions were introduced in the last release making Roundup
-  no longer work in Python releases prior to 2.6
-- make URL detection a little smarter about brackets per issue2550657
+- fixed reporting of source missing warnings
+- relevant tests made locale independent, issue2550660 (thanks
+  Benni Bärmann for reporting).
+- fix for incorrect except: syntax, issue2550661 (thanks Jakub Wilk)
+- No longer use the root logger, use a logger with prefix "roundup",
+  see http://thread.gmane.org/gmane.comp.bug-tracking.roundup.devel/5356
+- improve handling of '&gt;' when URLs are converted to links, issue2550664
   (thanks Ezio Melotti)
+- fixed registration, issue2550665 (thanks Timo Paulssen)
+- make sorting of multilinks in the web interface more robust, issue2550663
+- Fix charset of first text-part of outgoing multipart messages, thanks Dirk
+  Geschke for reporting, see
+  http://thread.gmane.org/gmane.comp.bug-tracking.roundup.user/10223
+- Fix handling of incoming message/rfc822 attachments. These resulted in
+  a weird mail usage error because the email module threw a TypeError
+  which roundup interprets as a Reject exception. Fixes issue2550667.
+  Added regression tests for message/rfc822 attachments with and without
+  configured unpacking (mailgw unpack_rfc822, see Features above)
+  Thanks to Benni Bärmann for reporting.
+- Allow search_popup macro to work with all db classes, issue2550567
+  (thanks John Kristensen)
+- lower memory footprint for (journal-) import
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.

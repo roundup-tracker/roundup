@@ -2,7 +2,7 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first. If no other name is given,
 Richard Jones did the change.
 
-2010-??-?? 1.4.16
+2010-10-08 1.4.16
 
 Features:
 
