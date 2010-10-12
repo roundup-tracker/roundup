@@ -1,0 +1,123 @@
+<tal:block metal:use-macro="templates/page/macros/frame">
+<title metal:fill-slot="head_title">
+<tal:block condition="context/id" i18n:translate=""
+ >Message <span tal:replace="context/id" i18n:name="id"
+ /> - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
+/></tal:block>
+<tal:block condition="not:context/id" i18n:translate=""
+ >New Message - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
+/></tal:block>
+</title>
+<tal:block metal:fill-slot="body_title">
+ <span tal:condition="python: not (context.id or context.is_edit_ok())"
+  tal:omit-tag="python:1" i18n:translate="">New Message</span>
+ <span tal:condition="python: not context.id and context.is_edit_ok()"
+  tal:omit-tag="python:1" i18n:translate="">New Message Editing</span>
+ <span tal:condition="python: context.id and not context.is_edit_ok()"
+  tal:omit-tag="python:1" i18n:translate="">Message<tal:x
+  replace="context/id" i18n:name="id" /></span>
+ <span tal:condition="python: context.id and context.is_edit_ok()"
+  tal:omit-tag="python:1" i18n:translate="">Message<tal:x
+  replace="context/id" i18n:name="id" /> Editing</span>
+</tal:block>
+<td class="content" metal:fill-slot="content">
+
+<p tal:condition="python:not (context.is_view_ok()
+ or request.user.hasRole('Anonymous'))" i18n:translate="">
+ You are not allowed to view this page.</p>
+
+<p tal:condition="python:not context.is_view_ok()
+ and request.user.hasRole('Anonymous')" i18n:translate="">
+ Please login with your username and password.</p>
+
+<div tal:condition="context/is_view_ok">
+<table class="form">
+
+<tr>
+ <th i18n:translate="">Author</th>
+ <td tal:content="context/author"></td>
+</tr>
+
+<tr>
+ <th i18n:translate="">Recipients</th>
+ <td tal:content="context/recipients"></td>
+</tr>
+
+<tr>
+ <th i18n:translate="">Date</th>
+ <td tal:content="context/date"></td>
+</tr>
+
+ <tr>
+  <th i18n:translate="">Message-id</th>
+  <td tal:content="context/messageid"></td>
+ </tr>
+
+ <tr>
+  <th i18n:translate="">In-reply-to</th>
+  <td tal:content="context/inreplyto"></td>
+ </tr>
+
+</table>
+
+<!--<p tal:condition="python:utils.sb_is_spam(context)" class="error-message">
+   Message has been classified as spam</p>-->
+
+<table class="messages">
+
+<!-- <tr>
+   <th class="header" i18n:translate="">Content</th>
+   <th class="header"
+   tal:condition="python:request.user.hasPermission('SB: May Classify')">
+     <form method="POST" onSubmit="return submit_once()"
+       enctype="multipart/form-data"
+       tal:attributes="action context/designator">
+ 
+      <input type="hidden" name="@action" value="spambayes_classify">
+      <input type="submit" name="trainspam" value="Mark as SPAM" i18n:attributes="value">
+      <input type="submit" name="trainham" value="Mark as HAM (not SPAM)" i18n:attributes="value">
+     </form>
+   </th>
+
+</tr>-->
+
+ <tr>
+  <td class="content" colspan="2"
+      tal:condition="python:context.content.is_view_ok()">
+      <pre
+      tal:content="structure python:utils.localReplace(context.content.hyperlinked())"></pre></td>
+  <td class="content" colspan="2"
+      tal:condition="python:not context.content.is_view_ok()">
+      You are not authorized to see this message.
+<!--            Message has been classified as spam and is therefore not
+      available to unathorized users. If you think this is
+      incorrect, please login and report the message as being
+      misclassified. -->
+  </td> 
+ </tr>
+</table>
+
+<table class="files" tal:condition="context/files">
+ <tr><th colspan="2" class="header" i18n:translate="">Files</th></tr>
+ <tr>
+  <th i18n:translate="">File name</th>
+  <th i18n:translate="">Uploaded</th>
+ </tr>
+ <tr tal:repeat="file context/files">
+  <td>
+   <a tal:attributes="href string:file${file/id}/${file/name}"
+      tal:content="file/name">dld link</a>
+  </td>
+  <td>
+   <span tal:content="file/creator">creator's name</span>,
+   <span tal:content="file/creation">creation date</span>
+  </td>
+ </tr>
+</table>
+
+<tal:block tal:replace="structure context/history" />
+
+</div>
+</td>
+
+</tal:block>

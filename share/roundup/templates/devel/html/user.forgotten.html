@@ -1,0 +1,56 @@
+<tal:block metal:use-macro="templates/page/macros/frame">
+<title metal:fill-slot="head_title" i18n:translate="">Password reset request - <span
+ i18n:name="tracker" tal:replace="config/TRACKER_NAME" /></title>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1"
+ i18n:translate="">Password reset request</span>
+<td class="content" metal:fill-slot="content">
+
+<tal:askforinfo tal:condition="python:options['error_message'] or not request.form.has_key('@action')"> 
+
+<p i18n:translate="">You have two options if you have forgotten your password.
+If you know the email address you registered with, enter it below.</p>
+
+<p i18n:translate="">If your  user was  automatically  created during
+import  from  the old  sourceforge  tracker,  your  e-mail address  is
+&lt;Sourceforge  username&gt;@users.sourceforge.net. The  mail address
+associated with your account can be changed after login.</p>
+
+<form method="POST" onSubmit="return submit_once()"
+      tal:attributes="action context/designator">
+    <table class="form">
+      <tr>
+        <th i18n:translate="">Email Address:</th>
+        <td><input name="address"></td>
+      </tr>
+      <tr>
+        <td>&nbsp;</td>
+        <td>
+          <input type="hidden" name="@action" value="passrst">
+          <input type="hidden" name="@template" value="forgotten">
+          <input type="submit" value="Request password reset"
+           i18n:attributes="value">
+        </td>
+      </tr>
+</table>
+
+<p i18n:translate="">Or, if you know your username, then enter it below.</p>
+
+<p i18n:translate="">If you have previously created or modified issue
+reports in the sourceforge issue tracker, you have an account here with
+the same username as your sourceforge username.</p>
+
+<table class="form">
+ <tr><th i18n:translate="">Username:</th> <td><input name="username"></td> </tr>
+ <tr><td></td><td><input type="submit" value="Request password reset"
+   i18n:attributes="value"></td></tr>
+</table>
+</form>
+
+<p i18n:translate="">A confirmation email will be sent to you -
+please follow the instructions within it to complete the reset process.</p>
+
+</tal:askforinfo>
+
+</td>
+g
+</tal:block>

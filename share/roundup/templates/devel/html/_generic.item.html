@@ -1,0 +1,53 @@
+<tal:block metal:use-macro="templates/page/macros/frame">
+<title metal:fill-slot="head_title" i18n:translate=""
+ ><span tal:replace="python:context._classname.capitalize()"
+ i18n:name="class" /> editing - <span i18n:name="tracker"
+ tal:replace="config/TRACKER_NAME" /></title>
+<tal:block metal:fill-slot="body_title" i18n:translate=""
+ ><span tal:replace="python:context._classname.capitalize()"
+ i18n:name="class" /> editing</tal:block>
+
+<td class="content" metal:fill-slot="content">
+
+<p tal:condition="python:not (context.is_view_ok()
+ or request.user.hasRole('Anonymous'))" i18n:translate="">
+ You are not allowed to view this page.</p>
+
+<p tal:condition="python:not context.is_view_ok()
+ and request.user.hasRole('Anonymous')" i18n:translate="">
+ Please login with your username and password.</p>
+
+<div tal:condition="context/is_view_ok">
+
+<form method="POST" onSubmit="return submit_once()"
+      enctype="multipart/form-data" tal:condition="context/is_view_ok"
+      tal:attributes="action context/designator">
+
+<input type="hidden" name="@template" value="item">
+
+<table class="form">
+
+<tr tal:repeat="prop python:db[context._classname].properties()">
+ <tal:block tal:condition="python:prop._name not in ('id',
+   'creator', 'creation', 'actor', 'activity')">
+  <th tal:content="prop/_name"></th>
+  <td tal:content="structure python:context[prop._name].field()"></td>
+ </tal:block>
+</tr>
+<tr>
+ <td>&nbsp;</td>
+ <td colspan=3 tal:content="structure context/submit">
+  submit button will go here
+ </td>
+</tr>
+</table>
+
+</form>
+
+<tal:block tal:condition="context/id" tal:replace="structure context/history" />
+
+</div>
+
+</td>
+
+</tal:block>

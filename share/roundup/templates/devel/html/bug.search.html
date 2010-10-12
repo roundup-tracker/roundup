@@ -1,0 +1,311 @@
+<tal:block metal:use-macro="templates/page/macros/frame">
+<title metal:fill-slot="head_title" i18n:translate="">Bug searching - <span
+ i18n:name="tracker" tal:replace="config/TRACKER_NAME" /></title>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1"
+ i18n:translate="">Bug searching</span>
+<td class="content" metal:fill-slot="content">
+
+<form method="get" name="itemSynopsis"
+      tal:attributes="action request/classname">
+      
+<table class="form" tal:define="
+   cols python:request.columns or 'id activity title status assignedto'.split();
+   sort_on python:request.sort and request.sort[0] or nothing;
+   sort_desc python:sort_on and sort_on[0] == '-';
+   sort_on python:(sort_on and sort_on[1]) or 'activity';
+   group_on python:request.group and request.group[0] or nothing;
+   group_desc python:group_on and group_on[0] == '-';
+   group_on python:(group_on and group_on[1]) or 'priority';
+
+   search_input templates/page/macros/search_input;
+   search_date templates/page/macros/search_date;
+   column_input templates/page/macros/column_input;
+   sort_input templates/page/macros/sort_input;
+   group_input templates/page/macros/group_input;
+   search_select templates/page/macros/search_select;
+   search_select_translated templates/page/macros/search_select_translated;
+   search_multiselect templates/page/macros/search_multiselect;">
+
+<tr>
+ <th class="header">&nbsp;</th>
+ <th class="header" i18n:translate="">Filter on</th>
+ <th class="header" i18n:translate="">Display</th>
+ <th class="header" i18n:translate="">Sort on</th>
+ <th class="header" i18n:translate="">Group on</th>
+</tr>
+
+<tr tal:define="name string:@search_text">
+  <th i18n:translate="">All text*:</th>
+  <td metal:use-macro="search_input"></td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+</tr>
+
+<tr tal:define="name string:title">
+  <th i18n:translate="">Title:</th>
+  <td metal:use-macro="search_input"></td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td>&nbsp;</td>
+</tr>
+
+<tr tal:define="name string:id">
+  <th i18n:translate="">ID:</th>
+  <td metal:use-macro="search_input"></td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td>&nbsp;</td>
+</tr>
+
+<tr tal:define="name string:creation">
+  <th i18n:translate="">Creation Date:</th>
+  <td metal:use-macro="search_date"></td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td metal:use-macro="group_input"></td>
+</tr>
+
+<tr tal:define="name string:creator;
+                db_klass string:user;
+                db_content string:username;">
+  <th i18n:translate="">Creator:</th>
+  <td metal:use-macro="search_input">
+    <option metal:fill-slot="extra_options" i18n:translate=""
+            tal:attributes="value request/user/id">created by me</option>
+  </td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td metal:use-macro="group_input"></td>
+</tr>
+
+<tr tal:define="name string:activity">
+  <th i18n:translate="">Activity:</th>
+  <td metal:use-macro="search_date"></td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td>&nbsp;</td>
+</tr>
+
+<tr tal:define="name string:actor;
+                db_klass string:user;
+                db_content string:username;">
+  <th i18n:translate="">Last actor:</th>
+  <td metal:use-macro="search_input">
+    <option metal:fill-slot="extra_options" i18n:translate=""
+            tal:attributes="value request/user/id">done by me</option>
+  </td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td>&nbsp;</td>
+</tr>
+
+<tr tal:define="name string:nosy">
+  <th i18n:translate="">Nosy list member:</th>
+  <td metal:use-macro="search_input"></td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td>&nbsp;</td>
+</tr>
+
+<tr tal:define="name string:type;
+                db_klass string:bug_type;
+                db_content string:name;">
+  <th i18n:translate="">Type:</th>
+  <td metal:use-macro="search_select_translated">
+    <option metal:fill-slot="extra_options" value="-1" i18n:translate=""
+            tal:attributes="selected python:value == '-1'">not selected</option>
+  </td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td metal:use-macro="group_input"></td>
+</tr>
+
+<tr tal:define="name string:components;
+                db_klass string:component;
+                db_content string:name;">
+  <th i18n:translate="">Components:</th>
+  <td metal:use-macro="search_select_translated">
+    <option metal:fill-slot="extra_options" value="-1" i18n:translate=""
+            tal:attributes="selected python:value == '-1'">not selected</option>
+  </td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td metal:use-macro="group_input"></td>
+</tr>
+
+<tr tal:define="name string:versions;
+                db_klass string:version;
+                db_content string:name;">
+  <th i18n:translate="">Versions:</th>
+  <td metal:use-macro="search_select_translated">
+    <option metal:fill-slot="extra_options" value="-1" i18n:translate=""
+            tal:attributes="selected python:value == '-1'">not selected</option>
+  </td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td metal:use-macro="group_input"></td>
+</tr>
+
+<!--tr tal:define="name string:severity;
+                db_klass string:severity;
+                db_content string:name;">
+  <th i18n:translate="">Severity:</th>
+  <td metal:use-macro="search_select_translated">
+    <option metal:fill-slot="extra_options" value="-1" i18n:translate=""
+            tal:attributes="selected python:value == '-1'">not selected</option>
+  </td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td metal:use-macro="group_input"></td>
+</tr-->
+
+<tr tal:define="name string:dependencies;
+                db_klass string:bug;
+                db_content string:id;">
+  <th i18n:translate="">Depends on:</th>
+  <td metal:use-macro="search_input"/>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td metal:use-macro="group_input"></td>
+</tr>
+
+<tr tal:define="name string:assignee;
+                db_klass string:user;
+                db_content string:username;">
+  <th i18n:translate="">Assigned to:</th>
+  <td metal:use-macro="search_input">
+    <tal:block metal:fill-slot="extra_options">
+      <option tal:attributes="value request/user/id"
+       i18n:translate="">assigned to me</option>
+      <option value="-1" tal:attributes="selected python:value == '-1'"
+       i18n:translate="">unassigned</option>
+    </tal:block>
+  </td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td metal:use-macro="group_input"></td>
+</tr>
+
+<tr tal:define="name string:keywords;
+                db_klass string:keyword;
+                db_content string:name;">
+  <th i18n:translate="">Keyword:</th>
+  <td metal:use-macro="search_select_translated">
+    <option metal:fill-slot="extra_options" value="-1" i18n:translate=""
+            tal:attributes="selected python:value == '-1'">not set</option>
+  </td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td metal:use-macro="group_input"></td>
+</tr>
+
+<tr tal:define="name string:priority;
+                db_klass string:priority;
+                db_content string:name;">
+  <th i18n:translate="">Priority:</th>
+  <td metal:use-macro="search_select_translated">
+    <option metal:fill-slot="extra_options" value="-1" i18n:translate=""
+            tal:attributes="selected python:value == '-1'">not selected</option>
+  </td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td metal:use-macro="group_input"></td>
+</tr>
+
+<tr tal:define="name string:status;
+                db_klass string:status;
+                db_content string:name;">
+  <th i18n:translate="">Status:</th>
+  <td metal:use-macro="search_select_translated">
+    <tal:block metal:fill-slot="extra_options">
+      <option value="-1,1,2" i18n:translate=""
+              tal:attributes="selected python:value == '-1,1,2'">not closed</option>
+      <option value="-1" i18n:translate=""
+              tal:attributes="selected python:value == '-1'">not selected</option>
+    </tal:block>
+  </td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td metal:use-macro="group_input"></td>
+</tr>
+
+<tr tal:define="name string:resolution;
+                db_klass string:resolution;
+                db_content string:name;">
+  <th i18n:translate="">Resolution:</th>
+  <td metal:use-macro="search_select_translated"/>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td metal:use-macro="group_input"></td>
+</tr>
+
+<tr>
+ <th i18n:translate="">No Sort or group:</th>
+ <td>&nbsp;</td>
+ <td>&nbsp;</td>
+ <td><input type="radio" name="@sort" value=""/></td>
+ <td><input type="radio" name="@group" value=""/></td>
+</tr>
+
+<tr>
+<th i18n:translate="">Pagesize:</th>
+<td><input name="@pagesize" size="3" value="50"
+           tal:attributes="value request/form/@pagesize/value | default"/></td>
+</tr>
+
+<tr>
+<th i18n:translate="">Start With:</th>
+<td><input name="@startwith" size="3" value="0"
+           tal:attributes="value request/form/@startwith/value | default"/></td>
+</tr>
+
+<tr>
+<th i18n:translate="">Sort Descending:</th>
+<td><input type="checkbox" name="@sortdir"
+           tal:attributes="checked sort_desc"/>
+</td>
+</tr>
+
+<tr>
+<th i18n:translate="">Group Descending:</th>
+<td><input type="checkbox" name="@groupdir"
+           tal:attributes="checked group_desc"/>
+</td>
+</tr>
+
+<tr tal:condition="python:request.user.hasPermission('Edit', 'query')">
+ <th i18n:translate="">Query name**:</th>
+ <td tal:define="value request/form/@queryname/value | nothing">
+  <input name="@queryname" tal:attributes="value value"/>
+  <input type="hidden" name="@old-queryname" tal:attributes="value value"/>
+ </td>
+</tr>
+
+<tr>
+  <td>
+   &nbsp;
+   <input type="hidden" name="@action" value="search"/>
+  </td>
+  <td><input type="submit" value="Search" i18n:attributes="value"/></td>
+</tr>
+
+<tr><td>&nbsp;</td>
+ <td colspan="4" class="help">
+  <span i18n:translate="" tal:omit-tag="true">
+   *: The "all text" field will look in message bodies and bug titles
+  </span><br>
+  <span tal:condition="python:request.user.hasPermission('Edit', 'query')"
+   i18n:translate="" tal:omit-tag="true"
+  >
+   **: If you supply a name, the query will be saved off and available as a
+       link in the sidebar
+  </span>
+ </td>
+</tr>
+</table>
+
+</form>
+</td>
+
+</tal:block>

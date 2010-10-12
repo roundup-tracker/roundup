@@ -1,0 +1,179 @@
+<tal:block metal:use-macro="templates/page/macros/frame">
+<title metal:fill-slot="head_title" >
+  <span tal:omit-tag="true" i18n:translate="" >List of tasks</span>
+  <span tal:condition="request/dispname"
+   tal:replace="python:' - %s '%request.dispname"
+  /> - <span tal:replace="config/TRACKER_NAME" />
+</title>
+<span metal:fill-slot="body_title" tal:omit-tag="true">
+  <span tal:omit-tag="true" i18n:translate="" >List of tasks</span>
+  <span tal:condition="request/dispname"
+   tal:replace="python:' - %s' % request.dispname" />
+</span>
+<tal:block metal:fill-slot="content">
+
+<p tal:condition="python:not (context.is_view_ok()
+ or request.user.hasRole('Anonymous'))" i18n:translate="">
+ You are not allowed to view this page.</p>
+
+<p tal:condition="python:not context.is_view_ok()
+ and request.user.hasRole('Anonymous')" i18n:translate="">
+ Please login with your username and password.</p>
+
+<tal:block tal:define="batch request/batch" tal:condition="context/is_view_ok">
+ <table class="list">
+  <tr>
+   <th tal:condition="request/show/severity" i18n:translate="">Severity</th>
+   <th tal:condition="request/show/id" i18n:translate="">ID</th>
+   <th tal:condition="request/show/creation" i18n:translate="">Creation</th>
+   <th tal:condition="request/show/activity" i18n:translate="">Activity</th>
+   <th tal:condition="request/show/actor" i18n:translate="">Actor</th>
+   <th tal:condition="request/show/title" i18n:translate="">Title</th>
+   <th tal:condition="request/show/components"  i18n:translate="">Components</th>
+   <th tal:condition="request/show/versions" i18n:translate="">Versions</th>
+   <th tal:condition="request/show/status"    i18n:translate="">Status</th>
+   <th tal:condition="request/show/resolution" i18n:translate="">Resolution</th>
+   <th tal:condition="request/show/creator" i18n:translate="">Creator</th>
+   <th tal:condition="request/show/assignee" i18n:translate="">Assigned&nbsp;To</th>
+   <th tal:condition="request/show/keywords" i18n:translate="">Keywords</th>
+   <th tal:condition="request/show/dependencies" i18n:translate="">Depends On</th>
+   <th tal:condition="request/show/type" i18n:translate="">Type</th>
+  </tr>
+ <tal:block tal:repeat="i batch" condition="true">
+  <tr tal:define="group python:[r[1] for r in request.group]"
+      tal:condition="python:group and batch.propchanged(*group)">
+   <th tal:attributes="colspan python:len(request.columns)" class="group">
+    <tal:block tal:repeat="g group">
+     <tal:block tal:content="python:str(i[g]) or '(no %s set)'%g"/>
+    </tal:block>
+   </th>
+  </tr>
+
+  <tr tal:attributes="class python:['even','odd'][repeat['i'].even()]">
+   <td tal:condition="request/show/severity"
+       tal:content="python:i.severity.plain() or default">&nbsp;</td>
+   <td tal:condition="request/show/id" tal:content="i/id">&nbsp;</td>
+   <td class="date" tal:condition="request/show/creation"
+       tal:content="i/creation/reldate">&nbsp;</td>
+   <td class="date" tal:condition="request/show/activity"
+       tal:content="i/activity/reldate">&nbsp;</td>
+   <td tal:condition="request/show/actor"
+       tal:content="python:i.actor.plain() or default">&nbsp;</td>
+   <td tal:condition="request/show/title">
+    <a tal:attributes="href string:task${i/id}"
+		tal:content="python:str(i.title.plain(hyperlink=0)) or '[no title]'">title</a>
+   </td>
+   <td tal:condition="request/show/components"
+       tal:content="python:i.components.plain() or default">&nbsp;</td>
+   <td tal:condition="request/show/versions"
+       tal:content="python:i.versions.plain() or default">&nbsp;</td>
+   <td tal:condition="request/show/status"
+       tal:content="python:i.status.plain() or default">&nbsp;</td>
+   <td tal:condition="request/show/resolution"
+       tal:content="python:i.resolution.plain() or default">&nbsp;</td>
+   <td tal:condition="request/show/creator"
+       tal:content="python:i.creator.plain() or default">&nbsp;</td>
+   <td tal:condition="request/show/assignee"
+       tal:content="python:i.assignee.plain() or default">&nbsp;</td>
+   <td tal:condition="request/show/keywords"
+       tal:content="python:i.keywords.plain() or default">&nbsp;</td>
+   <td tal:condition="request/show/dependencies"
+       tal:content="python:i.dependencies.plain() or default">&nbsp;</td>
+   <td tal:condition="request/show/type"
+       tal:content="python:i.type.plain() or default">&nbsp;</td>
+  </tr>
+
+ </tal:block>
+
+ <metal:index define-macro="batch-footer">
+ <tr tal:condition="batch">
+  <th tal:attributes="colspan python:len(request.columns)">
+   <table width="100%">
+    <tr class="navigation">
+     <th>
+      <a tal:define="prev batch/previous" tal:condition="prev"
+         tal:attributes="href python:request.indexargs_url(request.classname,
+         {'@startwith':prev.first, '@pagesize':prev.size})"
+         i18n:translate="">&lt;&lt; previous</a>
+      &nbsp;
+     </th>
+     <th i18n:translate=""><span tal:replace="batch/start" i18n:name="start"
+     />..<span tal:replace="python: batch.start + batch.length -1" i18n:name="end"
+     /> out of <span tal:replace="batch/sequence_length" i18n:name="total"
+     /></th>
+     <th>
+      <a tal:define="next batch/next" tal:condition="next"
+         tal:attributes="href python:request.indexargs_url(request.classname,
+         {'@startwith':next.first, '@pagesize':next.size})"
+         i18n:translate="">next &gt;&gt;</a>
+      &nbsp;
+     </th>
+    </tr>
+   </table>
+  </th>
+ </tr>
+ </metal:index>
+</table>
+<!--
+<a tal:attributes="href python:request.indexargs_url('task',
+            {'@action':'export_csv'})" i18n:translate="">Download as CSV</a>
+-->
+<form method="get" class="index-controls"
+    tal:attributes="action request/classname">
+
+ <table class="form" tal:define="n_sort python:2">
+<!--
+<tal:block tal:repeat="n python:range(n_sort)" tal:condition="batch">
+  <tr tal:define="key python:len(request.sort)>n and request.sort[n]">
+   <th>
+    <tal:block tal:condition="not:n" i18n:translate="">Sort on:</tal:block>
+   </th>
+   <td>
+    <select tal:attributes="name python:'@sort%d'%n">
+     <option value="" i18n:translate="">- nothing -</option>
+     <option tal:repeat="col context/properties"
+             tal:attributes="value col/_name;
+                             selected python:key and col._name == key[1]"
+             tal:content="col/_name"
+             i18n:translate="">column</option>
+    </select>
+   </td>
+   <th i18n:translate="">Descending:</th>
+   <td><input type="checkbox" tal:attributes="name python:'@sortdir%d'%n;
+              checked python:key and key[0] == '-'"/>
+   </td>
+  </tr>
+  </tal:block>
+  -->
+  <tal:block tal:repeat="n python:range(n_sort)" tal:condition="batch">
+  <tr tal:define="key python:len(request.group)>n and request.group[n]">
+   <th>
+    <tal:block tal:condition="not:n" i18n:translate="">Group on:</tal:block>
+   </th>
+   <td>
+    <select tal:attributes="name python:'@group%d'%n">
+     <option value="" i18n:translate="">- nothing -</option>
+     <option tal:repeat="col context/properties"
+             tal:attributes="value col/_name;
+                             selected python:key and col._name == key[1]"
+             tal:content="col/_name"
+             i18n:translate="">column</option>
+    </select>
+   </td>
+   <th i18n:translate="">Descending:</th>
+   <td><input type="checkbox" tal:attributes="name python:'@groupdir%d'%n;
+              checked python:key and key[0] == '-'"/>
+   </td>
+  </tr>
+  </tal:block>
+  <tr><td colspan="4">
+              <input type="submit" value="Redisplay" i18n:attributes="value"/>
+              <tal:block tal:replace="structure
+                python:request.indexargs_form(sort=0, group=0)" />
+  </td></tr>
+ </table>
+</form>
+
+</tal:block>
+</tal:block>
+</tal:block>

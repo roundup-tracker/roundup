@@ -1,0 +1,29 @@
+@import url(style.css);
+
+body { padding: 0;}
+body > .header,
+body > .footer
+{
+  margin: 0;
+}
+body .content { width: auto;}
+.header h1 { font-size: 110%; }
+
+table.classhelp th
+{
+  border-top: 1px solid #afafaf;
+  border-bottom: 1px solid #afafaf;
+  empty-cells: show;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+table.classhelp td
+{
+  border-bottom: 1px solid #efefef;
+  empty-cells: show;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
