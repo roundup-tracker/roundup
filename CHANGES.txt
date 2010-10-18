@@ -2,6 +2,11 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first. If no other name is given,
 Richard Jones did the change.
 
+20X0-XX-XX 
+
+Fixed:
+- Some minor typos fixed in doc/customizing.txt (Thanks Ralf Hemmecke).
+
 2010-10-08 1.4.16 (r4541)
 
 Features:

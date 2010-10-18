@@ -508,7 +508,7 @@ The ``schema.py`` module contains two functions:
   them.
 **init**
   This function is responsible for setting up the initial state of your
-  tracker. It's called exactly once - but the ``roundup-admin initialise``
+  tracker. It's called exactly once - by the ``roundup-admin initialise``
   command.  See the start of the section on `database content`_ for more
   info about how this works.
 
@@ -1623,7 +1623,7 @@ of files in there. The *minimal* template includes:
 **user.register.html**
   a special page just for the user class, that renders the registration
   page
-**style.css.html**
+**style.css**
   a static file that is served up as-is
 
 The *classic* template has a number of additional templates.
@@ -1984,7 +1984,7 @@ Hyperdb class wrapper
 This is implemented by the ``roundup.cgi.templating.HTMLClass``
 class.
 
-This wrapper object provides access to a hyperb class. It is used
+This wrapper object provides access to a hyperdb class. It is used
 primarily in both index view and new item views, but it's also usable
 anywhere else that you wish to access information about a class, or the
 items of a class, when you don't have a specific item of that class in
@@ -2084,7 +2084,7 @@ Hyperdb item wrapper
 This is implemented by the ``roundup.cgi.templating.HTMLItem``
 class.
 
-This wrapper object provides access to a hyperb item.
+This wrapper object provides access to a hyperdb item.
 
 We allow access to properties. There will be no "id" property. The value
 accessed through the property will be the current value of the same name
