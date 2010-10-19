@@ -101,7 +101,7 @@ def main():
           description="A simple-to-use and -install issue-tracking system"
             " with command-line, web and e-mail interfaces. Highly"
             " customisable.",
-          long_description=open('doc/announcement.txt').read(),
+          long_description=open('doc/announcement.txt').read().decode('utf8'),
           url='http://www.roundup-tracker.org',
           download_url='http://pypi.python.org/pypi/roundup',
           classifiers=['Development Status :: 5 - Production/Stable',
