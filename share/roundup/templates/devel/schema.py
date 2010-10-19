@@ -327,6 +327,8 @@ def edit_query(db, userid, itemid):
     return userid == db.query.get(itemid, 'creator')
 p = db.security.addPermission(name='View', klass='query', check=view_query,
     description="User is allowed to view their own and public queries")
+p = db.security.addPermission(name='Search', klass='query')
+db.security.addPermissionToRole('User', p)
 for r in 'User', 'Developer', 'Coordinator':
     db.security.addPermissionToRole(r, p)
 p = db.security.addPermission(name='Edit', klass='query', check=edit_query,

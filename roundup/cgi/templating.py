@@ -673,13 +673,21 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
 
             "request" takes precedence over the other three arguments.
         """
+        security = self._db.security
+        userid = self._client.userid
         if request is not None:
+            # for a request we asume it has already been
+            # security-filtered
             filterspec = request.filterspec
             sort = request.sort
             group = request.group
+        else:
+            cn = self.classname
+            filterspec = security.filterFilterspec(userid, cn, filterspec)
+            sort = security.filterSortspec(userid, cn, sort)
+            group = security.filterSortspec(userid, cn, group)
 
-        check = self._db.security.hasPermission
-        userid = self._client.userid
+        check = security.hasPermission
         if not check('Web Access', userid):
             return []
 
@@ -2446,12 +2454,16 @@ class HTMLRequest(HTMLInputMixin):
                 self.columns = handleListCGIValue(self.form[name])
                 break
         self.show = support.TruthDict(self.columns)
+        security = self._client.db.security
+        userid = self._client.userid
 
         # sorting and grouping
         self.sort = []
         self.group = []
         self._parse_sort(self.sort, 'sort')
         self._parse_sort(self.group, 'group')
+        self.sort = security.filterSortspec(userid, self.classname, self.sort)
+        self.group = security.filterSortspec(userid, self.classname, self.group)
 
         # filtering
         self.filter = []
@@ -2481,6 +2493,8 @@ class HTMLRequest(HTMLInputMixin):
                         self.filterspec[name] = handleListCGIValue(fv)
                     else:
                         self.filterspec[name] = fv.value
+        self.filterspec = security.filterFilterspec(userid, self.classname,
+            self.filterspec)
 
         # full-text search argument
         self.search_text = None

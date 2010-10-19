@@ -13,6 +13,45 @@ steps.
 
 .. contents::
 
+Migrating from 1.4.x to 1.4.17
+==============================
+
+Searching now requires either read-permission without a check method, or
+you will have to add a "Search" permission for a class or a list of
+properties for a class (if you want to allow searching). For the classic
+template (or other templates derived from it) you want to add the
+following lines to your `schema.py` file::
+
+  p = db.security.addPermission(name='Search', klass='query')
+  db.security.addPermissionToRole('User', p)
+
+This is needed, because for the `query` class users may view only their
+own queries (or public queries). This is implemented with a `check`
+method, therefore the default search permissions will not allow
+searching and you'll have to add an explicit search permission.
+If you have modified your schema, you can check if you're missing any
+search permissions with the following script, run it in your tracker
+directory, it will list for each Class and Property the roles that may
+search for this property::
+
+    #!/usr/bin/python
+    import os
+    from roundup import instance
+    
+    tracker = instance.open(os.getcwd ())
+    db = tracker.open('admin')
+    
+    for cl in sorted(db.getclasses()):
+        print "Class:", cl
+        for p in sorted(db.getclass(cl).properties.keys()):
+            print "    Property:", p
+            roles = []
+            for role in sorted(db.security.role.iterkeys()):
+                if db.security.roleHasSearchPermission(role,cl,p):
+                    roles.append(role)
+            print "        roles may search:", ', '.join(roles)
+
+
 Migrating from 1.4.x to 1.4.12
 ==============================
 

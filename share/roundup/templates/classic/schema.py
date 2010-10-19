@@ -129,6 +129,8 @@ def edit_query(db, userid, itemid):
 p = db.security.addPermission(name='View', klass='query', check=view_query,
     description="User is allowed to view their own and public queries")
 db.security.addPermissionToRole('User', p)
+p = db.security.addPermission(name='Search', klass='query')
+db.security.addPermissionToRole('User', p)
 p = db.security.addPermission(name='Edit', klass='query', check=edit_query,
     description="User is allowed to edit their queries")
 db.security.addPermissionToRole('User', p)

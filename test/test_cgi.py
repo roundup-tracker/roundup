@@ -14,7 +14,7 @@ import unittest, os, shutil, errno, sys, difflib, cgi, re, StringIO
 
 from roundup.cgi import client, actions, exceptions
 from roundup.cgi.exceptions import FormError
-from roundup.cgi.templating import HTMLItem
+from roundup.cgi.templating import HTMLItem, HTMLRequest
 from roundup.cgi.form_parser import FormParser
 from roundup import init, instance, password, hyperdb, date
 
@@ -616,17 +616,18 @@ class FormTestCase(unittest.TestCase):
     # SECURITY
     #
     # XXX test all default permissions
-    def _make_client(self, form, classname='user', nodeid='1', userid='2'):
+    def _make_client(self, form, classname='user', nodeid='1',
+           userid='2', template='item'):
         cl = client.Client(self.instance, None, {'PATH_INFO':'/',
             'REQUEST_METHOD':'POST'}, makeForm(form))
-        cl.classname = 'user'
+        cl.classname = classname
         if nodeid is not None:
             cl.nodeid = nodeid
         cl.db = self.db
         cl.userid = userid
         cl.language = ('en',)
         cl.error_message = []
-        cl.template = 'item'
+        cl.template = template
         return cl
 
     def testClassPermission(self):
@@ -723,6 +724,117 @@ class FormTestCase(unittest.TestCase):
         cl = self._make_client(dict(roles='User,Admin'))
         self.assertRaises(exceptions.Unauthorised,
             actions.EditItemAction(cl).handle)
+
+    def testSearchPermission(self):
+        # this checks if we properly check for search permissions
+        self.db.security.permissions = {}
+        self.db.security.addRole(name='User')
+        self.db.security.addRole(name='Project')
+        self.db.security.addPermissionToRole('User', 'Web Access')
+        self.db.security.addPermissionToRole('Project', 'Web Access')
+        # Allow viewing department
+        p = self.db.security.addPermission(name='View', klass='department')
+        self.db.security.addPermissionToRole('User', p)
+        # Allow viewing interesting things (but not department) on iss
+        # But users might only view issues where they are on nosy
+        # (so in the real world the check method would be better)
+        p = self.db.security.addPermission(name='View', klass='iss',
+            properties=("title", "status"), check=lambda x,y,z: True)
+        self.db.security.addPermissionToRole('User', p)
+        # Allow role "Project" access to whole iss
+        p = self.db.security.addPermission(name='View', klass='iss')
+        self.db.security.addPermissionToRole('Project', p)
+
+        department = self.instance.backend.Class(self.db, "department",
+            name=hyperdb.String())
+        status = self.instance.backend.Class(self.db, "stat",
+            name=hyperdb.String())
+        issue = self.instance.backend.Class(self.db, "iss",
+            title=hyperdb.String(), status=hyperdb.Link('stat'),
+            department=hyperdb.Link('department'))
+
+        d1 = department.create(name='d1')
+        d2 = department.create(name='d2')
+        open = status.create(name='open')
+        closed = status.create(name='closed')
+        issue.create(title='i1', status=open, department=d2)
+        issue.create(title='i2', status=open, department=d1)
+        issue.create(title='i2', status=closed, department=d1)
+
+        chef = self.db.user.lookup('Chef')
+        mary = self.db.user.lookup('mary')
+        self.db.user.set(chef, roles = 'User, Project')
+
+        perm = self.db.security.hasPermission
+        search = self.db.security.hasSearchPermission
+        self.assert_(perm('View', chef, 'iss', 'department', '1'))
+        self.assert_(perm('View', chef, 'iss', 'department', '2'))
+        self.assert_(perm('View', chef, 'iss', 'department', '3'))
+        self.assert_(search(chef, 'iss', 'department'))
+
+        self.assert_(not perm('View', mary, 'iss', 'department'))
+        self.assert_(perm('View', mary, 'iss', 'status'))
+        # Conditionally allow view of whole iss (check is False here,
+        # this might check for department owner in the real world)
+        p = self.db.security.addPermission(name='View', klass='iss',
+            check=lambda x,y,z: False)
+        self.db.security.addPermissionToRole('User', p)
+        self.assert_(perm('View', mary, 'iss', 'department'))
+        self.assert_(not perm('View', mary, 'iss', 'department', '1'))
+        self.assert_(not search(mary, 'iss', 'department'))
+
+        self.assert_(perm('View', mary, 'iss', 'status'))
+        self.assert_(not search(mary, 'iss', 'status'))
+        # Allow user to search for iss.status
+        p = self.db.security.addPermission(name='Search', klass='iss',
+            properties=("status",))
+        self.db.security.addPermissionToRole('User', p)
+        self.assert_(search(mary, 'iss', 'status'))
+
+        dep = {'@action':'search','columns':'id','@filter':'department',
+            'department':'1'}
+        stat = {'@action':'search','columns':'id','@filter':'status',
+            'status':'1'}
+        depsort = {'@action':'search','columns':'id','@sort':'department'}
+        depgrp = {'@action':'search','columns':'id','@group':'department'}
+
+        # Filter on department ignored for role 'User':
+        cl = self._make_client(dep, classname='iss', nodeid=None, userid=mary,
+            template='index')
+        h = HTMLRequest(cl)
+        self.assertEqual([x.id for x in h.batch()],['1', '2', '3'])
+        # Filter on department works for role 'Project':
+        cl = self._make_client(dep, classname='iss', nodeid=None, userid=chef,
+            template='index')
+        h = HTMLRequest(cl)
+        self.assertEqual([x.id for x in h.batch()],['2', '3'])
+        # Filter on status works for all:
+        cl = self._make_client(stat, classname='iss', nodeid=None, userid=mary,
+            template='index')
+        h = HTMLRequest(cl)
+        self.assertEqual([x.id for x in h.batch()],['1', '2'])
+        cl = self._make_client(stat, classname='iss', nodeid=None, userid=chef,
+            template='index')
+        h = HTMLRequest(cl)
+        self.assertEqual([x.id for x in h.batch()],['1', '2'])
+        # Sorting and grouping for class Project works:
+        cl = self._make_client(depsort, classname='iss', nodeid=None,
+            userid=chef, template='index')
+        h = HTMLRequest(cl)
+        self.assertEqual([x.id for x in h.batch()],['2', '3', '1'])
+        cl = self._make_client(depgrp, classname='iss', nodeid=None,
+            userid=chef, template='index')
+        h = HTMLRequest(cl)
+        self.assertEqual([x.id for x in h.batch()],['2', '3', '1'])
+        # Sorting and grouping for class User fails:
+        cl = self._make_client(depsort, classname='iss', nodeid=None,
+            userid=mary, template='index')
+        h = HTMLRequest(cl)
+        self.assertEqual([x.id for x in h.batch()],['1', '2', '3'])
+        cl = self._make_client(depgrp, classname='iss', nodeid=None,
+            userid=mary, template='index')
+        h = HTMLRequest(cl)
+        self.assertEqual([x.id for x in h.batch()],['1', '2', '3'])
 
     def testRoles(self):
         cl = self._make_client({})

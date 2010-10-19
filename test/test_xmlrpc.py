@@ -115,6 +115,84 @@ class TestCase(unittest.TestCase):
         finally:
             self.db.setCurrentUser('joe')
 
+    def testAuthFilter(self):
+        # this checks if we properly check for search permissions
+        self.db.security.permissions = {}
+        self.db.security.addRole(name='User')
+        self.db.security.addRole(name='Project')
+        self.db.security.addPermissionToRole('User', 'Web Access')
+        self.db.security.addPermissionToRole('Project', 'Web Access')
+        # Allow viewing keyword
+        p = self.db.security.addPermission(name='View', klass='keyword')
+        self.db.security.addPermissionToRole('User', p)
+        # Allow viewing interesting things (but not keyword) on issue
+        # But users might only view issues where they are on nosy
+        # (so in the real world the check method would be better)
+        p = self.db.security.addPermission(name='View', klass='issue',
+            properties=("title", "status"), check=lambda x,y,z: True)
+        self.db.security.addPermissionToRole('User', p)
+        # Allow role "Project" access to whole issue
+        p = self.db.security.addPermission(name='View', klass='issue')
+        self.db.security.addPermissionToRole('Project', p)
+
+        keyword = self.db.keyword
+        status = self.db.status
+        issue = self.db.issue
+
+        d1 = keyword.create(name='d1')
+        d2 = keyword.create(name='d2')
+        open = status.create(name='open')
+        closed = status.create(name='closed')
+        issue.create(title='i1', status=open, keyword=[d2])
+        issue.create(title='i2', status=open, keyword=[d1])
+        issue.create(title='i2', status=closed, keyword=[d1])
+
+        chef = self.db.user.create(username = 'chef', roles='User, Project')
+        joe  = self.db.user.lookup('joe')
+
+        # Conditionally allow view of whole issue (check is False here,
+        # this might check for keyword owner in the real world)
+        p = self.db.security.addPermission(name='View', klass='issue',
+            check=lambda x,y,z: False)
+        self.db.security.addPermissionToRole('User', p)
+        # Allow user to search for issue.status
+        p = self.db.security.addPermission(name='Search', klass='issue',
+            properties=("status",))
+        self.db.security.addPermissionToRole('User', p)
+
+        keyw = {'keyword':self.db.keyword.lookup('d1')}
+        stat = {'status':self.db.status.lookup('open')}
+        keygroup = keysort = [('+', 'keyword')]
+        self.db.commit()
+
+        # Filter on keyword ignored for role 'User':
+        r = self.server.filter('issue', None, keyw)
+        self.assertEqual(r, ['1', '2', '3'])
+        # Filter on status works for all:
+        r = self.server.filter('issue', None, stat)
+        self.assertEqual(r, ['1', '2'])
+        # Sorting and grouping for class User fails:
+        r = self.server.filter('issue', None, {}, sort=keysort)
+        self.assertEqual(r, ['1', '2', '3'])
+        r = self.server.filter('issue', None, {}, group=keygroup)
+        self.assertEqual(r, ['1', '2', '3'])
+
+        self.db.close()
+        self.db = self.instance.open('chef')
+        self.server = RoundupInstance(self.db, self.instance.actions, None)
+
+        # Filter on keyword works for role 'Project':
+        r = self.server.filter('issue', None, keyw)
+        self.assertEqual(r, ['2', '3'])
+        # Filter on status works for all:
+        r = self.server.filter('issue', None, stat)
+        self.assertEqual(r, ['1', '2'])
+        # Sorting and grouping for class Project works:
+        r = self.server.filter('issue', None, {}, sort=keysort)
+        self.assertEqual(r, ['2', '3', '1'])
+        r = self.server.filter('issue', None, {}, group=keygroup)
+        self.assertEqual(r, ['2', '3', '1'])
+
 def test_suite():
     suite = unittest.TestSuite()
     for l in list_backends():
