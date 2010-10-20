@@ -178,6 +178,33 @@ class PermissionTest(MyTestCase):
         self.assertEquals(has('Test', none, 'test', itemid='1'), 0)
         self.assertEquals(has('Test', none, 'test', itemid='2'), 0)
 
+    def testTransitiveSearchPermissions(self):
+        add = self.db.security.addPermission
+        has = self.db.security.hasSearchPermission
+        addRole = self.db.security.addRole
+        addToRole = self.db.security.addPermissionToRole
+        user = self.db.user.create(username='user1', roles='User')
+        anon = self.db.user.create(username='anonymous', roles='Anonymous')
+        addRole(name='User')
+        addRole(name='Anonymous')
+        iv = add(name="View", klass="issue")
+        addToRole('User', iv)
+        addToRole('Anonymous', iv)
+        ms = add(name="Search", klass="msg")
+        addToRole('User', ms)
+        addToRole('Anonymous', ms)
+        addToRole('User', add(name="View", klass="user"))
+        self.assertEquals(has(anon, 'issue', 'messages'), 1)
+        self.assertEquals(has(anon, 'issue', 'messages.author'), 1)
+        self.assertEquals(has(anon, 'issue', 'messages.author.username'), 0)
+        self.assertEquals(has(anon, 'issue', 'messages.recipients'), 1)
+        self.assertEquals(has(anon, 'issue', 'messages.recipients.username'), 0)
+        self.assertEquals(has(user, 'issue', 'messages'), 1)
+        self.assertEquals(has(user, 'issue', 'messages.author'), 1)
+        self.assertEquals(has(user, 'issue', 'messages.author.username'), 1)
+        self.assertEquals(has(user, 'issue', 'messages.recipients'), 1)
+        self.assertEquals(has(user, 'issue', 'messages.recipients.username'), 1)
+
 def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(PermissionTest))

@@ -54,12 +54,12 @@ class Permission:
         # we have a winner
         return 1
 
-    def searchable(self, db, permission, classname, property):
+    def searchable(self, classname, property):
         """ A Permission is searchable for the given permission if it
             doesn't include a check method and otherwise matches the
             given parameters.
         """
-        if permission != self.name:
+        if self.name not in ('View', 'Search'):
             return 0
 
         # are we checking the correct class
@@ -198,13 +198,29 @@ class Security:
         return 0
 
     def roleHasSearchPermission(self, rolename, classname, property):
-        """ for each of the user's Roles, check the permissions
+        """ For each of the user's Roles, check the permissions.
+            Property can be a transitive property.
         """
-        for perm in self.role[rolename].permissions:
-            # permission match?
-            for p in 'View', 'Search':
-                if perm.searchable(self.db, p, classname, property):
-                    return 1
+        cn = classname
+        last = None
+        # Note: break from inner loop means "found"
+        #       break from outer loop means "not found"
+        for propname in property.split('.'):
+            if last:
+                try:
+                    cls = self.db.getclass(cn)
+                    lprop = cls.getprops()[last]
+                except KeyError:
+                    break
+                cn = lprop.classname
+            last = propname
+            for perm in self.role[rolename].permissions:
+                if perm.searchable(cn, propname):
+                    break
+            else:
+                break
+        else:
+            return 1
         return 0
 
     def hasSearchPermission(self, userid, classname, property):
