@@ -10,7 +10,6 @@ Features:
 
 Fixed:
 
-- Some minor typos fixed in doc/customizing.txt (Thanks Ralf Hemmecke).
 - Security Fix: Add a check for search-permissions: now we allow
   searching for properties only if the property is readable without a
   check method or if an explicit search permission (see above unter
@@ -18,6 +17,8 @@ Fixed:
   doesn't have access to a property but can deduce the content by
   crafting a clever search, group or sort query.
   see doc/upgrading.txt for how to fix your trackers! (Ralf Schlatterbeck).
+- Some minor typos fixed in doc/customizing.txt (Thanks Ralf Hemmecke).
+- XML-RPC documentation now linked from the docs/index (Bernhard Reiter).
 
 2010-10-08 1.4.16 (r4541)
 
