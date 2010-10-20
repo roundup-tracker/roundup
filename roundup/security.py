@@ -63,7 +63,7 @@ class Permission:
             return 0
 
         # are we checking the correct class
-        if self.klass != classname:
+        if self.klass is not None and self.klass != classname:
             return 0
 
         # what about property?
