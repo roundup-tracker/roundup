@@ -17,7 +17,7 @@ Fixed:
   "Features) is given for the property. This fixes cases where a user
   doesn't have access to a property but can deduce the content by
   crafting a clever search, group or sort query.
-  see doc/upgrading.txt for how to fix your trackers!
+  see doc/upgrading.txt for how to fix your trackers! (Ralf Schlatterbeck).
 
 2010-10-08 1.4.16 (r4541)
 
