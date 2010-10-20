@@ -16,9 +16,13 @@ www.roundup-tracker.org:
  * update the working copy
       cd ${project_home}/src/web/www
       svn update
+ * (Update the roundup source docs directory as well?)
  * make sure PATH includes ${project_home}/bin, and PYTHONPATH includes ${project_home}/lib/python
  * build it
       make [clean] html
+      # with clean ignore: "loading pickled environment... failed"
+ * make sure you leave all files writable for the group "roundup"
+      chmod g+rw -R .
  * install it
       cp -r ./html/* ${project_home}/htdocs/
 
