@@ -113,6 +113,9 @@ class Tracker:
             'db': backend.Database(self.config, name)
         }
 
+        libdir = os.path.join(self.tracker_home, 'lib')
+        if os.path.isdir(libdir):
+            sys.path.insert(1, libdir)
         if self.optimize:
             # execute preloaded schema object
             exec(self.schema, vars)
@@ -121,9 +124,6 @@ class Tracker:
             # use preloaded detectors
             detectors = self.detectors
         else:
-            libdir = os.path.join(self.tracker_home, 'lib')
-            if os.path.isdir(libdir):
-                sys.path.insert(1, libdir)
             # execute the schema file
             self._load_python('schema.py', vars)
             if callable (self.schema_hook):
@@ -132,8 +132,8 @@ class Tracker:
             for extension in self.get_extensions('extensions'):
                 extension(self)
             detectors = self.get_extensions('detectors')
-            if libdir in sys.path:
-                sys.path.remove(libdir)
+        if libdir in sys.path:
+            sys.path.remove(libdir)
         db = vars['db']
         # apply the detectors
         for detector in detectors:
