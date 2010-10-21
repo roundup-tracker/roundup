@@ -31,12 +31,7 @@ from email.Header import Header
 from email.MIMEText import MIMEText
 from email.MIMEBase import MIMEBase
 
-try:
-    # Python 2.5+
-    from email.parser import FeedParser
-except ImportError:
-    # Python 2.4
-    from email.Parser import FeedParser
+from anypy.email_ import FeedParser
 
 from roundup import password, date, hyperdb
 from roundup.i18n import _

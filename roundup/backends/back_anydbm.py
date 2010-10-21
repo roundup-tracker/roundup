@@ -158,7 +158,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
     def getclasses(self):
         """Return a list of the names of all existing classes."""
-        return sorted(self.classes)
+        l = self.classes.keys()
+        l.sort()
+        return l
 
     def getclass(self, classname):
         """Get the Class object representing a particular class.
