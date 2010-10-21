@@ -741,6 +741,10 @@ class FormTestCase(unittest.TestCase):
         p = self.db.security.addPermission(name='View', klass='iss',
             properties=("title", "status"), check=lambda x,y,z: True)
         self.db.security.addPermissionToRole('User', p)
+        # Allow all relevant roles access to stat
+        p = self.db.security.addPermission(name='View', klass='stat')
+        self.db.security.addPermissionToRole('User', p)
+        self.db.security.addPermissionToRole('Project', p)
         # Allow role "Project" access to whole iss
         p = self.db.security.addPermission(name='View', klass='iss')
         self.db.security.addPermissionToRole('Project', p)

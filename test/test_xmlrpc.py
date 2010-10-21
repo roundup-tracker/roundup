@@ -134,6 +134,10 @@ class TestCase(unittest.TestCase):
         # Allow role "Project" access to whole issue
         p = self.db.security.addPermission(name='View', klass='issue')
         self.db.security.addPermissionToRole('Project', p)
+        # Allow all access to status:
+        p = self.db.security.addPermission(name='View', klass='status')
+        self.db.security.addPermissionToRole('User', p)
+        self.db.security.addPermissionToRole('Project', p)
 
         keyword = self.db.keyword
         status = self.db.status
