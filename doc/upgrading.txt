@@ -47,7 +47,7 @@ search for this property::
             print "    Property:", p
             roles = []
             for role in sorted(db.security.role.iterkeys()):
-                if db.security.roleHasSearchPermission(role,cl,p):
+                if db.security.roleHasSearchPermission(cl,p,role):
                     roles.append(role)
             print "        roles may search:", ', '.join(roles)
 

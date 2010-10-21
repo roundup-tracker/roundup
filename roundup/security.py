@@ -197,29 +197,54 @@ class Security:
                     return 1
         return 0
 
-    def roleHasSearchPermission(self, rolename, classname, property):
-        """ For each of the user's Roles, check the permissions.
+    def roleHasSearchPermission(self, classname, property, *rolenames):
+        """ For each of the given roles, check the permissions.
             Property can be a transitive property.
         """
-        cn = classname
-        last = None
+        perms = []
+        # pre-compute permissions
+        for rn in rolenames :
+            for perm in self.role[rn].permissions:
+                perms.append(perm)
         # Note: break from inner loop means "found"
         #       break from outer loop means "not found"
+        cn = classname
+        prev = None
+        prop = None
+        Link = hyperdb.Link
+        Multilink = hyperdb.Multilink
         for propname in property.split('.'):
-            if last:
+            if prev:
                 try:
-                    cls = self.db.getclass(cn)
-                    lprop = cls.getprops()[last]
-                except KeyError:
+                    cn = prop.classname
+                except AttributeError:
                     break
-                cn = lprop.classname
-            last = propname
-            for perm in self.role[rolename].permissions:
+            prev = propname
+            try:
+                cls = self.db.getclass(cn)
+                prop = cls.getprops()[propname]
+            except KeyError:
+                break
+            for perm in perms:
                 if perm.searchable(cn, propname):
                     break
             else:
                 break
         else:
+            # for Link and Multilink require search permission on label-
+            # and order-properties and on ID
+            if isinstance(prop, Multilink) or isinstance(prop, Link):
+                try:
+                    cls = self.db.getclass(prop.classname)
+                except KeyError:
+                    return 0
+                props = dict.fromkeys(('id', cls.labelprop(), cls.orderprop()))
+                for p in props.iterkeys():
+                    for perm in perms:
+                        if perm.searchable(prop.classname, p):
+                            break
+                    else:
+                        return 0
             return 1
         return 0
 
@@ -243,13 +268,9 @@ class Security:
            either no properties listed or the property must appear in
            the list.
         '''
-        for rolename in self.db.user.get_roles(userid):
-            if not rolename or not self.role.has_key(rolename):
-                continue
-            # for each of the user's Roles, check the permissions
-            if self.roleHasSearchPermission (rolename, classname, property):
-                return 1
-        return 0
+        roles = [r for r in self.db.user.get_roles(userid)
+                 if r and self.role.has_key(r)]
+        return self.roleHasSearchPermission (classname, property, *roles)
 
     def addPermission(self, **propspec):
         ''' Create a new Permission with the properties defined in
