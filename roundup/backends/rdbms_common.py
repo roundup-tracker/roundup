@@ -1301,6 +1301,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # clear out the transactions
         self.transactions = []
 
+        # clear the cache: Don't carry over cached values from one
+        # transaction to the next (there may be other changes from other
+        # transactions)
+        self.clearCache()
+
     def sql_rollback(self):
         self.conn.rollback()
 

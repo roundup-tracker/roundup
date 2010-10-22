@@ -20,7 +20,12 @@ Fixed:
 - Some minor typos fixed in doc/customizing.txt (Thanks Ralf Hemmecke).
 - XML-RPC documentation now linked from the docs/index (Bernhard Reiter).
 - Fix setting of sys.path when importing schema.py, fixes issue2550675,
-  thanks to Bryce L Nordgren for reporting.
+  thanks to Bryce L Nordgren for reporting. (Ralf Schlatterbeck)
+- clear the cache on commit for rdbms backends: Don't carry over cached
+  values from one transaction to the next (there may be other changes
+  from other transactions) see new ConcurrentDBTest for a
+  read-modify-update cycle that fails with the old caching behavior.
+  (Ralf Schlatterbeck)
 
 2010-10-08 1.4.16 (r4541)
 

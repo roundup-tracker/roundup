@@ -2172,4 +2172,36 @@ class ClassicInitTest(unittest.TestCase):
         except OSError, error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
 
+class ConcurrentDBTest(ClassicInitTest):
+    def testConcurrency(self):
+        # The idea here is a read-modify-update cycle in the presence of
+        # a cache that has to be properly handled. The same applies if
+        # we extend a String or otherwise modify something that depends
+        # on the previous value.
+
+        # set up and open a tracker
+        tracker = setupTracker(self.dirname, self.backend)
+        # open the database
+        self.db = tracker.open('admin')
+
+        prio = '1'
+        self.assertEqual(self.db.priority.get(prio, 'order'), 1.0)
+        def inc(db):
+            db.priority.set(prio, order=db.priority.get(prio, 'order') + 1)
+
+        inc(self.db)
+
+        db2 = tracker.open("admin")
+        self.assertEqual(db2.priority.get(prio, 'order'), 1.0)
+        db2.commit()
+        self.db.commit()
+        self.assertEqual(self.db.priority.get(prio, 'order'), 2.0)
+
+        inc(db2)
+        db2.commit()
+        db2.clearCache()
+        self.assertEqual(db2.priority.get(prio, 'order'), 3.0)
+        db2.close()
+
+
 # vim: set et sts=4 sw=4 :

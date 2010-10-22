@@ -23,6 +23,7 @@ from roundup.hyperdb import DatabaseError
 from roundup.backends import get_backend, have_backend
 
 from db_test_base import DBTest, ROTest, config, SchemaTest, ClassicInitTest
+from db_test_base import ConcurrentDBTest
 
 
 class mysqlOpener:
@@ -63,6 +64,15 @@ class mysqlClassicInitTest(mysqlOpener, ClassicInitTest):
         ClassicInitTest.tearDown(self)
         self.nuke_database()
 
+class mysqlConcurrencyTest(mysqlOpener, ConcurrentDBTest):
+    backend = 'mysql'
+    def setUp(self):
+        mysqlOpener.setUp(self)
+        ClassicInitTest.setUp(self)
+    def tearDown(self):
+        ClassicInitTest.tearDown(self)
+        self.nuke_database()
+
 from session_common import RDBMSTest
 class mysqlSessionTest(mysqlOpener, RDBMSTest):
     def setUp(self):
@@ -92,6 +102,7 @@ def test_suite():
         suite.addTest(unittest.makeSuite(mysqlSchemaTest))
         suite.addTest(unittest.makeSuite(mysqlClassicInitTest))
         suite.addTest(unittest.makeSuite(mysqlSessionTest))
+        suite.addTest(unittest.makeSuite(mysqlConcurrencyTest))
     return suite
 
 if __name__ == '__main__':
