@@ -99,6 +99,15 @@ class RoundupInstance:
         x = [id for id in result if check('View', uid, classname, itemid=id)]
         return x
 
+    def lookup(self, classname, key):
+        cl = self.db.getclass(classname)
+        uid = self.db.getuid()
+        prop = cl.getkey()
+        check = self.db.security.hasSearchPermission
+        if not check(uid, classname, 'id') or not check(uid, classname, prop):
+            raise Unauthorised('Permission to search %s denied'%classname)
+        return cl.lookup(key)
+
     def display(self, designator, *properties):
         classname, itemid = hyperdb.splitDesignator(designator)
         cl = self.db.getclass(classname)

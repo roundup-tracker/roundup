@@ -65,6 +65,12 @@ set     arguments: *designator, arg_1 ... arg_N*
         ``designator``. The new values are specified in ``arg_1`` through
         ``arg_N``. The arguments are name=value pairs (e.g. ``status='3'``).
 
+lookup  arguments: *classname, key_value*
+
+        looks up the key_value for the given class. The class needs to
+        have a key and the user needs search permission on the key
+        attribute and id for the given classname.
+
 filter  arguments: *classname, list or None, attributes*
         
         list can be None (requires ``allow_none=True`` when
@@ -100,3 +106,5 @@ sample python client
         []
         >>> roundup_server.filter('user',[],{'username':'adm'})
         []
+        >>> roundup_server.lookup('user','admin')
+        '1'
