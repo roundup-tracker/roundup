@@ -1,6 +1,6 @@
 
 def init_severity(db, cl, nodeid, newvalues):
-    """Make sure severity is set on new issues"""
+    """Make sure severity is set on new bugs"""
     if newvalues.has_key('severity') and newvalues['severity']:
         return
 
@@ -8,4 +8,4 @@ def init_severity(db, cl, nodeid, newvalues):
     newvalues['severity'] = normal
 
 def init(db): pass
-    #db.issue.audit('create', init_severity)
+    #db.bug.audit('create', init_severity)

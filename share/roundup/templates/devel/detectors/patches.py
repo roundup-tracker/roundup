@@ -19,7 +19,7 @@ def patches_keyword(db, cl, nodeid, newvalues):
     # Check whether there are any new files
     newfiles = set(newvalues.get('files',()))
     if nodeid:
-        newfiles -= set(db.issue.get(nodeid, 'files'))
+        newfiles -= set(db.bug.get(nodeid, 'files'))
     # Check whether any of these is a patch
     newpatch = False
     for fileid in newfiles:
@@ -31,7 +31,7 @@ def patches_keyword(db, cl, nodeid, newvalues):
         patchid = db.keyword.lookup("patch")
         oldkeywords = []
         if nodeid:
-            oldkeywords = db.issue.get(nodeid, 'keywords')
+            oldkeywords = db.bug.get(nodeid, 'keywords')
             if patchid in oldkeywords:
                 # This is already marked as a patch
                 return
@@ -41,5 +41,5 @@ def patches_keyword(db, cl, nodeid, newvalues):
 
 def init(db): pass
 #    db.file.audit('create', patches_text_plain)
-#    db.issue.audit('create', patches_keyword)
-#    db.issue.audit('set', patches_keyword)
+#    db.bug.audit('create', patches_keyword)
+#    db.bug.audit('set', patches_keyword)
