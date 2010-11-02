@@ -5,7 +5,7 @@
                   form request/form/form/value;
                   field request/form/property/value">
   <tal:block metal:fill-slot="more-javascript">
-     <script language="Javascript" type="text/javascript" tal:content="structure string:<!--
+     <script language="Javascript" type="text/javascript">
       // this is the name of the field in the original form that we're working on
       form  = parent.opener.document.${request/form/form/value};
       callingform=form
@@ -31,10 +31,9 @@
         alert('checkListForm: bol='+bol)
         return bol
       }
-      //-->">
     </script>
     <script src="@@file/jquery.js" type="text/javascript"></script>
-    <script src="@@file/search.js" type="text/javascript"></script>
+    <script src="@@file/query.js" type="text/javascript"></script>
   </tal:block>
   <tal:block metal:fill-slot="content">
     <div name="search">
@@ -50,7 +49,7 @@
                         search_select_roles templates/page/macros/search_select_roles;
                         required python:[];
                         th_label templates/page/macros/th_label; ">
-       <input type="hidden" name="@template" value="help-list">
+       <input type="hidden" name="@template" value="query">
        <input type="hidden" name="property" value="" tal:attributes="value property">
        <input type="hidden" name="form" value="" tal:attributes="value request/form/form/value">
        <table>
@@ -85,8 +84,10 @@
       </form>
       <script type="text/javascript"><!-- focus2id('username'); //--></script>
     </div>
-    <!-- for search results: help-list -->
-    <div class="list"><p i18n:translate="">Please specify your search parameters!</p></div>
+    <!-- for search results: query -->
+    <div class="list">
+      <p i18n:translate="">Please specify your search parameters!</p>
+    </div>
     <div class="submit" onload="parent.focus();" id="submit">
     <form name="frm_help"
           tal:define="batch request/batch;
