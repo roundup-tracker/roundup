@@ -364,7 +364,7 @@ db.security.addPermissionToRole('Anonymous', 'Create', 'user')
 # Allow anonymous users access to view issues (and the related, linked
 # information).
 
-for cl in 'bug', 'task', 'milestone', 'severity', 'status', 'resolution', 'msg', 'file':
+for cl in 'bug', 'severity', 'status', 'resolution', 'msg', 'file':
     db.security.addPermissionToRole('Anonymous', 'View', cl)
 
 # [OPTIONAL]
