@@ -3,12 +3,12 @@
   allowed to view this page.</p>
 
   <tal:if condition="context/is_view_ok">
-   <tal:def define="batch request/batch">
     <form>
      <table class="classhelp"
             tal:define="props python:request.form['properties'].value.split(',');
                         legend templates/query/macros/legend;
-                        navigation templates/query/macros/navigation;">
+                        navigation templates/query/macros/navigation;
+			batch request/batch;">
       <thead>
 	<tr metal:use-macro="navigation"/>
         <tr metal:use-macro="legend"/>
@@ -35,7 +35,6 @@
        </tbody>
      </table>
     </form>
-   </tal:def> <!-- batch -->
   </tal:if>
 </tal:block>
 
