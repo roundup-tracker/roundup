@@ -2230,6 +2230,11 @@ class Class(hyperdb.Class):
             elif k == 'id':
                 if p.sort_type < 2:
                     if isinstance(v, type([])):
+                        # If there are no permitted values, then the
+                        # where clause will always be false, and we
+                        # can optimize the query away.
+                        if not v:
+                            return []
                         s = ','.join([a for x in v])
                         where.append('_%s.%s in (%s)'%(pln, k, s))
                         args = args + v
