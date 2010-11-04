@@ -1289,8 +1289,9 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
         HTMLInputMixin.__init__(self)
 
     def __repr__(self):
-        return '<HTMLProperty(0x%x) %s %r %r>'%(id(self), self._formname,
-            self._prop, self._value)
+        classname = self.__class__.__name__
+        return '<%s(0x%x) %s %r %r>'%(classname, id(self), self._formname,
+                                      self._prop, self._value)
     def __str__(self):
         return self.plain()
     def __cmp__(self, other):
