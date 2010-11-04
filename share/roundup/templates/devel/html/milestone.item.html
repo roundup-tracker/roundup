@@ -22,12 +22,12 @@
     <tr>
       <th class="required">Title</th>
       <td colspan="5"
-          tal:condition="python: request.user.hasPermission('Process')"
+          tal:condition="python: request.user.hasPermission('Edit')"
           tal:content="structure python:context.title.field(size=60)">
         title
       </td>
       <td colspan="5"
-          tal:condition="python: not request.user.hasPermission('Process')"
+          tal:condition="python: not request.user.hasPermission('Edit')"
           tal:content="structure context/title/plain">
         title
       </td>
@@ -49,12 +49,12 @@
 escription', 500, 400)">status</a>
       </th>
       <td colspan="5"
-          tal:condition="python: request.user.hasPermission('Process')"
+          tal:condition="python: request.user.hasPermission('Edit')"
           tal:content="structure context/status/menu">
         status
       </td>
       <td colspan="5"
-          tal:condition="python: not request.user.hasPermission('Process')"
+          tal:condition="python: not request.user.hasPermission('Edit')"
           tal:content="structure context/status/plain">
         status
       </td>
@@ -63,7 +63,7 @@ escription', 500, 400)">status</a>
     <tr>
       <th>Bugs</th>
       <td colspan="2"
-          tal:condition="python: request.user.hasPermission('Process')">
+          tal:condition="python: request.user.hasPermission('Edit')">
         <table>
           <tr>
 	    <td>Add: <input name=":add:bugs"  size="20" /></td>
@@ -83,7 +83,7 @@ escription', 500, 400)">status</a>
         </table>
       </td>
       <td colspan="2"
-        tal:condition="python: not request.user.hasPermission('Process')">
+        tal:condition="python: not request.user.hasPermission('Edit')">
         <span tal:condition="context/bugs"
               tal:repeat="bug context/bugs">
           <br/>View:
