@@ -52,11 +52,11 @@
 
 <tr>
  <th class="required" i18n:translate="">
-   <span tal:replace="structure python:db.task_type.classhelp('id,name,description',label='Type')" />:
+   <span tal:replace="structure python:db.task_type.classhelp('id,name,description',property='type',label='Type')" />:
  </th>
  <td tal:content="structure context/type/menu">type</td>
  <th i18n:translate="">
-   <span tal:replace="structure python:db.component.classhelp('id,name,description',label='Components')" />:
+   <span tal:replace="structure python:db.component.classhelp('id,name,description',property='component',label='Components')" />:
  </th>
  <td tal:content="structure context/components/menu">components</td>
 </tr>
@@ -67,7 +67,7 @@
 <table class="form">
 <tr tal:condition="context/id">
  <th i18n:translate="">
-   <span tal:replace="structure python:db.status.classhelp('id,name,description',label='Status')" />:
+   <span tal:replace="structure python:db.status.classhelp('id,name,description',property='status',label='Status')" />:
  </th>
  <td tal:content="structure context/status/menu">status</td>
  <th i18n:translate="">Resolution:</th>
@@ -117,7 +117,7 @@
 </tr>
 <tr>
  <th>
-   <span tal:replace="structure python:db.priority.classhelp('id,name,description',label='Priority')" />:
+   <span tal:replace="structure python:db.priority.classhelp('id,name,description', property='priority',label='Priority')" />:
  </th>
  <td tal:content="structure context/priority/menu">priority</td>
 </tr>
