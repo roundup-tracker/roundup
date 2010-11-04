@@ -719,14 +719,8 @@ class Interval:
 
     def __cmp__(self, other):
         """Compare this interval to another interval."""
-        if other is None:
-            # we are always larger than None
-            return 1
-        for attr in 'sign year month day hour minute second'.split():
-            r = cmp(getattr(self, attr), getattr(other, attr))
-            if r:
-                return r
-        return 0
+
+        return cmp(self.as_seconds(), other.as_seconds())
 
     def __str__(self):
         """Return this interval as a string."""
