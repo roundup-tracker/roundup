@@ -215,6 +215,10 @@ for cl in ('severity', 'component',
            'keyword', 'file', 'msg'):
     db.security.addPermissionToRole('User', 'View', cl)
     db.security.addPermissionToRole('Anonymous', 'View', cl)
+
+for cl in ('severity', 'component',
+           'version', 'priority', 'status', 'resolution',
+           'bug_type', 'bug', 'file', 'msg'):
     db.security.addPermissionToRole('User', 'Create', cl)
     
 
