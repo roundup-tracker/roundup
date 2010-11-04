@@ -27,6 +27,9 @@ Fixed:
   from other transactions) see new ConcurrentDBTest for a
   read-modify-update cycle that fails with the old caching behavior.
   (Ralf Schlatterbeck)
+- Fix incorrect setting of template in customizing.txt example action,
+  patch via issue2550682 (thanks John Kristensen)
+
 
 2010-10-08 1.4.16 (r4541)
 

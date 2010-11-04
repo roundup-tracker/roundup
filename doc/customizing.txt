@@ -4869,10 +4869,10 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
             '''
             category = self.form['category'].value
             if category == '-1':
-                self.error_message.append('You must select a category of report')
+                self.client.error_message.append('You must select a category of report')
                 return
             # everything's ok, move on to the next page
-            self.template = 'add_page2'
+            self.client.template = 'add_page2'
 
     def init(instance):
         instance.registerAction('page1_submit', Page1SubmitAction)
