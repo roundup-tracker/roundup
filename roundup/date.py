@@ -720,6 +720,9 @@ class Interval:
     def __cmp__(self, other):
         """Compare this interval to another interval."""
 
+        if other is None:
+            # we are always larger than None
+            return 1
         return cmp(self.as_seconds(), other.as_seconds())
 
     def __str__(self):
