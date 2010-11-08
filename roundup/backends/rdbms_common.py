@@ -71,6 +71,9 @@ except ImportError:
 from roundup.backends.sessions_rdbms import Sessions, OneTimeKeys
 from roundup.date import Range
 
+from roundup.backends.back_anydbm import compile_expression
+
+
 # dummy value meaning "argument not passed"
 _marker = []
 
@@ -99,6 +102,54 @@ def connection_dict(config, dbnamestr=None):
         if config[cvar] is not None:
             d[name] = config[cvar]
     return d
+
+
+class IdListOptimizer:
+    """ To prevent flooding the SQL parser of the underlaying
+        db engine with "x IN (1, 2, 3, ..., <large number>)" collapses
+        these cases to "x BETWEEN 1 AND <large number>".
+    """
+
+    def __init__(self):
+        self.ranges  = []
+        self.singles = []
+
+    def append(self, nid):
+        """ Invariant: nid are ordered ascending """
+        if self.ranges:
+            last = self.ranges[-1]
+            if last[1] == nid-1:
+                last[1] = nid
+                return
+        if self.singles:
+            last = self.singles[-1]
+            if last == nid-1:
+                self.singles.pop()
+                self.ranges.append([last, nid])
+                return
+        self.singles.append(nid)
+
+    def where(self, field, placeholder):
+        ranges  = self.ranges
+        singles = self.singles
+
+        if not singles and not ranges: return "(1=0)", []
+
+        if ranges:
+            between = '%s BETWEEN %s AND %s' % (
+                field, placeholder, placeholder)
+            stmnt = [between] * len(ranges)
+        else:
+            stmnt = []
+        if singles:
+            stmnt.append('%s in (%s)' % (
+                field, ','.join([placeholder]*len(singles))))
+
+        return '(%s)' % ' OR '.join(stmnt), sum(ranges, []) + singles
+
+    def __str__(self):
+        return "ranges: %r / singles: %r" % (self.ranges, self.singles)
+
 
 class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     """ Wrapper around an SQL database that presents a hyperdb interface.
@@ -169,6 +220,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """ Fetch all rows. If there's nothing to fetch, return [].
         """
         return self.cursor.fetchall()
+
+    def sql_fetchiter(self):
+        """ Fetch all row as a generator
+        """
+        while True:
+            row = self.cursor.fetchone()
+            if not row: break
+            yield row
 
     def sql_stringquote(self, value):
         """ Quote the string so it's safe to put in the 'sql quotes'
@@ -2134,6 +2193,95 @@ class Class(hyperdb.Class):
     # The format parameter is replaced with the attribute.
     order_by_null_values = None
 
+    def supports_subselects(self): 
+        '''Assuming DBs can do subselects, overwrite if they cannot.
+	'''
+        return True
+
+    def _filter_multilink_expression_fallback(
+        self, classname, multilink_table, expr):
+        '''This is a fallback for database that do not support
+           subselects.'''
+
+        is_valid = expr.evaluate
+
+        last_id, kws = None, []
+
+        ids = IdListOptimizer()
+        append = ids.append
+
+        # This join and the evaluation in program space
+        # can be expensive for larger databases!
+        # TODO: Find a faster way to collect the data needed
+        # to evalute the expression.
+        # Moving the expression evaluation into the database
+        # would be nice but this tricky: Think about the cases
+        # where the multilink table does not have join values
+        # needed in evaluation.
+
+        stmnt = "SELECT c.id, m.linkid FROM _%s c " \
+                "LEFT OUTER JOIN %s m " \
+                "ON c.id = m.nodeid ORDER BY c.id" % (
+                    classname, multilink_table)
+        self.db.sql(stmnt)
+
+        # collect all multilink items for a class item
+        for nid, kw in self.db.sql_fetchiter():
+            if nid != last_id:
+                if last_id is None:
+                    last_id = nid
+                else:
+                    # we have all multilink items -> evaluate!
+                    if is_valid(kws): append(last_id)
+                    last_id, kws = nid, []
+            if kw is not None:
+                kws.append(kw)
+
+        if last_id is not None and is_valid(kws): 
+            append(last_id)
+
+        # we have ids of the classname table
+        return ids.where("_%s.id" % classname, self.db.arg)
+
+    def _filter_multilink_expression(self, classname, multilink_table, v):
+        """ Filters out elements of the classname table that do not
+            match the given expression.
+            Returns tuple of 'WHERE' introns for the overall filter.
+        """
+        try:
+            opcodes = [int(x) for x in v]
+            if min(opcodes) >= -1: raise ValueError()
+
+            expr = compile_expression(opcodes)
+
+            if not self.supports_subselects():
+                # We heavily rely on subselects. If there is
+                # no decent support fall back to slower variant.
+                return self._filter_multilink_expression_fallback(
+                    classname, multilink_table, expr)
+
+            atom = \
+                "%s IN(SELECT linkid FROM %s WHERE nodeid=a.id)" % (
+                self.db.arg,
+                multilink_table)
+
+            intron = \
+                "_%(classname)s.id in (SELECT id " \
+                "FROM _%(classname)s AS a WHERE %(condition)s) " % {
+                    'classname' : classname,
+                    'condition' : expr.generate(lambda n: atom) }
+
+            values = []
+            def collect_values(n): values.append(n.x)
+            expr.visit(collect_values)
+
+            return intron, values
+        except:
+            # original behavior
+            where = "%s.linkid in (%s)" % (
+                multilink_table, ','.join([self.db.arg] * len(v)))
+            return where, v, True # True to indicate original
+
     def filter(self, search_matches, filterspec, sort=[], group=[]):
         """Return a list of the ids of the active nodes in this class that
         match the 'filter' spec, sorted by the group spec and then the
@@ -2213,15 +2361,24 @@ class Class(hyperdb.Class):
                         where.append(self._subselect(pcn, tn))
                     else:
                         frum.append(tn)
-                        where.append('_%s.id=%s.nodeid'%(pln,tn))
+                        gen_join = True
+
+                        if p.has_values and isinstance(v, type([])):
+                            result = self._filter_multilink_expression(pln, tn, v)
+                            # XXX: We dont need an id join if we used the filter
+                            gen_join = len(result) == 3
+
+                        if gen_join:
+                            where.append('_%s.id=%s.nodeid'%(pln,tn))
+
                         if p.children:
                             frum.append('_%s as _%s' % (cn, ln))
                             where.append('%s.linkid=_%s.id'%(tn, ln))
+
                         if p.has_values:
                             if isinstance(v, type([])):
-                                s = ','.join([a for x in v])
-                                where.append('%s.linkid in (%s)'%(tn, s))
-                                args = args + v
+                                where.append(result[0])
+                                args += result[1]
                             else:
                                 where.append('%s.linkid=%s'%(tn, a))
                                 args.append(v)

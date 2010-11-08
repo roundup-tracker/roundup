@@ -8,6 +8,9 @@ Features:
 
 - Add explicit "Search" permissions, see Security Fix below.
 - Add "lookup" method to xmlrpc interface (Ralf Schlatterbeck)
+- Multilinks can be filtered by combining elements with AND, OR and NOT
+  operators now. A javascript gui was added for "keywords", see issue2550648.
+  Developed by Sascha Teichmann; funded by Intevation. (Bernhard Reiter)
 
 Fixed:
 

@@ -49,6 +49,87 @@ def db_exists(config):
 def db_nuke(config):
     shutil.rmtree(config.DATABASE)
 
+class Binary:
+
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def visit(self, visitor):
+        self.x.visit(visitor)
+        self.y.visit(visitor)
+
+class Unary:
+
+    def __init__(self, x):
+        self.x = x
+
+    def generate(self, atom):
+        return atom(self)
+
+    def visit(self, visitor):
+        self.x.visit(visitor)
+
+class Equals(Unary):
+
+    def evaluate(self, v):
+        return self.x in v
+
+    def visit(self, visitor):
+        visitor(self)
+
+class Not(Unary):
+
+    def evaluate(self, v):
+        return not self.x.evaluate(v)
+
+    def generate(self, atom):
+        return "NOT(%s)" % self.x.generate(atom)
+
+class Or(Binary):
+
+    def evaluate(self, v):
+        return self.x.evaluate(v) or self.y.evaluate(v)
+
+    def generate(self, atom):
+        return "(%s)OR(%s)" % (
+            self.x.generate(atom),
+            self.y.generate(atom))
+
+class And(Binary):
+
+    def evaluate(self, v):
+        return self.x.evaluate(v) and self.y.evaluate(v)
+
+    def generate(self, atom):
+        return "(%s)AND(%s)" % (
+            self.x.generate(atom),
+            self.y.generate(atom))
+
+def compile_expression(opcodes):
+
+    stack = []
+    push, pop = stack.append, stack.pop
+    for opcode in opcodes:
+        if   opcode == -2: push(Not(pop()))
+        elif opcode == -3: push(And(pop(), pop()))
+        elif opcode == -4: push(Or(pop(), pop()))
+        else:              push(Equals(opcode))
+
+    return pop()
+
+class Expression:
+
+    def __init__(self, v):
+        try:
+            opcodes = [int(x) for x in v]
+            if min(opcodes) >= -1: raise ValueError()
+
+            compiled = compile_expression(opcodes)
+            self.evaluate = lambda x: compiled.evaluate([int(y) for y in x])
+        except:
+            self.evaluate = lambda x: bool(set(x) & set(v))
+
 #
 # Now the database
 #
@@ -1702,12 +1783,10 @@ class Class(hyperdb.Class):
                         if not v:
                             match = not nv
                         else:
-                            # othewise, make sure this node has each of the
+                            # otherwise, make sure this node has each of the
                             # required values
-                            for want in v:
-                                if want in nv:
-                                    match = 1
-                                    break
+                            expr = Expression(v)
+                            if expr.evaluate(nv): match = 1
                     elif t == STRING:
                         if nv is None:
                             nv = ''

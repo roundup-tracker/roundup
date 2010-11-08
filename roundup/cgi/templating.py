@@ -27,6 +27,8 @@ from roundup import hyperdb, date, support
 from roundup import i18n
 from roundup.i18n import _
 
+from KeywordsExpr import render_keywords_expression_editor
+
 try:
     import cPickle as pickle
 except ImportError:
@@ -2862,6 +2864,9 @@ class TemplatingUtils:
         if not self.client.instance.templating_utils.has_key(name):
             raise AttributeError, name
         return self.client.instance.templating_utils[name]
+
+    def keywords_expressions(self, request):
+        return render_keywords_expression_editor(request)
 
     def html_calendar(self, request):
         """Generate a HTML calendar.

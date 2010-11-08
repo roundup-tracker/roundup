@@ -23,6 +23,7 @@
    sort_input templates/page/macros/sort_input;
    group_input templates/page/macros/group_input;
    search_select templates/page/macros/search_select;
+   search_select_keywords templates/page/macros/search_select_keywords;
    search_select_translated templates/page/macros/search_select_translated;
    search_multiselect templates/page/macros/search_multiselect;">
 
@@ -54,7 +55,7 @@
                 db_klass string:keyword;
                 db_content string:name;">
   <th i18n:translate="">Keyword:</th>
-  <td metal:use-macro="search_select">
+  <td metal:use-macro="search_select_keywords">
     <option metal:fill-slot="extra_options" value="-1" i18n:translate=""
             tal:attributes="selected python:value == '-1'">not selected</option>
   </td>

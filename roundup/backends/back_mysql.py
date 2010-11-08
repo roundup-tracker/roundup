@@ -564,6 +564,11 @@ class Database(Database):
                 raise
 
 class MysqlClass:
+
+    def supports_subselects(self):
+        # TODO: AFAIK its version dependent for MySQL
+        return False
+
     def _subselect(self, classname, multilink_table):
         ''' "I can't believe it's not a toy RDBMS"
            see, even toy RDBMSes like gadfly and sqlite can do sub-selects...
