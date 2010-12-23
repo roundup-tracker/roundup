@@ -527,6 +527,628 @@ class Message(mimetools.Message):
         result = context.op_verify_result()
         check_pgp_sigs(result.signatures, context, author)
 
+class parsedMessage:
+
+    def __init__(self, mailgw, message):
+        self.mailgw = mailgw
+        self.config = mailgw.instance.config
+        self.db = mailgw.db
+        self.message = message
+        self.subject = message.getheader('subject', '')
+        self.has_prefix = False
+        self.matches = dict.fromkeys(['refwd', 'quote', 'classname',
+                                 'nodeid', 'title', 'args', 'argswhole'])
+        self.from_list = message.getaddrlist('resent-from') \
+                         or message.getaddrlist('from')
+        self.pfxmode = self.config['MAILGW_SUBJECT_PREFIX_PARSING']
+        self.sfxmode = self.config['MAILGW_SUBJECT_SUFFIX_PARSING']
+        # these are filled in by subsequent parsing steps
+        self.classname = None
+        self.properties = None
+        self.cl = None
+        self.nodeid = None
+        self.author = None
+        self.recipients = None
+        self.props = None
+        self.content = None
+        self.attachments = None
+
+    def handle_ignore(self):
+        ''' Check to see if message can be safely ignored:
+            detect loops and
+            Precedence: Bulk, or Microsoft Outlook autoreplies
+        '''
+        if self.message.getheader('x-roundup-loop', ''):
+            raise IgnoreLoop
+        if (self.message.getheader('precedence', '') == 'bulk'
+                or self.subject.lower().find("autoreply") > 0):
+            raise IgnoreBulk
+
+    def handle_help(self):
+        ''' Check to see if the message contains a usage/help request
+        '''
+        if self.subject.strip().lower() == 'help':
+            raise MailUsageHelp
+
+    def check_subject(self):
+        ''' Check to see if the message contains a valid subject line
+        '''
+        if not self.subject:
+            raise MailUsageError, _("""
+Emails to Roundup trackers must include a Subject: line!
+""")
+
+    def parse_subject(self):
+        ''' Matches subjects like:
+        Re: "[issue1234] title of issue [status=resolved]"
+        
+        Each part of the subject is matched, stored, then removed from the
+        start of the subject string as needed. The stored values are then
+        returned
+        '''
+
+        tmpsubject = self.subject
+
+        sd_open, sd_close = self.config['MAILGW_SUBJECT_SUFFIX_DELIMITERS']
+        delim_open = re.escape(sd_open)
+        if delim_open in '[(': delim_open = '\\' + delim_open
+        delim_close = re.escape(sd_close)
+        if delim_close in '[(': delim_close = '\\' + delim_close
+
+        # Look for Re: et. al. Used later on for MAILGW_SUBJECT_CONTENT_MATCH
+        re_re = r"(?P<refwd>%s)\s*" % self.config["MAILGW_REFWD_RE"].pattern
+        m = re.match(re_re, tmpsubject, re.IGNORECASE|re.VERBOSE|re.UNICODE)
+        if m:
+            m = m.groupdict()
+            if m['refwd']:
+                self.matches.update(m)
+                tmpsubject = tmpsubject[len(m['refwd']):] # Consume Re:
+
+        # Look for Leading "
+        m = re.match(r'(?P<quote>\s*")', tmpsubject,
+                     re.IGNORECASE)
+        if m:
+            self.matches.update(m.groupdict())
+            tmpsubject = tmpsubject[len(self.matches['quote']):] # Consume quote
+
+        # Check if the subject includes a prefix
+        self.has_prefix = re.search(r'^%s(\w+)%s'%(delim_open,
+            delim_close), tmpsubject.strip())
+
+        # Match the classname if specified
+        class_re = r'%s(?P<classname>(%s))(?P<nodeid>\d+)?%s'%(delim_open,
+            "|".join(self.db.getclasses()), delim_close)
+        # Note: re.search, not re.match as there might be garbage
+        # (mailing list prefix, etc.) before the class identifier
+        m = re.search(class_re, tmpsubject, re.IGNORECASE)
+        if m:
+            self.matches.update(m.groupdict())
+            # Skip to the end of the class identifier, including any
+            # garbage before it.
+
+            tmpsubject = tmpsubject[m.end():]
+
+        # Match the title of the subject
+        # if we've not found a valid classname prefix then force the
+        # scanning to handle there being a leading delimiter
+        title_re = r'(?P<title>%s[^%s]*)'%(
+            not self.matches['classname'] and '.' or '', delim_open)
+        m = re.match(title_re, tmpsubject.strip(), re.IGNORECASE)
+        if m:
+            self.matches.update(m.groupdict())
+            tmpsubject = tmpsubject[len(self.matches['title']):] # Consume title
+
+        if self.matches['title']:
+            self.matches['title'] = self.matches['title'].strip()
+        else:
+            self.matches['title'] = ''
+
+        # strip off the quotes that dumb emailers put around the subject, like
+        #      Re: "[issue1] bla blah"
+        if self.matches['quote'] and self.matches['title'].endswith('"'):
+            self.matches['title'] = self.matches['title'][:-1]
+        
+        # Match any arguments specified
+        args_re = r'(?P<argswhole>%s(?P<args>.+?)%s)?'%(delim_open,
+            delim_close)
+        m = re.search(args_re, tmpsubject.strip(), re.IGNORECASE|re.VERBOSE)
+        if m:
+            self.matches.update(m.groupdict())
+
+    def rego_confirm(self):
+        ''' Check for registration OTK and confirm the registration if found
+        '''
+        
+        if self.config['EMAIL_REGISTRATION_CONFIRMATION']:
+            otk_re = re.compile('-- key (?P<otk>[a-zA-Z0-9]{32})')
+            otk = otk_re.search(self.matches['title'] or '')
+            if otk:
+                self.db.confirm_registration(otk.group('otk'))
+                subject = 'Your registration to %s is complete' % \
+                          self.config['TRACKER_NAME']
+                sendto = [self.from_list[0][1]]
+                self.mailgw.mailer.standard_message(sendto, subject, '')
+                return 1
+        return 0
+
+    def get_classname(self):
+        ''' Determine the classname of the node being created/edited
+        '''
+        subject = self.subject
+
+        # get the classname
+        if self.pfxmode == 'none':
+            classname = None
+        else:
+            classname = self.matches['classname']
+
+        if not classname and self.has_prefix and self.pfxmode == 'strict':
+            raise MailUsageError, _("""
+The message you sent to roundup did not contain a properly formed subject
+line. The subject must contain a class name or designator to indicate the
+'topic' of the message. For example:
+    Subject: [issue] This is a new issue
+      - this will create a new issue in the tracker with the title 'This is
+        a new issue'.
+    Subject: [issue1234] This is a followup to issue 1234
+      - this will append the message's contents to the existing issue 1234
+        in the tracker.
+
+Subject was: '%(subject)s'
+""") % locals()
+
+        # try to get the class specified - if "loose" or "none" then fall
+        # back on the default
+        attempts = []
+        if classname:
+            attempts.append(classname)
+
+        if self.mailgw.default_class:
+            attempts.append(self.default_class)
+        else:
+            attempts.append(self.config['MAILGW_DEFAULT_CLASS'])
+
+        # first valid class name wins
+        self.cl = None
+        for trycl in attempts:
+            try:
+                self.cl = self.db.getclass(trycl)
+                classname = self.classname = trycl
+                break
+            except KeyError:
+                pass
+
+        if not self.cl:
+            validname = ', '.join(self.db.getclasses())
+            if classname:
+                raise MailUsageError, _("""
+The class name you identified in the subject line ("%(classname)s") does
+not exist in the database.
+
+Valid class names are: %(validname)s
+Subject was: "%(subject)s"
+""") % locals()
+            else:
+                raise MailUsageError, _("""
+You did not identify a class name in the subject line and there is no
+default set for this tracker. The subject must contain a class name or
+designator to indicate the 'topic' of the message. For example:
+    Subject: [issue] This is a new issue
+      - this will create a new issue in the tracker with the title 'This is
+        a new issue'.
+    Subject: [issue1234] This is a followup to issue 1234
+      - this will append the message's contents to the existing issue 1234
+        in the tracker.
+
+Subject was: '%(subject)s'
+""") % locals()
+        # get the class properties
+        self.properties = self.cl.getprops()
+        
+
+    def get_nodeid(self):
+        ''' Determine the nodeid from the message and return it if found
+        '''
+        title = self.matches['title']
+        subject = self.subject
+        
+        if self.pfxmode == 'none':
+            nodeid = None
+        else:
+            nodeid = self.matches['nodeid']
+
+        # try in-reply-to to match the message if there's no nodeid
+        inreplyto = self.message.getheader('in-reply-to') or ''
+        if nodeid is None and inreplyto:
+            l = self.db.getclass('msg').stringFind(messageid=inreplyto)
+            if l:
+                nodeid = self.cl.filter(None, {'messages':l})[0]
+
+
+        # but we do need either a title or a nodeid...
+        if nodeid is None and not title:
+            raise MailUsageError, _("""
+I cannot match your message to a node in the database - you need to either
+supply a full designator (with number, eg "[issue123]") or keep the
+previous subject title intact so I can match that.
+
+Subject was: "%(subject)s"
+""") % locals()
+
+        # If there's no nodeid, check to see if this is a followup and
+        # maybe someone's responded to the initial mail that created an
+        # entry. Try to find the matching nodes with the same title, and
+        # use the _last_ one matched (since that'll _usually_ be the most
+        # recent...). The subject_content_match config may specify an
+        # additional restriction based on the matched node's creation or
+        # activity.
+        tmatch_mode = self.config['MAILGW_SUBJECT_CONTENT_MATCH']
+        if tmatch_mode != 'never' and nodeid is None and self.matches['refwd']:
+            l = self.cl.stringFind(title=title)
+            limit = None
+            if (tmatch_mode.startswith('creation') or
+                    tmatch_mode.startswith('activity')):
+                limit, interval = tmatch_mode.split(' ', 1)
+                threshold = date.Date('.') - date.Interval(interval)
+            for id in l:
+                if limit:
+                    if threshold < self.cl.get(id, limit):
+                        nodeid = id
+                else:
+                    nodeid = id
+
+        # if a nodeid was specified, make sure it's valid
+        if nodeid is not None and not self.cl.hasnode(nodeid):
+            if self.pfxmode == 'strict':
+                raise MailUsageError, _("""
+The node specified by the designator in the subject of your message
+("%(nodeid)s") does not exist.
+
+Subject was: "%(subject)s"
+""") % locals()
+            else:
+                nodeid = None
+        self.nodeid = nodeid
+
+    def get_author_id(self):
+        ''' Attempt to get the author id from the existing registered users,
+            otherwise attempt to register a new user and return their id
+        '''
+        # Don't create users if anonymous isn't allowed to register
+        create = 1
+        anonid = self.db.user.lookup('anonymous')
+        if not (self.db.security.hasPermission('Register', anonid, 'user')
+                and self.db.security.hasPermission('Email Access', anonid)):
+            create = 0
+
+        # ok, now figure out who the author is - create a new user if the
+        # "create" flag is true
+        author = uidFromAddress(self.db, self.from_list[0], create=create)
+
+        # if we're not recognised, and we don't get added as a user, then we
+        # must be anonymous
+        if not author:
+            author = anonid
+
+        # make sure the author has permission to use the email interface
+        if not self.db.security.hasPermission('Email Access', author):
+            if author == anonid:
+                # we're anonymous and we need to be a registered user
+                from_address = self.from_list[0][1]
+                registration_info = ""
+                if self.db.security.hasPermission('Web Access', author) and \
+                   self.db.security.hasPermission('Register', anonid, 'user'):
+                    tracker_web = self.config.TRACKER_WEB
+                    registration_info = """ Please register at:
+
+%(tracker_web)suser?template=register
+
+...before sending mail to the tracker.""" % locals()
+
+                raise Unauthorized, _("""
+You are not a registered user.%(registration_info)s
+
+Unknown address: %(from_address)s
+""") % locals()
+            else:
+                # we're registered and we're _still_ not allowed access
+                raise Unauthorized, _(
+                    'You are not permitted to access this tracker.')
+        self.author = author
+
+    def check_node_permissions(self):
+        ''' Check if the author has permission to edit or create this
+            class of node
+        '''
+        if self.nodeid:
+            if not self.db.security.hasPermission('Edit', self.author,
+                    self.classname, itemid=self.nodeid):
+                raise Unauthorized, _(
+                    'You are not permitted to edit %(classname)s.'
+                    ) % self.__dict__
+        else:
+            if not self.db.security.hasPermission('Create', self.author,
+                    self.classname):
+                raise Unauthorized, _(
+                    'You are not permitted to create %(classname)s.'
+                    ) % self.__dict__
+
+    def commit_and_reopen_as_author(self):
+        ''' the author may have been created - make sure the change is
+            committed before we reopen the database
+            then re-open the database as the author
+        '''
+        self.db.commit()
+
+        # set the database user as the author
+        username = self.db.user.get(self.author, 'username')
+        self.db.setCurrentUser(username)
+
+        # re-get the class with the new database connection
+        self.cl = self.db.getclass(self.classname)
+
+    def get_recipients(self):
+        ''' Get the list of recipients who were included in message and
+            register them as users if possible
+        '''
+        # Don't create users if anonymous isn't allowed to register
+        create = 1
+        anonid = self.db.user.lookup('anonymous')
+        if not (self.db.security.hasPermission('Register', anonid, 'user')
+                and self.db.security.hasPermission('Email Access', anonid)):
+            create = 0
+
+        # get the user class arguments from the commandline
+        user_props = self.mailgw.get_class_arguments('user')
+
+        # now update the recipients list
+        recipients = []
+        tracker_email = self.config['TRACKER_EMAIL'].lower()
+        msg_to = self.message.getaddrlist('to')
+        msg_cc = self.message.getaddrlist('cc')
+        for recipient in msg_to + msg_cc:
+            r = recipient[1].strip().lower()
+            if r == tracker_email or not r:
+                continue
+
+            # look up the recipient - create if necessary (and we're
+            # allowed to)
+            recipient = uidFromAddress(self.db, recipient, create, **user_props)
+
+            # if all's well, add the recipient to the list
+            if recipient:
+                recipients.append(recipient)
+        self.recipients = recipients
+
+    def get_props(self):
+        ''' Generate all the props for the new/updated node and return them
+        '''
+        subject = self.subject
+        
+        # get the commandline arguments for issues
+        issue_props = self.mailgw.get_class_arguments('issue', self.classname)
+        
+        #
+        # handle the subject argument list
+        #
+        # figure what the properties of this Class are
+        props = {}
+        args = self.matches['args']
+        argswhole = self.matches['argswhole']
+        title = self.matches['title']
+        
+        # Reform the title 
+        if self.matches['nodeid'] and self.nodeid is None:
+            title = subject
+        
+        if args:
+            if self.sfxmode == 'none':
+                title += ' ' + argswhole
+            else:
+                errors, props = setPropArrayFromString(self, self.cl, args,
+                    self.nodeid)
+                # handle any errors parsing the argument list
+                if errors:
+                    if self.sfxmode == 'strict':
+                        errors = '\n- '.join(map(str, errors))
+                        raise MailUsageError, _("""
+There were problems handling your subject line argument list:
+- %(errors)s
+
+Subject was: "%(subject)s"
+""") % locals()
+                    else:
+                        title += ' ' + argswhole
+
+
+        # set the issue title to the subject
+        title = title.strip()
+        if (title and self.properties.has_key('title') and not
+                issue_props.has_key('title')):
+            issue_props['title'] = title
+        if (self.nodeid and self.properties.has_key('title') and not
+                self.config['MAILGW_SUBJECT_UPDATES_TITLE']):
+            issue_props['title'] = self.cl.get(self.nodeid,'title')
+
+        # merge the command line props defined in issue_props into
+        # the props dictionary because function(**props, **issue_props)
+        # is a syntax error.
+        for prop in issue_props.keys() :
+            if not props.has_key(prop) :
+                props[prop] = issue_props[prop]
+
+        self.props = props
+
+    def get_pgp_message(self):
+        ''' If they've enabled PGP processing then verify the signature
+            or decrypt the message
+        '''
+        def pgp_role():
+            """ if PGP_ROLES is specified the user must have a Role in the list
+                or we will skip PGP processing
+            """
+            if self.config.PGP_ROLES:
+                return self.db.user.has_role(self.author,
+                    iter_roles(self.config.PGP_ROLES))
+            else:
+                return True
+
+        if self.config.PGP_ENABLE and pgp_role():
+            assert pyme, 'pyme is not installed'
+            # signed/encrypted mail must come from the primary address
+            author_address = self.db.user.get(self.author, 'address')
+            if self.config.PGP_HOMEDIR:
+                os.environ['GNUPGHOME'] = self.config.PGP_HOMEDIR
+            if self.message.pgp_signed():
+                self.message.verify_signature(author_address)
+            elif self.message.pgp_encrypted():
+                # replace message with the contents of the decrypted
+                # message for content extraction
+                # TODO: encrypted message handling is far from perfect
+                # bounces probably include the decrypted message, for
+                # instance :(
+                self.message = self.message.decrypt(author_address)
+            else:
+                raise MailUsageError, _("""
+This tracker has been configured to require all email be PGP signed or
+encrypted.""")
+
+    def get_content_and_attachments(self):
+        ''' get the attachments and first text part from the message
+        '''
+        ig = self.config.MAILGW_IGNORE_ALTERNATIVES
+        self.content, self.attachments = self.message.extract_content(
+            ignore_alternatives=ig,
+            unpack_rfc822=self.config.MAILGW_UNPACK_RFC822)
+        
+
+    def create_files(self):
+        ''' Create a file for each attachment in the message
+        '''
+        if not self.properties.has_key('files'):
+            return
+        files = []
+        file_props = self.mailgw.get_class_arguments('file')
+        
+        if self.attachments:
+            for (name, mime_type, data) in self.attachments:
+                if not self.db.security.hasPermission('Create', self.author,
+                    'file'):
+                    raise Unauthorized, _(
+                        'You are not permitted to create files.')
+                if not name:
+                    name = "unnamed"
+                try:
+                    fileid = self.db.file.create(type=mime_type, name=name,
+                         content=data, **file_props)
+                except exceptions.Reject:
+                    pass
+                else:
+                    files.append(fileid)
+            # allowed to attach the files to an existing node?
+            if self.nodeid and not self.db.security.hasPermission('Edit',
+                    self.author, self.classname, 'files'):
+                raise Unauthorized, _(
+                    'You are not permitted to add files to %(classname)s.'
+                    ) % self.__dict__
+
+            if self.nodeid:
+                # extend the existing files list
+                fileprop = self.cl.get(self.nodeid, 'files')
+                fileprop.extend(files)
+                files = fileprop
+
+        self.props['files'] = files
+
+    def create_msg(self):
+        ''' Create msg containing all the relevant information from the message
+        '''
+        if not self.properties.has_key('messages'):
+            return
+        msg_props = self.mailgw.get_class_arguments('msg')
+        
+        # Get the message ids
+        inreplyto = self.message.getheader('in-reply-to') or ''
+        messageid = self.message.getheader('message-id')
+        # generate a messageid if there isn't one
+        if not messageid:
+            messageid = "<%s.%s.%s%s@%s>"%(time.time(), random.random(),
+                self.classname, self.nodeid, self.config['MAIL_DOMAIN'])
+        
+        if self.content is None:
+            raise MailUsageError, _("""
+Roundup requires the submission to be plain text. The message parser could
+not find a text/plain part to use.
+""")
+
+        # parse the body of the message, stripping out bits as appropriate
+        summary, content = parseContent(self.content, config=self.config)
+        content = content.strip()
+
+        if content:
+            if not self.db.security.hasPermission('Create', self.author, 'msg'):
+                raise Unauthorized, _(
+                    'You are not permitted to create messages.')
+
+            try:
+                message_id = self.db.msg.create(author=self.author,
+                    recipients=self.recipients, date=date.Date('.'),
+                    summary=summary, content=content, files=self.props['files'],
+                    messageid=messageid, inreplyto=inreplyto, **msg_props)
+            except exceptions.Reject, error:
+                raise MailUsageError, _("""
+Mail message was rejected by a detector.
+%(error)s
+""") % locals()
+            # allowed to attach the message to the existing node?
+            if self.nodeid and not self.db.security.hasPermission('Edit',
+                    self.author, self.classname, 'messages'):
+                raise Unauthorized, _(
+                    'You are not permitted to add messages to %(classname)s.'
+                    ) % self.__dict__
+
+            if self.nodeid:
+                # add the message to the node's list
+                messages = self.cl.get(self.nodeid, 'messages')
+                messages.append(message_id)
+                self.props['messages'] = messages
+            else:
+                # pre-load the messages list
+                self.props['messages'] = [message_id]
+
+    def create_node(self):
+        ''' Create/update a node using self.props 
+        '''
+        classname = self.classname
+        try:
+            if self.nodeid:
+                # Check permissions for each property
+                for prop in self.props.keys():
+                    if not self.db.security.hasPermission('Edit', self.author,
+                            classname, prop):
+                        raise Unauthorized, _('You are not permitted to edit '
+                            'property %(prop)s of class %(classname)s.'
+                            ) % locals()
+                self.cl.set(self.nodeid, **self.props)
+            else:
+                # Check permissions for each property
+                for prop in self.props.keys():
+                    if not self.db.security.hasPermission('Create', self.author,
+                            classname, prop):
+                        raise Unauthorized, _('You are not permitted to set '
+                            'property %(prop)s of class %(classname)s.'
+                            ) % locals()
+                self.nodeid = self.cl.create(**self.props)
+        except (TypeError, IndexError, ValueError, exceptions.Reject), message:
+            raise MailUsageError, _("""
+There was a problem with the message you sent:
+   %(message)s
+""") % locals()
+
+        return self.nodeid
+
+
+
 class MailGW:
 
     def __init__(self, instance, arguments=()):
@@ -813,7 +1435,7 @@ class MailGW:
         # get database handle for handling one email
         self.db = self.instance.open ('admin')
         try:
-            return self._handle_message (message)
+            return self._handle_message(message)
         finally:
             self.db.close()
 
@@ -821,596 +1443,155 @@ class MailGW:
         ''' message - a Message instance
 
         Parse the message as per the module docstring.
-
-        The implementation expects an opened database and a try/finally
+        The following code expects an opened database and a try/finally
         that closes the database.
         '''
-        # detect loops
-        if message.getheader('x-roundup-loop', ''):
-            raise IgnoreLoop
+        parsed_message = parsedMessage(self, message)
 
-        # handle the subject line
-        subject = message.getheader('subject', '')
-        if not subject:
-            raise MailUsageError, _("""
-Emails to Roundup trackers must include a Subject: line!
-""")
-
-        # detect Precedence: Bulk, or Microsoft Outlook autoreplies
-        if (message.getheader('precedence', '') == 'bulk'
-                or subject.lower().find("autoreply") > 0):
-            raise IgnoreBulk
-
-        if subject.strip().lower() == 'help':
-            raise MailUsageHelp
-
-        # config is used many times in this method.
-        # make local variable for easier access
-        config = self.instance.config
-
-        # determine the sender's address
-        from_list = message.getaddrlist('resent-from')
-        if not from_list:
-            from_list = message.getaddrlist('from')
+        # Filter out messages to ignore
+        parsed_message.handle_ignore()
+        
+        # Check for usage/help requests
+        parsed_message.handle_help()
+        
+        # Check if the subject line is valid
+        parsed_message.check_subject()
 
         # XXX Don't enable. This doesn't work yet.
+        # XXX once this works it should be moved to parsedMessage class
 #  "[^A-z.]tracker\+(?P<classname>[^\d\s]+)(?P<nodeid>\d+)\@some.dom.ain[^A-z.]"
         # handle delivery to addresses like:tracker+issue25@some.dom.ain
         # use the embedded issue number as our issue
-#        issue_re = config['MAILGW_ISSUE_ADDRESS_RE']
-#        if issue_re:
-#            for header in ['to', 'cc', 'bcc']:
-#                addresses = message.getheader(header, '')
-#            if addresses:
-#              # FIXME, this only finds the first match in the addresses.
-#                issue = re.search(issue_re, addresses, 'i')
-#                if issue:
-#                    classname = issue.group('classname')
-#                    nodeid = issue.group('nodeid')
-#                    break
+#            issue_re = config['MAILGW_ISSUE_ADDRESS_RE']
+#            if issue_re:
+#                for header in ['to', 'cc', 'bcc']:
+#                    addresses = message.getheader(header, '')
+#                if addresses:
+#                  # FIXME, this only finds the first match in the addresses.
+#                    issue = re.search(issue_re, addresses, 'i')
+#                    if issue:
+#                        classname = issue.group('classname')
+#                        nodeid = issue.group('nodeid')
+#                        break
 
-        # Matches subjects like:
-        # Re: "[issue1234] title of issue [status=resolved]"
-
-        # Alias since we need a reference to the original subject for
-        # later use in error messages
-        tmpsubject = subject
-
-        sd_open, sd_close = config['MAILGW_SUBJECT_SUFFIX_DELIMITERS']
-        delim_open = re.escape(sd_open)
-        if delim_open in '[(': delim_open = '\\' + delim_open
-        delim_close = re.escape(sd_close)
-        if delim_close in '[(': delim_close = '\\' + delim_close
-
-        matches = dict.fromkeys(['refwd', 'quote', 'classname',
-                                 'nodeid', 'title', 'args',
-                                 'argswhole'])
-
-        # Look for Re: et. al. Used later on for MAILGW_SUBJECT_CONTENT_MATCH
-        re_re = r"(?P<refwd>%s)\s*" % config["MAILGW_REFWD_RE"].pattern
-        m = re.match(re_re, tmpsubject, re.IGNORECASE|re.VERBOSE|re.UNICODE)
-        if m:
-            m = m.groupdict()
-            if m['refwd']:
-                matches.update(m)
-                tmpsubject = tmpsubject[len(m['refwd']):] # Consume Re:
-
-        # Look for Leading "
-        m = re.match(r'(?P<quote>\s*")', tmpsubject,
-                     re.IGNORECASE)
-        if m:
-            matches.update(m.groupdict())
-            tmpsubject = tmpsubject[len(matches['quote']):] # Consume quote
-
-        has_prefix = re.search(r'^%s(\w+)%s'%(delim_open,
-            delim_close), tmpsubject.strip())
-
-        class_re = r'%s(?P<classname>(%s))(?P<nodeid>\d+)?%s'%(delim_open,
-            "|".join(self.db.getclasses()), delim_close)
-        # Note: re.search, not re.match as there might be garbage
-        # (mailing list prefix, etc.) before the class identifier
-        m = re.search(class_re, tmpsubject, re.IGNORECASE)
-        if m:
-            matches.update(m.groupdict())
-            # Skip to the end of the class identifier, including any
-            # garbage before it.
-
-            tmpsubject = tmpsubject[m.end():]
-
-        # if we've not found a valid classname prefix then force the
-        # scanning to handle there being a leading delimiter
-        title_re = r'(?P<title>%s[^%s]*)'%(
-            not matches['classname'] and '.' or '', delim_open)
-        m = re.match(title_re, tmpsubject.strip(), re.IGNORECASE)
-        if m:
-            matches.update(m.groupdict())
-            tmpsubject = tmpsubject[len(matches['title']):] # Consume title
-
-        args_re = r'(?P<argswhole>%s(?P<args>.+?)%s)?'%(delim_open,
-            delim_close)
-        m = re.search(args_re, tmpsubject.strip(), re.IGNORECASE|re.VERBOSE)
-        if m:
-            matches.update(m.groupdict())
-
-        # figure subject line parsing modes
-        pfxmode = config['MAILGW_SUBJECT_PREFIX_PARSING']
-        sfxmode = config['MAILGW_SUBJECT_SUFFIX_PARSING']
+        # Parse the subject line to get the importants parts
+        parsed_message.parse_subject()
 
         # check for registration OTK
-        # or fallback on the default class
-        if self.db.config['EMAIL_REGISTRATION_CONFIRMATION']:
-            otk_re = re.compile('-- key (?P<otk>[a-zA-Z0-9]{32})')
-            otk = otk_re.search(matches['title'] or '')
-            if otk:
-                self.db.confirm_registration(otk.group('otk'))
-                subject = 'Your registration to %s is complete' % \
-                          config['TRACKER_NAME']
-                sendto = [from_list[0][1]]
-                self.mailer.standard_message(sendto, subject, '')
-                return
+        if parsed_message.rego_confirm():
+            return
 
         # get the classname
-        if pfxmode == 'none':
-            classname = None
-        else:
-            classname = matches['classname']
-
-        if not classname and has_prefix and pfxmode == 'strict':
-            raise MailUsageError, _("""
-The message you sent to roundup did not contain a properly formed subject
-line. The subject must contain a class name or designator to indicate the
-'topic' of the message. For example:
-    Subject: [issue] This is a new issue
-      - this will create a new issue in the tracker with the title 'This is
-        a new issue'.
-    Subject: [issue1234] This is a followup to issue 1234
-      - this will append the message's contents to the existing issue 1234
-        in the tracker.
-
-Subject was: '%(subject)s'
-""") % locals()
-
-        # try to get the class specified - if "loose" or "none" then fall
-        # back on the default
-        attempts = []
-        if classname:
-            attempts.append(classname)
-
-        if self.default_class:
-            attempts.append(self.default_class)
-        else:
-            attempts.append(config['MAILGW_DEFAULT_CLASS'])
-
-        # first valid class name wins
-        cl = None
-        for trycl in attempts:
-            try:
-                cl = self.db.getclass(trycl)
-                classname = trycl
-                break
-            except KeyError:
-                pass
-
-        if not cl:
-            validname = ', '.join(self.db.getclasses())
-            if classname:
-                raise MailUsageError, _("""
-The class name you identified in the subject line ("%(classname)s") does
-not exist in the database.
-
-Valid class names are: %(validname)s
-Subject was: "%(subject)s"
-""") % locals()
-            else:
-                raise MailUsageError, _("""
-You did not identify a class name in the subject line and there is no
-default set for this tracker. The subject must contain a class name or
-designator to indicate the 'topic' of the message. For example:
-    Subject: [issue] This is a new issue
-      - this will create a new issue in the tracker with the title 'This is
-        a new issue'.
-    Subject: [issue1234] This is a followup to issue 1234
-      - this will append the message's contents to the existing issue 1234
-        in the tracker.
-
-Subject was: '%(subject)s'
-""") % locals()
+        parsed_message.get_classname()
 
         # get the optional nodeid
-        if pfxmode == 'none':
-            nodeid = None
-        else:
-            nodeid = matches['nodeid']
+        parsed_message.get_nodeid()
 
-        # try in-reply-to to match the message if there's no nodeid
-        inreplyto = message.getheader('in-reply-to') or ''
-        if nodeid is None and inreplyto:
-            l = self.db.getclass('msg').stringFind(messageid=inreplyto)
-            if l:
-                nodeid = cl.filter(None, {'messages':l})[0]
+        # Determine who the author is
+        parsed_message.get_author_id()
+        
+        # make sure they're allowed to edit or create this class
+        parsed_message.check_node_permissions()
 
-        # title is optional too
-        title = matches['title']
-        if title:
-            title = title.strip()
-        else:
-            title = ''
+        # author may have been created:
+        # commit author to database and re-open as author
+        parsed_message.commit_and_reopen_as_author()
 
-        # strip off the quotes that dumb emailers put around the subject, like
-        #      Re: "[issue1] bla blah"
-        if matches['quote'] and title.endswith('"'):
-            title = title[:-1]
+        # Get the recipients list
+        parsed_message.get_recipients()
 
-        # but we do need either a title or a nodeid...
-        if nodeid is None and not title:
-            raise MailUsageError, _("""
-I cannot match your message to a node in the database - you need to either
-supply a full designator (with number, eg "[issue123]") or keep the
-previous subject title intact so I can match that.
+        # get the new/updated node props
+        parsed_message.get_props()
 
-Subject was: "%(subject)s"
-""") % locals()
+        # Handle PGP signed or encrypted messages
+        parsed_message.get_pgp_message()
 
-        # If there's no nodeid, check to see if this is a followup and
-        # maybe someone's responded to the initial mail that created an
-        # entry. Try to find the matching nodes with the same title, and
-        # use the _last_ one matched (since that'll _usually_ be the most
-        # recent...). The subject_content_match config may specify an
-        # additional restriction based on the matched node's creation or
-        # activity.
-        tmatch_mode = config['MAILGW_SUBJECT_CONTENT_MATCH']
-        if tmatch_mode != 'never' and nodeid is None and matches['refwd']:
-            l = cl.stringFind(title=title)
-            limit = None
-            if (tmatch_mode.startswith('creation') or
-                    tmatch_mode.startswith('activity')):
-                limit, interval = tmatch_mode.split(' ', 1)
-                threshold = date.Date('.') - date.Interval(interval)
-            for id in l:
-                if limit:
-                    if threshold < cl.get(id, limit):
-                        nodeid = id
-                else:
-                    nodeid = id
+        # extract content and attachments from message body
+        parsed_message.get_content_and_attachments()
 
-        # if a nodeid was specified, make sure it's valid
-        if nodeid is not None and not cl.hasnode(nodeid):
-            if pfxmode == 'strict':
-                raise MailUsageError, _("""
-The node specified by the designator in the subject of your message
-("%(nodeid)s") does not exist.
-
-Subject was: "%(subject)s"
-""") % locals()
-            else:
-                title = subject
-                nodeid = None
-
-        # Handle the arguments specified by the email gateway command line.
-        # We do this by looping over the list of self.arguments looking for
-        # a -C to tell us what class then the -S setting string.
-        msg_props = {}
-        user_props = {}
-        file_props = {}
-        issue_props = {}
-        # so, if we have any arguments, use them
-        if self.arguments:
-            current_class = 'msg'
-            for option, propstring in self.arguments:
-                if option in ( '-C', '--class'):
-                    current_class = propstring.strip()
-                    # XXX this is not flexible enough.
-                    #   we should chect for subclasses of these classes,
-                    #   not for the class name...
-                    if current_class not in ('msg', 'file', 'user', 'issue'):
-                        mailadmin = config['ADMIN_EMAIL']
-                        raise MailUsageError, _("""
-The mail gateway is not properly set up. Please contact
-%(mailadmin)s and have them fix the incorrect class specified as:
-  %(current_class)s
-""") % locals()
-                if option in ('-S', '--set'):
-                    if current_class == 'issue' :
-                        errors, issue_props = setPropArrayFromString(self,
-                            cl, propstring.strip(), nodeid)
-                    elif current_class == 'file' :
-                        temp_cl = self.db.getclass('file')
-                        errors, file_props = setPropArrayFromString(self,
-                            temp_cl, propstring.strip())
-                    elif current_class == 'msg' :
-                        temp_cl = self.db.getclass('msg')
-                        errors, msg_props = setPropArrayFromString(self,
-                            temp_cl, propstring.strip())
-                    elif current_class == 'user' :
-                        temp_cl = self.db.getclass('user')
-                        errors, user_props = setPropArrayFromString(self,
-                            temp_cl, propstring.strip())
-                    if errors:
-                        mailadmin = config['ADMIN_EMAIL']
-                        raise MailUsageError, _("""
-The mail gateway is not properly set up. Please contact
-%(mailadmin)s and have them fix the incorrect properties:
-  %(errors)s
-""") % locals()
-
-        #
-        # handle the users
-        #
-        # Don't create users if anonymous isn't allowed to register
-        create = 1
-        anonid = self.db.user.lookup('anonymous')
-        if not (self.db.security.hasPermission('Register', anonid, 'user')
-                and self.db.security.hasPermission('Email Access', anonid)):
-            create = 0
-
-        # ok, now figure out who the author is - create a new user if the
-        # "create" flag is true
-        author = uidFromAddress(self.db, from_list[0], create=create)
-
-        # if we're not recognised, and we don't get added as a user, then we
-        # must be anonymous
-        if not author:
-            author = anonid
-
-        # make sure the author has permission to use the email interface
-        if not self.db.security.hasPermission('Email Access', author):
-            if author == anonid:
-                # we're anonymous and we need to be a registered user
-                from_address = from_list[0][1]
-                registration_info = ""
-                if self.db.security.hasPermission('Web Access', author) and \
-                   self.db.security.hasPermission('Register', anonid, 'user'):
-                    tracker_web = self.instance.config.TRACKER_WEB
-                    registration_info = """ Please register at:
-
-%(tracker_web)suser?template=register
-
-...before sending mail to the tracker.""" % locals()
-
-                raise Unauthorized, _("""
-You are not a registered user.%(registration_info)s
-
-Unknown address: %(from_address)s
-""") % locals()
-            else:
-                # we're registered and we're _still_ not allowed access
-                raise Unauthorized, _(
-                    'You are not permitted to access this tracker.')
-
-        # make sure they're allowed to edit or create this class of information
-        if nodeid:
-            if not self.db.security.hasPermission('Edit', author, classname,
-                    itemid=nodeid):
-                raise Unauthorized, _(
-                    'You are not permitted to edit %(classname)s.') % locals()
-        else:
-            if not self.db.security.hasPermission('Create', author, classname):
-                raise Unauthorized, _(
-                    'You are not permitted to create %(classname)s.'
-                    ) % locals()
-
-        # the author may have been created - make sure the change is
-        # committed before we reopen the database
-        self.db.commit()
-
-        # set the database user as the author
-        username = self.db.user.get(author, 'username')
-        self.db.setCurrentUser(username)
-
-        # re-get the class with the new database connection
-        cl = self.db.getclass(classname)
-
-        # now update the recipients list
-        recipients = []
-        tracker_email = config['TRACKER_EMAIL'].lower()
-        for recipient in message.getaddrlist('to') + message.getaddrlist('cc'):
-            r = recipient[1].strip().lower()
-            if r == tracker_email or not r:
-                continue
-
-            # look up the recipient - create if necessary (and we're
-            # allowed to)
-            recipient = uidFromAddress(self.db, recipient, create, **user_props)
-
-            # if all's well, add the recipient to the list
-            if recipient:
-                recipients.append(recipient)
-
-        #
-        # handle the subject argument list
-        #
-        # figure what the properties of this Class are
-        properties = cl.getprops()
-        props = {}
-        args = matches['args']
-        argswhole = matches['argswhole']
-        if args:
-            if sfxmode == 'none':
-                title += ' ' + argswhole
-            else:
-                errors, props = setPropArrayFromString(self, cl, args, nodeid)
-                # handle any errors parsing the argument list
-                if errors:
-                    if sfxmode == 'strict':
-                        errors = '\n- '.join(map(str, errors))
-                        raise MailUsageError, _("""
-There were problems handling your subject line argument list:
-- %(errors)s
-
-Subject was: "%(subject)s"
-""") % locals()
-                    else:
-                        title += ' ' + argswhole
-
-
-        # set the issue title to the subject
-        title = title.strip()
-        if (title and properties.has_key('title') and not
-                issue_props.has_key('title')):
-            issue_props['title'] = title
-        if (nodeid and properties.has_key('title') and not
-                config['MAILGW_SUBJECT_UPDATES_TITLE']):
-            issue_props['title'] = cl.get(nodeid,'title')
-
-        #
-        # handle message-id and in-reply-to
-        #
-        messageid = message.getheader('message-id')
-        # generate a messageid if there isn't one
-        if not messageid:
-            messageid = "<%s.%s.%s%s@%s>"%(time.time(), random.random(),
-                classname, nodeid, config['MAIL_DOMAIN'])
-
-        # if they've enabled PGP processing then verify the signature
-        # or decrypt the message
-
-        # if PGP_ROLES is specified the user must have a Role in the list
-        # or we will skip PGP processing
-        def pgp_role():
-            if self.instance.config.PGP_ROLES:
-                return self.db.user.has_role(author,
-                    iter_roles(self.instance.config.PGP_ROLES))
-            else:
-                return True
-
-        if self.instance.config.PGP_ENABLE and pgp_role():
-            assert pyme, 'pyme is not installed'
-            # signed/encrypted mail must come from the primary address
-            author_address = self.db.user.get(author, 'address')
-            if self.instance.config.PGP_HOMEDIR:
-                os.environ['GNUPGHOME'] = self.instance.config.PGP_HOMEDIR
-            if message.pgp_signed():
-                message.verify_signature(author_address)
-            elif message.pgp_encrypted():
-                # replace message with the contents of the decrypted
-                # message for content extraction
-                # TODO: encrypted message handling is far from perfect
-                # bounces probably include the decrypted message, for
-                # instance :(
-                message = message.decrypt(author_address)
-            else:
-                raise MailUsageError, _("""
-This tracker has been configured to require all email be PGP signed or
-encrypted.""")
-        # now handle the body - find the message
-        ig = self.instance.config.MAILGW_IGNORE_ALTERNATIVES
-        content, attachments = message.extract_content(ignore_alternatives=ig,
-            unpack_rfc822=self.instance.config.MAILGW_UNPACK_RFC822)
-        if content is None:
-            raise MailUsageError, _("""
-Roundup requires the submission to be plain text. The message parser could
-not find a text/plain part to use.
-""")
-
-        # parse the body of the message, stripping out bits as appropriate
-        summary, content = parseContent(content, config=config)
-        content = content.strip()
-
-        #
-        # handle the attachments
-        #
-        files = []
-        if attachments and properties.has_key('files'):
-            for (name, mime_type, data) in attachments:
-                if not self.db.security.hasPermission('Create', author, 'file'):
-                    raise Unauthorized, _(
-                        'You are not permitted to create files.')
-                if not name:
-                    name = "unnamed"
-                try:
-                    fileid = self.db.file.create(type=mime_type, name=name,
-                         content=data, **file_props)
-                except exceptions.Reject:
-                    pass
-                else:
-                    files.append(fileid)
-            # allowed to attach the files to an existing node?
-            if nodeid and not self.db.security.hasPermission('Edit', author,
-                    classname, 'files'):
-                raise Unauthorized, _(
-                    'You are not permitted to add files to %(classname)s.'
-                    ) % locals()
-
-            if nodeid:
-                # extend the existing files list
-                fileprop = cl.get(nodeid, 'files')
-                fileprop.extend(files)
-                props['files'] = fileprop
-            else:
-                # pre-load the files list
-                props['files'] = files
-
-        #
+        # put attachments into files linked to the issue
+        parsed_message.create_files()
+        
         # create the message if there's a message body (content)
-        #
-        if (content and properties.has_key('messages')):
-            if not self.db.security.hasPermission('Create', author, 'msg'):
-                raise Unauthorized, _(
-                    'You are not permitted to create messages.')
-
-            try:
-                message_id = self.db.msg.create(author=author,
-                    recipients=recipients, date=date.Date('.'),
-                    summary=summary, content=content, files=files,
-                    messageid=messageid, inreplyto=inreplyto, **msg_props)
-            except exceptions.Reject, error:
-                raise MailUsageError, _("""
-Mail message was rejected by a detector.
-%(error)s
-""") % locals()
-            # allowed to attach the message to the existing node?
-            if nodeid and not self.db.security.hasPermission('Edit', author,
-                    classname, 'messages'):
-                raise Unauthorized, _(
-                    'You are not permitted to add messages to %(classname)s.'
-                    ) % locals()
-
-            if nodeid:
-                # add the message to the node's list
-                messages = cl.get(nodeid, 'messages')
-                messages.append(message_id)
-                props['messages'] = messages
-            else:
-                # pre-load the messages list
-                props['messages'] = [message_id]
-
-        #
+        parsed_message.create_msg()
+            
         # perform the node change / create
-        #
-        try:
-            # merge the command line props defined in issue_props into
-            # the props dictionary because function(**props, **issue_props)
-            # is a syntax error.
-            for prop in issue_props.keys() :
-                if not props.has_key(prop) :
-                    props[prop] = issue_props[prop]
-
-            if nodeid:
-                # Check permissions for each property
-                for prop in props.keys():
-                    if not self.db.security.hasPermission('Edit', author,
-                            classname, prop):
-                        raise Unauthorized, _('You are not permitted to edit '
-                            'property %(prop)s of class %(classname)s.') % locals()
-                cl.set(nodeid, **props)
-            else:
-                # Check permissions for each property
-                for prop in props.keys():
-                    if not self.db.security.hasPermission('Create', author,
-                            classname, prop):
-                        raise Unauthorized, _('You are not permitted to set '
-                            'property %(prop)s of class %(classname)s.') % locals()
-                nodeid = cl.create(**props)
-        except (TypeError, IndexError, ValueError, exceptions.Reject), message:
-            raise MailUsageError, _("""
-There was a problem with the message you sent:
-   %(message)s
-""") % locals()
+        nodeid = parsed_message.create_node()
 
         # commit the changes to the DB
         self.db.commit()
 
         return nodeid
+
+    def get_class_arguments(self, class_type, classname=None):
+        ''' class_type - a valid node class type:
+                - 'user' refers to the author of a message
+                - 'issue' refers to an issue-type class (to which the
+                  message is appended) specified in parameter classname
+                  Note that this need not be the real classname, we get
+                  the real classname used as a parameter (from previous
+                  message-parsing steps)
+                - 'file' specifies a file-type class
+                - 'msg' is the message-class
+            classname - the name of the current issue-type class
+
+        Parse the commandline arguments and retrieve the properties that
+        are relevant to the class_type. We now allow multiple -S options
+        per class_type (-C option).
+        '''
+        allprops = {}
+
+        classname = classname or class_type
+        cls_lookup = { 'issue' : classname }
+        
+        # Allow other issue-type classes -- take the real classname from
+        # previous parsing-steps of the message:
+        clsname = cls_lookup.get (class_type, class_type)
+
+        # check if the clsname is valid
+        try:
+            self.db.getclass(clsname)
+        except KeyError:
+            mailadmin = self.instance.config['ADMIN_EMAIL']
+            raise MailUsageError, _("""
+The mail gateway is not properly set up. Please contact
+%(mailadmin)s and have them fix the incorrect class specified as:
+  %(clsname)s
+""") % locals()
+        
+        if self.arguments:
+            # The default type on the commandline is msg
+            if class_type == 'msg':
+                current_type = class_type
+            else:
+                current_type = None
+            
+            # Handle the arguments specified by the email gateway command line.
+            # We do this by looping over the list of self.arguments looking for
+            # a -C to match the class we want, then use the -S setting string.
+            for option, propstring in self.arguments:
+                if option in ( '-C', '--class'):
+                    current_type = propstring.strip()
+                    
+                    if current_type != class_type:
+                        current_type = None
+
+                elif current_type and option in ('-S', '--set'):
+                    cls = cls_lookup.get (current_type, current_type)
+                    temp_cl = self.db.getclass(cls)
+                    errors, props = setPropArrayFromString(self,
+                        temp_cl, propstring.strip())
+
+                    if errors:
+                        mailadmin = self.instance.config['ADMIN_EMAIL']
+                        raise MailUsageError, _("""
+The mail gateway is not properly set up. Please contact
+%(mailadmin)s and have them fix the incorrect properties:
+  %(errors)s
+""") % locals()
+                    allprops.update(props)
+
+        return allprops
 
 
 def setPropArrayFromString(self, cl, propString, nodeid=None):

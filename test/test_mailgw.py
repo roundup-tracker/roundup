@@ -149,16 +149,16 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
             os.remove(SENDMAILDEBUG)
         self.db.close()
 
-    def _create_mailgw(self, message):
+    def _create_mailgw(self, message, args=()):
         class MailGW(self.instance.MailGW):
             def handle_message(self, message):
                 return self._handle_message(message)
-        handler = MailGW(self.instance)
+        handler = MailGW(self.instance, args)
         handler.db = self.db
         return handler
 
-    def _handle_mail(self, message):
-        handler = self._create_mailgw(message)
+    def _handle_mail(self, message, args=()):
+        handler = self._create_mailgw(message, args)
         handler.trapExceptions = 0
         return handler.main(StringIO(message))
 
@@ -198,6 +198,68 @@ From here to there!
         assert not os.path.exists(SENDMAILDEBUG)
         msgid = self.db.issue.get(nodeid, 'messages')[0]
         self.assertEqual(self.db.msg.get(msgid, 'content'), 'From here to there!')
+
+    def testNoMessageId(self):
+        self.instance.config['MAIL_DOMAIN'] = 'example.com'
+        nodeid = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Cc: richard@test.test
+Reply-To: chef@bork.bork.bork
+Subject: [issue] Testing...
+
+Hi there!
+''')
+        assert not os.path.exists(SENDMAILDEBUG)
+        msgid = self.db.issue.get(nodeid, 'messages')[0]
+        messageid = self.db.msg.get(msgid, 'messageid')
+        x1, x2 = messageid.split('@')
+        self.assertEqual(x2, 'example.com>')
+        x = x1.split('.')[-1]
+        self.assertEqual(x, 'issueNone')
+        nodeid = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Subject: [issue%(nodeid)s] Testing...
+
+Just a test reply
+'''%locals())
+        msgid = self.db.issue.get(nodeid, 'messages')[-1]
+        messageid = self.db.msg.get(msgid, 'messageid')
+        x1, x2 = messageid.split('@')
+        self.assertEqual(x2, 'example.com>')
+        x = x1.split('.')[-1]
+        self.assertEqual(x, "issue%s"%nodeid)
+
+    def testOptions(self):
+        nodeid = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id>
+Reply-To: chef@bork.bork.bork
+Subject: [issue] Testing...
+
+Hi there!
+''', (('-C', 'issue'), ('-S', 'status=chatting;priority=critical')))
+        self.assertEqual(self.db.issue.get(nodeid, 'status'), '3')
+        self.assertEqual(self.db.issue.get(nodeid, 'priority'), '1')
+
+    def testOptionsMulti(self):
+        nodeid = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id>
+Reply-To: chef@bork.bork.bork
+Subject: [issue] Testing...
+
+Hi there!
+''', (('-C', 'issue'), ('-S', 'status=chatting'), ('-S', 'priority=critical')))
+        self.assertEqual(self.db.issue.get(nodeid, 'status'), '3')
+        self.assertEqual(self.db.issue.get(nodeid, 'priority'), '1')
 
     def doNewIssue(self):
         nodeid = self._handle_mail('''Content-Type: text/plain;

@@ -11,6 +11,14 @@ Features:
 - Multilinks can be filtered by combining elements with AND, OR and NOT
   operators now. A javascript gui was added for "keywords", see issue2550648.
   Developed by Sascha Teichmann; funded by Intevation. (Bernhard Reiter)
+- Factor MailGW message parsing into a separate class, thanks to John
+  Kristensen who did the major work in issue2550576 -- I wouldn't
+  have attempted it without this. Fixes issue2550576. (Ralf)
+- Now if the -C option to roundup-mailgw specifies "issue" this refers
+  to an issue-like class. The real class is determined from the
+  configured default class, or the -c option to the mailgw, or the class
+  resulting from mail subject parsing. We also accept multiple -S
+  options for the same class now. (Ralf)
 
 Fixed:
 
