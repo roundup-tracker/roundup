@@ -1151,6 +1151,11 @@ There was a problem with the message you sent:
 
 class MailGW:
 
+    # To override the message parsing, derive your own class from
+    # parsedMessage and assign to parsed_message_class in a derived
+    # class of MailGW
+    parsed_message_class = parsedMessage
+
     def __init__(self, instance, arguments=()):
         self.instance = instance
         self.arguments = arguments
@@ -1446,7 +1451,7 @@ class MailGW:
         The following code expects an opened database and a try/finally
         that closes the database.
         '''
-        parsed_message = parsedMessage(self, message)
+        parsed_message = self.parsed_message_class(self, message)
 
         # Filter out messages to ignore
         parsed_message.handle_ignore()
