@@ -122,6 +122,6 @@ class Indexer(IndexerBase):
         enquire.set_query(query)
         matches = enquire.get_mset(0, 10)
 
-        return [tuple(m[xapian.MSET_DOCUMENT].get_data().split(':'))
+        return [tuple(m.document.get_data().split(':'))
             for m in matches]
 
