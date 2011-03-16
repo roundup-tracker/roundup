@@ -42,6 +42,17 @@ Fixed:
   (Ralf Schlatterbeck)
 - Fix incorrect setting of template in customizing.txt example action,
   patch via issue2550682 (thanks John Kristensen)
+- Configuration issue: On some postgresql 8.4 installations (notably on
+  debian squeeze) the default template database used for database
+  creation doesn't match the needed character encoding UTF8 -- a new
+  config option 'template' in the rdbms section now allows specification
+  of the template. You know you need this option if you get the error
+  message:
+  psycopg2.DataError: new encoding (UTF8) is incompatible with the
+  encoding of the template database (SQL_ASCII)
+  HINT:  Use the same encoding as in the template database, or use
+  template0 as template.
+  (Ralf Schlatterbeck)
 
 
 2010-10-08 1.4.16 (r4541)

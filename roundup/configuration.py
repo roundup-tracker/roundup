@@ -610,6 +610,18 @@ SETTINGS = (
             "Only used in SQLite connections."),
         (IntegerNumberOption, 'cache_size', '100',
             "Size of the node cache (in elements)"),
+        (NullableOption, 'template', '',
+            "Name of the PostgreSQL template for database creation.\n"
+            "For database creation the template used has to match\n"
+            "the character encoding used (UTF8), there are different\n"
+            "PostgreSQL installations using different templates with\n"
+            "different encodings. If you get an error:\n"
+            "  new encoding (UTF8) is incompatible with the encoding of\n"
+            "  the template database (SQL_ASCII)\n"
+            "  HINT:  Use the same encoding as in the template database,\n"
+            "  or use template0 as template.\n"
+            "then set this option to the template name given in the\n"
+            "error message."),
     ), "Settings in this section are used"
         " by RDBMS backends only"
     ),
