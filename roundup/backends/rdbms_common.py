@@ -52,7 +52,7 @@ the same name.
 __docformat__ = 'restructuredtext'
 
 # standard python modules
-import sys, os, time, re, errno, weakref, copy, logging
+import sys, os, time, re, errno, weakref, copy, logging, datetime
 
 # roundup modules
 from roundup import hyperdb, date, password, roundupdb, security, support
@@ -61,6 +61,7 @@ from roundup.hyperdb import String, Password, Date, Interval, Link, \
 from roundup.backends import locking
 from roundup.support import reversed
 from roundup.i18n import _
+
 
 # support
 from roundup.backends.blobfiles import FileStorage
@@ -89,6 +90,13 @@ def _bool_cvt(value):
         return {'TRUE': 1, 'FALSE': 0}[value]
     # assume it's a number returned from the db API
     return int(value)
+
+def date_to_hyperdb_value(d):
+    """ convert date d to a roundup date """
+    if isinstance (d, datetime.datetime):
+        return date.Date(d)
+    return date.Date (str(d).replace(' ', '.'))
+
 
 def connection_dict(config, dbnamestr=None):
     """ Used by Postgresql and MySQL to detemine the keyword args for
@@ -1039,7 +1047,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
     sql_to_hyperdb_value = {
         hyperdb.String : str,
-        hyperdb.Date   : lambda x:date.Date(str(x).replace(' ', '.')),
+        hyperdb.Date   : date_to_hyperdb_value,
 #        hyperdb.Link   : int,      # XXX numeric ids
         hyperdb.Link   : str,
         hyperdb.Interval  : date.Interval,
@@ -2660,6 +2668,7 @@ class Class(hyperdb.Class):
                 name = p.name
                 assert (name)
                 classes[key][name] = p
+                p.to_hyperdb = self.db.to_hyperdb_value(p.propclass.__class__)
         while True:
             row = cursor.fetchone()
             if not row: break
@@ -2674,8 +2683,7 @@ class Class(hyperdb.Class):
                 for propname, p in pt.iteritems():
                     value = row[p.sql_idx]
                     if value is not None:
-                        cls = p.propclass.__class__
-                        value = self.db.to_hyperdb_value(cls)(value)
+                        value = p.to_hyperdb(value)
                     node[propname] = value
                 self.db._cache_save(key, node)
             yield str(row[0])
