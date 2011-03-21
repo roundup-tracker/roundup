@@ -284,18 +284,17 @@ class Proptree(object):
     """ Simple tree data structure for optimizing searching of
     properties. Each node in the tree represents a roundup Class
     Property that has to be navigated for finding the given search
-    or sort properties. The sort_type attribute is used for
-    distinguishing nodes in the tree used for sorting or searching: If
-    it is 0 for a node, that node is not used for sorting. If it is 1,
-    it is used for both, sorting and searching. If it is 2 it is used
-    for sorting only.
+    or sort properties. The need_for attribute is used for
+    distinguishing nodes in the tree used for sorting, searching or
+    retrieval: The attribute is a dictionary containing one or several
+    of the values 'sort', 'search', 'retrieve'.
 
     The Proptree is also used for transitively searching attributes for
     backends that do not support transitive search (e.g. anydbm). The
     _val attribute with set_val is used for this.
     """
 
-    def __init__(self, db, cls, name, props, parent = None):
+    def __init__(self, db, cls, name, props, parent=None, retr=False):
         self.db = db
         self.name = name
         self.props = props
@@ -308,7 +307,7 @@ class Proptree(object):
         self.children = []
         self.sortattr = []
         self.propdict = {}
-        self.sort_type = 0
+        self.need_for = {'search' : True}
         self.sort_direction = None
         self.sort_ids = None
         self.sort_ids_needed = False
@@ -317,6 +316,7 @@ class Proptree(object):
         self.tree_sort_done = False
         self.propclass = None
         self.orderby = []
+        self.sql_idx = None # index of retrieved column in sql result
         if parent:
             self.root = parent.root
             self.depth = parent.depth + 1
@@ -324,7 +324,7 @@ class Proptree(object):
             self.root = self
             self.seqno = 1
             self.depth = 0
-            self.sort_type = 1
+            self.need_for['sort'] = True
         self.id = self.root.seqno
         self.root.seqno += 1
         if self.cls:
@@ -332,15 +332,18 @@ class Proptree(object):
             self.uniqname = '%s%s' % (self.cls.classname, self.id)
         if not self.parent:
             self.uniqname = self.cls.classname
+        if retr:
+            self.append_retr_props()
 
-    def append(self, name, sort_type = 0):
+    def append(self, name, need_for='search', retr=False):
         """Append a property to self.children. Will create a new
         propclass for the child.
         """
         if name in self.propdict:
             pt = self.propdict[name]
-            if sort_type and not pt.sort_type:
-                pt.sort_type = 1
+            pt.need_for[need_for] = True
+            if retr and isinstance(pt.propclass, Link):
+                pt.append_retr_props()
             return pt
         propclass = self.props[name]
         cls = None
@@ -349,15 +352,24 @@ class Proptree(object):
             cls = self.db.getclass(propclass.classname)
             props = cls.getprops()
         child = self.__class__(self.db, cls, name, props, parent = self)
-        child.sort_type = sort_type
+        child.need_for = {need_for : True}
         child.propclass = propclass
         self.children.append(child)
         self.propdict[name] = child
+        if retr and isinstance(child.propclass, Link):
+            child.append_retr_props()
         return child
+
+    def append_retr_props(self):
+        """Append properties for retrieval."""
+        for name, prop in self.cls.getprops(protected=1).iteritems():
+            if isinstance(prop, Multilink):
+                continue
+            self.append(name, need_for='retrieve')
 
     def compute_sort_done(self, mlseen=False):
         """ Recursively check if attribute is needed for sorting
-        (self.sort_type > 0) or all children have tree_sort_done set and
+        ('sort' in self.need_for) or all children have tree_sort_done set and
         sort_ids_needed unset: set self.tree_sort_done if one of the conditions
         holds. Also remove sort_ids_needed recursively once having seen a
         Multilink.
@@ -371,7 +383,7 @@ class Proptree(object):
             p.compute_sort_done(mlseen)
             if not p.tree_sort_done:
                 self.tree_sort_done = False
-        if not self.sort_type:
+        if 'sort' not in self.need_for:
             self.tree_sort_done = True
         if mlseen:
             self.tree_sort_done = False
@@ -389,7 +401,7 @@ class Proptree(object):
         """
         filterspec = {}
         for p in self.children:
-            if p.sort_type < 2:
+            if 'search' in p.need_for:
                 if p.children:
                     p.search(sort = False)
                 filterspec[p.name] = p.val
@@ -413,7 +425,7 @@ class Proptree(object):
         too.
         """
         return [p for p in self.children
-                if p.sort_type > 0 and (intermediate or p.sort_direction)]
+                if 'sort' in p.need_for and (intermediate or p.sort_direction)]
 
     def __iter__(self):
         """ Yield nodes in depth-first order -- visited nodes first """
@@ -534,7 +546,6 @@ class Proptree(object):
                 curdir = sa.sort_direction
             idx += 1
         sortattr.append (val)
-        #print >> sys.stderr, "\nsortattr", sortattr
         sortattr = zip (*sortattr)
         for dir, i in reversed(zip(directions, dir_idx)):
             rev = dir == '-'
@@ -1055,27 +1066,40 @@ class Class:
         """
         raise NotImplementedError
 
-    def _proptree(self, filterspec, sortattr=[]):
+    def _proptree(self, filterspec, sortattr=[], retr=False):
         """Build a tree of all transitive properties in the given
         filterspec.
+        If we retrieve (retr is True) linked items we don't follow
+        across multilinks. We also don't follow if the searched value
+        can contain NULL values.
         """
-        proptree = Proptree(self.db, self, '', self.getprops())
+        proptree = Proptree(self.db, self, '', self.getprops(), retr=retr)
         for key, v in filterspec.iteritems():
             keys = key.split('.')
             p = proptree
+            mlseen = False
             for k in keys:
-                p = p.append(k)
+                if isinstance (p.propclass, Multilink):
+                    mlseen = True
+                isnull = v == '-1' or v is None
+                nullin = isinstance(v, type([])) and ('-1' in v or None in v)
+                r = retr and not mlseen and not isnull and not nullin
+                p = p.append(k, retr=r)
             p.val = v
         multilinks = {}
         for s in sortattr:
             keys = s[1].split('.')
             p = proptree
+            mlseen = False
             for k in keys:
-                p = p.append(k, sort_type = 2)
+                if isinstance (p.propclass, Multilink):
+                    mlseen = True
+                r = retr and not mlseen
+                p = p.append(k, need_for='sort', retr=r)
                 if isinstance (p.propclass, Multilink):
                     multilinks[p] = True
             if p.cls:
-                p = p.append(p.cls.orderprop(), sort_type = 2)
+                p = p.append(p.cls.orderprop(), need_for='sort')
             if p.sort_direction: # if an orderprop is also specified explicitly
                 continue
             p.sort_direction = s[0]
@@ -1158,13 +1182,20 @@ class Class:
         This implements a non-optimized version of Transitive search
         using _filter implemented in a backend class. A more efficient
         version can be implemented in the individual backends -- e.g.,
-        an SQL backen will want to create a single SQL statement and
+        an SQL backend will want to create a single SQL statement and
         override the filter method instead of implementing _filter.
         """
         sortattr = self._sortattr(sort = sort, group = group)
         proptree = self._proptree(filterspec, sortattr)
         proptree.search(search_matches)
         return proptree.sort()
+
+    # non-optimized filter_iter, a backend may chose to implement a
+    # better version that provides a real iterator that pre-fills the
+    # cache for each id returned. Note that the filter_iter doesn't
+    # promise to correctly sort by multilink (which isn't sane to do
+    # anyway).
+    filter_iter = filter
 
     def count(self):
         """Get the number of nodes in this class.

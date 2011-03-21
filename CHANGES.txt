@@ -19,6 +19,23 @@ Features:
   configured default class, or the -c option to the mailgw, or the class
   resulting from mail subject parsing. We also accept multiple -S
   options for the same class now. (Ralf)
+- Optimisation: Late evaluation of Multilinks (only in rdbms backends):
+  previously we materialized each multilink in a Node -- this creates an
+  SQL query for each multilink (e.g. 'files' and 'messages' for each
+  line in the issue index display) -- even if the multilinks aren't
+  displayed. Now we compute multilinks only if they're accessed (and
+  keep them cached).
+- Add a filter_iter similar to the existing filter call. This feature is
+  considered experimental. This is currently not used in the
+  web-interface but passes all tests for the filter call except sorting
+  by Multilinks (which isn't supported by SQL and isn't a sane concept
+  anyway). When using filter_iter instead of filter this saves a *lot*
+  of SQL queries: Filter returns only the IDs of Nodes in the database,
+  the additional content of a Node has to be fetched in a separate SQL
+  call. The new filter_iter also returns the IDs of Nodes (one by one,
+  it's an iterator) but pre-seeds the cache with the content of the
+  Node. The information needed for seeding the cache is retrieved in the
+  same SQL query as the ids.
 
 Fixed:
 

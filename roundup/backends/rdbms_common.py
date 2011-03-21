@@ -174,8 +174,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # keep a cache of the N most recently retrieved rows of any kind
         # (classname, nodeid) = row
         self.cache_size = config.RDBMS_CACHE_SIZE
-        self.cache = {}
-        self.cache_lru = []
+        self.clearCache()
         self.stats = {'cache_hits': 0, 'cache_misses': 0, 'get_items': 0,
             'filtering': 0}
 
@@ -202,14 +201,16 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """
         raise NotImplemented
 
-    def sql(self, sql, args=None):
+    def sql(self, sql, args=None, cursor=None):
         """ Execute the sql with the optional args.
         """
         self.log_debug('SQL %r %r'%(sql, args))
+        if not cursor:
+            cursor = self.cursor
         if args:
-            self.cursor.execute(sql, args)
+            cursor.execute(sql, args)
         else:
-            self.cursor.execute(sql)
+            cursor.execute(sql)
 
     def sql_fetchone(self):
         """ Fetch a single row. If there's nothing to fetch, return None.
@@ -847,6 +848,21 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         raise ValueError('%r is not a hyperdb property class' % propklass)
 
+    def _cache_del(self, key):
+        del self.cache[key]
+        self.cache_lru.remove(key)
+
+    def _cache_refresh(self, key):
+        self.cache_lru.remove(key)
+        self.cache_lru.insert(0, key)
+
+    def _cache_save(self, key, node):
+        self.cache[key] = node
+        # update the LRU
+        self.cache_lru.insert(0, key)
+        if len(self.cache_lru) > self.cache_size:
+            del self.cache[self.cache_lru.pop()]
+
     def addnode(self, classname, nodeid, node):
         """ Add the specified node to its class's db.
         """
@@ -880,8 +896,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # clear this node out of the cache if it's in there
         key = (classname, nodeid)
         if key in self.cache:
-            del self.cache[key]
-            self.cache_lru.remove(key)
+            self._cache_del(key)
 
         # figure the values to insert
         vals = []
@@ -930,8 +945,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # clear this node out of the cache if it's in there
         key = (classname, nodeid)
         if key in self.cache:
-            del self.cache[key]
-            self.cache_lru.remove(key)
+            self._cache_del(key)
 
         cl = self.classes[classname]
         props = cl.getprops()
@@ -1054,8 +1068,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         key = (classname, nodeid)
         if key in self.cache:
             # push us back to the top of the LRU
-            self.cache_lru.remove(key)
-            self.cache_lru.insert(0, key)
+            self._cache_refresh(key)
             if __debug__:
                 self.stats['cache_hits'] += 1
             # return the cached information
@@ -1092,26 +1105,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 value = self.to_hyperdb_value(props[name].__class__)(value)
             node[name] = value
 
-
-        # now the multilinks
-        for col in mls:
-            # get the link ids
-            sql = 'select linkid from %s_%s where nodeid=%s'%(classname, col,
-                self.arg)
-            self.sql(sql, (nodeid,))
-            # extract the first column from the result
-            # XXX numeric ids
-            items = [int(x[0]) for x in self.cursor.fetchall()]
-            items.sort ()
-            node[col] = [str(x) for x in items]
-
         # save off in the cache
         key = (classname, nodeid)
-        self.cache[key] = node
-        # update the LRU
-        self.cache_lru.insert(0, key)
-        if len(self.cache_lru) > self.cache_size:
-            del self.cache[self.cache_lru.pop()]
+        self._cache_save(key, node)
 
         if __debug__:
             self.stats['get_items'] += (time.time() - start_t)
@@ -1624,8 +1620,19 @@ class Class(hyperdb.Class):
             else:
                 return self.db.getuid()
 
-        # get the property (raises KeyErorr if invalid)
+        # get the property (raises KeyError if invalid)
         prop = self.properties[propname]
+
+        # lazy evaluation of Multilink
+        if propname not in d and isinstance(prop, Multilink):
+            sql = 'select linkid from %s_%s where nodeid=%s'%(self.classname,
+                propname, self.db.arg)
+            self.db.sql(sql, (nodeid,))
+            # extract the first column from the result
+            # XXX numeric ids
+            items = [int(x[0]) for x in self.db.cursor.fetchall()]
+            items.sort ()
+            d[propname] = [str(x) for x in items]
 
         # handle there being no value in the table for the property
         if propname not in d or d[propname] is None:
@@ -2282,32 +2289,17 @@ class Class(hyperdb.Class):
                 multilink_table, ','.join([self.db.arg] * len(v)))
             return where, v, True # True to indicate original
 
-    def filter(self, search_matches, filterspec, sort=[], group=[]):
-        """Return a list of the ids of the active nodes in this class that
-        match the 'filter' spec, sorted by the group spec and then the
-        sort spec
-
-        "filterspec" is {propname: value(s)}
-
-        "sort" and "group" are [(dir, prop), ...] where dir is '+', '-'
-        or None and prop is a prop name or None. Note that for
-        backward-compatibility reasons a single (dir, prop) tuple is
-        also allowed.
-
-        "search_matches" is a container type or None
-
-        The filter must match all properties specificed. If the property
-        value to match is a list:
-
-        1. String properties must match all elements in the list, and
-        2. Other properties must match any of the elements in the list.
+    def _filter_sql (self, search_matches, filterspec, srt=[], grp=[], retr=0):
+        """ Compute the proptree and the SQL/ARGS for a filter.
+        For argument description see filter below.
+        We return a 3-tuple, the proptree, the sql and the sql-args
+        or None if no SQL is necessary.
+        The flag retr serves to retrieve *all* non-Multilink properties
+        (for filling the cache during a filter_iter)
         """
         # we can't match anything if search_matches is empty
         if not search_matches and search_matches is not None:
-            return []
-
-        if __debug__:
-            start_t = time.time()
+            return None
 
         icn = self.classname
 
@@ -2320,8 +2312,8 @@ class Class(hyperdb.Class):
 
         # figure the WHERE clause from the filterspec
         mlfilt = 0      # are we joining with Multilink tables?
-        sortattr = self._sortattr (group = group, sort = sort)
-        proptree = self._proptree(filterspec, sortattr)
+        sortattr = self._sortattr (group = grp, sort = srt)
+        proptree = self._proptree(filterspec, sortattr, retr)
         mlseen = 0
         for pt in reversed(proptree.sortattr):
             p = pt
@@ -2336,12 +2328,11 @@ class Class(hyperdb.Class):
                 pt.attr_sort_done = pt.tree_sort_done = True
         proptree.compute_sort_done()
 
-        ordercols = []
-        auxcols = {}
+        cols = ['_%s.id'%icn]
         mlsort = []
         rhsnum = 0
         for p in proptree:
-            oc = None
+            rc = ac = oc = None
             cn = p.classname
             ln = p.uniqname
             pln = p.parent.uniqname
@@ -2349,10 +2340,13 @@ class Class(hyperdb.Class):
             k = p.name
             v = p.val
             propclass = p.propclass
-            if p.sort_type > 0:
-                oc = ac = '_%s._%s'%(pln, k)
+            if p.parent == proptree and p.name == 'id' \
+                and 'retrieve' in p.need_for:
+                p.sql_idx = 0
+            if 'sort' in p.need_for or 'retrieve' in p.need_for:
+                rc = oc = ac = '_%s._%s'%(pln, k)
             if isinstance(propclass, Multilink):
-                if p.sort_type < 2:
+                if 'search' in p.need_for:
                     mlfilt = 1
                     tn = '%s_%s'%(pcn, k)
                     if v in ('-1', ['-1'], []):
@@ -2382,10 +2376,10 @@ class Class(hyperdb.Class):
                             else:
                                 where.append('%s.linkid=%s'%(tn, a))
                                 args.append(v)
-                if p.sort_type > 0:
+                if 'sort' in p.need_for:
                     assert not p.attr_sort_done and not p.sort_ids_needed
             elif k == 'id':
-                if p.sort_type < 2:
+                if 'search' in p.need_for:
                     if isinstance(v, type([])):
                         # If there are no permitted values, then the
                         # where clause will always be false, and we
@@ -2398,10 +2392,10 @@ class Class(hyperdb.Class):
                     else:
                         where.append('_%s.%s=%s'%(pln, k, a))
                         args.append(v)
-                if p.sort_type > 0:
-                    oc = ac = '_%s.id'%pln
+                if 'sort' in p.need_for or 'retrieve' in p.need_for:
+                    rc = oc = ac = '_%s.id'%pln
             elif isinstance(propclass, String):
-                if p.sort_type < 2:
+                if 'search' in p.need_for:
                     if not isinstance(v, type([])):
                         v = [v]
 
@@ -2415,12 +2409,12 @@ class Class(hyperdb.Class):
                         +' and '.join(["_%s._%s LIKE '%s'"%(pln, k, s) for s in v])
                         +')')
                     # note: args are embedded in the query string now
-                if p.sort_type > 0:
+                if 'sort' in p.need_for:
                     oc = ac = 'lower(_%s._%s)'%(pln, k)
             elif isinstance(propclass, Link):
-                if p.sort_type < 2:
+                if 'search' in p.need_for:
                     if p.children:
-                        if p.sort_type == 0:
+                        if 'sort' not in p.need_for:
                             frum.append('_%s as _%s' % (cn, ln))
                         where.append('_%s._%s=_%s.id'%(pln, k, ln))
                     if p.has_values:
@@ -2448,16 +2442,18 @@ class Class(hyperdb.Class):
                             else:
                                 where.append('_%s._%s=%s'%(pln, k, a))
                                 args.append(v)
-                if p.sort_type > 0:
+                if 'sort' in p.need_for:
                     lp = p.cls.labelprop()
                     oc = ac = '_%s._%s'%(pln, k)
                     if lp != 'id':
-                        if p.tree_sort_done and p.sort_type > 0:
+                        if p.tree_sort_done:
                             loj.append(
                                 'LEFT OUTER JOIN _%s as _%s on _%s._%s=_%s.id'%(
                                 cn, ln, pln, k, ln))
                         oc = '_%s._%s'%(ln, lp)
-            elif isinstance(propclass, Date) and p.sort_type < 2:
+                if 'retrieve' in p.need_for:
+                    rc = '_%s._%s'%(pln, k)
+            elif isinstance(propclass, Date) and 'search' in p.need_for:
                 dc = self.db.to_sql_value(hyperdb.Date)
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
@@ -2478,7 +2474,7 @@ class Class(hyperdb.Class):
                         pass
             elif isinstance(propclass, Interval):
                 # filter/sort using the __<prop>_int__ column
-                if p.sort_type < 2:
+                if 'search' in p.need_for:
                     if isinstance(v, type([])):
                         s = ','.join([a for x in v])
                         where.append('_%s.__%s_int__ in (%s)'%(pln, k, s))
@@ -2496,9 +2492,11 @@ class Class(hyperdb.Class):
                         except ValueError:
                             # If range creation fails - ignore search parameter
                             pass
-                if p.sort_type > 0:
+                if 'sort' in p.need_for:
                     oc = ac = '_%s.__%s_int__'%(pln,k)
-            elif isinstance(propclass, Boolean) and p.sort_type < 2:
+                if 'retrieve' in p.need_for:
+                    rc = '_%s._%s'%(pln,k)
+            elif isinstance(propclass, Boolean) and 'search' in p.need_for:
                 if type(v) == type(""):
                     v = v.split(',')
                 if type(v) != type([]):
@@ -2516,7 +2514,7 @@ class Class(hyperdb.Class):
                     s = ','.join([a for x in v])
                     where.append('_%s._%s in (%s)'%(pln, k, s))
                     args = args + bv
-            elif p.sort_type < 2:
+            elif 'search' in p.need_for:
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
                     where.append('_%s._%s in (%s)'%(pln, k, s))
@@ -2526,18 +2524,28 @@ class Class(hyperdb.Class):
                     args.append(v)
             if oc:
                 if p.sort_ids_needed:
-                    auxcols[ac] = p
+                    if rc == ac:
+                        p.sql_idx = len(cols)
+                    p.auxcol = len(cols)
+                    cols.append(ac)
                 if p.tree_sort_done and p.sort_direction:
-                    # Don't select top-level id twice
-                    if p.name != 'id' or p.parent != proptree:
-                        ordercols.append(oc)
+                    # Don't select top-level id or multilink twice
+                    if (not p.sort_ids_needed or ac != oc) and (p.name != 'id'
+                        or p.parent != proptree):
+                        if rc == oc:
+                            p.sql_idx = len(cols)
+                        cols.append(oc)
                     desc = ['', ' desc'][p.sort_direction == '-']
                     # Some SQL dbs sort NULL values last -- we want them first.
                     if (self.order_by_null_values and p.name != 'id'):
                         nv = self.order_by_null_values % oc
-                        ordercols.append(nv)
+                        cols.append(nv)
                         p.orderby.append(nv + desc)
                     p.orderby.append(oc + desc)
+            if 'retrieve' in p.need_for and p.sql_idx is None:
+                assert(rc)
+                p.sql_idx = len(cols)
+                cols.append (rc)
 
         props = self.getprops()
 
@@ -2560,11 +2568,8 @@ class Class(hyperdb.Class):
         if mlfilt:
             # we're joining tables on the id, so we will get dupes if we
             # don't distinct()
-            cols = ['distinct(_%s.id)'%icn]
-        else:
-            cols = ['_%s.id'%icn]
-        if ordercols:
-            cols = cols + ordercols
+            cols[0] = 'distinct(_%s.id)'%icn
+
         order = []
         # keep correct sequence of order attributes.
         for sa in proptree.sortattr:
@@ -2575,21 +2580,50 @@ class Class(hyperdb.Class):
             order = ' order by %s'%(','.join(order))
         else:
             order = ''
-        for o, p in auxcols.iteritems ():
-            cols.append (o)
-            p.auxcol = len (cols) - 1
 
         cols = ','.join(cols)
         loj = ' '.join(loj)
         sql = 'select %s from %s %s %s%s'%(cols, frum, loj, where, order)
         args = tuple(args)
         __traceback_info__ = (sql, args)
+        return proptree, sql, args
+
+    def filter(self, search_matches, filterspec, sort=[], group=[]):
+        """Return a list of the ids of the active nodes in this class that
+        match the 'filter' spec, sorted by the group spec and then the
+        sort spec
+
+        "filterspec" is {propname: value(s)}
+
+        "sort" and "group" are [(dir, prop), ...] where dir is '+', '-'
+        or None and prop is a prop name or None. Note that for
+        backward-compatibility reasons a single (dir, prop) tuple is
+        also allowed.
+
+        "search_matches" is a container type or None
+
+        The filter must match all properties specificed. If the property
+        value to match is a list:
+
+        1. String properties must match all elements in the list, and
+        2. Other properties must match any of the elements in the list.
+        """
+        if __debug__:
+            start_t = time.time()
+
+        sq = self._filter_sql (search_matches, filterspec, sort, group)
+        # nothing to match?
+        if sq is None:
+            return []
+        proptree, sql, args = sq
+
         self.db.sql(sql, args)
         l = self.db.sql_fetchall()
 
         # Compute values needed for sorting in proptree.sort
-        for p in auxcols.itervalues():
-            p.sort_ids = p.sort_result = [row[p.auxcol] for row in l]
+        for p in proptree:
+            if hasattr(p, 'auxcol'):
+                p.sort_ids = p.sort_result = [row[p.auxcol] for row in l]
         # return the IDs (the first column)
         # XXX numeric ids
         l = [str(row[0]) for row in l]
@@ -2598,6 +2632,53 @@ class Class(hyperdb.Class):
         if __debug__:
             self.db.stats['filtering'] += (time.time() - start_t)
         return l
+
+    def filter_iter(self, search_matches, filterspec, sort=[], group=[]):
+        """Iterator similar to filter above with same args.
+        Limitation: We don't sort on multilinks.
+        This uses an optimisation: We put all nodes that are in the
+        current row into the node cache. Then we return the node id.
+        That way a fetch of a node won't create another sql-fetch (with
+        a join) from the database because the nodes are already in the
+        cache. We're using our own temporary cursor.
+        """
+        sq = self._filter_sql(search_matches, filterspec, sort, group, retr=1)
+        # nothing to match?
+        if sq is None:
+            return
+        proptree, sql, args = sq
+        cursor = self.db.conn.cursor()
+        self.db.sql(sql, args, cursor)
+        classes = {}
+        for p in proptree:
+            if 'retrieve' in p.need_for:
+                cn = p.parent.classname
+                ptid = p.parent.id # not the nodeid!
+                key = (cn, ptid)
+                if key not in classes:
+                    classes[key] = {}
+                name = p.name
+                assert (name)
+                classes[key][name] = p
+        while True:
+            row = cursor.fetchone()
+            if not row: break
+            # populate cache with current items
+            for (classname, ptid), pt in classes.iteritems():
+                nodeid = str(row[pt['id'].sql_idx])
+                key = (classname, nodeid)
+                if key in self.db.cache:
+                    self.db._cache_refresh(key)
+                    continue
+                node = {}
+                for propname, p in pt.iteritems():
+                    value = row[p.sql_idx]
+                    if value is not None:
+                        cls = p.propclass.__class__
+                        value = self.db.to_hyperdb_value(cls)(value)
+                    node[propname] = value
+                self.db._cache_save(key, node)
+            yield str(row[0])
 
     def filter_sql(self, sql):
         """Return a list of the ids of the items in this class that match

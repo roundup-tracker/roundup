@@ -35,6 +35,7 @@ config.RDBMS_NAME = "rounduptest"
 config.RDBMS_HOST = "localhost"
 config.RDBMS_USER = "rounduptest"
 config.RDBMS_PASSWORD = "rounduptest"
+#config.RDBMS_TEMPLATE = "template0"
 #config.logging = MockNull()
 # these TRACKER_WEB and MAIL_DOMAIN values are used in mailgw tests
 config.MAIL_DOMAIN = "your.tracker.email.domain.example"
@@ -124,13 +125,17 @@ class MyTestCase(unittest.TestCase):
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
 
+    def open_database(self):
+        self.db = self.module.Database(config, 'admin')
+
+
 if os.environ.has_key('LOGGING_LEVEL'):
     from roundup import rlog
     config.logging = rlog.BasicLogging()
     config.logging.setLevel(os.environ['LOGGING_LEVEL'])
     config.logging.getLogger('roundup.hyperdb').setFormat('%(message)s')
 
-class DBTest(MyTestCase):
+class commonDBTest(MyTestCase):
     def setUp(self):
         # remove previous test, ignore errors
         if os.path.exists(config.DATABASE):
@@ -139,8 +144,52 @@ class DBTest(MyTestCase):
         self.open_database()
         setupSchema(self.db, 1, self.module)
 
-    def open_database(self):
-        self.db = self.module.Database(config, 'admin')
+    def iterSetup(self, classname='issue'):
+        cls = getattr(self.db, classname)
+        def filt_iter(*args):
+            """ for checking equivalence of filter and filter_iter """
+            return list(cls.filter_iter(*args))
+        return self.assertEqual, cls.filter, filt_iter
+
+    def filteringSetupTransitiveSearch(self, classname='issue'):
+        u_m = {}
+        k = 30
+        for user in (
+                {'username': 'ceo', 'age': 129},
+                {'username': 'grouplead1', 'age': 29, 'supervisor': '3'},
+                {'username': 'grouplead2', 'age': 29, 'supervisor': '3'},
+                {'username': 'worker1', 'age': 25, 'supervisor' : '4'},
+                {'username': 'worker2', 'age': 24, 'supervisor' : '4'},
+                {'username': 'worker3', 'age': 23, 'supervisor' : '5'},
+                {'username': 'worker4', 'age': 22, 'supervisor' : '5'},
+                {'username': 'worker5', 'age': 21, 'supervisor' : '5'}):
+            u = self.db.user.create(**user)
+            u_m [u] = self.db.msg.create(author = u, content = ' '
+                , date = date.Date ('2006-01-%s' % k))
+            k -= 1
+        i = date.Interval('-1d')
+        for issue in (
+                {'title': 'ts1', 'status': '2', 'assignedto': '6',
+                    'priority': '3', 'messages' : [u_m ['6']], 'nosy' : ['4']},
+                {'title': 'ts2', 'status': '1', 'assignedto': '6',
+                    'priority': '3', 'messages' : [u_m ['6']], 'nosy' : ['5']},
+                {'title': 'ts4', 'status': '2', 'assignedto': '7',
+                    'priority': '3', 'messages' : [u_m ['7']]},
+                {'title': 'ts5', 'status': '1', 'assignedto': '8',
+                    'priority': '3', 'messages' : [u_m ['8']]},
+                {'title': 'ts6', 'status': '2', 'assignedto': '9',
+                    'priority': '3', 'messages' : [u_m ['9']]},
+                {'title': 'ts7', 'status': '1', 'assignedto': '10',
+                    'priority': '3', 'messages' : [u_m ['10']]},
+                {'title': 'ts8', 'status': '2', 'assignedto': '10',
+                    'priority': '3', 'messages' : [u_m ['10']], 'foo' : i},
+                {'title': 'ts9', 'status': '1', 'assignedto': '10',
+                    'priority': '3', 'messages' : [u_m ['10'], u_m ['9']]}):
+            self.db.issue.create(**issue)
+        return self.iterSetup(classname)
+
+
+class DBTest(commonDBTest):
 
     def testRefresh(self):
         self.db.refresh_database()
@@ -343,11 +392,15 @@ class DBTest(MyTestCase):
             '2008-02-29.00:00:00')
         self.assertEquals(self.db.issue.filter(None,
             {'deadline': '2008-02-29'}), [nid])
+        self.assertEquals(list(self.db.issue.filter_iter(None,
+            {'deadline': '2008-02-29'})), [nid])
         self.db.issue.set(nid, deadline=date.Date('2008-03-01'))
         self.assertEquals(str(self.db.issue.get(nid, 'deadline')),
             '2008-03-01.00:00:00')
         self.assertEquals(self.db.issue.filter(None,
             {'deadline': '2008-02-29'}), [])
+        self.assertEquals(list(self.db.issue.filter_iter(None,
+            {'deadline': '2008-02-29'})), [])
 
     def testDateUnset(self):
         for commit in (0,1):
@@ -1085,13 +1138,12 @@ class DBTest(MyTestCase):
         self.db.issue.retire(ids[0])
         self.assertEqual(len(self.db.issue.stringFind(title='spam')), 1)
 
-    def filteringSetup(self):
+    def filteringSetup(self, classname='issue'):
         for user in (
                 {'username': 'bleep', 'age': 1, 'assignable': True},
                 {'username': 'blop', 'age': 1.5, 'assignable': True},
                 {'username': 'blorp', 'age': 2, 'assignable': False}):
             self.db.user.create(**user)
-        iss = self.db.issue
         file_content = ''.join([chr(i) for i in range(255)])
         f = self.db.file.create(content=file_content)
         for issue in (
@@ -1109,121 +1161,133 @@ class DBTest(MyTestCase):
                     'files': [f]}):
             self.db.issue.create(**issue)
         self.db.commit()
-        return self.assertEqual, self.db.issue.filter
+        return self.iterSetup(classname)
 
     def testFilteringID(self):
-        ae, filt = self.filteringSetup()
-        ae(filt(None, {'id': '1'}, ('+','id'), (None,None)), ['1'])
-        ae(filt(None, {'id': '2'}, ('+','id'), (None,None)), ['2'])
-        ae(filt(None, {'id': '100'}, ('+','id'), (None,None)), [])
+        ae, filter, filter_iter = self.filteringSetup()
+        for filt in filter, filter_iter:
+            ae(filt(None, {'id': '1'}, ('+','id'), (None,None)), ['1'])
+            ae(filt(None, {'id': '2'}, ('+','id'), (None,None)), ['2'])
+            ae(filt(None, {'id': '100'}, ('+','id'), (None,None)), [])
 
     def testFilteringBoolean(self):
-        self.filteringSetup()
-        ae, filt = self.assertEqual, self.db.user.filter
+        ae, filter, filter_iter = self.filteringSetup('user')
         a = 'assignable'
-        ae(filt(None, {a: '1'}, ('+','id'), (None,None)), ['3','4'])
-        ae(filt(None, {a: '0'}, ('+','id'), (None,None)), ['5'])
-        ae(filt(None, {a: ['1']}, ('+','id'), (None,None)), ['3','4'])
-        ae(filt(None, {a: ['0']}, ('+','id'), (None,None)), ['5'])
-        ae(filt(None, {a: ['0','1']}, ('+','id'), (None,None)), ['3','4','5'])
-        ae(filt(None, {a: 'True'}, ('+','id'), (None,None)), ['3','4'])
-        ae(filt(None, {a: 'False'}, ('+','id'), (None,None)), ['5'])
-        ae(filt(None, {a: ['True']}, ('+','id'), (None,None)), ['3','4'])
-        ae(filt(None, {a: ['False']}, ('+','id'), (None,None)), ['5'])
-        ae(filt(None, {a: ['False','True']}, ('+','id'), (None,None)),
-            ['3','4','5'])
-        ae(filt(None, {a: True}, ('+','id'), (None,None)), ['3','4'])
-        ae(filt(None, {a: False}, ('+','id'), (None,None)), ['5'])
-        ae(filt(None, {a: 1}, ('+','id'), (None,None)), ['3','4'])
-        ae(filt(None, {a: 0}, ('+','id'), (None,None)), ['5'])
-        ae(filt(None, {a: [1]}, ('+','id'), (None,None)), ['3','4'])
-        ae(filt(None, {a: [0]}, ('+','id'), (None,None)), ['5'])
-        ae(filt(None, {a: [0,1]}, ('+','id'), (None,None)), ['3','4','5'])
-        ae(filt(None, {a: [True]}, ('+','id'), (None,None)), ['3','4'])
-        ae(filt(None, {a: [False]}, ('+','id'), (None,None)), ['5'])
-        ae(filt(None, {a: [False,True]}, ('+','id'), (None,None)),
-            ['3','4','5'])
+        for filt in filter, filter_iter:
+            ae(filt(None, {a: '1'}, ('+','id'), (None,None)), ['3','4'])
+            ae(filt(None, {a: '0'}, ('+','id'), (None,None)), ['5'])
+            ae(filt(None, {a: ['1']}, ('+','id'), (None,None)), ['3','4'])
+            ae(filt(None, {a: ['0']}, ('+','id'), (None,None)), ['5'])
+            ae(filt(None, {a: ['0','1']}, ('+','id'), (None,None)),
+                ['3','4','5'])
+            ae(filt(None, {a: 'True'}, ('+','id'), (None,None)), ['3','4'])
+            ae(filt(None, {a: 'False'}, ('+','id'), (None,None)), ['5'])
+            ae(filt(None, {a: ['True']}, ('+','id'), (None,None)), ['3','4'])
+            ae(filt(None, {a: ['False']}, ('+','id'), (None,None)), ['5'])
+            ae(filt(None, {a: ['False','True']}, ('+','id'), (None,None)),
+                ['3','4','5'])
+            ae(filt(None, {a: True}, ('+','id'), (None,None)), ['3','4'])
+            ae(filt(None, {a: False}, ('+','id'), (None,None)), ['5'])
+            ae(filt(None, {a: 1}, ('+','id'), (None,None)), ['3','4'])
+            ae(filt(None, {a: 0}, ('+','id'), (None,None)), ['5'])
+            ae(filt(None, {a: [1]}, ('+','id'), (None,None)), ['3','4'])
+            ae(filt(None, {a: [0]}, ('+','id'), (None,None)), ['5'])
+            ae(filt(None, {a: [0,1]}, ('+','id'), (None,None)), ['3','4','5'])
+            ae(filt(None, {a: [True]}, ('+','id'), (None,None)), ['3','4'])
+            ae(filt(None, {a: [False]}, ('+','id'), (None,None)), ['5'])
+            ae(filt(None, {a: [False,True]}, ('+','id'), (None,None)),
+                ['3','4','5'])
 
     def testFilteringNumber(self):
-        self.filteringSetup()
-        ae, filt = self.assertEqual, self.db.user.filter
-        ae(filt(None, {'age': '1'}, ('+','id'), (None,None)), ['3'])
-        ae(filt(None, {'age': '1.5'}, ('+','id'), (None,None)), ['4'])
-        ae(filt(None, {'age': '2'}, ('+','id'), (None,None)), ['5'])
-        ae(filt(None, {'age': ['1','2']}, ('+','id'), (None,None)), ['3','5'])
-        ae(filt(None, {'age': 2}, ('+','id'), (None,None)), ['5'])
-        ae(filt(None, {'age': [1,2]}, ('+','id'), (None,None)), ['3','5'])
+        ae, filter, filter_iter = self.filteringSetup('user')
+        for filt in filter, filter_iter:
+            ae(filt(None, {'age': '1'}, ('+','id'), (None,None)), ['3'])
+            ae(filt(None, {'age': '1.5'}, ('+','id'), (None,None)), ['4'])
+            ae(filt(None, {'age': '2'}, ('+','id'), (None,None)), ['5'])
+            ae(filt(None, {'age': ['1','2']}, ('+','id'), (None,None)),
+                ['3','5'])
+            ae(filt(None, {'age': 2}, ('+','id'), (None,None)), ['5'])
+            ae(filt(None, {'age': [1,2]}, ('+','id'), (None,None)), ['3','5'])
 
     def testFilteringString(self):
-        ae, filt = self.filteringSetup()
-        ae(filt(None, {'title': ['one']}, ('+','id'), (None,None)), ['1'])
-        ae(filt(None, {'title': ['issue one']}, ('+','id'), (None,None)),
-            ['1'])
-        ae(filt(None, {'title': ['issue', 'one']}, ('+','id'), (None,None)),
-            ['1'])
-        ae(filt(None, {'title': ['issue']}, ('+','id'), (None,None)),
-            ['1','2','3'])
-        ae(filt(None, {'title': ['one', 'two']}, ('+','id'), (None,None)),
-            [])
+        ae, filter, filter_iter = self.filteringSetup()
+        for filt in filter, filter_iter:
+            ae(filt(None, {'title': ['one']}, ('+','id'), (None,None)), ['1'])
+            ae(filt(None, {'title': ['issue one']}, ('+','id'), (None,None)),
+                ['1'])
+            ae(filt(None, {'title': ['issue', 'one']}, ('+','id'), (None,None)),
+                ['1'])
+            ae(filt(None, {'title': ['issue']}, ('+','id'), (None,None)),
+                ['1','2','3'])
+            ae(filt(None, {'title': ['one', 'two']}, ('+','id'), (None,None)),
+                [])
 
     def testFilteringLink(self):
-        ae, filt = self.filteringSetup()
-        ae(filt(None, {'status': '1'}, ('+','id'), (None,None)), ['2','3'])
-        ae(filt(None, {'assignedto': '-1'}, ('+','id'), (None,None)), ['3','4'])
-        ae(filt(None, {'assignedto': None}, ('+','id'), (None,None)), ['3','4'])
-        ae(filt(None, {'assignedto': [None]}, ('+','id'), (None,None)),
-            ['3','4'])
-        ae(filt(None, {'assignedto': ['-1', None]}, ('+','id'), (None,None)),
-            ['3','4'])
-        ae(filt(None, {'assignedto': ['1', None]}, ('+','id'), (None,None)),
-            ['1', '3','4'])
+        ae, filter, filter_iter = self.filteringSetup()
+        a = 'assignedto'
+        grp = (None, None)
+        for filt in filter, filter_iter:
+            ae(filt(None, {'status': '1'}, ('+','id'), grp), ['2','3'])
+            ae(filt(None, {a: '-1'}, ('+','id'), grp), ['3','4'])
+            ae(filt(None, {a: None}, ('+','id'), grp), ['3','4'])
+            ae(filt(None, {a: [None]}, ('+','id'), grp), ['3','4'])
+            ae(filt(None, {a: ['-1', None]}, ('+','id'), grp), ['3','4'])
+            ae(filt(None, {a: ['1', None]}, ('+','id'), grp), ['1', '3','4'])
 
     def testFilteringMultilinkAndGroup(self):
         """testFilteringMultilinkAndGroup:
         See roundup Bug 1541128: apparently grouping by something and
         searching a Multilink failed with MySQL 5.0
         """
-        ae, filt = self.filteringSetup()
-        ae(filt(None, {'files': '1'}, ('-','activity'), ('+','status')), ['4'])
+        ae, filter, filter_iter = self.filteringSetup()
+        for f in filter, filter_iter:
+            ae(f(None, {'files': '1'}, ('-','activity'), ('+','status')), ['4'])
 
     def testFilteringRetired(self):
-        ae, filt = self.filteringSetup()
+        ae, filter, filter_iter = self.filteringSetup()
         self.db.issue.retire('2')
-        ae(filt(None, {'status': '1'}, ('+','id'), (None,None)), ['3'])
+        for f in filter, filter_iter:
+            ae(f(None, {'status': '1'}, ('+','id'), (None,None)), ['3'])
 
     def testFilteringMultilink(self):
-        ae, filt = self.filteringSetup()
-        ae(filt(None, {'nosy': '3'}, ('+','id'), (None,None)), ['4'])
-        ae(filt(None, {'nosy': '-1'}, ('+','id'), (None,None)), ['1', '2'])
-        ae(filt(None, {'nosy': ['1','2']}, ('+', 'status'),
-            ('-', 'deadline')), ['4', '3'])
+        ae, filter, filter_iter = self.filteringSetup()
+        for filt in filter, filter_iter:
+            ae(filt(None, {'nosy': '3'}, ('+','id'), (None,None)), ['4'])
+            ae(filt(None, {'nosy': '-1'}, ('+','id'), (None,None)), ['1', '2'])
+            ae(filt(None, {'nosy': ['1','2']}, ('+', 'status'),
+                ('-', 'deadline')), ['4', '3'])
 
     def testFilteringMany(self):
-        ae, filt = self.filteringSetup()
-        ae(filt(None, {'nosy': '2', 'status': '1'}, ('+','id'), (None,None)),
-            ['3'])
+        ae, filter, filter_iter = self.filteringSetup()
+        for f in filter, filter_iter:
+            ae(f(None, {'nosy': '2', 'status': '1'}, ('+','id'), (None,None)),
+                ['3'])
 
     def testFilteringRangeBasic(self):
-        ae, filt = self.filteringSetup()
-        ae(filt(None, {'deadline': 'from 2003-02-10 to 2003-02-23'}), ['1','3'])
-        ae(filt(None, {'deadline': '2003-02-10; 2003-02-23'}), ['1','3'])
-        ae(filt(None, {'deadline': '; 2003-02-16'}), ['2'])
+        ae, filter, filter_iter = self.filteringSetup()
+        d = 'deadline'
+        for f in filter, filter_iter:
+            ae(f(None, {d: 'from 2003-02-10 to 2003-02-23'}), ['1','3'])
+            ae(f(None, {d: '2003-02-10; 2003-02-23'}), ['1','3'])
+            ae(f(None, {d: '; 2003-02-16'}), ['2'])
 
     def testFilteringRangeTwoSyntaxes(self):
-        ae, filt = self.filteringSetup()
-        ae(filt(None, {'deadline': 'from 2003-02-16'}), ['1', '3', '4'])
-        ae(filt(None, {'deadline': '2003-02-16;'}), ['1', '3', '4'])
+        ae, filter, filter_iter = self.filteringSetup()
+        for filt in filter, filter_iter:
+            ae(filt(None, {'deadline': 'from 2003-02-16'}), ['1', '3', '4'])
+            ae(filt(None, {'deadline': '2003-02-16;'}), ['1', '3', '4'])
 
     def testFilteringRangeYearMonthDay(self):
-        ae, filt = self.filteringSetup()
-        ae(filt(None, {'deadline': '2002'}), [])
-        ae(filt(None, {'deadline': '2003'}), ['1', '2', '3'])
-        ae(filt(None, {'deadline': '2004'}), ['4'])
-        ae(filt(None, {'deadline': '2003-02-16'}), ['1'])
-        ae(filt(None, {'deadline': '2003-02-17'}), [])
+        ae, filter, filter_iter = self.filteringSetup()
+        for filt in filter, filter_iter:
+            ae(filt(None, {'deadline': '2002'}), [])
+            ae(filt(None, {'deadline': '2003'}), ['1', '2', '3'])
+            ae(filt(None, {'deadline': '2004'}), ['4'])
+            ae(filt(None, {'deadline': '2003-02-16'}), ['1'])
+            ae(filt(None, {'deadline': '2003-02-17'}), [])
 
     def testFilteringRangeMonths(self):
-        ae, filt = self.filteringSetup()
+        ae, filter, filter_iter = self.filteringSetup()
         for month in range(1, 13):
             for n in range(1, month+1):
                 i = self.db.issue.create(title='%d.%d'%(month, n),
@@ -1231,55 +1295,61 @@ class DBTest(MyTestCase):
         self.db.commit()
 
         for month in range(1, 13):
-            r = filt(None, dict(deadline='2001-%02d'%month))
-            assert len(r) == month, 'month %d != length %d'%(month, len(r))
+            for filt in filter, filter_iter:
+                r = filt(None, dict(deadline='2001-%02d'%month))
+                assert len(r) == month, 'month %d != length %d'%(month, len(r))
 
     def testFilteringRangeInterval(self):
-        ae, filt = self.filteringSetup()
-        ae(filt(None, {'foo': 'from 0:50 to 2:00'}), ['1'])
-        ae(filt(None, {'foo': 'from 0:50 to 1d 2:00'}), ['1', '2'])
-        ae(filt(None, {'foo': 'from 5:50'}), ['2'])
-        ae(filt(None, {'foo': 'to 0:05'}), [])
+        ae, filter, filter_iter = self.filteringSetup()
+        for filt in filter, filter_iter:
+            ae(filt(None, {'foo': 'from 0:50 to 2:00'}), ['1'])
+            ae(filt(None, {'foo': 'from 0:50 to 1d 2:00'}), ['1', '2'])
+            ae(filt(None, {'foo': 'from 5:50'}), ['2'])
+            ae(filt(None, {'foo': 'to 0:05'}), [])
 
     def testFilteringRangeGeekInterval(self):
-        ae, filt = self.filteringSetup()
+        ae, filter, filter_iter = self.filteringSetup()
         for issue in (
                 { 'deadline': date.Date('. -2d')},
                 { 'deadline': date.Date('. -1d')},
                 { 'deadline': date.Date('. -8d')},
                 ):
             self.db.issue.create(**issue)
-        ae(filt(None, {'deadline': '-2d;'}), ['5', '6'])
-        ae(filt(None, {'deadline': '-1d;'}), ['6'])
-        ae(filt(None, {'deadline': '-1w;'}), ['5', '6'])
+        for filt in filter, filter_iter:
+            ae(filt(None, {'deadline': '-2d;'}), ['5', '6'])
+            ae(filt(None, {'deadline': '-1d;'}), ['6'])
+            ae(filt(None, {'deadline': '-1w;'}), ['5', '6'])
 
     def testFilteringIntervalSort(self):
         # 1: '1:10'
         # 2: '1d'
         # 3: None
         # 4: '0:10'
-        ae, filt = self.filteringSetup()
-        # ascending should sort None, 1:10, 1d
-        ae(filt(None, {}, ('+','foo'), (None,None)), ['3', '4', '1', '2'])
-        # descending should sort 1d, 1:10, None
-        ae(filt(None, {}, ('-','foo'), (None,None)), ['2', '1', '4', '3'])
+        ae, filter, filter_iter = self.filteringSetup()
+        for filt in filter, filter_iter:
+            # ascending should sort None, 1:10, 1d
+            ae(filt(None, {}, ('+','foo'), (None,None)), ['3', '4', '1', '2'])
+            # descending should sort 1d, 1:10, None
+            ae(filt(None, {}, ('-','foo'), (None,None)), ['2', '1', '4', '3'])
 
     def testFilteringStringSort(self):
         # 1: 'issue one'
         # 2: 'issue two'
         # 3: 'issue three'
         # 4: 'non four'
-        ae, filt = self.filteringSetup()
-        ae(filt(None, {}, ('+','title')), ['1', '3', '2', '4'])
-        ae(filt(None, {}, ('-','title')), ['4', '2', '3', '1'])
+        ae, filter, filter_iter = self.filteringSetup()
+        for filt in filter, filter_iter:
+            ae(filt(None, {}, ('+','title')), ['1', '3', '2', '4'])
+            ae(filt(None, {}, ('-','title')), ['4', '2', '3', '1'])
         # Test string case: For now allow both, w/wo case matching.
         # 1: 'issue one'
         # 2: 'issue two'
         # 3: 'Issue three'
         # 4: 'non four'
         self.db.issue.set('3', title='Issue three')
-        ae(filt(None, {}, ('+','title')), ['1', '3', '2', '4'])
-        ae(filt(None, {}, ('-','title')), ['4', '2', '3', '1'])
+        for filt in filter, filter_iter:
+            ae(filt(None, {}, ('+','title')), ['1', '3', '2', '4'])
+            ae(filt(None, {}, ('-','title')), ['4', '2', '3', '1'])
         # Obscure bug in anydbm backend trying to convert to number
         # 1: '1st issue'
         # 2: '2'
@@ -1287,8 +1357,9 @@ class DBTest(MyTestCase):
         # 4: 'non four'
         self.db.issue.set('1', title='1st issue')
         self.db.issue.set('2', title='2')
-        ae(filt(None, {}, ('+','title')), ['1', '2', '3', '4'])
-        ae(filt(None, {}, ('-','title')), ['4', '3', '2', '1'])
+        for filt in filter, filter_iter:
+            ae(filt(None, {}, ('+','title')), ['1', '2', '3', '4'])
+            ae(filt(None, {}, ('-','title')), ['4', '3', '2', '1'])
 
     def testFilteringMultilinkSort(self):
         # 1: []                 Reverse:  1: []
@@ -1298,7 +1369,9 @@ class DBTest(MyTestCase):
         # Note the sort order for the multilink doen't change when
         # reversing the sort direction due to the re-sorting of the
         # multilink!
-        ae, filt = self.filteringSetup()
+        # Note that we don't test filter_iter here, Multilink sort-order
+        # isn't defined for that.
+        ae, filt, dummy = self.filteringSetup()
         ae(filt(None, {}, ('+','nosy'), (None,None)), ['1', '2', '4', '3'])
         ae(filt(None, {}, ('-','nosy'), (None,None)), ['4', '3', '1', '2'])
 
@@ -1307,7 +1380,9 @@ class DBTest(MyTestCase):
         # 2: status: 1 "unread"      nosy: []
         # 3: status: 1 "unread"      nosy: ['admin','fred']
         # 4: status: 3 "testing"     nosy: ['admin','bleep','fred']
-        ae, filt = self.filteringSetup()
+        # Note that we don't test filter_iter here, Multilink sort-order
+        # isn't defined for that.
+        ae, filt, dummy = self.filteringSetup()
         ae(filt(None, {}, ('+','nosy'), ('+','status')), ['1', '4', '2', '3'])
         ae(filt(None, {}, ('-','nosy'), ('+','status')), ['1', '4', '3', '2'])
         ae(filt(None, {}, ('+','nosy'), ('-','status')), ['2', '3', '4', '1'])
@@ -1322,228 +1397,202 @@ class DBTest(MyTestCase):
         # 2: status: 1 -> 'u', priority: 3 -> 1
         # 3: status: 1 -> 'u', priority: 2 -> 3
         # 4: status: 3 -> 't', priority: 2 -> 3
-        ae, filt = self.filteringSetup()
-        ae(filt(None, {}, ('+','status'), ('+','priority')),
-            ['1', '2', '4', '3'])
-        ae(filt(None, {'priority':'2'}, ('+','status'), ('+','priority')),
-            ['4', '3'])
-        ae(filt(None, {'priority.order':'3'}, ('+','status'), ('+','priority')),
-            ['4', '3'])
-        ae(filt(None, {'priority':['2','3']}, ('+','priority'), ('+','status')),
-            ['1', '4', '2', '3'])
-        ae(filt(None, {}, ('+','priority'), ('+','status')),
-            ['1', '4', '2', '3'])
+        ae, filter, filter_iter = self.filteringSetup()
+        for filt in filter, filter_iter:
+            ae(filt(None, {}, ('+','status'), ('+','priority')),
+                ['1', '2', '4', '3'])
+            ae(filt(None, {'priority':'2'}, ('+','status'), ('+','priority')),
+                ['4', '3'])
+            ae(filt(None, {'priority.order':'3'}, ('+','status'),
+                ('+','priority')), ['4', '3'])
+            ae(filt(None, {'priority':['2','3']}, ('+','priority'),
+                ('+','status')), ['1', '4', '2', '3'])
+            ae(filt(None, {}, ('+','priority'), ('+','status')),
+                ['1', '4', '2', '3'])
 
     def testFilteringDateSort(self):
         # '1': '2003-02-16.22:50'
         # '2': '2003-01-01.00:00'
         # '3': '2003-02-18'
         # '4': '2004-03-08'
-        ae, filt = self.filteringSetup()
-        # ascending
-        ae(filt(None, {}, ('+','deadline'), (None,None)), ['2', '1', '3', '4'])
-        # descending
-        ae(filt(None, {}, ('-','deadline'), (None,None)), ['4', '3', '1', '2'])
+        ae, filter, filter_iter = self.filteringSetup()
+        for f in filter, filter_iter:
+            # ascending
+            ae(f(None, {}, ('+','deadline'), (None,None)), ['2', '1', '3', '4'])
+            # descending
+            ae(f(None, {}, ('-','deadline'), (None,None)), ['4', '3', '1', '2'])
 
     def testFilteringDateSortPriorityGroup(self):
         # '1': '2003-02-16.22:50'  1 => 2
         # '2': '2003-01-01.00:00'  3 => 1
         # '3': '2003-02-18'        2 => 3
         # '4': '2004-03-08'        1 => 2
-        ae, filt = self.filteringSetup()
+        ae, filter, filter_iter = self.filteringSetup()
 
-        # ascending
-        ae(filt(None, {}, ('+','deadline'), ('+','priority')),
-            ['2', '1', '3', '4'])
-        ae(filt(None, {}, ('-','deadline'), ('+','priority')),
-            ['1', '2', '4', '3'])
-        # descending
-        ae(filt(None, {}, ('+','deadline'), ('-','priority')),
-            ['3', '4', '2', '1'])
-        ae(filt(None, {}, ('-','deadline'), ('-','priority')),
-            ['4', '3', '1', '2'])
-
-    def filteringSetupTransitiveSearch(self):
-        u_m = {}
-        k = 30
-        for user in (
-                {'username': 'ceo', 'age': 129},
-                {'username': 'grouplead1', 'age': 29, 'supervisor': '3'},
-                {'username': 'grouplead2', 'age': 29, 'supervisor': '3'},
-                {'username': 'worker1', 'age': 25, 'supervisor' : '4'},
-                {'username': 'worker2', 'age': 24, 'supervisor' : '4'},
-                {'username': 'worker3', 'age': 23, 'supervisor' : '5'},
-                {'username': 'worker4', 'age': 22, 'supervisor' : '5'},
-                {'username': 'worker5', 'age': 21, 'supervisor' : '5'}):
-            u = self.db.user.create(**user)
-            u_m [u] = self.db.msg.create(author = u, content = ' '
-                , date = date.Date ('2006-01-%s' % k))
-            k -= 1
-        iss = self.db.issue
-        for issue in (
-                {'title': 'ts1', 'status': '2', 'assignedto': '6',
-                    'priority': '3', 'messages' : [u_m ['6']], 'nosy' : ['4']},
-                {'title': 'ts2', 'status': '1', 'assignedto': '6',
-                    'priority': '3', 'messages' : [u_m ['6']], 'nosy' : ['5']},
-                {'title': 'ts4', 'status': '2', 'assignedto': '7',
-                    'priority': '3', 'messages' : [u_m ['7']]},
-                {'title': 'ts5', 'status': '1', 'assignedto': '8',
-                    'priority': '3', 'messages' : [u_m ['8']]},
-                {'title': 'ts6', 'status': '2', 'assignedto': '9',
-                    'priority': '3', 'messages' : [u_m ['9']]},
-                {'title': 'ts7', 'status': '1', 'assignedto': '10',
-                    'priority': '3', 'messages' : [u_m ['10']]},
-                {'title': 'ts8', 'status': '2', 'assignedto': '10',
-                    'priority': '3', 'messages' : [u_m ['10']]},
-                {'title': 'ts9', 'status': '1', 'assignedto': '10',
-                    'priority': '3', 'messages' : [u_m ['10'], u_m ['9']]}):
-            self.db.issue.create(**issue)
-        return self.assertEqual, self.db.issue.filter
+        for filt in filter, filter_iter:
+            # ascending
+            ae(filt(None, {}, ('+','deadline'), ('+','priority')),
+                ['2', '1', '3', '4'])
+            ae(filt(None, {}, ('-','deadline'), ('+','priority')),
+                ['1', '2', '4', '3'])
+            # descending
+            ae(filt(None, {}, ('+','deadline'), ('-','priority')),
+                ['3', '4', '2', '1'])
+            ae(filt(None, {}, ('-','deadline'), ('-','priority')),
+                ['4', '3', '1', '2'])
 
     def testFilteringTransitiveLinkUser(self):
-        ae, filt = self.filteringSetupTransitiveSearch()
-        ufilt = self.db.user.filter
-        ae(ufilt(None, {'supervisor.username': 'ceo'}, ('+','username')),
-            ['4', '5'])
-        ae(ufilt(None, {'supervisor.supervisor.username': 'ceo'},
-            ('+','username')), ['6', '7', '8', '9', '10'])
-        ae(ufilt(None, {'supervisor.supervisor': '3'}, ('+','username')),
-            ['6', '7', '8', '9', '10'])
-        ae(ufilt(None, {'supervisor.supervisor.id': '3'}, ('+','username')),
-            ['6', '7', '8', '9', '10'])
-        ae(ufilt(None, {'supervisor.username': 'grouplead1'}, ('+','username')),
-            ['6', '7'])
-        ae(ufilt(None, {'supervisor.username': 'grouplead2'}, ('+','username')),
-            ['8', '9', '10'])
-        ae(ufilt(None, {'supervisor.username': 'grouplead2',
-            'supervisor.supervisor.username': 'ceo'}, ('+','username')),
-            ['8', '9', '10'])
-        ae(ufilt(None, {'supervisor.supervisor': '3', 'supervisor': '4'},
-            ('+','username')), ['6', '7'])
+        ae, filter, filter_iter = self.filteringSetupTransitiveSearch('user')
+        for f in filter, filter_iter:
+            ae(f(None, {'supervisor.username': 'ceo'}, ('+','username')),
+                ['4', '5'])
+            ae(f(None, {'supervisor.supervisor.username': 'ceo'},
+                ('+','username')), ['6', '7', '8', '9', '10'])
+            ae(f(None, {'supervisor.supervisor': '3'}, ('+','username')),
+                ['6', '7', '8', '9', '10'])
+            ae(f(None, {'supervisor.supervisor.id': '3'}, ('+','username')),
+                ['6', '7', '8', '9', '10'])
+            ae(f(None, {'supervisor.username': 'grouplead1'}, ('+','username')),
+                ['6', '7'])
+            ae(f(None, {'supervisor.username': 'grouplead2'}, ('+','username')),
+                ['8', '9', '10'])
+            ae(f(None, {'supervisor.username': 'grouplead2',
+                'supervisor.supervisor.username': 'ceo'}, ('+','username')),
+                ['8', '9', '10'])
+            ae(f(None, {'supervisor.supervisor': '3', 'supervisor': '4'},
+                ('+','username')), ['6', '7'])
 
     def testFilteringTransitiveLinkSort(self):
-        ae, filt = self.filteringSetupTransitiveSearch()
-        ufilt = self.db.user.filter
+        ae, filter, filter_iter = self.filteringSetupTransitiveSearch()
+        ae, ufilter, ufilter_iter = self.iterSetup('user')
         # Need to make ceo his own (and first two users') supervisor,
         # otherwise we will depend on sorting order of NULL values.
         # Leave that to a separate test.
         self.db.user.set('1', supervisor = '3')
         self.db.user.set('2', supervisor = '3')
         self.db.user.set('3', supervisor = '3')
-        ae(ufilt(None, {'supervisor':'3'}, []), ['1', '2', '3', '4', '5'])
-        ae(ufilt(None, {}, [('+','supervisor.supervisor.supervisor'),
-            ('+','supervisor.supervisor'), ('+','supervisor'),
-            ('+','username')]),
-            ['1', '3', '2', '4', '5', '6', '7', '8', '9', '10'])
-        ae(ufilt(None, {}, [('+','supervisor.supervisor.supervisor'),
-            ('-','supervisor.supervisor'), ('-','supervisor'),
-            ('+','username')]),
-            ['8', '9', '10', '6', '7', '1', '3', '2', '4', '5'])
-        ae(filt(None, {}, [('+','assignedto.supervisor.supervisor.supervisor'),
-            ('+','assignedto.supervisor.supervisor'),
-            ('+','assignedto.supervisor'), ('+','assignedto')]),
-            ['1', '2', '3', '4', '5', '6', '7', '8'])
-        ae(filt(None, {}, [('+','assignedto.supervisor.supervisor.supervisor'),
-            ('+','assignedto.supervisor.supervisor'),
-            ('-','assignedto.supervisor'), ('+','assignedto')]),
-            ['4', '5', '6', '7', '8', '1', '2', '3'])
-        ae(filt(None, {}, [('+','assignedto.supervisor.supervisor.supervisor'),
-            ('+','assignedto.supervisor.supervisor'),
-            ('+','assignedto.supervisor'), ('+','assignedto'),
-            ('-','status')]),
-            ['2', '1', '3', '4', '5', '6', '8', '7'])
-        ae(filt(None, {}, [('+','assignedto.supervisor.supervisor.supervisor'),
-            ('+','assignedto.supervisor.supervisor'),
-            ('+','assignedto.supervisor'), ('+','assignedto'),
-            ('+','status')]),
-            ['1', '2', '3', '4', '5', '7', '6', '8'])
-        ae(filt(None, {}, [('+','assignedto.supervisor.supervisor.supervisor'),
-            ('+','assignedto.supervisor.supervisor'),
-            ('-','assignedto.supervisor'), ('+','assignedto'), ('+','status')]),
-            ['4', '5', '7', '6', '8', '1', '2', '3'])
-        ae(filt(None, {'assignedto':['6','7','8','9','10']},
-            [('+','assignedto.supervisor.supervisor.supervisor'),
-            ('+','assignedto.supervisor.supervisor'),
-            ('-','assignedto.supervisor'), ('+','assignedto'), ('+','status')]),
-            ['4', '5', '7', '6', '8', '1', '2', '3'])
-        ae(filt(None, {'assignedto':['6','7','8','9']},
-            [('+','assignedto.supervisor.supervisor.supervisor'),
-            ('+','assignedto.supervisor.supervisor'),
-            ('-','assignedto.supervisor'), ('+','assignedto'), ('+','status')]),
-            ['4', '5', '1', '2', '3'])
+        for ufilt in ufilter, ufilter_iter:
+            ae(ufilt(None, {'supervisor':'3'}, []), ['1', '2', '3', '4', '5'])
+            ae(ufilt(None, {}, [('+','supervisor.supervisor.supervisor'),
+                ('+','supervisor.supervisor'), ('+','supervisor'),
+                ('+','username')]),
+                ['1', '3', '2', '4', '5', '6', '7', '8', '9', '10'])
+            ae(ufilt(None, {}, [('+','supervisor.supervisor.supervisor'),
+                ('-','supervisor.supervisor'), ('-','supervisor'),
+                ('+','username')]),
+                ['8', '9', '10', '6', '7', '1', '3', '2', '4', '5'])
+        for f in filter, filter_iter:
+            ae(f(None, {}, [('+','assignedto.supervisor.supervisor.supervisor'),
+                ('+','assignedto.supervisor.supervisor'),
+                ('+','assignedto.supervisor'), ('+','assignedto')]),
+                ['1', '2', '3', '4', '5', '6', '7', '8'])
+            ae(f(None, {}, [('+','assignedto.supervisor.supervisor.supervisor'),
+                ('+','assignedto.supervisor.supervisor'),
+                ('-','assignedto.supervisor'), ('+','assignedto')]),
+                ['4', '5', '6', '7', '8', '1', '2', '3'])
+            ae(f(None, {}, [('+','assignedto.supervisor.supervisor.supervisor'),
+                ('+','assignedto.supervisor.supervisor'),
+                ('+','assignedto.supervisor'), ('+','assignedto'),
+                ('-','status')]),
+                ['2', '1', '3', '4', '5', '6', '8', '7'])
+            ae(f(None, {}, [('+','assignedto.supervisor.supervisor.supervisor'),
+                ('+','assignedto.supervisor.supervisor'),
+                ('+','assignedto.supervisor'), ('+','assignedto'),
+                ('+','status')]),
+                ['1', '2', '3', '4', '5', '7', '6', '8'])
+            ae(f(None, {}, [('+','assignedto.supervisor.supervisor.supervisor'),
+                ('+','assignedto.supervisor.supervisor'),
+                ('-','assignedto.supervisor'), ('+','assignedto'),
+                ('+','status')]), ['4', '5', '7', '6', '8', '1', '2', '3'])
+            ae(f(None, {'assignedto':['6','7','8','9','10']},
+                [('+','assignedto.supervisor.supervisor.supervisor'),
+                ('+','assignedto.supervisor.supervisor'),
+                ('-','assignedto.supervisor'), ('+','assignedto'),
+                ('+','status')]), ['4', '5', '7', '6', '8', '1', '2', '3'])
+            ae(f(None, {'assignedto':['6','7','8','9']},
+                [('+','assignedto.supervisor.supervisor.supervisor'),
+                ('+','assignedto.supervisor.supervisor'),
+                ('-','assignedto.supervisor'), ('+','assignedto'),
+                ('+','status')]), ['4', '5', '1', '2', '3'])
 
     def testFilteringTransitiveLinkSortNull(self):
         """Check sorting of NULL values"""
-        ae, filt = self.filteringSetupTransitiveSearch()
-        ufilt = self.db.user.filter
-        ae(ufilt(None, {}, [('+','supervisor.supervisor.supervisor'),
-            ('+','supervisor.supervisor'), ('+','supervisor'),
-            ('+','username')]),
-            ['1', '3', '2', '4', '5', '6', '7', '8', '9', '10'])
-        ae(ufilt(None, {}, [('+','supervisor.supervisor.supervisor'),
-            ('-','supervisor.supervisor'), ('-','supervisor'),
-            ('+','username')]),
-            ['8', '9', '10', '6', '7', '4', '5', '1', '3', '2'])
-        ae(filt(None, {}, [('+','assignedto.supervisor.supervisor.supervisor'),
-            ('+','assignedto.supervisor.supervisor'),
-            ('+','assignedto.supervisor'), ('+','assignedto')]),
-            ['1', '2', '3', '4', '5', '6', '7', '8'])
-        ae(filt(None, {}, [('+','assignedto.supervisor.supervisor.supervisor'),
-            ('+','assignedto.supervisor.supervisor'),
-            ('-','assignedto.supervisor'), ('+','assignedto')]),
-            ['4', '5', '6', '7', '8', '1', '2', '3'])
+        ae, filter, filter_iter = self.filteringSetupTransitiveSearch()
+        ae, ufilter, ufilter_iter = self.iterSetup('user')
+        for ufilt in ufilter, ufilter_iter:
+            ae(ufilt(None, {}, [('+','supervisor.supervisor.supervisor'),
+                ('+','supervisor.supervisor'), ('+','supervisor'),
+                ('+','username')]),
+                ['1', '3', '2', '4', '5', '6', '7', '8', '9', '10'])
+            ae(ufilt(None, {}, [('+','supervisor.supervisor.supervisor'),
+                ('-','supervisor.supervisor'), ('-','supervisor'),
+                ('+','username')]),
+                ['8', '9', '10', '6', '7', '4', '5', '1', '3', '2'])
+        for f in filter, filter_iter:
+            ae(f(None, {}, [('+','assignedto.supervisor.supervisor.supervisor'),
+                ('+','assignedto.supervisor.supervisor'),
+                ('+','assignedto.supervisor'), ('+','assignedto')]),
+                ['1', '2', '3', '4', '5', '6', '7', '8'])
+            ae(f(None, {}, [('+','assignedto.supervisor.supervisor.supervisor'),
+                ('+','assignedto.supervisor.supervisor'),
+                ('-','assignedto.supervisor'), ('+','assignedto')]),
+                ['4', '5', '6', '7', '8', '1', '2', '3'])
 
     def testFilteringTransitiveLinkIssue(self):
-        ae, filt = self.filteringSetupTransitiveSearch()
-        ae(filt(None, {'assignedto.supervisor.username': 'grouplead1'},
-            ('+','id')), ['1', '2', '3'])
-        ae(filt(None, {'assignedto.supervisor.username': 'grouplead2'},
-            ('+','id')), ['4', '5', '6', '7', '8'])
-        ae(filt(None, {'assignedto.supervisor.username': 'grouplead2',
-                       'status': '1'}, ('+','id')), ['4', '6', '8'])
-        ae(filt(None, {'assignedto.supervisor.username': 'grouplead2',
-                       'status': '2'}, ('+','id')), ['5', '7'])
-        ae(filt(None, {'assignedto.supervisor.username': ['grouplead2'],
-                       'status': '2'}, ('+','id')), ['5', '7'])
-        ae(filt(None, {'assignedto.supervisor': ['4', '5'], 'status': '2'},
-            ('+','id')), ['1', '3', '5', '7'])
+        ae, filter, filter_iter = self.filteringSetupTransitiveSearch()
+        for filt in filter, filter_iter:
+            ae(filt(None, {'assignedto.supervisor.username': 'grouplead1'},
+                ('+','id')), ['1', '2', '3'])
+            ae(filt(None, {'assignedto.supervisor.username': 'grouplead2'},
+                ('+','id')), ['4', '5', '6', '7', '8'])
+            ae(filt(None, {'assignedto.supervisor.username': 'grouplead2',
+                           'status': '1'}, ('+','id')), ['4', '6', '8'])
+            ae(filt(None, {'assignedto.supervisor.username': 'grouplead2',
+                           'status': '2'}, ('+','id')), ['5', '7'])
+            ae(filt(None, {'assignedto.supervisor.username': ['grouplead2'],
+                           'status': '2'}, ('+','id')), ['5', '7'])
+            ae(filt(None, {'assignedto.supervisor': ['4', '5'], 'status': '2'},
+                ('+','id')), ['1', '3', '5', '7'])
 
     def testFilteringTransitiveMultilink(self):
-        ae, filt = self.filteringSetupTransitiveSearch()
-        ae(filt(None, {'messages.author.username': 'grouplead1'},
-            ('+','id')), [])
-        ae(filt(None, {'messages.author': '6'},
-            ('+','id')), ['1', '2'])
-        ae(filt(None, {'messages.author.id': '6'},
-            ('+','id')), ['1', '2'])
-        ae(filt(None, {'messages.author.username': 'worker1'},
-            ('+','id')), ['1', '2'])
-        ae(filt(None, {'messages.author': '10'},
-            ('+','id')), ['6', '7', '8'])
-        ae(filt(None, {'messages.author': '9'},
-            ('+','id')), ['5', '8'])
-        ae(filt(None, {'messages.author': ['9', '10']},
-            ('+','id')), ['5', '6', '7', '8'])
-        ae(filt(None, {'messages.author': ['8', '9']},
-            ('+','id')), ['4', '5', '8'])
-        ae(filt(None, {'messages.author': ['8', '9'], 'status' : '1'},
-            ('+','id')), ['4', '8'])
-        ae(filt(None, {'messages.author': ['8', '9'], 'status' : '2'},
-            ('+','id')), ['5'])
-        ae(filt(None, {'messages.author': ['8', '9', '10'],
-            'messages.date': '2006-01-22.21:00;2006-01-23'}, ('+','id')),
-            ['6', '7', '8'])
-        ae(filt(None, {'nosy.supervisor.username': 'ceo'},
-            ('+','id')), ['1', '2'])
-        ae(filt(None, {'messages.author': ['6', '9']},
-            ('+','id')), ['1', '2', '5', '8'])
-        ae(filt(None, {'messages': ['5', '7']},
-            ('+','id')), ['3', '5', '8'])
-        ae(filt(None, {'messages.author': ['6', '9'], 'messages': ['5', '7']},
-            ('+','id')), ['5', '8'])
+        ae, filter, filter_iter = self.filteringSetupTransitiveSearch()
+        for filt in filter, filter_iter:
+            ae(filt(None, {'messages.author.username': 'grouplead1'},
+                ('+','id')), [])
+            ae(filt(None, {'messages.author': '6'},
+                ('+','id')), ['1', '2'])
+            ae(filt(None, {'messages.author.id': '6'},
+                ('+','id')), ['1', '2'])
+            ae(filt(None, {'messages.author.username': 'worker1'},
+                ('+','id')), ['1', '2'])
+            ae(filt(None, {'messages.author': '10'},
+                ('+','id')), ['6', '7', '8'])
+            ae(filt(None, {'messages.author': '9'},
+                ('+','id')), ['5', '8'])
+            ae(filt(None, {'messages.author': ['9', '10']},
+                ('+','id')), ['5', '6', '7', '8'])
+            ae(filt(None, {'messages.author': ['8', '9']},
+                ('+','id')), ['4', '5', '8'])
+            ae(filt(None, {'messages.author': ['8', '9'], 'status' : '1'},
+                ('+','id')), ['4', '8'])
+            ae(filt(None, {'messages.author': ['8', '9'], 'status' : '2'},
+                ('+','id')), ['5'])
+            ae(filt(None, {'messages.author': ['8', '9', '10'],
+                'messages.date': '2006-01-22.21:00;2006-01-23'}, ('+','id')),
+                ['6', '7', '8'])
+            ae(filt(None, {'nosy.supervisor.username': 'ceo'},
+                ('+','id')), ['1', '2'])
+            ae(filt(None, {'messages.author': ['6', '9']},
+                ('+','id')), ['1', '2', '5', '8'])
+            ae(filt(None, {'messages': ['5', '7']},
+                ('+','id')), ['3', '5', '8'])
+            ae(filt(None, {'messages.author': ['6', '9'],
+                'messages': ['5', '7']}, ('+','id')), ['5', '8'])
 
     def testFilteringTransitiveMultilinkSort(self):
-        ae, filt = self.filteringSetupTransitiveSearch()
+        # Note that we don't test filter_iter here, Multilink sort-order
+        # isn't defined for that.
+        ae, filt, dummy = self.filteringSetupTransitiveSearch()
         ae(filt(None, {}, [('+','messages.author')]),
             ['1', '2', '3', '4', '5', '8', '6', '7'])
         ae(filt(None, {}, [('-','messages.author')]),
@@ -1608,9 +1657,10 @@ class DBTest(MyTestCase):
             ['3', '1', '2', '6', '7', '5', '4', '8'])
 
     def testFilteringSortId(self):
-        ae, filt = self.filteringSetupTransitiveSearch()
-        ae(self.db.user.filter(None, {}, ('+','id')),
-            ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'])
+        ae, filter, filter_iter = self.filteringSetupTransitiveSearch('user')
+        for filt in filter, filter_iter:
+            ae(filt(None, {}, ('+','id')),
+                ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'])
 
 # XXX add sorting tests for other types
 
@@ -1627,7 +1677,7 @@ class DBTest(MyTestCase):
 
     def testImportExport(self):
         # use the filtering setup to create a bunch of items
-        ae, filt = self.filteringSetup()
+        ae, dummy1, dummy2 = self.filteringSetup()
         # Get some stuff into the journal for testing import/export of
         # journal data:
         self.db.user.set('4', password = password.Password('xyzzy'))
@@ -1740,7 +1790,7 @@ class DBTest(MyTestCase):
         import roundup.admin
         import csv
         # use the filtering setup to create a bunch of items
-        ae, filt = self.filteringSetup()
+        ae, dummy1, dummy2 = self.filteringSetup()
         # create large field
         self.db.priority.create(name = 'X' * 500)
         self.db.config.CSV_FIELD_SIZE = 400
@@ -1895,9 +1945,6 @@ class SchemaTest(MyTestCase):
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
-
-    def open_database(self):
-        self.db = self.module.Database(config, 'admin')
 
     def test_reservedProperties(self):
         self.open_database()
@@ -2123,6 +2170,123 @@ class RDBMSTest:
     def test_indexTest(self):
         self.assertEqual(self.db.sql_index_exists('_issue', '_issue_id_idx'), 1)
         self.assertEqual(self.db.sql_index_exists('_issue', '_issue_x_idx'), 0)
+
+class FilterCacheTest(commonDBTest):
+    def testFilteringTransitiveLinkCache(self):
+        ae, filter, filter_iter = self.filteringSetupTransitiveSearch()
+        ae, ufilter, ufilter_iter = self.iterSetup('user')
+        # Need to make ceo his own (and first two users') supervisor
+        self.db.user.set('1', supervisor = '3')
+        self.db.user.set('2', supervisor = '3')
+        self.db.user.set('3', supervisor = '3')
+        # test bool value
+        self.db.user.set('4', assignable = True)
+        self.db.user.set('3', assignable = False)
+        filt = self.db.issue.filter_iter
+        ufilt = self.db.user.filter_iter
+        user_result = \
+            {  '1' : {'username': 'admin', 'assignable': None,
+                      'supervisor': '3', 'realname': None, 'roles': 'Admin',
+                      'creator': '1', 'age': None, 'actor': '1',
+                      'address': None}
+            ,  '2' : {'username': 'fred', 'assignable': None,
+                      'supervisor': '3', 'realname': None, 'roles': 'User',
+                      'creator': '1', 'age': None, 'actor': '1',
+                      'address': 'fred@example.com'}
+            ,  '3' : {'username': 'ceo', 'assignable': False,
+                      'supervisor': '3', 'realname': None, 'roles': None,
+                      'creator': '1', 'age': 129.0, 'actor': '1',
+                      'address': None}
+            ,  '4' : {'username': 'grouplead1', 'assignable': True,
+                      'supervisor': '3', 'realname': None, 'roles': None,
+                      'creator': '1', 'age': 29.0, 'actor': '1',
+                      'address': None}
+            ,  '5' : {'username': 'grouplead2', 'assignable': None,
+                      'supervisor': '3', 'realname': None, 'roles': None,
+                      'creator': '1', 'age': 29.0, 'actor': '1',
+                      'address': None}
+            ,  '6' : {'username': 'worker1', 'assignable': None,
+                      'supervisor': '4', 'realname': None, 'roles': None,
+                      'creator': '1', 'age': 25.0, 'actor': '1',
+                      'address': None}
+            ,  '7' : {'username': 'worker2', 'assignable': None,
+                      'supervisor': '4', 'realname': None, 'roles': None,
+                      'creator': '1', 'age': 24.0, 'actor': '1',
+                      'address': None}
+            ,  '8' : {'username': 'worker3', 'assignable': None,
+                      'supervisor': '5', 'realname': None, 'roles': None,
+                      'creator': '1', 'age': 23.0, 'actor': '1',
+                      'address': None}
+            ,  '9' : {'username': 'worker4', 'assignable': None,
+                      'supervisor': '5', 'realname': None, 'roles': None,
+                      'creator': '1', 'age': 22.0, 'actor': '1',
+                      'address': None}
+            , '10' : {'username': 'worker5', 'assignable': None,
+                      'supervisor': '5', 'realname': None, 'roles': None,
+                      'creator': '1', 'age': 21.0, 'actor': '1',
+                      'address': None}
+            }
+        foo = date.Interval('-1d')
+        issue_result = \
+            { '1' : {'title': 'ts1', 'status': '2', 'assignedto': '6',
+                     'priority': '3', 'messages' : ['4'], 'nosy' : ['4']}
+            , '2' : {'title': 'ts2', 'status': '1', 'assignedto': '6',
+                     'priority': '3', 'messages' : ['4'], 'nosy' : ['5']}
+            , '3' : {'title': 'ts4', 'status': '2', 'assignedto': '7',
+                     'priority': '3', 'messages' : ['5']}
+            , '4' : {'title': 'ts5', 'status': '1', 'assignedto': '8',
+                     'priority': '3', 'messages' : ['6']}
+            , '5' : {'title': 'ts6', 'status': '2', 'assignedto': '9',
+                     'priority': '3', 'messages' : ['7']}
+            , '6' : {'title': 'ts7', 'status': '1', 'assignedto': '10',
+                     'priority': '3', 'messages' : ['8'], 'foo' : None}
+            , '7' : {'title': 'ts8', 'status': '2', 'assignedto': '10',
+                     'priority': '3', 'messages' : ['8'], 'foo' : foo}
+            , '8' : {'title': 'ts9', 'status': '1', 'assignedto': '10',
+                     'priority': '3', 'messages' : ['7', '8']}
+            }
+        result = []
+        self.db.clearCache()
+        for id in ufilt(None, {}, [('+','supervisor.supervisor.supervisor'),
+            ('-','supervisor.supervisor'), ('-','supervisor'),
+            ('+','username')]):
+            result.append(id)
+            nodeid = id
+            for x in range(4):
+                assert(('user', nodeid) in self.db.cache)
+                n = self.db.user.getnode(nodeid)
+                for k, v in user_result[nodeid].iteritems():
+                    ae((k, n[k]), (k, v))
+                for k in 'creation', 'activity':
+                    assert(n[k])
+                nodeid = n.supervisor
+            self.db.clearCache()
+        ae (result, ['8', '9', '10', '6', '7', '1', '3', '2', '4', '5'])
+
+        result = []
+        self.db.clearCache()
+        for id in filt(None, {},
+            [('+','assignedto.supervisor.supervisor.supervisor'),
+            ('+','assignedto.supervisor.supervisor'),
+            ('-','assignedto.supervisor'), ('+','assignedto')]):
+            result.append(id)
+            assert(('issue', id) in self.db.cache)
+            n = self.db.issue.getnode(id)
+            for k, v in issue_result[id].iteritems():
+                ae((k, n[k]), (k, v))
+            for k in 'creation', 'activity':
+                assert(n[k])
+            nodeid = n.assignedto
+            for x in range(4):
+                assert(('user', nodeid) in self.db.cache)
+                n = self.db.user.getnode(nodeid)
+                for k, v in user_result[nodeid].iteritems():
+                    ae((k, n[k]), (k, v))
+                for k in 'creation', 'activity':
+                    assert(n[k])
+                nodeid = n.supervisor
+            self.db.clearCache()
+        ae (result, ['4', '5', '6', '7', '8', '1', '2', '3'])
 
 
 class ClassicInitTest(unittest.TestCase):

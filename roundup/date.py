@@ -249,14 +249,22 @@ class Date:
            serving as translation functions.
         """
         self.setTranslator(translator)
+        # Python 2.3+ datetime object
+        # common case when reading from database: avoid double-conversion
+        if isinstance(spec, datetime.datetime):
+            if offset == 0:
+                self.year, self.month, self.day, self.hour, self.minute, \
+                    self.second = spec.timetuple()[:6]
+            else:
+                TZ = get_timezone(tz)
+                self.year, self.month, self.day, self.hour, self.minute, \
+                    self.second = TZ.localize(spec).utctimetuple()[:6]
+            self.second += spec.microsecond/1000000.
+            return
+
         if type(spec) == type(''):
             self.set(spec, offset=offset, add_granularity=add_granularity)
             return
-        elif isinstance(spec, datetime.datetime):
-            # Python 2.3+ datetime object
-            y,m,d,H,M,S,x,x,x = spec.timetuple()
-            S += spec.microsecond/1000000.
-            spec = (y,m,d,H,M,S,x,x,x)
         elif hasattr(spec, 'tuple'):
             spec = spec.tuple()
         elif isinstance(spec, Date):
