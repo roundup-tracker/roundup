@@ -610,6 +610,12 @@ SETTINGS = (
             "Only used in SQLite connections."),
         (IntegerNumberOption, 'cache_size', '100',
             "Size of the node cache (in elements)"),
+        (BooleanOption, "allow_create", "yes",
+            "Setting this option to 'no' protects the database against table creations."),
+        (BooleanOption, "allow_alter", "yes",
+            "Setting this option to 'no' protects the database against table alterations."),
+        (BooleanOption, "allow_drop", "yes",
+            "Setting this option to 'no' protects the database against table drops."),
         (NullableOption, 'template', '',
             "Name of the PostgreSQL template for database creation.\n"
             "For database creation the template used has to match\n"

@@ -513,6 +513,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             # no changes
             return 0
 
+        if not self.config.RDBMS_ALLOW_ALTER:
+            raise DatabaseError(_('ALTER operation disallowed: %r -> %r.'%(old_spec, new_spec)))
+
         logger = logging.getLogger('roundup.hyperdb')
         logger.info('update_class %s'%spec.classname)
 
@@ -737,6 +740,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def create_class(self, spec):
         """ Create a database table according to the given spec.
         """
+
+        if not self.config.RDBMS_ALLOW_CREATE:
+            raise DatabaseError(_('CREATE operation disallowed: "%s".'%spec.classname))
+
         cols, mls = self.create_class_table(spec)
         self.create_journal_table(spec)
 
@@ -749,6 +756,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
             Drop the journal and multilink tables too.
         """
+
+        if not self.config.RDBMS_ALLOW_DROP:
+            raise DatabaseError(_('DROP operation disallowed: "%s".'%cn))
+
         properties = spec[1]
         # figure the multilinks
         mls = []
