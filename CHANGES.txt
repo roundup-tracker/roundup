@@ -46,6 +46,9 @@ Fixed:
   doesn't have access to a property but can deduce the content by
   crafting a clever search, group or sort query.
   see doc/upgrading.txt for how to fix your trackers! (Ralf Schlatterbeck).
+- Range support in roundup-server so large files can be served, 
+  e.g. media files on iOS/iPads; issue2550694. (Bernhard Reiter; 
+  Thanks to Jon C. Thomason for the patch.)
 - Fix search for xapian 1.2 issue2550676 
   (Bernhard Reiter; Thanks to Olly Betts for providing the patch.)
 - Some minor typos fixed in doc/customizing.txt (Thanks Ralf Hemmecke).

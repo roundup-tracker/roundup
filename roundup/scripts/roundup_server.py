@@ -362,6 +362,9 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         if os.environ.has_key('CGI_SHOW_TIMING'):
             env['CGI_SHOW_TIMING'] = os.environ['CGI_SHOW_TIMING']
         env['HTTP_ACCEPT_LANGUAGE'] = self.headers.get('accept-language')
+        range = self.headers.getheader('range')
+        if range:
+            env['HTTP_RANGE'] = range
 
         # do the roundup thing
         tracker = self.get_tracker(tracker_name)
