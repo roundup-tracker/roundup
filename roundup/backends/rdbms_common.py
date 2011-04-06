@@ -1617,27 +1617,23 @@ class Class(hyperdb.Class):
 
         # get the node's dict
         d = self.db.getnode(self.classname, nodeid)
+        # handle common case -- that property is in dict -- first
+        # if None and one of creator/creation actor/activity return None
+        if propname in d:
+            r = d [propname]
+            # return copy of our list
+            if isinstance (r, list):
+                return r[:]
+            if r is not None:
+                return r
+            elif propname in ('creation', 'activity', 'creator', 'actor'):
+                return r
 
-        if propname == 'creation':
-            if 'creation' in d:
-                return d['creation']
-            else:
-                return date.Date()
-        if propname == 'activity':
-            if 'activity' in d:
-                return d['activity']
-            else:
-                return date.Date()
-        if propname == 'creator':
-            if 'creator' in d:
-                return d['creator']
-            else:
-                return self.db.getuid()
-        if propname == 'actor':
-            if 'actor' in d:
-                return d['actor']
-            else:
-                return self.db.getuid()
+        # propname not in d:
+        if propname == 'creation' or propname == 'activity':
+            return date.Date()
+        if propname == 'creator' or propname == 'actor':
+            return self.db.getuid()
 
         # get the property (raises KeyError if invalid)
         prop = self.properties[propname]
