@@ -1108,6 +1108,13 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                             cell[-1] += ' -> %s'%current[k]
                             current[k] = val
 
+                    elif isinstance(prop, hyperdb.Password) and args[k] is not None:
+                        val = args[k].dummystr()
+                        cell.append('%s: %s'%(self._(k), val))
+                        if current.has_key(k):
+                            cell[-1] += ' -> %s'%current[k]
+                            current[k] = val
+
                     elif not args[k]:
                         if current.has_key(k):
                             cell.append('%s: %s'%(self._(k), current[k]))
@@ -1561,7 +1568,10 @@ class PasswordHTMLProperty(HTMLProperty):
 
         if self._value is None:
             return ''
-        return self._('*encrypted*')
+        value = self._value.dummystr()
+        if escape:
+            value = cgi.escape(value)
+        return value
 
     def field(self, size=30, **kwargs):
         """ Render a form edit field for the property.

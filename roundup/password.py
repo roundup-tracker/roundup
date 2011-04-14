@@ -168,7 +168,49 @@ def generatePassword(length=8):
     chars = string.letters+string.digits
     return ''.join([random.choice(chars) for x in range(length)])
 
-class Password:
+class JournalPassword:
+    """ Password dummy instance intended for journal operation.
+        We do not store passwords in the journal any longer.  The dummy
+        version only reads the encryption scheme from the given
+        encrypted password.
+    """
+    default_scheme = 'PBKDF2'        # new encryptions use this scheme
+    pwre = re.compile(r'{(\w+)}(.+)')
+
+    def __init__ (self, encrypted=''):
+        if isinstance(encrypted, self.__class__):
+            self.scheme = encrypted.scheme or self.default_scheme
+        else:
+            m = self.pwre.match(encrypted)
+            if m:
+                self.scheme = m.group(1)
+            else:
+                self.scheme = self.default_scheme
+        self.password = ''
+
+    def dummystr(self):
+        """ return dummy string to store in journal
+            - reports scheme, but nothing else
+        """
+        return "{%s}*encrypted*" % (self.scheme,)
+
+    __str__ = dummystr
+
+    def __cmp__(self, other):
+        """Compare this password against another password."""
+        # check to see if we're comparing instances
+        if isinstance(other, self.__class__):
+            if self.scheme != other.scheme:
+                return cmp(self.scheme, other.scheme)
+            return cmp(self.password, other.password)
+
+        # assume password is plaintext
+        if self.password is None:
+            raise ValueError, 'Password not set'
+        return cmp(self.password, encodePassword(other, self.scheme,
+            self.password or None))
+
+class Password(JournalPassword):
     """The class encapsulates a Password property type value in the database.
 
     The encoding of the password is one if None, 'SHA', 'MD5' or 'plaintext'.
@@ -192,9 +234,7 @@ class Password:
     """
     #TODO: code to migrate from old password schemes.
 
-    default_scheme = 'PBKDF2'        # new encryptions use this scheme
     known_schemes = [ "PBKDF2", "SHA", "MD5", "crypt", "plaintext" ]
-    pwre = re.compile(r'{(\w+)}(.+)')
 
     def __init__(self, plaintext=None, scheme=None, encrypted=None, strict=False):
         """Call setPassword if plaintext is not None."""
@@ -231,20 +271,6 @@ class Password:
         self.scheme = scheme
         self.password = encodePassword(plaintext, scheme)
         self.plaintext = plaintext
-
-    def __cmp__(self, other):
-        """Compare this password against another password."""
-        # check to see if we're comparing instances
-        if isinstance(other, Password):
-            if self.scheme != other.scheme:
-                return cmp(self.scheme, other.scheme)
-            return cmp(self.password, other.password)
-
-        # assume password is plaintext
-        if self.password is None:
-            raise ValueError, 'Password not set'
-        return cmp(self.password, encodePassword(other, self.scheme,
-            self.password))
 
     def __str__(self):
         """Stringify the encrypted password for database storage."""

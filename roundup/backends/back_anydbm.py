@@ -1298,6 +1298,8 @@ class Class(hyperdb.Class):
                     raise TypeError('new property "%s" not a '
                         'Password'%propname)
                 propvalues[propname] = value
+                journalvalues[propname] = \
+                    current and password.JournalPassword(current)
 
             elif value is not None and isinstance(prop, hyperdb.Date):
                 if not isinstance(value, date.Date):
@@ -1422,23 +1424,6 @@ class Class(hyperdb.Class):
         if self.db.journaltag is None:
             raise hyperdb.DatabaseError(_('Database open read-only'))
         self.db.destroynode(self.classname, nodeid)
-
-    def history(self, nodeid):
-        """Retrieve the journal of edits on a particular node.
-
-        'nodeid' must be the id of an existing node of this class or an
-        IndexError is raised.
-
-        The returned list contains tuples of the form
-
-            (nodeid, date, tag, action, params)
-
-        'date' is a Timestamp object specifying the time of the change and
-        'tag' is the journaltag specified when the database was opened.
-        """
-        if not self.do_journal:
-            raise ValueError('Journalling is disabled for this class')
-        return self.db.getjournal(self.classname, nodeid)
 
     # Locating nodes:
     def hasnode(self, nodeid):

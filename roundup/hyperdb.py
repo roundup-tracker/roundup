@@ -951,7 +951,9 @@ class Class:
         'date' is a Timestamp object specifying the time of the change and
         'tag' is the journaltag specified when the database was opened.
         """
-        raise NotImplementedError
+        if not self.do_journal:
+            raise ValueError('Journalling is disabled for this class')
+        return self.db.getjournal(self.classname, nodeid)
 
     # Locating nodes:
     def hasnode(self, nodeid):
@@ -1309,7 +1311,7 @@ class Class:
                     elif isinstance(prop, Interval):
                         value = date.Interval(value)
                     elif isinstance(prop, Password):
-                        value = password.Password(encrypted=value)
+                        value = password.JournalPassword(encrypted=value)
                     params[propname] = value
             elif action == 'create' and params:
                 # old tracker with data stored in the create!
