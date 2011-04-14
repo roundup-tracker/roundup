@@ -6,6 +6,7 @@ Richard Jones did the change.
 
 Features:
 
+- Allow declaration of default_values for properties in schema.
 - Add explicit "Search" permissions, see Security Fix below.
 - Add "lookup" method to xmlrpc interface (Ralf Schlatterbeck)
 - Multilinks can be filtered by combining elements with AND, OR and NOT
