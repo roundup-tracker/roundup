@@ -35,7 +35,7 @@ config.RDBMS_NAME = "rounduptest"
 config.RDBMS_HOST = "localhost"
 config.RDBMS_USER = "rounduptest"
 config.RDBMS_PASSWORD = "rounduptest"
-#config.RDBMS_TEMPLATE = "template0"
+config.RDBMS_TEMPLATE = "template0"
 #config.logging = MockNull()
 # these TRACKER_WEB and MAIL_DOMAIN values are used in mailgw tests
 config.MAIL_DOMAIN = "your.tracker.email.domain.example"

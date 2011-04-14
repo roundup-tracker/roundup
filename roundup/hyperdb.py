@@ -72,24 +72,12 @@ class Password(_Type):
     def from_raw(self, value, **kw):
         if not value:
             return None
-        m = password.Password.pwre.match(value)
-        if m:
-            # password is being given to us encrypted
-            p = password.Password()
-            p.scheme = m.group(1)
-            if p.scheme not in 'SHA crypt plaintext'.split():
-                raise HyperdbValueError, \
-                        ('property %s: unknown encryption scheme %r') %\
-                        (kw['propname'], p.scheme)
-            p.password = m.group(2)
-            value = p
-        else:
-            try:
-                value = password.Password(value)
-            except password.PasswordValueError, message:
-                raise HyperdbValueError, \
-                        _('property %s: %s')%(kw['propname'], message)
-        return value
+        try:
+            return password.Password(encrypted=value, strict=True)
+        except password.PasswordValueError, message:
+            raise HyperdbValueError, \
+                    _('property %s: %s')%(kw['propname'], message)
+
     def sort_repr (self, cls, val, name):
         if not val:
             return val
@@ -1307,9 +1295,7 @@ class Class:
                     elif isinstance(prop, Interval):
                         value = date.Interval(value)
                     elif isinstance(prop, Password):
-                        pwd = password.Password()
-                        pwd.unpack(value)
-                        value = pwd
+                        value = password.Password(encrypted=value)
                     params[propname] = value
             elif action == 'create' and params:
                 # old tracker with data stored in the create!
@@ -1337,7 +1323,7 @@ class Class:
 
     def has_role(self, nodeid, *roles):
         '''See if this node has any roles that appear in roles.
-           
+
            For convenience reasons we take a list.
            In standard schemas only a user has a roles property but
            this may be different in customized schemas.

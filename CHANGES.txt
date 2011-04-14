@@ -75,6 +75,8 @@ Fixed:
   (Ralf Schlatterbeck)
 - Fixed bug in mailgw refactoring, patch issue2550697 (thanks Hubert
   Touvet)
+- Fix first part of Password handling security issue2550688 (thanks
+  Joseph Myers for reporting and Eli Collins for fixing)
 
 2010-10-08 1.4.16 (r4541)
 

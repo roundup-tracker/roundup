@@ -103,8 +103,7 @@ class Database:
             elif isinstance(proptype, hyperdb.Interval):
                 props[propname] = date.Interval(value)
             elif isinstance(proptype, hyperdb.Password):
-                props[propname] = password.Password()
-                props[propname].unpack(value)
+                props[propname] = password.Password(encrypted=value)
 
         # tag new user creation with 'admin'
         self.journaltag = 'admin'
@@ -241,7 +240,7 @@ class IssueClass:
                 user or a user who has already seen the message.
                 Also check permissions on the message if not a system
                 message: A user must have view permission on content and
-                files to be on the receiver list. We do *not* check the 
+                files to be on the receiver list. We do *not* check the
                 author etc. for now.
             """
             allowed = True

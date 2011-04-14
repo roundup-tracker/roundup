@@ -2832,9 +2832,7 @@ class Class(hyperdb.Class):
             elif isinstance(prop, hyperdb.Interval):
                 value = date.Interval(value)
             elif isinstance(prop, hyperdb.Password):
-                pwd = password.Password()
-                pwd.unpack(value)
-                value = pwd
+                value = password.Password(encrypted=value)
             elif isinstance(prop, String):
                 if isinstance(value, unicode):
                     value = value.encode('utf8')

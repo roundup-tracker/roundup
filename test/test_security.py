@@ -23,7 +23,7 @@
 import os, unittest, shutil
 
 from roundup import backends
-from roundup.password import Password
+import roundup.password
 from db_test_base import setupSchema, MyTestCase, config
 
 class PermissionTest(MyTestCase):
@@ -232,6 +232,10 @@ class PermissionTest(MyTestCase):
         self.assertEquals(has(uimu, 'issue', 'messages.author.username'), 1)
         self.assertEquals(has(uimu, 'issue', 'messages.recipients'), 1)
         self.assertEquals(has(uimu, 'issue', 'messages.recipients.username'), 1)
+
+    # roundup.password has its own built-in test, call it.
+    def test_password(self):
+        roundup.password.test()
 
 def test_suite():
     suite = unittest.TestSuite()

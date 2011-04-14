@@ -504,9 +504,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             elif isinstance(prop, hyperdb.Interval) and v is not None:
                 d[k] = date.Interval(v)
             elif isinstance(prop, hyperdb.Password) and v is not None:
-                p = password.Password()
-                p.unpack(v)
-                d[k] = p
+                d[k] = password.Password(encrypted=v)
             else:
                 d[k] = v
         return d
@@ -1744,7 +1742,7 @@ class Class(hyperdb.Class):
                 l.append((OTHER, k, [float(val) for val in v]))
 
         filterspec = l
-        
+
         # now, find all the nodes that are active and pass filtering
         matches = []
         cldb = self.db.getclassdb(cn)
@@ -2028,9 +2026,7 @@ class Class(hyperdb.Class):
             elif isinstance(prop, hyperdb.Interval):
                 value = date.Interval(value)
             elif isinstance(prop, hyperdb.Password):
-                pwd = password.Password()
-                pwd.unpack(value)
-                value = pwd
+                value = password.Password(encrypted=value)
             d[propname] = value
 
         # get a new id if necessary
