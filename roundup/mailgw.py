@@ -704,7 +704,7 @@ Subject was: '%(subject)s'
             attempts.append(classname)
 
         if self.mailgw.default_class:
-            attempts.append(self.default_class)
+            attempts.append(self.mailgw.default_class)
         else:
             attempts.append(self.config['MAILGW_DEFAULT_CLASS'])
 

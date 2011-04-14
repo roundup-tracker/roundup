@@ -73,7 +73,8 @@ Fixed:
   HINT:  Use the same encoding as in the template database, or use
   template0 as template.
   (Ralf Schlatterbeck)
-
+- Fixed bug in mailgw refactoring, patch issue2550697 (thanks Hubert
+  Touvet)
 
 2010-10-08 1.4.16 (r4541)
 
