@@ -268,10 +268,11 @@ From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <dummy_test_message_id>
 Reply-To: chef@bork.bork.bork
-Subject: [issue] Testing...
+Subject: [issue] Testing... [status=chatting;priority=critical]
 
 Hi there!
 ''', (('-c', 'issue'),))
+        self.assertEqual(self.db.issue.get(nodeid, 'title'), 'Testing...')
         self.assertEqual(self.db.issue.get(nodeid, 'status'), '3')
         self.assertEqual(self.db.issue.get(nodeid, 'priority'), '1')
 
