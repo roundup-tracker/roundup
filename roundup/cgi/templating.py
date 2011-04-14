@@ -567,10 +567,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         for klass, htmlklass in propclasses:
             if not isinstance(prop, klass):
                 continue
-            if isinstance(prop, hyperdb.Multilink):
-                value = []
-            else:
-                value = None
+            value = prop.get_default_value()
             return htmlklass(self._client, self._classname, None, prop, item,
                 value, self._anonymous)
 
@@ -603,13 +600,10 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         l = []
         for name, prop in self._props.items():
             for klass, htmlklass in propclasses:
-                if isinstance(prop, hyperdb.Multilink):
-                    value = []
-                else:
-                    value = None
                 if isinstance(prop, klass):
+                    value = prop.get_default_value()
                     l.append(htmlklass(self._client, self._classname, '',
-                        prop, name, value, self._anonymous))
+                                       prop, name, value, self._anonymous))
         if sort:
             l.sort(lambda a,b:cmp(a._name, b._name))
         return l

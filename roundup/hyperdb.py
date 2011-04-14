@@ -35,11 +35,15 @@ from roundup.i18n import _
 #
 class _Type(object):
     """A roundup property type."""
-    def __init__(self, required=False):
+    def __init__(self, required=False, default_value = None):
         self.required = required
+        self.__default_value = default_value
     def __repr__(self):
         ' more useful for dumps '
         return '<%s.%s>'%(self.__class__.__module__, self.__class__.__name__)
+    def get_default_value(self):
+        """The default value when creating a new instance of this property.""" 
+        return self.__default_value
     def sort_repr (self, cls, val, name):
         """Representation used for sorting. This should be a python
         built-in type, otherwise sorting will take ages. Note that
@@ -50,8 +54,8 @@ class _Type(object):
 
 class String(_Type):
     """An object designating a String property."""
-    def __init__(self, indexme='no', required=False):
-        super(String, self).__init__(required)
+    def __init__(self, indexme='no', required=False, default_value = ""):
+        super(String, self).__init__(required, default_value)
         self.indexme = indexme == 'yes'
     def from_raw(self, value, propname='', **kw):
         """fix the CRLF/CR -> LF stuff"""
@@ -85,8 +89,9 @@ class Password(_Type):
 
 class Date(_Type):
     """An object designating a Date property."""
-    def __init__(self, offset=None, required=False):
-        super(Date, self).__init__(required)
+    def __init__(self, offset=None, required=False, default_value = None):
+        super(Date, self).__init__(required = required,
+                                   default_value = default_value)
         self._offset = offset
     def offset(self, db):
         if self._offset is not None:
@@ -124,10 +129,11 @@ class Interval(_Type):
 class _Pointer(_Type):
     """An object designating a Pointer property that links or multilinks
     to a node in a specified class."""
-    def __init__(self, classname, do_journal='yes', required=False):
+    def __init__(self, classname, do_journal='yes', required=False,
+                 default_value = None):
         """ Default is to journal link and unlink events
         """
-        super(_Pointer, self).__init__(required)
+        super(_Pointer, self).__init__(required, default_value)
         self.classname = classname
         self.do_journal = do_journal == 'yes'
     def __repr__(self):
@@ -163,6 +169,14 @@ class Multilink(_Pointer):
        "do_journal" indicates whether the linked-to nodes should have
                     'link' and 'unlink' events placed in their journal
     """
+
+    def __init__(self, classname, do_journal = 'yes', required = False):
+
+        super(Multilink, self).__init__(classname,
+                                        do_journal,
+                                        required = required,
+                                        default_value = [])        
+
     def from_raw(self, value, db, klass, propname, itemid, **kw):
         if not value:
             return []
