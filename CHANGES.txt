@@ -79,6 +79,11 @@ Fixed:
 - Fix Password handling security issue2550688 (thanks Joseph Myers for
   reporting and Eli Collins for fixing) -- this fixes all observations
   by Joseph Myers except for auto-migration of existing passwords.
+- Add new config-option 'migrate_passwords' in section 'web' to
+  auto-migrate passwords at web-login time. Default for the new option
+  is "yes" so if you don't want that passwords are auto-migrated to a
+  more secure password scheme on user login, set this to "no" before
+  running your tracker(s) after the upgrade.
 
 2010-10-08 1.4.16 (r4541)
 

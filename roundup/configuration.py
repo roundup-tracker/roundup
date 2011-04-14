@@ -579,6 +579,10 @@ SETTINGS = (
             "Setting this option makes Roundup display error tracebacks\n"
             "in the user's browser rather than emailing them to the\n"
             "tracker admin."),
+        (BooleanOption, "migrate_passwords", "yes",
+            "Setting this option makes Roundup migrate passwords with\n"
+            "an insecure password-scheme to a more secure scheme\n"
+            "when the user logs in via the web-interface."),
     )),
     ("rdbms", (
         (Option, 'name', 'roundup',

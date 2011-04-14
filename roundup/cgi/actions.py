@@ -1005,12 +1005,18 @@ class LoginAction(Action):
             raise exceptions.LoginError(self._(
                 "You do not have permission to login"))
 
-    def verifyPassword(self, userid, password):
-        '''Verify the password that the user has supplied'''
-        stored = self.db.user.get(userid, 'password')
-        if password == stored:
+    def verifyPassword(self, userid, givenpw):
+        '''Verify the password that the user has supplied.
+           Optionally migrate to new password scheme if configured
+        '''
+        db = self.db
+        stored = db.user.get(userid, 'password')
+        if givenpw == stored:
+            if db.config.WEB_MIGRATE_PASSWORDS and stored.needs_migration():
+                db.user.set(userid, password=password.Password(givenpw))
+                db.commit()
             return 1
-        if not password and not stored:
+        if not givenpw and not stored:
             return 1
         return 0
 

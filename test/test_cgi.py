@@ -425,6 +425,30 @@ class FormTestCase(unittest.TestCase):
             ':confirm:password': ''}, 'user', nodeid),
             ({('user', nodeid): {}}, []))
 
+    def testPasswordMigration(self):
+        chef = self.db.user.lookup('Chef')
+        form = dict(__login_name='Chef', __login_password='foo')
+        cl = self._make_client(form)
+        # assume that the "best" algorithm is the first one and doesn't
+        # need migration, all others should be migrated.
+        for scheme in password.Password.known_schemes[1:]:
+            pw1 = password.Password('foo', scheme=scheme)
+            self.assertEqual(pw1.needs_migration(), True)
+            self.db.user.set(chef, password=pw1)
+            self.db.commit()
+            actions.LoginAction(cl).handle()
+            pw = self.db.user.get(chef, 'password')
+            self.assertEqual(pw, 'foo')
+            self.assertEqual(pw.needs_migration(), False)
+        pw1 = pw
+        self.assertEqual(pw1.needs_migration(), False)
+        scheme = password.Password.known_schemes[0]
+        self.assertEqual(scheme, pw1.scheme)
+        actions.LoginAction(cl).handle()
+        pw = self.db.user.get(chef, 'password')
+        self.assertEqual(pw, 'foo')
+        self.assertEqual(pw, pw1)
+
     #
     # Boolean
     #

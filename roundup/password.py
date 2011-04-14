@@ -116,6 +116,25 @@ class PasswordValueError(ValueError):
     """ The password value is not valid """
     pass
 
+def pbkdf2_unpack(pbkdf2):
+    """ unpack pbkdf2 encrypted password into parts,
+        assume it has format "{rounds}${salt}${digest}
+    """
+    if isinstance(pbkdf2, unicode):
+        pbkdf2 = pbkdf2.encode("ascii")
+    try:
+        rounds, salt, digest = pbkdf2.split("$")
+    except ValueError:
+        raise PasswordValueError, "invalid PBKDF2 hash (wrong number of separators)"
+    if rounds.startswith("0"):
+        raise PasswordValueError, "invalid PBKDF2 hash (zero-padded rounds)"
+    try:
+        rounds = int(rounds)
+    except ValueError:
+        raise PasswordValueError, "invalid PBKDF2 hash (invalid rounds)"
+    raw_salt = h64decode(salt)
+    return rounds, salt, raw_salt, digest
+
 def encodePassword(plaintext, scheme, other=None):
     """Encrypt the plaintext password.
     """
@@ -123,20 +142,7 @@ def encodePassword(plaintext, scheme, other=None):
         plaintext = ""
     if scheme == "PBKDF2":
         if other:
-            #assume it has format "{rounds}${salt}${digest}"
-            if isinstance(other, unicode):
-                other = other.encode("ascii")
-            try:
-                rounds, salt, digest = other.split("$")
-            except ValueError:
-                raise PasswordValueError, "invalid PBKDF2 hash (wrong number of separators)"
-            if rounds.startswith("0"):
-                raise PasswordValueError, "invalid PBKDF2 hash (zero-padded rounds)"
-            try:
-                rounds = int(rounds)
-            except ValueError:
-                raise PasswordValueError, "invalid PBKDF2 hash (invalid rounds)"
-            raw_salt = h64decode(salt)
+            rounds, salt, raw_salt, digest = pbkdf2_unpack(other)
         else:
             raw_salt = getrandbytes(20)
             salt = h64encode(raw_salt)
@@ -248,6 +254,17 @@ class Password(JournalPassword):
             self.scheme = self.default_scheme
             self.password = None
             self.plaintext = None
+
+    def needs_migration(self):
+        """ Password has insecure scheme or other insecure parameters
+            and needs migration to new password scheme
+        """
+        if self.scheme != 'PBKDF2':
+            return True
+        rounds, salt, raw_salt, digest = pbkdf2_unpack(self.password)
+        if rounds < 1000:
+            return True
+        return False
 
     def unpack(self, encrypted, scheme=None, strict=False):
         """Set the password info from the scheme:<encryted info> string

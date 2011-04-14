@@ -16,6 +16,13 @@ steps.
 Migrating from 1.4.x to 1.4.17
 ==============================
 
+There is a new config-option 'migrate_passwords' in section 'web' to
+auto-migrate passwords at web-login time to a more secure storage
+scheme. Default for the new option is "yes" so if you don't want that
+passwords are auto-migrated to a more secure password scheme on user
+login, set this to "no" before running your tracker(s) after the
+upgrade.
+
 Searching now requires either read-permission without a check method, or
 you will have to add a "Search" permission for a class or a list of
 properties for a class (if you want to allow searching). For the classic
