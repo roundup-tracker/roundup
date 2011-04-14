@@ -240,7 +240,8 @@ class Password(JournalPassword):
     """
     #TODO: code to migrate from old password schemes.
 
-    known_schemes = [ "PBKDF2", "SHA", "MD5", "crypt", "plaintext" ]
+    deprecated_schemes = ["SHA", "MD5", "crypt", "plaintext"]
+    known_schemes = ["PBKDF2"] + deprecated_schemes
 
     def __init__(self, plaintext=None, scheme=None, encrypted=None, strict=False):
         """Call setPassword if plaintext is not None."""
@@ -259,7 +260,7 @@ class Password(JournalPassword):
         """ Password has insecure scheme or other insecure parameters
             and needs migration to new password scheme
         """
-        if self.scheme != 'PBKDF2':
+        if self.scheme in self.deprecated_schemes:
             return True
         rounds, salt, raw_salt, digest = pbkdf2_unpack(self.password)
         if rounds < 1000:

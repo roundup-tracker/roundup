@@ -431,7 +431,7 @@ class FormTestCase(unittest.TestCase):
         cl = self._make_client(form)
         # assume that the "best" algorithm is the first one and doesn't
         # need migration, all others should be migrated.
-        for scheme in password.Password.known_schemes[1:]:
+        for scheme in password.Password.deprecated_schemes:
             pw1 = password.Password('foo', scheme=scheme)
             self.assertEqual(pw1.needs_migration(), True)
             self.db.user.set(chef, password=pw1)
