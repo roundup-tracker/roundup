@@ -511,7 +511,7 @@ Erase it? Y/N: """))
             init.write_select_db(tracker_home, backend, tracker.config.DATABASE)
 
         # GO
-        tracker.init(password.Password(adminpw))
+        tracker.init(password.Password(adminpw, config=tracker.config))
 
         return 0
 

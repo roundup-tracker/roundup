@@ -135,7 +135,7 @@ def pbkdf2_unpack(pbkdf2):
     raw_salt = h64decode(salt)
     return rounds, salt, raw_salt, digest
 
-def encodePassword(plaintext, scheme, other=None):
+def encodePassword(plaintext, scheme, other=None, config=None):
     """Encrypt the plaintext password.
     """
     if plaintext is None:
@@ -146,9 +146,10 @@ def encodePassword(plaintext, scheme, other=None):
         else:
             raw_salt = getrandbytes(20)
             salt = h64encode(raw_salt)
-            #FIXME: find way to access config, so default rounds
-            # can be altered for faster/slower hosts via config.ini
-            rounds = 10000
+            if config:
+                rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
+            else:
+                rounds = 10000
         if rounds < 1000:
             raise PasswordValueError, "invalid PBKDF2 hash (rounds too low)"
         raw_digest = pbkdf2(plaintext, raw_salt, rounds, 20)
@@ -243,14 +244,14 @@ class Password(JournalPassword):
     deprecated_schemes = ["SHA", "MD5", "crypt", "plaintext"]
     known_schemes = ["PBKDF2"] + deprecated_schemes
 
-    def __init__(self, plaintext=None, scheme=None, encrypted=None, strict=False):
+    def __init__(self, plaintext=None, scheme=None, encrypted=None, strict=False, config=None):
         """Call setPassword if plaintext is not None."""
         if scheme is None:
             scheme = self.default_scheme
         if plaintext is not None:
-            self.setPassword (plaintext, scheme)
+            self.setPassword (plaintext, scheme, config=config)
         elif encrypted is not None:
-            self.unpack(encrypted, scheme, strict=strict)
+            self.unpack(encrypted, scheme, strict=strict, config=config)
         else:
             self.scheme = self.default_scheme
             self.password = None
@@ -267,7 +268,7 @@ class Password(JournalPassword):
             return True
         return False
 
-    def unpack(self, encrypted, scheme=None, strict=False):
+    def unpack(self, encrypted, scheme=None, strict=False, config=None):
         """Set the password info from the scheme:<encryted info> string
            (the inverse of __str__)
         """
@@ -278,16 +279,16 @@ class Password(JournalPassword):
             self.plaintext = None
         else:
             # currently plaintext - encrypt
-            self.setPassword(encrypted, scheme)
+            self.setPassword(encrypted, scheme, config=config)
         if strict and self.scheme not in self.known_schemes:
             raise PasswordValueError, "unknown encryption scheme: %r" % (self.scheme,)
 
-    def setPassword(self, plaintext, scheme=None):
+    def setPassword(self, plaintext, scheme=None, config=None):
         """Sets encrypts plaintext."""
         if scheme is None:
             scheme = self.default_scheme
         self.scheme = scheme
-        self.password = encodePassword(plaintext, scheme)
+        self.password = encodePassword(plaintext, scheme, config=config)
         self.plaintext = plaintext
 
     def __str__(self):

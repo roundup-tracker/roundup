@@ -353,7 +353,7 @@ class EditCSVAction(Action):
                     if isinstance(prop, hyperdb.Multilink):
                         value = value.split(':')
                     elif isinstance(prop, hyperdb.Password):
-                        value = password.Password(value)
+                        value = password.Password(value, config=self.db.config)
                     elif isinstance(prop, hyperdb.Interval):
                         value = date.Interval(value)
                     elif isinstance(prop, hyperdb.Date):
@@ -711,7 +711,7 @@ class PassResetAction(Action):
             # XXX we need to make the "default" page be able to display errors!
             try:
                 # set the password
-                cl.set(uid, password=password.Password(newpw))
+                cl.set(uid, password=password.Password(newpw, config=self.db.config))
                 # clear the props from the otk database
                 otks.destroy(otk)
                 self.db.commit()
@@ -1013,7 +1013,8 @@ class LoginAction(Action):
         stored = db.user.get(userid, 'password')
         if givenpw == stored:
             if db.config.WEB_MIGRATE_PASSWORDS and stored.needs_migration():
-                db.user.set(userid, password=password.Password(givenpw))
+                newpw = password.Password(givenpw, config=db.config)
+                db.user.set(userid, password=newpw)
                 db.commit()
             return 1
         if not givenpw and not stored:

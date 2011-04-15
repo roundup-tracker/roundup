@@ -84,6 +84,11 @@ Fixed:
   is "yes" so if you don't want that passwords are auto-migrated to a
   more secure password scheme on user login, set this to "no" before
   running your tracker(s) after the upgrade.
+- Add new config-option 'password_pbkdf2_default_rounds' in 'main'
+  section to configure the default parameter for new password
+  generation. Set this to a higher value on faster systems which want
+  more security. Thanks to Eli Collins for implementing this (see
+  issue2550688).
 
 2010-10-08 1.4.16 (r4541)
 

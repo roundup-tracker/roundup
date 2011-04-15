@@ -1688,7 +1688,7 @@ def uidFromAddress(db, address, create=1, **user_props):
         try:
             return db.user.create(username=trying, address=address,
                 realname=realname, roles=db.config.NEW_EMAIL_USER_ROLES,
-                password=password.Password(password.generatePassword()),
+                password=password.Password(password.generatePassword(), config=db.config),
                 **user_props)
         except exceptions.Reject:
             return 0

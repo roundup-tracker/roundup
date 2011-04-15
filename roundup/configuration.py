@@ -537,6 +537,10 @@ SETTINGS = (
             "starting with python 2.5. Set this to a higher value if you\n"
             "get the error 'Error: field larger than field limit' during\n"
             "import."),
+        (IntegerNumberOption, 'password_pbkdf2_default_rounds', '10000',
+            "Sets the default number of rounds used when encoding passwords\n"
+            "using the PBKDF2 scheme. Set this to a higher value on faster\n"
+            "systems which want more security."),
     )),
     ("tracker", (
         (Option, "name", "Roundup issue tracker",
