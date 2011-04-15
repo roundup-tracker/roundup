@@ -540,7 +540,19 @@ SETTINGS = (
         (IntegerNumberOption, 'password_pbkdf2_default_rounds', '10000',
             "Sets the default number of rounds used when encoding passwords\n"
             "using the PBKDF2 scheme. Set this to a higher value on faster\n"
-            "systems which want more security."),
+            "systems which want more security.\n"
+            "PBKDF2 (Password-Based Key Derivation Function) is a\n"
+            "password hashing mechanism that derives hash from the\n"
+            "password and a random salt. For authentication this process\n"
+            "is repeated with the same salt as in the stored hash.\n"
+            "If both hashes match, the authentication succeeds.\n"
+            "PBKDF2 supports a variable 'rounds' parameter which varies\n"
+            "the time-cost of calculating the hash - doubling the number\n"
+            "of rounds doubles the cpu time required to calculate it. The\n"
+            "purpose of this is to periodically adjust the rounds as CPUs\n"
+            "become faster. The currently enforced minimum number of\n"
+            "rounds is 1000.\n"
+            "See: http://en.wikipedia.org/wiki/PBKDF2 and RFC2898"),
     )),
     ("tracker", (
         (Option, "name", "Roundup issue tracker",
