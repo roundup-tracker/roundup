@@ -74,7 +74,7 @@ The basic configuration file layout is as follows (take from the
 
     [main]
     port = 8080
-    ;hostname =
+    ;host =
     ;user =
     ;group =
     ;log_ip = yes
@@ -93,9 +93,13 @@ are as follows:
 
 **port**
   Defines the local TCP port to listen for clients on.
-**hostname**
-  Defines the local hostname to listen for clients on. Only required if
-  "localhost" is not sufficient.
+**host**
+  Defines the hostname or IP number to listen for clients on. Only
+  required if `localhost` is not sufficient. If left empty (as opposed
+  to no `host` keyword in the config-file) this will listen to all
+  network interfaces and is equivalent to an explicit address `0.0.0.0`.
+  The use of an empty string to listen to all interfaces is deprecated
+  and will go away in a future version.
 **user** and **group**
   Defines the Unix user and group to run the server as. Only work if the
   server is started as root.

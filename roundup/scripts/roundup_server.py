@@ -465,9 +465,16 @@ class ServerConfig(configuration.Config):
 
     SETTINGS = (
             ("main", (
-            (configuration.Option, "host", "",
+            (configuration.Option, "host", "localhost",
                 "Host name of the Roundup web server instance.\n"
-                "If empty, listen on all network interfaces."),
+                "If left unconfigured (no 'host' setting) the default\n"
+                "will be used.\n"
+                "If empty, listen on all network interfaces.\n"
+                "If you want to explicitly listen on all\n"
+                "network interfaces, the address 0.0.0.0 is a more\n"
+                "explicit way to achieve this, the use of an empty\n"
+                "string for this purpose is deprecated and will go away\n"
+                "in a future release."),
             (configuration.IntegerNumberOption, "port", DEFAULT_PORT,
                 "Port to listen on."),
             (configuration.NullableFilePathOption, "favicon", "favicon.ico",
@@ -734,7 +741,10 @@ Options:
  -h            print this text and exit
  -S            create or update configuration file and exit
  -C <fname>    use configuration file <fname>
- -n <name>     set the host name of the Roundup web server instance
+ -n <name>     set the host name of the Roundup web server instance,
+               specifies on which network interfaces to listen for
+               connections, defaults to localhost, use 0.0.0.0 to bind
+               to all network interfaces
  -p <port>     set the port to listen on (default: %(port)s)
  -l <fname>    log to the file indicated by fname instead of stderr/stdout
  -N            log client machine names instead of IP addresses (much slower)

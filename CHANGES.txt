@@ -89,6 +89,13 @@ Fixed:
   generation. Set this to a higher value on faster systems which want
   more security. Thanks to Eli Collins for implementing this (see
   issue2550688).
+- Fix documentation for roundup-server about the 'host' parameter as
+  suggested in issue2550693, fixes the first part of this issue. Make
+  'localhost' the new default for this parameter, note the upgrading
+  documentation of changed behaviour.  We also deprecate the empty host
+  parameter for binding to all interfaces now (still left in for
+  compatibility). Thanks to Toni Mueller for providing the first version
+  of this patch and discussing implementations.
 
 2010-10-08 1.4.16 (r4541)
 

@@ -16,12 +16,22 @@ steps.
 Migrating from 1.4.x to 1.4.17
 ==============================
 
-There is a new config-option 'migrate_passwords' in section 'web' to
+There is a new config-option `migrate_passwords` in section `web` to
 auto-migrate passwords at web-login time to a more secure storage
 scheme. Default for the new option is "yes" so if you don't want that
 passwords are auto-migrated to a more secure password scheme on user
 login, set this to "no" before running your tracker(s) after the
 upgrade.
+
+The standalone roundup-server now defaults to listening on localhost (no
+longer on all network interfaces). This will not affect you if you're
+already using a configuration file for roundup-server. If you are using
+an empty setting for the `host` parameter in the config-file you should
+explicitly put 0.0.0.0 there as the use of an empty string to specify
+listening to all interfaces is deprecated and will go away in a future
+version.  If you are starting the server without a configuration file
+and want to explicitly listen to all network interface, you should
+specify the -n option with the address `0.0.0.0`.
 
 Searching now requires either read-permission without a check method, or
 you will have to add a "Search" permission for a class or a list of
