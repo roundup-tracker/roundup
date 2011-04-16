@@ -1080,8 +1080,34 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         raise ValueError('%r is not a hyperdb property class' % propklass)
 
-    def getnode(self, classname, nodeid):
+    def _materialize_multilink(self, classname, nodeid, node, propname):
+        """ evaluation of single Multilink (lazy eval may have skipped this)
+        """
+        if propname not in node:
+            sql = 'select linkid from %s_%s where nodeid=%s'%(classname,
+                propname, self.arg)
+            self.sql(sql, (nodeid,))
+            # extract the first column from the result
+            # XXX numeric ids
+            items = [int(x[0]) for x in self.cursor.fetchall()]
+            items.sort ()
+            node[propname] = [str(x) for x in items]
+
+    def _materialize_multilinks(self, classname, nodeid, node, props=None):
+        """ get all Multilinks of a node (lazy eval may have skipped this)
+        """
+        cl = self.classes[classname]
+        props = props or [pn for (pn, p) in cl.properties.iteritems()
+                          if isinstance(p, Multilink)]
+        for propname in props:
+            if propname not in node:
+                self._materialize_multilink(classname, nodeid, node, propname)
+
+    def getnode(self, classname, nodeid, fetch_multilinks=True):
         """ Get a node from the database.
+            For optimisation optionally we don't fetch multilinks
+            (lazy Multilinks).
+            But for internal database operations we need them.
         """
         # see if we have this node cached
         key = (classname, nodeid)
@@ -1091,6 +1117,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             if __debug__:
                 self.stats['cache_hits'] += 1
             # return the cached information
+            if fetch_multilinks:
+                self._materialize_multilinks(classname, nodeid, self.cache[key])
             return self.cache[key]
 
         if __debug__:
@@ -1123,6 +1151,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             if value is not None:
                 value = self.to_hyperdb_value(props[name].__class__)(value)
             node[name] = value
+
+        if fetch_multilinks and mls:
+            self._materialize_multilinks(classname, nodeid, node, mls)
 
         # save off in the cache
         key = (classname, nodeid)
@@ -1616,7 +1647,7 @@ class Class(hyperdb.Class):
             return nodeid
 
         # get the node's dict
-        d = self.db.getnode(self.classname, nodeid)
+        d = self.db.getnode(self.classname, nodeid, fetch_multilinks=False)
         # handle common case -- that property is in dict -- first
         # if None and one of creator/creation actor/activity return None
         if propname in d:
@@ -1640,14 +1671,7 @@ class Class(hyperdb.Class):
 
         # lazy evaluation of Multilink
         if propname not in d and isinstance(prop, Multilink):
-            sql = 'select linkid from %s_%s where nodeid=%s'%(self.classname,
-                propname, self.db.arg)
-            self.db.sql(sql, (nodeid,))
-            # extract the first column from the result
-            # XXX numeric ids
-            items = [int(x[0]) for x in self.db.cursor.fetchall()]
-            items.sort ()
-            d[propname] = [str(x) for x in items]
+            self.db._materialize_multilink(self.classname, nodeid, d, propname)
 
         # handle there being no value in the table for the property
         if propname not in d or d[propname] is None:

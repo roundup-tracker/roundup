@@ -321,6 +321,23 @@ class DBTest(commonDBTest):
             if commit: self.db.commit()
             self.assertEqual(self.db.issue.get(nid, "nosy"), [])
 
+    def testMakeSeveralMultilinkedNodes(self):
+        for commit in (0,1):
+            u1 = self.db.user.create(username='foo%s'%commit)
+            u2 = self.db.user.create(username='bar%s'%commit)
+            u3 = self.db.user.create(username='baz%s'%commit)
+            nid = self.db.issue.create(title="spam", nosy=[u1])
+            if commit: self.db.commit()
+            self.assertEqual(self.db.issue.get(nid, "nosy"), [u1])
+            self.db.issue.set(nid, deadline=date.Date('.'))
+            self.db.issue.set(nid, nosy=[u1,u2], title='ta%s'%commit)
+            if commit: self.db.commit()
+            self.assertEqual(self.db.issue.get(nid, "nosy"), [u1,u2])
+            self.db.issue.set(nid, deadline=date.Date('.'))
+            self.db.issue.set(nid, nosy=[u1,u2,u3], title='tb%s'%commit)
+            if commit: self.db.commit()
+            self.assertEqual(self.db.issue.get(nid, "nosy"), [u1,u2,u3])
+
     def testMultilinkChangeIterable(self):
         for commit in (0,1):
             # invalid nosy value assertion

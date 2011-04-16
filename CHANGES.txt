@@ -96,6 +96,10 @@ Fixed:
   parameter for binding to all interfaces now (still left in for
   compatibility). Thanks to Toni Mueller for providing the first version
   of this patch and discussing implementations.
+- Fixed bug in filter_iter refactoring (lazy multilinks), in rare cases
+  this would result in duplicate multilinks to the same node. We're now
+  going the safe route and doing lazy evaluation only for read-only
+  access, whenever updates are done we fetch everything.
 
 2010-10-08 1.4.16 (r4541)
 
