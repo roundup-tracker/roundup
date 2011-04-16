@@ -23,7 +23,7 @@ __docformat__ = 'restructuredtext'
 
 import re, string, random
 from base64 import b64encode, b64decode
-from roundup.anypy.hashlib_ import md5, sha1
+from roundup.anypy.hashlib_ import md5, sha1, shamodule
 try:
     import crypt
 except ImportError:
@@ -59,10 +59,6 @@ except ImportError:
     #no m2crypto - make our own pbkdf2 function
     from struct import pack
     from hmac import HMAC
-    try:
-        from hashlib import sha1
-    except ImportError:
-        from sha import new as sha1
 
     def xor_bytes(left, right):
         "perform bitwise-xor of two byte-strings"
@@ -71,7 +67,7 @@ except ImportError:
     def _pbkdf2(password, salt, rounds, keylen):
         digest_size = 20 # sha1 generates 20-byte blocks
         total_blocks = int((keylen+digest_size-1)/digest_size)
-        hmac_template = HMAC(password, None, sha1)
+        hmac_template = HMAC(password, None, shamodule)
         out = _bempty
         for i in xrange(1, total_blocks+1):
             hmac = hmac_template.copy()
