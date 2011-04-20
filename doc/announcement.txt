@@ -22,7 +22,7 @@ Fixed:
 
 - fixed reporting of source missing warnings
 - relevant tests made locale independent, issue2550660 (thanks
-  Benni Bärmann for reporting).
+  Benni Baermann for reporting).
 - fix for incorrect except: syntax, issue2550661 (thanks Jakub Wilk)
 - No longer use the root logger, use a logger with prefix "roundup",
   see http://thread.gmane.org/gmane.comp.bug-tracking.roundup.devel/5356
@@ -38,7 +38,7 @@ Fixed:
   which roundup interprets as a Reject exception. Fixes issue2550667.
   Added regression tests for message/rfc822 attachments with and without
   configured unpacking (mailgw unpack_rfc822, see Features above)
-  Thanks to Benni Bärmann for reporting.
+  Thanks to Benni Baermann for reporting.
 - Allow search_popup macro to work with all db classes, issue2550567
   (thanks John Kristensen)
 - lower memory footprint for (journal-) import

@@ -94,6 +94,14 @@ def main():
     # perform the setup action
     from roundup import __version__
 
+    long_description=open('doc/announcement.txt').read().decode('utf8')
+    try:
+        long_description.encode('ascii')
+    except UnicodeEncodeError, cause:
+        print >> sys.stderr, "doc/announcement.txt contains non-ascii: %s" \
+            % cause
+        sys.exit(42)
+
     setup(name='roundup',
           version=__version__,
           author="Richard Jones",
@@ -101,7 +109,7 @@ def main():
           description="A simple-to-use and -install issue-tracking system"
             " with command-line, web and e-mail interfaces. Highly"
             " customisable.",
-          long_description=open('doc/announcement.txt').read().decode('utf8'),
+          long_description=long_description,
           url='http://www.roundup-tracker.org',
           download_url='http://pypi.python.org/pypi/roundup',
           classifiers=['Development Status :: 5 - Production/Stable',
