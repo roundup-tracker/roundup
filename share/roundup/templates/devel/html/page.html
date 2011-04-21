@@ -308,6 +308,7 @@ See issue.search.html in the classic template for examples.
 </td>
 
 <td metal:define-macro="search_select_keywords">
+  <div tal:attributes="id python:'''keywords_%s'''%name">
   <select tal:attributes="name name; id name"
           tal:define="value python:request.form.getvalue(name)">
     <option value="" i18n:translate="">don't care</option>
@@ -318,7 +319,8 @@ See issue.search.html in the classic template for examples.
             tal:content="python:s[db_content]"></option>
   </select>
   <a class="classhelp"
-	 tal:attributes="href python:'''javascript:help_window('task?@template=&property=%s&form=itemSynopsis', 300, 200)'''%name">(edit)</a>
+	 tal:attributes="href python:'''javascript:help_window('%s?@template=keywords_expr&property=%s&form=itemSynopsis', 300, 200)'''%(request.classname, name)">(edit)</a>
+  </div>
 </td>
 
 <!-- like search_select, but translates the further values.
