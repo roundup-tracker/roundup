@@ -94,9 +94,15 @@ def main():
     # perform the setup action
     from roundup import __version__
 
+    # long_description may not contain non-ascii characters. Distutils
+    # will produce an non-installable installer on linux *and* we can't
+    # run the bdist_wininst on Linux if there are non-ascii characters
+    # because the distutils installer will try to use the mbcs codec
+    # which isn't available on non-windows platforms. See also
+    # http://bugs.python.org/issue10945
     long_description=open('doc/announcement.txt').read().decode('utf8')
     try:
-        long_description.encode('ascii')
+        long_description = long_description.encode('ascii')
     except UnicodeEncodeError, cause:
         print >> sys.stderr, "doc/announcement.txt contains non-ascii: %s" \
             % cause
