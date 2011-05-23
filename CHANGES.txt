@@ -2,6 +2,12 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first. If no other name is given,
 Richard Jones did the change.
 
+2011-XX-XX 1.X.XX (rXXXX)
+
+Features:
+
+- Norwegian Bokmal translation by Christian Aastorp
+
 2011-05-13 1.4.17 (r4605)
 
 Features:
