@@ -7,6 +7,8 @@ Richard Jones did the change.
 Features:
 
 - Norwegian Bokmal translation by Christian Aastorp
+- Allow to specify additional cc and bcc emails (not roundup users) for
+  nosymessage used by the nosyreaction reactor.
 
 2011-05-13 1.4.17 (r4605)
 

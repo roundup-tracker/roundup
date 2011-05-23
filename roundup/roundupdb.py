@@ -194,7 +194,7 @@ class IssueClass:
         """
 
     def nosymessage(self, issueid, msgid, oldvalues, whichnosy='nosy',
-            from_address=None, cc=[], bcc=[]):
+            from_address=None, cc=[], bcc=[], cc_emails = [], bcc_emails = []):
         """Send a message to the members of an issue's nosy list.
 
         The message is sent only to users on the nosy list who are not
@@ -213,6 +213,12 @@ class IssueClass:
         message to that may not be specified in the message's recipients
         list. These recipients will not be included in the To: or Cc:
         address lists.
+
+        The cc_emails and bcc_emails arguments take a list of additional
+        recipient email addresses (just the mail address not roundup users)
+        this can be useful for sending to additional email addresses which are no
+        roundup users. These arguments are currently not used by roundups
+        nosyreaction but can be used by customized (nosy-)reactors.
         """
         if msgid:
             authid = self.db.msg.get(msgid, 'author')
@@ -267,11 +273,13 @@ class IssueClass:
         for userid in cc + self.get(issueid, whichnosy):
             if good_recipient(userid):
                 add_recipient(userid, sendto)
+        sendto.extend (cc_emails)
 
         # now deal with bcc people.
         for userid in bcc:
             if good_recipient(userid):
                 add_recipient(userid, bcc_sendto)
+        bcc_sendto.extend (bcc_emails)
 
         if oldvalues:
             note = self.generateChangeNote(issueid, oldvalues)
