@@ -50,6 +50,10 @@ So, those commands in a nice, cut'n'pasteable form::
  python setup.py bdist_wininst
  python setup.py register
  python setup.py sdist upload --sign
- python setup.py bdist_wininst upload --sign
+ python2.5 setup.py bdist_wininst upload --sign
 
 (if the last two fail make sure you're using python2.5+)
+Note that python2.6 won't correctly create a bdist_wininst install on
+Linux (it will produce a .exe with "linux" in the name). Maybe
+2.7 fixes this? (Ralf)
+
