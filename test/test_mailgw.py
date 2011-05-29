@@ -625,6 +625,36 @@ some text in inner email
                 self.assertEqual(f.content, content [n])
         self.assertEqual(msg.content, 'test attachment second text/plain')
 
+    def testMultipartKeepFiles(self):
+        self.doNewIssue()
+        self._handle_mail(self.multipart_msg)
+        messages = self.db.issue.get('1', 'messages')
+        messages.sort()
+        msg = self.db.msg.getnode (messages[-1])
+        assert(len(msg.files) == 5)
+        issue = self.db.issue.getnode ('1')
+        assert(len(issue.files) == 5)
+        names = {0 : 'first.dvi', 4 : 'second.dvi'}
+        content = {3 : 'test attachment third text/plain\n',
+                   4 : 'Just a test\n'}
+        for n, id in enumerate (msg.files):
+            f = self.db.file.getnode (id)
+            self.assertEqual(f.name, names.get (n, 'unnamed'))
+            if n in content :
+                self.assertEqual(f.content, content [n])
+        self.assertEqual(msg.content, 'test attachment second text/plain')
+        self._handle_mail('''From: mary <mary@test.test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id2>
+In-Reply-To: <dummy_test_message_id>
+Subject: [issue1] Testing...
+
+This ist a message without attachment
+''')
+        issue = self.db.issue.getnode ('1')
+        assert(len(issue.files) == 5)
+        self.assertEqual(issue.files, ['1', '2', '3', '4', '5'])
+
     def testMultipartDropAlternatives(self):
         self.doNewIssue()
         self.db.config.MAILGW_IGNORE_ALTERNATIVES = True

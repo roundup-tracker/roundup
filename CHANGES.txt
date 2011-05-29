@@ -2,13 +2,21 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first. If no other name is given,
 Richard Jones did the change.
 
-2011-XX-XX 1.X.XX (rXXXX)
+2011-05-29 1.4.18 (rXXXX)
 
 Features:
 
 - Norwegian Bokmal translation by Christian Aastorp
 - Allow to specify additional cc and bcc emails (not roundup users) for
-  nosymessage used by the nosyreaction reactor.
+  nosymessage used by the nosyreaction reactor. (Ralf)
+
+Fixed:
+
+- Fix file-unlink bug in mailgw (Ralfs oversight when refactoring the mail
+  gateway code) -- if a message is sent that contains no attachments,
+  all previous files of the issue are unlinked, thanks to Rafal
+  Bisingier for reporting and proposing a fix.
+  I've now added a regression test that catches this issue.
 
 2011-05-13 1.4.17 (r4605)
 

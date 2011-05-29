@@ -1058,7 +1058,7 @@ encrypted.""")
                 fileprop.extend(files)
                 files = fileprop
 
-        self.props['files'] = files
+            self.props['files'] = files
 
     def create_msg(self):
         ''' Create msg containing all the relevant information from the message
@@ -1093,7 +1093,8 @@ not find a text/plain part to use.
             try:
                 message_id = self.db.msg.create(author=self.author,
                     recipients=self.recipients, date=date.Date('.'),
-                    summary=summary, content=content, files=self.props['files'],
+                    summary=summary, content=content,
+                    files=self.props.get('files',[]),
                     messageid=messageid, inreplyto=inreplyto, **msg_props)
             except exceptions.Reject, error:
                 raise MailUsageError, _("""
