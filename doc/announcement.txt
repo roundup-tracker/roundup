@@ -1,102 +1,24 @@
-I'm proud to release version 1.4.17 of Roundup which introduces some
-minor features and, as usual, fixes some bugs:
+This is the announcement of version 1.4.18 of Roundup, a Bug-Fix Release
+for a critical bug in roundups mail gateway.
+The bug will lead to files being unlinked from issues when mails without
+attachment are received for an existing issue. See the "Software
+Upgrade" guidelines in doc/announcement.txt (or the html version) for a
+script you can run to find out potentially affected issues and how to
+fix this. As usual some minor features and some bug fixes:
 
 Features:
 
-- Allow declaration of default_values for properties in schema.
-- Add explicit "Search" permissions, see Security Fix below.
-- Add "lookup" method to xmlrpc interface (Ralf Schlatterbeck)
-- Multilinks can be filtered by combining elements with AND, OR and NOT
-  operators now. A javascript gui was added for "keywords", see issue2550648.
-  Developed by Sascha Teichmann; funded by Intevation. (Bernhard Reiter)
-- Factor MailGW message parsing into a separate class, thanks to John
-  Kristensen who did the major work in issue2550576 -- I wouldn't
-  have attempted it without this. Fixes issue2550576. (Ralf)
-- Now if the -C option to roundup-mailgw specifies "issue" this refers
-  to an issue-like class. The real class is determined from the
-  configured default class, or the -c option to the mailgw, or the class
-  resulting from mail subject parsing. We also accept multiple -S
-  options for the same class now. (Ralf)
-- Optimisation: Late evaluation of Multilinks (only in rdbms backends):
-  previously we materialized each multilink in a Node -- this creates an
-  SQL query for each multilink (e.g. 'files' and 'messages' for each
-  line in the issue index display) -- even if the multilinks aren't
-  displayed. Now we compute multilinks only if they're accessed (and
-  keep them cached).
-- Add a filter_iter similar to the existing filter call. This feature is
-  considered experimental. This is currently not used in the
-  web-interface but passes all tests for the filter call except sorting
-  by Multilinks (which isn't supported by SQL and isn't a sane concept
-  anyway). When using filter_iter instead of filter this saves a *lot*
-  of SQL queries: Filter returns only the IDs of Nodes in the database,
-  the additional content of a Node has to be fetched in a separate SQL
-  call. The new filter_iter also returns the IDs of Nodes (one by one,
-  it's an iterator) but pre-seeds the cache with the content of the
-  Node. The information needed for seeding the cache is retrieved in the
-  same SQL query as the ids.
+- Norwegian Bokmal translation by Christian Aastorp
+- Allow to specify additional cc and bcc emails (not roundup users) for
+  nosymessage used by the nosyreaction reactor. (Ralf)
 
 Fixed:
 
-- Security Fix: Add a check for search-permissions: now we allow
-  searching for properties only if the property is readable without a
-  check method or if an explicit search permission (see above unter
-  "Features) is given for the property. This fixes cases where a user
-  doesn't have access to a property but can deduce the content by
-  crafting a clever search, group or sort query.
-  see doc/upgrading.txt for how to fix your trackers! (Ralf Schlatterbeck).
-- Range support in roundup-server so large files can be served, 
-  e.g. media files on iOS/iPads; issue2550694. (Bernhard Reiter; 
-  Thanks to Jon C. Thomason for the patch.)
-- Fix search for xapian 1.2 issue2550676 
-  (Bernhard Reiter; Thanks to Olly Betts for providing the patch.)
-- Some minor typos fixed in doc/customizing.txt (Thanks Ralf Hemmecke).
-- XML-RPC documentation now linked from the docs/index (Bernhard Reiter).
-- Fix setting of sys.path when importing schema.py, fixes issue2550675,
-  thanks to Bryce L Nordgren for reporting. (Ralf Schlatterbeck)
-- clear the cache on commit for rdbms backends: Don't carry over cached
-  values from one transaction to the next (there may be other changes
-  from other transactions) see new ConcurrentDBTest for a
-  read-modify-update cycle that fails with the old caching behavior.
-  (Ralf Schlatterbeck)
-- Fix incorrect setting of template in customizing.txt example action,
-  patch via issue2550682 (thanks John Kristensen)
-- Configuration issue: On some postgresql 8.4 installations (notably on
-  debian squeeze) the default template database used for database
-  creation doesn't match the needed character encoding UTF8 -- a new
-  config option 'template' in the rdbms section now allows specification
-  of the template. You know you need this option if you get the error
-  message:
-  psycopg2.DataError: new encoding (UTF8) is incompatible with the
-  encoding of the template database (SQL_ASCII)
-  HINT:  Use the same encoding as in the template database, or use
-  template0 as template.
-  (Ralf Schlatterbeck)
-- Fixed bug in mailgw refactoring, patch issue2550697 (thanks Hubert
-  Touvet)
-- Fix Password handling security issue2550688 (thanks Joseph Myers for
-  reporting and Eli Collins for fixing) -- this fixes all observations
-  by Joseph Myers except for auto-migration of existing passwords.
-- Add new config-option 'migrate_passwords' in section 'web' to
-  auto-migrate passwords at web-login time. Default for the new option
-  is "yes" so if you don't want that passwords are auto-migrated to a
-  more secure password scheme on user login, set this to "no" before
-  running your tracker(s) after the upgrade.
-- Add new config-option 'password_pbkdf2_default_rounds' in 'main'
-  section to configure the default parameter for new password
-  generation. Set this to a higher value on faster systems which want
-  more security. Thanks to Eli Collins for implementing this (see
-  issue2550688).
-- Fix documentation for roundup-server about the 'host' parameter as
-  suggested in issue2550693, fixes the first part of this issue. Make
-  'localhost' the new default for this parameter, note the upgrading
-  documentation of changed behaviour.  We also deprecate the empty host
-  parameter for binding to all interfaces now (still left in for
-  compatibility). Thanks to Toni Mueller for providing the first version
-  of this patch and discussing implementations.
-- Fixed bug in filter_iter refactoring (lazy multilinks), in rare cases
-  this would result in duplicate multilinks to the same node. We're now
-  going the safe route and doing lazy evaluation only for read-only
-  access, whenever updates are done we fetch everything.
+- Fix file-unlink bug in mailgw (Ralfs oversight when refactoring the mail
+  gateway code) -- if a message is sent that contains no attachments,
+  all previous files of the issue are unlinked, thanks to Rafal
+  Bisingier for reporting and proposing a fix.
+  I've now added a regression test that catches this issue.
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
