@@ -1,10 +1,5 @@
-This is the announcement of version 1.4.18 of Roundup, a Bug-Fix Release
-for a critical bug in roundups mail gateway.
-The bug will lead to files being unlinked from issues when mails without
-attachment are received for an existing issue. See the "Software
-Upgrade" guidelines in doc/announcement.txt (or the html version) for a
-script you can run to find out potentially affected issues and how to
-fix this. As usual some minor features and some bug fixes:
+I'm proud to release version 1.4.XX of Roundup which introduces some
+minor features and, as usual, fixes some bugs:
 
 Features:
 
