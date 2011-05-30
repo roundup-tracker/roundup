@@ -6,17 +6,17 @@ Richard Jones did the change.
 
 Features:
 
-- Norwegian Bokmal translation by Christian Aastorp
+- Norwegian Bokmal translation by Christian Aastorp (Ralf)
 - Allow to specify additional cc and bcc emails (not roundup users) for
   nosymessage used by the nosyreaction reactor. (Ralf)
 
 Fixed:
 
-- Fix file-unlink bug in mailgw (Ralfs oversight when refactoring the mail
-  gateway code) -- if a message is sent that contains no attachments,
-  all previous files of the issue are unlinked, thanks to Rafal
-  Bisingier for reporting and proposing a fix.
-  I've now added a regression test that catches this issue.
+- File-unlink defect in mailgw fixed! If an email was received
+  that contained no attachments, all previous files of the issue were unlinked. 
+  This defect was introduced with the 1.4.17 release as an unwanted result 
+  of the mail gate code refactoring. Thanks to Rafal Bisingier for reporting 
+  and proposing a fix. There is now a regression test in place. (Ralf)
 
 2011-05-13 1.4.17 (r4605)
 
