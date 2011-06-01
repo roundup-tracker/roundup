@@ -549,6 +549,7 @@ class parsedMessage:
         self.nodeid = None
         self.author = None
         self.recipients = None
+        self.msg_props = {}
         self.props = None
         self.content = None
         self.attachments = None
@@ -1052,6 +1053,7 @@ encrypted.""")
                     'You are not permitted to add files to %(classname)s.'
                     ) % self.__dict__
 
+            self.msg_props['files'] = files
             if self.nodeid:
                 # extend the existing files list
                 fileprop = self.cl.get(self.nodeid, 'files')
@@ -1066,6 +1068,7 @@ encrypted.""")
         if not self.properties.has_key('messages'):
             return
         msg_props = self.mailgw.get_class_arguments('msg')
+        self.msg_props.update (msg_props)
         
         # Get the message ids
         inreplyto = self.message.getheader('in-reply-to') or ''
@@ -1094,8 +1097,7 @@ not find a text/plain part to use.
                 message_id = self.db.msg.create(author=self.author,
                     recipients=self.recipients, date=date.Date('.'),
                     summary=summary, content=content,
-                    files=self.props.get('files',[]),
-                    messageid=messageid, inreplyto=inreplyto, **msg_props)
+                    messageid=messageid, inreplyto=inreplyto, **self.msg_props)
             except exceptions.Reject, error:
                 raise MailUsageError, _("""
 Mail message was rejected by a detector.

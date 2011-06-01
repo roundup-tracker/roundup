@@ -13,14 +13,14 @@ steps.
 
 .. contents::
 
-Migrating from 1.4.16 to 1.4.17
+Migrating from 1.4.17 to 1.4.18
 ===============================
 
-There was a bug in 1.4.16 where files were unlinked from issues if a
+There was a bug in 1.4.17 where files were unlinked from issues if a
 mail without attachment was received via the mail interface. The
 following script will list likely issues being affected by the bug.
-The date in the script is the date of the 1.4.16 release. If you have
-installed 1.4.16 later than this date, you can change the date
+The date in the script is the date of the 1.4.17 release. If you have
+installed 1.4.17 later than this date, you can change the date
 appropriately to your installation date. Run the script in the directory
 of your tracker.
 
