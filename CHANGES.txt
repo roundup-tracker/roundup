@@ -1,6 +1,7 @@
-This file contains the changes to the Roundup system over time. The entries
-are given with the most recent entry first. If no other name is given,
-Richard Jones did the change.
+This file contains the changes to the Roundup system over time. 
+The entries are given with the most recent entry first. 
+Each entry has the deveoper who committed the change in brackets.
+Entries without name were done by Richard Jones.
 
 2011-XX-XX 1.4.19 (r46XX)
 
@@ -11,13 +12,13 @@ Fixed:
   reporting and proposing a fix. The regression test was updated.
   (Ralf)
 - Fix version numbers in upgrade documentation, the file-unlink defect
-  was in 1.4.17 not 1.4.16. Thanks to Rafal Bisingier.
+  was in 1.4.17 not 1.4.16. Thanks to Rafal Bisingier. (Ralf)
 
 2011-05-29 1.4.18 (r4610)
 
 Features:
 
-- Norwegian Bokmal translation by Christian Aastorp
+- Norwegian Bokmal translation by Christian Aastorp (Ralf)
 - Allow to specify additional cc and bcc emails (not roundup users) for
   nosymessage used by the nosyreaction reactor. (Ralf)
 
