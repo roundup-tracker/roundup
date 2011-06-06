@@ -247,6 +247,22 @@ class Message(mimetools.Message):
             parts.append(part)
         return parts
 
+    def _decode_header_to_utf8(self, hdr):
+        l = []
+        prev_encoded = False
+        for part, encoding in decode_header(hdr):
+            if encoding:
+                part = part.decode(encoding)
+            # RFC 2047 specifies that between encoded parts spaces are
+            # swallowed while at the borders from encoded to non-encoded
+            # or vice-versa we must preserve a space. Multiple adjacent
+            # non-encoded parts should not occur.
+            if l and prev_encoded != bool(encoding):
+                l.append(' ')
+            prev_encoded = bool(encoding)
+            l.append(part)
+        return ''.join([s.encode('utf-8') for s in l])
+
     def getheader(self, name, default=None):
         hdr = mimetools.Message.getheader(self, name, default)
         # TODO are there any other False values possible?
@@ -257,24 +273,13 @@ class Message(mimetools.Message):
             return ''
         if hdr:
             hdr = hdr.replace('\n','') # Inserted by rfc822.readheaders
-        # historically this method has returned utf-8 encoded string
-        l = []
-        for part, encoding in decode_header(hdr):
-            if encoding:
-                part = part.decode(encoding)
-            l.append(part)
-        return ''.join([s.encode('utf-8') for s in l])
+        return self._decode_header_to_utf8(hdr)
 
     def getaddrlist(self, name):
         # overload to decode the name part of the address
         l = []
         for (name, addr) in mimetools.Message.getaddrlist(self, name):
-            p = []
-            for part, encoding in decode_header(name):
-                if encoding:
-                    part = part.decode(encoding)
-                p.append(part)
-            name = ''.join([s.encode('utf-8') for s in p])
+            name = self._decode_header_to_utf8(name)
             l.append((name, addr))
         return l
 

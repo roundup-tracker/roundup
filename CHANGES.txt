@@ -13,6 +13,11 @@ Fixed:
   (Ralf)
 - Fix version numbers in upgrade documentation, the file-unlink defect
   was in 1.4.17 not 1.4.16. Thanks to Rafal Bisingier. (Ralf)
+- Fix encoded email header parsing if multiple encoded and non-encoded
+  parts are present. RFC2047 specifies that spacing is removed only
+  between encoded parts, we always removed the space. Note that this bug
+  was present before mail gateway refactoring :-) Thanks for thorough
+  testing of mail gateway code by Rafal Bisingier. (Ralf)
 
 2011-05-29 1.4.18 (r4610)
 

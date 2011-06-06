@@ -1823,6 +1823,35 @@ This is a test submission of a new issue.
         name = self.db.user.get(new, 'realname')
         self.assertEquals(name, 'H€llo')
 
+    def testNewUserAuthorMixedEncodedName(self):
+        l = set(self.db.user.list())
+        # From: name has Euro symbol in it
+        message = '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Firstname =?utf-8?b?w6TDtsOf?= Last <fubar@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id>
+Subject: [issue] Test =?utf-8?b?w4TDlsOc?= umlauts
+ X1
+ X2
+
+This is a test submission of a new issue.
+'''
+        p = [
+            self.db.security.getPermission('Register', 'user'),
+            self.db.security.getPermission('Email Access', None),
+            self.db.security.getPermission('Create', 'issue'),
+            self.db.security.getPermission('Create', 'msg'),
+        ]
+        self.db.security.role['anonymous'].permissions = p
+        self._handle_mail(message)
+        title = self.db.issue.get('1', 'title')
+        self.assertEquals(title, 'Test \xc3\x84\xc3\x96\xc3\x9c umlauts X1 X2')
+        m = set(self.db.user.list())
+        new = list(m - l)[0]
+        name = self.db.user.get(new, 'realname')
+        self.assertEquals(name, 'Firstname \xc3\xa4\xc3\xb6\xc3\x9f Last')
+
     def testUnknownUser(self):
         l = set(self.db.user.list())
         message = '''Content-Type: text/plain;
