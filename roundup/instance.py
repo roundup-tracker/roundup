@@ -87,8 +87,7 @@ class Tracker:
                 sys.path.remove(libdir)
 
     def get_backend_name(self):
-        o = __builtin__.open
-        f = o(os.path.join(self.config.DATABASE, 'backend_name'))
+        f = file(os.path.join(self.config.DATABASE, 'backend_name'))
         name = f.readline().strip()
         f.close()
         return name
