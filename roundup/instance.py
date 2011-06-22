@@ -30,6 +30,7 @@ __docformat__ = 'restructuredtext'
 
 import os
 import sys
+import __builtin__
 from roundup import configuration, mailgw
 from roundup import hyperdb, backends, actions
 from roundup.cgi import client, templating
@@ -86,7 +87,7 @@ class Tracker:
                 sys.path.remove(libdir)
 
     def get_backend_name(self):
-        o = __builtins__['open']
+        o = __builtin__.open
         f = o(os.path.join(self.config.DATABASE, 'backend_name'))
         name = f.readline().strip()
         f.close()
