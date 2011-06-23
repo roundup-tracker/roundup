@@ -9,7 +9,7 @@ Fixed:
 
 - Do not depend on a CPython implementation detail anymore to make Roundup 
   more compatible with other Python implementations like PyPy.
-  Closes issue2550707. Thanks to Christof Meerwald. (Bernhard Reiter)
+  Closes issue2550707. Thanks to Christof Meerwald. (Bernhard Reiter, Richard)
 - Yet another fix to the mail gateway, messages got *all* files of
   an issue, not just the new ones. Thanks to Rafal Bisingier for
   reporting and proposing a fix. The regression test was updated.
