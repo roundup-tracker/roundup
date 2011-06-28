@@ -7,6 +7,8 @@ Entries without name were done by Richard Jones.
 
 Fixed:
 
+- Updated the url to point to www.roundup-tracker.org in two places in the
+  docs. (Bernhard Reiter)
 - Do not depend on a CPython implementation detail anymore to make Roundup 
   more compatible with other Python implementations like PyPy.
   Closes issue2550707. Thanks to Christof Meerwald. (Bernhard Reiter, Richard)

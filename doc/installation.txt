@@ -99,7 +99,7 @@ Getting Roundup
     and if it runs you may skip the `Basic Installation Steps`_
     below and go straight to `configuring your first tracker`_.
 
-Download the latest version from http://roundup.sf.net/.
+Download the latest version from http://www.roundup-tracker.org/.
 
 If you're using WinZIP's "classic" interface, make sure the "Use
 folder names" check box is checked before you extract the files.

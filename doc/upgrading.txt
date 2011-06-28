@@ -1422,8 +1422,8 @@ should then copy the html directory from the Roundup source "classic" template
 and modify it according to your local schema changes.
 
 If you need help with the new templating system, please ask questions on the
-roundup-users mailing list (available through the roundup project page on
-sourceforge, http://roundup.sf.net/)
+roundup-users mailing list (available through the roundup web page on
+sourceforge, http://www.roundup-tracker.org/.
 
 
 0.5.0 Detectors
