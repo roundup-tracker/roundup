@@ -37,8 +37,8 @@ this:
        FLUSH PRIVILEGES;
 
 2. If your administrator has provided you with database connection info, 
-   you can modify MYSQL_* constants in the file test/test_db.py with 
-   the correct values.
+   see the config values in 'test/db_test_base.py' 
+   about which database connection, name and user will be used.
 
 The MySQL database should not contain any tables. Tests will not 
 drop the database with existing data.

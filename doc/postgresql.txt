@@ -25,10 +25,8 @@ Running the PostgreSQL unit tests
 
 The user that you're running the tests as will need to be able to access
 the postgresql database on the local machine and create and drop
-databases. Edit the ``test/test_postgresql.py`` database connection info if
-you wish to test against a different database.
-
-The test database will be called "rounduptest".
+databases. See the config values in 'test/db_test_base.py' 
+about which database connection, name and user will be used.
 
 
 Credit
