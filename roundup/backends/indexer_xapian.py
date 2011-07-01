@@ -72,20 +72,10 @@ class Indexer(IndexerBase):
         # indexed so we know what we're matching when we get results
         identifier = '%s:%s:%s'%identifier
 
-        # see if the id is in the database
-        enquire = xapian.Enquire(database)
-        query = xapian.Query(xapian.Query.OP_AND, [identifier])
-        enquire.set_query(query)
-        matches = enquire.get_mset(0, 10)
-        if len(matches):
-            docid = matches[0].docid
-        else:
-            docid = None
-
         # create the new document
         doc = xapian.Document()
         doc.set_data(identifier)
-        doc.add_posting(identifier, 0)
+        doc.add_term(identifier, 0)
 
         for match in re.finditer(r'\b\w{%d,%d}\b'
                                  % (self.minlength, self.maxlength),
@@ -95,10 +85,8 @@ class Indexer(IndexerBase):
                 continue
             term = stemmer(word)
             doc.add_posting(term, match.start(0))
-        if docid:
-            database.replace_document(docid, doc)
-        else:
-            database.add_document(doc)
+
+        database.replace_document(identifier, doc)
 
     def find(self, wordlist):
         '''look up all the words in the wordlist.
