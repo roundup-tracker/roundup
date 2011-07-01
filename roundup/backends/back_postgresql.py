@@ -50,16 +50,22 @@ def db_nuke(config, fail_ok=0):
     if os.path.exists(config.DATABASE):
         shutil.rmtree(config.DATABASE)
 
-def db_command(config, command):
+def db_command(config, command, database='postgres'):
     '''Perform some sort of database-level command. Retry 10 times if we
     fail by conflicting with another user.
+
+    Since PostgreSQL version 8.1 there is a database "postgres",
+    before "template1" seems to habe been used, so we fall back to it. 
+    Compare to issue2550543.
     '''
     template1 = connection_dict(config)
-    template1['database'] = 'template1'
+    template1['database'] = database
 
     try:
         conn = psycopg.connect(**template1)
     except psycopg.OperationalError, message:
+        if str(message).find('database "postgres" does not exist') >= 0:
+            return db_command(config, command, database='template1')
         raise hyperdb.DatabaseError(message)
 
     conn.set_isolation_level(0)

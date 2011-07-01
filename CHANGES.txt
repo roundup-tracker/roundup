@@ -9,6 +9,9 @@ Features:
 
 - Xapian indexing improved: Slightly faster and slightly smaller database. 
   Closes issue2550687. Thanks to Olly Betts for the patch. (Bernhard Reiter)
+- PostgreSQL backend minor improvement: database creation less likely to fail
+  for PostgreSQL versions >= 8.1 as the table "postgres" is used by default.
+  Closes issue2550543. Thanks to Kai Storbeck for the patch. (Bernhard Reiter)
 
 Fixed:
 
