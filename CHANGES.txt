@@ -15,6 +15,9 @@ Features:
 
 Fixed:
 
+- The PostgreSQL backend quotes database names now for CREATE and DROP, 
+  enabling more exotic tracker names. Closes issue2550497. 
+  Thanks to Sebastian Harl for providing the patch. (Bernhard Reiter)
 - Updated the url to point to www.roundup-tracker.org in two places in the
   docs. (Bernhard Reiter)
 - Do not depend on a CPython implementation detail anymore to make Roundup 

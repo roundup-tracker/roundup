@@ -35,7 +35,7 @@ def connection_dict(config, dbnamestr=None):
 
 def db_create(config):
     """Clear all database contents and drop database itself"""
-    command = "CREATE DATABASE %s WITH ENCODING='UNICODE'"%config.RDBMS_NAME
+    command = "CREATE DATABASE \"%s\" WITH ENCODING='UNICODE'"%config.RDBMS_NAME
     if config.RDBMS_TEMPLATE :
         command = command + " TEMPLATE=%s" % config.RDBMS_TEMPLATE
     logging.getLogger('roundup.hyperdb').info(command)
@@ -43,7 +43,7 @@ def db_create(config):
 
 def db_nuke(config, fail_ok=0):
     """Clear all database contents and drop database itself"""
-    command = 'DROP DATABASE %s'% config.RDBMS_NAME
+    command = 'DROP DATABASE "%s"'% config.RDBMS_NAME
     logging.getLogger('roundup.hyperdb').info(command)
     db_command(config, command)
 
