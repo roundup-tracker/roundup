@@ -42,19 +42,19 @@ def check_manifest():
             n-len(err), n)
         print 'Missing:', '\nMissing: '.join(err)
 
+def build_message_files(command):
+    """For each locale/*.po, build .mo file in target locale directory"""
+    for (_src, _dst) in list_message_files():
+        _build_dst = os.path.join("build", _dst)
+        command.mkpath(os.path.dirname(_build_dst))
+        command.announce("Compiling %s -> %s" % (_src, _build_dst))
+        msgfmt.make(_src, _build_dst)
+
 
 class build(base):
 
-    def build_message_files(self):
-        """For each locale/*.po, build .mo file in target locale directory"""
-        for (_src, _dst) in list_message_files():
-            _build_dst = os.path.join("build", _dst)
-            self.mkpath(os.path.dirname(_build_dst))
-            self.announce("Compiling %s -> %s" % (_src, _build_dst))
-            msgfmt.make(_src, _build_dst)
-
     def run(self):
         check_manifest()
-        self.build_message_files()
+        build_message_files(self)
         base.run(self)
 

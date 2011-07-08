@@ -23,6 +23,7 @@ from roundup.dist.command.build_scripts import build_scripts
 from roundup.dist.command.build_py import build_py
 from roundup.dist.command.build import build, list_message_files
 from roundup.dist.command.bdist_rpm import bdist_rpm
+from roundup.dist.command.install_lib import install_lib
 from distutils.core import setup
 
 import sys, os
@@ -140,6 +141,7 @@ def main():
                      'build_py': build_py,
                      'build': build,
                      'bdist_rpm': bdist_rpm,
+                     'install_lib': install_lib,
                      },
           packages=packages,
           py_modules=py_modules,

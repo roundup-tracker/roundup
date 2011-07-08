@@ -15,6 +15,9 @@ Features:
 
 Fixed:
 
+- Installation: Fixed an issue that prevented to use EasyInstall 
+  and a Python egg. Thanks to Satchidanand Haridas for the patch and
+  John Kristensen for testing it. (Bernhard Reiter)
 - The PostgreSQL backend quotes database names now for CREATE and DROP, 
   enabling more exotic tracker names. Closes issue2550497. 
   Thanks to Sebastian Harl for providing the patch. (Bernhard Reiter)
