@@ -878,6 +878,22 @@ class FormTestCase(unittest.TestCase):
         h = HTMLRequest(cl)
         self.assertEqual([x.id for x in h.batch()],['1', '2', '3'])
 
+    def testEditCSV(self):
+        form = dict(rows='id,name\n1,newkey')
+        cl = self._make_client(form, userid='1', classname='keyword')
+        cl.ok_message = []
+        actions.EditCSVAction(cl).handle()
+        self.assertEqual(cl.ok_message, ['Items edited OK'])
+        k = self.db.keyword.getnode('1')
+        self.assertEqual(k.name, 'newkey')
+        form = dict(rows=u'id,name\n1,\xe4\xf6\xfc'.encode('utf-8'))
+        cl = self._make_client(form, userid='1', classname='keyword')
+        cl.ok_message = []
+        actions.EditCSVAction(cl).handle()
+        self.assertEqual(cl.ok_message, ['Items edited OK'])
+        k = self.db.keyword.getnode('1')
+        self.assertEqual(k.name, u'\xe4\xf6\xfc'.encode('utf-8'))
+
     def testRoles(self):
         cl = self._make_client({})
         self.db.user.set('1', roles='aDmin,    uSer')

@@ -297,7 +297,7 @@ class EditCSVAction(Action):
         props = ['id'] + props_without_id
 
         # do the edit
-        rows = io_.StringIO(self.form['rows'].value)
+        rows = io_.BytesIO(self.form['rows'].value)
         reader = csv.reader(rows)
         found = {}
         line = 0
