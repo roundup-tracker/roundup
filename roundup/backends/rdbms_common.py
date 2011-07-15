@@ -812,6 +812,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             description="User is allowed to edit "+cn)
         self.security.addPermission(name="View", klass=cn,
             description="User is allowed to access "+cn)
+        self.security.addPermission(name="Retire", klass=cn,
+            description="User is allowed to retire "+cn)
 
     def getclasses(self):
         """ Return a list of the names of all existing classes.

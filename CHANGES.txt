@@ -37,6 +37,8 @@ Fixed:
   between encoded parts, we always removed the space. Note that this bug
   was present before mail gateway refactoring :-) Thanks for thorough
   testing of mail gateway code by Rafal Bisingier. (Ralf)
+- The "Retire" permission was not being registered. (Richard)
+
 
 2011-05-29 1.4.18 (r4610)
 
