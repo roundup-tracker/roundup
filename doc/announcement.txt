@@ -1,19 +1,52 @@
-I'm proud to release version 1.4.XX of Roundup which introduces some
+I'm proud to release version 1.4.19 of Roundup which introduces some
 minor features and, as usual, fixes some bugs:
 
 Features:
 
-- Norwegian Bokmal translation by Christian Aastorp
-- Allow to specify additional cc and bcc emails (not roundup users) for
-  nosymessage used by the nosyreaction reactor. (Ralf)
+- Xapian indexing improved: Slightly faster and slightly smaller database. 
+  Closes issue2550687. Thanks to Olly Betts for the patch. (Bernhard Reiter)
+- PostgreSQL backend minor improvement: database creation less likely to fail
+  for PostgreSQL versions >= 8.1 as the table "postgres" is used by default.
+  Closes issue2550543. Thanks to Kai Storbeck for the patch. (Bernhard Reiter)
+- Allow HTMLRequest.batch to filter on other permissions than "View"
+  (e.g. on the new "Search" permission") by adding a "permission"
+  parameter. Thanks to Eli Collins for the patch. Closes issue2550699. (Ralf)
 
 Fixed:
 
-- Fix file-unlink bug in mailgw (Ralfs oversight when refactoring the mail
-  gateway code) -- if a message is sent that contains no attachments,
-  all previous files of the issue are unlinked, thanks to Rafal
-  Bisingier for reporting and proposing a fix.
-  I've now added a regression test that catches this issue.
+- Installation: Fixed an issue that prevented to use EasyInstall 
+  and a Python egg. Thanks to Satchidanand Haridas for the patch and
+  John Kristensen for testing it. (Bernhard Reiter)
+- The PostgreSQL backend quotes database names now for CREATE and DROP, 
+  enabling more exotic tracker names. Closes issue2550497. 
+  Thanks to Sebastian Harl for providing the patch. (Bernhard Reiter)
+- Updated the url to point to www.roundup-tracker.org in two places in the
+  docs. (Bernhard Reiter)
+- Do not depend on a CPython implementation detail anymore to make Roundup 
+  more compatible with other Python implementations like PyPy.
+  Closes issue2550707. Thanks to Christof Meerwald. (Bernhard Reiter, Richard)
+- Yet another fix to the mail gateway, messages got *all* files of
+  an issue, not just the new ones. Thanks to Rafal Bisingier for
+  reporting and proposing a fix. The regression test was updated.
+  (Ralf)
+- Fix version numbers in upgrade documentation, the file-unlink defect
+  was in 1.4.17 not 1.4.16. Thanks to Rafal Bisingier. (Ralf)
+- Fix encoded email header parsing if multiple encoded and non-encoded
+  parts are present. RFC2047 specifies that spacing is removed only
+  between encoded parts, we always removed the space. Note that this bug
+  was present before mail gateway refactoring :-) Thanks for thorough
+  testing of mail gateway code by Rafal Bisingier. (Ralf)
+- The "Retire" permission was not being registered. (Richard)
+- Fix StringIO issue2550713: io.StringIO in newer versions of python
+  returns unicode strings and expects a unicode string in the
+  constructor. Unfortunately csv  doesn't handle unicode (yet). So we
+  need to use a BytesIO which gets the utf-8 string from the
+  web-interface. Compatibility for old versions by using
+  StringIO.StringIO for emulating a io.BytesIO also works.
+  Thanks to Cedric Krier for reporting. Closes issue2550713.
+  Added a regression test for EditCSVAction (Ralf)
+- Fix issue2550691 where a Unix From-Header was sometimes inserted in
+  outgoing emails, thanks to Joseph Myers for the patch. (Ralf)
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
