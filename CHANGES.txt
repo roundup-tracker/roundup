@@ -46,6 +46,8 @@ Fixed:
   StringIO.StringIO for emulating a io.BytesIO also works.
   Thanks to Cédric Krier for reporting. Closes issue2550713.
   Added a regression test for EditCSVAction (Ralf)
+- Fix issue2550691 where a Unix From-Header was sometimes inserted in
+  outgoing emails, thanks to Joseph Myers for the patch. (Ralf)
 
 
 2011-05-29 1.4.18 (r4610)

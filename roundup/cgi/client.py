@@ -1024,7 +1024,7 @@ class Client:
         message['Content-type'] = 'text/html; charset=utf-8'
         message.set_payload(content)
         encode_quopri(message)
-        self.mailer.smtp_send(to, str(message))
+        self.mailer.smtp_send(to, message.as_string())
     
     def renderFrontPage(self, message):
         """Return the front page of the tracker."""
