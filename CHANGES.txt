@@ -38,6 +38,14 @@ Fixed:
   was present before mail gateway refactoring :-) Thanks for thorough
   testing of mail gateway code by Rafal Bisingier. (Ralf)
 - The "Retire" permission was not being registered. (Richard)
+- Fix StringIO issue2550713: io.StringIO in newer versions of python
+  returns unicode strings and expects a unicode string in the
+  constructor. Unfortunately csv  doesn't handle unicode (yet). So we
+  need to use a BytesIO which gets the utf-8 string from the
+  web-interface. Compatibility for old versions by using
+  StringIO.StringIO for emulating a io.BytesIO also works.
+  Thanks to Cédric Krier for reporting. Closes issue2550713.
+  Added a regression test for EditCSVAction (Ralf)
 
 
 2011-05-29 1.4.18 (r4610)
