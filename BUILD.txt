@@ -28,8 +28,8 @@ Building and distributing a release of Roundup is done by running:
     with all available Python versions.
 12. Assuming all is well tag the release in SVN::
 
-      svn cp https://roundup.svn.sourceforge.net/svnroot/roundup/roundup/trunk \
-      https://roundup.svn.sourceforge.net/svnroot/roundup/roundup/tags/release-1-4-16
+      svn cp https://svn.roundup-tracker.org/svnroot/roundup/roundup/trunk \
+      https://svn.roundup-tracker.org/svnroot/roundup/roundup/tags/release-1-4-19
 
 13. python setup.py bdist_rpm
 14. python setup.py bdist_wininst
@@ -54,6 +54,6 @@ So, those commands in a nice, cut'n'pasteable form::
 
 (if the last two fail make sure you're using python2.5+)
 Note that python2.6 won't correctly create a bdist_wininst install on
-Linux (it will produce a .exe with "linux" in the name). Maybe
-2.7 fixes this? (Ralf)
+Linux (it will produce a .exe with "linux" in the name). 2.7 still has
+this bug (Ralf)
 
