@@ -2718,7 +2718,7 @@ function help_window(helpurl, width, height) {
 </script>
 """%self.base
 
-    def batch(self):
+    def batch(self, permission='View'):
         """ Return a batch object for results from the "current search"
         """
         check = self._client.db.security.hasPermission
@@ -2744,7 +2744,7 @@ function help_window(helpurl, width, height) {
 
         # filter for visibility
         l = [id for id in klass.filter(matches, filterspec, sort, group)
-            if check('View', userid, self.classname, itemid=id)]
+            if check(permission, userid, self.classname, itemid=id)]
 
         # return the batch object, using IDs only
         return Batch(self.client, l, self.pagesize, self.startwith,

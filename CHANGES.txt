@@ -12,6 +12,9 @@ Features:
 - PostgreSQL backend minor improvement: database creation less likely to fail
   for PostgreSQL versions >= 8.1 as the table "postgres" is used by default.
   Closes issue2550543. Thanks to Kai Storbeck for the patch. (Bernhard Reiter)
+- Allow HTMLRequest.batch to filter on other permissions than "View"
+  (e.g. on the new "Search" permission") by adding a "permission"
+  parameter. Thanks to Eli Collins for the patch. Closes issue2550699.
 
 Fixed:
 
