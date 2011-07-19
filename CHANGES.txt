@@ -8,6 +8,10 @@ Entries without name were done by Richard Jones.
 Features:
 Fixed:
 
+issue2550695: 'No sort or group' settings not retained when editing queries.
+  Reported and fixed by John Kristensen. Tested by Satchidanand Haridas. 
+  (Bernhard)
+
 2011-07-15 1.4.19 (r4638)
 
 Features:

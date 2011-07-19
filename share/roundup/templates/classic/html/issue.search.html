@@ -12,10 +12,10 @@
    cols python:request.columns or 'id activity title status assignedto'.split();
    sort_on python:request.sort and request.sort[0] or nothing;
    sort_desc python:sort_on and sort_on[0] == '-';
-   sort_on python:(sort_on and sort_on[1]) or 'activity';
+   sort_on python:(sort_on and sort_on[1]) or (not request.nodeid and 'activity') or '';
    group_on python:request.group and request.group[0] or nothing;
    group_desc python:group_on and group_on[0] == '-';
-   group_on python:(group_on and group_on[1]) or 'priority';
+   group_on python:(group_on and group_on[1]) or (not request.nodeid and 'priority') or '';
 
    search_input templates/page/macros/search_input;
    search_date templates/page/macros/search_date;
@@ -168,8 +168,8 @@
  <th i18n:translate="">No Sort or group:</th>
  <td>&nbsp;</td>
  <td>&nbsp;</td>
- <td><input type="radio" name="@sort" value=""></td>
- <td><input type="radio" name="@group" value=""></td>
+ <td><input type="radio" name="@sort" value="" tal:attributes="checked python:sort_on == ''"></td>
+ <td><input type="radio" name="@group" value="" tal:attributes="checked python:group_on == ''"></td>
 </tr>
 
 <tr>
