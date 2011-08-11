@@ -920,7 +920,10 @@ class Client:
             raise Unauthorised(self._("You are not allowed to view "
                 "this file."))
 
-        mime_type = klass.get(nodeid, 'type')
+        try:
+            mime_type = klass.get(nodeid, 'type')
+        except IndexError, e:
+            raise NotFound(e)
         # Can happen for msg class:
         if not mime_type:
             mime_type = 'text/plain'

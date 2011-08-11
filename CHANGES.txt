@@ -8,6 +8,9 @@ Entries without name were done by Richard Jones.
 Features:
 Fixed:
 
+issue2550715: IndexError when requesting non-existing file via http.
+  Reported and fixed by Cédric Krier. (Bernhard)
+
 issue2550695: 'No sort or group' settings not retained when editing queries.
   Reported and fixed by John Kristensen. Tested by Satchidanand Haridas. 
   (Bernhard)
