@@ -1666,7 +1666,17 @@ def uidFromAddress(db, address, create=1, **user_props):
     props = db.user.getprops()
     if props.has_key('alternate_addresses'):
         users = db.user.filter(None, {'alternate_addresses': address})
-        user = extractUserFromList(db.user, users)
+        # We want an exact match of the email, not just a substring
+        # match. Otherwise e.g. support@example.com would match
+        # discuss-support@example.com which is not what we want.
+        found_users = []
+        for u in users:
+            alt = db.user.get(u, 'alternate_addresses').split('\n')
+            for a in alt:
+                if a.strip().lower() == address.lower():
+                    found_users.append(u)
+                    break
+        user = extractUserFromList(db.user, found_users)
         if user is not None:
             return user
 

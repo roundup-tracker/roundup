@@ -2205,6 +2205,12 @@ This is a followup
         self.assertEqual(uidFromAddress(self.db, ('', 'user1@bar.com'), 0), i)
         self.assertEqual(uidFromAddress(self.db, ('', 'USER1@bar.com'), 0), i)
 
+    def testUserAlternateSubstringNomatch(self):
+        i = self.db.user.create(username='user1', address='user1@foo.com',
+                                alternate_addresses='x-user1@bar.com')
+        self.assertEqual(uidFromAddress(self.db, ('', 'user1@bar.com'), 0), 0)
+        self.assertEqual(uidFromAddress(self.db, ('', 'USER1@bar.com'), 0), 0)
+
     def testUserCreate(self):
         i = uidFromAddress(self.db, ('', 'user@foo.com'), 1)
         self.assertNotEqual(uidFromAddress(self.db, ('', 'user@bar.com'), 1), i)

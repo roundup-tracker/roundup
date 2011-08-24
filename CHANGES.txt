@@ -8,12 +8,15 @@ Entries without name were done by Richard Jones.
 Features:
 Fixed:
 
-issue2550715: IndexError when requesting non-existing file via http.
+- issue2550715: IndexError when requesting non-existing file via http.
   Reported and fixed by Cédric Krier. (Bernhard)
-
-issue2550695: 'No sort or group' settings not retained when editing queries.
+- issue2550695: 'No sort or group' settings not retained when editing queries.
   Reported and fixed by John Kristensen. Tested by Satchidanand Haridas. 
   (Bernhard)
+- Fix matching of incoming email addresses to the alternate_addresses
+  field of a user -- this would match substrings, e.g. if the user has
+  discuss-support@example.com as an alternate email and an incoming mail
+  is addressed to support@example.com this would (wrongly) match. (Ralf)
 
 2011-07-15 1.4.19 (r4638)
 
