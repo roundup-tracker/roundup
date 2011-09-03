@@ -6,6 +6,11 @@ Entries without name were done by Richard Jones.
 2011-XX-XX 1.4.20 (r4XXX)
 
 Features:
+
+- issue2550678: Allow pagesize=-1 which returns all results.
+  Suggested and implemented by John Kristensen. 
+  Tested by Satchidanand Haridas. (Bernhard)
+
 Fixed:
 
 - issue2550715: IndexError when requesting non-existing file via http.

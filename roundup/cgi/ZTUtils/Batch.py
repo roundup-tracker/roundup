@@ -52,7 +52,8 @@ class Batch:
         "orphan" elements, it is combined with the current batch.
         "overlap" is the number of elements shared by adjacent
         batches.  If "size" is not specified, it is computed from
-        "start" and "end".  Failing that, it is 7.
+        "start" and "end".  If "size" is 0, it is the length of
+        the sequence. Failing that, it is 7.
 
         Attributes: Note that the "start" attribute, unlike the
         argument, is a 1-based index (I know, lame).  "first" is the
@@ -92,7 +93,9 @@ class Batch:
 
 def opt(start,end,size,orphan,sequence):
     if size < 1:
-        if start > 0 and end > 0 and end >= start:
+        if size == 0:
+            size=len(sequence)
+        elif start > 0 and end > 0 and end >= start:
             size=end+1-start
         else: size=7
 
