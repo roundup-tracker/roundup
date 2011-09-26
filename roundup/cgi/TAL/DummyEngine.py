@@ -79,8 +79,7 @@ class DummyEngine:
         return "$%s$" % expr
 
     def uncompile(self, expression):
-        assert (expression.startswith("$") and expression.endswith("$"),
-            expression)
+        assert expression.startswith("$") and expression.endswith("$"),expression
         return expression[1:-1]
 
     def beginScope(self):
@@ -100,8 +99,7 @@ class DummyEngine:
         self.globals[name] = value
 
     def evaluate(self, expression):
-        assert (expression.startswith("$") and expression.endswith("$"),
-            expression)
+        assert expression.startswith("$") and expression.endswith("$"), expression
         expression = expression[1:-1]
         m = name_match(expression)
         if m:
@@ -162,8 +160,7 @@ class DummyEngine:
         return self.evaluate(expr)
 
     def evaluateMacro(self, macroName):
-        assert (macroName.startswith("$") and macroName.endswith("$"),
-            macroName)
+        assert macroName.startswith("$") and macroName.endswith("$"), macroName
         macroName = macroName[1:-1]
         file, localName = self.findMacroFile(macroName)
         if not file:
