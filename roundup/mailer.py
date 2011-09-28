@@ -7,7 +7,7 @@ import time, quopri, os, socket, smtplib, re, sys, traceback, email
 from cStringIO import StringIO
 
 from roundup import __version__
-from roundup.date import get_timezone
+from roundup.date import get_timezone, Date
 
 from email.Utils import formatdate, formataddr, specialsre, escapesre
 from email.Message import Message
@@ -207,9 +207,12 @@ class Mailer:
         if not sender:
             sender = self.config.ADMIN_EMAIL
         if self.debug:
-            # don't send - just write to a file
-            open(self.debug, 'a').write('FROM: %s\nTO: %s\n%s\n' %
-                                        (sender,
+            # don't send - just write to a file, use unix from line so
+            # that resulting file can be openened in a mailer
+            fmt = '%a %b %m %H:%M:%S %Y'
+            unixfrm = 'From %s %s' % (sender, Date ('.').pretty (fmt))
+            open(self.debug, 'a').write('%s\nFROM: %s\nTO: %s\n%s\n\n' %
+                                        (unixfrm, sender,
                                          ', '.join(to), message))
         else:
             # now try to send the message
