@@ -575,6 +575,21 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.transactions.append((self.doSetJournal, (classname, nodeid,
             journal)))
 
+    def fix_journal(self, classname, journal):
+        """ fix password entries to correct type """
+        pwprops = {}
+        for pn, prop in self.getclass(classname).properties.iteritems():
+            if isinstance(prop, hyperdb.Password):
+                pwprops [pn] = 1
+        if not pwprops:
+            return journal
+        for j in journal:
+            if j[3] == 'set':
+                for k, v in j[4].items():
+                    if k in pwprops:
+                        j[4][k] = password.JournalPassword(j[4][k])
+        return journal
+
     def getjournal(self, classname, nodeid):
         """ get the journal for id
 
@@ -611,7 +626,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 raise
             if res:
                 # we have unsaved journal entries, return them
-                return res
+                return self.fix_journal (classname, res)
             raise IndexError('no such %s %s'%(classname, nodeid))
         try:
             journal = marshal.loads(db[nodeid])
@@ -619,14 +634,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             db.close()
             if res:
                 # we have some unsaved journal entries, be happy!
-                return res
+                return self.fix_journal (classname, res)
             raise IndexError('no such %s %s'%(classname, nodeid))
         db.close()
 
         # add all the saved journal entries for this node
         for nodeid, date_stamp, user, action, params in journal:
             res.append((nodeid, date.Date(date_stamp), user, action, params))
-        return res
+        return self.fix_journal (classname, res)
 
     def pack(self, pack_before):
         """ Delete all journal entries except "create" before 'pack_before'.
