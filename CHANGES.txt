@@ -25,7 +25,7 @@ Fixed:
   discuss-support@example.com as an alternate email and an incoming mail
   is addressed to support@example.com this would (wrongly) match. (Ralf)
 - issue2550729: Fix password history display for anydbm backend, thanks
-  to Ralf Hemmecke for reporting.
+  to Ralf Hemmecke for reporting. (Ralf)
 
 2011-07-15 1.4.19 (r4638)
 
