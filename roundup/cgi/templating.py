@@ -1973,7 +1973,7 @@ class LinkHTMLProperty(HTMLProperty):
                           **kwargs)
 
     def menu(self, size=None, height=None, showid=0, additional=[], value=None,
-             sort_on=None, html_kwargs = {}, **conditions):
+             sort_on=None, html_kwargs={}, translate=True, **conditions):
         """ Render a form select list for this property
 
             "size" is used to limit the length of the list labels
@@ -1986,6 +1986,11 @@ class LinkHTMLProperty(HTMLProperty):
                 (direction, property) where direction is '+' or '-'. A
                 single string with the direction prepended may be used.
                 For example: ('-', 'order'), '+name'.
+            "html_kwargs" specified additional html args for the
+            generated html <select>
+            "translate" indicates if we should do translation of labels
+            using gettext -- this is often desired (e.g. for status
+            labels) but sometimes not.
 
             The remaining keyword arguments are used as conditions for
             filtering the items in the list - they're passed as the
@@ -2074,7 +2079,10 @@ class LinkHTMLProperty(HTMLProperty):
                 lab = lab + ' (%s)'%', '.join(m)
 
             # and generate
-            lab = cgi.escape(self._(lab))
+            tr = str
+            if translate:
+                tr = self._
+            lab = cgi.escape(tr(lab))
             l.append('<option %svalue="%s">%s</option>'%(s, optionid, lab))
         l.append('</select>')
         return '\n'.join(l)
@@ -2198,7 +2206,8 @@ class MultilinkHTMLProperty(HTMLProperty):
         return self.input(name=self._formname, size=size, **kwargs)
 
     def menu(self, size=None, height=None, showid=0, additional=[],
-             value=None, sort_on=None, html_kwargs = {}, **conditions):
+             value=None, sort_on=None, html_kwargs={}, translate=True,
+             **conditions):
         """ Render a form <select> list for this property.
 
             "size" is used to limit the length of the list labels
@@ -2299,7 +2308,10 @@ class MultilinkHTMLProperty(HTMLProperty):
                 lab = lab + ' (%s)'%', '.join(m)
 
             # and generate
-            lab = cgi.escape(self._(lab))
+            tr = str
+            if translate:
+                tr = self._
+            lab = cgi.escape(tr(lab))
             l.append('<option %svalue="%s">%s</option>'%(s, optionid,
                 lab))
         l.append('</select>')

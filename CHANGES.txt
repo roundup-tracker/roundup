@@ -10,6 +10,9 @@ Features:
 - issue2550678: Allow pagesize=-1 which returns all results.
   Suggested and implemented by John Kristensen. 
   Tested by Satchidanand Haridas. (Bernhard)
+- Allow to turn off translation of generated html options in menu method
+  of LinkHTMLProperty and MultilinkHTMLProperty -- default is
+  translation as it used to be (Ralf)
 
 Fixed:
 
