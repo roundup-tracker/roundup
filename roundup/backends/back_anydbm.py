@@ -586,7 +586,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         for j in journal:
             if j[3] == 'set':
                 for k, v in j[4].items():
-                    if k in pwprops:
+                    if k in pwprops and j[4][k]:
                         j[4][k] = password.JournalPassword(j[4][k])
         return journal
 
