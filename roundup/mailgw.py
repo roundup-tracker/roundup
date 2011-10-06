@@ -92,7 +92,7 @@ from roundup.i18n import _
 from roundup.hyperdb import iter_roles
 
 try:
-    import pyme, pyme.core, pyme.gpgme
+    import pyme, pyme.core, pyme.constants, pyme.constants.sigsum
 except ImportError:
     pyme = None
 
@@ -156,39 +156,31 @@ def gpgh_key_getall(key, attr):
     ''' return list of given attribute for all uids in
         a key
     '''
-    u = key.uids
-    while u:
+    for u in key.uids:
         yield getattr(u, attr)
-        u = u.next
 
-def gpgh_sigs(sig):
-    ''' more pythonic iteration over GPG signatures '''
-    while sig:
-        yield sig
-        sig = sig.next
-
-def check_pgp_sigs(sig, gpgctx, author):
+def check_pgp_sigs(sigs, gpgctx, author):
     ''' Theoretically a PGP message can have several signatures. GPGME
-        returns status on all signatures in a linked list. Walk that
-        linked list looking for the author's signature
+        returns status on all signatures in a list. Walk that list
+        looking for the author's signature
     '''
-    for sig in gpgh_sigs(sig):
+    for sig in sigs:
         key = gpgctx.get_key(sig.fpr, False)
         # we really only care about the signature of the user who
         # submitted the email
         if key and (author in gpgh_key_getall(key, 'email')):
-            if sig.summary & pyme.gpgme.GPGME_SIGSUM_VALID:
+            if sig.summary & pyme.constants.sigsum.VALID:
                 return True
             else:
                 # try to narrow down the actual problem to give a more useful
                 # message in our bounce
-                if sig.summary & pyme.gpgme.GPGME_SIGSUM_KEY_MISSING:
+                if sig.summary & pyme.constants.sigsum.KEY_MISSING:
                     raise MailUsageError, \
                         _("Message signed with unknown key: %s") % sig.fpr
-                elif sig.summary & pyme.gpgme.GPGME_SIGSUM_KEY_EXPIRED:
+                elif sig.summary & pyme.constants.sigsum.KEY_EXPIRED:
                     raise MailUsageError, \
                         _("Message signed with an expired key: %s") % sig.fpr
-                elif sig.summary & pyme.gpgme.GPGME_SIGSUM_KEY_REVOKED:
+                elif sig.summary & pyme.constants.sigsum.KEY_REVOKED:
                     raise MailUsageError, \
                         _("Message signed with a revoked key: %s") % sig.fpr
                 else:
@@ -511,7 +503,6 @@ class Message(mimetools.Message):
             raise MailUsageError, \
                 _("No PGP signature found in message.")
 
-        context = pyme.core.Context()
         # msg.getbody() is skipping over some headers that are
         # required to be present for verification to succeed so
         # we'll do this by hand
@@ -526,6 +517,7 @@ class Message(mimetools.Message):
         msg_data = pyme.core.Data(canonical_msg)
         sig_data = pyme.core.Data(sig.getbody())
 
+        context = pyme.core.Context()
         context.op_verify(sig_data, msg_data, None)
 
         # check all signatures for validity
@@ -995,7 +987,7 @@ Subject was: "%(subject)s"
             """
             if self.config.PGP_ROLES:
                 return self.db.user.has_role(self.author,
-                    iter_roles(self.config.PGP_ROLES))
+                    *iter_roles(self.config.PGP_ROLES))
             else:
                 return True
 
