@@ -862,7 +862,7 @@ Unknown address: %(from_address)s
                     'You are not permitted to access this tracker.')
         self.author = author
 
-    def check_node_permissions(self):
+    def check_permissions(self):
         ''' Check if the author has permission to edit or create this
             class of node
         '''
@@ -1155,6 +1155,71 @@ There was a problem with the message you sent:
 
         return self.nodeid
 
+        # XXX Don't enable. This doesn't work yet.
+#  "[^A-z.]tracker\+(?P<classname>[^\d\s]+)(?P<nodeid>\d+)\@some.dom.ain[^A-z.]"
+        # handle delivery to addresses like:tracker+issue25@some.dom.ain
+        # use the embedded issue number as our issue
+#            issue_re = config['MAILGW_ISSUE_ADDRESS_RE']
+#            if issue_re:
+#                for header in ['to', 'cc', 'bcc']:
+#                    addresses = message.getheader(header, '')
+#                if addresses:
+#                  # FIXME, this only finds the first match in the addresses.
+#                    issue = re.search(issue_re, addresses, 'i')
+#                    if issue:
+#                        classname = issue.group('classname')
+#                        nodeid = issue.group('nodeid')
+#                        break
+
+    # Default sequence of methods to be called on message. Use this for
+    # easier override of the default message processing
+    # list consists of tuples (method, return_if_true), the parsing
+    # returns if the return_if_true flag is set for a method *and* the
+    # method returns something that evaluates to True.
+    method_list = [
+        # Filter out messages to ignore
+        (handle_ignore, False),
+        # Check for usage/help requests
+        (handle_help, False),
+        # Check if the subject line is valid
+        (check_subject, False),
+        # get importants parts from subject
+        (parse_subject, False),
+        # check for registration OTK
+        (rego_confirm, True),
+        # get the classname
+        (get_classname, False),
+        # get the optional nodeid:
+        (get_nodeid, False),
+        # Determine who the author is:
+        (get_author_id, False),
+        # allowed to edit or create this class?
+        (check_permissions, False),
+        # author may have been created:
+        # commit author to database and re-open as author
+        (commit_and_reopen_as_author, False),
+        # Get the recipients list
+        (get_recipients, False),
+        # get the new/updated node props
+        (get_props, False),
+        # Handle PGP signed or encrypted messages
+        (get_pgp_message, False),
+        # extract content and attachments from message body:
+        (get_content_and_attachments, False),
+        # put attachments into files linked to the issue:
+        (create_files, False),
+        # create the message if there's a message body (content):
+        (create_msg, False),
+    ]
+
+
+    def parse (self):
+        for method, flag in self.method_list:
+            ret = method(self)
+            if flag and ret:
+                return
+        # perform the node change / create:
+        return self.create_node()
 
 
 class MailGW:
@@ -1370,6 +1435,7 @@ class MailGW:
         # in some rare cases, a particularly stuffed-up e-mail will make
         # its way into here... try to handle it gracefully
 
+        self.parsed_message = None
         sendto = message.getaddrlist('resent-from')
         if not sendto:
             sendto = message.getaddrlist('from')
@@ -1459,77 +1525,8 @@ class MailGW:
         The following code expects an opened database and a try/finally
         that closes the database.
         '''
-        parsed_message = self.parsed_message_class(self, message)
-
-        # Filter out messages to ignore
-        parsed_message.handle_ignore()
-        
-        # Check for usage/help requests
-        parsed_message.handle_help()
-        
-        # Check if the subject line is valid
-        parsed_message.check_subject()
-
-        # XXX Don't enable. This doesn't work yet.
-        # XXX once this works it should be moved to parsedMessage class
-#  "[^A-z.]tracker\+(?P<classname>[^\d\s]+)(?P<nodeid>\d+)\@some.dom.ain[^A-z.]"
-        # handle delivery to addresses like:tracker+issue25@some.dom.ain
-        # use the embedded issue number as our issue
-#            issue_re = config['MAILGW_ISSUE_ADDRESS_RE']
-#            if issue_re:
-#                for header in ['to', 'cc', 'bcc']:
-#                    addresses = message.getheader(header, '')
-#                if addresses:
-#                  # FIXME, this only finds the first match in the addresses.
-#                    issue = re.search(issue_re, addresses, 'i')
-#                    if issue:
-#                        classname = issue.group('classname')
-#                        nodeid = issue.group('nodeid')
-#                        break
-
-        # Parse the subject line to get the importants parts
-        parsed_message.parse_subject()
-
-        # check for registration OTK
-        if parsed_message.rego_confirm():
-            return
-
-        # get the classname
-        parsed_message.get_classname()
-
-        # get the optional nodeid
-        parsed_message.get_nodeid()
-
-        # Determine who the author is
-        parsed_message.get_author_id()
-        
-        # make sure they're allowed to edit or create this class
-        parsed_message.check_node_permissions()
-
-        # author may have been created:
-        # commit author to database and re-open as author
-        parsed_message.commit_and_reopen_as_author()
-
-        # Get the recipients list
-        parsed_message.get_recipients()
-
-        # get the new/updated node props
-        parsed_message.get_props()
-
-        # Handle PGP signed or encrypted messages
-        parsed_message.get_pgp_message()
-
-        # extract content and attachments from message body
-        parsed_message.get_content_and_attachments()
-
-        # put attachments into files linked to the issue
-        parsed_message.create_files()
-        
-        # create the message if there's a message body (content)
-        parsed_message.create_msg()
-            
-        # perform the node change / create
-        nodeid = parsed_message.create_node()
+        self.parsed_message = self.parsed_message_class(self, message)
+        nodeid = self.parsed_message.parse ()
 
         # commit the changes to the DB
         self.db.commit()
