@@ -13,6 +13,8 @@ Features:
 - Allow to turn off translation of generated html options in menu method
   of LinkHTMLProperty and MultilinkHTMLProperty -- default is
   translation as it used to be (Ralf)
+- Sending of PGP-Encrypted mail to all users or selected users (via
+  roles) is now working. (Ralf)
 
 Fixed:
 
@@ -32,9 +34,7 @@ Fixed:
 - PGP support is again working (pyme API has changed significantly) and
   we now have a regression test. We now take care that bounce-messages
   for incoming encrypted mails or mails where the policy dictates that
-  outgoing traffic should be encrypted is actually pgp-encrypted. Note
-  that the new pgp encrypt option for outgoing mails works only for
-  bounces for now. (Ralf)
+  outgoing traffic should be encrypted is actually pgp-encrypted. (Ralf)
 
 2011-07-15 1.4.19 (r4638)
 

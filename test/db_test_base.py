@@ -18,8 +18,10 @@
 # $Id: db_test_base.py,v 1.101 2008-08-19 01:40:59 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, base64, os.path
+import gpgmelib
 # Python 2.3 ... 2.6 compatibility:
 from roundup.anypy.sets_ import set
+from email.parser import FeedParser
 
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval, DatabaseError, Boolean, Number, Node
@@ -1932,6 +1934,78 @@ class DBTest(commonDBTest):
         finally :
             roundupdb._ = old_translate_
             Mailer.smtp_send = backup
+
+    def testPGPNosyMail(self) :
+        """Creates one issue with two attachments, one smaller and one larger
+           than the set max_attachment_size. Recipients are one with and
+           one without encryption enabled via a gpg group.
+        """
+        if gpgmelib.pyme is None:
+            print "Skipping PGPNosy test"
+            return
+        old_translate_ = roundupdb._
+        roundupdb._ = i18n.get_translation(language='C').gettext
+        db = self.db
+        db.config.NOSY_MAX_ATTACHMENT_SIZE = 4096
+        db.config['PGP_HOMEDIR'] = gpgmelib.pgphome
+        db.config['PGP_ROLES'] = 'pgp'
+        db.config['PGP_ENABLE'] = True
+        db.config['PGP_ENCRYPT'] = True
+        gpgmelib.setUpPGP()
+        res = []
+        def dummy_snd(s, to, msg, res=res) :
+            res.append (dict (mail_to = to, mail_msg = msg))
+        backup, Mailer.smtp_send = Mailer.smtp_send, dummy_snd
+        try :
+            john = db.user.create(username="john", roles='User,pgp',
+                address='john@test.test', realname='John Doe')
+            f1 = db.file.create(name="test1.txt", content="x" * 20)
+            f2 = db.file.create(name="test2.txt", content="y" * 5000)
+            m  = db.msg.create(content="one two", author="admin",
+                files = [f1, f2])
+            i  = db.issue.create(title='spam', files = [f1, f2],
+                messages = [m], nosy = [db.user.lookup("fred"), john])
+
+            db.issue.nosymessage(i, m, {})
+            res.sort(key=lambda x: x['mail_to'])
+            self.assertEqual(res[0]["mail_to"], ["fred@example.com"])
+            self.assertEqual(res[1]["mail_to"], ["john@test.test"])
+            mail_msg = str(res[0]["mail_msg"])
+            self.assert_("From: admin" in mail_msg)
+            self.assert_("Subject: [issue1] spam" in mail_msg)
+            self.assert_("New submission from admin" in mail_msg)
+            self.assert_("one two" in mail_msg)
+            self.assert_("File 'test1.txt' not attached" not in mail_msg)
+            self.assert_(base64.encodestring("xxx").rstrip() in mail_msg)
+            self.assert_("File 'test2.txt' not attached" in mail_msg)
+            self.assert_(base64.encodestring("yyy").rstrip() not in mail_msg)
+            fp = FeedParser()
+            mail_msg = str(res[1]["mail_msg"])
+            fp.feed(mail_msg)
+            parts = fp.close().get_payload()
+            self.assertEqual(len(parts),2)
+            self.assertEqual(parts[0].get_payload().strip(), 'Version: 1')
+            crypt = gpgmelib.pyme.core.Data(parts[1].get_payload())
+            plain = gpgmelib.pyme.core.Data()
+            ctx = gpgmelib.pyme.core.Context()
+            res = ctx.op_decrypt(crypt, plain)
+            self.assertEqual(res, None)
+            plain.seek(0,0)
+            fp = FeedParser()
+            fp.feed(plain.read())
+            self.assert_("From: admin" in mail_msg)
+            self.assert_("Subject: [issue1] spam" in mail_msg)
+            mail_msg = str(fp.close())
+            self.assert_("New submission from admin" in mail_msg)
+            self.assert_("one two" in mail_msg)
+            self.assert_("File 'test1.txt' not attached" not in mail_msg)
+            self.assert_(base64.encodestring("xxx").rstrip() in mail_msg)
+            self.assert_("File 'test2.txt' not attached" in mail_msg)
+            self.assert_(base64.encodestring("yyy").rstrip() not in mail_msg)
+        finally :
+            roundupdb._ = old_translate_
+            Mailer.smtp_send = backup
+            gpgmelib.tearDownPGP()
 
 class ROTest(MyTestCase):
     def setUp(self):

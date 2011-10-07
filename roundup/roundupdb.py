@@ -30,15 +30,22 @@ from email.Utils import formataddr
 from email.Header import Header
 from email.MIMEText import MIMEText
 from email.MIMEBase import MIMEBase
+from email.MIMEMultipart import MIMEMultipart
 
 from anypy.email_ import FeedParser
 
 from roundup import password, date, hyperdb
 from roundup.i18n import _
+from roundup.hyperdb import iter_roles
 
-# MessageSendError is imported for backwards compatibility
 from roundup.mailer import Mailer, MessageSendError, encode_quopri, \
     nice_sender_header
+
+try:
+    import pyme, pyme.core
+except ImportError:
+    pyme = None
+
 
 class Database:
 
@@ -212,14 +219,26 @@ class IssueClass:
         The "bcc" argument also indicates additional recipients to send the
         message to that may not be specified in the message's recipients
         list. These recipients will not be included in the To: or Cc:
-        address lists.
+        address lists. Note that the list of bcc users *is* updated in
+        the recipient list of the message, so this field has to be
+        protected (using appropriate permissions), otherwise the bcc
+        will be decuceable for users who have web access to the tracker.
 
         The cc_emails and bcc_emails arguments take a list of additional
         recipient email addresses (just the mail address not roundup users)
-        this can be useful for sending to additional email addresses which are no
-        roundup users. These arguments are currently not used by roundups
-        nosyreaction but can be used by customized (nosy-)reactors.
+        this can be useful for sending to additional email addresses
+        which are no roundup users. These arguments are currently not
+        used by roundups nosyreaction but can be used by customized
+        (nosy-)reactors.
+
+        A note on encryption: If pgp encryption for outgoing mails is
+        turned on in the configuration and no specific pgp roles are
+        defined, we try to send encrypted mail to *all* users
+        *including* cc, bcc, cc_emails and bcc_emails and this might
+        fail if not all the keys are available in roundups keyring.
         """
+        encrypt = self.db.config.PGP_ENABLE and self.db.config.PGP_ENCRYPT
+        pgproles = self.db.config.PGP_ROLES
         if msgid:
             authid = self.db.msg.get(msgid, 'author')
             recipients = self.db.msg.get(msgid, 'recipients', [])
@@ -228,8 +247,8 @@ class IssueClass:
             authid = None
             recipients = []
 
-        sendto = []
-        bcc_sendto = []
+        sendto = dict (plain = [], crypt = [])
+        bcc_sendto = dict (plain = [], crypt = [])
         seen_message = {}
         for recipient in recipients:
             seen_message[recipient] = 1
@@ -238,7 +257,10 @@ class IssueClass:
             """ make sure they have an address """
             address = self.db.user.get(userid, 'address')
             if address:
-                to.append(address)
+                ciphered = encrypt and (not pgproles or
+                    self.db.user.has_role(userid, *iter_roles(pgproles)))
+                type = ['plain', 'crypt'][ciphered]
+                to[type].append(address)
                 recipients.append(userid)
 
         def good_recipient(userid):
@@ -273,13 +295,19 @@ class IssueClass:
         for userid in cc + self.get(issueid, whichnosy):
             if good_recipient(userid):
                 add_recipient(userid, sendto)
-        sendto.extend (cc_emails)
+        if encrypt and not pgproles:
+            sendto['crypt'].extend (cc_emails)
+        else:
+            sendto['plain'].extend (cc_emails)
 
         # now deal with bcc people.
         for userid in bcc:
             if good_recipient(userid):
                 add_recipient(userid, bcc_sendto)
-        bcc_sendto.extend (bcc_emails)
+        if encrypt and not pgproles:
+            bcc_sendto['crypt'].extend (bcc_emails)
+        else:
+            bcc_sendto['plain'].extend (bcc_emails)
 
         if oldvalues:
             note = self.generateChangeNote(issueid, oldvalues)
@@ -288,17 +316,53 @@ class IssueClass:
 
         # If we have new recipients, update the message's recipients
         # and send the mail.
-        if sendto or bcc_sendto:
+        if sendto['plain'] or sendto['crypt']:
+            # update msgid and recipients only if non-bcc have changed
             if msgid is not None:
                 self.db.msg.set(msgid, recipients=recipients)
-            self.send_message(issueid, msgid, note, sendto, from_address,
-                bcc_sendto)
+        if sendto['plain'] or bcc_sendto['plain']:
+            self.send_message(issueid, msgid, note, sendto['plain'],
+                from_address, bcc_sendto['plain'])
+        if sendto['crypt'] or bcc_sendto['crypt']:
+            self.send_message(issueid, msgid, note, sendto['crypt'],
+                from_address, bcc_sendto['crypt'], crypt=True)
 
     # backwards compatibility - don't remove
     sendmessage = nosymessage
 
+    def encrypt_to(self, message, sendto):
+        """ Encrypt given message to sendto receivers.
+            Returns a new RFC 3156 conforming message.
+        """
+        plain = pyme.core.Data(message.as_string())
+        cipher = pyme.core.Data()
+        ctx = pyme.core.Context()
+        ctx.set_armor(1)
+        keys = []
+        for adr in sendto:
+            ctx.op_keylist_start(adr, 0)
+            # only first key per email
+            k = ctx.op_keylist_next()
+            if k is not None:
+                keys.append(k)
+            else:
+                msg = _('No key for "%(adr)s" in keyring')%locals()
+                raise MessageSendError, msg
+            ctx.op_keylist_end()
+        ctx.op_encrypt(keys, 1, plain, cipher)
+        cipher.seek(0,0)
+        msg = MIMEMultipart('encrypted', boundary=None, _subparts=None,
+            protocol="application/pgp-encrypted")
+        part = MIMEBase('application', 'pgp-encrypted')
+        part.set_payload("Version: 1\r\n")
+        msg.attach(part)
+        part = MIMEBase('application', 'octet-stream')
+        part.set_payload(cipher.read())
+        msg.attach(part)
+        return msg
+
     def send_message(self, issueid, msgid, note, sendto, from_address=None,
-            bcc_sendto=[]):
+            bcc_sendto=[], crypt=False):
         '''Actually send the nominated message from this issue to the sendto
            recipients, with the note appended.
         '''
@@ -430,7 +494,6 @@ class IssueClass:
             mailer = Mailer(self.db.config)
 
             message = mailer.get_standard_message(multipart=message_files)
-            mailer.set_message_attributes(message, sendto, subject, author)
 
             # set reply-to to the tracker
             message['Reply-To'] = tracker_name
@@ -526,10 +589,29 @@ class IssueClass:
                 message.set_payload(body)
                 encode_quopri(message)
 
-            if first:
-                mailer.smtp_send(sendto + bcc_sendto, message.as_string())
+            if crypt:
+                send_msg = self.encrypt_to (message, sendto)
             else:
-                mailer.smtp_send(sendto, message.as_string())
+                send_msg = message
+            mailer.set_message_attributes(send_msg, sendto, subject, author)
+            send_msg ['Message-Id'] = message ['Message-Id']
+            send_msg ['Reply-To'] = message ['Reply-To']
+            if message.get ('In-Reply-To'):
+                send_msg ['In-Reply-To'] = message ['In-Reply-To']
+            mailer.smtp_send(sendto, send_msg.as_string())
+            if first:
+                if crypt:
+                    # send individual bcc mails, otherwise receivers can
+                    # deduce bcc recipients from keys in message
+                    for bcc in bcc_sendto:
+                        send_msg = self.encrypt_to (message, [bcc])
+                        send_msg ['Message-Id'] = message ['Message-Id']
+                        send_msg ['Reply-To'] = message ['Reply-To']
+                        if message.get ('In-Reply-To'):
+                            send_msg ['In-Reply-To'] = message ['In-Reply-To']
+                        mailer.smtp_send([bcc], send_msg.as_string())
+                elif bcc_sendto:
+                    mailer.smtp_send(bcc_sendto, send_msg.as_string())
             first = False
 
     def email_signature(self, issueid, msgid):

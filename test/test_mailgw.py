@@ -14,6 +14,7 @@
 # TODO: test bcc
 
 import unittest, tempfile, os, shutil, errno, imp, sys, difflib, rfc822, time
+import gpgmelib
 from email.parser import FeedParser
 
 
@@ -3063,7 +3064,7 @@ ownertrust = """
 """
 
 class MailgwPGPTestCase(MailgwTestAbstractBase):
-    pgphome = 'pgp-test-home'
+    pgphome = gpgmelib.pgphome
     def setUp(self):
         MailgwTestAbstractBase.setUp(self)
         self.db.security.addRole(name = 'pgp', description = 'PGP Role')
@@ -3073,23 +3074,11 @@ class MailgwPGPTestCase(MailgwTestAbstractBase):
         self.instance.config['MAIL_DOMAIN'] = 'example.com'
         self.instance.config['ADMIN_EMAIL'] = 'roundup-admin@example.com'
         self.db.user.set(self.john_id, roles='User,pgp')
-        os.mkdir(self.pgphome)
-        os.environ['GNUPGHOME'] = self.pgphome
-        ctx = pyme.core.Context()
-        key = pyme.core.Data(pgp_test_key)
-        ctx.op_import(key)
-        key = pyme.core.Data(john_doe_key)
-        ctx.op_import(key)
-        # trust-modelling with pyme isn't working in 0.8.1
-        # based on libgpgme11 1.2.0, also tried in C -- same thing.
-        otrust = os.popen ('gpg --import-ownertrust 2> /dev/null', 'w')
-        otrust.write(ownertrust)
-        otrust.close()
+        gpgmelib.setUpPGP()
 
     def tearDown(self):
         MailgwTestAbstractBase.tearDown(self)
-        if os.path.exists(self.pgphome):
-            shutil.rmtree(self.pgphome)
+        gpgmelib.tearDownPGP()
 
     def testPGPUnsignedMessage(self):
         self.assertRaises(MailUsageError, self._handle_mail,
