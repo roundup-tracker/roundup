@@ -5,6 +5,7 @@ __docformat__ = 'restructuredtext'
 import base64, binascii, cgi, codecs, mimetypes, os
 import quopri, random, re, rfc822, stat, sys, time
 import socket, errno
+from traceback import format_exc
 
 from roundup import roundupdb, date, hyperdb, password
 from roundup.cgi import templating, cgitb, TranslationService
@@ -21,6 +22,10 @@ from roundup.anypy.cookie_ import CookieError, BaseCookie, SimpleCookie, \
 from roundup.anypy.io_ import StringIO
 from roundup.anypy import http_
 from roundup.anypy import urllib_
+
+from email.MIMEBase import MIMEBase
+from email.MIMEText import MIMEText
+from email.MIMEMultipart import MIMEMultipart
 
 def initialiseSecurity(security):
     '''Create some Permissions and Roles on the security object
@@ -547,7 +552,7 @@ class Client:
             if not self.instance.config.WEB_DEBUG:
                 exc_info = sys.exc_info()
                 subject = "Error: %s" % exc_info[1]
-                self.send_html_to_admin(subject, html)
+                self.send_error_to_admin(subject, html, format_exc())
                 self.write_html(self._(error_message))
             else:
                 self.write_html(html)
@@ -1018,15 +1023,23 @@ class Client:
             self.additional_headers['Content-Length'] = str(len(content))
             self.write(content)
 
-    def send_html_to_admin(self, subject, content):
-
+    def send_error_to_admin(self, subject, html, txt):
+        """Send traceback information to admin via email.
+           We send both, the formatted html (with more information) and
+           the text version of the traceback. We use
+           multipart/alternative so the receiver can chose which version
+           to display.
+        """
         to = [self.mailer.config.ADMIN_EMAIL]
-        message = self.mailer.get_standard_message(to, subject)
-        # delete existing content-type headers
-        del message['Content-type']
-        message['Content-type'] = 'text/html; charset=utf-8'
-        message.set_payload(content)
-        encode_quopri(message)
+        message = MIMEMultipart('alternative')
+        self.mailer.set_message_attributes(message, to, subject)
+        part = MIMEBase('text', 'html')
+        part.set_charset('utf-8')
+        part.set_payload(html)
+        encode_quopri(part)
+        message.attach(part)
+        part = MIMEText(txt)
+        message.attach(part)
         self.mailer.smtp_send(to, message.as_string())
     
     def renderFrontPage(self, message):
@@ -1084,7 +1097,7 @@ class Client:
                 # If possible, send the HTML page template traceback
                 # to the administrator.
                 subject = "Templating Error: %s" % exc_info[1]
-                self.send_html_to_admin(subject, cgitb.pt_html())
+                self.send_error_to_admin(subject, cgitb.pt_html(), format_exc())
                 # Now report the error to the user.
                 return self._(error_message)
             except:
