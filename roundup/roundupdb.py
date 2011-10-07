@@ -429,8 +429,8 @@ class IssueClass:
             # create the message
             mailer = Mailer(self.db.config)
 
-            message = mailer.get_standard_message(sendto, subject, author,
-                multipart=message_files)
+            message = mailer.get_standard_message(multipart=message_files)
+            mailer.set_message_attributes(message, sendto, subject, author)
 
             # set reply-to to the tracker
             message['Reply-To'] = tracker_name

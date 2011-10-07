@@ -159,10 +159,12 @@ def gpgh_key_getall(key, attr):
     for u in key.uids:
         yield getattr(u, attr)
 
-def check_pgp_sigs(sigs, gpgctx, author):
+def check_pgp_sigs(sigs, gpgctx, author, may_be_unsigned=False):
     ''' Theoretically a PGP message can have several signatures. GPGME
         returns status on all signatures in a list. Walk that list
-        looking for the author's signature
+        looking for the author's signature. Note that even if incoming
+        signatures are not required, the processing fails if there is an
+        invalid signature.
     '''
     for sig in sigs:
         key = gpgctx.get_key(sig.fpr, False)
@@ -188,7 +190,10 @@ def check_pgp_sigs(sigs, gpgctx, author):
                         _("Invalid PGP signature detected.")
 
     # we couldn't find a key belonging to the author of the email
-    raise MailUsageError, _("Message signed with unknown key: %s") % sig.fpr
+    if sigs:
+        raise MailUsageError, _("Message signed with unknown key: %s") % sig.fpr
+    elif not may_be_unsigned:
+        raise MailUsageError, _("Unsigned Message")
 
 class Message(mimetools.Message):
     ''' subclass mimetools.Message so we can retrieve the parts of the
@@ -452,16 +457,18 @@ class Message(mimetools.Message):
         return self.gettype() == 'multipart/encrypted' \
             and self.typeheader.find('protocol="application/pgp-encrypted"') != -1
 
-    def decrypt(self, author):
+    def decrypt(self, author, may_be_unsigned=False):
         ''' decrypt an OpenPGP MIME message
-            This message must be signed as well as encrypted using the "combined"
-            method. The decrypted contents are returned as a new message.
+            This message must be signed as well as encrypted using the
+            "combined" method if incoming signatures are configured.
+            The decrypted contents are returned as a new message.
         '''
         (hdr, msg) = self.getparts()
         # According to the RFC 3156 encrypted mail must have exactly two parts.
         # The first part contains the control information. Let's verify that
         # the message meets the RFC before we try to decrypt it.
-        if hdr.getbody() != 'Version: 1' or hdr.gettype() != 'application/pgp-encrypted':
+        if hdr.getbody().strip() != 'Version: 1' \
+           or hdr.gettype() != 'application/pgp-encrypted':
             raise MailUsageError, \
                 _("Unknown multipart/encrypted version.")
 
@@ -478,7 +485,8 @@ class Message(mimetools.Message):
         # key to send it to us. now check the signatures to see if it
         # was signed by someone we trust
         result = context.op_verify_result()
-        check_pgp_sigs(result.signatures, context, author)
+        check_pgp_sigs(result.signatures, context, author,
+            may_be_unsigned = may_be_unsigned)
 
         plaintext.seek(0,0)
         # pyme.core.Data implements a seek method with a different signature
@@ -550,6 +558,7 @@ class parsedMessage:
         self.props = None
         self.content = None
         self.attachments = None
+        self.crypt = False
 
     def handle_ignore(self):
         ''' Check to see if message can be safely ignored:
@@ -991,22 +1000,33 @@ Subject was: "%(subject)s"
             else:
                 return True
 
-        if self.config.PGP_ENABLE and pgp_role():
+        if self.config.PGP_ENABLE:
+            if pgp_role() and self.config.PGP_ENCRYPT:
+                self.crypt = True
             assert pyme, 'pyme is not installed'
             # signed/encrypted mail must come from the primary address
             author_address = self.db.user.get(self.author, 'address')
             if self.config.PGP_HOMEDIR:
                 os.environ['GNUPGHOME'] = self.config.PGP_HOMEDIR
+            if self.config.PGP_REQUIRE_INCOMING in ('encrypted', 'both') \
+                and pgp_role() and not self.message.pgp_encrypted():
+                raise MailUsageError, _(
+                    "This tracker has been configured to require all email "
+                    "be PGP encrypted.")
             if self.message.pgp_signed():
                 self.message.verify_signature(author_address)
             elif self.message.pgp_encrypted():
-                # replace message with the contents of the decrypted
+                # Replace message with the contents of the decrypted
                 # message for content extraction
-                # TODO: encrypted message handling is far from perfect
-                # bounces probably include the decrypted message, for
-                # instance :(
-                self.message = self.message.decrypt(author_address)
-            else:
+                # Note: the bounce-handling code now makes sure that
+                # either the encrypted mail received is sent back or
+                # that the error message is encrypted if needed.
+                encr_only = self.config.PGP_REQUIRE_INCOMING == 'encrypted'
+                encr_only = encr_only or not pgp_role()
+                self.crypt = True
+                self.message = self.message.decrypt(author_address,
+                    may_be_unsigned = encr_only)
+            elif pgp_role():
                 raise MailUsageError, _("""
 This tracker has been configured to require all email be PGP signed or
 encrypted.""")
@@ -1449,6 +1469,12 @@ class MailGW:
             return self.handle_message(message)
 
         # no, we want to trap exceptions
+        # Note: by default we return the message received not the
+        # internal state of the parsedMessage -- except for
+        # MailUsageError, Unauthorized and for unknown exceptions. For
+        # the latter cases we make sure the error message is encrypted
+        # if needed (if it either was received encrypted or pgp
+        # processing is turned on for the user).
         try:
             return self.handle_message(message)
         except MailUsageHelp:
@@ -1466,12 +1492,18 @@ class MailGW:
             m.append(str(value))
             m.append('\n\nMail Gateway Help\n=================')
             m.append(fulldoc)
-            self.mailer.bounce_message(message, [sendto[0][1]], m)
+            if self.parsed_message:
+                message = self.parsed_message.message
+                crypt = self.parsed_message.crypt
+            self.mailer.bounce_message(message, [sendto[0][1]], m, crypt=crypt)
         except Unauthorized, value:
             # just inform the user that he is not authorized
             m = ['']
             m.append(str(value))
-            self.mailer.bounce_message(message, [sendto[0][1]], m)
+            if self.parsed_message:
+                message = self.parsed_message.message
+                crypt = self.parsed_message.crypt
+            self.mailer.bounce_message(message, [sendto[0][1]], m, crypt=crypt)
         except IgnoreMessage:
             # do not take any action
             # this exception is thrown when email should be ignored
@@ -1492,7 +1524,10 @@ class MailGW:
             m.append('An unexpected error occurred during the processing')
             m.append('of your message. The tracker administrator is being')
             m.append('notified.\n')
-            self.mailer.bounce_message(message, [sendto[0][1]], m)
+            if self.parsed_message:
+                message = self.parsed_message.message
+                crypt = self.parsed_message.crypt
+            self.mailer.bounce_message(message, [sendto[0][1]], m, crypt=crypt)
 
             m.append('----------------')
             m.append(traceback.format_exc())
@@ -1523,6 +1558,7 @@ class MailGW:
         # commit the changes to the DB
         self.db.commit()
 
+        self.parsed_message = None
         return nodeid
 
     def get_class_arguments(self, class_type, classname=None):

@@ -14,6 +14,7 @@
 # TODO: test bcc
 
 import unittest, tempfile, os, shutil, errno, imp, sys, difflib, rfc822, time
+from email.parser import FeedParser
 
 
 try:
@@ -164,9 +165,9 @@ class MailgwTestAbstractBase(unittest.TestCase, DiffHelper):
         handler.db = self.db
         return handler
 
-    def _handle_mail(self, message, args=()):
+    def _handle_mail(self, message, args=(), trap_exc=0):
         handler = self._create_mailgw(message, args)
-        handler.trapExceptions = 0
+        handler.trapExceptions = trap_exc
         return handler.main(StringIO(message))
 
     def _get_mail(self):
@@ -1875,10 +1876,8 @@ Subject: [issue] Testing nonexisting user...
 
 This is a test submission of a new issue.
 '''
-        handler = self._create_mailgw(message)
-        # we want a bounce message:
-        handler.trapExceptions = 1
-        ret = handler.main(StringIO(message))
+        # trap_exc=1: we want a bounce message:
+        ret = self._handle_mail(message, trap_exc=1)
         self.compareMessages(self._get_mail(),
 '''FROM: Roundup issue tracker <roundup-admin@your.tracker.email.domain.example>
 TO: nonexisting@bork.bork.bork
@@ -3067,10 +3066,12 @@ class MailgwPGPTestCase(MailgwTestAbstractBase):
     pgphome = 'pgp-test-home'
     def setUp(self):
         MailgwTestAbstractBase.setUp(self)
-        self.db.security.addRole (name = 'pgp', description = 'PGP Role')
+        self.db.security.addRole(name = 'pgp', description = 'PGP Role')
         self.instance.config['PGP_HOMEDIR'] = self.pgphome
         self.instance.config['PGP_ROLES'] = 'pgp'
         self.instance.config['PGP_ENABLE'] = True
+        self.instance.config['MAIL_DOMAIN'] = 'example.com'
+        self.instance.config['ADMIN_EMAIL'] = 'roundup-admin@example.com'
         self.db.user.set(self.john_id, roles='User,pgp')
         os.mkdir(self.pgphome)
         os.environ['GNUPGHOME'] = self.pgphome
@@ -3090,7 +3091,7 @@ class MailgwPGPTestCase(MailgwTestAbstractBase):
         if os.path.exists(self.pgphome):
             shutil.rmtree(self.pgphome)
 
-    def testUnsignedMessage(self):
+    def testPGPUnsignedMessage(self):
         self.assertRaises(MailUsageError, self._handle_mail,
             '''Content-Type: text/plain;
   charset="iso-8859-1"
@@ -3102,8 +3103,7 @@ Subject: [issue] Testing non-signed message...
 This is no pgp signed message.
 ''')
 
-    def testSignedMessage(self):
-        nodeid = self._handle_mail('''Content-Disposition: inline
+    signed_msg = '''Content-Disposition: inline
 From: John Doe <john@test.test>
 To: issue_tracker@your.tracker.email.domain.example
 Subject: [issue] Testing signed message...
@@ -3133,10 +3133,157 @@ ZQ4K6R3m3AOw7BLdvZs=
 -----END PGP SIGNATURE-----
 
 --cWoXeonUoKmBZSoM--
-''')
-        m = self.db.issue.get (nodeid, 'messages') [0]
+'''
+
+    def testPGPSignedMessage(self):
+        nodeid = self._handle_mail(self.signed_msg)
+        m = self.db.issue.get(nodeid, 'messages')[0]
         self.assertEqual(self.db.msg.get(m, 'content'), 
             'This is a pgp signed message.')
+
+    def testPGPSignedMessageFail(self):
+        # require both, signing and encryption
+        self.instance.config['PGP_REQUIRE_INCOMING'] = 'both'
+        self.assertRaises(MailUsageError, self._handle_mail, self.signed_msg)
+
+    encrypted_msg = '''Content-Disposition: inline
+From: John Doe <john@test.test>
+To: roundup-admin@example.com
+Subject: [issue] Testing encrypted message...
+Content-Type: multipart/encrypted; protocol="application/pgp-encrypted";
+        boundary="d6Gm4EdcadzBjdND"
+
+--d6Gm4EdcadzBjdND
+Content-Type: application/pgp-encrypted
+Content-Disposition: attachment
+
+Version: 1
+
+--d6Gm4EdcadzBjdND
+Content-Type: application/octet-stream
+Content-Disposition: inline; filename="msg.asc"
+
+-----BEGIN PGP MESSAGE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+hQEMAzfeQttq+Q2YAQf9FxCtZVgC7jAy6UkeAJ1imCpnh9DgKA5w40OFtrY4mVAp
+cL7kCkvGvJCW7uQZrmSgIiYaZGLI3GS42XutORC6E6PzBEW0fJUMIXYmoSd0OFeY
+3H2+854qu37W/uCOWM9OnPFIH8g8q8DgYy88i0goM+Ot9Q96yFfJ7QymanOZJgVa
+MNC+oKDiIZKiE3PCwtGr+8CHZN/9J6O4FeJijBlr09C5LXc+Nif5T0R0nt17MAns
+9g2UvGxW8U24NAS1mOg868U05hquLPIcFz9jGZGknJu7HBpOkQ9GjKqkzN8pgZVN
+VbN8IdDqi0QtRKE44jtWQlyNlESMjv6GtC2V9F6qKNK8AfHtBexDhyv4G9cPFFNO
+afQ6e4dPi89RYIQyydtwiqao8fj6jlAy2Z1cbr7YxwBG7BeUZv9yis7ShaAIo78S
+82MrCYpSjfHNwKiSfC5yITw22Uv4wWgixVdAsaSdtBqEKXJPG9LNey18ArsBjSM1
+P81iDOWUp/uyIe5ZfvNI38BBxEYslPTUlDk2GB8J2Vun7IWHoj9a4tY3IotC9jBr
+5Qnigzqrt7cJZX6OrN0c+wnOjXbMGYXmgSs4jeM=
+=XX5Q
+-----END PGP MESSAGE-----
+
+--d6Gm4EdcadzBjdND--
+'''
+    def testPGPEncryptedUnsignedMessageError(self):
+        self.assertRaises(MailUsageError, self._handle_mail, self.encrypted_msg)
+
+    def testPGPEncryptedUnsignedMessage(self):
+        # no error if we don't require a signature:
+        self.instance.config['PGP_REQUIRE_INCOMING'] = 'encrypted'
+        nodeid = self._handle_mail (self.encrypted_msg)
+        m = self.db.issue.get(nodeid, 'messages')[0]
+        self.assertEqual(self.db.msg.get(m, 'content'), 
+            'This is the text to be encrypted')
+
+    def testPGPEncryptedUnsignedMessageFromNonPGPUser(self):
+        msg = self.encrypted_msg.replace('John Doe <john@test.test>',
+            '"Contrary, Mary" <mary@test.test>')
+        nodeid = self._handle_mail (msg)
+        m = self.db.issue.get(nodeid, 'messages')[0]
+        self.assertEqual(self.db.msg.get(m, 'content'), 
+            'This is the text to be encrypted')
+        self.assertEqual(self.db.msg.get(m, 'author'), self.mary_id)
+
+    # check that a bounce-message that is triggered *after*
+    # decrypting is properly encrypted:
+    def testPGPEncryptedUnsignedMessageCheckBounce(self):
+        # allow non-signed msg
+        self.instance.config['PGP_REQUIRE_INCOMING'] = 'encrypted'
+        # don't allow creation of message, trigger error *after* decrypt
+        self.db.user.set(self.john_id, roles='pgp')
+        self.db.security.addPermissionToRole('pgp', 'Email Access')
+        self.db.security.addPermissionToRole('pgp', 'Create', 'issue')
+        # trap_exc=1: we want a bounce message:
+        self._handle_mail(self.encrypted_msg, trap_exc=1)
+        m = self._get_mail()
+        fp = FeedParser()
+        fp.feed(m)
+        parts = fp.close().get_payload()
+        self.assertEqual(len(parts),2)
+        self.assertEqual(parts[0].get_payload().strip(), 'Version: 1')
+        crypt = pyme.core.Data(parts[1].get_payload())
+        plain = pyme.core.Data()
+        ctx = pyme.core.Context()
+        res = ctx.op_decrypt(crypt, plain)
+        self.assertEqual(res, None)
+        plain.seek(0,0)
+        fp = FeedParser()
+        fp.feed(plain.read())
+        parts = fp.close().get_payload()
+        self.assertEqual(len(parts),2)
+        self.assertEqual(parts[0].get_payload().strip(),
+            'You are not permitted to create messages.')
+        self.assertEqual(parts[1].get_payload().strip(),
+            '''Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+This is the text to be encrypted''')
+
+
+    def testPGPEncryptedSignedMessage(self):
+        # require both, signing and encryption
+        self.instance.config['PGP_REQUIRE_INCOMING'] = 'both'
+        nodeid = self._handle_mail('''Content-Disposition: inline
+From: John Doe <john@test.test>
+To: roundup-admin@example.com
+Subject: Testing encrypted and signed message
+MIME-Version: 1.0
+Content-Type: multipart/encrypted; protocol="application/pgp-encrypted";
+        boundary="ReaqsoxgOBHFXBhH"
+
+--ReaqsoxgOBHFXBhH
+Content-Type: application/pgp-encrypted
+Content-Disposition: attachment
+
+Version: 1
+
+--ReaqsoxgOBHFXBhH
+Content-Type: application/octet-stream
+Content-Disposition: inline; filename="msg.asc"
+
+-----BEGIN PGP MESSAGE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+hQEMAzfeQttq+Q2YAQf+NaC3r8qBURQqxHH9IAP4vg0QAP2yj3n0v6guo1lRf5BA
+EUfTQ3jc3chxLvzTgoUIuMOvhlNroqR1lgLwhfSTCyuKWDZa+aVNiSgsB2MD44Xd
+mAkKKmnmOGLmfbICbPQZxl4xNhCMTHiAy1xQE6mTj/+pEAq5XxjJUwn/gJ3O1Wmd
+NyWtJY2N+TRbxUVB2WhG1j9J1D2sjhG26TciE8JeuLDZzaiVNOW9YlX2Lw5KtlkR
+Hkgw6Xme06G0XXZUcm9JuBU/7oFP/tSrC1tBsnVlq1pZYf6AygIBdXWb9gD/WmXh
+7Eu/xCKrw4RFnXnTgmBz/NHRfVDkfdSscZqexnG1D9LAwQHSuVf8sxDPNesv0W+8
+e49loVjvU+Y0BCFQAbWSW4iOEUYZpW/ITRE4+wIqMXZbAraeBV0KPZ4hAa3qSmf+
+oZBRcbzssL163Odx/OHRuK2J2CHC654+crrlTBnxd/RUKgRbSUKwrZzB2G6OPcGv
+wfiqXsY+XvSZtTbWuvUJxePh8vhhhjpuo1JtlrYc3hZ9OYgoCoV1JiLl5c60U5Es
+oUT9GDl1Qsgb4dF4TJ1IBj+riYiocYpJxPhxzsy6liSLNy2OA6VEjG0FGk53+Ok9
+7UzOA+WaHJHSXafZzrdP1TWJUFlOMA+dOgTKpH69eL1+IRfywOjEwp1UNSbLnJpc
+D0QQLwIFttplKvYkn0DZByJCVnIlGkl4s5LM5rnc8iecX8Jad0iRIlPV6CVM+Nso
+WdARUfyJfXAmz8uk4f2sVfeMu1gdMySdjvxwlgHDJdBPIG51r2b8L/NCTiC57YjF
+zGhS06FLl3V1xx6gBlpqQHjut3efrAGpXGBVpnTJMOcgYAk=
+=jt/n
+-----END PGP MESSAGE-----
+
+--ReaqsoxgOBHFXBhH--
+''')
+        m = self.db.issue.get(nodeid, 'messages')[0]
+        self.assertEqual(self.db.msg.get(m, 'content'), 
+            'This is the text of a signed and encrypted email.')
+
 
 def test_suite():
     suite = unittest.TestSuite()

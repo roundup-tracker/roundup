@@ -12,8 +12,15 @@ from roundup.date import get_timezone, Date
 from email.Utils import formatdate, formataddr, specialsre, escapesre
 from email.Message import Message
 from email.Header import Header
+from email.MIMEBase import MIMEBase
 from email.MIMEText import MIMEText
 from email.MIMEMultipart import MIMEMultipart
+
+try:
+    import pyme, pyme.core
+except ImportError:
+    pyme = None
+
 
 class MessageSendError(RuntimeError):
     pass
@@ -64,17 +71,14 @@ class Mailer:
             os.environ['TZ'] = get_timezone(self.config.TIMEZONE).tzname(None)
             time.tzset()
 
-    def get_standard_message(self, to, subject, author=None, multipart=False):
-        '''Form a standard email message from Roundup.
-
+    def set_message_attributes(self, message, to, subject, author=None):
+        ''' Add attributes to a standard output message
         "to"      - recipients list
         "subject" - Subject
         "author"  - (name, address) tuple or None for admin email
 
         Subject and author are encoded using the EMAIL_CHARSET from the
         config (default UTF-8).
-
-        Returns a Message object.
         '''
         # encode header values if they need to be
         charset = getattr(self.config, 'EMAIL_CHARSET', 'utf-8')
@@ -85,13 +89,6 @@ class Mailer:
         else:
             name = unicode(author[0], 'utf-8')
         author = nice_sender_header(name, author[1], charset)
-
-        if multipart:
-            message = MIMEMultipart()
-        else:
-            message = MIMEText("")
-            message.set_charset(charset)
-
         try:
             message['Subject'] = subject.encode('ascii')
         except UnicodeError:
@@ -114,6 +111,17 @@ class Mailer:
         # finally, an aid to debugging problems
         message['X-Roundup-Version'] = __version__
 
+    def get_standard_message(self, multipart=False):
+        '''Form a standard email message from Roundup.
+        Returns a Message object.
+        '''
+        charset = getattr(self.config, 'EMAIL_CHARSET', 'utf-8')
+        if multipart:
+            message = MIMEMultipart()
+        else:
+            message = MIMEText("")
+            message.set_charset(charset)
+
         return message
 
     def standard_message(self, to, subject, content, author=None):
@@ -127,13 +135,14 @@ class Mailer:
 
         All strings are assumed to be UTF-8 encoded.
         """
-        message = self.get_standard_message(to, subject, author)
+        message = self.get_standard_message()
+        self.set_message_attributes(message, to, subject, author)
         message.set_payload(content)
         encode_quopri(message)
         self.smtp_send(to, message.as_string())
 
     def bounce_message(self, bounced_message, to, error,
-                       subject='Failed issue tracker submission'):
+                       subject='Failed issue tracker submission', crypt=False):
         """Bounce a message, attaching the failed submission.
 
         Arguments:
@@ -143,18 +152,29 @@ class Mailer:
           ERROR_MESSAGES_TO setting.
         - error: the reason of failure as a string.
         - subject: the subject as a string.
+        - crypt: require encryption with pgp for user -- applies only to
+          mail sent back to the user, not the dispatcher oder admin.
 
         """
+        crypt_to = None
+        if crypt:
+            crypt_to = to
+            to = None
         # see whether we should send to the dispatcher or not
         dispatcher_email = getattr(self.config, "DISPATCHER_EMAIL",
             getattr(self.config, "ADMIN_EMAIL"))
         error_messages_to = getattr(self.config, "ERROR_MESSAGES_TO", "user")
         if error_messages_to == "dispatcher":
             to = [dispatcher_email]
+            crypt = False
+            crypt_to = None
         elif error_messages_to == "both":
-            to.append(dispatcher_email)
+            if crypt:
+                to = [dispatcher_email]
+            else:
+                to.append(dispatcher_email)
 
-        message = self.get_standard_message(to, subject, multipart=True)
+        message = self.get_standard_message(multipart=True)
 
         # add the error text
         part = MIMEText('\n'.join(error))
@@ -175,15 +195,54 @@ class Mailer:
         part = MIMEText(''.join(body))
         message.attach(part)
 
-        # send
-        try:
-            self.smtp_send(to, message.as_string())
-        except MessageSendError:
-            # squash mail sending errors when bouncing mail
-            # TODO this *could* be better, as we could notify admin of the
-            # problem (even though the vast majority of bounce errors are
-            # because of spam)
-            pass
+        if to:
+            # send
+            self.set_message_attributes(message, to, subject)
+            try:
+                self.smtp_send(to, message.as_string())
+            except MessageSendError:
+                # squash mail sending errors when bouncing mail
+                # TODO this *could* be better, as we could notify admin of the
+                # problem (even though the vast majority of bounce errors are
+                # because of spam)
+                pass
+        if crypt_to:
+            plain = pyme.core.Data(message.as_string())
+            cipher = pyme.core.Data()
+            ctx = pyme.core.Context()
+            ctx.set_armor(1)
+            keys = []
+            adrs = []
+            for adr in crypt_to:
+                ctx.op_keylist_start(adr, 0)
+                # only first key per email
+                k = ctx.op_keylist_next()
+                if k is not None:
+                    adrs.append(adr)
+                    keys.append(k)
+                ctx.op_keylist_end()
+            crypt_to = adrs
+        if crypt_to:
+            try:
+                ctx.op_encrypt(keys, 1, plain, cipher)
+                cipher.seek(0,0)
+                message=MIMEMultipart('encrypted', boundary=None,
+                    _subparts=None, protocol="application/pgp-encrypted")
+                part=MIMEBase('application', 'pgp-encrypted')
+                part.set_payload("Version: 1\r\n")
+                message.attach(part)
+                part=MIMEBase('application', 'octet-stream')
+                part.set_payload(cipher.read())
+                message.attach(part)
+            except pyme.GPGMEError:
+                crypt_to = None
+        if crypt_to:
+            self.set_message_attributes(message, crypt_to, subject)
+            try:
+                self.smtp_send(crypt_to, message.as_string())
+            except MessageSendError:
+                # ignore on error, see above.
+                pass
 
     def exception_message(self):
         '''Send a message to the admins with information about the latest
