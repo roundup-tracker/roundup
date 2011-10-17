@@ -18,6 +18,8 @@ Features:
 
 Fixed:
 
+- issue2550730: FAQ has broken link to Zope book. Reported and fixed by
+  John Rouillard.(Bernhard)
 - issue2550728: remove buggy parentheses in TAL/DummyEngine.py.
   Reported and fixed by Ralf Hemmecke. (Bernhard)
 - issue2550715: IndexError when requesting non-existing file via http.
