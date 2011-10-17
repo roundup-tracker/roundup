@@ -1190,44 +1190,45 @@ There was a problem with the message you sent:
     # method returns something that evaluates to True.
     method_list = [
         # Filter out messages to ignore
-        (handle_ignore, False),
+        ("handle_ignore", False),
         # Check for usage/help requests
-        (handle_help, False),
+        ("handle_help", False),
         # Check if the subject line is valid
-        (check_subject, False),
+        ("check_subject", False),
         # get importants parts from subject
-        (parse_subject, False),
+        ("parse_subject", False),
         # check for registration OTK
-        (rego_confirm, True),
+        ("rego_confirm", True),
         # get the classname
-        (get_classname, False),
+        ("get_classname", False),
         # get the optional nodeid:
-        (get_nodeid, False),
+        ("get_nodeid", False),
         # Determine who the author is:
-        (get_author_id, False),
+        ("get_author_id", False),
         # allowed to edit or create this class?
-        (check_permissions, False),
+        ("check_permissions", False),
         # author may have been created:
         # commit author to database and re-open as author
-        (commit_and_reopen_as_author, False),
+        ("commit_and_reopen_as_author", False),
         # Get the recipients list
-        (get_recipients, False),
+        ("get_recipients", False),
         # get the new/updated node props
-        (get_props, False),
+        ("get_props", False),
         # Handle PGP signed or encrypted messages
-        (get_pgp_message, False),
+        ("get_pgp_message", False),
         # extract content and attachments from message body:
-        (get_content_and_attachments, False),
+        ("get_content_and_attachments", False),
         # put attachments into files linked to the issue:
-        (create_files, False),
+        ("create_files", False),
         # create the message if there's a message body (content):
-        (create_msg, False),
+        ("create_msg", False),
     ]
 
 
     def parse (self):
-        for method, flag in self.method_list:
-            ret = method(self)
+        for methodname, flag in self.method_list:
+            method = getattr (self, methodname)
+            ret = method()
             if flag and ret:
                 return
         # perform the node change / create:
