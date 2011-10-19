@@ -290,8 +290,7 @@ Hi there!
         self.assertEqual(self.db.issue.get(nodeid, 'status'), '3')
         self.assertEqual(self.db.issue.get(nodeid, 'priority'), '1')
 
-    def doNewIssue(self):
-        nodeid = self._handle_mail('''Content-Type: text/plain;
+    newmsg = '''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
@@ -300,7 +299,10 @@ Message-Id: <dummy_test_message_id>
 Subject: [issue] Testing...
 
 This is a test submission of a new issue.
-''')
+'''
+
+    def doNewIssue(self):
+        nodeid = self._handle_mail(self.newmsg)
         assert not os.path.exists(SENDMAILDEBUG)
         l = self.db.issue.get(nodeid, 'nosy')
         l.sort()
@@ -312,20 +314,25 @@ This is a test submission of a new issue.
 
     def testNewIssueNosy(self):
         self.instance.config.ADD_AUTHOR_TO_NOSY = 'yes'
-        nodeid = self._handle_mail('''Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Chef <chef@bork.bork.bork>
-To: issue_tracker@your.tracker.email.domain.example
-Cc: richard@test.test
-Message-Id: <dummy_test_message_id>
-Subject: [issue] Testing...
+        nodeid = self.doNewIssue()
+        m = self.db.issue.get(nodeid, 'messages')
+        self.assertEqual(len(m), 1)
+        recv = self.db.msg.get(m[0], 'recipients')
+        self.assertEqual(recv, [self.richard_id])
 
-This is a test submission of a new issue.
-''')
+    def testNewIssueNosyAuthor(self):
+        self.instance.config.ADD_AUTHOR_TO_NOSY = 'no'
+        self.instance.config.MESSAGES_TO_AUTHOR = 'nosy'
+        nodeid = self._handle_mail(self.newmsg)
         assert not os.path.exists(SENDMAILDEBUG)
         l = self.db.issue.get(nodeid, 'nosy')
         l.sort()
-        self.assertEqual(l, [self.chef_id, self.richard_id])
+        self.assertEqual(l, [self.richard_id])
+        m = self.db.issue.get(nodeid, 'messages')
+        self.assertEqual(len(m), 1)
+        recv = self.db.msg.get(m[0], 'recipients')
+        recv.sort()
+        self.assertEqual(recv, [self.richard_id])
 
     def testAlternateAddress(self):
         self._handle_mail('''Content-Type: text/plain;
@@ -356,7 +363,6 @@ This is a test submission of a new issue.
         assert not os.path.exists(SENDMAILDEBUG)
 
     def testNewIssueAuthMsg(self):
-        # TODO: fix the damn config - this is apalling
         self.db.config.MESSAGES_TO_AUTHOR = 'yes'
         self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
@@ -1453,11 +1459,7 @@ Subject: Re: Testing...
 This is a followup
 '''), nodeid)
 
-
-    def testFollowupNosyAuthor(self):
-        self.doNewIssue()
-        self.db.config.ADD_AUTHOR_TO_NOSY = 'yes'
-        self._handle_mail('''Content-Type: text/plain;
+    simple_followup = '''Content-Type: text/plain;
   charset="iso-8859-1"
 From: john@test.test
 To: issue_tracker@your.tracker.email.domain.example
@@ -1466,8 +1468,12 @@ In-Reply-To: <dummy_test_message_id>
 Subject: [issue1] Testing...
 
 This is a followup
-''')
+'''
 
+    def testFollowupNosyAuthor(self):
+        self.doNewIssue()
+        self.db.config.ADD_AUTHOR_TO_NOSY = 'yes'
+        self._handle_mail(self.simple_followup)
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test.test
@@ -1505,7 +1511,7 @@ _______________________________________________________________________
         self.doNewIssue()
         self.db.config.ADD_RECIPIENTS_TO_NOSY = 'yes'
         self._handle_mail('''Content-Type: text/plain;
-  charset="iso-8859-1"
+ charset="iso-8859-1"
 From: richard@test.test
 To: issue_tracker@your.tracker.email.domain.example
 Cc: john@test.test
@@ -1552,16 +1558,45 @@ _______________________________________________________________________
         self.doNewIssue()
         self.db.config.ADD_AUTHOR_TO_NOSY = 'yes'
         self.db.config.MESSAGES_TO_AUTHOR = 'yes'
-        self._handle_mail('''Content-Type: text/plain;
-  charset="iso-8859-1"
-From: john@test.test
-To: issue_tracker@your.tracker.email.domain.example
+        self._handle_mail(self.simple_followup)
+        self.compareMessages(self._get_mail(),
+'''FROM: roundup-admin@your.tracker.email.domain.example
+TO: chef@bork.bork.bork, john@test.test, richard@test.test
+Content-Type: text/plain; charset="utf-8"
+Subject: [issue1] Testing...
+To: chef@bork.bork.bork, john@test.test, richard@test.test
+From: John Doe <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
+MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
-Subject: [issue1] Testing...
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
+Content-Transfer-Encoding: quoted-printable
+
+
+John Doe <john@test.test> added the comment:
 
 This is a followup
+
+----------
+nosy: +john
+status: unread -> chatting
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
+_______________________________________________________________________
+
 ''')
+
+    def testFollowupNosyAuthorNosyCopy(self):
+        self.doNewIssue()
+        self.db.config.ADD_AUTHOR_TO_NOSY = 'yes'
+        self.db.config.MESSAGES_TO_AUTHOR = 'nosy'
+        self._handle_mail(self.simple_followup)
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, john@test.test, richard@test.test
@@ -1598,22 +1633,89 @@ _______________________________________________________________________
     def testFollowupNoNosyAuthor(self):
         self.doNewIssue()
         self.instance.config.ADD_AUTHOR_TO_NOSY = 'no'
-        self._handle_mail('''Content-Type: text/plain;
-  charset="iso-8859-1"
-From: john@test.test
-To: issue_tracker@your.tracker.email.domain.example
-Message-Id: <followup_dummy_id>
-In-Reply-To: <dummy_test_message_id>
-Subject: [issue1] Testing...
-
-This is a followup
-''')
+        self._handle_mail(self.simple_followup)
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test.test
 Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test.test
+From: John Doe <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
+MIME-Version: 1.0
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
+Content-Transfer-Encoding: quoted-printable
+
+
+John Doe <john@test.test> added the comment:
+
+This is a followup
+
+----------
+status: unread -> chatting
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
+_______________________________________________________________________
+
+''')
+
+    def testFollowupNoNosyAuthorNoCopy(self):
+        self.doNewIssue()
+        self.instance.config.ADD_AUTHOR_TO_NOSY = 'no'
+        self.instance.config.MESSAGES_TO_AUTHOR = 'nosy'
+        self._handle_mail(self.simple_followup)
+        self.compareMessages(self._get_mail(),
+'''FROM: roundup-admin@your.tracker.email.domain.example
+TO: chef@bork.bork.bork, richard@test.test
+Content-Type: text/plain; charset="utf-8"
+Subject: [issue1] Testing...
+To: chef@bork.bork.bork, richard@test.test
+From: John Doe <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
+MIME-Version: 1.0
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
+Content-Transfer-Encoding: quoted-printable
+
+
+John Doe <john@test.test> added the comment:
+
+This is a followup
+
+----------
+status: unread -> chatting
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
+_______________________________________________________________________
+
+''')
+
+    # this is a pathological case where the author is *not* on the nosy
+    # list but gets the message; test documents existing behaviour
+    def testFollowupNoNosyAuthorButCopy(self):
+        self.doNewIssue()
+        self.instance.config.ADD_AUTHOR_TO_NOSY = 'no'
+        self.instance.config.MESSAGES_TO_AUTHOR = 'yes'
+        self._handle_mail(self.simple_followup)
+        self.compareMessages(self._get_mail(),
+'''FROM: roundup-admin@your.tracker.email.domain.example
+TO: chef@bork.bork.bork, john@test.test, richard@test.test
+Content-Type: text/plain; charset="utf-8"
+Subject: [issue1] Testing...
+To: chef@bork.bork.bork, john@test.test, richard@test.test
 From: John Doe <issue_tracker@your.tracker.email.domain.example>
 Reply-To: Roundup issue tracker
  <issue_tracker@your.tracker.email.domain.example>

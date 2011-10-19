@@ -285,7 +285,9 @@ class IssueClass:
         # anonymous
         if (good_recipient(authid) and
             (self.db.config.MESSAGES_TO_AUTHOR == 'yes' or
-             (self.db.config.MESSAGES_TO_AUTHOR == 'new' and not oldvalues))):
+             (self.db.config.MESSAGES_TO_AUTHOR == 'new' and not oldvalues) or
+             (self.db.config.MESSAGES_TO_AUTHOR == 'nosy' and authid in
+             self.get(issueid, whichnosy)))):
             add_recipient(authid, sendto)
 
         if authid:

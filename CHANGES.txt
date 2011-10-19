@@ -15,6 +15,12 @@ Features:
   translation as it used to be (Ralf)
 - Sending of PGP-Encrypted mail to all users or selected users (via
   roles) is now working. (Ralf)
+- Add config-option "nosy" to messages_to_author setting in [nosy]
+  section of config: This will send a message to the author only
+  in the case where the author is on the nosy-list (either added
+  earlier or via the add_author setting). Current config-options
+  for this setting will send / not send to author without considering
+  the nosy list. (Ralf)
 
 Fixed:
 

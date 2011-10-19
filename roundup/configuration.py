@@ -831,8 +831,12 @@ SETTINGS = (
             "turned on."),
     ), "OpenPGP mail processing options"),
     ("nosy", (
-        (RunDetectorOption, "messages_to_author", "no",
-            "Send nosy messages to the author of the message.",
+        (Option, "messages_to_author", "no",
+            "Send nosy messages to the author of the message.\n"
+            "Allowed values: yes, no, new, nosy -- if yes, messages\n"
+            "are sent to the author even if not on the nosy list, same\n"
+            "for new (but only for new messages). When set to nosy,\n"
+            "the nosy list controls sending messages to the author.",
             ["MESSAGES_TO_AUTHOR"]),
         (Option, "signature_position", "bottom",
             "Where to place the email signature.\n"
