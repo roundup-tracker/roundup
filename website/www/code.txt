@@ -28,7 +28,7 @@ to authorize your access. (See `SF's site documentation on git
 authorisation
 <http://sourceforge.net/apps/trac/sourceforge/wiki/Git#Authentication>`_) ::
 
-  git clone ssh\ ://\ *<username>*\ @roundup.git.sourceforge.net/gitroot/roundup/roundup roundup
+  git clone ssh://<username>@roundup.git.sourceforge.net/gitroot/roundup/roundup roundup
 
 Of course a roundup developer must have granted
 you write access first - ask for it on the roundup-devel list.
