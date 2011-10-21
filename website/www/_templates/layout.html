@@ -6,7 +6,7 @@
     {{ metatags }}
     {%- if builder != 'htmlhelp' %}
       {%- set titlesuffix = docstitle|e %}
-      {%- set titlesuffix = " &mdash; " + titlesuffix %}
+      {%- set titlesuffix = " - " + titlesuffix %}
     {%- endif %}
     <title>{{ title|striptags }}{{ titlesuffix }}</title>
     {%- if builder == 'web' %}
