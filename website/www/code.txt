@@ -14,9 +14,8 @@ You may browse the repository via `gitweb <http://roundup.git.sourceforge.net/gi
 Read-only Access
 ----------------
 
-Read-only repository access is provided through git://roundup.git.sourceforge.net/gitroot/roundup/roundup
-
-The development branch can be checked out via::
+Read-only repository access is provided through
+git://roundup.git.sourceforge.net/gitroot/roundup/roundup ::
 
   git clone git://roundup.git.sourceforge.net/gitroot/roundup/roundup roundup
 
@@ -25,8 +24,11 @@ Read-write Access
 -----------------
 
 The read/write access uses your SourceForge.net ssh password or ssh key
-to authorize your access. (See `SF's site documentation on git authorisation <http://sourceforge.net/apps/trac/sourceforge/wiki/Git#Authentication>`_)
-Of course a roundup developer must have granted
-you write access first - ask for it on the roundup-devel list.
+to authorize your access. (See `SF's site documentation on git
+authorisation
+<http://sourceforge.net/apps/trac/sourceforge/wiki/Git#Authentication>`_) ::
 
   git clone ssh\ ://\ *<username>*\ @roundup.git.sourceforge.net/gitroot/roundup/roundup roundup
+
+Of course a roundup developer must have granted
+you write access first - ask for it on the roundup-devel list.
