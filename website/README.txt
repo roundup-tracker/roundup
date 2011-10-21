@@ -9,20 +9,16 @@ issues.roundup-tracker.org:
 
 www.roundup-tracker.org:
  
- * project_home=/home/groups/r/ro/roundup
-
  * log into sf.net
       ssh -t <user>,roundup@shell.sourceforge.net create
- * update the working copy
+ * set project_home:
+      project_home=/home/project-web/roundup
+ * update the working copy (you may need to "cd" to the docs directory for it to update...)
       cd ${project_home}/src/web/www
       svn update
- * (Update the roundup source docs directory as well?)
- * make sure PATH includes ${project_home}/bin, and PYTHONPATH includes ${project_home}/lib/python
  * build it
-      make [clean] html
-      # with clean ignore: "loading pickled environment... failed"
- * make sure you leave all files writable for the group "roundup"
-      chmod g+rw -R .
+      PATH=${PATH}:${project_home}/bin PYTHONPATH=${project_home}/lib/python make html
+ * you may also "make clean"
  * install it
       cp -r ./html/* ${project_home}/htdocs/
 
@@ -32,7 +28,7 @@ wiki.roundup-tracker.org:
 
  * log into sf.net (see above)
  * update the working copy
-       cd /home/r/ro/roundup/src/web/wiki
+       cd /home/project-web/roundup/src/web/wiki
        svn update
  * copy the files into the right places:
        - cp static/roundup/* ${project_home}/htdocs/_wiki/

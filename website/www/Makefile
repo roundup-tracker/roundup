@@ -1,5 +1,6 @@
 TMP  := _tmp
 HTML := html
+ROUNDUP_SOURCE = ../../roundup
 
 .PHONY: help clean html linkcheck
 
@@ -12,6 +13,7 @@ clean:
 	-rm -rf $(TMP)
 
 html:
+	cp $(ROUNDUP_SOURCE)/doc/*.txt docs/
 	mkdir -p $(TMP)/doctrees $(HTML)
 	sphinx-build -b html -d $(TMP)/doctrees . $(HTML)
 
