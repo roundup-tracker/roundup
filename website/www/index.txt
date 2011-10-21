@@ -1,7 +1,7 @@
 Roundup Issue Tracker
 =====================
 
-.. pypi-release:: Roundup
+.. pypi-release:: roundup
    :prefix: Download
    :class: note
 
