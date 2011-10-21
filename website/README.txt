@@ -13,11 +13,14 @@ www.roundup-tracker.org:
       ssh -t <user>,roundup@shell.sourceforge.net create
  * set project_home:
       project_home=/home/project-web/roundup
+ * activate the virtualenv
+      cd ${project_home}
+      . docbuilder/bin/activate
  * update the working copy (you may need to "cd" to the docs directory for it to update...)
       cd ${project_home}/src/web/www
       svn update
  * build it
-      PATH=${PATH}:${project_home}/bin PYTHONPATH=${project_home}/lib/python make html
+      make html
  * you may also "make clean"
  * install it
       cp -r ./html/* ${project_home}/htdocs/
