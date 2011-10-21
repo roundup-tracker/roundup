@@ -4,29 +4,29 @@ Code
 Changelog
 ----------
 
-The changelog is available `here <http://svn.roundup-tracker.org/viewvc/roundup/roundup/trunk/CHANGES.txt?view=markup>`_
+The changelog is available `here <http://roundup.git.sourceforge.net/git/gitweb.cgi?p=roundup/roundup;a=blob;f=CHANGES.txt>`_
 
-ViewVC
+GitWeb
 ------
 
-You may browse the repository via `viewvc <http://svn.roundup-tracker.org/viewvc/roundup/>`_
+You may browse the repository via `gitweb <http://roundup.git.sourceforge.net/git/gitweb.cgi?p=roundup/roundup;a=summary>`_
 
 Read-only Access
 ----------------
 
-Read-only repository access is provided through http://svn.roundup-tracker.org/svnroot/roundup 
+Read-only repository access is provided through git://roundup.git.sourceforge.net/gitroot/roundup/roundup
 
 The development branch can be checked out via::
 
-  svn co http://svn.roundup-tracker.org/svnroot/roundup/roundup/trunk roundup
+  git clone git://roundup.git.sourceforge.net/gitroot/roundup/roundup roundup
 
 
 Read-write Access
 -----------------
 
-When attempting to write, you will be prompted for your SourceForge.net 
-username and password. (See `SF's site documentation on svn authorisation <http://sourceforge.net/apps/trac/sourceforge/wiki/Subversion#Authentication>`_)
+The read/write access uses your SourceForge.net ssh password or ssh key
+to authorize your access. (See `SF's site documentation on git authorisation <http://sourceforge.net/apps/trac/sourceforge/wiki/Git#Authentication>`_)
 Of course a roundup developer must have granted
 you write access first - ask for it on the roundup-devel list.
 
-  svn co https://svn.roundup-tracker.org/svnroot/roundup/roundup/trunk roundup
+  git clone ssh\ ://\ *<username>*\ @roundup.git.sourceforge.net/gitroot/roundup/roundup roundup
