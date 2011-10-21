@@ -1,5 +1,4 @@
 STXTOHTML = rst2html.py
-STXTOHT = rst2ht.py
 WEBDIR = ../../htdocs/htdocs/doc-1.0
 
 SOURCE = announcement.txt customizing.txt developers.txt FAQ.txt features.txt \
@@ -10,9 +9,8 @@ SOURCE = announcement.txt customizing.txt developers.txt FAQ.txt features.txt \
 COMPILED := $(SOURCE:.txt=.html)
 WEBHT := $(SOURCE:.txt=.ht)
 
-all: html ht
+all: html
 html: ${COMPILED}
-ht: ${WEBHT}
 
 website: ${WEBHT}
 	cp *.ht ${WEBDIR}
@@ -20,9 +18,6 @@ website: ${WEBHT}
 
 %.html: %.txt
 	${STXTOHTML} --report=warning -d $< $@
-
-%.ht: %.txt
-	${STXTOHT} --report=warning -d $< $@
 
 clean:
 	rm -f ${COMPILED}

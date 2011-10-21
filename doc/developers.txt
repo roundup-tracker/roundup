@@ -59,8 +59,8 @@ Most small changes can be submitted through the issue tracker, with
 patches attached that give context diffs of the affected source.
 
 
-SVN Access
-----------
+Source Repository Access
+------------------------
 
 See http://www.roundup-tracker.org/code.html.
 For all other questions ask on the development mailinglist.
