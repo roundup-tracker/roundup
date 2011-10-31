@@ -2,8 +2,6 @@
 Roundup Tracker Templates
 =========================
 
-:Version: $Revision: 1.2 $
-
 The templates distributed with Roundup are stored in the "share" directory
 nominated by Python. On Unix this is typically
 ``/usr/share/roundup/templates/`` (or ``/usr/local/share...``) and

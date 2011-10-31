@@ -2,8 +2,6 @@
 MySQL Backend
 =============
 
-:version: $Revision: 1.13 $
-
 This notes detail the MySQL backend for the Roundup issue tracker.
 
 

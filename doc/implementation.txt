@@ -2,8 +2,6 @@
 Implementation notes
 ====================
 
-:Version: $Revision: 1.6 $
-
 [see also the roundup package docstring]
 
 There have been some modifications to the spec. I've marked these in the

@@ -2,8 +2,6 @@
 Roundup Glossary
 ================
 
-:Version: $Revision: 1.5 $
-
 .. contents::
 
 
