@@ -369,6 +369,9 @@ class FormParser:
                 if not value:
                     # ignore empty password values
                     continue
+                if d['confirm']:
+                    # ignore the "confirm" password value by itself
+                    continue
                 for key, d in matches:
                     if d['confirm'] and d['propname'] == propname:
                         confirm = form[key]
