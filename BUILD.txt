@@ -11,7 +11,7 @@ Building and distributing a release of Roundup is done by running:
 1.  Make sure the unit tests run! "./run_tests.py"
 2.  Edit roundup/__init__.py and doc/announcement.txt to reflect the new
     version and appropriate announcements.
-3.  Note the SVN revision in the CHANGES.txt file.
+3.  Note the date in the CHANGES.txt file.
 4.  Clean out all *.orig, *.rej, .#* files from the source.
 5.  python setup.py clean --all
 6.  Edit setup.py to ensure that all information therein (version, contact
@@ -26,11 +26,7 @@ Building and distributing a release of Roundup is done by running:
      command)
 11. Unpack the new dist file in /tmp then a) run_test.py and b) demo.py
     with all available Python versions.
-12. Assuming all is well tag the release in SVN::
-
-      svn cp https://svn.roundup-tracker.org/svnroot/roundup/roundup/trunk \
-      https://svn.roundup-tracker.org/svnroot/roundup/roundup/tags/release-1-4-19
-
+12. Assuming all is well tag the release in the version-control system.
 13. python setup.py bdist_rpm
 14. python setup.py bdist_wininst
 15. Send doc/announcement.txt to python-announce@python.org and
