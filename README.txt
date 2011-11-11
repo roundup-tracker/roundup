@@ -41,6 +41,12 @@ you have rst2html installed (part of the docutils suite) you can convert
 these to HTML by running "make html" in the "doc" directory.
 
 
+For Developers
+==============
+To get started on development work, read the developers.txt file in
+the "doc" directory.
+
+
 License
 =======
 See COPYING.txt
