@@ -1,0 +1,16 @@
+Docs
+====
+
+.. toctree::
+   :maxdepth: 2
+
+   docs/features
+   docs/installation
+   docs/FAQ
+   docs/user_guide
+   docs/customizing
+   docs/admin_guide
+   docs/xmlrpc
+   docs/upgrading
+   Design (original) <docs/design>
+   docs/developers

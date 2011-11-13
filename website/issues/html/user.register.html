@@ -1,0 +1,88 @@
+<tal:block metal:use-macro="templates/page/macros/icing">
+<title metal:fill-slot="head_title"
+ i18n:translate="">Registering with <span i18n:name="tracker"
+ tal:replace="db/config/TRACKER_NAME" /></title>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1"
+ i18n:translate="">Registering with <span i18n:name="tracker"
+ tal:replace="db/config/TRACKER_NAME" /></span>
+<td class="content" metal:fill-slot="content">
+
+<p><span style="color:red; font-size:large;">NOTE</span>: If you have previously created or modified issue
+reports using the sourceforge issue tracker previously used for python
+bugs, your username on sourceforge already exists in this tracker. Use
+the <a href="user?@template=forgotten">Password recovery form</a> to
+get a password for your account.</p>
+
+
+<form method="POST" onSubmit="return submit_once()"
+      enctype="multipart/form-data"
+      tal:attributes="action context/designator">
+
+<input type="hidden" name="opaque" tal:attributes="value python: utils.timestamp()" />
+<table class="form">
+ <tr>
+  <th i18n:translate="">Name</th>
+  <td tal:content="structure context/realname/field">realname</td>
+ </tr>
+ <tr>
+  <th class="required" i18n:translate="">Login Name</th>
+  <td tal:content="structure context/username/field">username</td>
+ </tr>
+ <tr>
+  <th class="required" i18n:translate="">Login Password</th>
+  <td tal:content="structure context/password/field">password</td>
+ </tr>
+ <tr>
+  <th class="required" i18n:translate="">Confirm Password</th>
+  <td tal:content="structure context/password/confirm">password</td>
+ </tr>
+ <tr tal:condition="python:request.user.hasPermission('Web Roles')">
+  <th i18n:translate="">Roles</th>
+  <td tal:condition="exists:item"
+      tal:content="structure context/roles/field">roles</td>
+  <td tal:condition="not:exists:item">
+   <input name="roles" tal:attributes="value db/config/NEW_WEB_USER_ROLES">
+  </td>
+ </tr>
+ <tr>
+  <th i18n:translate="">Phone</th>
+  <td tal:content="structure context/phone/field">phone</td>
+ </tr>
+ <tr>
+  <th i18n:translate="">Organisation</th>
+  <td tal:content="structure context/organisation/field">organisation</td>
+ </tr>
+ <tr>
+  <th class="required" i18n:translate="">E-mail address</th>
+  <td tal:content="structure context/address/field">address</td>
+ </tr>
+ <tr>
+  <th i18n:translate="">Alternate E-mail addresses<br>One address per line</th>
+  <td tal:content="structure context/alternate_addresses/multiline">alternate_addresses</td>
+ </tr>
+
+ <tr>
+  <td>&nbsp;</td>
+  <td>
+   <input type="hidden" name="@template" value="register">
+   <input type="hidden" name="@required" value="username,password,address">
+   <input type="hidden" name="@action" value="register">
+   <input type="submit" name="submit" value="Register" i18n:attributes="value">
+  </td>
+ </tr>
+</table>
+</form>
+
+<tal:block tal:condition="not:context/id" i18n:translate="">
+<table class="form">
+<tr>
+ <td>Note:&nbsp;</td>
+ <th class="required">highlighted</th>
+ <td>&nbsp;fields are required.</td>
+</tr>
+</table>
+</tal:block>
+
+</td>
+
+</tal:block>

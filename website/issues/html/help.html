@@ -1,0 +1,38 @@
+<!--
+Macros for framed help windows
+-->
+
+<!-- legend for helper search results -->
+<thead>
+<tr metal:define-macro="legend">
+  <th><b>x</b></th>
+  <th tal:repeat="prop props" tal:content="prop" i18n:translate=""></th>
+</tr>
+</thead>
+
+<table width="100%"
+  metal:define-macro="batch_navi"
+  tal:define="prev batch/previous;
+  next batch/next;
+  "
+  tal:condition="python:prev or next">
+  <tr class="navigation">
+   <th width="30%">
+    <a tal:condition="prev"
+       tal:attributes="href python:request.indexargs_url(request.classname, {'@template':'help-list', 'property': request.form['property'].value, 'properties': request.form['properties'].value, 'form': request.form['form'].value, '@startwith':prev.first, '@pagesize':prev.size})"
+       i18n:translate="" >&lt;&lt; previous</a>
+    &nbsp;
+   </th>
+   <th i18n:translate="" width="40%"><span tal:replace="batch/start" i18n:name="start"
+    />..<span tal:replace="python: batch.start + batch.length -1" i18n:name="end"
+    /> out of <span tal:replace="batch/sequence_length" i18n:name="total"
+    />
+   </th>
+   <th width="30%">
+    <a tal:condition="next"
+       tal:attributes="href python:request.indexargs_url(request.classname, {'@template':'help-list', 'property': request.form['property'].value, 'properties': request.form['properties'].value, 'form': request.form['form'].value, '@startwith':next.first, '@pagesize':next.size})"
+       i18n:translate="" >next &gt;&gt;</a>
+    &nbsp;
+   </th>
+  </tr>
+ </table>

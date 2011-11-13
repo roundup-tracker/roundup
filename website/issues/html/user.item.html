@@ -1,0 +1,165 @@
+<tal:doc metal:use-macro="templates/page/macros/icing"
+define="edit_ok context/is_edit_ok"
+>
+<title metal:fill-slot="head_title">
+<tal:if condition="context/id" i18n:translate=""
+ >User <span tal:replace="context/id" i18n:name="id"
+ />: <span tal:replace="context/username" i18n:name="title"
+ /> - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
+/></tal:if>
+<tal:if condition="not:context/id" i18n:translate=""
+ >New User - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
+/></tal:if>
+</title>
+<metal:slot fill-slot="more-javascript">
+<script metal:use-macro="templates/page/macros/user_utils"></script>
+<script type="text/javascript" src="@@file/help_controls.js"></script>
+</metal:slot>
+<tal:block metal:fill-slot="body_title"
+  define="edit_ok context/is_edit_ok">
+ <span tal:condition="python: not (context.id or edit_ok)"
+  tal:omit-tag="python:1" i18n:translate="">New User</span>
+ <span tal:condition="python: not context.id and edit_ok"
+  tal:omit-tag="python:1" i18n:translate="">New User Editing</span>
+ <span tal:condition="python: context.id and not edit_ok"
+  tal:omit-tag="python:1" i18n:translate="">User<tal:x
+  replace="context/id" i18n:name="id" /></span>
+ <span tal:condition="python: context.id and edit_ok"
+  tal:omit-tag="python:1" i18n:translate="">User<tal:x
+  replace="context/id" i18n:name="id" /> Editing</span>
+</tal:block>
+
+<td class="content" metal:fill-slot="content">
+
+<p tal:condition="python:not (context.is_view_ok()
+ or request.user.hasRole('Anonymous'))" i18n:translate="">
+ You are not allowed to view this page.</p>
+
+<p tal:condition="python:not context.is_view_ok()
+ and request.user.hasRole('Anonymous')" i18n:translate="">
+ Please login with your username and password.</p>
+
+<div tal:condition="context/is_view_ok">
+
+<form method="POST"
+      tal:define="required python:'username address'.split()"
+      enctype="multipart/form-data"
+      tal:attributes="action context/designator;
+      onSubmit python:'return checkRequiredFields(\'%s\')'%'\', \''.join(required);
+      ">
+<table class="form" tal:define="
+  th_label templates/page/macros/th_label;
+  src_input templates/page/macros/user_src_input;
+  normal_input templates/page/macros/user_normal_input;
+  pw_input templates/page/macros/user_pw_input;
+  confirm_input templates/page/macros/user_confirm_input;
+  edit_ok context/is_edit_ok;
+  ">
+ <tr tal:define="name string:realname; label string:Name; value context/realname; edit_ok edit_ok">
+  <th metal:use-macro="th_label">Name</th>
+  <td><input name="realname" metal:use-macro="src_input"></td>
+ </tr>
+ <tr tal:define="name string:username; label string:Login Name; value context/username">
+   <th metal:use-macro="th_label">Login Name</th>
+   <td><input metal:use-macro="src_input"></td>
+ </tr>
+ <tal:if condition="edit_ok">
+ <tr tal:define="name string:password; label string:Login Password">
+  <th metal:use-macro="th_label">Login Password</th>
+  <td><input metal:use-macro="pw_input" type="password"></td>
+ </tr>
+ <tr tal:define="name string:password; label string:Confirm Password">
+  <th metal:use-macro="th_label">Confirm Password</th>
+  <td><input metal:use-macro="confirm_input" type="password"></td>
+ </tr>
+ </tal:if>
+ <tal:if condition="python:request.user.hasPermission('Web Roles')">
+ <tr tal:define="name string:roles; label string:Roles;">
+  <th><label for="roles" i18n:translate="">Roles</label></th>
+  <td tal:define="gips context/id">
+    <tal:subif condition=gips define="value context/roles">
+      <input metal:use-macro="normal_input">
+    </tal:subif>
+    <tal:subif condition="not:gips" define="value db/config/NEW_WEB_USER_ROLES">
+      <input metal:use-macro="normal_input">
+    </tal:subif>
+   <tal:block i18n:translate="">(to give the user more than one role,
+    enter a comma,separated,list)</tal:block>
+  </td>
+ </tr>
+ </tal:if>
+
+ <tr tal:define="name string:phone; label string:Phone; value context/phone">
+  <th metal:use-macro="th_label">Phone</th>
+  <td><input name="phone" metal:use-macro="normal_input"></td>
+ </tr>
+
+ <tr tal:define="name string:organisation; label string:Organisation; value context/organisation">
+  <th metal:use-macro="th_label">Organisation</th>
+  <td><input name="organisation" metal:use-macro="normal_input"></td>
+ </tr>
+
+ <tr tal:condition="python:edit_ok or context.timezone"
+     tal:define="name string:timezone; label string:Timezone; value context/timezone">
+  <th metal:use-macro="th_label">Timezone</th>
+  <td><input tal:replace="structure python:
+       utils.tzfield(context.timezone, 'timezone', db.config.DEFAULT_TIMEZONE)"/>
+  </td>
+ </tr>
+
+ <tr tal:define="name string:address; label string:E-mail address; value context/address">
+  <th metal:use-macro="th_label">E-mail address</th>
+  <td tal:define="mailto python:context.address.field(id='address');
+	  mklink python:mailto and not edit_ok">
+      <a href="mailto:calvin@the-z.org"
+		  tal:attributes="href string:mailto:$value"
+		  tal:content="value"
+          tal:condition="python:mklink">calvin@the-z.org</a>
+      <tal:if condition=edit_ok>
+      <input metal:use-macro="src_input" value="calvin@the-z.org">
+      </tal:if>
+      &nbsp;
+  </td>
+ </tr>
+
+ <tr>
+  <th><label for="alternate_addresses" i18n:translate="">Alternate E-mail addresses<br>One address per line</label></th>
+  <td>
+    <textarea rows=5 cols=40 tal:replace="structure context/alternate_addresses/multiline">nobody@nowhere.org
+anybody@everywhere.net
+(alternate_addresses)
+    </textarea>
+  </td>
+ </tr>
+
+ <tr tal:condition="edit_ok">
+  <td>
+   &nbsp;
+   <input type="hidden" name="@template" value="item">
+   <input type="hidden" name="@required" value="username,address"
+          tal:attributes="value python:','.join(required)">
+  </td>
+  <td><input type="submit" value="save" tal:replace="structure context/submit"><!--submit button here-->
+    <input type="reset">
+  </td>
+ </tr>
+</table>
+</form>
+
+<tal:block tal:condition="not:context/id" i18n:translate="">
+<table class="form">
+<tr>
+ <td>Note:&nbsp;</td>
+ <th class="required">highlighted</th>
+ <td>&nbsp;fields are required.</td>
+</tr>
+</table>
+</tal:block>
+
+<tal:block tal:condition="context/id" tal:replace="structure context/history" />
+
+</div>
+
+</td>
+
+</tal:doc>

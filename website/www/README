@@ -1,0 +1,12 @@
+These are the sources of the Roundup website. 
+To build them, you need Sphinx (http://sphinx.pocoo.org/).
+
+  pip install sphinx
+  pip install sphinxcontrib-cheeseshop
+
+The content of the 'docs' section are mirrored in from the roundup package
+- typically just a symlink of "docs" from the roundup source.
+
+Good luck !
+
+                Stefan

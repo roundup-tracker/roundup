@@ -1,0 +1,103 @@
+<tal:block metal:use-macro="templates/page/macros/icing">
+<title metal:fill-slot="head_title" i18n:translate="">User listing - <span
+ i18n:name="tracker" tal:replace="config/TRACKER_NAME" /></title>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1"
+ i18n:translate="">User listing</span>
+<td class="content" metal:fill-slot="content">
+
+<span tal:condition="python:not (context.is_view_ok()
+ or request.user.hasRole('Anonymous'))"
+ i18n:translate="">You are not allowed to view this page.</span>
+
+<span tal:condition="python:not context.is_view_ok()
+ and request.user.hasRole('Anonymous')"
+ i18n:translate="">Please login with your username and password.</span>
+
+<form tal:condition="context/is_view_ok" method="get" name="itemSynopsis"
+      tal:attributes="action request/classname">
+
+<table class="form" tal:define="
+       search_input templates/page/macros/search_input;">
+
+   <tr><th class="header" colspan="5">Search for users</th></tr>
+   <tr>
+       <th class="header">Username</th>
+       <td tal:define="name string:username">
+           <input tal:attributes="value python:request.form.getvalue(name) or nothing;
+                         name name;
+                         id name"/>
+       </td>
+       <th class="header">Realname</th>
+       <td tal:define="name string:realname">
+           <input tal:attributes="value python:request.form.getvalue(name) or nothing;
+                         name name;
+                         id name"/>
+       </td>
+
+       <td><input class="form-small" type="submit" value="Search" i18n:attributes="value"/></td>
+   </tr>
+
+</table>
+   <input type="hidden" name="@action" value="search"/>
+</form>
+
+
+<table width="100%" tal:condition="context/is_view_ok" class="list"
+       tal:define="batch request/batch">
+<tr>
+ <th i18n:translate="">Username</th>
+ <th i18n:translate="">Real name</th>
+ <th i18n:translate="">Organisation</th>
+ <th i18n:translate="">Email address</th>
+ <th i18n:translate="">Phone number</th>
+ <th tal:condition="context/is_edit_ok" i18n:translate="">Retire</th>
+</tr>
+<tal:block repeat="user batch">
+<tr tal:attributes="class python:['normal', 'alt'][repeat['user'].index%6/3]">
+ <td>
+  <a tal:attributes="href string:user${user/id}"
+     tal:content="user/username">username</a>
+ </td>
+ <td tal:content="python:user.realname.plain() or default">&nbsp;</td>
+ <td tal:content="python:user.organisation.plain() or default">&nbsp;</td>
+ <td tal:content="python:user.address.email() or default">&nbsp;</td>
+ <td tal:content="python:user.phone.plain() or default">&nbsp;</td>
+ <td tal:condition="context/is_edit_ok">
+  <a tal:attributes="href string:user${user/id}?@action=retire&@template=index"
+   i18n:translate="">retire</a>
+ </td>
+</tr>
+</tal:block>
+ <tr tal:condition="batch">
+  <th tal:attributes="colspan python:len(request.columns)">
+   <table width="100%">
+    <tr class="navigation">
+     <th>
+      <a tal:define="prev batch/previous" tal:condition="prev"
+         tal:attributes="href python:request.indexargs_url(request.classname,
+         {'@startwith':prev.first, '@pagesize':prev.size})"
+         i18n:translate="">&lt;&lt; previous</a>
+      &nbsp;
+     </th>
+     <th i18n:translate=""><span tal:replace="batch/start" i18n:name="start"
+     />..<span tal:replace="python: batch.start + batch.length -1" i18n:name="end"
+     /> out of <span tal:replace="batch/sequence_length" i18n:name="total"
+     /></th>
+     <th>
+      <a tal:define="next batch/next" tal:condition="next"
+         tal:attributes="href python:request.indexargs_url(request.classname,
+         {'@startwith':next.first, '@pagesize':next.size})"
+         i18n:translate="">next &gt;&gt;</a>
+      &nbsp;
+     </th>
+    </tr>
+   </table>
+  </th>
+ </tr>
+
+</table>
+</td>
+
+
+
+</tal:block>

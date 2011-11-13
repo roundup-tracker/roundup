@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html tal:define="property request/form/property/value;
+qs request/env/QUERY_STRING;
+qs python:'&'.join([a for a in qs.split('&') if not a.startswith('@template=')]);
+form request/form/form/value;
+field request/form/property/value">
+  <head>
+      <link rel="stylesheet" type="text/css" href="@@file/style.css" />
+      <meta http-equiv="Content-Type"
+       tal:attributes="content string:text/html;; charset=${request/client/charset}" />
+      <tal:block tal:condition="python:request.form.has_key('property')">
+      <title><tal:x i18n:translate=""><tal:x i18n:name="property"
+       tal:content="property" i18n:translate="" /> help - <span i18n:name="tracker"
+	       tal:replace="config/TRACKER_NAME" /></tal:x></title>
+      <script language="Javascript" type="text/javascript"
+	      tal:condition=false
+          tal:content="structure string:<!--
+          // this is the name of the field in the original form that we're working on
+          form  = window.opener.document.${form};
+          field  = '${field}';
+          //-->">
+      </script>
+      <script src="@@file/help_controls.js"
+     tal:condition=false type="text/javascript"><!--
+      //--></script>
+      </tal:block>
+  </head>
+<frameset rows="123,*,62">
+  <frame src="#" tal:attributes="src string:?@template=help-search&${qs}" name="search">
+  <!-- for search results: help-list -->
+  <frame
+  tal:attributes="src string:?@template=help-empty&${qs}"
+  name="list">
+  <frame
+  tal:attributes="src string:?@template=help-submit&${qs}"
+  name="submit">
+  <!-- -->
+</frameset>
+<noframes>
+  <body>
+<p i18n:translate="">
+Your browser is not capable of using frames; you should be redirected immediately,
+or visit <a href="#" tal:attributes="href string:?${qs}&template=help-noframes"
+i18n:name="link">this link</a>.
+</p>
+</body>
+</noframes>
+
+</html>

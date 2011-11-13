@@ -1,0 +1,262 @@
+<tal:block metal:use-macro="templates/page/macros/icing">
+<title metal:fill-slot="head_title">
+<tal:block condition="context/id" i18n:translate=""
+ >Issue <span tal:replace="context/id" i18n:name="id"
+ />: <span tal:replace="context/title" i18n:name="title"
+ /> - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
+/></tal:block>
+<tal:block condition="not:context/id" i18n:translate=""
+ >New Issue - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
+/></tal:block>
+</title>
+<tal:block metal:fill-slot="body_title">
+ <span tal:condition="python: not (context.id or context.is_edit_ok())"
+  tal:omit-tag="python:1" i18n:translate="">New Issue</span>
+ <span tal:condition="python: not context.id and context.is_edit_ok()"
+  tal:omit-tag="python:1" i18n:translate="">New Issue Editing</span>
+ <span tal:condition="python: context.id and not context.is_edit_ok()"
+  tal:omit-tag="python:1" i18n:translate="">Issue <tal:x
+  replace="context/id" i18n:name="id" /></span>
+ <span tal:condition="python: context.id and context.is_edit_ok()"
+  tal:omit-tag="python:1" i18n:translate="">Issue<tal:x
+  replace="context/id" i18n:name="id" /> Editing</span>
+</tal:block>
+
+<td class="content" metal:fill-slot="content">
+
+<p tal:condition="python:not (context.is_view_ok()
+ or request.user.hasRole('Anonymous'))" i18n:translate="">
+ You are not allowed to view this page.</p>
+
+<p tal:condition="python:not context.is_view_ok()
+ and request.user.hasRole('Anonymous')" i18n:translate="">
+ Please login with your username and password.</p>
+
+<div tal:condition="context/is_view_ok">
+
+<form method="POST" name="itemSynopsis"
+      onSubmit="return submit_once()" enctype="multipart/form-data"
+      tal:attributes="action context/designator">
+
+<fieldset><legend>classification</legend>
+<table class="form">
+<tr>
+ <th class="required" i18n:translate="">Title:</th>
+ <td colspan="3" tal:condition="context/title/is_edit_ok"
+     tal:content="structure python:context.title.field(size=60)">title</td>
+ <td colspan="3" tal:condition="not:context/title/is_edit_ok">
+  <span tal:content="structure context/title/plain"/>
+  <input type="hidden" name="title" tal:attributes="value context/title">
+ </td>
+</tr>
+
+<tr>
+ <th class="required" i18n:translate="">
+   <span tal:replace="structure python:db.issue_type.classhelp('id,name,description',label='Type')" />:
+ </th>
+ <td tal:content="structure context/type/menu">type</td>
+ <th i18n:translate="">
+   <span tal:replace="structure python:db.severity.classhelp('id,name,description',label='Severity')" />:
+ </th>
+ <td tal:content="structure context/severity/menu">components</td>
+</tr>
+
+<tr>
+ <th i18n:translate="">
+   <span tal:replace="structure python:db.component.classhelp('id,name,description',label='Components')" />:
+ </th>
+ <td tal:content="structure context/components/menu">components</td>
+ <th i18n:translate="">
+   <span tal:replace="structure python:db.version.classhelp('id,name,description',label='Versions')" />:
+ </th>
+ <td tal:content="structure context/versions/menu">versions</td>
+</tr>
+</table>
+</fieldset>
+
+<fieldset><legend>process</legend>
+<table class="form">
+<tr tal:condition="context/id">
+ <th i18n:translate="">
+   <span tal:replace="structure python:db.status.classhelp('id,name,description',label='Status')" />:
+ </th>
+ <td tal:content="structure context/status/menu">status</td>
+ <th i18n:translate="">Resolution:</th>
+ <td tal:content="structure context/resolution/menu">resolution</td>
+</tr>
+
+<tr tal:condition="context/id">
+ <th>
+  <tal:block i18n:translate="">Dependencies</tal:block>:
+  <span tal:condition="context/dependencies/is_edit_ok"
+        tal:replace="structure python:db.issue.classhelp('id,title', filter='status=0,1', property='dependencies')" />
+ </th>
+ <td>
+  <span tal:replace="structure python:context.dependencies.field(showid=1,size=20)" />
+  <span tal:condition="context/dependencies" tal:repeat="d python:context.dependencies.sorted('creation')">
+   <br/>View: <a tal:attributes="href string:issue${d/id}" tal:content="d/id"></a>
+  </span>
+ </td>
+ <th i18n:translate="">
+  <tal:block i18n:translate="">Superseder</tal:block>:
+  <span tal:condition="context/superseder/is_edit_ok"
+        tal:replace="structure python:db.issue.classhelp('id,title', filter='status=0,1', property='superseder')" />
+ </th>
+ <td>
+  <span tal:replace="structure python:context.superseder.field(showid=1, size=20)" />
+ <span tal:condition="context/superseder">
+<!--   <br><span i18n:translate="">View</span>:
+     <a tal:repeat="sup context/superseder"
+        tal:content="python:sup['id'] + ', '*(not repeat['sup'].end)"
+        tal:attributes="href string:issue${sup/id}; title sup/title;"></a> -->
+   <br><span i18n:translate="">View</span>:
+     <a tal:content="context/superseder/id"
+        tal:attributes="href string:issue${context/superseder/id}; title context/superseder/title;"></a> 
+  </span> 
+ </td>
+ </tr>
+ <tr>
+ <th><tal:block i18n:translate="">Assigned To</tal:block>:</th>
+ <td tal:condition="context/status/is_edit_ok">
+  <select name="assignee">
+   <option value="-1">nobody</option>
+   <tal:block tal:repeat="userdata python:db._db.user.filter_sql('select id,_username from _user where _roles like \'%Developer%\' order by _username')">
+    <option tal:attributes="value python:userdata[0]; 
+                            selected python:str(userdata[0]) == context.assignee._value"
+            tal:content="python:userdata[1]"></option>
+   </tal:block>
+  </select>
+ </td>
+ <td tal:condition="not:context/assignee/is_edit_ok">
+  <span tal:replace="structure context/assignee/plain" />
+ </td>
+ <th><tal:block i18n:translate="">Nosy List</tal:block>:
+  <span tal:condition="context/nosy/is_edit_ok"
+        tal:replace="structure python:db.user.classhelp('username,realname,address', property='nosy')" />
+ </th>
+ <td>
+  <span tal:replace="structure context/nosy/field" />
+ </td>
+</tr>
+<tr>
+ <th>
+   <span tal:replace="structure python:db.priority.classhelp('id,name,description',label='Priority')" />:
+ </th>
+ <td tal:content="structure context/priority/menu">priority</td>
+ <th i18n:translate="">Keywords:</th>
+ <td tal:content="structure python:context['keywords'].menu(height=5)">keywords</td>
+
+
+</tr>
+<tr tal:condition="context/is_edit_ok">
+ <th><tal:block i18n:translate="">Comment</tal:block>:</th>
+ <td colspan="3">
+  <textarea tal:content="request/form/@note/value | default"
+            name="@note" wrap="hard" rows="10" cols="72"></textarea>
+ </td>
+</tr>
+
+<tr tal:condition="context/is_edit_ok">
+ <th><tal:block i18n:translate="">File</tal:block>:</th>
+ <td colspan=3>
+   <input type="hidden" name="@link@files" value="file-1">
+   <input type="file" name="file-1@content" size="40">
+ </td>
+</tr>
+<tr tal:condition="context/is_edit_ok">
+ <th><tal:block i18n:translate="">File Description</tal:block>:</th>
+ <td colspan=3><input type="edit" name="file-1@description" size="40"></td>
+</tr>
+</table>
+</fieldset>
+<table class="form">
+<tr tal:condition="context/is_edit_ok">
+ <td>
+  &nbsp;
+  <input type="hidden" name="@template" value="item">
+  <input type="hidden" name="@required" value="title">
+ </td>
+ <td colspan=3>
+  <span tal:replace="structure context/submit">submit button</span>
+  <a tal:condition="context/id" tal:attributes="href context/copy_url"
+   i18n:translate="">Make a copy</a>
+ </td>
+</tr>
+</table>
+</form>
+
+<p tal:condition="context/id" i18n:translate="">
+ Created on <b><tal:x replace="python:context.creation.pretty('%Y-%m-%d %H:%M')" i18n:name="creation" /></b>
+ by <b><tal:x replace="context/creator" i18n:name="creator" /></b>,
+ last changed <b><tal:x replace="python:context.activity.pretty('%Y-%m-%d %H:%M')" i18n:name="activity" /></b>
+ by <b><tal:x replace="context/actor" i18n:name="actor" /></b>.
+</p>
+
+<table class="files" tal:condition="context/files">
+ <tr><th colspan="5" class="header" i18n:translate="">Files</th></tr>
+ <tr>
+  <th i18n:translate="">File name</th>
+  <th i18n:translate="">Uploaded</th>
+  <th i18n:translate="">Description</th>
+  <th i18n:translate="">Edit</th>
+  <th i18n:translate="">Remove</th>
+ </tr>
+ <tr tal:repeat="file python:context.files.sorted('creation')">
+  <td>
+   <a tal:attributes="href file/download_url"
+      tal:content="file/name">dld link</a>
+  </td>
+  <td>
+   <span tal:content="file/creator">creator's name</span>,
+   <span tal:content="python:file.creation.pretty('%Y-%m-%d %H:%M')">creation date</span>
+  </td>
+  <td tal:content="file/description" />
+  <td><a tal:condition="file/is_edit_ok"
+          tal:attributes="href string:file${file/id}">edit</a>
+  </td>
+  <td>
+   <form style="padding:0" tal:condition="file/is_edit_ok"
+         tal:attributes="action string:issue${context/id}">
+    <input type="hidden" name="@remove@files" tal:attributes="value file/id">
+    <input type="hidden" name="@action" value="edit">
+    <input type="submit" value="remove" i18n:attributes="value">
+   </form>
+  </td>
+ </tr>
+</table>
+
+<table class="messages" tal:condition="context/messages">
+ <tr><th colspan="4" class="header" i18n:translate="">Messages</th></tr>
+ <tal:block tal:repeat="msg context/messages">
+  <tr>
+   <th><a tal:attributes="href string:msg${msg/id}"
+    i18n:translate="">msg<tal:x replace="msg/id" i18n:name="id" /></a></th>
+   <th i18n:translate="">Author: <tal:x replace="python:msg.author.realname.plain()"
+       i18n:name="author" /> (<tal:x replace="msg/author"/>)</th>
+   <th i18n:translate="">Date: <tal:x replace="python:msg.date.pretty('%Y-%m-%d %H:%M')"
+       i18n:name="date" /></th>
+   <th>
+    <form style="padding:0" tal:condition="msg/is_edit_ok"
+          tal:attributes="action string:issue${context/id}">
+     <input type="hidden" name="@remove@messages" tal:attributes="value msg/id">
+     <input type="hidden" name="@action" value="edit">
+     <input type="submit" value="remove" i18n:attributes="value">
+    </form>
+   </th>
+  </tr>
+  <tr>
+   <td colspan="4" class="content">
+    <pre tal:condition="python:msg.content.is_view_ok()"
+         tal:content="structure python:utils.localReplace(msg.content.hyperlinked())">content</pre>
+   </td>
+  </tr>
+ </tal:block>
+</table>
+
+<tal:block tal:condition="context/id" tal:replace="structure context/history" />
+
+</div>
+
+</td>
+
+</tal:block>
