@@ -161,7 +161,7 @@ For ``assigned to``, this is already done around line 77::
 Great! But now the select/option list is too big
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Thats a little harder (but only a little ;^)
+That is a little harder (but only a little ;^)
 
 Again, edit ``html/issue.item``. For nosy, change line (around line 69) from::
 
@@ -177,8 +177,8 @@ for more information, go and read about Zope Page Templates.
 Using Roundup
 -------------
 
-I got an error and I cant reload it!
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+I got an error and I cannot reload it!
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you're using Netscape/Mozilla, try holding shift and pressing reload.
 If you're using IE then install Mozilla and try again ;^)

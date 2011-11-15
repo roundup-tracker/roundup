@@ -14,7 +14,7 @@ Features:
 
 Fixed:
 
-- Installation: Fixed an issue that prevented to use EasyInstall 
+- Installation: Fixed an issue that prevented use of EasyInstall 
   and a Python egg. Thanks to Satchidanand Haridas for the patch and
   John Kristensen for testing it. (Bernhard Reiter)
 - The PostgreSQL backend quotes database names now for CREATE and DROP, 

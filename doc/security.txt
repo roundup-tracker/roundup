@@ -56,7 +56,7 @@ Security controls in Roundup could be approached in three ways:
 3) at a logical permission level, checked as needed.
 
 In all cases, the security built into roundup assumes restricted access to the
-hyperdatabase itself, through Operating System controls such as user or group
+hyperdatabase itself, through operating-system controls such as user or group
 permissions.
 
 

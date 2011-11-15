@@ -23,7 +23,7 @@ The Layer Cake
 -----------------
 
 Lots of software design documents come with a picture of a cake.
-Everybody seems to like them.  I also like cakes (i think they are
+Everybody seems to like them.  I also like cakes (I think they are
 tasty).  So I, too, shall include a picture of a cake here::
 
      ________________________________________________________________
@@ -68,7 +68,7 @@ dates.  The hyperdatabase module provides Timestamp objects for
 representing date-and-time stamps and Interval objects for representing
 date-and-time intervals.
 
-As strings, date-and-time stamps are specified with the date in
+As strings, date-and-time stamps are specified with the date in ISO8601
 international standard format (``yyyy-mm-dd``) joined to the time
 (``hh:mm:ss``) by a period "``.``".  Dates in this form can be easily
 compared and are fairly readable when printed.  An example of a valid
@@ -457,7 +457,7 @@ Here is the interface provided by the hyperdatabase::
             given items.
 
             'propspec' consists of keyword args propname=itemid or
-                       propname={<itemid 1>:1, <itemid 2>: 1, ...}
+                       propname={<itemid 1>:1, <itemid 2>:1, ...}
             'propname' must be the name of a property in this class,
                        or a KeyError is raised.  That property must
                        be a Link or Multilink property, or a TypeError

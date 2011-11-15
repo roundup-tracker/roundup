@@ -16,9 +16,9 @@ itemid
 item
    a collection of data that forms one entry in the hyperdb.
 property
-   one element of data that makes up an item. In Roundup, item
-   properties may be changed as needed - even after the tracker
-   has been initialised and used in production.
+   one element of data that makes up an item. In Roundup, the set 
+   of item properties may be changed as needed - even after the 
+   tracker has been initialised and used in production.
 schema
    the definition of all the classes that make up an tracker
 tracker

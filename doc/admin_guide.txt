@@ -243,7 +243,7 @@ Migrating Backends
      
      roundup-admin -i <tracker home> import <tracker export dir>
 
-   If interactively, enter 'commit' before exitting.
+   If interactively, enter 'commit' before exiting.
 7. Test each of the admin tool, web interface and mail gateway using the new
    backend.
 8. Move the old tracker home out of the way (rename to "tracker.old") and
