@@ -1,8 +1,6 @@
 # Russian message file for Roundup Issue Tracker
 # alexander smishlajev <alex@tycobka.lv>, 2004
 #
-# $Id: ru.po,v 1.16 2007-09-16 07:23:04 a1s Exp $
-#
 # roundup.pot revision 1.23
 #
 msgid ""

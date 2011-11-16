@@ -1,8 +1,6 @@
 # Chinese Traditional message file for Roundup Issue Tracker
 # Fred Lin <gasolin@gmail.com>
 #
-# $Id: zh_TW.po,v 1.2 2005-05-16 09:31:48 a1s Exp $
-#
 # roundup.pot revision 1.10
 #
 msgid ""

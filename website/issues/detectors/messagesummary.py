@@ -1,5 +1,3 @@
-#$Id: messagesummary.py,v 1.1 2009/02/01 22:23:25 stefan Exp $
-
 from roundup.mailgw import parseContent
 
 def summarygenerator(db, cl, nodeid, newvalues):

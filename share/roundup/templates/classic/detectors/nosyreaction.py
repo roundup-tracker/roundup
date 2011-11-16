@@ -15,7 +15,6 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: nosyreaction.py,v 1.4 2005-04-04 08:47:14 richard Exp $
 
 # Python 2.3 ... 2.6 compatibility:
 from roundup.anypy.sets_ import set

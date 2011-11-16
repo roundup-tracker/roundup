@@ -75,8 +75,6 @@ set() method to add the message to the item's spool; in the second case we
 are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
-
-$Id: mailgw.py,v 1.196 2008-07-23 03:04:44 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 

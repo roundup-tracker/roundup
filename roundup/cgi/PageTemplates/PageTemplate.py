@@ -20,8 +20,6 @@
 HTML- and XML-based template objects using TAL, TALES, and METAL.
 """
 
-__version__='$Revision: 1.5 $'[11:-2]
-
 import sys
 
 from roundup.cgi.TAL.TALParser import TALParser

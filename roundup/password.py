@@ -15,8 +15,6 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: password.py,v 1.15 2005-12-25 15:38:40 a1s Exp $
-
 """Password handling (encoding, decoding).
 """
 __docformat__ = 'restructuredtext'

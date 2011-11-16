@@ -1,6 +1,4 @@
 #! /usr/bin/env python
-# $Id: load_tracker.py,v 1.6 2005-06-08 02:24:06 anthonybaxter Exp $
-
 '''
 Usage: %s <tracker home> <N>
 

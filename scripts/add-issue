@@ -1,6 +1,4 @@
 #! /usr/bin/env python
-# $Id: add-issue,v 1.2 2003-04-30 01:28:37 richard Exp $
-
 '''
 Usage: %s <tracker home> <priority> <issue title>
 

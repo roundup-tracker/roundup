@@ -19,8 +19,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: locking.py,v 1.8 2004-02-11 23:55:09 richard Exp $
-
 '''This module provides a generic interface to acquire and release
 exclusive access to a file.
 

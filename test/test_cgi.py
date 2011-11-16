@@ -7,8 +7,6 @@
 # This module is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-#
-# $Id: test_cgi.py,v 1.36 2008-08-07 06:12:57 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re, StringIO
 

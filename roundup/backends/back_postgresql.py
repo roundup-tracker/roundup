@@ -1,5 +1,3 @@
-#$Id: back_postgresql.py,v 1.44 2008-08-07 05:50:03 richard Exp $
-#
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
 # This module is free software, and you may redistribute it and/or modify

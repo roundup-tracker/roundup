@@ -20,8 +20,6 @@
 An implementation of a generic TALES engine
 """
 
-__version__='$Revision: 1.9 $'[11:-2]
-
 import re, sys
 from roundup.cgi import ZTUtils
 from weakref import ref

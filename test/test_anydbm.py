@@ -14,8 +14,6 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-# $Id: test_anydbm.py,v 1.4 2004-11-03 01:34:21 richard Exp $ 
 
 import unittest, os, shutil, time
 from roundup.backends import get_backend

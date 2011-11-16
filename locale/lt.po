@@ -1,8 +1,6 @@
 # Lithuanian message file for Roundup Issue Tracker
 # Aiste Kesminaite <aiste@pov.lt>, 2005
 #
-# $Id: lt.po,v 1.8 2007-01-04 17:14:29 a1s Exp $
-#
 # roundup.pot revision 1.20
 #
 msgid ""

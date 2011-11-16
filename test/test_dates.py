@@ -15,7 +15,6 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: test_dates.py,v 1.45 2008-03-07 01:11:55 richard Exp $
 from __future__ import nested_scopes
 
 import unittest

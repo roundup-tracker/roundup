@@ -22,8 +22,6 @@ Page Template-specific implementation of TALES, with handlers
 for Python expressions, string literals, and paths.
 """
 
-__version__='$Revision: 1.12 $'[11:-2]
-
 import re, sys
 from TALES import Engine, CompilerError, _valid_name, NAME_RE, \
      Undefined, Default, _parse_expr

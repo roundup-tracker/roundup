@@ -1,4 +1,3 @@
-#$Id: sessions_rdbms.py,v 1.8 2008-08-18 05:04:01 richard Exp $
 """This module defines a very basic store that's used by the CGI interface
 to store session and one-time-key information.
 

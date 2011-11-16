@@ -1,5 +1,3 @@
-#$Id: back_tsearch2.py,v 1.9 2005-01-08 16:16:59 jlgijsbers Exp $
-
 # Note: this backend is EXPERIMENTAL. Do not use if you value your data.
 import re
 

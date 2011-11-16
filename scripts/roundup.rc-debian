@@ -1,8 +1,6 @@
 #!/bin/sh -e
 #
 # roundup	Startup script for the roundup http server.
-#
-# Version:	$Id: roundup.rc-debian,v 1.1 2003-10-07 23:02:58 richard Exp $
 
 DESC='Roundup HTTP-Server'
 

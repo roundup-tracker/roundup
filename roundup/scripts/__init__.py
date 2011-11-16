@@ -14,8 +14,6 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-# $Id: __init__.py,v 1.3 2004-02-11 23:55:10 richard Exp $
 
 '''Subpackage containing the modules that implement the command
 line tools.

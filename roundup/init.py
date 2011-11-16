@@ -15,8 +15,6 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: init.py,v 1.36 2005-12-03 11:22:50 a1s Exp $
-
 """Init (create) a roundup instance.
 """
 __docformat__ = 'restructuredtext'

@@ -8,8 +8,6 @@
 # This module is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-#
-# $Id: test_mailgw.py,v 1.96 2008-08-19 01:40:59 richard Exp $
 
 # TODO: test bcc
 

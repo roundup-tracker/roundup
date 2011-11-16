@@ -1,9 +1,6 @@
 # portalocker.py - Cross-platform (posix/nt) API for flock-style file locking.
 #                  Requires python 1.5.2 or better.
 
-# ID line added by richard for Roundup file tracking
-# $Id: portalocker.py,v 1.9 2006-09-09 05:42:45 richard Exp $
-
 """Cross-platform (posix/nt) API for flock-style file locking.
 
 Synopsis::

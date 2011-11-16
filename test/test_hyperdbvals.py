@@ -7,8 +7,6 @@
 # This module is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-#
-# $Id: test_hyperdbvals.py,v 1.3 2006-08-18 01:26:19 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 from roundup.anypy.hashlib_ import sha1

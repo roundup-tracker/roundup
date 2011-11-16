@@ -15,7 +15,6 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: install_util.py,v 1.11 2006-01-25 03:11:43 richard Exp $
 
 """Support module to generate and check fingerprints of installed files.
 """

@@ -14,8 +14,6 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-#
-# $Id: test_sqlite.py,v 1.6 2008-09-01 00:43:02 richard Exp $
 
 import unittest, os, shutil, time
 from roundup.backends import get_backend, have_backend

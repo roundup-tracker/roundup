@@ -1,7 +1,5 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.51 2008-09-01 02:30:06 richard Exp $
-#
 __docformat__ = "restructuredtext"
 
 import ConfigParser

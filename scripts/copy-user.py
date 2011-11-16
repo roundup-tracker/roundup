@@ -15,10 +15,6 @@ Example:
     (copies users 3, 4, 5, 6, 7, 8, 9, 10, 14 and 16)
 """
 
-__version__ = "$Revision: 1.1 $"
-# $Source: /home/stefan/projects/roundup-migrate/roundup/scripts/copy-user.py,v $
-# $Id: copy-user.py,v 1.1 2003-12-04 23:13:43 richard Exp $
-
 import sys
 import roundup.instance
 

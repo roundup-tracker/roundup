@@ -1,5 +1,3 @@
-#$Id: tsearch2_setup.py,v 1.2 2005-01-08 11:25:23 jlgijsbers Exp $
-
 # All the SQL in this module is taken from the tsearch2 module in the contrib
 # tree of PostgreSQL 7.4.6. PostgreSQL, and this code, has the following
 # license:

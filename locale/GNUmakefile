@@ -1,7 +1,5 @@
 # Extract translatable strings from Roundup sources,
 # update and compile all existing translations
-#
-# $Id: GNUmakefile,v 1.11 2006-11-16 14:14:42 a1s Exp $
 
 # tool locations
 XPOT ?= xpot

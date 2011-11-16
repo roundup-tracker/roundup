@@ -1,5 +1,3 @@
-# $Id: test_userauditor.py,v 1.4 2007-09-12 21:11:14 jpend Exp $
-
 import os, unittest, shutil
 from db_test_base import setupTracker
 

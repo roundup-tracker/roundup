@@ -14,8 +14,6 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: ZRoundup.py,v 1.23 2008-02-07 01:03:39 richard Exp $
-#
 ''' ZRoundup module - exposes the roundup web interface to Zope
 
 This frontend works by providing a thin layer that sits between Zope and the

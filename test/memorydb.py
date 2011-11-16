@@ -1,4 +1,3 @@
-# $Id: test_memorydb.py,v 1.4 2004-11-03 01:34:21 richard Exp $ 
 '''Implement an in-memory hyperdb for testing purposes.
 '''
 

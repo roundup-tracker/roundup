@@ -1,5 +1,3 @@
-$Id: README.txt,v 1.3 2004-10-24 08:37:58 a1s Exp $
-
 Structure of the tests:
 
    1   Test date classes

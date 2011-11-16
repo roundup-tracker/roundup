@@ -1,7 +1,5 @@
 # English message file for Roundup Issue Tracker
 #
-# $Id: en.po,v 1.2 2004-11-20 11:54:32 a1s Exp $
-#
 # roundup.pot revision 1.9
 #
 # Currently Roundup has no strings that need english translation.

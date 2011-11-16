@@ -16,8 +16,6 @@
 #
 
 """Command-line script that runs a server over roundup.cgi.client.
-
-$Id: roundup_server.py,v 1.94 2007-09-25 04:27:12 jpend Exp $
 """
 __docformat__ = 'restructuredtext'
 

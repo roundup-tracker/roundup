@@ -16,7 +16,6 @@
 # 2. make imports use roundup.cgi
 """Global Translation Service for providing I18n to Page Templates.
 
-$Id: GlobalTranslationService.py,v 1.4 2004-05-29 00:08:07 a1s Exp $
 """
 
 import re

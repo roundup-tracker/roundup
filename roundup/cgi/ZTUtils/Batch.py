@@ -12,9 +12,8 @@
 ##############################################################################
 __doc__='''Batch class, for iterating over a sequence in batches
 
-$Id: Batch.py,v 1.3 2004-02-11 23:55:09 richard Exp $'''
+'''
 __docformat__ = 'restructuredtext'
-__version__='$Revision: 1.3 $'[11:-2]
 
 class LazyPrevBatch:
     def __of__(self, parent):

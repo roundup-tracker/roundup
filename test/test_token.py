@@ -7,8 +7,6 @@
 # This module is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-#
-# $Id: test_token.py,v 1.3 2003-10-25 22:53:26 richard Exp $
 
 import unittest, time
 

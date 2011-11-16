@@ -18,8 +18,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: test_locking.py,v 1.4 2003-10-25 22:53:26 richard Exp $
-
 import os, unittest, tempfile
 
 from roundup.backends.locking import acquire_lock, release_lock

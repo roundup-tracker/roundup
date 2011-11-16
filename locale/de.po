@@ -3,8 +3,6 @@
 # updated by Toni Mueller <toni@debian.org>
 # updated by Tobias Herp <tobias.herp@gmx.de>
 #
-# $Id: de.po,v 1.9 2008-08-19 01:51:10 richard Exp $
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: Roundup 1.4.6\n"

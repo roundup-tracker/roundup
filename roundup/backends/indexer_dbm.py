@@ -14,7 +14,6 @@
 #     that promote freedom, but obviously am giving up any rights
 #     to compel such.
 # 
-#$Id: indexer_dbm.py,v 1.9 2006-04-27 05:48:26 richard Exp $
 '''This module provides an indexer class, RoundupIndexer, that stores text
 indices in a roundup instance.  This class makes searching the content of
 messages, string properties and text files possible.

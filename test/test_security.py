@@ -18,8 +18,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: test_security.py,v 1.10 2006-02-03 04:04:37 richard Exp $
-
 import os, unittest, shutil
 
 from roundup import backends

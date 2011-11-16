@@ -18,7 +18,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-#$Id: userauditor.py,v 1.8 2007-09-12 21:11:14 jpend Exp $
 
 import re
 

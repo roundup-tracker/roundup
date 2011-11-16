@@ -18,8 +18,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: test_indexer.py,v 1.13 2008-09-11 19:10:30 schlatterbeck Exp $
-
 import os, unittest, shutil
 
 from roundup.backends import get_backend, have_backend

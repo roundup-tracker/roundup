@@ -18,7 +18,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-#$Id: statusauditor.py,v 1.5 2004-03-27 00:01:48 richard Exp $
 
 def chatty(db, cl, nodeid, newvalues):
     ''' If the issue is currently 'unread', 'resolved', 'done-cbb' or None,

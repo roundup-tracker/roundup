@@ -14,8 +14,6 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-#
-# $Id: db_test_base.py,v 1.101 2008-08-19 01:40:59 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, base64, os.path
 import gpgmelib

@@ -17,8 +17,6 @@ A TALES Iterator with the ability to use first() and last() on
 subpaths of elements.
 """
 
-__version__='$Revision: 1.3 $'[11:-2]
-
 import TALES
 from Expressions import restrictedTraverse, Undefs, getSecurityManager
 

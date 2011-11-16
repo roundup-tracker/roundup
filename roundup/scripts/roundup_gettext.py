@@ -1,8 +1,6 @@
 #! /usr/bin/env python
 #
 # Copyright 2004 Richard Jones (richard@mechanicalcat.net)
-#
-# $Id: roundup_gettext.py,v 1.1 2004-10-20 10:25:23 a1s Exp $
 
 """Extract translatable strings from tracker templates"""
 

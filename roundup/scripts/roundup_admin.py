@@ -13,8 +13,6 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-# $Id: roundup_admin.py,v 1.6 2004-02-11 23:55:10 richard Exp $
 
 """Command-line script stub that calls the roundup.admin functions.
 """

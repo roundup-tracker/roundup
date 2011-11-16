@@ -8,8 +8,6 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # 
-# $Id: token.py,v 1.4 2004-02-11 23:55:08 richard Exp $
-#
 
 """This module provides the tokeniser used by roundup-admin.
 """

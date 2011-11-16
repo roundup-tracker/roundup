@@ -13,9 +13,6 @@
 #   translate(domain, msgid, mapping, context, target_language, default)
 #
 
-__version__ = "$Revision: 1.6 $"[11:-2]
-__date__ = "$Date: 2008-08-18 05:04:01 $"[7:-2]
-
 from roundup import i18n
 from roundup.cgi.PageTemplates import Expressions, PathIterator, TALES
 from roundup.cgi.TAL import TALInterpreter

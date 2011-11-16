@@ -1,4 +1,3 @@
-#$Id: indexer_xapian.py,v 1.6 2007-10-25 07:02:42 richard Exp $
 ''' This implements the full-text indexer using the Xapian indexer.
 '''
 import re, os

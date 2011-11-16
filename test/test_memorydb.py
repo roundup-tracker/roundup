@@ -1,5 +1,3 @@
-# $Id: test_memorydb.py,v 1.4 2004-11-03 01:34:21 richard Exp $ 
-
 import unittest, os, shutil, time
 
 from roundup import hyperdb

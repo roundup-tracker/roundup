@@ -1,7 +1,6 @@
 #
 # This module was written by Ka-Ping Yee, <ping@lfw.org>.
 #
-# $Id: cgitb.py,v 1.12 2004-07-13 10:18:00 a1s Exp $
 
 """Extended CGI traceback handler by Ka-Ping Yee, <ping@lfw.org>.
 """

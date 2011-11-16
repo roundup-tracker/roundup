@@ -4,7 +4,6 @@
 # Stéphane Raimbault <stephane.raimbault@gmail.com>, 2008.
 # This file is distributed under the same license as the Roundup package.
 # 
-# $Id: fr.po,v 1.6 2009-02-05 14:18:27 stefan Exp $
 # roundup.pot revision 1.18
 # 
 msgid ""

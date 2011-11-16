@@ -1,4 +1,3 @@
-#$Id: indexer_common.py,v 1.11 2008-09-11 19:41:07 schlatterbeck Exp $
 import re
 # Python 2.3 ... 2.6 compatibility:
 from roundup.anypy.sets_ import set

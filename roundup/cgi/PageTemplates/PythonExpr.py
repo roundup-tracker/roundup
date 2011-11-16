@@ -17,8 +17,6 @@
 """Generic Python Expression Handler
 """
 
-__version__='$Revision: 1.6 $'[11:-2]
-
 from TALES import CompilerError
 from sys import exc_info
 
