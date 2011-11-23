@@ -46,6 +46,9 @@ Fixed:
 - Ignore confirm set() fields by themselves in the absence of non-"confirm"
   values; otherwise a bare confirm field can be used to change the a
   password. Reported by Cam Blackwood.
+- Updated version of simplified Chinese message file by Cheer Xiao:
+  Corrected some mistakes, added a few more items and did some
+  formating.
 
 
 2011-07-15: 1.4.19
