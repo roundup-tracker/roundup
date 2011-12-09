@@ -38,6 +38,7 @@ import time
 import getopt
 import traceback
 
+from roundup import __version__
 from roundup.cgi.TAL.HTMLTALParser import HTMLTALParser
 from roundup.cgi.TAL.TALInterpreter import TALInterpreter
 from roundup.cgi.TAL.DummyEngine import DummyEngine
