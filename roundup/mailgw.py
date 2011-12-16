@@ -1447,6 +1447,7 @@ class MailGW:
         # its way into here... try to handle it gracefully
 
         self.parsed_message = None
+        crypt = False
         sendto = message.getaddrlist('resent-from')
         if not sendto:
             sendto = message.getaddrlist('from')
