@@ -49,6 +49,8 @@ Fixed:
 - Updated version of simplified Chinese message file by Cheer Xiao:
   Corrected some mistakes, added a few more items and did some
   formating.
+- Fix xmlrpc URL parsing so that passwords may contain a ':' character
+  (Ralf)
 
 
 2011-07-15: 1.4.19

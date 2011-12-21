@@ -695,7 +695,7 @@ class Client:
                     except TypeError:
                         # invalid challenge
                         pass
-                    username, password = decoded.split(':')
+                    username, password = decoded.split(':', 1)
                     try:
                         login = self.get_action_class('login')(self)
                         login.verifyLogin(username, password)
