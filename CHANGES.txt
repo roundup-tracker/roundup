@@ -54,6 +54,7 @@ Fixed:
 - Be more tolerant when parsing RFC2047 encoded mail headers. Use
   backported version of my proposed changes to
   email.header.decode_header in http://bugs.python.org/issue1079
+  (Ralf)
 
 
 2011-07-15: 1.4.19
