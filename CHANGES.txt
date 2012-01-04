@@ -51,6 +51,9 @@ Fixed:
   formating.
 - Fix xmlrpc URL parsing so that passwords may contain a ':' character
   (Ralf)
+- Be more tolerant when parsing RFC2047 encoded mail headers. Use
+  backported version of my proposed changes to
+  email.header.decode_header in http://bugs.python.org/issue1079
 
 
 2011-07-15: 1.4.19

@@ -82,7 +82,7 @@ import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
 import time, random, sys, logging
 import traceback, rfc822
 
-from email.Header import decode_header
+from anypy.email_ import decode_header
 
 from roundup import configuration, hyperdb, date, password, rfc2822, exceptions
 from roundup.mailer import Mailer, MessageSendError
@@ -244,17 +244,14 @@ class Message(mimetools.Message):
 
     def _decode_header_to_utf8(self, hdr):
         l = []
-        prev_encoded = False
         for part, encoding in decode_header(hdr):
             if encoding:
                 part = part.decode(encoding)
             # RFC 2047 specifies that between encoded parts spaces are
             # swallowed while at the borders from encoded to non-encoded
             # or vice-versa we must preserve a space. Multiple adjacent
-            # non-encoded parts should not occur.
-            if l and prev_encoded != bool(encoding):
-                l.append(' ')
-            prev_encoded = bool(encoding)
+            # non-encoded parts should not occur. This is now
+            # implemented in our patched decode_header method in anypy
             l.append(part)
         return ''.join([s.encode('utf-8') for s in l])
 
