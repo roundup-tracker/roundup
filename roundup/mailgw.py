@@ -1792,7 +1792,9 @@ def parseContent(content, keep_citations=None, keep_body=None, config=None):
         if quote_1st or quote_2nd:
             # don't drop non-quoted first line of intermediate section:
             if ns and not quote_1st and lines[0] and not keep_citations:
-                l.append(lines[0])
+                # we drop only first-lines ending in ':' (e.g. 'XXX wrote:')
+                if not lines[0].endswith(':'):
+                    l.append(lines[0])
             # see if there's a response somewhere inside this section (ie.
             # no blank line between quoted message and response)
             for n, line in enumerate(lines[1:]):
