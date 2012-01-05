@@ -37,6 +37,12 @@ from roundup.anypy.sets_ import set
 #import db_test_base
 import memorydb
 
+def expectedFailure(method):
+    """ For marking a failing test.
+        This will *not* run the test and return success instead.
+    """
+    return lambda x: 0
+
 class Message(rfc822.Message):
     """String-based Message class with equivalence test."""
     def __init__(self, s):
@@ -2280,27 +2286,7 @@ Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 _______________________________________________________________________
 ''')
 
-    def testEmailQuoting(self):
-        self.instance.config.EMAIL_KEEP_QUOTED_TEXT = 'no'
-        self.innerTestQuoting('''This is a followup
-''')
-
-    def testEmailQuotingRemove(self):
-        self.instance.config.EMAIL_KEEP_QUOTED_TEXT = 'yes'
-        self.innerTestQuoting('''Blah blah wrote:
-> Blah bklaskdfj sdf asdf jlaskdf skj sdkfjl asdf
->  skdjlkjsdfalsdkfjasdlfkj dlfksdfalksd fj
->
-
-This is a followup
-''')
-
-    def innerTestQuoting(self, expect):
-        nodeid = self.doNewIssue()
-
-        messages = self.db.issue.get(nodeid, 'messages')
-
-        self._handle_mail('''Content-Type: text/plain;
+    firstquotingtest = '''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard <richard@test.test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -2314,7 +2300,160 @@ Blah blah wrote:
 >
 
 This is a followup
-''')
+'''
+
+    def testEmailQuoting(self):
+        self.instance.config.EMAIL_KEEP_QUOTED_TEXT = 'no'
+        self.innerTestQuoting(self.firstquotingtest, '''This is a followup
+''', 'This is a followup')
+
+    def testEmailQuotingRemove(self):
+        self.instance.config.EMAIL_KEEP_QUOTED_TEXT = 'yes'
+        self.innerTestQuoting(self.firstquotingtest, '''Blah blah wrote:
+> Blah bklaskdfj sdf asdf jlaskdf skj sdkfjl asdf
+>  skdjlkjsdfalsdkfjasdlfkj dlfksdfalksd fj
+>
+
+This is a followup
+''', 'This is a followup')
+
+    secondquotingtest = '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: richard <richard@test.test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: Re: [issue1] Testing...
+
+On Tue, Feb 23, 2010 at 8:46 AM, Someone <report@bugs.python.org> wrote:
+> aa
+> aa
+
+AA:
+
+ AA
+
+AA
+
+ AA
+
+TEXT BEFORE QUOTE
+> bb
+> bb
+>
+
+BB
+BB
+BB
+BB
+
+> cc
+>
+> cc
+>
+>
+> cc
+>
+> cc
+>
+> cc
+>
+CC
+
+--
+added signature
+'''
+    def testEmailQuoting2(self):
+        self.instance.config.EMAIL_KEEP_QUOTED_TEXT = 'no'
+        self.innerTestQuoting(self.secondquotingtest, '''AA:
+
+ AA
+
+AA
+
+ AA
+
+TEXT BEFORE QUOTE
+
+BB
+BB
+BB
+BB
+
+CC
+''', 'AA:')
+
+    def testEmailQuotingRemove2(self):
+        self.instance.config.EMAIL_KEEP_QUOTED_TEXT = 'yes'
+        self.innerTestQuoting(self.secondquotingtest,
+            '\n'.join(self.secondquotingtest.split('\n')[8:-3]), 'AA:')
+
+    thirdquotingtest = '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: richard <richard@test.test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: Re: [issue1] Testing...
+
+On Mon, Jan 02, 2012 at 06:14:27PM +0000, Someone wrote:
+>
+> aa
+>
+> aa
+> aa
+> aa
+AA0
+AA
+
+> bb
+> bb
+> bb
+BB
+
+> cc
+> cc
+> cc
+> cc
+> cc
+> cc
+
+CC
+CC
+CC
+
+CC
+CC
+
+CC
+CC
+CC
+CC
+
+CC
+
+NAME
+--
+sig
+sig
+sig
+sig
+'''
+
+    # This fails because the sig isn't removed (we currently remove the
+    # sig only if the delimiter is the first line in a section)
+    @expectedFailure
+    def testEmailQuotingRemove3(self):
+        self.instance.config.EMAIL_KEEP_QUOTED_TEXT = 'yes'
+        self.innerTestQuoting(self.thirdquotingtest,
+            '\n'.join(self.thirdquotingtest.split('\n')[8:-6]), 'AA0')
+
+    def innerTestQuoting(self, msgtext, expect, summary=None):
+        nodeid = self.doNewIssue()
+
+        messages = self.db.issue.get(nodeid, 'messages')
+
+        self._handle_mail(msgtext)
         # figure the new message id
         newmessages = self.db.issue.get(nodeid, 'messages')
         for msg in messages:
@@ -2322,6 +2461,8 @@ This is a followup
         messageid = newmessages[0]
 
         self.compareMessages(self.db.msg.get(messageid, 'content'), expect)
+        if summary:
+            self.assertEqual (summary, self.db.msg.get(messageid, 'summary'))
 
     def testUserLookup(self):
         i = self.db.user.create(username='user1', address='user1@foo.com')

@@ -59,6 +59,13 @@ Fixed:
   thanks to Thomas Arendsen Hein for reporting and patch.
 - issue2550711 Fix XSS vulnerability in @action parameter,
   thanks to "om" for reporting.
+- issue2550535 In some cases even when keep_quoted_text=yes is
+  configured we would strip quoted sections. This hit the python
+  bug-tracker especially for python interpreter examples with leading
+  '>>>' strings. The fix is slightly different compared to the proposal
+  as this broke keep_quoted_text=no in certain cases. We also fix a bug
+  where keep_quoted_text=no would drop the last line of a non-quoted
+  section if there wasn't an empty line between the next quotes.
 
 
 2011-07-15: 1.4.19

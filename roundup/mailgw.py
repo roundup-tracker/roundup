@@ -1778,16 +1778,24 @@ def parseContent(content, keep_citations=None, keep_body=None, config=None):
     # extract out the summary from the message
     summary = ''
     l = []
-    for section in sections:
+    # find last non-empty section for signature matching
+    last_nonempty = len(sections) -1
+    while last_nonempty and not sections[last_nonempty]:
+        last_nonempty -= 1
+    for ns, section in enumerate(sections):
         #section = section.strip()
         if not section:
             continue
         lines = eol.split(section)
-        if (lines[0] and lines[0][0] in '>|') or (len(lines) > 1 and
-                lines[1] and lines[1][0] in '>|'):
+        quote_1st = lines[0] and lines[0][0] in '>|'
+        quote_2nd = len(lines) > 1 and lines[1] and lines[1][0] in '>|'
+        if quote_1st or quote_2nd:
+            # don't drop non-quoted first line of intermediate section:
+            if ns and not quote_1st and lines[0] and not keep_citations:
+                l.append(lines[0])
             # see if there's a response somewhere inside this section (ie.
             # no blank line between quoted message and response)
-            for line in lines[1:]:
+            for n, line in enumerate(lines[1:]):
                 if line and line[0] not in '>|':
                     break
             else:
@@ -1796,17 +1804,19 @@ def parseContent(content, keep_citations=None, keep_body=None, config=None):
                     l.append(section)
                 continue
             # keep this section - it has reponse stuff in it
-            lines = lines[lines.index(line):]
+            if not keep_citations:
+                lines = lines[n+1:]
             section = '\n'.join(lines)
-            # and while we're at it, use the first non-quoted bit as
-            # our summary
-            summary = section
 
+        is_last = ns == last_nonempty
+        # and while we're at it, use the first non-quoted bit as
+        # our summary
         if not summary:
             # if we don't have our summary yet use the first line of this
             # section
             summary = section
-        elif signature.match(lines[0]) and 2 <= len(lines) <= 10:
+        # match signature only in last section
+        elif is_last and signature.match(lines[0]) and 2 <= len(lines) <= 10:
             # lose any signature
             break
         elif original_msg.match(lines[0]):
