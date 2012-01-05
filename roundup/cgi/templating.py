@@ -1141,7 +1141,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
             if dre.match(user):
                 user = self._db.user.get(user, 'username')
             l.append('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'%(
-                date_s, user, self._(action), arg_s))
+                date_s, cgi.escape(user), self._(action), arg_s))
         if comments:
             l.append(self._(
                 '<tr><td colspan=4><strong>Note:</strong></td></tr>'))
