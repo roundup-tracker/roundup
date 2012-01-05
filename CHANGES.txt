@@ -66,6 +66,8 @@ Fixed:
   as this broke keep_quoted_text=no in certain cases. We also fix a bug
   where keep_quoted_text=no would drop the last line of a non-quoted
   section if there wasn't an empty line between the next quotes.
+- issue2431638 wrong registration link in bounce mail for non-registered
+  users reported *years* ago by anonymous
 
 
 2011-07-15: 1.4.19

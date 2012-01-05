@@ -1901,7 +1901,7 @@ Unknown address: fubar@bork.bork.bork
             body_diff = self.compareMessages(str(value), """
 You are not a registered user. Please register at:
 
-http://tracker.example/cgi-bin/roundup.cgi/bugs/user?template=register
+http://tracker.example/cgi-bin/roundup.cgi/bugs/user?@template=register
 
 ...before sending mail to the tracker.
 
@@ -2030,7 +2030,7 @@ Content-Transfer-Encoding: 7bit
 
 You are not a registered user. Please register at:
 
-http://tracker.example/cgi-bin/roundup.cgi/bugs/user?template=register
+http://tracker.example/cgi-bin/roundup.cgi/bugs/user?@template=register
 
 ...before sending mail to the tracker.
 

@@ -843,7 +843,7 @@ Subject was: "%(subject)s"
                     tracker_web = self.config.TRACKER_WEB
                     registration_info = """ Please register at:
 
-%(tracker_web)suser?template=register
+%(tracker_web)suser?@template=register
 
 ...before sending mail to the tracker.""" % locals()
 
