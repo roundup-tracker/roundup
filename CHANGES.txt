@@ -55,8 +55,10 @@ Fixed:
   backported version of my proposed changes to
   email.header.decode_header in http://bugs.python.org/issue1079
   (Ralf)
-- issue2550711 Fix XSS vulnerability when username contains HTML code,
+- issue2550684 Fix XSS vulnerability when username contains HTML code,
   thanks to Thomas Arendsen Hein for reporting and patch.
+- issue2550711 Fix XSS vulnerability in @action parameter,
+  thanks to "om" for reporting.
 
 
 2011-07-15: 1.4.19

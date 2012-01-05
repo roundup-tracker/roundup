@@ -1171,7 +1171,7 @@ class Client:
                 if name == action_name:
                     break
             else:
-                raise ValueError('No such action "%s"'%action_name)
+                raise ValueError('No such action "%s"'%cgi.escape(action_name))
         return action_klass
 
     def _socket_op(self, call, *args, **kwargs):
