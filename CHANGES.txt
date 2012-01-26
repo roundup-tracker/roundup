@@ -71,6 +71,8 @@ Fixed:
 - Fix doc/upgrading.txt which produces errors with latest docutils about
   wrong block structure. Fix .gitignore in doc directory. Thanks to
   Cheer Xiao for the patches.
+- Fix wrong execute permissions on some files, thanks to Cheer Xiao for
+  the patch.
 
 
 2011-07-15: 1.4.19
