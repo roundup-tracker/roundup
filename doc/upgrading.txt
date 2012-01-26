@@ -22,29 +22,29 @@ following script will list likely issues being affected by the bug.
 The date in the script is the date of the 1.4.17 release. If you have
 installed 1.4.17 later than this date, you can change the date
 appropriately to your installation date. Run the script in the directory
-of your tracker.
+of your tracker::
 
-#!/usr/bin/python
-import os
-from roundup import instance
-from roundup.date import Date
-dir     = os.getcwd ()
-tracker = instance.open (dir)
-db      = tracker.open ('admin')
-# you may want to change this to your install date to find less candidates
-last_release = Date('2011-05-13')
-affected = {}
-for i in db.issue.getnodeids():
-    for j in db.issue.history(i):
-        if i in affected:
-            break
-        if j[1] < last_release or j[3] != 'set' or 'files' not in j[4]:
-            continue
-        for op, p in j[4]['files']:
-            if op == '-':
-                affected [i] = 1
-                break
-print ', '.join(sorted(affected.iterkeys()))
+  #!/usr/bin/python
+  import os
+  from roundup import instance
+  from roundup.date import Date
+  dir     = os.getcwd ()
+  tracker = instance.open (dir)
+  db      = tracker.open ('admin')
+  # you may want to change this to your install date to find less candidates
+  last_release = Date('2011-05-13')
+  affected = {}
+  for i in db.issue.getnodeids():
+      for j in db.issue.history(i):
+          if i in affected:
+              break
+          if j[1] < last_release or j[3] != 'set' or 'files' not in j[4]:
+              continue
+          for op, p in j[4]['files']:
+              if op == '-':
+                  affected [i] = 1
+                  break
+  print ', '.join(sorted(affected.iterkeys()))
 
 To find out which files where attached before you can look in the
 history of the affected issue.  For fixing issues you can re-attach the

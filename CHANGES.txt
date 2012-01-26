@@ -68,6 +68,9 @@ Fixed:
   section if there wasn't an empty line between the next quotes.
 - issue2431638 wrong registration link in bounce mail for non-registered
   users reported *years* ago by anonymous
+- Fix doc/upgrading.txt which produces errors with latest docutils about
+  wrong block structure. Fix .gitignore in doc directory. Thanks to
+  Cheer Xiao for the patches.
 
 
 2011-07-15: 1.4.19
