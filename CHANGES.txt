@@ -73,6 +73,8 @@ Fixed:
   Cheer Xiao for the patches.
 - Fix wrong execute permissions on some files, thanks to Cheer Xiao for
   the patch.
+- Fix override of TemplatingUtils in instance.py, thanks to Cheer Xiao
+  for the patch.
 
 
 2011-07-15: 1.4.19

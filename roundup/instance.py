@@ -173,6 +173,7 @@ class Tracker:
             self._load_python('interfaces.py', vars)
         self.Client = vars.get('Client', client.Client)
         self.MailGW = vars.get('MailGW', mailgw.MailGW)
+        self.TemplatingUtils = vars.get('TemplatingUtils', templating.TemplatingUtils)
 
     def get_extensions(self, dirname):
         """Load python extensions

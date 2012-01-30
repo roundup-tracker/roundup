@@ -249,10 +249,9 @@ def context(client, template=None, classname=None, request=None):
       The current database, used to access arbitrary database items.
 
     *utils*
-      This is a special class that has its base in the TemplatingUtils
-      class in this file. If the tracker interfaces module defines a
-      TemplatingUtils class then it is mixed in, overriding the methods
-      in the base class.
+      This is an instance of client.instance.TemplatingUtils, which is
+      optionally defined in the tracker interfaces module and defaults to
+      TemplatingUtils class in this file.
 
     *templates*
       Access to all the tracker templates by name.
@@ -272,12 +271,6 @@ def context(client, template=None, classname=None, request=None):
       methods ``gettext`` and ``ngettext``.
 
     """
-    # construct the TemplatingUtils class
-    utils = TemplatingUtils
-    if (hasattr(client.instance, 'interfaces') and
-            hasattr(client.instance.interfaces, 'TemplatingUtils')):
-        class utils(client.instance.interfaces.TemplatingUtils, utils):
-            pass
 
     # if template, classname and/or request are not passed explicitely,
     # compute form client
@@ -296,7 +289,7 @@ def context(client, template=None, classname=None, request=None):
          'db': HTMLDatabase(client),
          'config': client.instance.config,
          'tracker': client.instance,
-         'utils': utils(client),
+         'utils': client.instance.TemplatingUtils(client),
          'templates': client.instance.templates,
          'template': template,
          'true': 1,
