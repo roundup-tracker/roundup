@@ -75,6 +75,8 @@ Fixed:
   the patch.
 - Fix override of TemplatingUtils in instance.py, thanks to Cheer Xiao
   for the patch.
+- Fix another XSS with the "otk" parameter, thanks to Jesse Ruderman for
+  reporting. (Ralf)
 
 
 2011-07-15: 1.4.19

@@ -8,6 +8,7 @@ __docformat__ = 'restructuredtext'
 
 import os, marshal, time
 
+from cgi import escape
 from roundup import hyperdb
 from roundup.i18n import _
 from roundup.anypy.dbm_ import anydbm, whichdb, key_in
@@ -64,7 +65,7 @@ class BasicDatabase:
             else:
                 if default != self._marker:
                     return default
-                raise KeyError('No such %s "%s"'%(self.name, infoid))
+                raise KeyError('No such %s "%s"'%(self.name, escape(infoid)))
             return values.get(value, None)
         finally:
             db.close()
@@ -77,7 +78,7 @@ class BasicDatabase:
                 del d['__timestamp']
                 return d
             except KeyError:
-                raise KeyError('No such %s "%s"'%(self.name, infoid))
+                raise KeyError('No such %s "%s"'%(self.name, escape(infoid)))
         finally:
             db.close()
 
