@@ -61,7 +61,7 @@ class Tracker:
         self.cgi_actions = {}
         self.templating_utils = {}
         self.load_interfaces()
-        self.templates = templating.Templates(self.config["TEMPLATES"])
+        self.templates = templating.get_templates(self.config["TEMPLATES"], self.config["TEMPLATE_ENGINE"])
         self.backend = backends.get_backend(self.get_backend_name())
         if self.optimize:
             libdir = os.path.join(self.tracker_home, 'lib')

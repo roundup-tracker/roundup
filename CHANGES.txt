@@ -7,6 +7,12 @@ Entries without name were done by Richard Jones.
 
 Features:
 
+- We now have two configurable templating engines, the old Zope TAL
+  templates (called zopetal in the config) and the new Chameleon (called
+  chameleon in the config). A new config-option "template_engine" under
+  [main] can take these config-options, the default is zopetal.
+  Thanks to Cheer Xiao for the idea of making this configurable *and*
+  for the actual implementation!
 - issue2550678: Allow pagesize=-1 which returns all results.
   Suggested and implemented by John Kristensen. 
   Tested by Satchidanand Haridas. (Bernhard)
