@@ -296,6 +296,9 @@ class Client:
         # this is the base URL for this tracker
         self.base = self.instance.config.TRACKER_WEB
 
+        # should cookies be secure?
+        self.secure = self.base.startswith ('https')
+
         # check the tracker_we setting
         if not self.base.endswith('/'):
             self.base = self.base + '/'
@@ -1475,6 +1478,11 @@ class Client:
             cookie = "%s=%s; Path=%s;"%(name, value, path)
             if expire is not None:
                 cookie += " expires=%s;"%get_cookie_date(expire)
+            # mark as secure if https, see issue2550689
+            if self.secure:
+                cookie += " secure;"
+            # prevent theft of session cookie, see issue2550689
+            cookie += " HttpOnly;"
             headers.append(('Set-Cookie', cookie))
 
         self._socket_op(self.request.start_response, headers, response)
@@ -1507,17 +1515,6 @@ class Client:
         if not value:
             expire = -1
         self._cookies[(path, name)] = (value, expire)
-
-    def set_cookie(self, user, expire=None):
-        """Deprecated. Use session_api calls directly
-
-        XXX remove
-        """
-
-        # insert the session in the session db
-        self.session_api.set(user=user)
-        # refresh session cookie
-        self.session_api.update(set_cookie=True, expire=expire)
 
     def make_user_anonymous(self):
         """ Make us anonymous

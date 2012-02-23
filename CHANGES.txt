@@ -77,6 +77,8 @@ Fixed:
   for the patch.
 - Fix another XSS with the "otk" parameter, thanks to Jesse Ruderman for
   reporting. (Ralf)
+- Mark cookies HttpOnly and -- if https is used -- secure. Fixes
+  issue2550689, but is untested if this really works in browsers. (Ralf)
 
 
 2011-07-15: 1.4.19
