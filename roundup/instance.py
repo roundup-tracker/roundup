@@ -35,10 +35,6 @@ from roundup import hyperdb, backends, actions
 from roundup.cgi import client, templating
 from roundup.cgi import actions as cgi_actions
 
-class Vars:
-    def __init__(self, vars):
-        self.__dict__.update(vars)
-
 class Tracker:
     def __init__(self, tracker_home, optimize=0):
         """New-style tracker instance constructor
@@ -63,27 +59,21 @@ class Tracker:
         self.load_interfaces()
         self.templates = templating.get_templates(self.config["TEMPLATES"], self.config["TEMPLATE_ENGINE"])
         self.backend = backends.get_backend(self.get_backend_name())
+
+        libdir = os.path.join(self.tracker_home, 'lib')
+        self.libdir = os.path.isdir(libdir) and libdir or ''
+
         if self.optimize:
-            libdir = os.path.join(self.tracker_home, 'lib')
-            if os.path.isdir(libdir):
-                sys.path.insert(1, libdir)
             self.templates.precompileTemplates()
             # initialize tracker extensions
             for extension in self.get_extensions('extensions'):
                 extension(self)
             # load database schema
-            schemafilename = os.path.join(self.tracker_home, 'schema.py')
-            # Note: can't use built-in open()
-            #   because of the global function with the same name
-            schemafile = file(schemafilename, 'rt')
-            self.schema = compile(schemafile.read(), schemafilename, 'exec')
-            schemafile.close()
+            self.schema = self._compile('schema.py')
             # load database detectors
             self.detectors = self.get_extensions('detectors')
             # db_open is set to True after first open()
             self.db_open = 0
-            if libdir in sys.path:
-                sys.path.remove(libdir)
 
     def get_backend_name(self):
         f = file(os.path.join(self.config.DATABASE, 'backend_name'))
@@ -97,7 +87,7 @@ class Tracker:
         # because the schema has security settings that must be
         # applied to each database instance
         backend = self.backend
-        vars = {
+        env = {
             'Class': backend.Class,
             'FileClass': backend.FileClass,
             'IssueClass': backend.IssueClass,
@@ -112,28 +102,23 @@ class Tracker:
             'db': backend.Database(self.config, name)
         }
 
-        libdir = os.path.join(self.tracker_home, 'lib')
-        if os.path.isdir(libdir):
-            sys.path.insert(1, libdir)
         if self.optimize:
             # execute preloaded schema object
-            exec(self.schema, vars)
+            exec(self.schema, env)
             if callable (self.schema_hook):
-                self.schema_hook(**vars)
+                self.schema_hook(**env)
             # use preloaded detectors
             detectors = self.detectors
         else:
             # execute the schema file
-            self._load_python('schema.py', vars)
+            self._execfile('schema.py', env)
             if callable (self.schema_hook):
-                self.schema_hook(**vars)
+                self.schema_hook(**env)
             # reload extensions and detectors
             for extension in self.get_extensions('extensions'):
                 extension(self)
             detectors = self.get_extensions('detectors')
-        if libdir in sys.path:
-            sys.path.remove(libdir)
-        db = vars['db']
+        db = env['db']
         # apply the detectors
         for detector in detectors:
             detector(db)
@@ -168,12 +153,12 @@ class Tracker:
 
     def load_interfaces(self):
         """load interfaces.py (if any), initialize Client and MailGW attrs"""
-        vars = {}
+        env = {}
         if os.path.isfile(os.path.join(self.tracker_home, 'interfaces.py')):
-            self._load_python('interfaces.py', vars)
-        self.Client = vars.get('Client', client.Client)
-        self.MailGW = vars.get('MailGW', mailgw.MailGW)
-        self.TemplatingUtils = vars.get('TemplatingUtils', templating.TemplatingUtils)
+            self._execfile('interfaces.py', env)
+        self.Client = env.get('Client', client.Client)
+        self.MailGW = env.get('MailGW', mailgw.MailGW)
+        self.TemplatingUtils = env.get('TemplatingUtils', templating.TemplatingUtils)
 
     def get_extensions(self, dirname):
         """Load python extensions
@@ -193,15 +178,15 @@ class Tracker:
             for name in os.listdir(dirpath):
                 if not name.endswith('.py'):
                     continue
-                vars = {}
-                self._load_python(os.path.join(dirname, name), vars)
-                extensions.append(vars['init'])
+                env = {}
+                self._execfile(os.path.join(dirname, name), env)
+                extensions.append(env['init'])
             sys.path.remove(dirpath)
         return extensions
 
     def init(self, adminpw):
         db = self.open('admin')
-        self._load_python('initial_data.py', {'db': db, 'adminpw': adminpw,
+        self._execfile('initial_data.py', {'db': db, 'adminpw': adminpw,
             'admin_email': self.config['ADMIN_EMAIL']})
         db.commit()
         db.close()
@@ -212,10 +197,20 @@ class Tracker:
     def nuke(self):
         self.backend.db_nuke(self.config)
 
-    def _load_python(self, file, vars):
-        file = os.path.join(self.tracker_home, file)
-        execfile(file, vars)
-        return vars
+    def _compile(self, fname):
+        fname = os.path.join(self.tracker_home, fname)
+        return compile(file(fname).read(), fname, 'exec')
+
+    def _exec(self, obj, env):
+        if self.libdir:
+            sys.path.insert(1, self.libdir)
+        exec(obj, env)
+        if self.libdir:
+            sys.path.remove(self.libdir)
+        return env
+
+    def _execfile(self, fname, env):
+        self._exec(self._compile(fname), env)
 
     def registerAction(self, name, action):
 
