@@ -41,3 +41,5 @@ doc/xmlrpc.html
 locale/*.mo
 locale/*.bak
 locale/*.poedit
+website/www/_tmp/
+website/www/html/
