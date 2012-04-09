@@ -140,7 +140,7 @@ Leonardo Soto,
 Maciej Starzyk,
 Kai Storbeck,
 Mitchell Surface,
-Anatoly T.,
+anatoly techtonik,
 Jon C. Thomason
 Mike Thompson,
 Hubert Touvet,

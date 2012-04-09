@@ -533,7 +533,7 @@ Fixed:
 - Add filter() to XML-RPC interface (sf patch #1966456)
 - Fix IndexError when there are no messages to an issue (sf patch #1894249)
 - Prevent broken pipe errors in csv export (sf patch #1911449)
-- New session API and cleanup thanks anatoly t.
+- New session API and cleanup (anatoly techtonik)
 - Make WSGI handler threadsafe (sf #1968027)
 - Improved URL matching RE (sf #2038858)
 - Allow binary file content submission via XML-RPC (sf #1995623)
