@@ -58,7 +58,7 @@ To give Roundup a try, just download (see below), unpack and run::
     roundup-demo
 
 Release info and download page:
-     http://cheeseshop.python.org/pypi/roundup
+     http://pypi.python.org/pypi/roundup
 Source and documentation is available at the website:
      http://roundup-tracker.org/
 Mailing lists - the place to ask questions:
