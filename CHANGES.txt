@@ -1,9 +1,9 @@
-This file contains the changes to the Roundup system over time. 
-The entries are given with the most recent entry first. 
-Each entry has the deveoper who committed the change in brackets.
+This file contains significant changes to Roundup over time.
+Entries are given with the most recent entry first.
+Each entry has the developer who committed the change in brackets.
 Entries without name were done by Richard Jones.
 
-2011-XX-XX: 1.4.20
+2012-XX-XX: 1.4.20
 
 Features:
 
