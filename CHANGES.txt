@@ -12,7 +12,7 @@ Features:
   chameleon in the config). A new config-option "template_engine" under
   [main] can take these config-options, the default is zopetal.
   Thanks to Cheer Xiao for the idea of making this configurable *and*
-  for the actual implementation!
+  for the actual implementation! (Ralf)
 - issue2550678: Allow pagesize=-1 which returns all results.
   Suggested and implemented by John Kristensen. 
   Tested by Satchidanand Haridas. (Bernhard)
@@ -51,10 +51,10 @@ Fixed:
   outgoing traffic should be encrypted is actually OpenPGP encrypted. (Ralf)
 - Ignore confirm set() fields by themselves in the absence of non-"confirm"
   values; otherwise a bare confirm field can be used to change the a
-  password. Reported by Cam Blackwood.
+  password. Reported by Cam Blackwood. (Ralf)
 - Updated version of simplified Chinese message file by Cheer Xiao:
   Corrected some mistakes, added a few more items and did some
-  formating.
+  formating. (Ralf)
 - Fix xmlrpc URL parsing so that passwords may contain a ':' character
   (Ralf)
 - Be more tolerant when parsing RFC2047 encoded mail headers. Use
@@ -62,25 +62,25 @@ Fixed:
   email.header.decode_header in http://bugs.python.org/issue1079
   (Ralf)
 - issue2550684 Fix XSS vulnerability when username contains HTML code,
-  thanks to Thomas Arendsen Hein for reporting and patch.
+  thanks to Thomas Arendsen Hein for reporting and patch. (Ralf)
 - issue2550711 Fix XSS vulnerability in @action parameter,
-  thanks to "om" for reporting.
+  thanks to "om" for reporting. (Ralf)
 - issue2550535 In some cases even when keep_quoted_text=yes is
   configured we would strip quoted sections. This hit the python
   bug-tracker especially for python interpreter examples with leading
   '>>>' strings. The fix is slightly different compared to the proposal
   as this broke keep_quoted_text=no in certain cases. We also fix a bug
   where keep_quoted_text=no would drop the last line of a non-quoted
-  section if there wasn't an empty line between the next quotes.
+  section if there wasn't an empty line between the next quotes. (Ralf)
 - issue2431638 wrong registration link in bounce mail for non-registered
-  users reported *years* ago by anonymous
+  users reported *years* ago by anonymous (Ralf)
 - Fix doc/upgrading.txt which produces errors with latest docutils about
   wrong block structure. Fix .gitignore in doc directory. Thanks to
-  Cheer Xiao for the patches.
+  Cheer Xiao for the patches. (Ralf)
 - Fix wrong execute permissions on some files, thanks to Cheer Xiao for
-  the patch.
+  the patch. (Ralf)
 - Fix override of TemplatingUtils in instance.py, thanks to Cheer Xiao
-  for the patch.
+  for the patch. (Ralf)
 - Fix another XSS with the "otk" parameter, thanks to Jesse Ruderman for
   reporting. (Ralf)
 - Mark cookies HttpOnly and -- if https is used -- secure. Fixes
