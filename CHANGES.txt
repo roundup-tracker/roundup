@@ -19,7 +19,7 @@ Features:
 - Allow to turn off translation of generated html options in menu method
   of LinkHTMLProperty and MultilinkHTMLProperty -- default is
   translation as it used to be (Ralf)
-- Sending of PGP-Encrypted mail to all users or selected users (via
+- Sending of OpenPGP encrypted mail to all users or selected users (via
   roles) is now working. (Ralf)
 - Add config-option "nosy" to messages_to_author setting in [nosy]
   section of config: This will send a message to the author only
@@ -45,10 +45,10 @@ Fixed:
   is addressed to support@example.com this would (wrongly) match. (Ralf)
 - issue2550729: Fix password history display for anydbm backend, thanks
   to Ralf Hemmecke for reporting. (Ralf)
-- PGP support is again working (pyme API has changed significantly) and
+- OpenPGP support is again working (pyme API has changed significantly) and
   we now have a regression test. We now take care that bounce-messages
   for incoming encrypted mails or mails where the policy dictates that
-  outgoing traffic should be encrypted is actually pgp-encrypted. (Ralf)
+  outgoing traffic should be encrypted is actually OpenPGP encrypted. (Ralf)
 - Ignore confirm set() fields by themselves in the absence of non-"confirm"
   values; otherwise a bare confirm field can be used to change the a
   password. Reported by Cam Blackwood.
