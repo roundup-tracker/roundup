@@ -105,11 +105,11 @@ def run_demo(home):
     hostname, port = urlparse.urlparse(url)[1].split(':')
     port = int(port)
     success_message = '''Server running - connect to:
-    %s
+    %(url)s
 1. Log in as "demo"/"demo" or "admin"/"admin".
 2. Hit Control-C to stop the server.
-3. Re-start the server by running "roundup-demo" again.
-4. Re-initialise the server by running "roundup-demo nuke".
+3. Re-start the server by running "%(script)s" again.
+4. Re-initialise the server by running "%(script)s nuke".
 
 Demo tracker is set up to be accessed by localhost browser.  If you
 run demo on a server host, please stop the demo, open file
@@ -117,7 +117,7 @@ run demo on a server host, please stop the demo, open file
 option in section "[tracker]", save the file, then re-run the demo
 program. If you want to change backend types, you must use "nuke".
 
-''' % url
+''' % dict(url=url, script=sys.argv[0])
 
     # disable command line processing in roundup_server
     sys.argv = sys.argv[:1] + ['-p', str(port), 'demo=' + home]
