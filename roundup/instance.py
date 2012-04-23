@@ -106,7 +106,7 @@ class Tracker:
 
         if self.optimize:
             # execute preloaded schema object
-            exec(self.schema, env)
+            self._exec(self.schema, env)
             if callable (self.schema_hook):
                 self.schema_hook(**env)
             # use preloaded detectors
