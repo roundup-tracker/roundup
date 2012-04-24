@@ -1,5 +1,8 @@
 License
 =======
 
-See COPYING.txt in the software distribution for the licensing terms.
+Roundup is Free Software under the following license (from the file
+COPYING.txt in the software distribution):
 
+  .. include:: ../../../COPYING.txt
+    :literal:
