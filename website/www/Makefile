@@ -11,7 +11,10 @@ help:
 clean:
 	-rm -rf $(TMP)
 
-html:
+docs:
+	ln -s ../../doc ./docs
+
+html: docs
 	mkdir -p $(TMP)/doctrees $(HTML)
 	sphinx-build -b html -d $(TMP)/doctrees . $(HTML)
 

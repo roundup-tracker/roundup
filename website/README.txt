@@ -21,8 +21,10 @@ www.roundup-tracker.org:
       . docbuilder/bin/activate
  * update the working copy
       cd ${project_home}/src/roundup/website/www
-      FIXME hg pull -u
-      FIXME ln -s ../../doc/ docs
+      hg pull -u /home/scm_hg/r/ro/roundup/roundup
+   (The warning about "Not trusting file 
+   /home/scm_hg/r/ro/roundup/roundup/.hg/hgrc from untrusted user" 
+   can be ignored)
  * build it
       make html
  * you may also "make clean"
