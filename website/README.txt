@@ -21,7 +21,8 @@ www.roundup-tracker.org:
       . docbuilder/bin/activate
  * update the working copy
       cd ${project_home}/src/roundup/website/www
-      hg pull -u
+      FIXME hg pull -u
+      FIXME ln -s ../../doc/ docs
  * build it
       make html
  * you may also "make clean"
