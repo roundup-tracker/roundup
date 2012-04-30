@@ -1642,11 +1642,42 @@ How the templates work
 ----------------------
 
 
+Templating engines
+~~~~~~~~~~~~~~~~~~
+
+Since version 1.4.20 Roundup supports two templating engines: the original
+`Template Attribute Language`_ (TAL) engine from Zope and the standalone
+Chameleon templating engine. Chameleon is intended as a replacement for the
+original TAL engine, and supports a syntax that is very similiar to the it,
+but they are not 100% compatible. The major (and most likely the only)
+incompatibility to worry about is the default expression type being
+``python:`` instead of ``path:``. See also "Incompatibilities and
+differences" section of `Chameleon documentation`__.
+
+**NOTE1**: For historical reasons, examples given below assumes path
+expression as default expression type. With Chameleon you have to manually
+resolve the path expressions. A Chameleon-based, z3c.pt, that is fully
+compatible with the old TAL implementation, is planned to be included in a
+future release.
+
+**NOTE2**: As of 1.4.20 Chameleon support is highly experimental and **not**
+recommended for production use.
+
+.. _Chameleon:
+   http://chameleon.repoze.org/
+.. _z3c.pt:
+   http://pypi.python.org/pypi/z3c.pt
+__ http://chameleon.repoze.org/docs/latest/reference.html#incompatibilities-and-differences
+.. _TAL:
+.. _Template Attribute Language:
+   http://dev.zope.org/Wikis/DevSite/Projects/ZPT/TAL%20Specification%201.4
+
+
 Basic Templating Actions
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 Roundup's templates consist of special attributes on the HTML tags.
-These attributes form the `Template Attribute Language`_, or TAL.
+These attributes form the **Template Attribute Language**, or TAL.
 The basic TAL commands are:
 
 **tal:define="variable expression; variable expression; ..."**
@@ -1742,10 +1773,6 @@ don't go using any "tal:attributes" commands on it). This is useful for
 making arbitrary blocks of HTML conditional or repeatable (very handy
 for repeating multiple table rows, which would othewise require an
 illegal tag placement to effect the repeat).
-
-.. _TAL:
-.. _Template Attribute Language:
-   http://dev.zope.org/Wikis/DevSite/Projects/ZPT/TAL%20Specification%201.4
 
 
 Templating Expressions
