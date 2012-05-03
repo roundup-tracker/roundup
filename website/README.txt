@@ -10,21 +10,28 @@ issues.roundup-tracker.org:
  * restart the roundup server:
       sudo -u roundup /etc/init.d/roundup restart
 
-www.roundup-tracker.org:
-
+[1] All services hosted on sf.net:
  * log into sf.net
+   http://sourceforge.net/apps/trac/sourceforge/wiki/Shell%20service
       ssh -t <user>,roundup@shell.sourceforge.net create
  * set project_home:
       project_home=/home/project-web/roundup
- * activate the virtualenv
       cd ${project_home}
-      . docbuilder/bin/activate
- * update the working copy
-      cd ${project_home}/src/roundup/website/www
+ * read up on other people changes and add yours
+      vim ${project_home}/logbuch.txt
+ * update the working copy of the SCM roundup source (includes www and wiki)
+      cd ${project_home}/src/roundup
       hg pull -u /home/scm_hg/r/ro/roundup/roundup
    (The warning about "Not trusting file 
    /home/scm_hg/r/ro/roundup/roundup/.hg/hgrc from untrusted user" 
-   can be ignored)
+   can be ignored.)
+
+www.roundup-tracker.org:
+ * follow [1].
+ * activate the virtualenv
+      . ${project_home}/docbuilder/bin/activate
+ * go to the now current source directory
+      cd ${project_home}/src/roundup/website/www
  * build it
       make html
  * you may also "make clean"
@@ -34,14 +41,9 @@ www.roundup-tracker.org:
 (I think I can simplify the Makefile above such that the installation will be included as a make target.)
 
 wiki.roundup-tracker.org:
-
- * log into sf.net
-      ssh -t <user>,roundup@shell.sourceforge.net create
- * set project_home:
-      project_home=/home/project-web/roundup
- * update the working copy
+ * follow [1].
+ * go to the now current source directory
       cd ${project_home}/src/roundup/website/wiki
-      hg pull -u
  * copy the files into the right places:
       cp static/roundup/* ${project_home}/htdocs/_wiki/
       cp wiki/data/plugin/theme/roundup.py ${project_home}/persistent/wiki/data/plugin/theme/
