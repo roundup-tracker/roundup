@@ -4,5 +4,5 @@ License
 Roundup is Free Software under the following license (from the file
 COPYING.txt in the software distribution):
 
-  .. include:: ../../../COPYING.txt
+  .. include:: ../COPYING.txt
     :literal:
