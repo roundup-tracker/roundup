@@ -1035,6 +1035,18 @@ class ExportCSVAction(Action):
         columns = request.columns
         klass = self.db.getclass(request.classname)
 
+        # check if all columns exist on class
+        # the exception must be raised before sending header
+        props = klass.getprops()
+        for cname in columns:
+            if cname not in props:
+                # TODO raise exceptions.NotFound(.....) does not give message
+                # so using SeriousError instead
+                self.client.response_code = 404
+                raise exceptions.SeriousError(
+                    self._('Column "%(column)s" not found on %(class)s')
+                    % {'column': cgi.escape(cname), 'class': request.classname})
+
         # full-text search
         if request.search_text:
             matches = self.db.indexer.search(

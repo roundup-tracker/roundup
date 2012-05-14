@@ -43,6 +43,8 @@ Fixed:
   Reported and fixed by Ralf Hemmecke. (Bernhard)
 - issue2550715: IndexError when requesting non-existing file via http.
   Reported and fixed by Cédric Krier. (Bernhard)
+- issue2550712: exportcsvaction errors poorly when given invalid columns.
+  Reported by Will Kahn-Greene, fixed by Cédric Krier. (Bernhard)
 - issue2550695: 'No sort or group' settings not retained when editing queries.
   Reported and fixed by John Kristensen. Tested by Satchidanand Haridas. 
   (Bernhard)

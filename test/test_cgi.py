@@ -930,6 +930,16 @@ class FormTestCase(unittest.TestCase):
             '8,resolved\r\n',
             output.getvalue())
 
+    def testCSVExportBadColumnName(self):
+        cl = self._make_client({'@columns': 'falseid,name'}, nodeid=None,
+            userid='1')
+        cl.classname = 'status'
+        output = StringIO.StringIO()
+        cl.request = MockNull()
+        cl.request.wfile = output
+        self.assertRaises(exceptions.SeriousError,
+            actions.ExportCSVAction(cl).handle)
+
     def testCSVExportFailPermission(self):
         cl = self._make_client({'@columns': 'id,email,password'}, nodeid=None,
             userid='2')
@@ -937,7 +947,9 @@ class FormTestCase(unittest.TestCase):
         output = StringIO.StringIO()
         cl.request = MockNull()
         cl.request.wfile = output
-        self.assertRaises(exceptions.Unauthorised,
+        # used to be self.assertRaises(exceptions.Unauthorised,
+        # but not acting like the column name is not found
+        self.assertRaises(exceptions.SeriousError,
             actions.ExportCSVAction(cl).handle)
 
 
