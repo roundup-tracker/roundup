@@ -185,7 +185,8 @@ status_notresolved string:-1,1,2,4;
 <div class="content">
 <h1 id="breadcrumb"><span metal:define-slot="body_title">body title</span></h1>
  <p tal:condition="options/error_message | nothing" class="error-message"
-    tal:repeat="m options/error_message" tal:content="structure m" />
+    tal:repeat="m options/error_message"
+    tal:content="structure string:$m <br/ > " />
  <p tal:condition="options/ok_message | nothing" class="ok-message">
   <span tal:repeat="m options/ok_message"
         tal:content="structure string:$m <br/ > " />
