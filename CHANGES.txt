@@ -93,6 +93,11 @@ Fixed:
 - Mark cookies HttpOnly and -- if https is used -- secure. Fixes
   issue2550689, but is untested if this really works in browsers.
   Thanks to Joseph Myers for reporting. (Ralf)
+- Fix another XSS with the ok- and error message, see issue2550724. We
+  solve this differently from the proposals in the bug-report by not
+  allowing *any* html-tags in ok/error messages anymore. Thanks to 
+  David Benjamin for the bug-report and to Ezio Melotti for several
+  proposed fixes. (Ralf)
 
 
 2011-07-15: 1.4.19

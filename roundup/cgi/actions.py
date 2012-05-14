@@ -491,7 +491,7 @@ class EditCommon(Action):
                             else:
                                 props[linkprop] = nodeid
 
-        return '<br>'.join(m)
+        return '\n'.join(m)
 
     def _changenode(self, cn, nodeid, props):
         """Change the node based on the contents of the form."""

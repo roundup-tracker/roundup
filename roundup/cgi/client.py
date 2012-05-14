@@ -43,19 +43,8 @@ def initialiseSecurity(security):
         description="User may manipulate user Roles through the web")
     security.addPermissionToRole('Admin', p)
 
-# used to clean messages passed through CGI variables - HTML-escape any tag
-# that isn't <a href="">, <i>, <b> and <br> (including XHTML variants) so
-# that people can't pass through nasties like <script>, <iframe>, ...
-CLEAN_MESSAGE_RE = r'(<(/?(.*?)(\s*href="[^"]")?\s*/?)>)'
-def clean_message(message, mc=re.compile(CLEAN_MESSAGE_RE, re.I)):
-    return mc.sub(clean_message_callback, message)
-def clean_message_callback(match, ok={'a':1,'i':1,'b':1,'br':1}):
-    """ Strip all non <a>,<i>,<b> and <br> tags from a string
-    """
-    if match.group(3).lower() in ok:
-        return match.group(1)
-    return '&lt;%s&gt;'%match.group(2)
-
+def clean_message(msg):
+    return cgi.escape (msg).replace ('\n', '<br />\n')
 
 error_message = ''"""<html><head><title>An error has occurred</title></head>
 <body><h1>An error has occurred</h1>
