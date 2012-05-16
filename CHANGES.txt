@@ -3,6 +3,18 @@ Entries are given with the most recent entry first.
 Each entry has the developer who committed the change in brackets.
 Entries without name were done by Richard Jones.
 
+2012-??-??: 1.4.21
+
+Features:
+
+- ...
+
+Fixed:
+
+- issue2550574: Restore sample detectors removed in roundup 1.4.9
+  (Thomas Arendsen Hein)
+
+
 2012-05-15: 1.4.20
 
 Features:
