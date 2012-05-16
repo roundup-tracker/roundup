@@ -1,8 +1,6 @@
 # This detector was written by richard@mechanicalcat.net and it's been
 # placed in the Public Domain. Copy and modify to your heart's content.
 
-#$Id: creator_resolution.py,v 1.2 2004-04-07 06:32:54 richard Exp $
-
 from roundup.exceptions import Reject
 
 def creator_resolution(db, cl, nodeid, newvalues):
