@@ -66,7 +66,9 @@ def audit_user_fields(db, cl, nodeid, newvalues):
         if check_main or check_alts:
             raise ValueError, 'Email address %s already in use' % address
 
-    for rolename in [r.lower().strip() for r in newvalues.get('roles', '').split(',')]:
+    newroles = newvalues.get('roles')
+    if newroles:
+        for rolename in [r.lower().strip() for r in newroles.split(',')]:
             if rolename and not db.security.role.has_key(rolename):
                 raise ValueError, 'Role "%s" does not exist'%rolename
 
