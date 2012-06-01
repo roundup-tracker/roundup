@@ -58,7 +58,7 @@ def audit_user_fields(db, cl, nodeid, newvalues):
 
     for address in get_addresses(newvalues):
         if not valid_address(address):
-            raise ValueError, 'Email address syntax is invalid'
+            raise ValueError, 'Email address syntax is invalid "%s"'%address
 
         check_main = db.user.stringFind(address=address)
         # make sure none of the alts are owned by anyone other than us (x!=nodeid)
