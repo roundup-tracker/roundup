@@ -23,7 +23,7 @@ class Templates(TemplatesBase):
         src, filename = find_template(self.dir, name, extension)
         return RoundupPageTemplate(self.loader.load(src))
 
-class RoundupPageTemplate():
+class RoundupPageTemplate(object):
     def __init__(self, pt):
         self._pt = pt
 
@@ -36,7 +36,7 @@ class RoundupPageTemplate():
                          mapping=mapping, default=default)
             return unicode(result, client.translator.OUTPUT_ENCODING)
 
-        output = self._pt.render(None, translate, None, **c)
+        output = self._pt.render(None, translate, **c)
         return output.encode(client.charset)
 
     def __getitem__(self, name):
