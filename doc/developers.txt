@@ -46,8 +46,8 @@ In this tracker, Upfronthosting people are the users izak and roche.
 The Roundup tracker http://issues.roundup-tracker.org/ is in
 ~roundup/trackers/roundup
 
-The configuration is in the "web/trunk/issues" section of Roundup's
-Subversion repository and copied manually to the live tracker.
+The configuration is in the "website/issues" section of Roundup's
+Mercurical SCM repository and copied manually to the live tracker.
 
 A checkout of the roundup sources is in ~roundup/src/roundup-src.
 
