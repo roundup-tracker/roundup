@@ -33,9 +33,12 @@ Website, wiki
 Issue Tracker
 -------------
 
-The tracker resides on psf.upfronthosting.co.za. The roundup installation
-belongs to the user roundup. In ~roundup, all trackers are stored and
-the roundup code itself. roundup is started through /etc/init.d/roundup;
+The tracker resides on psf.upfronthosting.co.za. 
+(2012-07-04) 2048 c4:ad:63:92:1b:c0:4a:35:c8:c5:3e:96:51:c0:88:67 (RSA)
+
+The roundup installation belongs to the user roundup. 
+In ~roundup, all trackers are stored and the roundup code itself. 
+roundup is started through /etc/init.d/roundup;
 other parts of the installation are started through
 /etc/init.d/{postgresql-8-1,spambayes,postfix}.
 
