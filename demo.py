@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 #
@@ -8,7 +8,6 @@ import os
 import socket
 import sys
 import urlparse
-from glob import glob
 import getopt
 
 from roundup import configuration
