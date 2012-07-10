@@ -26,6 +26,7 @@ Website, wiki
 -------------
 
 1. ssh -t <username>,roundup@shell.sourceforge.net create
+   Docs: http://sourceforge.net/apps/trac/sourceforge/wiki/Shell%20service
 2. cd /home/groups/r/ro/roundup
 3. follow instructions in README.txt
 
