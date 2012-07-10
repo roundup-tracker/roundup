@@ -539,6 +539,15 @@ class Client:
         except FormError, e:
             self.error_message.append(self._('Form Error: ') + str(e))
             self.write_html(self.renderContext())
+        except IOError:
+            # IOErrors here are due to the client disconnecting before
+            # receiving the reply.
+            # may happen during write_html and serve_file, too.
+            pass
+        except SysCallError:
+            # OpenSSL.SSL.SysCallError is similar to IOError above
+            # may happen during write_html and serve_file, too.
+            pass
         except:
             # Something has gone badly wrong.  Therefore, we should
             # make sure that the response code indicates failure.
