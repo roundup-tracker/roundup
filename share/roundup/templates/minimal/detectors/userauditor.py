@@ -58,7 +58,7 @@ def audit_user_fields(db, cl, nodeid, newvalues):
 
     for address in get_addresses(newvalues):
         if not valid_address(address):
-            raise ValueError, 'Email address syntax is invalid'
+            raise ValueError, 'Email address syntax is invalid "%s"'%address
 
         check_main = db.user.stringFind(address=address)
         # make sure none of the alts are owned by anyone other than us (x!=nodeid)
@@ -66,7 +66,9 @@ def audit_user_fields(db, cl, nodeid, newvalues):
         if check_main or check_alts:
             raise ValueError, 'Email address %s already in use' % address
 
-    for rolename in [r.lower().strip() for r in newvalues.get('roles', '').split(',')]:
+    newroles = newvalues.get('roles')
+    if newroles:
+        for rolename in [r.lower().strip() for r in newroles.split(',')]:
             if rolename and not db.security.role.has_key(rolename):
                 raise ValueError, 'Role "%s" does not exist'%rolename
 

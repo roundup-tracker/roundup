@@ -1,3 +1,24 @@
+# Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+
 import re
 
 # regular expression thanks to: http://www.regular-expressions.info/email.html
@@ -37,7 +58,6 @@ def audit_user_fields(db, cl, nodeid, newvalues):
 
     for address in get_addresses(newvalues):
         if not valid_address(address):
-            print newvalues
             raise ValueError, 'Email address syntax is invalid "%s"'%address
 
         check_main = db.user.stringFind(address=address)
@@ -46,7 +66,9 @@ def audit_user_fields(db, cl, nodeid, newvalues):
         if check_main or check_alts:
             raise ValueError, 'Email address %s already in use' % address
 
-    for rolename in [r.lower().strip() for r in newvalues.get('roles', '').split(',')]:
+    newroles = newvalues.get('roles')
+    if newroles:
+        for rolename in [r.lower().strip() for r in newroles.split(',')]:
             if rolename and not db.security.role.has_key(rolename):
                 raise ValueError, 'Role "%s" does not exist'%rolename
 
@@ -69,3 +91,5 @@ def init(db):
     # fire before changes are made
     db.user.audit('set', audit_user_fields)
     db.user.audit('create', audit_user_fields)
+
+# vim: sts=4 sw=4 et si
