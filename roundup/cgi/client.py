@@ -7,6 +7,11 @@ import quopri, random, re, rfc822, stat, sys, time
 import socket, errno
 from traceback import format_exc
 
+try:
+    from OpenSSL.SSL import SysCallError
+except ImportError:
+    SysCallError = None
+
 from roundup import roundupdb, date, hyperdb, password
 from roundup.cgi import templating, cgitb, TranslationService
 from roundup.cgi.actions import *
@@ -483,7 +488,10 @@ class Client:
                 self.serve_static_file(str(file))
             except IOError:
                 # IOErrors here are due to the client disconnecting before
-                # recieving the reply.
+                # receiving the reply.
+                pass
+            except SysCallError:
+                # OpenSSL.SSL.SysCallError is similar to IOError above
                 pass
 
         except SeriousError, message:
