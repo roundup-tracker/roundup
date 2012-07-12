@@ -7,8 +7,10 @@ issues.roundup-tracker.org:
    http://roundup.hg.sourceforge.net/hgweb/roundup/roundup/archive/default.tar.gz
  * copy the files into the tracker instance, using sudo:
       sudo -u roundup cp <file> /home/roundup/trackers/roundup/...
+   or use rsync to check and only copy the changes files as user roundup like
+      rsync -rvc /home/YOURUSERID/roundup/website/issues/ trackers/roundup/
  * restart the roundup server:
-      sudo -u roundup /etc/init.d/roundup restart
+      sudo /etc/init.d/roundup restart
 
 [1] All services hosted on sf.net:
  * log into sf.net
