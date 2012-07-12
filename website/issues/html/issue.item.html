@@ -215,7 +215,7 @@
           tal:attributes="href string:file${file/id}">edit</a>
   </td>
   <td>
-   <form style="padding:0" tal:condition="file/is_edit_ok"
+   <form style="padding:0" method="POST" tal:condition="file/is_edit_ok"
          tal:attributes="action string:issue${context/id}">
     <input type="hidden" name="@remove@files" tal:attributes="value file/id">
     <input type="hidden" name="@action" value="edit">
@@ -236,7 +236,7 @@
    <th i18n:translate="">Date: <tal:x replace="python:msg.date.pretty('%Y-%m-%d %H:%M')"
        i18n:name="date" /></th>
    <th>
-    <form style="padding:0" tal:condition="msg/is_edit_ok"
+    <form style="padding:0" method="POST" tal:condition="msg/is_edit_ok"
           tal:attributes="action string:issue${context/id}">
      <input type="hidden" name="@remove@messages" tal:attributes="value msg/id">
      <input type="hidden" name="@action" value="edit">

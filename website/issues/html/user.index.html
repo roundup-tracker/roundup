@@ -63,8 +63,12 @@
  <td tal:content="python:user.address.email() or default">&nbsp;</td>
  <td tal:content="python:user.phone.plain() or default">&nbsp;</td>
  <td tal:condition="context/is_edit_ok">
-  <a tal:attributes="href string:user${user/id}?@action=retire&@template=index"
-   i18n:translate="">retire</a>
+     <form style="padding:0" method="POST"
+           tal:attributes="action string:user${user/id}">
+      <input type="hidden" name="@template" value="index">
+      <input type="hidden" name="@action" value="retire">
+      <input type="submit" value="retire" i18n:attributes="value">
+     </form>
  </td>
 </tr>
 </tal:block>
