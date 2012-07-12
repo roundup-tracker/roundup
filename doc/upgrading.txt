@@ -296,16 +296,10 @@ and add ``method="POST"`` as shown below::
 Fixing the "retire" button in user management list
 --------------------------------------------------
 
-If you made the change to the "reture" link in the user management list as
-listed below in `Migrating from 1.4.x to 1.4.7`_ then you'll need to fix that
-change by adding ``method="POST"`` to the ``<form>`` tag::
-
-     <form style="padding:0" method="POST"
-           tal:attributes="action string:user${user/id}">
-      <input type="hidden" name="@template" value="index">
-      <input type="hidden" name="@action" value="retire">
-      <input type="submit" value="retire" i18n:attributes="value">
-     </form>
+Some previous versions of this upgrading document missed ``method="POST"``
+in the change to the "retire" link in the user management list
+in section `Migrating from 1.4.x to 1.4.7`_.
+Make sure the change is done as listed below in this document.
 
 
 Migrating from 1.4.x to 1.4.7
