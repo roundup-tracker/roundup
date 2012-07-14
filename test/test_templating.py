@@ -173,6 +173,13 @@ class HTMLClassTestCase(TemplatingTestCase) :
         ae(t('(e.g. http://en.wikipedia.org/wiki/Python_(programming_language&gt;)).'),
            '(e.g. <a href="http://en.wikipedia.org/wiki/Python_(programming_language">'
            'http://en.wikipedia.org/wiki/Python_(programming_language</a>&gt;)).')
+        for c in '.,;:!':
+            # trailing punctuation is not included
+            ae(t('http://roundup.net/%c ' % c),
+               '<a href="http://roundup.net/">http://roundup.net/</a>%c ' % c)
+            # but it's included if it's part of the URL
+            ae(t('http://roundup.net/%c/' % c),
+               '<a href="http://roundup.net/%c/">http://roundup.net/%c/</a>' % (c, c))
 
 '''
 class HTMLPermissions:

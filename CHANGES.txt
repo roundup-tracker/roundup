@@ -11,6 +11,8 @@ Features:
 
 Fixed:
 
+- issue2550759: Trailing punctuation is no longer included when URLs are
+  converted to links. (Ezio Melotti)
 - issue2550574: Restore sample detectors removed in roundup 1.4.9
   (Thomas Arendsen Hein)
 - Prevent AttributeError when removing all roles of a user
@@ -37,7 +39,7 @@ Features:
   developement. If you found a bug in Chameleon support, please report after
   testing against latest Roundup source from the Mercurial repository.
 - issue2550678: Allow pagesize=-1 which returns all results.
-  Suggested and implemented by John Kristensen. 
+  Suggested and implemented by John Kristensen.
   Tested by Satchidanand Haridas. (Bernhard)
 - Allow to turn off translation of generated html options in menu method
   of LinkHTMLProperty and MultilinkHTMLProperty -- default is
@@ -62,7 +64,7 @@ Fixed:
 - issue2550712: exportcsvaction errors poorly when given invalid columns.
   Reported by Will Kahn-Greene, fixed by Cédric Krier. (Bernhard)
 - issue2550695: 'No sort or group' settings not retained when editing queries.
-  Reported and fixed by John Kristensen. Tested by Satchidanand Haridas. 
+  Reported and fixed by John Kristensen. Tested by Satchidanand Haridas.
   (Bernhard)
 - Fix matching of incoming email addresses to the alternate_addresses
   field of a user -- this would match substrings, e.g. if the user has
@@ -113,7 +115,7 @@ Fixed:
   Thanks to Joseph Myers for reporting. (Ralf)
 - Fix another XSS with the ok- and error message, see issue2550724. We
   solve this differently from the proposals in the bug-report by not
-  allowing *any* html-tags in ok/error messages anymore. Thanks to 
+  allowing *any* html-tags in ok/error messages anymore. Thanks to
   David Benjamin for the bug-report and to Ezio Melotti for several
   proposed fixes. (Ralf)
 
@@ -122,7 +124,7 @@ Fixed:
 
 Features:
 
-- Xapian indexing improved: Slightly faster and slightly smaller database. 
+- Xapian indexing improved: Slightly faster and slightly smaller database.
   Closes issue2550687. Thanks to Olly Betts for the patch. (Bernhard Reiter)
 - PostgreSQL backend minor improvement: database creation less likely to fail
   for PostgreSQL versions >= 8.1 as the table "postgres" is used by default.
@@ -133,15 +135,15 @@ Features:
 
 Fixed:
 
-- Installation: Fixed an issue that prevented to use EasyInstall 
+- Installation: Fixed an issue that prevented to use EasyInstall
   and a Python egg. Thanks to Satchidanand Haridas for the patch and
   John Kristensen for testing it. (Bernhard Reiter)
-- The PostgreSQL backend quotes database names now for CREATE and DROP, 
-  enabling more exotic tracker names. Closes issue2550497. 
+- The PostgreSQL backend quotes database names now for CREATE and DROP,
+  enabling more exotic tracker names. Closes issue2550497.
   Thanks to Sebastian Harl for providing the patch. (Bernhard Reiter)
 - Updated the url to point to www.roundup-tracker.org in two places in the
   docs. (Bernhard Reiter)
-- Do not depend on a CPython implementation detail anymore to make Roundup 
+- Do not depend on a CPython implementation detail anymore to make Roundup
   more compatible with other Python implementations like PyPy.
   Closes issue2550707. Thanks to Christof Meerwald. (Bernhard Reiter, Richard)
 - Yet another fix to the mail gateway, messages got *all* files of
@@ -179,9 +181,9 @@ Features:
 Fixed:
 
 - File-unlink defect in mailgw fixed! If an email was received
-  that contained no attachments, all previous files of the issue were unlinked. 
-  This defect was introduced with the 1.4.17 release as an unwanted result 
-  of the mail gate code refactoring. Thanks to Rafal Bisingier for reporting 
+  that contained no attachments, all previous files of the issue were unlinked.
+  This defect was introduced with the 1.4.17 release as an unwanted result
+  of the mail gate code refactoring. Thanks to Rafal Bisingier for reporting
   and proposing a fix. There is now a regression test in place. (Ralf)
 
 2011-05-13: 1.4.17
@@ -229,10 +231,10 @@ Fixed:
   doesn't have access to a property but can deduce the content by
   crafting a clever search, group or sort query.
   see doc/upgrading.txt for how to fix your trackers! (Ralf Schlatterbeck).
-- Range support in roundup-server so large files can be served, 
-  e.g. media files on iOS/iPads; issue2550694. (Bernhard Reiter; 
+- Range support in roundup-server so large files can be served,
+  e.g. media files on iOS/iPads; issue2550694. (Bernhard Reiter;
   Thanks to Jon C. Thomason for the patch.)
-- Fix search for xapian 1.2 issue2550676 
+- Fix search for xapian 1.2 issue2550676
   (Bernhard Reiter; Thanks to Olly Betts for providing the patch.)
 - Some minor typos fixed in doc/customizing.txt (Thanks Ralf Hemmecke).
 - XML-RPC documentation now linked from the docs/index (Bernhard Reiter).
@@ -384,7 +386,7 @@ Fixes:
 - Fix handling of non-ascii in realname in the nosy mailer, this used to
   mangle the email address making it unusable when replying. Thanks to
   intevation for funding the fix.
-- Fix documentation on user required to run the tests, fixes 
+- Fix documentation on user required to run the tests, fixes
   issue2550618, thanks to Chris aka 'radioking'
 - Add simple doc about translating customised tracker content
 - Add "flup" setup documentation, thanks Christian Glass
@@ -470,7 +472,7 @@ Fixes:
 - Indexers behaviour made more consistent regarding length of indexed words
   and stopwords (thanks Thomas Arendsen Hein, Bernhard Reiter)(issue 2550584)
 - fixed typos in the installation instructions (thanks Thomas Arendsen Hein)
-  (issue 2550573) 
+  (issue 2550573)
 - New config option csv_field_size: Pythons csv module (which is used
   for export/import) has a new field size limit starting with python2.5.
   We now issue a warning during export if the limit is too small and use
@@ -480,7 +482,7 @@ Fixes:
   worked only for 2.5 and beyond due to a change in the xmlrpc interface
   in python (Ralf Schlatterbeck)
 - Document filter method of xmlrpc interface (Ralf Schlatterbeck)
-- Fix interaction of SSL and XMLRPC, now XMLRPC works with SSL 
+- Fix interaction of SSL and XMLRPC, now XMLRPC works with SSL
   (Ralf Schlatterbeck)
 
 2009-08-10: 1.4.9

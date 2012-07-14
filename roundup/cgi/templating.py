@@ -1277,6 +1277,10 @@ class StringHTMLProperty(HTMLProperty):
             pos = s.find('&gt;')
             end = s[pos:]
             u = s = s[:pos]
+        if s.endswith(tuple('.,;:!')):
+            # don't include trailing punctuation
+            end = s[-1:] + end
+            u = s = s[:-1]
         if ')' in s and s.count('(') != s.count(')'):
             # don't include extraneous ')' in the link
             pos = s.rfind(')')
