@@ -185,7 +185,7 @@ class Session:
 
             if 'set_cookie' is True, set cookie with 'expire' seconds lifetime
             if 'expire' is None - session will be closed with the browser
-             
+
             XXX the session can be purged within a week even if a cookie
                 lifetime is longer
         """
@@ -215,7 +215,7 @@ class Client:
 
     During the processing of a request, the following attributes are used:
 
-    - "db" 
+    - "db"
     - "error_message" holds a list of error messages
     - "ok_message" holds a list of OK messages
     - "session" is deprecated in favor of session_api (XXX remove)
@@ -398,7 +398,7 @@ class Client:
         self.setHeader("Content-Type", "text/xml")
         self.setHeader("Content-Length", str(len(output)))
         self.write(output)
-        
+
     def inner_main(self):
         """Process a request.
 
@@ -797,7 +797,7 @@ class Client:
                 # The old session API refers to the closed database;
                 # we can no longer use it.
                 self.session_api = Session(self)
- 
+
 
     def determine_context(self, dre=re.compile(r'([^\d]+)0*(\d+)')):
         """Determine the context of this page from the URL:
@@ -917,7 +917,7 @@ class Client:
         except KeyError:
             # The classname was not valid.
             raise NotFound(str(designator))
-            
+
         # perform the Anonymous user access check
         self.check_anonymous_access()
 
@@ -968,7 +968,7 @@ class Client:
                 pass
         if not filename:
             content = klass.get(nodeid, 'content')
-        
+
         lmt = klass.get(nodeid, 'activity').timestamp()
 
         self._serve_file(lmt, mime_type, content, filename)
@@ -1050,10 +1050,10 @@ class Client:
         part = MIMEText(txt)
         message.attach(part)
         self.mailer.smtp_send(to, message.as_string())
-    
+
     def renderFrontPage(self, message):
         """Return the front page of the tracker."""
-    
+
         self.classname = self.nodeid = None
         self.template = ''
         self.error_message.append(message)
@@ -1271,7 +1271,7 @@ class Client:
         elements = [self.http_strip(e) for e in elements]
         # Remove any now-empty elements.
         return [e for e in elements if e]
-        
+
     def handle_range_header(self, length, etag):
         """Handle the 'Range' and 'If-Range' headers.
 
@@ -1308,7 +1308,7 @@ class Client:
         if_range = self.env.get("HTTP_IF_RANGE")
         if if_range:
             # The grammar for the If-Range header is:
-            # 
+            #
             #   If-Range = "If-Range" ":" ( entity-tag | HTTP-date )
             #   entity-tag = [ weak ] opaque-tag
             #   weak = "W/"
@@ -1413,7 +1413,7 @@ class Client:
         length = stat_info[stat.ST_SIZE]
         # Assume we will return the entire file.
         offset = 0
-        # If the headers have not already been finalized, 
+        # If the headers have not already been finalized,
         if not self.headers_done:
             # RFC 2616 14.19: ETag
             #
