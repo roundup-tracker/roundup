@@ -1114,7 +1114,7 @@ class Client:
                 # receive an error message, and the adminstrator will
                 # receive a traceback, albeit with less information
                 # than the one we tried to generate above.
-                raise exc_info[0](exc_info[1]).with_traceback(exc_info[2])
+                raise exc_info[0], exc_info[1], exc_info[2]
 
     # these are the actions that are available
     actions = (

@@ -11,6 +11,9 @@ Features:
 
 Fixed:
 
+- "BaseException.with_traceback" is not available on Python 2, so use
+  "raise E, V, T" instead of "raise E(V).with_traceback(T)".  This change was
+  originally introduced in 74476eaac38a. (Ezio Melotti)
 - issue2550759: Trailing punctuation is no longer included when URLs are
   converted to links. (Ezio Melotti)
 - issue2550574: Restore sample detectors removed in roundup 1.4.9
