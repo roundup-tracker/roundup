@@ -161,10 +161,8 @@ the current day of the month.
 -   "2000-04-17.03:45" means <Date 2000-04-17.08:45:00>
 -   "08-13.22:13" means <Date yyyy-08-14.03:13:00>
 -   "11-07.09:32:43" means <Date yyyy-11-07.14:32:43>
--   "14:25" means
--   <Date yyyy-mm-dd.19:25:00>
--   "8:47:11" means
--   <Date yyyy-mm-dd.13:47:11>
+-   "14:25" means <Date yyyy-mm-dd.19:25:00>
+-   "8:47:11" means <Date yyyy-mm-dd.13:47:11>
 -   the special date "." means "right now"
 
 
