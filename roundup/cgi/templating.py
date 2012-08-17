@@ -2811,10 +2811,22 @@ class TemplatingUtils:
         day       = display.day
 
         # for navigation
-        date_prev_month = display + date.Interval("-1m")
-        date_next_month = display + date.Interval("+1m")
-        date_prev_year  = display + date.Interval("-1y")
-        date_next_year  = display + date.Interval("+1y")
+        try:
+            date_prev_month = display + date.Interval("-1m")
+        except ValueError:
+            date_prev_month = None
+        try:
+            date_next_month = display + date.Interval("+1m")
+        except ValueError:
+            date_next_month = None
+        try:
+            date_prev_year = display + date.Interval("-1y")
+        except ValueError:
+            date_prev_year = None
+        try:
+            date_next_year = display + date.Interval("+1y")
+        except ValueError:
+            date_next_year = None
 
         res = []
 
@@ -2826,19 +2838,31 @@ class TemplatingUtils:
         res.append('<table class="calendar"><tr><td>')
         res.append(' <table width="100%" class="calendar_nav"><tr>')
         link = "&display=%s"%date_prev_month
-        res.append('  <td><a href="%s&display=%s">&lt;</a></td>'%(base_link,
-            date_prev_month))
+        if date_prev_month:
+            res.append('  <td><a href="%s&display=%s">&lt;</a></td>'
+                    % (base_link, date_prev_month))
+        else:
+            res.append('  <td></td>')
         res.append('  <td>%s</td>'%calendar.month_name[display.month])
-        res.append('  <td><a href="%s&display=%s">&gt;</a></td>'%(base_link,
-            date_next_month))
+        if date_next_month:
+            res.append('  <td><a href="%s&display=%s">&gt;</a></td>'
+                    % (base_link, date_next_month))
+        else:
+            res.append('  <td></td>')
         # spacer
         res.append('  <td width="100%"></td>')
         # year
-        res.append('  <td><a href="%s&display=%s">&lt;</a></td>'%(base_link,
-            date_prev_year))
+        if date_prev_year:
+            res.append('  <td><a href="%s&display=%s">&lt;</a></td>'
+                    % (base_link, date_prev_year))
+        else:
+            res.append('  <td></td>')
         res.append('  <td>%s</td>'%display.year)
-        res.append('  <td><a href="%s&display=%s">&gt;</a></td>'%(base_link,
-            date_next_year))
+        if date_next_year:
+            res.append('  <td><a href="%s&display=%s">&gt;</a></td>'
+                    % (base_link, date_next_year))
+        else:
+            res.append('  <td></td>')
         res.append(' </tr></table>')
         res.append(' </td></tr>')
 

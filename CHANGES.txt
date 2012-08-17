@@ -18,6 +18,11 @@ Features:
 
 Fixed:
 
+- issue2550765: Don't show links in calendar that will fail.
+  Found and fixed by Cédric Krier. (Bernhard)
+- "BaseException.with_traceback" is not available on Python 2, so use
+  "raise E, V, T" instead of "raise E(V).with_traceback(T)".  This change was
+  originally introduced in 74476eaac38a. (Ezio Melotti)
 - issue2550759: Trailing punctuation is no longer included when URLs are
   converted to links. (Ezio Melotti)
 - issue2550574: Restore sample detectors removed in roundup 1.4.9
@@ -26,6 +31,8 @@ Fixed:
   (Thomas Arendsen Hein)
 - issue2550762 Minor Documentation fix in doc/developers.txt, thanks
   to W. Trevor King. (Bernhard Reiter)
+- issue2550766: Minor formatting issues in the docs for date properties, 
+  thanks John Kristensen. (Bernhard Reiter)
 
 
 2012-05-15: 1.4.20
