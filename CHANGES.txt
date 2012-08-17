@@ -7,7 +7,14 @@ Entries without name were done by Richard Jones.
 
 Features:
 
-- ...
+- Add an interface to register clearCache callbacks in roundupdb.
+  Sometimes complicated computations may require an application cache.
+  This application can now register a callback to clear the application
+  cache, because roundup knows better when to clear it (usually when a
+  transaction ends, either with rollback or with commit). The interface
+  for this is currently considered experimental. The current interface
+  is registerClearCacheCallback(self, method, param) where method is
+  called with param as the only parameter.  (Ralf Schlatterbeck)
 
 Fixed:
 

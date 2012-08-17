@@ -195,6 +195,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def clearCache(self):
         self.cache = {}
         self.cache_lru = []
+        # upcall is necessary!
+        roundupdb.Database.clearCache(self)
 
     def getSessionManager(self):
         return Sessions(self)

@@ -733,6 +733,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.newnodes = {}
         self.destroyednodes = {}
         self.transactions = []
+        # upcall is necessary!
+        roundupdb.Database.clearCache(self)
 
     def getCachedClassDB(self, classname):
         """ get the class db, looking in our cache of databases for commit

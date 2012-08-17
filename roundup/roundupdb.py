@@ -149,6 +149,26 @@ class Database:
 
         return self.__logger
 
+    def clearCache(self):
+        """ Backends may keep a cache.
+            It must be cleared at end of commit and rollback methods.
+            We allow to register user-defined cache-clearing routines
+            that are called by this routine.
+        """
+        if getattr (self, 'cache_callbacks', None) :
+            for method, param in self.cache_callbacks:
+                method(param)
+
+    def registerClearCacheCallback(self, method, param = None):
+        """ Register a callback method for clearing the cache.
+            It is called with the given param as the only parameter.
+            Even if the parameter is not specified, the method has to
+            accept a single parameter.
+        """
+        if not getattr (self, 'cache_callbacks', None) :
+            self.cache_callbacks = []
+        self.cache_callbacks.append ((method, param))
+
 
 class DetectorError(RuntimeError):
     """ Raised by detectors that want to indicate that something's amiss
