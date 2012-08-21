@@ -38,7 +38,9 @@ www.roundup-tracker.org:
       make html
  * you may also "make clean"
  * install it
-      cp -r ./html/* ${project_home}/htdocs/
+     cp -r ./html/* ${project_home}/htdocs/
+   or alternatively (leaving out the --dry-run later)
+     rsync --dry-run -v --checksum --recursive ./html/* ${project_home}/htdocs/
 
 (I think I can simplify the Makefile above such that the installation will be included as a make target.)
 
