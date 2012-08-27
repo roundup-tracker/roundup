@@ -131,7 +131,7 @@ What is that stuff in the tracker html directory?
 
 This is the template code that Roundup uses to display the various pages.
 This is based upon the template markup language in Zope called, oddly
-enough "Zope Page Templates". There's documentation in the Roundup
+enough, "Zope Page Templates". There's documentation in the Roundup
 customisation_ documentation. For more information have a look at:
 
    http://docs.zope.org/zope2/zope2book/

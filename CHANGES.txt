@@ -33,6 +33,8 @@ Fixed:
   to W. Trevor King. (Bernhard Reiter)
 - issue2550766: Minor formatting issues in the docs for date properties, 
   thanks John Kristensen. (Bernhard Reiter)
+- issue2550738: Fixes for various documentation typoes,
+  thanks Nathan Russell. (John Kristensen)
 
 
 2012-05-15: 1.4.20

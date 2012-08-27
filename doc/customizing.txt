@@ -375,7 +375,7 @@ Section **mailgw**
 
  origmsg_re -- `` ^[>|\s]*-----\s?Original Message\s?-----$``
   Regular expression matching start of an original message if quoted
-  the in body.  Value is Python Regular Expression (UTF8-encoded).
+  in the body.  Value is Python Regular Expression (UTF8-encoded).
 
  sign_re -- ``^[>|\s]*-- ?$``
   Regular expression matching the start of a signature in the message

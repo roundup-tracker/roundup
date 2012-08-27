@@ -390,7 +390,7 @@ CGI-bin for Limited-Access Hosting
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you are running in a shared-hosting environment or otherwise don't have
-permissiong to edit the system web server's configuration, but can create a
+permission to edit the system web server's configuration, but can create a
 ``.htaccess`` file then you may be able to use this approach.
 
 1. Install flup_
