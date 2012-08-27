@@ -105,8 +105,6 @@ for user_id in db.user.list():
             print >>body, '    ', db.priority.get(priority,'name')
         # pretty creation
         creation = (creation_date - date.Date('.')).pretty()
-        if creation is None:
-            creation = creation_date.pretty()
         activity = (activity_date - date.Date('.')).pretty()
         title = db.issue.get(issue_id, 'title')
         if len(title) > 42:
@@ -143,9 +141,7 @@ and click on "My Issues". Do NOT respond to this message.
         if (priority != old_priority):
            old_priority = priority
            print >>body, '<tr><td>-></td><td>-></td><td>-></td><td><b>%s</b></td></tr>'%db.priority.get(priority,'name')
-        creation = (date.Date('.') - creation_date).pretty()
-        if creation is None:
-            creation = (creation_date - date.Date('.')).pretty()
+        creation = (creation_date - date.Date('.')).pretty()
         title = db.issue.get(issue_id, 'title')
         issue_id = '<a href="%sissue%s">%s</a>'%(db.config.TRACKER_WEB,
             issue_id, issue_id)
