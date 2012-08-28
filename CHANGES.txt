@@ -35,6 +35,8 @@ Fixed:
   thanks John Kristensen. (Bernhard Reiter)
 - issue2550738: Fixes for various documentation typoes,
   thanks Nathan Russell. (John Kristensen)
+- issue2550756: Fix `oder' typo in mailer.Mailer.bounce_message docstring,
+  thanks W. Trevor King (John Kristensen)
 
 
 2012-05-15: 1.4.20

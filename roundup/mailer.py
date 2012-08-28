@@ -153,7 +153,7 @@ class Mailer:
         - error: the reason of failure as a string.
         - subject: the subject as a string.
         - crypt: require encryption with pgp for user -- applies only to
-          mail sent back to the user, not the dispatcher oder admin.
+          mail sent back to the user, not the dispatcher or admin.
 
         """
         crypt_to = None
