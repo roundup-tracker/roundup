@@ -15,6 +15,8 @@ Features:
   for this is currently considered experimental. The current interface
   is registerClearCacheCallback(self, method, param) where method is
   called with param as the only parameter.  (Ralf Schlatterbeck)
+- Add a script to remove file-spam from a tracker, see
+  scripts/spam-remover. (Ralf Schlatterbeck)
 
 Fixed:
 

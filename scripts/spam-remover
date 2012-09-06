@@ -1,0 +1,178 @@
+#! /usr/bin/env python
+# Copyright (C) 2012 Dr. Ralf Schlatterbeck Open Source Consulting.
+# Reichergasse 131, A-3411 Weidling.
+# Web: http://www.runtux.com Email: rsc@runtux.com
+# All rights reserved
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+_doc = '''
+%prog [options]
+Remove file attachment spam from a tracker:
+- Edit the journal of the given issue(s) and remove the links to the
+  spam-files
+- Set the contents of the spam-files involved to zero length
+WARNING:
+This is a dangerous operation as it will edit the history *and* remove
+data that is not in the journal (the contents of files). Be careful with
+the file pattern (start of filename) you specify!
+'''
+
+import sys
+from   optparse import OptionParser
+from   roundup  import instance, hyperdb
+
+def main():
+    cmd = OptionParser(usage=_doc)
+    cmd.add_option \
+        ( "-i", "--instance"
+        , help    = "Instance home"
+        , default = "."
+        )
+    cmd.add_option \
+        ( "-d", "--designator"
+        , dest    = "designators"
+        , help    = "Item designator for issue(s), to remove files from,\n"
+                    "e.g. issue4711"
+        , action  = "append"
+        , default = []
+        )
+    cmd.add_option \
+        ( "-f", "--filename"
+        , dest    = "filenames"
+        , help    = "Exact spam-filename to remove from issue(s)"
+        , action  = "append"
+        , default = []
+        )
+    cmd.add_option \
+        ( "-a", "--action", "--no-dry-run"
+        , dest    = "doit"
+        , help    = "Don't perform any action by default unless specified"
+        , action  = "store_true"
+        )
+    cmd.add_option \
+        ( "-s", "--file-start-pattern"
+        , dest    = "file_pattern"
+        , help    = "Start of spam-filename to remove from issue(s)"
+        , action  = "append"
+        , default = []
+        )
+    cmd.add_option \
+        ( "-u", "--spam-user"
+        , dest    = "users"
+        , help    = "Username that created the spam-files to remove"
+        , action  = "append"
+        , default = []
+        )
+    cmd.add_option \
+        ( "-q", "--quiet"
+        , dest    = "quiet"
+        , help    = "Be quiet about what we're doing"
+        , action  = "store_true"
+        )
+    opt, args = cmd.parse_args()
+    # open the instance
+    if len(args):
+        print >> sys.stderr, "This command doesn't take arguments"
+        cmd.show_help()
+    tracker = instance.open(opt.instance)
+    db = tracker.open('admin')
+    users = dict.fromkeys (db.user.lookup(u) for u in opt.users)
+    files_to_remove = {}
+    for fn in opt.filenames:
+        for fid in db.files.filter(None,name=fn):
+            if db.file.get(fid,'name') == fn:
+                files_to_remove[fid] = True
+    for fn in opt.file_pattern:
+        for fid in db.files.filter(None,name=fn):
+            if db.file.get(fid,'name').startswith(fn):
+                files_to_remove[fid] = True
+    files_found = {}
+    for d in opt.designators:
+        clsname, id = hyperdb.splitDesignator(d)
+        cls = db.getclass(clsname)
+        issuefiles = dict.fromkeys(cls.get (id, 'files'))
+        for fid in issuefiles.keys():
+            f = db.file.getnode(fid)
+            if fid in files_to_remove or f.creator in users:
+                files_to_remove[fid] = True
+                files_found[fid] = True
+                if not opt.quiet:
+                    print "deleting file %s from issue" % f
+                del issuefiles[fid]
+        if opt.doit:
+            cls.set(id, files=issuefiles.keys())
+        journal = oldjournal = db.getjournal(clsname, id)
+        # do this twice, we may have file-removals *before* file
+        # additions for files to delete and may discover mid-journal
+        # that there are new files to remove
+        for x in xrange(2):
+            newjournal = []
+            for j in journal:
+                if j[3] == 'set' and 'files' in j[4]:
+                    changes = dict(j[4]['files'])
+                    # only consider file additions by this user
+                    if j[2] in users and '+' in changes:
+                        f = dict.fromkeys(changes['+'])
+                        files_found.update(f)
+                        files_to_remove.update(f)
+                        del changes['+']
+                    # change dict in-place, don't use iteritems
+                    for k, v in changes.items():
+                        new_f = []
+                        for f in v:
+                            if f in files_to_remove:
+                                files_found[f] = True
+                            else:
+                                new_f.append(f)
+                        if new_f :
+                            changes[k] = new_f
+                        else:
+                            del changes[k]
+                    msg = []
+                    if not opt.quiet:
+                        msg.append ("Old journal entry: %s" % str(j))
+                    if changes:
+                        j[4]['files'] = tuple(changes.iteritems())
+                    else:
+                        del j[4]['files']
+                    if j[4]:
+                        newjournal.append(j)
+                        if not opt.quiet:
+                            msg.append ("New journal entry: %s" % str(j))
+                    elif not opt.quiet:
+                        msg.append ("deleted")
+                    if len(msg) == 2 and msg[0][4:] != msg[1][4:]:
+                        for m in msg:
+                            print m
+                else:
+                    newjournal.append(j)
+            journal = newjournal
+        if newjournal != oldjournal and opt.doit:
+            db.setjournal(clsname, id, newjournal)
+    if opt.doit:
+        for f in files_found:
+            db.file.set(f, content='')
+        db.commit()
+    else:
+        print "Database not changed"
+
+
+if __name__ == '__main__':
+    main()
