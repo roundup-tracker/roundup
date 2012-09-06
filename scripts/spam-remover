@@ -96,11 +96,11 @@ def main():
     users = dict.fromkeys (db.user.lookup(u) for u in opt.users)
     files_to_remove = {}
     for fn in opt.filenames:
-        for fid in db.files.filter(None,name=fn):
+        for fid in db.file.filter(None,dict(name=fn)):
             if db.file.get(fid,'name') == fn:
                 files_to_remove[fid] = True
     for fn in opt.file_pattern:
-        for fid in db.files.filter(None,name=fn):
+        for fid in db.file.filter(None,dict(name=fn)):
             if db.file.get(fid,'name').startswith(fn):
                 files_to_remove[fid] = True
     files_found = {}
@@ -168,7 +168,7 @@ def main():
             db.setjournal(clsname, id, newjournal)
     if opt.doit:
         for f in files_found:
-            db.file.set(f, content='')
+            db.file.set(f, content=' ')
         db.commit()
     else:
         print "Database not changed"
