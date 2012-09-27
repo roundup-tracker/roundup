@@ -20,9 +20,9 @@ Roundup used to allow certain HTML-Tags in OK- and Error-messages. Since
 these messages are passed via the URL (due to roundup redirecting after
 an edit), we did have security-issues (see issue2550724).
 
-If you have customized OK- or Error messages in your
-roundup-installation and you're were using features like bold or italic
-parts of the message you will have to do without this highlighting and
+If you have customized the OK or Error messages in your
+roundup-installation and you were using features like bold or italic
+in the message, you will have to do without this highlighting and
 remove HTML tags from messages.
 
 If you were using <br> tags for multi-line messages, you now should use
@@ -121,10 +121,10 @@ search for this property::
     #!/usr/bin/python
     import os
     from roundup import instance
-    
+
     tracker = instance.open(os.getcwd ())
     db = tracker.open('admin')
-    
+
     for cl in sorted(db.getclasses()):
         print "Class:", cl
         for p in sorted(db.getclass(cl).properties.keys()):
@@ -220,7 +220,7 @@ assign it to the Anonymous role (replacing any previously assigned
 
   +db.security.addPermission(name='Register', klass='user',
   +     description='User is allowed to register new user')
- 
+
    # Assign the appropriate permissions to the anonymous user's Anonymous
    # Role. Choices here are:
    # - Allow anonymous users to register
@@ -398,7 +398,7 @@ Migrating from 1.4.x to 1.4.2
 =============================
 
 You should run the "roundup-admin migrate" command for your tracker once
-you've installed the latest codebase. 
+you've installed the latest codebase.
 
 Do this before you use the web, command-line or mail interface and before
 any users access the tracker.
@@ -462,7 +462,7 @@ lists. This is reflected in several places:
 
  * ``renderWith`` now has list attributes for ``sort`` and ``group``,
    where you previously wrote::
-   
+
     renderWith(... sort=('-', 'activity'), group=('+', 'priority')
 
    you write now::
@@ -675,7 +675,7 @@ The ``dbinit.py`` file has been split into two new files,
   tracker's ``dbinit.py`` file to this file. As the lines you're copying
   aren't part of a function definition anymore, one level of indentation
   needs to be removed (remove only the leading four spaces on each
-  line). 
+  line).
 
   The first few lines -- those starting with ``from roundup.hyperdb
   import ...`` and the ``db = Database(config, name)`` line -- don't
@@ -735,11 +735,11 @@ own details by adding the following to ``schema.py``::
 ----------------------------
 
 If you used custom python functions in TemplatingUtils, they must
-be moved from interfaces.py to a new file in the ``extensions`` directory. 
+be moved from interfaces.py to a new file in the ``extensions`` directory.
 
 Each Function that should be available through TAL needs to be defined
 as a toplevel function in the newly created file. Furthermore you
-add an inititialization function, that registers the functions with the 
+add an inititialization function, that registers the functions with the
 tracker.
 
 If you find this too tedious, donfu wrote an automatic init function that
@@ -838,7 +838,7 @@ Due to a change in the rendering of web widgets, permissions are now
 checked on Classes where they previously weren't (this is a good thing).
 
 You will need to add some additional Permission assignments for your
-regular users, or some displays will break. After the following in your 
+regular users, or some displays will break. After the following in your
 tracker's ``dbinit.py``::
 
     # Assign the access and edit Permissions for issue, file and message
@@ -972,11 +972,11 @@ Added internationalization support. This is done via encoding all data
 stored in roundup database to utf-8 (unicode encoding). To support utf-8 in
 web interface you should add the folowing line to your tracker's html/page
 and html/_generic.help files inside <head> tag::
-  
+
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
 Since latin characters in utf-8 have the same codes as in ASCII table, this
-modification is optional for users who use only plain latin characters. 
+modification is optional for users who use only plain latin characters.
 
 After this modification, you will be able to see and enter any world
 character via web interface. Data received via mail interface also converted
@@ -997,18 +997,18 @@ timezone if he/she has provided timezone information. To make it possible
 some modification to tracker's schema and HTML templates are required.
 First you must add string property 'timezone' to user class in dbinit.py
 like this::
-  
-    user = Class(db, "user", 
+
+    user = Class(db, "user",
                     username=String(),   password=Password(),
-                    address=String(),    realname=String(), 
+                    address=String(),    realname=String(),
                     phone=String(),      organisation=String(),
                     alternate_addresses=String(),
                     queries=Multilink('query'), roles=String(),
                     timezone=String())
-  
+
 And second - html interface. Add following lines to
 $TRACKER_HOME/html/user.item template::
-  
+
      <tr>
       <th>Timezone</th>
       <td tal:content="structure context/timezone/field">timezone</td>
@@ -1412,7 +1412,7 @@ changing from::
 
  from roundup import cgi_client, mailgw
  from roundup.i18n import _
- 
+
  class Client(cgi_client.Client):
      ''' derives basic CGI implementation from the standard module,
          with any specific extensions
@@ -1423,8 +1423,8 @@ to::
 
  from roundup import mailgw
  from roundup.cgi import client
- 
- class Client(client.Client): 
+
+ class Client(client.Client):
      ''' derives basic CGI implementation from the standard module,
          with any specific extensions
      '''
@@ -1466,7 +1466,7 @@ the replacement behaviour to occur now.
 
 The new configuration variables are:
 
-- EMAIL_KEEP_QUOTED_TEXT 
+- EMAIL_KEEP_QUOTED_TEXT
 - EMAIL_LEAVE_BODY_UNCHANGED
 - ADD_RECIPIENTS_TO_NOSY
 
@@ -1579,7 +1579,7 @@ the classic schema, the interfaces file is in::
 
 If you used the extended schema, the file is in::
 
- <roundup source>/roundup/templates/extended/dbinit.py 
+ <roundup source>/roundup/templates/extended/dbinit.py
 
 If you have modified your dbinit.py file, you need to edit the dbinit.py
 file in your instance home directory. Find the lines which define the user
@@ -1587,7 +1587,7 @@ class::
 
     user = Class(db, "msg",
                     username=String(),   password=Password(),
-                    address=String(),    realname=String(), 
+                    address=String(),    realname=String(),
                     phone=String(),      organisation=String(),
                     alternate_addresses=String())
 
@@ -1618,7 +1618,7 @@ classic schema, the interfaces file is in::
 
 If you used the extended schema, the file is in::
 
- <roundup source>/roundup/templates/extended/dbinit.py 
+ <roundup source>/roundup/templates/extended/dbinit.py
 
 If you have modified your dbinit.py file, you need to edit the dbinit.py
 file in your instance home directory. Find the lines which define the msg
@@ -1734,17 +1734,17 @@ If you have modified your dbinit.py file, you may use encoded passwords:
 
    b. Where the password property is defined (around line 66)::
 
-       user = Class(db, "user", 
+       user = Class(db, "user",
                        username=String(),   password=String(),
-                       address=String(),    realname=String(), 
+                       address=String(),    realname=String(),
                        phone=String(),      organisation=String())
        user.setkey("username")
 
       alter the "password=String()" to "password=Password()"::
 
-       user = Class(db, "user", 
+       user = Class(db, "user",
                        username=String(),   password=Password(),
-                       address=String(),    realname=String(), 
+                       address=String(),    realname=String(),
                        phone=String(),      organisation=String())
        user.setkey("username")
 
