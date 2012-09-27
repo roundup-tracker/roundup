@@ -13,6 +13,17 @@ steps.
 
 .. contents::
 
+Migrating from 1.4.20 to 1.4.21
+===============================
+
+The ``_generic.calendar.html`` page of the instance has been updated to include
+``<meta name="robots" content="noindex, nofollow" />``.  This prevents
+robots to follow all the links in the calendar.  If you haven't modified the
+page on your local instance, you can simply replace it with the one in
+``share/roundup/templates/classic/html/_generic.calendar.html``; if you did,
+you can add the tag manually.  See issue2550765 and changeset a099ff2ceff3.
+
+
 Migrating from 1.4.19 to 1.4.20
 ===============================
 

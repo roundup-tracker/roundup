@@ -22,6 +22,9 @@ Fixed:
 
 - issue2550765: Don't show links in calendar that will fail.
   Found and fixed by Cédric Krier. (Bernhard)
+- issue2550765: use <meta name="robots" content="noindex, nofollow"> in the
+  _generic.calendar.html to prevent robots to follow all the links in the
+  calendar. (Ezio Melotti)
 - "BaseException.with_traceback" is not available on Python 2, so use
   "raise E, V, T" instead of "raise E(V).with_traceback(T)".  This change was
   originally introduced in 74476eaac38a. (Ezio Melotti)
@@ -33,7 +36,7 @@ Fixed:
   (Thomas Arendsen Hein)
 - issue2550762 Minor Documentation fix in doc/developers.txt, thanks
   to W. Trevor King. (Bernhard Reiter)
-- issue2550766: Minor formatting issues in the docs for date properties, 
+- issue2550766: Minor formatting issues in the docs for date properties,
   thanks John Kristensen. (Bernhard Reiter)
 - issue2550738: Fixes for various documentation typoes,
   thanks Nathan Russell. (John Kristensen)
