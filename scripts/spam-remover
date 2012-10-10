@@ -126,6 +126,9 @@ def main():
             newjournal = []
             for j in journal:
                 if j[3] == 'set' and 'files' in j[4]:
+                    if j[4]['files'][0][0] not in ('-', '+') :
+                        newjournal.append(j)
+                        continue
                     changes = dict(j[4]['files'])
                     # only consider file additions by this user
                     if j[2] in users and '+' in changes:
