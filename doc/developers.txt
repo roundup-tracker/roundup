@@ -25,11 +25,9 @@ All development is coordinated through two resources:
 Website, wiki
 -------------
 
-1. ssh -t <username>,roundup@shell.sourceforge.net create
-   Docs: http://sourceforge.net/apps/trac/sourceforge/wiki/Shell%20service
-2. cd /home/groups/r/ro/roundup
-3. follow instructions in README.txt
-
+The website is in our repository, so is the configuration of the wiki.
+Please check the README.txt in the "website" subdirectory 
+of a current checkout.
 
 Issue Tracker
 -------------

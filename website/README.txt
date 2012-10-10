@@ -34,6 +34,8 @@ www.roundup-tracker.org:
       . ${project_home}/docbuilder/bin/activate
  * go to the now current source directory
       cd ${project_home}/src/roundup/website/www
+ * (build requirement: sphinx and the sphinxcontrib-cheeseshop plugin
+      http://pypi.python.org/pypi/sphinxcontrib-cheeseshop)
  * build it
       make html
  * you may also "make clean"
