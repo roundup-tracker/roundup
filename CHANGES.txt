@@ -42,6 +42,9 @@ Fixed:
   thanks Nathan Russell. (John Kristensen)
 - issue2550756: Fix `oder' typo in mailer.Mailer.bounce_message docstring,
   thanks W. Trevor King (John Kristensen)
+- Fix basic authentication: instatiating the login action would fail if
+  the user is not set. We now first set the user to anonymous and then
+  try basic authentication if enabled.
 
 
 2012-05-15: 1.4.20

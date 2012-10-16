@@ -706,6 +706,10 @@ class Client:
                         pass
                     username, password = decoded.split(':', 1)
                     try:
+                        # Current user may not be None, otherwise
+                        # instatiation of the login action will fail.
+                        # So we set the user to anonymous first.
+                        self.make_user_anonymous()
                         login = self.get_action_class('login')(self)
                         login.verifyLogin(username, password)
                     except LoginError, err:
