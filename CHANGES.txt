@@ -45,6 +45,8 @@ Fixed:
 - Fix basic authentication: instatiating the login action would fail if
   the user is not set. We now first set the user to anonymous and then
   try basic authentication if enabled.
+- Fix xmlrpc permissions for lookup method: Allow if the key attribute
+  is either searchable or viewable, don't check id attribute
 
 
 2012-05-15: 1.4.20

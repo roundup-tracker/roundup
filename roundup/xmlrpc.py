@@ -103,9 +103,11 @@ class RoundupInstance:
         cl = self.db.getclass(classname)
         uid = self.db.getuid()
         prop = cl.getkey()
-        check = self.db.security.hasSearchPermission
-        if not check(uid, classname, 'id') or not check(uid, classname, prop):
-            raise Unauthorised('Permission to search %s denied'%classname)
+        search = self.db.security.hasSearchPermission
+        access = self.db.security.hasPermission
+        if (not search(uid, classname, prop)
+           and not access('View', uid, classname, prop)):
+           raise Unauthorised('Permission to lookup %s denied'%classname)
         return cl.lookup(key)
 
     def display(self, designator, *properties):
