@@ -44,9 +44,13 @@ Fixed:
   thanks W. Trevor King (John Kristensen)
 - Fix basic authentication: instatiating the login action would fail if
   the user is not set. We now first set the user to anonymous and then
-  try basic authentication if enabled.
+  try basic authentication if enabled. (Ralf Schlatterbeck)
 - Fix xmlrpc permissions for lookup method: Allow if the key attribute
-  is either searchable or viewable, don't check id attribute
+  is either searchable or viewable, don't check id attribute (Ralf
+  Schlatterbeck)
+- Fix installation documentation (section Prerequisites) to require at
+  least python 2.5, thanks to John P. Rouillard for discovering this.
+  (committed by Ralf Schlatterbeck)
 
 
 2012-05-15: 1.4.20
