@@ -24,8 +24,8 @@ issues.roundup-tracker.org:
  * update the working copy of the SCM roundup source (includes www and wiki)
       cd ${project_home}/src/roundup
       hg pull -u /home/scm_hg/r/ro/roundup/roundup
-   (The warning about "Not trusting file 
-   /home/scm_hg/r/ro/roundup/roundup/.hg/hgrc from untrusted user" 
+   (The warning about "Not trusting file
+   /home/scm_hg/r/ro/roundup/roundup/.hg/hgrc from untrusted user"
    can be ignored.)
 
 www.roundup-tracker.org:
