@@ -51,6 +51,8 @@ Fixed:
 - Fix installation documentation (section Prerequisites) to require at
   least python 2.5, thanks to John P. Rouillard for discovering this.
   (committed by Ralf Schlatterbeck)
+- Fixing the download button re-activating the cheeseshop plugin in the 
+  sphinx config. Thanks to Richard for the hint. (Bernhard Reiter)
 
 
 2012-05-15: 1.4.20
