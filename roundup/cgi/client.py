@@ -361,7 +361,7 @@ class Client:
         """ Wrap the real main in a try/finally so we always close off the db.
         """
         try:
-            if self.env.get('CONTENT_TYPE') == 'text/xml':
+            if self.env.get('CONTENT_TYPE') == 'text/xml' and self.path == 'xmlrpc':
                 self.handle_xmlrpc()
             else:
                 self.inner_main()

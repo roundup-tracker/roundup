@@ -11,9 +11,16 @@ that roundup-admins requirement of local access to the tracker instance
 limiting. The XML-RPC frontend provides the ability to execute a limited subset
 of commands similar to those found in roundup-admin from remote machines. 
 
-roundup-xmlrpc-server
+There are two ways to access the xmlrpc interface:
+
+  stand alone roundup-xmlrpc-server
+
+  access via the roundup server
+  
+  
+stand alone roundup-xmlrpc-server
 ---------------------
-The Roundup XML-RPC server must be started before remote clients can access the
+The Roundup XML-RPC standalone server must be started before remote clients can access the
 tracker via XML-RPC. ``roundup-xmlrpc-server`` is installed in the scripts
 directory alongside ``roundup-server`` and roundup-admin``. When invoked, the
 location of the tracker instance must be specified.
@@ -22,6 +29,13 @@ location of the tracker instance must be specified.
 
 The default port is ``8000``. An alternative port can be specified with the
 ``--port`` switch.
+
+accessing via roundup server
+----------------------------
+In addition to running a stand alone server described above, the
+xmlrpc service is available from the roundup HTTP server. Access it by
+sending text/xml data to the URL for the roundup tracker with the last
+component of the url set to 'xmlrpc'.
 
 security consideration
 ======================
@@ -108,3 +122,10 @@ sample python client
         []
         >>> roundup_server.lookup('user','admin')
         '1'
+
+If you are accessing the interface via the roundup HTTP server, a url
+similar to:
+
+  http://username:password@localhost:8000/tracker/xmlrpc
+
+should be used.

@@ -23,6 +23,20 @@ page on your local instance, you can simply replace it with the one in
 ``share/roundup/templates/classic/html/_generic.calendar.html``; if you did,
 you can add the tag manually.  See issue2550765 and changeset a099ff2ceff3.
 
+If you are using the xml-rpc interface, there is a change
+  in accessing it. You can not send text/xml data to any
+  roundup url and get a response, you must use the /xmlrpc
+  url. For example, if you used to send your xmlrpc request to:
+
+   http://myroundup.com/roundup
+
+  you need to change the url to read:
+
+   http://myroundup.com/roundup/xmlrpc
+
+  to invoke the xmlrpc handler. This allows us to send xml
+  data to roundup for other handlers (e.g. REST, SOAP ...)
+  in the future.
 
 Migrating from 1.4.19 to 1.4.20
 ===============================

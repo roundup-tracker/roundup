@@ -56,6 +56,12 @@ Fixed:
 - issue2550783 devel template's schema.py permissions referenced the
   organization property for the user, but the property is called
   organisation. Thanks to Pradip Caulagi. (committed by John Rouillard)
+- issue2550749 - the xmlrpc interface is invoked on content type
+  and not url path. Sending any text/xml data to roundup results in
+  invoking the xml-rpc interface, but a REST or other interface could
+  also consume xml data and do something different. So require the use
+  of 'http(s)://.../xmlrpc' uri to trigger the xmlrpc interface.
+  (John Rouillard)
 
 2012-05-15: 1.4.20
 
