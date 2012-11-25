@@ -53,7 +53,9 @@ Fixed:
   (committed by Ralf Schlatterbeck)
 - Fixing the download button re-activating the cheeseshop plugin in the 
   sphinx config. Thanks to Richard for the hint. (Bernhard Reiter)
-
+- issue2550783 devel template's schema.py permissions referenced the
+  organization property for the user, but the property is called
+  organisation. Thanks to Pradip Caulagi. (committed by John Rouillard)
 
 2012-05-15: 1.4.20
 
