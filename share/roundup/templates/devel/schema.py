@@ -313,7 +313,7 @@ p = db.security.addPermission(name='Edit', klass='user', check=own_record,
     description="User is allowed to edit their own user details",
     properties=('username', 'password',
                 'address', 'realname',
-                'phone', 'organization',
+                'phone', 'organisation',
                 'alternate_addresses',
                 'queries',
                 'timezone')) # Note: 'roles' excluded - users should not be able to edit their own roles. 
