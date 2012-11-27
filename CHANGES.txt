@@ -51,6 +51,7 @@ Fixed:
 - Fix installation documentation (section Prerequisites) to require at
   least python 2.5, thanks to John P. Rouillard for discovering this.
   (committed by Ralf Schlatterbeck)
+- Fix version_check.py to require at least python 2.5 (anatoly techtonik)
 - Fixing the download button re-activating the cheeseshop plugin in the 
   sphinx config. Thanks to Richard for the hint. (Bernhard Reiter)
 - issue2550783 devel template's schema.py permissions referenced the
