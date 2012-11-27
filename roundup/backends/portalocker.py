@@ -44,6 +44,7 @@ import os
 if os.name == 'nt':
     import win32file
     import pywintypes
+    import msvcrt
     LOCK_SH = 0    # the default
     LOCK_NB = 0x1  # LOCKFILE_FAIL_IMMEDIATELY
     LOCK_EX = 0x2  # LOCKFILE_EXCLUSIVE_LOCK
@@ -61,7 +62,7 @@ if os.name == 'nt':
     # eugh, we want 0xffff0000 here, but python 2.3 won't let us :(
     FFFF0000 = -65536
     def lock(file, flags):
-        hfile = win32file._get_osfhandle(file.fileno())
+        hfile = msvcrt.get_osfhandle(file.fileno())
         # LockFileEx is not supported on all Win32 platforms (Win95, Win98,
         # WinME).
         # If it's not supported, win32file will raise an exception.
@@ -104,7 +105,7 @@ if os.name == 'nt':
         # TODO: should this return the result of the lock?
                     
     def unlock(file):
-        hfile = win32file._get_osfhandle(file.fileno())
+        hfile = msvcrt.get_osfhandle(file.fileno())
         # UnlockFileEx is not supported on all Win32 platforms (Win95, Win98,
         # WinME).
         # If it's not supported, win32file will raise an api_error exception.
