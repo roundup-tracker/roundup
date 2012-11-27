@@ -459,7 +459,7 @@ class FormTestCase(unittest.TestCase):
         form = dict(__login_name='Chef', __login_password='foo')
         cl = self._make_client(form)
         self.db.config.PASSWORD_PBKDF2_DEFAULT_ROUNDS = 1000
-        pw1 = password.Password('foo', scheme='crypt')
+        pw1 = password.Password('foo', scheme='MD5')
         self.assertEqual(pw1.needs_migration(), True)
         self.db.user.set(chef, password=pw1)
         self.db.commit()

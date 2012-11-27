@@ -45,7 +45,7 @@ def h64decode(data):
     if off == 0:
         return b64decode(data, "./")
     elif off == 1:
-        raise ValueError("invalid bas64 input")
+        raise ValueError("Invalid base64 input")
     elif off == 2:
         return b64decode(data + "==", "./")
     else:
@@ -162,7 +162,7 @@ def encodePassword(plaintext, scheme, other=None, config=None):
     elif scheme == 'plaintext':
         s = plaintext
     else:
-        raise PasswordValueError, 'unknown encryption scheme %r'%scheme
+        raise PasswordValueError, 'Unknown encryption scheme %r'%scheme
     return s
 
 def generatePassword(length=8):
@@ -275,7 +275,7 @@ class Password(JournalPassword):
             # currently plaintext - encrypt
             self.setPassword(encrypted, scheme, config=config)
         if strict and self.scheme not in self.known_schemes:
-            raise PasswordValueError, "unknown encryption scheme: %r" % (self.scheme,)
+            raise PasswordValueError, "Unknown encryption scheme: %r" % (self.scheme,)
 
     def setPassword(self, plaintext, scheme=None, config=None):
         """Sets encrypts plaintext."""
@@ -307,11 +307,12 @@ def test():
     assert 'not sekrit' != p
 
     # crypt
-    p = Password('sekrit', 'crypt')
-    assert p == 'sekrit'
-    assert p != 'not sekrit'
-    assert 'sekrit' == p
-    assert 'not sekrit' != p
+    if crypt:  # not available on Windows
+        p = Password('sekrit', 'crypt')
+        assert p == 'sekrit'
+        assert p != 'not sekrit'
+        assert 'sekrit' == p
+        assert 'not sekrit' != p
 
     # PBKDF2 - low level function
     from binascii import unhexlify
