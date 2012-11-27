@@ -59,8 +59,6 @@ else:
     raise RuntimeError("PortaLocker only defined for nt and posix platforms")
 
 if os.name == 'nt':
-    # eugh, we want 0xffff0000 here, but python 2.3 won't let us :(
-    FFFF0000 = -65536
     def lock(file, flags):
         hfile = msvcrt.get_osfhandle(file.fileno())
         # LockFileEx is not supported on all Win32 platforms (Win95, Win98,
@@ -69,7 +67,7 @@ if os.name == 'nt':
         # Try LockFileEx first, as it has more functionality and handles
         # blocking locks more efficiently.
         try:
-            win32file.LockFileEx(hfile, flags, 0, FFFF0000, __overlapped)
+            win32file.LockFileEx(hfile, flags, 0, 0xFFFF0000, __overlapped)
         except win32file.error, e:
             import winerror
             # Propagate upwards all exceptions other than not-implemented.
@@ -86,14 +84,14 @@ if os.name == 'nt':
                     "locking on Win9x", RuntimeWarning)
             # LockFile only supports immediate-fail locking.
             if flags & LOCK_NB:
-                win32file.LockFile(hfile, 0, 0, FFFF0000, 0)
+                win32file.LockFile(hfile, 0, 0, 0xFFFF0000, 0)
             else:
                 # Emulate a blocking lock with a polling loop.
                 import time
                 while 1:
                     # Attempt a lock.
                     try:
-                        win32file.LockFile(hfile, 0, 0, FFFF0000, 0)
+                        win32file.LockFile(hfile, 0, 0, 0xFFFF0000, 0)
                         break
                     except win32file.error, e:
                         # Propagate upwards all exceptions other than lock
@@ -110,7 +108,7 @@ if os.name == 'nt':
         # WinME).
         # If it's not supported, win32file will raise an api_error exception.
         try:
-            win32file.UnlockFileEx(hfile, 0, FFFF0000, __overlapped)
+            win32file.UnlockFileEx(hfile, 0, 0xFFFF0000, __overlapped)
         except win32file.error, e:
             import winerror
             # Propagate upwards all exceptions other than not-implemented.
@@ -120,7 +118,7 @@ if os.name == 'nt':
             # UnlockFileEx is not supported. Use UnlockFile.
             # Care: the low/high length params are reversed compared to
             # UnLockFileEx.
-            win32file.UnlockFile(hfile, 0, 0, FFFF0000, 0)
+            win32file.UnlockFile(hfile, 0, 0, 0xFFFF0000, 0)
 
 elif os.name =='posix':
     def lock(file, flags):
