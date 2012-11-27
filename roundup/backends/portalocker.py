@@ -42,19 +42,18 @@ __docformat__ = 'restructuredtext'
 import os
 
 if os.name == 'nt':
-    import win32con
     import win32file
     import pywintypes
-    LOCK_EX = win32con.LOCKFILE_EXCLUSIVE_LOCK
-    LOCK_SH = 0 # the default
-    LOCK_NB = win32con.LOCKFILE_FAIL_IMMEDIATELY
+    LOCK_SH = 0    # the default
+    LOCK_NB = 0x1  # LOCKFILE_FAIL_IMMEDIATELY
+    LOCK_EX = 0x2  # LOCKFILE_EXCLUSIVE_LOCK
     # is there any reason not to reuse the following structure?
     __overlapped = pywintypes.OVERLAPPED()
 elif os.name == 'posix':
     import fcntl
+    LOCK_SH = fcntl.LOCK_SH  # shared lock
+    LOCK_NB = fcntl.LOCK_NB  # non-blocking
     LOCK_EX = fcntl.LOCK_EX
-    LOCK_SH = fcntl.LOCK_SH
-    LOCK_NB = fcntl.LOCK_NB
 else:
     raise RuntimeError("PortaLocker only defined for nt and posix platforms")
 
