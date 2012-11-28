@@ -107,7 +107,6 @@ class TestCase_anypy_hashlib(unittest.TestCase):
             for src, SHA, MD5 in self.data_for_test:
                 self.assertEqual(sha.sha(src).hexdigest(), SHA)
 
-        # fails for me with Python 2.3; unittest module bug?
         def test_sha_new_expected(self):
             """sha.new is sha.sha, or at least yields expected results"""
             if sha.new is sha.sha:

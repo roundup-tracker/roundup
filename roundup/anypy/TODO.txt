@@ -1,8 +1,4 @@
 Python compatiblity TODO
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-- the popen2 module is deprecated as of Python 2.6;
-  the subprocess module is available since Python 2.4,
-  thus a roundup.anypy.subprocess_ module is needed
-
-# vim: si
+Remove sets_ included for Python 2.3 compatibility.

@@ -17,8 +17,6 @@
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, base64, os.path
 import gpgmelib
-# Python 2.3 ... 2.6 compatibility:
-from roundup.anypy.sets_ import set
 from email.parser import FeedParser
 
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \

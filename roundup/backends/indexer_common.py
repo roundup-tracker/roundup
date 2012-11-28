@@ -1,6 +1,4 @@
 import re
-# Python 2.3 ... 2.6 compatibility:
-from roundup.anypy.sets_ import set
 
 from roundup import hyperdb
 

@@ -3,8 +3,6 @@ is a mapping of words to occurance IDs. The second maps the IDs to (Class,
 propname, itemid) instances.
 """
 import re
-# Python 2.3 ... 2.6 compatibility:
-from roundup.anypy.sets_ import set
 
 from roundup.backends.indexer_common import Indexer as IndexerBase
 

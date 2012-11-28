@@ -40,20 +40,9 @@ def get_backend(name):
         return vars[name]
     # import the backend module
     module_name = 'back_%s' % name
-    try:
-        module = __import__(module_name, vars)
-    except:
-        # import failed, but in versions prior to 2.4, a (broken)
-        # module is left in sys.modules and package globals;
-        # subsequent imports would succeed and get the broken module.
-        # This no longer happens in Python 2.4 and later.
-        if sys.version_info < (2, 4):
-            del sys.modules['.'.join((__name__, module_name))]
-            del vars[module_name]
-        raise
-    else:
-        vars[name] = module
-        return module
+    module = __import__(module_name, vars)
+    vars[name] = module
+    return module
 
 def have_backend(name):
     '''Is backend "name" available?'''

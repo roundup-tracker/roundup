@@ -813,12 +813,7 @@ def process_args(argv=None):
         gc.set_debug(gcdebug)
 
     if build:
-        # Python 2.3 is more sane in its non -q output
-        if sys.hexversion >= 0x02030000:
-            qflag = ""
-        else:
-            qflag = "-q"
-        cmd = sys.executable + " setup.py " + qflag + " build"
+        cmd = sys.executable + " setup.py build"
         if build_inplace:
             cmd += "_ext -i"
         if VERBOSE:

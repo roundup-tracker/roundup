@@ -16,9 +16,6 @@
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
 
-# Python 2.3 ... 2.6 compatibility:
-from roundup.anypy.sets_ import set
-
 from roundup import roundupdb, hyperdb
 
 def nosyreaction(db, cl, nodeid, oldvalues):

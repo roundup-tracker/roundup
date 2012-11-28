@@ -22,8 +22,6 @@ __docformat__ = 'restructuredtext'
 
 # standard python modules
 import os, re, shutil, weakref
-# Python 2.3 ... 2.6 compatibility:
-from roundup.anypy.sets_ import set
 
 # roundup modules
 import date, password

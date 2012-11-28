@@ -22,8 +22,6 @@ And you're done!
 """
 
 import sys, os, csv, time, urllib2, httplib, mimetypes, urlparse
-# Python 2.3 ... 2.6 compatibility:
-from roundup.anypy.sets_ import set
 
 try:
     import cElementTree as ElementTree
