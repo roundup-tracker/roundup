@@ -437,6 +437,8 @@ class FormTestCase(unittest.TestCase):
         # assume that the "best" algorithm is the first one and doesn't
         # need migration, all others should be migrated.
         for scheme in password.Password.deprecated_schemes:
+            if scheme == 'crypt' and os.name == 'nt':
+                continue  # crypt is not available on Windows
             pw1 = password.Password('foo', scheme=scheme)
             self.assertEqual(pw1.needs_migration(), True)
             self.db.user.set(chef, password=pw1)
