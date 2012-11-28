@@ -100,15 +100,12 @@ Getting Roundup
 
 Download the latest version from http://www.roundup-tracker.org/.
 
-If you're using WinZIP's "classic" interface, make sure the "Use
-folder names" check box is checked before you extract the files.
-
-
 For The Really Impatient
 ========================
 
-If you just want to give Roundup a whirl Right Now, then simply run
-``roundup-demo``.
+If you just want to give Roundup a whirl Right Now, then simply unpack
+and run ``demo.py`` (it will be available as ``roundup-demo`` script
+after installation).
 
 This will set up a simple demo tracker on your machine. [1]_
 When it's done, it'll print out a URL to point your web browser at
