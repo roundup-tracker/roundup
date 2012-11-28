@@ -455,6 +455,7 @@ class FormTestCase(unittest.TestCase):
         pw = self.db.user.get(chef, 'password')
         self.assertEqual(pw, 'foo')
         self.assertEqual(pw, pw1)
+        cl.db.close()
 
     def testPasswordConfigOption(self):
         chef = self.db.user.lookup('Chef')
@@ -469,6 +470,7 @@ class FormTestCase(unittest.TestCase):
         pw = self.db.user.get(chef, 'password')
         self.assertEqual('PBKDF2', pw.scheme)
         self.assertEqual(1000, password.pbkdf2_unpack(pw.password)[0])
+        cl.db.close()
 
     #
     # Boolean
