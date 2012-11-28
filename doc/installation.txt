@@ -39,11 +39,6 @@ Some variants of Linux will need an additional "python dev" package
 installed for Roundup installation to work. Debian and derivatives, are
 known to require this.
 
-If you're on windows, you will either need to be using the ActiveState python
-distribution (at http://www.activestate.com/Products/ActivePython/), or you'll
-have to install the win32all package separately (get it from
-http://starship.python.net/crew/mhammond/win32/).
-
 
 Optional Components
 ===================
@@ -83,11 +78,15 @@ pyme
   configured, you can require email to be cryptographically signed
   before roundup will allow it to make modifications to issues.
 
+Windows Service
+  You can run Roundup as a Windows service if pywin32_ is installed.
+
 .. _Xapian: http://xapian.org/
 .. _pytz: http://www.python.org/pypi/pytz
 .. _Olson tz database: http://www.twinsun.com/tz/tz-link.htm
 .. _pyopenssl: http://pyopenssl.sourceforge.net
 .. _pyme: http://pyme.sourceforge.net
+.. _pywin32: http://pypi.python.org/pypi/pywin32
 
 
 Getting Roundup
