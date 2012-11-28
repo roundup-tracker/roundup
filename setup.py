@@ -125,7 +125,7 @@ def main():
                        'Intended Audience :: End Users/Desktop',
                        'Intended Audience :: Developers',
                        'Intended Audience :: System Administrators',
-                       'License :: OSI Approved :: Python Software Foundation License',
+                       'License :: OSI Approved :: MIT License',
                        'Operating System :: MacOS :: MacOS X',
                        'Operating System :: Microsoft :: Windows',
                        'Operating System :: POSIX',
