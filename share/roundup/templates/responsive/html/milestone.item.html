@@ -1,0 +1,175 @@
+<tal:block metal:use-macro="templates/page/macros/frame">
+  <tal:block metal:fill-slot="body_title">
+    <p class="header">Milestone<span tal:replace="context/id" /> Editing</p>
+  </tal:block>
+
+  <tal:block metal:fill-slot="content">
+    <tal:block tal:condition="python:context.is_view_ok or context.is_edit_ok">
+
+
+<form method="post" id="itemSynopsis" onSubmit="return submit_once()"
+      enctype="multipart/form-data">
+
+  <p><input type="hidden" name=":template" value="item" /></p>
+
+  <table class="form">
+
+    <!-- Title -->
+    <tr>
+      <th class="required">Title</th>
+      <td colspan="5"
+          tal:condition="python: request.user.hasPermission('Edit')"
+          tal:content="structure python:context.title.field(size=60)">
+        title
+      </td>
+      <td colspan="5"
+          tal:condition="python: not request.user.hasPermission('Edit')"
+          tal:content="structure context/title/plain">
+        title
+      </td>
+    </tr>
+
+    <!-- creation, creator, activity -->
+    <tr tal:condition="context/id">
+      <td colspan="6"
+          tal:content="structure string:Created on
+            <b>${context/creation}</b> by <b>${context/creator}</b>, last
+            changed <b>${context/activity}</b>.">last changed
+      </td>
+    </tr>
+
+    <!-- status -->
+    <tr tal:condition="context/id">
+      <th>
+        <a href="javascript:help_window('status?:template=help&properties=name,d
+escription', 500, 400)">status</a>
+      </th>
+      <td colspan="5"
+          tal:condition="python: request.user.hasPermission('Edit')"
+          tal:content="structure context/status/menu">
+        status
+      </td>
+      <td colspan="5"
+          tal:condition="python: not request.user.hasPermission('Edit')"
+          tal:content="structure context/status/plain">
+        status
+      </td>
+    </tr>
+
+    <tr>
+      <th>Bugs</th>
+      <td colspan="2"
+          tal:condition="python: request.user.hasPermission('Edit')">
+        <table>
+          <tr>
+	    <td>Add: <input name=":add:bugs"  size="20" /></td>
+            </tr>
+            <tr tal:repeat="bug context/bugs">
+              <td>
+                <a tal:attributes="href string:bug${bug/id}; title string:${bug/title}"
+                   tal:content="string:bug${bug/id}">&nbsp</a>
+              </td>
+              <td>
+                <input type="checkbox"
+                       name=":remove:bugs"
+                       tal:attributes="value bug/id" />
+                remove
+              </td>
+            </tr>
+        </table>
+      </td>
+      <td colspan="2"
+        tal:condition="python: not request.user.hasPermission('Edit')">
+        <span tal:condition="context/bugs"
+              tal:repeat="bug context/bugs">
+          <br/>View:
+          <a tal:attributes="href string:bug${bug/id};
+                             title string:${bug/title}"
+             tal:content="string:bug${bug/id}">
+          &nbsp;
+          </a>
+        </span>
+      </td>
+    </tr>
+
+    <!-- Comment -->
+    <tr>  
+      <th>Add Comment:</th>
+      <td colspan="5" class="form-text">
+        <textarea name=":note" wrap="hard" rows="5" cols="50"></textarea>
+      </td>
+    </tr>
+
+    <!-- Files -->
+    <tr>
+      <th>File</th>
+      <td colspan="5"><input type="file" name=":file" size="40" /></td>
+    </tr>
+
+    <!-- Nosy List -->
+    <tr>
+      <th>
+        CC List:<span tal:replace="structure python:db.user.classhelp('username,realname,address', property='nosy', label='?', width=500)" />
+      </th>
+      <td colspan="5">
+        <span tal:replace="structure context/nosy/field" />
+      </td>
+    </tr>
+  </table>
+
+  <!-- graph
+  <p tal:condition="context/id">
+View the <a tal:attributes="href string:/graph?type=milestone&id=${context/id}&output=cmap">dependency graph</a> for this milestone.
+  </p>-->
+
+  <!-- Submit -->
+  <p tal:content="structure context/submit">
+    submit button will go here
+  </p>
+
+  <tal:block tal:condition="context/id">
+    <!-- Messages -->
+    <table class="messages" tal:condition="context/messages">
+      <tr><th colspan="3" class="header">Messages</th></tr>
+      <tal:block tal:repeat="msg context/messages">
+        <tr>
+          <th tal:content="string:Author: ${msg/author}">author</th>
+          <th tal:content="string:Date: ${msg/date}">date</th>
+        </tr>
+        <tr>
+          <td colspan="2"><pre tal:content="msg/content">content</pre></td>
+        </tr>
+      </tal:block>
+    </table>
+
+    <!-- Files -->
+    <table class="files" tal:condition="context/files">
+      <tr><th colspan="2" class="header">Files</th></tr>
+      <tr><th>File name</th><th>Uploaded</th></tr>
+      <tr tal:repeat="file context/files">
+        <td>
+          <a tal:attributes="href string:file${file/id}/${file/name}"
+             tal:content="file/name">dld link</a>
+        </td>
+        <td>
+          <span tal:content="file/creator">creator's name</span>,
+          <span tal:content="file/creation">creation date</span>
+        </td>
+      </tr>
+    </table>
+
+    <!-- Sort ascending -->
+    <tal:block tal:replace="structure python:context.history(direction='ascending')" />   
+
+  </tal:block>
+</form>
+
+<!-- FOOTER -->
+    </tal:block>
+    <span tal:condition="python:not (context.is_view_ok or context.is_edit_ok)">
+You are not allowed to view this page.
+    </span>
+
+  </tal:block>
+</tal:block>
+

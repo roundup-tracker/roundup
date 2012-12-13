@@ -7,6 +7,8 @@ Entries without name were done by Richard Jones.
 
 Features:
 
+- Beta version of responsive templates using devel schema
+  and Twitter Bootstrap for styling (Pradip Caulagi)
 - pywin32 is not longer required to run on Windows (anatoly techtonik)
 - Rewritten portalocker.py logic in ctypes for Windows (anatoly techtonik)
 - Add an interface to register clearCache callbacks in roundupdb.

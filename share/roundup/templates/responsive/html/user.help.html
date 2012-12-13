@@ -1,0 +1,119 @@
+<tal:block metal:use-macro="templates/help/macros/frame">
+<tal:block tal:define="property request/form/property/value;
+                  qs request/env/QUERY_STRING;
+                  qs python:'&'.join([a for a in qs.split('&') if not a.startswith('@template=')]);
+                  form request/form/form/value;
+                  field request/form/property/value">
+  <tal:block metal:fill-slot="more-javascript">
+     <script language="Javascript" type="text/javascript">
+      // this is the name of the field in the original form that we're working on
+      form  = parent.opener.document.${request/form/form/value};
+      callingform=form
+      field  = '${request/form/property/value}';
+      var listform = null
+      function listPresent() { return document.frm_help.cb_listpresent.checked}
+      function getListForm()
+      {
+        if (listPresent()) { return parent.list.document.forms.dummyform}
+        else { return null}
+      }
+
+      function checkListForm()
+      {
+        // global listform
+        if (listform != null)
+        if (parent.list.document.dummyform) 
+        {
+          listform = parent.list.document.dummyform
+          alert(listform)
+        }
+        var bol= listform != null
+        alert('checkListForm: bol='+bol)
+        return bol
+      }
+    </script>
+    <script src="@@file/jquery.js" type="text/javascript"></script>
+    <script src="@@file/query.js" type="text/javascript"></script>
+  </tal:block>
+  <tal:block metal:fill-slot="content">
+    <div name="search">
+      <form method="get" name="itemSynopsis" target="list"
+            tal:attributes="action request/classname" 
+            tal:define="property request/form/property/value;
+                        cols python:request.columns or 'id username address realname roles'.split();
+                        sort_on request/sort | nothing;
+                        sort_desc python:sort_on and request.sort[0][0] == '-';
+                        sort_on python:sort_on and request.sort[0][1] or 'lastname';
+                        search_input templates/page/macros/search_input;
+                        search_select templates/page/macros/search_select;
+                        search_select_roles templates/page/macros/search_select_roles;
+                        required python:[];
+                        th_label templates/page/macros/th_label; ">
+       <input type="hidden" name="@template" value="query">
+       <input type="hidden" name="property" value="" tal:attributes="value property">
+       <input type="hidden" name="form" value="" tal:attributes="value request/form/form/value">
+       <table>
+        <tr tal:define="name string:username; label string:Username:">
+         <th metal:use-macro="th_label">Name</th> 
+         <td metal:use-macro="search_input"><input type="text"></td>
+        </tr>
+        <tr tal:define="name string:phone; label string:Phone number">
+         <th metal:use-macro="th_label">Phone</th>
+         <td metal:use-macro="search_input"><input type="text"></td>
+        </tr>
+        <tr tal:define="name string:roles; label string:Roles:" >
+         <th metal:use-macro="th_label">role</th>
+         <td metal:use-macro="search_select_roles">
+          <select>
+           <option value="">jokester</option>
+          </select>
+         </td>
+        </tr>
+        <tr>
+         <td>&nbsp;</td>
+         <td>
+          <input type="hidden" name="@action" value="search"/>
+          <input type="submit" value="Search" i18n:attributes="value"/>
+          <input type="reset"/>
+          <input type="hidden" value="username,realname,phone,organisation,roles" name="properties"/>
+          <input type="text" name="@pagesize" id="sp-pagesize" value="25" size="2"/>
+          <label for="sp-pagesize" i18n:translate="">Pagesize</label>
+         </td>
+        </tr>
+       </table>
+      </form>
+      <script type="text/javascript"><!-- focus2id('username'); //--></script>
+    </div>
+    <!-- for search results: query -->
+    <div class="list">
+      <p i18n:translate="">Please specify your search parameters!</p>
+    </div>
+    <div class="submit" onload="parent.focus();" id="submit">
+    <form name="frm_help"
+          tal:define="batch request/batch;
+                      props python:request.form['properties'].value.split(',')"
+          class="help-submit"
+          id="classhelp-controls">
+    <div style="width:100%;text-align:left;margin-bottom:0.2em">
+     <input type="text" name="text_preview" size="24" class="preview"
+            onchange="f=getListForm();if(f){ reviseList_framed(f, this)};"/>
+    </div>
+    <input type=checkbox name="cb_listpresent" readonly="readonly" style="display:none"/>
+    <input type="button" id="btn_cancel"
+           value=" Cancel " onclick="parent.close();return false;"
+           i18n:attributes="value" />
+    <input type="reset" id="btn_reset"
+           onclick="text_field.value=original_field;f=getListForm();if (f) {reviseList_framed(f, this)};return false"/>
+    <input type="submit" id="btn_apply" class="apply"
+           value=" Apply " onclick="callingform[field].value=text_field.value; parent.close();"
+           i18n:attributes="value" />
+   </form>
+   <script type="text/javascript"><!--
+var text_field = document.frm_help.text_preview;
+original_field=form[field].value;
+text_field.value=original_field;
+//--></script>
+  </div>
+</tal:block>
+</tal:block>
+</tal:block>

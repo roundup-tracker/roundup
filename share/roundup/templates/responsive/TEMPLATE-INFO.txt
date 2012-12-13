@@ -1,0 +1,6 @@
+Name: responsive
+Description: This issue tracker uses the same schema as devel.
+            The difference between devel and responsive templates
+            is the use of Twitter bootstrap (http://twitter.github.com/bootstrap/)
+            in templates and HTML5 markup.
+Intended-For: Developers

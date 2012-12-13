@@ -1,0 +1,40 @@
+<tal:block tal:define="vok context/is_view_ok">
+  <p tal:condition="not:vok" i18n:translate="">You are not
+  allowed to view this page.</p>
+
+  <tal:if condition="context/is_view_ok">
+    <form>
+     <table class="classhelp"
+            tal:define="props python:request.form['properties'].value.split(',');
+                        legend templates/query/macros/legend;
+                        navigation templates/query/macros/navigation;
+			batch request/batch;">
+      <thead>
+	<tr metal:use-macro="navigation"/>
+        <tr metal:use-macro="legend"/>
+      </thead>
+      <tfoot tal:condition=true>
+        <tr metal:use-macro="legend"/>
+	<tr metal:use-macro="navigation"/>
+      </tfoot>
+      <tbody>
+       <tr tal:repeat="item request/batch">
+         <tal:block tal:define="attr python:item[props[0]]" >
+           <td>
+             <input name="check"
+             onclick="switch_val(text_field, this);" type="checkbox"
+             tal:attributes="value attr; id string:id_$attr" />
+             </td>
+             <td tal:repeat="prop props">
+                 <label class="classhelp-label"
+                        tal:attributes="for string:id_$attr"
+                        tal:content="structure python:item[prop]"></label>
+             </td>
+           </tal:block>
+         </tr>
+       </tbody>
+     </table>
+    </form>
+  </tal:if>
+</tal:block>
+

@@ -1,0 +1,15 @@
+<tal:block metal:use-macro="templates/page/macros/frame">
+<title metal:fill-slot="head_title"
+ i18n:translate="">Registration in progress - <span i18n:name="tracker"
+ tal:replace="config/TRACKER_NAME" /></title>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1"
+ i18n:translate="">Registration in progress...</span>
+<td class="content" metal:fill-slot="content">
+
+<p i18n:translate="">You will shortly receive an email
+to confirm your registration. To complete the registration process,
+visit the link indicated in the email.
+</p>
+
+</td>
+</tal:block>

@@ -1,0 +1,27 @@
+<!-- Query-related macros -->
+
+<!-- legend for query results -->
+<tr metal:define-macro="legend">
+  <th><b>x</b></th>
+  <th tal:repeat="prop props" tal:content="prop" i18n:translate=""></th>
+</tr>
+
+<!-- navigation for query results -->
+<tr metal:define-macro="navigation" 
+    tal:define="prev batch/previous;
+                next batch/next;"
+    tal:condition="python:prev or next">
+  <th tal:condition="prev" width="30%">
+    <input type="button" value="prev"
+	   tal:attributes="onclick string:query_start(${prev/start}, ${prev/size})"/>
+  </th>
+  <th i18n:translate="" width="40%">
+    <span tal:replace="batch/start" i18n:name="start"/>..
+    <span tal:replace="python: batch.start + batch.length -1" i18n:name="end"/> out of 
+    <span tal:replace="batch/sequence_length" i18n:name="total"/>
+  </th>
+ <th tal:condition="next" width="30%">
+    <input type="button" value="next" 
+	   tal:attributes="onclick string:query_start(${next/start}, ${next/size})"/>
+  </th>
+</tr>

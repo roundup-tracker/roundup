@@ -1,0 +1,68 @@
+<tal:block metal:use-macro="templates/page/macros/frame">
+<title metal:fill-slot="head_title" i18n:translate=""
+ ><span tal:replace="python:context._classname.capitalize()"
+ i18n:name="class" /> editing - <span i18n:name="tracker"
+ tal:replace="config/TRACKER_NAME" /></title>
+<tal:block metal:fill-slot="body_title" i18n:translate=""
+ ><span tal:replace="python:context._classname.capitalize()"
+ i18n:name="class" /> editing</tal:block>
+
+<td class="content" metal:fill-slot="content">
+
+<span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok()
+ or request.user.hasRole('Anonymous'))"
+ tal:omit-tag="python:1" i18n:translate=""
+>You are not allowed to view this page.</span>
+
+<span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())
+ and request.user.hasRole('Anonymous')"
+ tal:omit-tag="python:1" i18n:translate=""
+>Please login with your username and password.</span>
+
+<tal:block tal:condition="context/is_edit_ok">
+<tal:block i18n:translate="">
+<p class="form-help">
+ You may edit the contents of the
+ <span tal:replace="request/classname" i18n:name="classname"/>
+ class using this form. Commas, newlines and double quotes (") must be
+ handled delicately. You may include commas and newlines by enclosing the
+ values in double-quotes ("). Double quotes themselves must be quoted by
+ doubling ("").
+</p>
+
+<p class="form-help">
+ Multilink properties have their multiple values colon (":") separated
+ (... ,"one:two:three", ...)
+</p>
+
+<p class="form-help">
+ Remove entries by deleting their line. Add new entries by appending
+ them to the table - put an X in the id column.
+</p>
+</tal:block>
+<form onSubmit="return submit_once()" method="POST"
+      tal:attributes="action context/designator">
+<textarea rows="15" style="width:90%" name="rows" tal:content="context/csv"></textarea>
+<br>
+<input type="hidden" name="@action" value="editCSV">
+<input type="submit" value="Edit Items" i18n:attributes="value">
+</form>
+</tal:block>
+
+<table tal:condition="context/is_only_view_ok" width="100%" class="list">
+ <tr>
+  <th tal:repeat="property context/propnames" tal:content="property">&nbsp;</th>
+ </tr>
+ <tal:block repeat="item context/list">
+ <tr tal:condition="item/is_view_ok"
+     tal:attributes="class python:['normal', 'alt'][repeat['item'].index%6/3]">
+  <td tal:repeat="property context/propnames"
+   tal:content="python: item[property] or default"
+  >&nbsp;</td>
+ </tr>
+ </tal:block>
+</table>
+
+</td>
+
+</tal:block>

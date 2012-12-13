@@ -1,0 +1,66 @@
+<tal:block metal:use-macro="templates/page/macros/frame">
+<title metal:fill-slot="head_title" i18n:translate="">
+  List of patches - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker" />
+</title>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1"
+  i18n:translate="">List of patches</span>
+<td class="content" metal:fill-slot="content">
+
+<table class="otherinfo" tal:define="batch request/batch">
+ <tr><th style="padding-right: 10" i18n:translate="">Download</th>
+     <th style="padding-right: 10" i18n:translate="">Description</th>
+     <th style="padding-right: 10" i18n:translate="">Content Type</th>
+     <th style="padding-right: 10" i18n:translate="">Uploaded By</th>
+     <th style="padding-right: 10" i18n:translate="">Date</th>
+ </tr>
+ <tr tal:repeat="patch batch" tal:attributes="class python:['normal', 'alt'][repeat['patch'].index%6/3]">
+  <td>
+   <a tal:attributes="href string:patch${patch/id}/${patch/name}"
+      tal:content="patch/name">dld link</a>
+  </td>
+  <td tal:content="patch/description">description</td>
+  <td tal:content="patch/type">content type</td>
+  <td tal:content="patch/creator">creator's name</td>
+  <td tal:content="patch/creation">creation date</td>
+ </tr>
+
+ <metal:block use-macro="templates/issue.index/macros/batch-footer" />
+
+</table>
+
+</td>
+
+</tal:block>
+<tal:block metal:use-macro="templates/page/macros/frame">
+<title metal:fill-slot="head_title" i18n:translate="">
+  List of patches - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker" />
+</title>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1"
+  i18n:translate="">List of patches</span>
+<td class="content" metal:fill-slot="content">
+
+<table class="otherinfo" tal:define="batch request/batch">
+ <tr><th style="padding-right: 10" i18n:translate="">Download</th>
+     <th style="padding-right: 10" i18n:translate="">Description</th>
+     <th style="padding-right: 10" i18n:translate="">Content Type</th>
+     <th style="padding-right: 10" i18n:translate="">Uploaded By</th>
+     <th style="padding-right: 10" i18n:translate="">Date</th>
+ </tr>
+ <tr tal:repeat="patch batch" tal:attributes="class python:['normal', 'alt'][repeat['patch'].index%6/3]">
+  <td>
+   <a tal:attributes="href string:patch${patch/id}/${patch/name}"
+      tal:content="patch/name">dld link</a>
+  </td>
+  <td tal:content="patch/description">description</td>
+  <td tal:content="patch/type">content type</td>
+  <td tal:content="patch/creator">creator's name</td>
+  <td tal:content="patch/creation">creation date</td>
+ </tr>
+
+ <metal:block use-macro="templates/issue.index/macros/batch-footer" />
+
+</table>
+
+</td>
+
+</tal:block>

@@ -1,0 +1,440 @@
+<tal:block metal:define-macro="frame">
+<!doctype html>
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title metal:define-slot="head_title">title goes here</title>
+    <meta name="description" content="Roundup is a python-based, MIT licensed issue-tracking system with command-line, web and e-mail interfaces">
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="@@file/css/bootstrap.min.css">
+    <style>
+      body { padding-top: 80px; padding-bottom: 40px; }
+    </style>
+    <link rel="stylesheet" href="@@file/css/bootstrap-responsive.min.css">
+    <script tal:replace="structure request/base_javascript"></script>
+    <metal:x define-slot="more-javascript" />
+  </head>
+  <body tal:attributes="class request/classname"
+       tal:define="kw_create python:request.user.hasPermission('Create', 'keyword');
+                   bug_columns string:id,activity,title,creator,status;
+                   bug_columns_showall string:id,activity,title,creator,assignee,status;
+                   bug_status_notclosed string:-1,1,2,4;
+
+                   task_columns string:id,activity,title,creator,status;
+                   task_columns_showall string:id,activity,title,creator,assignee,status;
+                   task_status_notclosed string:-1,1,2,4;
+
+                   milestone_columns string:id,activity,title,creator,status;
+                   milestone_columns_showall string:id,activity,title,creator,assignee,status;
+                   milestone_status_notclosed string:-1,1,2,4;">
+  <div class="navbar navbar-fixed-top">
+    <div class='navbar-inner'>
+      <div class='container'>
+       <a href="/" class='brand'><i class='icon-home'></i> Roundup Demo Tracker</a>
+       <div id="searchbox" class='pull-right'>
+        <form name="searchform" method="get" action="bug" id="searchform" class='form-search'>
+         <div id="search">
+          <input type="hidden" name="@columns"
+                 tal:attributes="value bug_columns_showall"/>
+          <input type="hidden" name="@sort" value="-activity" />
+          <input type="hidden" name="@group" value="priority" />
+          <input type="hidden" name="@filter" value="status"/>
+          <input type="hidden" name="status" tal:attributes="value bug_status_notclosed"/>
+          <input class="input-text input-medium search-query" id="search-text" name="@search_text" size="10" />
+          <input type="submit" id="submit" value="search in open bugs" name="submit" class="btn"/>
+         </div>
+        </form>
+       </div> <!-- searchbox -->
+      </div> <!-- container -->
+    </div> <!-- navbar-inner -->
+  </div> <!-- navbar -->
+  <div class='container'>
+    <div class='row-fluid'>
+      <div class="span3 well">
+        <ul tal:condition="python:request.user.hasPermission('View', 'bug')" class='nav nav-list'>
+          <li class='nav-header'><i class='icon-fire'></i>Bugs</li>
+          <li><a href="/" i18n:translate="">Bugs</a></li>
+          <li tal:condition="python:request.user.hasPermission('Create', 'bug')">
+            <a href="bug?@template=item" i18n:translate="">Create New</a>
+          </li>
+          <li>
+            <a href="#"
+                tal:attributes="href python:request.indexargs_url('bug', {
+                                    '@sort': '-activity',
+                                    '@group': 'priority',
+                                    '@filter': 'status',
+                                    '@columns': bug_columns_showall,
+                                    '@search_text': '',
+                                    'status': bug_status_notclosed,
+                                    '@dispname': i18n.gettext('Show All'),
+                                    '@startwith': 0,
+                                    })"
+                    i18n:translate="">Show Open</a>
+          </li>
+          <li><a href="#"
+                  tal:attributes="href python:request.indexargs_url('bug', {
+                                    '@sort': '-activity',
+                                    '@group': 'priority',
+                                    '@filter': 'status,assignee',
+                                    '@columns': bug_columns,
+                                    '@search_text': '',
+                                    'status': bug_status_notclosed,
+                                    'assignee': '-1',
+                                    '@dispname': i18n.gettext('Show Unassigned'),
+                                    '@startwith': 0,
+                                    })"
+                    i18n:translate="">Show Unassigned</a>
+          </li>
+          <li>
+            <a href="bug?@template=search&status=1" i18n:translate="">Search</a>
+          </li>
+          <li>
+            <form method="post" action="#" class='form-inline'>
+              <input class="input-small" type="text" name="@number"/>
+              <input type="submit" class="btn" value="Show bug" i18n:attributes="value"/>
+              <input type="hidden" name="@type" value="bug"/>
+              <input type="hidden" name="@action" value="show"/>
+            </form>
+          </li>
+        </ul>
+        <hr>
+        <ul tal:condition="python:request.user.hasPermission('View', 'task')" class='nav nav-list'>
+          <li class="nav-header"><i class='icon-briefcase'></i>Tasks</li>
+          <li><a href="/" i18n:translate="">Tasks</a></li>
+          <li tal:condition="python:request.user.hasPermission('Create', 'task')">
+            <a href="task?@template=item" i18n:translate="">Create New</a>
+          </li>
+          <li>
+            <a href="#" tal:attributes="href python:request.indexargs_url('task', {
+                                  '@sort': '-activity',
+                                  '@group': 'priority',
+                                  '@filter': 'status',
+                                  '@columns': task_columns_showall,
+                                  '@search_text': '',
+                                  'status': task_status_notclosed,
+                                  '@dispname': i18n.gettext('Show All'),
+                                  '@startwith': 0,
+                                  })"
+                  i18n:translate="">Show Open</a>
+          </li>
+          <li>
+            <a href="#" tal:attributes="href python:request.indexargs_url('task', {
+                                  '@sort': '-activity',
+                                  '@group': 'priority',
+                                  '@filter': 'status,assignee',
+                                  '@columns': task_columns,
+                                  '@search_text': '',
+                                  'status': task_status_notclosed,
+                                  'assignee': '-1',
+                                  '@dispname': i18n.gettext('Show Unassigned'),
+                                  '@startwith': 0,
+                                  })"
+                  i18n:translate="">Show Unassigned</a>
+          </li>
+          <li>
+            <a href="task?@template=search&status=1" i18n:translate="">Search</a>
+          </li>
+          <li>
+            <form method="post" action="#" class='form-inline'>
+              <input class="input-small" type="text" name="@number"/>
+              <input type="submit" class="btn" value="Show task" i18n:attributes="value"/>
+              <input type="hidden" name="@type" value="task"/>
+              <input type="hidden" name="@action" value="show"/>
+            </form>
+          </li>
+        </ul>
+        <hr>
+        <ul tal:condition="python:request.user.hasPermission('View', 'milestone')" class='nav nav-list'>
+          <li class='nav-header'><i class='icon-bullhorn'></i>Milestones</li>
+          <li><a href="milestone" i18n:translate="">Milestones</a></li>
+          <li tal:condition="python:request.user.hasPermission('Create', 'milestone')">
+            <a href="milestone?@template=item" i18n:translate="">Create New</a>
+          </li>
+          <li>
+            <a href="#" tal:attributes="href python:request.indexargs_url('milestone', {
+                                  '@filter': 'status',
+                                  'status': milestone_status_notclosed,
+                                  '@dispname': i18n.gettext('Show Open'),
+                                  '@startwith': 0,
+                                  })"
+                  i18n:translate="">Show Open</a>
+          </li>
+        </ul>
+        <hr>
+        <div tal:condition="python:request.user.username=='anonymous'">
+          <ul class='nav nav-list'>
+            <li>
+              <form method="post" action="#">
+                <fieldset>
+                  <legend><i class='icon-user'></i>Login form</legend>
+                  <input name="__login_name" type='text' placeholder='Username' i18n:attributes="placeholder">
+                  <input type="password" name="__login_password" placeholder='Password' i18n:attributes="placeholder">
+                  <input type="hidden" name="@action" value="Login"/>
+                  <label class='checkbox'>
+                    <input type="checkbox" name="remember" id="remember">Remember me?
+                  </label>
+                  <input type="submit" value="Login" i18n:attributes="value" class='btn'>
+                  <input type="hidden" name="__came_from" tal:attributes="value string:${request/env/PATH_INFO}"/>
+                  <span tal:replace="structure request/indexargs_form" />
+                </fieldset>
+              </form>
+            </li>
+            <li>
+             <a href="user?@template=register"
+                tal:condition="python:request.user.hasPermission('Create', 'user')"
+                i18n:translate="">Register</a>
+            </li>
+            <li>
+             <a href="user?@template=forgotten" i18n:translate="">Lost&nbsp;your&nbsp;login?</a>
+            </li>
+           </ul>
+         </div>
+         <div tal:condition="python:request.user.username != 'anonymous'" class="submenu">
+          <ul class='nav nav-list'>
+            <li class="nav-header"><i class='icon-user'></i><b tal:replace="request/user/username">username</b></li>
+            <li>
+              <a href="#" tal:attributes="href python:request.indexargs_url('bug', {
+                                         '@sort': '-activity',
+                                         '@group': 'priority',
+                                         '@filter': 'status,assignee',
+                                         '@columns': bug_columns,
+                                         '@search_text': '',
+                                         'status': bug_status_notclosed,
+                                         'assignee': request.user.id,
+                                         '@dispname': i18n.gettext('Bugs assigned to you'),
+                                         '@startwith': 0})"
+                        i18n:translate="">Bugs assigned to you</a>
+            </li>
+            <li>
+              <a tal:attributes="href string:user${request/user/id}" i18n:translate="">Your Details</a>
+            </li>
+            <li>
+              <a tal:attributes="href python:request.indexargs_url('', {'@action':'logout'})" 
+                 i18n:translate="">Logout</a>
+           </li>
+           <li class="" tal:condition="python:request.user.hasPermission('View', 'query')">
+              <span i18n:translate=""><b>Your Queries</b> (<a class="nomargin" href="query?@template=edit">edit</a>)</span><br/>
+              <ul tal:repeat="qs request/user/queries">
+                <li>
+                  <a tal:attributes="href string:${qs/klass}?${qs/url}&@dispname=${qs/name}" tal:content="qs/name">link</a>
+                </li>
+              </ul>
+           </li>
+           <li class="" tal:condition="python:request.user.hasPermission('View', 'user')">
+            <b i18n:translate="">Administration</b>
+            <ul>
+             <li tal:condition="python:request.user.hasPermission('Edit', None)">
+              <a href="home?@template=classlist" i18n:translate="">Class List</a>
+             </li>
+             <li tal:condition="python:request.user.hasPermission('View', 'user')
+                                or request.user.hasPermission('Edit', 'user')">
+              <a href="user?@sort=username"  i18n:translate="">User List</a>
+             </li>
+             <li tal:condition="python:request.user.hasPermission('Create', 'user')">
+              <a href="user?@template=item" i18n:translate="">Add User</a>
+             </li>
+             <li tal:condition="python:request.user.hasPermission('Edit', 'keyword')">
+              <a href="keyword" i18n:translate="">Edit Keywords</a>
+             </li>
+            </ul>
+           </li>
+          </ul>
+         </div>
+      </div> <!-- well -->
+      <div class="span8">
+       <h1 id="breadcrumb"><span metal:define-slot="body_title">body title</span></h1>
+       <p tal:condition="options/error_message | nothing" class="alert alert-error"
+          tal:repeat="m options/error_message"
+          tal:content="structure string:$m <br/ > " />
+       <p tal:condition="options/ok_message | nothing" class="alert alert-success">
+        <span tal:repeat="m options/ok_message"
+              tal:content="structure string:$m <br/ > " />
+        <a class="form-small" tal:attributes="href request/current_url"
+           i18n:translate="">clear this message</a>
+       </p>
+       <tal:block metal:define-slot="content">Page content goes here</tal:block>
+      </div> <!-- span8 -->
+    </div> <!-- row-fluid -->
+    <footer>
+      <hr>
+      A <a href='http://roundup.sourceforge.net/'>roundup</a> instance.
+      Last modified: Wed Dec 13 2012.
+    </footer>
+  </div> <!-- container -->
+  <pre tal:condition="request/form/deissue | nothing" tal:content="request"></pre>
+ </body>
+</html>
+</tal:block>
+
+<!--
+The following macros are intended to be used in search pages.
+
+The invoking context must define a "name" variable which names the
+property being searched.
+
+See issue.search.html in the classic template for examples.
+-->
+
+<!-- creates a th and a label: -->
+<th metal:define-macro="th_label"
+    tal:define="required required | python:[]"
+    tal:attributes="class python:(name in required) and 'required' or nothing">
+  <label tal:attributes="for name" tal:content="label" i18n:translate="">text</label>
+	<metal:x define-slot="behind_the_label" />
+</th>
+
+<td metal:define-macro="search_input">
+  <input tal:attributes="value python:request.form.getvalue(name) or nothing;
+                         name name;
+                         id name"/>
+</td>
+
+<td metal:define-macro="search_date">
+  <input tal:attributes="value python:request.form.getvalue(name) or nothing;
+                         name name;
+                         id name"/>
+  <a class="classhelp"
+	 tal:attributes="href python:'''javascript:help_window('task?@template=calendar&property=%s&form=itemSynopsis', 300, 200)'''%name">(cal)</a>
+</td>
+
+<td metal:define-macro="search_popup">
+  <!--
+    context needs to specify the popup "columns" as a comma-separated
+    string (eg. "id,title" or "id,name,description") as well as name
+  -->
+  <input tal:attributes="value python:request.form.getvalue(name) or nothing;
+                         name name;
+                         id name"/>
+  <span tal:replace="structure python:db.task.classhelp(columns,
+                                      property=name)" />
+</td>
+
+<td metal:define-macro="search_select">
+  <select tal:attributes="name name; id name"
+          tal:define="value python:request.form.getvalue(name)">
+    <option value="" i18n:translate="">don't care</option>
+    <metal:slot define-slot="extra_options" />
+    <option value="" i18n:translate="" disabled="disabled">------------</option>
+    <option tal:repeat="s python:db[db_klass].list()"
+            tal:attributes="value s/id; selected python:value == s.id"
+            tal:content="python:s[db_content]"></option>
+  </select>
+</td>
+
+<td metal:define-macro="search_select_keywords">
+  <div tal:attributes="id python:'''keywords_%s'''%name">
+  <select tal:attributes="name name; id name"
+          tal:define="value python:request.form.getvalue(name)">
+    <option value="" i18n:translate="">don't care</option>
+    <metal:slot define-slot="extra_options" />
+    <option value="" i18n:translate="" disabled="disabled">------------</option>
+    <option tal:repeat="s python:db[db_klass].list()"
+            tal:attributes="value s/id; selected python:value == s.id"
+            tal:content="python:s[db_content]"></option>
+  </select>
+  <a class="classhelp"
+	 tal:attributes="href python:'''javascript:help_window('%s?@template=keywords_expr&property=%s&form=itemSynopsis', 300, 200)'''%(request.classname, name)">(edit)</a>
+  </div>
+</td>
+
+<!-- like search_select, but translates the further values.
+Could extend it (METAL 1.1 attribute "extend-macro")
+-->
+<td metal:define-macro="search_select_translated">
+  <select tal:attributes="name name; id name"
+          tal:define="value python:request.form.getvalue(name)">
+    <option value="" i18n:translate="">don't care</option>
+    <metal:slot define-slot="extra_options" />
+    <option value="" i18n:translate="" disabled="disabled">------------</option>
+    <option tal:repeat="s python:db[db_klass].list()"
+            tal:attributes="value s/id; selected python:value == s.id"
+						tal:content="python:s[db_content]"
+						i18n:translate=""></option>
+  </select>
+</td>
+
+<!-- currently, there is no convenient API to get a list of all roles -->
+<td metal:define-macro="search_select_roles"
+	  tal:define="onchange onchange | nothing">
+  <select name="roles" id="roles" tal:attributes="onchange onchange">
+    <option value="" i18n:translate="">don't care</option>
+    <option value="" i18n:translate="" disabled="disabled">------------</option>
+    <option value="User">User</option>
+    <option value="Developer">Developer</option>
+    <option value="Coordinator">Coordinator</option>
+  </select>
+</td>
+
+<td metal:define-macro="search_multiselect">
+  <input tal:attributes="value python:request.form.getvalue(name) or nothing;
+                         name name;
+                         id name"/>
+  <span tal:replace="structure python:db[db_klass].classhelp(db_content,
+                                        property=name, width='600')" />
+</td>
+
+<td metal:define-macro="search_checkboxes">
+ <ul class="search-checkboxes"
+     tal:define="value python:request.form.getvalue(name);
+                 values python:value and value.split(',') or []">
+ <li tal:repeat="s python:db[db_klass].list()">
+  <input type="checkbox" tal:attributes="name name; id string:$name-${s/id};
+    value s/id; checked python:s.id in values" />
+  <label tal:attributes="for string:$name-${s/id}"
+         tal:content="python:s[db_content]" />
+ </li>
+ <li metal:define-slot="no_value_item">
+  <input type="checkbox" value="-1" tal:attributes="name name;
+     id string:$name--1; checked python:value == '-1'" />
+  <label tal:attributes="for string:$name--1" i18n:translate="">no value</label>
+ </li>
+ </ul>
+</td>
+
+<td metal:define-macro="column_input">
+  <input type="checkbox" name="@columns"
+         tal:attributes="value name;
+                         checked python:name in cols"/>
+</td>
+
+<td metal:define-macro="sort_input">
+  <input type="radio" name="@sort"
+         tal:attributes="value name;
+                         checked python:name == sort_on"/>
+</td>
+
+<td metal:define-macro="group_input">
+  <input type="radio" name="@group"
+         tal:attributes="value name;
+                         checked python:name == group_on"/>
+</td>
+
+<!--
+The following macros are intended for user editing.
+
+The invoking context must define a "name" variable which names the
+property being searched; the "edit_ok" variable tells whether the
+current user is allowed to edit.
+
+See user.item.html in the classic template for examples.
+-->
+<script metal:define-macro="user_utils" type="text/javascript" src="@@file/user_utils.js"></script>
+
+<!-- src: value will be re-used for other input fields -->
+<input metal:define-macro="user_src_input"
+    type="text" tal:attributes="onblur python:edit_ok and 'split_name(this)';
+    id name; name name; value value; readonly not:edit_ok"
+    value="heinz.kunz"/>
+<!-- normal: no re-using -->
+<input metal:define-macro="user_normal_input" type="text"
+    tal:attributes="id name; name name; value value; readonly not:edit_ok"
+    value="heinz"/>
+<!-- password: type; no initial value -->
+    <input metal:define-macro="user_pw_input" type="password"
+    tal:attributes="id name; name name; readonly not:edit_ok" value=""/>
+    <input metal:define-macro="user_confirm_input" type="password"
+    tal:attributes="id name; name string:@confirm@$name; readonly not:edit_ok" value=""/>

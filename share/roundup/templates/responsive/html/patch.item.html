@@ -1,0 +1,172 @@
+<tal:block metal:use-macro="templates/page/macros/frame">
+<title metal:fill-slot="head_title" i18n:translate="">Patch display - <span
+ i18n:name="tracker" tal:replace="config/TRACKER_NAME" /></title>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1"
+ i18n:translate="">Modify patch</span>
+
+<td class="content" metal:fill-slot="content">
+
+<p tal:condition="python:not (context.is_view_ok()
+ or request.user.hasRole('Anonymous'))" i18n:translate="">
+ You are not allowed to view this page.</p>
+
+<p tal:condition="python:not context.is_view_ok()
+ and request.user.hasRole('Anonymous')" i18n:translate="">
+ Please login with your username and password.</p>
+
+<form method="POST" onSubmit="return submit_once()"
+      enctype="multipart/form-data" tal:condition="context/is_view_ok"
+      tal:attributes="action context/designator">
+
+<table class="form">
+ <tr>
+  <th i18n:translate="">Name</th>
+  <td tal:content="structure context/name/field"></td>
+ </tr>
+ <tr>
+  <th i18n:translate="">Description</th>
+  <td tal:content="structure context/description/field"></td>
+ </tr>
+ <tr>
+  <th i18n:translate="">Content Type</th>
+  <td tal:content="structure context/type/field"/>
+  <td style="border: none" tal:condition="python: context.is_edit_ok()">Please note that
+  for security reasons, it's not permitted to set content type to <i>text/html</i>.</td>
+ </tr>
+ <tr>
+  <th i18n:translate="">Repository</th>
+  <td tal:content="structure context/repository/field"></td>
+ </tr>
+ <tr>
+  <th i18n:translate="">Repository revision</th>
+  <td tal:content="structure context/revision/field"></td>
+ </tr>
+ <tr tal:condition="python:context.is_edit_ok()">
+  <td>
+   &nbsp;
+   <input type="hidden" name="@template" value="item">
+   <input type="hidden" name="@required" value="name,type">
+   <input type="hidden" name="@multilink"
+          tal:condition="python:request.form.has_key('@multilink')"
+          tal:attributes="value request/form/@multilink/value">
+  </td>
+  <td tal:content="structure context/submit">submit button here</td>
+ </tr>
+</table>
+</form>
+
+<!--<p tal:condition="python:utils.sb_is_spam(context)" class="error-message">
+   File has been classified as spam.</p>-->
+
+<a tal:condition="python:context.id and context.content.is_view_ok()"
+ tal:attributes="href string:patch${context/id}/${context/name}"
+ i18n:translate="">download</a>
+
+<!--<p tal:condition="python:context.id and not context.content.is_view_ok()">
+   Files classified as spam are not available for download by
+   unathorized users. If you think the file has been misclassified,
+   please login and click on the button for reclassification.
+</p>-->
+
+
+<!--     <form method="POST" onSubmit="return submit_once()"
+       enctype="multipart/form-data"
+       tal:attributes="action context/designator"
+       tal:condition="python:request.user.hasPermission('SB: May Classify')">
+ 
+      <input type="hidden" name="@action" value="spambayes_classify">
+      <input type="submit" name="trainspam" value="Mark as SPAM" i18n:attributes="value">
+      <input type="submit" name="trainham" value="Mark as HAM (not SPAM)" i18n:attributes="value">
+     </form>-->
+
+<tal:block tal:condition="context/id" tal:replace="structure context/history" />
+
+</td>
+
+</tal:block>
+<tal:block metal:use-macro="templates/page/macros/frame">
+<title metal:fill-slot="head_title" i18n:translate="">Patch display - <span
+ i18n:name="tracker" tal:replace="config/TRACKER_NAME" /></title>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1"
+ i18n:translate="">Patch display</span>
+
+<td class="content" metal:fill-slot="content">
+
+<p tal:condition="python:not (context.is_view_ok()
+ or request.user.hasRole('Anonymous'))" i18n:translate="">
+ You are not allowed to view this page.</p>
+
+<p tal:condition="python:not context.is_view_ok()
+ and request.user.hasRole('Anonymous')" i18n:translate="">
+ Please login with your username and password.</p>
+
+<form method="POST" onSubmit="return submit_once()"
+      enctype="multipart/form-data" tal:condition="context/is_view_ok"
+      tal:attributes="action context/designator">
+
+<table class="form">
+ <tr>
+  <th i18n:translate="">Name</th>
+  <td tal:content="structure context/name/field"></td>
+ </tr>
+ <tr>
+  <th i18n:translate="">Description</th>
+  <td tal:content="structure context/description/field"></td>
+ </tr>
+ <tr>
+  <th i18n:translate="">Content Type</th>
+  <td tal:content="structure context/type/field"/>
+  <td style="border: none" tal:condition="python: context.is_edit_ok()">Please note that
+  for security reasons, it's not permitted to set content type to <i>text/html</i>.</td>
+ </tr>
+ <tr>
+  <th i18n:translate="">Repository</th>
+  <td tal:content="structure context/repository/field"></td>
+ </tr>
+ <tr>
+  <th i18n:translate="">Repository revision</th>
+  <td tal:content="structure context/revision/field"></td>
+ </tr>
+ <tr tal:condition="python:context.is_edit_ok()">
+  <td>
+   &nbsp;
+   <input type="hidden" name="@template" value="item">
+   <input type="hidden" name="@required" value="name,type">
+   <input type="hidden" name="@multilink"
+          tal:condition="python:request.form.has_key('@multilink')"
+          tal:attributes="value request/form/@multilink/value">
+  </td>
+  <td tal:content="structure context/submit">submit button here</td>
+ </tr>
+</table>
+</form>
+
+<!--<p tal:condition="python:utils.sb_is_spam(context)" class="error-message">
+   File has been classified as spam.</p>-->
+
+<a tal:condition="python:context.id and context.content.is_view_ok()"
+ tal:attributes="href string:patch${context/id}/${context/name}"
+ i18n:translate="">download</a>
+
+<!--<p tal:condition="python:context.id and not context.content.is_view_ok()">
+   Files classified as spam are not available for download by
+   unathorized users. If you think the file has been misclassified,
+   please login and click on the button for reclassification.
+</p>-->
+
+
+<!--     <form method="POST" onSubmit="return submit_once()"
+       enctype="multipart/form-data"
+       tal:attributes="action context/designator"
+       tal:condition="python:request.user.hasPermission('SB: May Classify')">
+ 
+      <input type="hidden" name="@action" value="spambayes_classify">
+      <input type="submit" name="trainspam" value="Mark as SPAM" i18n:attributes="value">
+      <input type="submit" name="trainham" value="Mark as HAM (not SPAM)" i18n:attributes="value">
+     </form>-->
+
+<tal:block tal:condition="context/id" tal:replace="structure context/history" />
+
+</td>
+
+</tal:block>

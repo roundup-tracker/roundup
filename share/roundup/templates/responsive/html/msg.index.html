@@ -1,0 +1,26 @@
+<tal:block metal:use-macro="templates/page/macros/frame">
+<title metal:fill-slot="head_title" i18n:translate=""
+ >List of messages - <span tal:replace="config/TRACKER_NAME"
+ i18n:name="tracker"/></title>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1"
+ i18n:translate="">Message listing</span>
+<td class="content" metal:fill-slot="content">
+<table tal:define="batch request/batch" class="messages">
+ <tr><th colspan=3 class="header" i18n:translate="">Messages</th></tr>
+ <tal:block tal:repeat="msg batch">
+  <tr>
+   <th><a tal:attributes="href string:msg${msg/id}"><tal:x replace="msg/id"/></a></th>
+   <th tal:content="string:Author: ${msg/author}">author</th>
+   <th tal:content="string:Date: ${msg/date}">date</th>
+  </tr>
+  <tr>
+   <td colspan="3"><pre tal:content="msg/content">content</pre></td>
+  </tr>
+ </tal:block>
+
+ <metal:block use-macro="templates/issue.index/macros/batch-footer" />
+
+</table>
+</td>
+
+</tal:block>

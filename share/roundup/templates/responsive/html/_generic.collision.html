@@ -1,0 +1,16 @@
+<tal:block metal:use-macro="templates/page/macros/frame">
+<title metal:fill-slot="head_title" i18n:translate=""
+ ><span tal:replace="python:context._classname.capitalize()"
+ i18n:name="class" /> Edit Collision - <span i18n:name="tracker"
+ tal:replace="config/TRACKER_NAME" /></title>
+<tal:block metal:fill-slot="body_title" i18n:translate=""
+ ><span tal:replace="python:context._classname.capitalize()"
+ i18n:name="class" /> Edit Collision</tal:block>
+
+<td class="content" metal:fill-slot="content" i18n:translate="
+  There has been a collision. Another user updated this node
+  while you were editing. Please <a href='${context}'>reload</a>
+  the node and review your edits.
+"><span tal:replace="context/designator" i18n:name="context" />
+</td>
+</tal:block>

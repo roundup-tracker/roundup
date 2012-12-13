@@ -1,0 +1,32 @@
+<tal:block metal:use-macro="templates/page/macros/frame">
+<title metal:fill-slot="head_title" i18n:translate=""
+ >List of files - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker" /></title>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1"
+  i18n:translate="">List of files</span>
+<td class="content" metal:fill-slot="content">
+
+<table class="otherinfo" tal:define="batch request/batch">
+ <tr><th style="padding-right: 10" i18n:translate="">Download</th>
+     <th style="padding-right: 10" i18n:translate="">Description</th>
+     <th style="padding-right: 10" i18n:translate="">Content Type</th>
+     <th style="padding-right: 10" i18n:translate="">Uploaded By</th>
+     <th style="padding-right: 10" i18n:translate="">Date</th>
+ </tr>
+ <tr tal:repeat="file batch" tal:attributes="class python:['normal', 'alt'][repeat['file'].index%6/3]">
+  <td>
+   <a tal:attributes="href string:file${file/id}/${file/name}"
+      tal:content="file/name">dld link</a>
+  </td>
+  <td tal:content="file/description">description</td>
+  <td tal:content="file/type">content type</td>
+  <td tal:content="file/creator">creator's name</td>
+  <td tal:content="file/creation">creation date</td>
+ </tr>
+
+ <metal:block use-macro="templates/issue.index/macros/batch-footer" />
+
+</table>
+
+</td>
+
+</tal:block>
