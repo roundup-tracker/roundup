@@ -81,7 +81,7 @@ def main():
     templates = [t['path']
                  for t in listTemplates('share/roundup/templates').values()]
     for tdir in templates:
-        for idir in '. detectors extensions html'.split():
+        for idir in '. detectors extensions html static'.split():
             data_files.append(include(os.path.join(tdir, idir), '*'))
 
     # add message files
