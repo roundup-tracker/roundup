@@ -869,6 +869,13 @@ Sample additional detectors that have been found useful will appear in
 the ``'detectors'`` directory of the Roundup distribution. If you want
 to use one, copy it to the ``'detectors'`` of your tracker instance:
 
+**irker.py**
+  This detector sends notification on IRC through an irker daemon
+  (http://www.catb.org/esr/irker/) when issues are created or messages
+  are added.  In order to use it you need to install irker, start the
+  irkerd daemon, and add an ``[irker]`` section in ``detectors/config.ini``
+  that contains a comma-separated list of channels where the messages should
+  be sent, e.g. ``channels = irc://chat.freenode.net/channelname``.
 **newissuecopy.py**
   This detector sends an email to a team address whenever a new issue is
   created. The address is hard-coded into the detector, so edit it
