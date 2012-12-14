@@ -2,7 +2,7 @@
 <tal:block metal:fill-slot="content">
 <tal:block tal:condition="python:request.form.has_key('property')">
  <form name="frm_help" action="#">
-     <table class="classhelp"
+     <table class="table"
             tal:define="props python:request.form['properties'].value.split(',');
                         legend templates/help/macros/legend;
                         navigation templates/help/macros/batch_navi;

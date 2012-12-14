@@ -15,6 +15,7 @@
       body { padding-top: 80px; padding-bottom: 40px; }
     </style>
     <link rel="stylesheet" href="@@file/bootstrap-responsive.min.css">
+    <link rel="stylesheet" href="@@file/style.css">
     <script tal:replace="structure request/base_javascript"></script>
     <metal:x define-slot="more-javascript" />
   </head>
@@ -52,7 +53,7 @@
       </div> <!-- container -->
     </div> <!-- navbar-inner -->
   </div> <!-- navbar -->
-  <div class='container'>
+  <div class='container-fluid'>
     <div class='row-fluid'>
       <div class="span3 well">
         <ul tal:condition="python:request.user.hasPermission('View', 'bug')" class='nav nav-list'>
@@ -246,7 +247,7 @@
          </div>
       </div> <!-- well -->
       <div class="span8">
-       <h1 id="breadcrumb"><span metal:define-slot="body_title">body title</span></h1>
+       <h1><span metal:define-slot="body_title">body title</span></h1>
        <p tal:condition="options/error_message | nothing" class="alert alert-error"
           tal:repeat="m options/error_message"
           tal:content="structure string:$m <br/ > " />

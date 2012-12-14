@@ -1049,7 +1049,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         if direction == 'ascending':
             l.reverse()
 
-        l[0:0] = ['<table class="history">'
+        l[0:0] = ['<table class="history table table-condensed table-striped">'
              '<tr><th colspan="4" class="header">',
              self._('History'),
              '</th></tr><tr>',

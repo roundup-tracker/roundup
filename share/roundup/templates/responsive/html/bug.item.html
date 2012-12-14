@@ -22,300 +22,331 @@
   replace="context/id" i18n:name="id" /> Editing</span>
 </tal:block>
 
-<td class="content" metal:fill-slot="content">
+<div metal:fill-slot="content">
 
-<p tal:condition="python:not (context.is_view_ok()
- or request.user.hasRole('Anonymous'))" i18n:translate="">
- You are not allowed to view this page.</p>
+  <p tal:condition="python:not (context.is_view_ok()
+   or request.user.hasRole('Anonymous'))" i18n:translate="" class='alert alert-error'>
+   You are not allowed to view this page.</p>
 
-<p tal:condition="python:not context.is_view_ok()
- and request.user.hasRole('Anonymous')" i18n:translate="">
- Please login with your username and password.</p>
+  <p tal:condition="python:not context.is_view_ok()
+   and request.user.hasRole('Anonymous')" i18n:translate="" class='alert alert-error'>
+   Please login with your username and password.</p>
 
-<div tal:condition="context/is_view_ok">
+  <div tal:condition="context/is_view_ok">
+    <form method="POST" name="itemSynopsis" class='form-horizontal'
+        onSubmit="return submit_once()" enctype="multipart/form-data"
+        tal:attributes="action context/designator">
 
-<form method="POST" name="itemSynopsis"
-      onSubmit="return submit_once()" enctype="multipart/form-data"
-      tal:attributes="action context/designator">
+      <fieldset>
+        <legend>classification</legend>
+        <div class='container-fluid'>
+          <!-- TITLE -->
+          <div class='control-group vspace-two' tal:condition="context/title/is_edit_ok">
+            <label class='control-label'  for='bug_title' i18n:translate="">Title</label>
+            <div class='controls'>
+              <input class='input-xxlarge' type='text' name='title' id='bug_title' tal:attributes="value context/title">
+            </div>
+          </div>
+          <div class='control-group vspace-two' tal:condition="not:context/title/is_edit_ok">
+            <label class='control-label' i18n:translate="">Title</label>
+            <div class='controls'>
+              <span class='input-xxlarge uneditable-input' tal:content="structure context/title/plain"></span>
+            </div>
+          </div>
+          
+          <div class='row-fluid'>
+            <!-- TYPE -->
+            <div class='control-group span6'>
+              <label class='control-label' for='bug_type'
+                    tal:condition="context/type/is_edit_ok" i18n:translate="">
+                <span tal:condition="context/type/is_edit_ok" 
+                      tal:replace="structure python:db.bug_type.classhelp('id,name,description',property='type',label='Type')" />
+              </label>
+              <label class='control-label' for='bug_type'
+                  tal:condition="not:context/type/is_edit_ok" i18n:translate="">Type</label>
+              <div class='controls' tal:content="structure context/type/menu">
+                <!-- ; -->
+              </div>
+            </div>
+            <!-- Severity -->
+            <div class='control-group span6'>
+              <label class='control-label' for='bug_severity'
+                    tal:condition="context/severity/is_edit_ok" i18n:translate="">
+                <span tal:condition="context/severity/is_edit_ok" 
+                    tal:replace="structure python:db.severity.classhelp('id,name,description',property='severity',label='Severity')" />
+              </label>
+              <label class='control-label' for='bug_severity'
+                  tal:condition="not:context/severity/is_edit_ok" i18n:translate="">Severity</label>
+              <div class='controls' tal:content="structure context/severity/menu">
+                <!-- ; -->
+              </div>
+            </div>
+          </div> <!-- row-fluid -->
 
-<fieldset><legend>classification</legend>
-<table class="form">
-<tr>
- <th class="required" i18n:translate="">Title:</th>
- <td colspan="3" tal:condition="context/title/is_edit_ok"
-     tal:content="structure python:context.title.field(size=40)">title</td>
- <td colspan="3" tal:condition="not:context/title/is_edit_ok">
-  <span tal:content="structure context/title/plain"/>
-  <input type="hidden" name="title" tal:attributes="value context/title">
- </td>
-</tr>
+          <div class='row-fluid'>
+            <!-- Components -->
+            <div class='control-group span6'>
+              <label class='control-label' for='bug_components'
+                    tal:condition="context/components/is_edit_ok" i18n:translate="">
+                <span tal:condition="context/components/is_edit_ok" 
+                    tal:replace="structure python:db.component.classhelp('id,name,description',property='components',label='Components')" />
+              </label>
+              <label class='control-label' for='bug_components'
+                  tal:condition="not:context/components/is_edit_ok" i18n:translate="">component</label>
+              <div class='controls' tal:content="structure context/components/menu">
+                <!-- ; -->
+              </div>
+            </div>
+            <!-- Versions -->
+            <div class='control-group span6'>
+              <label class='control-label' for='bug_versions'
+                    tal:condition="context/versions/is_edit_ok" i18n:translate="">
+                <span tal:condition="context/versions/is_edit_ok" 
+                    tal:replace="structure python:db.version.classhelp('id,name,description',property='versions',label='Versions')" />
+              </label>
+              <label class='control-label' for='bug_versions'
+                  tal:condition="not:context/versions/is_edit_ok" i18n:translate="">Versions</label>
+              <div class='controls' tal:content="structure context/versions/menu">
+                <!-- ; -->
+              </div>
+            </div>
+          </div> <!-- row-fluid -->
+        </div> <!-- container-fluid -->
+      </fieldset>
 
-<tr>
- <th class="required" i18n:translate="">
-   <span tal:condition="context/type/is_edit_ok" 
-         tal:replace="structure python:db.bug_type.classhelp('id,name,description',property='type',label='Type')" />
-   <span tal:condition="not:context/type/is_edit_ok">Type</span>:
- </th>
- <td tal:content="structure context/type/menu">type</td>
- <th i18n:translate="">
-   <span tal:condition="context/severity/is_edit_ok"
-         tal:replace="structure python:db.severity.classhelp('id,name,description',property='severity',label='Severity')" />
-   <span tal:condition="not:context/severity/is_edit_ok">Severity</span>:
- </th>
- <td tal:content="structure context/severity/menu">severity</td>
-</tr>
+      <fieldset>
+        <legend>process</legend>
+        <div class='container-fluid'>
+          <div class='row-fluid vspace-two' tal:condition="context/id">
+            <!-- Status -->
+            <div class='control-group span6'>
+              <label class='control-label' for='process_status'
+                    tal:condition="context/status/is_edit_ok" i18n:translate="">
+                <span tal:condition="context/status/is_edit_ok" 
+                    tal:replace="structure python:db.status.classhelp('id,name,description',property='status', label='Status')" />
+              </label>
+              <label class='control-label' for='process_status'
+                  tal:condition="not:context/status/is_edit_ok" i18n:translate="">Status</label>
+              <div class='controls' tal:content="structure context/status/menu">
+                <!-- ; -->
+              </div>
+            </div>
+            <!-- Resolution -->
+            <div class='control-group span6'>
+              <label class='control-label' for='process_resolution'
+                    tal:condition="context/resolution/is_edit_ok" i18n:translate="">
+                <span tal:condition="context/resolution/is_edit_ok" 
+                    tal:replace="structure python:db.resolution.classhelp('id,name,description',property='resolution', label='Resolution')" />
+              </label>
+              <label class='control-label' for='process_resolution'
+                  tal:condition="not:context/resolution/is_edit_ok" i18n:translate="">Resolution</label>
+              <div class='controls' tal:content="structure context/resolution/menu">
+                <!-- ; -->
+              </div>
+            </div>
+          </div> <!-- row-fluid -->
 
-<tr>
- <th i18n:translate="">
-   <span tal:condition="context/components/is_edit_ok" 
-         tal:replace="structure python:db.component.classhelp('id,name,description',property='components',label='Components')" />
-   <span tal:condition="not:context/components/is_edit_ok">Components</span>:
- </th>
- <td tal:content="structure context/components/menu">components</td>
- <th i18n:translate="">
-   <span tal:condition="context/versions/is_edit_ok" 
-         tal:replace="structure python:db.version.classhelp('id,name,description',property='versions',label='Versions')" />
-   <span tal:condition="not:context/versions/is_edit_ok">Versions</span>:
- </th>
- <td tal:content="structure context/versions/menu">versions</td>
-</tr>
-</table>
-</fieldset>
+          <div class='row-fluid' tal:condition="context/id">
+            <!-- Dependencies -->
+            <div class='control-group span6'>
+              <tal:block i18n:translate="">Dependencies</tal:block>:
+              <span tal:condition="context/dependencies/is_edit_ok"
+                  tal:replace="structure python:db.bug.classhelp('id,title', filter='status=0,1', property='dependencies')" />
+              <div class='controls'>
+                <span tal:replace="structure python:context.dependencies.field(showid=1,size=20)" />
+                <span tal:condition="context/dependencies" tal:repeat="d python:context.dependencies.sorted('creation')">
+                  View: <a tal:attributes="href string:bug${d/id}" tal:content="d/id"></a>
+                </span>
+              </div>
+            </div>
+            <!-- Superseder -->
+            <div class='control-group span6'>
+              <label class='control-label'>Superseder</label>
+              <!-- FIXME
+              <tal:block i18n:translate="">Superseder</tal:block>:
+              <span tal:condition="context/superseder/is_edit_ok"
+                  tal:replace="structure python:db.bug.classhelp('id,title', filter='status=0,1', property='superseder')" />
+              -->
+              <div class='controls'>
+                <span tal:replace="structure python:context.superseder.field(showid=1, size=20)" />
+                <span tal:condition="context/superseder">
+                  <span i18n:translate="">View</span>:
+                  <a tal:content="context/superseder/id"
+                      tal:attributes="href string:bug${context/superseder/id}; title context/superseder/title;"></a> 
+                </span> 
+              </div>
+            </div>
+          </div> <!-- row-fluid -->
 
-<fieldset><legend>process</legend>
-<table class="form">
-<tr tal:condition="context/id">
- <th i18n:translate="">
-   <span tal:condition="context/status/is_edit_ok" 
-         tal:replace="structure python:db.status.classhelp('id,name,description',property='status', label='Status')" />
-   <span tal:condition="not:context/status/is_edit_ok">Status</span>:
- </th>
- <td tal:content="structure context/status/menu">status</td>
- <th i18n:translate="">
-   <span tal:condition="context/resolution/is_edit_ok" 
-         tal:replace="structure python:db.resolution.classhelp('id,name,description',property='resolution', label='Resolution')" />
-   <span tal:condition="not:context/resolution/is_edit_ok">Resolution</span>:
- </th>
- <td tal:content="structure context/resolution/menu">resolution</td>
-</tr>
+          <div class='row-fluid' tal:condition="context/id">
+            <!-- Assignee -->
+            <div class='control-group span6'>
+              <label class='control-label'>
+                <tal:block i18n:translate="">Assigned To</tal:block>
+              </label>
+              <div class='controls'>
+                <span tal:content="structure context/assignee/menu">assignedto menu</span>
+              </div>
+            </div>
+            <!-- Nosy list -->
+            <div class='control-group span6'>
+              <label class='control-label' for='nosy'><tal:block i18n:translate="">Nosy List</tal:block></label>
+              <div class='controls'>
+                <span tal:condition="context/nosy/is_edit_ok"
+                    tal:replace="structure python:db.user.classhelp('username,realname,address', property='nosy')" />
+                <span tal:replace="structure context/nosy/field" />
+            </div>
+          </div> <!-- row-fluid -->
 
-<tr tal:condition="context/id">
- <th>
-  <tal:block i18n:translate="">Dependencies</tal:block>:
-  <span tal:condition="context/dependencies/is_edit_ok"
-        tal:replace="structure python:db.bug.classhelp('id,title', filter='status=0,1', property='dependencies')" />
- </th>
- <td>
-  <span tal:replace="structure python:context.dependencies.field(showid=1,size=20)" />
-  <span tal:condition="context/dependencies" tal:repeat="d python:context.dependencies.sorted('creation')">
-   <br/>View: <a tal:attributes="href string:bug${d/id}" tal:content="d/id"></a>
-  </span>
- </td>
- <th i18n:translate="">
-  <tal:block i18n:translate="">Superseder</tal:block>:
-  <span tal:condition="context/superseder/is_edit_ok"
-        tal:replace="structure python:db.bug.classhelp('id,title', filter='status=0,1', property='superseder')" />
- </th>
- <td>
-  <span tal:replace="structure python:context.superseder.field(showid=1, size=20)" />
- <span tal:condition="context/superseder">
-<!--   <br><span i18n:translate="">View</span>:
-     <a tal:repeat="sup context/superseder"
-        tal:content="python:sup['id'] + ', '*(not repeat['sup'].end)"
-        tal:attributes="href string:bug${sup/id}; title sup/title;"></a> -->
-   <br><span i18n:translate="">View</span>:
-     <a tal:content="context/superseder/id"
-        tal:attributes="href string:bug${context/superseder/id}; title context/superseder/title;"></a> 
-  </span> 
- </td>
- </tr>
- <tr>
- <th><tal:block i18n:translate="">Assigned To</tal:block>:</th>
- <td tal:content="structure context/assignee/menu">assignedto menu</td>
- <th><tal:block i18n:translate="">Nosy List</tal:block>:
-  <span tal:condition="context/nosy/is_edit_ok"
-        tal:replace="structure python:db.user.classhelp('username,realname,address', property='nosy')" />
- </th>
- <td>
-  <span tal:replace="structure context/nosy/field" />
- </td>
-</tr>
-<tr>
- <th>
-   <span tal:condition="context/priority/is_edit_ok"
-         tal:replace="structure python:db.priority.classhelp('id,name,description',property='priority',label='Priority')" />
-   <span tal:condition="not:context/priority/is_edit_ok">Priority</span>:
- </th>
- <td tal:content="structure context/priority/menu">priority</td>
- <th i18n:translate="">Keywords:</th>
- <td tal:content="structure python:context['keywords'].menu(height=5)">keywords</td>
+          <div class='row-fluid' tal:condition="context/id">
+            <!-- Priority -->
+            <div class='control-group span6'>
+              <label class='control-label' for='process_priority'
+                    tal:condition="context/priority/is_edit_ok" i18n:translate="">
+                <span tal:condition="context/priority/is_edit_ok" 
+                    tal:replace="structure python:db.priority.classhelp('id,name,description',property='priority',label='Priority')" />
+              </label>
+              <label class='control-label' for='process_priority'
+                  tal:condition="not:context/priority/is_edit_ok" i18n:translate="">Priority</label>
+              <div class='controls' tal:content="structure context/priority/menu">
+                <!-- ; -->
+              </div>
+            </div>
+            <!-- Keywords -->
+            <div class='control-group span6'>
+              <label class='control-label' i18n:translate="">Keywords:</label>
+              <div class='controls'>
+                <span tal:content="structure python:context['keywords'].menu(height=5)">keywords</span>
+              </div>
+            </div>
+          </div> <!-- row-fluid -->
 
+          <!-- and finally, allow people to say something important -->
+          <div class='row-fluid' tal:condition="context/id">
+            <div class='control-group' tal:condition="context/id">
+              <label class='control-label'>
+                <tal:block i18n:translate="">
+                  <span class='badge badge-inverse'>Comment</span>
+                  &nbsp;
+                </tal:block>
+              </label>
+              <textarea tal:content="request/form/@note/value | default"
+                      name="@note" rows="6" class='input-xxlarge'></textarea>
+            </div>
+          </div> <!-- row-fluid -->
 
-</tr>
-<tr tal:condition="context/is_edit_ok">
- <th><tal:block i18n:translate="">Comment</tal:block>:</th>
- <td colspan="3">
-  <textarea tal:content="request/form/@note/value | default"
-            name="@note" wrap="hard" rows="10" cols="60"></textarea>
- </td>
-</tr>
+          <!-- upload file -->
+          <div class='row-fluid' tal:condition="context/id">
+            <div class='control-group' tal:condition="context/id">
+              <label class='control-label'>
+                <tal:block i18n:translate="">File</tal:block>
+              </label>
+              <div class='controls'>
+                <input type="hidden" name="@link@files" value="file-1">
+                <input type="file" name="file-1@content" class='input-xlarge'>
+              </div>
+            </div>
+          </div> <!-- row-fluid -->
 
-<tr tal:condition="context/is_edit_ok">
- <th><tal:block i18n:translate="">File</tal:block>:</th>
- <td colspan="3">
-   <input type="hidden" name="@link@files" value="file-1">
-   <input type="file" name="file-1@content" size="35">
- </td>
-</tr>
-<tr tal:condition="context/is_edit_ok">
- <th><tal:block i18n:translate="">File Description</tal:block>:</th>
- <td colspan=3><input type="edit" name="file-1@description" size="40"></td>
-</tr>
+          <!-- file description -->
+          <div class='row-fluid' tal:condition="context/id">
+            <div class='control-group' tal:condition="context/id"> 
+              <label class='control-label'>
+                <tal:block i18n:translate="">File Description</tal:block>
+              </label>
+              <div class='controls'>
+                <input type="edit" name="file-1@description">
+              </div>
+            </div>
+          </div> <!-- row-fluid -->
+        </div> <!-- container-fluid -->
+      </fieldset>
 
-<!--
-<tr tal:condition="context/is_edit_ok">
- <th><tal:block i18n:translate="">Patch</tal:block>:</th>
- <td colspan="3">
-   <input type="hidden" name="@link@patches" value="patch-1"/>
-   <input type="file" name="patch-1@content" size="35"/>
- </td>
-</tr>
-<tr tal:condition="context/is_edit_ok">
- <th><tal:block i18n:translate="">Patch Description</tal:block>:</th>
- <td colspan=3><input type="edit" name="patch-1@description" size="40"></td>
-</tr>
-<tr tal:condition="context/is_edit_ok">
- <th><tal:block i18n:translate="">Repository</tal:block>:</th>
- <td colspan=3><input type="edit" name="patch-1@repository" size="40"></td>
-</tr>
-<tr tal:condition="context/is_edit_ok">
- <th><tal:block i18n:translate="">Repo. Revision</tal:block>:</th>
- <td colspan=3><input type="edit" name="patch-1@revision" size="40"></td>
-</tr>
--->
-</table>
-</fieldset>
-<div class="form-actions" tal:condition="context/is_edit_ok">
-  <input type="hidden" name="@template" value="item">
-  <input type="hidden" name="@required" value="title">
-  <span tal:replace="structure context/submit">submit button</span>
-  <a tal:condition="context/id" tal:attributes="href context/copy_url"
-   i18n:translate="" class='btn'>Make a copy</a>
-</div>
-</form>
-
-<p tal:condition="context/id" i18n:translate="">
- Created on <b><tal:x replace="python:context.creation.pretty('%Y-%m-%d %H:%M')" i18n:name="creation" /></b>
- by <b><tal:x replace="context/creator" i18n:name="creator" /></b>,
- last changed <b><tal:x replace="python:context.activity.pretty('%Y-%m-%d %H:%M')" i18n:name="activity" /></b>
- by <b><tal:x replace="context/actor" i18n:name="actor" /></b>.
-</p>
-
-<table class="files" tal:condition="context/files">
- <tr><th colspan="5" class="header" i18n:translate="">Files</th></tr>
- <tr>
-  <th i18n:translate="">File name</th>
-  <th i18n:translate="">Uploaded</th>
-  <th i18n:translate="">Description</th>
-  <th i18n:translate="">Edit</th>
-  <th i18n:translate="">Remove</th>
- </tr>
- <tr tal:repeat="file python:context.files.sorted('creation')">
-  <td>
-   <a tal:attributes="href file/download_url"
-      tal:content="file/name">dld link</a>
-  </td>
-  <td>
-   <span tal:content="file/creator">creator's name</span>,
-   <span tal:content="python:file.creation.pretty('%Y-%m-%d %H:%M')">creation date</span>
-  </td>
-  <td tal:content="file/description" />
-  <td><a tal:condition="file/is_edit_ok"
-          tal:attributes="href string:file${file/id}">edit</a>
-  </td>
-  <td>
-   <form style="padding:0" tal:condition="file/is_edit_ok"
-         tal:attributes="action string:bug${context/id}">
-    <input type="hidden" name="@remove@files" tal:attributes="value file/id">
-    <input type="hidden" name="@action" value="edit">
-    <input type="submit" value="remove" i18n:attributes="value">
-   </form>
-  </td>
- </tr>
-</table>
-<!--
-<table class="files" tal:condition="context/patches">
- <tr><th colspan="5" class="header" i18n:translate="">Patches</th></tr>
- <tr>
-  <th i18n:translate="">Patch name</th>
-  <th i18n:translate="">Uploaded</th>
-  <th i18n:translate="">Description</th>
-  <th i18n:translate="">View</th>
-  <th i18n:translate="">Edit</th>
-  <th i18n:translate="">Remove</th>
- </tr>
- <tr tal:repeat="patch python:context.patches.sorted('creation')">
-  <td>
-   <a tal:attributes="href patch/download_url"
-      tal:content="patch/name">dld link</a>
-  </td>
-  <td>
-   <span tal:content="patch/creator">creator's name</span>,
-   <span tal:content="python:patch.creation.pretty('%Y-%m-%d %H:%M')">creation date</span>
-  </td>
-  <td tal:content="patch/description" />
-  <td><a tal:attributes="href string:patch_view${patch/id}">Show patch</a>
-  </td>
-  <td><a tal:condition="patch/is_edit_ok"
-          tal:attributes="href string:patch${patch/id}">Edit</a>
-  </td>
-  <td>
-   <form style="padding:0" tal:condition="patch/is_edit_ok"
-         tal:attributes="action string:bug${context/id}">
-    <input type="hidden" name="@remove@patches" tal:attributes="value patch/id"/>
-    <input type="hidden" name="@action" value="edit"/>
-    <input type="submit" value="remove" i18n:attributes="value"/>
-   </form>
-  </td>
- </tr>
-</table>
--->
-<div class='container-fluid' tal:condition="context/messages">
-  <h3 i18n:translate="">Messages</h3>
-  <tal:block tal:repeat="msg context/messages">
-    <div class='row-fluid'>
-      <div class='span1'>
-        <a tal:attributes="href string:msg${msg/id}"
-          i18n:translate="">msg<tal:x replace="msg/id" i18n:name="id" /></a>
+      <div class="form-actions" tal:condition="context/is_edit_ok">
+        <input type="hidden" name="@template" value="item">
+        <input type="hidden" name="@required" value="title">
+        <span tal:replace="structure context/submit">submit button</span>
+        <a tal:condition="context/id" tal:attributes="href context/copy_url"
+         i18n:translate="" class='btn'>Make a copy</a>
       </div>
-      <div class='span7 offset2'>
-        <span i18n:translate="">Author: <tal:x replace="python:msg.author.realname.plain()"
-          i18n:name="author" /> (<tal:x replace="msg/author"/>)</span>
-        <span i18n:translate="">Date: <tal:x replace="python:msg.date.pretty('%Y-%m-%d %H:%M')"
-          i18n:name="date" /></span>
-      </div>
-      <div class='pull-right'>
-        <form style="padding:0" tal:condition="msg/is_edit_ok"
-              tal:attributes="action string:bug${context/id}">
-         <input type="hidden" name="@remove@messages" tal:attributes="value msg/id">
-         <input type="hidden" name="@action" value="edit">
-         <input type="submit" value="remove" i18n:attributes="value">
-        </form>
-      </div>
+    </form>
+
+    <p tal:condition="context/id" i18n:translate="">
+     Created on <b><tal:x replace="python:context.creation.pretty('%Y-%m-%d %H:%M')" i18n:name="creation" /></b>
+     by <b><tal:x replace="context/creator" i18n:name="creator" /></b>,
+     last changed <b><tal:x replace="python:context.activity.pretty('%Y-%m-%d %H:%M')" i18n:name="activity" /></b>
+     by <b><tal:x replace="context/actor" i18n:name="actor" /></b>.
+    </p>
+
+    <table class="table table-condensed table-bordered vspace-two" tal:condition="context/files">
+      <thead>
+        <tr>
+          <th i18n:translate="">File name</th>
+          <th i18n:translate="">Uploaded</th>
+          <th i18n:translate="">Description</th>
+          <th i18n:translate="">Edit</th>
+          <th i18n:translate="">Remove</th>
+        </tr>
+      </thead>
+      <tr tal:repeat="file python:context.files.sorted('creation')">
+        <td>
+          <a tal:attributes="href file/download_url"
+              tal:content="file/name">dld link</a>
+        </td>
+        <td>
+          <span tal:content="file/creator">creator's name</span>,
+          <span tal:content="python:file.creation.pretty('%Y-%m-%d %H:%M')">creation date</span>
+        </td>
+        <td tal:content="file/description" />
+        <td><a tal:condition="file/is_edit_ok"
+              tal:attributes="href string:file${file/id}">edit</a>
+        </td>
+        <td>
+          <form style="padding:0" tal:condition="file/is_edit_ok"
+             tal:attributes="action string:bug${context/id}">
+              <input type="hidden" name="@remove@files" tal:attributes="value file/id">
+              <input type="hidden" name="@action" value="edit">
+              <input type="submit" value="remove" i18n:attributes="value">
+          </form>
+        </td>
+      </tr>
+    </table>
+    <div class='container-fluid' tal:condition="context/messages">
+      <h3 i18n:translate="">Messages</h3>
+      <tal:block tal:repeat="msg context/messages">
+        <div class='row-fluid'>
+          <div class='span1'>
+            <a tal:attributes="href string:msg${msg/id}"
+              i18n:translate="">msg<tal:x replace="msg/id" i18n:name="id" /></a>
+          </div>
+          <div class='span7 offset2'>
+            <span i18n:translate="">Author: <tal:x replace="python:msg.author.realname.plain()"
+              i18n:name="author" /> (<tal:x replace="msg/author"/>)</span>
+            <span i18n:translate="">Date: <tal:x replace="python:msg.date.pretty('%Y-%m-%d %H:%M')"
+              i18n:name="date" /></span>
+          </div>
+          <div class='pull-right'>
+            <form style="padding:0" tal:condition="msg/is_edit_ok"
+                  tal:attributes="action string:bug${context/id}">
+             <input type="hidden" name="@remove@messages" tal:attributes="value msg/id">
+             <input type="hidden" name="@action" value="edit">
+             <input type="submit" value="remove" i18n:attributes="value">
+            </form>
+          </div>
+        </div>
+        <div class='row-fluid'>
+          <div class="content">
+            <pre tal:condition="python:msg.content.is_view_ok()"
+               tal:content="structure python:utils.localReplace(msg.content.hyperlinked())">content</pre>
+          </div>
+        </div>
+      </tal:block>
     </div>
-    <div class='row-fluid'>
-      <div class="content">
-        <pre tal:condition="python:msg.content.is_view_ok()"
-           tal:content="structure python:utils.localReplace(msg.content.hyperlinked())">content</pre>
-      </div>
-    </div>
-  </tal:block>
-</div>
 
-<tal:block tal:condition="context/id" tal:replace="structure context/history" />
+    <div class='vspace-four'></div>
+    <tal:block tal:condition="context/id" tal:replace="structure context/history" />
 
-</div>
-
-</td>
+  </div> <!-- div tal:condition="context/is_view_ok" -->
+</div> <!-- content -->
 
 </tal:block>
