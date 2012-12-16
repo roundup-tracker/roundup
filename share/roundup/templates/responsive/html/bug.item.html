@@ -39,18 +39,24 @@
 
       <fieldset>
         <legend>classification</legend>
-        <div class='container-fluid'>
+        <div class='container-fluid' tal:condition="not:context/is_edit_ok">
+          <dl class='dl-horizontal'>
+            <dt i18n:translate="">Title</dt>
+            <dd tal:content="structure context/title/plain"></dd>
+            <dt i18n:translate="">Type</dt>
+            <dd tal:content="structure context/type/plain"></dd>
+            <dt i18n:translate="">Components</dt>
+            <dd tal:content="structure context/components/plain"></dd>
+            <dt i18n:translate="">Version</dt>
+            <dd tal:content="structure context/versions/plain"></dd>
+          </dl>
+        </div>
+        <div class='container-fluid' tal:condition="context/is_edit_ok">
           <!-- TITLE -->
           <div class='control-group vspace-two' tal:condition="context/title/is_edit_ok">
             <label class='control-label'  for='bug_title' i18n:translate="">Title</label>
             <div class='controls'>
               <input class='input-xxlarge' type='text' name='title' id='bug_title' tal:attributes="value context/title">
-            </div>
-          </div>
-          <div class='control-group vspace-two' tal:condition="not:context/title/is_edit_ok">
-            <label class='control-label' i18n:translate="">Title</label>
-            <div class='controls'>
-              <span class='input-xxlarge uneditable-input' tal:content="structure context/title/plain"></span>
             </div>
           </div>
           
@@ -116,7 +122,31 @@
 
       <fieldset>
         <legend>process</legend>
-        <div class='container-fluid'>
+        <div class='container-fluid' tal:condition="not:context/is_edit_ok">
+          <div class='row-fluid'>
+            <dl class='dl-horizontal span6'>
+              <dt i18n:translate="">Status</dt>
+              <dd tal:content="structure context/status/plain"></dd>
+              <dt i18n:translate="">Resolution</dt>
+              <dd tal:content="structure context/resolution/plain"></dd>
+              <dt i18n:translate="">Dependencies</dt>
+              <dd tal:content="structure context/dependencies/plain"></dd>
+              <dt i18n:translate="">Superseder</dt>
+              <dd tal:content="structure context/superseder/plain"></dd>
+            </dl>
+            <dl class='dl-horizontal span6'>
+              <dt i18n:translate="">Assigned to</dt>
+              <dd tal:content="structure context/assignee/plain"></dd>
+              <dt i18n:translate="">Nosy list</dt>
+              <dd tal:content="structure context/nosy/plain"></dd>
+              <dt i18n:translate="">Priority</dt>
+              <dd tal:content="structure context/priority/plain"></dd>
+              <dt i18n:translate="">Keywords</dt>
+              <dd tal:content="structure context/keywords/plain"></dd>
+            </dl>
+          </div>
+        </div>
+        <div class='container-fluid' tal:condition="context/is_edit_ok">
           <div class='row-fluid vspace-two'></div>
           <div class='row-fluid' tal:condition="context/id">
             <!-- Status -->
@@ -196,6 +226,7 @@
                 <span tal:condition="context/nosy/is_edit_ok"
                     tal:replace="structure python:db.user.classhelp('username,realname,address', property='nosy')" />
                 <span tal:replace="structure context/nosy/field" />
+              </div>
             </div>
           </div> <!-- row-fluid -->
 
