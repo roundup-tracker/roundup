@@ -45,23 +45,12 @@
       <dd tal:content="context/inreplyto"></dd>
     </dl>
 
-    <!-- not sure this is needed -->
-    <table class="messages">
-     <tr>
-      <td class="content" colspan="2"
-          tal:condition="python:context.content.is_view_ok()">
-          <pre
-          tal:content="structure python:utils.localReplace(context.content.hyperlinked())"></pre></td>
-      <td class="content" colspan="2"
-          tal:condition="python:not context.content.is_view_ok()">
+    <div class='row-fluid' tal:condition="python:context.content.is_view_ok()">
+      <pre tal:content="structure python:utils.localReplace(context.content.hyperlinked())"></pre>
+      <div class='text-error' tal:condition="python:not context.content.is_view_ok()">
           You are not authorized to see this message.
-    <!--            Message has been classified as spam and is therefore not
-          available to unathorized users. If you think this is
-          incorrect, please login and report the message as being
-          misclassified. -->
-      </td> 
-     </tr>
-    </table>
+      </div> 
+    </div>
 
     <table class="files" tal:condition="context/files">
      <tr><th colspan="2" class="header" i18n:translate="">Files</th></tr>
