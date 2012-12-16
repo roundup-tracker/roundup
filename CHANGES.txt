@@ -69,6 +69,11 @@ Fixed:
   also consume xml data and do something different. So require the use
   of 'http(s)://.../xmlrpc' uri to trigger the xmlrpc interface.
   (John Rouillard)
+- issue2550774: Remove generating documentation with rst2html, and update the
+  README.txt with how to create the html docs using sphinx, thanks Kai Storbeck
+  (John Kristensen)
+- issue2550774: Include doc/conf.py in the release tarball, so people can build
+  their own documentation in html, thanks Kai Storbeck (John Kristensen)
 
 2012-05-15: 1.4.20
 
