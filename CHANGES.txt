@@ -74,6 +74,8 @@ Fixed:
   (John Kristensen)
 - issue2550774: Include doc/conf.py in the release tarball, so people can build
   their own documentation in html, thanks Kai Storbeck (John Kristensen)
+- issue2550774: Update website/www/Makefile to symlink COPYING.txt so "make"
+  works again, thanks Kai Storbeck (John Kristensen)
 
 2012-05-15: 1.4.20
 
