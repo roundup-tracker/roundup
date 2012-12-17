@@ -1,3 +1,15 @@
+@font-face {
+  font-family: 'Droid Sans';
+  src: url('DroidSans.ttf');
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'Ubuntu Mono';
+  src: url('UbuntuMono-Regular.ttf');
+  font-weight: 400;
+}
+
 body {
   font-family: 'Droid Sans', sans-serif;
   font-size: 13px;
@@ -6,8 +18,13 @@ body {
 }
 
 h1,
-h2 {
+h2,
+.brand {
   font-family: 'Ubuntu Mono', serif;
+}
+
+h1,
+h2 {
   font-weight: normal;
   margin: 10px 0 20px 0;
   text-transform: uppercase;
