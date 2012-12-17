@@ -9,10 +9,11 @@ help:
 	@echo "  linkcheck to check all external links for integrity"
 
 clean:
-	-rm -rf $(TMP)
+	-rm -rf $(TMP) $(HTML) docs COPYING.txt
 
 docs:
 	ln -s ../../doc ./docs
+	ln -s ../../COPYING.txt
 
 html: docs
 	mkdir -p $(TMP)/doctrees $(HTML)

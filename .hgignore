@@ -42,5 +42,6 @@ locale/*.mo
 locale/*.bak
 locale/*.poedit
 website/www/_tmp/
+website/www/COPYING.txt
 website/www/docs
 website/www/html/
