@@ -2,14 +2,17 @@
 .SH NAME
 roundup-mailgw \- mail gateway for roundup
 .SH SYNOPSIS
-\fBroundup-mailgw\fP \fI<instance home>\fP [\fImethod\fP]
+\fBroundup-mailgw\fP \fIinstance_home\fP [\fImethod\fP]
 .SH OPTIONS
+.TP
+\fB-v\fP
+Print version and exit.
 .TP
 \fB-C\fP \fIhyperdb class\fP
 specify a tracker class - one of msg (the default), issue, file, user - to
 manipulate with -S options
 .TP
-\fB-S\fP \fIproperty=value[;property=value] pairs\fP
+\fB-S\fP \fIproperty\fP\fB=\fP\fIvalue\fP[\fB;\fP\fIproperty\fP\fB=\fP\fIvalue\fP] \fIpairs\fP
 specify the values to set on the class specified by -C using the same
 format as the Subject line property manipulations
 .SH DESCRIPTION
@@ -46,17 +49,35 @@ the command-line or in ~/.netrc.
 In the third case, the gateway reads all messages from the POP server
 specified and submits each in turn to the roundup.mailgw module. The
 server is specified as:
- \fIpop username:password@server\fP
+ \fBpop\fP \fIusername\fP\fB:\fP\fIpassword\fP\fB@\fP\fIserver\fP
 .br
 The username and password may be omitted:
- \fIpop username@server\fP
- \fIpop server\fP
+ \fBpop\fP \fIusername\fP\fB@\fP\fIserver\fP
+ \fBpop\fP \fIserver\fP
 .br
-are both valid.
+are both valid. The username and/or password will be prompted for if
+not supplied on the command-line.
 
 \fBAPOP\fP
+.br
 Same as POP, but using Authenticated POP:
- \fIapop username:password@server\fP
+ \fBapop\fP \fIusername\fP\fB:\fP\fIpassword\fP\fB@\fP\fIserver\fP
+
+\fBIMAP\fP
+.br
+Connect to an IMAP server. This supports the same notation as that of
+POP mail.
+ \fBimap\fP \fIusername\fP\fB:\fP\fIpassword\fP\fB@\fP\fIserver\fP
+.br
+It also allows you to specify a specific mailbox other than INBOX using
+this format:
+ \fBimap\fP \fIusername\fP\fB:\fP\fIpassword\fP\fB@\fP\fIserver mailbox\fP
+
+\fBIMAPS\fP
+.br
+Connect to an IMAP server over ssl.
+This supports the same notation as IMAP.
+ \fBimaps\fP \fIusername\fP\fB:\fP\fIpassword\fP\fB@\fP\fIserver\fP [\fImailbox\fP]
 .SH AUTHOR
 This manpage was written by Bastian Kleineidam
 <calvin@debian.org> for the Debian distribution of roundup.

@@ -8,11 +8,19 @@ roundup-admin \- administrate roundup trackers
 \fB-i\fP \fIinstance home\fP
 specify the issue tracker "home directory" to administer
 .TP
-\fB-u\fP
-the user[:password] to use for commands
+\fB-u\fP \fIuser\fP[\fB:\fP\fIpassword\fP]
+the user and password to use for commands
 .TP
 \fB-c\fP
-when outputting lists of data, just comma-separate them
+When outputting lists of data, comma-separate them. Same as
+\fB-S ","\fP.
+.TP
+\fB-S\fP \fIstring\fP
+When outputting lists of data, separate items with given string.
+.TP
+\fB-s\fP
+When outputting lists of data, space-separate them. Same as
+\fB-S " "\fP.
 .SH FURTHER HELP
  roundup-admin -h
  roundup-admin help                       -- this help

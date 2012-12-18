@@ -76,6 +76,8 @@ Fixed:
   their own documentation in html, thanks Kai Storbeck (John Kristensen)
 - issue2550774: Update website/www/Makefile to symlink COPYING.txt so "make"
   works again, thanks Kai Storbeck (John Kristensen)
+- issue2550760: Several improvements to the manpages
+  thanks Kai Storbeck & Bastian Kleineidam (John Kristensen)
 
 2012-05-15: 1.4.20
 

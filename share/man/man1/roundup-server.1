@@ -9,10 +9,10 @@ roundup-server \- start roundup web server
 Use options read from the configuration file (see below).
 .TP
 \fB-n\fP \fIhostname\fP
-Sets the host name.
+Sets the host name or IP address to listen on
 .TP
 \fB-p\fP \fIport\fP
-Sets the port to listen on.
+Sets the port to listen on (default: 8080).
 .TP
 \fB-d\fP \fIfile\fP
 Daemonize, and write the server's PID to the nominated file.
@@ -33,8 +33,25 @@ Enables to use of SSL.
 Sets a filename containing the PEM file to use for SSL. If left blank, a
 temporary self-signed certificate will be used.
 .TP
+\fB-N\fP
+Log client machine names instead of IP addresses (much slower).
+.TP
+\fB-u\fP \fIUID\fP
+Runs the Roundup web server as this UID.
+.TP
+\fB-g\fP \fIGID\fP
+Runs the Roundup web server as this GID.
+.TP
+\fB-d\fP \fIPIDfile\fP
+Run the server in the background and write the server's PID
+to the file indicated by PIDfile. The -l option \fBmust\fP be
+specified if -d is used.
+.TP
+\fB-v\fP
+Print version and exit.
+.TP
 \fB-h\fP
-print help
+Print help and exit.
 .TP
 \fBname=\fP\fItracker home\fP
 Sets the tracker home(s) to use. The \fBname\fP variable is how the tracker is
