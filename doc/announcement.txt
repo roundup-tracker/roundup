@@ -1,104 +1,80 @@
-I'm proud to release version 1.4.20 of Roundup which can be seen as a
-security release. We've fixed several security issues, in particular
-some XSS issues. We've also dropped support for python 2.4 with this
-release. This release also introduces some minor features and, as usual,
-fixes some bugs:
+I'm proud to release version 1.4.21 of Roundup which has been possible
+due to the help of several contributors.  This release introduces some
+minor features and, as usual, fixes some bugs:
 
 Features:
 
-- Experimental support for the new Chameleon templating engine.
-  We now have two configurable templating engines, the old Zope TAL
-  templates (called zopetal in the config) and the new Chameleon (called
-  chameleon in the config). A new config-option "template_engine" under
-  [main] can take these config-options, the default is zopetal.
-  Thanks to Cheer Xiao for the idea of making this configurable *and*
-  for the actual implementation! (Ralf)
-  WARNING: Chameleon support is highly experimental and *not* recommended for
-  production use. It has known performance issues and i18n is not yet
-  functioning. It's still under active development. Only use this feature if
-  you want to experiment with Chameleon and/or help with Roundup
-  developement. If you found a bug in Chameleon support, please report after
-  testing against latest Roundup source from the Mercurial repository.
-- issue2550678: Allow pagesize=-1 which returns all results.
-  Suggested and implemented by John Kristensen. 
-  Tested by Satchidanand Haridas. (Bernhard)
-- Allow to turn off translation of generated html options in menu method
-  of LinkHTMLProperty and MultilinkHTMLProperty -- default is
-  translation as it used to be (Ralf)
-- Sending of OpenPGP encrypted mail to all users or selected users (via
-  roles) is now working. (Ralf)
-- Add config-option "nosy" to messages_to_author setting in [nosy]
-  section of config: This will send a message to the author only
-  in the case where the author is on the nosy-list (either added
-  earlier or via the add_author setting). Current config-options
-  for this setting will send / not send to author without considering
-  the nosy list. (Ralf)
+- issue2550782: Added a new irker detector to send notifications on IRC
+  when an issue is created or messages are added. (Ezio Melotti)
+- Beta version of responsive templates using devel schema
+  and Twitter Bootstrap for styling (Pradip Caulagi)
+- pywin32 is not longer required to run on Windows (anatoly techtonik)
+- Rewritten portalocker.py logic in ctypes for Windows (anatoly techtonik)
+- Add an interface to register clearCache callbacks in roundupdb.
+  Sometimes complicated computations may require an application cache.
+  This application can now register a callback to clear the application
+  cache, because roundup knows better when to clear it (usually when a
+  transaction ends, either with rollback or with commit). The interface
+  for this is currently considered experimental. The current interface
+  is registerClearCacheCallback(self, method, param) where method is
+  called with param as the only parameter.  (Ralf Schlatterbeck)
+- Add a script to remove file-spam from a tracker, see
+  scripts/spam-remover. (Ralf Schlatterbeck)
 
 Fixed:
 
-- issue2550730: FAQ has broken link to Zope book. Reported and fixed by
-  John Rouillard.(Bernhard)
-- issue2550728: remove buggy parentheses in TAL/DummyEngine.py.
-  Reported and fixed by Ralf Hemmecke. (Bernhard)
-- issue2550715: IndexError when requesting non-existing file via http.
-  Reported and fixed by Cedric Krier. (Bernhard)
-- issue2550712: exportcsvaction errors poorly when given invalid columns.
-  Reported by Will Kahn-Greene, fixed by Cedric Krier. (Bernhard)
-- issue2550695: 'No sort or group' settings not retained when editing queries.
-  Reported and fixed by John Kristensen. Tested by Satchidanand Haridas. 
-  (Bernhard)
-- Fix matching of incoming email addresses to the alternate_addresses
-  field of a user -- this would match substrings, e.g. if the user has
-  discuss-support@example.com as an alternate email and an incoming mail
-  is addressed to support@example.com this would (wrongly) match. (Ralf)
-- issue2550729: Fix password history display for anydbm backend, thanks
-  to Ralf Hemmecke for reporting. (Ralf)
-- OpenPGP support is again working (pyme API has changed significantly) and
-  we now have a regression test. We now take care that bounce-messages
-  for incoming encrypted mails or mails where the policy dictates that
-  outgoing traffic should be encrypted is actually OpenPGP encrypted. (Ralf)
-- Ignore confirm set() fields by themselves in the absence of non-"confirm"
-  values; otherwise a bare confirm field can be used to change the a
-  password. Reported by Cam Blackwood. (Ralf)
-- Updated version of simplified Chinese message file by Cheer Xiao:
-  Corrected some mistakes, added a few more items and did some
-  formating. (Ralf)
-- Fix xmlrpc URL parsing so that passwords may contain a ':' character
-  (Ralf)
-- Be more tolerant when parsing RFC2047 encoded mail headers. Use
-  backported version of my proposed changes to
-  email.header.decode_header in http://bugs.python.org/issue1079
-  (Ralf)
-- issue2550684 Fix XSS vulnerability when username contains HTML code,
-  thanks to Thomas Arendsen Hein for reporting and patch. (Ralf)
-- issue2550711 Fix XSS vulnerability in @action parameter,
-  thanks to "om" for reporting. (Ralf)
-- issue2550535 In some cases even when keep_quoted_text=yes is
-  configured we would strip quoted sections. This hit the python
-  bug-tracker especially for python interpreter examples with leading
-  '>>>' strings. The fix is slightly different compared to the proposal
-  as this broke keep_quoted_text=no in certain cases. We also fix a bug
-  where keep_quoted_text=no would drop the last line of a non-quoted
-  section if there wasn't an empty line between the next quotes. (Ralf)
-- issue2431638 wrong registration link in bounce mail for non-registered
-  users reported *years* ago by anonymous (Ralf)
-- Fix doc/upgrading.txt which produces errors with latest docutils about
-  wrong block structure. Fix .gitignore in doc directory. Thanks to
-  Cheer Xiao for the patches. (Ralf)
-- Fix wrong execute permissions on some files, thanks to Cheer Xiao for
-  the patch. (Ralf)
-- Fix override of TemplatingUtils in instance.py, thanks to Cheer Xiao
-  for the patch. (Ralf)
-- Fix another XSS with the "otk" parameter, thanks to Jesse Ruderman for
-  reporting. (Ralf)
-- Mark cookies HttpOnly and -- if https is used -- secure. Fixes
-  issue2550689, but is untested if this really works in browsers.
-  Thanks to Joseph Myers for reporting. (Ralf)
-- Fix another XSS with the ok- and error message, see issue2550724. We
-  solve this differently from the proposals in the bug-report by not
-  allowing *any* html-tags in ok/error messages anymore. Thanks to 
-  David Benjamin for the bug-report and to Ezio Melotti for several
-  proposed fixes. (Ralf)
+- issue2550765: Don't show links in calendar that will fail.
+  Found and fixed by Cedric Krier. (Bernhard)
+- issue2550765: use <meta name="robots" content="noindex, nofollow"> in the
+  _generic.calendar.html to prevent robots to follow all the links in the
+  calendar. (Ezio Melotti)
+- "BaseException.with_traceback" is not available on Python 2, so use
+  "raise E, V, T" instead of "raise E(V).with_traceback(T)".  This change was
+  originally introduced in 74476eaac38a. (Ezio Melotti)
+- issue2550759: Trailing punctuation is no longer included when URLs are
+  converted to links. (Ezio Melotti)
+- issue2550574: Restore sample detectors removed in roundup 1.4.9
+  (Thomas Arendsen Hein)
+- Prevent AttributeError when removing all roles of a user
+  (Thomas Arendsen Hein)
+- issue2550762 Minor Documentation fix in doc/developers.txt, thanks
+  to W. Trevor King. (Bernhard Reiter)
+- issue2550766: Minor formatting issues in the docs for date properties,
+  thanks John Kristensen. (Bernhard Reiter)
+- issue2550738: Fixes for various documentation typoes,
+  thanks Nathan Russell. (John Kristensen)
+- issue2550756: Fix `oder' typo in mailer.Mailer.bounce_message docstring,
+  thanks W. Trevor King (John Kristensen)
+- Fix basic authentication: instatiating the login action would fail if
+  the user is not set. We now first set the user to anonymous and then
+  try basic authentication if enabled. (Ralf Schlatterbeck)
+- Fix xmlrpc permissions for lookup method: Allow if the key attribute
+  is either searchable or viewable, don't check id attribute (Ralf
+  Schlatterbeck)
+- Fix installation documentation (section Prerequisites) to require at
+  least python 2.5, thanks to John P. Rouillard for discovering this.
+  (committed by Ralf Schlatterbeck)
+- Fix version_check.py to require at least python 2.5 (anatoly techtonik)
+- Fixing the download button re-activating the cheeseshop plugin in the 
+  sphinx config. Thanks to Richard for the hint. (Bernhard Reiter)
+- issue2550783 devel template's schema.py permissions referenced the
+  organization property for the user, but the property is called
+  organisation. Thanks to Pradip Caulagi. (committed by John Rouillard)
+- issue2550749 - the xmlrpc interface is invoked on content type
+  and not url path. Sending any text/xml data to roundup results in
+  invoking the xml-rpc interface, but a REST or other interface could
+  also consume xml data and do something different. So require the use
+  of 'http(s)://.../xmlrpc' uri to trigger the xmlrpc interface.
+  (John Rouillard)
+- issue2550774: Remove generating documentation with rst2html, and update the
+  README.txt with how to create the html docs using sphinx, thanks Kai Storbeck
+  (John Kristensen)
+- issue2550774: Include doc/conf.py in the release tarball, so people can build
+  their own documentation in html, thanks Kai Storbeck (John Kristensen)
+- issue2550774: Update website/www/Makefile to symlink COPYING.txt so "make"
+  works again, thanks Kai Storbeck (John Kristensen)
+- issue2550760: Several improvements to the manpages
+  thanks Kai Storbeck & Bastian Kleineidam (John Kristensen)
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
