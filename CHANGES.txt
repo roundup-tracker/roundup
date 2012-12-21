@@ -3,6 +3,17 @@ Entries are given with the most recent entry first.
 Each entry has the developer who committed the change in brackets.
 Entries without name were done by Richard Jones.
 
+2013-??-??: 1.4.22
+
+Features:
+
+- ...
+
+Fixed:
+
+- ...
+
+
 2012-12-21: 1.4.21
 
 Features:
@@ -78,6 +89,7 @@ Fixed:
   works again, thanks Kai Storbeck (John Kristensen)
 - issue2550760: Several improvements to the manpages
   thanks Kai Storbeck & Bastian Kleineidam (John Kristensen)
+
 
 2012-05-15: 1.4.20
 
