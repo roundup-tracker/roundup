@@ -22,7 +22,7 @@ Features:
   when an issue is created or messages are added. (Ezio Melotti)
 - Beta version of responsive templates using devel schema
   and Twitter Bootstrap for styling (Pradip Caulagi)
-- pywin32 is not longer required to run on Windows (anatoly techtonik)
+- pywin32 is no longer required to run on Windows (anatoly techtonik)
 - Rewritten portalocker.py logic in ctypes for Windows (anatoly techtonik)
 - Add an interface to register clearCache callbacks in roundupdb.
   Sometimes complicated computations may require an application cache.
