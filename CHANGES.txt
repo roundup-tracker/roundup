@@ -11,8 +11,9 @@ Features:
 
 Fixed:
 
-- [Minor] Template responsive: footer link fixed and hardcoded 
-  last modfied date removed. (Bernhard Reiter)
+- [minor] Template responsive: make demo.py work out of the box with it,
+  by setting the static_files config.ini setting to "static". 
+  Footer: link fixed and hardcoded last modfied date removed. (Bernhard Reiter)
 
 
 2012-12-21: 1.4.21

@@ -79,6 +79,9 @@ def install_demo(home, backend, template):
 
     # write the config
     config['INSTANT_REGISTRATION'] = 1
+    # FIXME: Move template-specific demo initialization into the templates.
+    if template == 'responsive':
+        config['STATIC_FILES'] = "static"
     config.save(os.path.join(home, config.INI_FILE))
 
     # open the tracker and initialise

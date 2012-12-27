@@ -3,4 +3,7 @@ Description: This issue tracker uses the same schema as devel.
             The difference between devel and responsive templates
             is the use of Twitter bootstrap (http://twitter.github.com/bootstrap/)
             in templates and HTML5 markup.
+	    Make sure the "static_files" setting in your config.ini of your
+            instance is set to the directory where the static files live
+            (the subdirectory "static" in the default of the template).
 Intended-For: Developers
