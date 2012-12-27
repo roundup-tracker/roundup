@@ -11,7 +11,8 @@ Features:
 
 Fixed:
 
-- ...
+- [Minor] Template responsive: footer link fixed and hardcoded 
+  last modfied date removed. (Bernhard Reiter)
 
 
 2012-12-21: 1.4.21
