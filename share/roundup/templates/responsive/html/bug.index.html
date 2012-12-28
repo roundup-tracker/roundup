@@ -25,7 +25,6 @@
   <tr>
    <th tal:condition="request/show/severity" i18n:translate="">Severity</th>
    <th tal:condition="request/show/id" i18n:translate="">ID</th>
-   <th tal:condition="request/show/creation" i18n:translate="">Creation</th>
    <th tal:condition="request/show/activity" i18n:translate="">Activity</th>
    <th tal:condition="request/show/actor" i18n:translate="">Actor</th>
    <th tal:condition="request/show/title" i18n:translate="">Title</th>
@@ -35,8 +34,6 @@
    <th tal:condition="request/show/resolution" i18n:translate="">Resolution</th>
    <th tal:condition="request/show/creator" i18n:translate="">Creator</th>
    <th tal:condition="request/show/assignee" i18n:translate="">Assigned&nbsp;To</th>
-   <th tal:condition="request/show/keywords" i18n:translate="">Keywords</th>
-   <th tal:condition="request/show/dependencies" i18n:translate="">Depends On</th>
    <th tal:condition="request/show/type" i18n:translate="">Type</th>
   </tr>
  <tal:block tal:repeat="i batch" condition="true">
@@ -53,8 +50,6 @@
    <td tal:condition="request/show/severity"
        tal:content="python:i.severity.plain() or default">&nbsp;</td>
    <td tal:condition="request/show/id" tal:content="i/id">&nbsp;</td>
-   <td class="date" tal:condition="request/show/creation"
-       tal:content="i/creation/reldate">&nbsp;</td>
    <td class="date" tal:condition="request/show/activity"
        tal:content="i/activity/reldate">&nbsp;</td>
    <td tal:condition="request/show/actor"
@@ -75,10 +70,6 @@
        tal:content="python:i.creator.plain() or default">&nbsp;</td>
    <td tal:condition="request/show/assignee"
        tal:content="python:i.assignee.plain() or default">&nbsp;</td>
-   <td tal:condition="request/show/keywords"
-       tal:content="python:i.keywords.plain() or default">&nbsp;</td>
-   <td tal:condition="request/show/dependencies"
-       tal:content="python:i.dependencies.plain() or default">&nbsp;</td>
    <td tal:condition="request/show/type"
        tal:content="python:i.type.plain() or default">&nbsp;</td>
   </tr>

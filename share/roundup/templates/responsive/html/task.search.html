@@ -135,32 +135,6 @@
   <td metal:use-macro="group_input"></td>
 </tr>
 
-<tr tal:define="name string:versions;
-                db_klass string:version;
-                db_content string:name;">
-  <th i18n:translate="">Versions:</th>
-  <td metal:use-macro="search_select_translated">
-    <option metal:fill-slot="extra_options" value="-1" i18n:translate=""
-            tal:attributes="selected python:value == '-1'">not selected</option>
-  </td>
-  <td metal:use-macro="column_input"></td>
-  <td metal:use-macro="sort_input"></td>
-  <td metal:use-macro="group_input"></td>
-</tr>
-
-<!--tr tal:define="name string:severity;
-                db_klass string:severity;
-                db_content string:name;">
-  <th i18n:translate="">Severity:</th>
-  <td metal:use-macro="search_select_translated">
-    <option metal:fill-slot="extra_options" value="-1" i18n:translate=""
-            tal:attributes="selected python:value == '-1'">not selected</option>
-  </td>
-  <td metal:use-macro="column_input"></td>
-  <td metal:use-macro="sort_input"></td>
-  <td metal:use-macro="group_input"></td>
-</tr-->
-
 <tr tal:define="name string:dependencies;
                 db_klass string:task;
                 db_content string:id;">
@@ -182,19 +156,6 @@
       <option value="-1" tal:attributes="selected python:value == '-1'"
        i18n:translate="">unassigned</option>
     </tal:block>
-  </td>
-  <td metal:use-macro="column_input"></td>
-  <td metal:use-macro="sort_input"></td>
-  <td metal:use-macro="group_input"></td>
-</tr>
-
-<tr tal:define="name string:keywords;
-                db_klass string:keyword;
-                db_content string:name;">
-  <th i18n:translate="">Keyword:</th>
-  <td metal:use-macro="search_select_keywords">
-    <option metal:fill-slot="extra_options" value="-1" i18n:translate=""
-            tal:attributes="selected python:value == '-1'">not set</option>
   </td>
   <td metal:use-macro="column_input"></td>
   <td metal:use-macro="sort_input"></td>

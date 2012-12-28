@@ -58,7 +58,8 @@
       <div class="span3 well">
         <ul tal:condition="python:request.user.hasPermission('View', 'bug')" class='nav nav-list'>
           <li class='nav-header'><i class='icon-fire'></i>Bugs</li>
-          <li><a href="/" i18n:translate="">Bugs</a></li>
+          <li><a href="bug" i18n:translate="">Bugs</a>
+          </li>
           <li tal:condition="python:request.user.hasPermission('Create', 'bug')">
             <a href="bug?@template=item" i18n:translate="">Create New</a>
           </li>
@@ -105,7 +106,7 @@
         <hr>
         <ul tal:condition="python:request.user.hasPermission('View', 'task')" class='nav nav-list'>
           <li class="nav-header"><i class='icon-briefcase'></i>Tasks</li>
-          <li><a href="/" i18n:translate="">Tasks</a></li>
+          <li><a href="task" i18n:translate="">Tasks</a></li>
           <li tal:condition="python:request.user.hasPermission('Create', 'task')">
             <a href="task?@template=item" i18n:translate="">Create New</a>
           </li>
