@@ -91,7 +91,7 @@ def install_demo(home, backend, template):
     # add the "demo" user
     db = tracker.open('admin')
     # FIXME: Move tracker-specific demo initialization into the tracker templates.
-    if (template == 'minimal'):
+    if template == 'minimal':
         db.user.create(username='demo', password=password.Password('demo'),
                        roles='User')
     else:
