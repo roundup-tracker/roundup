@@ -469,7 +469,7 @@ SETTINGS = (
         (Option, "template_engine", "zopetal",
             "Templating engine to use.\n"
             "Possible values are 'zopetal' for the old TAL engine\n"
-            "ported from Zope, or 'chameleon' for Chamaleon."),
+            "ported from Zope, or 'chameleon' for Chameleon."),
         (FilePathOption, "templates", "html",
             "Path to the HTML templates directory."),
         (NullableFilePathOption, "static_files", "",
