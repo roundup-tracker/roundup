@@ -11,13 +11,11 @@ Prerequisites
 To use PostgreSQL as backend for storing roundup data, you should
 additionally install:
 
-1. PostgreSQL 7.x - http://www.postgresql.org/
+1. PostgreSQL 8.x or higher - http://www.postgresql.org/
 
 2. The psycopg python interface to PostgreSQL:
 
      http://initd.org/software/initd/psycopg
-
-   It is recommended that you use at least version 1.1.21
 
 
 Running the PostgreSQL unit tests
