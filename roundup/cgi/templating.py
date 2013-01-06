@@ -117,8 +117,8 @@ def find_template(dir, name, view):
         'with template "%s" (neither "%s" nor "%s")'%(name, view,
         filename, generic))
 
-class TemplatesBase:
-    """Base for engine-specific Templates class."""
+class LoaderBase:
+    """Base for engine-specific template Loader class."""
     def precompileTemplates(self):
         """ Go through a directory and precompile all the templates therein
         """
@@ -149,10 +149,12 @@ class TemplatesBase:
         if extension:
             extension = extension[1:]
         try:
+            # [ ] dispell - add get() definition to this base class
             return self.get(name, extension)
         except NoTemplate, message:
             raise KeyError, message
 
+# [ ] rename to get_loader
 def get_templates(dir, engine_name):
     if engine_name == 'chameleon':
         import engine_chameleon as engine

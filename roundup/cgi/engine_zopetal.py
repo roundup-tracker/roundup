@@ -8,14 +8,14 @@ import mimetypes
 import os
 import os.path
 
-from roundup.cgi.templating import StringIO, context, translationService, find_template, TemplatesBase
+from roundup.cgi.templating import StringIO, context, translationService, find_template, LoaderBase
 from roundup.cgi.PageTemplates import PageTemplate, GlobalTranslationService
 from roundup.cgi.PageTemplates.Expressions import getEngine
 from roundup.cgi.TAL import TALInterpreter
 
 GlobalTranslationService.setGlobalTranslationService(translationService)
 
-class Templates(TemplatesBase):
+class Templates(LoaderBase):
     templates = {}
 
     def __init__(self, dir):

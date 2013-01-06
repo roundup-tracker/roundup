@@ -5,9 +5,9 @@ __docformat__ = 'restructuredtext'
 import os.path
 from chameleon import PageTemplateLoader
 
-from roundup.cgi.templating import StringIO, context, find_template, TemplatesBase
+from roundup.cgi.templating import StringIO, context, find_template, LoaderBase
 
-class Templates(TemplatesBase):
+class Templates(LoaderBase):
     def __init__(self, dir):
         self.dir = dir
         self.loader = PageTemplateLoader(dir)
