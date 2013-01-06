@@ -154,8 +154,7 @@ class LoaderBase:
         except NoTemplate, message:
             raise KeyError, message
 
-# [ ] rename to get_loader
-def get_templates(dir, engine_name):
+def get_loader(dir, engine_name):
     if engine_name == 'chameleon':
         import engine_chameleon as engine
     else:
