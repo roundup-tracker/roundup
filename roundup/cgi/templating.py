@@ -160,7 +160,7 @@ def get_templates(dir, engine_name):
         import engine_chameleon as engine
     else:
         import engine_zopetal as engine
-    return engine.Templates(dir)
+    return engine.Loader(dir)
 
 def context(client, template=None, classname=None, request=None):
     """Return the rendering context dictionary

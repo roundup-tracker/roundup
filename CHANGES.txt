@@ -10,6 +10,8 @@ Features:
 - API changes. Renamed templating members to correctly reflect
   the purpose of classes and avoid confusion (anatoly techtonik)
     templating.TemplatesBase -> templating.LoaderBase
+    engine_chameleon.Templates -> engine_chameleon.Loader
+    engine_zopetal.Templates -> engine_zopetal.Loader
 
 Fixed:
 

@@ -3,14 +3,14 @@
 __docformat__ = 'restructuredtext'
 
 import os.path
-from chameleon import PageTemplateLoader
+import chameleon
 
 from roundup.cgi.templating import StringIO, context, find_template, LoaderBase
 
-class Templates(LoaderBase):
+class Loader(LoaderBase):
     def __init__(self, dir):
         self.dir = dir
-        self.loader = PageTemplateLoader(dir)
+        self.loader = chameleon.PageTemplateLoader(dir)
 
     def get(self, name, extension=None):
         # default the name to "home"

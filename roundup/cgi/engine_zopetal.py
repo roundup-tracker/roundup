@@ -15,7 +15,7 @@ from roundup.cgi.TAL import TALInterpreter
 
 GlobalTranslationService.setGlobalTranslationService(translationService)
 
-class Templates(LoaderBase):
+class Loader(LoaderBase):
     templates = {}
 
     def __init__(self, dir):

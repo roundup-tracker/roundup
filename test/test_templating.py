@@ -338,7 +338,7 @@ class Unauthorised(Exception):
     def __str__(self):
 def find_template(dir, name, extension):
 
-class Templates:
+class Loader:
     def __init__(self, dir):
     def precompileTemplates(self):
     def get(self, name, extension=None):
