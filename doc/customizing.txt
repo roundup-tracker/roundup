@@ -1655,9 +1655,9 @@ Templating engines
 Since version 1.4.20 Roundup supports two templating engines: the original
 `Template Attribute Language`_ (TAL) engine from Zope and the standalone
 Chameleon templating engine. Chameleon is intended as a replacement for the
-original TAL engine, and supports a syntax that is very similiar to the it,
+original TAL engine, and supports the same syntax,
 but they are not 100% compatible. The major (and most likely the only)
-incompatibility to worry about is the default expression type being
+incompatibility is the default expression type being
 ``python:`` instead of ``path:``. See also "Incompatibilities and
 differences" section of `Chameleon documentation`__.
 
@@ -2449,13 +2449,13 @@ The access results in a `hyperdb class wrapper`_.
 The templates variable
 ~~~~~~~~~~~~~~~~~~~~~~
 
-This is implemented by the ``roundup.cgi.templating.Templates``
-class.
+This was implemented by the ``roundup.cgi.templating.Templates``
+class before 1.4.20. In later versions it is the instance of appropriate
+template engine loader class.
 
-This variable doesn't have any useful methods defined. It supports being
-used in expressions to access the templates, and consequently the
-template macros. You may access the templates using the following path
-expression::
+This variable is used to access other templates in expressions and
+template macros. It doesn't have any useful methods defined. The
+templates can be accessed using the following path expression::
 
    templates/name
 
