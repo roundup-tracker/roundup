@@ -288,9 +288,7 @@ class OldStyleTrackers:
         tracker.dbinit.config = tracker.config
 
         tracker.optimize = optimize
-        # [ ] this path doesn't seem to work anymore in 1.4.21
-        #     check and cleanup, also fix the docs
-        tracker.templates = templating.Templates(tracker.config["TEMPLATES"])
+        tracker.templates = templating.get_loader(tracker.config["TEMPLATES"])
         if optimize:
             tracker.templates.precompileTemplates()
 

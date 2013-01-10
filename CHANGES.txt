@@ -15,6 +15,7 @@ Features:
 
 Fixed:
 
+- Restored compatibility with old style trackers (anatoly techtonik)
 - Make roundup play nice with setup tools (for using with virtualenv)
   (Pradip Caulagi)
 - [minor] Template responsive: make demo.py work out of the box with it,
