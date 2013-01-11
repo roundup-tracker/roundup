@@ -144,12 +144,25 @@ class LoaderBase:
             else:
                 self.get(filename, None)
 
+    def get(self, name, extension=None):
+        """ Interface to get a template, possibly loading a compiled template.
+
+            "name" and "extension" indicate the template we're after, which in
+            most cases will be "name.extension". If "extension" is None, then
+            we look for a template just called "name" with no extension.
+
+            If the file "name.extension" doesn't exist, we look for
+            "_generic.extension" as a fallback.
+        """
+        # [ ] document default 'home' template and other special pages
+        raise NotImplementedError
+
     def __getitem__(self, name):
+        """Special method to access templates by loader['name']"""
         name, extension = os.path.splitext(name)
         if extension:
             extension = extension[1:]
         try:
-            # [ ] dispell - add get() definition to this base class
             return self.get(name, extension)
         except NoTemplate, message:
             raise KeyError, message

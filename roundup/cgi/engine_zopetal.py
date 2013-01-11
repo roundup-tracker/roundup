@@ -22,15 +22,6 @@ class Loader(LoaderBase):
         self.dir = dir
 
     def get(self, name, extension=None):
-        """ Interface to get a template, possibly loading a compiled template.
-
-            "name" and "extension" indicate the template we're after, which in
-            most cases will be "name.extension". If "extension" is None, then
-            we look for a template just called "name" with no extension.
-
-            If the file "name.extension" doesn't exist, we look for
-            "_generic.extension" as a fallback.
-        """
         # default the name to "home"
         if name is None:
             name = 'home'
