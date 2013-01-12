@@ -1287,12 +1287,38 @@ In some situations, exceptions occur:
     client
 
 
+Roundup URL design
+------------------
+
+Each tracker has several hardcoded URLs. These three are equivalent and
+lead to the main tracker page:
+
+1. ``/``
+2. ``/index``
+3. ``/home``
+
+The following prefix is used to access static resources:
+
+4. ``/@@file/``
+
+All other URLs depend on the classes configured in Roundup database.
+Each class receives two URLs - one for the class itself and another
+for specific items of that class. Example for class URL:
+
+5. ``/issue``
+
+This is usually used to show listings of class items. The URL for
+for specific object of issue class with id 1 will look like:
+
+6. ``/issue1``
+
+
 Determining web context
 -----------------------
 
-To determine the "context" of a request, we look at the URL and the
-special request variable ``@template``. The URL path after the tracker
-identifier is examined. Typical URL paths look like:
+To determine the "context" of a request (what request is for), we look at
+the URL path after the tracker root and at ``@template`` request
+parameter. Typical URL paths look like:
 
 1.  ``/tracker/issue``
 2.  ``/tracker/issue1``
@@ -1300,21 +1326,20 @@ identifier is examined. Typical URL paths look like:
 4.  ``/cgi-bin/roundup.cgi/tracker/file1``
 5.  ``/cgi-bin/roundup.cgi/tracker/file1/kitten.png``
 
-where the "tracker identifier" is "tracker" in the above cases. That means
-we're looking at "issue", "issue1", "@@file/style.css", "file1" and
-"file1/kitten.png" in the cases above. The path is generally only one
-entry long - longer paths are handled differently.
+where tracker root is ``/tracker/`` or ``/cgi-bin/roundup.cgi/tracker/``
+We're looking at "issue", "issue1", "@@file/style.css", "file1" and
+"file1/kitten.png" in the cases above.
 
-a. if there is no path, then we are in the "home" context. See `the "home"
-   context`_ below for more information about how it may be used.
-b. if the path starts with "@@file" (as in example 3,
-   "/tracker/@@file/style.css"), then the additional path entry,
-   "style.css" specifies the filename of a static file we're to serve up
-   from the tracker TEMPLATES (or STATIC_FILES, if configured) directory.
-   This is usually the tracker's "html" directory. Raises a SendStaticFile
-   exception.
+a. with is no path we are in the "home" context. See `the "home"
+   context`_ below for details. "index" or "home" paths may also be used
+   to switch into "home" context.
+b. for paths starting with "@@file" the additional path entry ("style.css"
+   in the example above) specifies the static file to be served
+   from the tracker TEMPLATES directory (or STATIC_FILES, if configured).
+   This is usually the tracker's "html" directory. Internally this works
+   by raising SendStaticFile exception.
 c. if there is something in the path (as in example 1, "issue"), it
-   identifies the tracker class we're to display.
+   identifies the tracker class to display.
 d. if the path is an item designator (as in examples 2 and 4, "issue1"
    and "file1"), then we're to display a specific item.
 e. if the path starts with an item designator and is longer than one
@@ -1324,11 +1349,9 @@ e. if the path starts with an item designator and is longer than one
    with (i.e. "file1/kitten.png" is nicer to download than "file1").
    This raises a ``SendFile`` exception.
 
-Both b. and e. stop before we bother to determine the template we're
-going to use. That's because they don't actually use templates.
-
-The template used is specified by the ``@template`` CGI variable, which
-defaults to:
+Both b. and e. don't use templates and stop before the template is
+determined. For other contexts the template used is specified by the
+``@template`` variable, which defaults to:
 
 - only classname suplied:        "index"
 - full item designator supplied: "item"
