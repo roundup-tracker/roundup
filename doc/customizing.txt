@@ -1349,7 +1349,7 @@ e. if the path starts with an item designator and is longer than one
    with (i.e. "file1/kitten.png" is nicer to download than "file1").
    This raises a ``SendFile`` exception.
 
-Both b. and e. don't use templates and stop before the template is
+Neither b. or e. use templates and stop before the template is
 determined. For other contexts the template used is specified by the
 ``@template`` variable, which defaults to:
 
