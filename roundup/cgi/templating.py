@@ -102,7 +102,7 @@ def find_template(dir, name, view):
     if not view:
         raise NoTemplate, 'Template file "%s" doesn\'t exist'%name
 
-    # try for a _generic template
+    # try _generic template for the view
     generic = '_generic.%s'%view
     src = os.path.join(dir, generic)
     if os.path.exists(src):
@@ -140,31 +140,31 @@ class LoaderBase:
 
             # load the template
             if '.' in filename:
-                name, extension = filename.split('.', 1)
-                self.load(name, extension)
+                name, view = filename.split('.', 1)
+                self.load(name, view)
             else:
                 self.load(filename, None)
 
-    def load(self, name, extension=None):
+    def load(self, name, view=None):
         """ Interface to get a template, possibly loading a compiled template.
 
-            "name" and "extension" indicate the template we're after, which in
-            most cases will be "name.extension". If "extension" is None, then
-            we look for a template just called "name" with no extension.
+            "name" and "view" indicate the template we're after, which in
+            most cases will be "name.view". If "view" is None, then
+            we look for a template just called "name".
 
-            If the file "name.extension" doesn't exist, we look for
-            "_generic.extension" as a fallback.
+            If the file "name.view" doesn't exist, we look for
+            "_generic.view" as a fallback.
         """
         # [ ] document default 'home' template and other special pages
         raise NotImplementedError
 
     def __getitem__(self, name):
         """Special method to access templates by loader['name']"""
-        name, extension = os.path.splitext(name)
-        if extension:
-            extension = extension[1:]
+        view = None
+        if '.' in name:
+            name, view = name.split('.', 1)
         try:
-            return self.load(name, extension)
+            return self.load(name, view)
         except NoTemplate, message:
             raise KeyError, message
 

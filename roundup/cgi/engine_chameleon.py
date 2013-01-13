@@ -12,15 +12,15 @@ class Loader(LoaderBase):
         self.dir = dir
         self.loader = chameleon.PageTemplateLoader(dir)
 
-    def load(self, name, extension=None):
+    def load(self, name, view=None):
         # default the name to "home"
         if name is None:
             name = 'home'
-        elif extension is None and '.' in name:
+        elif view is None and '.' in name:
             # split name
-            name, extension = name.split('.')
+            name, view = name.split('.')
 
-        src, filename = find_template(self.dir, name, extension)
+        src, filename = find_template(self.dir, name, view)
         return RoundupPageTemplate(self.loader.load(src))
 
 class RoundupPageTemplate(object):

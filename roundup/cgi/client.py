@@ -1067,7 +1067,7 @@ class Client:
         """ Return a PageTemplate for the named page
         """
         name = self.classname
-        extension = self.template
+        view = self.template
 
         # catch errors so we can handle PT rendering errors more nicely
         args = {
@@ -1075,7 +1075,7 @@ class Client:
             'error_message': self.error_message
         }
         try:
-            pt = self.instance.templates.load(name, extension)
+            pt = self.instance.templates.load(name, view)
             # let the template render figure stuff out
             result = pt.render(self, None, None, **args)
             self.additional_headers['Content-Type'] = pt.content_type

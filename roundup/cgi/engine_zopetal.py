@@ -21,16 +21,16 @@ class Loader(LoaderBase):
     def __init__(self, dir):
         self.dir = dir
 
-    def load(self, name, extension=None):
+    def load(self, name, view=None):
         # default the name to "home"
         if name is None:
             name = 'home'
-        elif extension is None and '.' in name:
+        elif view is None and '.' in name:
             # split name
-            name, extension = name.split('.')
+            name, view = name.split('.')
 
         # find the source
-        src, filename = find_template(self.dir, name, extension)
+        src, filename = find_template(self.dir, name, view)
 
         # has it changed?
         try:
