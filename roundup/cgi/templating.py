@@ -4,6 +4,7 @@ from __future__ import nested_scopes
 """
 
 todo = """
+- Add tests for Loader.load() method
 - Most methods should have a "default" arg to supply a value
   when none appears in the hyperdb or request.
 - Multilink property additions: change_note and new_upload
@@ -140,11 +141,11 @@ class LoaderBase:
             # load the template
             if '.' in filename:
                 name, extension = filename.split('.', 1)
-                self.get(name, extension)
+                self.load(name, extension)
             else:
-                self.get(filename, None)
+                self.load(filename, None)
 
-    def get(self, name, extension=None):
+    def load(self, name, extension=None):
         """ Interface to get a template, possibly loading a compiled template.
 
             "name" and "extension" indicate the template we're after, which in
@@ -163,7 +164,7 @@ class LoaderBase:
         if extension:
             extension = extension[1:]
         try:
-            return self.get(name, extension)
+            return self.load(name, extension)
         except NoTemplate, message:
             raise KeyError, message
 
@@ -699,7 +700,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         req.update(kwargs)
 
         # new template, using the specified classname and request
-        pt = self._client.instance.templates.get(self.classname, name)
+        pt = self._client.instance.templates.load(self.classname, name)
 
         # use our fabricated request
         args = {
@@ -1086,7 +1087,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
             '&@queryname=%s'%urllib.quote(name))
 
         # new template, using the specified classname and request
-        pt = self._client.instance.templates.get(req.classname, 'search')
+        pt = self._client.instance.templates.load(req.classname, 'search')
         # The context for a search page should be the class, not any
         # node.
         self._client.nodeid = None

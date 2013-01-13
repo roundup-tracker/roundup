@@ -12,7 +12,7 @@ class Loader(LoaderBase):
         self.dir = dir
         self.loader = chameleon.PageTemplateLoader(dir)
 
-    def get(self, name, extension=None):
+    def load(self, name, extension=None):
         # default the name to "home"
         if name is None:
             name = 'home'

@@ -21,7 +21,7 @@ class Loader(LoaderBase):
     def __init__(self, dir):
         self.dir = dir
 
-    def get(self, name, extension=None):
+    def load(self, name, extension=None):
         # default the name to "home"
         if name is None:
             name = 'home'
