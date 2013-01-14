@@ -1063,23 +1063,50 @@ class Client:
         self.error_message.append(message)
         self.write_html(self.renderContext())
 
-    def selectTemplate(self):
-        """ Template selection logic """
+    def selectTemplate(self, name, view):
+        """ Choose existing template for the given combination of
+            classname (name parameter) and template request variable
+            (view parameter) and return its name.
+
+            In most cases the name will be "classname.view", but
+            if "view" is None, then template name "classname" will
+            be returned.
+
+            If "classname.view" template doesn't exist, the
+            "_generic.view" is used as a fallback.
+
+            [ ] cover with tests
+        """
         loader = self.instance.templates
 
-        name = self.classname
-        view = self.template
-        
         # if classname is not set, use "home" template
         if name is None:
             name = 'home'
 
-        return name, view
+        tplname = name     
+        if view:
+            tplname = '%s.%s' % (name, view)
+
+        if loader.check(tplname):
+            return tplname
+
+        # rendering class/context with generic template for this view.
+        # with no view it's impossible to choose which generic template to use
+        if not view:
+            raise templating.NoTemplate('Template "%s" doesn\'t exist' % name)
+
+        generic = '_generic.%s' % view
+        if loader.check(generic):
+            return generic
+
+        raise templating.NoTemplate('No template file exists for templating '
+            '"%s" with template "%s" (neither "%s" nor "%s")' % (name, view,
+            tplname, generic))
 
     def renderContext(self):
         """ Return a PageTemplate for the named page
         """
-        name, view = self.selectTemplate()
+        tplname = self.selectTemplate(self.classname, self.template)
 
         # catch errors so we can handle PT rendering errors more nicely
         args = {
@@ -1087,7 +1114,7 @@ class Client:
             'error_message': self.error_message
         }
         try:
-            pt = self.instance.templates.load(name, view)
+            pt = self.instance.templates.load(tplname)
             # let the template render figure stuff out
             result = pt.render(self, None, None, **args)
             self.additional_headers['Content-Type'] = pt.content_type

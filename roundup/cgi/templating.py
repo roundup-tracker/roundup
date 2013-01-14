@@ -77,49 +77,8 @@ class Unauthorised(Exception):
             'items of class %(class)s') % {
             'action': self.action, 'class': self.klass}
 
-def find_template(dir, name, view):
-    """ Find a template in the nominated dir
-    """
-    # find the source
-    if view:
-        filename = '%s.%s'%(name, view)
-    else:
-        filename = name
-
-    # try old-style
-    src = os.path.join(dir, filename)
-    if os.path.exists(src):
-        return (src, filename)
-
-    # try with a .html or .xml extension (new-style)
-    for extension in '.html', '.xml':
-        f = filename + extension
-        src = os.path.join(dir, f)
-        if os.path.exists(src):
-            return (src, f)
-
-    # no view == no generic template is possible
-    if not view:
-        raise NoTemplate, 'Template file "%s" doesn\'t exist'%name
-
-    # try _generic template for the view
-    generic = '_generic.%s'%view
-    src = os.path.join(dir, generic)
-    if os.path.exists(src):
-        return (src, generic)
-
-    # finally, try _generic.html
-    generic = generic + '.html'
-    src = os.path.join(dir, generic)
-    if os.path.exists(src):
-        return (src, generic)
-
-    raise NoTemplate('No template file exists for templating "%s" '
-        'with template "%s" (neither "%s" nor "%s")'%(name, view,
-        filename, generic))
-
 class LoaderBase:
-    """Base for engine-specific template Loader class."""
+    """ Base for engine-specific template Loader class."""
     def precompileTemplates(self):
         """ Go through a directory and precompile all the templates therein
         """
@@ -137,36 +96,30 @@ class LoaderBase:
 
             # remove extension
             filename = filename[:-len(extension)]
+            self.load(filename)
 
-            # load the template
-            if '.' in filename:
-                name, view = filename.split('.', 1)
-                self.load(name, view)
-            else:
-                self.load(filename, None)
-
-    def load(self, name, view=None):
+    def load(self, tplname):
         """ Load template and return template object with render() method.
 
-            "name" and "view" are used to select the template, which in
-            most cases will be "name.view". If "view" is None, then a
-            template called "name" will be selected.
-
-            If the file "name.view" doesn't exist, we look for
-            "_generic.view" as a fallback.
+            "tplname" is a template name. For filesystem loaders it is a
+            filename without extensions, typically in the "classname.view"
+            format.
         """
-        # [ ] document default 'home' template and other special pages
+        raise NotImplementedError
+
+    def check(self, name):
+        """ Check if template with the given name exists. Return None or
+            a tuple (src, filename) that can be reused in load() method.
+        """
         raise NotImplementedError
 
     def __getitem__(self, name):
         """Special method to access templates by loader['name']"""
-        view = None
-        if '.' in name:
-            name, view = name.split('.', 1)
         try:
-            return self.load(name, view)
+            return self.load(name)
         except NoTemplate, message:
             raise KeyError, message
+
 
 def get_loader(dir, engine_name):
     if engine_name == 'chameleon':
@@ -700,7 +653,9 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         req.update(kwargs)
 
         # new template, using the specified classname and request
-        pt = self._client.instance.templates.load(self.classname, name)
+        # [ ] this code is too similar to client.renderContext()
+        tplname = self._client.selectTemplate(self.classname, name)
+        pt = self._client.instance.templates.load(tplname)
 
         # use our fabricated request
         args = {
@@ -845,9 +800,8 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                     isinstance(self._props[prop_n], hyperdb.Link)):
                 classname = self._props[prop_n].classname
                 try:
-                    template = find_template(self._db.config.TEMPLATES,
-                        classname, 'item')
-                    if template[1].startswith('_generic'):
+                    template = self._client.selectTemplate(classname, 'item')
+                    if template.startswith('_generic.'):
                         raise NoTemplate, 'not really...'
                 except NoTemplate:
                     pass
@@ -917,9 +871,9 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                             ) % locals()
                         labelprop = linkcl.labelprop(1)
                         try:
-                            template = find_template(self._db.config.TEMPLATES,
-                                classname, 'item')
-                            if template[1].startswith('_generic'):
+                            template = self._client.selectTemplate(classname,
+                               'item')
+                            if template.startswith('_generic.'):
                                 raise NoTemplate, 'not really...'
                             hrefable = 1
                         except NoTemplate:
@@ -1087,7 +1041,10 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
             '&@queryname=%s'%urllib.quote(name))
 
         # new template, using the specified classname and request
-        pt = self._client.instance.templates.load(req.classname, 'search')
+        # [ ] the custom logic for search page doesn't belong to
+        #     generic templating module (techtonik)
+        tplname = self._client.selectTemplate(req.classname, 'search')
+        pt = self._client.instance.templates.load(tplname)
         # The context for a search page should be the class, not any
         # node.
         self._client.nodeid = None

@@ -8,7 +8,7 @@ import mimetypes
 import os
 import os.path
 
-from roundup.cgi.templating import StringIO, context, translationService, find_template, LoaderBase
+from roundup.cgi.templating import StringIO, context, translationService, LoaderBase
 from roundup.cgi.PageTemplates import PageTemplate, GlobalTranslationService
 from roundup.cgi.PageTemplates.Expressions import getEngine
 from roundup.cgi.TAL import TALInterpreter
@@ -21,9 +21,16 @@ class Loader(LoaderBase):
     def __init__(self, dir):
         self.dir = dir
 
-    def load(self, name, view=None):
+    def check(self, name):
+        for extension in ['', '.html', '.xml']:
+            f = name + extension
+            src = os.path.join(self.dir, f)
+            if os.path.exists(src):
+                return (src, f)
+
+    def load(self, tplname):
         # find the source
-        src, filename = find_template(self.dir, name, view)
+        src, filename = self.check(tplname)
 
         # has it changed?
         try:

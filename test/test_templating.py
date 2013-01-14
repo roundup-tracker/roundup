@@ -336,7 +336,6 @@ class NoTemplate(Exception):
 class Unauthorised(Exception):
     def __init__(self, action, klass):
     def __str__(self):
-def find_template(dir, name, view):
 
 class Loader:
     def __init__(self, dir):

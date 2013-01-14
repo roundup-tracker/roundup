@@ -5,15 +5,22 @@ __docformat__ = 'restructuredtext'
 import os.path
 import chameleon
 
-from roundup.cgi.templating import StringIO, context, find_template, LoaderBase
+from roundup.cgi.templating import StringIO, context, LoaderBase
 
 class Loader(LoaderBase):
     def __init__(self, dir):
         self.dir = dir
         self.loader = chameleon.PageTemplateLoader(dir)
 
-    def load(self, name, view=None):
-        src, filename = find_template(self.dir, name, view)
+    def check(self, name):
+        for extension in ['', '.html', '.xml']:
+            f = name + extension
+            src = os.path.join(self.dir, f)
+            if os.path.exists(src):
+                return (src, f)
+
+    def load(self, tplname):
+        src, filename = self.check(tplname)
         return RoundupPageTemplate(self.loader.load(src))
 
 class RoundupPageTemplate(object):

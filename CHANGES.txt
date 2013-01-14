@@ -9,6 +9,10 @@ Features:
 
 - Renamed old Templates classes to Loader classes to clarify sources
   for alternative templating engines, updated docs (anatoly techtonik)
+- Template selection code is moved from Loader classes into cgi.client
+  limiting the responsibility of Loaders to compilation and rendering.
+  Internally, templating.find_template is replaced with
+  client.selectTemplate (anatoly techtonik)
 
 Fixed:
 
