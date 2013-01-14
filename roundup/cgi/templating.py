@@ -146,11 +146,11 @@ class LoaderBase:
                 self.load(filename, None)
 
     def load(self, name, view=None):
-        """ Interface to get a template, possibly loading a compiled template.
+        """ Load template and return template object with render() method.
 
-            "name" and "view" indicate the template we're after, which in
-            most cases will be "name.view". If "view" is None, then
-            we look for a template just called "name".
+            "name" and "view" are used to select the template, which in
+            most cases will be "name.view". If "view" is None, then a
+            template called "name" will be selected.
 
             If the file "name.view" doesn't exist, we look for
             "_generic.view" as a fallback.
