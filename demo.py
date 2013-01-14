@@ -149,6 +149,10 @@ def main():
     except getopt.GetoptError, e:
         usage(str(e))
         return 1
+    for opt, arg in opts:
+        if opt == '-h':
+            usage()
+            return 0
 
     home = os.path.abspath('demo')
     nuke = args and args[0] == 'nuke'
@@ -156,10 +160,7 @@ def main():
         backend = 'anydbm'
         template = 'classic'
         for opt, arg in opts:
-            if opt == '-h':
-                usage()
-                return 0
-            elif opt == '-t':
+            if opt == '-t':
                 template = arg
             elif opt == '-b':
                 backend = arg
