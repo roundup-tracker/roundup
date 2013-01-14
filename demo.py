@@ -13,6 +13,9 @@ import getopt
 from roundup import configuration
 from roundup.scripts import roundup_server
 
+# Path where demo instance files will be stored
+TRACKER_HOME = os.path.join(os.path.dirname(__file__), 'demo')
+
 def install_demo(home, backend, template):
     """Install a demo tracker
 
@@ -101,7 +104,7 @@ def install_demo(home, backend, template):
     db.close()
 
 def run_demo(home):
-    """Run the demo tracker installed in ``home``"""
+    """Run the demo tracker instance from its ``home`` directory"""
     cfg = configuration.CoreConfig(home)
     url = cfg["TRACKER_WEB"]
     hostname, port = urlparse.urlparse(url)[1].split(':')
@@ -115,11 +118,11 @@ def run_demo(home):
 
 Demo tracker is set up to be accessed by localhost browser.  If you
 run demo on a server host, please stop the demo, open file
-"demo/config.ini" with your editor, change the host name in the "web"
+"%(datadir)s/config.ini" with your editor, change the host name in the "web"
 option in section "[tracker]", save the file, then re-run the demo
 program. If you want to change backend types, you must use "nuke".
 
-''' % dict(url=url, script=sys.argv[0])
+''' % dict(url=url, script=sys.argv[0], datadir=TRACKER_HOME)
 
     # disable command line processing in roundup_server
     sys.argv = sys.argv[:1] + ['-p', str(port), 'demo=' + home]
@@ -131,11 +134,14 @@ def usage(msg = ''):
     if msg: print msg
     print 'Usage: %s [options] [nuke]'%sys.argv[0]
     print """
+ Run a demo server. Config and database files are created
+ in %(datadir)s/ subdirectory of %(script)s dir.
+    
 Options:
  -h                -- print this help message
  -t template       -- specify the tracker template to use
  -b backend        -- specify the database backend to use
-"""
+""" % dict(script=sys.argv[0], datadir=TRACKER_HOME)
 
 
 def main():
@@ -154,7 +160,7 @@ def main():
             usage()
             return 0
 
-    home = os.path.abspath('demo')
+    home = os.path.abspath(TRACKER_HOME)
     nuke = args and args[0] == 'nuke'
     if not os.path.exists(home) or nuke:
         backend = 'anydbm'
@@ -169,6 +175,7 @@ def main():
             usage()
             return 1
 
+        print "Initializing demo instance in:\n    %s" % home
         install_demo(home, backend, template)
     elif opts:
         print "Error: Arguments are not allowed when running an existing demo."
