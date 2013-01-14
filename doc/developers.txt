@@ -17,7 +17,7 @@ Design Document`_ and the `implementation notes`_.
 
 All development is coordinated through two resources:
 
-- roundup-dev mailing list at
+- roundup-devel mailing list at
   http://lists.sourceforge.net/mailman/listinfo/roundup-devel
 - The issue tracker running at
   http://issues.roundup-tracker.org/
@@ -57,8 +57,8 @@ A checkout of the roundup sources is in ~roundup/src/roundup-src.
 Small Changes
 -------------
 
-Most small changes can be submitted through the issue tracker, with
-patches attached that give context diffs of the affected source.
+Most small changes can be submitted as patches through the issue
+tracker or sent to `roundup-devel mailing list`_.
 
 
 Source Repository Access
@@ -434,6 +434,8 @@ At run time, Roundup automatically compiles message catalogs whenever
 .. _Roundup source distribution:
 .. _Roundup binary distribution:
     http://sourceforge.net/project/showfiles.php?group_id=31577
+.. _roundup-devel mailing list:
+   http://lists.sourceforge.net/mailman/listinfo/roundup-devel
 .. _TAL:
 .. _Template Attribute Language:
    http://dev.zope.org/Wikis/DevSite/Projects/ZPT/TAL%20Specification%201.4
