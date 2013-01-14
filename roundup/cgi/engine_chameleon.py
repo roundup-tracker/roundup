@@ -16,9 +16,6 @@ class Loader(LoaderBase):
         # default the name to "home"
         if name is None:
             name = 'home'
-        elif view is None and '.' in name:
-            # split name
-            name, view = name.split('.')
 
         src, filename = find_template(self.dir, name, view)
         return RoundupPageTemplate(self.loader.load(src))
