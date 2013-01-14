@@ -15,6 +15,8 @@
 user = Class(db, "user", username=String(), password=Password(),
     address=String(), alternate_addresses=String(), roles=String())
 user.setkey("username")
+db.security.addPermission(name='Register', klass='user',
+                          description='User is allowed to register new user')
 #
 # TRACKER SECURITY SETTINGS
 #
