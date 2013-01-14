@@ -99,7 +99,7 @@ directions that have not been agreed to.
 Debugging Aids
 --------------
 
-See `debugging.txt`_.
+See :doc:`debugging <debugging>`.
 
 Internationalization Notes
 --------------------------
