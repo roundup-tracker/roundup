@@ -22,10 +22,6 @@ class Loader(LoaderBase):
         self.dir = dir
 
     def load(self, name, view=None):
-        # default the name to "home"
-        if name is None:
-            name = 'home'
-
         # find the source
         src, filename = find_template(self.dir, name, view)
 

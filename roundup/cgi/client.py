@@ -1063,11 +1063,23 @@ class Client:
         self.error_message.append(message)
         self.write_html(self.renderContext())
 
+    def selectTemplate(self):
+        """ Template selection logic """
+        loader = self.instance.templates
+
+        name = self.classname
+        view = self.template
+        
+        # if classname is not set, use "home" template
+        if name is None:
+            name = 'home'
+
+        return name, view
+
     def renderContext(self):
         """ Return a PageTemplate for the named page
         """
-        name = self.classname
-        view = self.template
+        name, view = self.selectTemplate()
 
         # catch errors so we can handle PT rendering errors more nicely
         args = {

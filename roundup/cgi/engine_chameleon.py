@@ -13,10 +13,6 @@ class Loader(LoaderBase):
         self.loader = chameleon.PageTemplateLoader(dir)
 
     def load(self, name, view=None):
-        # default the name to "home"
-        if name is None:
-            name = 'home'
-
         src, filename = find_template(self.dir, name, view)
         return RoundupPageTemplate(self.loader.load(src))
 
