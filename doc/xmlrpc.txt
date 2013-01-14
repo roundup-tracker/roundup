@@ -19,7 +19,7 @@ There are two ways to access the xmlrpc interface:
   
   
 stand alone roundup-xmlrpc-server
----------------------
+---------------------------------
 The Roundup XML-RPC standalone server must be started before remote clients can access the
 tracker via XML-RPC. ``roundup-xmlrpc-server`` is installed in the scripts
 directory alongside ``roundup-server`` and roundup-admin``. When invoked, the

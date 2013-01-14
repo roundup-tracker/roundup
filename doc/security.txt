@@ -31,7 +31,7 @@ preventing non-admin users from accessing:
 Issues
 ======
 
-1. The current implementation is ad-hoc, and not complete for all `use cases`_.
+1. The current implementation is ad-hoc, and not complete for all use cases.
 2. Currently it is not possible to allow submission of issues through email
    but restrict those users from accessing the web interface.
 3. Only one user may perform admin functions.

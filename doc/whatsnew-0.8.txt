@@ -104,7 +104,7 @@ Extending Roundup
 =================
 
 To write extension code for Roundup you place a file in the tracker home
-``extensions`` directory. See the `customisation documentation`_ for more
+``extensions`` directory. See the `customization documentation`_ for more
 information about how this is done.
 
 
