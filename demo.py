@@ -5,6 +5,7 @@
 
 import errno
 import os
+import shutil
 import socket
 import sys
 import urlparse
@@ -43,10 +44,17 @@ def install_demo(home, backend, template):
         config['RDBMS_PASSWORD'] = 'rounduptest'
         config['RDBMS_NAME'] = 'rounduptest'
 
-    # see if we have further db nuking to perform
-    module = backends.get_backend(backend)
-    if module.db_exists(config):
-        module.db_nuke(config)
+    # see if we need to clean up existing directory
+    if os.path.exists(home):
+        if os.path.exists(home + '/config.ini'):
+            # clear everything out to avoid conflicts with former
+            # extensions and detectors
+            print "Nuking directory left from the previous demo instance."
+            shutil.rmtree(home)
+        else:
+            print "Error: Refusing to nuke non-tracker directory:"
+            print "    %s" % home
+            sys.exit(1)
 
     template_dir = os.path.join('share', 'roundup', 'templates', template)
     init.install(home, template_dir)
