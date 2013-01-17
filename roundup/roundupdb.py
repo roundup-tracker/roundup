@@ -1,4 +1,3 @@
-from __future__ import nested_scopes
 #
 # Copyright (c) 2001 Bizar Software Pty Ltd (http://www.bizarsoftware.com.au/)
 # This module is free software, and you may redistribute it and/or modify

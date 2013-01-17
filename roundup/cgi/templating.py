@@ -1,5 +1,3 @@
-from __future__ import nested_scopes
-
 """Implements the API used in the HTML templating for the web interface.
 """
 

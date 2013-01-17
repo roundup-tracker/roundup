@@ -1,5 +1,3 @@
-from __future__ import nested_scopes
-
 import unittest
 from cgi import FieldStorage, MiniFieldStorage
 
