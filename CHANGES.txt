@@ -13,6 +13,9 @@ Features:
   limiting the responsibility of Loaders to compilation and rendering.
   Internally, templating.find_template is replaced with
   client.selectTemplate (anatoly techtonik)
+- Experimental proof of concept code for Jinja2 templating engine.
+  Select 'jinja2' template_engine in config and place templates into 
+  html/jinja2 to play with (anatoly techtonik)
 
 Fixed:
 

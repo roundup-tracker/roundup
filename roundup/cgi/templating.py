@@ -77,6 +77,10 @@ class Unauthorised(Exception):
 
 class LoaderBase:
     """ Base for engine-specific template Loader class."""
+    def __init__(self, dir):
+        # loaders are given the template directory as a first argument
+        pass
+
     def precompileTemplates(self):
         """ Go through a directory and precompile all the templates therein
         """
@@ -118,13 +122,17 @@ class LoaderBase:
         except NoTemplate, message:
             raise KeyError, message
 
+class TemplateBase:
+    content_type = 'text/html'
 
 def get_loader(dir, engine_name):
     if engine_name == 'chameleon':
-        import engine_chameleon as engine
+        from engine_chameleon import Loader
+    elif engine_name == 'jinja2':
+        from engine_jinja2 import Jinja2Loader as Loader
     else:
-        import engine_zopetal as engine
-    return engine.Loader(dir)
+        from engine_zopetal import Loader
+    return Loader(dir)
 
 def context(client, template=None, classname=None, request=None):
     """Return the rendering context dictionary
