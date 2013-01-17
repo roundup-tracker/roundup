@@ -42,6 +42,14 @@ from roundup.mailer import Mailer, MessageSendError, encode_quopri, \
 
 try:
     import pyme, pyme.core
+    # gpgme_check_version() must have been called once in a programm
+    # to initialise some subsystems of gpgme.
+    # See the gpgme documentation (at least from v1.1.6 to 1.3.1, e.g.
+    # http://gnupg.org/documentation/manuals/gpgme/Library-Version-Check.html)
+    # This is not done by pyme (at least v0.7.0 - 0.8.1). So we do it here.
+    # FIXME: Make sure it is done only once (the gpgme documentation does
+    # not tell if calling this several times has drawbacks).
+    pyme.core.check_version(None)
 except ImportError:
     pyme = None
 

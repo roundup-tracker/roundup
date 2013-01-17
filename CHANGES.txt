@@ -19,6 +19,7 @@ Features:
 
 Fixed:
 
+- Fixed OpenPGP support for modern versions of libgpgme. (Bernhard Reiter)
 - Restored compatibility with old style trackers (anatoly techtonik)
 - Make roundup play nice with setup tools (for using with virtualenv)
   (Pradip Caulagi)
