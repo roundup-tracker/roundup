@@ -21,5 +21,6 @@ Contents
    original design <design>
    developers
    tracker_templates
+   glossary
    acknowledgements
    license

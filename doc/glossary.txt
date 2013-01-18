@@ -2,8 +2,6 @@
 Roundup Glossary
 ================
 
-.. contents::
-
 
 class
    a definition of the properties and behaviour of a set of items
