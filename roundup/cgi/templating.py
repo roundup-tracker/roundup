@@ -75,6 +75,9 @@ class Unauthorised(Exception):
             'items of class %(class)s') % {
             'action': self.action, 'class': self.klass}
 
+
+# --- Template Loader API
+
 class LoaderBase:
     """ Base for engine-specific template Loader class."""
     def __init__(self, dir):
@@ -130,9 +133,14 @@ def get_loader(dir, engine_name):
         from engine_chameleon import Loader
     elif engine_name == 'jinja2':
         from engine_jinja2 import Jinja2Loader as Loader
-    else:
+    elif engine_name == 'zopetal':
         from engine_zopetal import Loader
+    else:
+        raise Exception('Unknown template engine "%s"' % engine_name)
     return Loader(dir)
+
+# --/ Template Loader API
+
 
 def context(client, template=None, classname=None, request=None):
     """Return the rendering context dictionary
