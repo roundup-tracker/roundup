@@ -25,7 +25,7 @@ minimal set (to avoid Roundup state changes from template).
 [ ] figure out what to do with autoescaping - it is disabled
     by default in Jinja2
 
-[ ] precompileTemplates is a stub
+[ ] precompile() is a stub
 
 [ ] add {{ debug() }} dumper to inspect available variables
     https://github.com/mitsuhiko/jinja2/issues/174
@@ -59,7 +59,7 @@ class Jinja2Loader(LoaderBase):
         #src, filename = self.check(tplname)
         return Jinja2ProxyPageTemplate(self._env.get_template(tplname + '.html'))
 
-    def precompileTemplates(self):
+    def precompile(self):
         pass
 
 class Jinja2ProxyPageTemplate(TemplateBase):

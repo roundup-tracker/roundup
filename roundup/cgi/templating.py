@@ -84,9 +84,11 @@ class LoaderBase:
         # loaders are given the template directory as a first argument
         pass
 
-    def precompileTemplates(self):
-        """ Go through a directory and precompile all the templates therein
+    def precompile(self):
+        """ This method may be called when tracker is loaded to precompile
+            templates that support this ability.
         """
+        # [ ] move implementation out of API
         for filename in os.listdir(self.dir):
             # skip subdirs
             if os.path.isdir(filename):
@@ -120,6 +122,7 @@ class LoaderBase:
 
     def __getitem__(self, name):
         """Special method to access templates by loader['name']"""
+        # [ ] not sure if it is needed for anything except TAL templates
         try:
             return self.load(name)
         except NoTemplate, message:

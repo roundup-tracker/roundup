@@ -66,7 +66,7 @@ class Tracker:
         self.backend = backends.get_backend(self.get_backend_name())
 
         if self.optimize:
-            self.templates.precompileTemplates()
+            self.templates.precompile()
             # initialize tracker extensions
             for extension in self.get_extensions('extensions'):
                 extension(self)
@@ -290,7 +290,7 @@ class OldStyleTrackers:
         tracker.optimize = optimize
         tracker.templates = templating.get_loader(tracker.config["TEMPLATES"])
         if optimize:
-            tracker.templates.precompileTemplates()
+            tracker.templates.precompile()
 
         return tracker
 
