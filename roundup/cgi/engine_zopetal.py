@@ -8,29 +8,22 @@ import mimetypes
 import os
 import os.path
 
-from roundup.cgi.templating import StringIO, context, translationService, LoaderBase
+from roundup.cgi.templating import StringIO, context, translationService, TALLoaderBase
 from roundup.cgi.PageTemplates import PageTemplate, GlobalTranslationService
 from roundup.cgi.PageTemplates.Expressions import getEngine
 from roundup.cgi.TAL import TALInterpreter
 
 GlobalTranslationService.setGlobalTranslationService(translationService)
 
-class Loader(LoaderBase):
+class Loader(TALLoaderBase):
     templates = {}
 
     def __init__(self, dir):
         self.dir = dir
 
-    def check(self, name):
-        for extension in ['', '.html', '.xml']:
-            f = name + extension
-            src = os.path.join(self.dir, f)
-            if os.path.exists(src):
-                return (src, f)
-
     def load(self, tplname):
         # find the source
-        src, filename = self.check(tplname)
+        src, filename = self._find(tplname)
 
         # has it changed?
         try:

@@ -16,6 +16,7 @@ Features:
 - Experimental proof of concept code for Jinja2 templating engine.
   Select 'jinja2' template_engine in config and place templates into 
   html/jinja2 to play with (anatoly techtonik)
+- Introducing Template Loader API (anatoly techtonik)
 
 Fixed:
 

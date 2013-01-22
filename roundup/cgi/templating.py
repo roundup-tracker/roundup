@@ -2,6 +2,7 @@
 """
 
 todo = """
+- Document parameters to Template.render() method
 - Add tests for Loader.load() method
 - Most methods should have a "default" arg to supply a value
   when none appears in the hyperdb or request.
@@ -88,7 +89,43 @@ class LoaderBase:
         """ This method may be called when tracker is loaded to precompile
             templates that support this ability.
         """
-        # [ ] move implementation out of API
+        pass
+
+    def load(self, tplname):
+        """ Load template and return template object with render() method.
+
+            "tplname" is a template name. For filesystem loaders it is a
+            filename without extensions, typically in the "classname.view"
+            format.
+        """
+        raise NotImplementedError
+
+    def check(self, name):
+        """ Check if template with the given name exists. Should return
+            false if template can not be found.
+        """
+        raise NotImplementedError
+
+class TALLoaderBase(LoaderBase):
+    """ Common methods for the legacy TAL loaders."""
+
+    def __init__(self, dir):
+        self.dir = dir
+
+    def _find(self, name):
+        """ Find template, return full path and filename of the
+            template if it is found, None otherwise."""
+        for extension in ['', '.html', '.xml']:
+            f = name + extension
+            src = os.path.join(self.dir, f)
+            if os.path.exists(src):
+                return (src, f)
+
+    def check(self, name):
+        return bool(self._find(name))
+
+    def precompile(self):
+        """ Precompile templates in load directory by loading them """
         for filename in os.listdir(self.dir):
             # skip subdirs
             if os.path.isdir(filename):
@@ -105,24 +142,8 @@ class LoaderBase:
             filename = filename[:-len(extension)]
             self.load(filename)
 
-    def load(self, tplname):
-        """ Load template and return template object with render() method.
-
-            "tplname" is a template name. For filesystem loaders it is a
-            filename without extensions, typically in the "classname.view"
-            format.
-        """
-        raise NotImplementedError
-
-    def check(self, name):
-        """ Check if template with the given name exists. Return None or
-            a tuple (src, filename) that can be reused in load() method.
-        """
-        raise NotImplementedError
-
     def __getitem__(self, name):
         """Special method to access templates by loader['name']"""
-        # [ ] not sure if it is needed for anything except TAL templates
         try:
             return self.load(name)
         except NoTemplate, message:
