@@ -149,19 +149,61 @@ class TALLoaderBase(LoaderBase):
         except NoTemplate, message:
             raise KeyError, message
 
+class MultiLoader(LoaderBase):
+    def __init__(self):
+        self.loaders = []
+
+    def add_loader(self, loader):
+        self.loaders.append(loader)
+      
+    def check(self, name):
+        for l in self.loaders:
+            if l.check(name):
+                return True
+
+    def load(self, name):    
+        for l in self.loaders:
+            if l.check(name):
+                return l.load(name)
+
+    def __getitem__(self, name):
+        """Needed for TAL templates compatibility"""
+        # [ ] document root and helper templates
+        try:
+            return self.load(name)
+        except NoTemplate, message:
+            raise KeyError, message
+        
+
 class TemplateBase:
     content_type = 'text/html'
 
-def get_loader(dir, engine_name):
-    if engine_name == 'chameleon':
-        from engine_chameleon import Loader
-    elif engine_name == 'jinja2':
-        from engine_jinja2 import Jinja2Loader as Loader
-    elif engine_name == 'zopetal':
-        from engine_zopetal import Loader
+
+def get_loader(dir, template_engine):
+
+    # Support for multiple engines using fallback mechanizm
+    # meaning that if first engine can't find template, we
+    # use the second
+
+    engines = template_engine.split(',')
+    engines = [x.strip() for x in engines]
+    ml = MultiLoader()
+
+    for engine_name in engines:
+        if engine_name == 'chameleon':
+            from engine_chameleon import Loader
+        elif engine_name == 'jinja2':
+            from engine_jinja2 import Jinja2Loader as Loader
+        elif engine_name == 'zopetal':
+            from engine_zopetal import Loader
+        else:
+            raise Exception('Unknown template engine "%s"' % engine_name)
+        ml.add_loader(Loader(dir))
+    
+    if len(engines) == 1:
+        return ml.loaders[0]
     else:
-        raise Exception('Unknown template engine "%s"' % engine_name)
-    return Loader(dir)
+        return ml
 
 # --/ Template Loader API
 

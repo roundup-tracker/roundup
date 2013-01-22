@@ -47,9 +47,10 @@ class Jinja2Loader(LoaderBase):
                     )
 
     def check(self, tplname):
-        print tplname
+        #print tplname
         try:
-            print self._env.get_template(tplname + '.html')
+            #print self._env.get_template(tplname + '.html')
+            self._env.get_template(tplname + '.html')
         except jinja2.TemplateNotFound:
             return
         else:
