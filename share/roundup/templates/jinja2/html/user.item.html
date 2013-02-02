@@ -1,0 +1,115 @@
+{% extends 'layout/page.html' %}
+
+{% block head_title %}
+  {% if context.id %}
+    User {{ context.id }} - {{ config.TRACKER_NAME }}
+  {% else %}
+    New User - {{ config.TRACKER_NAME }}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class='page-header'>
+    <h1>
+      {% if not (context.id or context.is_edit_ok()) %}
+        New User
+      {% elif not context.id and context.is_edit_ok() %}
+        New User Editing
+      {% elif context.id and not context.is_edit_ok() %}
+        User{{ context.id }}
+      {% elif context.id and context.is_edit_ok() %}
+        User{{ context.id }} editing
+      {% endif %}
+    </h1>
+  </div>
+
+  {% include 'layout/permission.html' %}
+
+  {% if context.is_view_ok() %}
+    <form method="POST"
+          name ="itemSynopsis"
+          enctype ="multipart/form-data"
+          action ='{{  context.designator() }}'>
+      <table>
+        <tr>
+          <th>Name</th>
+          <td>
+            <input type='text' name="realname" value='{{ context.realname }}'>
+          </td>
+        </tr>
+        <tr>
+          <th>Login Name</th>
+          <td>
+            <input type='text' name='username' value='{{ context.username }}'>
+          </td>
+        </tr>
+        {% if context.is_edit_ok() %}
+          <tr>
+            <th>Login Password</th>
+            <td>
+              <input type='password' name='password'>
+            </td>
+          </tr>
+          <tr>
+            <th>Confirm Password</th>
+            <td>
+              <input type='password' name='confirm_input'>
+            </td>
+          </tr>
+        {% endif %}
+        {% if request.user.hasPermission('Web Roles') %}
+          <tr>
+            <th>Roles <br>(comma separated)</th>
+            <td>
+              <input type='text' name='roles' value='{{ context.roles }}'>
+            </td>
+          </tr>
+        {% endif %}
+        <tr>
+          <th>Phone</th>
+          <td>
+            <input type='text' name='phone' value='{{ context.phone }}'>
+          </td>
+        </tr>
+        <tr>
+          <th>Organisation</th>
+          <td>
+            <input type='text' name='organisation' value='{{ context.organisation }}'>
+          </td>
+        </tr>
+        {% if context.timezone %}
+          <tr>
+            <th>Timezone</th>
+            <td>
+              <input type='text' name='timezone' value='{{ context.timezone}}'>
+            </td>
+          </tr>
+        {% endif %}
+        <tr>
+          <th>Email</th>
+          <td>
+            <input type='text' name='address' value='{{ context.address }}'>
+          </td>
+        </tr>
+        <tr>
+          <th>Alternate email address <br>One address per line</th>
+          <td>
+            {{ context.alternate_addresses.multiline() }}
+          </td>
+        </tr>
+        {% if context.is_edit_ok() %}
+          <tr class='form-actions'>
+            <td>
+            <input type="hidden" name="@template" value="item">
+            {{ context.submit() }}
+            </td>
+          </tr>
+        {% endif %}
+      </table>
+    </form>
+  {% endif %}
+
+  <div class='vspace-five'></div>
+  {{ context.history() }}
+
+{% endblock %}

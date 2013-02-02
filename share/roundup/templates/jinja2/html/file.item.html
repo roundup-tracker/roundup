@@ -1,0 +1,42 @@
+{% extends 'layout/page.html' %}
+
+{% block content %}
+  <div class='page-header'>
+    <h1>File display</h1>
+  </div>
+
+  {% include 'layout/permission.html' %}
+
+  {% if context.is_view_ok() %}
+    <form method="POST"
+      enctype="multipart/form-data" action='{{ context.designator() }}'>
+
+      <dl class='dl-horizontal'>
+        <dt>Name</dt>
+        <dd>{{ context.name.field() }}</dd>
+        <dt>Content Type</dt>
+        <dd>{{ context.type.field() }}</dd>
+      </dl>
+
+      <input type="hidden" name="@template" value="item">
+      <input type="hidden" name="@required" value="name,type">
+      {% if request.form.has_key('@multilink') %}
+        <input type="hidden" name="@multilink"
+          value='request.form.@multilink.value()'>
+      {% endif %}
+      <div class='form-actions'>
+        {{ context.submit() }}
+      </div>
+    </form>
+  {% endif %}
+
+  {% if context.id and context.is_view_ok() %}
+    <div class='row-fluid'>
+      <a href='file{{ context.id }}/{{ context.name }}'>Download</a>
+    </div>
+  {% endif %}
+
+  <div class='vspace-five'></div>
+  {{ context.history() }}
+
+{% endblock %}

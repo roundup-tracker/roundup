@@ -28,107 +28,12 @@
 
   {% include 'layout/permission.html' %}
 
-  {% if context.is_view_ok %}
-    <form method="POST"
-          {% if context.id %}
-            action='issue{{ context.id }}'
-          {% else %}
-            action='issue'
-          {% endif %}
-          name="itemSynopsis"
-          enctype="multipart/form-data"
-      >
-      <fieldset>
-        {% if context.is_edit_ok %}
-          <div class='container-fluid form-horizontal'>
-            <!-- title -->
-            <div class='row-fluid'>
-              <div class='control-group'>
-                <label class='control-label' for='title'>Title</label>
-                <div class='controls'>
-                  <input name='title' id='title' type='text' class='input-xxlarge' value='{{ context.title }}' required>
-                </div>
-              </div>
-            </div> <!-- row-fluid -->
-        
-            <!-- priority & Status -->
-            <div class='row-fluid'>
-              <div class='control-group span6'>
-                <label class='control-label' for='priority'>Priority</label>
-                <div class='controls'>
-                  {{ context.priority.menu() }}
-                </div>
-              </div>
-              <div class='control-group span6'>
-                <label class='control-label' for='status'>Status</label>
-                <div class='controls'>
-                  {{ context.status.menu() }}
-                </div>
-              </div>
-            </div> <!-- row-fluid -->
-
-            <!-- Superseder & nosy list -->
-            <div class='row-fluid'>
-              <div class='control-group span6'>
-                <label class='control-label' for='superseder'>Superseder</label>
-                <div class='controls'>
-                  <input type='text' name='superseder'>
-                </div>
-              </div>
-              <div class='control-group span6'>
-                <label class='control-label' for='nosylist'>Nosy list</label>
-                <div class='controls'>
-                  <input type='text' name='nosy'>
-                </div>
-              </div>
-            </div> <!-- row-fluid -->
-
-            <!-- Assigned to & keywords -->
-            <div class='row-fluid'>
-              <div class='control-group span6'>
-                <label class='control-label' for='assignedto'>Assigned to</label>
-                <div class='controls'>
-                  {{ context.assignedto.menu() }}
-                </div>
-              </div>
-              <div class='control-group span6'>
-                <label class='control-label' for='keywords'>Keywords</label>
-                <div class='controls'>
-                  <input type='text' name='keywords' id='keywords'>
-                </div>
-              </div>
-            </div> <!-- row-fluid -->
-
-            <!-- Note -->
-            <div class='row-fluid'>
-              <div class='control-group'>
-                <label class='control-label' for='change_note'>Change note</label>
-                <div class='controls'>
-                  <textarea name="@note" rows="5" class='input-xxlarge' id='change_note'></textarea>
-                </div>
-              </div>
-            </div> <!-- row-fluid -->
-
-            <!-- File upload -->
-            <div class='row-fluid'>
-              <div class='control-group'>
-                <label class='control-label' for='file_upload'>File</label>
-                <div class='controls'>
-                  <input type="file" name="@file" id='file_upload'>
-                </div>
-              </div>
-            </div> <!-- row-fluid -->
-        {% endif %}
-      </fieldset>
-      <div class='form-actions'>
-        {{ context.submit() }}
-        {% if context.id %}
-          <a href='{{ context.copy_url }}'>Make a copy</a>
-        {% endif %}
-      </div>
-      <input type="hidden" name="@template" value="item">
-      <input type="hidden" name="@required" value="title,priority">
-    </form>
+  {% if context.is_view_ok() %}
+    {% if context.is_edit_ok() %}
+      {% include 'issue.item.edit.html' %}
+    {% else %}
+      {% include 'issue.item.readonly.html' %}
+    {% endif %}
   {% endif %}
 
   {% if context.id %}
@@ -141,39 +46,7 @@
   {% endif %}
 
   {% if context.files %}
-    <h4>Files</h4>
-    <table class='table'>
-      <tr>
-        <th i18n:translate="">File name</th>
-        <th i18n:translate="">Uploaded</th>
-        <th i18n:translate="">Type</th>
-        <th i18n:translate="">Edit</th>
-        <th i18n:translate="">Remove</th>
-      </tr>
-      {% for file in context.files %}
-        <tr>
-          <td>
-            <a href='{{ file.download_url }}'>{{ file.name }}</a>
-          </td>
-          <td>{{ file.creator }}, {{ file.creation }}</td>
-          <td>{{ file.type }}</td>
-          {% if file.is_edit_ok %}
-            <td>
-              <a href='file{{ file.id }}'>edit</a>
-            </td>
-          {% endif %}
-          {% if context.is_edit_ok %}
-            <td>
-              <form method="POST" action='issue{{ context.id }}'>
-                <input type="hidden" name="@remove@files" value='file.id'>
-                <input type="hidden" name="@action" value="edit">
-                <input type="submit" value="remove" i18n:attributes="value">
-              </form>
-            </td>
-          {% endif %}
-        </tr>
-      {% endfor %}
-    </table>
+    {% include 'file.index.html' %}
   {% endif %}
 
   {% if context.messages %}
@@ -204,7 +77,7 @@
   {% endif %}
 
   <div class='vspace-five'></div>
+
   {{ context.history() }}
 
 {% endblock %}
-

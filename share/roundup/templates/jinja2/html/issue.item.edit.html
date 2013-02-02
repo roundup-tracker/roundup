@@ -1,0 +1,98 @@
+<form method="POST"
+      {% if context.id %}
+        action='issue{{ context.id }}'
+      {% else %}
+        action='issue'
+      {% endif %}
+      name="itemSynopsis"
+      enctype="multipart/form-data"
+  >
+  <fieldset>
+      <div class='container-fluid form-horizontal'>
+        <!-- title -->
+        <div class='row-fluid'>
+          <div class='control-group'>
+            <label class='control-label' for='title'>Title</label>
+            <div class='controls'>
+              <input name='title' id='title' type='text' class='input-xxlarge' value='{{ context.title }}' required>
+            </div>
+          </div>
+        </div> <!-- row-fluid -->
+    
+        <!-- priority & Status -->
+        <div class='row-fluid'>
+          <div class='control-group span6'>
+            <label class='control-label' for='priority'>Priority</label>
+            <div class='controls'>
+              {{ context.priority.menu() }}
+            </div>
+          </div>
+          <div class='control-group span6'>
+            <label class='control-label' for='status'>Status</label>
+            <div class='controls'>
+              {{ context.status.menu() }}
+            </div>
+          </div>
+        </div> <!-- row-fluid -->
+
+        <!-- Superseder & nosy list -->
+        <div class='row-fluid'>
+          <div class='control-group span6'>
+            <label class='control-label' for='superseder'>Superseder</label>
+            <div class='controls'>
+              <input type='text' name='superseder'>
+            </div>
+          </div>
+          <div class='control-group span6'>
+            <label class='control-label' for='nosylist'>Nosy list</label>
+            <div class='controls'>
+              <input type='text' name='nosy'>
+            </div>
+          </div>
+        </div> <!-- row-fluid -->
+
+        <!-- Assigned to & keywords -->
+        <div class='row-fluid'>
+          <div class='control-group span6'>
+            <label class='control-label' for='assignedto'>Assigned to</label>
+            <div class='controls'>
+              {{ context.assignedto.menu() }}
+            </div>
+          </div>
+          <div class='control-group span6'>
+            <label class='control-label' for='keywords'>Keywords</label>
+            <div class='controls'>
+              <input type='text' name='keywords' id='keywords'>
+            </div>
+          </div>
+        </div> <!-- row-fluid -->
+
+        <!-- Note -->
+        <div class='row-fluid'>
+          <div class='control-group'>
+            <label class='control-label' for='change_note'>Change note</label>
+            <div class='controls'>
+              <textarea name="@note" rows="5" class='input-xxlarge' id='change_note'></textarea>
+            </div>
+          </div>
+        </div> <!-- row-fluid -->
+
+        <!-- File upload -->
+        <div class='row-fluid'>
+          <div class='control-group'>
+            <label class='control-label' for='file_upload'>File</label>
+            <div class='controls'>
+              <input type="file" name="@file" id='file_upload'>
+            </div>
+          </div>
+        </div> <!-- row-fluid -->
+  </fieldset>
+  <div class='form-actions'>
+    {{ context.submit() }}
+    {% if context.id %}
+      <a href='{{ context.copy_url }}'>Make a copy</a>
+    {% endif %}
+  </div>
+  <input type="hidden" name="@template" value="item">
+  <input type="hidden" name="@required" value="title,priority">
+</form>

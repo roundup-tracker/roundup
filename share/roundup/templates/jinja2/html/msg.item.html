@@ -1,0 +1,51 @@
+{% extends 'layout/page.html' %}
+
+{% block head_title %}
+  {% if context.id %}
+    Message {{ context.id }} - {{ config.TRACKER_NAME }}
+  {% else %}
+    New Message - {{ config.TRACKER_NAME }}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class='page-header'>
+    <h1>
+      {% if not (context.id or context.is_edit_ok()) %}
+        New Message
+      {% elif not context.id and context.is_edit_ok() %}
+        New Message Editing
+      {% elif context.id and not context.is_edit_ok() %}
+        Message{{ context.id }}
+      {% elif context.id and context.is_edit_ok() %}
+        Message{{ context.id }} editing
+      {% endif %}
+    </h1>
+  </div>
+
+  {% include 'layout/permission.html' %}
+
+  {% if context.is_view_ok() %}
+    <dl class='dl-horizontal'>
+      <dt>Author</dt>
+      <dd>{{ context.author }} </dd>
+      <dt>Recipients</dt>
+      <dd>{{ context.recipients }}</dd>
+      <dt>Date</dt>
+      <dd>{{ context.date }}</dd>
+    </dl>
+
+    <div class='row-fluid'>
+      <h4>Content</h4>
+      <pre>{{ context.content.hyperlinked }}</pre>
+    </div>
+  {% endif %}
+
+  {% if context.files %}
+    {% include 'file.index.html' %}
+  {% endif %}
+
+  <div class='vspace-five'></div>
+  {{ context.history() }}
+
+{% endblock %}

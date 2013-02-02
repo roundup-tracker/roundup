@@ -1,0 +1,49 @@
+{% extends 'layout/page.html' %}
+
+{% block head_title %}
+  User listing - {{ config.TRACKER_NAME }}
+{% endblock %}
+
+{% block content %}
+  <div class='page-header'>
+    <h1>User listing</h1>
+  </div>
+
+  {% include 'layout/permission.html' %}
+
+  {% if context.is_view_ok() %}
+    <table class='table'>
+      <tr class='info'>
+        <td>Username</td>
+        <td>Real name</td>
+        <td>Organisation</td>
+        <td>Email address</td>
+        <td>Phone number</td>
+        {% if context.is_retire_ok() %}
+          <td>Retire</td>
+        {% endif %}
+      </tr>
+      {% for user in context.list() %}
+        <tr>
+          <td>
+            <a href='user{{ user.id }}'>{{ user.username }}</a>
+          </td>
+          <td>{{ user.realname.plain() }}</td>
+          <td>{{ user.organisation.plain() }}</td>
+          <td>{{ user.address.email() }}</td>
+          <td>{{ user.phone.plain() }}</td>
+          {% if context.is_retire_ok() %}
+            <td>
+              <form method="POST" action='user{{ user.id }}' class='form-inline'>
+                <input type="hidden" name="@template" value="index">
+                <input type="hidden" name="@action" value="retire">
+                <input type="submit" value="retire" class='btn btn-small'>
+              </form>
+            </td>
+          {% endif %}
+        </tr>
+      {% endfor %}
+    </table>
+  {% endif %}
+
+{% endblock %}

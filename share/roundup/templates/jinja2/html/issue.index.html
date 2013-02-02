@@ -9,23 +9,21 @@
 
   {% if context.is_view_ok %}
     <table class='table'>
-      <tr>
-        <th i18n:translate="">Priority</th>
-        <th i18n:translate="">ID</th>
-        <th i18n:translate="">Creation</th>
-        <th i18n:translate="">Activity</th>
-        <th i18n:translate="">Actor</th>
-        <th i18n:translate="">Keyword</th>
-        <th i18n:translate="">Title</th>
-        <th i18n:translate="">Status</th>
-        <th i18n:translate="">Creator</th>
-        <th i18n:translate="">Assigned&nbsp;To</th>
+      <tr class='info'>
+        <td>Priority</td>
+        <td>ID</td>
+        <td>Activity</td>
+        <td>Actor</td>
+        <td>Keyword</td>
+        <td>Title</td>
+        <td>Status</td>
+        <td>Creator</td>
+        <td>Assigned&nbsp;To</td>
       </tr>
       {% for issue in context.list() %}
         <tr>
          <td>{{ issue.priority.plain() }}</td>
          <td>{{ issue.id }}</td>
-         <td>{{ issue.creation }}</td>
          <td>{{ issue.activity }}</td>
          <td>{{ issue.actor }}</td>
          <td>{{ issue.keyword.plain() }}</td>
@@ -45,7 +43,9 @@
   {% include 'layout/pagination.html' %}
 
   <div class='row-fluid'> 
-    <a href="{{ request.indexargs_url('issue', {'@action':'export_csv'}) }}">Download as CSV</a>
+    <div class='pull-right'>
+      <a class='btn btn-success' href="{{ request.indexargs_url('issue', {'@action':'export_csv'}) }}">Download as CSV</a>
+    </div>
   </div>
 
   {% include 'layout/sort.html' %}
