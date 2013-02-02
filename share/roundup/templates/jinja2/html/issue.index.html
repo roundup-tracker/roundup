@@ -1,0 +1,53 @@
+{% extends 'layout/page.html' %}
+
+{% block content %}
+  <div class='page-header'>
+    <h1>List of issues</h1>
+  </div>
+
+  {% include 'layout/permission.html' %}
+
+  {% if context.is_view_ok %}
+    <table class='table'>
+      <tr>
+        <th i18n:translate="">Priority</th>
+        <th i18n:translate="">ID</th>
+        <th i18n:translate="">Creation</th>
+        <th i18n:translate="">Activity</th>
+        <th i18n:translate="">Actor</th>
+        <th i18n:translate="">Keyword</th>
+        <th i18n:translate="">Title</th>
+        <th i18n:translate="">Status</th>
+        <th i18n:translate="">Creator</th>
+        <th i18n:translate="">Assigned&nbsp;To</th>
+      </tr>
+      {% for issue in context.list() %}
+        <tr>
+         <td>{{ issue.priority.plain() }}</td>
+         <td>{{ issue.id }}</td>
+         <td>{{ issue.creation }}</td>
+         <td>{{ issue.activity }}</td>
+         <td>{{ issue.actor }}</td>
+         <td>{{ issue.keyword.plain() }}</td>
+         <td>
+          <a href='issue{{ issue.id }}'>{{ issue.title.plain(hyperlink=0) }}</a>
+         </td>
+         <td>{{ issue.status.plain() }}</td>
+         <td>{{ issue.creator.plain() }}</td>
+         <td>{{ issue.assignedto.plain() }}</td>
+        </tr>
+      {% else %}
+        There are no issues yet.
+      {% endfor %}
+    </table>
+  {% endif %}
+
+  {% include 'layout/pagination.html' %}
+
+  <div class='row-fluid'> 
+    <a href="{{ request.indexargs_url('issue', {'@action':'export_csv'}) }}">Download as CSV</a>
+  </div>
+
+  {% include 'layout/sort.html' %}
+
+{% endblock %}

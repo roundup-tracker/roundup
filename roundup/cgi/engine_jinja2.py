@@ -32,19 +32,31 @@ minimal set (to avoid Roundup state changes from template).
 """
 
 import jinja2
+import gettext
 
 # http://jinja.pocoo.org/docs/api/#loaders
 
 from roundup.cgi.templating import context, LoaderBase, TemplateBase
 
+'''
+def get_gettext_translations():
+    return gettext.find('??')
+'''
+
 class Jinja2Loader(LoaderBase):
     def __init__(self, dir):
-        jinjadir = dir + '/jinja2'
-        # [ ] separate configuration when multiple loaders are used
-        print "Jinja2 templates:", jinjadir
+        extensions = [
+            'jinja2.ext.autoescape',
+            'jinja2.ext.i18n',
+        ]
+        print "Jinja2 templates: ", dir 
+        print "Extensions: ", extensions
+        #translations = get_gettext_translations()
         self._env = jinja2.Environment(
-                        loader=jinja2.FileSystemLoader(jinjadir)
+                        loader=jinja2.FileSystemLoader(dir),
+                        extensions=extensions
                     )
+        #self._env.install_gettext_translations(translations)
 
     def check(self, tplname):
         #print tplname
@@ -91,4 +103,3 @@ class Jinja2ProxyPageTemplate(TemplateBase):
         # [ ] figure out what are these for
         raise NotImplemented
         #return getattr(self._pt, name)
-

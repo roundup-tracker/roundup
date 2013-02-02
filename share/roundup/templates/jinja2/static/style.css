@@ -1,0 +1,65 @@
+@font-face {
+  font-family: 'Droid Sans';
+  src: url('DroidSans.ttf');
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'Ubuntu Mono';
+  src: url('UbuntuMono-Regular.ttf');
+  font-weight: 400;
+}
+
+body {
+  font-family: 'Droid Sans', sans-serif;
+  font-size: 13.5px;
+  line-height: 18px;
+  color: #333;
+}
+
+h1,
+h2,
+footer,
+.brand {
+  font-family: 'Ubuntu Mono', serif;
+}
+
+h1,
+h2 {
+  font-weight: normal;
+  margin: 10px 0 20px 0;
+  text-transform: uppercase;
+}
+
+h1 {
+  text-align: center;
+  font-size: 24px;
+  letter-spacing: 2px;
+  line-height: 24px;
+}
+
+.navbar {
+  margin: 20px 0;
+}
+
+.navbar form {
+  margin: 8px;
+}
+
+.navbar .btn {
+  margin-top: 0;
+}
+
+.navbar .brand {
+  color: #B31B1B;
+}
+
+footer {
+  font-size: 1.2em;
+}
+
+.vspace-one { margin-top: 1em; }
+.vspace-two { margin-top: 2em; }
+.vspace-three { margin-top: 3em; }
+.vspace-four { margin-top: 4em; }
+.vspace-five { margin-top: 5em; }

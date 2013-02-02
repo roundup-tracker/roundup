@@ -1,0 +1,33 @@
+{% extends 'layout/page.html' %}
+
+{% block content %}
+  <div class='page-header'>
+    <h1>Keyword editing</h1>
+  </div>
+
+  <h4>Existing Keywords</h4>
+  <p class='text-warning'>
+   To edit an existing keyword (for spelling or typing errors),
+   click on its entry above.
+  </p>
+
+  <ul class='nav nav-pills nav-stacked'>
+    {% for keyword in db.keyword.list() %}
+      <li>
+        <a href='keyword{{ keyword.id }}'>{{ keyword.name }}</a>
+      </li>
+    {% else %}
+      <p class='text-mute'>There are no keywords yet.  Be the first -</p>
+    {% endfor %}
+  </ul>
+
+  <form class='form-inline' method="POST" action='{{ context.designator() }}'>
+    <input type='text' class='input-xlarge' name='name'>
+    <input type="hidden" name="@required" value="name">
+    <input type="hidden" name="@template" value="item">
+    <input type="hidden" name="@action" value="new">
+    <input type='submit' class='btn btn-primary' value='Create keyword'>
+  </form>
+{% endblock %}
+
+

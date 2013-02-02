@@ -1,0 +1,53 @@
+<form method="GET" class="index-controls"
+    tal:attributes="action request/classname">
+
+ <table class="form" tal:define="n_sort python:2">
+  <tal:block tal:repeat="n python:range(n_sort)" tal:condition="batch">
+  <tr tal:define="key python:len(request.sort)>n and request.sort[n]">
+   <th>
+    <tal:block tal:condition="not:n" i18n:translate="">Sort on:</tal:block>
+   </th>
+   <td>
+    <select tal:attributes="name python:'@sort%d'%n">
+     <option value="" i18n:translate="">- nothing -</option>
+     <option tal:repeat="col context/properties"
+             tal:attributes="value col/_name;
+                             selected python:key and col._name == key[1]"
+             tal:content="col/_name"
+             i18n:translate="">column</option>
+    </select>
+   </td>
+   <th i18n:translate="">Descending:</th>
+   <td><input type="checkbox" tal:attributes="name python:'@sortdir%d'%n;
+              checked python:key and key[0] == '-'">
+   </td>
+  </tr>
+  </tal:block>
+  <tal:block tal:repeat="n python:range(n_sort)" tal:condition="batch">
+  <tr tal:define="key python:len(request.group)>n and request.group[n]">
+   <th>
+    <tal:block tal:condition="not:n" i18n:translate="">Group on:</tal:block>
+   </th>
+   <td>
+    <select tal:attributes="name python:'@group%d'%n">
+     <option value="" i18n:translate="">- nothing -</option>
+     <option tal:repeat="col context/properties"
+             tal:attributes="value col/_name;
+                             selected python:key and col._name == key[1]"
+             tal:content="col/_name"
+             i18n:translate="">column</option>
+    </select>
+   </td>
+   <th i18n:translate="">Descending:</th>
+   <td><input type="checkbox" tal:attributes="name python:'@groupdir%d'%n;
+              checked python:key and key[0] == '-'">
+   </td>
+  </tr>
+  </tal:block>
+  <tr><td colspan="4">
+              <input type="submit" value="Redisplay" i18n:attributes="value">
+              <tal:block tal:replace="structure
+                python:request.indexargs_form(sort=0, group=0)" />
+  </td></tr>
+ </table>
+</form>

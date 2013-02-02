@@ -1,0 +1,39 @@
+{% extends 'layout/page.html' %}
+
+{% block content %}
+  <div class='page-header'>
+    <h1>{{ context._classname.capitalize() }} editing</h1>
+  </div>
+
+  {% include 'layout/permission.html' %}
+
+  {% if context.is_view_ok %}
+    <p class="form-help">
+     You may edit the contents of the
+     <span tal:replace="request/classname" i18n:name="classname"/>
+     class using this form. Commas, newlines and double quotes (") must be
+     handled delicately. You may include commas and newlines by enclosing the
+     values in double-quotes ("). Double quotes themselves must be quoted by
+     doubling ("").
+    </p>
+
+    <p class="form-help">
+     Multilink properties have their multiple values colon (":") separated
+     (... ,"one:two:three", ...)
+    </p>
+
+    <p class="form-help">
+     Remove entries by deleting their line. Add new entries by appending
+     them to the table - put an X in the id column. If you wish to restore a
+     removed item and you know its id then just put that id in the id column.
+    </p>
+    <form onSubmit="return submit_once()" method="POST"
+          tal:attributes="action context/designator">
+    <textarea rows="15" style="width:90%" name="rows" tal:content="context/csv"></textarea>
+    <br>
+    <input type="hidden" name="@action" value="editCSV">
+    <input type="submit" value="Edit Items" i18n:attributes="value">
+    </form>
+  {% endif %}
+
+{%endblock %}

@@ -1,0 +1,11 @@
+{% if not (context.is_view_ok() or request.user.hasRole('Anonymous')) %}
+  <p class='text-error'> 
+    You are not allowed to view this page.
+  </p>
+{% endif %}
+
+{% if not context.is_view_ok() and request.user.hasRole('Anonymous') %}
+  <p class='text-error'> 
+    Please login with your username and password.
+  </p>
+{% endif %}
