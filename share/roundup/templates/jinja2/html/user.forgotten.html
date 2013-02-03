@@ -1,0 +1,41 @@
+{% extends 'layout/page.html' %}
+
+{% block head_title %}
+  Password reset request - {{ config.TRACKER_NAME }}
+{% endblock %}
+
+{% block page_header %}
+  Password reset request
+{% endblock %}
+
+{% block content %}
+
+  <p>
+    If you know the email address you registered with, enter it below.
+  </p>
+
+  <form method="POST" action='{{ context.designator() }}'>
+    <div class='row-fluid'>
+      <label>Email Address:</label>
+      <input type='text' name="address">
+      <input type="hidden" name="@action" value="passrst">
+      <input type="hidden" name="@template" value="forgotten">
+      <input type="submit" value="Password reset" class='btn btn-primary'>
+    </div>
+
+    <div class='row-fluid vspace-two'> 
+      <p>Or, if you know your username, then enter it below.</p>
+      <label>Username:</label>
+      <input type='text' name="username">
+      <input type="submit" value="Password reset" class='btn btn-info'>
+    </div>
+  </form>
+
+  <div class='row-fluid vspace-two'>
+    <p>
+      A confirmation email will be sent to you -
+      please follow the instructions within it to complete the reset process.
+    </p>
+  </div>
+
+{% endblock %}

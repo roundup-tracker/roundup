@@ -8,20 +8,19 @@
   {% endif %}
 {% endblock %}
 
+{% block page_header %}
+  {% if not (context.id or context.is_edit_ok()) %}
+    New Message
+  {% elif not context.id and context.is_edit_ok() %}
+    New Message Editing
+  {% elif context.id and not context.is_edit_ok() %}
+    Message{{ context.id }}
+  {% elif context.id and context.is_edit_ok() %}
+    Message{{ context.id }} editing
+  {% endif %}
+{% endblock %}
+
 {% block content %}
-  <div class='page-header'>
-    <h1>
-      {% if not (context.id or context.is_edit_ok()) %}
-        New Message
-      {% elif not context.id and context.is_edit_ok() %}
-        New Message Editing
-      {% elif context.id and not context.is_edit_ok() %}
-        Message{{ context.id }}
-      {% elif context.id and context.is_edit_ok() %}
-        Message{{ context.id }} editing
-      {% endif %}
-    </h1>
-  </div>
 
   {% include 'layout/permission.html' %}
 

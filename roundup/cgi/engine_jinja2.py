@@ -82,8 +82,9 @@ class Jinja2ProxyPageTemplate(TemplateBase):
     def render(self, client, classname, request, **options):
         # [ ] limit the information passed to the minimal necessary set
         c = context(client, self, classname, request)
-        '''c.update({'options': options})
+        c.update({'options': options})
 
+        '''
         def translate(msgid, domain=None, mapping=None, default=None):
             result = client.translator.translate(domain, msgid,
                          mapping=mapping, default=default)

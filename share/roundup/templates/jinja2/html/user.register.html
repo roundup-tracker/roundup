@@ -1,0 +1,90 @@
+{% extends 'layout/page.html' %}
+
+{% block head_title %}
+  Registration - {{ config.TRACKER_NAME }}
+{% endblock %}
+
+{% block page_header %}
+  Registration - {{ config.TRACKER_NAME }}
+{% endblock %}
+
+{% block content %}
+
+  <form method="POST"
+        name ="itemSynopsis"
+        enctype ="multipart/form-data"
+        action ='{{  context.designator() }}'>
+    <table>
+      <tr>
+        <th>Name</th>
+        <td>
+          <input type='text' name="realname">
+        </td>
+      </tr>
+      <tr>
+        <th>Login Name</th>
+        <td>
+          <input type='text' name='username' required>
+        </td>
+      </tr>
+      <tr>
+        <th>Login Password</th>
+        <td>
+          <input type='password' name='password' required>
+        </td>
+      </tr>
+      <tr>
+        <th>Confirm Password</th>
+        <td>
+          <input type='password' name='@confirm@password'>
+        </td>
+      </tr>
+      {% if request.user.hasPermission('Web Roles') %}
+        <tr>
+          <th>Roles <br>(comma separated)</th>
+          <td>
+            <input type='text' name='roles' value='{{ context.roles }}'>
+          </td>
+        </tr>
+      {% endif %}
+      <tr>
+        <th>Phone</th>
+        <td>
+          <input type='text' name='phone'>
+        </td>
+      </tr>
+      <tr>
+        <th>Organisation</th>
+        <td>
+          <input type='text' name='organisation'>
+        </td>
+      </tr>
+      <tr>
+        <th>Timezone</th>
+        <td>
+          <input type='text' name='timezone'>
+        </td>
+      </tr>
+      <tr>
+        <th>Email</th>
+        <td>
+          <input type='text' name='address' required>
+        </td>
+      </tr>
+      <tr>
+        <th>Alternate email address <br>One address per line</th>
+        <td>
+          {{ context.alternate_addresses.multiline() }}
+        </td>
+      </tr>
+      <tr class='form-actions'>
+        <td>
+        <input type="hidden" name="@template" value="register">
+        <input type="hidden" name="@action" value="register">
+        <input type="submit" name="submit" value="Register">
+        </td>
+      </tr>
+    </table>
+  </form>
+
+{% endblock %}

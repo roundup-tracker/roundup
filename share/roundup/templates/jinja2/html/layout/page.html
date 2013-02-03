@@ -24,7 +24,17 @@
       </div>
 
       <div class='span8 offset1'>
-        {% block content %} {% endblock %}
+          <div class='page-header'>
+            <h1> {% block page_header %} {% endblock %} </h1>
+            {% if options.error_message %}
+              <div class='alert alert-error'>{{ options.error_message }}</div>
+            {% endif %}
+            {% if options.ok_message %}
+              <div class='alert alert-success'>{{ options.ok_message }}</div>
+            {% endif %}
+          </div>
+        {% block content %}
+        {% endblock %}
       </div>
     </div>
 

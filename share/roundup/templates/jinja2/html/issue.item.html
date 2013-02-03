@@ -8,23 +8,17 @@
   {% endif %}
 {% endblock %}
 
+{% block page_header %}
+  {% if not (context.id or context.is_edit_ok()) %}
+    New Issue
+  {% elif not context.id and context.is_edit_ok() %}
+    New Issue Editing
+  {% else %}
+    Issue {{ context.id }}
+  {% endif %}
+{% endblock %}
+
 {% block content %}
-  <div class='page-header'>
-    <h1>
-      {% if not (context.id or context.is_edit_ok()) %}
-        New Issue
-      {% elif not context.id and context.is_edit_ok() %}
-        New Issue Editing
-      {% else %}
-        Issue {{ context.id }}
-      {% endif %}
-    </h1>
-    {% if ok_message %}
-      <p class='alert alert-success'>{{ ok_message }}</p>
-    {% elif error_message %}
-      <p class='alert alert-error'>{{ error_message }}</p>
-    {% endif %}
-  </div>
 
   {% include 'layout/permission.html' %}
 
