@@ -1,24 +1,32 @@
-
-  <div class='pagination pagination-centered' tal:condition="batch">
-    <ul>
-      <li tal:define="prev batch/previous" tal:condition="prev" class='disabled'>
-        <a tal:define="prev batch/previous" tal:condition="prev"
-         tal:attributes="href python:request.indexargs_url(request.classname,
-         {'@startwith':prev.first, '@pagesize':prev.size})"
-         i18n:translate="">Previous</a>
+<div class='pagination pagination-centered'>
+  {% set batch = request.batch() %}
+  <ul>
+    {% if batch and batch.previous %}
+      <li>
+        <a href="#"
+         >Previous</a>
       </li>
-      <li tal:define="prev batch/previous" tal:condition="not:prev" class='disabled'><a href='#' i18n:translate="">Previous</a></li>
-     <li i18n:translate="">
-      <a href='#'><span tal:replace="batch/start" i18n:name="start"
-     />..<span tal:replace="python: batch.start + batch.length -1" i18n:name="end"
-     /> out of <span tal:replace="batch/sequence_length" i18n:name="total"
-     /></a></li>
-      <li tal:define="next batch/next" tal:condition="next" class='disabled'>
-      <a tal:define="next batch/next" tal:condition="next"
-         tal:attributes="href python:request.indexargs_url(request.classname,
-         {'@startwith':next.first, '@pagesize':next.size})"
-         i18n:translate="">Next</a>
+    {% else %}
+      <li class='disabled'>
+        <a href='#' i18n:translate="">Previous</a>
       </li>
-      <li tal:define="next batch/next" tal:condition="not:next" class='disabled'><a href='#' i18n:translate="">Next</a></li>
-     </ul>
-  </div>
+    {% endif %}
+    <li>
+      <span>
+        {{ batch.start }}...{{ batch.start + batch.length -1 }}
+        out of {{ batch.sequence_length }}
+      </span>
+    </li>
+    {% if batch and batch.next() %}
+      <li>
+        <a href="{{ request.indexargs_url(request.classname,
+                {'@startwith':batch.next().first, '@pagesize':batch.next().size}) }}"
+        >Next</a>
+      </li>
+    {% else %}
+      <li class='disabled'>
+        <a href='#' i18n:translate="">Next</a>
+      </li>
+    {% endif %}
+  </ul>
+</div>

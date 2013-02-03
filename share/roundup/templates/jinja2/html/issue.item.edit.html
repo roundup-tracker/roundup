@@ -8,7 +8,7 @@
       enctype="multipart/form-data"
   >
   <fieldset>
-      <div class='container-fluid form-horizontal'>
+      <div class='container-fluid'>
         <!-- title -->
         <div class='row-fluid'>
           <div class='control-group'>
@@ -90,7 +90,7 @@
   <div class='form-actions'>
     {{ context.submit() }}
     {% if context.id %}
-      <a href='{{ context.copy_url }}'>Make a copy</a>
+      <a href='{{ context.copy_url() }}'>Make a copy</a>
     {% endif %}
   </div>
   <input type="hidden" name="@template" value="item">

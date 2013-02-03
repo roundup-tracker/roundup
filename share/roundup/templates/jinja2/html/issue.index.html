@@ -9,36 +9,38 @@
   {% include 'layout/permission.html' %}
 
   {% if context.is_view_ok %}
-    <table class='table'>
-      <tr class='info'>
-        <td>Priority</td>
-        <td>ID</td>
-        <td>Activity</td>
-        <td>Actor</td>
-        <td>Keyword</td>
-        <td>Title</td>
-        <td>Status</td>
-        <td>Creator</td>
-        <td>Assigned&nbsp;To</td>
-      </tr>
-      {% for issue in context.list() %}
-        <tr>
-         <td>{{ issue.priority.plain() }}</td>
-         <td>{{ issue.id }}</td>
-         <td>{{ issue.activity }}</td>
-         <td>{{ issue.actor }}</td>
-         <td>{{ issue.keyword.plain() }}</td>
-         <td>
-          <a href='issue{{ issue.id }}'>{{ issue.title.plain(hyperlink=0) }}</a>
-         </td>
-         <td>{{ issue.status.plain() }}</td>
-         <td>{{ issue.creator.plain() }}</td>
-         <td>{{ issue.assignedto.plain() }}</td>
+    {% if context.list() %}
+      <table class='table'>
+        <tr class='info'>
+          <td>Priority</td>
+          <td>ID</td>
+          <td>Activity</td>
+          <td>Actor</td>
+          <td>Keyword</td>
+          <td>Title</td>
+          <td>Status</td>
+          <td>Creator</td>
+          <td>Assigned&nbsp;To</td>
         </tr>
-      {% else %}
-        There are no issues yet.
-      {% endfor %}
-    </table>
+        {% for issue in context.list() %}
+          <tr>
+           <td>{{ issue.priority.plain() }}</td>
+           <td>{{ issue.id }}</td>
+           <td>{{ issue.activity }}</td>
+           <td>{{ issue.actor }}</td>
+           <td>{{ issue.keyword.plain() }}</td>
+           <td>
+            <a href='issue{{ issue.id }}'>{{ issue.title.plain(hyperlink=0) }}</a>
+           </td>
+           <td>{{ issue.status.plain() }}</td>
+           <td>{{ issue.creator.plain() }}</td>
+           <td>{{ issue.assignedto.plain() }}</td>
+          </tr>
+        {% endfor %}
+      </table>
+    {% else %}
+      <p class='text-error'>There are no issue yet!</p>
+    {% endif %}
   {% endif %}
 
   {% include 'layout/pagination.html' %}
