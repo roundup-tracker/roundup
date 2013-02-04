@@ -45,29 +45,28 @@
 
   {% if context.messages %}
     <h4>Messages</h4>
-      {% for msg in context.messages.reverse() %}
-        <div class='row-fluid'>
-          <div class='span2'>
-            <a href='msg{{ msg.id }}'>msg{{msg.id}} (view)</a>
-          </div>
-          <div class='span4'>
-            Author: {{ msg.author }}, Date: {{ msg.date }}
-          </div>
-          <div class='pull-right'>
-            {% if context.is_edit_ok %}
-              <form method="POST" action='issue{{ context.id }}' class='form-inline'>
-                <input type="hidden" name="@remove@messages" value='{{ msg.id }}'>
-                <input type="hidden" name="@action" value="edit">
-                <input type="submit" value="remove">
-              </form>
-            {% endif %}
-          </div>
+    {% for msg in context.messages.reverse() %}
+      <div class='row-fluid'>
+        <div class='span2'>
+          <a href='msg{{ msg.id }}'>msg{{msg.id}} (view)</a>
         </div>
-        <div class='row-fluid'>
-          <pre>{{ msg.content.hyperlinked() }}</pre>
+        <div class='span4'>
+          Author: {{ msg.author }}, Date: {{ msg.date }}
         </div>
-      {% endfor %}
-    </table>
+        <div class='pull-right'>
+          {% if context.is_edit_ok %}
+            <form method="POST" action='issue{{ context.id }}' class='form-inline'>
+              <input type="hidden" name="@remove@messages" value='{{ msg.id }}'>
+              <input type="hidden" name="@action" value="edit">
+              <input type="submit" value="remove">
+            </form>
+          {% endif %}
+        </div>
+      </div>
+      <div class='row-fluid'>
+        <pre>{{ msg.content.hyperlinked() }}</pre>
+      </div>
+    {% endfor %}
   {% endif %}
 
   <div class='vspace-five'></div>

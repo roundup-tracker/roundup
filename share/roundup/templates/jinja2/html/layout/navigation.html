@@ -4,112 +4,106 @@
   </p>
 {% endif %}
 
-<p>
-  {% if request.user.hasPermission('View', 'issue') %}
-    <ul class='nav nav-list'>
-      <li class='nav-header' i18n:translate="">
-        <i class='icon-fire'></i>Issues
+{% if request.user.hasPermission('View', 'issue') %}
+  <ul class='nav nav-list'>
+    <li class='nav-header'>
+      <i class='icon-fire'></i>Issues
+    </li>
+    {% if request.user.hasPermission('Create', 'issue') %}
+      <li>
+        <a href="issue?@template=item">Create New</a>
       </li>
-      {% if request.user.hasPermission('Create', 'issue') %}
-        <li>
-          <a href="issue?@template=item" i18n:translate="">Create New</a>
-        </li>
-      {% endif %}
+    {% endif %}
 
-      <li>
-        <a href="{{ request.indexargs_url('issue', {
-          '@sort': '-activity',
-          '@group': 'priority',
-          '@filter': 'status,assignedto',
-          '@columns': columns,
-          '@search_text': '',
-          'status': status_notresolved,
-          'assignedto': '-1',
-          '@dispname': i18n.gettext('Show Unassigned'),
-         }) }}" i18n:translate="">Show Unassigned</a>
-      </li>
-      <li>
-        <a href="{{ request.indexargs_url('issue', {
-          '@sort': '-activity',
-          '@group': 'priority',
-          '@filter': 'status',
-          '@columns': columns_showall,
-          '@search_text': '',
-          'status': status_notresolved,
-          '@dispname': i18n.gettext('Show All'),
-         }) }}" i18n:translate="">Show All</a>
-      </li>
-      <li>
-        <a href="issue?@template=search" i18n:translate="">Search</a>
-      </li>
-      <li>
-        <form method="POST" class='form-inline' tal:attributes="action request/base">
-          <input type="hidden" name="@type" value="issue">
-          <input type="hidden" name="@action" value="show">
-          <input class="input-mini" type="text" name="@number">
-          <input type="submit" class="btn" value="Show issue" i18n:attributes="value">
-        </form>
-      </li>
-    </ul>
-  {% else %}
-    You don't have permission to view issues.
-  {% endif %}
+    <li>
+      <a href="{{ request.indexargs_url('issue', {
+        '@sort': '-activity',
+        '@group': 'priority',
+        '@filter': 'status,assignedto',
+        '@columns': columns,
+        '@search_text': '',
+        'status': status_notresolved,
+        'assignedto': '-1',
+        '@dispname': i18n.gettext('Show Unassigned'),
+       }) }}">Show Unassigned</a>
+    </li>
+    <li>
+      <a href="{{ request.indexargs_url('issue', {
+        '@sort': '-activity',
+        '@group': 'priority',
+        '@filter': 'status',
+        '@columns': columns_showall,
+        '@search_text': '',
+        'status': status_notresolved,
+        '@dispname': i18n.gettext('Show All'),
+       }) }}">Show All</a>
+    </li>
+    <li>
+      <a href="issue?@template=search">Search</a>
+    </li>
+    <li>
+      <form method="POST" class='form-inline' tal:attributes="action request/base">
+        <input type="hidden" name="@type" value="issue">
+        <input type="hidden" name="@action" value="show">
+        <input class="input-mini" type="text" name="@number">
+        <input type="submit" class="btn" value="Show issue">
+      </form>
+    </li>
+  </ul>
   <hr>
-</p>
+{% else %}
+  <p class='text-error'>You don't have permission to view issues.</p>
+{% endif %}
 
-<p>
-   <ul class='nav nav-list'>
-    {% if request.user.hasPermission('Create', 'keyword')
-          or request.user.hasPermission('Edit', 'keyword') %}
-      <li class='nav-header'>
-        <i class='icon-star'></i>Keywords
+<ul class='nav nav-list'>
+  {% if request.user.hasPermission('Create', 'keyword')
+        or request.user.hasPermission('Edit', 'keyword') %}
+    <li class='nav-header'>
+      <i class='icon-star'></i>Keywords
+    </li>
+  {% endif %}
+  {% if request.user.hasPermission('Create', 'keyword') %}
+    <li>
+      <a href="keyword?@template=item">Create New</a>
+    </li>
+  {% endif %}
+  {% if request.user.hasPermission('Edit', 'keyword') %}
+    <li>
+      <a href="keyword?@template=item">Edit Existing</a>
+    </li>
+  {% endif %}
+</ul>
+{% if request.user.hasPermission('Create', 'keyword')
+      or request.user.hasPermission('Edit', 'keyword') %}
+<hr>
+{% endif %}
+
+{% if request.user.hasPermission('View', 'user') %}
+  <ul class='nav nav-list'>
+    <li class='nav-header'>
+      <i class='icon-eye-open'></i>Administration
+    </li>
+
+    {% if request.user.hasPermission('Edit', None) %}
+      <li>
+        <a href="home?@template=classlist">Class List</a>
       </li>
     {% endif %}
-    {% if request.user.hasPermission('Create', 'keyword') %}
+
+    {% if request.user.hasPermission('View', 'user') or request.user.hasPermission('Edit', 'user') %}
       <li>
-        <a href="keyword?@template=item" i18n:translate="">Create New</a>
+        <a href="user" >User List</a>
       </li>
     {% endif %}
-    {% if request.user.hasPermission('Edit', 'keyword') %}
+
+    {% if request.user.hasPermission('Create', 'user') %}
       <li>
-        <a href="keyword?@template=item" i18n:translate="">Edit Existing</a>
+        <a href="user?@template=item">Add User</a>
       </li>
     {% endif %}
   </ul>
-  {% if request.user.hasPermission('Create', 'keyword')
-          or request.user.hasPermission('Edit', 'keyword') %}
-    <hr>
-  {% endif %}
-</p>
-
-<p>
-  {% if request.user.hasPermission('View', 'user') %}
-    <ul class='nav nav-list'>
-      <li class='nav-header'>
-        <i class='icon-eye-open'></i>Administration
-      </li>
-
-      {% if request.user.hasPermission('Edit', None) %}
-        <li>
-          <a href="home?@template=classlist" i18n:translate="">Class List</a>
-        </li>
-      {% endif %}
-
-      {% if request.user.hasPermission('View', 'user') or request.user.hasPermission('Edit', 'user') %}
-        <li>
-          <a href="user"  i18n:translate="">User List</a>
-        </li>
-      {% endif %}
-
-      {% if request.user.hasPermission('Create', 'user') %}
-        <li>
-          <a href="user?@template=item" i18n:translate="">Add User</a>
-        </li>
-      {% endif %}
-    </ul>
-    <hr>
-  {% endif %}
-</p>
+  <hr>
+{% endif %}
 
 {% if  request.user.username == 'anonymous' %}
   <form method="POST" tal:attributes="action request/base">
@@ -133,11 +127,11 @@
       </li>
       <li class='vspace-one'>
         {% if request.user.hasPermission('Register', 'user') %}
-          <a href="user?@template=register" i18n:translate="">Register</a>
+          <a href="user?@template=register">Register</a>
         {% endif %}
       </li>
       <li>
-        <a href="user?@template=forgotten" i18n:translate="">Lost&nbsp;your&nbsp;login?</a>
+        <a href="user?@template=forgotten">Lost&nbsp;your&nbsp;login?</a>
       </li>
     </ul>
     <input type="hidden" name="@action" value="Login">
@@ -160,25 +154,23 @@
         'status': status_notresolved,
         'assignedto': request.user.id,
         '@dispname': i18n.gettext('Your Issues'),
-      }) }}" i18n:translate="">Your Issues</a>
+      }) }}">Your Issues</a>
     </li>
     <li>
-      <a href="user{{ request.user.id }}" i18n:translate="">Your Details</a>
+      <a href="user{{ request.user.id }}">Your Details</a>
     </li>
     <li>
-      <a href="{{ request.indexargs_url('', {'@action':'logout'}) }}" i18n:translate="">Logout</a>
+      <a href="{{ request.indexargs_url('', {'@action':'logout'}) }}">Logout</a>
     </li>
   </ul>
   <hr>
 {% endif %}
 
-<p>
-  <ul class='nav nav-list'>
-    <li class='nav-header'>
-      <i class='icon-bookmark'></i>Help
-    </li>
-    <li>
-      <a href="http://www.roundup-tracker.org" i18n:translate="">Roundup docs</a>
-    </li>
-  </ul>
-</p>
+<ul class='nav nav-list'>
+  <li class='nav-header'>
+    <i class='icon-bookmark'></i>Help
+  </li>
+  <li>
+    <a href="http://www.roundup-tracker.org">Roundup docs</a>
+  </li>
+</ul>
