@@ -1,19 +1,15 @@
 <div class="navbar">
   <div class='container-fluid'>
     <div class='navbar-inner'>
-       <a href="/" class='brand'><i class='icon-home'></i> Roundup Demo Tracker</a>
+       <a href="/" class='brand'><i class='icon-home'></i> {{ i18n.gettext('Roundup Demo Tracker') }}</a>
        <form name="searchform" method="get" action="bug" class='navbar-search pull-right'>
-         <!-- FIXME:
-         <input type="hidden" name="@columns" tal:attributes="value bug_columns_showall"/>
-         -->
+         <input type="hidden" name="@columns" value="{{ bug_columns_showall }}"/>
          <input type="hidden" name="@sort" value="-activity">
          <input type="hidden" name="@group" value="priority">
          <input type="hidden" name="@filter" value="status">
-         <!-- FIXME:
-         <input type="hidden" name="status" tal:attributes="value bug_status_notclosed"/>
-         -->
+         <input type="hidden" name="status" value="{{ bug_status_notclosed }}"/>
          <input class="input-medium search-query" id="search-text" type="search" name="@search_text">
-         <input type="submit" value="search in open bugs" name="submit" class='btn'>
+         <input type="submit" value="{{ i18n.gettext('search in open bugs') }}" name="submit" class='btn'>
        </form>
     </div> <!-- navbar-inner -->
   </div> <!-- container-fluid -->

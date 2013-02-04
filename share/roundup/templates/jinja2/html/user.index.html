@@ -1,11 +1,11 @@
 {% extends 'layout/page.html' %}
 
 {% block head_title %}
-  User listing - {{ config.TRACKER_NAME }}
+  {{ i18n.gettext('User listing') }} - {{ config.TRACKER_NAME }}
 {% endblock %}
 
 {% block page_header %}
-  User listing
+  {{ i18n.gettext('User listing') }}
 {% endblock %}
 
 {% block content %}
@@ -15,13 +15,13 @@
   {% if context.is_view_ok() %}
     <table class='table'>
       <tr class='info'>
-        <td>Username</td>
-        <td>Real name</td>
-        <td>Organisation</td>
-        <td>Email address</td>
-        <td>Phone number</td>
+        <td>{{ i18n.gettext('Username') }}</td>
+        <td>{{ i18n.gettext('Real name') }}</td>
+        <td>{{ i18n.gettext('Organisation') }}</td>
+        <td>{{ i18n.gettext('Email address') }}</td>
+        <td>{{ i18n.gettext('Phone number') }}</td>
         {% if context.is_retire_ok() %}
-          <td>Retire</td>
+          <td>{{ i18n.gettext('Retire') }}</td>
         {% endif %}
       </tr>
       {% for user in context.list() %}
@@ -38,7 +38,7 @@
               <form method="POST" action='user{{ user.id }}' class='form-inline'>
                 <input type="hidden" name="@template" value="index">
                 <input type="hidden" name="@action" value="retire">
-                <input type="submit" value="retire" class='btn btn-small'>
+                <input type="submit" value="{{ i18n.gettext('retire') }}" class='btn btn-small'>
               </form>
             </td>
           {% endif %}

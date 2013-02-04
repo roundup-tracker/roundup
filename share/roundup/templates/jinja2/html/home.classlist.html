@@ -1,7 +1,11 @@
 {% extends 'layout/page.html' %}
 
+{% block head_title %}
+  {{ i18n.gettext('List of classes') }}
+{% endblock %}
+
 {% block page_header %}
-  List of classes
+  {{ i18n.gettext('List of classes') }}
 {% endblock %}
 
 {% block content %}

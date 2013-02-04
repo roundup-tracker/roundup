@@ -11,7 +11,7 @@
     <!-- title -->
     <div class='row-fluid'>
       <div class='control-group'>
-        <label class='control-label' for='title'>Title</label>
+        <label class='control-label' for='title'>{{ i18n.gettext('Title') }}</label>
         <div class='controls'>
           <input name='title' id='title' type='text' class='input-xxlarge' value='{{ context.title }}' required>
         </div>
@@ -21,13 +21,13 @@
     <!-- priority & Status -->
     <div class='row-fluid'>
       <div class='control-group span6'>
-        <label class='control-label' for='priority'>Priority</label>
+        <label class='control-label' for='priority'>{{ i18n.gettext('Priority') }}</label>
         <div class='controls'>
           {{ context.priority.menu() }}
         </div>
       </div>
       <div class='control-group span6'>
-        <label class='control-label' for='status'>Status</label>
+        <label class='control-label' for='status'>{{ i18n.gettext('Status') }}</label>
         <div class='controls'>
           {{ context.status.menu() }}
         </div>
@@ -37,13 +37,13 @@
     <!-- Superseder & nosy list -->
     <div class='row-fluid'>
       <div class='control-group span6'>
-        <label class='control-label' for='superseder'>Superseder</label>
+        <label class='control-label' for='superseder'>{{ i18n.gettext('Superseder') }}</label>
         <div class='controls'>
           <input type='text' name='superseder'>
         </div>
       </div>
       <div class='control-group span6'>
-        <label class='control-label' for='nosylist'>Nosy list</label>
+        <label class='control-label' for='nosylist'>{{ i18n.gettext('Nosy list') }}</label>
         <div class='controls'>
           <input type='text' name='nosy'>
         </div>
@@ -53,13 +53,13 @@
     <!-- Assigned to & keywords -->
     <div class='row-fluid'>
       <div class='control-group span6'>
-        <label class='control-label' for='assignedto'>Assigned to</label>
+        <label class='control-label' for='assignedto'>{{ i18n.gettext('Assigned to') }}</label>
         <div class='controls'>
           {{ context.assignedto.menu() }}
         </div>
       </div>
       <div class='control-group span6'>
-        <label class='control-label' for='keywords'>Keywords</label>
+        <label class='control-label' for='keywords'>{{ i18n.gettext('Keywords') }}</label>
         <div class='controls'>
           <input type='text' name='keywords' id='keywords'>
         </div>
@@ -69,7 +69,7 @@
     <!-- Note -->
     <div class='row-fluid'>
       <div class='control-group'>
-        <label class='control-label' for='change_note'>Change note</label>
+        <label class='control-label' for='change_note'>{{ i18n.gettext('Change note') }}</label>
         <div class='controls'>
           <textarea name="@note" rows="5" class='input-xxlarge' id='change_note'></textarea>
         </div>
@@ -79,7 +79,7 @@
     <!-- File upload -->
     <div class='row-fluid'>
       <div class='control-group'>
-        <label class='control-label' for='file_upload'>File</label>
+        <label class='control-label' for='file_upload'>{{ i18n.gettext('File') }}</label>
         <div class='controls'>
           <input type="file" name="@file" id='file_upload'>
         </div>
@@ -89,7 +89,7 @@
   <div class='form-actions'>
     {{ context.submit() }}
     {% if context.id %}
-      <a href='{{ context.copy_url() }}'>Make a copy</a>
+      <a href='{{ context.copy_url() }}'>{{ i18n.gettext('Make a copy') }}</a>
     {% endif %}
   </div>
   <input type="hidden" name="@template" value="item">

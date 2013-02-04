@@ -3,29 +3,29 @@
   <ul>
     {% if batch and batch.previous %}
       <li>
-        <a href="#"
-         >Previous</a>
+        <a href="#">{{ i18n.gettext('Previous') }}</a>
       </li>
     {% else %}
       <li class='disabled'>
-        <a href='#'>Previous</a>
+        <a href="#">{{ i18n.gettext('Previous') }}</a>
       </li>
     {% endif %}
     <li>
       <span>
         {{ batch.start }}...{{ batch.start + batch.length -1 }}
-        out of {{ batch.sequence_length }}
+        {{ i18n.gettext('out of') }}
+        {{ batch.sequence_length }}
       </span>
     </li>
     {% if batch and batch.next() %}
       <li>
         <a href="{{ request.indexargs_url(request.classname,
                 {'@startwith':batch.next().first, '@pagesize':batch.next().size}) }}"
-        >Next</a>
+        >{{ i18n.gettext('Next') }}</a>
       </li>
     {% else %}
       <li class='disabled'>
-        <a href='#'>Next</a>
+        <a href='#'>{{ i18n.gettext('Next') }}</a>
       </li>
     {% endif %}
   </ul>

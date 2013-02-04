@@ -2,21 +2,21 @@
 
 {% block head_title %}
   {% if context.id %}
-    Message {{ context.id }} - {{ config.TRACKER_NAME }}
+    {{ i18n.gettext('Message') }} {{ context.id }} - {{ config.TRACKER_NAME }}
   {% else %}
-    New Message - {{ config.TRACKER_NAME }}
+    {{ i18n.gettext('New Message') }} - {{ config.TRACKER_NAME }}
   {% endif %}
 {% endblock %}
 
 {% block page_header %}
   {% if not (context.id or context.is_edit_ok()) %}
-    New Message
+    {{ i18n.gettext('New Message') }}
   {% elif not context.id and context.is_edit_ok() %}
-    New Message Editing
+    {{ i18n.gettext('New Message Editing') }}
   {% elif context.id and not context.is_edit_ok() %}
-    Message{{ context.id }}
+    {{ i18n.gettext('Message') }}{{ context.id }}
   {% elif context.id and context.is_edit_ok() %}
-    Message{{ context.id }} editing
+    {{ i18n.gettext('Message') }}{{ context.id }} {{ i18n.gettext('editing') }}
   {% endif %}
 {% endblock %}
 
@@ -26,11 +26,11 @@
 
   {% if context.is_view_ok() %}
     <dl class='dl-horizontal'>
-      <dt>Author</dt>
+      <dt>{{ i18n.gettext('Author') }}</dt>
       <dd>{{ context.author }} </dd>
-      <dt>Recipients</dt>
+      <dt>{{ i18n.gettext('Recipients') }}</dt>
       <dd>{{ context.recipients }}</dd>
-      <dt>Date</dt>
+      <dt>{{ i18n.gettext('Date') }}</dt>
       <dd>{{ context.date }}</dd>
     </dl>
 

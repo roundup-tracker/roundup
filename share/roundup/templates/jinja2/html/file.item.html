@@ -1,7 +1,11 @@
 {% extends 'layout/page.html' %}
 
+{% block head_title %}
+  {{ i18n.gettext('File display') }}
+{% endblock %}
+
 {% block page_header %}
-  File display
+  {{ i18n.gettext('File display') }}
 {% endblock %}
 
 {% block content %}
@@ -13,9 +17,9 @@
       enctype="multipart/form-data" action='{{ context.designator() }}'>
 
       <dl class='dl-horizontal'>
-        <dt>Name</dt>
+        <dt>{{ i18n.gettext('Name') }}</dt>
         <dd>{{ context.name.field() }}</dd>
-        <dt>Content Type</dt>
+        <dt>{{ i18n.gettext('Content Type') }}</dt>
         <dd>{{ context.type.field() }}</dd>
       </dl>
 
@@ -33,7 +37,7 @@
 
   {% if context.id and context.is_view_ok() %}
     <div class='row-fluid'>
-      <a href='file{{ context.id }}/{{ context.name }}'>Download</a>
+      <a href='file{{ context.id }}/{{ context.name }}'>{{ i18n.gettext('Download') }}</a>
     </div>
   {% endif %}
 

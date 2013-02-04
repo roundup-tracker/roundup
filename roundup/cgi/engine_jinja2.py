@@ -38,25 +38,17 @@ import gettext
 
 from roundup.cgi.templating import context, LoaderBase, TemplateBase
 
-'''
-def get_gettext_translations():
-    return gettext.find('??')
-'''
-
 class Jinja2Loader(LoaderBase):
     def __init__(self, dir):
         extensions = [
             'jinja2.ext.autoescape',
-            'jinja2.ext.i18n',
         ]
         print "Jinja2 templates: ", dir 
         print "Extensions: ", extensions
-        #translations = get_gettext_translations()
         self._env = jinja2.Environment(
                         loader=jinja2.FileSystemLoader(dir),
                         extensions=extensions
                     )
-        #self._env.install_gettext_translations(translations)
 
     def check(self, tplname):
         #print tplname
@@ -83,16 +75,6 @@ class Jinja2ProxyPageTemplate(TemplateBase):
         # [ ] limit the information passed to the minimal necessary set
         c = context(client, self, classname, request)
         c.update({'options': options})
-
-        '''
-        def translate(msgid, domain=None, mapping=None, default=None):
-            result = client.translator.translate(domain, msgid,
-                         mapping=mapping, default=default)
-            return unicode(result, client.translator.OUTPUT_ENCODING)
-
-        output = self._pt.render(None, translate, **c)
-        return output.encode(client.charset)
-        '''
         return self._tpl.render(c)
 
     def __getitem__(self, name):

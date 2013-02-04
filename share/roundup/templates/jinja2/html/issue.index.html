@@ -1,7 +1,11 @@
 {% extends 'layout/page.html' %}
 
+{% block head_title %}
+  {{ i18n.gettext('List of issues') }}
+{% endblock %}
+
 {% block page_header %}
-    List of issues
+  {{ i18n.gettext('List of issues') }}
 {% endblock %}
 
 {% block content %}
@@ -12,15 +16,15 @@
     {% if context.list() %}
       <table class='table'>
         <tr class='info'>
-          <td>Priority</td>
-          <td>ID</td>
-          <td>Activity</td>
-          <td>Actor</td>
-          <td>Keyword</td>
-          <td>Title</td>
-          <td>Status</td>
-          <td>Creator</td>
-          <td>Assigned&nbsp;To</td>
+          <td>{{ i18n.gettext('Priority') }}</td>
+          <td>{{ i18n.gettext('ID') }}</td>
+          <td>{{ i18n.gettext('Activity') }}</td>
+          <td>{{ i18n.gettext('Actor') }}</td>
+          <td>{{ i18n.gettext('Keyword') }}</td>
+          <td>{{ i18n.gettext('Title') }}</td>
+          <td>{{ i18n.gettext('Status') }}</td>
+          <td>{{ i18n.gettext('Creator') }}</td>
+          <td>{{ i18n.gettext('Assigned To') }}</td>
         </tr>
         {% for issue in context.list() %}
           <tr>
@@ -39,7 +43,7 @@
         {% endfor %}
       </table>
     {% else %}
-      <p class='text-error'>There are no issue yet!</p>
+      <p class='text-error'>{{ i18n.gettext('There are no issue yet!') }}</p>
     {% endif %}
   {% endif %}
 
@@ -47,7 +51,10 @@
 
   <div class='row-fluid'> 
     <div class='pull-right'>
-      <a class='btn btn-success' href="{{ request.indexargs_url('issue', {'@action':'export_csv'}) }}">Download as CSV</a>
+      <a class='btn btn-success'
+          href="{{ request.indexargs_url('issue', {'@action':'export_csv'}) }}">
+        {{ i18n.gettext('Download as CSV') }}
+      </a>
     </div>
   </div>
 

@@ -1,15 +1,19 @@
 {% extends 'layout/page.html' %}
 
+{% block head_title %}
+  {{ i18n.gettext('Keyword editing') }}
+{% endblock %}
+
 {% block page_header %}
-  Keyword editing
+  {{ i18n.gettext('Keyword editing') }}
 {% endblock %}
 
 {% block content %}
 
   <h4>Existing Keywords</h4>
   <p class='text-warning'>
-   To edit an existing keyword (for spelling or typing errors),
-   click on its entry above.
+   {{ i18n.gettext('To edit an existing keyword (for spelling or typing errors),
+   click on its entry above.') }}
   </p>
 
   <ul class='nav nav-pills nav-stacked'>
@@ -18,7 +22,7 @@
         <a href='keyword{{ keyword.id }}'>{{ keyword.name }}</a>
       </li>
     {% else %}
-      <p class='text-mute'>There are no keywords yet.  Be the first -</p>
+      <p class='text-mute'>{{ i18n.gettext('There are no keywords yet.  Be the first -') }}</p>
     {% endfor %}
   </ul>
 
@@ -27,8 +31,6 @@
     <input type="hidden" name="@required" value="name">
     <input type="hidden" name="@template" value="item">
     <input type="hidden" name="@action" value="new">
-    <input type='submit' class='btn btn-primary' value='Create keyword'>
+    <input type='submit' class='btn btn-primary' value="{{ i18n.gettext('Create keyword') }}">
   </form>
 {% endblock %}
-
-

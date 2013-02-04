@@ -2,7 +2,7 @@
 <form method="GET" action='{{ request.classname }}'>
   <div class='row-fluid'>
     <div class='span6'>
-      <span class='label label-info'>Sort on</span>
+      <span class='label label-info'>{{ i18n.gettext('Sort on') }}</span>
       {% for i in range(2) %}
         <p>
           <select name='@sort{{i}}'>
@@ -16,7 +16,7 @@
       {% endfor %}
     </div>
     <div class='span6'>
-      <span class='label label-info'>Group on</span>
+      <span class='label label-info'>{{ i18n.gettext('Group on') }}</span>
       {% for i in range(2) %}
         <p>
           <select name='@group{{i}}'>
@@ -31,7 +31,7 @@
     </div>
   </div>
   <div class='form-actions'>
-    <input type='submit' value='Redisplay' class='btn btn-primary'>
+    <input type='submit' value='{{ i18n.gettext("Redisplay") }}' class='btn btn-primary'>
     {{ request.indexargs_form(sort=0, group=0) }}
   </div>
 </form>
