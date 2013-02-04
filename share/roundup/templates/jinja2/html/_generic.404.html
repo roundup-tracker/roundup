@@ -1,0 +1,12 @@
+{% extends 'layout/page.html' %}
+
+{% block head_title %}
+  404 - {{ i18n.gettext('page not found') }}
+{% endblock %}
+
+{% block page_content %}
+  <div class='container-fluid'>
+    <h1 class='text-error'>{{ i18n.gettext('404 - page not found') }}</h1>
+    <p style='text-align: center'>{{ i18n.gettext('What were you looking for anyways?') }}</p>
+  </div>
+{% endblock %}

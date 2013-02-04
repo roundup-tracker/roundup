@@ -63,3 +63,7 @@ footer {
 .vspace-three { margin-top: 3em; }
 .vspace-four { margin-top: 4em; }
 .vspace-five { margin-top: 5em; }
+
+.navigation {
+  border-right: 1px solid #ddd;
+}

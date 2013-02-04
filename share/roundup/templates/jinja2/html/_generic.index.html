@@ -1,7 +1,11 @@
 {% extends 'layout/page.html' %}
 
+{% block head_title %}
+  {{ context._classname.capitalize() }} {{ i18n.gettext('editing') }}
+{% endblock %}
+
 {% block page_header %}
-  {{ context._classname.capitalize() }} editing
+  {{ context._classname.capitalize() }} {{ i18n.gettext('editing') }}
 {% endblock %}
 
 {% block content %}
@@ -9,30 +13,29 @@
   {% include 'layout/permission.html' %}
 
   {% if context.is_view_ok %}
-    <p class="form-help">
+    <p class="form-help">{{ i18n.gettext('
      You may edit the contents of the
      class using this form. Commas, newlines and double quotes (") must be
      handled delicately. You may include commas and newlines by enclosing the
      values in double-quotes ("). Double quotes themselves must be quoted by
      doubling ("").
-    </p>
+    ') }}</p>
 
-    <p class="form-help">
+    <p class="form-help">{{ i18n.gettext('
      Multilink properties have their multiple values colon (":") separated
      (... ,"one:two:three", ...)
-    </p>
+    ') }}</p>
 
-    <p class="form-help">
+    <p class="form-help">{{ i18n.gettext('
      Remove entries by deleting their line. Add new entries by appending
      them to the table - put an X in the id column. If you wish to restore a
      removed item and you know its id then just put that id in the id column.
-    </p>
-    <form onSubmit="return submit_once()" method="POST"
-          tal:attributes="action context/designator">
-    <textarea rows="15" style="width:90%" name="rows" tal:content="context/csv"></textarea>
-    <br>
-    <input type="hidden" name="@action" value="editCSV">
-    <input type="submit" value="Edit Items" i18n:attributes="value">
+    ') }}</p>
+    <form method="POST" action='{{ context.designator() }}'>
+      <textarea rows="15" style="width:90%" name="rows">{{ context.csv }}</textarea>
+      <br>
+      <input type="hidden" name="@action" value="{{ i18n.gettext('editCSV') }}">
+      <input type="submit" value="{{ i18n.gettext('Edit Items') }}">
     </form>
   {% endif %}
 
