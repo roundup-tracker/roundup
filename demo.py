@@ -93,6 +93,9 @@ def install_demo(home, backend, template):
     # FIXME: Move template-specific demo initialization into the templates.
     if template == 'responsive':
         config['STATIC_FILES'] = "static"
+    if template == 'jinja2':
+        config['TEMPLATE_ENGINE'] = 'jinja2'
+        config['STATIC_FILES'] = "static"
     config.save(os.path.join(home, config.INI_FILE))
 
     # open the tracker and initialise

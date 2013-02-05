@@ -7,6 +7,9 @@ Entries without name were done by Richard Jones.
 
 Features:
 
+- A new jinja2 template based on Classic schema and using Twitter
+  bootstrap for responsive behaviour.  Run as - 
+  python demo.py -t jinja2 nuke (Pradip P Caulagi)
 - Renamed old Templates classes to Loader classes to clarify sources
   for alternative templating engines, updated docs (anatoly techtonik)
 - Template selection code is moved from Loader classes into cgi.client
@@ -15,7 +18,7 @@ Features:
   client.selectTemplate (anatoly techtonik)
 - Experimental proof of concept code for Jinja2 templating engine.
   Select 'jinja2' template_engine in config and place templates into 
-  html/jinja2 to play with (anatoly techtonik)
+  html to play with (anatoly techtonik)
 - Introducing Template Loader API (anatoly techtonik)
 
 Fixed:
