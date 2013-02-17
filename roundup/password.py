@@ -165,9 +165,13 @@ def encodePassword(plaintext, scheme, other=None, config=None):
         raise PasswordValueError, 'Unknown encryption scheme %r'%scheme
     return s
 
-def generatePassword(length=8):
+def generatePassword(length=12):
     chars = string.letters+string.digits
-    return ''.join([random.choice(chars) for x in range(length)])
+    password = [random.choice(chars) for x in range(length)]
+    # make sure there is at least one digit
+    password[0] = random.choice(string.digits)
+    random.shuffle(password)
+    return ''.join(password)
 
 class JournalPassword:
     """ Password dummy instance intended for journal operation.

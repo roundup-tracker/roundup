@@ -20,6 +20,8 @@ Features:
   Select 'jinja2' template_engine in config and place templates into 
   html to play with (anatoly techtonik)
 - Introducing Template Loader API (anatoly techtonik)
+- Increased generated password length to 12 symbols to slow down GPGPU
+  attacks (anatoly techtonik)
 
 Fixed:
 
