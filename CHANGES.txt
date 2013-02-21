@@ -34,7 +34,8 @@ Fixed:
   Footer: link fixed and hardcoded last modfied date removed. (Bernhard Reiter)
 - demo.py tracker home is configurable, its location is printed and
   the directory is fully erased when nuking (anatoly techtonik)
-
+- demo.py changing hostname in config.ini actually changes the address
+  where demo.py listens. (John Rouillard)
 
 2012-12-21: 1.4.21
 

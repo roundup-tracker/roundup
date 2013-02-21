@@ -136,7 +136,7 @@ program. If you want to change backend types, you must use "nuke".
 ''' % dict(url=url, script=sys.argv[0], datadir=TRACKER_HOME)
 
     # disable command line processing in roundup_server
-    sys.argv = sys.argv[:1] + ['-p', str(port), 'demo=' + home]
+    sys.argv = sys.argv[:1] + ['-p', str(port), '-n', hostname, 'demo=' + home]
     roundup_server.run(success_message=success_message)
 
 
