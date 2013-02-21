@@ -18,14 +18,27 @@
 """
 __docformat__ = 'restructuredtext'
 
+import sys
+
+
+# --- patch sys.path to make sure 'import roundup' finds correct version
+import os.path as osp
+
+thisdir = osp.dirname(osp.abspath(__file__))
+rootdir = osp.dirname(osp.dirname(thisdir))
+if (osp.exists(thisdir + '/__init__.py') and
+        osp.exists(rootdir + '/roundup/__init__.py')):
+    # the script is located inside roundup source code
+    sys.path.insert(0, rootdir)
+# --/
+
+
 # python version check
 from roundup import version_check
 
 # import the admin tool guts and make it go
 from roundup.admin import AdminTool
 from roundup.i18n import _
-
-import sys
 
 def run():
     # time out after a minute if we can

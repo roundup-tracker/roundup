@@ -19,6 +19,20 @@
 """
 __docformat__ = 'restructuredtext'
 
+
+# --- patch sys.path to make sure 'import roundup' finds correct version
+import sys
+import os.path as osp
+
+thisdir = osp.dirname(osp.abspath(__file__))
+rootdir = osp.dirname(osp.dirname(thisdir))
+if (osp.exists(thisdir + '/__init__.py') and
+        osp.exists(rootdir + '/roundup/__init__.py')):
+    # the script is located inside roundup source code
+    sys.path.insert(0, rootdir)
+# --/
+
+
 import errno, cgi, getopt, os, socket, sys, traceback, urllib, time
 import ConfigParser, BaseHTTPServer, SocketServer, StringIO
 

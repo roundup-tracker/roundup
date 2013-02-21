@@ -13,6 +13,8 @@ Features:
 - A new jinja2 template based on Classic schema and using Twitter
   bootstrap for responsive behaviour.  Run as - 
   python demo.py -t jinja2 nuke (Pradip P Caulagi)
+- roundup_admin.py and other scripts can now be run directly from the
+  sources dir as roundup\scripts\roundup_admin.py (anatoly techtonik)
 - Renamed old Templates classes to Loader classes to clarify sources
   for alternative templating engines, updated docs (anatoly techtonik)
 - Template selection code is moved from Loader classes into cgi.client
