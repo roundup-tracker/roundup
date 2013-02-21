@@ -31,8 +31,8 @@ Fixed:
 - [minor] Template responsive: make demo.py work out of the box with it,
   by setting the static_files config.ini setting to "static". 
   Footer: link fixed and hardcoded last modfied date removed. (Bernhard Reiter)
-- demo.py tracker home is configurable, its location is printed and
-  the directory is fully erased when nuking (anatoly techtonik)
+- demo.py print location of tracker home and fully erase its directory
+  when nuking (anatoly techtonik)
 - demo.py changing hostname in config.ini actually changes the address
   where demo.py listens. (John Rouillard)
 

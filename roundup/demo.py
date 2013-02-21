@@ -15,7 +15,7 @@ from roundup import configuration
 from roundup.scripts import roundup_server
 
 # Path where demo instance files will be stored
-TRACKER_HOME = os.path.join(os.path.dirname(__file__), 'demo')
+TRACKER_HOME = os.path.abspath('demo')
 
 def install_demo(home, backend, template):
     """Install a demo tracker
@@ -116,6 +116,8 @@ def install_demo(home, backend, template):
 
 def run_demo(home):
     """Run the demo tracker instance from its ``home`` directory"""
+    print "Demo Tracker Home:", home
+
     cfg = configuration.CoreConfig(home)
     url = cfg["TRACKER_WEB"]
     hostname, port = urlparse.urlparse(url)[1].split(':')
