@@ -42,7 +42,6 @@ TODO
 ./roundup/dist/command/bdist_rpm.py
 ./roundup/dist/command/build.py
 ./roundup/dist/command/build_doc.py
-./roundup/dist/command/build_py.py
 ./roundup/dist/command/build_scripts.py
 ./roundup/exceptions.py
 ./roundup/hyperdb.py
