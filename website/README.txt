@@ -13,8 +13,8 @@ issues.roundup-tracker.org:
       sudo /etc/init.d/roundup restart
 
 [1] All services hosted on sf.net:
- * log into sf.net
-   http://sourceforge.net/apps/trac/sourceforge/wiki/Shell%20service
+ * log into sf.net (Generic sf instructions can be found here:
+   http://sourceforge.net/apps/trac/sourceforge/wiki/Shell%20service )
       ssh -t <user>,roundup@shell.sourceforge.net create
  * set project_home:
       project_home=/home/project-web/roundup
