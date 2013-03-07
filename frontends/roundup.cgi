@@ -222,7 +222,7 @@ except:
         out.write(cgitb.breaker())
         ts = time.ctime()
         out.write('''<p>%s: An error occurred. Please check
-            the server log for more infomation.</p>'''%ts)
+            the server log for more information.</p>'''%ts)
         print >> sys.stderr, 'EXCEPTION AT', ts
         traceback.print_exc(0, sys.stderr)
 

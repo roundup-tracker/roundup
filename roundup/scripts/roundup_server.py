@@ -232,7 +232,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                     self.wfile.write(cgitb.breaker())
                     ts = time.ctime()
                     self.wfile.write('''<p>%s: An error occurred. Please check
-                    the server log for more infomation.</p>'''%ts)
+                    the server log for more information.</p>'''%ts)
                     # out to the logfile
                     print 'EXCEPTION AT', ts
                     traceback.print_exc()
