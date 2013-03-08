@@ -27,6 +27,8 @@ issues.roundup-tracker.org:
    (The warning about "Not trusting file
    /home/scm_hg/r/ro/roundup/roundup/.hg/hgrc from untrusted user"
    can be ignored.)
+ * When done working in the shell, you can destroy it early to free resources:
+      shutdown
 
 www.roundup-tracker.org:
  * follow [1].
@@ -48,6 +50,8 @@ www.roundup-tracker.org:
 
 wiki.roundup-tracker.org:
  * follow [1].
+ * the main wiki configuration is here
+      vim persistent/wiki/wikiconfig.py
  * go to the now current source directory
       cd ${project_home}/src/roundup/website/wiki
  * copy the files into the right places:
