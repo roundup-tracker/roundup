@@ -75,7 +75,7 @@ class Jinja2ProxyPageTemplate(TemplateBase):
         # [ ] limit the information passed to the minimal necessary set
         c = context(client, self, classname, request)
         c.update({'options': options})
-        return self._tpl.render(c)
+        return self._tpl.render(c).encode(client.charset, )
 
     def __getitem__(self, name):
         # [ ] figure out what are these for
