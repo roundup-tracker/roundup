@@ -254,7 +254,7 @@ class Database(rdbms_common.Database):
         self.create_class_table(spec)
 
         if olddata:
-            inscols = ['id', '_actor', '_activity', '_creation', '_creator']
+            inscols = ['id', '_actor', '_activity', '_creation', '_creator', '__retired__']
             for propname,x in new_spec[1]:
                 prop = properties[propname]
                 if isinstance(prop, hyperdb.Multilink):
@@ -273,6 +273,7 @@ class Database(rdbms_common.Database):
             sql = 'insert into _%s (%s) values (%s)'%(cn, cols, args)
             for entry in olddata:
                 d = []
+                retired_id = None
                 for name in inscols:
                     # generate the new value for the Interval int column
                     if name.endswith('_int__'):
@@ -295,6 +296,10 @@ class Database(rdbms_common.Database):
                         v = entry[name]
                     else:
                         v = None
+                    if name == 'id':
+                        retired_id = v
+                    elif name == '__retired__' and retired_id and v not in ['0', 0]:
+                        v = retired_id
                     d.append(v)
                 self.sql(sql, tuple(d))
 

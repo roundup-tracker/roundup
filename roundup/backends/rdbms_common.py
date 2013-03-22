@@ -274,7 +274,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             We should now confirm that the schema defined by our "classes"
             attribute actually matches the schema in the database.
         """
-        save = 0
+
+        # upgrade the database for column type changes, new internal
+        # tables, etc.
+        save = self.upgrade_db()
 
         # handle changes in the schema
         tables = self.database_schema['tables']
@@ -294,10 +297,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 self.drop_class(classname, tables[classname])
                 del tables[classname]
                 save = 1
-
-        # now upgrade the database for column type changes, new internal
-        # tables, etc.
-        save = save | self.upgrade_db()
 
         # update the database version of the schema
         if save:
@@ -345,9 +344,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             self.fix_version_2_tables()
 
         if version < 4:
+            self.log_info('upgrade to version 4')
             self.fix_version_3_tables()
 
         if version < 5:
+            self.log_info('upgrade to version 5')
             self.fix_version_4_tables()
 
         self.database_schema['version'] = self.current_db_version
@@ -645,7 +646,12 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def add_class_key_required_unique_constraint(self, cn, key):
         sql = '''create unique index _%s_key_retired_idx
             on _%s(__retired__, _%s)'''%(cn, cn, key)
-        self.sql(sql)
+        try:
+            self.sql(sql)
+        except StandardError:
+            # XXX catch e.g.:
+            # _sqlite.DatabaseError: index _status_key_retired_idx already exists
+            pass
 
     def drop_class_table_indexes(self, cn, key):
         # drop the old table indexes first
