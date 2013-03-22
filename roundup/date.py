@@ -274,7 +274,8 @@ class Date:
                 self.second = _local_to_utc(y, m, d, H, M, S, offset)
             # we lost the fractional part
             self.second = self.second + frac
-            if str(self.second) == '60.0': self.second = 59.9
+            # making sure we match the precision of serialise()
+            self.second = min(self.second, 59.999)
         except:
             raise ValueError, 'Unknown spec %r' % (spec,)
 
@@ -543,6 +544,13 @@ class Date:
             self.second, 0, 0, 0)
 
     def serialise(self):
+        """ Return serialised string for self's datetime.
+
+        Uses '%06.3f' as format for self.second, which therefor
+        must be <=59.999 to work. Otherwise it will be rounded
+        to 60.000.
+
+        """
         return '%04d%02d%02d%02d%02d%06.3f'%(self.year, self.month,
             self.day, self.hour, self.minute, self.second)
 

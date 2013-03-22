@@ -37,6 +37,8 @@ Fixed:
   when nuking (anatoly techtonik)
 - demo.py changing hostname in config.ini actually changes the address
   where demo.py listens. (John Rouillard)
+- issue2550802: Fixed date so second fraction can't cause rounding to
+  60.000 when serialising. Report and fix by Erik Hanspers. (Bernhard Reiter)
 
 2012-12-21: 1.4.21
 
