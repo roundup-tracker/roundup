@@ -23,7 +23,7 @@ issues.roundup-tracker.org:
       vim ${project_home}/logbuch.txt
  * update the working copy of the SCM roundup source (includes www and wiki)
       cd ${project_home}/src/roundup
-      hg pull -u /home/scm_hg/r/ro/roundup/roundup
+      hg pull -u /home/hg/p/roundup/code
    (The warning about "Not trusting file
    /home/scm_hg/r/ro/roundup/roundup/.hg/hgrc from untrusted user"
    can be ignored.)
