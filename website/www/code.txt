@@ -4,19 +4,19 @@ Code
 Changelog
 ----------
 
-The changelog is available as `CHANGES.txt in the SCM repository <http://roundup.hg.sourceforge.net/hgweb/roundup/roundup/raw-file/default/CHANGES.txt>`_.
+The changelog is available as `CHANGES.txt in the SCM repository <https://sourceforge.net/p/roundup/code/ci/tip/tree/CHANGES.txt?format=raw>`_.
 
 Browse
 ------
 
-You may browse the repository via the `Mercurial webinterface <http://roundup.hg.sourceforge.net/hgweb/roundup/roundup>`_.
+`Browse the repository <https://sourceforge.net/p/roundup/code/>`_.
 
 Read-only Access
 ----------------
 
 Read-only repository access is provided through ::
 
-  hg clone http://roundup.hg.sourceforge.net:8000/hgroot/roundup/roundup
+  hg clone http://hg.code.sf.net/p/roundup/code roundup-code
 
 The URL for the webinterface works, too, but you will see messages about
 redirects to the URL shown here.
@@ -26,9 +26,9 @@ Read-write Access
 
 The read/write access uses your SourceForge.net ssh password or ssh key
 to authorize your access. (See `SF's site documentation on Mercurial access
-<https://sourceforge.net/apps/trac/sourceforge/wiki/Mercurial#Access>`_) ::
+<https://sourceforge.net/p/forge/documentation/Mercurial/>`_) ::
 
-  hg clone ssh://<username>@roundup.hg.sourceforge.net/hgroot/roundup/roundup
+  hg clone ssh://USERNAME@hg.code.sf.net/p/roundup/code roundup-code
 
 Of course a roundup developer must have granted
 you write access first - ask for it on the roundup-devel list.
