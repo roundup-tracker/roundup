@@ -10,6 +10,7 @@ from roundup.cgi.exceptions import *
 from roundup import init, instance, password, hyperdb, date
 from roundup.xmlrpc import RoundupInstance
 from roundup.backends import list_backends
+from roundup.hyperdb import String
 
 import db_test_base
 
@@ -26,6 +27,8 @@ class TestCase(unittest.TestCase):
 
         # open the database
         self.db = self.instance.open('admin')
+
+        # Get user id (user4 maybe). Used later to get data from db.
         self.joeid = 'user' + self.db.user.create(username='joe',
             password=password.Password('random'), address='random@home.org',
             realname='Joe Random', roles='User')
@@ -33,6 +36,20 @@ class TestCase(unittest.TestCase):
         self.db.commit()
         self.db.close()
         self.db = self.instance.open('joe')
+
+        self.db.tx_Source = 'web'
+
+        self.db.issue.addprop(tx_Source=hyperdb.String())
+        self.db.msg.addprop(tx_Source=hyperdb.String())
+
+        self.db.post_init()
+
+        vars = dict(globals())
+        vars['db'] = self.db
+        vars = {}
+        execfile("test/tx_Source_detector.py", vars)
+        vars['init'](self.db)
+
         self.server = RoundupInstance(self.db, self.instance.actions, None)
 
     def tearDown(self):
@@ -66,6 +83,7 @@ class TestCase(unittest.TestCase):
         issueid = 'issue' + results
         results = self.server.display(issueid, 'title')
         self.assertEqual(results['title'], 'foo')
+        self.assertEqual(self.db.issue.get('1', "tx_Source"), 'web')
 
     def testFileCreate(self):
         results = self.server.create('file', 'content=hello\r\nthere')
@@ -183,6 +201,12 @@ class TestCase(unittest.TestCase):
 
         self.db.close()
         self.db = self.instance.open('chef')
+        self.db.tx_Source = 'web'
+
+        self.db.issue.addprop(tx_Source=hyperdb.String())
+        self.db.msg.addprop(tx_Source=hyperdb.String())
+        self.db.post_init()
+
         self.server = RoundupInstance(self.db, self.instance.actions, None)
 
         # Filter on keyword works for role 'Project':

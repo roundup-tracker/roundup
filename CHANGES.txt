@@ -7,6 +7,24 @@ Entries without name were done by Richard Jones.
 
 Features:
 
+- Support for tx_Source property on database handle. Can be used by
+  detectors to find out the source of a change in an auditor to block
+  changes arriving by unauthenticated mechanisms (e.g. plain email
+  where headers can be faked). The property db.tx_Source has the
+  following values:
+  * None - Default value set to None. May be valid if it's a script
+    that is created by the user. Otherwise it's an error and indicates
+    that some code path is not properly setting the tx_Source property.
+  * "cli" - this string value is set when using roundup-admin and
+    supplied scripts.
+  * "web" - this string value is set when using any web based
+    technique: html interface, xmlrpc ....
+  * "email" - this string value is set when using an unauthenticated
+    email based technique.
+  * "email-sig-openpgp" - this string value is set when email with a
+    valid pgp signature is used. (*NOTE* the testing for this mode
+    is incomplete. If you have a pgp infrastructure you should test
+    and verify that this is properly set.)
 - Introducing Template Loader API (anatoly techtonik)
 - Experimental support for Jinja2, try 'jinja2' for template_engine
   in config (anatoly techtonik)

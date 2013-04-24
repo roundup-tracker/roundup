@@ -121,6 +121,8 @@ class Tracker:
                 extension(self)
             detectors = self.get_extensions('detectors')
         db = env['db']
+        db.tx_Source = None
+
         # apply the detectors
         for detector in detectors:
             detector(db)

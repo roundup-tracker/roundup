@@ -42,6 +42,9 @@ def copy_user(home1, home2, *userids):
     db1 = instance1.open('admin')
     db2 = instance2.open('admin')
 
+    db1.tx_Source = "cli"
+    db2.tx_Source = "cli"
+
     userlist = db1.user.list()
     for userid in userids:
         try:

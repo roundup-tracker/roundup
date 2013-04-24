@@ -6,6 +6,7 @@ class UserAuditorTest(unittest.TestCase):
         self.dirname = '_test_user_auditor'
         self.instance = setupTracker(self.dirname)
         self.db = self.instance.open('admin')
+        self.db.tx_Source = "cli"
 
         try:
             import pytz

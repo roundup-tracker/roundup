@@ -50,6 +50,10 @@ def create(journaltag, create=True, debug=False):
         execfile(os.path.join(dirname, fn), vars)
         vars['init'](db)
 
+    vars = {}
+    execfile("test/tx_Source_detector.py", vars)
+    vars['init'](db)
+
     '''
     status = Class(db, "status", name=String())
     status.setkey("name")
@@ -194,6 +198,7 @@ class Database(back_anydbm.Database):
         self.newnodes = {}      # keep track of the new nodes by class
         self.destroyednodes = {}# keep track of the destroyed nodes by class
         self.transactions = []
+        self.tx_Source = None
 
     def filename(self, classname, nodeid, property=None, create=0):
         shutil.copyfile(__file__, __file__+'.dummy')

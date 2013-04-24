@@ -129,6 +129,8 @@ class DiffHelper:
 
         return res
 
+from roundup.hyperdb import String
+
 class MailgwTestAbstractBase(unittest.TestCase, DiffHelper):
     count = 0
     schema = 'classic'
@@ -139,6 +141,13 @@ class MailgwTestAbstractBase(unittest.TestCase, DiffHelper):
 
         # and open the database / "instance"
         self.db = memorydb.create('admin')
+
+        self.db.issue.addprop(tx_Source=String())
+        self.db.msg.addprop(tx_Source=String())
+        self.db.post_init()
+
+        self.db.tx_Source = "email"
+
         self.instance = Tracker()
         self.instance.db = self.db
         self.instance.config = self.db.config
@@ -206,6 +215,7 @@ Subject: [issue] Testing...
 ''')
         assert not os.path.exists(SENDMAILDEBUG)
         self.assertEqual(self.db.issue.get(nodeid, 'title'), 'Testing...')
+        self.assertEqual(self.db.issue.get(nodeid, 'tx_Source'), 'email')
 
 
 class MailgwTestCase(MailgwTestAbstractBase):
@@ -320,6 +330,11 @@ This is a test submission of a new issue.
         l = self.db.issue.get(nodeid, 'nosy')
         l.sort()
         self.assertEqual(l, [self.chef_id, self.richard_id])
+
+        # check that the message has the right source code
+        l = self.db.msg.get('1', 'tx_Source')
+        self.assertEqual(l, 'email')
+
         return nodeid
 
     def testNewIssue(self):
@@ -413,6 +428,7 @@ messages: 1
 nosy: Chef, mary, richard
 status: unread
 title: Testing...
+tx_Source: email
 
 _______________________________________________________________________
 Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
@@ -455,6 +471,7 @@ messages: 1
 nosy: Chef, mary, richard
 status: unread
 title: Testing...
+tx_Source: email
 
 _______________________________________________________________________
 Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
@@ -499,6 +516,7 @@ messages: 1
 nosy: Chef, mary, richard
 status: unread
 title: Testing...
+tx_Source: email
 
 _______________________________________________________________________
 Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
@@ -1195,7 +1213,6 @@ X-Roundup-Loop: hello
 X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
-
 richard <richard@test.test> added the comment:
 
 This is a followup
@@ -1230,6 +1247,10 @@ This is a followup
         self.assertEqual(l, [self.chef_id, self.richard_id, self.mary_id,
             self.john_id])
 
+        # check that the message has the right tx_Source
+        l = self.db.msg.get('2', 'tx_Source')
+        self.assertEqual(l, 'email')
+
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, john@test.test, mary@test.test
@@ -1246,7 +1267,6 @@ X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
 X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
-
 
 richard <richard@test.test> added the comment:
 
@@ -1265,6 +1285,7 @@ _______________________________________________________________________
 ''')
 
     def testNosyGeneration(self):
+        self.db.tx_Source = "email"
         self.db.issue.create(title='test')
 
         # create a nosy message
@@ -1273,6 +1294,10 @@ _______________________________________________________________________
         self.db.journaltag = 'richard'
         l = self.db.issue.create(title='test', messages=[msg],
             nosy=[self.chef_id, self.mary_id, self.john_id])
+
+
+        # check that message has right tx_Source
+        self.assertEqual(self.db.msg.get('1', 'tx_Source'), 'email')
 
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
@@ -1300,6 +1325,7 @@ messages: 1
 nosy: Chef, john, mary, richard
 status: unread
 title: test
+tx_Source: email
 
 _______________________________________________________________________
 Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
@@ -1373,6 +1399,10 @@ Subject: Re: Testing... [assignedto=mary; nosy=+john]
 
 This is a followup
 ''')
+
+        l = self.db.msg.get('2', 'tx_Source')
+        self.assertEqual(l, 'email')
+
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, john@test.test, mary@test.test
@@ -3390,6 +3420,10 @@ ZQ4K6R3m3AOw7BLdvZs=
         m = self.db.issue.get(nodeid, 'messages')[0]
         self.assertEqual(self.db.msg.get(m, 'content'), 
             'This is a pgp signed message.')
+        # check that the message has the right source code
+        l = self.db.msg.get(m, 'tx_Source')
+        self.assertEqual(l, 'email-sig-openpgp')
+
 
     def testPGPSignedMessageFail(self):
         # require both, signing and encryption
@@ -3441,6 +3475,9 @@ P81iDOWUp/uyIe5ZfvNI38BBxEYslPTUlDk2GB8J2Vun7IWHoj9a4tY3IotC9jBr
         m = self.db.issue.get(nodeid, 'messages')[0]
         self.assertEqual(self.db.msg.get(m, 'content'), 
             'This is the text to be encrypted')
+        # check that the message has the right source code
+        l = self.db.msg.get(m, 'tx_Source')
+        self.assertEqual(l, 'email')
 
     def testPGPEncryptedUnsignedMessageFromNonPGPUser(self):
         msg = self.encrypted_msg.replace('John Doe <john@test.test>',
@@ -3450,6 +3487,10 @@ P81iDOWUp/uyIe5ZfvNI38BBxEYslPTUlDk2GB8J2Vun7IWHoj9a4tY3IotC9jBr
         self.assertEqual(self.db.msg.get(m, 'content'), 
             'This is the text to be encrypted')
         self.assertEqual(self.db.msg.get(m, 'author'), self.mary_id)
+        # check that the message has the right source code
+        l = self.db.msg.get(m, 'tx_Source')
+        self.assertEqual(l, 'email')
+
 
     # check that a bounce-message that is triggered *after*
     # decrypting is properly encrypted:
@@ -3533,7 +3574,9 @@ zGhS06FLl3V1xx6gBlpqQHjut3efrAGpXGBVpnTJMOcgYAk=
         m = self.db.issue.get(nodeid, 'messages')[0]
         self.assertEqual(self.db.msg.get(m, 'content'), 
             'This is the text of a signed and encrypted email.')
-
+        # check that the message has the right source code
+        l = self.db.msg.get(m, 'tx_Source')
+        self.assertEqual(l, 'email-sig-openpgp')
 
 def test_suite():
     suite = unittest.TestSuite()

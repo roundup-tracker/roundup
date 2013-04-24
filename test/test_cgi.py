@@ -75,10 +75,23 @@ class FormTestCase(unittest.TestCase):
 
         # open the database
         self.db = self.instance.open('admin')
+        self.db.tx_Source = "web"
         self.db.user.create(username='Chef', address='chef@bork.bork.bork',
             realname='Bork, Chef', roles='User')
         self.db.user.create(username='mary', address='mary@test.test',
             roles='User', realname='Contrary, Mary')
+
+        self.db.issue.addprop(tx_Source=hyperdb.String())
+        self.db.msg.addprop(tx_Source=hyperdb.String())
+
+        self.db.post_init()
+
+        vars = dict(globals())
+        vars['db'] = self.db
+        vars = {}
+        execfile("test/tx_Source_detector.py", vars)
+        vars['init'](self.db)
+
 
         test = self.instance.backend.Class(self.db, "test",
             string=hyperdb.String(), number=hyperdb.Number(),
@@ -207,6 +220,7 @@ class FormTestCase(unittest.TestCase):
         self.assertEqual(self.db.issue.get(issue,'status'),'1')
         self.assertEqual(self.db.status.lookup('1'),'2')
         self.assertEqual(self.db.status.lookup('2'),'1')
+        self.assertEqual(self.db.issue.get('1','tx_Source'),'web')
         form = cgi.FieldStorage()
         cl = client.Client(self.instance, None, {'PATH_INFO':'/'}, form)
         cl.classname = 'issue'
@@ -226,6 +240,7 @@ class FormTestCase(unittest.TestCase):
         self.assertEqual(self.db.issue.get(issue,'keyword'),['1'])
         self.assertEqual(self.db.keyword.lookup('1'),'2')
         self.assertEqual(self.db.keyword.lookup('2'),'1')
+        self.assertEqual(self.db.issue.get(issue,'tx_Source'),'web')
         form = cgi.FieldStorage()
         cl = client.Client(self.instance, None, {'PATH_INFO':'/'}, form)
         cl.classname = 'issue'
@@ -271,11 +286,13 @@ class FormTestCase(unittest.TestCase):
         nodeid = self.db.issue.create(status='unread')
         self.assertEqual(self.parseForm({'status': 'unread'}, 'issue', nodeid),
             ({('issue', nodeid): {}}, []))
+        self.assertEqual(self.db.issue.get(nodeid,'tx_Source'),'web')
 
     def testUnsetLink(self):
         nodeid = self.db.issue.create(status='unread')
         self.assertEqual(self.parseForm({'status': '-1'}, 'issue', nodeid),
             ({('issue', nodeid): {'status': None}}, []))
+        self.assertEqual(self.db.issue.get(nodeid,'tx_Source'),'web')
 
     def testInvalidLinkValue(self):
 # XXX This is not the current behaviour - should we enforce this?

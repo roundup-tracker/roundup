@@ -26,6 +26,7 @@ for home in sys.argv[1:]:
         continue
 
     db = instance.open('admin')
+    db.tx_Source = "cli"
 
     print 'Migrating active queries in %s (%s):'%(
         instance.config.TRACKER_NAME, home)

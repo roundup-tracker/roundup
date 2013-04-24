@@ -1010,6 +1010,9 @@ Subject was: "%(subject)s"
                     "be PGP encrypted.")
             if self.message.pgp_signed():
                 self.message.verify_signature(author_address)
+                # signature has been verified
+                self.db.tx_Source = "email-sig-openpgp"
+
             elif self.message.pgp_encrypted():
                 # Replace message with the contents of the decrypted
                 # message for content extraction
@@ -1019,8 +1022,26 @@ Subject was: "%(subject)s"
                 encr_only = self.config.PGP_REQUIRE_INCOMING == 'encrypted'
                 encr_only = encr_only or not pgp_role()
                 self.crypt = True
-                self.message = self.message.decrypt(author_address,
-                    may_be_unsigned = encr_only)
+                try:
+                    # see if the message has a valid signature
+                    message = self.message.decrypt(author_address,
+                                                   may_be_unsigned = False)
+                    # only set if MailUsageError is not raised
+                    # indicating that we have a valid signature
+                    self.db.tx_Source = "email-sig-openpgp"
+                except MailUsageError:
+                    # if there is no signature or an error in the message
+                    # we get here. Try decrypting it again if we don't
+                    # need signatures.
+                    if encr_only:
+                        message = self.message.decrypt(author_address,
+                                               may_be_unsigned = encr_only)
+                    else:
+                        # something failed with the message decryption/sig
+                        # chain. Pass the error up.
+                        raise
+                # store the decrypted message      
+                self.message = message
             elif pgp_role():
                 raise MailUsageError, _("""
 This tracker has been configured to require all email be PGP signed or
@@ -1537,6 +1558,9 @@ class MailGW:
         '''
         # get database handle for handling one email
         self.db = self.instance.open ('admin')
+
+        self.db.tx_Source = "email"
+
         try:
             return self._handle_message(message)
         finally:

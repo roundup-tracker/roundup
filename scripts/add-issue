@@ -28,6 +28,7 @@ message_text = sys.stdin.read().strip()
 # open the tracker
 tracker = instance.open(tracker_home)
 db = tracker.open('admin')
+db.tx_Source = "cli"
 uid = db.user.lookup('admin')
 try:
     # try to open the tracker as the current user

@@ -4539,6 +4539,73 @@ Scalability
     selected these keywords as nosy keywords. This will eliminate the
     loop over all users.
 
+Restricting updates that arrive by email
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Roundup supports multiple update methods:
+
+1. command line
+2. plain email
+3. pgp signed email
+4. web access
+
+in some cases you may need to prevent changes to properties by some of
+these methods. For example you can set up issues that are viewable
+only by people on the nosy list. So you must prevent unauthenticated
+changes to the nosy list.
+
+Since plain email can be easily forged, it does not provide sufficient
+authentication in this senario.
+
+To prevent this we can add a detector that audits the source of the
+transaction and rejects the update if it changes the nosy list.
+
+Create the detector (auditor) module and add it to the detectors
+directory of your tracker::
+
+   from roundup import roundupdb, hyperdb
+   
+   from roundup.mailgw import Unauthorized
+
+   def restrict_nosy_changes(db, cl, nodeid, newvalues):
+       '''Do not permit changes to nosy via email.'''
+
+       if not (newvalues.has_key('nosy')):
+           # the nosy field has not changed so no need to check.
+           return
+
+       if db.tx_Source in ['web', 'email-sig-openpgp', 'cli' ]:
+	   # if the source of the transaction is from an authenticated
+	   # source or a privileged process allow the transaction.
+	   # Other possible sources: 'email'
+	   return
+
+       # otherwise raise an error
+       raise Unauthorized, \
+	   'Changes to nosy property not allowed via %s for this issue.'%\
+           tx_Source
+	
+   def init(db):
+      ''' Install restrict_nosy_changes to run after other auditors. 
+
+          Allow initial creation email to set nosy.
+          So don't execute: db.issue.audit('create', requestedbyauditor)
+
+          Set priority to 110 to run this auditor after other auditors
+          that can cause nosy to change.
+      '''
+      db.issue.audit('set', restrict_nosy_changes, 110)
+
+This detector (auditor) will prevent updates to the nosy field if it
+arrives by email. Since it runs after other auditors (due to the
+priority of 110), it will also prevent changes to the nosy field that
+are done by other auditors if triggered by an email.
+
+Note that db.tx_Source was not present in roundup versions before
+1.4.21, so you must be running a newer version to use this detector.
+Read the CHANGES.txt document in the roundup source code for further
+details on tx_Source.
+
 Changes to Security and Permissions
 -----------------------------------
 

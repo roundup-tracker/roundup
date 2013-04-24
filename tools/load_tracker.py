@@ -19,6 +19,7 @@ N = int(sys.argv[2])
 # open the tracker
 tracker = instance.open(tracker_home)
 db = tracker.open('admin')
+db.tx_Source = "cli"
 
 priorities = db.priority.list()
 statuses = db.status.list()

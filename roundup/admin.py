@@ -1475,6 +1475,8 @@ Erase it? Y/N: """))
         if not self.db:
             self.db = tracker.open('admin')
 
+        self.db.tx_Source = 'cli'
+
         # do the command
         ret = 0
         try:

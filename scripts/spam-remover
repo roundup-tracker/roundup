@@ -93,6 +93,8 @@ def main():
         cmd.show_help()
     tracker = instance.open(opt.instance)
     db = tracker.open('admin')
+    db.tx_Source = "cli"
+
     users = dict.fromkeys (db.user.lookup(u) for u in opt.users)
     files_to_remove = {}
     for fn in opt.filenames:
