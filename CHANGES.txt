@@ -7,6 +7,13 @@ Entries without name were done by Richard Jones.
 
 Features:
 
+- issue2550808 Enhanced the boolean field template function. Now by
+  default the labels generated can be clicked on and select the
+  corresponding radio button. Also can create a trivalued radiobutton
+  (yes/no/unknown) as well as customize the labels for the
+  yes/no/unknown radio buttons.  (John Rouillard)
+- issue2550807 enhance classhelp method with ability to set html
+  properties on the generated link. (John Rouillard)
 - Support for tx_Source property on database handle. Can be used by
   detectors to find out the source of a change in an auditor to block
   changes arriving by unauthenticated mechanisms (e.g. plain email
@@ -24,7 +31,7 @@ Features:
   * "email-sig-openpgp" - this string value is set when email with a
     valid pgp signature is used. (*NOTE* the testing for this mode
     is incomplete. If you have a pgp infrastructure you should test
-    and verify that this is properly set.)
+    and verify that this is properly set.) (John Rouillard)
 - Introducing Template Loader API (anatoly techtonik)
 - Experimental support for Jinja2, try 'jinja2' for template_engine
   in config (anatoly techtonik)
