@@ -1604,10 +1604,21 @@ class BooleanHTMLProperty(HTMLProperty):
             return ''
         return self._value and self._("Yes") or self._("No")
 
-    def field(self, **kwargs):
+    def field(self, labelfirst=False, y_label=None, n_label=None,
+              u_label=None, **kwargs):
         """ Render a form edit field for the property
 
             If not editable, just display the value via plain().
+
+            In addition to being able to set arbitrary html properties
+            using prop=val arguments, the thre arguments:
+
+              y_label, n_label, u_label let you control the labels
+              associated with the yes, no (and optionally unknown/empty)
+              values.
+
+           Also the labels can be placed before the radiobuttons by setting
+           labelfirst=True.
         """
         if not self.is_edit_ok():
             return self.plain(escape=1)
@@ -1617,21 +1628,45 @@ class BooleanHTMLProperty(HTMLProperty):
             value = value.strip().lower() in ('checked', 'yes', 'true',
                 'on', '1')
 
+        if ( not y_label ):
+            y_label = '<label class="rblabel" for="%s_%s">'%(self._formname, 'yes')
+            y_label += self._('Yes')
+            y_label += '</label>'
+
+        if ( not n_label ):
+            n_label = '<label class="rblabel" for="%s_%s">'%(self._formname, 'no')
+            n_label += self._('No')
+            n_label += '</label>'
+
         checked = value and "checked" or ""
         if value:
-            s = self.input(type="radio", name=self._formname, value="yes",
-                checked="checked", **kwargs)
-            s += self._('Yes')
-            s +=self.input(type="radio", name=self._formname,  value="no",
-                           **kwargs)
-            s += self._('No')
+            y_rb = self.input(type="radio", name=self._formname, value="yes",
+                checked="checked", id="%s_%s"%(self._formname, 'yes'), **kwargs)
+
+            n_rb =self.input(type="radio", name=self._formname,  value="no",
+                           id="%s_%s"%(self._formname, 'no'), **kwargs)
         else:
-            s = self.input(type="radio", name=self._formname,  value="yes",
-                           **kwargs)
-            s += self._('Yes')
-            s +=self.input(type="radio", name=self._formname, value="no",
-                checked="checked", **kwargs)
-            s += self._('No')
+            y_rb = self.input(type="radio", name=self._formname, value="yes",
+                              id="%s_%s"%(self._formname, 'yes'), **kwargs)
+
+            n_rb = self.input(type="radio", name=self._formname,  value="no",
+                checked="checked", id="%s_%s"%(self._formname, 'no'), **kwargs)
+
+        if ( u_label ):
+            if (u_label is True): # it was set via u_label=True
+                u_label = '' # make it empty but a string not boolean
+            u_rb = self.input(type="radio", name=self._formname,  value="",
+                id="%s_%s"%(self._formname, 'unk'), **kwargs)
+        else:
+            # don't generate a trivalue radiobutton.
+            u_label = ''
+            u_rb=''
+            
+        if ( labelfirst ):
+            s = u_label + u_rb + y_label + y_rb + n_label + n_rb
+        else:
+            s = u_label + u_rb +y_rb + y_label +  n_rb + n_label
+
         return s
 
 class DateHTMLProperty(HTMLProperty):
