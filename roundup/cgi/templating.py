@@ -640,7 +640,8 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
 
     def classhelp(self, properties=None, label=''"(list)", width='500',
             height='400', property='', form='itemSynopsis',
-            pagesize=50, inputtype="checkbox", sort=None, filter=None):
+            pagesize=50, inputtype="checkbox", html_kwargs={},
+            sort=None, filter=None):
         """Pop up a javascript window with class help
 
         This generates a link to a popup window which displays the
@@ -704,8 +705,9 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
                    sort, pagesize, filter)
         onclick = "javascript:help_window('%s', '%s', '%s');return false;" % \
                   (help_url, width, height)
-        return '<a class="classhelp" href="%s" onclick="%s">%s</a>' % \
-               (help_url, onclick, self._(label))
+        return '<a class="classhelp" href="%s" onclick="%s" %s>%s</a>' % \
+               (help_url, onclick, cgi_escape_attrs(**html_kwargs),
+                self._(label))
 
     def submit(self, label=''"Submit New Entry", action="new"):
         """ Generate a submit button (and action hidden element)
