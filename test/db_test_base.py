@@ -16,6 +16,7 @@
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, base64, os.path
+import logging
 import gpgmelib
 from email.parser import FeedParser
 
@@ -34,7 +35,6 @@ config.RDBMS_HOST = "localhost"
 config.RDBMS_USER = "rounduptest"
 config.RDBMS_PASSWORD = "rounduptest"
 config.RDBMS_TEMPLATE = "template0"
-#config.logging = MockNull()
 # these TRACKER_WEB and MAIL_DOMAIN values are used in mailgw tests
 config.MAIL_DOMAIN = "your.tracker.email.domain.example"
 config.TRACKER_WEB = "http://tracker.example/cgi-bin/roundup.cgi/bugs/"
@@ -128,10 +128,8 @@ class MyTestCase(unittest.TestCase):
 
 
 if os.environ.has_key('LOGGING_LEVEL'):
-    from roundup import rlog
-    config.logging = rlog.BasicLogging()
-    config.logging.setLevel(os.environ['LOGGING_LEVEL'])
-    config.logging.getLogger('roundup.hyperdb').setFormat('%(message)s')
+    logger = logging.getLogger('roundup.hyperdb')
+    logger.setLevel(os.environ['LOGGING_LEVEL'])
 
 class commonDBTest(MyTestCase):
     def setUp(self):

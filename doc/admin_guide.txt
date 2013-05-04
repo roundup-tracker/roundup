@@ -42,9 +42,7 @@ Configuring Roundup's Logging of Messages For Sysadmins
 =======================================================
 
 You may configure where Roundup logs messages in your tracker's config.ini
-file. Roundup will use the standard Python (2.3+) logging implementation
-when available. If not, then a very basic logging implementation will be used
-(see BasicLogging in the roundup.rlog module for details).
+file. Roundup will use the standard Python (2.3+) logging implementation.
 
 Configuration for standard "logging" module:
  - tracker configuration file specifies the location of a logging

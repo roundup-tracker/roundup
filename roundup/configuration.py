@@ -1305,9 +1305,6 @@ class CoreConfig(Config):
     Core config has a predefined layout (see the SETTINGS structure),
     supports loading of old-style pythonic configurations and holds
     three additional attributes:
-        logging:
-            instance logging engine, from standard python logging module
-            or minimalistic logger implemented in Roundup
         detectors:
             user-defined configuration for detectors
         ext:

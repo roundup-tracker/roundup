@@ -51,6 +51,8 @@ Features:
 
 Fixed:
 
+- Removed some old left over "rlog" references in documentation and code.
+  Makes the debugging.txt advise for the database unit tests work again.
 - Fixed OpenPGP support for modern versions of libgpgme. (Bernhard Reiter)
 - Restored compatibility with old style trackers (anatoly techtonik)
 - Make roundup play nice with setup tools (for using with virtualenv)
