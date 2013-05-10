@@ -1235,6 +1235,23 @@ class DBTest(commonDBTest):
             ae(filt(None, {'title': ['one', 'two']}, ('+','id'), (None,None)),
                 [])
 
+    def testFilteringStringCase(self):
+        """
+        Similar to testFilteringString except the search parameters
+        have different capitalization.
+        """
+        ae, filter, filter_iter = self.filteringSetup()
+        for filt in filter, filter_iter:
+            ae(filt(None, {'title': ['One']}, ('+','id'), (None,None)), ['1'])
+            ae(filt(None, {'title': ['Issue One']}, ('+','id'), (None,None)),
+                ['1'])
+            ae(filt(None, {'title': ['ISSUE', 'ONE']}, ('+','id'), (None,None)),
+                ['1'])
+            ae(filt(None, {'title': ['iSSUE']}, ('+','id'), (None,None)),
+                ['1','2','3'])
+            ae(filt(None, {'title': ['One', 'Two']}, ('+','id'), (None,None)),
+                [])
+
     def testFilteringLink(self):
         ae, filter, filter_iter = self.filteringSetup()
         a = 'assignedto'

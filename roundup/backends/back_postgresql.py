@@ -285,6 +285,7 @@ class Database(rdbms_common.Database):
 
 class PostgresqlClass:
     order_by_null_values = '(%s is not NULL)'
+    case_insensitive_like = 'ILIKE'
 
 class Class(PostgresqlClass, rdbms_common.Class):
     pass

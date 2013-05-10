@@ -2440,7 +2440,14 @@ class Class(hyperdb.Class):
 
                     # now add to the where clause
                     where.append('('
-                        +' and '.join(["_%s._%s LIKE '%s'"%(pln, k, s) for s in v])
+                        +' and '.join(["_%s._%s %s '%s'"%(
+                                    pln,
+                                    k,
+                                    # For many databases the LIKE operator
+                                    # ignores case.  Postgres and Oracle have
+                                    # an ILIKE operator to support this.
+                                    getattr(self,'case_insensitive_like','LIKE'),
+                                    s) for s in v])
                         +')')
                     # note: args are embedded in the query string now
                 if 'sort' in p.need_for:

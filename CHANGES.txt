@@ -51,6 +51,8 @@ Features:
 
 Fixed:
 
+- issue2550805: Postgres should search title attribute case insensitive 
+  like sqlite. Reported and fixed by Tom Ekberg. (Bernhard Reiter)
 - Removed some old left over "rlog" references in documentation and code.
   Makes the debugging.txt advise for the database unit tests work again.
 - Fixed OpenPGP support for modern versions of libgpgme. (Bernhard Reiter)
