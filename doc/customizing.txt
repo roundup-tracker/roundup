@@ -4602,7 +4602,7 @@ priority of 110), it will also prevent changes to the nosy field that
 are done by other auditors if triggered by an email.
 
 Note that db.tx_Source was not present in roundup versions before
-1.4.21, so you must be running a newer version to use this detector.
+1.4.22, so you must be running a newer version to use this detector.
 Read the CHANGES.txt document in the roundup source code for further
 details on tx_Source.
 
