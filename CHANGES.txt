@@ -7,6 +7,9 @@ Entries without name were done by Richard Jones.
 
 Features:
 
+- issue2550775 Added rel=nofollow to links in the journal linking to
+  attachments to allow the admin to delete attachment spam and prevent
+  search engines from increasing the rankings. (John Rouillard)
 - issue2550808 Enhanced the boolean field template function. Now by
   default the labels generated can be clicked on and select the
   corresponding radio button. Also can create a trivalued radiobutton

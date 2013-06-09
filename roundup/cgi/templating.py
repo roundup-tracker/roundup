@@ -889,7 +889,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                     pass
                 else:
                     id = self._klass.get(self._nodeid, prop_n, None)
-                    current[prop_n] = '<a href="%s%s">%s</a>'%(
+                    current[prop_n] = '<a rel="nofollow" href="%s%s">%s</a>'%(
                         classname, id, current[prop_n])
 
         # get the journal, sort and reverse
@@ -910,7 +910,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
             if action == 'link' and type(args) == type(()):
                 if len(args) == 3:
                     linkcl, linkid, key = args
-                    arg_s += '<a href="%s%s">%s%s %s</a>'%(linkcl, linkid,
+                    arg_s += '<a rel="nofollow" href="%s%s">%s%s %s</a>'%(linkcl, linkid,
                         linkcl, linkid, key)
                 else:
                     arg_s = str(args)
@@ -918,7 +918,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
             elif action == 'unlink' and type(args) == type(()):
                 if len(args) == 3:
                     linkcl, linkid, key = args
-                    arg_s += '<a href="%s%s">%s%s %s</a>'%(linkcl, linkid,
+                    arg_s += '<a rel="nofollow" href="%s%s">%s%s %s</a>'%(linkcl, linkid,
                         linkcl, linkid, key)
                 else:
                     arg_s = str(args)
@@ -988,7 +988,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                                     subml.append('<strike>%s</strike>'%label)
                                 else:
                                     if hrefable:
-                                        subml.append('<a href="%s%s">%s</a>'%(
+                                        subml.append('<a rel="nofollow" href="%s%s">%s</a>'%(
                                             classname, linkid, label))
                                     elif label is None:
                                         subml.append('%s%s'%(classname,
@@ -1015,7 +1015,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                                 label = None
                         if label is not None:
                             if hrefable:
-                                old = '<a href="%s%s">%s</a>'%(classname,
+                                old = '<a ref="nofollow" href="%s%s">%s</a>'%(classname,
                                     args[k], label)
                             else:
                                 old = label;
