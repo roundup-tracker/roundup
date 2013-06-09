@@ -749,6 +749,21 @@ login may be specified as either "``name``" or "``name:password``".
 If either the name or password is not supplied, they are obtained from
 the command-line.
 
+When you initialise a new tracker instance you are prompted for the
+admin password. If you want to initialise a tracker non-interactively
+you can put the initialise command and password on the commnd
+line. But this allows others on the host to see the password (using
+the ps command). To initialise a tracker non-interactively without
+exposing the password, create a file (e.g init_tracker) set to mode
+600 (so only the owner can read it) with the contents:
+
+   initialise admin_password
+
+and feed it to roundup-admin on standard input. E.G.
+
+  cat init_tracker | roundup-admin -i tracker_dir
+
+(for more details see http://issues.roundup-tracker.org/issue2550789.)
 
 Using with the shell
 --------------------

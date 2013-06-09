@@ -231,7 +231,10 @@ Configuring your first tracker
       database*. In the case of MySQL and PostgreSQL, any existing database
       will be dropped and re-created.
 
-      Once this is done, the tracker has been created.
+      Once this is done, the tracker has been created. See the note in
+      the user_guide on how to initialise a tracker without being
+      prompted for the password or exposing the password on the command
+      line.
 
 2. At this point, your tracker is set up, but doesn't have a nice user
    interface. To set that up, we need to `configure a web interface`_ and

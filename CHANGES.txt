@@ -54,6 +54,8 @@ Features:
 
 Fixed:
 
+- issue2550789: add documentation on how to initialise a tracker
+  without exposing the admin password.
 - issue2550805: Postgres should search title attribute case insensitive 
   like sqlite. Reported and fixed by Tom Ekberg. (Bernhard Reiter)
 - Removed some old left over "rlog" references in documentation and code.
