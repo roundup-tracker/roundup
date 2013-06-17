@@ -198,6 +198,7 @@ class RoundupDispatcher(SimpleXMLRPCDispatcher):
             # python2.4
             SimpleXMLRPCDispatcher.__init__(self)
         self.register_instance(RoundupInstance(db, actions, translator))
+        self.register_multicall_functions()
                  
 
     def dispatch(self, input):

@@ -6,11 +6,13 @@
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
+from xmlrpclib import MultiCall
 from roundup.cgi.exceptions import *
 from roundup import init, instance, password, hyperdb, date
-from roundup.xmlrpc import RoundupInstance
+from roundup.xmlrpc import RoundupInstance, RoundupDispatcher
 from roundup.backends import list_backends
 from roundup.hyperdb import String
+from roundup.cgi import TranslationService
 
 import db_test_base
 
@@ -220,6 +222,31 @@ class TestCase(unittest.TestCase):
         self.assertEqual(r, ['2', '3', '1'])
         r = self.server.filter('issue', None, {}, group=keygroup)
         self.assertEqual(r, ['2', '3', '1'])
+
+    def testMulticall(self):
+        translator = TranslationService.get_translation(
+            language=self.instance.config["TRACKER_LANGUAGE"],
+            tracker_home=self.instance.config["TRACKER_HOME"])
+        self.server = RoundupDispatcher(self.db, self.instance.actions,
+            translator, allow_none = True)
+        class S:
+            multicall=self.server.funcs['system.multicall']
+        self.server.system = S()
+        self.db.issue.create(title='i1')
+        self.db.issue.create(title='i2')
+        m = MultiCall(self.server)
+        m.display('issue1')
+        m.display('issue2')
+        result = m()
+        results = [
+            {'files': [], 'status': '1', 'tx_Source': 'web',
+             'keyword': [], 'title': 'i1', 'nosy': [], 'messages': [],
+             'priority': None, 'assignedto': None, 'superseder': []},
+            {'files': [], 'status': '1', 'tx_Source': 'web',
+             'keyword': [], 'title': 'i2', 'nosy': [], 'messages': [],
+             'priority': None, 'assignedto': None, 'superseder': []}]
+        for n, r in enumerate(result):
+            self.assertEqual(r, results[n])
 
 def test_suite():
     suite = unittest.TestSuite()
