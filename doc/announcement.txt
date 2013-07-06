@@ -1,4 +1,4 @@
-I'm proud to release version 1.4.21 of Roundup which has been possible
+I'm proud to release version 1.5.0 of Roundup which has been possible
 due to the help of several contributors.  This release introduces some
 new features, most notably modular web templating with Jinja2 as a
 templating engine (the old templating engine is still the recommended

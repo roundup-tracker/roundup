@@ -9,8 +9,8 @@ to find out how to install this software.
 Building and distributing a release of Roundup is done by running:
 
 1.  Make sure the unit tests run! "./run_tests.py"
-2.  Edit roundup/__init__.py and doc/announcement.txt to reflect the new
-    version and appropriate announcements.
+2.  Edit roundup/__init__.py, CHANGES.txt and doc/announcement.txt to
+    reflect the new version and appropriate announcements.
 3.  Note the date in the CHANGES.txt file.
 4.  Clean out all *.orig, *.rej, .#* files from the source.
 5.  python setup.py clean --all
