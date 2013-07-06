@@ -42,7 +42,8 @@ def create(journaltag, create=True, debug=False):
     execfile(initial_data, vars)
 
     # load standard detectors
-    dirname = os.path.join(os.path.dirname(__file__),
+    thisdir = os.path.dirname(__file__)
+    dirname = os.path.join(thisdir,
         '../share/roundup/templates/classic/detectors')
     for fn in os.listdir(dirname):
         if not fn.endswith('.py'): continue
@@ -51,7 +52,7 @@ def create(journaltag, create=True, debug=False):
         vars['init'](db)
 
     vars = {}
-    execfile("test/tx_Source_detector.py", vars)
+    execfile(os.path.join(thisdir, "tx_Source_detector.py"), vars)
     vars['init'](db)
 
     '''

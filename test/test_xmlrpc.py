@@ -46,10 +46,9 @@ class TestCase(unittest.TestCase):
 
         self.db.post_init()
 
-        vars = dict(globals())
-        vars['db'] = self.db
+        thisdir = os.path.dirname(__file__)
         vars = {}
-        execfile("test/tx_Source_detector.py", vars)
+        execfile(os.path.join(thisdir, "tx_Source_detector.py"), vars)
         vars['init'](self.db)
 
         self.server = RoundupInstance(self.db, self.instance.actions, None)

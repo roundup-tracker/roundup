@@ -118,6 +118,9 @@ ownertrust = """
 
 pgphome = 'pgp-test-home'
 def setUpPGP():
+    # prevent test from failing if left over from earlier run:
+    if os.path.exists(pgphome):
+        shutil.rmtree(pgphome)
     os.mkdir(pgphome)
     os.environ['GNUPGHOME'] = pgphome
     # gpgme_check_version() must have been called once in a programm

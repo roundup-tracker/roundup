@@ -86,12 +86,10 @@ class FormTestCase(unittest.TestCase):
 
         self.db.post_init()
 
-        vars = dict(globals())
-        vars['db'] = self.db
         vars = {}
-        execfile("test/tx_Source_detector.py", vars)
+        thisdir = os.path.dirname(__file__)
+        execfile(os.path.join(thisdir, "tx_Source_detector.py"), vars)
         vars['init'](self.db)
-
 
         test = self.instance.backend.Class(self.db, "test",
             string=hyperdb.String(), number=hyperdb.Number(),
