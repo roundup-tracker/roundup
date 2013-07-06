@@ -3,7 +3,7 @@ Entries are given with the most recent entry first.
 Each entry has the developer who committed the change in brackets.
 Entries without name were done by Richard Jones.
 
-2013-??-??: 1.4.22
+2013-06-06: 1.5.0
 
 Features:
 

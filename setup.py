@@ -25,10 +25,14 @@ from roundup.dist.command.build import build, list_message_files
 from roundup.dist.command.bdist_rpm import bdist_rpm
 from roundup.dist.command.install_lib import install_lib
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+# FIXME: setuptools breaks the --manifest-only option to setup.py and
+# doesn't seem to generate a MANIFEST file. Since I'm not familiar with
+# the way setuptools handles the files to include I'm commenting this
+# for now -- Ralf Schlatterbeck
+#try:
+#    from setuptools import setup
+#except ImportError:
+from distutils.core import setup
 
 import sys, os
 from glob import glob
@@ -116,6 +120,8 @@ def main():
           version=__version__,
           author="Richard Jones",
           author_email="richard@users.sourceforge.net",
+          maintainer="Ralf Schlatterbeck",
+          maintainer_email="rsc@runtux.com",
           description="A simple-to-use and -install issue-tracking system"
             " with command-line, web and e-mail interfaces. Highly"
             " customisable.",

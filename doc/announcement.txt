@@ -1,80 +1,83 @@
 I'm proud to release version 1.4.21 of Roundup which has been possible
 due to the help of several contributors.  This release introduces some
-minor features and, as usual, fixes some bugs:
+new features, most notably modular web templating with Jinja2 as a
+templating engine (the old templating engine is still the recommended
+one) and, as usual, fixes some bugs:
 
 Features:
 
-- issue2550782: Added a new irker detector to send notifications on IRC
-  when an issue is created or messages are added. (Ezio Melotti)
-- Beta version of responsive templates using devel schema
-  and Twitter Bootstrap for styling (Pradip Caulagi)
-- pywin32 is no longer required to run on Windows (anatoly techtonik)
-- Rewritten portalocker.py logic in ctypes for Windows (anatoly techtonik)
-- Add an interface to register clearCache callbacks in roundupdb.
-  Sometimes complicated computations may require an application cache.
-  This application can now register a callback to clear the application
-  cache, because roundup knows better when to clear it (usually when a
-  transaction ends, either with rollback or with commit). The interface
-  for this is currently considered experimental. The current interface
-  is registerClearCacheCallback(self, method, param) where method is
-  called with param as the only parameter.  (Ralf Schlatterbeck)
-- Add a script to remove file-spam from a tracker, see
-  scripts/spam-remover. (Ralf Schlatterbeck)
+- issue2550775 Added rel=nofollow to links in the journal linking to
+  attachments to allow the admin to delete attachment spam and prevent
+  search engines from increasing the rankings. (John Rouillard)
+- issue2550808 Enhanced the boolean field template function. Now by
+  default the labels generated can be clicked on and select the
+  corresponding radio button. Also can create a trivalued radiobutton
+  (yes/no/unknown) as well as customize the labels for the
+  yes/no/unknown radio buttons.  (John Rouillard)
+- issue2550807 enhance classhelp method with ability to set html
+  properties on the generated link. (John Rouillard)
+- Support for tx_Source property on database handle. Can be used by
+  detectors to find out the source of a change in an auditor to block
+  changes arriving by unauthenticated mechanisms (e.g. plain email
+  where headers can be faked). The property db.tx_Source has the
+  following values:
+  * None - Default value set to None. May be valid if it's a script
+    that is created by the user. Otherwise it's an error and indicates
+    that some code path is not properly setting the tx_Source property.
+  * "cli" - this string value is set when using roundup-admin and
+    supplied scripts.
+  * "web" - this string value is set when using any web based
+    technique: html interface, xmlrpc ....
+  * "email" - this string value is set when using an unauthenticated
+    email based technique.
+  * "email-sig-openpgp" - this string value is set when email with a
+    valid pgp signature is used. (*NOTE* the testing for this mode
+    is incomplete. If you have a pgp infrastructure you should test
+    and verify that this is properly set.) (John Rouillard)
+- Introducing Template Loader API (anatoly techtonik)
+- Experimental support for Jinja2, try 'jinja2' for template_engine
+  in config (anatoly techtonik)
+- A new jinja2 template based on Classic schema and using Twitter
+  bootstrap for responsive behaviour.  Run as - 
+  python demo.py -t jinja2 nuke (Pradip P Caulagi)
+- roundup_admin.py and other scripts can now be run directly from the
+  sources dir as roundup\scripts\roundup_admin.py (anatoly techtonik)
+- Renamed old Templates classes to Loader classes to clarify sources
+  for alternative templating engines, updated docs (anatoly techtonik)
+- Template selection code is moved from Loader classes into cgi.client
+  limiting the responsibility of Loaders to compilation and rendering.
+  Internally, templating.find_template is replaced with
+  client.selectTemplate (anatoly techtonik)
+- Increased generated password length to 12 symbols to slow down GPGPU
+  attacks (anatoly techtonik)
+- Implement XMLRPC MultiCall (including test), see
+  http://docs.python.org/2/library/xmlrpclib.html#xmlrpclib.MultiCall
+  (Ralf Schlatterbeck)
 
 Fixed:
 
-- issue2550765: Don't show links in calendar that will fail.
-  Found and fixed by Cedric Krier. (Bernhard)
-- issue2550765: use <meta name="robots" content="noindex, nofollow"> in the
-  _generic.calendar.html to prevent robots to follow all the links in the
-  calendar. (Ezio Melotti)
-- "BaseException.with_traceback" is not available on Python 2, so use
-  "raise E, V, T" instead of "raise E(V).with_traceback(T)".  This change was
-  originally introduced in 74476eaac38a. (Ezio Melotti)
-- issue2550759: Trailing punctuation is no longer included when URLs are
-  converted to links. (Ezio Melotti)
-- issue2550574: Restore sample detectors removed in roundup 1.4.9
-  (Thomas Arendsen Hein)
-- Prevent AttributeError when removing all roles of a user
-  (Thomas Arendsen Hein)
-- issue2550762 Minor Documentation fix in doc/developers.txt, thanks
-  to W. Trevor King. (Bernhard Reiter)
-- issue2550766: Minor formatting issues in the docs for date properties,
-  thanks John Kristensen. (Bernhard Reiter)
-- issue2550738: Fixes for various documentation typoes,
-  thanks Nathan Russell. (John Kristensen)
-- issue2550756: Fix "oder" typo in mailer.Mailer.bounce_message docstring,
-  thanks W. Trevor King (John Kristensen)
-- Fix basic authentication: instatiating the login action would fail if
-  the user is not set. We now first set the user to anonymous and then
-  try basic authentication if enabled. (Ralf Schlatterbeck)
-- Fix xmlrpc permissions for lookup method: Allow if the key attribute
-  is either searchable or viewable, don't check id attribute (Ralf
-  Schlatterbeck)
-- Fix installation documentation (section Prerequisites) to require at
-  least python 2.5, thanks to John P. Rouillard for discovering this.
-  (committed by Ralf Schlatterbeck)
-- Fix version_check.py to require at least python 2.5 (anatoly techtonik)
-- Fixing the download button re-activating the cheeseshop plugin in the 
-  sphinx config. Thanks to Richard for the hint. (Bernhard Reiter)
-- issue2550783 devel template's schema.py permissions referenced the
-  organization property for the user, but the property is called
-  organisation. Thanks to Pradip Caulagi. (committed by John Rouillard)
-- issue2550749 - the xmlrpc interface is invoked on content type
-  and not url path. Sending any text/xml data to roundup results in
-  invoking the xml-rpc interface, but a REST or other interface could
-  also consume xml data and do something different. So require the use
-  of 'http(s)://.../xmlrpc' uri to trigger the xmlrpc interface.
-  (John Rouillard)
-- issue2550774: Remove generating documentation with rst2html, and update the
-  README.txt with how to create the html docs using sphinx, thanks Kai Storbeck
-  (John Kristensen)
-- issue2550774: Include doc/conf.py in the release tarball, so people can build
-  their own documentation in html, thanks Kai Storbeck (John Kristensen)
-- issue2550774: Update website/www/Makefile to symlink COPYING.txt so "make"
-  works again, thanks Kai Storbeck (John Kristensen)
-- issue2550760: Several improvements to the manpages
-  thanks Kai Storbeck & Bastian Kleineidam (John Kristensen)
+- issue2550789: add documentation on how to initialise a tracker
+  without exposing the admin password.
+- issue2550805: Postgres should search title attribute case insensitive 
+  like sqlite. Reported and fixed by Tom Ekberg. (Bernhard Reiter)
+- Removed some old left over "rlog" references in documentation and code.
+  Makes the debugging.txt advise for the database unit tests work again.
+- Fixed OpenPGP support for modern versions of libgpgme. (Bernhard Reiter)
+- Restored compatibility with old style trackers (anatoly techtonik)
+- Make roundup play nice with setup tools (for using with virtualenv)
+  (Pradip Caulagi)
+- [minor] Template responsive: make demo.py work out of the box with it,
+  by setting the static_files config.ini setting to "static". 
+  Footer: link fixed and hardcoded last modified date removed. (Bernhard Reiter)
+- demo.py print location of tracker home and fully erase its directory
+  when nuking (anatoly techtonik)
+- demo.py changing hostname in config.ini actually changes the address
+  where demo.py listens. (John Rouillard)
+- issue2550802: Fixed date so second fraction can't cause rounding to
+  60.000 when serialising. Report and fix by Erik Hanspers. (Bernhard Reiter)
+- issue2550595: Allow migrating from roundup 0.x to 1.4 (Thomas Arendsen Hein)
+- issue2550634: New German orthography corrections (Thomas Arendsen Hein)
+
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
