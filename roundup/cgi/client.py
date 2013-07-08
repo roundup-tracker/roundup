@@ -759,12 +759,14 @@ class Client:
         # allow Anonymous to use the "login" and "register" actions (noting
         # that "register" has its own "Register" permission check)
 
-        if ':action' in self.form:
-            action = self.form[':action']
-        elif '@action' in self.form:
-            action = self.form['@action']
-        else:
-            action = ''
+        action = ''
+        try:
+            if ':action' in self.form:
+                action = self.form[':action']
+            elif '@action' in self.form:
+                action = self.form['@action']
+        except TypeError:
+            pass
         if isinstance(action, list):
             raise SeriousError('broken form: multiple @action values submitted')
         elif action != '':
