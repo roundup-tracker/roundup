@@ -603,7 +603,7 @@ class Client:
         charset_parameter = 0
         # Python 2.6 form may raise a TypeError if list in form is None
         charset = None
-        try :
+        try:
             charset = self.form['@charset'].value
             if charset.lower() == "none":
                 charset = ""
@@ -660,18 +660,23 @@ class Client:
         # look for language parameter
         # then for language cookie
         # last for the Accept-Language header
-        if "@language" in self.form:
+        # Python 2.6 form may raise a TypeError if list in form is None
+        language = None
+        try:
             language = self.form["@language"].value
             if language.lower() == "none":
                 language = ""
             self.add_cookie("roundup_language", language)
-        elif "roundup_language" in self.cookie:
-            language = self.cookie["roundup_language"].value
-        elif self.instance.config["WEB_USE_BROWSER_LANGUAGE"]:
-            hal = self.env.get('HTTP_ACCEPT_LANGUAGE')
-            language = accept_language.parse(hal)
-        else:
-            language = ""
+        except (KeyError, TypeError):
+            pass
+        if language is None:
+            if "roundup_language" in self.cookie:
+                language = self.cookie["roundup_language"].value
+            elif self.instance.config["WEB_USE_BROWSER_LANGUAGE"]:
+                hal = self.env.get('HTTP_ACCEPT_LANGUAGE')
+                language = accept_language.parse(hal)
+            else:
+                language = ""
 
         self.language = language
         if language:
