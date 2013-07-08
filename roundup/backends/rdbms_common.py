@@ -2419,7 +2419,7 @@ class Class(hyperdb.Class):
                         # where clause will always be false, and we
                         # can optimize the query away.
                         if not v:
-                            return []
+                            return None
                         s = ','.join([a for x in v])
                         where.append('_%s.%s in (%s)'%(pln, k, s))
                         args = args + v
