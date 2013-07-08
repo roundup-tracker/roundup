@@ -859,7 +859,11 @@ class Client:
 
         # see if a template or messages are specified
         template_override = ok_message = error_message = None
-        for key in self.form:
+        try:
+            keys = self.form.keys()
+        except TypeError:
+            keys = ()
+        for key in keys:
             if self.FV_TEMPLATE.match(key):
                 template_override = self.form[key].value
             elif self.FV_OK_MESSAGE.match(key):
