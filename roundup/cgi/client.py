@@ -601,15 +601,17 @@ class Client:
         """
         # look for client charset
         charset_parameter = 0
-        if '@charset' in self.form:
+        # Python 2.6 form may raise a TypeError if list in form is None
+        charset = None
+        try :
             charset = self.form['@charset'].value
             if charset.lower() == "none":
                 charset = ""
             charset_parameter = 1
-        elif 'roundup_charset' in self.cookie:
+        except (KeyError, TypeError):
+            pass
+        if charset is None and 'roundup_charset' in self.cookie:
             charset = self.cookie['roundup_charset'].value
-        else:
-            charset = None
         if charset:
             # make sure the charset is recognized
             try:
