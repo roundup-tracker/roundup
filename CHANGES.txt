@@ -3,7 +3,21 @@ Entries are given with the most recent entry first.
 Each entry has the developer who committed the change in brackets.
 Entries without name were done by Richard Jones.
 
-2013-06-06: 1.5.0
+2013-??-??: 1.5.1
+
+Features:
+
+Fixed:
+
+- Fix Release-date of 1.5.0 in this file (thanks to Bernhard for
+  discovery) (Ralf Schlatterbeck)
+- Pythons cgi form code can return a TypeError, we now guard for this
+  condition. (Ralf Schlatterbeck)
+- Small bug-fix in SQL backends: An query (e.g. in a html menu) with a
+  where-clause that always evaluates to false now will not raise a
+  traceback. (Ralf Schlatterbeck)
+
+2013-07-06: 1.5.0
 
 Features:
 
