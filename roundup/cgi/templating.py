@@ -509,7 +509,6 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
             raise KeyError, 'No such property "%s" on %s'%(item, self.classname)
 
         # look up the correct HTMLProperty class
-        form = self._client.form
         for klass, htmlklass in propclasses:
             if not isinstance(prop, klass):
                 continue
@@ -1225,7 +1224,11 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
         # If no value is already present for this property, see if one
         # is specified in the current form.
         form = self._client.form
-        if not self._value and form.has_key(self._formname):
+        try:
+            is_in = form.has_key(self._formname)
+        except TypeError:
+            is_in = False
+        if not self._value and is_in:
             if isinstance(prop, hyperdb.Multilink):
                 value = lookupIds(self._db, prop,
                                   handleListCGIValue(form[self._formname]),
@@ -2426,7 +2429,7 @@ class HTMLRequest(HTMLInputMixin):
         for special in '@:':
             idx = 0
             key = '%s%s%d'%(special, name, idx)
-            while key in self.form:
+            while self._form_has_key(key):
                 self.special_char = special
                 fields.append(self.form.getfirst(key))
                 dirkey = '%s%sdir%d'%(special, name, idx)
@@ -2439,7 +2442,7 @@ class HTMLRequest(HTMLInputMixin):
             # backward compatible (and query) URL format
             key = special + name
             dirkey = key + 'dir'
-            if key in self.form and not fields:
+            if self._form_has_key(key) and not fields:
                 fields = handleListCGIValue(self.form[key])
                 if dirkey in self.form:
                     dirs.append(self.form.getfirst(dirkey))
@@ -2453,13 +2456,20 @@ class HTMLRequest(HTMLInputMixin):
             else:
                 var.append(('+', f))
 
+    def _form_has_key(self, name):
+        try:
+            return self.form.has_key(name)
+        except TypeError:
+            pass
+        return False
+
     def _post_init(self):
         """ Set attributes based on self.form
         """
         # extract the index display information from the form
         self.columns = []
         for name in ':columns @columns'.split():
-            if self.form.has_key(name):
+            if self._form_has_key(name):
                 self.special_char = name[0]
                 self.columns = handleListCGIValue(self.form[name])
                 break
@@ -2478,7 +2488,7 @@ class HTMLRequest(HTMLInputMixin):
         # filtering
         self.filter = []
         for name in ':filter @filter'.split():
-            if self.form.has_key(name):
+            if self._form_has_key(name):
                 self.special_char = name[0]
                 self.filter = handleListCGIValue(self.form[name])
 
@@ -2487,7 +2497,7 @@ class HTMLRequest(HTMLInputMixin):
         if self.classname is not None:
             cls = db.getclass (self.classname)
             for name in self.filter:
-                if not self.form.has_key(name):
+                if not self._form_has_key(name):
                     continue
                 prop = cls.get_transitive_prop (name)
                 fv = self.form[name]
@@ -2509,7 +2519,7 @@ class HTMLRequest(HTMLInputMixin):
         # full-text search argument
         self.search_text = None
         for name in ':search_text @search_text'.split():
-            if self.form.has_key(name):
+            if self._form_has_key(name):
                 self.special_char = name[0]
                 self.search_text = self.form.getfirst(name)
 
@@ -2517,7 +2527,7 @@ class HTMLRequest(HTMLInputMixin):
         # figure batch args
         self.pagesize = 50
         for name in ':pagesize @pagesize'.split():
-            if self.form.has_key(name):
+            if self._form_has_key(name):
                 self.special_char = name[0]
                 try:
                     self.pagesize = int(self.form.getfirst(name))
@@ -2527,7 +2537,7 @@ class HTMLRequest(HTMLInputMixin):
 
         self.startwith = 0
         for name in ':startwith @startwith'.split():
-            if self.form.has_key(name):
+            if self._form_has_key(name):
                 self.special_char = name[0]
                 try:
                     self.startwith = int(self.form.getfirst(name))
@@ -2536,7 +2546,7 @@ class HTMLRequest(HTMLInputMixin):
                     pass
 
         # dispname
-        if self.form.has_key('@dispname'):
+        if self._form_has_key('@dispname'):
             self.dispname = self.form.getfirst('@dispname')
         else:
             self.dispname = None

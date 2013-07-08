@@ -1203,11 +1203,15 @@ class Client:
             We explicitly catch Reject and ValueError exceptions and
             present their messages to the user.
         """
-        if ':action' in self.form:
-            action = self.form[':action']
-        elif '@action' in self.form:
-            action = self.form['@action']
-        else:
+        action = None
+        try:
+            if ':action' in self.form:
+                action = self.form[':action']
+            elif '@action' in self.form:
+                action = self.form['@action']
+        except TypeError:
+            pass
+        if action is None:
             return None
 
         if isinstance(action, list):
