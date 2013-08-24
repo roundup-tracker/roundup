@@ -2,44 +2,48 @@
 Roundup: an Issue-Tracking System for Knowledge Workers
 =======================================================
 
-Copyright (c) 2003-2009 Richard Jones (richard@mechanicalcat.net)
-Copyright (c) 2002 eKit.com Inc (http://www.ekit.com/)
-Copyright (c) 2001 Bizar Software Pty Ltd (http://www.bizarsoftware.com.au/)
-
-
 INSTANT GRATIFICATION
 =====================
 
-The impatient may try Roundup immediately by typing at the console::
+The impatient may try Roundup immediately by running demo.py from
+the source directory::
 
    python demo.py
 
-To start anew (a fresh demo instance)::
+This will create new tracker home in "demo" subdirectory and start
+server. To reset demo instance::
 
    python demo.py nuke
 
-Run demo.py from the *source* directory; don't try to run demo.py from
-the *installed* directory, it will *break*.
+
+Tracker Home
+=============
+"Tracker Home" is main concept when starting with Roundup. It is
+directory where all your tracker data is stored. This directory is
+created every time when new tracker is initialized and includes
+tracker configuration, database, template, schema and extensions.
 
 
 Installation
 ============
-For installation instructions, please see installation.txt in the "doc"
-directory.
+Please see "doc/installation.txt"
 
 
 Upgrading
 =========
-For upgrading instructions, please see upgrading.txt in the "doc" directory.
+Please see "doc/upgrading.txt"
 
 
 Usage and Other Information
 ===========================
-See the index.txt file in the "doc" directory.
-The *.txt files in the "doc" directory are written in reStructedText. If
-you have Sphinx installed, you can convert these to HTML by running
-  $ python setup.py build_doc
-from the top of the release directory.
+Start with the index.txt file in the "doc" directory. These
+documentation files are written in reStructedText, which can be
+converted into HTML format. If you have Sphinx installed, you can
+do this by running::
+
+   python setup.py build_doc
+
+Resulting HTML files will be in "share/doc/roundup/html" directory.
 
 
 For Developers
