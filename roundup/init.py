@@ -19,7 +19,8 @@
 """
 __docformat__ = 'restructuredtext'
 
-import os, errno, rfc822
+import os, errno, email.parser
+
 
 from roundup import install_util, password
 from roundup.configuration import CoreConfig
@@ -138,7 +139,7 @@ def loadTemplateInfo(path):
 
     # load up the template's information
     with open(tif) as f:
-        m = rfc822.Message(f)
+        m = email.parser.Parser().parse(f, True)
         ti = {}
         ti['name'] = m['name']
         ti['description'] = m['description']

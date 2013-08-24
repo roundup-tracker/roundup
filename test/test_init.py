@@ -15,9 +15,9 @@ class TemplateInfoTestCase(unittest.TestCase):
             {
               'description': textwrap.dedent('''\
                    This is a generic issue tracker that may be used to track bugs,
-                    feature requests, project issues or any number of other types
-                    of issues. Most users of Roundup will find that this template
-                    suits them, with perhaps a few customisations.'''),
+                                feature requests, project issues or any number of other types
+                                of issues. Most users of Roundup will find that this template
+                                suits them, with perhaps a few customisations.'''),
               'intended-for': 'All first-time Roundup users',
               'name': 'classic',
               'path': path
