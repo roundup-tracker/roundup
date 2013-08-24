@@ -120,33 +120,30 @@ def listTemplates(dir):
             ret[ti['name']] = ti
     return ret
 
-def loadTemplateInfo(dir):
+def loadTemplateInfo(path):
     ''' Attempt to load a Roundup template from the indicated directory.
 
         Return None if there's no template, otherwise a template info
         dictionary.
     '''
-    ti = os.path.join(dir, 'TEMPLATE-INFO.txt')
-    if not os.path.exists(ti):
+    tif = os.path.join(path, 'TEMPLATE-INFO.txt')
+    if not os.path.exists(tif):
         return None
 
-    if os.path.exists(os.path.join(dir, 'config.py')):
+    if os.path.exists(os.path.join(path, 'config.py')):
         print _("WARNING: directory '%s'\n"
             "\tcontains old-style template - ignored"
-            ) % os.path.abspath(dir)
+            ) % os.path.abspath(path)
         return None
 
     # load up the template's information
-    f = open(ti)
-    try:
-        m = rfc822.Message(open(ti))
+    with open(tif) as f:
+        m = rfc822.Message(f)
         ti = {}
         ti['name'] = m['name']
         ti['description'] = m['description']
         ti['intended-for'] = m['intended-for']
-        ti['path'] = dir
-    finally:
-        f.close()
+        ti['path'] = path
     return ti
 
 def writeHeader(name, value):
