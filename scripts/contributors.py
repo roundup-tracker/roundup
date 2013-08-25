@@ -102,16 +102,30 @@ if __name__ == '__main__':
       print("Years for each contributor...")
     print('')
     
-    # sort authors by last contribution date (newest first)
     def last_year(name):
-        return sorted(list(names[name]))[-1]
+      """Return year of the latest contribution for a given name"""
+      return sorted(list(names[name]))[-1]
+
+    def first_year(name):
+      """Return year of the first contribution"""
+      return sorted(list(names[name]))[0]
+
+    def year_cmp(name1, name2):
+      """
+      Year comparison function. First sort by latest contribution year (desc).
+      If it matches, compare first contribution year (desc).
+      """
+      if last_year(name1) != last_year(name2):
+        return last_year(name1) - last_year(name2)
+      else:
+        return first_year(name1) - first_year(name2)
     
-    for author in sorted(list(names), key=last_year, reverse=True):
+    for author in sorted(list(names), cmp=year_cmp, reverse=True):
       years = list(names[author])
       yearstr = compress(years)
 
       if 0: #DEBUG
         print(years, yearstr, author)
       else:
-        print(yearstr, author)
+        print("Copyright (c) %s %s" % (yearstr, author))
     print('')
