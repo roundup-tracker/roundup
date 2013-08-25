@@ -14,7 +14,8 @@ Roundup release checklist:
 5.  python setup.py clean --all
 6.  Edit setup.py to ensure that all information therein (contacts,
     classifiers, etc) is correct.
-7.  python setup.py build_doc
+7.  Rebuild documentation in "share/doc/roundup/html"
+    python setup.py build_doc
 8.  python setup.py sdist --manifest-only
 9.  Check the MANIFEST to make sure that any new files are included. If
     they are not, edit MANIFEST.in to include them. "Documentation" for
