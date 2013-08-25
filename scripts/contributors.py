@@ -53,11 +53,44 @@ if contributors_by_year:
       print("  " + author)
   print('')
 
+
+def compress_years(years):
+  """
+  Given a list of years like [2003, 2004, 2007],
+  compress it into string like '2003-2004, 2007'
+  """
+  years = sorted(years)
+  # compress years into string
+  comma = ', '
+  yearstr = ''
+  for i in range(0,len(years)-1):
+    if years[i+1]-years[i] == 1:
+      if not yearstr or yearstr.endswith(comma):
+        yearstr += '%s' % years[i]
+      if yearstr.endswith('-'):
+        pass
+      else:
+        yearstr += '-'
+    else:
+      yearstr += '%s, ' % years[i]
+
+  if len(years) == 1:
+    yearstr += str(years[0])
+  else:
+    yearstr += '%s' % years[-1]
+  return yearstr
+
+
 if years_for_contributors:
   if verbose:
     print("Years for each contributor...")
   print('')
   for author in sorted(names):
-    years = sorted(names[author])
-    print(years, author)
+    years = list(names[author])
+    yearstr = compress_years(years)
+    
+    if 1: #DEBUG
+      print(years, yearstr, author)
+    else:
+      print(yearstr, author)
   print('')
