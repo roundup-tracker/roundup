@@ -30,6 +30,7 @@ ALIASES = {
   'John P. Rouillard <rouilj@cs.umb.edu>':
       ['rouilj'],
 }
+ROBOTS = ['No Author <no-author@users.sourceforge.net>']
 # /-- 
 
 
@@ -93,11 +94,15 @@ if __name__ == '__main__':
   years = {}  # year -> set(author1, author2, ...)
   names = {}  # author -> set(years)
   for year, author in authorship:
+    if author in ROBOTS:
+      continue
     # process aliases
     for name, aliases in ALIASES.items():
       if author in aliases:
         author = name
         break
+    author = author.replace('<', '(')
+    author = author.replace('>', ')')
     # years
     if not year in years:
       years[year] = set()
@@ -134,13 +139,15 @@ if __name__ == '__main__':
     def year_cmp(name1, name2):
       """
       Year comparison function. First sort by latest contribution year (desc).
-      If it matches, compare first contribution year (desc).
+      If it matches, compare first contribution year (asc). This ensures that
+      the most recent and long-term contributors are at the top.
       """
       if last_year(name1) != last_year(name2):
         return last_year(name1) - last_year(name2)
       else:
-        return first_year(name1) - first_year(name2)
+        return first_year(name2) - first_year(name1)
     
+    print("Copyright (c)")
     for author in sorted(list(names), cmp=year_cmp, reverse=True):
       years = list(names[author])
       yearstr = compress(years)
@@ -148,5 +155,5 @@ if __name__ == '__main__':
       if 0: #DEBUG
         print(years, yearstr, author)
       else:
-        print("Copyright (c) %s %s" % (yearstr, author))
+        print("    %s %s" % (yearstr, author))
     print('')

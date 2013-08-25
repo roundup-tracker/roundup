@@ -31,3 +31,6 @@ imapServer.py
  This IMAP server script that runs in the background and checks for new
  email from a variety of mailboxes.
 
+contributors.py
+ Analyzes Mercurial log, filters and compiles list of committers with years
+ of contribution. Can be useful for updating COPYING.txt
