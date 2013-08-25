@@ -15,6 +15,22 @@ years_for_contributors = True
 verbose = True
 # /--
 
+# --- project specific configuration
+ALIASES = {
+  'Richard Jones <richard@mechanicalcat.net>':
+      ['richard',
+       'Richard Jones <richard@users.sourceforge.net>'],
+  'Bernhard Reiter <bernhard@intevation.de>':
+      ['Bernhard Reiter <ber@users.sourceforge.net>',
+       'Bernhard Reiter <Bernhard.Reiter@intevation.de>'],
+  'Ralf Schlatterbeck <rsc@runtux.com>':
+      ['Ralf Schlatterbeck <schlatterbeck@users.sourceforge.net>'],
+  'Stefan Seefeld <stefan@seefeld.name>':
+      ['Stefan Seefeld <stefan@users.sourceforge.net>'],
+  'John P. Rouillard <rouilj@cs.umb.edu>':
+      ['rouilj'],
+}
+# /-- 
 
 
 def compress(years):
@@ -76,7 +92,12 @@ if __name__ == '__main__':
     print("Sorting...")
   years = {}  # year -> set(author1, author2, ...)
   names = {}  # author -> set(years)
-  for year,author in authorship:
+  for year, author in authorship:
+    # process aliases
+    for name, aliases in ALIASES.items():
+      if author in aliases:
+        author = name
+        break
     # years
     if not year in years:
       years[year] = set()
