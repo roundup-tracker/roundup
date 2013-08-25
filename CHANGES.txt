@@ -16,6 +16,7 @@ Fixed:
 - Small bug-fix in SQL backends: An query (e.g. in a html menu) with a
   where-clause that always evaluates to false now will not raise a
   traceback. (Ralf Schlatterbeck)
+- Remove Python 2.3 compatibility code for i18n (anatoly techtonik)
 
 2013-07-06: 1.5.0
 

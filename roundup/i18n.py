@@ -61,33 +61,8 @@ del _mo_path
 # Roundup text domain
 DOMAIN = "roundup"
 
-if hasattr(gettext_module.GNUTranslations, "ngettext"):
-    # gettext_module has everything needed
-    RoundupNullTranslations = gettext_module.NullTranslations
-    RoundupTranslations = gettext_module.GNUTranslations
-else:
-    # prior to 2.3, there was no plural forms.  mix simple emulation in
-    class PluralFormsMixIn:
-        def ngettext(self, singular, plural, count):
-            if count == 1:
-                _msg = singular
-            else:
-                _msg = plural
-            return self.gettext(_msg)
-        def ungettext(self, singular, plural, count):
-            if count == 1:
-                _msg = singular
-            else:
-                _msg = plural
-            return self.ugettext(_msg)
-    class RoundupNullTranslations(
-        gettext_module.NullTranslations, PluralFormsMixIn
-    ):
-        pass
-    class RoundupTranslations(
-        gettext_module.GNUTranslations, PluralFormsMixIn
-    ):
-        pass
+RoundupNullTranslations = gettext_module.NullTranslations
+RoundupTranslations = gettext_module.GNUTranslations
 
 def find_locales(language=None):
     """Return normalized list of locale names to try for given language
