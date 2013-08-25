@@ -101,11 +101,16 @@ if __name__ == '__main__':
     if verbose:
       print("Years for each contributor...")
     print('')
-    for author in sorted(names):
+    
+    # sort authors by last contribution date (newest first)
+    def last_year(name):
+        return sorted(list(names[name]))[-1]
+    
+    for author in sorted(list(names), key=last_year, reverse=True):
       years = list(names[author])
       yearstr = compress(years)
 
-      if 1: #DEBUG
+      if 0: #DEBUG
         print(years, yearstr, author)
       else:
         print(yearstr, author)
