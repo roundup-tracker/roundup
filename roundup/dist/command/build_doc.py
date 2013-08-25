@@ -26,6 +26,17 @@ class build_doc(build.build):
         """Run this command, i.e. do the actual document generation."""
 
         sphinx = find_executable('sphinx-build')
+        if sphinx:
+            sphinx = [sphinx]
+        else:
+            try:  # try to find version installed with Python tools
+                  # tested with Sphinx 1.1.3
+                import sphinx as sp
+            except ImportError:
+                pass
+            else:
+                sphinx = [sys.executable, sp.__file__]
+
         if not sphinx:
             self.warn("could not find sphinx-build in PATH")
             self.warn("cannot build documentation")
@@ -33,5 +44,5 @@ class build_doc(build.build):
 
         doc_dir = os.path.join('share', 'doc', 'roundup', 'html')
         temp_dir = os.path.join(self.build_temp, 'doc')
-        cmd = [sphinx, '-d', temp_dir, 'doc', doc_dir]
+        cmd = sphinx + ['-d', temp_dir, 'doc', doc_dir]
         spawn(cmd)
