@@ -157,9 +157,6 @@
       {%- else %}
         {% trans copyright=copyright|e %}&copy; Copyright {{ copyright }}.{% endtrans %}
       {%- endif %}
-      {%- if show_source and has_source and sourcename %}
-        <p class="source"><a href="{{ pathto('_sources/' + sourcename, true)|e }}" rel="nofollow">{{ _('source') }}</a></p>
-      {%- endif %}
     </div>
 {%- endblock %}
   </body>
