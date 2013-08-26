@@ -3,14 +3,29 @@ Contact
 
 We maintain the following mailing lists:
   
-================ ========================================================================== ======================================================================================
-roundup-user     `sign up <https://lists.sourceforge.net/lists/listinfo/roundup-users>`_    `archive <https://sourceforge.net/mailarchive/forum.php?forum_name=roundup-users>`_
-roundup-devel    `sign up <https://lists.sourceforge.net/lists/listinfo/roundup-devel>`_    `archive <https://sourceforge.net/mailarchive/forum.php?forum_name=roundup-devel>`_
-roundup-checkins `sign up <https://lists.sourceforge.net/lists/listinfo/roundup-checkins>`_ `archive <https://sourceforge.net/mailarchive/forum.php?forum_name=roundup-checkins>`_
-================ ========================================================================== ======================================================================================
+=================== ===================================================
+roundup-users_      archives `[SourceForge]`__ `[GMane]`__ `[Nabble]`__
+roundup-devel_      archives `[SourceForge]`__ `[GMane]`__ `[Nabble]`__
+roundup-checkins_   archives `[SourceForge]`__
+=================== ===================================================
 
 These lists are moderated to protect them against spam. 
 Please sign up if you intend to mail repeatedly.
 
-You may talk to Roundup developers directly via irc at irc://irc.oftc.net/roundup.
+You may talk to Roundup developers directly via IRC irc://irc.oftc.net/roundup
+using IRC client or through `WebChat <https://webchat.oftc.net/>`_ interface.
 
+
+.. _roundup-users: https://lists.sourceforge.net/lists/listinfo/roundup-users
+.. _roundup-devel: https://lists.sourceforge.net/lists/listinfo/roundup-devel
+.. _roundup-checkins: https://lists.sourceforge.net/lists/listinfo/roundup-checkins
+
+.. __: https://sourceforge.net/mailarchive/forum.php?forum_name=roundup-users
+.. __: http://news.gmane.org/gmane.comp.bug-tracking.roundup.user
+.. __: http://roundup.1086182.n5.nabble.com/User-f3164.html
+
+.. __: https://sourceforge.net/mailarchive/forum.php?forum_name=roundup-devel
+.. __: http://news.gmane.org/gmane.comp.bug-tracking.roundup.devel
+.. __: http://roundup.1086182.n5.nabble.com/Developer-f3.html
+
+.. __: https://sourceforge.net/mailarchive/forum.php?forum_name=roundup-checkins

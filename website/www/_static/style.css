@@ -128,3 +128,10 @@ table
 }
 
 input, textarea { border-width: 1px; }
+
+
+/* Contact page */
+div#contact table td {
+  white-space: nowrap;
+  padding: 1pt 1em;
+}
