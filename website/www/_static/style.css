@@ -96,6 +96,10 @@ body
   color: lightgrey;
 }
 
+.footer img {
+  vertical-align: middle;
+}
+
 .content
 { 
   padding: 1em;
