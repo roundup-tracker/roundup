@@ -88,18 +88,22 @@
     </div>
 {%- block footer %}
     <div class="footer">
-      <p>hosted by <a href="http://sourceforge.net"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=31577&amp;type=1" width="88" height="31" border="0" alt="SourceForge.net Logo" /></a></p>
+      <div>
+      {%- if show_source and has_source and sourcename %}
+        <span class="source">[<a href="{{ pathto('_sources/' + sourcename, true)|e }}" rel="nofollow">{{ _('page source') }}</a>]</span>
+      {%- endif %}
       {%- if hasdoc('copyright') %}
         {% trans path=pathto('copyright'), copyright=copyright|e %}&copy; <a href="{{ path }}">Copyright</a> {{ copyright }}.{% endtrans %}
       {%- else %}
         {% trans copyright=copyright|e %}&copy; Copyright {{ copyright }}.{% endtrans %}
       {%- endif %}
+      </div>
+      <div>
       {%- if last_updated %}
         {% trans last_updated=last_updated|e %}Last updated on {{ last_updated }}.{% endtrans %}
       {%- endif %}
-      {%- if show_source and has_source and sourcename %}
-        <p class="source"><a href="{{ pathto('_sources/' + sourcename, true)|e }}" rel="nofollow">{{ _('source') }}</a></p>
-      {%- endif %}
+      <span>Hosted by <a href="http://sourceforge.net"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=31577&amp;type=1" width="88" height="31" border="0" alt="SourceForge.net Logo" /></a></span>
+      </div>
     </div>
 {%- endblock %}
   </body>
