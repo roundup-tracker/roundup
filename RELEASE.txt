@@ -8,8 +8,12 @@ Roundup, read the doc/installation.txt file.
 Roundup release checklist:
 
 1.  Run unit tests! They should pass successfully. "./run_tests.py"
-2.  Change version in roundup/__init__.py, record date in CHANGES.txt.
-3.  Update doc/announcement.txt with new details.
+2.  Update version
+      CHANGES.txt
+      roundup/__init__.py
+3.  Update documentation
+      doc/announcement.txt
+      doc/upgrading.txt
 4.  Clean out all *.orig, *.rej, .#* files from the source.
 5.  python setup.py clean --all
 6.  Edit setup.py to ensure that all information therein (contacts,
