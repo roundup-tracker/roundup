@@ -17,6 +17,10 @@ Fixed:
   where-clause that always evaluates to false now will not raise a
   traceback. (Ralf Schlatterbeck)
 - Remove Python 2.3 compatibility code for i18n (anatoly techtonik)
+- If documentation 'sphinx-build' tool is not found in system PATH,
+ 'setup.py build_doc' command now tries to detect it from PYTHONPATH
+  (anatoly techtonik)
+
 
 2013-07-06: 1.5.0
 
