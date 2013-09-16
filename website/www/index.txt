@@ -31,4 +31,4 @@ Roundup was originally released as version 0.1.1 in late August, 2001. The first
     something different for a while. Roundup here I come... 
 
 .. _`download`: http://cheeseshop.python.org/pypi/roundup
-.. _`change note`: https://sourceforge.net/p/roundup/code/ci/tip/tree/CHANGES.txt?format=raw
+.. _`change note`: https://sourceforge.net/p/roundup/code/ci/tip/tree/CHANGES.txt

@@ -4,7 +4,7 @@ Code
 Changelog
 ----------
 
-The changelog is available as `CHANGES.txt in the SCM repository <https://sourceforge.net/p/roundup/code/ci/tip/tree/CHANGES.txt?format=raw>`_.
+The changelog is available as `CHANGES.txt in the SCM repository <https://sourceforge.net/p/roundup/code/ci/tip/tree/CHANGES.txt>`_.
 
 Browse
 ------
