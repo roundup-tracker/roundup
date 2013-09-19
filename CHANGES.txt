@@ -20,6 +20,8 @@ Fixed:
 - If documentation 'sphinx-build' tool is not found in system PATH,
  'setup.py build_doc' command now tries to detect it from PYTHONPATH
   (anatoly techtonik)
+- Read version and release for generated documentation from
+  roundup/__init__.py. (Thomas Arendsen Hein)
 
 
 2013-07-06: 1.5.0
