@@ -29,4 +29,3 @@ user.create(username="anonymous", roles='Anonymous')
 
 
 # vim: set filetype=python sts=4 sw=4 et si
-#SHA: b1da2e72a7fe9f26086f243eb744135b085101d9

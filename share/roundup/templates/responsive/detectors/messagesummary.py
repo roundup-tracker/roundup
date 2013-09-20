@@ -15,4 +15,3 @@ def init(db):
     db.msg.audit('create', summarygenerator)
 
 # vim: set filetype=python ts=4 sw=4 et si
-#SHA: 538f90cb7f4eb63f77eca252b87afbe037d29c48
