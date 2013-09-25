@@ -43,6 +43,8 @@ Roundup release checklist:
 15. Send doc/announcement.txt to python-announce@python.org and
     roundup-users@lists.sourceforge.net and
     roundup-devel@lists.sourceforge.net
+16. Refresh website.
+      website/README.txt
 
 So, those commands in a nice, cut'n'pasteable form::
 
