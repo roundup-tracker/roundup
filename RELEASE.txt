@@ -14,10 +14,12 @@ Roundup release checklist:
 3.  Update documentation
       doc/announcement.txt
       doc/upgrading.txt
-4.  Clean out all *.orig, *.rej, .#* files from the source.
-5.  python setup.py clean --all
-6.  Check setup.py to ensure that all information therein (contacts,
-    classifiers, etc) is correct.
+4.  Update setup.py info is needed (contacts, classifiers, etc.), and
+    check that metadata is valid and long descriptions is proper reST:
+      python setup.py check --restructuredtext --metadata --strict
+5.  Clean out all *.orig, *.rej, .#* files from the source.
+6.  Remove previuos build files
+      python setup.py clean --all
 7.  Rebuild documentation in "share/doc/roundup/html"
       python setup.py build_doc
 8.  python setup.py sdist --manifest-only
@@ -37,8 +39,7 @@ Roundup release checklist:
       python setup.py bdist_wininst
 14. Upload source distributive to PyPI
       python setup.py sdist upload --sign
-    Load http://pypi.python.org/pypi/roundup and check that information
-    is displayed correctly.
+    It should appear on http://pypi.python.org/pypi/roundup in no time.
 15. Send doc/announcement.txt to python-announce@python.org and
     roundup-users@lists.sourceforge.net and
     roundup-devel@lists.sourceforge.net
@@ -49,6 +50,7 @@ So, those commands in a nice, cut'n'pasteable form::
  find . -name '*.rej' -exec rm {} \;
  find . -name '.#*' -exec rm {} \;
  python setup.py clean --all
+ python setup.py check --restructuredtext --metadata --strict
  python setup.py build_doc
  python setup.py sdist --manifest-only
  python setup.py sdist --quiet
