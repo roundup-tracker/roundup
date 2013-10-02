@@ -22,6 +22,8 @@ Fixed:
   (anatoly techtonik)
 - Read version and release for generated documentation from
   roundup/__init__.py. (Thomas Arendsen Hein)
+- Do not throw an internal error if a .mo file can not be read
+  (Thomas Arendsen Hein)
 
 
 2013-07-06: 1.5.0

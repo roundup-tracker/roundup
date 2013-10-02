@@ -181,13 +181,20 @@ def get_translation(language=None, tracker_home=None,
             mofiles.append(get_mofile(locales, system_locale, DOMAIN))
     # filter out elements that are not found
     mofiles = filter(None, mofiles)
-    if mofiles:
-        translator = translation_class(open(mofiles[0], "rb"))
-        for mofile in mofiles[1:]:
-            # note: current implementation of gettext_module
-            #   always adds fallback to the end of the fallback chain.
-            translator.add_fallback(translation_class(open(mofile, "rb")))
-    else:
+    translator = None
+    for mofile in mofiles:
+        try:
+            mo = open(mofile, "rb")
+            if translator is None:
+                translator = translation_class(mo)
+            else:
+                # note: current implementation of gettext_module
+                #   always adds fallback to the end of the fallback chain.
+                translator.add_fallback(translation_class(mo))
+        except IOError:
+            # ignore unreadable .mo files
+            pass
+    if translator is None:
         translator = null_translation_class()
     return translator
 
