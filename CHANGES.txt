@@ -24,7 +24,8 @@ Fixed:
   roundup/__init__.py. (Thomas Arendsen Hein)
 - Do not throw an internal error if a .mo file can not be read
   (Thomas Arendsen Hein)
-
+- Make the "Make a copy" link work by fixing copy_url to properly
+  handle multilink properties. (John Rouillard)
 
 2013-07-06: 1.5.0
 

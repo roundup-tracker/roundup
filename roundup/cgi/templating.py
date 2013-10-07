@@ -1159,7 +1159,12 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         }
         for name in self._props.keys():
             if name not in exclude:
-                query[name] = self[name].plain()
+                prop = self._props[name]
+                if not isinstance(prop, hyperdb.Multilink):
+                    query[name] = self[name].plain()
+                else:
+                    query[name] = ",".join(self._klass.get(self._nodeid, name))
+
         return self._classname + "?" + "&".join(
             ["%s=%s" % (key, urllib.quote(value))
                 for key, value in query.items()])
