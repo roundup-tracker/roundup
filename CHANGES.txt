@@ -18,7 +18,7 @@ Fixed:
   traceback. (Ralf Schlatterbeck)
 - Remove Python 2.3 compatibility code for i18n (anatoly techtonik)
 - If documentation 'sphinx-build' tool is not found in system PATH,
- 'setup.py build_doc' command now tries to detect it from PYTHONPATH
+  'setup.py build_doc' command now tries to detect it from PYTHONPATH
   (anatoly techtonik)
 - Read version and release for generated documentation from
   roundup/__init__.py. (Thomas Arendsen Hein)
@@ -26,6 +26,8 @@ Fixed:
   (Thomas Arendsen Hein)
 - issue2550673 Make the "Make a copy" link work by fixing copy_url to properly
   handle multilink properties. (John Rouillard)
+- issue2550583, issue2550635 Do not limit results with Xapian indexer
+  (Thomas Arendsen Hein)
 
 2013-07-06: 1.5.0
 

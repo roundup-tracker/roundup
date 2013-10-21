@@ -130,6 +130,12 @@ class IndexerTest(unittest.TestCase):
             self.assertSeqEqual(self.dex.find([k]),
                 [('test', '1', 'a'), ('test', '2', 'a')])
 
+    def test_manyresults(self):
+        """Test if searches find many results."""
+        for i in range(123):
+            self.dex.add_text(('test', str(i), 'many'), 'many')
+        self.assertEqual(len(self.dex.find(['many'])), 123)
+
     def tearDown(self):
         shutil.rmtree('test-index')
 

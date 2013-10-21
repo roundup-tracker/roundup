@@ -107,7 +107,7 @@ class Indexer(IndexerBase):
         query = xapian.Query(xapian.Query.OP_AND, terms)
 
         enquire.set_query(query)
-        matches = enquire.get_mset(0, 10)
+        matches = enquire.get_mset(0, database.get_doccount())
 
         return [tuple(m.document.get_data().split(':'))
             for m in matches]
