@@ -1704,7 +1704,11 @@ class DateHTMLProperty(HTMLProperty):
             offset = self._db.getUserTimezone()
         else:
             offset = self._offset
-        return str(self._value.local(offset))
+        try:
+            return str(self._value.local(offset))
+        except AttributeError:
+            # not a date value, e.g. from unsaved form data
+            return str(self._value)
 
     def now(self, str_interval=None):
         """ Return the current time.
