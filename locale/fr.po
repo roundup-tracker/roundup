@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: Roundup 1.4.6\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2006-04-27 09:02+0300\n"
-"PO-Revision-Date: 2008-10-14 10:15+0200\n"
+"PO-Revision-Date: 2013-10-31 12:19+0100\n"
 "Last-Translator: Stéphane Raimbault <stephane.raimbault@gmail.com>\n"
 "Language-Team: GNOME French Team <gnomefr@traduc.org>\n"
 "MIME-Version: 1.0\n"
@@ -3322,10 +3322,9 @@ msgid "Timezone"
 msgstr "Fuseau horaire"
 
 #: ../templates/classic/html/user.item.html:78
-msgid "(this is a numeric hour offset, the default is ${zone})"
+msgid "(the default is ${zone})"
 msgstr ""
-"(il s'agit d'un d&eacute;calage horaire num&eacute;rique, par d&eacute;faut: "
-"${zone})"
+"(par d&eacute;faut: ${zone})"
 
 #: ../templates/classic/html/user.item.html:83
 #: ../templates/classic/html/user.register.html:49

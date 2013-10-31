@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2009-03-12 11:58+0200\n"
-"PO-Revision-Date: 2011-05-15 22:02+0100\n"
+"PO-Revision-Date: 2013-10-31 12:21+0100\n"
 "Last-Translator: Christian Aastorp <christian.aastorp@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -3525,8 +3525,8 @@ msgstr "(gi brukeren mer enn en rolle med en kommaseparert liste)"
 
 #: ../share/roundup/templates/classic/html/user.item.html:109
 #: ../share/roundup/templates/minimal/html/user.item.html:109
-msgid "(this is a numeric hour offset, the default is ${zone})"
-msgstr "(dette er en numerisk offset, standard er ${zone})"
+msgid "(the default is ${zone})"
+msgstr "(standard er ${zone})"
 
 #: ../share/roundup/templates/classic/html/user.item.html:130
 #: ../share/roundup/templates/classic/html/user.register.html:53

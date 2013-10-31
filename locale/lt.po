@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: roundup-1.1.2\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2006-11-16 16:24+0200\n"
-"PO-Revision-Date: 2006-11-22 20:17+0300\n"
+"PO-Revision-Date: 2013-10-31 12:21+0100\n"
 "Last-Translator: Nerijus Baliunas <nerijus@users.sourceforge.net>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -3353,8 +3353,8 @@ msgstr "(jei norite vartotojui priskirti daugiau nei vieną rolę, įveskite kab
 
 #: ../templates/classic/html/user.item.html:108
 #: ../templates/minimal/html/user.item.html:103
-msgid "(this is a numeric hour offset, the default is ${zone})"
-msgstr "(tai yra skaitinis valandų poslinkis, standartas yra ${zone})"
+msgid "(the default is ${zone})"
+msgstr "(standartas yra ${zone})"
 
 #: ../templates/classic/html/user.item.html:129
 #: ../templates/classic/html/user.register.html:53

@@ -7,6 +7,10 @@ Entries without name were done by Richard Jones.
 
 Features:
 
+- Drop comment in user settings about numeric hour offsets instead of using
+  pytz timezone names. Due to DST these are wrong half of the year, it is
+  much better to use timezone names. (Thomas Arendsen Hein)
+
 Fixed:
 
 - Fix Release-date of 1.5.0 in this file (thanks to Bernhard for

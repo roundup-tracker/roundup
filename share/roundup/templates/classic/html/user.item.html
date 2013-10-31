@@ -105,7 +105,7 @@ define="edit_ok context/is_edit_ok"
      tal:define="name string:timezone; label string:Timezone; value context/timezone">
   <th metal:use-macro="th_label">Timezone</th>
   <td><input name="timezone" metal:use-macro="normal_input">
-   <tal:block tal:condition="edit_ok" i18n:translate="">(this is a numeric hour offset, the default is
+   <tal:block tal:condition="edit_ok" i18n:translate="">(the default is
     <span tal:replace="db/config/DEFAULT_TIMEZONE" i18n:name="zone"
     />)</tal:block>
   </td>

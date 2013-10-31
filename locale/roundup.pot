@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2009-03-12 11:58+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: 2013-10-31 10:43+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -2932,7 +2932,7 @@ msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.item.html:109
 #: ../share/roundup/templates/minimal/html/user.item.html:109
-msgid "(this is a numeric hour offset, the default is ${zone})"
+msgid "(the default is ${zone})"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.item.html:130

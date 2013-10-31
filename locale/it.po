@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: roundup cvs\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2006-12-18 13:36+0200\n"
-"PO-Revision-Date: 2007-07-17 11:05+0200\n"
+"PO-Revision-Date: 2013-10-31 12:20+0100\n"
 "Last-Translator: Marco Ghidinelli <marco.ghidinelli@ing.unibs.it>\n"
 "Language-Team: italian <it@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -2910,9 +2910,9 @@ msgstr ""
 
 #: ../templates/classic/html/user.item.html:108
 #: ../templates/minimal/html/user.item.html:103
-msgid "(this is a numeric hour offset, the default is ${zone})"
+msgid "(the default is ${zone})"
 msgstr ""
-"(questo è la differenza in numero di ore, il valore predefinito è ${zone})"
+"(il valore predefinito è ${zone})"
 
 #: ../templates/classic/html/user.item.html:129
 #: ../templates/classic/html/user.register.html:53

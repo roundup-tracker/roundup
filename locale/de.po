@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Roundup 1.4.6\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2009-03-12 11:58+0200\n"
-"PO-Revision-Date: 2013-04-09 11:15+0200\n"
+"PO-Revision-Date: 2013-10-31 10:43+0100\n"
 "Last-Translator: Tobias Herp <tobias.herp@gmx.de>\n"
 "Language-Team: German Translators <roundup-devel@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -3573,8 +3573,8 @@ msgstr "<tt>Verwenden,Sie,Kommata</tt>, um einem Benutzer mehrere Rollen zuzutei
 
 #: ../share/roundup/templates/classic/html/user.item.html:109
 #: ../share/roundup/templates/minimal/html/user.item.html:109
-msgid "(this is a numeric hour offset, the default is ${zone})"
-msgstr "(als Differenz zu GMT/UTC in Stunden - Voreinstellung: ${zone})"
+msgid "(the default is ${zone})"
+msgstr "(Voreinstellung: ${zone})"
 
 #: ../share/roundup/templates/classic/html/user.item.html:130
 #: ../share/roundup/templates/classic/html/user.register.html:53

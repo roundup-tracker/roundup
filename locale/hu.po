@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Roundup 1.3.3\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2007-09-27 11:18+0300\n"
-"PO-Revision-Date: 2007-09-20 12:30+0200\n"
+"PO-Revision-Date: 2013-10-31 12:19+0100\n"
 "Last-Translator: kilo aka Gabor Kmetyko <kg_kilo@freemail.hu>\n"
 "Language-Team: Hungarian\n"
 "MIME-Version: 1.0\n"
@@ -3096,8 +3096,8 @@ msgstr ""
 
 #: ../templates/classic/html/user.item.html:109
 #: ../templates/minimal/html/user.item.html:109
-msgid "(this is a numeric hour offset, the default is ${zone})"
-msgstr "(ez egy numerikus óra eltolás, ${zone} az alapértelmezett)"
+msgid "(the default is ${zone})"
+msgstr "(${zone} az alapértelmezett)"
 
 #: ../templates/classic/html/user.item.html:130
 #: ../templates/classic/html/user.register.html:53

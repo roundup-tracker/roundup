@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Roundup 1.4.8\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2009-03-12 11:58+0200\n"
-"PO-Revision-Date: 2009-04-23 14:00+0900\n"
+"PO-Revision-Date: 2013-10-31 12:20+0100\n"
 "Last-Translator: Yasushi Iwata <iwata@know-net.co.jp>\n"
 "Language-Team: Yasushi Iwata <iwata@know-net.co.jp>\n"
 "MIME-Version: 1.0\n"
@@ -649,8 +649,8 @@ msgstr "(一覧)"
 
 #: ../share/roundup/templates/classic/html/user.item.html:109
 #: ../share/roundup/templates/minimal/html/user.item.html:109
-msgid "(this is a numeric hour offset, the default is ${zone})"
-msgstr "(協定世界時との時差, デフォルト ${zone})"
+msgid "(the default is ${zone})"
+msgstr "(デフォルト ${zone})"
 
 #: ../share/roundup/templates/classic/html/user.item.html:88
 #: ../share/roundup/templates/minimal/html/user.item.html:88

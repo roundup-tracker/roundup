@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: 0.8.3\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2009-03-12 11:58+0200\n"
-"PO-Revision-Date: 2011-08-28 13:51+0800\n"
+"PO-Revision-Date: 2013-10-31 12:22+0100\n"
 "Last-Translator: Cheer Xiao <xiaqqaix@gmail.com>\n"
 "Language-Team: Chinese Simplified <limodou@gmail.com>\n"
 "Language: \n"
@@ -3367,8 +3367,8 @@ msgstr "(为给用户指定多个角色，用逗号分隔它们)"
 
 #: ../share/roundup/templates/classic/html/user.item.html:109
 #: ../share/roundup/templates/minimal/html/user.item.html:109
-msgid "(this is a numeric hour offset, the default is ${zone})"
-msgstr "(相对于 UTC 的偏移量，以小时为单位。此 tracker 的缺省值是 ${zone})"
+msgid "(the default is ${zone})"
+msgstr "(此 tracker 的缺省值是 ${zone})"
 
 #: ../share/roundup/templates/classic/html/user.item.html:130
 #: ../share/roundup/templates/classic/html/user.register.html:53

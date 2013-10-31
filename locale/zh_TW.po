@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.8.3\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2004-10-19 12:33+0300\n"
-"PO-Revision-Date: 2005-05-15 17:40+0800\n"
+"PO-Revision-Date: 2013-10-31 12:23+0100\n"
 "Last-Translator: Fred Lin <gasolin@gmail>\n"
 "Language-Team: Chinese Traditional <gasolin@gmail.com>\n"
 "MIME-Version: 1.0\n"
@@ -2675,8 +2675,8 @@ msgid "Timezone"
 msgstr "時區"
 
 #: ../templates/classic/html/user.item.html:73
-msgid "(this is a numeric hour offset, the default is ${zone})"
-msgstr "(這是數字的小時偏移量，預設值是 ${zone})"
+msgid "(the default is ${zone})"
+msgstr "(預設值是 ${zone})"
 
 #: ../templates/classic/html/user.item.html:78
 #: ../templates/classic/html/user.register.html:49
