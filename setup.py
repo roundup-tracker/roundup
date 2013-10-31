@@ -98,6 +98,9 @@ def main():
 
     # add docs
     data_files.append(include('share/doc/roundup/html', '*'))
+    data_files.append(include('share/doc/roundup/html/_images', '*'))
+    data_files.append(include('share/doc/roundup/html/_sources', '*'))
+    data_files.append(include('share/doc/roundup/html/_static', '*'))
 
     # perform the setup action
     from roundup import __version__

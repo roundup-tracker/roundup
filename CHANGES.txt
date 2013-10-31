@@ -34,6 +34,9 @@ Fixed:
   (Thomas Arendsen Hein)
 - Allow using plain() on unsaved dates in HTML forms
   (Thomas Arendsen Hein)
+- setup.py now installs static files of the HTML documentation (stylesheets,
+  images, etc.) (Thomas Arendsen Hein)
+
 
 2013-07-06: 1.5.0
 
