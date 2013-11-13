@@ -36,6 +36,9 @@ Fixed:
   (Thomas Arendsen Hein)
 - setup.py now installs static files of the HTML documentation (stylesheets,
   images, etc.) (Thomas Arendsen Hein)
+- executable .py scripts need "#!/usr/bin/env python", add this to demo.py,
+  remove exec bits from website/wiki/wiki/data/plugin/theme/roundup.py
+  (Thomas Arendsen Hein)
 
 
 2013-07-06: 1.5.0
