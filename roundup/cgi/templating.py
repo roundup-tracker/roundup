@@ -2048,11 +2048,12 @@ class LinkHTMLProperty(HTMLProperty):
                 if isinstance(prop, hyperdb.Link):
                     cl = self._db.getclass(prop.classname)
                     labelprop = cl.labelprop()
-                    fn = lambda optionid, propname=propname, labelprop=labelprop: cl.get(linkcl.get(optionid,
-                                                            propname),
-                                                 labelprop)
+                    fn = lambda optionid, \
+                                propname=propname, labelprop=labelprop: \
+                            cl.get(linkcl.get(optionid, propname), labelprop)
                 else:
-                    fn = lambda optionid, propname=propname: linkcl.get(optionid, propname)
+                    fn = lambda optionid, propname=propname: \
+                            linkcl.get(optionid, propname)
                 additional_fns.append(fn)
 
         for optionid in options:
