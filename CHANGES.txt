@@ -39,6 +39,8 @@ Fixed:
 - executable .py scripts need "#!/usr/bin/env python", add this to demo.py,
   remove exec bits from website/wiki/wiki/data/plugin/theme/roundup.py
   (Thomas Arendsen Hein)
+- issue2550822: Fix showing more than one additional property in class menu
+  (James Mack)
 
 
 2013-07-06: 1.5.0
