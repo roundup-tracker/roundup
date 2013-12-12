@@ -41,6 +41,8 @@ Fixed:
   (Thomas Arendsen Hein)
 - issue2550822: Fix showing more than one additional property in class menu
   (James Mack)
+- Fix String search with special SQL wildcard characters in LIKE/ILIKE
+  clause and add testcase (Ralf Schlatterbeck)
 
 
 2013-07-06: 1.5.0

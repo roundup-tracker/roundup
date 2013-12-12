@@ -1252,6 +1252,22 @@ class DBTest(commonDBTest):
             ae(filt(None, {'title': ['One', 'Two']}, ('+','id'), (None,None)),
                 [])
 
+    def testFilteringSpecialChars(self):
+        """ Special characters in SQL search are '%' and '_', some used
+            to lead to a traceback.
+        """
+        ae, filter, filter_iter = self.filteringSetup()
+        self.db.issue.set('1', title="With % symbol")
+        self.db.issue.set('2', title="With _ symbol")
+        self.db.issue.set('3', title="With \\ symbol")
+        self.db.issue.set('4', title="With ' symbol")
+        d = dict (status = '1')
+        for filt in filter, filter_iter:
+            ae(filt(None, dict(title='%'), ('+','id'), (None,None)), ['1'])
+            ae(filt(None, dict(title='_'), ('+','id'), (None,None)), ['2'])
+            ae(filt(None, dict(title='\\'), ('+','id'), (None,None)), ['3'])
+            ae(filt(None, dict(title="'"), ('+','id'), (None,None)), ['4'])
+
     def testFilteringLink(self):
         ae, filter, filter_iter = self.filteringSetup()
         a = 'assignedto'
