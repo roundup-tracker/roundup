@@ -43,6 +43,9 @@ Fixed:
   (James Mack)
 - Fix String search with special SQL wildcard characters in LIKE/ILIKE
   clause and add testcase (Ralf Schlatterbeck)
+- Fix subtle bug when sorting by a Link that contains a Multilink from
+  which we also search for an attribute. In that case the LEFT OUTER
+  JOIN clause was missing in generated SQL. (Ralf Schlatterbeck)
 
 
 2013-07-06: 1.5.0

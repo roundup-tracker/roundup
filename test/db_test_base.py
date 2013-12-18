@@ -73,7 +73,9 @@ def setupTracker(dirname, backend="anydbm"):
     return tracker
 
 def setupSchema(db, create, module):
-    status = module.Class(db, "status", name=String())
+    mls = module.Class(db, "mls", name=String())
+    mls.setkey("name")
+    status = module.Class(db, "status", name=String(), mls=Multilink("mls"))
     status.setkey("name")
     priority = module.Class(db, "priority", name=String(), order=String())
     priority.setkey("name")
@@ -104,7 +106,9 @@ def setupSchema(db, create, module):
             password=password.Password('sekrit'))
         user.create(username="fred", roles='User',
             password=password.Password('sekrit'), address='fred@example.com')
-        status.create(name="unread")
+        u1 = mls.create(name="unread_1")
+        u2 = mls.create(name="unread_2")
+        status.create(name="unread",mls=[u1, u2])
         status.create(name="in-progress")
         status.create(name="testing")
         status.create(name="resolved")
@@ -1279,6 +1283,14 @@ class DBTest(commonDBTest):
             ae(filt(None, {a: [None]}, ('+','id'), grp), ['3','4'])
             ae(filt(None, {a: ['-1', None]}, ('+','id'), grp), ['3','4'])
             ae(filt(None, {a: ['1', None]}, ('+','id'), grp), ['1', '3','4'])
+
+    def testFilteringLinkSortSearchMultilink(self):
+        ae, filter, filter_iter = self.filteringSetup()
+        a = 'assignedto'
+        grp = (None, None)
+        for filt in filter, filter_iter:
+            ae(filt(None, {'status.mls': '1'}, ('+','status')), ['2','3'])
+            ae(filt(None, {'status.mls': '2'}, ('+','status')), ['2','3'])
 
     def testFilteringMultilinkAndGroup(self):
         """testFilteringMultilinkAndGroup:

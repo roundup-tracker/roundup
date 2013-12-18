@@ -372,9 +372,9 @@ class Proptree(object):
         ('sort' in self.need_for) or all children have tree_sort_done set and
         sort_ids_needed unset: set self.tree_sort_done if one of the conditions
         holds. Also remove sort_ids_needed recursively once having seen a
-        Multilink.
+        Multilink that is used for sorting.
         """
-        if isinstance (self.propclass, Multilink):
+        if isinstance (self.propclass, Multilink) and 'sort' in self.need_for:
             mlseen = True
         if mlseen:
             self.sort_ids_needed = False
