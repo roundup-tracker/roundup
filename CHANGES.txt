@@ -17,7 +17,7 @@ Fixed:
   discovery) (Ralf Schlatterbeck)
 - Pythons cgi form code can return a TypeError, we now guard for this
   condition. (Ralf Schlatterbeck)
-- Small bug-fix in SQL backends: An query (e.g. in a html menu) with a
+- Small bug-fix in SQL backends: A query (e.g. in a html menu) with a
   where-clause that always evaluates to false now will not raise a
   traceback. (Ralf Schlatterbeck)
 - Remove Python 2.3 compatibility code for i18n (anatoly techtonik)
@@ -46,6 +46,14 @@ Fixed:
 - Fix subtle bug when sorting by a Link that contains a Multilink from
   which we also search for an attribute. In that case the LEFT OUTER
   JOIN clause was missing in generated SQL. (Ralf Schlatterbeck)
+- Fix another XSS issue2550817. Note that the code that triggers that
+  particular bug is no longer in roundup core. But the change to the
+  templates we suggest is a *lot* safer as it always escapes the error
+  and ok messages now.
+  If you are upgrading: you *MUST* read doc/upgrading.txt and do the
+  necessary changes to your templates, the escaping now happens in the
+  template and not in the roundup code. So if you don't make the
+  necessary changes *you are vulnerable*. (Ralf Schlatterbeck)
 
 
 2013-07-06: 1.5.0

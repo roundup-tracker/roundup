@@ -13,6 +13,47 @@ steps.
 
 .. contents::
 
+Migrating from 1.5.0 to 1.5.1
+=============================
+
+*Important*:
+There was a security bug fixed in the html templates (an XSS
+vulnerability). So if you have a running tracker you will have to fix
+the file ``html/page.html`` in your tracker directory. You need to
+*twice* remove the ``structure`` element in the template and modify the
+'tal:content' attribute, you need to replace the section::
+
+ <td>
+  <p tal:condition="options/error_message | nothing" class="error-message"
+     tal:repeat="m options/error_message"
+     tal:content="structure string:$m <br/ > " />
+  <p tal:condition="options/ok_message | nothing" class="ok-message">
+    <span tal:repeat="m options/ok_message"
+       tal:content="structure string:$m <br/ > " />
+     <a class="form-small" tal:attributes="href request/current_url"
+        i18n:translate="">clear this message</a>
+  </p>
+ </td>
+
+with::
+
+ <td>
+  <p tal:condition="options/error_message | nothing" class="error-message"
+     tal:repeat="m options/error_message" tal:content="m" />
+  <p tal:condition="options/ok_message | nothing" class="ok-message">
+    <span tal:repeat="m options/ok_message" tal:content="m" />
+     <a class="form-small" tal:attributes="href request/current_url"
+        i18n:translate="">clear this message</a>
+  </p>
+ </td>
+
+if you are using the new *jinja2* base templates, we are now iterating
+over the error- and ok-messages and creating a paragraph for each
+message. In addition ``autoescape`` is turned on for the section (which
+is the critical security change).
+See ``templates/jinja2/html/layout/page.html`` for details.
+
+
 Migrating from 1.4.20 to 1.4.21
 ===============================
 

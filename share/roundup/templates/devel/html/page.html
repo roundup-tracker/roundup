@@ -234,11 +234,9 @@
   <div class="content">
    <h1 id="breadcrumb"><span metal:define-slot="body_title">body title</span></h1>
    <p tal:condition="options/error_message | nothing" class="error-message"
-      tal:repeat="m options/error_message"
-      tal:content="structure string:$m <br/ > " />
+      tal:repeat="m options/error_message" tal:content="m" />
    <p tal:condition="options/ok_message | nothing" class="ok-message">
-    <span tal:repeat="m options/ok_message"
-          tal:content="structure string:$m <br/ > " />
+    <span tal:repeat="m options/ok_message" tal:content="m" />
     <a class="form-small" tal:attributes="href request/current_url"
        i18n:translate="">clear this message</a>
    </p>

@@ -49,7 +49,12 @@ def initialiseSecurity(security):
     security.addPermissionToRole('Admin', p)
 
 def clean_message(msg):
-    return cgi.escape (msg).replace ('\n', '<br />\n')
+    """ A multi-line message is now split at line boundaries.
+        The templates will do the right thing to format this message.
+        Note that we no longer need to escape the message as this is now
+        taken care of by the template.
+    """
+    return msg.split('\n')
 
 error_message = ''"""<html><head><title>An error has occurred</title></head>
 <body><h1>An error has occurred</h1>
@@ -877,9 +882,9 @@ class Client:
 
         # see if we were passed in a message
         if ok_message:
-            self.ok_message.append(ok_message)
+            self.ok_message.extend(ok_message)
         if error_message:
-            self.error_message.append(error_message)
+            self.error_message.extend(error_message)
 
         # determine the classname and possibly nodeid
         path = self.path.split('/')
