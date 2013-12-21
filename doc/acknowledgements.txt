@@ -43,6 +43,7 @@ Andrew Eland,
 Jeff Epler,
 Tom Epperly,
 Tamer Fahmy,
+Thibault Févry
 Vickenty Fesunov,
 Hernan Martinez Foffani,
 Stuart D. Gathman,

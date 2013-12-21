@@ -49,7 +49,8 @@ Fixed:
 - Fix another XSS issue2550817. Note that the code that triggers that
   particular bug is no longer in roundup core. But the change to the
   templates we suggest is a *lot* safer as it always escapes the error
-  and ok messages now.
+  and ok messages now. Thanks to Thibault Fevry for the original
+  bug-report.
   If you are upgrading: you *MUST* read doc/upgrading.txt and do the
   necessary changes to your templates, the escaping now happens in the
   template and not in the roundup code. So if you don't make the
