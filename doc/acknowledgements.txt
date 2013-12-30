@@ -6,7 +6,7 @@ letting me implement this system on their time.
 
 Thanks also to the many people on the mailing list, in the sourceforge
 project and those who just report bugs:
-Christian Aastorp
+Christian Aastorp,
 Thomas Arendsen Hein,
 Nerijus Baliunas,
 Benni Bärmann,
@@ -43,7 +43,7 @@ Andrew Eland,
 Jeff Epler,
 Tom Epperly,
 Tamer Fahmy,
-Thibault Févry
+Thibault Févry,
 Vickenty Fesunov,
 Hernan Martinez Foffani,
 Stuart D. Gathman,
@@ -144,7 +144,7 @@ Maciej Starzyk,
 Kai Storbeck,
 Mitchell Surface,
 anatoly techtonik,
-Jon C. Thomason
+Jon C. Thomason,
 Mike Thompson,
 Hubert Touvet,
 Michael Twomey,
