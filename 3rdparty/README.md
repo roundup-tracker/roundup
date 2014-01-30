@@ -11,6 +11,7 @@ the following -
 
 ```
 $ sudo npm install -g connect@2.1.3 hogan.js@2.0.0 jshint@0.9.1 recess@1.1.9 uglify-js@1.3.4
+$ make build
 ```
 
 The files are now located in docs/assets
