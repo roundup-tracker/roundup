@@ -145,6 +145,7 @@ def get_timezone(tz):
 
 def _utc_to_local(y,m,d,H,M,S,tz):
     TZ = get_timezone(tz)
+    S = min(S, 59.999)
     frac = S - int(S)
     dt = datetime.datetime(y, m, d, H, M, int(S), tzinfo=UTC)
     y,m,d,H,M,S = dt.astimezone(TZ).timetuple()[:6]
@@ -269,6 +270,7 @@ class Date:
             spec = spec.get_tuple()
         try:
             y,m,d,H,M,S,x,x,x = spec
+            S = min(S, 59.999)
             frac = S - int(S)
             self.year, self.month, self.day, self.hour, self.minute, \
                 self.second = _local_to_utc(y, m, d, H, M, S, offset)

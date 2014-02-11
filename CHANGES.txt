@@ -3,7 +3,7 @@ Entries are given with the most recent entry first.
 Each entry has the developer who committed the change in brackets.
 Entries without name were done by Richard Jones.
 
-2013-??-??: 1.5.1
+2014-??-??: 1.5.1
 
 Features:
 
@@ -55,6 +55,9 @@ Fixed:
   necessary changes to your templates, the escaping now happens in the
   template and not in the roundup code. So if you don't make the
   necessary changes *you are vulnerable*. (Ralf Schlatterbeck)
+- issue2117897: Fixed two more places in date.py where seconds can be
+  rounded to 60.0 and causing exceptions. Change them to 59.999 as was
+  done in the fix for issue2550802. (Thomas Arendsen Hein)
 
 
 2013-07-06: 1.5.0
