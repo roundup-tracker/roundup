@@ -1,9 +1,20 @@
-This file contains significant changes to Roundup over time.
-Entries are given with the most recent entry first.
+
+Please read doc/upgrading.txt to see how to bring you Roundup version
+up to date with changes listed in this file. This may require schema
+and template changes not listed here.
+
 Each entry has the developer who committed the change in brackets.
 Entries without name were done by Richard Jones.
 
+
 2014-??-??: 1.5.1
+
+Pay attention:
+
+  This release includes *important change affecting security*. Since
+  this version escaping now happens in the template and not in the
+  roundup code. Please read doc/upgrading.txt on how to change your
+  templates. Without this you are vulnerable. (Ralf Schlatterbeck)
 
 Features:
 
@@ -51,10 +62,6 @@ Fixed:
   templates we suggest is a *lot* safer as it always escapes the error
   and ok messages now. Thanks to Thibault Fevry for the original
   bug-report.
-  If you are upgrading: you *MUST* read doc/upgrading.txt and do the
-  necessary changes to your templates, the escaping now happens in the
-  template and not in the roundup code. So if you don't make the
-  necessary changes *you are vulnerable*. (Ralf Schlatterbeck)
 - issue2117897: Fixed two more places in date.py where seconds can be
   rounded to 60.0 and causing exceptions. Change them to 59.999 as was
   done in the fix for issue2550802. (Thomas Arendsen Hein)
