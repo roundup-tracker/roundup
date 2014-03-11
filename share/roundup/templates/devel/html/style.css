@@ -106,6 +106,10 @@ body
   background-color: #ffffff;
 }
 
+pre {
+  white-space: pre-wrap;
+}
+
 #search { text-align: right; }
 
 p.ok-message 

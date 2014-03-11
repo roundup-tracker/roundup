@@ -21,6 +21,8 @@ Features:
 - Drop comment in user settings about numeric hour offsets instead of using
   pytz timezone names. Due to DST these are wrong half of the year, it is
   much better to use timezone names. (Thomas Arendsen Hein)
+- issue2550793: Wrap messages with very long lines in the web interface.
+  (Thomas Arendsen Hein)
 
 Fixed:
 
