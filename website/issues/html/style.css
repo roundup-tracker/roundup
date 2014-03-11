@@ -104,6 +104,24 @@ body
   background-color: #ffffff;
 }
 
+#search { text-align: right; }
+
+p.ok-message 
+{
+  background-color: #eeffee;
+  border: 1px solid #009900;
+  padding: 5px;
+  color: #009900;
+  font-weight: bold;
+}
+p.error-message 
+{
+  background-color: #ffeeee;
+  border: 1px solid #990000;
+  padding: 5px;
+  color: #990000;
+  font-weight: bold;
+}
 /* This is a little hack to inject a 'news' block into the title
    page without having to set up a custom directive. */
 #roundup-issue-tracker .note
@@ -123,3 +141,6 @@ table
   border-spacing: 1px;
   background-color: #fafafa;
 }
+
+tr.odd { background-color:#f5f5f5; }
+
