@@ -39,8 +39,9 @@ status_notresolved string:-1,1,2,3,4,5,6,7;
        <input type="hidden" name="@sort" value="activity"/>
        <input type="hidden" name="@group" value="priority"/>
        <input id="search-text" name="@search_text" size="10"
-              tal:attributes="value request/search_text"/>
-       <input type="submit" id="submit" name="submit" value="Search" i18n:attributes="value" />
+              tal:attributes="value request/search_text | default" />
+       <input type="submit" id="submit" name="submit" value="Search"
+              i18n:attributes="value" />
      </form>
   </div>
  </td>
