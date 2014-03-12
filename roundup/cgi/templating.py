@@ -1903,7 +1903,7 @@ class IntervalHTMLProperty(HTMLProperty):
         return self.input(name=self._formname, value=value, size=size,
                           **kwargs)
 
-class LinkHTMLProperty(HTMLProperty):
+class LinkHTMLProperty(HTMLProperty, object):
     """ Link HTMLProperty
         Include the above as well as being able to access the class
         information. Stringifying the object itself results in the value
@@ -1912,6 +1912,9 @@ class LinkHTMLProperty(HTMLProperty):
         property accessed (so item/assignedto/name would look up the user
         entry identified by the assignedto property on item, and then the
         name property of that user)
+
+        (Has been turned into a new-style class to enable comparisons
+        of values with None, see issue2550830.)
     """
     def __init__(self, *args, **kw):
         HTMLProperty.__init__(self, *args, **kw)

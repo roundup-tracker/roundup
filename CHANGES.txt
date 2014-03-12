@@ -26,6 +26,9 @@ Features:
 
 Fixed:
 
+- issue2550830 An empty LinkHTMLProperty cannot be compared successfully. 
+  Improves the query editing page. Reported and fixed by R David Murray 
+  (Bernhard Reiter).
 - Fix Release-date of 1.5.0 in this file (thanks to Bernhard for
   discovery) (Ralf Schlatterbeck)
 - Pythons cgi form code can return a TypeError, we now guard for this
