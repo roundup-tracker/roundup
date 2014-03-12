@@ -68,6 +68,9 @@ Fixed:
   rounded to 60.0 and causing exceptions. Change them to 59.999 as was
   done in the fix for issue2550802. (Thomas Arendsen Hein)
 
+Minor:
+- demo.py usage message improved: explains "nuke" now.
+
 
 2013-07-06: 1.5.0
 

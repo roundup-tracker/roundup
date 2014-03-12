@@ -149,7 +149,9 @@ def usage(msg = ''):
     print """
  Run a demo server. Config and database files are created
  in %(datadir)s/ subdirectory of %(script)s dir.
-    
+
+ 'nuke' will re-initialize the demo instance, deleting the old data.
+
 Options:
  -h                -- print this help message
  -t template       -- specify the tracker template to use
