@@ -18,12 +18,11 @@ def local_replace(message):
         message = cre.sub(replacement, message)
 
     return message
-        
-    
-    
+
+
 def init(instance):
     instance.registerUtil('localReplace', local_replace)
-    
+
 
 if "__main__" == __name__:
     print " debian:#222", local_replace(" debian:#222")
@@ -32,4 +31,3 @@ if "__main__" == __name__:
     print " r222", local_replace(" r222")
     print " r 222", local_replace(" r 222")
     print " #555", local_replace(" #555")
-    
