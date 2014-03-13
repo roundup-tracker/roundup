@@ -2,13 +2,17 @@ issues.roundup-tracker.org:
 
  * log into issues.roundup-tracker.org
  * get a working copy of roundup/website/issues from the SCM, either via
-   hg clone http://roundup.hg.sourceforge.net:8000/hgroot/roundup/roundup
+   hg clone http://hg.code.sf.net/p/roundup/code
    or download a snapshot:
-   http://roundup.hg.sourceforge.net/hgweb/roundup/roundup/archive/default.tar.gz
+   http://sourceforge.net/p/roundup/code/ci/default/tarball
+
+ * check the differences
+   diff -ur /home/YOURUSERID/roundup/website/issues/ /home/roundup/trackers/roundup/
  * copy the files into the tracker instance, using sudo:
       sudo -u roundup cp <file> /home/roundup/trackers/roundup/...
-   or use rsync to check and only copy the changes files as user roundup like
+   or use rsync to check and only copy the changed files as user roundup like
       rsync -rvc /home/YOURUSERID/roundup/website/issues/ trackers/roundup/
+      HINT: old files will not be deleted by this rsync command 
  * restart the roundup server:
       sudo /etc/init.d/roundup restart
 
