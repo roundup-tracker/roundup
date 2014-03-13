@@ -18,6 +18,9 @@ Pay attention:
 
 Features:
 
+- The example local_replace.py has been updated to show how to link to
+  modern revision systems using hex revsion numbers. This extension is used
+  to expand shortcuts in msgs. (Bernhard Reiter)
 - Drop comment in user settings about numeric hour offsets instead of using
   pytz timezone names. Due to DST these are wrong half of the year, it is
   much better to use timezone names. (Thomas Arendsen Hein)
@@ -72,7 +75,7 @@ Fixed:
   done in the fix for issue2550802. (Thomas Arendsen Hein)
 
 Minor:
-- demo.py usage message improved: explains "nuke" now.
+- demo.py usage message improved: explains "nuke" now. (Bernhard Reiter)
 
 
 2013-07-06: 1.5.0
