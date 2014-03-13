@@ -4,8 +4,8 @@ substitutions = [ (re.compile('debian:\#(?P<id>\d+)'),
                    '<a href="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=\g<id>">debian#\g<id></a>' ),
                   (re.compile('\#(?P<ws>\s*)(?P<id>\d+)'),
                    "<a href='issue\g<id>'>#\g<ws>\g<id></a>" ),
-                  (re.compile('(?P<prews>\s+)(?P<revstr>(revision|rev|r)\s?)(?P<revision>\d+)'),
-                   "\g<prews><a href='http://svn.roundup-tracker.org/viewvc/roundup?view=rev&rev=\g<revision>'>\g<revstr>\g<revision></a>"),
+                  (re.compile('(?P<prews>\s+)(?P<revstr>(revision|rev|r)\s?)(?P<revision>[\da-fA-F]+)'),
+                   "\g<prews><a href='http://sourceforge.net/p/roundup/code/ci/\g<revision>'>\g<revstr>\g<revision></a>"),
                   ]
 
 def local_replace(message):
