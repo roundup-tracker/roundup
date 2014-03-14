@@ -4,6 +4,8 @@ substitutions = [ (re.compile('debian:\#(?P<id>\d+)'),
                    '<a href="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=\g<id>">debian#\g<id></a>' ),
                   (re.compile('\#(?P<ws>\s*)(?P<id>\d+)'),
                    "<a href='issue\g<id>'>#\g<ws>\g<id></a>" ),
+                  (re.compile('(?P<prews>^|\s+)issue(?P<ws>\s*)(?P<id>\d+)'),
+                   "\g<prews><a href='issue\g<id>'>issue\g<ws>\g<id></a>" ),
                   (re.compile('(?P<prews>^|\s+)(?P<revstr>(revision|rev|r)\s?)(?P<revision>[\da-fA-F]+)(?P<post>\W+|$)'),
                    "\g<prews><a href='http://sourceforge.net/p/roundup/code/ci/\g<revision>'>\g<revstr>\g<revision></a>\g<post>"),
                   ]
@@ -23,6 +25,7 @@ def init(instance):
 if "__main__" == __name__:
     print " debian:#222", local_replace(" debian:#222")
     print " #555", local_replace(" #555")
+    print "issue333", local_replace("issue333")
     print " revision 222", local_replace(" revision 222")
     print " r 222", local_replace(" r 222")
     print " wordthatendswithr 222", local_replace(" wordthatendswithr 222") # should fail
