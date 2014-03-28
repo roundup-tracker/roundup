@@ -127,13 +127,19 @@ class Interval(_Type):
 class _Pointer(_Type):
     """An object designating a Pointer property that links or multilinks
     to a node in a specified class."""
-    def __init__(self, classname, do_journal='yes', required=False,
-                 default_value = None):
-        """ Default is to journal link and unlink events
+    def __init__(self, classname, do_journal='yes', try_id_parsing='yes',
+                 required=False, default_value=None):
+        """ Default is to journal link and unlink events.
+            When try_id_parsing is false, we don't allow IDs in input
+            fields (the key of the Link or Multilink property must be
+            given instead). This is useful when the name of a property
+            can be numeric. It will only work if the linked item has a
+            key property and is a questionable feature for multilinks.
         """
         super(_Pointer, self).__init__(required, default_value)
         self.classname = classname
         self.do_journal = do_journal == 'yes'
+        self.try_id_parsing = try_id_parsing == 'yes'
     def __repr__(self):
         """more useful for dumps. But beware: This is also used in schema
         storage in SQL backends!
@@ -145,10 +151,13 @@ class Link(_Pointer):
     """An object designating a Link property that links to a
        node in a specified class."""
     def from_raw(self, value, db, propname, **kw):
-        if value == '-1' or not value:
+        if (self.try_id_parsing and value == '-1') or not value:
             value = None
         else:
-            value = convertLinkValue(db, propname, self, value)
+            if self.try_id_parsing:
+                value = convertLinkValue(db, propname, self, value)
+            else:
+                value = convertLinkValue(db, propname, self, value, None)
         return value
     def sort_repr (self, cls, val, name):
         if not val:
@@ -213,7 +222,10 @@ class Multilink(_Pointer):
                 do_set = 0
 
             # look up the value
-            itemid = convertLinkValue(db, propname, self, item)
+            if self.try_id_parsing:
+                itemid = convertLinkValue(db, propname, self, item)
+            else:
+                itemid = convertLinkValue(db, propname, self, item, None)
 
             # perform the add/remove
             if remove:
@@ -1356,7 +1368,7 @@ class HyperdbValueError(ValueError):
 def convertLinkValue(db, propname, prop, value, idre=re.compile('^\d+$')):
     """ Convert the link value (may be id or key value) to an id value. """
     linkcl = db.classes[prop.classname]
-    if not idre.match(value):
+    if not idre or not idre.match(value):
         if linkcl.getkey():
             try:
                 value = linkcl.lookup(value)

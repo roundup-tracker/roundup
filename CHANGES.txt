@@ -26,6 +26,11 @@ Features:
   much better to use timezone names. (Thomas Arendsen Hein)
 - issue2550793: Wrap messages with very long lines in the web interface.
   (Thomas Arendsen Hein)
+- New Link / Multilink option "try_id_parsing": Sometimes the key of a
+  class can be numeric -- in that case roundup will try to parse the
+  value as an ID when evaluating form values -- not as a key. Specifying
+  try_id_parsing='no' for these Link/Multilink will skip the ID step,
+  default is 'yes'.
 
 Fixed:
 

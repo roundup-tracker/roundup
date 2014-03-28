@@ -23,6 +23,7 @@ class TestClass:
             'date': hyperdb.Date(),
             'interval': hyperdb.Interval(),
             'link': hyperdb.Link('test'),
+            'linkkeyonly': hyperdb.Link('test', try_id_parsing='no'),
             'link2': hyperdb.Link('test2'),
             'multilink': hyperdb.Multilink('test'),
             'multilink2': hyperdb.Multilink('test2'),
@@ -104,10 +105,14 @@ class RawToHyperdbTest(unittest.TestCase):
         self.assertRaises(hyperdb.HyperdbValueError, self._test, 'interval',
             'fubar')
     def testLink(self):
-        self.assertEqual(self._test('password', ''), None)
         self.assertEqual(self._test('link', '1'), '1')
         self.assertEqual(self._test('link', 'valid'), '1')
+        self.assertEqual(self._test('linkkeyonly', 'valid'), '1')
         self.assertRaises(hyperdb.HyperdbValueError, self._test, 'link',
+            'invalid')
+        self.assertRaises(hyperdb.HyperdbValueError, self._test, 'linkkeyonly',
+            '1')
+        self.assertRaises(hyperdb.HyperdbValueError, self._test, 'linkkeyonly',
             'invalid')
     def testMultilink(self):
         self.assertEqual(self._test('multilink', '', '1'), [])
