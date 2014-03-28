@@ -2844,7 +2844,8 @@ class Batch(ZTUtils.Batch):
         if self.last_item is None:
             return 1
         for property in properties:
-            if property == 'id' or isinstance (self.last_item[property], list):
+            if property == 'id' or property.endswith ('.id')\
+               or isinstance (self.last_item[property], list):
                 if (str(self.last_item[property]) !=
                     str(self.current_item[property])):
                     return 1

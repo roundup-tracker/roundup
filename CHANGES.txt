@@ -73,6 +73,8 @@ Fixed:
 - issue2117897: Fixed two more places in date.py where seconds can be
   rounded to 60.0 and causing exceptions. Change them to 59.999 as was
   done in the fix for issue2550802. (Thomas Arendsen Hein)
+- Fix batch.propchanged for transitive id properties (would result in a
+  backtrace when trying to group by property.id)
 
 Minor:
 - demo.py usage message improved: explains "nuke" now. (Bernhard Reiter)
