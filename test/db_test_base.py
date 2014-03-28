@@ -1367,16 +1367,25 @@ class DBTest(commonDBTest):
 
     def testFilteringRangeGeekInterval(self):
         ae, filter, filter_iter = self.filteringSetup()
+        # Note: When querying, create date one minute later than the
+        # timespan later queried to avoid race conditions where the
+        # creation of the deadline is more than a second ago when
+        # queried -- in that case we wouldn't get the expected result.
+        # By extending the interval by a minute we would need a very
+        # slow machine for this test to fail :-)
         for issue in (
-                { 'deadline': date.Date('. -2d')},
-                { 'deadline': date.Date('. -1d')},
-                { 'deadline': date.Date('. -8d')},
+                { 'deadline': date.Date('. -2d') + date.Interval ('00:01')},
+                { 'deadline': date.Date('. -1d') + date.Interval ('00:01')},
+                { 'deadline': date.Date('. -8d') + date.Interval ('00:01')},
                 ):
             self.db.issue.create(**issue)
         for filt in filter, filter_iter:
             ae(filt(None, {'deadline': '-2d;'}), ['5', '6'])
             ae(filt(None, {'deadline': '-1d;'}), ['6'])
             ae(filt(None, {'deadline': '-1w;'}), ['5', '6'])
+            ae(filt(None, {'deadline': '. -2d;'}), ['5', '6'])
+            ae(filt(None, {'deadline': '. -1d;'}), ['6'])
+            ae(filt(None, {'deadline': '. -1w;'}), ['5', '6'])
 
     def testFilteringIntervalSort(self):
         # 1: '1:10'

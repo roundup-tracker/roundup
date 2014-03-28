@@ -75,6 +75,10 @@ Fixed:
   done in the fix for issue2550802. (Thomas Arendsen Hein)
 - Fix batch.propchanged for transitive id properties (would result in a
   backtrace when trying to group by property.id)
+- Fix issue2550835 which tests for date-range queries with an interval
+  that depends on the local time. Put the queried date a little later to
+  avoid a race condition where the queried interval doesn't match the
+  date because the clock has advanced. (Ralf Schlatterbeck)
 
 Minor:
 - demo.py usage message improved: explains "nuke" now. (Bernhard Reiter)
