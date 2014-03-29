@@ -398,7 +398,7 @@ def input_xhtml(**attrs):
     _set_input_default_args(attrs)
     return '<input %s/>'%cgi_escape_attrs(**attrs)
 
-class HTMLInputMixin:
+class HTMLInputMixin(object):
     """ requires a _client property """
     def __init__(self):
         html_version = 'html4'
@@ -421,7 +421,7 @@ class HTMLInputMixin:
 
     _ = gettext
 
-class HTMLPermissions:
+class HTMLPermissions(object):
 
     def view_check(self):
         """ Raise the Unauthorised exception if the user's not permitted to
@@ -1903,7 +1903,7 @@ class IntervalHTMLProperty(HTMLProperty):
         return self.input(name=self._formname, value=value, size=size,
                           **kwargs)
 
-class LinkHTMLProperty(HTMLProperty, object):
+class LinkHTMLProperty(HTMLProperty):
     """ Link HTMLProperty
         Include the above as well as being able to access the class
         information. Stringifying the object itself results in the value
@@ -1912,9 +1912,6 @@ class LinkHTMLProperty(HTMLProperty, object):
         property accessed (so item/assignedto/name would look up the user
         entry identified by the assignedto property on item, and then the
         name property of that user)
-
-        (Has been turned into a new-style class to enable comparisons
-        of values with None, see issue2550830.)
     """
     def __init__(self, *args, **kw):
         HTMLProperty.__init__(self, *args, **kw)
@@ -1935,6 +1932,14 @@ class LinkHTMLProperty(HTMLProperty, object):
             return MissingValue(msg%locals())
         i = HTMLItem(self._client, self._prop.classname, self._value)
         return getattr(i, attr)
+
+    def __getitem__(self, item):
+        """Explicitly define __getitem__ -- this used to work earlier
+           due to __getattr__ returning the __getitem__ of HTMLItem -- this
+           lookup doesn't work for new-style classes.
+        """
+        i = HTMLItem(self._client, self._prop.classname, self._value)
+        return i[item]
 
     def plain(self, escape=0):
         """ Render a "plain" representation of the property
@@ -3006,7 +3011,7 @@ class TemplatingUtils:
         res.append('</table></td></tr></table>')
         return "\n".join(res)
 
-class MissingValue:
+class MissingValue(object):
     def __init__(self, description, **kwargs):
         self.__description = description
         for key, value in kwargs.items():

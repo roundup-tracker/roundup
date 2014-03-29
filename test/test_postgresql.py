@@ -20,7 +20,7 @@ import unittest
 from roundup.hyperdb import DatabaseError
 
 from db_test_base import DBTest, ROTest, config, SchemaTest, ClassicInitTest
-from db_test_base import ConcurrentDBTest, FilterCacheTest
+from db_test_base import ConcurrentDBTest, HTMLItemTest, FilterCacheTest
 
 from roundup.backends import get_backend, have_backend
 
@@ -64,6 +64,16 @@ class postgresqlConcurrencyTest(postgresqlOpener, ConcurrentDBTest):
 
     def tearDown(self):
         ConcurrentDBTest.tearDown(self)
+        postgresqlOpener.tearDown(self)
+
+class postgresqlHTMLItemTest(postgresqlOpener, HTMLItemTest):
+    backend = 'postgresql'
+    def setUp(self):
+        postgresqlOpener.setUp(self)
+        HTMLItemTest.setUp(self)
+
+    def tearDown(self):
+        HTMLItemTest.tearDown(self)
         postgresqlOpener.tearDown(self)
 
 class postgresqlFilterCacheTest(postgresqlOpener, FilterCacheTest):
@@ -122,6 +132,7 @@ def test_suite():
     suite.addTest(unittest.makeSuite(postgresqlClassicInitTest))
     suite.addTest(unittest.makeSuite(postgresqlSessionTest))
     suite.addTest(unittest.makeSuite(postgresqlConcurrencyTest))
+    suite.addTest(unittest.makeSuite(postgresqlHTMLItemTest))
     suite.addTest(unittest.makeSuite(postgresqlFilterCacheTest))
     return suite
 
