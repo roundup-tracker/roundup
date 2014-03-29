@@ -2536,6 +2536,9 @@ class HTMLItemTest(ClassicInitBase):
         issue = {'title': 'ts1', 'status': '2', 'assignedto': '3',
                 'priority': '3', 'messages' : [u_m], 'nosy' : ['3']}
         self.db.issue.create(**issue)
+        issue = {'title': 'ts2', 'status': '2',
+                'messages' : [u_m], 'nosy' : ['3']}
+        self.db.issue.create(**issue)
 
     def testHTMLItemAttributes(self):
         issue = HTMLItem(self.client, 'issue', '1')
@@ -2577,5 +2580,20 @@ class HTMLItemTest(ClassicInitBase):
             ae(n['author'].username.plain(),'worker5')
             ae(n['author']['username'].plain(),'worker5')
 
+
+    def testHTMLItemDerefFail(self):
+        issue = HTMLItem(self.client, 'issue', '2')
+        ae = self.assertEqual
+        ae(issue.assignedto.plain(),'')
+        ae(issue ['assignedto'].plain(),'')
+        ae(issue.priority.plain(),'')
+        ae(issue ['priority'].plain(),'')
+        m = '[Attempt to look up %s on a missing value]'
+        ae(str(issue.priority.name),m%'name')
+        ae(str(issue ['priority'].name),m%'name')
+        ae(str(issue.assignedto.username),m%'username')
+        ae(str(issue ['assignedto'].username),m%'username')
+        ae(bool(issue ['assignedto']['username']),False)
+        ae(bool(issue ['priority']['name']),False)
 
 # vim: set et sts=4 sw=4 :

@@ -1938,6 +1938,9 @@ class LinkHTMLProperty(HTMLProperty):
            due to __getattr__ returning the __getitem__ of HTMLItem -- this
            lookup doesn't work for new-style classes.
         """
+        if not self._value:
+            msg = self._('Attempt to look up %(item)s on a missing value')
+            return MissingValue(msg%locals())
         i = HTMLItem(self._client, self._prop.classname, self._value)
         return i[item]
 
