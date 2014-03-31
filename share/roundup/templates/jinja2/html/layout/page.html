@@ -25,31 +25,25 @@
             {% endblock %}
           </div>
 
-          {% autoescape true %}
           <div class='span9'>
               <div class='page-header'>
                 <h1> {% block page_header %} {% endblock %} </h1>
                 {% if options.error_message %}
-                  {% for m in options.error_message %}
-                    <p class='alert alert-block alert-error fade in'> 
-                      {{ m }}
-                      <button type='button' class='close' data-dismiss='alert'>X</button>
-                    </p>
-                  {% endfor %}
+                  <p class='alert alert-block alert-error fade in'> 
+                    {{ options.error_message }}
+                    <button type='button' class='close' data-dismiss='alert'>X</button>
+                  </p>
                 {% endif %}
                 {% if options.ok_message %}
-                  {% for m in options.ok_message %}
-                    <p class='alert alert-block alert-success fade in'> 
-                      {{ m }}
-                      <button type='button' class='close' data-dismiss='alert'>X</button>
-                    </p>
-                  {% endfor %}
+                  <p class='alert alert-block alert-success fade in'> 
+                    {{ options.ok_message }}
+                    <button type='button' class='close' data-dismiss='alert'>X</button>
+                  </p>
                 {% endif %}
               </div>
             {% block content %}
             {% endblock %}
           </div>
-          {% endautoescape %}
         </div>
       </div>
     {% endblock %}

@@ -48,15 +48,15 @@ def initialiseSecurity(security):
         description="User may manipulate user Roles through the web")
     security.addPermissionToRole('Admin', p)
 
-def clean_message(msg):
-    """ A multi-line message is now split at line boundaries.
-        The templates will do the right thing to format this message.
-        Note that we no longer need to escape the message as this is now
-        taken care of by the template.
-    """
-    return msg.split('\n')
+def add_message(msg_list, msg, escape=True):
+    if escape:
+        msg = cgi.escape(msg).replace('\n', '<br />\n')
+    else:
+        msg = msg.replace('\n', '<br />\n')
+    msg_list.append (msg)
+    return msg_list # for unittests
 
-error_message = ''"""<html><head><title>An error has occurred</title></head>
+default_err_msg = ''"""<html><head><title>An error has occurred</title></head>
 <body><h1>An error has occurred</h1>
 <p>A problem was encountered processing your request.
 The tracker maintainers have been notified of the problem.</p>
@@ -221,8 +221,8 @@ class Client:
     During the processing of a request, the following attributes are used:
 
     - "db"
-    - "error_message" holds a list of error messages
-    - "ok_message" holds a list of OK messages
+    - "_error_message" holds a list of error messages
+    - "_ok_message" holds a list of OK messages
     - "session" is deprecated in favor of session_api (XXX remove)
     - "session_api" is the interface to store data in session
     - "user" is the current user's name
@@ -230,6 +230,10 @@ class Client:
     - "template" is the current :template context
     - "classname" is the current class context name
     - "nodeid" is the current context item id
+
+    Note: _error_message and _ok_message should not be modified
+    directly, use add_ok_message and add_error_message, these, by
+    default, escape the message added to avoid XSS security issues.
 
     User Identification:
      Users that are absent in session data are anonymous and are logged
@@ -404,6 +408,12 @@ class Client:
         self.setHeader("Content-Length", str(len(output)))
         self.write(output)
 
+    def add_ok_message(self, msg, escape=True):
+        add_message(self._ok_message, msg, escape)
+
+    def add_error_message(self, msg, escape=True):
+        add_message(self._error_message, msg, escape)
+
     def inner_main(self):
         """Process a request.
 
@@ -436,8 +446,8 @@ class Client:
         - NotFound       (raised wherever it needs to be)
           percolates up to the CGI interface that called the client
         """
-        self.ok_message = []
-        self.error_message = []
+        self._ok_message = []
+        self._error_message = []
         try:
             self.determine_charset()
             self.determine_language()
@@ -475,7 +485,7 @@ class Client:
                 # <rj> always expire pages, as IE just doesn't seem to do the
                 # right thing here :(
                 date = time.time() - 1
-                #if self.error_message or self.ok_message:
+                #if self._error_message or self._ok_message:
                 #    date = time.time() - 1
                 #else:
                 #    date = time.time() + 5
@@ -542,7 +552,7 @@ class Client:
                 # handle it
                 raise NotFound(e)
         except FormError, e:
-            self.error_message.append(self._('Form Error: ') + str(e))
+            self.add_error_message(self._('Form Error: ') + str(e))
             self.write_html(self.renderContext())
         except IOError:
             # IOErrors here are due to the client disconnecting before
@@ -567,7 +577,7 @@ class Client:
                 exc_info = sys.exc_info()
                 subject = "Error: %s" % exc_info[1]
                 self.send_error_to_admin(subject, html, format_exc())
-                self.write_html(self._(error_message))
+                self.write_html(self._(default_err_msg))
             else:
                 self.write_html(html)
 
@@ -622,7 +632,7 @@ class Client:
             try:
                 codecs.lookup(charset)
             except LookupError:
-                self.error_message.append(self._('Unrecognized charset: %r')
+                self.add_error_message(self._('Unrecognized charset: %r')
                     % charset)
                 charset_parameter = 0
             else:
@@ -875,16 +885,14 @@ class Client:
                 template_override = self.form[key].value
             elif self.FV_OK_MESSAGE.match(key):
                 ok_message = self.form[key].value
-                ok_message = clean_message(ok_message)
             elif self.FV_ERROR_MESSAGE.match(key):
                 error_message = self.form[key].value
-                error_message = clean_message(error_message)
 
         # see if we were passed in a message
         if ok_message:
-            self.ok_message.extend(ok_message)
+            self.add_ok_message(ok_message)
         if error_message:
-            self.error_message.extend(error_message)
+            self.add_error_message(error_message)
 
         # determine the classname and possibly nodeid
         path = self.path.split('/')
@@ -1081,7 +1089,7 @@ class Client:
 
         self.classname = self.nodeid = None
         self.template = ''
-        self.error_message.append(message)
+        self.add_error_message(message)
         self.write_html(self.renderContext())
 
     def selectTemplate(self, name, view):
@@ -1131,8 +1139,8 @@ class Client:
 
         # catch errors so we can handle PT rendering errors more nicely
         args = {
-            'ok_message': self.ok_message,
-            'error_message': self.error_message
+            'ok_message': self._ok_message,
+            'error_message': self._error_message
         }
         try:
             pt = self.instance.templates.load(tplname)
@@ -1172,7 +1180,7 @@ class Client:
                 subject = "Templating Error: %s" % exc_info[1]
                 self.send_error_to_admin(subject, cgitb.pt_html(), format_exc())
                 # Now report the error to the user.
-                return self._(error_message)
+                return self._(default_err_msg)
             except:
                 # Reraise the original exception.  The user will
                 # receive an error message, and the adminstrator will
@@ -1235,7 +1243,7 @@ class Client:
                 return action_klass(self).execute()
 
         except (ValueError, Reject), err:
-            self.error_message.append(str(err))
+            self.add_error_message(str(err))
 
     def get_action_class(self, action_name):
         if (hasattr(self.instance, 'cgi_actions') and
@@ -1612,7 +1620,7 @@ class Client:
         try:
             self.mailer.standard_message(to, subject, body, author)
         except MessageSendError, e:
-            self.error_message.append(str(e))
+            self.add_error_message(str(e))
             return 0
         return 1
 

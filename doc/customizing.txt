@@ -2958,7 +2958,9 @@ See the docstring of that class for details of what it can do.
 The method will typically check the ``self.form`` variable's contents.
 It may then:
 
-- add information to ``self.client.ok_message`` or ``self.client.error_message``
+- add information to ``self.client._ok_message``
+  or ``self.client._error_message`` (by using ``self.client.add_ok_message``
+  or ``self.client.add_error_message``, respectively)
 - change the ``self.client.template`` variable to alter what the user will see
   next
 - raise Unauthorised, SendStaticFile, SendFile, NotFound or Redirect
@@ -4993,7 +4995,7 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
             '''
             category = self.form['category'].value
             if category == '-1':
-                self.client.error_message.append('You must select a category of report')
+                self.client.add_error_message('You must select a category of report')
                 return
             # everything's ok, move on to the next page
             self.client.template = 'add_page2'

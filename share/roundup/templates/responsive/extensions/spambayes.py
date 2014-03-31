@@ -62,9 +62,9 @@ class SpambayesClassify(Action):
             if not is_spam:
                 props['spambayes_score'] = 0.0
                 s = " HAM"
-            self.client.ok_message.append(self._('Message classified as') + s)
+            self.client.add_ok_message(self._('Message classified as') + s)
         else:
-            self.client.error_message.append(self._('Unable to classify message, got error:') + errmsg)
+            self.client.add_error_message(self._('Unable to classify message, got error:') + errmsg)
 
         klass = self.db.getclass(self.classname)
         klass.set(self.nodeid, **props)

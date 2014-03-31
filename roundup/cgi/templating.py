@@ -740,8 +740,8 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
 
         # use our fabricated request
         args = {
-            'ok_message': self._client.ok_message,
-            'error_message': self._client.error_message
+            'ok_message': self._client._ok_message,
+            'error_message': self._client._error_message
         }
         return pt.render(self._client, self.classname, req, **args)
 

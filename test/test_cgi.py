@@ -40,16 +40,40 @@ def makeForm(args):
             form.list.append(cgi.MiniFieldStorage(k, v))
     return form
 
-cm = client.clean_message
+cm = client.add_message
 class MessageTestCase(unittest.TestCase):
-    # Note: We used to allow some html tags in error message. Now *only*
-    # newlines are allowed and messages are split at newlines.
-    # Note that tags are no longer escaped, see doc/upgrading.txt for
-    # the changes needed in the templates (Migrating from 1.5.0 to 1.5.1)
-    def testCleanMessageOK(self):
-        self.assertEqual(cm('a'), ['a'])
-        self.assertEqual(cm('a\nb'), ['a','b'])
-        self.assertEqual(cm('a\nb\nc\n'), ['a','b','c',''])
+    # Note: Escaping is now handled on a message-by-message basis at a
+    # point where we still know what generates a message. In this way we
+    # can decide when to escape and when not. We test the add_message
+    # routine here.
+    # Of course we won't catch errors in judgement when to escape here
+    # -- but at the time of this change only one message is not escaped.
+    def testAddMessageOK(self):
+        self.assertEqual(cm([],'a\nb'), ['a<br />\nb'])
+        self.assertEqual(cm([],'a\nb\nc\n'), ['a<br />\nb<br />\nc<br />\n'])
+
+    def testAddMessageBAD(self):
+        self.assertEqual(cm([],'<script>x</script>'),
+            ['&lt;script&gt;x&lt;/script&gt;'])
+        self.assertEqual(cm([],'<iframe>x</iframe>'),
+            ['&lt;iframe&gt;x&lt;/iframe&gt;'])
+        self.assertEqual(cm([],'<<script >>alert(42);5<</script >>'),
+            ['&lt;&lt;script &gt;&gt;alert(42);5&lt;&lt;/script &gt;&gt;'])
+        self.assertEqual(cm([],'<a href="y">x</a>'),
+            ['&lt;a href="y"&gt;x&lt;/a&gt;'])
+        self.assertEqual(cm([],'<A HREF="y">x</A>'),
+            ['&lt;A HREF="y"&gt;x&lt;/A&gt;'])
+        self.assertEqual(cm([],'<br>x<br />'), ['&lt;br&gt;x&lt;br /&gt;'])
+        self.assertEqual(cm([],'<i>x</i>'), ['&lt;i&gt;x&lt;/i&gt;'])
+        self.assertEqual(cm([],'<b>x</b>'), ['&lt;b&gt;x&lt;/b&gt;'])
+        self.assertEqual(cm([],'<BR>x<BR />'), ['&lt;BR&gt;x&lt;BR /&gt;'])
+        self.assertEqual(cm([],'<I>x</I>'), ['&lt;I&gt;x&lt;/I&gt;'])
+        self.assertEqual(cm([],'<B>x</B>'), ['&lt;B&gt;x&lt;/B&gt;'])
+
+    def testAddMessageNoEscape(self):
+        self.assertEqual(cm([],'<i>x</i>',False), ['<i>x</i>'])
+        self.assertEqual(cm([],'<i>x</i>\n<b>x</b>',False),
+            ['<i>x</i><br />\n<b>x</b>'])
 
 class FormTestCase(unittest.TestCase):
     def setUp(self):
@@ -672,7 +696,7 @@ class FormTestCase(unittest.TestCase):
         cl.db = self.db
         cl.userid = userid
         cl.language = ('en',)
-        cl.error_message = []
+        cl._error_message = []
         cl.template = template
         return cl
 
@@ -743,14 +767,14 @@ class FormTestCase(unittest.TestCase):
             'roles':'Admin'}, nodeid=None, userid='4')
         self.assertRaises(exceptions.Unauthorised,
             actions.NewItemAction(cl).handle)
-        self.assertEqual(cl.error_message,[])
+        self.assertEqual(cl._error_message,[])
         # this should work
         cl = self._make_client({'username':'new_user', 'password':'secret',
             '@confirm@password':'secret', 'address':'new_user@bork.bork'},
             nodeid=None, userid='4')
         self.assertRaises(exceptions.Redirect,
             actions.NewItemAction(cl).handle)
-        self.assertEqual(cl.error_message,[])
+        self.assertEqual(cl._error_message,[])
         # don't allow changing (my own) username (in this example)
         cl = self._make_client(dict(username='new_user42'), userid='4')
         self.assertRaises(exceptions.Unauthorised,
@@ -889,16 +913,16 @@ class FormTestCase(unittest.TestCase):
     def testEditCSV(self):
         form = dict(rows='id,name\n1,newkey')
         cl = self._make_client(form, userid='1', classname='keyword')
-        cl.ok_message = []
+        cl._ok_message = []
         actions.EditCSVAction(cl).handle()
-        self.assertEqual(cl.ok_message, ['Items edited OK'])
+        self.assertEqual(cl._ok_message, ['Items edited OK'])
         k = self.db.keyword.getnode('1')
         self.assertEqual(k.name, 'newkey')
         form = dict(rows=u'id,name\n1,\xe4\xf6\xfc'.encode('utf-8'))
         cl = self._make_client(form, userid='1', classname='keyword')
-        cl.ok_message = []
+        cl._ok_message = []
         actions.EditCSVAction(cl).handle()
-        self.assertEqual(cl.ok_message, ['Items edited OK'])
+        self.assertEqual(cl._ok_message, ['Items edited OK'])
         k = self.db.keyword.getnode('1')
         self.assertEqual(k.name, u'\xe4\xf6\xfc'.encode('utf-8'))
 

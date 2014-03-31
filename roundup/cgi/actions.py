@@ -131,7 +131,7 @@ class RetireAction(Action):
         self.db.getclass(self.classname).retire(itemid)
         self.db.commit()
 
-        self.client.ok_message.append(
+        self.client.add_ok_message(
             self._('%(classname)s %(itemid)s has been retired')%{
                 'classname': self.classname.capitalize(), 'itemid': itemid})
 
@@ -331,7 +331,7 @@ class EditCSVAction(Action):
 
             # confirm correct weight
             if len(props_without_id) != len(values):
-                self.client.error_message.append(
+                self.client.add_error_message(
                     self._('Not enough values on line %(line)s')%{'line':line})
                 return
 
@@ -392,7 +392,7 @@ class EditCSVAction(Action):
         # all OK
         self.db.commit()
 
-        self.client.ok_message.append(self._('Items edited OK'))
+        self.client.add_ok_message(self._('Items edited OK'))
 
 class EditCommon(Action):
     '''Utility methods for editing.'''
@@ -593,7 +593,7 @@ class EditItemAction(EditCommon):
             'View <a target="new" href="%s%s">their changes</a> '
             'in a new window.')%(self.classname, ', '.join(props),
             self.classname, self.nodeid)
-        self.client.error_message.append(message)
+        self.client.add_error_message(message, escape=False)
         return
 
     def handle(self):
@@ -620,7 +620,7 @@ class EditItemAction(EditCommon):
             message = self._editnodes(props, links)
         except (ValueError, KeyError, IndexError,
                 roundup.exceptions.Reject), message:
-            self.client.error_message.append(
+            self.client.add_error_message(
                 self._('Edit Error: %s') % str(message))
             return
 
@@ -656,7 +656,7 @@ class NewItemAction(EditCommon):
         try:
             props, links = self.client.parsePropsFromForm(create=1)
         except (ValueError, KeyError), message:
-            self.client.error_message.append(self._('Error: %s')
+            self.client.add_error_message(self._('Error: %s')
                 % str(message))
             return
 
@@ -667,7 +667,7 @@ class NewItemAction(EditCommon):
         except (ValueError, KeyError, IndexError,
                 roundup.exceptions.Reject), message:
             # these errors might just be indicative of user dumbness
-            self.client.error_message.append(_('Error: %s') % str(message))
+            self.client.add_error_message(_('Error: %s') % str(message))
             return
 
         # commit now that all the tricky stuff is done
@@ -692,7 +692,7 @@ class PassResetAction(Action):
             otk = self.form['otk'].value
             uid = otks.get(otk, 'uid', default=None)
             if uid is None:
-                self.client.error_message.append(
+                self.client.add_error_message(
                     self._("Invalid One Time Key!\n"
                         "(a Mozilla bug may cause this message "
                         "to show up erroneously, please check your email)"))
@@ -716,7 +716,7 @@ class PassResetAction(Action):
                 otks.destroy(otk)
                 self.db.commit()
             except (ValueError, KeyError), message:
-                self.client.error_message.append(str(message))
+                self.client.add_error_message(str(message))
                 return
 
             # user info
@@ -734,7 +734,7 @@ Your password is now: %(password)s
             if not self.client.standard_message([address], subject, body):
                 return
 
-            self.client.ok_message.append(
+            self.client.add_ok_message(
                 self._('Password reset and email sent to %s') % address)
             return
 
@@ -744,19 +744,19 @@ Your password is now: %(password)s
             try:
                 uid = self.db.user.lookup(name)
             except KeyError:
-                self.client.error_message.append(self._('Unknown username'))
+                self.client.add_error_message(self._('Unknown username'))
                 return
             address = self.db.user.get(uid, 'address')
         elif 'address' in self.form:
             address = self.form['address'].value
             uid = uidFromAddress(self.db, ('', address), create=0)
             if not uid:
-                self.client.error_message.append(
+                self.client.add_error_message(
                     self._('Unknown email address'))
                 return
             name = self.db.user.get(uid, 'username')
         else:
-            self.client.error_message.append(
+            self.client.add_error_message(
                 self._('You need to specify a username or address'))
             return
 
@@ -782,7 +782,7 @@ You should then receive another email with the new password.
         if not self.client.standard_message([address], subject, body):
             return
 
-        self.client.ok_message.append(self._('Email sent to %s') % address)
+        self.client.add_ok_message(self._('Email sent to %s') % address)
 
 class RegoCommon(Action):
     def finishRego(self):
@@ -815,7 +815,7 @@ class ConfRegoAction(RegoCommon):
             # pull the rego information out of the otk database
             self.userid = self.db.confirm_registration(self.form['otk'].value)
         except (ValueError, KeyError), message:
-            self.client.error_message.append(str(message))
+            self.client.add_error_message(str(message))
             return
         return self.finishRego()
 
@@ -837,7 +837,7 @@ class RegisterAction(RegoCommon, EditCommon):
         try:
             props, links = self.client.parsePropsFromForm(create=1)
         except (ValueError, KeyError), message:
-            self.client.error_message.append(self._('Error: %s')
+            self.client.add_error_message(self._('Error: %s')
                 % str(message))
             return
 
@@ -850,7 +850,7 @@ class RegisterAction(RegoCommon, EditCommon):
             except (ValueError, KeyError, IndexError,
                     roundup.exceptions.Reject), message:
                 # these errors might just be indicative of user dumbness
-                self.client.error_message.append(_('Error: %s') % str(message))
+                self.client.add_error_message(_('Error: %s') % str(message))
                 return
 
             # fix up the initial roles
@@ -938,7 +938,7 @@ class LogoutAction(Action):
         self.client.session_api.destroy()
 
         # Let the user know what's going on
-        self.client.ok_message.append(self._('You are logged out'))
+        self.client.add_ok_message(self._('You are logged out'))
 
         # reset client context to render tracker home page
         # instead of last viewed page (may be inaccessibe for anonymous)
@@ -959,7 +959,7 @@ class LoginAction(Action):
 
         # we need the username at a minimum
         if '__login_name' not in self.form:
-            self.client.error_message.append(self._('Username required'))
+            self.client.add_error_message(self._('Username required'))
             return
 
         # get the login info
@@ -973,7 +973,8 @@ class LoginAction(Action):
             self.verifyLogin(self.client.user, password)
         except exceptions.LoginError, err:
             self.client.make_user_anonymous()
-            self.client.error_message.extend(list(err.args))
+            for arg in err.args:
+                self.client.add_error_message(arg)
             return
 
         # now we're OK, re-open the database for real, using the user

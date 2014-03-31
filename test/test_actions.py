@@ -4,6 +4,7 @@ from cgi import FieldStorage, MiniFieldStorage
 from roundup import hyperdb
 from roundup.date import Date, Interval
 from roundup.cgi.actions import *
+from roundup.cgi.client import add_message
 from roundup.cgi.exceptions import Redirect, Unauthorised, SeriousError
 
 from mocknull import MockNull
@@ -15,6 +16,12 @@ class ActionTestCase(unittest.TestCase):
     def setUp(self):
         self.form = FieldStorage()
         self.client = MockNull()
+        self.client._ok_message = []
+        self.client._error_message = []
+        self.client.add_error_message = lambda x : add_message(
+            self.client._error_message, x)
+        self.client.add_ok_message = lambda x : add_message(
+            self.client._ok_message, x)
         self.client.form = self.form
         class TemplatingUtils:
             pass
@@ -60,9 +67,9 @@ class ShowActionTestCase(ActionTestCase):
 class RetireActionTestCase(ActionTestCase):
     def testRetireAction(self):
         self.client.db.security.hasPermission = true
-        self.client.ok_message = []
+        self.client._ok_message = []
         RetireAction(self.client).handle()
-        self.assert_(len(self.client.ok_message) == 1)
+        self.assert_(len(self.client._ok_message) == 1)
 
     def testNoPermission(self):
         self.assertRaises(Unauthorised, RetireAction(self.client).execute)
@@ -179,7 +186,7 @@ class CollisionDetectionTestCase(ActionTestCase):
 class LoginTestCase(ActionTestCase):
     def setUp(self):
         ActionTestCase.setUp(self)
-        self.client.error_message = []
+        self.client._error_message = []
 
         # set the db password to 'right'
         self.client.db.user.get = lambda a,b: 'right'
@@ -196,7 +203,7 @@ class LoginTestCase(ActionTestCase):
                 MiniFieldStorage('__login_password', password))
 
         LoginAction(self.client).handle()
-        self.assertEqual(self.client.error_message, messages)
+        self.assertEqual(self.client._error_message, messages)
 
     def testNoUsername(self):
         self.assertLoginLeavesMessages(['Username required'])

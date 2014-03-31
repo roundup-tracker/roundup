@@ -11,10 +11,11 @@ Entries without name were done by Richard Jones.
 
 Pay attention:
 
-  This release includes *important change affecting security*. Since
-  this version escaping now happens in the template and not in the
-  roundup code. Please read doc/upgrading.txt on how to change your
-  templates. Without this you are vulnerable. (Ralf Schlatterbeck)
+  If you have installed an intermediate version from our version control
+  system and have modified your tracker instance to escape OK and
+  error-messages in the HTML templates you need to revert this change.
+  If you're upgrading from a previous roundup release version
+  you should look into ``doc/upgrading.txt``.  (Ralf Schlatterbeck)
 
 Features:
 
@@ -72,18 +73,18 @@ Fixed:
   JOIN clause was missing in generated SQL. (Ralf Schlatterbeck)
 - Fix another XSS issue2550817. Note that the code that triggers that
   particular bug is no longer in roundup core. But the change to the
-  templates we suggest is a *lot* safer as it always escapes the error
-  and ok messages now. Thanks to Thibault Fevry for the original
+  templates we suggest is a *lot* safer as it by default escapes the
+  error and ok messages now. Thanks to Thibault Fevry for the original
   bug-report.
 - issue2117897: Fixed two more places in date.py where seconds can be
   rounded to 60.0 and causing exceptions. Change them to 59.999 as was
   done in the fix for issue2550802. (Thomas Arendsen Hein)
 - Fix batch.propchanged for transitive id properties (would result in a
   backtrace when trying to group by property.id)
-- Fix issue2550835 which tests for date-range queries with an interval
-  that depends on the local time. Put the queried date a little later to
-  avoid a race condition where the queried interval doesn't match the
-  date because the clock has advanced. (Ralf Schlatterbeck)
+- Fix issue2550835, the test checks for date-range queries with an
+  interval that depends on the local time. Put the queried date a little
+  later to avoid a race condition where the queried interval doesn't
+  match the date because the clock has advanced. (Ralf Schlatterbeck)
 
 Minor:
 - demo.py usage message improved: explains "nuke" now. (Bernhard Reiter)
@@ -335,10 +336,10 @@ Fixed:
   issue2550689, but is untested if this really works in browsers.
   Thanks to Joseph Myers for reporting. (Ralf)
 - Fix another XSS with the ok- and error message, see issue2550724. We
-  solve this differently from the proposals in the bug-report by not
-  allowing *any* html-tags in ok/error messages anymore. Thanks to
-  David Benjamin for the bug-report and to Ezio Melotti for several
-  proposed fixes. (Ralf)
+  now escape messages when added to the list so we can decide whether to
+  escape a message individually for each message. The default is to
+  escape. Thanks to David Benjamin for the bug-report and to Ezio
+  Melotti for several proposed fixes. (Ralf)
 
 
 2011-07-15: 1.4.19
