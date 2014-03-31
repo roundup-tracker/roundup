@@ -85,6 +85,8 @@ Fixed:
   interval that depends on the local time. Put the queried date a little
   later to avoid a race condition where the queried interval doesn't
   match the date because the clock has advanced. (Ralf Schlatterbeck)
+- Apply german translation fixes from Debian team in issue2550761,
+  thanks to Kai Storbeck for taking the time to report these.
 
 Minor:
 - demo.py usage message improved: explains "nuke" now. (Bernhard Reiter)

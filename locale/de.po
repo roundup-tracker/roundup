@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Roundup 1.4.6\n"
+"Project-Id-Version: Roundup 1.5.0\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2009-03-12 11:58+0200\n"
-"PO-Revision-Date: 2013-10-31 10:43+0100\n"
+"PO-Revision-Date: 2014-03-31 18:42+0200\n"
 "Last-Translator: Tobias Herp <tobias.herp@gmx.de>\n"
 "Language-Team: German Translators <roundup-devel@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -259,7 +259,7 @@ msgstr ""
 "Verwendung: help Thema\n"
 "        Zeigt die Hilfe für ein Thema ein.\n"
 "\n"
-"        commands  -- Befehle auflisten\n"
+"        commands  -- Befehlsliste ausgeben\n"
 "        <command> -- Hilfe zu einem bestimmten Befehl\n"
 "        initopts  -- Optionen zur Initialisierung\n"
 "        all       -- sämtlichen Hilfetext anzeigen\n"
@@ -383,7 +383,7 @@ msgstr ""
 
 #: ../roundup/admin.py:401
 msgid "Select template [classic]: "
-msgstr "Template auswählen [classic]:"
+msgstr "Vorlagensatz auswählen [classic]:"
 
 #: ../roundup/admin.py:412
 msgid "Select backend [anydbm]: "
@@ -444,7 +444,7 @@ msgid ""
 msgstr ""
 "Verwendung: genconfig <filename>\n"
 "        Schreibt eine neue Tracker-Konfiguration (im \".ini\"-Format) mit \n"
-"        Standard-Werten in die Datei <filename>.\n"
+"        Standardwerten in die Datei <filename>.\n"
 "        "
 
 #. password
@@ -1898,7 +1898,7 @@ msgid ""
 "\tcontains old-style template - ignored"
 msgstr ""
 "WARNUNG: Das Verzeichnis '%s'\n"
-"\tenthält Templates im alten Format, die ignoriert werden."
+"\tenthält Vorlagen im alten Format, die ignoriert werden."
 
 #: ../roundup/mailgw.py:201
 #: ../roundup/mailgw.py:213
