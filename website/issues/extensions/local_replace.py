@@ -1,14 +1,14 @@
 import re
 
-substitutions = [ (re.compile('debian:\#(?P<id>\d+)'),
-                   '<a href="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=\g<id>">debian#\g<id></a>' ),
-                  (re.compile('\#(?P<ws>\s*)(?P<id>\d+)'),
-                   "<a href='issue\g<id>'>#\g<ws>\g<id></a>" ),
-                  (re.compile('(?P<prews>^|\s+)issue(?P<ws>\s*)(?P<id>\d+)'),
-                   "\g<prews><a href='issue\g<id>'>issue\g<ws>\g<id></a>" ),
+substitutions = [ (re.compile(r'debian:\#(?P<id>\d+)'),
+                   r'<a href="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=\g<id>">debian#\g<id></a>' ),
+                  (re.compile(r'\#(?P<ws>\s*)(?P<id>\d+)'),
+                   r"<a href='issue\g<id>'>#\g<ws>\g<id></a>" ),
+                  (re.compile(r'(?P<prews>^|\s+)issue(?P<ws>\s*)(?P<id>\d+)'),
+                   r"\g<prews><a href='issue\g<id>'>issue\g<ws>\g<id></a>" ),
                   # matching hg revison number or hash
-                  (re.compile('(?P<prews>^|\s+)(?P<revstr>(revision|rev|r)\s?)(?P<revision>([1-9][0-9]*)|[0-9a-fA-F]{4,40})(?P<post>\W+|$)'),
-                   "\g<prews><a href='http://sourceforge.net/p/roundup/code/ci/\g<revision>'>\g<revstr>\g<revision></a>\g<post>"),
+                  (re.compile(r'(?P<prews>^|\s+)(?P<revstr>(revision|rev|r)\s?)(?P<revision>([1-9][0-9]*)|[0-9a-fA-F]{4,40})(?P<post>\W+|$)'),
+                   r"\g<prews><a href='http://sourceforge.net/p/roundup/code/ci/\g<revision>'>\g<revstr>\g<revision></a>\g<post>"),
                   ]
 
 def local_replace(message):
@@ -40,7 +40,7 @@ if "__main__" == __name__:
     quicktest("re-evaluate", False)
     quicktest("rex140eb", False)
     quicktest("rev 012", False) # too short for a hg hash
-    quicktest("rev 0123", False) # too short for a hg hash
+    quicktest("rev 0123")
     quicktest("re140eb")
     quicktest(" r7140eb")
     quicktest(" rev7140eb ")
