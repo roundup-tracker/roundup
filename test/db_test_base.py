@@ -430,6 +430,19 @@ class DBTest(commonDBTest):
             if commit: self.db.commit()
             self.assertEqual(self.db.issue.get(nid, "deadline"), None)
 
+    def testDateSort(self):
+        d1 = date.Date('.')
+        ae, filter, filter_iter = self.filteringSetup()
+        nid = self.db.issue.create(title="nodeadline", status='1')
+        self.db.commit()
+        for filt in filter, filter_iter:
+            ae(filt(None, {}, ('+','deadline')), ['5', '2', '1', '3', '4'])
+            ae(filt(None, {}, ('+','id'), ('+', 'deadline')),
+                ['5', '2', '1', '3', '4'])
+            ae(filt(None, {}, ('-','id'), ('-', 'deadline')),
+                ['4', '3', '1', '2', '5'])
+
+
     # Interval
     def testIntervalChange(self):
         self.assertRaises(TypeError, self.db.issue.create,
