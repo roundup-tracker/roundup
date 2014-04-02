@@ -6,7 +6,8 @@ substitutions = [ (re.compile('debian:\#(?P<id>\d+)'),
                    "<a href='issue\g<id>'>#\g<ws>\g<id></a>" ),
                   (re.compile('(?P<prews>^|\s+)issue(?P<ws>\s*)(?P<id>\d+)'),
                    "\g<prews><a href='issue\g<id>'>issue\g<ws>\g<id></a>" ),
-                  (re.compile('(?P<prews>^|\s+)(?P<revstr>(revision|rev|r)\s?)(?P<revision>[1-9a-fA-F][0-9a-fA-F]*)(?P<post>\W+|$)'),
+                  # matching hg revison number or hash
+                  (re.compile('(?P<prews>^|\s+)(?P<revstr>(revision|rev|r)\s?)(?P<revision>([1-9][0-9]*)|[0-9a-fA-F]{4,40})(?P<post>\W+|$)'),
                    "\g<prews><a href='http://sourceforge.net/p/roundup/code/ci/\g<revision>'>\g<revstr>\g<revision></a>\g<post>"),
                   ]
 
@@ -38,6 +39,8 @@ if "__main__" == __name__:
     quicktest(" too many spaces r  222", False)
     quicktest("re-evaluate", False)
     quicktest("rex140eb", False)
+    quicktest("rev 012", False) # too short for a hg hash
+    quicktest("rev 0123", False) # too short for a hg hash
     quicktest("re140eb")
     quicktest(" r7140eb")
     quicktest(" rev7140eb ")
