@@ -2675,7 +2675,8 @@ class Class(hyperdb.Class):
         # Compute values needed for sorting in proptree.sort
         for p in proptree:
             if hasattr(p, 'auxcol'):
-                p.sort_ids = p.sort_result = [row[p.auxcol] for row in l]
+                p.sort_ids = [row[p.auxcol] for row in l]
+                p.sort_result = p._sort_repr (p.propclass.sort_repr, p.sort_ids)
         # return the IDs (the first column)
         # XXX numeric ids
         l = [str(row[0]) for row in l]
