@@ -40,6 +40,13 @@ import os, shutil
 from MySQLdb.constants import ER
 import logging
 
+isolation_levels = \
+    { 'read uncommitted': 'READ UNCOMMITTED'
+    , 'read committed': 'READ COMMITTED'
+    , 'repeatable read': 'REPEATABLE READ'
+    , 'serializable': 'SERIALIZABLE'
+    }
+
 def connection_dict(config, dbnamestr=None):
     d = rdbms_common.connection_dict(config, dbnamestr)
     if d.has_key('password'):
@@ -145,6 +152,8 @@ class Database(Database):
             raise DatabaseError, message
         cursor = conn.cursor()
         cursor.execute("SET AUTOCOMMIT=0")
+        lvl = isolation_levels [self.config.RDBMS_ISOLATION_LEVEL]
+        cursor.execute("SET SESSION TRANSACTION ISOLATION LEVEL %s" % lvl)
         cursor.execute("START TRANSACTION")
         return (conn, cursor)
 

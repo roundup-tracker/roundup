@@ -8,19 +8,43 @@
 __docformat__ = 'restructuredtext'
 
 import os, shutil, time
+ISOLATION_LEVEL_READ_UNCOMMITTED = None
+ISOLATION_LEVEL_READ_COMMITTED = None
+ISOLATION_LEVEL_REPEATABLE_READ = None
+ISOLATION_LEVEL_SERIALIZABLE = None
 try:
     import psycopg
     from psycopg import QuotedString
     from psycopg import ProgrammingError
+    TransactionRollbackError = ProgrammingError
+    try:
+        from psycopg.extensions import ISOLATION_LEVEL_READ_UNCOMMITTED
+        from psycopg.extensions import ISOLATION_LEVEL_READ_COMMITTED
+        from psycopg.extensions import ISOLATION_LEVEL_REPEATABLE_READ
+        from psycopg.extensions import ISOLATION_LEVEL_SERIALIZABLE
+    except ImportError:
+        pass
 except:
     from psycopg2 import psycopg1 as psycopg
     from psycopg2.extensions import QuotedString
+    from psycopg2.extensions import ISOLATION_LEVEL_READ_UNCOMMITTED
+    from psycopg2.extensions import ISOLATION_LEVEL_READ_COMMITTED
+    from psycopg2.extensions import ISOLATION_LEVEL_REPEATABLE_READ
+    from psycopg2.extensions import ISOLATION_LEVEL_SERIALIZABLE
     from psycopg2.psycopg1 import ProgrammingError
+    from psycopg2.extensions import TransactionRollbackError
 import logging
 
 from roundup import hyperdb, date
 from roundup.backends import rdbms_common
 from roundup.backends import sessions_rdbms
+
+isolation_levels = \
+    { 'read uncommitted': ISOLATION_LEVEL_READ_COMMITTED
+    , 'read committed': ISOLATION_LEVEL_READ_COMMITTED
+    , 'repeatable read': ISOLATION_LEVEL_REPEATABLE_READ
+    , 'serializable': ISOLATION_LEVEL_SERIALIZABLE
+    }
 
 def connection_dict(config, dbnamestr=None):
     ''' read_default_group is MySQL-specific, ignore it '''
@@ -145,6 +169,9 @@ class Database(rdbms_common.Database):
             raise hyperdb.DatabaseError(message)
 
         cursor = conn.cursor()
+        if ISOLATION_LEVEL_REPEATABLE_READ is not None:
+            lvl = isolation_levels [self.config.RDBMS_ISOLATION_LEVEL]
+            conn.set_isolation_level(lvl)
 
         return (conn, cursor)
 

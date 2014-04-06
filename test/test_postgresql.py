@@ -21,6 +21,7 @@ from roundup.hyperdb import DatabaseError
 
 from db_test_base import DBTest, ROTest, config, SchemaTest, ClassicInitTest
 from db_test_base import ConcurrentDBTest, HTMLItemTest, FilterCacheTest
+from db_test_base import ClassicInitBase, setupTracker
 
 from roundup.backends import get_backend, have_backend
 
@@ -65,6 +66,54 @@ class postgresqlConcurrencyTest(postgresqlOpener, ConcurrentDBTest):
     def tearDown(self):
         ConcurrentDBTest.tearDown(self)
         postgresqlOpener.tearDown(self)
+
+class postgresqlJournalTest(postgresqlOpener, ClassicInitBase):
+    backend = 'postgresql'
+    def setUp(self):
+        postgresqlOpener.setUp(self)
+        ClassicInitBase.setUp(self)
+        self.tracker = setupTracker(self.dirname, self.backend)
+        db = self.tracker.open('admin')
+        self.id = db.issue.create(title='initial value')
+        db.commit()
+        db.close()
+
+    def tearDown(self):
+        self.db1.close()
+        self.db2.close()
+        ClassicInitBase.tearDown(self)
+        postgresqlOpener.tearDown(self)
+
+    def _test_journal(self, expected_journal):
+        id  = self.id
+        db1 = self.db1 = self.tracker.open('admin')
+        db2 = self.db2 = self.tracker.open('admin')
+
+        t1  = db1.issue.get(id, 'title')
+        t2  = db2.issue.get(id, 'title')
+
+        db1.issue.set (id, title='t1')
+        db1.commit()
+        db1.close()
+
+        db2.issue.set (id, title='t2')
+        db2.commit()
+        db2.close()
+        self.db = self.tracker.open('admin')
+        journal = self.db.getjournal('issue', id)
+        for n, line in enumerate(journal):
+            self.assertEqual(line[4], expected_journal[n])
+
+    def testConcurrentReadCommitted(self):
+        expected_journal = [
+            {}, {'title': 'initial value'}, {'title': 'initial value'}
+        ]
+        self._test_journal(expected_journal)
+
+    def testConcurrentRepeatableRead(self):
+        self.tracker.config.RDBMS_ISOLATION_LEVEL='repeatable read'
+        exc = self.module.TransactionRollbackError
+        self.assertRaises(exc, self._test_journal, [])
 
 class postgresqlHTMLItemTest(postgresqlOpener, HTMLItemTest):
     backend = 'postgresql'
@@ -132,6 +181,7 @@ def test_suite():
     suite.addTest(unittest.makeSuite(postgresqlClassicInitTest))
     suite.addTest(unittest.makeSuite(postgresqlSessionTest))
     suite.addTest(unittest.makeSuite(postgresqlConcurrencyTest))
+    suite.addTest(unittest.makeSuite(postgresqlJournalTest))
     suite.addTest(unittest.makeSuite(postgresqlHTMLItemTest))
     suite.addTest(unittest.makeSuite(postgresqlFilterCacheTest))
     return suite

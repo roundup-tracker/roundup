@@ -293,6 +293,20 @@ class RunDetectorOption(Option):
         else:
             raise OptionValueError(self, value, self.class_description)
 
+class IsolationOption(Option):
+    """Database isolation levels"""
+
+    allowed = ['read uncommitted', 'read committed', 'repeatable read',
+        'serializable']
+    class_description = "Allowed values: %s" % ', '.join ("'%s'" % a
+        for a in allowed)
+
+    def str2value(self, value):
+        _val = value.lower()
+        if _val in self.allowed:
+            return _val
+        raise OptionValueError(self, value, self.class_description)
+
 class MailAddressOption(Option):
 
     """Email address
@@ -650,6 +664,10 @@ SETTINGS = (
             "  or use template0 as template.\n"
             "then set this option to the template name given in the\n"
             "error message."),
+        (IsolationOption, 'isolation_level', 'read committed',
+            "Database isolation level, currently supported for\n"
+            "PostgreSQL and mysql. See, e.g.,\n"
+            "http://www.postgresql.org/docs/9.1/static/transaction-iso.html"),
     ), "Settings in this section are used"
         " by RDBMS backends only"
     ),

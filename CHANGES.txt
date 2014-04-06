@@ -32,6 +32,14 @@ Features:
   value as an ID when evaluating form values -- not as a key. Specifying
   try_id_parsing='no' for these Link/Multilink will skip the ID step,
   default is 'yes'.
+- New configuration option 'isolation_level' in rdbms section. Currently
+  supported for Postgres and mysql, sets the transaction isolation level.
+  Wrong history entries for concurrent database updates observed in
+  issue2550806 can be prevented by setting this to 'repeatable read' if
+  you want to pay the performance penalty. We test this behaviour in the
+  regression tests for Postgres but not currently for mysql.
+  See http://www.postgresql.org/docs/9.1/static/transaction-iso.html
+  (Ralf Schlatterbeck)
 
 Fixed:
 
