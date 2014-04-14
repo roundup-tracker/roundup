@@ -8,7 +8,8 @@ Customising Roundup
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
 
 .. contents::
-   :depth: 1
+   :depth: 2
+   :local:
 
 What You Can Do
 ===============
