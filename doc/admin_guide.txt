@@ -138,8 +138,9 @@ Roundup holds its own user database which primarily contains a username,
 password and email address for the user. Roundup *must* have its own user
 listing, in order to maintain internal consistency of its data. It is a
 relatively simple exercise to update this listing on a regular basis, or on
-demand, so that it matches an external listing (eg. unix passwd file, LDAP,
-etc.)
+demand, so that it matches an external listing (eg. 
+:ref:`unix passwd file<external-authentication>`,
+`LDAP <http://www.roundup-tracker.org/cgi-bin/moin.cgi/LDAPLogin>`_, etc.)
 
 Roundup identifies users in a number of ways:
 

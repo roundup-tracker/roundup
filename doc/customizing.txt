@@ -3780,6 +3780,8 @@ or "Developer" Role, and then the new class you're adding is available to
 all with the "User" Role.
 
 
+.. _external-authentication:
+
 Using External User Databases
 -----------------------------
 
