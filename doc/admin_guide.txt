@@ -3,6 +3,7 @@ Administration Guide
 ====================
 
 .. contents::
+   :local:
 
 What does Roundup install?
 ==========================

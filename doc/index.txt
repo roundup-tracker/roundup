@@ -18,7 +18,7 @@ Contents
    customizing
    admin_guide
    xmlrpc
-   original design <design>
+   Design (original) <design>
    developers
    tracker_templates
    glossary

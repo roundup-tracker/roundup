@@ -11,7 +11,10 @@ then you don't need to do anything. If you're upgrading from 0.5.6 to
 0.6.8 though, you'll need to check the "0.5 to 0.6" and "0.6.x to 0.6.3"
 steps.
 
+Contents:
+
 .. contents::
+   :local:
 
 Migrating from 1.5.0 to 1.5.1
 =============================

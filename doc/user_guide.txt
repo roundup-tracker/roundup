@@ -3,6 +3,7 @@ User Guide
 ==========
 
 .. contents::
+   :local:
 
 .. hint::
    This document will refer to *issues* as the primary store of

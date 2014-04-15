@@ -3,6 +3,7 @@ XML-RPC access to Roundup
 =========================
 
 .. contents::
+   :local:
 
 Introduction
 ------------
