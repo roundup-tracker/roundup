@@ -31,7 +31,7 @@ Features:
   class can be numeric -- in that case roundup will try to parse the
   value as an ID when evaluating form values -- not as a key. Specifying
   try_id_parsing='no' for these Link/Multilink will skip the ID step,
-  default is 'yes'.
+  default is 'yes'.  (Ralf Schlatterbeck)
 - New configuration option 'isolation_level' in rdbms section. Currently
   supported for Postgres and mysql, sets the transaction isolation level.
   Wrong history entries for concurrent database updates observed in
@@ -72,8 +72,8 @@ Fixed:
 - executable .py scripts need "#!/usr/bin/env python", add this to demo.py,
   remove exec bits from website/wiki/wiki/data/plugin/theme/roundup.py
   (Thomas Arendsen Hein)
-- issue2550822: Fix showing more than one additional property in class menu
-  (James Mack)
+- issue2550822: Fix showing more than one additional property in class menu.
+  Report and fix by James Mack (Thomas Arendsen Hein)
 - Fix String search with special SQL wildcard characters in LIKE/ILIKE
   clause and add testcase (Ralf Schlatterbeck)
 - Fix subtle bug when sorting by a Link that contains a Multilink from
@@ -83,18 +83,19 @@ Fixed:
   particular bug is no longer in roundup core. But the change to the
   templates we suggest is a *lot* safer as it by default escapes the
   error and ok messages now. Thanks to Thibault Fevry for the original
-  bug-report.
+  bug-report. (Ralf Schlatterbeck)
 - issue2117897: Fixed two more places in date.py where seconds can be
   rounded to 60.0 and causing exceptions. Change them to 59.999 as was
   done in the fix for issue2550802. (Thomas Arendsen Hein)
 - Fix batch.propchanged for transitive id properties (would result in a
-  backtrace when trying to group by property.id)
+  backtrace when trying to group by property.id) (Ralf Schlatterbeck)
 - Fix issue2550835, the test checks for date-range queries with an
   interval that depends on the local time. Put the queried date a little
   later to avoid a race condition where the queried interval doesn't
   match the date because the clock has advanced. (Ralf Schlatterbeck)
 - Apply german translation fixes from Debian team in issue2550761,
   thanks to Kai Storbeck for taking the time to report these.
+  (Ralf Schlatterbeck)
 
 Minor:
 - demo.py usage message improved: explains "nuke" now. (Bernhard Reiter)
@@ -160,6 +161,7 @@ Fixed:
   like sqlite. Reported and fixed by Tom Ekberg. (Bernhard Reiter)
 - Removed some old left over "rlog" references in documentation and code.
   Makes the debugging.txt advise for the database unit tests work again.
+  (Bernhard Reiter)
 - Fixed OpenPGP support for modern versions of libgpgme. (Bernhard Reiter)
 - Restored compatibility with old style trackers (anatoly techtonik)
 - Make roundup play nice with setup tools (for using with virtualenv)
