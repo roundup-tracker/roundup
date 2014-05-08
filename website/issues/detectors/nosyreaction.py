@@ -1,5 +1,3 @@
-from roundup.anypy.sets_ import set
-
 from roundup import roundupdb, hyperdb
 
 def nosyreaction(db, cl, nodeid, oldvalues):

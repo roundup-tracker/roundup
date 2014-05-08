@@ -147,7 +147,6 @@ NOTHING DONE
 ./roundup/__init__.py
 ./roundup/actions.py
 ./roundup/anypy/__init__.py
-./roundup/anypy/sets_.py
 ./roundup/backends/blobfiles.py
 ./roundup/backends/indexer_xapian.py
 ./roundup/backends/tsearch2_setup.py

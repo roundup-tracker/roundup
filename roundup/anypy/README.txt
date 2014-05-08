@@ -11,29 +11,4 @@ in this package provide the functionalities which are used by Roundup
 
 Use the modules in this package to preserve Roundup's compatibility.
 
-sets_: sets compatibility module
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Since Python 2.4, there is a built-in type 'set'; therefore, the 'sets'
-module is deprecated since version 2.6.  As far as Roundup is concerned,
-the usage is identical; see 
-http://docs.python.org/library/sets.html#comparison-to-the-built-in-set-types
-
-Uses the built-in type 'set' if available, and thus avoids
-deprecation warnings. Simple usage:
-
-Change all::
-  from sets import Set
-
-to::
-  from roundup.anypy.sets_ import set
-
-and use 'set' instead of 'Set' (or sets.Set, respectively).
-To avoid unnecessary imports, you can::
-
-  try:
-      set
-  except NameError:
-      from roundup.anypy.sets_ import set
-
 # vim: si

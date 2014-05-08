@@ -31,7 +31,6 @@ from roundup import mailgw, i18n, roundupdb
 from roundup.mailgw import MailGW, Unauthorized, uidFromAddress, \
     parseContent, IgnoreLoop, IgnoreBulk, MailUsageError, MailUsageHelp
 from roundup import init, instance, password, __version__
-from roundup.anypy.sets_ import set
 
 #import db_test_base
 import memorydb
