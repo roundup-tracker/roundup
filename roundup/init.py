@@ -138,13 +138,16 @@ def loadTemplateInfo(path):
         return None
 
     # load up the template's information
-    with open(tif) as f:
+    try:
+        f = open(tif)
         m = email.parser.Parser().parse(f, True)
         ti = {}
         ti['name'] = m['name']
         ti['description'] = m['description']
         ti['intended-for'] = m['intended-for']
         ti['path'] = path
+    finally:
+        f.close()
     return ti
 
 def writeHeader(name, value):
