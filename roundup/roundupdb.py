@@ -25,13 +25,12 @@ import cStringIO, base64, mimetypes
 import os.path
 import logging
 from email import Encoders
+from email.parser import FeedParser
 from email.Utils import formataddr
 from email.Header import Header
 from email.MIMEText import MIMEText
 from email.MIMEBase import MIMEBase
 from email.MIMEMultipart import MIMEMultipart
-
-from anypy.email_ import FeedParser
 
 from roundup import password, date, hyperdb
 from roundup.i18n import _
