@@ -211,38 +211,4 @@ def wrap(text, width=75, alignment=LEFTN):
     return format_columns(((width, alignment),), [text],
         collapse_whitespace=False)
 
-# Python2.3 backwards-compatibility-hack. Should be removed (and clients
-# fixed to use built-in reversed/sorted) when we abandon support for
-# python2.3
-try:
-    reversed = reversed
-except NameError:
-    def reversed(x):
-        x = list(x)
-        x.reverse()
-        return x
-
-try:
-    sorted = sorted
-except NameError:
-    def sorted(iter, cmp=None, key=None, reverse=False):
-        if key:
-            l = []
-            cnt = 0 # cnt preserves original sort-order
-            inc = [1, -1][bool(reverse)] # count down on reverse
-            for x in iter:
-                l.append ((key(x), cnt, x))
-                cnt += inc
-        else:
-            l = list(iter)
-        if cmp:
-            l.sort(cmp = cmp)
-        else:
-            l.sort()
-        if reverse:
-            l.reverse()
-        if key:
-            return [x[-1] for x in l]
-        return l
-
 # vim: set et sts=4 sw=4 :

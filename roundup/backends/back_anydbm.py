@@ -27,7 +27,6 @@ import os, marshal, re, weakref, string, copy, time, shutil, logging
 from roundup.anypy.dbm_ import anydbm, whichdb, key_in
 
 from roundup import hyperdb, date, password, roundupdb, security, support
-from roundup.support import reversed
 from roundup.backends import locking
 from roundup.i18n import _
 

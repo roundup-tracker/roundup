@@ -25,7 +25,7 @@ import os, re, shutil, weakref
 
 # roundup modules
 import date, password
-from support import ensureParentsExist, PrioList, sorted, reversed
+from support import ensureParentsExist, PrioList
 from roundup.i18n import _
 
 #

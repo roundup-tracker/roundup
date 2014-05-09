@@ -59,7 +59,6 @@ from roundup import hyperdb, date, password, roundupdb, security, support
 from roundup.hyperdb import String, Password, Date, Interval, Link, \
     Multilink, DatabaseError, Boolean, Number, Node
 from roundup.backends import locking
-from roundup.support import reversed
 from roundup.i18n import _
 
 
