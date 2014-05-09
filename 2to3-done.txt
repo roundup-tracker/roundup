@@ -90,7 +90,6 @@ TODO
 ./test/session_common.py
 ./test/test_actions.py
 ./test/test_anydbm.py
-./test/test_anypy_hashlib.py
 ./test/test_cgi.py
 ./test/test_dates.py
 ./test/test_hyperdbvals.py
@@ -148,7 +147,6 @@ NOTHING DONE
 ./roundup/__init__.py
 ./roundup/actions.py
 ./roundup/anypy/__init__.py
-./roundup/anypy/hashlib_.py
 ./roundup/anypy/sets_.py
 ./roundup/backends/blobfiles.py
 ./roundup/backends/indexer_xapian.py

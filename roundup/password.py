@@ -21,7 +21,8 @@ __docformat__ = 'restructuredtext'
 
 import re, string, random
 from base64 import b64encode, b64decode
-from roundup.anypy.hashlib_ import md5, sha1, shamodule
+from hashlib import md5, sha1
+
 try:
     import crypt
 except ImportError:
@@ -65,7 +66,7 @@ except ImportError:
     def _pbkdf2(password, salt, rounds, keylen):
         digest_size = 20 # sha1 generates 20-byte blocks
         total_blocks = int((keylen+digest_size-1)/digest_size)
-        hmac_template = HMAC(password, None, shamodule)
+        hmac_template = HMAC(password, None, sha1)
         out = _bempty
         for i in xrange(1, total_blocks+1):
             hmac = hmac_template.copy()

@@ -9,7 +9,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
-from roundup.anypy.hashlib_ import sha1
+from hashlib import sha1
 
 from roundup import init, instance, password, hyperdb, date
 

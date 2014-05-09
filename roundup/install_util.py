@@ -21,7 +21,7 @@
 __docformat__ = 'restructuredtext'
 
 import os, shutil
-from roundup.anypy.hashlib_ import sha1
+from hashlib import sha1
 
 sgml_file_types = [".xml", ".ent", ".html"]
 hash_file_types = [".py", ".sh", ".conf", ".cgi"]

@@ -36,22 +36,4 @@ To avoid unnecessary imports, you can::
   except NameError:
       from roundup.anypy.sets_ import set
 
-hashlib_: md5/sha/hashlib compatibility
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The md5 and sha modules are deprecated since Python 2.6; the hashlib
-module, introduced with Python 2.5, is recommended instead.
-
-Change all::
-  import md5
-  md5.md5(), md5.new()
-  import sha
-  sha.sha(), sha.new()
-
-to::
-  from roundup.anypy.hashlib_ import md5
-  md5()
-  from roundup.anypy.hashlib_ import sha1
-  sha1()
-
 # vim: si
