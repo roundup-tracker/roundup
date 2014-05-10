@@ -85,7 +85,7 @@ import email.utils
 
 from anypy.email_ import decode_header
 
-from roundup import configuration, hyperdb, date, password, rfc2822, exceptions
+from roundup import configuration, hyperdb, date, password, exceptions
 from roundup.mailer import Mailer, MessageSendError
 from roundup.i18n import _
 from roundup.hyperdb import iter_roles
@@ -320,8 +320,9 @@ class Message(mimetools.Message):
             data = self.fp.read()
 
         # Encode message to unicode
-        charset = rfc2822.unaliasCharset(self.getparam("charset"))
+        charset = self.getparam("charset")
         if charset:
+            charset = charset.lower().replace("windows-", 'cp')
             # Do conversion only if charset specified - handle
             # badly-specified charsets
             edata = unicode(data, charset, 'replace').encode('utf-8')

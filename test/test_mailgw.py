@@ -30,7 +30,7 @@ SENDMAILDEBUG = os.environ['SENDMAILDEBUG']
 from roundup import mailgw, i18n, roundupdb
 from roundup.mailgw import MailGW, Unauthorized, uidFromAddress, \
     parseContent, IgnoreLoop, IgnoreBulk, MailUsageError, MailUsageHelp
-from roundup import init, instance, password, rfc2822, __version__
+from roundup import init, instance, password, __version__
 from roundup.anypy.sets_ import set
 
 #import db_test_base
@@ -2533,13 +2533,6 @@ sig
     def testUserCreate(self):
         i = uidFromAddress(self.db, ('', 'user@foo.com'), 1)
         self.assertNotEqual(uidFromAddress(self.db, ('', 'user@bar.com'), 1), i)
-
-    def testRFC2822(self):
-        ascii_header = "[issue243] This is a \"test\" - with 'quotation' marks"
-        unicode_header = '[issue244] \xd0\xb0\xd0\xbd\xd0\xb4\xd1\x80\xd0\xb5\xd0\xb9'
-        unicode_encoded = '=?utf-8?q?[issue244]_=D0=B0=D0=BD=D0=B4=D1=80=D0=B5=D0=B9?='
-        self.assertEqual(rfc2822.encode_header(ascii_header), ascii_header)
-        self.assertEqual(rfc2822.encode_header(unicode_header), unicode_encoded)
 
     def testRegistrationConfirmation(self):
         otk = "Aj4euk4LZSAdwePohj90SME5SpopLETL"
