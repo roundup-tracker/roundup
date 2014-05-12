@@ -159,7 +159,7 @@ def main():
           data_files=data_files)
 
 if __name__ == '__main__':
-    os.chdir(os.path.dirname(__file__))
+    os.chdir(os.path.dirname(__file__) or '.')
     main()
 
 # vim: set filetype=python sts=4 sw=4 et si :
