@@ -109,6 +109,11 @@ pygments_style = 'sphinx'
 # given in html_static_path.
 html_style = 'default.css'
 
+# Add any extra paths that contain custom files (such as robots.txt or
+# .htaccess) here, relative to this directory. These files are copied
+# directly to the root of the documentation.
+html_extra_path = ['html_extra']
+
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
 #html_title = None
