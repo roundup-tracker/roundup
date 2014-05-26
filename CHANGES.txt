@@ -96,6 +96,9 @@ Fixed:
 - Apply german translation fixes from Debian team in issue2550761,
   thanks to Kai Storbeck for taking the time to report these.
   (Ralf Schlatterbeck)
+- Fix issue2550843 Pass text of Unauthorised and Login exceptions instead
+  of the exception instance to avoid traceback with string operations.
+  (Thomas Arendsen Hein)
 
 Minor:
 - demo.py usage message improved: explains "nuke" now. (Bernhard Reiter)

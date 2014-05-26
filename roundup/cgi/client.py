@@ -531,11 +531,11 @@ class Client:
                                "Basic realm=\"%s\"" % realm)
             else:
                 self.response_code = http_.client.FORBIDDEN
-            self.renderFrontPage(message)
+            self.renderFrontPage(str(message))
         except Unauthorised, message:
             # users may always see the front page
             self.response_code = 403
-            self.renderFrontPage(message)
+            self.renderFrontPage(str(message))
         except NotModified:
             # send the 304 response
             self.response_code = 304
