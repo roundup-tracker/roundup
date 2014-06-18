@@ -8,7 +8,7 @@ Roundup Issue Tracker
 Roundup is a simple-to-use and -install issue-tracking system with command-line, web and e-mail interfaces. 
 It is based on the winning design from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-The current stable version of Roundup is 1.4.x which has quite a comprehensive 
+The current stable version of Roundup is 1.5.x which has quite a comprehensive
 :doc:`feature set <docs/features>`. For more information see the :doc:`design overview <docs/design>`,
 and all the other :doc:`documentation <docs>`. Roundup has been deployed for:
 
