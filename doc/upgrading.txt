@@ -11,6 +11,10 @@ then you don't need to do anything. If you're upgrading from 0.5.6 to
 0.6.8 though, you'll need to check the "0.5 to 0.6" and "0.6.x to 0.6.3"
 steps.
 
+**IMPORTANT** The v1.5.x releases of Roundup will be the last to support Python
+v2.5. Support for Python v2.5 will be dropped with the v1.6 release of Roundup,
+at which point users will need to run Roundup using either Python v2.6 or v2.7.
+
 Contents:
 
 .. contents::
