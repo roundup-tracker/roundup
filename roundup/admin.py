@@ -305,7 +305,7 @@ Command help:
         #
         # we're interested in where the directory containing "share" is
         templates = {}
-        for N in 2, 4, 5:
+        for N in 2, 4, 5, 6:
             path = __file__
             # move up N elements in the path
             for i in range(N):

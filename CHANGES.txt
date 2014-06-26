@@ -99,6 +99,8 @@ Fixed:
 - Fix issue2550843 Pass text of Unauthorised and Login exceptions instead
   of the exception instance to avoid traceback with string operations.
   (Thomas Arendsen Hein)
+- Fix issue2550841 roundup-demo templates not found in virtualenv (John
+  Kristensen)
 
 Minor:
 - demo.py usage message improved: explains "nuke" now. (Bernhard Reiter)
