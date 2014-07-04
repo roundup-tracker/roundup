@@ -292,8 +292,13 @@ for cl in ('bug_type', 'task_type', 'severity', 'component',
 
 # May users view other user information? Comment these lines out
 # if you don't want them to
-db.security.addPermissionToRole('User', 'View', 'user')
-db.security.addPermissionToRole('Developer', 'View', 'user')
+p = db.security.addPermission(name='View', klass='user', 
+    properties=('id', 'organisation', 'phone', 'realname', 'timezone',
+    'username', 'vcs_name'))
+db.security.addPermissionToRole('User', p)
+db.security.addPermissionToRole('Developer', p)
+
+# Coordinator may also edit users, so they may see everything:
 db.security.addPermissionToRole('Coordinator', 'View', 'user')
 
 # Allow Coordinator to edit any user, including their roles.

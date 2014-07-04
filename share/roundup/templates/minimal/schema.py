@@ -32,7 +32,9 @@ db.security.addPermissionToRole('User', 'Email Access')
 
 # May users view other user information?
 # Comment these lines out if you don't want them to
-db.security.addPermissionToRole('User', 'View', 'user')
+p = db.security.addPermission(name='View', klass='user', 
+    properties=('id', 'username'))
+db.security.addPermissionToRole('User', p)
 
 # Users should be able to edit their own details -- this permission is
 # limited to only the situation where the Viewed or Edited item is their own.

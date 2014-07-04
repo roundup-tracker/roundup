@@ -6,9 +6,10 @@ and template changes not listed here.
 Each entry has the developer who committed the change in brackets.
 Entries without name were done by Richard Jones.
 
-**IMPORTANT** The v1.5.x releases of Roundup will be the last to support Python
-v2.5. Support for Python v2.5 will be dropped with the v1.6 release of Roundup,
-at which point users will need to run Roundup using either Python v2.6 or v2.7.
+**IMPORTANT** The v1.5.x releases of Roundup will be the last to support
+Python v2.5. Support for Python v2.5 will be dropped with the v1.6
+release of Roundup, at which point users will need to run Roundup using
+either Python v2.6 or v2.7.
 
 
 2014-??-??: 1.5.1
@@ -20,6 +21,8 @@ Pay attention:
   error-messages in the HTML templates you need to revert this change.
   If you're upgrading from a previous roundup release version
   you should look into ``doc/upgrading.txt``.  (Ralf Schlatterbeck)
+
+  Also note the default user permissions, see ``doc/upgrading.txt``.
 
 Features:
 
@@ -35,7 +38,7 @@ Features:
   class can be numeric -- in that case roundup will try to parse the
   value as an ID when evaluating form values -- not as a key. Specifying
   try_id_parsing='no' for these Link/Multilink will skip the ID step,
-  default is 'yes'.  (Ralf Schlatterbeck)
+  default is 'yes'. (Ralf Schlatterbeck)
 - New configuration option 'isolation_level' in rdbms section. Currently
   supported for Postgres and mysql, sets the transaction isolation level.
   Wrong history entries for concurrent database updates observed in
@@ -105,6 +108,12 @@ Fixed:
   (Thomas Arendsen Hein)
 - Fix issue2550841 roundup-demo templates not found in virtualenv (John
   Kristensen)
+- Security: Default user permissions should not include all user
+  attributes. We now limit this to the username, realname and some
+  further attributes depending on the schema. Note that we no longer
+  include the email addresses, depending on your installation you may
+  want to further restrict this or add some attributes like ``address``
+  and ``alternate_addresses``. (Ralf Schlatterbeck)
 
 Minor:
 - demo.py usage message improved: explains "nuke" now. (Bernhard Reiter)
