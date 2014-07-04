@@ -114,6 +114,13 @@ Fixed:
   include the email addresses, depending on your installation you may
   want to further restrict this or add some attributes like ``address``
   and ``alternate_addresses``. (Ralf Schlatterbeck)
+- Security: Attached html files are not shipped as text/html by default,
+  unless ``allow_html_file`` is specified in the configuration.
+  Unfortunately some browsers want to be helpful and render other
+  non-standard content types as html. We now change this to
+  application/octet-stream whenever 'html' is contained in the string
+  (case insensitive). Thanks to Kay Hayen for reporting and helping
+  debug this. (Ralf Schlatterbeck)
 
 Minor:
 - demo.py usage message improved: explains "nuke" now. (Bernhard Reiter)

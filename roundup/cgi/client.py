@@ -977,7 +977,7 @@ class Client:
 
         # if the mime_type is HTML-ish then make sure we're allowed to serve up
         # HTML-ish content
-        if mime_type in ('text/html', 'text/x-html'):
+        if 'html' in str (mime_type).lower () :
             if not self.instance.config['WEB_ALLOW_HTML_FILE']:
                 # do NOT serve the content up as HTML
                 mime_type = 'application/octet-stream'
