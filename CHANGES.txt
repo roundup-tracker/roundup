@@ -121,6 +121,8 @@ Fixed:
   application/octet-stream whenever 'html' is contained in the string
   (case insensitive). Thanks to Kay Hayen for reporting and helping
   debug this. (Ralf Schlatterbeck)
+- Correctly recreate the database directory when re-initialising a tracker
+  instance. (John Kristensen)
 
 Minor:
 - demo.py usage message improved: explains "nuke" now. (Bernhard Reiter)
