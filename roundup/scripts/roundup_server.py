@@ -277,9 +277,9 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def inner_run_cgi(self):
         ''' This is the inner part of the CGI handling
         '''
-        rest = self.path
 
-        if rest == '/favicon.ico':
+        # self.path is /some/path?with&all=stuff
+        if self.path == '/favicon.ico':
             # file-like object for the favicon.ico file information
             favicon_fileobj = None
 
@@ -314,10 +314,12 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
             return
 
-        i = rest.rfind('?')
+        i = self.path.rfind('?')
         if i >= 0:
-            rest, query = rest[:i], rest[i+1:]
+            # rest starts with /, query is without ?
+            rest, query = self.path[:i], self.path[i+1:]
         else:
+            rest = self.path
             query = ''
 
         # no tracker - spit out the index
