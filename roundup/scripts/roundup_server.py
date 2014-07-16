@@ -279,10 +279,10 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         '''
         rest = self.path
 
-        # file-like object for the favicon.ico file information
-        favicon_fileobj = None
-
         if rest == '/favicon.ico':
+            # file-like object for the favicon.ico file information
+            favicon_fileobj = None
+
             # check to see if a custom favicon was specified, and set
             # favicon_fileobj to the input file
             if self.CONFIG is not None:
