@@ -336,7 +336,9 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.send_response(301)
             # redirect - XXX https??
             protocol = 'http'
-            url = '%s://%s%s/'%(protocol, self.headers['host'], self.path)
+            url = '%s://%s%s/'%(protocol, self.headers['host'], rest)
+            if query:
+               url += '?' + query
             self.send_header('Location', url)
             self.end_headers()
             self.wfile.write('Moved Permanently')
