@@ -3,8 +3,8 @@
 Copyright (c) 2001, 2002, 2003 by Juergen Hermann
 */
 
-/* content styles */
-@import url(/newsite/_static/style.css);
+/* include style of main Roundup site */
+@import url(/_static/style.css);
 
 ul.editbar
 {
