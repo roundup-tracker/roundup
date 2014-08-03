@@ -99,7 +99,7 @@ sample python client
 ::
 
         >>> import xmlrpclib
-        >>> roundup_server = xmlrpclib.ServerProxy('http://username:password@localhost:8000', allow_none=True)
+        >>> roundup_server = xmlrpclib.ServerProxy('http://username:password@localhost:8000/xmlrpc', allow_none=True)
         >>> roundup_server.list('user')
         ['admin', 'anonymous', 'demo']
         >>> roundup_server.list('issue', 'id')
