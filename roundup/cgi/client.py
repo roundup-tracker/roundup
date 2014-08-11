@@ -370,7 +370,7 @@ class Client:
         """ Wrap the real main in a try/finally so we always close off the db.
         """
         try:
-            if self.env.get('CONTENT_TYPE') == 'text/xml' and self.path == 'xmlrpc':
+            if self.path == 'xmlrpc':
                 self.handle_xmlrpc()
             else:
                 self.inner_main()
@@ -380,6 +380,11 @@ class Client:
 
 
     def handle_xmlrpc(self):
+        if self.env.get('CONTENT_TYPE') != 'text/xml':
+            self.write("This is the endpoint of Roundup <a href='" +
+                "http://www.roundup-tracker.org/docs/xmlrpc.html'>" +
+                "XML-RPC interface</a>.")
+            return
 
         # Pull the raw XML out of the form.  The "value" attribute
         # will be the raw content of the POST request.
