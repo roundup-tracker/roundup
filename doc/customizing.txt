@@ -22,7 +22,7 @@ Customisation of Roundup can take one of six forms:
 1. `tracker configuration`_ changes
 2. database, or `tracker schema`_ changes
 3. "definition" class `database content`_ changes
-4. behavioural changes, through detectors_
+4. behavioural changes, through detectors_ and extensions_
 5. `security / access controls`_
 6. change the `web interface`_
 
@@ -48,7 +48,7 @@ db/                 Holds the tracker's database
 db/files/           Holds the tracker's upload files and messages            
 db/backend_name     Names the database back-end for the tracker            
 detectors/          Auditors and reactors for this tracker                   
-extensions/         Additional web actions and templating utilities.
+extensions/         Additional actions and `templating utilities`_
 html/               Web interface templates, images and style sheets         
 lib/                optional common imports for detectors and extensions
 =================== ======================================================== 
@@ -940,6 +940,33 @@ messages which only consist of a change note (ie. the message id parameter
 is not required - this is referred to as a "System Message" because it
 comes from "the system" and not a user).
 
+
+Extensions - adding capabilities to your tracker
+================================================
+.. _extensions:
+
+While detectors_ add new behavior by reacting to changes in tracked
+objects, `extensions` add new actions and utilities to Roundup, which
+are mostly used to enhance web interface.
+
+You can create an extension by creating Python file in your tracker
+``extensions`` directory.  All files from this dir are loaded when
+tracker instance is created, at which point it calls ``init(instance)``
+from each file supplying itself as a first argument.
+
+Note that at this point web interface is not loaded, but extensions still
+can register actions for in tracker instance. This may be fixed in
+Roundup 1.6 by introducing ``init_web(client)`` callback or a more
+flexible extension point mechanism.
+
+
+  * ``instance.registerUtil`` is used for adding `templating utilities`_
+    (see `adding a time log to your issues`_ for an example)
+
+  * ``instance.registerAction`` is used to add more actions to instance
+    and to web interface. See `Defining new web actions`_ for details.
+    Generic action can be added by inheriting from ``action.Action``
+    instead of ``cgi.action.Action``.
 
 Database Content
 ================
@@ -2528,10 +2555,11 @@ Roman           Same as roman(), except uppercase.
 
 The utils variable
 ~~~~~~~~~~~~~~~~~~
+.. _templating utilities:
 
 This is implemented by the
-``roundup.cgi.templating.TemplatingUtils`` class, but it may be extended
-as described below.
+``roundup.cgi.templating.TemplatingUtils`` class, which may be extended
+with additional methods by extensions_.
 
 =============== ========================================================
 Method          Description
@@ -2543,11 +2571,6 @@ html_calendar   renders an HTML calendar used by the
                 ``_generic.calendar.html`` template (itself invoked by
                 the popupCalendar DateHTMLProperty method
 =============== ========================================================
-
-You may add additional utility methods by writing them in your tracker
-``extensions`` directory and registering them with the templating system
-using ``instance.registerUtil`` (see `adding a time log to your issues`_ for
-an example of this).
 
 
 Batching
