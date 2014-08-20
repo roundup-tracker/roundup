@@ -844,16 +844,16 @@ Detector Interface
 ------------------
 
 Detectors are Python functions that are triggered on certain kinds of
-events.  The definitions of the functions live in Python modules placed
-in a directory set aside for this purpose.  Importing the Roundup
+events.  These functions are placed in a special directory which exists
+just for this purpose.  Importing the Roundup
 database module also imports all the modules in this directory, and the
 ``init()`` function of each module is called when a database is opened
 to provide it a chance to register its detectors.
 
 There are two kinds of detectors:
 
-1. an auditor is triggered just before modifying an item
-2. a reactor is triggered just after an item has been modified
+1. an `auditor` is triggered just before modifying an item
+2. a `reactor` is triggered just after an item has been modified
 
 When the Roundup database is about to perform a ``create()``, ``set()``,
 ``retire()``, or ``restore`` operation, it first calls any *auditors*
