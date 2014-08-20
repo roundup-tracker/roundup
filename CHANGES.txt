@@ -49,6 +49,8 @@ Features:
   (Ralf Schlatterbeck)
 - /xmlrpc endpoint now shows link to XML-RPC documentation if accessed
   through browser, without text/xml Content-Type (anatoly techtonik)
+- docs: New dedicated chapter for extensions in ``doc/customizing.txt``
+  (anatoly techtonik)
 
 Fixed:
 
