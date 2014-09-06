@@ -1771,8 +1771,12 @@ class DateHTMLProperty(HTMLProperty):
         elif isinstance(value, str) or isinstance(value, unicode):
             # most likely erroneous input to be passed back to user
             if isinstance(value, unicode): value = value.encode('utf8')
-            return self.input(name=self._formname, value=value, size=size,
+            print "string encountered"
+            s = self.input(name=self._formname, value=value, size=size,
                               **kwargs)
+            if popcal:
+                s += self.popcal()
+            return s
         else:
             raw_value = value
 

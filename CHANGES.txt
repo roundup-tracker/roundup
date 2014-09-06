@@ -127,6 +127,8 @@ Fixed:
   debug this. (Ralf Schlatterbeck)
 - Correctly recreate the database directory when re-initialising a tracker
   instance. (John Kristensen)
+- In case of an error, date fields would lose the calendar help, fixed.
+  (Ralf Schlatterbeck)
 
 Minor:
 - demo.py usage message improved: explains "nuke" now. (Bernhard Reiter)
