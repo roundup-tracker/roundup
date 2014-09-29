@@ -88,10 +88,10 @@ lookup  arguments: *classname, key_value*
 
 filter  arguments: *classname, list or None, attributes*
         
-        list can be None (requires ``allow_none=True`` when
-        instantiating the ServerProxy) to indicate search for all values,
-        or a list of ids. The attributes are given as a dictionary of
-        name value pairs to search for.
+        ``list`` is a list of ids to filter. It can be set to None to run
+        filter over all values (requires ``allow_none=True`` when
+        instantiating the ServerProxy). The ``attributes`` are given as a 
+        dictionary of name value pairs to search for. See also :ref:`query-tracker`.
 ======= ====================================================================
 
 sample python client
