@@ -9,15 +9,17 @@ www and wiki are hosted on SourceForge.
 
 updating issues.roundup-tracker.org
 ===================================
+If you don't have access, ask to update on mailing list. You may try to
+ping Ralf, Bernhard or Ezio directly.
 
  * log into issues.roundup-tracker.org
  * get a working copy of roundup/website/issues from the SCM, either via
-   hg clone http://hg.code.sf.net/p/roundup/code
+      hg clone http://hg.code.sf.net/p/roundup/code
    or download a snapshot:
-   http://sourceforge.net/p/roundup/code/ci/default/tarball
+      http://sourceforge.net/p/roundup/code/ci/default/tarball
 
  * check the differences
-   diff -ur /home/roundup/trackers/roundup/ /home/YOURUSERID/roundup/website/issues/
+      diff -ur /home/roundup/trackers/roundup/ /home/YOURUSERID/roundup/website/issues/
  * copy the files into the tracker instance, using sudo:
       sudo -u roundup cp <file> /home/roundup/trackers/roundup/...
    or use rsync to check and only copy the changed files as user roundup like
