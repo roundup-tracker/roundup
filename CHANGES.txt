@@ -129,9 +129,9 @@ Fixed:
   instance. (John Kristensen)
 - In case of an error, date fields would lose the calendar help, fixed.
   (Ralf Schlatterbeck)
-
-Minor:
 - demo.py usage message improved: explains "nuke" now. (Bernhard Reiter)
+- Fix issue2550735 Missing doc for xmlrpc schema. Thanks to Cédric Krier
+  for the patch. (anatoly techtonik)
 
 
 2013-07-06: 1.5.0
