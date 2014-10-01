@@ -54,6 +54,10 @@ to authenticate the request against the tracker.
 ======= ====================================================================
 Command Description
 ======= ====================================================================
+schema
+
+        Fetch tracker schema.
+
 list    arguments: *classname, [property_name]*
 
         List all elements of a given ``classname``. If ``property_name`` is
@@ -100,6 +104,8 @@ sample python client
 
         >>> import xmlrpclib
         >>> roundup_server = xmlrpclib.ServerProxy('http://username:password@localhost:8000/xmlrpc', allow_none=True)
+        >>> roundup_server.schema()
+        {'user': [['username', '<roundup.hyperdb.String>'], ...], 'issue': [...]}
         >>> roundup_server.list('user')
         ['admin', 'anonymous', 'demo']
         >>> roundup_server.list('issue', 'id')
