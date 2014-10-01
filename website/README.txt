@@ -17,7 +17,7 @@ updating issues.roundup-tracker.org
    http://sourceforge.net/p/roundup/code/ci/default/tarball
 
  * check the differences
-   diff -ur /home/YOURUSERID/roundup/website/issues/ /home/roundup/trackers/roundup/
+   diff -ur /home/roundup/trackers/roundup/ /home/YOURUSERID/roundup/website/issues/
  * copy the files into the tracker instance, using sudo:
       sudo -u roundup cp <file> /home/roundup/trackers/roundup/...
    or use rsync to check and only copy the changed files as user roundup like
