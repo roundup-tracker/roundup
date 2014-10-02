@@ -293,13 +293,12 @@ def splitDesignator(designator, dre=re.compile(r'([^\d]+)(\d+)')):
     return m.group(1), m.group(2)
 
 class Proptree(object):
-    """ Simple tree data structure for optimizing searching of
-    properties. Each node in the tree represents a roundup Class
-    Property that has to be navigated for finding the given search
-    or sort properties. The need_for attribute is used for
-    distinguishing nodes in the tree used for sorting, searching or
-    retrieval: The attribute is a dictionary containing one or several
-    of the values 'sort', 'search', 'retrieve'.
+    """ Simple tree data structure for property lookup. Each node in
+    the tree is a roundup Class Property that has to be navigated to
+    find given property. The need_for attribute is used to mark nodes
+    that are used for sorting, searching or retrieval: The attribute
+    is a dictionary containing one or several of the values 'sort',
+    'search', 'retrieve'.
 
     The Proptree is also used for transitively searching attributes for
     backends that do not support transitive search (e.g. anydbm). The
