@@ -7,12 +7,19 @@ XML-RPC access to Roundup
 
 Introduction
 ------------
-Version 1.4 of Roundup includes an XML-RPC frontend. Some installations find
-that roundup-admins requirement of local access to the tracker instance
-limiting. The XML-RPC frontend provides the ability to execute a limited subset
-of commands similar to those found in roundup-admin from remote machines. 
+Version 1.4 of Roundup includes an XML-RPC frontend for remote access. The
+XML-RPC interface allows a limited subset of commands similar to those found in
+local `roundup-admin` tool.
 
-There are two ways to access the xmlrpc interface:
+By default XML-RPC is accessible from ``/xmlrpc`` endpoint:
+
+    http://username:password@localhost:8000/xmlrpc
+
+For demo tracker the URL would be:
+
+    http://localhost:8917/demo/xmlrpc
+
+There are two ways to run the XML-RPC interface:
 
   stand alone roundup-xmlrpc-server
 
@@ -34,9 +41,7 @@ The default port is ``8000``. An alternative port can be specified with the
 accessing via roundup server
 ----------------------------
 In addition to running a stand alone server described above, the
-xmlrpc service is available from the roundup HTTP server. Access it by
-sending text/xml data to the URL for the roundup tracker with the last
-component of the url set to 'xmlrpc'.
+XML-RPC service is available from the roundup HTTP server.
 
 security consideration
 ======================
@@ -103,7 +108,7 @@ sample python client
 ::
 
         >>> import xmlrpclib
-        >>> roundup_server = xmlrpclib.ServerProxy('http://username:password@localhost:8000/xmlrpc', allow_none=True)
+        >>> roundup_server = xmlrpclib.ServerProxy('http://admin:admin@localhost:8917/demo/xmlrpc', allow_none=True)
         >>> roundup_server.schema()
         {'user': [['username', '<roundup.hyperdb.String>'], ...], 'issue': [...]}
         >>> roundup_server.list('user')
@@ -129,10 +134,3 @@ sample python client
         []
         >>> roundup_server.lookup('user','admin')
         '1'
-
-If you are accessing the interface via the roundup HTTP server, a url
-similar to:
-
-  http://username:password@localhost:8000/tracker/xmlrpc
-
-should be used.
