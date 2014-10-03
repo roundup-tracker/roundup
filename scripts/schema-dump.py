@@ -91,7 +91,6 @@ if __name__ == "__main__":
     parser.add_option("--json", action='store_true')
     (options, args) = parser.parse_args()
 
-    print sys.argv, args
     url = args[0]
     roundup_server = xmlrpclib.ServerProxy(url, allow_none=True)
     schema = roundup_server.schema()
