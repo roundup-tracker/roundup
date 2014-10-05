@@ -58,7 +58,7 @@ http://web.archive.org/web/20140618231150/http://sourceforge.net/apps/trac/sourc
     # pull latest Roundup source with www and wiki
     # (the warning about "Not trusting file ... " can be ignored
     #  for now https://sourceforge.net/p/forge/site-support/8217/)
-    hg pull -u --cwd src/roundup
+    hg pull -u --cwd ${project_home}/src/roundup
 
 
 updating wiki.roundup-tracker.org
