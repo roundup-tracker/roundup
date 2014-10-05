@@ -19,13 +19,14 @@ For demo tracker the URL would be:
 
     http://localhost:8917/demo/xmlrpc
 
+Enabling XML-RPC server 
+-----------------------
 There are two ways to run the XML-RPC interface:
 
   stand alone roundup-xmlrpc-server
 
-  access via the roundup server
-  
-  
+  through roundup itself
+
 stand alone roundup-xmlrpc-server
 ---------------------------------
 The Roundup XML-RPC standalone server must be started before remote clients can access the
@@ -38,19 +39,20 @@ location of the tracker instance must be specified.
 The default port is ``8000``. An alternative port can be specified with the
 ``--port`` switch.
 
-accessing via roundup server
-----------------------------
+through roundup
+---------------
 In addition to running a stand alone server described above, the
 XML-RPC service is available from the roundup HTTP server.
 
 security consideration
-======================
+----------------------
 Note that the current ``roundup-xmlrpc-server`` implementation does not
 support SSL. This means that usernames and passwords will be passed in
 cleartext unless the server is being proxied behind another server (such as
 Apache or lighttpd) that provide SSL.
 
-client API
+
+Client API
 ----------
 The server currently implements four methods. Each method requires that the
 user provide a username and password in the HTTP authorization header in order
