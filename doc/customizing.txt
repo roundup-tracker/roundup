@@ -4755,8 +4755,8 @@ users, replacing the existing ``'User'`` values::
 
     [main]
     ...
-    new_web_user_roles = 'Provisional User'
-    new_email_user_roles = 'Provisional User'
+    new_web_user_roles = Provisional User
+    new_email_user_roles = Provisional User
 
 
 All users may only view and edit issues, files and messages they create
