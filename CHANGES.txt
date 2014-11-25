@@ -132,6 +132,8 @@ Fixed:
 - demo.py usage message improved: explains "nuke" now. (Bernhard Reiter)
 - Fix issue2550735 Missing doc for xmlrpc schema. Thanks to Cédric Krier
   for the patch. (anatoly techtonik)
+- Fix two line-break accidents in devel and responsive milestone.item.html
+  (Thomas Arendsen Hein)
 
 
 2013-07-06: 1.5.0

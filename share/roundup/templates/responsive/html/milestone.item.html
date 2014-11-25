@@ -41,8 +41,7 @@
     <!-- status -->
     <tr tal:condition="context/id">
       <th>
-        <a href="javascript:help_window('status?:template=help&properties=name,d
-escription', 500, 400)">status</a>
+        <a href="javascript:help_window('status?:template=help&properties=name,description', 500, 400)">status</a>
       </th>
       <td colspan="5"
           tal:condition="python: request.user.hasPermission('Edit')"
