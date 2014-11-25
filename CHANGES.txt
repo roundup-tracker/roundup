@@ -51,6 +51,8 @@ Features:
   through browser, without text/xml Content-Type (anatoly techtonik)
 - docs: New dedicated chapter for extensions in ``doc/customizing.txt``
   (anatoly techtonik)
+- Increase default height of classhelp windows from 400 to 600.
+  (Thomas Arendsen Hein)
 
 Fixed:
 

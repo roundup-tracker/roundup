@@ -638,7 +638,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         return l
 
     def classhelp(self, properties=None, label=''"(list)", width='500',
-            height='400', property='', form='itemSynopsis',
+            height='600', property='', form='itemSynopsis',
             pagesize=50, inputtype="checkbox", html_kwargs={},
             sort=None, filter=None):
         """Pop up a javascript window with class help
