@@ -1060,7 +1060,7 @@ from installation and scripts.
 
 .. _`table of contents`: index.html
 .. _`user guide`: user_guide.html
-.. _`roundup specification`: design.html
+.. _`roundup specification`: spec.html
 .. _`tracker configuration`: customizing.html#tracker-configuration
 .. _`customisation documentation`: customizing.html
 .. _`Adding a new field to the classic schema`:

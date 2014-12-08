@@ -410,7 +410,7 @@ At run time, Roundup automatically compiles message catalogs whenever
 `PO`_ file is changed.
 
 .. _`Customising Roundup`: customizing.html
-.. _`Roundup's Design Document`: design.html
+.. _`Roundup's Design Document`: spec.html
 .. _`implementation notes`: implementation.html
 
 
