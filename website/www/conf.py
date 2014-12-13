@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
-#
+
+# -- Roundup Notice --
+# This conf.py is used for Roundup website and it is different
+# from doc/conf.py in that it doesn't copy extra HTML files, which
+# are copied manually using instructions in README.txt
+# ---
+
 # Roundup documentation build configuration file, created by
 # sphinx-quickstart on Tue Jan 20 17:33:20 2009.
 #
@@ -39,7 +45,7 @@ master_doc = 'contents'
 
 # General information about the project.
 project = u'Roundup'
-copyright = u'2013, Richard Jones, Roundup-Team'
+copyright = u'2009-2015, Richard Jones, Roundup-Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -169,8 +175,8 @@ htmlhelp_basename = 'Roundupdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
 latex_documents = [
-  ('docs/index', 'Roundup.tex', ur'Roundup Documentation',
-   ur'Richard Jones', 'manual'),
+  ('docs/index', 'Roundup.tex', u'Roundup Documentation',
+   u'Richard Jones', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

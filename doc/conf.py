@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
-#
+
+# -- Roundup Notice --
+# This conf.py is used to generate local documentation. There is also
+# website/www/conf.py in Roundup repository which uses the same .rst
+# sources, but different setup to generate site contents.
+# ---
+
 # Roundup documentation build configuration file, created by
 # sphinx-quickstart on Tue Jan 20 17:33:20 2009.
 #
@@ -55,7 +61,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Roundup'
-copyright = u'2009, Richard Jones'
+copyright = u'2009-2015, Richard Jones, Roundup-Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
