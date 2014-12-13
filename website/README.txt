@@ -48,17 +48,17 @@ http://web.archive.org/web/20140618231150/http://sourceforge.net/apps/trac/sourc
     # log in, replace <user> with your account
     ssh -t <user>,roundup@shell.sourceforge.net create
 
-    # set project_home and go there
+    # set project_home
     project_home=/home/project-web/roundup
-    cd ${project_home}
-
-    # read up on other people changes and add yours
-    vim logbuch.txt
 
     # pull latest Roundup source with www and wiki
     # (the warning about "Not trusting file ... " can be ignored
     #  for now https://sourceforge.net/p/forge/site-support/8217/)
     hg pull -u --cwd ${project_home}/src/roundup
+
+    # read up on other people changes and add yours
+    cd ${project_home}
+    vim logbuch.txt
 
 
 updating wiki.roundup-tracker.org
@@ -94,6 +94,9 @@ the whole procedure looks like so:
     #diff -qur ./html/ ${project_home}/htdocs/
     # copy to website dir
     cp -r -p ./html/* ${project_home}/htdocs/
+    # copy legacy html doc to website docs/ dir
+    # (in main doc/conf.py this is done automatically)
+    cp -r -p ../../doc/html_extra/* ${project_home}/htdocs/docs/
     # or try it with rsync (skip --dry-run when ready)
     #rsync --dry-run -v --checksum --recursive ./html/* ${project_home}/htdocs/
 
