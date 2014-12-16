@@ -1982,7 +1982,8 @@ class LinkHTMLProperty(HTMLProperty):
             value = ''
         else:
             k = linkcl.getkey()
-            if k and num_re.match(self._value):
+            idparse = self._prop.try_id_parsing
+            if k and idparse and num_re.match(self._value):
                 value = linkcl.get(self._value, k)
             else:
                 value = self._value
