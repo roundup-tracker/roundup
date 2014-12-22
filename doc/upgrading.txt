@@ -20,6 +20,30 @@ Contents:
 .. contents::
    :local:
 
+Migrating from 1.5.1 to 1.6.0
+=============================
+
+The ``db/backend_name`` file is no longer used to configure the database
+backend being used for a tracker. The backend is now configured in the
+``config.ini`` file using the ``backend`` option located in the ``[rdbms]``
+section. For example if ``db/backend_name`` file contains ``sqlite``, a new
+entry in the ``config.ini`` will need to be created::
+
+  [rdbms]
+
+  ...
+
+  # Database backend.
+  # Default:
+  backend = sqlite
+
+Once the ``config.ini`` file has been updated with the new ``backend`` option,
+you can safely delete the ``db/backend_name`` file.
+
+Note: the ``backend_name`` file may be located in a directory other than
+``db/`` if you have configured the ``database`` option in the ``[main]``
+section of the ``config.ini`` file to be something other than ``db``.
+
 Migrating from 1.5.0 to 1.5.1
 =============================
 

@@ -30,6 +30,8 @@ __docformat__ = 'restructuredtext'
 
 import os
 import sys
+import warnings
+
 from roundup import configuration, mailgw
 from roundup import hyperdb, backends, actions
 from roundup.cgi import client, templating
@@ -63,7 +65,31 @@ class Tracker:
         self.load_interfaces()
         self.templates = templating.get_loader(self.config["TEMPLATES"],
             self.config["TEMPLATE_ENGINE"])
-        self.backend = backends.get_backend(self.get_backend_name())
+
+        rdbms_backend = self.config.RDBMS_BACKEND
+
+        # TODO: Remove in v1.7
+        # Provide some backwards compatability for existing Roundup instances
+        # that still define the backend type in 'db/backend_name' and warn the
+        # users they need to update their config.ini
+        if rdbms_backend == '':
+            filename = os.path.join(self.config.DATABASE, 'backend_name')
+            msg = """\n
+The 'backend_name' file is no longer used to configure the database backend
+used for the tracker.  Please read 'doc/upgrading.txt' to find out how to
+update your config.ini
+"""
+            try:
+                with file(filename) as backend_file:
+                    rdbms_backend = backend_file.readline().strip()
+
+                with warnings.catch_warnings():
+                    warnings.simplefilter("once", DeprecationWarning)
+                    warnings.warn(msg, DeprecationWarning, stacklevel=2)
+            except IOError:
+                pass
+
+        self.backend = backends.get_backend(rdbms_backend)
 
         if self.optimize:
             self.templates.precompile()
@@ -76,12 +102,6 @@ class Tracker:
             self.detectors = self.get_extensions('detectors')
             # db_open is set to True after first open()
             self.db_open = 0
-
-    def get_backend_name(self):
-        f = file(os.path.join(self.config.DATABASE, 'backend_name'))
-        name = f.readline().strip()
-        f.close()
-        return name
 
     def open(self, name=None):
         # load the database schema

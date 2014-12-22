@@ -620,6 +620,8 @@ SETTINGS = (
         (Option, 'name', 'roundup',
             "Name of the database to use.",
             ['MYSQL_DBNAME']),
+        (Option, 'backend', '',
+            "Database backend."),
         (NullableOption, 'host', 'localhost',
             "Database server host.",
             ['MYSQL_DBHOST']),

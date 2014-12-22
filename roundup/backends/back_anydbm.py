@@ -171,6 +171,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.security = security.Security(self)
         os.umask(config.UMASK)
 
+        # make sure the database directory exists
+        if not os.path.isdir(self.config.DATABASE):
+            os.makedirs(self.config.DATABASE)
+
         # lock it
         lockfilenm = os.path.join(self.dir, 'lock')
         self.lockfile = locking.acquire_lock(lockfilenm)

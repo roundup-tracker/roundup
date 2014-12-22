@@ -175,21 +175,4 @@ def saveTemplateInfo(dir, info):
     finally:
         f.close()
 
-def write_select_db(instance_home, backend, dbdir=None):
-    ''' Write the file that selects the backend for the tracker
-    '''
-    # dbdir is only supplied when AdminTool.do_initialise() invokes this
-    # function and the value is fetched from the tracker config which has
-    # already determined the correct path. This is bit of a hack, but it is
-    # likely this function will be removed in v1.6
-    if not dbdir:
-        dbdir = os.path.join(instance_home, 'db')
-    if not os.path.exists(dbdir):
-        os.makedirs(dbdir)
-    f = open(os.path.join(dbdir, 'backend_name'), 'w')
-    f.write(backend+'\n')
-    f.close()
-
-
-
 # vim: set filetype=python sts=4 sw=4 et si :

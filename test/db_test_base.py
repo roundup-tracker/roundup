@@ -65,12 +65,11 @@ def setupTracker(dirname, backend="anydbm"):
                                        'roundup',
                                        'templates',
                                        'classic'))
-    init.write_select_db(dirname, backend)
+    config.RDBMS_BACKEND = backend
     config.save(os.path.join(dirname, 'config.ini'))
     tracker = instance.open(dirname)
     if tracker.exists():
         tracker.nuke()
-        init.write_select_db(dirname, backend)
     tracker.init(password.Password('sekrit'))
     return tracker
 

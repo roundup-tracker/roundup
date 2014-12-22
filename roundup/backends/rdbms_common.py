@@ -185,6 +185,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.stats = {'cache_hits': 0, 'cache_misses': 0, 'get_items': 0,
             'filtering': 0}
 
+        # make sure the database directory exists
+        if not os.path.isdir(self.config.DATABASE):
+            os.makedirs(self.config.DATABASE)
+
         # database lock
         self.lockfile = None
 

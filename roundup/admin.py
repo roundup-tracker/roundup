@@ -421,9 +421,9 @@ Erase it? Y/N: """) % locals())
         else:
             defns = {}
 
+        defns['rdbms_backend'] = backend
         # install!
         init.install(tracker_home, templates[template]['path'], settings=defns)
-        init.write_select_db(tracker_home, backend)
 
         print _("""
 ---------------------------------------------------------------------------
@@ -502,13 +502,8 @@ Erase it? Y/N: """))
             if ok.strip().lower() != 'y':
                 return 0
 
-            backend = tracker.get_backend_name()
-
             # nuke it
             tracker.nuke()
-
-            # re-write the backend select file
-            init.write_select_db(tracker_home, backend, tracker.config.DATABASE)
 
         # GO
         tracker.init(password.Password(adminpw, config=tracker.config))
