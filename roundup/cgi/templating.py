@@ -1983,8 +1983,13 @@ class LinkHTMLProperty(HTMLProperty):
         else:
             k = linkcl.getkey()
             idparse = self._prop.try_id_parsing
-            if k and idparse and num_re.match(self._value):
-                value = linkcl.get(self._value, k)
+            if k and num_re.match(self._value):
+                try :
+                    value = linkcl.get(self._value, k)
+                except IndexError :
+                    if idparse :
+                        raise
+                    value = ''
             else:
                 value = self._value
         return self.input(name=self._formname, value=value, size=size,
