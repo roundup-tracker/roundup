@@ -972,6 +972,32 @@ class Client:
             raise Unauthorised(self._("You are not allowed to view "
                 "this file."))
 
+
+        # --- mime-type security
+        # mime type detection is performed in cgi.form_parser
+
+        # everything not here is served as 'application/octet-stream'
+        whitelist = [
+            'text/plain',
+            'text/x-csrc',   # .c
+            'text/x-chdr',   # .h
+            'text/x-patch',  # .patch and .diff
+            'text/x-python', # .py
+            'text/xml',
+            'text/csv',
+            'text/css',
+            'application/pdf',
+            'image/gif',
+            'image/jpeg',
+            'image/png',
+            'image/webp',
+            'audio/ogg',
+            'video/webm',
+        ]
+
+        if self.instance.config['WEB_ALLOW_HTML_FILE']:
+            whitelist.append('text/html')
+
         try:
             mime_type = klass.get(nodeid, 'type')
         except IndexError, e:
@@ -980,12 +1006,11 @@ class Client:
         if not mime_type:
             mime_type = 'text/plain'
 
-        # if the mime_type is HTML-ish then make sure we're allowed to serve up
-        # HTML-ish content
-        if 'html' in str (mime_type).lower () :
-            if not self.instance.config['WEB_ALLOW_HTML_FILE']:
-                # do NOT serve the content up as HTML
-                mime_type = 'application/octet-stream'
+        if mime_type not in whitelist:
+            mime_type = 'application/octet-stream'
+
+        # --/ mime-type security
+
 
         # If this object is a file (i.e., an instance of FileClass),
         # see if we can find it in the filesystem.  If so, we may be
