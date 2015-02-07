@@ -605,6 +605,9 @@ def runner(files, test_filter, debug):
         else:
             raise
 
+    return r
+
+
 def remove_stale_bytecode(arg, dirname, names):
     names = map(os.path.normcase, names)
     for name in names:
@@ -665,7 +668,8 @@ def main(module_filter, test_filter, libdir):
                 print "totalrefcount=%-8d change=%-6d" % (rc, rc - prev)
                 track.update()
     else:
-        runner(files, test_filter, debug)
+        result = runner(files, test_filter, debug)
+        return len(result.failures + result.errors) > 0
 
 
 def process_args(argv=None):
