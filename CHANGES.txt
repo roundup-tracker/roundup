@@ -139,6 +139,8 @@ Fixed:
   provide protection for invalid content-type, in which case browser
   tried to guess the best one. Thanks to Kay Hayen for reporting and
   helping debug this. issue2550848 (Ralf Schlatterbeck, anatoly techtonik)
+- Fix issue2550866 '"pip install --editable ." fails'. Thanks to tonich for the
+  initial patch (John Kristensen)
 
 
 
