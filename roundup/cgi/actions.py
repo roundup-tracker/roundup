@@ -1,4 +1,5 @@
 import re, cgi, time, random, csv, codecs
+from io import BytesIO
 
 from roundup import hyperdb, token, date, password
 from roundup.actions import Action as BaseAction
@@ -6,7 +7,7 @@ from roundup.i18n import _
 from roundup.cgi import exceptions, templating
 from roundup.mailgw import uidFromAddress
 from roundup.exceptions import Reject, RejectRaw
-from roundup.anypy import io_, urllib_
+from roundup.anypy import urllib_
 
 __all__ = ['Action', 'ShowAction', 'RetireAction', 'SearchAction',
            'EditCSVAction', 'EditItemAction', 'PassResetAction',
@@ -297,7 +298,7 @@ class EditCSVAction(Action):
         props = ['id'] + props_without_id
 
         # do the edit
-        rows = io_.BytesIO(self.form['rows'].value)
+        rows = BytesIO(self.form['rows'].value)
         reader = csv.reader(rows)
         found = {}
         line = 0

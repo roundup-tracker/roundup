@@ -25,7 +25,6 @@ from roundup import xmlrpc
 
 from roundup.anypy.cookie_ import CookieError, BaseCookie, SimpleCookie, \
     get_cookie_date
-from roundup.anypy.io_ import StringIO
 from roundup.anypy import http_
 from roundup.anypy import urllib_
 
