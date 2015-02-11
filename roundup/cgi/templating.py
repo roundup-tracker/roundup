@@ -21,7 +21,8 @@ __docformat__ = 'restructuredtext'
 
 
 import cgi, urllib, re, os.path, mimetypes, csv
-import calendar, textwrap
+import calendar
+import textwrap
 
 from roundup import hyperdb, date, support
 from roundup import i18n
@@ -1426,7 +1427,7 @@ class StringHTMLProperty(HTMLProperty):
 
         if self._value is None:
             return ''
-        s = support.wrap(str(self._value), width=80)
+        s = '\n'.join(textwrap.wrap(str(self._value), 80))
         if escape:
             s = cgi.escape(s)
         if hyperlink:
