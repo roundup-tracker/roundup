@@ -24,7 +24,7 @@ __docformat__ = 'restructuredtext'
 
 import os, marshal, re, weakref, string, copy, time, shutil, logging
 
-from roundup.anypy.dbm_ import anydbm, whichdb, key_in
+from roundup.anypy.dbm_ import anydbm, whichdb
 
 from roundup import hyperdb, date, password, roundupdb, security, support
 from roundup.backends import locking
@@ -332,7 +332,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """
         # open the ids DB - create if if doesn't exist
         db = self.opendb('_ids', 'c')
-        if key_in(db, classname):
+        if classname in db:
             newid = db[classname] = str(int(db[classname]) + 1)
         else:
             # the count() bit is transitional - older dbs won't start at 1
@@ -409,7 +409,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # get from the database and save in the cache
         if db is None:
             db = self.getclassdb(classname)
-        if not key_in(db, nodeid):
+        if nodeid not in db:
             raise IndexError("no such %s %s"%(classname, nodeid))
 
         # check the uncommitted, destroyed nodes
@@ -521,7 +521,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # not in the cache - check the database
         if db is None:
             db = self.getclassdb(classname)
-        return key_in(db, nodeid)
+        return nodeid in db
 
     def countnodes(self, classname, db=None):
         count = 0
@@ -783,7 +783,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         db = self.getCachedJournalDB(classname)
 
         # now insert the journal entry
-        if key_in(db, nodeid):
+        if nodeid in db:
             # append to existing
             s = db[nodeid]
             l = marshal.loads(s)
@@ -808,12 +808,12 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def doDestroyNode(self, classname, nodeid):
         # delete from the class database
         db = self.getCachedClassDB(classname)
-        if key_in(db, nodeid):
+        if nodeid in db:
             del db[nodeid]
 
         # delete from the database
         db = self.getCachedJournalDB(classname)
-        if key_in(db, nodeid):
+        if nodeid in db:
             del db[nodeid]
 
     def rollback(self):
@@ -1624,7 +1624,7 @@ class Class(hyperdb.Class):
             # remove the uncommitted, destroyed nodes
             if self.classname in self.db.destroyednodes:
                 for nodeid in self.db.destroyednodes[self.classname]:
-                    if key_in(db, nodeid):
+                    if nodeid in db:
                         res.remove(nodeid)
 
             # check retired flag
