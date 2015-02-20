@@ -4,11 +4,11 @@ recursive-include frontends *.*
 recursive-include scripts *.* *-*
 recursive-include tools *.*
 recursive-include test *.py *.txt
-recursive-include doc *.html *.png *.txt *.css *.1 *.example
+recursive-include doc *.html *.png *.txt *.css *.example
 recursive-include detectors *.py
-recursive-include templates *.* home* page*
-global-exclude .svn .cvsignore *.pyc *.pyo .DS_Store
-include run_tests.py *.txt demo.py MANIFEST.in MANIFEST doc/conf.py
-exclude BUILD.txt I18N_PROGRESS.txt TODO.txt
-exclude doc/security.txt doc/templating.txt
+global-exclude *.pyc *.pyo .DS_Store
+include run_tests.py demo.py *.txt
+include doc/conf.py
+exclude 2to3-done.txt
+exclude doc/security.txt
 include locale/*.po locale/*.mo locale/roundup.pot
