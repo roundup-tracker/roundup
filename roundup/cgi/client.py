@@ -3,8 +3,9 @@
 __docformat__ = 'restructuredtext'
 
 import base64, binascii, cgi, codecs, mimetypes, os
-import quopri, random, re, rfc822, stat, sys, time
+import quopri, random, re, stat, sys, time
 import socket, errno
+import email.utils
 from traceback import format_exc
 
 try:
@@ -495,7 +496,8 @@ class Client:
                 #    date = time.time() - 1
                 #else:
                 #    date = time.time() + 5
-                self.additional_headers['Expires'] = rfc822.formatdate(date)
+                self.additional_headers['Expires'] = \
+                    email.utils.formatdate(date, usegmt=True)
 
                 # render the content
                 self.write_html(self.renderContext())
@@ -1074,7 +1076,7 @@ class Client:
 
         # spit out headers
         self.additional_headers['Content-Type'] = mime_type
-        self.additional_headers['Last-Modified'] = rfc822.formatdate(lmt)
+        self.additional_headers['Last-Modified'] = email.utils.formatdate(lmt)
 
         ims = None
         # see if there's an if-modified-since...
@@ -1085,7 +1087,7 @@ class Client:
             # cgi will put the header in the env var
             ims = self.env['HTTP_IF_MODIFIED_SINCE']
         if ims:
-            ims = rfc822.parsedate(ims)[:6]
+            ims = email.utils.parsedate(ims)[:6]
             lmtt = time.gmtime(lmt)[:6]
             if lmtt <= ims:
                 raise NotModified

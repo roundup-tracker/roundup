@@ -80,7 +80,8 @@ __docformat__ = 'restructuredtext'
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
 import time, random, sys, logging
-import traceback, rfc822
+import traceback
+import email.utils
 
 from anypy.email_ import decode_header
 
@@ -147,7 +148,7 @@ def getparam(str, param):
         if '=' in f:
             i = f.index('=')
             if f[:i].strip().lower() == param:
-                return rfc822.unquote(f[i+1:].strip())
+                return email.utils.unquote(f[i+1:].strip())
     return None
 
 def gpgh_key_getall(key, attr):
