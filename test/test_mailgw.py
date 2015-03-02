@@ -11,9 +11,9 @@
 
 # TODO: test bcc
 
-import unittest, tempfile, os, shutil, errno, imp, sys, difflib, rfc822, time
+import email
 import gpgmelib
-from email.parser import FeedParser
+import unittest, tempfile, os, shutil, errno, imp, sys, difflib, time
 
 
 try:
@@ -43,14 +43,13 @@ def expectedFailure(method):
     """
     return lambda x: 0
 
-class Message(rfc822.Message):
-    """String-based Message class with equivalence test."""
-    def __init__(self, s):
-        rfc822.Message.__init__(self, StringIO(s.strip()))
 
-    def __eq__(self, other):
-        return (self.dict == other.dict and
-                self.fp.read() == other.fp.read())
+def get_body(message):
+    if not message.is_multipart():
+        return message.get_payload()
+
+    return message.as_string().split('\n\n', 1)[-1]
+
 
 class Tracker(object):
     def open(self, journaltag):
@@ -59,7 +58,8 @@ class Tracker(object):
 class DiffHelper:
     def compareMessages(self, new, old):
         """Compare messages for semantic equivalence."""
-        new, old = Message(new), Message(old)
+        new = email.message_from_string(new.strip())
+        old = email.message_from_string(old.strip())
 
         # all Roundup-generated messages have "Precedence: bulk"
         old['Precedence'] = 'bulk'
@@ -86,11 +86,14 @@ class DiffHelper:
                     oldmime = old.get(key, '').split('=',1)[-1].strip('"')
                     replace ['--' + newmime] = '--' + oldmime
                     replace ['--' + newmime + '--'] = '--' + oldmime + '--'
-                elif new.get(key, '') != old.get(key, ''):
-                    res.append('  %s: %r != %r' % (key, old.get(key, ''),
-                        new.get(key, '')))
+                elif new.get_all(key, '') != old.get_all(key, ''):
+                    # check that all other headers are identical, including
+                    # headers that appear more than once.
+                    res.append('  %s: %r != %r' % (key, old.get_all(key, ''),
+                        new.get_all(key, '')))
 
-            body_diff = self.compareStrings(new.fp.read(), old.fp.read(),
+            # TODO replace the string comparision with a mimepart comparison
+            body_diff = self.compareStrings(get_body(new), get_body(old),
                 replace=replace)
             if body_diff:
                 res.append('')
@@ -3504,7 +3507,7 @@ P81iDOWUp/uyIe5ZfvNI38BBxEYslPTUlDk2GB8J2Vun7IWHoj9a4tY3IotC9jBr
         # trap_exc=1: we want a bounce message:
         self._handle_mail(self.encrypted_msg, trap_exc=1)
         m = self._get_mail()
-        fp = FeedParser()
+        fp = email.parser.FeedParser()
         fp.feed(m)
         parts = fp.close().get_payload()
         self.assertEqual(len(parts),2)
@@ -3515,7 +3518,7 @@ P81iDOWUp/uyIe5ZfvNI38BBxEYslPTUlDk2GB8J2Vun7IWHoj9a4tY3IotC9jBr
         res = ctx.op_decrypt(crypt, plain)
         self.assertEqual(res, None)
         plain.seek(0,0)
-        fp = FeedParser()
+        fp = email.parser.FeedParser()
         fp.feed(plain.read())
         parts = fp.close().get_payload()
         self.assertEqual(len(parts),2)
