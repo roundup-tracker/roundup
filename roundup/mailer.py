@@ -9,12 +9,12 @@ from cStringIO import StringIO
 from roundup import __version__
 from roundup.date import get_timezone, Date
 
-from email.Utils import formatdate, formataddr, specialsre, escapesre
-from email.Message import Message
-from email.Header import Header
-from email.MIMEBase import MIMEBase
-from email.MIMEText import MIMEText
-from email.MIMEMultipart import MIMEMultipart
+from email.utils import formatdate, formataddr, specialsre, escapesre
+from email.message import Message
+from email.header import Header
+from email.mime.base import MIMEBase
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 try:
     import pyme, pyme.core
