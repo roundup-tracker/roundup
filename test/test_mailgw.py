@@ -62,7 +62,8 @@ class DiffHelper:
         old = email.message_from_string(old.strip())
 
         # all Roundup-generated messages have "Precedence: bulk"
-        old['Precedence'] = 'bulk'
+        if 'Precedence' not in old:
+            old['Precedence'] = 'bulk'
 
         # don't try to compare the date
         del new['date'], old['date']
@@ -2052,7 +2053,6 @@ Precedence: bulk
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
 X-Roundup-Version: 1.4.8
-MIME-Version: 1.0
 
 --===============0639262320==
 Content-Type: text/plain; charset="us-ascii"
