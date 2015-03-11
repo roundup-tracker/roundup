@@ -56,6 +56,9 @@ Features:
 
 Fixed:
 
+- issue2550869 Duplicate mail headers (Reply-To, Message-ID, In-Reply-To) 
+  when sending out email. Reported with first fix by Mathias Behrle.
+  (Bernhard Reiter)
 - issue2550830 An empty LinkHTMLProperty cannot be compared successfully. 
   Improves the query editing page. Reported and fixed by R David Murray 
   (Bernhard Reiter).
