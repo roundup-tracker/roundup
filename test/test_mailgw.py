@@ -198,6 +198,11 @@ class MailgwTestAbstractBase(unittest.TestCase, DiffHelper):
         return handler.main(StringIO(message))
 
     def _get_mail(self):
+        """Reads an email that has been written to file via debug output.
+
+        Note: the resulting email will have three leading extra lines
+        written by the self.debug code branch in Mailer.smtp_send().
+        """
         f = open(SENDMAILDEBUG)
         try:
             return f.read()
@@ -1001,7 +1006,8 @@ PGh0bWw+dW1sYXV0IMOkw7bDvMOEw5bDnMOfPC9odG1sPgo=
             self.assertEqual(f.name, name)
         self.assertEqual(msg.content, 'First part: Text')
         self.compareMessages(self._get_mail(),
-'''TO: chef@bork.bork.bork, richard@test.test
+'''FROM: roundup-admin@your.tracker.email.domain.example
+TO: chef@bork.bork.bork, richard@test.test
 Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test.test
@@ -2040,7 +2046,7 @@ This is a test submission of a new issue.
         # trap_exc=1: we want a bounce message:
         ret = self._handle_mail(message, trap_exc=1)
         self.compareMessages(self._get_mail(),
-'''FROM: Roundup issue tracker <roundup-admin@your.tracker.email.domain.example>
+'''FROM: roundup-admin@your.tracker.email.domain.example
 TO: nonexisting@bork.bork.bork
 From nobody Tue Jul 14 12:04:11 2009
 Content-Type: multipart/mixed; boundary="===============0639262320=="
