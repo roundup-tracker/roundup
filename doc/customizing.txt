@@ -416,7 +416,10 @@ Section **nosy**
 
  messages_to_author -- ``no``
   Send nosy messages to the author of the message.
-  Allowed values: ``yes``, ``no``, ``new``
+  If ``yes`` is used, then messages are sent to the author
+  even if not on the nosy list, same for ``new`` (but only for new messages).
+  When set to ``nosy``, the nosy list controls sending messages to the author.
+  Allowed values: ``yes``, ``no``, ``new``, ``nosy``
 
  signature_position -- ``bottom``
   Where to place the email signature.

@@ -144,7 +144,8 @@ Fixed:
   helping debug this. issue2550848 (Ralf Schlatterbeck, anatoly techtonik)
 - Fix issue2550866 '"pip install --editable ." fails'. Thanks to tonich for the
   initial patch (John Kristensen)
-
+- Documentation: configuration messages_to_author value "nosy" now documented
+  in chapter "customizing". (Bernhard Reiter)
 
 
 2013-07-06: 1.5.0
