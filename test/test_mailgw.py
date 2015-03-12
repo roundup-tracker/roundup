@@ -57,7 +57,15 @@ class Tracker(object):
 
 class DiffHelper:
     def compareMessages(self, new, old):
-        """Compare messages for semantic equivalence."""
+        """Compare messages for semantic equivalence.
+
+        Will raise an AssertionError with a diff for inequality.
+
+        Note that header fieldnames are case-insensitive.
+        So if a header fieldname appears more than once in different casing
+        and the values are not equal, there will be more than one entry
+        in the diff. Typical examples are "From:"/ "FROM:" and "TO:"/"To:".
+        """
         new = email.message_from_string(new.strip())
         old = email.message_from_string(old.strip())
 
@@ -458,7 +466,7 @@ This is a test submission of a new issue.
 ''')
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
-TO: chef@bork.bork.bork, mary@test.test, richard@test.test
+TO: mary@test.test, richard@test.test
 Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: mary@test.test, richard@test.test
@@ -501,7 +509,7 @@ This is a test submission of a new issue.
 ''')
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
-TO: chef@bork.bork.bork, mary@test.test, richard@test.test
+TO: mary@test.test, richard@test.test
 Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: mary@test.test, richard@test.test
@@ -2998,7 +3006,7 @@ Just a test reply
         assert os.path.exists(SENDMAILDEBUG)
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
-TO: chef@bork.bork.bork, richard@test.test
+TO: richard@test.test
 Content-Type: text/plain; charset="utf-8"
 Subject: [issue1] Testing...
 To: richard@test.test
