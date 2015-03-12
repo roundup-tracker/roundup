@@ -27,8 +27,8 @@ Pay attention:
 Features:
 
 - The example local_replace.py has been updated to show how to link to
-  modern revision systems using hex revsion numbers. This extension is used
-  to expand shortcuts in msgs. (Bernhard Reiter)
+  modern revision systems using hex revision identifiers.
+  This extension is used to expand shortcuts in msgs. (Bernhard Reiter)
 - Drop comment in user settings about numeric hour offsets instead of using
   pytz timezone names. Due to DST these are wrong half of the year, it is
   much better to use timezone names. (Thomas Arendsen Hein)
@@ -146,6 +146,8 @@ Fixed:
   initial patch (John Kristensen)
 - Documentation: configuration messages_to_author value "nosy" now documented
   in chapter "customizing". (Bernhard Reiter)
+- issue2550877 Five failures in test_mailgw.py because of duplicated headers
+  and more precise comparision. (Bernhard Reiter)
 
 
 2013-07-06: 1.5.0
