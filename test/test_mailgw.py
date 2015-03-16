@@ -15,7 +15,6 @@ import email
 import gpgmelib
 import unittest, tempfile, os, shutil, errno, imp, sys, difflib, time
 
-
 try:
     import pyme, pyme.core
 except ImportError:

@@ -31,6 +31,7 @@ from roundup.anypy import urllib_
 from email.MIMEBase import MIMEBase
 from email.MIMEText import MIMEText
 from email.MIMEMultipart import MIMEMultipart
+import roundup.anypy.email_
 
 def initialiseSecurity(security):
     '''Create some Permissions and Roles on the security object

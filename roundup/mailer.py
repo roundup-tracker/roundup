@@ -16,6 +16,8 @@ from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+from roundup.anypy import email_
+
 try:
     import pyme, pyme.core
 except ImportError:

@@ -146,8 +146,9 @@ Fixed:
   initial patch (John Kristensen)
 - Documentation: configuration messages_to_author value "nosy" now documented
   in chapter "customizing". (Bernhard Reiter)
-- issue2550877 Five failures in test_mailgw.py because of duplicated headers
-  and more precise comparision. (Bernhard Reiter)
+- issue2550877 Failures in test_mailgw.py because of duplicated headers
+  and more precise comparision. Writing headers with the email module will use 
+  continuation_ws = ' ' now for python 2.5 and 2.6. (Bernhard Reiter)
 
 
 2013-07-06: 1.5.0
