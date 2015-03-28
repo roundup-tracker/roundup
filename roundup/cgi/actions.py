@@ -698,6 +698,9 @@ class PassResetAction(Action):
                         "to show up erroneously, please check your email)"))
                 return
 
+            # pull the additional email address if exist
+            uaddress = otks.get(otk, 'uaddress', default=None)
+
             # re-open the database as "admin"
             if self.user != 'admin':
                 self.client.opendb('admin')
@@ -720,8 +723,11 @@ class PassResetAction(Action):
                 return
 
             # user info
-            address = self.db.user.get(uid, 'address')
             name = self.db.user.get(uid, 'username')
+            if uaddress is None:
+                address = self.db.user.get(uid, 'address')
+            else:
+                address = uaddress
 
             # send the email
             tracker_name = self.db.config.TRACKER_NAME
@@ -764,7 +770,7 @@ Your password is now: %(password)s
         otk = ''.join([random.choice(chars) for x in range(32)])
         while otks.exists(otk):
             otk = ''.join([random.choice(chars) for x in range(32)])
-        otks.set(otk, uid=uid)
+        otks.set(otk, uid=uid, uaddress=address)
         self.db.commit()
 
         # send the email
