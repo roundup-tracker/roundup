@@ -53,6 +53,10 @@ Features:
   (anatoly techtonik)
 - Increase default height of classhelp windows from 400 to 600.
   (Thomas Arendsen Hein)
+- Date properties now can specify (on input) an explicit timezone suffix
+  (similar to RFC 2822), e.g. +0200 for CEST or -0500 for EST. This also
+  works in the XMLRPC interface. For examples see roundup.date.Date.
+  (Ralf Schlatterbeck)
 
 Fixed:
 
@@ -133,7 +137,7 @@ Fixed:
 - Fix two line-break accidents in devel and responsive milestone.item.html
   (Thomas Arendsen Hein)
 - Fix broken images in legacy spec.html and original_overview.html, and
-  restore web presence for "Roundup’s Design Document" (anatoly techtonik)
+  restore web presence for "Roundup's Design Document" (anatoly techtonik)
 - Template jinja2: Updated URL to point to http://www.roundup-tracker.org/
   (Bernhard Reiter)
 - Security: Add mime-type whitelist for attachmens that can be safely
@@ -151,6 +155,9 @@ Fixed:
   continuation_ws = ' ' now for python 2.5 and 2.6. (Bernhard Reiter)
 - issue2550870 migrate use of 'rfc822' module to the 'email' module
   (Bernhard Reiter/John Kristensen)
+- Doctests for roundup.date.Date are now really executable and don't
+  fail. Bug-Fixes in range properties, open intervals with 'to' didn't
+  always work. (Ralf Schlatterbeck)
 
 
 2013-07-06: 1.5.0
