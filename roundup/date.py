@@ -39,6 +39,7 @@ date_re = re.compile(r'''^
     (?P<n>\.)?                                   # .
     (((?P<H>\d?\d):(?P<M>\d\d))?(:(?P<S>\d\d?(\.\d+)?))?)?  # hh:mm:ss
     (?P<o>[\d\smywd\-+]+)?                       # offset
+    (?P<tz>[+-]\d{4})?                           # time-zone offset
 $''', re.VERBOSE)
 serialised_date_re = re.compile(r'''
     (\d{4})(\d\d)(\d\d)(\d\d)(\d\d)(\d\d?(\.\d+)?)
@@ -158,6 +159,19 @@ def _local_to_utc(y,m,d,H,M,S,tz):
     y,m,d,H,M,S = TZ.localize(dt).utctimetuple()[:6]
     return (y,m,d,H,M,S)
 
+def test_ini(t):
+    """ Monkey-patch to make doctest think it's always time t:
+    """
+    u = Date.now 
+    d = datetime.datetime.strptime (t, '%Y-%m-%d.%H:%M:%S.%f')
+    Date.now = lambda x : d
+    return u
+
+def test_fin(u):
+    """ Undo monkey patch above
+    """
+    Date.now = u
+
 class Date:
     '''
     As strings, date-and-time stamps are specified with the date in
@@ -166,7 +180,7 @@ class Date:
     and are fairly readable when printed. An example of a valid stamp is
     "2000-06-24.13:03:59". We'll call this the "full date format". When
     Timestamp objects are printed as strings, they appear in the full date
-    format with the time always given in GMT. The full date format is
+    format with the time always given in UTC. The full date format is
     always exactly 19 characters long.
 
     For user input, some partial forms are also permitted: the whole time
@@ -197,20 +211,23 @@ class Date:
     2000-08-04 (rather than trying to decide whether 1m 10d means 38 or 40
     or 41 days).  Example usage::
 
+        make doctest think it's always 2000-06-26.00:34:02:
+        >>> u = test_ini('2000-06-26.00:34:02.0')
+
         >>> Date(".")
-        <Date 2000-06-26.00:34:02>
+        <Date 2000-06-26.00:34:02.000>
         >>> _.local(-5)
-        "2000-06-25.19:34:02"
+        <Date 2000-06-25.19:34:02.000>
         >>> Date(". + 2d")
-        <Date 2000-06-28.00:34:02>
+        <Date 2000-06-28.00:34:02.000>
         >>> Date("1997-04-17", -5)
-        <Date 1997-04-17.00:00:00>
+        <Date 1997-04-17.05:00:00.000>
         >>> Date("01-25", -5)
-        <Date 2000-01-25.00:00:00>
+        <Date 2000-01-25.05:00:00.000>
         >>> Date("08-13.22:13", -5)
-        <Date 2000-08-14.03:13:00>
+        <Date 2000-08-14.03:13:00.000>
         >>> Date("14:25", -5)
-        <Date 2000-06-25.19:25:00>
+        <Date 2000-06-26.19:25:00.000>
 
     The date format 'yyyymmddHHMMSS' (year, month, day, hour,
     minute, second) is the serialisation format returned by the serialise()
@@ -218,19 +235,22 @@ class Date:
 
     The date class handles basic arithmetic::
 
+        >>> x=test_ini('2004-04-06.22:04:20.766830')
         >>> d1=Date('.')
         >>> d1
-        <Date 2004-04-06.22:04:20.766830>
+        <Date 2004-04-06.22:04:20.767>
         >>> d2=Date('2003-07-01')
         >>> d2
-        <Date 2003-07-01.00:00:0.000000>
+        <Date 2003-07-01.00:00:00.000>
         >>> d1-d2
         <Interval + 280d 22:04:20>
         >>> i1=_
         >>> d2+i1
-        <Date 2004-04-06.22:04:20.000000>
+        <Date 2004-04-06.22:04:20.000>
         >>> d1-i1
-        <Date 2003-07-01.00:00:0.000000>
+        <Date 2003-07-01.00:00:00.000>
+
+        >>> test_fin(u)
     '''
 
     def __init__(self, spec='.', offset=0, add_granularity=False,
@@ -281,6 +301,11 @@ class Date:
         except:
             raise ValueError, 'Unknown spec %r' % (spec,)
 
+    def now(self):
+        """ To be able to override for testing
+        """
+        return datetime.datetime.utcnow()
+
     def set(self, spec, offset=0, date_re=date_re,
             serialised_re=serialised_date_re, add_granularity=False):
         ''' set the date to the value in spec
@@ -298,9 +323,9 @@ class Date:
         # not serialised data, try usual format
         m = date_re.match(spec)
         if m is None:
-            raise ValueError, self._('Not a date spec: '
-                '"yyyy-mm-dd", "mm-dd", "HH:MM", "HH:MM:SS" or '
-                '"yyyy-mm-dd.HH:MM:SS.SSS"')
+            raise ValueError, self._('Not a date spec: %r '
+                '("yyyy-mm-dd", "mm-dd", "HH:MM", "HH:MM:SS" or '
+                '"yyyy-mm-dd.HH:MM:SS.SSS")' % spec)
 
         info = m.groupdict()
 
@@ -324,7 +349,7 @@ class Date:
                 raise ValueError(self._('Could not determine granularity'))
 
         # get the current date as our default
-        dt = datetime.datetime.utcnow()
+        dt = self.now()
         y,m,d,H,M,S,x,x,x = dt.timetuple()
         S += dt.microsecond/1000000.
 
@@ -603,10 +628,13 @@ class Interval:
       "0:04:33" means four minutes and 33 seconds
 
     Example usage:
+        make doctest think it's always 2000-06-26.00:34:02:
+        >>> u = test_ini('2000-06-26.00:34:02.0')
+
         >>> Interval("  3w  1  d  2:00")
         <Interval + 22d 2:00>
         >>> Date(". + 2d") + Interval("- 3w")
-        <Date 2000-06-07.00:34:02>
+        <Date 2000-06-07.00:34:02.000>
         >>> Interval('1:59:59') + Interval('00:00:01')
         <Interval + 2:00>
         >>> Interval('2:00') + Interval('- 00:00:01')
@@ -615,10 +643,16 @@ class Interval:
         <Interval + 6m>
         >>> Interval('1:00')/2
         <Interval + 0:30>
+
+        [number of days between 2000-06-26.00:34:02 and 2003-03-18
         >>> Interval('2003-03-18')
-        <Interval + [number of days between now and 2003-03-18]>
+        <Interval - 995d>
+
+        [number of days between 2000-06-26.00:34:02 and 2003-03-14
         >>> Interval('-4d 2003-03-18')
-        <Interval + [number of days between now and 2003-03-14]>
+        <Interval - 991d>
+
+        >>> test_fin(u)
 
     Interval arithmetic is handled in a couple of special ways, trying
     to cater for the most common cases. Fundamentally, Intervals which
@@ -1011,23 +1045,39 @@ class Range:
 
     Examples (consider local time is Sat Mar  8 22:07:48 EET 2003)::
 
-        >>> Range("from 2-12 to 4-2")
+        make doctest think it's always 2000-06-26.00:34:02:
+        >>> u = test_ini('2003-03-08.20:07:48.0')
+
+        >>> Range("from 2-12 to 4-2", Date)
         <Range from 2003-02-12.00:00:00 to 2003-04-02.00:00:00>
 
-        >>> Range("18:00 TO +2m")
+        >>> Range("18:00 to +2m", Date)
         <Range from 2003-03-08.18:00:00 to 2003-05-08.20:07:48>
 
-        >>> Range("12:00")
-        <Range from 2003-03-08.12:00:00 to None>
-
-        >>> Range("tO +3d")
+        >>> Range("tO +3d", Date)
         <Range from None to 2003-03-11.20:07:48>
 
-        >>> Range("2002-11-10; 2002-12-12")
+        >>> Range("12:00 to", Date)
+        <Range from 2003-03-08.12:00:00 to None>
+
+        >>> Range("12:00;", Date)
+        <Range from 2003-03-08.12:00:00 to None>
+
+        >>> Range("2002-11-10; 2002-12-12", Date)
         <Range from 2002-11-10.00:00:00 to 2002-12-12.00:00:00>
 
-        >>> Range("; 20:00 +1d")
+        >>> Range("; 20:00 +1d", Date)
         <Range from None to 2003-03-09.20:00:00>
+
+        Granularity tests:
+
+        >>> Range("12:00", Date)
+        <Range from 2003-03-08.12:00:00 to 2003-03-08.12:00:59>
+
+        >>> Range("2003-03-08", Date)
+        <Range from 2003-03-08.00:00:00 to 2003-03-08.23:59:59>
+
+        >>> test_fin(u)
 
     """
     def __init__(self, spec, Type, allow_granularity=True, **params):
@@ -1041,8 +1091,8 @@ class Range:
         class instance.
         """
         self.range_type = Type
-        re_range = r'(?:^|from(.+?))(?:to(.+?)$|$)'
-        re_geek_range = r'(?:^|(.+?));(?:(.+?)$|$)'
+        re_range = r'^(?:from)?(.+?)?to(.+?)?$'
+        re_geek_range = r'^(.+?)?;(.+?)?$'
         # Check which syntax to use
         if ';' in spec:
             # Geek
