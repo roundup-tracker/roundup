@@ -38,8 +38,7 @@ date_re = re.compile(r'''^
     |(?P<a>\d\d?)[/-](?P<b>\d\d?))?              # or mm-dd
     (?P<n>\.)?                                   # .
     (((?P<H>\d?\d):(?P<M>\d\d))?(:(?P<S>\d\d?(\.\d+)?))?)?  # hh:mm:ss
-    (?P<o>[\d\smywd\-+]+)?                       # offset
-    (?P<tz>[+-]\d{4})?                           # time-zone offset
+    (?:(?P<tz>\s?[+-]\d{4})|(?P<o>[\d\smywd\-+]+))? # time-zone offset, offset
 $''', re.VERBOSE)
 serialised_date_re = re.compile(r'''
     (\d{4})(\d\d)(\d\d)(\d\d)(\d\d)(\d\d?(\.\d+)?)
@@ -190,18 +189,46 @@ class Date:
     care of these conversions. In the following examples, suppose that yyyy
     is the current year, mm is the current month, and dd is the current day
     of the month; and suppose that the user is on Eastern Standard Time.
+
+    Note that Date conversion from user inputs will use the local
+    timezone, either from the database user (some database schemas have
+    a timezone property for a user) or from a default in the roundup
+    configuration. Roundup will store all times in UTC in the database
+    but display the time to the user in their local timezone as
+    configured. In the following examples the timezone correction for
+    Eastern Standard Time (GMT-5, no DST) will be applied explicitly via
+    an offset, but times are given in UTC in the output.
+
     Examples::
 
-      "2000-04-17" means <Date 2000-04-17.00:00:00>
-      "01-25" means <Date yyyy-01-25.00:00:00>
-      "2000-04-17.03:45" means <Date 2000-04-17.08:45:00>
-      "08-13.22:13" means <Date yyyy-08-14.03:13:00>
-      "11-07.09:32:43" means <Date yyyy-11-07.14:32:43>
-      "14:25" means <Date yyyy-mm-dd.19:25:00>
-      "8:47:11" means <Date yyyy-mm-dd.13:47:11>
-      "2003" means <Date 2003-01-01.00:00:00>
-      "2003-06" means <Date 2003-06-01.00:00:00>
-      "." means "right now"
+
+        make doctest think it's always 2000-06-26.00:34:02:
+        >>> u = test_ini('2000-06-26.00:34:02.0')
+
+        >>> Date("2000-04-17-0500")
+        <Date 2000-04-17.05:00:00.000>
+        >>> Date("01-25-0500")
+        <Date 2000-01-25.05:00:00.000>
+        >>> Date("2000-04-17.03:45-0500")
+        <Date 2000-04-17.08:45:00.000>
+        >>> Date("08-13.22:13-0500")
+        <Date 2000-08-14.03:13:00.000>
+        >>> Date("11-07.09:32:43-0500")
+        <Date 2000-11-07.14:32:43.000>
+        >>> Date("14:25-0500")
+        <Date 2000-06-26.19:25:00.000>
+        >>> Date("8:47:11-0500")
+        <Date 2000-06-26.13:47:11.000>
+        >>> Date("2003 -0500")
+        <Date 2003-01-01.05:00:00.000>
+        >>> Date("2003-06 -0500")
+        <Date 2003-06-01.05:00:00.000>
+
+        "." means "right now":
+        >>> Date(".")
+        <Date 2000-06-26.00:34:02.000>
+
+        >>> test_fin(u)
 
     The Date class should understand simple date expressions of the form
     stamp + interval and stamp - interval. When adding or subtracting
@@ -233,7 +260,29 @@ class Date:
     minute, second) is the serialisation format returned by the serialise()
     method, and is accepted as an argument on instatiation.
 
-    The date class handles basic arithmetic::
+    In addition, a timezone specifier can be appended to the date format.
+    The timezone specifier is a sign ("+" or "-") followed by a 4-digit
+    number as in the RFC 2822 date format.
+    The first two digits indicate the number of hours, while the last two
+    digits indicate the number of minutes the time is offset from
+    Coordinated Universal Time (UTC). The "+" or "-" sign indicate whether
+    the time is ahead of (east of) or behind (west of) UTC. Note that a
+    given timezone specifier *overrides* an offset given to the Date
+    constructor.  Examples::
+
+        >>> Date ("2000-08-14+0200")
+        <Date 2000-08-13.22:00:00.000>
+        >>> Date ("08-15.22:00+0200")
+        <Date 2000-08-15.20:00:00.000>
+        >>> Date ("08-15.22:47+0200")
+        <Date 2000-08-15.20:47:00.000>
+        >>> Date ("08-15.22:47+0200", offset = 5)
+        <Date 2000-08-15.20:47:00.000>
+        >>> Date ("08-15.22:47", offset = 5)
+        <Date 2000-08-15.17:47:00.000>
+
+    The date class handles basic arithmetic, but note that arithmetic
+    cannot be combined with timezone offsets (see last example)::
 
         >>> x=test_ini('2004-04-06.22:04:20.766830')
         >>> d1=Date('.')
@@ -380,6 +429,8 @@ class Date:
                 S = float(info['S'])
             adjust = True
 
+        if info.get('tz', None):
+            offset = 0
 
         # now handle the adjustment of hour
         frac = S - int(S)
@@ -399,6 +450,13 @@ class Date:
                 raise ValueError, self._('%r not a date / time spec '
                     '"yyyy-mm-dd", "mm-dd", "HH:MM", "HH:MM:SS" or '
                     '"yyyy-mm-dd.HH:MM:SS.SSS"')%(spec,)
+
+        if info.get('tz', None):
+            tz     = info ['tz'].strip ()
+            sign   = [-1,1][tz[0] == '-']
+            minute = int (tz[3:], 10)
+            hour   = int (tz[1:3], 10)
+            self.applyInterval(Interval((0, 0, 0, hour, minute, 0), sign=sign))
 
         # adjust by added granularity
         if add_granularity:
