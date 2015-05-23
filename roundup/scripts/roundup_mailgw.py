@@ -45,18 +45,18 @@ def usage(args, message=None):
     if message is not None:
         print message
     print _(
-"""Usage: %(program)s [-v] [-c class] [[-C class] -S field=value]* <instance home> [method]
+"""Usage: %(program)s [-v] [-c class] [[-C class] -S field=value]* [instance home] [mail source [specification]]
 
 Options:
  -v: print version and exit
  -c: default class of item to create (else the tracker's MAIL_DEFAULT_CLASS)
  -C / -S: see below
 
-The roundup mail gateway may be called in one of four ways:
+The roundup mail gateway may be called in one of the following ways:
+ . without arguments. Then the env var ROUNDUP_INSTANCE will be tried.
  . with an instance home as the only argument,
  . with both an instance home and a mail spool file,
- . with both an instance home and a POP/APOP server account, or
- . with both an instance home and a IMAP/IMAPS server account.
+ . with an instance home, a mail source type and its specification.
 
 It also supports optional -C and -S arguments that allows you to set a
 fields for a class created by the roundup-mailgw. The default class if
@@ -69,25 +69,26 @@ of an email message.
 It can let you set the type of the message on a per email address basis.
 
 PIPE:
- In the first case, the mail gateway reads a single message from the
- standard input and submits the message to the roundup.mailgw module.
+ If there is no mail source specified,
+ the mail gateway reads a single message from the standard input
+ and submits the message to the roundup.mailgw module.
 
-UNIX mailbox:
- In the second case, the gateway reads all messages from the mail spool
+Mail source "mailbox":
+ In this case, the gateway reads all messages from the UNIX mail spool
  file and submits each in turn to the roundup.mailgw module. The file is
  emptied once all messages have been successfully handled. The file is
  specified as:
    mailbox /path/to/mailbox
 
-In all of the following the username and password can be stored in a
-~/.netrc file. In this case only the server name need be specified on
-the command-line.
+In all of the following mail source type the username and password
+can be stored in a ~/.netrc file. If done so case only the server name
+need to be specified on the command-line.
 
 The username and/or password will be prompted for if not supplied on
 the command-line or in ~/.netrc.
 
 POP:
- In the third case, the gateway reads all messages from the POP server
+ For the mail source "pop", the gateway reads all messages from the POP server
  specified and submits each in turn to the roundup.mailgw module. The
  server is specified as:
     pop username:password@server

@@ -160,6 +160,8 @@ Fixed:
   always work. (Ralf Schlatterbeck)
 - issue2550881 demo.py: Add pointer how to access demo from remote host.
   Suggested by Karl-Philipp Richter. (Bernhard Reiter)
+- issue2550884 roundup-mailgw --help text improved to explain the allowed 
+  parameters better. Suggested by by Karl-Philipp Richter. (Bernhard Reiter)
 
 
 2013-07-06: 1.5.0
