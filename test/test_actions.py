@@ -234,6 +234,7 @@ class EditItemActionTestCase(ActionTestCase):
     def setUp(self):
         ActionTestCase.setUp(self)
         self.result = []
+        self.new_id = 16
         class AppendResult:
             def __init__(inner_self, name):
                 inner_self.name = name
@@ -241,7 +242,8 @@ class EditItemActionTestCase(ActionTestCase):
                 self.result.append((inner_self.name, args, kw))
                 if inner_self.name == 'set':
                     return kw
-                return '17'
+                self.new_id+=1
+                return str(self.new_id)
 
         self.client.db.security.hasPermission = true
         self.client.classname = 'issue'
@@ -267,6 +269,24 @@ class EditItemActionTestCase(ActionTestCase):
         self.client.parsePropsFromForm = lambda: \
             ( {('msg','-1'):{'content':'t'},('issue','4711'):{}}
             , [('issue','4711','messages',[('msg','-1')])]
+            )
+        try :
+            self.action.handle()
+        except Redirect, msg:
+            pass
+        self.assertEqual(expect, self.result)
+
+    def testMessageMultiAttach(self):
+        expect = \
+            [ ('create',(),{'content':'t2'})
+            , ('create',(),{'content':'t'})
+            , ('set',('4711',), {'messages':['23','42','17','18']})
+            ]
+        self.client.db.classes.get = lambda a, b:['23','42']
+        self.client.parsePropsFromForm = lambda: \
+            ( {('msg','-1'):{'content':'t'},('msg','-2'):{'content':'t2'}
+              , ('issue','4711'):{}}
+            , [('issue','4711','messages',[('msg','-1'),('msg','-2')])]
             )
         try :
             self.action.handle()

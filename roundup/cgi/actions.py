@@ -490,6 +490,8 @@ class EditCommon(Action):
                                 props[linkprop] = existing
                             else:
                                 props[linkprop] = nodeid
+                    elif isinstance(propdef, hyperdb.Multilink):
+                        props[linkprop].append(nodeid)
 
         return '\n'.join(m)
 

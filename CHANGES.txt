@@ -162,6 +162,9 @@ Fixed:
   Suggested by Karl-Philipp Richter. (Bernhard Reiter)
 - issue2550884 roundup-mailgw --help text improved to explain the allowed 
   parameters better. Suggested by by Karl-Philipp Richter. (Bernhard Reiter)
+- Fix form-parsing: If multiple new items are added to a multilink
+  property, the old version would create the new items but only link
+  one. (Ralf Schlatterbeck)
 
 
 2013-07-06: 1.5.0
