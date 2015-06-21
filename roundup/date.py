@@ -783,8 +783,9 @@ class Interval:
         if not m:
             m = interval_re.match(spec)
             if not m:
-                raise ValueError, self._('Not an interval spec:'
-                    ' [+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS] [date spec]')
+                raise ValueError, self._('Not an interval spec: "%s"'
+                    ' ([+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS] [date spec])'
+                    % spec)
         else:
             allowdate = 0
 
@@ -805,8 +806,9 @@ class Interval:
 
         # make sure it's valid
         if not valid and not info['D']:
-            raise ValueError, self._('Not an interval spec:'
-                ' [+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS]')
+            raise ValueError, self._('Not an interval spec: "%s"'
+                ' ([+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS])'
+                % spec)
 
         if self.week:
             self.day = self.day + self.week*7
@@ -1127,6 +1129,12 @@ class Range:
         >>> Range("; 20:00 +1d", Date)
         <Range from None to 2003-03-09.20:00:00>
 
+        >>> Range("from 2003-02-16", Date)
+        <Range from 2003-02-16.00:00:00 to None>
+
+        >>> Range("2003-02-16;", Date)
+        <Range from 2003-02-16.00:00:00 to None>
+
         Granularity tests:
 
         >>> Range("12:00", Date)
@@ -1136,6 +1144,17 @@ class Range:
         <Range from 2003-03-08.00:00:00 to 2003-03-08.23:59:59>
 
         >>> test_fin(u)
+
+        Range of Interval tests
+
+        >>> Range ("from 0:50 to 2:00", Interval)
+        <Range from + 0:50 to + 2:00>
+        >>> Range ("from 0:50 to 1d 2:00", Interval)
+        <Range from + 0:50 to + 1d 2:00>
+        >>> Range ("from 5:50", Interval)
+        <Range from + 5:50 to None>
+        >>> Range ("to 0:05", Interval)
+        <Range from None to + 0:05>
 
     """
     def __init__(self, spec, Type, allow_granularity=True, **params):
@@ -1150,6 +1169,7 @@ class Range:
         """
         self.range_type = Type
         re_range = r'^(?:from)?(.+?)?to(.+?)?$'
+        re_range_no_to = r'^from(.+)(.)?$'
         re_geek_range = r'^(.+?)?;(.+?)?$'
         # Check which syntax to use
         if ';' in spec:
@@ -1158,6 +1178,8 @@ class Range:
         else:
             # Native english
             m = re.search(re_range, spec.strip(), re.IGNORECASE)
+            if not m :
+                m = re.search(re_range_no_to, spec.strip(), re.IGNORECASE)
         if m:
             self.from_value, self.to_value = m.groups()
             if self.from_value:
