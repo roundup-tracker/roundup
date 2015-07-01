@@ -2218,7 +2218,7 @@ msgstr "Schlagwort"
 
 #: ../roundup/roundupdb.py:175
 msgid "priority"
-msgstr "Prioriät"
+msgstr "Priorität"
 
 #: ../roundup/roundupdb.py:175
 msgid "status"
