@@ -190,13 +190,7 @@ class RoundupDispatcher(SimpleXMLRPCDispatcher):
 
     def __init__(self, db, actions, translator,
                  allow_none=False, encoding=None):
-
-        try:
-            # python2.5 and beyond
-            SimpleXMLRPCDispatcher.__init__(self, allow_none, encoding)
-        except TypeError:
-            # python2.4
-            SimpleXMLRPCDispatcher.__init__(self)
+        SimpleXMLRPCDispatcher.__init__(self, allow_none, encoding)
         self.register_instance(RoundupInstance(db, actions, translator))
         self.register_multicall_functions()
                  
