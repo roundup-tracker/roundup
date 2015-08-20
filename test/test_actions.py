@@ -14,7 +14,7 @@ def true(*args, **kwargs):
 
 class ActionTestCase(unittest.TestCase):
     def setUp(self):
-        self.form = FieldStorage()
+        self.form = FieldStorage(environ={'QUERY_STRING': ''})
         self.client = MockNull()
         self.client._ok_message = []
         self.client._error_message = []
