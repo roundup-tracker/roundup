@@ -20,7 +20,8 @@ class TestCase_Zero(unittest.TestCase):
     def test_zero(self):
         self.assertEqual(True, True)
 
-class TestCase(unittest.TestCase):
+
+class Jinja2Test(object):
     """Sets up and tears down an instance with database contents.
 
     Setup and teardown modelled after the use of db_test_base
@@ -48,6 +49,9 @@ class TestCase(unittest.TestCase):
         pass
 
 
+class anydbmJinja2Test(Jinja2Test, unittest.TestCase):
+    backend = 'anydbm'
+
 
 def test_suite():
     suite = unittest.TestSuite()
@@ -58,10 +62,7 @@ def test_suite():
     # backends will keep the test focussed enough to be useful for the used
     # computing time. Would be okay to change in the future.
     # for l in list_backends():
-    for l in ['anydbm']:
-        dct = dict(backend = l)
-        subcls = type(TestCase)('TestCase_%s'%l, (TestCase,), dct)
-        suite.addTest(unittest.makeSuite(subcls))
+    suite.addTest(unittest.makeSuite(anydbmJinja2Test))
 
     return suite
 

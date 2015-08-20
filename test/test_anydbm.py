@@ -27,23 +27,29 @@ class anydbmOpener:
     def nuke_database(self):
         shutil.rmtree(config.DATABASE)
 
-class anydbmDBTest(anydbmOpener, DBTest):
+
+class anydbmDBTest(anydbmOpener, DBTest, unittest.TestCase):
     pass
 
-class anydbmROTest(anydbmOpener, ROTest):
+
+class anydbmROTest(anydbmOpener, ROTest, unittest.TestCase):
     pass
 
-class anydbmSchemaTest(anydbmOpener, SchemaTest):
+
+class anydbmSchemaTest(anydbmOpener, SchemaTest, unittest.TestCase):
     pass
 
-class anydbmClassicInitTest(ClassicInitTest):
+
+class anydbmClassicInitTest(ClassicInitTest, unittest.TestCase):
     backend = 'anydbm'
 
-class anydbmHTMLItemTest(HTMLItemTest):
+
+class anydbmHTMLItemTest(HTMLItemTest, unittest.TestCase):
     backend = 'anydbm'
+
 
 from session_common import DBMTest
-class anydbmSessionTest(anydbmOpener, DBMTest):
+class anydbmSessionTest(anydbmOpener, DBMTest, unittest.TestCase):
     pass
 
 def test_suite():

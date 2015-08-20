@@ -141,7 +141,8 @@ class DiffHelper:
 
 from roundup.hyperdb import String
 
-class MailgwTestAbstractBase(unittest.TestCase, DiffHelper):
+
+class MailgwTestAbstractBase(DiffHelper):
     count = 0
     schema = 'classic'
     def setUp(self):
@@ -233,7 +234,7 @@ Subject: [issue] Testing...
         self.assertEqual(self.db.issue.get(nodeid, 'tx_Source'), 'email')
 
 
-class MailgwTestCase(MailgwTestAbstractBase):
+class MailgwTestCase(MailgwTestAbstractBase, unittest.TestCase):
 
     def testMessageWithFromInIt(self):
         nodeid = self._handle_mail('''Content-Type: text/plain;
@@ -3261,7 +3262,8 @@ Stack trace:
         fileid = self.db.msg.get(msgid, 'files')[0]
         self.assertEqual(self.db.file.get(fileid, 'type'), 'message/rfc822')
 
-class MailgwPGPTestCase(MailgwTestAbstractBase):
+
+class MailgwPGPTestCase(MailgwTestAbstractBase, unittest.TestCase):
     pgphome = gpgmelib.pgphome
     def setUp(self):
         MailgwTestAbstractBase.setUp(self)

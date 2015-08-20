@@ -24,7 +24,8 @@ from roundup import backends
 import roundup.password
 from db_test_base import setupSchema, MyTestCase, config
 
-class PermissionTest(MyTestCase):
+
+class PermissionTest(MyTestCase, unittest.TestCase):
     def setUp(self):
         backend = backends.get_backend('anydbm')
         # remove previous test, ignore errors

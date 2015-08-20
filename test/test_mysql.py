@@ -38,22 +38,26 @@ class mysqlOpener:
     def nuke_database(self):
         self.module.db_nuke(config)
 
-class mysqlDBTest(mysqlOpener, DBTest):
+
+class mysqlDBTest(mysqlOpener, DBTest, unittest.TestCase):
     def setUp(self):
         mysqlOpener.setUp(self)
         DBTest.setUp(self)
 
-class mysqlROTest(mysqlOpener, ROTest):
+
+class mysqlROTest(mysqlOpener, ROTest, unittest.TestCase):
     def setUp(self):
         mysqlOpener.setUp(self)
         ROTest.setUp(self)
 
-class mysqlSchemaTest(mysqlOpener, SchemaTest):
+
+class mysqlSchemaTest(mysqlOpener, SchemaTest, unittest.TestCase):
     def setUp(self):
         mysqlOpener.setUp(self)
         SchemaTest.setUp(self)
 
-class mysqlClassicInitTest(mysqlOpener, ClassicInitTest):
+
+class mysqlClassicInitTest(mysqlOpener, ClassicInitTest, unittest.TestCase):
     backend = 'mysql'
     def setUp(self):
         mysqlOpener.setUp(self)
@@ -62,7 +66,8 @@ class mysqlClassicInitTest(mysqlOpener, ClassicInitTest):
         ClassicInitTest.tearDown(self)
         self.nuke_database()
 
-class mysqlConcurrencyTest(mysqlOpener, ConcurrentDBTest):
+
+class mysqlConcurrencyTest(mysqlOpener, ConcurrentDBTest, unittest.TestCase):
     backend = 'mysql'
     def setUp(self):
         mysqlOpener.setUp(self)
@@ -71,7 +76,8 @@ class mysqlConcurrencyTest(mysqlOpener, ConcurrentDBTest):
         ConcurrentDBTest.tearDown(self)
         self.nuke_database()
 
-class mysqlHTMLItemTest(mysqlOpener, HTMLItemTest):
+
+class mysqlHTMLItemTest(mysqlOpener, HTMLItemTest, unittest.TestCase):
     backend = 'mysql'
     def setUp(self):
         mysqlOpener.setUp(self)
@@ -80,7 +86,8 @@ class mysqlHTMLItemTest(mysqlOpener, HTMLItemTest):
         HTMLItemTest.tearDown(self)
         self.nuke_database()
 
-class mysqlFilterCacheTest(mysqlOpener, FilterCacheTest):
+
+class mysqlFilterCacheTest(mysqlOpener, FilterCacheTest, unittest.TestCase):
     backend = 'mysql'
     def setUp(self):
         mysqlOpener.setUp(self)
@@ -89,8 +96,9 @@ class mysqlFilterCacheTest(mysqlOpener, FilterCacheTest):
         FilterCacheTest.tearDown(self)
         self.nuke_database()
 
+
 from session_common import RDBMSTest
-class mysqlSessionTest(mysqlOpener, RDBMSTest):
+class mysqlSessionTest(mysqlOpener, RDBMSTest, unittest.TestCase):
     def setUp(self):
         mysqlOpener.setUp(self)
         RDBMSTest.setUp(self)

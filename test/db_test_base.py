@@ -121,7 +121,8 @@ def setupSchema(db, create, module):
     # nosy tests require this
     db.security.addPermissionToRole('User', 'View', 'msg')
 
-class MyTestCase(unittest.TestCase):
+
+class MyTestCase(object):
     def tearDown(self):
         if hasattr(self, 'db'):
             self.db.close()
@@ -2463,7 +2464,7 @@ class FilterCacheTest(commonDBTest):
         ae (result, ['4', '5', '6', '7', '8', '1', '2', '3'])
 
 
-class ClassicInitBase(unittest.TestCase):
+class ClassicInitBase(object):
     count = 0
     db = None
 

@@ -149,7 +149,8 @@ class XapianIndexerTest(IndexerTest):
     def tearDown(self):
         shutil.rmtree('test-index')
 
-class RDBMSIndexerTest(IndexerTest):
+
+class RDBMSIndexerTest(object):
     def setUp(self):
         # remove previous test, ignore errors
         if os.path.exists(config.DATABASE):
@@ -162,7 +163,8 @@ class RDBMSIndexerTest(IndexerTest):
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
 
-class postgresqlIndexerTest(postgresqlOpener, RDBMSIndexerTest):
+
+class postgresqlIndexerTest(postgresqlOpener, RDBMSIndexerTest, IndexerTest):
     def setUp(self):
         postgresqlOpener.setUp(self)
         RDBMSIndexerTest.setUp(self)
@@ -170,7 +172,8 @@ class postgresqlIndexerTest(postgresqlOpener, RDBMSIndexerTest):
         RDBMSIndexerTest.tearDown(self)
         postgresqlOpener.tearDown(self)
 
-class mysqlIndexerTest(mysqlOpener, RDBMSIndexerTest):
+
+class mysqlIndexerTest(mysqlOpener, RDBMSIndexerTest, IndexerTest):
     def setUp(self):
         mysqlOpener.setUp(self)
         RDBMSIndexerTest.setUp(self)
@@ -178,7 +181,8 @@ class mysqlIndexerTest(mysqlOpener, RDBMSIndexerTest):
         RDBMSIndexerTest.tearDown(self)
         mysqlOpener.tearDown(self)
 
-class sqliteIndexerTest(sqliteOpener, RDBMSIndexerTest):
+
+class sqliteIndexerTest(sqliteOpener, RDBMSIndexerTest, IndexerTest):
     pass
 
 def test_suite():

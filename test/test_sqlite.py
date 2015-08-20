@@ -28,26 +28,33 @@ class sqliteOpener:
     def nuke_database(self):
         shutil.rmtree(config.DATABASE)
 
-class sqliteDBTest(sqliteOpener, DBTest):
+
+class sqliteDBTest(sqliteOpener, DBTest, unittest.TestCase):
     pass
 
-class sqliteROTest(sqliteOpener, ROTest):
+
+class sqliteROTest(sqliteOpener, ROTest, unittest.TestCase):
     pass
 
-class sqliteSchemaTest(sqliteOpener, SchemaTest):
+
+class sqliteSchemaTest(sqliteOpener, SchemaTest, unittest.TestCase):
     pass
 
-class sqliteClassicInitTest(ClassicInitTest):
+
+class sqliteClassicInitTest(ClassicInitTest, unittest.TestCase):
     backend = 'sqlite'
 
-class sqliteConcurrencyTest(ConcurrentDBTest):
+
+class sqliteConcurrencyTest(ConcurrentDBTest, unittest.TestCase):
     backend = 'sqlite'
 
-class sqliteFilterCacheTest(sqliteOpener, FilterCacheTest):
+
+class sqliteFilterCacheTest(sqliteOpener, FilterCacheTest, unittest.TestCase):
     backend = 'sqlite'
+
 
 from session_common import RDBMSTest
-class sqliteSessionTest(sqliteOpener, RDBMSTest):
+class sqliteSessionTest(sqliteOpener, RDBMSTest, unittest.TestCase):
     pass
 
 def test_suite():

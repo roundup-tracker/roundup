@@ -39,7 +39,8 @@ class postgresqlOpener:
         # clear out the database - easiest way is to nuke and re-create it
         self.module.db_nuke(config)
 
-class postgresqlDBTest(postgresqlOpener, DBTest):
+
+class postgresqlDBTest(postgresqlOpener, DBTest, unittest.TestCase):
     def setUp(self):
         postgresqlOpener.setUp(self)
         DBTest.setUp(self)
@@ -48,7 +49,8 @@ class postgresqlDBTest(postgresqlOpener, DBTest):
         DBTest.tearDown(self)
         postgresqlOpener.tearDown(self)
 
-class postgresqlROTest(postgresqlOpener, ROTest):
+
+class postgresqlROTest(postgresqlOpener, ROTest, unittest.TestCase):
     def setUp(self):
         postgresqlOpener.setUp(self)
         ROTest.setUp(self)
@@ -57,7 +59,9 @@ class postgresqlROTest(postgresqlOpener, ROTest):
         ROTest.tearDown(self)
         postgresqlOpener.tearDown(self)
 
-class postgresqlConcurrencyTest(postgresqlOpener, ConcurrentDBTest):
+
+class postgresqlConcurrencyTest(postgresqlOpener, ConcurrentDBTest,
+                                unittest.TestCase):
     backend = 'postgresql'
     def setUp(self):
         postgresqlOpener.setUp(self)
@@ -67,7 +71,9 @@ class postgresqlConcurrencyTest(postgresqlOpener, ConcurrentDBTest):
         ConcurrentDBTest.tearDown(self)
         postgresqlOpener.tearDown(self)
 
-class postgresqlJournalTest(postgresqlOpener, ClassicInitBase):
+
+class postgresqlJournalTest(postgresqlOpener, ClassicInitBase,
+                            unittest.TestCase):
     backend = 'postgresql'
     def setUp(self):
         postgresqlOpener.setUp(self)
@@ -115,7 +121,9 @@ class postgresqlJournalTest(postgresqlOpener, ClassicInitBase):
         exc = self.module.TransactionRollbackError
         self.assertRaises(exc, self._test_journal, [])
 
-class postgresqlHTMLItemTest(postgresqlOpener, HTMLItemTest):
+
+class postgresqlHTMLItemTest(postgresqlOpener, HTMLItemTest,
+                             unittest.TestCase):
     backend = 'postgresql'
     def setUp(self):
         postgresqlOpener.setUp(self)
@@ -125,7 +133,9 @@ class postgresqlHTMLItemTest(postgresqlOpener, HTMLItemTest):
         HTMLItemTest.tearDown(self)
         postgresqlOpener.tearDown(self)
 
-class postgresqlFilterCacheTest(postgresqlOpener, FilterCacheTest):
+
+class postgresqlFilterCacheTest(postgresqlOpener, FilterCacheTest,
+                                unittest.TestCase):
     backend = 'postgresql'
     def setUp(self):
         postgresqlOpener.setUp(self)
@@ -135,7 +145,8 @@ class postgresqlFilterCacheTest(postgresqlOpener, FilterCacheTest):
         FilterCacheTest.tearDown(self)
         postgresqlOpener.tearDown(self)
 
-class postgresqlSchemaTest(postgresqlOpener, SchemaTest):
+
+class postgresqlSchemaTest(postgresqlOpener, SchemaTest, unittest.TestCase):
     def setUp(self):
         postgresqlOpener.setUp(self)
         SchemaTest.setUp(self)
@@ -144,7 +155,9 @@ class postgresqlSchemaTest(postgresqlOpener, SchemaTest):
         SchemaTest.tearDown(self)
         postgresqlOpener.tearDown(self)
 
-class postgresqlClassicInitTest(postgresqlOpener, ClassicInitTest):
+
+class postgresqlClassicInitTest(postgresqlOpener, ClassicInitTest,
+                                unittest.TestCase):
     backend = 'postgresql'
     def setUp(self):
         postgresqlOpener.setUp(self)
@@ -154,8 +167,9 @@ class postgresqlClassicInitTest(postgresqlOpener, ClassicInitTest):
         ClassicInitTest.tearDown(self)
         postgresqlOpener.tearDown(self)
 
+
 from session_common import RDBMSTest
-class postgresqlSessionTest(postgresqlOpener, RDBMSTest):
+class postgresqlSessionTest(postgresqlOpener, RDBMSTest, unittest.TestCase):
     def setUp(self):
         postgresqlOpener.setUp(self)
         RDBMSTest.setUp(self)

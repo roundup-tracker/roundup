@@ -16,7 +16,8 @@ from roundup.cgi import TranslationService
 
 import db_test_base
 
-class TestCase(unittest.TestCase):
+
+class XmlrpcTest(object):
 
     backend = None
 
@@ -245,12 +246,29 @@ class TestCase(unittest.TestCase):
         for n, r in enumerate(result):
             self.assertEqual(r, results[n])
 
+
+class anydbmXmlrpcTest(XmlrpcTest, unittest.TestCase):
+    backend = 'anydbm'
+
+
+class mysqlXmlrpcTest(XmlrpcTest, unittest.TestCase):
+    backend = 'mysql'
+
+
+class sqliteXmlrpcTest(XmlrpcTest, unittest.TestCase):
+    backend = 'sqlite'
+
+
+class postgresqlXmlrpcTest(XmlrpcTest, unittest.TestCase):
+    backend = 'postgresql'
+
+
 def test_suite():
     suite = unittest.TestSuite()
-    for l in list_backends():
-        dct = dict(backend = l)
-        subcls = type(TestCase)('TestCase_%s'%l, (TestCase,), dct)
-        suite.addTest(unittest.makeSuite(subcls))
+    suite.addTest(unittest.makeSuite(anydbmXmlrpcTest))
+    suite.addTest(unittest.makeSuite(mysqlXmlrpcTest))
+    suite.addTest(unittest.makeSuite(sqliteXmlrpcTest))
+    suite.addTest(unittest.makeSuite(postgresqlXmlrpcTest))
     return suite
 
 if __name__ == '__main__':

@@ -33,19 +33,23 @@ class memorydbOpener:
         self.db = self.module.Database(config, 'admin')
         setupSchema(self.db, 0, self.module)
 
-class memorydbDBTest(memorydbOpener, DBTest):
+
+class memorydbDBTest(memorydbOpener, DBTest, unittest.TestCase):
     pass
 
-class memorydbROTest(memorydbOpener, ROTest):
+
+class memorydbROTest(memorydbOpener, ROTest, unittest.TestCase):
     def setUp(self):
         self.db = self.module.Database(config)
         setupSchema(self.db, 0, self.module)
 
-class memorydbSchemaTest(memorydbOpener, SchemaTest):
+
+class memorydbSchemaTest(memorydbOpener, SchemaTest, unittest.TestCase):
     pass
 
+
 from session_common import DBMTest
-class memorydbSessionTest(memorydbOpener, DBMTest):
+class memorydbSessionTest(memorydbOpener, DBMTest, unittest.TestCase):
     def setUp(self):
         self.db = self.module.Database(config, 'admin')
         setupSchema(self.db, 1, self.module)

@@ -2,7 +2,8 @@ import os, shutil, unittest
 
 from db_test_base import config
 
-class SessionTest(unittest.TestCase):
+
+class SessionTest(object):
     def setUp(self):
         # remove previous test, ignore errors
         if os.path.exists(config.DATABASE):
