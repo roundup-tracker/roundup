@@ -20,6 +20,7 @@ import logging
 import gpgmelib
 from email.parser import FeedParser
 
+import pytest
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval, DatabaseError, Boolean, Number, Node
 from roundup.mailer import Mailer
@@ -2019,14 +2020,12 @@ class DBTest(commonDBTest):
             roundupdb._ = old_translate_
             Mailer.smtp_send = backup
 
+    @pytest.mark.skipif(gpgmelib.pyme is None, reason='Skipping PGPNosy test')
     def testPGPNosyMail(self) :
         """Creates one issue with two attachments, one smaller and one larger
            than the set max_attachment_size. Recipients are one with and
            one without encryption enabled via a gpg group.
         """
-        if gpgmelib.pyme is None:
-            print "Skipping PGPNosy test"
-            return
         old_translate_ = roundupdb._
         roundupdb._ = i18n.get_translation(language='C').gettext
         db = self.db

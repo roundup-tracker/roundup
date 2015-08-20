@@ -20,14 +20,26 @@
 
 import os, unittest, shutil
 
+import pytest
 from roundup.backends import get_backend, have_backend
 from roundup.backends.indexer_rdbms import Indexer
 
 # borrow from other tests
 from db_test_base import setupSchema, config
-from test_postgresql import postgresqlOpener
-from test_mysql import mysqlOpener
+from .test_postgresql import postgresqlOpener, skip_postgresql
+from .test_mysql import mysqlOpener, skip_mysql
 from test_sqlite import sqliteOpener
+
+try:
+    import xapian
+    SKIP_XAPIAN = False
+except ImportError:
+    SKIP_XAPIAN = True
+
+skip_xapian = pytest.mark.skipif(
+    SKIP_XAPIAN,
+    reason="Skipping Xapian indexer tests: 'xapian' not installed")
+
 
 class db:
     class config(dict):
@@ -139,6 +151,8 @@ class IndexerTest(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree('test-index')
 
+
+@skip_xapian
 class XapianIndexerTest(IndexerTest):
     def setUp(self):
         if os.path.exists('test-index'):
@@ -164,6 +178,7 @@ class RDBMSIndexerTest(object):
             shutil.rmtree(config.DATABASE)
 
 
+@skip_postgresql
 class postgresqlIndexerTest(postgresqlOpener, RDBMSIndexerTest, IndexerTest):
     def setUp(self):
         postgresqlOpener.setUp(self)
@@ -173,6 +188,7 @@ class postgresqlIndexerTest(postgresqlOpener, RDBMSIndexerTest, IndexerTest):
         postgresqlOpener.tearDown(self)
 
 
+@skip_mysql
 class mysqlIndexerTest(mysqlOpener, RDBMSIndexerTest, IndexerTest):
     def setUp(self):
         mysqlOpener.setUp(self)

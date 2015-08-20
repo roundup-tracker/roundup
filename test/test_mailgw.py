@@ -15,10 +15,16 @@ import email
 import gpgmelib
 import unittest, tempfile, os, shutil, errno, imp, sys, difflib, time
 
+import pytest
+
 try:
     import pyme, pyme.core
+    SKIP_PGP = False
 except ImportError:
-    pyme = None
+    SKIP_PGP = True
+
+skip_pgp = pytest.mark.skipif(
+    SKIP_PGP, reason="Skipping PGP tests: 'pyme' not installed")
 
 
 from cStringIO import StringIO
@@ -3263,6 +3269,7 @@ Stack trace:
         self.assertEqual(self.db.file.get(fileid, 'type'), 'message/rfc822')
 
 
+@skip_pgp
 class MailgwPGPTestCase(MailgwTestAbstractBase, unittest.TestCase):
     pgphome = gpgmelib.pgphome
     def setUp(self):

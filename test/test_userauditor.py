@@ -1,5 +1,10 @@
 import os, unittest, shutil
+
+import pytest
+
 from db_test_base import setupTracker
+from .test_dates import skip_pytz
+
 
 class UserAuditorTest(unittest.TestCase):
     def setUp(self):
@@ -7,12 +12,6 @@ class UserAuditorTest(unittest.TestCase):
         self.instance = setupTracker(self.dirname)
         self.db = self.instance.open('admin')
         self.db.tx_Source = "cli"
-
-        try:
-            import pytz
-            self.pytz = True
-        except ImportError:
-            self.pytz = False
 
         self.db.user.create(username='kyle', address='kyle@example.com',
             realname='Kyle Broflovski', roles='User')
@@ -34,18 +33,20 @@ class UserAuditorTest(unittest.TestCase):
         self.assertRaises(ValueError, self.db.user.set, userid, timezone='-24')
         self.assertRaises(ValueError, self.db.user.set, userid, timezone='-3000')
 
-        if self.pytz:
-            try:
-                from pytz import UnknownTimeZoneError
-            except:
-                UnknownTimeZoneError = ValueError
-            self.assertRaises(UnknownTimeZoneError, self.db.user.set, userid, timezone='MiddleOf/Nowhere')
+    @skip_pytz
+    def testBadTimezonesPyTZ(self):
+        userid = self.db.user.lookup('kyle')
+
+        try:
+            from pytz import UnknownTimeZoneError
+        except:
+            UnknownTimeZoneError = ValueError
+
+        self.assertRaises(UnknownTimeZoneError, self.db.user.set, userid,
+                          timezone='MiddleOf/Nowhere')
 
     def testGoodTimezones(self):
         self.db.user.create(username='test_user01', timezone='12')
-
-        if self.pytz:
-            self.db.user.create(username='test_user02', timezone='MST')
 
         userid = self.db.user.lookup('kyle')
 
@@ -57,8 +58,12 @@ class UserAuditorTest(unittest.TestCase):
         self.db.user.set(userid, timezone='23')
         self.db.user.set(userid, timezone='0')
 
-        if self.pytz:
-            self.db.user.set(userid, timezone='US/Eastern')
+    @skip_pytz
+    def testGoodTimezonesPyTZ(self):
+        userid = self.db.user.lookup('kyle')
+
+        self.db.user.create(username='test_user02', timezone='MST')
+        self.db.user.set(userid, timezone='US/Eastern')
 
     def testBadEmailAddresses(self):
         userid = self.db.user.lookup('kyle')

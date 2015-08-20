@@ -17,6 +17,7 @@
 
 import unittest, os, shutil, time, imp
 
+import pytest
 from roundup.hyperdb import DatabaseError
 from roundup.backends import get_backend, have_backend
 
@@ -39,24 +40,44 @@ class mysqlOpener:
         self.module.db_nuke(config)
 
 
+if not have_backend('mysql'):
+    SKIP_MYSQL = True
+    SKIP_MYSQL_REASON = 'Skipping MySQL tests: not enabled'
+else:
+    try:
+        import MySQLdb
+        mysqlOpener.module.db_exists(config)
+        SKIP_MYSQL = False
+        SKIP_MYSQL_REASON = ''
+    except (MySQLdb.MySQLError, DatabaseError) as msg:
+        SKIP_MYSQL = True
+        SKIP_MYSQL_REASON = 'Skipping MySQL tests: %s' % str(msg)
+
+skip_mysql = pytest.mark.skipif(SKIP_MYSQL, reason=SKIP_MYSQL_REASON)
+
+
+@skip_mysql
 class mysqlDBTest(mysqlOpener, DBTest, unittest.TestCase):
     def setUp(self):
         mysqlOpener.setUp(self)
         DBTest.setUp(self)
 
 
+@skip_mysql
 class mysqlROTest(mysqlOpener, ROTest, unittest.TestCase):
     def setUp(self):
         mysqlOpener.setUp(self)
         ROTest.setUp(self)
 
 
+@skip_mysql
 class mysqlSchemaTest(mysqlOpener, SchemaTest, unittest.TestCase):
     def setUp(self):
         mysqlOpener.setUp(self)
         SchemaTest.setUp(self)
 
 
+@skip_mysql
 class mysqlClassicInitTest(mysqlOpener, ClassicInitTest, unittest.TestCase):
     backend = 'mysql'
     def setUp(self):
@@ -67,6 +88,7 @@ class mysqlClassicInitTest(mysqlOpener, ClassicInitTest, unittest.TestCase):
         self.nuke_database()
 
 
+@skip_mysql
 class mysqlConcurrencyTest(mysqlOpener, ConcurrentDBTest, unittest.TestCase):
     backend = 'mysql'
     def setUp(self):
@@ -77,6 +99,7 @@ class mysqlConcurrencyTest(mysqlOpener, ConcurrentDBTest, unittest.TestCase):
         self.nuke_database()
 
 
+@skip_mysql
 class mysqlHTMLItemTest(mysqlOpener, HTMLItemTest, unittest.TestCase):
     backend = 'mysql'
     def setUp(self):
@@ -87,6 +110,7 @@ class mysqlHTMLItemTest(mysqlOpener, HTMLItemTest, unittest.TestCase):
         self.nuke_database()
 
 
+@skip_mysql
 class mysqlFilterCacheTest(mysqlOpener, FilterCacheTest, unittest.TestCase):
     backend = 'mysql'
     def setUp(self):
@@ -98,6 +122,7 @@ class mysqlFilterCacheTest(mysqlOpener, FilterCacheTest, unittest.TestCase):
 
 
 from session_common import RDBMSTest
+@skip_mysql
 class mysqlSessionTest(mysqlOpener, RDBMSTest, unittest.TestCase):
     def setUp(self):
         mysqlOpener.setUp(self)

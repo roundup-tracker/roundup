@@ -20,9 +20,18 @@ import time
 import datetime
 import calendar
 
+import pytest
 from roundup import date, i18n
 from roundup.date import Date, Interval, Range, fixTimeOverflow, \
     get_timezone
+
+try:
+    import pytz
+    SKIP_PYTZ = False
+except ImportError:
+    SKIP_PYTZ = True
+
+skip_pytz = pytest.mark.skipif(SKIP_PYTZ, reason="'pytz' not installed")
 
 
 class DateTestCase(unittest.TestCase):
@@ -452,6 +461,8 @@ class DateTestCase(unittest.TestCase):
         ae (date.timestamp(), -61125753600.0)
         ae(str(date), '0033-01-01.00:00:00')
 
+
+@skip_pytz
 class TimezoneTestCase(unittest.TestCase):
 
     def testTZ(self):

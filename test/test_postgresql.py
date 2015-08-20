@@ -17,6 +17,7 @@
 
 import unittest
 
+import pytest
 from roundup.hyperdb import DatabaseError
 
 from db_test_base import DBTest, ROTest, config, SchemaTest, ClassicInitTest
@@ -24,6 +25,15 @@ from db_test_base import ConcurrentDBTest, HTMLItemTest, FilterCacheTest
 from db_test_base import ClassicInitBase, setupTracker
 
 from roundup.backends import get_backend, have_backend
+
+if not have_backend('postgresql'):
+    SKIP_POSTGRESQL = True
+else:
+    SKIP_POSTGRESQL = False
+
+skip_postgresql = pytest.mark.skipif(
+    SKIP_POSTGRESQL, reason='Skipping PostgreSQL tests: not enabled')
+
 
 class postgresqlOpener:
     if have_backend('postgresql'):
@@ -40,6 +50,7 @@ class postgresqlOpener:
         self.module.db_nuke(config)
 
 
+@skip_postgresql
 class postgresqlDBTest(postgresqlOpener, DBTest, unittest.TestCase):
     def setUp(self):
         postgresqlOpener.setUp(self)
@@ -50,6 +61,7 @@ class postgresqlDBTest(postgresqlOpener, DBTest, unittest.TestCase):
         postgresqlOpener.tearDown(self)
 
 
+@skip_postgresql
 class postgresqlROTest(postgresqlOpener, ROTest, unittest.TestCase):
     def setUp(self):
         postgresqlOpener.setUp(self)
@@ -60,6 +72,7 @@ class postgresqlROTest(postgresqlOpener, ROTest, unittest.TestCase):
         postgresqlOpener.tearDown(self)
 
 
+@skip_postgresql
 class postgresqlConcurrencyTest(postgresqlOpener, ConcurrentDBTest,
                                 unittest.TestCase):
     backend = 'postgresql'
@@ -72,6 +85,7 @@ class postgresqlConcurrencyTest(postgresqlOpener, ConcurrentDBTest,
         postgresqlOpener.tearDown(self)
 
 
+@skip_postgresql
 class postgresqlJournalTest(postgresqlOpener, ClassicInitBase,
                             unittest.TestCase):
     backend = 'postgresql'
@@ -122,6 +136,7 @@ class postgresqlJournalTest(postgresqlOpener, ClassicInitBase,
         self.assertRaises(exc, self._test_journal, [])
 
 
+@skip_postgresql
 class postgresqlHTMLItemTest(postgresqlOpener, HTMLItemTest,
                              unittest.TestCase):
     backend = 'postgresql'
@@ -134,6 +149,7 @@ class postgresqlHTMLItemTest(postgresqlOpener, HTMLItemTest,
         postgresqlOpener.tearDown(self)
 
 
+@skip_postgresql
 class postgresqlFilterCacheTest(postgresqlOpener, FilterCacheTest,
                                 unittest.TestCase):
     backend = 'postgresql'
@@ -146,6 +162,7 @@ class postgresqlFilterCacheTest(postgresqlOpener, FilterCacheTest,
         postgresqlOpener.tearDown(self)
 
 
+@skip_postgresql
 class postgresqlSchemaTest(postgresqlOpener, SchemaTest, unittest.TestCase):
     def setUp(self):
         postgresqlOpener.setUp(self)
@@ -156,6 +173,7 @@ class postgresqlSchemaTest(postgresqlOpener, SchemaTest, unittest.TestCase):
         postgresqlOpener.tearDown(self)
 
 
+@skip_postgresql
 class postgresqlClassicInitTest(postgresqlOpener, ClassicInitTest,
                                 unittest.TestCase):
     backend = 'postgresql'
@@ -169,6 +187,7 @@ class postgresqlClassicInitTest(postgresqlOpener, ClassicInitTest,
 
 
 from session_common import RDBMSTest
+@skip_postgresql
 class postgresqlSessionTest(postgresqlOpener, RDBMSTest, unittest.TestCase):
     def setUp(self):
         postgresqlOpener.setUp(self)
