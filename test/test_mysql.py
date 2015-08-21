@@ -131,33 +131,4 @@ class mysqlSessionTest(mysqlOpener, RDBMSTest, unittest.TestCase):
         RDBMSTest.tearDown(self)
         mysqlOpener.tearDown(self)
 
-def test_suite():
-    suite = unittest.TestSuite()
-    if not have_backend('mysql'):
-        print "Skipping mysql tests"
-        return suite
-
-    import MySQLdb
-    try:
-        # Check if we can connect to the server.
-        # use db_exists() to make a connection, ignore it's return value
-        mysqlOpener.module.db_exists(config)
-    except (MySQLdb.MySQLError, DatabaseError), msg:
-        print "Skipping mysql tests (%s)"%msg
-    else:
-        print 'Including mysql tests'
-        suite.addTest(unittest.makeSuite(mysqlDBTest))
-        suite.addTest(unittest.makeSuite(mysqlROTest))
-        suite.addTest(unittest.makeSuite(mysqlSchemaTest))
-        suite.addTest(unittest.makeSuite(mysqlClassicInitTest))
-        suite.addTest(unittest.makeSuite(mysqlSessionTest))
-        suite.addTest(unittest.makeSuite(mysqlConcurrencyTest))
-        suite.addTest(unittest.makeSuite(mysqlHTMLItemTest))
-        suite.addTest(unittest.makeSuite(mysqlFilterCacheTest))
-    return suite
-
-if __name__ == '__main__':
-    runner = unittest.TextTestRunner()
-    unittest.main(testRunner=runner)
-
 # vim: set et sts=4 sw=4 :

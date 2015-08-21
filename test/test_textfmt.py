@@ -10,8 +10,3 @@ sit amet,
 consectetuer
 adipiscing elit.'''
         self.assertEquals(wrap(lorem, 20), wrapped)
-
-def test_suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(WrapTestCase))
-    return suite

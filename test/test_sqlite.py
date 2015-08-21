@@ -56,24 +56,3 @@ class sqliteFilterCacheTest(sqliteOpener, FilterCacheTest, unittest.TestCase):
 from session_common import RDBMSTest
 class sqliteSessionTest(sqliteOpener, RDBMSTest, unittest.TestCase):
     pass
-
-def test_suite():
-    suite = unittest.TestSuite()
-    from roundup import backends
-    if not have_backend('sqlite'):
-        print 'Skipping sqlite tests'
-        return suite
-    print 'Including sqlite tests'
-    suite.addTest(unittest.makeSuite(sqliteDBTest))
-    suite.addTest(unittest.makeSuite(sqliteROTest))
-    suite.addTest(unittest.makeSuite(sqliteSchemaTest))
-    suite.addTest(unittest.makeSuite(sqliteClassicInitTest))
-    suite.addTest(unittest.makeSuite(sqliteSessionTest))
-    suite.addTest(unittest.makeSuite(sqliteConcurrencyTest))
-    suite.addTest(unittest.makeSuite(sqliteFilterCacheTest))
-    return suite
-
-if __name__ == '__main__':
-    runner = unittest.TextTestRunner()
-    unittest.main(testRunner=runner)
-

@@ -508,21 +508,4 @@ class RangeTestCase(unittest.TestCase):
             ae(str(r.to_value), '2006-%02d-%02d.23:59:59'%(i,
                 calendar.mdays[i]))
 
-
-def test_suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(DateTestCase))
-    suite.addTest(unittest.makeSuite(RangeTestCase))
-    try:
-        import pytz
-    except ImportError:
-        pass
-    else:
-        suite.addTest(unittest.makeSuite(TimezoneTestCase))
-    return suite
-
-if __name__ == '__main__':
-    runner = unittest.TextTestRunner()
-    unittest.main(testRunner=runner)
-
 # vim: set filetype=python sts=4 sw=4 et si :

@@ -55,19 +55,5 @@ class memorydbSessionTest(memorydbOpener, DBMTest, unittest.TestCase):
         setupSchema(self.db, 1, self.module)
         self.sessions = self.db.sessions
 
-def test_suite():
-    suite = unittest.TestSuite()
-    print 'Including memorydb tests'
-    suite.addTest(unittest.makeSuite(memorydbDBTest))
-    suite.addTest(unittest.makeSuite(memorydbROTest))
-    suite.addTest(unittest.makeSuite(memorydbSchemaTest))
-    suite.addTest(unittest.makeSuite(memorydbSessionTest))
-    return suite
-
-if __name__ == '__main__':
-    runner = unittest.TextTestRunner()
-    unittest.main(testRunner=runner)
-
-
 # vim: set filetype=python ts=4 sw=4 et si
 

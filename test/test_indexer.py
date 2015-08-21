@@ -201,46 +201,4 @@ class mysqlIndexerTest(mysqlOpener, RDBMSIndexerTest, IndexerTest):
 class sqliteIndexerTest(sqliteOpener, RDBMSIndexerTest, IndexerTest):
     pass
 
-def test_suite():
-    suite = unittest.TestSuite()
-
-    suite.addTest(unittest.makeSuite(IndexerTest))
-
-    try:
-        import xapian
-        suite.addTest(unittest.makeSuite(XapianIndexerTest))
-    except ImportError:
-        print "Skipping Xapian indexer tests"
-        pass
-
-    if have_backend('postgresql'):
-        # make sure we start with a clean slate
-        if postgresqlOpener.module.db_exists(config):
-            postgresqlOpener.module.db_nuke(config, 1)
-        suite.addTest(unittest.makeSuite(postgresqlIndexerTest))
-    else:
-        print "Skipping postgresql indexer tests"
-
-    if have_backend('mysql'):
-        # make sure we start with a clean slate
-        if mysqlOpener.module.db_exists(config):
-            mysqlOpener.module.db_nuke(config)
-        suite.addTest(unittest.makeSuite(mysqlIndexerTest))
-    else:
-        print "Skipping mysql indexer tests"
-
-    if have_backend('sqlite'):
-        # make sure we start with a clean slate
-        if sqliteOpener.module.db_exists(config):
-            sqliteOpener.module.db_nuke(config)
-        suite.addTest(unittest.makeSuite(sqliteIndexerTest))
-    else:
-        print "Skipping sqlite indexer tests"
-
-    return suite
-
-if __name__ == '__main__':
-    runner = unittest.TextTestRunner()
-    unittest.main(testRunner=runner)
-
 # vim: set filetype=python ts=4 sw=4 et si

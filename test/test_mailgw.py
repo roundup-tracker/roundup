@@ -3494,17 +3494,4 @@ zGhS06FLl3V1xx6gBlpqQHjut3efrAGpXGBVpnTJMOcgYAk=
         l = self.db.msg.get(m, 'tx_Source')
         self.assertEqual(l, 'email-sig-openpgp')
 
-def test_suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(MailgwTestCase))
-    if pyme is not None:
-        suite.addTest(unittest.makeSuite(MailgwPGPTestCase))
-    else:
-        print "Skipping PGP tests"
-    return suite
-
-if __name__ == '__main__':
-    runner = unittest.TextTestRunner()
-    unittest.main(testRunner=runner)
-
 # vim: set filetype=python sts=4 sw=4 et si :

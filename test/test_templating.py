@@ -349,16 +349,4 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
     def __repr__(self):
 '''
 
-
-def test_suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(HTMLDatabaseTestCase))
-    suite.addTest(unittest.makeSuite(FunctionsTestCase))
-    suite.addTest(unittest.makeSuite(HTMLClassTestCase))
-    return suite
-
-if __name__ == '__main__':
-    runner = unittest.TextTestRunner()
-    unittest.main(testRunner=runner)
-
 # vim: set et sts=4 sw=4 :

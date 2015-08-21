@@ -236,13 +236,4 @@ class PermissionTest(MyTestCase, unittest.TestCase):
     def test_password(self):
         roundup.password.test()
 
-def test_suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(PermissionTest))
-    return suite
-
-if __name__ == '__main__':
-    runner = unittest.TextTestRunner()
-    unittest.main(testRunner=runner)
-
 # vim: set filetype=python sts=4 sw=4 et si :

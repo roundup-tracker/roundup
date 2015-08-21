@@ -196,27 +196,4 @@ class postgresqlSessionTest(postgresqlOpener, RDBMSTest, unittest.TestCase):
         RDBMSTest.tearDown(self)
         postgresqlOpener.tearDown(self)
 
-def test_suite():
-    suite = unittest.TestSuite()
-    if not have_backend('postgresql'):
-        print "Skipping postgresql tests"
-        return suite
-
-    # make sure we start with a clean slate
-    if postgresqlOpener.module.db_exists(config):
-        postgresqlOpener.module.db_nuke(config, 1)
-
-    # TODO: Check if we can run postgresql tests
-    print 'Including postgresql tests'
-    suite.addTest(unittest.makeSuite(postgresqlDBTest))
-    suite.addTest(unittest.makeSuite(postgresqlROTest))
-    suite.addTest(unittest.makeSuite(postgresqlSchemaTest))
-    suite.addTest(unittest.makeSuite(postgresqlClassicInitTest))
-    suite.addTest(unittest.makeSuite(postgresqlSessionTest))
-    suite.addTest(unittest.makeSuite(postgresqlConcurrencyTest))
-    suite.addTest(unittest.makeSuite(postgresqlJournalTest))
-    suite.addTest(unittest.makeSuite(postgresqlHTMLItemTest))
-    suite.addTest(unittest.makeSuite(postgresqlFilterCacheTest))
-    return suite
-
 # vim: set et sts=4 sw=4 :

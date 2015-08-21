@@ -47,13 +47,4 @@ class TokenTestCase(unittest.TestCase):
         self.assertRaises(ValueError, token_split, '"hello world')
         self.assertRaises(ValueError, token_split, "Roch'e Compaan")
 
-def test_suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TokenTestCase))
-    return suite
-
-if __name__ == '__main__':
-    runner = unittest.TextTestRunner()
-    unittest.main(testRunner=runner)
-
 # vim: set filetype=python ts=4 sw=4 et si

@@ -977,18 +977,4 @@ class FormTestCase(unittest.TestCase):
         self.assertRaises(exceptions.SeriousError,
             actions.ExportCSVAction(cl).handle)
 
-
-def test_suite():
-    suite = unittest.TestSuite()
-
-def test_suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(FormTestCase))
-    suite.addTest(unittest.makeSuite(MessageTestCase))
-    return suite
-
-if __name__ == '__main__':
-    runner = unittest.TextTestRunner()
-    unittest.main(testRunner=runner)
-
 # vim: set filetype=python sts=4 sw=4 et si :

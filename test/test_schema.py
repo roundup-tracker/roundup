@@ -72,15 +72,4 @@ class SchemaTestCase(unittest.TestCase):
         self.assert_(user, 'no class object returned')
         user.setkey("username")
 
-
-def test_suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(SchemaTestCase))
-    return suite
-
-if __name__ == '__main__':
-    runner = unittest.TextTestRunner()
-    unittest.main(testRunner=runner)
-
-
 # vim: set filetype=python sts=4 sw=4 et si :

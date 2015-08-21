@@ -227,14 +227,4 @@ multipart/mixed
                   (None,
                    [('foo.eml', 'message/rfc822', 'Subject: foo\n\nfoo\n')]))
 
-def test_suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(MultipartTestCase))
-    return suite
-
-if __name__ == '__main__':
-    runner = unittest.TextTestRunner()
-    unittest.main(testRunner=runner)
-
-
 # vim: set filetype=python ts=4 sw=4 et si

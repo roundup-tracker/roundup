@@ -129,12 +129,4 @@ class RawToHyperdbTest(unittest.TestCase):
         self.assertEqual(self._test('multilink', '+valid', None), ['1'])
         self.assertEqual(self._test('multilink', '', None), [])
 
-def test_suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(RawToHyperdbTest))
-    return suite
-
-if __name__ == '__main__':
-    runner = unittest.TextTestRunner()
-    unittest.main(testRunner=runner)
 # vim: set filetype=python ts=4 sw=4 et si

@@ -49,25 +49,11 @@ class Jinja2Test(object):
         pass
 
 
+# only using one database backend for now, not sure if doing all
+# backends will keep the test focussed enough to be useful for the used
+# computing time. Would be okay to change in the future.
 class anydbmJinja2Test(Jinja2Test, unittest.TestCase):
     backend = 'anydbm'
-
-
-def test_suite():
-    suite = unittest.TestSuite()
-
-    suite.addTest(unittest.makeSuite(TestCase_Zero))
-
-    # only using one database backend for now, not sure if doing all
-    # backends will keep the test focussed enough to be useful for the used
-    # computing time. Would be okay to change in the future.
-    # for l in list_backends():
-    suite.addTest(unittest.makeSuite(anydbmJinja2Test))
-
-    return suite
-
-# Other roundup test source files have an if __name__ == '__main__': here
-# but I'm not sure if this is still helpful. So left out for now.
 
 # vim: ts=4 et sts=4 sw=4 ai :
 

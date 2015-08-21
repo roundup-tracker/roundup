@@ -52,20 +52,4 @@ from session_common import DBMTest
 class anydbmSessionTest(anydbmOpener, DBMTest, unittest.TestCase):
     pass
 
-def test_suite():
-    suite = unittest.TestSuite()
-    print 'Including anydbm tests'
-    suite.addTest(unittest.makeSuite(anydbmDBTest))
-    suite.addTest(unittest.makeSuite(anydbmROTest))
-    suite.addTest(unittest.makeSuite(anydbmSchemaTest))
-    suite.addTest(unittest.makeSuite(anydbmClassicInitTest))
-    suite.addTest(unittest.makeSuite(anydbmHTMLItemTest))
-    suite.addTest(unittest.makeSuite(anydbmSessionTest))
-    return suite
-
-if __name__ == '__main__':
-    runner = unittest.TextTestRunner()
-    unittest.main(testRunner=runner)
-
-
 # vim: set filetype=python ts=4 sw=4 et si

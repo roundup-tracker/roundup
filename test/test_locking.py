@@ -44,13 +44,4 @@ class LockingTest(unittest.TestCase):
     def tearDown(self):
         os.remove(self.path)
 
-def test_suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(LockingTest))
-    return suite
-
-if __name__ == '__main__':
-    runner = unittest.TextTestRunner()
-    unittest.main(testRunner=runner)
-
 # vim: set filetype=python ts=4 sw=4 et si
