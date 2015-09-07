@@ -26,13 +26,13 @@ from db_test_base import ClassicInitBase, setupTracker
 
 from roundup.backends import get_backend, have_backend
 
+# FIX: workaround for a bug in pytest.mark.skipif():
+#   https://github.com/pytest-dev/pytest/issues/568
 if not have_backend('postgresql'):
-    SKIP_POSTGRESQL = True
+    skip_postgresql = pytest.skip(
+        'Skipping PostgreSQL tests: backend not available')
 else:
-    SKIP_POSTGRESQL = False
-
-skip_postgresql = pytest.mark.skipif(
-    SKIP_POSTGRESQL, reason='Skipping PostgreSQL tests: not enabled')
+    skip_postgresql = lambda func, *args, **kwargs: func
 
 
 class postgresqlOpener:

@@ -25,13 +25,13 @@ from roundup import date, i18n
 from roundup.date import Date, Interval, Range, fixTimeOverflow, \
     get_timezone
 
+# FIX: workaround for a bug in pytest.mark.skipif():
+#   https://github.com/pytest-dev/pytest/issues/568
 try:
     import pytz
-    SKIP_PYTZ = False
+    skip_pytz = lambda func, *args, **kwargs: func
 except ImportError:
-    SKIP_PYTZ = True
-
-skip_pytz = pytest.mark.skipif(SKIP_PYTZ, reason="'pytz' not installed")
+    skip_pytz = pytest.skip("'pytz' not installed")
 
 
 class DateTestCase(unittest.TestCase):

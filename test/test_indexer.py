@@ -30,15 +30,14 @@ from .test_postgresql import postgresqlOpener, skip_postgresql
 from .test_mysql import mysqlOpener, skip_mysql
 from test_sqlite import sqliteOpener
 
+# FIX: workaround for a bug in pytest.mark.skipif():
+#   https://github.com/pytest-dev/pytest/issues/568
 try:
     import xapian
-    SKIP_XAPIAN = False
+    skip_xapian = lambda func, *args, **kwargs: func
 except ImportError:
-    SKIP_XAPIAN = True
-
-skip_xapian = pytest.mark.skipif(
-    SKIP_XAPIAN,
-    reason="Skipping Xapian indexer tests: 'xapian' not installed")
+    skip_xapian = pytest.skip(
+        "Skipping Xapian indexer tests: 'xapian' not installed")
 
 
 class db:
