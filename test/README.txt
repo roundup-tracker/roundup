@@ -11,7 +11,6 @@ test_mysql.py
 test_postgresql.py
 test_security.py
 test_sqlite.py
-test_tsearch2.py
 test_userauditor.py
 
 grep "import db_test_base" -l *.py

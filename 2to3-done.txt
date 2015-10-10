@@ -1,7 +1,6 @@
 CAN'T VERIFY
 
 ./roundup/backends/back_mysql.py
-./roundup/backends/back_tsearch2.py
 
 TODO
 
@@ -109,7 +108,6 @@ TODO
 ./test/test_templating.py
 ./test/test_textfmt.py
 ./test/test_token.py
-./test/test_tsearch2.py
 ./test/test_userauditor.py
 ./test/test_xmlrpc.py
 ./test.py
@@ -149,7 +147,6 @@ NOTHING DONE
 ./roundup/anypy/__init__.py
 ./roundup/backends/blobfiles.py
 ./roundup/backends/indexer_xapian.py
-./roundup/backends/tsearch2_setup.py
 ./roundup/cgi/__init__.py
 ./roundup/cgi/apache.py
 ./roundup/cgi/client.py
