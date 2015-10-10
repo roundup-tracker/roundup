@@ -57,6 +57,9 @@ Features:
   (similar to RFC 2822), e.g. +0200 for CEST or -0500 for EST. This also
   works in the XMLRPC interface. For examples see roundup.date.Date.
   (Ralf Schlatterbeck)
+- Add RejectRaw exception to allow unescaped HTML error messages to be
+  displayed to the user (thanks Ezio Melotti for the initial patch)
+  (John Kristensen)
 
 Fixed:
 

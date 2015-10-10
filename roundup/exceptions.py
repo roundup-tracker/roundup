@@ -21,6 +21,15 @@ class Reject(Exception):
     """
     pass
 
+
+class RejectRaw(Reject):
+    """
+    Performs the same function as Reject, except HTML in the message is not
+    escaped when displayed to the user.
+    """
+    pass
+
+
 class UsageError(ValueError):
     pass
 

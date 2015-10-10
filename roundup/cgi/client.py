@@ -16,7 +16,7 @@ except ImportError:
 from roundup import roundupdb, date, hyperdb, password
 from roundup.cgi import templating, cgitb, TranslationService
 from roundup.cgi.actions import *
-from roundup.exceptions import *
+from roundup.exceptions import LoginError, Reject, RejectRaw, Unauthorised
 from roundup.cgi.exceptions import *
 from roundup.cgi.form_parser import FormParser
 from roundup.mailer import Mailer, MessageSendError, encode_quopri
@@ -1274,9 +1274,9 @@ class Client:
                 return getattr(self, action_klass)()
             else:
                 return action_klass(self).execute()
-
-        except (ValueError, Reject), err:
-            self.add_error_message(str(err))
+        except (ValueError, Reject) as err:
+            escape = not isinstance(err, RejectRaw)
+            self.add_error_message(str(err), escape=escape)
 
     def get_action_class(self, action_name):
         if (hasattr(self.instance, 'cgi_actions') and

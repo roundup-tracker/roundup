@@ -928,7 +928,13 @@ To use, simply add at the top of your auditor::
 
 And then when your rejection criteria have been detected, simply::
 
-   raise Reject
+   raise Reject('Description of error')
+
+Error messages raised with ``Reject`` automatically have any HTML content
+escaped before being displayed to the user. To display an error message to the
+user without performing any HTML escaping the ``RejectRaw`` should be used. All
+security implications should be carefully considering before using
+``RejectRaw``.
 
 
 Generating email from Roundup
