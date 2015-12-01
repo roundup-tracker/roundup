@@ -170,6 +170,9 @@ Fixed:
   one. (Ralf Schlatterbeck)
 - issue2550892 (translation error of priority in locale de) Thanks 
   Martin Thomas Swaton for reporting. (Bernhard Reiter)
+- Help-Window now gets focus, this prevents the case that help doesn't
+  work because an old help-window is below the main window.
+  (Ralf Schlatterbeck)
 
 
 2013-07-06: 1.5.0

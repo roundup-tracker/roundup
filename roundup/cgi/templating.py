@@ -2758,6 +2758,7 @@ function submit_once() {
 
 function help_window(helpurl, width, height) {
     HelpWin = window.open('%s' + helpurl, 'RoundupHelpWindow', 'scrollbars=yes,resizable=yes,toolbar=no,height='+height+',width='+width);
+    HelpWin.focus ()
 }
 </script>
 """%self.base
