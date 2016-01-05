@@ -20,8 +20,6 @@ from mocknull import MockNull
 
 import db_test_base
 
-NEEDS_INSTANCE = 1
-
 class FileUpload:
     def __init__(self, content, filename):
         self.content = content

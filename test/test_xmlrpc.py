@@ -16,8 +16,6 @@ from roundup.cgi import TranslationService
 
 import db_test_base
 
-NEEDS_INSTANCE = 1
-
 class TestCase(unittest.TestCase):
 
     backend = None
