@@ -2,5 +2,7 @@ Name: jinja2
 Description: This is a generic issue tracker based on classic schema.
     It uses Jinja2 for templating and Twitter bootstrap for responsive
     markup.  You will need jinja and gettext for this to work.
+    See the wiki page http://www.roundup-tracker.org/cgi-bin/moin.cgi/Jinja2
+    for updates infos between releases.
 Intended-For: Developers/Fearless first-time roundup users
 

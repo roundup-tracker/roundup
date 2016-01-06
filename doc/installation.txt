@@ -79,6 +79,11 @@ pyme
   configured, you can require email to be cryptographically signed
   before roundup will allow it to make modifications to issues.
 
+jinja2
+  To use the jinja2 template (may still be experimental, check out
+  its TEMPLATE-INFO.txt file) you need
+  to have the jinja2_ template engine installed.
+
 Windows Service
   You can run Roundup as a Windows service if pywin32_ is installed.
 
@@ -88,6 +93,7 @@ Windows Service
 .. _pyopenssl: http://pyopenssl.sourceforge.net
 .. _pyme: http://pyme.sourceforge.net
 .. _pywin32: http://pypi.python.org/pypi/pywin32
+.. _jinja2: http://jinja.pocoo.org/
 
 
 Getting Roundup
