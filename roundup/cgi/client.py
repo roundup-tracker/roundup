@@ -1274,7 +1274,7 @@ class Client:
                 return getattr(self, action_klass)()
             else:
                 return action_klass(self).execute()
-        except (ValueError, Reject) as err:
+        except (ValueError, Reject), err:
             escape = not isinstance(err, RejectRaw)
             self.add_error_message(str(err), escape=escape)
 

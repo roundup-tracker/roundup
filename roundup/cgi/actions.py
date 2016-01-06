@@ -620,7 +620,7 @@ class EditItemAction(EditCommon):
         # handle the props
         try:
             message = self._editnodes(props, links)
-        except (ValueError, KeyError, IndexError, Reject) as message:
+        except (ValueError, KeyError, IndexError, Reject), message:
             escape = not isinstance(message, RejectRaw)
             self.client.add_error_message(
                 self._('Edit Error: %s') % str(message), escape=escape)
@@ -666,7 +666,7 @@ class NewItemAction(EditCommon):
         try:
             # when it hits the None element, it'll set self.nodeid
             messages = self._editnodes(props, links)
-        except (ValueError, KeyError, IndexError, Reject) as message:
+        except (ValueError, KeyError, IndexError, Reject), message:
             escape = not isinstance(message, RejectRaw)
             # these errors might just be indicative of user dumbness
             self.client.add_error_message(_('Error: %s') % str(message),
@@ -850,7 +850,7 @@ class RegisterAction(RegoCommon, EditCommon):
             try:
                 # when it hits the None element, it'll set self.nodeid
                 messages = self._editnodes(props, links)
-            except (ValueError, KeyError, IndexError, Reject) as message:
+            except (ValueError, KeyError, IndexError, Reject), message:
                 escape = not isinstance(message, RejectRaw)
                 # these errors might just be indicative of user dumbness
                 self.client.add_error_message(_('Error: %s') % str(message),
