@@ -64,7 +64,7 @@
         </div>
       </div>
       <div class='row-fluid'>
-        <pre>{{ msg.content.hyperlinked() }}</pre>
+        <pre>{{ msg.content.hyperlinked()|u }}</pre>
       </div>
     {% endfor %}
   {% endif %}

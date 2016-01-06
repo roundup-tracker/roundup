@@ -173,6 +173,10 @@ Fixed:
 - Help-Window now gets focus, this prevents the case that help doesn't
   work because an old help-window is below the main window.
   (Ralf Schlatterbeck)
+- issue2550811 20% fix: jinja2 template engine now has an example 
+  how to use non-ascii unicode contents with a custom filter ('|u'). 
+  See updates on http://www.roundup-tracker.org/cgi-bin/moin.cgi/Jinja2
+  (Bernhard Reiter)
 
 
 2013-07-06: 1.5.0

@@ -34,6 +34,8 @@ minimal set (to avoid Roundup state changes from template).
 import jinja2
 import gettext
 
+from types import MethodType
+
 # http://jinja.pocoo.org/docs/api/#loaders
 
 from roundup.cgi.templating import context, LoaderBase, TemplateBase
@@ -43,12 +45,21 @@ class Jinja2Loader(LoaderBase):
         extensions = [
             'jinja2.ext.autoescape',
         ]
-        print "Jinja2 templates: ", dir 
+        print "Jinja2 templates: ", dir
         print "Extensions: ", extensions
         self._env = jinja2.Environment(
                         loader=jinja2.FileSystemLoader(dir),
                         extensions=extensions
                     )
+
+        # Adding a custom filter that can transform roundup's vars to unicode
+        # This is necessary because jinja2 can only deal with unicode objects
+        # and roundup uses utf-8 for the internal representation.
+        # The automatic conversion will assume 'ascii' and fail sometime.
+        # Analysed with roundup 1.5.0 and jinja 2.7.1. See issue2550811.
+        self._env.filters["u"] = lambda s: \
+            unicode(s(), "utf-8") if type(s) == MethodType \
+                                  else unicode(s, "utf-8")
 
     def check(self, tplname):
         #print tplname
