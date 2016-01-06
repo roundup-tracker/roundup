@@ -141,8 +141,8 @@ Fixed:
   (Thomas Arendsen Hein)
 - Fix broken images in legacy spec.html and original_overview.html, and
   restore web presence for "Roundup's Design Document" (anatoly techtonik)
-- Template jinja2: Updated URL to point to http://www.roundup-tracker.org/
-  (Bernhard Reiter)
+- Template jinja2: Updated URL to point to http://www.roundup-tracker.org/,
+  fixed a typo. (Bernhard Reiter)
 - Security: Add mime-type whitelist for attachmens that can be safely
   rendered from Roundup without trigerring security bugs in browser
   plugins, XSS issues and spam. The option ``allow_html_file`` didn't
