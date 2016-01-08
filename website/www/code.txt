@@ -1,25 +1,25 @@
 Code
 ====
 
-Changelog
-----------
+Roundup is an open source project written in Python, so we use
+SourceForge and Mercurial to keep in the same spirits. But when
+practicality beats purity, you may also find unoffical
+mirrors like
+`this one on GitHub <https://github.com/roundup-tracker/roundup>`_.
 
-The changelog is available as `CHANGES.txt in the SCM repository <https://sourceforge.net/p/roundup/code/ci/tip/tree/CHANGES.txt>`_.
+Project history is maintained in `CHANGES.txt <https://sourceforge.net/p/roundup/code/ci/tip/tree/CHANGES.txt>`_
+file in code repository of Roundup, which can also be viewed online
+through SourceForge `web interface <https://sourceforge.net/p/roundup/code/>`_.
 
-Browse
-------
+Sources
+-------
 
-`Browse the repository <https://sourceforge.net/p/roundup/code/>`_.
-
-Get sources
------------
-
-Read-only access to Mercurial repository is provided through ::
+Official **read-only access** to Mercurial repository is provided through ::
 
   hg clone http://hg.code.sf.net/p/roundup/code roundup
 
-Read/write access requires SourceForge.net ssh password or ssh key
-authorization (see `SourceForge docs for details
+**Read/write access** requires SSH password or SSH key
+authorization (see `SourceForge.net docs for details
 <https://sourceforge.net/p/forge/documentation/Mercurial/>`_) ::
 
   hg clone ssh://USERNAME@hg.code.sf.net/p/roundup/code roundup
