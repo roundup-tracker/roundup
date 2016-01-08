@@ -11,24 +11,18 @@ Browse
 
 `Browse the repository <https://sourceforge.net/p/roundup/code/>`_.
 
-Read-only Access
-----------------
+Get sources
+-----------
 
-Read-only repository access is provided through ::
+Read-only access to Mercurial repository is provided through ::
 
-  hg clone http://hg.code.sf.net/p/roundup/code roundup-code
+  hg clone http://hg.code.sf.net/p/roundup/code roundup
 
-The URL for the webinterface works, too, but you will see messages about
-redirects to the URL shown here.
-
-Read-write Access
------------------
-
-The read/write access uses your SourceForge.net ssh password or ssh key
-to authorize your access. (See `SF's site documentation on Mercurial access
+Read/write access requires SourceForge.net ssh password or ssh key
+authorization (see `SourceForge docs for details
 <https://sourceforge.net/p/forge/documentation/Mercurial/>`_) ::
 
-  hg clone ssh://USERNAME@hg.code.sf.net/p/roundup/code roundup-code
+  hg clone ssh://USERNAME@hg.code.sf.net/p/roundup/code roundup
 
-Of course a roundup developer must have granted
-you write access first - ask for it on the roundup-devel list.
+You also need to be added as a Roundup developer for write access - ask
+for it on the :doc:`roundup-devel list <contact>`.
