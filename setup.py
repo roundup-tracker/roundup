@@ -52,15 +52,13 @@ def include(d, e):
 
     return (d, [f for f in glob('%s/%s'%(d, e)) if os.path.isfile(f)])
 
-
-def mapscript(path):
+def scriptname(path):
     """ Helper for building a list of script names from a list of
         module files.
     """
-    module = os.path.splitext(os.path.basename(path))[0]
-    script = module.replace('_', '-')
-    return '%s = roundup.scripts.%s:run' % (script, module)
-
+    script = os.path.splitext(os.path.basename(path))[0]
+    script = script.replace('_', '-')
+    return script
 
 def main():
     # template munching
@@ -76,7 +74,7 @@ def main():
     ]
 
     # build list of scripts from their implementation modules
-    scripts = [mapscript(f) for f in glob('roundup/scripts/[!_]*.py')]
+    scripts = [scriptname(f) for f in glob('roundup/scripts/[!_]*.py')]
 
     data_files = [
         ('share/roundup/cgi-bin', ['frontends/roundup.cgi']),
@@ -157,9 +155,7 @@ def main():
                      'install_lib': install_lib,
                      },
           packages=packages,
-          entry_points={
-              'console_scripts': scripts
-          },
+          scripts=scripts,
           data_files=data_files)
 
 if __name__ == '__main__':
