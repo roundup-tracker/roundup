@@ -143,12 +143,13 @@ then restart demo. If you want to change backend types, you must use "nuke".
 
 
 def usage(msg = ''):
+    if msg:
+        print msg
+    print """\
+Usage: %(script)s [options] [nuke]
 
-    if msg: print msg
-    print 'Usage: %s [options] [nuke]'%sys.argv[0]
-    print """
- Run a demo server. Config and database files are created
- in %(datadir)s/ subdirectory of %(script)s dir.
+ Run a demo server. Config and database files are created in
+ %(datadir)s subdirectory of %(script)s dir.
 
  'nuke' will re-initialize the demo instance, deleting the old data.
 
@@ -158,7 +159,7 @@ Options:
  -h                -- print this help message
  -t template       -- specify the tracker template to use
  -b backend        -- specify the database backend to use
-""" % dict(script=sys.argv[0], datadir=TRACKER_HOME)
+""" % dict(script=sys.argv[0], datadir=TRACKER_HOME+os.sep)
 
 
 def main():
