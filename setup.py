@@ -37,11 +37,6 @@ from distutils.core import setup
 import sys, os
 from glob import glob
 
-# patch distutils if it can't cope with the "classifiers" keyword
-from distutils.dist import DistributionMetadata
-if not hasattr(DistributionMetadata, 'classifiers'):
-    DistributionMetadata.classifiers = None
-    DistributionMetadata.download_url = None
 
 def include(d, e):
     """Generate a pair of (directory, file-list) for installation.
