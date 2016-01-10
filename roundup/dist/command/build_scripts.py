@@ -60,7 +60,7 @@ class build_scripts(base):
         else:
             # default to current platform
             target = sys.platform
-        self.target_platfom = target
+        self.target_platform = target
 
         # for native builds, use current python executable path;
         # for cross-platform builds, use default executable name
