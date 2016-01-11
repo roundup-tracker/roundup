@@ -1,5 +1,5 @@
 
-Please read doc/upgrading.txt to see how to bring you Roundup version
+Please read ``doc/upgrading.txt`` to see how to bring you Roundup version
 up to date with changes listed in this file. This may require schema
 and template changes not listed here.
 
@@ -12,7 +12,7 @@ release of Roundup, at which point users will need to run Roundup using
 either Python v2.6 or v2.7.
 
 
-2016-??-??: 1.5.1
+2016-01-11: 1.5.1
 
 Pay attention:
 
@@ -149,8 +149,6 @@ Fixed:
   provide protection for invalid content-type, in which case browser
   tried to guess the best one. Thanks to Kay Hayen for reporting and
   helping debug this. issue2550848 (Ralf Schlatterbeck, anatoly techtonik)
-- Fix issue2550866 '"pip install --editable ." fails'. Thanks to tonich for the
-  initial patch (John Kristensen)
 - Documentation: configuration messages_to_author value "nosy" now documented
   in chapter "customizing". (Bernhard Reiter)
 - issue2550877 Failures in test_mailgw.py because of duplicated headers
