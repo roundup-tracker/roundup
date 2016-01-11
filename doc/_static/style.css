@@ -107,3 +107,9 @@ table
   border-spacing: 1px;
   background-color: #fafafa;
 }
+
+a.headerlink {
+  font-size: 0.8em;
+  margin-left: 0.3em;
+  color: #c99;
+}
