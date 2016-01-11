@@ -117,7 +117,7 @@ Fixed:
 - In case of an error, date fields would lose the calendar help, fixed.
   (Ralf Schlatterbeck)
 - demo.py usage message improved: explains "nuke" now. (Bernhard Reiter)
-- Fix issue2550735 Missing doc for xmlrpc schema. Thanks to Cédric Krier
+- Fix issue2550735 Missing doc for xmlrpc schema. Thanks to Cedric Krier
   for the patch. (anatoly techtonik)
 - Fix two line-break accidents in devel and responsive milestone.item.html
   (Thomas Arendsen Hein)
@@ -154,7 +154,7 @@ Fixed:
   work because an old help-window is below the main window.
   (Ralf Schlatterbeck)
 - issue2550811 20% fix: jinja2 template engine now has an example 
-  how to use non-ascii unicode contents with a custom filter ('|u'). 
+  how to use non-ascii unicode contents with a custom filter ('| u'). 
   See updates on http://www.roundup-tracker.org/cgi-bin/moin.cgi/Jinja2
   (Bernhard Reiter)
 

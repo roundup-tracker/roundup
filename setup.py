@@ -106,8 +106,9 @@ def main():
     # because the distutils installer will try to use the mbcs codec
     # which isn't available on non-windows platforms. See also
     # http://bugs.python.org/issue10945
-    long_description=open('doc/announcement.txt').read().decode('utf8')
+    long_description=open('doc/announcement.txt').read()
     try:
+        # attempt to interpret string as 'ascii'
         long_description = long_description.encode('ascii')
     except UnicodeEncodeError, cause:
         print >> sys.stderr, "doc/announcement.txt contains non-ascii: %s" \
