@@ -138,6 +138,7 @@ def main():
                        'Operating System :: Microsoft :: Windows',
                        'Operating System :: POSIX',
                        'Programming Language :: Python',
+                       'Programming Language :: Python :: 2 :: Only',
                        'Topic :: Communications :: Email',
                        'Topic :: Office/Business',
                        'Topic :: Software Development :: Bug Tracking',
