@@ -4,6 +4,7 @@
 # For license terms see the file COPYING.txt.
 #
 from distutils.command.build_scripts import build_scripts as base
+from distutils import log
 import sys, os, string
 
 class build_scripts(base):
@@ -60,7 +61,7 @@ class build_scripts(base):
         else:
             # default to current platform
             target = sys.platform
-        self.target_platfom = target
+        self.target_platform = target
 
         # for native builds, use current python executable path;
         # for cross-platform builds, use default executable name
@@ -106,7 +107,7 @@ sys.path.insert(1, "%s/lib/python%s/site-packages")
             #    continue
 
             if self.dry_run:
-                self.announce("would create %s" % outfile)
+                log.info("would create %s" % outfile)
                 continue
 
             module = os.path.splitext(os.path.basename(script))[0]
@@ -118,7 +119,7 @@ sys.path.insert(1, "%s/lib/python%s/site-packages")
                 'prefix': self.script_preamble,
             }
 
-            self.announce("creating %s" % outfile)
+            log.info("writing %s" % outfile)
             file = open(outfile, 'w')
 
             try:
