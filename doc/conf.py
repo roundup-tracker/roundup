@@ -61,7 +61,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Roundup'
-copyright = u'2009-2015, Richard Jones, Roundup-Team'
+copyright = u'2009-2016, Richard Jones, Roundup-Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -157,8 +157,6 @@ html_collapse_toctree = True
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
 #html_additional_pages = {}
-
-html_add_permalinks = False
 
 # If false, no module index is generated.
 #html_use_modindex = True
