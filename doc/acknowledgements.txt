@@ -1,6 +1,59 @@
 Acknowledgements
 ================
+The Roundup Initative is a group of people that regularily works
+together to produce new releases of the Roundup Issue Tracker.
+We like to thank our community and all organisation and people
+that support us doing so with code, money, time, testing, reports,
+ideas and everything else that helped!
 
+1.5
+---
+
+1.5.1
+~~~~~
+Maintainer: Ralf Schlatterbeck
+
+Release Manager: Anatoly Techtonik
+
+Developer activity by changesets::
+  hg churn -c --rev 1.5.0:1.5.1 
+  techtonik@gmail.com        98 **********************************************
+  bernhard@intevation.de     44 ********************* Bernhard Reiter 
+  rsc@runtux.com             37 ***************** Ralf Schlatterbeck
+  john@jerrykan.com          26 ************ John Kristensen
+  thomas@intevation.de       22 ********** Thomas Arendsen Hein
+  rouilj@ieee.org             5 ** John P. Rouillard
+  caulagi@gmail.com           2 * Pradip Caulagi
+  ced@b2ck.com                1  Cédric Krier
+
+Mathias Behrle,
+Ezio Melotti,
+R David Murray,
+James Mack, 
+Thibault Fevry, 
+Kai Storbeck, 
+Kay Hayen, 
+Karl-Philipp Richter
+
+1.5.0
+~~~~~
+Maintainer: Ralf Schlatterbeck
+
+hg churn -c --rev 1.4.21:1.5.0
+techtonik@gmail.com        37 ********************************************** Anatoly Techtonik
+bernhard@intevation.de     17 ********************* Bernhard Reiter
+caulagi@gmail.com          16 ******************** Pradip Caulagi
+rouilj@ieee.org             8 ********** John P. Rouillard
+rsc@runtux.com              6 ******* Ralf Schlatterbeck
+thomas@intevation.de        5 ****** Thomas Arendsen Hein
+
+Tom Ekberg,
+Erik Hanspers
+
+
+
+pre 1.5.0
+---------
 Go Ping, you rock! Also, go Common Ground, ekit.com and Bizar Software for
 letting me implement this system on their time.
 
