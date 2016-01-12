@@ -12,6 +12,17 @@ release of Roundup, at which point users will need to run Roundup using
 either Python v2.6 or v2.7.
 
 
+201?-??-??: 1.6.0
+
+Features:
+
+- issue2550894: migrate test suite and run_test.py to py.test (John Kristensen)
+
+Fixed
+
+- (none yet)
+
+
 2016-01-11: 1.5.1
 
 Pay attention:
