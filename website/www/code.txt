@@ -1,12 +1,6 @@
 Code
 ====
 
-Roundup is an open source project written in Python, so we use
-SourceForge and Mercurial to keep in the same spirits. But when
-practicality beats purity, you may also find unoffical
-mirrors like
-`this one on GitHub <https://github.com/roundup-tracker/roundup>`_.
-
 Project history is maintained in `CHANGES.txt <https://sourceforge.net/p/roundup/code/ci/tip/tree/CHANGES.txt>`_
 file in code repository of Roundup, which can also be viewed online
 through SourceForge `web interface <https://sourceforge.net/p/roundup/code/>`_.
