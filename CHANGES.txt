@@ -6,10 +6,10 @@ and template changes not listed here.
 Each entry has the developer who committed the change in brackets.
 Entries without name were done by Richard Jones.
 
-**IMPORTANT** The v1.5.x releases of Roundup will be the last to support
-Python v2.5. Support for Python v2.5 will be dropped with the v1.6
-release of Roundup, at which point users will need to run Roundup using
-either Python v2.6 or v2.7.
+**IMPORTANT** The v1.5.x releases of Roundup were the last to support
+Python v2.5. Support for Python v2.5 is dropped starting with the v1.6.x
+releases of Roundup, at which point either Python v2.6 or v2.7 is
+required to run those releases of Roundup.
 
 
 201?-??-??: 1.6.0
@@ -20,7 +20,10 @@ Features:
 
 Fixed
 
-- (none yet)
+- issue1615201: Optionally restore the original (version 0.6) mailgw 
+  behaviour of ignoring a Resent-From:-header and using the real 
+  From-header instead: new configuration option EMAIL_KEEP_REAL_FROM 
+  (Peter Funk aka Pefu).
 
 
 2016-01-11: 1.5.1

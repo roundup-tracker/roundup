@@ -818,7 +818,13 @@ SETTINGS = (
             "multipart/alternative, and this option is set, all other\n"
             "parts of the multipart/alternative are ignored. The default\n"
             "is to keep all parts and attach them to the issue."),
-    ), "Roundup Mail Gateway options"),
+        (BooleanOption, "keep_real_from", "no",
+            "When handling emails ignore the Resent-From:-header\n"
+            "and use the original senders From:-header instead.\n"
+            "(This might be desirable in some situations where a moderator\n"
+            "reads incoming messages first before bouncing them to Roundup)",
+            ["EMAIL_KEEP_REAL_FROM"]),
+     ), "Roundup Mail Gateway options"),
     ("pgp", (
         (BooleanOption, "enable", "no",
             "Enable PGP processing. Requires pyme. If you're planning\n"

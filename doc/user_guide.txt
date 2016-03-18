@@ -549,6 +549,10 @@ the message may be added to the `nosy list`_ depending on:
  creates a new issue. If 'yes', then the recipients will be added on
  followups too. If 'no', they're never added to the nosy.
 
+Some organisations might prefer to have someone moderate emails before
+they are delivered into Roundup.  Those might want to set the 
+configuration option ``EMAIL_KEEP_REAL_FROM`` to ``'yes'`` to avoid
+having the moderators address appearing as the creator of issues.
 
 Nosy List
 ~~~~~~~~~

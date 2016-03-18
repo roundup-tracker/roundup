@@ -540,8 +540,12 @@ class parsedMessage:
         self.has_prefix = False
         self.matches = dict.fromkeys(['refwd', 'quote', 'classname',
                                  'nodeid', 'title', 'args', 'argswhole'])
-        self.from_list = message.getaddrlist('resent-from') \
-                         or message.getaddrlist('from')
+        self.keep_real_from = self.config['EMAIL_KEEP_REAL_FROM']
+        if self.keep_real_from:
+            self.from_list = message.getaddrlist('from')
+        else:
+            self.from_list = message.getaddrlist('resent-from') \
+                          or message.getaddrlist('from')
         self.pfxmode = self.config['MAILGW_SUBJECT_PREFIX_PARSING']
         self.sfxmode = self.config['MAILGW_SUBJECT_SUFFIX_PARSING']
         # these are filled in by subsequent parsing steps
@@ -1469,7 +1473,7 @@ class MailGW:
         self.parsed_message = None
         crypt = False
         sendto = message.getaddrlist('resent-from')
-        if not sendto:
+        if not sendto or self.instance.config['EMAIL_KEEP_REAL_FROM']:
             sendto = message.getaddrlist('from')
         if not sendto:
             # very bad-looking message - we don't even know who sent it

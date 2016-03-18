@@ -2586,6 +2586,25 @@ This is a test submission of a new issue.
         self.assertEqual(l, [self.richard_id, self.mary_id])
         return nodeid
 
+    def testResentFromSwitchedOff(self):
+        self.instance.config.EMAIL_KEEP_REAL_FROM = 'yes'
+        nodeid = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+Resent-From: mary <mary@test.test>
+To: issue_tracker@your.tracker.email.domain.example
+Cc: richard@test.test
+Message-Id: <dummy_test_message_id>
+Subject: [issue] Testing...
+
+This is a test submission of a new issue.
+''')
+        assert not os.path.exists(SENDMAILDEBUG)
+        l = self.db.issue.get(nodeid, 'nosy')
+        l.sort()
+        self.assertEqual(l, [self.chef_id, self.richard_id])
+        return nodeid
+
     def testDejaVu(self):
         self.assertRaises(IgnoreLoop, self._handle_mail,
             '''Content-Type: text/plain;
