@@ -157,7 +157,8 @@ bug = IssueClass(db, "bug",
                  status=Link('status'),
                  resolution=Link('resolution'),
                  superseder=Link('bug'),
-                 keywords=Multilink('keyword'))
+                 keywords=Multilink('keyword'),
+                 patches=Multilink('patches'))
 
 # Task Type
 task_type = Class(db, 'task_type',
