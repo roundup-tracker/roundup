@@ -162,6 +162,14 @@ Section **main**
  umask -- ``02``
   Defines the file creation mode mask.
 
+ csv_field_size -- ``131072``
+  Maximum size of a csv-field during import. Roundups export
+  format is a csv (comma separated values) variant. The csv
+  reader has a limit on the size of individual fields
+  starting with python 2.5. Set this to a higher value if you
+  get the error 'Error: field larger than field limit' during
+  import.
+
 Section **tracker**
  name -- ``Roundup issue tracker``
   A descriptive name for your roundup instance.
