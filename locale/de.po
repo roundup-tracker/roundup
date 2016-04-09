@@ -2124,7 +2124,7 @@ msgid ""
 "encrypted."
 msgstr ""
 "\n"
-"Dieser Tracker wurde konfiguriert, Email-Nachrichten nur PGP-signiert oder\n"
+"Dieser Tracker wurde konfiguriert, E-mail-Nachrichten nur PGP-signiert oder\n"
 "verschlüsselt entgegenzunehmen."
 
 #: ../roundup/mailgw.py:1273
@@ -3612,7 +3612,7 @@ msgstr "Telefon"
 #: ../share/roundup/templates/classic/html/user.register.html:49
 #: ../share/roundup/templates/minimal/html/user.register.html:49
 msgid "E-mail address"
-msgstr "Email-Adresse"
+msgstr "E-mail-Adresse"
 
 #: ../share/roundup/templates/classic/html/user.rego_progress.html:4
 #: ../share/roundup/templates/minimal/html/user.rego_progress.html:4
