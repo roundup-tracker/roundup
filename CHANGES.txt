@@ -31,6 +31,9 @@ Fixed:
 - issue2550601: gsoc-2009 "bug" class doesn't have "patches" property
   Added multilink to patches to the bug schema in the devel template.
   (John Rouillard)
+- issue2550748: Crash when creating new issues with non-existing
+  multilink values (in classic template). Applied patch so it
+  now errors the same way as an update does.  (John Rouillard)
 
 2016-01-11: 1.5.1
 
