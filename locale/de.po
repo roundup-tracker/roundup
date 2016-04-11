@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Roundup 1.5.0\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2009-03-12 11:58+0200\n"
-"PO-Revision-Date: 2014-03-31 18:42+0200\n"
+"PO-Revision-Date: 2016-04-11 09:13+0200\n"
 "Last-Translator: Tobias Herp <tobias.herp@gmx.de>\n"
 "Language-Team: German Translators <roundup-devel@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -2124,7 +2124,7 @@ msgid ""
 "encrypted."
 msgstr ""
 "\n"
-"Dieser Tracker wurde konfiguriert, E-mail-Nachrichten nur PGP-signiert oder\n"
+"Dieser Tracker wurde konfiguriert, E-Mail-Nachrichten nur PGP-signiert oder\n"
 "verschlüsselt entgegenzunehmen."
 
 #: ../roundup/mailgw.py:1273
@@ -3580,7 +3580,7 @@ msgstr "(Voreinstellung: ${zone})"
 #: ../share/roundup/templates/classic/html/user.register.html:53
 #: ../share/roundup/templates/minimal/html/user.item.html:130
 #: ../share/roundup/templates/minimal/html/user.register.html:53
-msgid "Alternate E-mail addresses<br>One address per line"
+msgid "Alternate E-Mail addresses<br>One address per line"
 msgstr "<div title=\"alle, von denen E-Mails an den Bugtracker geschickt werden sollen\">Alternative E-Mail-Adressen</div><i>(eine pro Zeile)</i>"
 
 #: ../share/roundup/templates/classic/html/user.register.html:4
@@ -3612,7 +3612,7 @@ msgstr "Telefon"
 #: ../share/roundup/templates/classic/html/user.register.html:49
 #: ../share/roundup/templates/minimal/html/user.register.html:49
 msgid "E-mail address"
-msgstr "E-mail-Adresse"
+msgstr "E-Mail-Adresse"
 
 #: ../share/roundup/templates/classic/html/user.rego_progress.html:4
 #: ../share/roundup/templates/minimal/html/user.rego_progress.html:4

@@ -25,7 +25,7 @@ Fixed:
   From-header instead: new configuration option EMAIL_KEEP_REAL_FROM 
   (Peter Funk aka Pefu).
 - issue2550717: Changed a couple of residual email references into
-  e-mail in German translation (John Rouillard)
+  E-Mail in German translation (John Rouillard)
 - issue2550669: Adding documentation for csv_field_size to the
   customizing tracker section of doc/customizing.txt (John Rouillard)
 - issue2550601: gsoc-2009 "bug" class doesn't have "patches" property
