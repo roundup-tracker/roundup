@@ -17,7 +17,7 @@ required to run those releases of Roundup.
 Features:
 
 - issue2550894: migrate test suite and run_test.py to py.test (John Kristensen)
-- issue 2550880: Ability to choose password store scheme and SSHA
+- issue2550880: Ability to choose password store scheme and SSHA
   support. Discussion on devel list is tending in favor of this patch.
   Embedded test works, my manual test with a SSHA password
   assigned to a user allowed the user to log in.   Ran the test suite
@@ -30,7 +30,7 @@ Fixed:
   From-header instead: new configuration option EMAIL_KEEP_REAL_FROM 
   (Peter Funk aka Pefu).
 - issue2550717: Changed a couple of residual email references into
-  e-mail in German translation (John Rouillard)
+  E-Mail in German translation (John Rouillard)
 - issue2550669: Adding documentation for csv_field_size to the
   customizing tracker section of doc/customizing.txt (John Rouillard)
 - issue2550601: gsoc-2009 "bug" class doesn't have "patches" property
@@ -38,7 +38,7 @@ Fixed:
   (applied by John Rouillard)
 - issue2550748: Crash when creating new issues with non-existing
   multilink values (in classic template). Applied patch so it
-  now errors the same way as an update does.  (applied by John Rouillard)
+  now errors the same way as an update does. (applied by John Rouillard)
 
 2016-01-11: 1.5.1
 
