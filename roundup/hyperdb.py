@@ -71,11 +71,15 @@ class String(_Type):
 
 class Password(_Type):
     """An object designating a Password property."""
+    def __init__(self, scheme=None, required=False, default_value = None):
+        super(Password, self).__init__(required, default_value)
+        self.scheme = scheme
+
     def from_raw(self, value, **kw):
         if not value:
             return None
         try:
-            return password.Password(encrypted=value, strict=True)
+            return password.Password(encrypted=value, scheme=self.scheme, strict=True)
         except password.PasswordValueError, message:
             raise HyperdbValueError, \
                     _('property %s: %s')%(kw['propname'], message)

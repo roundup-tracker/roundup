@@ -20,6 +20,7 @@
 __docformat__ = 'restructuredtext'
 
 import re, string, random
+import os
 from base64 import b64encode, b64decode
 from hashlib import md5, sha1
 
@@ -80,6 +81,16 @@ except ImportError:
                 block = xor_bytes(block, tmp)
             out += block
         return out[:keylen]
+
+def ssha(password, salt):
+    ''' Make ssha digest from password and salt.
+    Based on code of Roberto Aguilar <roberto@baremetal.io>
+    https://gist.github.com/rca/7217540
+    '''
+    shaval = sha1(password)
+    shaval.update( salt )
+    ssha_digest = b64encode( '{}{}'.format(shaval.digest(), salt) ).strip()
+    return ssha_digest
 
 def pbkdf2(password, salt, rounds, keylen):
     """pkcs#5 password-based key derivation v2.0
@@ -149,6 +160,16 @@ def encodePassword(plaintext, scheme, other=None, config=None):
             raise PasswordValueError, "invalid PBKDF2 hash (rounds too low)"
         raw_digest = pbkdf2(plaintext, raw_salt, rounds, 20)
         return "%d$%s$%s" % (rounds, salt, h64encode(raw_digest))
+    elif scheme == 'SSHA':
+        if other:
+            raw_other = b64decode(other)
+            salt = raw_other[20:]
+        else:
+            #new password
+            # variable salt length
+            salt_len = random.randrange(36, 52)
+            salt = os.urandom(salt_len)
+        s = ssha(plaintext, salt)
     elif scheme == 'SHA':
         s = sha1(plaintext).hexdigest()
     elif scheme == 'MD5':
@@ -241,7 +262,7 @@ class Password(JournalPassword):
     #TODO: code to migrate from old password schemes.
 
     deprecated_schemes = ["SHA", "MD5", "crypt", "plaintext"]
-    known_schemes = ["PBKDF2"] + deprecated_schemes
+    known_schemes = ["PBKDF2", "SSHA"] + deprecated_schemes
 
     def __init__(self, plaintext=None, scheme=None, encrypted=None, strict=False, config=None):
         """Call setPassword if plaintext is not None."""
@@ -318,6 +339,13 @@ def test():
         assert p != 'not sekrit'
         assert 'sekrit' == p
         assert 'not sekrit' != p
+
+    # SSHA
+    p = Password('sekrit', 'SSHA')
+    assert p == 'sekrit'
+    assert p != 'not sekrit'
+    assert 'sekrit' == p
+    assert 'not sekrit' != p
 
     # PBKDF2 - low level function
     from binascii import unhexlify

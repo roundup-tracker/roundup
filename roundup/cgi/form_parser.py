@@ -386,7 +386,8 @@ class FormParser:
                     raise FormError, self._('Password and confirmation text '
                         'do not match')
                 try:
-                    value = password.Password(value, config=self.db.config)
+                    value = password.Password(value, scheme = proptype.scheme,
+                                              config=self.db.config)
                 except hyperdb.HyperdbValueError, msg:
                     raise FormError, msg
 
