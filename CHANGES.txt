@@ -39,6 +39,9 @@ Fixed:
 - issue2550748: Crash when creating new issues with non-existing
   multilink values (in classic template). Applied patch so it
   now errors the same way as an update does. (applied by John Rouillard)
+- issue2550757: one bug raised by issue fixed. Patch created by
+  W. Trevor King (wking) for documentation of mailgw applied by 
+  John Rouillard.
 
 2016-01-11: 1.5.1
 

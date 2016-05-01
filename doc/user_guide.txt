@@ -402,12 +402,20 @@ Subject-line information
 
 The subject line of the incoming message is examined to find one of:
 
-1. the item that the message is responding to,
-2. the type of item the message should create, or
-3. we default the item class and try some trickiness
+1. a case insentive ``help``,
+2. a match for ``-- key <OneTimeKey>``,
+3. the item that the message is responding to,
+4. the type of item the message should create, or
+5. we default the item class and try some trickiness.
+
+If the subject is ``help`` (case insensitive), the gateway responds
+with an explaination of the interface.
+
+If a one-time key is found, we're processing an in-progress
+registration confirmation.
 
 If the subject line contains a prefix in ``[square brackets]`` then
-we're looking at case 1 or 2 above. Any "re:" or "fwd:" prefixes are
+we're looking at case 3 or 4 above. Any "re:" or "fwd:" prefixes are
 stripped off the subject line before we start looking for real
 information.
 
@@ -421,7 +429,7 @@ item of that class with its "messages" property initialized to contain
 the new "msg" item and its "files" property initialized to contain any
 new "file" items.
 
-The third case above - where no ``[information]`` is provided, the
+The fifth case above - where no ``[information]`` is provided, the
 tracker's ``MAIL_DEFAULT_CLASS`` configuration variable defines what
 class of item the message relates to. We try to match the subject line
 to an existing item of the default class, and if there's a match, the

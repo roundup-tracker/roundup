@@ -31,14 +31,6 @@ Incoming messages are examined for multiple parts:
    special handling of the first text part) if unpack_rfc822 is set in
    the mailgw config section.
 
-Summary
--------
-The "summary" property on message nodes is taken from the first non-quoting
-section in the message body. The message body is divided into sections by
-blank lines. Sections where the second and all subsequent lines begin with
-a ">" or "|" character are considered "quoting sections". The first line of
-the first non-quoting section becomes the summary of the message.
-
 Addresses
 ---------
 All of the addresses in the To: and Cc: headers of the incoming message are
@@ -54,10 +46,26 @@ nodes with no passwords.
 
 Actions
 -------
-The subject line of the incoming message is examined to determine whether
-the message is an attempt to create a new item or to discuss an existing
-item. A designator enclosed in square brackets is sought as the first thing
-on the subject line (after skipping any "Fwd:" or "Re:" prefixes).
+The subject line of the incoming message is examined to determine
+whether the message is an attempt to create a new item, discuss an
+existing item, or execute some other command.
+
+If the subject consists of one of the following (case insensitive),
+the corresponding action is taken:
+
+help
+  Respond with an explanation of this interface.
+
+If the subject contains the following, the corresponding action is
+taken:
+
+-- key <OneTimeKey>
+  Complete an in-progress user registration.
+
+If the email is not a command, it is either a new item or a message
+associated with an existing item.  A designator enclosed in square
+brackets is sought as the first thing on the subject line (after
+skipping any "Fwd:" or "Re:" prefixes).
 
 If an item designator (class name and id number) is found there, the newly
 created "msg" node is added to the "messages" property for that item, and
@@ -67,6 +75,14 @@ If just an item class name is found there, we attempt to create a new item
 of that class with its "messages" property initialized to contain the new
 "msg" node and its "files" property initialized to contain any new "file"
 nodes.
+
+Summary
+-------
+The "summary" property on message nodes is taken from the first non-quoting
+section in the message body. The message body is divided into sections by
+blank lines. Sections where the second and all subsequent lines begin with
+a ">" or "|" character are considered "quoting sections". The first line of
+the first non-quoting section becomes the summary of the message.
 
 Triggers
 --------
