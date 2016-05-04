@@ -36,5 +36,5 @@ Execute tests
 
   python run_tests.py
 
-See repository `README.txt <https://sourceforge.net/p/roundup/code/ci/tip/tree/CHANGES.txt>`_
+See repository `README.txt <https://sourceforge.net/p/roundup/code/ci/tip/tree/README.txt>`_
 for more info.
