@@ -1,6 +1,5 @@
 language: python
 python:
-  - 2.6
   - 2.7
 
 sudo: false
@@ -25,10 +24,7 @@ before_install:
   - cd $TRAVIS_BUILD_DIR
 
 install:
-  - pip install MySQL-python psycopg2 pytz
-
-  # includes a patch for python 2.6 support
-  - pip install git+https://bitbucket.org/malb/pyme.git@459f3eca65#egg=pyme
+  - pip install MySQL-python psycopg2 pytz pyme
 
 before_script:
   # set up mysql database
