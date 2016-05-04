@@ -25,6 +25,7 @@ before_install:
 
 install:
   - pip install MySQL-python psycopg2 pytz pyme
+  - pip install pytest-cov codecov
 
 before_script:
   # set up mysql database
@@ -38,4 +39,7 @@ before_script:
   - sed -i 's/CREATE DATABASE \%s/CREATE DATABASE \%s COLLATE utf8_general_ci/' roundup/backends/back_mysql.py
 
 script:
-  python run_tests.py -v
+  - py.test -v test/ --cov=roundup
+
+after_success:
+  - codecov
