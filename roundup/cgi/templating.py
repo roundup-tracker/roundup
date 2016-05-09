@@ -2695,7 +2695,8 @@ env: %(env)s
         """
         q = urllib.quote
         sc = self.special_char
-        l = ['%s=%s'%(k,v) for k,v in args.items()]
+        l = ['%s=%s'%(k,isinstance(v, basestring) and q(v) or v)
+                for k,v in args.items()]
 
         # pull out the special values (prefixed by @ or :)
         specials = {}
