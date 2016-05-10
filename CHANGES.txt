@@ -48,6 +48,9 @@ Fixed:
 - Fix processing of additional arguments to cgi method 'menu': This
   would not work if more than one additional argument is used.
   (Ralf Schlatterbeck)
+- Update documentation of some existing property attributes (like
+  'do_journal' for Link/Multilink properties), this also adds missing
+  documentation for issue1444214. (Ralf Schlatterbeck)
 
 2016-01-11: 1.5.1
 

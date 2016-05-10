@@ -663,6 +663,47 @@ A Class is comprised of one or more properties of the following types:
 * A Multilink property refers to possibly many items in a specified
   class. The value is a list of integers.
 
+Properties can have additional attributes to change the default
+behaviour:
+
+* String properties can have an ``indexme`` attribute that defines if the
+  property should be part of the index. The default is 'yes' but this
+  can be set to 'no' to prevent a property from being indexed.
+* Link and Multilink properties can have several attributes:
+  
+  - ``do_journal``: By default, every change of a link property is
+    recorded in the item being linked to (or being unlinked). A typical
+    use-case for setting ``do_journal='no'`` would be to turn off
+    journalling of nosy list, message author and message recipient link
+    and unlink events to prevent the journal from clogged with these
+    events.
+  - ``try_id_parsing`` is turned on by default. If entering a number
+    into a Link or Multilink field, roundup interprets this number as an
+    ID of the item to link to. Sometimes items can have numeric names
+    (like, e.g., product codes). For these roundup needs to match the
+    numeric name and should never match an ID. In this case you can set
+    ``try_id_parsing='no'``.
+  - The ``msg_header_property`` is used in the mail gateway when sending
+    out messages: By default roundup creates headers of the form::
+
+        X-Roundup-issue-prop: value
+
+    for all properties prop of issue that have a ``name`` property. This
+    definition allows to override the name of the property used for
+    generating headers. A common use-case is adding a mail-header with
+    the ``assigned_to`` property to allow user mail-filtering of
+    issue-emails for which they're responsible.  In that case setting::
+
+        msg_header_property="username"
+
+    for the assigned_to property will generated message headers of the
+    form::
+    
+        X-Roundup-issue-assigned_to: joe_user
+
+    for issues where joe_user is the username of the person responsible
+    for this issue.
+
 All Classes automatically have a number of properties by default:
 
 *creator*
