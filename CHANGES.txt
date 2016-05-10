@@ -22,6 +22,9 @@ Features:
   Embedded test works, my manual test with a SSHA password
   assigned to a user allowed the user to log in.   Ran the test suite
   and the tests that were not skipped passed. (applied by John Rouillard)
+- New Link/Multilink property attribute 'msg_header_property', can be
+  used to configure additional headers in outgoing emails. See
+  documentation in ``doc/customizing.txt``. (Ralf Schlatterbeck)
 
 Fixed:
 

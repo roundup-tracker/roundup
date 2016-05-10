@@ -538,7 +538,12 @@ class IssueClass:
                 if not isinstance(prop, (hyperdb.Link, hyperdb.Multilink)):
                     continue
                 cl = self.db.getclass(prop.classname)
-                if not 'name' in cl.getprops():
+                label = None
+                if 'name' in cl.getprops():
+                    label = 'name'
+                if prop.msg_header_property in cl.getprops():
+                    label = prop.msg_header_property
+                if not label:
                     continue
                 if isinstance(prop, hyperdb.Link):
                     value = self.get(issueid, propname)
@@ -549,7 +554,7 @@ class IssueClass:
                     values = self.get(issueid, propname)
                     if not values:
                         continue
-                values = [cl.get(v, 'name') for v in values]
+                values = [cl.get(v, label) for v in values]
                 values = ', '.join(values)
                 header = "X-Roundup-%s-%s"%(self.classname, propname)
                 try:
