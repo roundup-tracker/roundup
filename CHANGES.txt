@@ -42,6 +42,9 @@ Fixed:
 - issue2550757: one bug raised by issue fixed. Patch created by
   W. Trevor King (wking) for documentation of mailgw applied by 
   John Rouillard.
+- Fix processing of additional arguments to cgi method 'menu': This
+  would not work if more than one additional argument is used.
+  (Ralf Schlatterbeck)
 
 2016-01-11: 1.5.1
 
