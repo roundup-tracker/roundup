@@ -25,6 +25,9 @@ Features:
 - New Link/Multilink property attribute 'msg_header_property', can be
   used to configure additional headers in outgoing emails. See
   documentation in ``doc/customizing.txt``. (Ralf Schlatterbeck)
+- Allow multiple file uploads: If the html template specifies
+  multiple="multiple" for a file upload the user can attach multiple
+  files and the form parser now handles this. (Ralf Schlatterbeck)
 
 Fixed:
 

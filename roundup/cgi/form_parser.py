@@ -163,13 +163,22 @@ class FormParser:
 
                 The String content value is handled as described above for
                 file uploads.
+                If "multiple" is turned on for file uploads in the html
+                template, multiple links are generated::
+
+                    @link@files=file-2
+                    file-2@content=value
+                    ...
+
+                depending on how many files the user has attached.
 
             If both the "@note" and "@file" form variables are
             specified, the action::
 
                     @link@msg-1@files=file-1
 
-            is also performed.
+            is also performed. If "multiple" is specified this is
+            carried out for each of the attached files.
 
             We also check that FileClass items have a "content" property with
             actual content, otherwise we remove them from all_props before
@@ -242,13 +251,10 @@ class FormParser:
                 have_note = 1
             elif d['file']:
                 # the special file field
-                cn = 'file'
-                cl = self.db.classes[cn]
-                nodeid = '-1'
-                propname = 'content'
-                all_links.append((default_cn, default_nodeid, 'files',
-                    [('file', '-1')]))
-                have_file = 1
+                cn = default_cn
+                cl = default_cl
+                nodeid = default_nodeid
+                propname = 'files'
             else:
                 # default
                 cn = default_cn
@@ -280,8 +286,8 @@ class FormParser:
                 for entry in self.extractFormList(form[key]):
                     m = self.FV_DESIGNATOR.match(entry)
                     if not m:
-                        raise FormError, self._('link "%(key)s" '
-                            'value "%(entry)s" not a designator') % locals()
+                        raise FormError (self._('link "%(key)s" '
+                            'value "%(entry)s" not a designator') % locals())
                     value.append((m.group(1), m.group(2)))
 
                     # get details of linked class
@@ -298,9 +304,9 @@ class FormParser:
                 # make sure the link property is valid
                 if (not isinstance(propdef[propname], hyperdb.Multilink) and
                         not isinstance(propdef[propname], hyperdb.Link)):
-                    raise FormError, self._('%(class)s %(property)s '
+                    raise FormError (self._('%(class)s %(property)s '
                         'is not a link or multilink property') % {
-                        'class':cn, 'property':propname}
+                        'class':cn, 'property':propname})
 
                 all_links.append((cn, nodeid, propname, value))
                 continue
@@ -310,10 +316,10 @@ class FormParser:
                 for entry in self.extractFormList(form[key]):
                     m = self.FV_SPECIAL.match(entry)
                     if not m:
-                        raise FormError, self._('The form action claims to '
+                        raise FormError (self._('The form action claims to '
                             'require property "%(property)s" '
                             'which doesn\'t exist') % {
-                            'property':propname}
+                            'property':propname})
                     if m.group('classname'):
                         this = (m.group('classname'), m.group('id'))
                         entry = m.group('propname')
@@ -332,10 +338,10 @@ class FormParser:
             # does the property exist?
             if not propdef.has_key(propname):
                 if mlaction != 'set':
-                    raise FormError, self._('You have submitted a %(action)s '
+                    raise FormError (self._('You have submitted a %(action)s '
                         'action for the property "%(property)s" '
                         'which doesn\'t exist') % {
-                        'action': mlaction, 'property':propname}
+                        'action': mlaction, 'property':propname})
                 # the form element is probably just something we don't care
                 # about - ignore it
                 continue
@@ -346,16 +352,21 @@ class FormParser:
             value = form[key]
 
             # handle unpacking of the MiniFieldStorage / list form value
-            if isinstance(proptype, hyperdb.Multilink):
+            if d['file']:
+                assert isinstance(proptype, hyperdb.Multilink)
+                # value is a file upload... we *always* handle multiple
+                # files here (html5)
+                if not isinstance(value, type([])):
+                    value = [value]
+            elif isinstance(proptype, hyperdb.Multilink):
                 value = self.extractFormList(value)
             else:
                 # multiple values are not OK
                 if isinstance(value, type([])):
-                    raise FormError, self._('You have submitted more than one '
-                        'value for the %s property') % propname
-                # value might be a file upload...
-                if not hasattr(value, 'filename') or value.filename is None:
-                    # nope, pull out the value and strip it
+                    raise FormError (self._('You have submitted more than one '
+                        'value for the %s property') % propname)
+                # value might be a single file upload
+                if not getattr(value, 'filename', None):
                     value = value.value.strip()
 
             # now that we have the props field, we need a teensy little
@@ -377,27 +388,53 @@ class FormParser:
                         confirm = form[key]
                         break
                 else:
-                    raise FormError, self._('Password and confirmation text '
-                        'do not match')
+                    raise FormError (self._('Password and confirmation text '
+                        'do not match'))
                 if isinstance(confirm, type([])):
-                    raise FormError, self._('You have submitted more than one '
-                        'value for the %s property') % propname
+                    raise FormError (self._('You have submitted more than one '
+                        'value for the %s property') % propname)
                 if value != confirm.value:
-                    raise FormError, self._('Password and confirmation text '
-                        'do not match')
+                    raise FormError (self._('Password and confirmation text '
+                        'do not match'))
                 try:
                     value = password.Password(value, scheme = proptype.scheme,
                                               config=self.db.config)
                 except hyperdb.HyperdbValueError, msg:
-                    raise FormError, msg
+                    raise FormError (msg)
 
+            if d['file']:
+                # This needs to be a Multilink and is checked above
+                fcn = 'file'
+                fcl = self.db.classes[fcn]
+                fpropname = 'content'
+                if not all_propdef.has_key(fcn):
+                    all_propdef[fcn] = fcl.getprops()
+                fpropdef = all_propdef[fcn]
+                have_file = []
+                for n, v in enumerate(value):
+                    if not hasattr(v, 'filename'):
+                        raise FormError (self._('Not a file attachment'))
+                    # skip if the upload is empty
+                    if not v.filename:
+                        continue
+                    fnodeid = str (-(n+1))
+                    have_file.append(fnodeid)
+                    fthis = (fcn, fnodeid)
+                    if fthis not in all_props:
+                        all_props[fthis] = {}
+                    fprops = all_props[fthis]
+                    all_links.append((cn, nodeid, 'files', [('file', fnodeid)]))
+
+                    fprops['content'] = self.parse_file(fpropdef, fprops, v)
+                value = None
+                nodeid = None
             elif isinstance(proptype, hyperdb.Multilink):
                 # convert input to list of ids
                 try:
                     l = hyperdb.rawToHyperdb(self.db, cl, nodeid,
                         propname, value)
                 except hyperdb.HyperdbValueError, msg:
-                    raise FormError, msg
+                    raise FormError (msg)
 
                 # now use that list of ids to modify the multilink
                 if mlaction == 'set':
@@ -419,10 +456,10 @@ class FormParser:
                             try:
                                 existing.remove(entry)
                             except ValueError:
-                                raise FormError, self._('property '
+                                raise FormError (self._('property '
                                     '"%(propname)s": "%(value)s" '
                                     'not currently in list') % {
-                                    'propname': propname, 'value': entry}
+                                    'propname': propname, 'value': entry})
                     else:
                         # add - easy, just don't dupe
                         for entry in l:
@@ -439,36 +476,16 @@ class FormParser:
             else:
                 # handle all other types
                 try:
-                    if isinstance(proptype, hyperdb.String):
-                        if (hasattr(value, 'filename') and
-                                value.filename is not None):
-                            # skip if the upload is empty
-                            if not value.filename:
-                                continue
-                            # this String is actually a _file_
-                            # try to determine the file content-type
-                            fn = value.filename.split('\\')[-1]
-                            if propdef.has_key('name'):
-                                props['name'] = fn
-                            # use this info as the type/filename properties
-                            if propdef.has_key('type'):
-                                if hasattr(value, 'type') and value.type:
-                                    props['type'] = value.type
-                                elif mimetypes.guess_type(fn)[0]:
-                                    props['type'] = mimetypes.guess_type(fn)[0]
-                                else:
-                                    props['type'] = "application/octet-stream"
-                            # finally, read the content RAW
-                            value = value.value
-                        else:
-                            value = hyperdb.rawToHyperdb(self.db, cl,
-                                nodeid, propname, value)
-
+                    # Try handling file upload
+                    if (isinstance(proptype, hyperdb.String) and
+                        hasattr(value, 'filename') and
+                        value.filename is not None):
+                        value = self.parse_file(propdef, props, value)
                     else:
                         value = hyperdb.rawToHyperdb(self.db, cl, nodeid,
                             propname, value)
                 except hyperdb.HyperdbValueError, msg:
-                    raise FormError, msg
+                    raise FormError (msg)
 
             # register that we got this property
             if isinstance(proptype, hyperdb.Multilink):
@@ -526,9 +543,10 @@ class FormParser:
 
                 props[propname] = value
 
-        # check to see if we need to specially link a file to the note
+        # check to see if we need to specially link files to the note
         if have_note and have_file:
-            all_links.append(('msg', '-1', 'files', [('file', '-1')]))
+            for fid in have_file:
+                all_links.append(('msg', '-1', 'files', [('file', fid)]))
 
         # see if all the required properties have been supplied
         s = []
@@ -566,7 +584,7 @@ class FormParser:
                 'property': ', '.join(map(self.gettext, required))
             })
         if s:
-            raise FormError, '\n'.join(s)
+            raise FormError ('\n'.join(s))
 
         # When creating a FileClass node, it should have a non-empty content
         # property to be created. When editing a FileClass node, it should
@@ -581,8 +599,24 @@ class FormParser:
                     if not props.get('content', ''):
                         del all_props[(cn, id)]
                 elif props.has_key('content') and not props['content']:
-                    raise FormError, self._('File is empty')
+                    raise FormError (self._('File is empty'))
         return all_props, all_links
+
+    def parse_file(self, fpropdef, fprops, v):
+        # try to determine the file content-type
+        fn = v.filename.split('\\')[-1]
+        if fpropdef.has_key('name'):
+            fprops['name'] = fn
+        # use this info as the type/filename properties
+        if fpropdef.has_key('type'):
+            if hasattr(v, 'type') and v.type:
+                fprops['type'] = v.type
+            elif mimetypes.guess_type(fn)[0]:
+                fprops['type'] = mimetypes.guess_type(fn)[0]
+            else:
+                fprops['type'] = "application/octet-stream"
+        # finally, read the content RAW
+        return v.value
 
     def extractFormList(self, value):
         ''' Extract a list of values from the form value.

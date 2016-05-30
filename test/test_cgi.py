@@ -25,6 +25,14 @@ class FileUpload:
         self.content = content
         self.filename = filename
 
+class FileList:
+    def __init__(self, name, *files):
+        self.name  = name
+        self.files = files
+    def items (self):
+        for f in self.files:
+            yield (self.name, f)
+
 def makeForm(args):
     form = cgi.FieldStorage()
     for k,v in args.items():
@@ -262,6 +270,33 @@ class FormTestCase(unittest.TestCase):
         self.assertEqual(self.parseForm({'content': file}, 'file'),
             ({('file', None): {'content': 'foo', 'name': 'foo.txt',
             'type': 'text/plain'}}, []))
+
+    def testSingleFileUpload(self):
+        file = FileUpload('foo', 'foo.txt')
+        self.assertEqual(self.parseForm({'@file': file}, 'issue'),
+            ({('file', '-1'): {'content': 'foo', 'name': 'foo.txt',
+            'type': 'text/plain'},
+              ('issue', None): {}},
+             [('issue', None, 'files', [('file', '-1')])]))
+
+    def testMultipleFileUpload(self):
+        f1 = FileUpload('foo', 'foo.txt')
+        f2 = FileUpload('bar', 'bar.txt')
+        f3 = FileUpload('baz', 'baz.txt')
+        files = FileList('@file', f1, f2, f3)
+
+        self.assertEqual(self.parseForm(files, 'issue'),
+            ({('file', '-1'): {'content': 'foo', 'name': 'foo.txt',
+               'type': 'text/plain'},
+              ('file', '-2'): {'content': 'bar', 'name': 'bar.txt',
+               'type': 'text/plain'},
+              ('file', '-3'): {'content': 'baz', 'name': 'baz.txt',
+               'type': 'text/plain'},
+              ('issue', None): {}},
+             [ ('issue', None, 'files', [('file', '-1')])
+             , ('issue', None, 'files', [('file', '-2')])
+             , ('issue', None, 'files', [('file', '-3')])
+             ]))
 
     def testEditFileClassAttributes(self):
         self.assertEqual(self.parseForm({'name': 'foo.txt',
