@@ -401,8 +401,7 @@ class FormParser:
                                               config=self.db.config)
                 except hyperdb.HyperdbValueError, msg:
                     raise FormError (msg)
-
-            if d['file']:
+            elif d['file']:
                 # This needs to be a Multilink and is checked above
                 fcn = 'file'
                 fcl = self.db.classes[fcn]
