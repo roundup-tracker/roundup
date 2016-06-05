@@ -296,6 +296,17 @@ class Number(_Type):
             raise HyperdbValueError, _('property %s: %r is not a number')%(
                 kw['propname'], value)
         return value
+
+class Integer(_Type):
+    """An object designating an integer property"""
+    def from_raw(self, value, **kw):
+        value = value.strip()
+        try:
+            value = int(value)
+        except ValueError:
+            raise HyperdbValueError, _('property %s: %r is not an integer')%(
+                kw['propname'], value)
+        return value
 #
 # Support for splitting designators
 #

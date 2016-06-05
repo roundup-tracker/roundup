@@ -263,6 +263,11 @@ class NumberHTMLProperty(HTMLProperty):
     def __int__(self):
     def __float__(self):
 
+class IntegerHTMLProperty(HTMLProperty):
+    def plain(self):
+    def field(self, size = 30):
+    def __int__(self):
+
 class BooleanHTMLProperty(HTMLProperty):
     def plain(self):
     def field(self):

@@ -227,6 +227,8 @@ A property may be one of five basic types:
 
 - Boolean properties are for storing true/false, or yes/no values.
 
+- Integer properties are for storing Integer (non real) numeric values.
+
 - Number properties are for storing numeric values.
 
 - Date properties store date-and-time stamps. Their values are Timestamp
@@ -262,6 +264,10 @@ properties belong in classes::
     class Boolean:
         def __init__(self):
             """An object designating a Boolean property."""
+
+    class Integer:
+        def __init__(self):
+            """An object designating an Integer property."""
 
     class Number:
         def __init__(self):
@@ -1024,7 +1030,7 @@ the printed results:
 
 - Strings are, well, strings.
 
-- Numbers are displayed the same as strings.
+- Integers/Numbers are displayed the same as strings.
 
 - Booleans are displayed as 'Yes' or 'No'.
 
@@ -1646,7 +1652,7 @@ and Dean Tribble for their assistance with the first-round submission.
 Changes to this document
 ------------------------
 
-- Added Boolean and Number types
+- Added Boolean, Integer and Number types
 - Added section Hyperdatabase Implementations
 - "Item" has been renamed to "Issue" to account for the more specific
   nature of the Class.

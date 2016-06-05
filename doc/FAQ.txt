@@ -204,8 +204,9 @@ How is sorting performed, and why does it seem to fail sometimes?
 When we sort items in the hyperdb, we use one of a number of methods,
 depending on the properties being sorted on:
 
-1. If it's a String, Number, Date or Interval property, we just sort the
-   scalar value of the property. Strings are sorted case-sensitively.
+1. If it's a String, Integer, Number, Date or Interval property, we
+   just sort the scalar value of the property. Strings are sorted
+   case-sensitively.
 2. If it's a Link property, we sort by either the linked item's "order"
    property (if it has one) or the linked item's "id".
 3. Mulitlinks sort similar to #2, but we start with the first

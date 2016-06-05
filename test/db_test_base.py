@@ -22,7 +22,7 @@ from email.parser import FeedParser
 
 import pytest
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
-    Interval, DatabaseError, Boolean, Number, Node
+    Interval, DatabaseError, Boolean, Number, Node, Integer
 from roundup.mailer import Mailer
 from roundup import date, password, init, instance, configuration, \
     roundupdb, i18n
@@ -82,7 +82,7 @@ def setupSchema(db, create, module):
     priority.setkey("name")
     user = module.Class(db, "user", username=String(), password=Password(),
         assignable=Boolean(), age=Number(), roles=String(), address=String(),
-        supervisor=Link('user'),realname=String())
+        rating=Integer(), supervisor=Link('user'),realname=String())
     user.setkey("username")
     file = module.FileClass(db, "file", name=String(), type=String(),
         comment=String(indexme="yes"), fooz=Password())
@@ -533,6 +533,25 @@ class DBTest(commonDBTest):
         nid = self.db.user.create(username='foo', age=1)
         self.db.user.set(nid, age=None)
         self.assertEqual(self.db.user.get(nid, "age"), None)
+
+    # Integer
+    def testIntegerChange(self):
+        nid = self.db.user.create(username='foo', rating=100)
+        self.assertEqual(100, self.db.user.get(nid, 'rating'))
+        self.db.user.set(nid, rating=300)
+        self.assertNotEqual(self.db.user.get(nid, 'rating'), 100)
+        self.db.user.set(nid, rating=-1)
+        self.assertEqual(self.db.user.get(nid, 'rating'), -1)
+        self.db.user.set(nid, rating=0)
+        self.assertEqual(self.db.user.get(nid, 'rating'), 0)
+
+        nid = self.db.user.create(username='bar', rating=0)
+        self.assertEqual(self.db.user.get(nid, 'rating'), 0)
+
+    def testIntegerUnset(self):
+        nid = self.db.user.create(username='foo', rating=1)
+        self.db.user.set(nid, rating=None)
+        self.assertEqual(self.db.user.get(nid, "rating"), None)
 
     # Password
     def testPasswordChange(self):

@@ -135,7 +135,7 @@ class FormParser:
                 they are valid for the class).  Otherwise, the property
                 is set to the form value.
 
-                For Date(), Interval(), Boolean(), and Number()
+                For Date(), Interval(), Boolean(), and Number(), Integer()
                 properties, the form value is converted to the
                 appropriate
 
@@ -519,7 +519,7 @@ class FormParser:
                         # some backends store "missing" Strings as empty strings
                         if existing == self.db.BACKEND_MISSING_STRING:
                             existing = None
-                    elif isinstance(proptype, hyperdb.Number):
+                    elif isinstance(proptype, hyperdb.Number) or isinstance(proptype, hyperdb.Integer):
                         # some backends store "missing" Numbers as 0 :(
                         if existing == self.db.BACKEND_MISSING_NUMBER:
                             existing = None

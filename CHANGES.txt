@@ -28,6 +28,11 @@ Features:
 - Allow multiple file uploads: If the html template specifies
   multiple="multiple" for a file upload the user can attach multiple
   files and the form parser now handles this. (Ralf Schlatterbeck)
+- issue2550886: Add support for an integer type to join the existing
+  number type. This can be used for properties used for ordering,
+  counts etc. where a decimal point isn't needed. Developed by
+  Anthony (antmail). Doc updates written by John Rouillard. (applied
+  by John Rouillard)
 
 Fixed:
 

@@ -655,6 +655,7 @@ A Class is comprised of one or more properties of the following types:
   class.
 * Date properties store date-and-time stamps. Their values are Timestamp
   objects.
+* Integer properties store integer values. (Number can store real/float values.)
 * Number properties store numeric values.
 * Boolean properties store on/off, yes/no, true/false values.
 * A Link property refers to a single other item selected from a
@@ -814,8 +815,9 @@ A note about ordering
 When we sort items in the hyperdb, we use one of a number of methods,
 depending on the properties being sorted on:
 
-1. If it's a String, Number, Date or Interval property, we just sort the
-   scalar value of the property. Strings are sorted case-sensitively.
+1. If it's a String, Integer, Number, Date or Interval property, we
+   just sort the scalar value of the property. Strings are sorted
+   case-sensitively.
 2. If it's a Link property, we sort by either the linked item's "order"
    property (if it has one) or the linked item's "id".
 3. Mulitlinks sort similar to #2, but we start with the first Multilink
@@ -1660,7 +1662,7 @@ None of the above (ie. just a simple form value)
     they are valid for the class).  Otherwise, the property
     is set to the form value.
 
-    For Date(), Interval(), Boolean(), and Number()
+    For Date(), Interval(), Boolean(), Integer() and Number()
     properties, the form value is converted to the
     appropriate
 

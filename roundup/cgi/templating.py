@@ -1201,7 +1201,7 @@ def HTMLItem(client, classname, nodeid, anonymous=0):
         return _HTMLItem(client, classname, nodeid, anonymous)
 
 class HTMLProperty(HTMLInputMixin, HTMLPermissions):
-    """ String, Number, Date, Interval HTMLProperty
+    """ String, Integer, Number, Date, Interval HTMLProperty
 
         Has useful attributes:
 
@@ -1604,6 +1604,38 @@ class NumberHTMLProperty(HTMLProperty):
         """ Return a float of me
         """
         return float(self._value)
+
+class IntegerHTMLProperty(HTMLProperty):
+    def plain(self, escape=0):
+        """ Render a "plain" representation of the property
+        """
+        if not self.is_view_ok():
+            return self._('[hidden]')
+
+        if self._value is None:
+            return ''
+
+        return str(self._value)
+
+    def field(self, size=30, **kwargs):
+        """ Render a form edit field for the property.
+
+            If not editable, just display the value via plain().
+        """
+        if not self.is_edit_ok():
+            return self.plain(escape=1)
+
+        value = self._value
+        if value is None:
+            value = ''
+
+        return self.input(name=self._formname, value=value, size=size,
+                          **kwargs)
+
+    def __int__(self):
+        """ Return an int of me
+        """
+        return int(self._value)
 
 
 class BooleanHTMLProperty(HTMLProperty):
@@ -2352,6 +2384,7 @@ class MultilinkHTMLProperty(HTMLProperty):
 propclasses = [
     (hyperdb.String, StringHTMLProperty),
     (hyperdb.Number, NumberHTMLProperty),
+    (hyperdb.Integer, IntegerHTMLProperty),
     (hyperdb.Boolean, BooleanHTMLProperty),
     (hyperdb.Date, DateHTMLProperty),
     (hyperdb.Interval, IntervalHTMLProperty),

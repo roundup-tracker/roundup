@@ -1001,6 +1001,12 @@ class Class(hyperdb.Class):
                 except ValueError:
                     raise TypeError('new property "%s" not numeric'%key)
 
+            elif value is not None and isinstance(prop, hyperdb.Integer):
+                try:
+                    int(value)
+                except ValueError:
+                    raise TypeError('new property "%s" not an integer'%key)
+
             elif value is not None and isinstance(prop, hyperdb.Boolean):
                 try:
                     int(value)
@@ -1338,6 +1344,13 @@ class Class(hyperdb.Class):
             elif value is not None and isinstance(prop, hyperdb.Number):
                 try:
                     float(value)
+                except ValueError:
+                    raise TypeError('new property "%s" not '
+                        'numeric'%propname)
+
+            elif value is not None and isinstance(prop, hyperdb.Integer):
+                try:
+                    int(value)
                 except ValueError:
                     raise TypeError('new property "%s" not '
                         'numeric'%propname)
@@ -1747,6 +1760,14 @@ class Class(hyperdb.Class):
                     except AttributeError :
                         v = [v]
                 l.append((OTHER, k, [float(val) for val in v]))
+
+            elif isinstance(propclass, hyperdb.Integer):
+                if type(v) != type([]):
+                    try :
+                        v = v.split(',')
+                    except AttributeError :
+                        v = [v]
+                l.append((OTHER, k, [int(val) for val in v]))
 
         filterspec = l
 

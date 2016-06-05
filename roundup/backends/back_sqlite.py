@@ -51,6 +51,7 @@ class Database(rdbms_common.Database):
         hyperdb.Password  : 'VARCHAR(255)',
         hyperdb.Boolean   : 'BOOLEAN',
         hyperdb.Number    : 'REAL',
+        hyperdb.Integer   : 'INTEGER',
     }
     hyperdb_to_sql_value = {
         hyperdb.String : str,
@@ -59,6 +60,7 @@ class Database(rdbms_common.Database):
         hyperdb.Interval  : str,
         hyperdb.Password  : str,
         hyperdb.Boolean   : int,
+        hyperdb.Integer   : int,
         hyperdb.Number    : lambda x: x,
         hyperdb.Multilink : lambda x: x,    # used in journal marshalling
     }
@@ -69,6 +71,7 @@ class Database(rdbms_common.Database):
         hyperdb.Interval  : date.Interval,
         hyperdb.Password  : lambda x: password.Password(encrypted=x),
         hyperdb.Boolean   : int,
+        hyperdb.Integer   : int,
         hyperdb.Number    : rdbms_common._num_cvt,
         hyperdb.Multilink : lambda x: x,    # used in journal marshalling
     }

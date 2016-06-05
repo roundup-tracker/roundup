@@ -129,6 +129,7 @@ class Database(Database):
         hyperdb.Password  : 'VARCHAR(255)',
         hyperdb.Boolean   : 'BOOL',
         hyperdb.Number    : 'REAL',
+        hyperdb.Integer   : 'INTEGER',
     }
 
     hyperdb_to_sql_value = {
@@ -140,6 +141,7 @@ class Database(Database):
         hyperdb.Password  : str,
         hyperdb.Boolean   : int,
         hyperdb.Number    : lambda x: x,
+        hyperdb.Integer   : int,
         hyperdb.Multilink : lambda x: x,    # used in journal marshalling
     }
 
@@ -299,6 +301,8 @@ class Database(Database):
                         v = date.Interval(v)
                     elif isinstance(prop, Password) and v is not None:
                         v = password.Password(encrypted=v)
+                    elif isinstance(prop, Integer) and v is not None:
+                        v = int(v)
                     elif (isinstance(prop, Boolean) or
                             isinstance(prop, Number)) and v is not None:
                         v = float(v)

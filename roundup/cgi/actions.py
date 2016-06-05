@@ -363,6 +363,8 @@ class EditCSVAction(Action):
                         value = value.lower() in ('yes', 'true', 'on', '1')
                     elif isinstance(prop, hyperdb.Number):
                         value = float(value)
+                    elif isinstance(prop, hyperdb.Integer):
+                        value = int(value)
                     d[name] = value
                 elif exists:
                     # nuke the existing value

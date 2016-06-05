@@ -18,6 +18,7 @@ class TestClass:
         return {
             'string': hyperdb.String(),
             'number': hyperdb.Number(),
+            'integer': hyperdb.Integer(),
             'boolean': hyperdb.Boolean(),
             'password': hyperdb.Password(),
             'date': hyperdb.Date(),
@@ -65,6 +66,15 @@ class RawToHyperdbTest(unittest.TestCase):
         self.assertEqual(self._test('password', ''), None)
         self.assertEqual(self._test('number', '  10 '), 10)
         self.assertEqual(self._test('number', '  1.5 '), 1.5)
+        self.assertEqual(self._test('number', '  -1022.5 '), -1022.5)
+    def testInteger(self):
+        self.assertEqual(self._test('integer', '  100 '), 100)
+        self.assertEqual(self._test('integer', '  0 '), 0)
+        self.assertEqual(self._test('integer', '  -100 '), -100)
+        # make sure error raised on string
+        self.assertRaises(hyperdb.HyperdbValueError, self._test, 'integer', 'a string', 'a string')
+        # make sure error raised on real number
+        self.assertRaises(hyperdb.HyperdbValueError, self._test, 'integer', '  -100.2 ')
     def testBoolean(self):
         self.assertEqual(self._test('password', ''), None)
         for true in 'yes true on 1'.split():

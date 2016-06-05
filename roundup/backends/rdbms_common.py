@@ -57,7 +57,7 @@ import sys, os, time, re, errno, weakref, copy, logging, datetime
 # roundup modules
 from roundup import hyperdb, date, password, roundupdb, security, support
 from roundup.hyperdb import String, Password, Date, Interval, Link, \
-    Multilink, DatabaseError, Boolean, Number, Node
+    Multilink, DatabaseError, Boolean, Number, Integer, Node
 from roundup.backends import locking
 from roundup.i18n import _
 
@@ -464,6 +464,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         hyperdb.Password  : 'VARCHAR(255)',
         hyperdb.Boolean   : 'BOOLEAN',
         hyperdb.Number    : 'REAL',
+        hyperdb.Integer   : 'INTEGER',
     }
 
     def hyperdb_to_sql_datatype(self, propclass):
@@ -871,6 +872,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         hyperdb.Password  : str,
         hyperdb.Boolean   : lambda x: x and 'TRUE' or 'FALSE',
         hyperdb.Number    : lambda x: x,
+        hyperdb.Integer   : lambda x: x,
         hyperdb.Multilink : lambda x: x,    # used in journal marshalling
     }
 
@@ -1084,6 +1086,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         hyperdb.Password  : lambda x: password.Password(encrypted=x),
         hyperdb.Boolean   : _bool_cvt,
         hyperdb.Number    : _num_cvt,
+        hyperdb.Integer   : int,
         hyperdb.Multilink : lambda x: x,    # used in journal marshalling
     }
 
@@ -1632,6 +1635,12 @@ class Class(hyperdb.Class):
                 except ValueError:
                     raise TypeError('new property "%s" not numeric'%key)
 
+            elif value is not None and isinstance(prop, Integer):
+                try:
+                    int(value)
+                except ValueError:
+                    raise TypeError('new property "%s" not integer'%key)
+
             elif value is not None and isinstance(prop, Boolean):
                 try:
                     int(value)
@@ -1930,6 +1939,12 @@ class Class(hyperdb.Class):
                     float(value)
                 except ValueError:
                     raise TypeError('new property "%s" not numeric'%propname)
+
+            elif value is not None and isinstance(prop, Integer):
+                try:
+                    int(value)
+                except ValueError:
+                    raise TypeError('new property "%s" not integer'%propname)
 
             elif value is not None and isinstance(prop, Boolean):
                 try:

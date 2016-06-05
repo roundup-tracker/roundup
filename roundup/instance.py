@@ -121,6 +121,7 @@ update your config.ini
             'Interval': hyperdb.Interval,
             'Boolean': hyperdb.Boolean,
             'Number': hyperdb.Number,
+            'Integer': hyperdb.Integer,
             'db': backend.Database(self.config, name)
         }
 
