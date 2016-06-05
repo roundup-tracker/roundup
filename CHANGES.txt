@@ -33,6 +33,10 @@ Features:
   counts etc. where a decimal point isn't needed. Developed by
   Anthony (antmail). Doc updates written by John Rouillard. (applied
   by John Rouillard)
+- Updated html/_generic.404.html to use the page template. So 404
+  errors now include the left hand menu, a proper page title and
+  body content. Note added to doc/upgrading.txt on how to add it to
+  deployed trackers. (John Rouillard)
 
 Fixed:
 
