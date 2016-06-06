@@ -44,6 +44,8 @@ def install_demo(home, backend, template):
         config['RDBMS_PASSWORD'] = 'rounduptest'
         config['RDBMS_NAME'] = 'rounduptest'
 
+    config['RDBMS_BACKEND'] = backend
+
     # see if we need to clean up existing directory
     if os.path.exists(home):
         if os.path.exists(home + '/config.ini'):
@@ -65,7 +67,6 @@ def install_demo(home, backend, template):
     nosyreaction += 'c'
     if os.path.exists(nosyreaction):
         os.remove(nosyreaction)
-    init.write_select_db(home, backend)
 
     # figure basic params for server
     hostname = 'localhost'
