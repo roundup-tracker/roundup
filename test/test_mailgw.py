@@ -3052,6 +3052,56 @@ Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 _______________________________________________________________________
 ''')
 
+    def testSpacesAroundMultilinkPropertyValue(self):
+        self.db.keyword.create(name='Foo')
+        self.db.keyword.create(name='Bar')
+        self.db.keyword.create(name='Baz This')
+        nodeid1 = self.doNewIssue()
+        nodeid2 = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: "Bork, Chef" <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: [issue1] set keyword [ keyword =+ Foo,Baz This ; nosy =+ mary ]
+
+Set the Foo and Baz This keywords along with mary for nosy.
+''')
+        assert os.path.exists(SENDMAILDEBUG)
+        self.compareMessages(self._get_mail(),
+'''FROM: roundup-admin@your.tracker.email.domain.example
+TO: mary@test.test, richard@test.test
+Content-Type: text/plain; charset="utf-8"
+Subject: [issue1] set keyword
+To: mary@test.test, richard@test.test
+From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
+MIME-Version: 1.0
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
+X-Roundup-Issue-keyword: Foo, Baz This
+Content-Transfer-Encoding: quoted-printable
+
+Bork, Chef <chef@bork.bork.bork> added the comment:
+
+Set the Foo and Baz This keywords along with mary for nosy.
+
+----------
+keyword: +Baz This, Foo
+nosy: +mary
+status: unread -> chatting
+title: Testing... -> set keyword
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
+_______________________________________________________________________
+''')
+
     def testOutlookAttachment(self):
         message = '''X-MimeOLE: Produced By Microsoft Exchange V6.5
 Content-class: urn:content-classes:message

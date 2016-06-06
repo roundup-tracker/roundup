@@ -63,6 +63,9 @@ Fixed:
 - Update documentation of some existing property attributes (like
   'do_journal' for Link/Multilink properties), this also adds missing
   documentation for issue1444214. (Ralf Schlatterbeck)
+- issue2550763 Strip whitespace from Multilink values after + or -.
+  (W. Trevor King) Test heavily modified by John Rouillard. (applied
+  by John Rouillard)
 
 2016-01-11: 1.5.1
 

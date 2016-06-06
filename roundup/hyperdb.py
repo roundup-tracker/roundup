@@ -232,10 +232,10 @@ class Multilink(_Pointer):
             remove = 0
             if item.startswith('-'):
                 remove = 1
-                item = item[1:]
+                item = item[1:].strip()
                 do_set = 0
             elif item.startswith('+'):
-                item = item[1:]
+                item = item[1:].strip()
                 do_set = 0
 
             # look up the value
