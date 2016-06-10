@@ -2,7 +2,9 @@
 '''
 
 import shutil
+import os
 
+from roundup import date
 from roundup import hyperdb
 from roundup import roundupdb
 from roundup import security
@@ -12,7 +14,6 @@ from roundup.backends import back_anydbm
 from roundup.backends import indexer_dbm
 from roundup.backends import sessions_dbm
 from roundup.backends import indexer_common
-from roundup.hyperdb import *
 from roundup.support import ensureParentsExist
 
 def new_config(debug=False):
@@ -32,7 +33,10 @@ def create(journaltag, create=True, debug=False):
     # load standard schema
     schema = os.path.join(os.path.dirname(__file__),
         '../share/roundup/templates/classic/schema.py')
-    vars = dict(globals())
+    vars = hyperdb.__dict__
+    vars['Class'] = Class
+    vars['FileClass'] = FileClass
+    vars['IssueClass'] = IssueClass
     vars['db'] = db
     execfile(schema, vars)
     initial_data = os.path.join(os.path.dirname(__file__),
