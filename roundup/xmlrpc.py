@@ -5,11 +5,10 @@
 #
 
 from roundup import hyperdb
-from roundup.cgi.exceptions import *
-from roundup.exceptions import UsageError
+from roundup.exceptions import Unauthorised, UsageError
 from roundup.date import Date, Range, Interval
 from roundup import actions
-from SimpleXMLRPCServer import *
+from SimpleXMLRPCServer import SimpleXMLRPCDispatcher
 from xmlrpclib import Binary
 
 def translate(value):
