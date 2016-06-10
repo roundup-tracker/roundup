@@ -4,7 +4,7 @@
 # For license terms see the file COPYING.txt.
 #
 
-from roundup.exceptions import *
+from roundup.exceptions import Unauthorised
 from roundup import hyperdb
 from roundup.i18n import _
 
