@@ -15,9 +15,11 @@ except ImportError:
 
 from roundup import roundupdb, date, hyperdb, password
 from roundup.cgi import templating, cgitb, TranslationService
-from roundup.cgi.actions import *
+from roundup.cgi import actions
 from roundup.exceptions import LoginError, Reject, RejectRaw, Unauthorised
-from roundup.cgi.exceptions import *
+from roundup.cgi.exceptions import (
+    FormError, NotFound, NotModified, Redirect, SendFile, SendStaticFile,
+    SeriousError)
 from roundup.cgi.form_parser import FormParser
 from roundup.mailer import Mailer, MessageSendError, encode_quopri
 from roundup.cgi import accept_language
@@ -1222,18 +1224,18 @@ class Client:
 
     # these are the actions that are available
     actions = (
-        ('edit',        EditItemAction),
-        ('editcsv',     EditCSVAction),
-        ('new',         NewItemAction),
-        ('register',    RegisterAction),
-        ('confrego',    ConfRegoAction),
-        ('passrst',     PassResetAction),
-        ('login',       LoginAction),
-        ('logout',      LogoutAction),
-        ('search',      SearchAction),
-        ('retire',      RetireAction),
-        ('show',        ShowAction),
-        ('export_csv',  ExportCSVAction),
+        ('edit',        actions.EditItemAction),
+        ('editcsv',     actions.EditCSVAction),
+        ('new',         actions.NewItemAction),
+        ('register',    actions.RegisterAction),
+        ('confrego',    actions.ConfRegoAction),
+        ('passrst',     actions.PassResetAction),
+        ('login',       actions.LoginAction),
+        ('logout',      actions.LogoutAction),
+        ('search',      actions.SearchAction),
+        ('retire',      actions.RetireAction),
+        ('show',        actions.ShowAction),
+        ('export_csv',  actions.ExportCSVAction),
     )
     def handle_action(self):
         """ Determine whether there should be an Action called.
