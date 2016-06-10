@@ -53,7 +53,7 @@ import os
 
 if os.name == 'nt':
     import msvcrt
-    from ctypes import *
+    import ctypes
     from ctypes.wintypes import BOOL, DWORD, HANDLE
 
     LOCK_SH = 0    # the default
@@ -64,26 +64,26 @@ if os.name == 'nt':
     #
     # detect size of ULONG_PTR 
     def is_64bit():
-        return sizeof(c_ulong) != sizeof(c_void_p)
+        return ctypes.sizeof(ctypes.c_ulong) != ctypes.sizeof(ctypes.c_void_p)
     if is_64bit():
-        ULONG_PTR = c_int64
+        ULONG_PTR = ctypes.c_int64
     else:
-        ULONG_PTR = c_ulong
-    PVOID = c_void_p
+        ULONG_PTR = ctypes.c_ulong
+    PVOID = ctypes.c_void_p
 
     # --- Union inside Structure by stackoverflow:3480240 ---
-    class _OFFSET(Structure):
+    class _OFFSET(ctypes.Structure):
         _fields_ = [
             ('Offset', DWORD),
             ('OffsetHigh', DWORD)]
 
-    class _OFFSET_UNION(Union):
+    class _OFFSET_UNION(ctypes.Union):
         _anonymous_ = ['_offset']
         _fields_ = [
             ('_offset', _OFFSET),
             ('Pointer', PVOID)]
 
-    class OVERLAPPED(Structure):
+    class OVERLAPPED(ctypes.Structure):
         _anonymous_ = ['_offset_union']
         _fields_ = [
             ('Internal', ULONG_PTR),
@@ -91,7 +91,7 @@ if os.name == 'nt':
             ('_offset_union', _OFFSET_UNION),
             ('hEvent', HANDLE)]
 
-    LPOVERLAPPED = POINTER(OVERLAPPED)
+    LPOVERLAPPED = ctypes.POINTER(OVERLAPPED)
 
     # --- Define function prototypes for extra safety ---
     LockFileEx = windll.kernel32.LockFileEx
@@ -114,7 +114,7 @@ if os.name == 'nt':
         """ Return True on success, False otherwise """
         hfile = msvcrt.get_osfhandle(file.fileno())
         overlapped = OVERLAPPED()
-        if LockFileEx(hfile, flags, 0, 0, 0xFFFF0000, byref(overlapped)):
+        if LockFileEx(hfile, flags, 0, 0, 0xFFFF0000, ctypes.byref(overlapped)):
             return True
         else:
             return False
@@ -122,7 +122,7 @@ if os.name == 'nt':
     def unlock(file):
         hfile = msvcrt.get_osfhandle(file.fileno())
         overlapped = OVERLAPPED()
-        if UnlockFileEx(hfile, 0, 0, 0xFFFF0000, byref(overlapped)):
+        if UnlockFileEx(hfile, 0, 0, 0xFFFF0000, ctypes.byref(overlapped)):
             return True
         else:
             return False
