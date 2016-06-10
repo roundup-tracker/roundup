@@ -5,9 +5,7 @@
 #
 
 import os, sys
-from stat import *
 import os.path
-from shutil import *
 import glob
 
 from distutils.command import build
