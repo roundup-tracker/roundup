@@ -1407,6 +1407,57 @@ _______________________________________________________________________
 """)
 
 
+    def testNosyMessageSettingSubject(self):
+        self.doNewIssue()
+        oldvalues = self.db.getnode('issue', '1').copy()
+        oldvalues['assignedto'] = None
+        # reconstruct old behaviour: This would reuse the
+        # database-handle from the doNewIssue above which has committed
+        # as user "Chef". So we close and reopen the db as that user.
+        #self.db.close() actually don't close 'cos this empties memorydb
+        self.db = self.instance.open('Chef')
+        self.db.issue.set('1', assignedto=self.chef_id)
+        self.db.commit()
+        self.db.issue.nosymessage('1', None, oldvalues, subject="test")
+
+        new_mail = ""
+        for line in self._get_mail().split("\n"):
+            if "Message-Id: " in line:
+                continue
+            if "Date: " in line:
+                continue
+            new_mail += line+"\n"
+
+        self.compareMessages(new_mail, """
+FROM: roundup-admin@your.tracker.email.domain.example
+TO: chef@bork.bork.bork, richard@test.test
+Content-Type: text/plain; charset="utf-8"
+Subject: test
+To: chef@bork.bork.bork, richard@test.test
+From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+X-Roundup-Issue-Status: unread
+X-Roundup-Version: 1.3.3
+In-Reply-To: <dummy_test_message_id>
+MIME-Version: 1.0
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
+Content-Transfer-Encoding: quoted-printable
+
+
+Change by Bork, Chef <chef@bork.bork.bork>:
+
+
+----------
+assignedto:  -> Chef
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
+_______________________________________________________________________
+""")
+
     #
     # FOLLOWUP TITLE MATCH
     #

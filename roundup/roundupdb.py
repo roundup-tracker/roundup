@@ -227,7 +227,8 @@ class IssueClass:
         """
 
     def nosymessage(self, issueid, msgid, oldvalues, whichnosy='nosy',
-            from_address=None, cc=[], bcc=[], cc_emails = [], bcc_emails = []):
+            from_address=None, cc=[], bcc=[], cc_emails = [],
+            bcc_emails = [], subject=None ):
         """Send a message to the members of an issue's nosy list.
 
         The message is sent only to users on the nosy list who are not
@@ -237,6 +238,12 @@ class IssueClass:
 
         If 'msgid' is None, the message gets sent only to the nosy
         list, and it's called a 'System Message'.
+
+        The "subject" argument is used as subject for the message. If no
+        subject is passed, a subject will be generated from the message.
+        Note the subject does not include the item designator [classID]
+        prefix that allows proper processing of reply emails. The caller
+        needs to include that label in the subject if needed.
 
         The "cc" argument indicates additional recipients to send the
         message to that may not be specified in the message's recipients
@@ -248,12 +255,12 @@ class IssueClass:
         address lists. Note that the list of bcc users *is* updated in
         the recipient list of the message, so this field has to be
         protected (using appropriate permissions), otherwise the bcc
-        will be decuceable for users who have web access to the tracker.
+        will be deduceable for users who have web access to the tracker.
 
         The cc_emails and bcc_emails arguments take a list of additional
         recipient email addresses (just the mail address not roundup users)
         this can be useful for sending to additional email addresses
-        which are no roundup users. These arguments are currently not
+        which are not roundup users. These arguments are currently not
         used by roundups nosyreaction but can be used by customized
         (nosy-)reactors.
 
@@ -350,10 +357,10 @@ class IssueClass:
                 self.db.msg.set(msgid, recipients=recipients)
         if sendto['plain'] or bcc_sendto['plain']:
             self.send_message(issueid, msgid, note, sendto['plain'],
-                from_address, bcc_sendto['plain'])
+                              from_address, bcc_sendto['plain'], subject)
         if sendto['crypt'] or bcc_sendto['crypt']:
             self.send_message(issueid, msgid, note, sendto['crypt'],
-                from_address, bcc_sendto['crypt'], crypt=True)
+                from_address, bcc_sendto['crypt'], subject, crypt=True)
 
     # backwards compatibility - don't remove
     sendmessage = nosymessage
@@ -390,7 +397,7 @@ class IssueClass:
         return msg
 
     def send_message(self, issueid, msgid, note, sendto, from_address=None,
-            bcc_sendto=[], crypt=False):
+            bcc_sendto=[], subject=None, crypt=False):
         '''Actually send the nominated message from this issue to the sendto
            recipients, with the note appended.
         '''
@@ -498,7 +505,9 @@ class IssueClass:
         if from_tag:
             from_tag = ' ' + from_tag
 
-        subject = '[%s%s] %s'%(cn, issueid, title)
+        if subject is None:
+            subject = '[%s%s] %s'%(cn, issueid, title)
+
         author = (authname + from_tag, from_address)
 
         # send an individual message per recipient?
