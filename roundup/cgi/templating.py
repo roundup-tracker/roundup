@@ -2681,8 +2681,15 @@ env: %(env)s
 """%d
 
     def indexargs_form(self, columns=1, sort=1, group=1, filter=1,
-            filterspec=1, search_text=1):
-        """ return the current index args as form elements """
+            filterspec=1, search_text=1, exclude=[]):
+        """ return the current index args as form elements
+
+            This routine generates an html form with hidden elements.
+            If you want to have visible form elements in your tal/jinja
+            generated templates use the exclude aray to list the names for
+            these elements. This wll prevent the function from creating
+            these elements in its output.
+        """
         l = []
         sc = self.special_char
         def add(k, v):
@@ -2710,6 +2717,8 @@ env: %(env)s
         if self.classname and filterspec:
             cls = self.client.db.getclass(self.classname)
             for k,v in self.filterspec.items():
+                if k in exclude:
+                    continue
                 if type(v) == type([]):
                     if isinstance(cls.get_transitive_prop(k), hyperdb.String):
                         add(k, ' '.join(v))
