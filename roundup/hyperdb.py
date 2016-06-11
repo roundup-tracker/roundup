@@ -21,12 +21,14 @@
 __docformat__ = 'restructuredtext'
 
 # standard python modules
-import os, re, shutil, weakref
+import os, re, shutil, sys, weakref
+import traceback
 
 # roundup modules
 import date, password
 from support import ensureParentsExist, PrioList
 from roundup.i18n import _
+from roundup.cgi.exceptions import DetectorError
 
 #
 # Types
@@ -1290,7 +1292,16 @@ class Class:
     def fireAuditors(self, event, nodeid, newvalues):
         """Fire all registered auditors"""
         for prio, name, audit in self.auditors[event]:
-            audit(self.db, self, nodeid, newvalues)
+            try:
+                audit(self.db, self, nodeid, newvalues)
+            except Exception as e:
+                tb = traceback.format_exc()
+                html = ("<h1>Traceback</h1>" + str(tb).replace('\n', '<br>').
+                        replace(' ', '&nbsp;'))
+                txt = 'Caught exception %s: %s\n%s' % (str(type(e)), e, tb)
+                exc_info = sys.exc_info()
+                subject = "Error: %s" % exc_info[1]
+                raise DetectorError(subject, html, txt)
 
     def react(self, event, detector, priority = 100):
         """Register a reactor detector"""
@@ -1299,7 +1310,16 @@ class Class:
     def fireReactors(self, event, nodeid, oldvalues):
         """Fire all registered reactors"""
         for prio, name, react in self.reactors[event]:
-            react(self.db, self, nodeid, oldvalues)
+            try:
+                react(self.db, self, nodeid, oldvalues)
+            except Exception as e:
+                tb = traceback.format_exc()
+                html = ("<h1>Traceback</h1>" + str(tb).replace('\n', '<br>').
+                        replace(' ', '&nbsp;'))
+                txt = 'Caught exception %s: %s\n%s' % (str(type(e)), e, tb)
+                exc_info = sys.exc_info()
+                subject = "Error: %s" % exc_info[1]
+                raise DetectorError(subject, html, txt)
 
     #
     # import / export support

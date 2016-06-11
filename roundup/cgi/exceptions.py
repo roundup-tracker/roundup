@@ -18,6 +18,14 @@ class NotFound(HTTPException):
 class NotModified(HTTPException):
     pass
 
+class DetectorError(Exception):
+    """Raised when a detector throws an exception.
+Contains details of the exception."""
+    def __init__(self, subject, html, txt):
+        self.subject = subject
+        self.html = html
+        self.txt = txt
+
 class FormError(ValueError):
     """An 'expected' exception occurred during form parsing.
 

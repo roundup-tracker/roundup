@@ -19,7 +19,7 @@ from roundup.cgi import actions
 from roundup.exceptions import LoginError, Reject, RejectRaw, Unauthorised
 from roundup.cgi.exceptions import (
     FormError, NotFound, NotModified, Redirect, SendFile, SendStaticFile,
-    SeriousError)
+    DetectorError, SeriousError)
 from roundup.cgi.form_parser import FormParser
 from roundup.mailer import Mailer, MessageSendError, encode_quopri
 from roundup.cgi import accept_language
@@ -572,6 +572,15 @@ class Client:
             # OpenSSL.SSL.SysCallError is similar to IOError above
             # may happen during write_html and serve_file, too.
             pass
+        except DetectorError as e:
+            if not self.instance.config.WEB_DEBUG:
+                # run when we are not in debug mode, so errors
+                # go to admin too.
+                self.send_error_to_admin(e.subject, e.html, e.txt)
+                self.write_html(e.html)
+            else:
+                # in debug mode, only write error to screen.
+                self.write_html(e.html)
         except:
             # Something has gone badly wrong.  Therefore, we should
             # make sure that the response code indicates failure.
