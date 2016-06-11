@@ -24,7 +24,7 @@ Migrating from 1.5.1 to 1.6.0
 =============================
 
 Database back end specified in config.ini
---------------------
+-----------------------------------------
 
 The ``db/backend_name`` file is no longer used to configure the database
 backend being used for a tracker. The backend is now configured in the
@@ -48,7 +48,7 @@ Note: the ``backend_name`` file may be located in a directory other than
 section of the ``config.ini`` file to be something other than ``db``.
 
 html/_generic.404.html in trackers use page template
---------------------
+----------------------------------------------------
 
 The original generic 404 error pages for many trackers did not use the
 standard page layout. This change replaces the html/_generic.404.html
