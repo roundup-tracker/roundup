@@ -141,7 +141,6 @@ installation:
 4. and optionally `configure an email interface`_
 5. `UNIX environment steps`_ to take if you're installing on a shared
    UNIX machine and want to restrict local access to roundup
-6. `additional language codecs`_
 
 For information about how Roundup installs, see the `administration
 guide`_.
@@ -833,14 +832,6 @@ you will need to ensure that the db directory has a context that
 permits the web server to modify and create files. If you're using the
 mysql or postgresql backend you may also need to update your policy to
 allow the web server to access the database socket.
-
-
-Additional Language Codecs
---------------------------
-
-If you intend to send messages to Roundup that use Chinese, Japanese or
-Korean encodings the you'll need to obtain CJKCodecs from
-http://cjkpython.berlios.de/
 
 
 Public Tracker Considerations
