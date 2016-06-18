@@ -111,6 +111,8 @@ Fixed:
   they appear to be part of the standard python since at least 2.6.
   Also the quoted url is obsolete. See ticket if you think you need
   the codecs.
+- issue2550823 improve mailgw logging for node creation errors.
+  Patch by r.david.murray (applied by John Rouillard).
 
 2016-01-11: 1.5.1
 

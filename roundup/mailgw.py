@@ -1198,6 +1198,7 @@ Mail message was rejected by a detector.
                             ) % locals()
                 self.nodeid = self.cl.create(**self.props)
         except (TypeError, IndexError, ValueError, exceptions.Reject), message:
+            self.mailgw.logger.exception("Rejecting email due to node creation error:")
             raise MailUsageError, _("""
 There was a problem with the message you sent:
    %(message)s
