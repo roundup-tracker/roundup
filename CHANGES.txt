@@ -99,7 +99,7 @@ Fixed:
 - issue2550907 Fix errors when creating documentation. Work done by
   Peter Funk (pefu). (Applied by John Rouillard with small change
   omitting obsolete security.txt.)
-- issue2550826 Capture all exceptions from auditors/reactors and
+- issue2550826 Capture some exceptions from auditors/reactors and
   raise a DetectorError instead. This allows failures like IOErrors
   from the detectors (e.g. unable to access files) to be handled.
   Previously an IOError just resulted in no output (premature end of

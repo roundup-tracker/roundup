@@ -30,14 +30,6 @@ from support import ensureParentsExist, PrioList
 from roundup.i18n import _
 from roundup.cgi.exceptions import DetectorError
 
-# import other errors that a detector is allowed to throw
-# so they can be raised and not captured by the DetectorError
-from roundup.exceptions import Reject, RejectRaw
-try:
-    from pytz import UnknownTimeZoneError
-except:
-    UnknownTimeZoneError = ValueError
-
 #
 # Types
 #
@@ -1302,11 +1294,7 @@ class Class:
         for prio, name, audit in self.auditors[event]:
             try:
                 audit(self.db, self, nodeid, newvalues)
-            except (Reject, RejectRaw, ValueError, UnknownTimeZoneError):
-                # these are raised by detectors to cause actions
-                # to occur at other levels. Reassert them.
-                raise
-            except Exception as e:
+            except (EnvironmentError, ArithmeticError) as e:
                 tb = traceback.format_exc()
                 html = ("<h1>Traceback</h1>" + str(tb).replace('\n', '<br>').
                         replace(' ', '&nbsp;'))
@@ -1324,11 +1312,7 @@ class Class:
         for prio, name, react in self.reactors[event]:
             try:
                 react(self.db, self, nodeid, oldvalues)
-            except (Reject, RejectRaw, ValueError):
-                # these are raised by detectors to cause actions
-                # to occur at other levels. Reassert them.
-                raise
-            except Exception as e:
+            except (EnvironmentError, ArithmeticError) as e:
                 tb = traceback.format_exc()
                 html = ("<h1>Traceback</h1>" + str(tb).replace('\n', '<br>').
                         replace(' ', '&nbsp;'))
