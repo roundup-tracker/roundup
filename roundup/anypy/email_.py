@@ -122,6 +122,7 @@ def decode_header(header):
             last_word = word
             last_charset = charset
         elif last_charset is None:
+            BSPACE = b' '
             last_word += BSPACE + word
         else:
             last_word += word

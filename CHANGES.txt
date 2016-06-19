@@ -123,6 +123,9 @@ Fixed:
   pagesize is not propigated to the prev link. This patch fixes that.
   Patch provided by John Kristensen. (Applied, light testing by John
   Rouillard.)
+- issue2550850 anypy/email_.py uses BSPACE which is not defined in python 2.7
+  Supplied a definition for BSPACE since it seems to not be defined
+  anywhere. Reported by Dennis Boone. (John Rouillard)
 
 2016-01-11: 1.5.1
 
