@@ -1228,6 +1228,15 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def hasnode(self, classname, nodeid):
         """ Determine if the database has a given node.
         """
+        # nodeid (aka link) is sql type INTEGER.  max positive value
+        # for INTEGER is 2^31-1 for Postgres and MySQL. The max
+        # positive value for SqLite is 2^63 -1, so arguably this check
+        # needs to adapt for the type of the RDBMS. For right now,
+        # choose lowest common denominator.
+        if int(nodeid) >= 2**31:
+            # value out of range return false
+            return 0
+
         # If this node is in the cache, then we do not need to go to
         # the database.  (We don't consider this an LRU hit, though.)
         if (classname, nodeid) in self.cache:

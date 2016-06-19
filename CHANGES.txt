@@ -113,6 +113,12 @@ Fixed:
   the codecs.
 - issue2550823 improve mailgw logging for node creation errors.
   Patch by r.david.murray (applied by John Rouillard).
+- issue2550549 Postgres error on message templating
+  Exception gets thrown and not captured if nodeid is too large
+  on postgres. Added a check in rdbms_common layer that max nodeid
+  is < 2^31 -1. Large nodeid now return no such id error upstream.
+  Patch idea from: martin.v.loewis. (John Rouillard)
+
 
 2016-01-11: 1.5.1
 
