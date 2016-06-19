@@ -118,7 +118,11 @@ Fixed:
   on postgres. Added a check in rdbms_common layer that max nodeid
   is < 2^31 -1. Large nodeid now return no such id error upstream.
   Patch idea from: martin.v.loewis. (John Rouillard)
-
+- issue2550723 Fix propagation of @pagesize
+  When @pagesize=0 is specified (indicating show all), the value of
+  pagesize is not propigated to the prev link. This patch fixes that.
+  Patch provided by John Kristensen. (Applied, light testing by John
+  Rouillard.)
 
 2016-01-11: 1.5.1
 

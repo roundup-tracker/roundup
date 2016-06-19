@@ -2925,7 +2925,7 @@ class Batch(ZTUtils.Batch):
     def previous(self):
         if self.start == 1:
             return None
-        return Batch(self.client, self._sequence, self._size,
+        return Batch(self.client, self._sequence, self.size,
             self.first - self._size + self.overlap, 0, self.orphan,
             self.overlap)
 
@@ -2934,7 +2934,7 @@ class Batch(ZTUtils.Batch):
             self._sequence[self.end]
         except IndexError:
             return None
-        return Batch(self.client, self._sequence, self._size,
+        return Batch(self.client, self._sequence, self.size,
             self.end - self.overlap, 0, self.orphan, self.overlap)
 
 class TemplatingUtils:

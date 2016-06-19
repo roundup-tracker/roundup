@@ -17,7 +17,7 @@ __docformat__ = 'restructuredtext'
 
 class LazyPrevBatch:
     def __of__(self, parent):
-        return Batch(parent._sequence, parent._size,
+        return Batch(parent._sequence, parent.size,
                      parent.first - parent._size + parent.overlap, 0,
                      parent.orphan, parent.overlap)
 
@@ -25,7 +25,7 @@ class LazyNextBatch:
     def __of__(self, parent):
         try: parent._sequence[parent.end]
         except IndexError: return None
-        return Batch(parent._sequence, parent._size,
+        return Batch(parent._sequence, parent.size,
                      parent.end - parent.overlap, 0,
                      parent.orphan, parent.overlap)
 
@@ -60,6 +60,11 @@ class Batch:
         the batch.
 
         "sequence_length" is the length of the original, unbatched, sequence
+        
+        Note: "_size" is the "actual" size used to perform batch calulcations,
+        while "size" is the "representative" size. (ie. a "special value" of
+        "size" used by the templates may translate to a different value for
+        "_size" which is used internally for batch calculations).
         '''
 
         start = start + 1
@@ -67,8 +72,8 @@ class Batch:
         start,end,sz = opt(start,end,size,orphan,sequence)
 
         self._sequence = sequence
-        self.size = sz
-        self._size = size
+        self.size = size
+        self._size = sz
         self.start = start
         self.end = end
         self.orphan = orphan
