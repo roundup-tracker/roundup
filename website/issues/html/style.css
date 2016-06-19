@@ -156,3 +156,8 @@ td { padding-left: 1em; }
 
 tr.odd { background-color:#f5f5f5; }
 
+/* Make sure that user name starts at the top of the change list
+and not in the middle Issue2550809: History display misalignment */
+table.history td {
+    vertical-align: top;
+}
