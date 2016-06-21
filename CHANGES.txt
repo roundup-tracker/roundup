@@ -67,6 +67,12 @@ Features:
     assignedto. Use exclude=['assignedto'] to prevent the
     indexargs_form from generating a confliciting assignedto field
     which lists all users regardless of the role.]
+- allow user to recover account password using an entry in the
+  Alternate E-mail addresses list. See:
+     http://psf.upfronthosting.co.za/roundup/meta/issue564
+  for description. Merge request at:
+    https://sourceforge.net/p/roundup/code/merge-requests/1/
+  Patch supplied by kinggreedy. Applied/tested by John Rouillard
 
 Fixed:
 
