@@ -787,6 +787,7 @@ class FormTestCase(unittest.TestCase):
         cl.userid = userid
         cl.language = ('en',)
         cl._error_message = []
+        cl._ok_message = []
         cl.template = template
         return cl
 
@@ -986,6 +987,21 @@ class FormTestCase(unittest.TestCase):
             userid=chef, template='index')
         h = HTMLRequest(cl)
         self.assertEqual([x.id for x in h.batch()],['2', '3', '1'])
+        self.assertEqual(cl._error_message, []) # test for empty _error_message when sort is valid
+        self.assertEqual(cl._ok_message, []) # test for empty _ok_message when sort is valid
+
+        # Test for correct _error_message for invalid sort/group properties
+        baddepsort = {'@action':'search','columns':'id','@sort':'dep'}
+        baddepgrp = {'@action':'search','columns':'id','@group':'dep'}
+        cl = self._make_client(baddepsort, classname='iss', nodeid=None,
+            userid=chef, template='index')
+        h = HTMLRequest(cl)
+        self.assertEqual(cl._error_message, ['Unknown sort property dep'])
+        cl = self._make_client(baddepgrp, classname='iss', nodeid=None,
+            userid=chef, template='index')
+        h = HTMLRequest(cl)
+        self.assertEqual(cl._error_message, ['Unknown group property dep'])
+
         cl = self._make_client(depgrp, classname='iss', nodeid=None,
             userid=chef, template='index')
         h = HTMLRequest(cl)

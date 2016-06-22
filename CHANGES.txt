@@ -132,6 +132,12 @@ Fixed:
 - issue2550850 anypy/email_.py uses BSPACE which is not defined in python 2.7
   Supplied a definition for BSPACE since it seems to not be defined
   anywhere. Reported by Dennis Boone. (John Rouillard)
+- Validate properties specified for sorting and grouping in index
+  views. Original patch from martin.v.loewis via:
+  https://hg.python.org/tracker/roundup/rev/439bd3060df2
+  Applied by John Rouillard with some modification to properly
+  identify if the bad property is a sort or grouping property. Tests
+  added.
 
 2016-01-11: 1.5.1
 
