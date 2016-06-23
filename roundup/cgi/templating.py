@@ -2517,7 +2517,12 @@ class HTMLRequest(HTMLInputMixin):
                     dirs.append(self.form.getfirst(dirkey))
             if fields: # only try other special char if nothing found
                 break
-        cls = self.client.db.getclass(self.classname)
+
+        # sometimes requests come in without a class
+        # chances are they won't have any filter params,
+        # in that case anyway but...
+        if self.classname:
+            cls = self.client.db.getclass(self.classname)
         for f, d in map(None, fields, dirs):
             if f.startswith('-'):
                 dir, propname = '-', f[1:]
@@ -2525,7 +2530,9 @@ class HTMLRequest(HTMLInputMixin):
                 dir, propname = '-', f
             else:
                 dir, propname = '+', f
-            if cls.get_transitive_prop(propname) is None:
+            # if no classname, just append the propname unchecked.
+            # this may be valid for some actions that bypass classes.
+            if self.classname and cls.get_transitive_prop(propname) is None:
                 self.client.add_error_message("Unknown %s property %s"%(name, propname))
             else:
                 var.append((dir, propname))
