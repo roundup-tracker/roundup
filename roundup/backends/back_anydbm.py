@@ -147,6 +147,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
     dbtype = "anydbm"
 
+    # used by migrate roundup_admin command. Is a no-op for anydbm.
+    # but needed to stop traceback in admin.
+    db_version_updated = False
 
     def __init__(self, config, journaltag=None):
         """Open a hyperdatabase given a specifier to some storage.

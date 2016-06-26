@@ -157,7 +157,11 @@ Fixed:
   http://hg.python.org/tracker/roundup/rev/98508a47c126 by
   Martin.V.Loewis. Numeric test patch applied, Integer code and tests
   developed by John Rouillard.
-
+- issue1926124: fix crash in roundup_admin migrate option.
+  Patch submitted by Henry (henryl), modified value to False
+  since this produces the correct "No migration action required"
+  output from the migrate command.
+  
 2016-01-11: 1.5.1
 
 Pay attention:
