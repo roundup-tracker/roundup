@@ -73,6 +73,11 @@ Features:
   for description. Merge request at:
     https://sourceforge.net/p/roundup/code/merge-requests/1/
   Patch supplied by kinggreedy. Applied/tested by John Rouillard
+- issue2550636, issue2550909: Added support for Whoosh indexer.
+  Also adds new config.ini setting called indexer to select
+  indexer. See ``doc/upgrading.txt`` for details. Initial patch
+  done by David Wolever. Patch modified, docs added and committed
+  by John Rouillard.
 
 Fixed:
 

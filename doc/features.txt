@@ -47,7 +47,7 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
    support them (sqlite, mysql and postgresql)
  - indexed text searching giving fast responses to searches across all
    messages and indexed string properties
- - support for the Xapian full-text indexing engine for large trackers
+ - support for the Xapian or Whoosh full-text indexing engine for large trackers
 
 *documented*
  - documentation exists for installation, upgrading, maintenance, users and

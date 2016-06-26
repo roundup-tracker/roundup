@@ -33,10 +33,7 @@ from roundup.i18n import _
 from roundup.backends.blobfiles import FileStorage
 from roundup.backends.sessions_dbm import Sessions, OneTimeKeys
 
-try:
-    from roundup.backends.indexer_xapian import Indexer
-except ImportError:
-    from roundup.backends.indexer_dbm import Indexer
+from roundup.backends.indexer_common import get_indexer
 
 def db_exists(config):
     # check for the user db
@@ -140,7 +137,17 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     - check the timestamp of the class file and nuke the cache if it's
       modified. Do some sort of conflict checking on the dirty stuff.
     - perhaps detect write collisions (related to above)?
+
+    attributes:
+      dbtype:
+        holds the value for the type of db. It is used by indexer to
+        identify the database type so it can import the correct indexer
+        module when using native text search mode.
     """
+
+    dbtype = "anydbm"
+
+
     def __init__(self, config, journaltag=None):
         """Open a hyperdatabase given a specifier to some storage.
 
@@ -167,7 +174,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.newnodes = {}      # keep track of the new nodes by class
         self.destroyednodes = {}# keep track of the destroyed nodes by class
         self.transactions = []
-        self.indexer = Indexer(self)
+        self.indexer = get_indexer(config, self)
         self.security = security.Security(self)
         os.umask(config.UMASK)
 

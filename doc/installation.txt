@@ -67,6 +67,20 @@ Xapian full-text indexer
 
   Roundup requires Xapian 1.0.0 or newer.
 
+Whoosh full-text indexer
+  The Whoosh_ full-text indexer is also supported and will be used by
+  default if it is available (and Xapian is not installed). This is
+  recommended if you are anticipating a large number of issues (> 5000).
+
+  You may install Whoosh at any time, even after a tracker has been
+  installed and used. You will need to run the "roundup-admin reindex"
+  command if the tracker has existing data.
+
+  Roundup was tested with Whoosh 2.5.7, but earlier versions in the
+  2.0 series may work. Whoosh is a pure python indexer so it is slower
+  than Xapian, but should be useful for moderately sized trackers.
+  It uses the StandardAnalyzer which is suited for Western languages.
+
 pyopenssl
   If pyopenssl_ is installed the roundup-server can be configured
   to serve trackers over SSL. If you are going to serve roundup via
@@ -88,6 +102,7 @@ Windows Service
   You can run Roundup as a Windows service if pywin32_ is installed.
 
 .. _Xapian: http://xapian.org/
+.. _Whoosh: https://bitbucket.org/mchaput/whoosh/wiki/Home
 .. _pytz: http://www.python.org/pypi/pytz
 .. _Olson tz database: http://www.twinsun.com/tz/tz-link.htm
 .. _pyopenssl: http://pyopenssl.sourceforge.net

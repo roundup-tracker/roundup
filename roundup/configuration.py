@@ -540,6 +540,11 @@ SETTINGS = (
             "email?"),
         (BooleanOption, "email_registration_confirmation", "yes",
             "Offer registration confirmation by email or only through the web?"),
+        (Option, "indexer", "",
+            "Force Roundup to use a particular text indexer.\n"
+            "If no indexer is supplied, the first available indexer\n"
+            "will be used in the following order:\n"
+            "Possible values: xapian, whoosh, native (internal)."),
         (WordListOption, "indexer_stopwords", "",
             "Additional stop-words for the full-text indexer specific to\n"
             "your tracker. See the indexer source for the default list of\n"

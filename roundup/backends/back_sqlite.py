@@ -34,11 +34,22 @@ def db_nuke(config):
     shutil.rmtree(config.DATABASE)
 
 class Database(rdbms_common.Database):
+    """Sqlite DB backend implementation
+
+    attributes:
+      dbtype:
+        holds the value for the type of db. It is used by indexer to
+        identify the database type so it can import the correct indexer
+        module when using native text search mode.
+    """
+
     # char to use for positional arguments
     if sqlite_version in (2,3):
         arg = '?'
     else:
         arg = '%s'
+
+    dbtype = "sqlite"
 
     # used by some code to switch styles of query
     implements_intersect = 1

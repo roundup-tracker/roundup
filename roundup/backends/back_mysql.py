@@ -110,7 +110,18 @@ def db_exists(config):
 
 
 class Database(rdbms_common.Database):
+    """ Mysql DB backend implementation
+
+    attributes:
+      dbtype:
+        holds the value for the type of db. It is used by indexer to
+        identify the database type so it can import the correct indexer
+        module when using native text search mode.
+    """
+
     arg = '%s'
+
+    dbtype = "mysql"
 
     # used by some code to switch styles of query
     implements_intersect = 0

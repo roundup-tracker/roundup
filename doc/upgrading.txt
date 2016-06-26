@@ -30,7 +30,7 @@ The ``db/backend_name`` file is no longer used to configure the database
 backend being used for a tracker. The backend is now configured in the
 ``config.ini`` file using the ``backend`` option located in the ``[rdbms]``
 section. For example if ``db/backend_name`` file contains ``sqlite``, a new
-entry in the ``config.ini`` will need to be created::
+entry in the tracker's ``config.ini`` will need to be created::
 
   [rdbms]
 
@@ -46,6 +46,24 @@ you can safely delete the ``db/backend_name`` file.
 Note: the ``backend_name`` file may be located in a directory other than
 ``db/`` if you have configured the ``database`` option in the ``[main]``
 section of the ``config.ini`` file to be something other than ``db``.
+
+New config file option 'indexer' added
+--------------------------------------
+
+With support for the Whoosh indexer, a new config file option has been
+added. You can force Roundup to use a particular text indexer by
+setting this value in the [main] section of the tracker's
+``config.ini`` file (usually placed right before indexer_stopwords)::
+
+  [main]
+
+  ...
+
+  # Force Roundup to use a particular text indexer.
+  # If no indexer is supplied, the first available indexer
+  # will be used in the following order:
+  # Possible values: xapian, whoosh, native (internal).
+  indexer =
 
 html/_generic.404.html in trackers use page template
 ----------------------------------------------------

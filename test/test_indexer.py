@@ -39,6 +39,12 @@ except ImportError:
     skip_xapian = pytest.skip(
         "Skipping Xapian indexer tests: 'xapian' not installed")
 
+try:
+    import whoosh
+    skip_whoosh = lambda func, *args, **kwargs: func
+except ImportError:
+    skip_whoosh = pytest.skip(
+        "Skipping Whoosh indexer tests: 'whoosh' not installed")
 
 class db:
     class config(dict):
@@ -150,6 +156,16 @@ class IndexerTest(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree('test-index')
 
+@skip_whoosh
+class WhooshIndexerTest(IndexerTest):
+    def setUp(self):
+        if os.path.exists('test-index'):
+            shutil.rmtree('test-index')
+        os.mkdir('test-index')
+        from roundup.backends.indexer_whoosh import Indexer
+        self.dex = Indexer(db)
+    def tearDown(self):
+        shutil.rmtree('test-index')
 
 @skip_xapian
 class XapianIndexerTest(IndexerTest):

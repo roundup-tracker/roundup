@@ -64,10 +64,7 @@ from roundup.i18n import _
 
 # support
 from roundup.backends.blobfiles import FileStorage
-try:
-    from roundup.backends.indexer_xapian import Indexer
-except ImportError:
-    from roundup.backends.indexer_rdbms import Indexer
+from roundup.backends.indexer_common import get_indexer
 from roundup.backends.sessions_rdbms import Sessions, OneTimeKeys
 from roundup.date import Range
 
@@ -172,7 +169,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.config, self.journaltag = config, journaltag
         self.dir = config.DATABASE
         self.classes = {}
-        self.indexer = Indexer(self)
+        self.indexer = get_indexer(config, self)
         self.security = security.Security(self)
 
         # additional transaction support for external files and the like

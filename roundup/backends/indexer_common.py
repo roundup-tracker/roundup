@@ -107,3 +107,41 @@ class Indexer:
                             node_dict[linkprop].append(nodeid)
         return nodeids
 
+def get_indexer(config, db):
+    indexer_name = getattr(config, "INDEXER", "")
+    if not indexer_name:
+        # Try everything
+        try:
+            from indexer_xapian import Indexer
+            return Indexer(db)
+        except ImportError:
+            pass
+
+        try:
+            from indexer_whoosh import Indexer
+            return Indexer(db)
+        except ImportError:
+            pass
+
+        indexer_name = "native" # fallback to native full text search
+
+    if indexer_name == "xapian":
+        from indexer_xapian import Indexer
+        return Indexer(db)
+
+    if indexer_name == "whoosh":
+        from indexer_whoosh import Indexer
+        return Indexer(db)
+
+    if indexer_name == "native":
+        # load proper native indexing based on database type
+        if db.dbtype == "anydbm":
+            from roundup.backends.indexer_dbm import Indexer
+            return Indexer(db)
+
+        if db.dbtype in ("sqlite", "postgres", "mysql"):
+            from roundup.backends.indexer_rdbms import Indexer
+            return Indexer(db)
+
+    raise AssertionError("Invalid indexer: %r" %(indexer_name))
+
