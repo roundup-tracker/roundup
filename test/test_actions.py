@@ -5,7 +5,7 @@ from roundup import hyperdb
 from roundup.date import Date, Interval
 from roundup.cgi.actions import *
 from roundup.cgi.client import add_message
-from roundup.cgi.exceptions import Redirect, Unauthorised, SeriousError
+from roundup.cgi.exceptions import Redirect, Unauthorised, SeriousError, FormError
 
 from mocknull import MockNull
 
@@ -134,6 +134,34 @@ class FakeFilterVarsTestCase(SearchActionTestCase):
         self.client.db.classes.getprops = lambda: {'foo': hyperdb.String()}
         self.form.value.append(MiniFieldStorage('foo', 'hello'))
         self.assertFilterEquals('foo')
+
+    def testNumKey(self): # testing patch: http://hg.python.org/tracker/roundup/rev/98508a47c126
+        for val in [ "-1000a", "test", "o0.9999", "o0", "1.00/10" ]:
+            print "testing ", val
+            self.client.db.classes.get_transitive_prop = lambda x: hyperdb.Number()
+            self.form.value.append(MiniFieldStorage('foo', val)) # invalid numbers
+            self.assertRaises(FormError, self.action.fakeFilterVars)
+            del self.form.value[:]
+
+        for val in [ "-1000.7738", "-556", "-0.9999", "-.456", "-5E-5", "0.00", "0",
+                     "1.00", "0556", "7.56E2", "1000.7738"]:
+            self.form.value.append(MiniFieldStorage('foo', val))
+            self.action.fakeFilterVars() # this should run and return. No errors, nothing to check.
+            del self.form.value[:]
+
+    def testIntKey(self): # testing patch: http://hg.python.org/tracker/roundup/rev/98508a47c126
+        for val in [ "-1000a", "test", "-5E-5", "0.9999", "0.0", "1.000", "0456", "1E4" ]:
+            print "testing ", val
+            self.client.db.classes.get_transitive_prop = lambda x: hyperdb.Integer()
+            self.form.value.append(MiniFieldStorage('foo', val))
+            self.assertRaises(FormError, self.action.fakeFilterVars)
+            del self.form.value[:]
+
+        for val in [ "-1000", "-512", "0", "1", "100", "248" ]: # no scientific notation apparently
+            self.client.db.classes.get_transitive_prop = lambda x: hyperdb.Integer()
+            self.form.value.append(MiniFieldStorage('foo', val))
+            self.action.fakeFilterVars() # this should run and return. No errors, nothing to check.
+            del self.form.value[:]
 
     def testTokenizedStringKey(self):
         self.client.db.classes.get_transitive_prop = lambda x: hyperdb.String()

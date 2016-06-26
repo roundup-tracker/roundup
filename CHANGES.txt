@@ -143,6 +143,11 @@ Fixed:
   Applied by John Rouillard with some modification to properly
   identify if the bad property is a sort or grouping property. Tests
   added.
+- Validate Integer and Numeric type filter parameters rather than
+  passing output down to db level. Initial patch at:
+  http://hg.python.org/tracker/roundup/rev/98508a47c126 by
+  Martin.V.Loewis. Numeric test patch applied, Integer code and tests
+  developed by John Rouillard.
 
 2016-01-11: 1.5.1
 
