@@ -1963,6 +1963,142 @@ Subject: [issue1] Testing... [nosy=-richard]
         # NO NOSY MESSAGE SHOULD BE SENT!
         assert not os.path.exists(SENDMAILDEBUG)
 
+    def testNosyReplytoTracker(self):
+        self.db.config.TRACKER_REPLYTO_ADDRESS = ''
+        self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id>
+Subject: [issue] Testing... [nosy=mary; assignedto=richard]
+
+This is a test submission of a new issue.
+''')
+        self.compareMessages(self._get_mail(),
+'''FROM: roundup-admin@your.tracker.email.domain.example
+TO: mary@test.test, richard@test.test
+Content-Type: text/plain; charset="utf-8"
+Subject: [issue1] Testing...
+To: mary@test.test, richard@test.test
+From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
+MIME-Version: 1.0
+Message-Id: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+X-Roundup-Issue-Status: unread
+Content-Transfer-Encoding: quoted-printable
+
+
+New submission from Bork, Chef <chef@bork.bork.bork>:
+
+This is a test submission of a new issue.
+
+----------
+assignedto: richard
+messages: 1
+nosy: Chef, mary, richard
+status: unread
+title: Testing...
+tx_Source: email
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
+_______________________________________________________________________
+''')
+
+    def testNosyReplytoSomeaddress(self):
+        self.db.config.TRACKER_REPLYTO_ADDRESS = 'replyto@me.example.com'
+        self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id>
+Subject: [issue] Testing... [nosy=mary; assignedto=richard]
+
+This is a test submission of a new issue.
+''')
+        self.compareMessages(self._get_mail(),
+'''FROM: roundup-admin@your.tracker.email.domain.example
+TO: mary@test.test, richard@test.test
+Content-Type: text/plain; charset="utf-8"
+Subject: [issue1] Testing...
+To: mary@test.test, richard@test.test
+From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: replyto@me.example.com
+MIME-Version: 1.0
+Message-Id: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+X-Roundup-Issue-Status: unread
+Content-Transfer-Encoding: quoted-printable
+
+
+New submission from Bork, Chef <chef@bork.bork.bork>:
+
+This is a test submission of a new issue.
+
+----------
+assignedto: richard
+messages: 1
+nosy: Chef, mary, richard
+status: unread
+title: Testing...
+tx_Source: email
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
+_______________________________________________________________________
+''')
+
+    def testNosyReplytoAuthor(self):
+        self.db.config.TRACKER_REPLYTO_ADDRESS = 'AUTHOR'
+        self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id>
+Subject: [issue] Testing... [nosy=mary; assignedto=richard]
+
+This is a test submission of a new issue.
+''')
+        self.compareMessages(self._get_mail(),
+'''FROM: roundup-admin@your.tracker.email.domain.example
+TO: mary@test.test, richard@test.test
+Content-Type: text/plain; charset="utf-8"
+Subject: [issue1] Testing...
+To: mary@test.test, richard@test.test
+From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: "Bork, Chef" <chef@bork.bork.bork>
+MIME-Version: 1.0
+Message-Id: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+X-Roundup-Issue-Status: unread
+Content-Transfer-Encoding: quoted-printable
+
+
+New submission from Bork, Chef <chef@bork.bork.bork>:
+
+This is a test submission of a new issue.
+
+----------
+assignedto: richard
+messages: 1
+nosy: Chef, mary, richard
+status: unread
+title: Testing...
+tx_Source: email
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
+_______________________________________________________________________
+''')
+
     def testNewUserAuthor(self):
         self.db.commit()
         l = self.db.user.list()

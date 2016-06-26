@@ -65,6 +65,34 @@ setting this value in the [main] section of the tracker's
   # Possible values: xapian, whoosh, native (internal).
   indexer =
 
+New config file option 'replyto_address' added
+----------------------------------------------
+
+A new config file option has been added to let you control the
+Reply-To header on nosy messages.
+
+Edit your tracker's ``config.ini`` and place the following after
+the email entry in the tracker section::
+
+  [tracker]
+  ...
+
+  # Controls the reply-to header address used when sending
+  # nosy messages.
+  # If the value is unset (default) the roundup tracker's
+  # email address (above) is used.
+  # If set to "AUTHOR" then the primary email address of the
+  # author of the change will be used as the reply-to
+  # address. This allows email exchanges to occur outside of
+  # the view of roundup and exposes the address of the person
+  # who updated the issue, but it could be useful in some
+  # unusual circumstances.
+  # If set to some other value, the value is used as the reply-to
+  # address. It must be a valid RFC2822 address or people will not be
+  # able to reply.
+  # Default: 
+  replyto_address = 
+
 html/_generic.404.html in trackers use page template
 ----------------------------------------------------
 

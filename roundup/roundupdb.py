@@ -532,8 +532,18 @@ class IssueClass:
 
             message = mailer.get_standard_message(multipart=message_files)
 
-            # set reply-to to the tracker
-            message['Reply-To'] = tracker_name
+            # set reply-to as requested by config option TRACKER_REPLYTO_ADDRESS
+            replyto_config = self.db.config.TRACKER_REPLYTO_ADDRESS
+            if replyto_config:
+                if replyto_config == "AUTHOR":
+                    # note that authaddr at this point is already surrounded by < >, so
+                    # get the original address from the db as nice_send_header adds < >
+                    replyto_addr = nice_sender_header(authname, users.get(authid, 'address', ''), charset)
+                else:
+                    replyto_addr = replyto_config
+            else:
+                replyto_addr = tracker_name
+            message['Reply-To'] = replyto_addr
 
             # message ids
             if messageid:

@@ -588,6 +588,20 @@ SETTINGS = (
         (MailAddressOption, "email", "issue_tracker",
             "Email address that mail to roundup should go to.\n"
             "If no domain is specified then mail_domain is added."),
+        (Option, "replyto_address", "",
+            "Controls the reply-to header address used when sending\n"
+            "nosy messages.\n"
+            "If the value is unset (default) the roundup tracker's\n"
+            "email address (above) is used.\n"
+            "If set to \"AUTHOR\" then the primary email address of the\n"
+            "author of the change will be used as the reply-to\n"
+            "address. This allows email exchanges to occur outside of\n"
+            "the view of roundup and exposes the address of the person\n"
+            "who updated the issue, but it could be useful in some\n"
+            "unusual circumstances.\n"
+            "If set to some other value, the value is used as the reply-to\n"
+            "address. It must be a valid RFC2822 address or people will not be\n"
+            "able to reply."),
         (NullableOption, "language", "",
             "Default locale name for this tracker.\n"
             "If this option is not set, the language is determined\n"

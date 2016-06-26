@@ -78,6 +78,15 @@ Features:
   indexer. See ``doc/upgrading.txt`` for details. Initial patch
   done by David Wolever. Patch modified, docs added and committed
   by John Rouillard.
+- issue2550803: Replying to NOSY mail goes to the tracker through
+  reply-to, not original message author.
+  Created new [tracker] replyto_address config.ini option to allow:
+    1) setting reply-to header to the tracker
+    2) setting reply-to header to the address of the author
+       of the change
+    3) setting it to a fixed address (like noreply@some.place)
+  Done by John Rouillard from proposal by Peter Funk (pefu)
+  in discussion with Tom Ekberg (tekberg). See doc/upgrading.txt.
 
 Fixed:
 
