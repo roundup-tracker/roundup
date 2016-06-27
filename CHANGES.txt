@@ -161,6 +161,10 @@ Fixed:
   Patch submitted by Henry (henryl), modified value to False
   since this produces the correct "No migration action required"
   output from the migrate command.
+- issue2161722: oudated docs (sic)
+  Fix old entry in FAQ, update roundup-server config docs and
+  example file from current roundup-server output. Update
+  some typos in .py files. John Rouillard.
   
 2016-01-11: 1.5.1
 
