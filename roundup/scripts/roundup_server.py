@@ -534,7 +534,7 @@ class ServerConfig(configuration.Config):
             "Option name identifies the tracker and will appear in the URL.\n"
             "Option value is tracker home directory path.\n"
             "The path may be either absolute or relative\n"
-            "to the directory containig this config file."),
+            "to the directory containing this config file."),
     )
 
     # options recognized by config

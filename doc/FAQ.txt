@@ -111,19 +111,6 @@ that describes the needed option in detail. With the standalone server
 now XMLRPC over SSL works, too.
 
 
-Roundup runs very slowly on my XP machine when accessed from the Internet
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The issue is probably related to host name resolution for the client
-performing the request. You can turn off the resolution of the names
-when it's so slow like this. To do so, edit the module
-roundup/scripts/roundup_server.py around line 77 to add the following
-to the RoundupRequestHandler class::
-
-     def address_string(self):
-         return self.client_address[0]
-
-
 Templates
 ---------
 

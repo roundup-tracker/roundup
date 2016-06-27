@@ -1,19 +1,96 @@
 ; This is a sample configuration file for roundup-server. See the
 ; admin_guide for information about its contents.
+
 [main]
-port = 8080
-;hostname = 
-;user = 
-;group = 
-;log_ip = yes
-;pidfile = 
-;logfile = 
-;template =
-;ssl = no
-;pem =
 
+# Host name of the Roundup web server instance.
+# If left unconfigured (no 'host' setting) the default
+# will be used.
+# If empty, listen on all network interfaces.
+# If you want to explicitly listen on all
+# network interfaces, the address 0.0.0.0 is a more
+# explicit way to achieve this, the use of an empty
+# string for this purpose is deprecated and will go away
+# in a future release.
+# Default: localhost
+host = localhost
 
-; Add one of these per tracker being served
+# Port to listen on.
+# Default: 8080
+port = 8017
+
+# Path to favicon.ico image file.  If unset, built-in favicon.ico is used.
+# The path may be either absolute or relative
+# to the directory containing this config file.
+# Default: favicon.ico
+favicon = favicon.ico
+
+# User ID as which the server will answer requests.
+# In order to use this option, the server must be run initially as root.
+# Availability: Unix.
+# Default: 
+user = roundup
+
+# Group ID as which the server will answer requests.
+# In order to use this option, the server must be run initially as root.
+# Availability: Unix.
+# Default: 
+group = 
+
+# don't fork (this overrides the pidfile mechanism)'
+# Allowed values: yes, no
+# Default: no
+nodaemon = no
+
+# Log client machine names instead of IP addresses (much slower)
+# Allowed values: yes, no
+# Default: no
+log_hostnames = no
+
+# File to which the server records the process id of the daemon.
+# If this option is not set, the server will run in foreground
+# 
+# The path may be either absolute or relative
+# to the directory containing this config file.
+# Default: 
+pidfile = 
+
+# Log file path.  If unset, log to stderr.
+# The path may be either absolute or relative
+# to the directory containing this config file.
+# Default: 
+logfile = 
+
+# Set processing of each request in separate subprocess.
+# Allowed values: debug, none, thread, fork.
+# Default: fork
+multiprocess = fork
+
+# Tracker index template. If unset, built-in will be used.
+# The path may be either absolute or relative
+# to the directory containing this config file.
+# Default: 
+template = 
+
+# Enable SSL support (requires pyopenssl)
+# Allowed values: yes, no
+# Default: no
+ssl = no
+
+# PEM file used for SSL. A temporary self-signed certificate
+# will be used if left blank.
+# The path may be either absolute or relative
+# to the directory containing this config file.
+# Default: 
+pem = 
+
+# Roundup trackers to serve.
+# Each option in this section defines single Roundup tracker.
+# Option name identifies the tracker and will appear in the URL.
+# Option value is tracker home directory path.
+# The path may be either absolute or relative
+# to the directory containing this config file.
 [trackers]
-home = /path/to/tracker
 
+demo = /trackers/demo
+sysadmin = /trackers/sysadmin

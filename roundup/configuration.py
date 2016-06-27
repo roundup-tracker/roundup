@@ -331,7 +331,7 @@ class FilePathOption(Option):
     """
 
     class_description = "The path may be either absolute or relative\n" \
-        "to the directory containig this config file."
+        "to the directory containing this config file."
 
     def get(self):
         _val = Option.get(self)
