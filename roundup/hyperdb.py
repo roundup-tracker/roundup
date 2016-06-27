@@ -1488,6 +1488,11 @@ class FileClass:
         return propnames
 
     def exportFilename(self, dirname, nodeid):
+        """ Returns destination filename for a exported file
+
+            Called by export function in roundup admin to generate
+            the <class>-files subdirectory
+        """
         subdir_filename = self.db.subdirFilename(self.classname, nodeid)
         return os.path.join(dirname, self.classname+'-files', subdir_filename)
 
