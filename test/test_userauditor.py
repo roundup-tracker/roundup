@@ -1,7 +1,5 @@
 import os, unittest, shutil
 
-import pytest
-
 from db_test_base import setupTracker
 from .test_dates import skip_pytz
 

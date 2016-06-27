@@ -31,7 +31,7 @@ try:
     import pytz
     skip_pytz = lambda func, *args, **kwargs: func
 except ImportError:
-    skip_pytz = pytest.skip("'pytz' not installed")
+    skip_pytz = pytest.mark.skip(reason="'pytz' not installed")
 
 
 class DateTestCase(unittest.TestCase):

@@ -36,15 +36,16 @@ try:
     import xapian
     skip_xapian = lambda func, *args, **kwargs: func
 except ImportError:
-    skip_xapian = pytest.skip(
+    skip_xapian = pytest.mark.skip(
         "Skipping Xapian indexer tests: 'xapian' not installed")
 
 try:
     import whoosh
     skip_whoosh = lambda func, *args, **kwargs: func
 except ImportError:
-    skip_whoosh = pytest.skip(
+    skip_whoosh = pytest.mark.skip(
         "Skipping Whoosh indexer tests: 'whoosh' not installed")
+
 
 class db:
     class config(dict):

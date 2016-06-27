@@ -23,7 +23,8 @@ try:
     import pyme, pyme.core
     skip_pgp = lambda func, *args, **kwargs: func
 except ImportError:
-    skip_pgp = pytest.skip("Skipping PGP tests: 'pyme' not installed")
+    skip_pgp = pytest.mark.skip(
+        reason="Skipping PGP tests: 'pyme' not installed")
 
 
 from cStringIO import StringIO
