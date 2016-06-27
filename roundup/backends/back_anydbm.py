@@ -1416,7 +1416,7 @@ class Class(hyperdb.Class):
         self.fireReactors('retire', nodeid, None)
 
     def restore(self, nodeid):
-        """Restpre a retired node.
+        """Restore a retired node.
 
         Make node available for all operations like it was before retirement.
         """
