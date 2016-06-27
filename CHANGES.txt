@@ -165,6 +165,10 @@ Fixed:
   Fix old entry in FAQ, update roundup-server config docs and
   example file from current roundup-server output. Update
   some typos in .py files. John Rouillard.
+- issue2550572: setting nosy=+foo on multiple issues gives them all
+  the same exact nosy list. Fixed a missing reinitialization that has
+  to occur every time though the loop in do_set. Manual tests work.
+  (John Rouillard)
   
 2016-01-11: 1.5.1
 

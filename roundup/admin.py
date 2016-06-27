@@ -608,6 +608,8 @@ Erase it? Y/N: """))
         is un-set. If the property is a multilink, you specify the linked
         ids for the multilink as comma-separated numbers (ie "1,2,3").
         """
+        import copy # needed for copying props list
+
         if len(args) < 2:
             raise UsageError(_('Not enough arguments supplied'))
         from roundup import hyperdb
@@ -628,15 +630,21 @@ Erase it? Y/N: """))
                 raise UsageError(message)
 
         # get the props from the args
-        props = self.props_from_args(args[1:])
+        propset = self.props_from_args(args[1:]) # parse the cli once
 
         # now do the set for all the nodes
         for classname, itemid in designators:
+            props = copy.copy(propset) # make a new copy for every designator
             cl = self.get_class(classname)
 
-            properties = cl.getprops()
             for key, value in props.items():
                 try:
+                    # You must reinitialize the props every time though.
+                    # if props['nosy'] = '+admin' initally, it gets
+                    # set to 'demo,admin' (assuming it was set to demo
+                    # in the db) after rawToHyperdb returns.
+                    # This  new value is used for all the rest of the
+                    # designators if not reinitalized.
                     props[key] = hyperdb.rawToHyperdb(self.db, cl, itemid,
                         key, value)
                 except hyperdb.HyperdbValueError, message:
