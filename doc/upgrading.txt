@@ -65,6 +65,20 @@ setting this value in the [main] section of the tracker's
   # Possible values: xapian, whoosh, native (internal).
   indexer =
 
+Stemming improved in Xapian Indexer
+-----------------------------------
+
+Stemming allows a search for "silent" also match silently.  The Porter
+stemmer in Xapian works with lowercase English text. In this release we
+lowercase the documents as they are put into the indexer.
+
+This means capitalization is not preserved, but produces more hits by
+using the stemmer.
+
+You will need to do a roundup-admin reindex if you are using the
+Xapian full text indexer on your tracker.
+
+
 New config file option 'replyto_address' added
 ----------------------------------------------
 

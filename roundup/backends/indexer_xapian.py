@@ -82,7 +82,7 @@ class Indexer(IndexerBase):
             word = match.group(0)
             if self.is_stopword(word):
                 continue
-            term = stemmer(word)
+            term = stemmer(word.lower())
             doc.add_posting(term, match.start(0))
 
         database.replace_document(identifier, doc)
@@ -103,7 +103,7 @@ class Indexer(IndexerBase):
         for term in [word.upper() for word in wordlist
                           if self.minlength <= len(word) <= self.maxlength]:
             if not self.is_stopword(term):
-                terms.append(stemmer(term))
+                terms.append(stemmer(term.lower()))
         query = xapian.Query(xapian.Query.OP_AND, terms)
 
         enquire.set_query(query)

@@ -67,6 +67,11 @@ Xapian full-text indexer
 
   Roundup requires Xapian 1.0.0 or newer.
 
+  Note that capitalization is not preserved by the Xapian search.
+  This is required to make the porter stemmer work so that searching
+  for silent also returns documents with the word silently. Note that
+  the current stemming implementation is designed for English.
+
 Whoosh full-text indexer
   The Whoosh_ full-text indexer is also supported and will be used by
   default if it is available (and Xapian is not installed). This is

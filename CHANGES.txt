@@ -169,7 +169,14 @@ Fixed:
   the same exact nosy list. Fixed a missing reinitialization that has
   to occur every time though the loop in do_set. Manual tests work.
   (John Rouillard)
-  
+- issue2550653: xapian search, stemming is not working
+  This is a partial fix for the issue. It does make stemming work
+  (so searching for silent will also return docs with silently in
+  them). However to do this we need to lowercase the text so the
+  porter stemmer will work. This means capitalization is not
+  preserved. Fix done by David Wolever (wolever). Committed and doc
+  updates John Rouillard.
+
 2016-01-11: 1.5.1
 
 Pay attention:
