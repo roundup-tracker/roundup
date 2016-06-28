@@ -40,19 +40,21 @@ class mysqlOpener:
         self.module.db_nuke(config)
 
 
-# FIX: workaround for a bug in pytest.mark.skipif():
+# FIX: workaround for a bug in pytest.mark.skip():
 #   https://github.com/pytest-dev/pytest/issues/568
+from .pytest_patcher import mark_class
+
 if not have_backend('mysql'):
-    skip_mysql = pytest.mark.skip(
-        reason='Skipping MySQL tests: backend not available')
+    skip_mysql = mark_class(pytest.mark.skip(
+        reason='Skipping MySQL tests: backend not available'))
 else:
     try:
         import MySQLdb
         mysqlOpener.module.db_exists(config)
         skip_mysql = lambda func, *args, **kwargs: func
     except (MySQLdb.MySQLError, DatabaseError) as msg:
-        skip_mysql = pytest.mark.skip(
-            reason='Skipping MySQL tests: %s' % str(msg))
+        skip_mysql = mark_class(pytest.mark.skip(
+            reason='Skipping MySQL tests: %s' % str(msg)))
 
 
 @skip_mysql

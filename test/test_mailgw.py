@@ -17,14 +17,15 @@ import unittest, tempfile, os, shutil, errno, imp, sys, difflib, time
 
 import pytest
 
-# FIX: workaround for a bug in pytest.mark.skipif():
-#   https://github.com/pytest-dev/pytest/issues/568
 try:
     import pyme, pyme.core
     skip_pgp = lambda func, *args, **kwargs: func
 except ImportError:
-    skip_pgp = pytest.mark.skip(
-        reason="Skipping PGP tests: 'pyme' not installed")
+    # FIX: workaround for a bug in pytest.mark.skip():
+    #   https://github.com/pytest-dev/pytest/issues/568
+    from .pytest_patcher import mark_class
+    skip_pgp = mark_class(pytest.mark.skip(
+        reason="Skipping PGP tests: 'pyme' not installed"))
 
 
 from cStringIO import StringIO

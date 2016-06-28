@@ -30,21 +30,25 @@ from .test_postgresql import postgresqlOpener, skip_postgresql
 from .test_mysql import mysqlOpener, skip_mysql
 from test_sqlite import sqliteOpener
 
-# FIX: workaround for a bug in pytest.mark.skipif():
-#   https://github.com/pytest-dev/pytest/issues/568
 try:
     import xapian
     skip_xapian = lambda func, *args, **kwargs: func
 except ImportError:
-    skip_xapian = pytest.mark.skip(
-        "Skipping Xapian indexer tests: 'xapian' not installed")
+    # FIX: workaround for a bug in pytest.mark.skip():
+    #   https://github.com/pytest-dev/pytest/issues/568
+    from .pytest_patcher import mark_class
+    skip_xapian = mark_class(pytest.mark.skip(
+        "Skipping Xapian indexer tests: 'xapian' not installed"))
 
 try:
     import whoosh
     skip_whoosh = lambda func, *args, **kwargs: func
 except ImportError:
-    skip_whoosh = pytest.mark.skip(
-        "Skipping Whoosh indexer tests: 'whoosh' not installed")
+    # FIX: workaround for a bug in pytest.mark.skip():
+    #   https://github.com/pytest-dev/pytest/issues/568
+    from .pytest_patcher import mark_class
+    skip_whoosh = mark_class(pytest.mark.skip(
+        "Skipping Whoosh indexer tests: 'whoosh' not installed"))
 
 
 class db:
