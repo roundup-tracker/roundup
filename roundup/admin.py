@@ -107,7 +107,7 @@ class AdminTool:
         """
         if message:
             message = _('Problem: %(message)s\n\n')%locals()
-        print _("""%(message)sUsage: roundup-admin [options] [<command> <arguments>]
+        sys.stdout.write( _("""%(message)sUsage: roundup-admin [options] [<command> <arguments>]
 
 Options:
  -i instance home  -- specify the issue tracker "home directory" to administer
@@ -128,13 +128,13 @@ Help:
  roundup-admin help                       -- this help
  roundup-admin help <command>             -- command-specific help
  roundup-admin help all                   -- all available help
-""")%locals()
+""")%locals())
         self.help_commands()
 
     def help_commands(self):
         """List the commands available with their help summary.
         """
-        print _('Commands:'),
+        sys.stdout.write( _('Commands: '))
         commands = ['']
         for command in self.commands.itervalues():
             h = _(command.__doc__).split('\n')[0]
@@ -143,8 +143,7 @@ Help:
         commands.append(_(
 """Commands may be abbreviated as long as the abbreviation
 matches only one command, e.g. l == li == lis == list."""))
-        print '\n'.join(commands)
-        print
+        sys.stdout.write('\n'.join(commands) + '\n\n')
 
     def help_commands_html(self, indent_re=re.compile(r'^(\s+)\S+')):
         """ Produce an HTML command list.
@@ -736,9 +735,9 @@ Erase it? Y/N: """))
         for key in cl.properties:
             value = cl.properties[key]
             if keyprop == key:
-                print _('%(key)s: %(value)s (key property)')%locals()
+                sys.stdout.write( _('%(key)s: %(value)s (key property)\n')%locals() )
             else:
-                print _('%(key)s: %(value)s')%locals()
+                sys.stdout.write( _('%(key)s: %(value)s\n')%locals() )
 
     def do_display(self, args):
         ''"""Usage: display designator[,designator]*
@@ -829,7 +828,7 @@ Erase it? Y/N: """))
 
         # do the actual create
         try:
-            print cl.create(**props)
+            sys.stdout.write(cl.create(**props) + '\n')
         except (TypeError, IndexError, ValueError), message:
             raise UsageError(message)
         self.db_uncommitted = True
@@ -1354,34 +1353,34 @@ Erase it? Y/N: """))
             try:
                 roles = [(args[0], self.db.security.role[args[0]])]
             except KeyError:
-                print _('No such Role "%(role)s"')%locals()
+                sys.stdout.write( _('No such Role "%(role)s"\n')%locals() )
                 return 1
         else:
             roles = list(self.db.security.role.items())
             role = self.db.config.NEW_WEB_USER_ROLES
             if ',' in role:
-                print _('New Web users get the Roles "%(role)s"')%locals()
+                sys.stdout.write( _('New Web users get the Roles "%(role)s"\n')%locals() )
             else:
-                print _('New Web users get the Role "%(role)s"')%locals()
+                sys.stdout.write( _('New Web users get the Role "%(role)s"\n')%locals() )
             role = self.db.config.NEW_EMAIL_USER_ROLES
             if ',' in role:
-                print _('New Email users get the Roles "%(role)s"')%locals()
+                sys.stdout.write( _('New Email users get the Roles "%(role)s"\n')%locals() )
             else:
-                print _('New Email users get the Role "%(role)s"')%locals()
+                sys.stdout.write( _('New Email users get the Role "%(role)s"\n')%locals() )
         roles.sort()
         for rolename, role in roles:
-            print _('Role "%(name)s":')%role.__dict__
+            sys.stdout.write( _('Role "%(name)s":\n')%role.__dict__ )
             for permission in role.permissions:
                 d = permission.__dict__
                 if permission.klass:
                     if permission.properties:
-                        print _(' %(description)s (%(name)s for "%(klass)s"'
-                          ': %(properties)s only)')%d
+                        sys.stdout.write( _(' %(description)s (%(name)s for "%(klass)s"' +
+                          ': %(properties)s only)\n')%d )
                     else:
-                        print _(' %(description)s (%(name)s for "%(klass)s" '
-                            'only)')%d
+                        sys.stdout.write( _(' %(description)s (%(name)s for "%(klass)s" ' +
+                            'only)\n')%d )
                 else:
-                    print _(' %(description)s (%(name)s)')%d
+                    sys.stdout.write( _(' %(description)s (%(name)s)\n')%d )
         return 0
 
 

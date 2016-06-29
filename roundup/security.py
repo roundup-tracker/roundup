@@ -128,7 +128,7 @@ class Security:
         # default permissions - Admin may do anything
         for p in 'create edit retire view'.split():
             p = self.addPermission(name=p.title(),
-                description="User may %s everthing"%p)
+                description="User may %s everything"%p)
             self.addPermissionToRole('Admin', p)
 
         # initialise the permissions and roles needed for the UIs

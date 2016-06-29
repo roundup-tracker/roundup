@@ -25,7 +25,7 @@ from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval, DatabaseError, Boolean, Number, Node, Integer
 from roundup.mailer import Mailer
 from roundup import date, password, init, instance, configuration, \
-    roundupdb, i18n
+    roundupdb, i18n, hyperdb
 from roundup.cgi.templating import HTMLItem
 
 from mocknull import MockNull
@@ -1958,6 +1958,120 @@ class DBTest(commonDBTest):
         finally:
             roundup.admin.sys = sys
             shutil.rmtree('_test_export')
+
+    # test props from args parsing
+    def testAdminOtherCommands(self):
+        import roundup.admin
+        from roundup.exceptions import UsageError
+
+        # use the filtering setup to create a bunch of items
+        ae, dummy1, dummy2 = self.filteringSetup()
+        # create large field
+        self.db.priority.create(name = 'X' * 500)
+        self.db.config.CSV_FIELD_SIZE = 400
+        self.db.commit()
+
+        eoutput = [] # stderr output
+        soutput = [] # stdout output
+
+        def stderrwrite(s):
+            eoutput.append(s)
+        def stdoutwrite(s):
+            soutput.append(s)
+        roundup.admin.sys = MockNull ()
+        try:
+            roundup.admin.sys.stderr.write = stderrwrite
+            roundup.admin.sys.stdout.write = stdoutwrite
+
+            tool = roundup.admin.AdminTool()
+            home = '.'
+            tool.tracker_home = home
+            tool.db = self.db
+            tool.verbose = False
+            tool.separator = "\n"
+            tool.print_designator = True
+
+            # test props_from_args
+            self.assertRaises(UsageError, tool.props_from_args, "fullname") # invalid propname
+
+            self.assertEqual(tool.props_from_args("="), {'': None}) # not sure this desired, I'd expect UsageError
+            
+            props = tool.props_from_args(["fullname=robert", "friends=+rouilj,+other", "key="])
+            self.assertEqual(props, {'fullname': 'robert', 'friends': '+rouilj,+other', 'key': None})
+
+            # test get_class()
+            self.assertRaises(UsageError, tool.get_class, "bar") # invalid class
+
+            # This writes to stdout, need to figure out how to redirect to a variable.
+            # classhandle = tool.get_class("user") # valid class
+            # FIXME there should be some test here
+ 
+            issue_class_spec = tool.do_specification(["issue"])
+            self.assertEqual(soutput, ['files: <roundup.hyperdb.Multilink to "file">\n',
+                                       'status: <roundup.hyperdb.Link to "status">\n',
+                                       'feedback: <roundup.hyperdb.Link to "msg">\n',
+                                       'spam: <roundup.hyperdb.Multilink to "msg">\n',
+                                       'nosy: <roundup.hyperdb.Multilink to "user">\n',
+                                       'title: <roundup.hyperdb.String>\n',
+                                       'messages: <roundup.hyperdb.Multilink to "msg">\n',
+                                       'priority: <roundup.hyperdb.Link to "priority">\n',
+                                       'assignedto: <roundup.hyperdb.Link to "user">\n',
+                                       'deadline: <roundup.hyperdb.Date>\n',
+                                       'foo: <roundup.hyperdb.Interval>\n',
+                                       'superseder: <roundup.hyperdb.Multilink to "issue">\n'])
+
+            #userclassprop=tool.do_list(["mls"])
+            #tool.print_designator = False
+            #userclassprop=tool.do_get(["realname","user1"])
+
+            # test do_create
+            soutput[:] = [] # empty for next round of output
+            userclass=tool.do_create(["issue", "title='title1 title'", "nosy=1,3"]) # should be issue 5
+            userclass=tool.do_create(["issue", "title='title2 title'", "nosy=2,3"]) # should be issue 6
+            self.assertEqual(soutput, ['5\n', '6\n'])
+            # verify nosy setting
+            props=self.db.issue.get('5', "nosy")
+            self.assertEqual(props, ['1','3'])
+
+            # test do_set using newly created issues
+            # remove user 3 from issues
+            # verifies issue2550572
+            userclass=tool.do_set(["issue5,issue6", "nosy=-3"])
+            # verify proper result
+            props=self.db.issue.get('5', "nosy")
+            self.assertEqual(props, ['1'])
+            props=self.db.issue.get('6', "nosy")
+            self.assertEqual(props, ['2'])
+
+            # basic usage test. TODO add full output verification
+            soutput[:] = [] # empty for next round of output
+            tool.usage(message="Hello World")
+            self.failUnless(soutput[0].startswith('Problem: Hello World'), None)
+
+            # check security output
+            soutput[:] = [] # empty for next round of output
+            tool.do_security("Admin")
+            self.assertEqual(soutput, [ 'New Web users get the Role "User"\n',
+                                       'New Email users get the Role "User"\n',
+                                       'Role "admin":\n',
+                                       ' User may create everything (Create)\n',
+                                       ' User may edit everything (Edit)\n',
+                                       ' User may retire everything (Retire)\n',
+                                       ' User may view everything (View)\n',
+                                       ' User may access the web interface (Web Access)\n',
+                                       ' User may manipulate user Roles through the web (Web Roles)\n',
+                                       ' User may use the email interface (Email Access)\n',
+                                       'Role "anonymous":\n', 'Role "user":\n',
+                                       ' User is allowed to access msg (View for "msg" only)\n'])
+
+
+            self.nukeAndCreate()
+            tool = roundup.admin.AdminTool()
+            tool.tracker_home = home
+            tool.db = self.db
+            tool.verbose = False
+        finally:
+            roundup.admin.sys = sys
 
     def testAddProperty(self):
         self.db.issue.create(title="spam", status='1')
