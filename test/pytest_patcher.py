@@ -24,8 +24,11 @@ def mark_class(marker):
                                       closure=f.func_closure)
 
     def mark(cls):
+        if isinstance(cls, types.FunctionType):
+            return marker(copy_func(cls))
+
         for method in dir(cls):
-            if method.startswith('test_'):
+            if method.startswith('test'):
                 f = copy_func(getattr(cls, method))
                 setattr(cls, method, marker(f))
         return cls
