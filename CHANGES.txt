@@ -202,6 +202,11 @@ Fixed:
   issues. Patch supplied by Stuart McGraw (smcgraw). For caveats
   see ``upgrading.txt`` and the comments in the default templates.
   (Docs created and applcation by John Rouillard)
+- issue2550854: including new field in All text* search.
+  Fixed documentation in customizing.txt. The default for indexme on
+  String fileds is 'no' not 'yes'. So to get a new string field into
+  the full text/all text index you need to use String(indexme='yes').
+  Reported by Michael Belleville. (John Rouillard)
 
 2016-01-11: 1.5.1
 

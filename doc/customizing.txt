@@ -668,8 +668,9 @@ Properties can have additional attributes to change the default
 behaviour:
 
 * String properties can have an ``indexme`` attribute that defines if the
-  property should be part of the index. The default is 'yes' but this
-  can be set to 'no' to prevent a property from being indexed.
+  property should be part of the full text index. The default is 'no' but this
+  can be set to 'yes' to allow a property's contents to be in the full
+  text index.
 * Link and Multilink properties can have several attributes:
   
   - ``do_journal``: By default, every change of a link property is
