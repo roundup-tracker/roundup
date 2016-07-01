@@ -195,6 +195,13 @@ Fixed:
   porter stemmer will work. This means capitalization is not
   preserved. Fix done by David Wolever (wolever). Committed and doc
   updates John Rouillard.
+- issue2550855: "show unassigned" link shows all open issues if not
+  logged in. This adds permission for the anonymous user to search
+  the users class. Without this the unassigned search can't see if
+  there is a user assigned to an issue, so it acts like all open
+  issues. Patch supplied by Stuart McGraw (smcgraw). For caveats
+  see ``upgrading.txt`` and the comments in the default templates.
+  (Docs created and applcation by John Rouillard)
 
 2016-01-11: 1.5.1
 

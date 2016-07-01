@@ -118,6 +118,19 @@ If your deployed tracker is based on: classic, minimal, responsive or
 devel templates and has not changed the html/_generic.404.html file,
 you can copy in the new file to get this additional functionality.
 
+Schema change to allow "Show Unassigned" issues link to work for Anonymous user
+-------------------------------------------------------------------------------
+
+In this release the anonymous user is allowed to search the user
+class. The following was added to the schema for all templates that
+provide the search option::
+
+   p = db.security.addPermission(name='Search', klass='user')
+   db.security.addPermissionToRole ('Anonymous', p)
+
+If you are running a tracker that **does not** allow read access for
+anonymous, you should remove this entry as it can be used to perform
+a username guessing attack against a roundup install.
 
 Migrating from 1.5.0 to 1.5.1
 =============================
