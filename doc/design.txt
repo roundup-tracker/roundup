@@ -254,8 +254,44 @@ Hyperdb Interface Specification
 TODO: replace the Interface Specifications with links to the pydoc
 
 The hyperdb module provides property objects to designate the different
-kinds of properties.  These objects are used when specifying what
-properties belong in classes::
+kinds of properties.
+
+All property objects support the following settings:
+
+quiet=False:
+      if set to True, changes to the property will not be shown to the
+      user. This can be used for adminstrative properties that are
+      automatically updated when a user makes some other change. This
+      reduces confusion by the user and clutter in the display.
+      The property change will not be shown in:
+
+        - the change confirmation message when a change is entered in the web interface
+        - the property change section of the change note email ("nosy email")
+        - the web history shown at the bottom of an item page
+
+required=False:
+        if set to True, the property name is returned when calling
+        get_required_props(self, propnames = []). Any additional props
+        specified in propnames is merged with the required props.
+
+default_value=None or [] depending on object type:
+        this sets the default value if none is specified. The default
+        value can be retrieved by calling the get_default_value()
+        method on the property object.
+ 
+E.G. assuming title is part of an Issue::
+
+    title=String(required=True, default_value="not set",quiet=True)
+
+will create a property called ``title`` that will be included in the
+get_required_props() output. Calling
+db.issue.properties['title'].get_default_value() will return "not set".
+Changes to the property will not be displayed in emailed change notes,
+the history at the end of the item pages in the web interface and will
+be suppressed in the confirmation notice (displayed as a green banner)
+shown on changes.
+
+These objects are used when specifying what properties belong in classes::
 
     class String:
         def __init__(self, indexme='no'):
@@ -1652,6 +1688,7 @@ and Dean Tribble for their assistance with the first-round submission.
 Changes to this document
 ------------------------
 
+- Added docs for quiet, default_value and required arguments for properties.
 - Added Boolean, Integer and Number types
 - Added section Hyperdatabase Implementations
 - "Item" has been renamed to "Issue" to account for the more specific

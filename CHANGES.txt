@@ -87,6 +87,25 @@ Features:
     3) setting it to a fixed address (like noreply@some.place)
   Done by John Rouillard from proposal by Peter Funk (pefu)
   in discussion with Tom Ekberg (tekberg). See doc/upgrading.txt.
+- issue1714899: Feature Request: Optional Change Note. Added a new
+  quiet=True/False option for all property types. When quiet=True
+  changes to the property will not be displayed in the::
+    confirmation banner (shown in green) when a change is made
+    property change section of change note (nosy emails)
+    web history display for an item.
+  Note that this may confuse users if used on a property that is
+  meant to be changed by a user. It is most useful on administrative
+  properties that are changed by an auditor as part of a user
+  generated change. Original patch by Daniel Diniz (ajaksu2)
+  discussed also at:
+    http://psf.upfronthosting.co.za/roundup/meta/issue249
+  Support for setting quiet when calling the class specifiers:
+  E.G. prop=String(quiet=True) rather than::
+    prop=String()
+    prop.quiet=True
+  support for anydb backend, added tests, doc updates, support for
+  ignoring quiet setting using showall=True in call to history()
+  function in templates by John Rouillard.
 
 Fixed:
 

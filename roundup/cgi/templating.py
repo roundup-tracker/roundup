@@ -870,7 +870,13 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         return []
 
     def history(self, direction='descending', dre=re.compile('^\d+$'),
-            limit=None):
+                limit=None, showall=False ):
+        """Create an html view of the journal for the item.
+
+           Display property changes for all properties that does not have quiet set.
+           If showall=True then all properties regardless of quiet setting will be
+           shown.
+        """
         if not self.is_view_ok():
             return self._('[hidden]')
 
@@ -965,7 +971,10 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                         except NoTemplate:
                             hrefable = 0
 
-                    if isinstance(prop, hyperdb.Multilink) and args[k]:
+                    if (not showall) and prop.quiet:
+                        # Omit quiet properties from history/changelog
+                        continue
+                    elif isinstance(prop, hyperdb.Multilink) and args[k]:
                         ml = []
                         for linkid in args[k]:
                             if isinstance(linkid, type(())):

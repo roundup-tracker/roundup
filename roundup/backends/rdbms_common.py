@@ -1783,6 +1783,9 @@ class Class(hyperdb.Class):
         # for the Database layer to do its stuff
         multilink_changes = {}
 
+        # omit quiet properties from history/changelog
+        quiet_props = []
+
         for propname, value in list(propvalues.items()):
             # check to make sure we're not duplicating an existing key
             if propname == self.key and node[propname] != value:
@@ -1958,6 +1961,10 @@ class Class(hyperdb.Class):
                 except ValueError:
                     raise TypeError('new property "%s" not boolean'%propname)
 
+            # record quiet properties to omit from history/changelog
+            if prop.quiet:
+                quiet_props.append(propname)
+
         # nothing to do?
         if not propvalues:
             return propvalues
@@ -1976,6 +1983,11 @@ class Class(hyperdb.Class):
         # journal the set
         if self.do_journal:
             self.db.addjournal(self.classname, nodeid, ''"set", journalvalues)
+
+        # remove quiet properties from output
+        for propname in quiet_props:
+            if propname in propvalues:
+                del propvalues[propname]
 
         return propvalues
 

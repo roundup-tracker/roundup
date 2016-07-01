@@ -1199,6 +1199,9 @@ class Class(hyperdb.Class):
         # if the journal value is to be different, store it in here
         journalvalues = {}
 
+        # omit quiet properties from history/changelog
+        quiet_props = []
+
         # list() propvalues 'cos it might be modified by the loop
         for propname, value in list(propvalues.items()):
             # check to make sure we're not duplicating an existing key
@@ -1374,6 +1377,10 @@ class Class(hyperdb.Class):
 
             node[propname] = value
 
+            # record quiet properties to omit from history/changelog
+            if prop.quiet:
+                quiet_props.append(propname)
+
         # nothing to do?
         if not propvalues:
             return propvalues
@@ -1387,6 +1394,11 @@ class Class(hyperdb.Class):
 
         if self.do_journal:
             self.db.addjournal(self.classname, nodeid, 'set', journalvalues)
+
+        # remove quiet properties from output
+        for propname in quiet_props:
+            if propname in propvalues:
+                del propvalues[propname]
 
         return propvalues
 

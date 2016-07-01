@@ -80,16 +80,20 @@ def setupSchema(db, create, module):
     status.setkey("name")
     priority = module.Class(db, "priority", name=String(), order=String())
     priority.setkey("name")
-    user = module.Class(db, "user", username=String(), password=Password(),
-        assignable=Boolean(), age=Number(), roles=String(), address=String(),
-        rating=Integer(), supervisor=Link('user'),realname=String())
+    user = module.Class(db, "user", username=String(), password=Password(quiet=True),
+                        assignable=Boolean(quiet=True), age=Number(quiet=True), roles=String(), address=String(),
+                        rating=Integer(quiet=True), supervisor=Link('user'),realname=String(quiet=True))
     user.setkey("username")
     file = module.FileClass(db, "file", name=String(), type=String(),
         comment=String(indexme="yes"), fooz=Password())
     file_nidx = module.FileClass(db, "file_nidx", content=String(indexme='no'))
+
+    # initialize quiet mode a second way without using Multilink("user", quiet=True)
+    mynosy = Multilink("user")
+    mynosy.quiet = True
     issue = module.IssueClass(db, "issue", title=String(indexme="yes"),
-        status=Link("status"), nosy=Multilink("user"), deadline=Date(),
-        foo=Interval(), files=Multilink("file"), assignedto=Link('user'),
+                              status=Link("status"), nosy=mynosy, deadline=Date(quiet=True),
+                              foo=Interval(quiet=True, default_value=date.Interval('-1w')), files=Multilink("file"), assignedto=Link('user', quiet=True),
         priority=Link('priority'), spam=Multilink('msg'),
         feedback=Link('msg'))
     stuff = module.Class(db, "stuff", stuff=String())
@@ -877,6 +881,102 @@ class DBTest(commonDBTest):
         self.assertEqual(test.call_a, 0)
         self.assertEqual(test.call_b, 1)
         self.assertEqual(test.call_c, 2)
+
+    def testDefault_Value(self):
+        new_issue=self.db.issue.create(title="title", deadline=date.Date('2016-6-30.22:39'))
+
+        # John Rouillard claims this should return the default value of 1 week for foo,
+        # but the hyperdb doesn't assign the default value for missing properties in the
+        # db on creation.
+        result=self.db.issue.get(new_issue, 'foo')
+        # When the defaultis automatically set by the hyperdb, change this to
+        # match the Interval test below.
+        self.assertEqual(result, None)
+
+        # but verify that the default value is retreivable
+        result=self.db.issue.properties['foo'].get_default_value()
+        self.assertEqual(result, date.Interval('-7d'))
+
+    def testQuietProperty(self):
+        # make sure that the quiet properties: "assignable" and "age" are not
+        # returned as part of the proplist
+        new_user=self.db.user.create(username="pete", age=10, assignable=False)
+        new_issue=self.db.issue.create(title="title", deadline=date.Date('2016-6-30.22:39'))
+        # change all quiet params. Verify they aren't returned in object.
+        # between this and the issue class every type represented in hyperdb
+        # should be initalized with a quiet parameter.
+        result=self.db.user.set(new_user, username="new", age=20, supervisor='3', assignable=True,
+                                password=password.Password("3456"), rating=4, realname="newname")
+        self.assertEqual(result, {'supervisor': '3', 'username': "new"})
+        result=self.db.user.get(new_user, 'age')
+        self.assertEqual(result, 20)
+
+        # change all quiet params. Verify they aren't returned in object.
+        result=self.db.issue.set(new_issue, title="title2", deadline=date.Date('2016-7-13.22:39'),
+                                 assignedto="2", nosy=["3", "2"])
+        self.assertEqual(result, {'title': 'title2'})
+
+        # also test that we can make a property noisy
+        self.db.user.properties['age'].quiet=False
+        result=self.db.user.set(new_user, username="old", age=30, supervisor='2', assignable=False)
+        self.assertEqual(result, {'age': 30, 'supervisor': '2', 'username': "old"})
+        self.db.user.properties['age'].quiet=True
+
+    def testQuietChangenote(self):
+        # create user 3 for later use
+        self.db.user.create(username="pete", age=10, assignable=False)
+
+        new_issue=self.db.issue.create(title="title", deadline=date.Date('2016-6-30.22:39'))
+
+        # change all quiet params. Verify they aren't returned in CreateNote.
+        result=self.db.issue.set(new_issue, title="title2", deadline=date.Date('2016-6-30.22:39'),
+                                 assignedto="2", nosy=["3", "2"])
+        result=self.db.issue.generateCreateNote(new_issue)
+        self.assertEqual(result, '\n----------\ntitle: title2')
+
+        # also test that we can make a property noisy
+        self.db.issue.properties['nosy'].quiet=False
+        self.db.issue.properties['deadline'].quiet=False
+        result=self.db.issue.set(new_issue, title="title2", deadline=date.Date('2016-7-13.22:39'),
+                                 assignedto="2", nosy=["1", "2"])
+        result=self.db.issue.generateCreateNote(new_issue)
+        self.assertEqual(result, '\n----------\ndeadline: 2016-07-13.22:39:00\nnosy: admin, fred\ntitle: title2')
+        self.db.issue.properties['nosy'].quiet=True
+        self.db.issue.properties['deadline'].quiet=True
+
+    def testQuietJournal(self):
+        # FIXME this doesn't work. I need to call
+        # template.py::_HTMLItem::history() and verify the output.
+        # not sure how to get there from here. -- rouilj
+        # make sure that the quiet properties: "assignable" and "age" are not
+        # returned as part of the journal
+        #   so comment out tests here but leave framework for later.
+        new_user=self.db.user.create(username="pete", age=10, assignable=False)
+        new_issue=self.db.issue.create(title="title", deadline=date.Date('2016-6-30.22:39'))
+
+        # change all quiet params. Verify they aren't returned in journal.
+        # between this and the issue class every type represented in hyperdb
+        # should be initalized with a quiet parameter.
+        result=self.db.user.set(new_user, username="new", age=20, supervisor='3', assignable=True,
+                                password=password.Password("3456"), rating=4, realname="newname")
+        result=self.db.user.history(new_user)
+        #self.assertEqual(result, 20)
+
+        # change all quiet params. Verify they aren't returned in object.
+        result=self.db.issue.set(new_issue, title="title2", deadline=date.Date('2016-6-30.22:39'),
+                                 assignedto="2", nosy=["3", "2"])
+        result=self.db.issue.generateCreateNote(new_issue)
+        #self.assertEqual(result, '\n----------\ntitle: title2')
+
+        # also test that we can make a property noisy
+        self.db.issue.properties['nosy'].quiet=False
+        self.db.issue.properties['deadline'].quiet=False
+        result=self.db.issue.set(new_issue, title="title2", deadline=date.Date('2016-7-13.22:39'),
+                                 assignedto="2", nosy=["1", "2"])
+        result=self.db.issue.generateCreateNote(new_issue)
+        #self.assertEqual(result, '\n----------\ndeadline: 2016-07-13.22:39:00\nnosy: admin, fred\ntitle: title2')
+        self.db.issue.properties['nosy'].quiet=True
+        self.db.issue.properties['deadline'].quiet=True
 
     def testJournals(self):
         muid = self.db.user.create(username="mary")

@@ -703,6 +703,9 @@ class IssueClass:
         prop_items = props.items()
         prop_items.sort()
         for propname, prop in prop_items:
+            # Omit quiet properties from history/changelog
+            if prop.quiet:
+                continue
             value = cl.get(issueid, propname, None)
             # skip boring entries
             if not value:
@@ -775,6 +778,9 @@ class IssueClass:
         changed_items.sort()
         for propname, oldvalue in changed_items:
             prop = props[propname]
+            # Omit quiet properties from history/changelog
+            if prop.quiet:
+                continue
             value = cl.get(issueid, propname, None)
             if isinstance(prop, hyperdb.Link):
                 link = self.db.classes[prop.classname]

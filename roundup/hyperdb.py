@@ -35,9 +35,10 @@ from roundup.cgi.exceptions import DetectorError
 #
 class _Type(object):
     """A roundup property type."""
-    def __init__(self, required=False, default_value = None):
+    def __init__(self, required=False, default_value = None, quiet=False):
         self.required = required
         self.__default_value = default_value
+        self.quiet = quiet
     def __repr__(self):
         ' more useful for dumps '
         return '<%s.%s>'%(self.__class__.__module__, self.__class__.__name__)
@@ -54,8 +55,8 @@ class _Type(object):
 
 class String(_Type):
     """An object designating a String property."""
-    def __init__(self, indexme='no', required=False, default_value = ""):
-        super(String, self).__init__(required, default_value)
+    def __init__(self, indexme='no', required=False, default_value = "", quiet=False):
+        super(String, self).__init__(required, default_value, quiet)
         self.indexme = indexme == 'yes'
     def from_raw(self, value, propname='', **kw):
         """fix the CRLF/CR -> LF stuff"""
@@ -73,8 +74,8 @@ class String(_Type):
 
 class Password(_Type):
     """An object designating a Password property."""
-    def __init__(self, scheme=None, required=False, default_value = None):
-        super(Password, self).__init__(required, default_value)
+    def __init__(self, scheme=None, required=False, default_value = None, quiet=False):
+        super(Password, self).__init__(required, default_value, quiet)
         self.scheme = scheme
 
     def from_raw(self, value, **kw):
@@ -93,9 +94,10 @@ class Password(_Type):
 
 class Date(_Type):
     """An object designating a Date property."""
-    def __init__(self, offset=None, required=False, default_value = None):
+    def __init__(self, offset=None, required=False, default_value = None, quiet=False):
         super(Date, self).__init__(required = required,
-                                   default_value = default_value)
+                                   default_value = default_value,
+                                   quiet=quiet)
         self._offset = offset
     def offset(self, db):
         if self._offset is not None:
@@ -135,7 +137,7 @@ class _Pointer(_Type):
     to a node in a specified class."""
     def __init__(self, classname, do_journal='yes', try_id_parsing='yes',
                  required=False, default_value=None,
-                 msg_header_property = None):
+                 msg_header_property = None, quiet=False):
         """ Default is to journal link and unlink events.
             When try_id_parsing is false, we don't allow IDs in input
             fields (the key of the Link or Multilink property must be
@@ -154,7 +156,7 @@ class _Pointer(_Type):
             property will generated message headers of the form:
             'X-Roundup-issue-assigned_to: joe_user'.
         """
-        super(_Pointer, self).__init__(required, default_value)
+        super(_Pointer, self).__init__(required, default_value, quiet)
         self.classname = classname
         self.do_journal = do_journal == 'yes'
         self.try_id_parsing      = try_id_parsing == 'yes'
@@ -196,12 +198,12 @@ class Multilink(_Pointer):
                     'link' and 'unlink' events placed in their journal
     """
 
-    def __init__(self, classname, do_journal = 'yes', required = False):
+    def __init__(self, classname, do_journal = 'yes', required = False, quiet=False):
 
         super(Multilink, self).__init__(classname,
                                         do_journal,
                                         required = required,
-                                        default_value = [])        
+                                        default_value = [], quiet=quiet)
 
     def from_raw(self, value, db, klass, propname, itemid, **kw):
         if not value:
