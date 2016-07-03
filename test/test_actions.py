@@ -237,6 +237,23 @@ class LoginTestCase(ActionTestCase):
         self.client.opendb = lambda a: self.fail(
             "Logged in, but we shouldn't be.")
 
+    def assertRaisesMessage(self, exception, callable, message, *args,
+                            **kwargs):
+        """An extension of assertRaises, which also checks the exception
+        message. We need this because we rely on exception messages when
+        redirecting.
+        """
+        try:
+            callable(*args, **kwargs)
+        except exception, msg:
+            self.assertEqual(str(msg), message)
+        else:
+            if hasattr(exception, '__name__'):
+                excName = exception.__name__
+            else:
+                excName = str(exception)
+            raise self.failureException, excName
+
     def assertLoginLeavesMessages(self, messages, username=None, password=None):
         if username is not None:
             self.form.value.append(MiniFieldStorage('__login_name', username))
@@ -246,6 +263,18 @@ class LoginTestCase(ActionTestCase):
 
         LoginAction(self.client).handle()
         self.assertEqual(self.client._error_message, messages)
+
+    def assertLoginRaisesRedirect(self, message, username=None, password=None, came_from=None):
+        if username is not None:
+            self.form.value.append(MiniFieldStorage('__login_name', username))
+        if password is not None:
+            self.form.value.append(
+                MiniFieldStorage('__login_password', password))
+        if came_from is not None:
+            self.form.value.append(
+                MiniFieldStorage('__came_from', came_from))
+
+        self.assertRaisesMessage(Redirect, LoginAction(self.client).handle, message)
 
     def testNoUsername(self):
         self.assertLoginLeavesMessages(['Username required'])
@@ -271,6 +300,58 @@ class LoginTestCase(ActionTestCase):
         self.client.opendb = opendb
 
         self.assertLoginLeavesMessages([], 'foo', 'right')
+
+    def testCorrectLoginRedirect(self):
+        self.client.db.security.hasPermission = lambda *args, **kwargs: True
+        def opendb(username):
+            self.assertEqual(username, 'foo')
+        self.client.opendb = opendb
+
+        # basic test with query
+        self.assertLoginRaisesRedirect("http://whoami.com/path/issue?%40action=search",
+                                 'foo', 'right', "http://whoami.com/path/issue?@action=search")
+
+        # test that old messages are removed
+        self.form.value[:] = []         # clear out last test's setup values
+        self.assertLoginRaisesRedirect("http://whoami.com/path/issue?%40action=search",
+                                 'foo', 'right', "http://whoami.com/path/issue?@action=search&@ok_messagehurrah+we+win&@error_message=blam")
+
+        # test when there is no query
+        self.form.value[:] = []         # clear out last test's setup values
+        self.assertLoginRaisesRedirect("http://whoami.com/path/issue255",
+                                 'foo', 'right', "http://whoami.com/path/issue255")
+
+        # test if we are logged out; should kill the @action=logout
+        self.form.value[:] = []         # clear out last test's setup values
+        self.assertLoginRaisesRedirect("http://localhost:9017/demo/issue39?%40startwith=0&%40pagesize=50",
+                                 'foo', 'right', "http://localhost:9017/demo/issue39?@action=logout&@pagesize=50&@startwith=0")
+
+    def testInvalidLoginRedirect(self):
+        self.client.db.security.hasPermission = lambda *args, **kwargs: True
+
+        def opendb(username):
+            self.assertEqual(username, 'foo')
+        self.client.opendb = opendb
+
+        # basic test with query
+        self.assertLoginRaisesRedirect("http://whoami.com/path/issue?%40error_message=Invalid+login&%40action=search",
+                                 'foo', 'wrong', "http://whoami.com/path/issue?@action=search")
+
+        # test that old messages are removed
+        self.form.value[:] = []         # clear out last test's setup values
+        self.assertLoginRaisesRedirect("http://whoami.com/path/issue?%40error_message=Invalid+login&%40action=search",
+                                 'foo', 'wrong', "http://whoami.com/path/issue?@action=search&@ok_messagehurrah+we+win&@error_message=blam")
+
+        # test when there is no __came_from specified
+        self.form.value[:] = []         # clear out last test's setup values
+        # I am not sure why this produces three copies of the same error.
+        # only one copy of the error is displayed to the user in the web interface.
+        self.assertLoginLeavesMessages(['Invalid login', 'Invalid login', 'Invalid login'], 'foo', 'wrong')
+
+        # test when there is no query
+        self.form.value[:] = []         # clear out last test's setup values
+        self.assertLoginRaisesRedirect("http://whoami.com/path/issue255?%40error_message=Invalid+login",
+                                 'foo', 'wrong', "http://whoami.com/path/issue255")
 
 class EditItemActionTestCase(ActionTestCase):
     def setUp(self):

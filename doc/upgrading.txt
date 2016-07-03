@@ -107,6 +107,44 @@ the email entry in the tracker section::
   # Default: 
   replyto_address = 
 
+Login from a search or after logout works better
+------------------------------------------------
+
+The login form has been improved to work with some back end code
+changes. Now when a user logs in they stay on the same page where they
+started the login. To make this work, you must change the tal that is
+used to set the ``__came_from`` form variable.
+
+Replace the existing code in the tracker's html/page.html page that
+looks similar to (look for name="__came_from")::
+
+  <input type="hidden" name="__came_from" tal:attributes="value string:${request/base}${request/env/PATH_INFO}">
+
+with the following::
+
+  <input type="hidden" name="__came_from"
+    tal:condition="exists:request/env/QUERY_STRING"
+    tal:attributes="value string:${request/base}${request/env/PATH_INFO}?${request/env/QUERY_STRING}">
+  <input type="hidden" name="__came_from"
+    tal:condition="not:exists:request/env/QUERY_STRING"
+    tal:attributes="value string:${request/base}${request/env/PATH_INFO}">
+
+Now search backwards for the nearest form statement before the code
+that sets __came_from. If it looks like::
+
+     <form method="post" action="#">
+
+replace it with::
+
+     <form method="post" tal:attributes="action request/base">
+
+or with::
+
+     <form method="post" tal:attributes="action string:${request/env/PATH_INFO}">
+
+the important part is that the action field **must not** include any query
+parameters ('#' includes query params).
+
 html/_generic.404.html in trackers use page template
 ----------------------------------------------------
 

@@ -153,7 +153,7 @@
     <ul class="user">
      <li tal:condition="python:request.user.username=='anonymous'" class="submenu">
       <b i18n:translate="">User</b>
-      <form method="post" action="#">
+      <form method="post" tal:attributes="action request/base">
        <ul>
         <li>
          <tal:span i18n:translate="">Login</tal:span><br/>
@@ -163,7 +163,12 @@
          <input type="checkbox" name="remember" id="remember"/>
          <label for="remember" i18n:translate="">Remember me?</label><br/>
          <input class="form-small" type="submit" value="Login" i18n:attributes="value"/><br/>
-         <input type="hidden" name="__came_from" tal:attributes="value string:${request/env/PATH_INFO}"/>
+	 <input type="hidden" name="__came_from"
+		tal:condition="exists:request/env/QUERY_STRING"
+		tal:attributes="value string:${request/base}${request/env/PATH_INFO}?${request/env/QUERY_STRING}"/>
+         <input type="hidden" name="__came_from"
+    		tal:condition="not:exists:request/env/QUERY_STRING"
+		tal:attributes="value string:${request/base}${request/env/PATH_INFO}"/>
          <span tal:replace="structure request/indexargs_form" />
         </li>
         <li>

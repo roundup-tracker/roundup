@@ -239,6 +239,13 @@ Fixed:
   Diagnosis and fix with patch by R David Murray. Support for
   restoring retired but active queries, html layout changes and doc
   by John Rouillard.
+- issue2550785: Using login from search (or logout) fails.  when
+  logging in from a search page or after a logout it fails with an
+  error. These failures have been fixed. The fix also keeps the user
+  on the same page they started from before the login. There are two
+  parts to this: 1) changes to the templates to properly define the
+  __came_from form element. See ``upgrading.txt``. 2) code changes
+  to the LoginAction code in roundup/cgi/actions.py.  (John Rouillard)
 
 2016-01-11: 1.5.1
 

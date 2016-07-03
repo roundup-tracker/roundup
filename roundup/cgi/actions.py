@@ -1029,12 +1029,63 @@ class LoginAction(Action):
         else:
             password = ''
 
+        if '__came_from' in self.form:
+            # On valid or invalid login, redirect the user back to the page
+            # the started on. Searches, issue and other pages
+            # are all preserved in __came_from. Clean out any old feedback
+            # @error_message, @ok_message from the __came_from url.
+            #
+            # 1. Split the url into components.
+            # 2. Split the query string into parts.
+            # 3. Delete @error_message and @ok_message if present.
+            # 4. Define a new redirect_url missing the @...message entries.
+            #    This will be redefined if there is a login error to include
+            #      a new error message
+            redirect_url_tuple = urllib_.urlparse(self.form['__came_from'].value)
+            # now I have a tuple form for the __came_from url
+            try:
+                query=urllib_.parse_qs(redirect_url_tuple.query)
+                if "@error_message" in query:
+                    del query["@error_message"]
+                if "@ok_message" in query:
+                    del query["@ok_message"]
+                if "@action" in query:
+                    # also remove the logout action from the redirect
+                    # there is only ever one @action value.
+                    if query['@action'] == ["logout"]:
+                        del query["@action"]
+            except AttributeError:
+                # no query param so nothing to remove. Just define.
+                query = {}
+                pass
+
+            redirect_url = urllib_.urlunparse( (redirect_url_tuple.scheme,
+                                                redirect_url_tuple.netloc,
+                                                redirect_url_tuple.path,
+                                                redirect_url_tuple.params,
+                                                urllib_.urlencode(query, doseq=True),
+                                                redirect_url_tuple.fragment)
+                                           )
+
         try:
             self.verifyLogin(self.client.user, password)
         except exceptions.LoginError, err:
             self.client.make_user_anonymous()
             for arg in err.args:
                 self.client.add_error_message(arg)
+
+            if '__came_from' in self.form:
+                # set a new error
+                query['@error_message'] = err.args
+                redirect_url = urllib_.urlunparse( (redirect_url_tuple.scheme,
+                                                    redirect_url_tuple.netloc,
+                                                    redirect_url_tuple.path,
+                                                    redirect_url_tuple.params,
+                                                    urllib_.urlencode(query, doseq=True),
+                                                    redirect_url_tuple.fragment )
+                                               )
+                raise exceptions.Redirect(redirect_url)
+            # if no __came_from, send back to base url with error
             return
 
         # now we're OK, re-open the database for real, using the user
@@ -1047,7 +1098,7 @@ class LoginAction(Action):
 
         # If we came from someplace, go back there
         if '__came_from' in self.form:
-            raise exceptions.Redirect(self.form['__came_from'].value)
+            raise exceptions.Redirect(redirect_url)
 
     def verifyLogin(self, username, password):
         # make sure the user exists

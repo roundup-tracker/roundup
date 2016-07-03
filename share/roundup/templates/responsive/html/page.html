@@ -170,7 +170,7 @@
         <div tal:condition="python:request.user.username=='anonymous'">
           <ul class='nav nav-list'>
             <li>
-              <form method="post" action="#">
+              <form method="post" tal:attributes="action request/base">
                 <fieldset>
                   <legend><i class='icon-user'></i>Login form</legend>
                   <input name="__login_name" type='text' placeholder='Username' i18n:attributes="placeholder">
@@ -180,7 +180,12 @@
                     <input type="checkbox" name="remember" id="remember">Remember me?
                   </label>
                   <input type="submit" value="Login" i18n:attributes="value" class='btn'>
-                  <input type="hidden" name="__came_from" tal:attributes="value string:${request/env/PATH_INFO}"/>
+		  <input type="hidden" name="__came_from"
+			 tal:condition="exists:request/env/QUERY_STRING"
+			 tal:attributes="value string:${request/base}${request/env/PATH_INFO}?${request/env/QUERY_STRING}">
+		  <input type="hidden" name="__came_from"
+			 tal:condition="not:exists:request/env/QUERY_STRING"
+			 tal:attributes="value string:${request/base}${request/env/PATH_INFO}">
                   <span tal:replace="structure request/indexargs_form" />
                 </fieldset>
               </form>
