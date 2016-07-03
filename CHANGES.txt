@@ -120,7 +120,11 @@ Features:
   keeping all the quoted parts.  If leave_body_unchanged is set to
   new, even the signature on the email that starts a new issue will be
   preserved.
-  
+- New cgi action restore (RestoreAction) which reverses the effects of
+  the retire action. Created while implementing fix for
+  issue2550831. Requires restore permission in the schema. See
+  upgrading.txt for migrating to 1.6.0 for details. (John Rouillard)
+
 Fixed:
 
 - issue1615201: Optionally restore the original (version 0.6) mailgw 

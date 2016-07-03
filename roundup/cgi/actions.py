@@ -9,7 +9,8 @@ from roundup.mailgw import uidFromAddress
 from roundup.exceptions import Reject, RejectRaw
 from roundup.anypy import urllib_
 
-__all__ = ['Action', 'ShowAction', 'RetireAction', 'SearchAction',
+# Also add action to client.py::Client.actions property
+__all__ = ['Action', 'ShowAction', 'RetireAction', 'RestoreAction', 'SearchAction',
            'EditCSVAction', 'EditItemAction', 'PassResetAction',
            'ConfRegoAction', 'RegisterAction', 'LoginAction', 'LogoutAction',
            'NewItemAction', 'ExportCSVAction']
@@ -134,6 +135,38 @@ class RetireAction(Action):
 
         self.client.add_ok_message(
             self._('%(classname)s %(itemid)s has been retired')%{
+                'classname': self.classname.capitalize(), 'itemid': itemid})
+
+
+class RestoreAction(Action):
+    name = 'restore'
+    permissionType = 'Edit'
+
+    def handle(self):
+        """Restore the context item."""
+        # ensure modification comes via POST
+        if self.client.env['REQUEST_METHOD'] != 'POST':
+            raise Reject(self._('Invalid request'))
+
+        # if we want to view the index template now, then unset the itemid
+        # context info (a special-case for retire actions on the index page)
+        itemid = self.nodeid
+        if self.template == 'index':
+            self.client.nodeid = None
+
+        # check permission
+        if not self.hasPermission('Restore', classname=self.classname,
+                itemid=itemid):
+            raise exceptions.Unauthorised(self._(
+                'You do not have permission to restore %(class)s'
+            ) % {'class': self.classname})
+
+        # do the restore
+        self.db.getclass(self.classname).restore(itemid)
+        self.db.commit()
+
+        self.client.add_ok_message(
+            self._('%(classname)s %(itemid)s has been restored')%{
                 'classname': self.classname.capitalize(), 'itemid': itemid})
 
 

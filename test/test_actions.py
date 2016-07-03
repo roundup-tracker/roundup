@@ -85,6 +85,20 @@ class RetireActionTestCase(ActionTestCase):
         self.client.db.user.get = lambda a,b: 'anonymous'
         self.assertRaises(ValueError, RetireAction(self.client).handle)
 
+class RestoreActionTestCase(ActionTestCase):
+    # This is a copy of the RetireActionTestCase. But what do these
+    # actually test? I see no actual db or retire call or
+    # class id. Testing db level restore is covered in the
+    # db_test_base as part of retire.
+    def testRestoreAction(self):
+        self.client.db.security.hasPermission = true
+        self.client._ok_message = []
+        RestoreAction(self.client).handle()
+        self.assert_(len(self.client._ok_message) == 1)
+
+    def testNoPermission(self):
+        self.assertRaises(Unauthorised, RestoreAction(self.client).execute)
+
 class SearchActionTestCase(ActionTestCase):
     def setUp(self):
         ActionTestCase.setUp(self)

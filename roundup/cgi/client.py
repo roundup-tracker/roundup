@@ -1242,6 +1242,7 @@ class Client:
         ('login',       actions.LoginAction),
         ('logout',      actions.LogoutAction),
         ('search',      actions.SearchAction),
+        ('restore',     actions.RestoreAction),
         ('retire',      actions.RetireAction),
         ('show',        actions.ShowAction),
         ('export_csv',  actions.ExportCSVAction),
