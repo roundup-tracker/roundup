@@ -221,6 +221,15 @@ Fixed:
   String fileds is 'no' not 'yes'. So to get a new string field into
   the full text/all text index you need to use String(indexme='yes').
   Reported by Michael Belleville. (John Rouillard)
+- issue2550853 - better error handling and cleanup on some postgres
+  tests by Stuart McGraw.
+- issue2086536 - back_postgresql: fixing pg_command and prefering
+  psycopg2. Patch done by Philipp Gortan (mephinet). His patch
+  also improves handling of retryable errors. Applied and
+  edited by John Rouillard. Edits included removing support for
+  psycopg1. See:
+    https://sourceforge.net/p/roundup/mailman/message/32855027/
+  for rational for dropping it.
 
 2016-01-11: 1.5.1
 

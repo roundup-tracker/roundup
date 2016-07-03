@@ -25,6 +25,7 @@ from db_test_base import ConcurrentDBTest, HTMLItemTest, FilterCacheTest
 from db_test_base import ClassicInitBase, setupTracker
 
 from roundup.backends import get_backend, have_backend
+from roundup.backends.back_postgresql import psycopg
 
 if not have_backend('postgresql'):
     # FIX: workaround for a bug in pytest.mark.skip():
@@ -100,8 +101,12 @@ class postgresqlJournalTest(postgresqlOpener, ClassicInitBase,
         db.close()
 
     def tearDown(self):
-        self.db1.close()
-        self.db2.close()
+        try:
+            self.db1.close()
+            self.db2.close()
+        except psycopg.InterfaceError, exc:
+            if 'connection already closed' in str(exc): pass
+            else: raise
         ClassicInitBase.tearDown(self)
         postgresqlOpener.tearDown(self)
 
@@ -117,9 +122,15 @@ class postgresqlJournalTest(postgresqlOpener, ClassicInitBase,
         db1.commit()
         db1.close()
 
-        db2.issue.set (id, title='t2')
-        db2.commit()
-        db2.close()
+        # Test testConcurrentRepeatableRead is expected to raise
+        # an error when the db2.issue.set() call is executed. 
+        try:
+            db2.issue.set (id, title='t2')
+            db2.commit()    
+        finally:
+            # Make sure that the db2 connection is closed, even when
+            # an error is raised.
+            db2.close()
         self.db = self.tracker.open('admin')
         journal = self.db.getjournal('issue', id)
         for n, line in enumerate(journal):
