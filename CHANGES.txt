@@ -111,7 +111,16 @@ Features:
   describe the purpose of the directory. It also says the detectors
   are provided on an as-is basis and may not work. Detector by W.
   Trevor King (wking), rest by John Rouillard.
-
+- issue934009: Have New Issues Submitted By Email *Not* Change Body!
+  The mailgw config options: keep_quoted_text and leave_body_unchanged
+  can now have a new values: new. If set to new, keep_quoted_text acts
+  like yes if the message is starting a new issue. Otherise it strips
+  quoted text. This allows somebody to start a new issue by forwarding
+  a threaded email (with multiple quoted parts) into roundup and
+  keeping all the quoted parts.  If leave_body_unchanged is set to
+  new, even the signature on the email that starts a new issue will be
+  preserved.
+  
 Fixed:
 
 - issue1615201: Optionally restore the original (version 0.6) mailgw 

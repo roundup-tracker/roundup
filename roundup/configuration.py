@@ -293,6 +293,19 @@ class RunDetectorOption(Option):
         else:
             raise OptionValueError(self, value, self.class_description)
 
+class EmailBodyOption(Option):
+
+    """When to replace message body or strip quoting: always, never or for new items only"""
+
+    class_description = "Allowed values: yes, no, new"
+
+    def str2value(self, value):
+        _val = value.lower()
+        if _val in ("yes", "no", "new"):
+            return _val
+        else:
+            raise OptionValueError(self, value, self.class_description)
+
 class IsolationOption(Option):
     """Database isolation levels"""
 
@@ -760,15 +773,18 @@ SETTINGS = (
             "actor from being exposed at mail archives, etc."),
     ), "Outgoing email options.\nUsed for nozy messages and approval requests"),
     ("mailgw", (
-        (BooleanOption, "keep_quoted_text", "yes",
+        (EmailBodyOption, "keep_quoted_text", "yes",
             "Keep email citations when accepting messages.\n"
-            "Setting this to \"no\" strips out \"quoted\" text"
-            " from the message.\n"
+            "Setting this to \"no\" strips out \"quoted\" text\n"
+            "from the message. Setting this to \"new\" keeps quoted\n"
+            "text only if a new issue is being created.\n"
             "Signatures are also stripped.",
             ["EMAIL_KEEP_QUOTED_TEXT"]),
-        (BooleanOption, "leave_body_unchanged", "no",
-            "Preserve the email body as is - that is,\n"
-            "keep the citations _and_ signatures.",
+        (EmailBodyOption, "leave_body_unchanged", "no",
+            "Setting this to \"yes\" preserves the email body\n"
+            "as is - that is, keep the citations _and_ signatures.\n"
+            "Setting this to \"new\" keeps the body only if we are\n"
+            "creating a new issue.",
             ["EMAIL_LEAVE_BODY_UNCHANGED"]),
         (Option, "default_class", "issue",
             "Default class to use in the mailgw\n"

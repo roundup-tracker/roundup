@@ -2547,6 +2547,75 @@ This is a followup
         self.innerTestQuoting(self.firstquotingtest, '''This is a followup
 ''', 'This is a followup')
 
+    def testEmailQuotingNewIsNew(self):
+        self.instance.config.EMAIL_KEEP_QUOTED_TEXT = 'new'
+        # create the message, remove the prefix from subject
+        testmessage=self.firstquotingtest.replace(" Re: [issue1]", "")
+        nodeid = self._handle_mail(testmessage)
+
+        msgs = self.db.issue.get(nodeid, 'messages')
+        # validate content and summary
+        content = self.db.msg.get(msgs[0], 'content')
+        self.assertEqual(content, '''Blah blah wrote:
+> Blah bklaskdfj sdf asdf jlaskdf skj sdkfjl asdf
+>  skdjlkjsdfalsdkfjasdlfkj dlfksdfalksd fj
+>
+
+This is a followup''')
+
+        summary = self.db.msg.get(msgs[0], 'summary')
+        self.assertEqual(summary,  '''This is a followup''')
+
+    def testEmailQuotingNewIsFollowup(self):
+        self.instance.config.EMAIL_KEEP_QUOTED_TEXT = 'new'
+        # create issue1 that we can followup on
+        self.doNewIssue()
+        # add the second message to the issue
+        nodeid = self._handle_mail(self.firstquotingtest)
+        msgs = self.db.issue.get(nodeid, 'messages')
+        # check second message for accuracy
+        content = self.db.msg.get(msgs[1], 'content')
+        summary = self.db.msg.get(msgs[1], 'summary')
+        self.assertEqual(content,  '''This is a followup''')
+        self.assertEqual(summary,  '''This is a followup''')
+
+    def testEmailReplaceBodyNewIsNew(self):
+        mysig = "--\nmy sig\n\n"
+        self.instance.config.EMAIL_LEAVE_BODY_UNCHANGED = 'new'
+        # create the message, remove the prefix from subject
+        testmessage=self.firstquotingtest.replace(" Re: [issue1]", "") + mysig
+        nodeid = self._handle_mail(testmessage)
+
+        msgs = self.db.issue.get(nodeid, 'messages')
+        # validate content and summary
+        content = self.db.msg.get(msgs[0], 'content')
+        self.assertEqual(content, '''Blah blah wrote:
+> Blah bklaskdfj sdf asdf jlaskdf skj sdkfjl asdf
+>  skdjlkjsdfalsdkfjasdlfkj dlfksdfalksd fj
+>
+
+This is a followup\n''' + mysig[:-2])
+        # the :-2 requrement to strip the trailing newlines is probably a bug
+        # somewhere mailgw has right content maybe trailing \n are stripped by
+        # msg or something.
+
+        summary = self.db.msg.get(msgs[0], 'summary')
+        self.assertEqual(summary,  '''This is a followup''')
+
+    def testEmailReplaceBodyNewIsFollowup(self):
+        mysig = "\n--\nmy sig\n"
+        self.instance.config.EMAIL_LEAVE_BODY_UNCHANGED = 'new'
+        # create issue1 that we can followup on
+        self.doNewIssue()
+        # add the second message to the issue
+        nodeid = self._handle_mail(self.firstquotingtest + mysig)
+        msgs = self.db.issue.get(nodeid, 'messages')
+        # check second message for accuracy
+        content = self.db.msg.get(msgs[1], 'content')
+        summary = self.db.msg.get(msgs[1], 'summary')
+        self.assertEqual(content,  '''Blah blah wrote:\n> Blah bklaskdfj sdf asdf jlaskdf skj sdkfjl asdf\n>  skdjlkjsdfalsdkfjasdlfkj dlfksdfalksd fj\n>\n\nThis is a followup''')
+        self.assertEqual(summary,  '''This is a followup''')
+
     def testEmailQuotingRemove(self):
         self.instance.config.EMAIL_KEEP_QUOTED_TEXT = 'yes'
         self.innerTestQuoting(self.firstquotingtest, '''Blah blah wrote:

@@ -1138,9 +1138,8 @@ encrypted.""")
 Roundup requires the submission to be plain text. The message parser could
 not find a text/plain part to use.
 """)
-
         # parse the body of the message, stripping out bits as appropriate
-        summary, content = parseContent(self.content, config=self.config)
+        summary, content = parseContent(self.content, config=self.config, is_new_issue = not bool(self.nodeid))
         content = content.strip()
 
         if content:
@@ -1782,7 +1781,7 @@ def uidFromAddress(db, address, create=1, **user_props):
     else:
         return 0
 
-def parseContent(content, keep_citations=None, keep_body=None, config=None):
+def parseContent(content, keep_citations=None, keep_body=None, config=None, is_new_issue=False):
     """Parse mail message; return message summary and stripped content
 
     The message body is divided into sections by blank lines.
@@ -1806,8 +1805,30 @@ def parseContent(content, keep_citations=None, keep_body=None, config=None):
         config = configuration.CoreConfig()
     if keep_citations is None:
         keep_citations = config["MAILGW_KEEP_QUOTED_TEXT"]
+        if keep_citations == "new":
+            # don't strip citations if we are a new issue
+            if is_new_issue:
+                keep_citations = True
+            else:
+                keep_citations = False
+        elif keep_citations == "yes":
+            keep_citations = True
+        else:
+            keep_citations = False
+
     if keep_body is None:
         keep_body = config["MAILGW_LEAVE_BODY_UNCHANGED"]
+        if keep_body == "new":
+            # don't strip citations if we are a new issue
+            if is_new_issue:
+                keep_body = True
+            else:
+                keep_body = False
+        elif keep_body == "yes":
+            keep_body = True
+        else:
+            keep_body = False
+
     eol = config["MAILGW_EOL_RE"]
     signature = config["MAILGW_SIGN_RE"]
     original_msg = config["MAILGW_ORIGMSG_RE"]
