@@ -174,17 +174,21 @@ Improvements in Classic Tracker query.edit.html template
 --------------------------------------------------------
 
 There is a new query editing template included in the distribution at:
-   share/roundup/templates/classic/html/query.edit.html
+
+   ``share/roundup/templates/classic/html/query.edit.html``
 
 This template fixes:
 
- * Once added, a public query could not be removed from "Your Queries". Trying to do so would cause a permissions error.
- * The private yes/no dropdown always showed "yes" regardless of underlying state
- * The query Delete button did not work.
- * The same query being displayed multiple times
+ * public query could not be removed from "Your Queries" once it was added.
+   Trying to do so would cause a permissions error.
+ * private yes/no dropdown always showed "yes" regardless of
+   underlying state
+ * query Delete button did not work.
+ * same query being displayed multiple times
 
 It also adds:
- * the table layout displays queries created by the user first, then available public queries.
+ * the table layout displays queries created by the user first,
+   then available public queries.
  * public query owners are shown
  * better support for deleted queries. When a query is deleted, it is
    still available for those who added it to their query list. If you
@@ -197,9 +201,25 @@ It also adds:
  * notifies the user that delete/restore requires javascript. It
    always did, but that requirement wasn't displayed.
 
-If you have not modified the query.edit.html template in your tracker, you should be
-able to copy the new version from the location above. Otherwise you will
-have to merge the changes into your modified template.
+To use the new template, you must add Restore permission on queries to
+allow the user to restore queries (see below).
+
+If you have not modified the query.edit.html template in your tracker,
+you should be able to copy the new version from the location above.
+Otherwise you will have to merge the changes into your modified template.
+
+You will need to add the query Restore permission for the User role to
+your tracker's schema.py file.  Place it right after the query retire
+permission for the user role. After the change it should look like::
+
+  p = db.security.addPermission(name='Retire', klass='query', check=edit_query,
+      description="User is allowed to retire their queries")
+  db.security.addPermissionToRole('User', p)
+  p = db.security.addPermission(name='Restore', klass='query', check=edit_query,
+      description="User is allowed to restore their queries")
+  db.security.addPermissionToRole('User', p)
+
+where the last three lines are the ones you need to add.
 
 Migrating from 1.5.0 to 1.5.1
 =============================

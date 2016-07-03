@@ -140,6 +140,9 @@ db.security.addPermissionToRole('User', p)
 p = db.security.addPermission(name='Retire', klass='query', check=edit_query,
     description="User is allowed to retire their queries")
 db.security.addPermissionToRole('User', p)
+p = db.security.addPermission(name='Restore', klass='query', check=edit_query,
+    description="User is allowed to restore their queries")
+db.security.addPermissionToRole('User', p)
 p = db.security.addPermission(name='Create', klass='query',
     description="User is allowed to create queries")
 db.security.addPermissionToRole('User', p)
