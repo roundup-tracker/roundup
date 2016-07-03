@@ -562,6 +562,12 @@ class IssueClass:
                     label = 'name'
                 if prop.msg_header_property in cl.getprops():
                     label = prop.msg_header_property
+                if prop.msg_header_property == "":
+                    # if msg_header_property is set to empty string
+                    # suppress the header entirely. You can't use
+                    # 'msg_header_property == None'. None is the
+                    # default value.
+                    label = None
                 if not label:
                     continue
                 if isinstance(prop, hyperdb.Link):

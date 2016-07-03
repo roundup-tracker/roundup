@@ -124,6 +124,12 @@ Features:
   the retire action. Created while implementing fix for
   issue2550831. Requires restore permission in the schema. See
   upgrading.txt for migrating to 1.6.0 for details. (John Rouillard)
+- issue2550751: Email Header Issue. Noel Garces requested the ability
+  to suppress email headers like "x-roundup-issue-files". With Ralf's
+  addition of the Link/Multilink property attribute
+  'msg_header_property' we can do this easily. Setting the
+  'msg_header_property' to the empty string '' (not to None) will
+  suppress the header for that property. (John Rouillard)
 
 Fixed:
 

@@ -703,8 +703,11 @@ behaviour:
     
         X-Roundup-issue-assigned_to: joe_user
 
-    for issues where joe_user is the username of the person responsible
-    for this issue.
+    for issues where joe_user is the username of the person
+    responsible for this issue.
+
+    If this property is set to the empty string "", it will prevent
+    the header from being generated on outgoing mail.
 
 All Classes automatically have a number of properties by default:
 
