@@ -234,6 +234,11 @@ Fixed:
   psycopg1. See:
     https://sourceforge.net/p/roundup/mailman/message/32855027/
   for rational for dropping it.
+- issue2550831: Make the classic template query.edit page work.
+  Many fixes and improvements. See ``upgrading.txt`` for details.
+  Diagnosis and fix with patch by R David Murray. Support for
+  restoring retired but active queries, html layout changes and doc
+  by John Rouillard.
 
 2016-01-11: 1.5.1
 

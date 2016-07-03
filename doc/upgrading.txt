@@ -132,6 +132,37 @@ If you are running a tracker that **does not** allow read access for
 anonymous, you should remove this entry as it can be used to perform
 a username guessing attack against a roundup install.
 
+Improvements in Classic Tracker query.edit.html template
+--------------------------------------------------------
+
+There is a new query editing template included in the distribution at:
+   share/roundup/templates/classic/html/query.edit.html
+
+This template fixes:
+
+ * Once added, a public query could not be removed from "Your Queries". Trying to do so would cause a permissions error.
+ * The private yes/no dropdown always showed "yes" regardless of underlying state
+ * The query Delete button did not work.
+ * The same query being displayed multiple times
+
+It also adds:
+ * the table layout displays queries created by the user first, then available public queries.
+ * public query owners are shown
+ * better support for deleted queries. When a query is deleted, it is
+   still available for those who added it to their query list. If you
+   are the query owner, you can restore (undelete) the query. If you
+   are not the owner you can remove it from your query list.
+   (If a query is deleted and nobody had it in their query list, it
+   will not show up in the "Active retired queries" section. You will
+   have to use the class editor or roundup_admin command line to
+   restore it.)
+ * notifies the user that delete/restore requires javascript. It
+   always did, but that requirement wasn't displayed.
+
+If you have not modified the query.edit.html template in your tracker, you should be
+able to copy the new version from the location above. Otherwise you will
+have to merge the changes into your modified template.
+
 Migrating from 1.5.0 to 1.5.1
 =============================
 

@@ -12,10 +12,36 @@
  i18n:translate="">You are not allowed to edit queries.</span>
 
 <script language="javascript">
-// This exists solely because I can't figure how to get the & into an
-// attributes TALES expression, and so it keeps getting quoted.
+// This allows us to make the delete button an immediate action.
+// The post_to_url function comes from:
+//    http://stackoverflow.com/questions/133925/javascript-post-request-like-a-form-submit
 function retire(qid) {
-    window.location = 'query'+qid+'?@action=retire&@template=edit';
+    post_to_url('query'+qid, {'@action': 'retire', '@template': 'edit'});
+}
+
+function restore(qid) {
+    post_to_url('query'+qid, {'@action': 'restore', '@template': 'edit'});
+}
+function post_to_url(path, params, method) {
+    method = method || "post"; // Set method to post by default if not specified.
+
+    var form = document.createElement("form");
+    form.setAttribute("method", method);
+    form.setAttribute("action", path);
+
+    for(var key in params) {
+        if(params.hasOwnProperty(key)) {
+            var hiddenField = document.createElement("input");
+            hiddenField.setAttribute("type", "hidden");
+            hiddenField.setAttribute("name", key);
+            hiddenField.setAttribute("value", params[key]);
+
+            form.appendChild(hiddenField);
+         }
+    }
+
+    document.body.appendChild(form);
+    form.submit();
 }
 </script>
 
@@ -29,12 +55,15 @@ function retire(qid) {
     <th i18n:translate="">Include in "Your Queries"</th>
     <th i18n:translate="">Edit</th>
     <th i18n:translate="">Private to you?</th>
-    <th>&nbsp;</th>
+    <th i18n:translate="">delete/restore<br> (javascript<br>required)</th>
+</tr>
+<tr>
+ <td colspan="5"><b i18n:translate="">Queries I created</b></td>
 </tr>
 
-<tr tal:repeat="query mine">
- <tal:block condition="query/is_retired">
-
+<tr tal:define="queries python:db.query.filter(filterspec={'creator': uid})"
+    tal:repeat="query queries">
+ <tal:block>
  <td><a tal:attributes="href string:${query/klass}?${query/url}"
         tal:content="query/name">query</a></td>
 
@@ -51,26 +80,13 @@ function retire(qid) {
   </select>
  </td>
 
- <td colspan="3" i18n:translate="">[query is retired]</td>
-
- <!-- <td> maybe offer "restore" some day </td> -->
- </tal:block>
-</tr>
-
-<tr tal:repeat="query mine">
- <tal:block condition="not:query/is_retired">
- <td><a tal:attributes="href string:${query/klass}?${query/url}"
-        tal:content="query/name">query</a></td>
-
- <td metal:use-macro="template/macros/include" />
-
  <td><a tal:attributes="href string:query${query/id}" i18n:translate="">edit</a></td>
 
  <td>
   <select tal:attributes="name string:query${query/id}@private_for">
    <option tal:attributes="selected python:query.private_for == uid;
            value uid" i18n:translate="">yes</option>
-   <option tal:attributes="selected python:query.private_for == None"
+   <option tal:attributes="selected python:not query.private_for"
            value="-1" i18n:translate="">no</option>
   </select>
  </td>
@@ -81,20 +97,44 @@ function retire(qid) {
   </td>
   </tal:block>
 </tr>
+<tr>
+ <td colspan="4"><b i18n:translate="">Queries others created</b></td>
+ <td colspan="4"><b i18n:translate="">Owner</b></td>
+</tr>
 
-<tr tal:define="queries python:db.query.filter(filterspec={'private_for':None})"
+<tr tal:define="queries
+		python:db.query.filter(filterspec={'private_for': None})"
      tal:repeat="query queries">
- <tal:block condition="python: query.creator != uid">
+ <tal:block tal:condition="python:not query.creator == uid">
  <td><a tal:attributes="href string:${query/klass}?${query/url}"
         tal:content="query/name">query</a></td>
 
  <td metal:use-macro="template/macros/include" />
 
- <td colspan="3" tal:condition="query/is_edit_ok">
-  <a tal:attributes="href string:query${query/id}" i18n:translate="">edit</a>
- </td>
- <td tal:condition="not:query/is_edit_ok" colspan="3"
+ <td colspan="2" tal:condition="not:query/is_edit_ok"
     i18n:translate="">[not yours to edit]</td>
+ <td colspan="2" tal:condition="query/is_edit_ok"
+    i18n:translate=""><a tal:attributes="href string:query${query/id}" i18n:translate="">edit</a></td>
+ <td colspan="2"
+    tal:content="query/creator" i18n:translate="">put query owner here</td>
+ </tal:block>
+</tr>
+
+<tr>
+ <td colspan="5"><b i18n:translate="">Active retired queries</b></td>
+</tr>
+<tr tal:repeat="query request/user/queries">
+ <tal:block condition="python:path('query/is_retired')">
+ <td><a tal:attributes="href string:${query/klass}?${query/url}"
+        tal:content="query/name">query</a></td>
+ <tal:block tal:condition="python: not query.creator == uid">
+    <td metal:use-macro="template/macros/include"> </td>
+ </tal:block>
+ <td colspan="3" i18n:translate="">[query is retired]</td>
+ <td tal:condition="python:query.creator == uid">
+  <input type="button" value="Restore" i18n:attributes="value"
+  tal:attributes="onClick python:'''restore('%s')'''%query.id">
+  </td>
  </tal:block>
 </tr>
 
