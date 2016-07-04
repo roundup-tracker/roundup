@@ -121,23 +121,41 @@ function post_to_url(path, params, method) {
 </tr>
 
 <tr>
- <td colspan="5"><b i18n:translate="">Active retired queries</b></td>
+ <td colspan="5"><b i18n:translate="">Active retired/private queries</b></td>
 </tr>
-<tr tal:repeat="query request/user/queries">
+<tal:block tal:repeat="query request/user/queries">
+<tr>
  <tal:block condition="python:path('query/is_retired')">
  <td><a tal:attributes="href string:${query/klass}?${query/url}"
         tal:content="query/name">query</a></td>
  <tal:block tal:condition="python: not query.creator == uid">
     <td metal:use-macro="template/macros/include"> </td>
  </tal:block>
- <td colspan="3" i18n:translate="">[query is retired]</td>
+ <td colspan="2" tal:condition="python: not query.creator == uid" i18n:translate="">[query is retired]</td>
+ <td colspan="3" tal:condition="python:  query.creator == uid" i18n:translate="">[query is retired]</td>
  <td tal:condition="python:query.creator == uid">
   <input type="button" value="Restore" i18n:attributes="value"
   tal:attributes="onClick python:'''restore('%s')'''%query.id">
   </td>
+ <td colspan="1" tal:condition="python:not query.creator == uid" tal:content="query/creator" i18n:translate="">put query owner here</td>
  </tal:block>
 </tr>
-
+<tr>
+ <tal:block condition="python:path('query/private_for') and (not query.creator == uid)">
+ <td><a tal:attributes="href string:${query/klass}?${query/url}"
+        tal:content="query/name">query</a></td>
+ <tal:block tal:condition="python: not query.creator == uid">
+    <td metal:use-macro="template/macros/include"> </td>
+ </tal:block>
+ <td colspan="2" i18n:translate="">[query is private]</td>
+ <td tal:condition="python:query.creator == uid">
+  <input type="button" value="Restore" i18n:attributes="value"
+  tal:attributes="onClick python:'''restore('%s')'''%query.id">
+   </td>
+ <td colspan="1" tal:content="query/creator" i18n:translate="">put query owner here</td>
+ </tal:block>
+</tr>
+</tal:block>
 <tr><td colspan="5">
    <input type="hidden" name="@action" value="edit">
    <input type="hidden" name="@template" value="edit">
