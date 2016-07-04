@@ -1008,7 +1008,7 @@ class Config:
         *not* have aliases!
 
         """
-        if description or not self.section_descriptions.has_key(section):
+        if description or not (section in self.section_descriptions):
             self.section_descriptions[section] = description
         for option_def in options:
             klass = option_def[0]
@@ -1327,7 +1327,7 @@ class Config:
     # attribute emulation
 
     def __setattr__(self, name, value):
-        if self.__dict__.has_key(name) or hasattr(self.__class__, name):
+        if (name in self.__dict__) or hasattr(self.__class__, name):
             self.__dict__[name] = value
         else:
             self._get_option(name).set(value)
