@@ -2608,6 +2608,53 @@ This is a followup''')
         self.assertEqual(content,  '''This is a followup''')
         self.assertEqual(summary,  '''This is a followup''')
 
+    def testEmailBodyUnchangedNewIsYes(self):
+        mysig = "--\nmy sig\n\n"
+        self.instance.config.EMAIL_LEAVE_BODY_UNCHANGED = 'yes'
+        # create the message, remove the prefix from subject
+        testmessage=self.firstquotingtest.replace(" Re: [issue1]", "") + mysig
+        nodeid = self._handle_mail(testmessage)
+
+        msgs = self.db.issue.get(nodeid, 'messages')
+        # validate content and summary
+        content = self.db.msg.get(msgs[0], 'content')
+        self.assertEqual(content, '''Blah blah wrote:
+> Blah bklaskdfj sdf asdf jlaskdf skj sdkfjl asdf
+>  skdjlkjsdfalsdkfjasdlfkj dlfksdfalksd fj
+>
+
+This is a followup\n''' + mysig[:-2])
+        # the :-2 requrement to strip the trailing newlines is probably a bug
+        # somewhere mailgw has right content maybe trailing \n are stripped by
+        # msg or something.
+
+        summary = self.db.msg.get(msgs[0], 'summary')
+        self.assertEqual(summary,  '''This is a followup''')
+
+    def testEmailBodyUnchangedFollowupIsYes(self):
+        mysig = "--\nmy sig\n\n"
+        self.instance.config.EMAIL_LEAVE_BODY_UNCHANGED = 'yes'
+
+        # create issue1 that we can followup on
+        self.doNewIssue()
+        testmessage=self.firstquotingtest + mysig
+        nodeid = self._handle_mail(testmessage)
+        msgs = self.db.issue.get(nodeid, 'messages')
+        # validate content and summary
+        content = self.db.msg.get(msgs[1], 'content')
+        self.assertEqual(content, '''Blah blah wrote:
+> Blah bklaskdfj sdf asdf jlaskdf skj sdkfjl asdf
+>  skdjlkjsdfalsdkfjasdlfkj dlfksdfalksd fj
+>
+
+This is a followup\n''' + mysig[:-2])
+        # the :-2 requrement to strip the trailing newlines is probably a bug
+        # somewhere mailgw has right content maybe trailing \n are stripped by
+        # msg or something.
+
+        summary = self.db.msg.get(msgs[1], 'summary')
+        self.assertEqual(summary,  '''This is a followup''')
+
     def testEmailReplaceBodyNewIsNew(self):
         mysig = "--\nmy sig\n\n"
         self.instance.config.EMAIL_LEAVE_BODY_UNCHANGED = 'new'
