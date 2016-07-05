@@ -161,6 +161,17 @@ to::
 
 for more information, go and read about Zope Page Templates.
 
+I want to link version identifiers from my messages to svn/mercurial/git 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+See: the LinkFormatingExample at:
+
+http://www.roundup-tracker.org/cgi-bin/moin.cgi/LinkFormattingExample?highlight=%28local%5C_replace%29
+
+There are examples in the devel and responsive templates. Search for
+LocalReplace to find the extension file and the change that has to be
+made to the item template.
+
 
 Using Roundup
 -------------
@@ -203,6 +214,37 @@ depending on the properties being sorted on:
 Note that if an "order" property is defined on a Class that is used for
 sorting, all items of that Class *must* have a value against the "order"
 property, or sorting will result in random ordering.
+
+
+How do I filter roundup emails?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When roundup emails users, it provides an email header::
+
+  X-Roundup-(class)-(property): values
+
+for every property that is a link or multilink (usually things
+set by a dropdown or selection in the web interface).
+
+For example, assume you have a category field for issues in your tracker.
+You respond to issues that fall into the catagories: Network and Security.
+
+You will see headers like:
+
+  X-Roundup-issue-category: Network
+
+or
+
+  X-Roundup-issue-category: Network, Security, Linux
+
+Then you can set up a filter looking for X-Roundup-issue-category
+followed by Network or Security in your mail program. Directions on
+using your mail program ae beyond the scope of theis FAQ entry.
+
+(If you don't see a header for a multilink or link property, look for
+msg_header_property in the roundup docs. In some cases you have to
+explicitly enable the header.)
+
 
 .. _`customisation`: customizing.html
 
