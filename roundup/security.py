@@ -144,7 +144,7 @@ class Security:
 
             Raise ValueError if there is no exact match.
         '''
-        if not self.permission.has_key(permission):
+        if permission not in self.permission:
             raise ValueError, 'No permission "%s" defined'%permission
 
         if classname:
@@ -187,7 +187,7 @@ class Security:
         if itemid and classname is None:
             raise ValueError, 'classname must accompany itemid'
         for rolename in self.db.user.get_roles(userid):
-            if not rolename or not self.role.has_key(rolename):
+            if not rolename or (rolename not in self.role):
                 continue
             # for each of the user's Roles, check the permissions
             for perm in self.role[rolename].permissions:
@@ -269,7 +269,7 @@ class Security:
            the list.
         '''
         roles = [r for r in self.db.user.get_roles(userid)
-                 if r and self.role.has_key(r)]
+                 if r and (r in self.role)]
         return self.roleHasSearchPermission (classname, property, *roles)
 
     def addPermission(self, **propspec):
