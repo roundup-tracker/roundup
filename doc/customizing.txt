@@ -685,26 +685,65 @@ behaviour:
     (like, e.g., product codes). For these roundup needs to match the
     numeric name and should never match an ID. In this case you can set
     ``try_id_parsing='no'``.
-  - The ``msg_header_property`` is used in the mail gateway when sending
-    out messages: By default roundup creates headers of the form::
+  - The ``msg_header_property`` is used by the mail gateway when sending
+    out messages. When a link or multilink property of an issue changes,
+    roundup creates email headers of the form::
 
         X-Roundup-issue-prop: value
 
-    for all properties prop of issue that have a ``name`` property. This
-    definition allows to override the name of the property used for
-    generating headers. A common use-case is adding a mail-header with
-    the ``assigned_to`` property to allow user mail-filtering of
-    issue-emails for which they're responsible.  In that case setting::
+    where ``value`` is the ``name`` property for the linked item(s).
+    For example, if you have a multilink for attached_files in your
+    issue, you will see a header::
+
+        X-Roundup-issue-attached_files: MySpecialFile.doc, HisResume.txt
+
+    when the class for attached files is defined as::
+
+       file = FileClass(db, "file",
+                name=String())
+
+    ``MySpecialFile.doc`` is the name for the file object.
+
+    If you have an ``assigned_to`` property in your issue class that
+    links to the user class and you want to add a header::
+
+        X-Roundup-issue-assigned_to: ...
+
+    so that the mail recipients can filter emails where
+    ``X-Roundup-issue-assigned_to: name`` that contains their
+    username. The user class is defined as::
+
+       user = Class(db, "user",
+                username=String(),
+                password=Password(),
+                address=String(),
+                realname=String(),
+                phone=String(),
+                organisation=String(),
+                alternate_addresses=String(),
+                queries=Multilink('query'),
+                roles=String(),     # comma-separated string of Role names
+                timezone=String())
+
+    Because there is no ``name`` parameter for the user class, there
+    will be no header. However setting::
+   
+      assigned_to=Link("user", msg_header_property="username")
+
+    will make the mail gateway generate an ``X-Roundup-issue-assigned_to``
+    using the username property of the linked user.
+
+    Assume assigned_to for an issue is linked to the user with
+    username=joe_user, setting::
 
         msg_header_property="username"
 
     for the assigned_to property will generated message headers of the
     form::
-    
+
         X-Roundup-issue-assigned_to: joe_user
 
-    for issues where joe_user is the username of the person
-    responsible for this issue.
+    for emails sent on issues where joe_user has been assigned to the issue.
 
     If this property is set to the empty string "", it will prevent
     the header from being generated on outgoing mail.
