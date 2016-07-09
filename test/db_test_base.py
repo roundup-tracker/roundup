@@ -2156,6 +2156,7 @@ class DBTest(commonDBTest):
                                        'Role "admin":\n',
                                        ' User may create everything (Create)\n',
                                        ' User may edit everything (Edit)\n',
+                                       ' User may restore everything (Restore)\n',
                                        ' User may retire everything (Retire)\n',
                                        ' User may view everything (View)\n',
                                        ' User may access the web interface (Web Access)\n',
