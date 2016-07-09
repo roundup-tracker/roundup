@@ -245,7 +245,7 @@ Fixed:
   Diagnosis and fix with patch by R David Murray. Support for
   restoring retired but active queries, html layout changes and doc
   by John Rouillard.
-- issue2550785: Using login from search (or logout) fails.  when
+- issue2550785: Using login from search (or logout) fails.  When
   logging in from a search page or after a logout it fails with an
   error. These failures have been fixed. The fix also keeps the user
   on the same page they started from before the login. There are two
@@ -258,6 +258,12 @@ Fixed:
   the simple dropdown search item, retired values are now removed from
   the expression editor. (We have an open question as to whether this
   is desirable.)
+- issue2550743 - Reindex with MySQL Server failed. It looks like
+  indexing large documents may require increasing mysql's
+  max_allowed_packet setting. Documented the issue in doc/mysql.txt.
+  Possible solutions include: increasing value of MySQL parameter,
+  changing the full text search engine to whoosh or xapian. Problem
+  report by telsch. Analysis/doc by John Rouillard.
 
 2016-01-11: 1.5.1
 

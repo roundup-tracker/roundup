@@ -18,6 +18,33 @@ to install:
    ``roundup/backends/back_mysql.py`` file to enable DBD instead of InnoDB.
 2. Python MySQL interface - http://sourceforge.net/projects/mysql-python
 
+
+Other Configuration
+===================
+
+If you are indexing large documents (e.g attached file contents)
+using MySQL, you may need to increase the max_allowed_packet size.
+If you don't you can see the error::
+
+   'MySql Server has gone away (2006)'
+
+To do this edit /etc/my.conf and change::
+
+    [mysqld]
+    max_allowed_packet = 1M
+
+the 'max_allowed_packet' value from '1M' to '64M' or
+larger.
+
+Alternatively you can install an alternate indexer (whoosh, xapian
+etc.) and force the tracker to use it by setting the ``indexer``
+setting in the tracker's ``config.ini``.
+
+This fix was supplied by telsch. See issue
+http://issues.roundup-tracker.org/issue2550743 for further info or if
+you are interested in developing a patch to roundup to help work
+around this issue.
+
 Running the MySQL tests
 =======================
 
