@@ -245,7 +245,7 @@ def list_nodes(request):
     prop = request.form.getfirst("property")
     cls = request.client.db.getclass(prop)
     items = []
-    for nodeid in cls.getnodeids():
+    for nodeid in cls.getnodeids(retired=0):
         l = cls.getnode(nodeid).items()
         l = dict([x for x in l if len(x) == 2])
         try:

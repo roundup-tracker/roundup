@@ -126,7 +126,7 @@ file = FileClass(db, "file",
                 description=String(indexme='yes'))
 
 # Patch
-patches = FileClass(db, "patches",
+patch = FileClass(db, "patch",
                   name=String(),
                   description=String(indexme='yes'),
                   repository=String(),

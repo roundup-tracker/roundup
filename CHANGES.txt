@@ -252,6 +252,12 @@ Fixed:
   parts to this: 1) changes to the templates to properly define the
   __came_from form element. See ``upgrading.txt``. 2) code changes
   to the LoginAction code in roundup/cgi/actions.py.  (John Rouillard)
+- issue2550648 - partial fix for problem in this issue. Ezio Melotti
+  reported that the expression editor allowed the user to generate an
+  expression using retired values. To align the expression editor with
+  the simple dropdown search item, retired values are now removed from
+  the expression editor. (We have an open question as to whether this
+  is desirable.)
 
 2016-01-11: 1.5.1
 
