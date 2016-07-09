@@ -264,7 +264,12 @@ Fixed:
   Possible solutions include: increasing value of MySQL parameter,
   changing the full text search engine to whoosh or xapian. Problem
   report by telsch. Analysis/doc by John Rouillard.
-
+- issue2550882. Reported by Karl-Philipp Richter. Fixed
+  installation.txt documentation to include better directions on
+  starting roundup-server on different ports/ip addresses. Also
+  updated man page to include default use of localhost for -n and use
+  of -n 0.0.0.0 to bind to all addresses on the host. (John Rouillard)
+  
 2016-01-11: 1.5.1
 
 Pay attention:

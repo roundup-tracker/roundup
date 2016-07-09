@@ -276,7 +276,14 @@ Configuring your first tracker
 
    and you should see the tracker interface.
 
+   To run your tracker on some interface other than 127.0.0.1 and port
+   8080 (make sure you change the "tracker :: web" changes to match) use::
 
+     roundup-server -p 1080 -n 0.0.0.0 support=/opt/roundup/trackers/support
+
+   to run the server at port 1080 and bind to all ip addresses on your system.
+   Then direct your web browser to ``http://your_host_name:1080/support``.
+   
 Choosing Your Template
 ----------------------
 
