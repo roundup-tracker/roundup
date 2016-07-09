@@ -727,8 +727,8 @@ behaviour:
 
     Because there is no ``name`` parameter for the user class, there
     will be no header. However setting::
-   
-      assigned_to=Link("user", msg_header_property="username")
+
+       assigned_to=Link("user", msg_header_property="username")
 
     will make the mail gateway generate an ``X-Roundup-issue-assigned_to``
     using the username property of the linked user.

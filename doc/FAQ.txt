@@ -161,7 +161,7 @@ to::
 
 for more information, go and read about Zope Page Templates.
 
-I want to link version identifiers from my messages to svn/mercurial/git 
+I want to link version identifiers from my messages to svn/mercurial/git
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 See: the LinkFormatingExample at:
