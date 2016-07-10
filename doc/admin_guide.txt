@@ -398,8 +398,10 @@ Windows
 -------
 
 On Windows, the roundup-server program runs as a Windows Service, and
-therefore may be controlled through the Services control panel. The
-roundup-server program may also control the service directly:
+therefore may be controlled through the Services control panel. Note
+that you **must** install the pywin32 package to allow roundup to
+run as a service. The roundup-server program may also control the
+service directly:
 
 **install the service**
   ``roundup-server -C /path/to/my/roundup-server.ini -c install``

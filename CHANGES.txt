@@ -269,6 +269,12 @@ Fixed:
   starting roundup-server on different ports/ip addresses. Also
   updated man page to include default use of localhost for -n and use
   of -n 0.0.0.0 to bind to all addresses on the host. (John Rouillard)
+- issue2550827, issue2550718. Doc additions so people know that a
+  python 32 bit installation may be required for windows. Additional
+  documentation on the requirement of pywin32 for running roundup as a
+  windows service. Also the windows installer must be run as
+  administrator and strong encouragement for installing the pytz
+  module added to ``doc/installation.txt``.
   
 2016-01-11: 1.5.1
 

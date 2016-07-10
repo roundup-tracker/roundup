@@ -40,6 +40,14 @@ Some variants of Linux will need an additional "python dev" package
 installed for Roundup installation to work. Debian and derivatives, are
 known to require this.
 
+If you are using the Roundup Windows installer on a 64 bit system and
+you get the error message::
+
+  "No Python installation found in the registry"
+
+you need to install a 32 bit version of python. The 64 bit versions
+use a different registry key that the installer doesn't detect. See:
+http://issues.roundup-tracker.org/issue2550718 for details.
 
 Optional Components
 ===================
@@ -50,7 +58,8 @@ Timezone Definitions
   Full timezone support requires pytz_ module (version 2005i or later)
   which brings the `Olson tz database`_ into Python.  If pytz_ is not
   installed, timezones may be specified as numeric hour offsets only.
-
+  This is optional but strongly suggested.
+  
 An RDBMS
   Sqlite, MySQL and Postgresql are all supported by Roundup and will be
   used if available. One of these is recommended if you are anticipating a
@@ -105,6 +114,7 @@ jinja2
 
 Windows Service
   You can run Roundup as a Windows service if pywin32_ is installed.
+  Otherwise it must be started manually.
 
 .. _Xapian: http://xapian.org/
 .. _Whoosh: https://bitbucket.org/mchaput/whoosh/wiki/Home
@@ -165,6 +175,9 @@ installation:
 For information about how Roundup installs, see the `administration
 guide`_.
 
+The following assumes that you are using the source distribution.  If
+you are using the Windows installer, run it with Administrator
+privileges so it can correctly update the registry.
 
 Basic Installation Steps
 ------------------------
