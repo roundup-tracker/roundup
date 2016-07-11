@@ -354,6 +354,9 @@ Examples:
         parser.error('Invalid number of arguments. '
             'Each site needs a home and a server.')
 
+    if opts.verbose == None:
+        opts.verbose = logging.WARNING
+
     log.setLevel(opts.verbose)
     myServer = IMAPServer(delay=opts.delay, pidfile=opts.pidfile,
         daemon=opts.daemon)

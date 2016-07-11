@@ -275,7 +275,9 @@ Fixed:
   windows service. Also the windows installer must be run as
   administrator and strong encouragement for installing the pytz
   module added to ``doc/installation.txt``.
-  
+- issue2550776: imapServer.py problem. Fixed a missing initialization of the
+  logging level if no logging level option is supplied. (John Rouillard)
+
 2016-01-11: 1.5.1
 
 Pay attention:
