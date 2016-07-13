@@ -277,6 +277,9 @@ Fixed:
   module added to ``doc/installation.txt``.
 - issue2550776: imapServer.py problem. Fixed a missing initialization of the
   logging level if no logging level option is supplied. (John Rouillard)
+- issue2550839: Xapian, DatabaseLockError: Unable to get write lock on
+  db/text-index: already locked. Put in a retry loop that will attempt
+  to get the lock. Total delay approx 4.5 seconds. (John Rouillard)
 
 2016-01-11: 1.5.1
 
