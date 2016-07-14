@@ -20,7 +20,7 @@ todo = """
 __docformat__ = 'restructuredtext'
 
 
-import cgi, urllib, re, os.path, mimetypes, csv
+import cgi, urllib, re, os.path, mimetypes, csv, string
 import calendar
 import textwrap
 
@@ -116,9 +116,14 @@ class TALLoaderBase(LoaderBase):
     def _find(self, name):
         """ Find template, return full path and filename of the
             template if it is found, None otherwise."""
+        realsrc = os.path.realpath(self.dir)
         for extension in ['', '.html', '.xml']:
             f = name + extension
-            src = os.path.join(self.dir, f)
+            src = os.path.join(realsrc, f)
+            realpath = os.path.realpath(src)
+            print f, src, realpath, realsrc
+            if string.find(realpath, realsrc) != 0:
+                return # will raise invalid template
             if os.path.exists(src):
                 return (src, f)
 

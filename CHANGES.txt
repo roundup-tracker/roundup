@@ -286,6 +286,12 @@ Fixed:
   Had to explicitly manage transactions with BEGIN IMMEDIATE and call
   sql_commit. Note that this reduces performance in return for accuracy.
   Problem reported by Matt Mackall (mpm) (John Rouillard).
+- issue2550701: Path traversal from template names. This affects the
+  tal based template engines (zopetal, chameleon). If a directory
+  with a specific name is created in the html subdirectory, the
+  template name in the url can be used to get access to files outside
+  of the tracker html directory. This has been fixed by normalizing
+  the path and comparing to the normalized path for the html directory.
 
 2016-01-11: 1.5.1
 
