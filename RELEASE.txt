@@ -34,9 +34,10 @@ Roundup release checklist:
       b) demo.py
     with all available Python versions.
 12. Assuming all is well tag the release in the version-control system.
-13. Build binary packages
+13. Build binary packages (requires python 2.6 or newer for
+    bdist_windist to have the --user-access flag.)
       python setup.py bdist_rpm
-      python setup.py bdist_wininst
+      python setup.py bdist_wininst --user-access-control force
 14. Upload source distributive to PyPI
       python setup.py sdist upload --sign
     It should appear on http://pypi.python.org/pypi/roundup in no time.
