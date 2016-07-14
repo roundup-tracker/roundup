@@ -366,15 +366,36 @@ class Database(rdbms_common.Database):
     def newid(self, classname):
         """ Generate a new id for the given class
         """
+
+        # Prevent other processes from reading while we increment.
+        # Otherwise multiple processes can end up with the same
+        # new id and hilarity results.
+        #
+        # Defeat pysqlite's attempts to do locking by setting
+        # isolation_level to None. Pysqlite can commit
+        # on it's own even if we don't want it to end the transaction.
+        # If we rewrite to use another sqlite library like apsw we
+        # don't have to deal with this autocommit/autotransact foolishness.
+        self.conn.isolation_level = None;
+        # Manage the transaction locks manually.
+        self.sql("BEGIN IMMEDIATE");
+
         # get the next ID
         sql = 'select num from ids where name=%s'%self.arg
         self.sql(sql, (classname, ))
         newid = int(self.cursor.fetchone()[0])
 
-        # update the counter
-        sql = 'update ids set num=%s where name=%s'%(self.arg, self.arg)
-        vals = (int(newid)+1, classname)
+        # leave the next larger number as the next newid
+        sql = 'update ids set num=num+1 where name=%s'%self.arg
+        vals = (classname,)
         self.sql(sql, vals)
+
+        # reset pysqlite's auto transact stuff to default since the
+        # rest of the code expects it.
+        self.conn.isolation_level = '';
+        # commit writing the data, clearing locks for other processes
+        # and create a new cursor to the database.
+        self.sql_commit();
 
         # return as string
         return str(newid)

@@ -280,6 +280,12 @@ Fixed:
 - issue2550839: Xapian, DatabaseLockError: Unable to get write lock on
   db/text-index: already locked. Put in a retry loop that will attempt
   to get the lock. Total delay approx 4.5 seconds. (John Rouillard)
+- issue2550727: db.newid is broken with sqlite. Added proper transaction
+  lock around the sql code to get a new id. The the locking
+  that pysqlite attempts had to be defeated because it is broken.
+  Had to explicitly manage transactions with BEGIN IMMEDIATE and call
+  sql_commit. Note that this reduces performance in return for accuracy.
+  Problem reported by Matt Mackall (mpm) (John Rouillard).
 
 2016-01-11: 1.5.1
 
