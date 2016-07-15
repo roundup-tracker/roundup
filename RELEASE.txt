@@ -46,6 +46,10 @@ Roundup release checklist:
     roundup-devel@lists.sourceforge.net
 16. Refresh website.
       website/README.txt
+      http://www.roundup-tracker.org/ should state that the stable
+      version is the one that you released.
+      http://www.roundup-tracker.org/docs.html should also match the
+      released version (or atleast the major 1.x release.
 
 So, those commands in a nice, cut'n'pasteable form::
 
