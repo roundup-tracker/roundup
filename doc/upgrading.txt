@@ -23,6 +23,23 @@ Contents:
 Migrating from 1.5.1 to 1.6.0
 =============================
 
+Fix for path traversal changes template resolution
+--------------------------------------------------
+
+The templates in the tracker's html subdirectory must not be
+symbolic links that lead outside of the html directory.
+
+If you don't use symbolic links for templates in your html
+subdirectory you don't have to make any changes. Otherwise you need to
+replace the symbolic links with hard links to the files or replace the
+symbolic links with the files.
+
+This is a side effect of fixing a path traversal security issue.  The
+security issue required a directory with a specific unusual name. This
+made it difficult to exploit. However allowing the use of
+subdirectories to organize the templates required that it be fixed.
+
+
 Database back end specified in config.ini
 -----------------------------------------
 
