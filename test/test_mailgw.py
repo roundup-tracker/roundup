@@ -3444,6 +3444,58 @@ Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 _______________________________________________________________________
 ''')
 
+    def testmsgHeaderPropertyAssignedto(self):
+        ''' Test that setting the msg_header_property to an empty string
+        suppresses the X-Roundup-issue-prop header in generated email.
+        '''
+        reference_email = '''FROM: roundup-admin@your.tracker.email.domain.example
+TO: mary@test.test, richard@test.test
+Content-Type: text/plain; charset="utf-8"
+Subject: [issue1] set assignedto
+To: mary@test.test, richard@test.test
+From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
+MIME-Version: 1.0
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
+X-Roundup-Issue-Assignedto: mary
+Content-Transfer-Encoding: quoted-printable
+
+Bork, Chef <chef@bork.bork.bork> added the comment:
+
+Check that assignedto makes it into an X-Header
+
+----------
+assignedto:  -> mary
+nosy: +mary
+status: unread -> chatting
+title: Testing... -> set assignedto
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
+_______________________________________________________________________
+'''        
+        self.db.issue.properties['assignedto'].msg_header_property='username'
+
+        nodeid1 = self.doNewIssue()
+        nodeid2 = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: "Bork, Chef" <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: [issue1] set assignedto [assignedto=mary]
+
+Check that assignedto makes it into an X-Header
+''')
+        assert os.path.exists(SENDMAILDEBUG)
+        self.compareMessages(self._get_mail(), reference_email)
+
     def testmsgHeaderPropertyEmptyString(self):
         ''' Test that setting the msg_header_property to an empty string
         suppresses the X-Roundup-issue-prop header in generated email.
