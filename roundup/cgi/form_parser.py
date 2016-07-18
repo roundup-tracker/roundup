@@ -594,11 +594,9 @@ class FormParser:
                 # new item (any class) with no content - ignore
                 del all_props[(cn, id)]
             elif isinstance(self.db.classes[cn], hyperdb.FileClass):
-                if id is not None and id.startswith('-'):
-                    if not props.get('content', ''):
-                        del all_props[(cn, id)]
-                elif props.has_key('content') and not props['content']:
-                    raise FormError (self._('File is empty'))
+                # Avoid emptying the file
+                if props.has_key('content') and not props['content']:
+                    del props ['content']
         return all_props, all_links
 
     def parse_file(self, fpropdef, fprops, v):
