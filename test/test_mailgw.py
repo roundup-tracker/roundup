@@ -3059,6 +3059,24 @@ Message-Id: <dummy_test_message_id>
         self.assertEqual(self.db.issue.get(nodeid, 'title'),
             '[frobulated] testing')
 
+    def testInvalidClassLooseReplyQuoted(self):
+        self.instance.config.MAILGW_SUBJECT_PREFIX_PARSING = 'loose'
+        nodeid = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Subject: Re: "[frobulated] testing"
+Cc: richard@test.test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+
+Dumb mailers may put quotes around the subject after the reply prefix,
+e.g. Re: "[issue1] bla bla"
+''')
+        assert not os.path.exists(SENDMAILDEBUG)
+        self.assertEqual(self.db.issue.get(nodeid, 'title'),
+            '[frobulated] testing')
+
     def testInvalidClassLoose(self):
         self.instance.config.MAILGW_SUBJECT_PREFIX_PARSING = 'loose'
         nodeid = self._handle_mail('''Content-Type: text/plain;
@@ -3090,6 +3108,23 @@ Message-Id: <dummy_test_message_id>
 ''')
         assert not os.path.exists(SENDMAILDEBUG)
         self.assertEqual(self.db.keyword.get('1', 'name'), 'Bar')
+
+    def testDoublePrefixLoose(self):
+        self.instance.config.MAILGW_SUBJECT_PREFIX_PARSING = 'loose'
+        self.instance.config.MAILGW_SUBJECT_SUFFIX_PARSING = 'loose'
+        nodeid = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Subject: [frobulated] [frobulatedagain] testing stuff after double prefix
+Cc: richard@test.test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+
+''')
+        assert not os.path.exists(SENDMAILDEBUG)
+        self.assertEqual(self.db.issue.get(nodeid, 'title'),
+            '[frobulated] [frobulatedagain] testing stuff after double prefix')
 
     def testClassStrictInvalid(self):
         self.instance.config.MAILGW_SUBJECT_PREFIX_PARSING = 'strict'

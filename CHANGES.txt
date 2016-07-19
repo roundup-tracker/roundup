@@ -293,6 +293,12 @@ Fixed:
   of the tracker html directory. This has been fixed by normalizing
   the path and comparing to the normalized path for the html
   directory. See ``doc/upgrading.txt``. (John Rouillard)
+- Fix subject parsing in mail gateway. The previous parsing routine
+  would not ensure that arguments are at the end of the subject and when
+  subject_suffix_parsing was configured to be 'loose' it would truncate
+  the subject when encountering a double prefix, e.g.
+  Subject: [frobulated] [frobulatedagain] this part would be lost
+  (Ralf Schlatterbeck)
 
 2016-01-11: 1.5.1
 

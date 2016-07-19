@@ -652,33 +652,33 @@ Emails to Roundup trackers must include a Subject: line!
 
             tmpsubject = tmpsubject[m.end():]
 
-        # Match the title of the subject
-        # if we've not found a valid classname prefix then force the
-        # scanning to handle there being a leading delimiter
-        title_re = r'(?P<title>%s[^%s]*)'%(
-            not self.matches['classname'] and '.' or '', delim_open)
-        m = re.match(title_re, tmpsubject.strip(), re.IGNORECASE)
-        if m:
-            self.matches.update(m.groupdict())
-            tmpsubject = tmpsubject[len(self.matches['title']):] # Consume title
-
-        if self.matches['title']:
-            self.matches['title'] = self.matches['title'].strip()
-        else:
-            self.matches['title'] = ''
-
-        # strip off the quotes that dumb emailers put around the subject, like
-        #      Re: "[issue1] bla blah"
-        if self.matches['quote'] and self.matches['title'].endswith('"'):
-            self.matches['title'] = self.matches['title'][:-1]
-        
-        # Match any arguments specified
-        args_re = r'(?P<argswhole>%s(?P<args>.+?)%s)?'%(delim_open,
-            delim_close)
+        # Match any arguments specified *from the end*
+        # Optionally match and strip quote at the end that dumb mailers
+        # may put there, e.g.
+        #      Re: "[issue1] bla blah [<args>]"
+        q = ''
+        if self.matches['quote']:
+            q = '"?'
+        args_re = r'(?P<argswhole>%s(?P<args>[^%s]*)%s)%s$'%(delim_open,
+            delim_close, delim_close, q)
         m = re.search(args_re, tmpsubject.strip(), re.IGNORECASE|re.VERBOSE)
         if m:
             self.matches.update(m.groupdict())
+            tmpsubject = tmpsubject [:m.start()]
+        else:
+            self.matches['argswhole'] = self.matches['args'] = None
 
+        # The title of the subject is the remaining tmpsubject.
+        self.matches ['title'] = tmpsubject.strip ()
+
+        # strip off the quotes that dumb emailers put around the subject, like
+        #      Re: "[issue1] bla blah"
+        # but only if we didn't match arguments at the end (which would
+        # already have consumed the quote after the subject)
+        if self.matches['quote'] and not self.matches['argswhole'] \
+           and self.matches['title'].endswith('"'):
+            self.matches['title'] = self.matches['title'][:-1]
+        
     def rego_confirm(self):
         ''' Check for registration OTK and confirm the registration if found
         '''
