@@ -93,6 +93,58 @@ class XmlrpcTest(object):
         results = self.server.display(fileid, 'content')
         self.assertEqual(results['content'], 'hello\r\nthere')
 
+    def testSchema(self):
+        schema={'status': [('order', '<roundup.hyperdb.Number>'),
+                           ('name', '<roundup.hyperdb.String>')],
+                'keyword': [('name', '<roundup.hyperdb.String>')],
+                'priority': [('order', '<roundup.hyperdb.Number>'),
+                             ('name', '<roundup.hyperdb.String>')],
+                'user': [('username', '<roundup.hyperdb.String>'),
+                         ('alternate_addresses', '<roundup.hyperdb.String>'),
+                         ('realname', '<roundup.hyperdb.String>'),
+                         ('roles', '<roundup.hyperdb.String>'),
+                         ('organisation', '<roundup.hyperdb.String>'),
+                         ('queries', '<roundup.hyperdb.Multilink to "query">'),
+                         ('phone', '<roundup.hyperdb.String>'),
+                         ('address', '<roundup.hyperdb.String>'),
+                         ('timezone', '<roundup.hyperdb.String>'),
+                         ('password', '<roundup.hyperdb.Password>')],
+                'file': [('content', '<roundup.hyperdb.String>'),
+                         ('type', '<roundup.hyperdb.String>'),
+                         ('name', '<roundup.hyperdb.String>')],
+                'msg': [('files', '<roundup.hyperdb.Multilink to "file">'),
+                        ('inreplyto', '<roundup.hyperdb.String>'),
+                        ('tx_Source', '<roundup.hyperdb.String>'),
+                        ('recipients', '<roundup.hyperdb.Multilink to "user">'),
+                        ('author', '<roundup.hyperdb.Link to "user">'),
+                        ('summary', '<roundup.hyperdb.String>'),
+                        ('content', '<roundup.hyperdb.String>'),
+                        ('messageid', '<roundup.hyperdb.String>'),
+                        ('date', '<roundup.hyperdb.Date>'),
+                        ('type', '<roundup.hyperdb.String>')],
+                'query': [('url', '<roundup.hyperdb.String>'),
+                          ('private_for', '<roundup.hyperdb.Link to "user">'),
+                          ('name', '<roundup.hyperdb.String>'),
+                          ('klass', '<roundup.hyperdb.String>')],
+                'issue': [('status', '<roundup.hyperdb.Link to "status">'),
+                          ('files', '<roundup.hyperdb.Multilink to "file">'),
+                          ('tx_Source', '<roundup.hyperdb.String>'),
+                          ('keyword', '<roundup.hyperdb.Multilink to "keyword">'),
+                          ('title', '<roundup.hyperdb.String>'),
+                          ('nosy', '<roundup.hyperdb.Multilink to "user">'),
+                          ('messages', '<roundup.hyperdb.Multilink to "msg">'), 
+                          ('priority', '<roundup.hyperdb.Link to "priority">'),
+                          ('assignedto', '<roundup.hyperdb.Link to "user">'),
+                          ('superseder', '<roundup.hyperdb.Multilink to "issue">')]}
+
+        results = self.server.schema()
+        self.assertEqual(results, schema)
+
+    def testLookup(self):
+        self.assertRaises(KeyError, self.server.lookup, 'user', '1')
+        results = self.server.lookup('user', 'admin')
+        self.assertEqual(results, '1')
+
     def testAction(self):
         # As this action requires special previledges, we temporarily switch
         # to 'admin'
@@ -105,6 +157,13 @@ class XmlrpcTest(object):
             self.db.setCurrentUser('joe')
         users_after = self.server.list('user')
         self.assertEqual(users_before, users_after)
+
+        # test a bogus action
+        with self.assertRaises(Exception) as cm:
+            self.server.action('bogus')
+        print cm.exception
+        self.assertEqual(cm.exception.message,
+                         'action "bogus" is not supported ')
 
     def testAuthDeniedEdit(self):
         # Wrong permissions (caught by roundup security module).
