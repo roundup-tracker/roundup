@@ -253,6 +253,24 @@ class MailgwTestAbstractBase(DiffHelper):
         finally:
             f.close()
 
+    def testHelpMessage(self):
+        help_message='''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Cc: richard@test.test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+Subject: help
+
+'''
+        assert not os.path.exists(SENDMAILDEBUG)
+        self.assertRaises(MailUsageHelp, self._handle_mail, help_message)
+        # FIXME I think help sends email. but using _get_mail() doesn't
+        # work. The file mail-test.log is missing.
+        # self.compareMessages(self._get_mail(), 1)
+
+
     # Normal test-case used for both non-pgp test and a test while pgp
     # is enabled, so this test is run in both test suites.
     def testEmptyMessage(self):
