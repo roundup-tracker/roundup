@@ -134,6 +134,12 @@ Features:
   requested the ability to put templates into subdirectories. So
   the issue class can accept @template=issues/item to get the
   html/issues/issue.item.html template. See ``doc/upgrading.txt``.
+- issue1842687: Keywords: After creating, stay in "Create New" mode.
+  Change to classic tracker template to provide a check box (checked
+  by default) that keeps the user on the "Add new keyword" page after
+  submitting a new keyword. Usually after submission, you will see the
+  the page for the new keyword to allow you to change the name of the
+  keyword. (John Rouillard)
 
 Fixed:
 

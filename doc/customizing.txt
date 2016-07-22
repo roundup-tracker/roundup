@@ -1539,7 +1539,10 @@ of:
 
 **new**
  Add a new item to the database. You may use the same `special form
- variables`_ as in the "edit" action.
+ variables`_ as in the "edit" action. Also you can set the
+ ``__redirect_to`` form variable to the URL that should be displayed after
+ the new item is created. This is useful if you want to create another
+ item rather than edit the newly created item.
 
 **retire**
  Retire the item in the database.
@@ -1605,6 +1608,9 @@ variables and their values. You can:
 - Remove items from a multilink property of the current item.
 - Specify that some properties are required for the edit
   operation to be successful.
+- Redirect to a different page after creating a new item (new action
+  only, not edit action). Usually you end up on the page for the
+  created item.
 - Set up user interface locale.
 
 These operations will only take place if the form action (the
@@ -1711,6 +1717,11 @@ None of the above (ie. just a simple form value)
 
 Any of the form variables may be prefixed with a classname or
 designator.
+
+Setting the form variable: ``__redirect_to=`` to a url when @action=new
+redirects the user to the specified url after successfully creating
+the new item. This is useful if you want the user to create another
+item rather than edit the newly created item.
 
 Two special form values are supported for backwards compatibility:
 

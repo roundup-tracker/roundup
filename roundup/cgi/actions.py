@@ -726,7 +726,12 @@ class NewItemAction(EditCommon):
         # commit now that all the tricky stuff is done
         self.db.commit()
 
-        # redirect to the new item's page
+        # Allow an option to stay on the page to create new things
+        if '__redirect_to' in self.form:
+            raise exceptions.Redirect('%s&@ok_message=%s'%(
+                self.form['__redirect_to'].value, urllib_.quote(messages)))
+
+        # otherwise redirect to the new item's page
         raise exceptions.Redirect('%s%s%s?@ok_message=%s&@template=%s' % (
             self.base, self.classname, self.nodeid, urllib_.quote(messages),
             urllib_.quote(self.template)))

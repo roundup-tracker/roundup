@@ -36,6 +36,20 @@
   <tr>
    <th i18n:translate="">Keyword</th>
    <td tal:content="structure context/name/field">name</td>
+   <td tal:condition="not:context/id">
+     <tal:comment tal:replace="nothing">
+       If we get here and do not have an id, we are creating a new
+       keyword. It would be nice to provide some mechanism to
+       determine the preferred state of the "Continue adding keywords"
+       checkbox. By default I have it enabled.
+     </tal:comment>
+     <input type="checkbox" id="continue_new_keyword"
+	    name="__redirect_to"
+	    tal:attributes="value
+			    string:${request/base}${request/env/PATH_INFO}?@template=item;
+			    checked python:True" />
+     <label for="continue_new_keyword" i18n:translate="">Continue adding keywords.</label>
+   </td>
   </tr>
 
   <tr>

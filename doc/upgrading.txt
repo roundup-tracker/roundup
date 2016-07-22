@@ -162,6 +162,46 @@ or with::
 the important part is that the action field **must not** include any query
 parameters ('#' includes query params).
 
+Option to make adding multiple keywords more convenient
+-------------------------------------------------------
+
+In the classic tracker, after adding a new keyword you are redirected
+to the page for the new keyword so you can change the keyword's
+name. This is usually not desirable as you usually correctly set the
+keyword's name when creating the keyword. The new classic tracker has
+a new checkbox (checked by default) that keeps you on the same page so
+you can add a new keywords one after the other.
+
+To add this to your own tracker, add the following code (prefixed with
+a +) after the entry box for the new keyword::
+
+      <tr>
+       <th i18n:translate="">Keyword</th>
+       <td tal:content="structure context/name/field">name</td>
+   +   <td tal:condition="not:context/id">
+   +     <tal:comment tal:replace="nothing">
+   +       If we get here and do not have an id, we are creating a new
+   +       keyword. It would be nice to provide some mechanism to
+   +       determine the preferred state of the "Continue adding keywords"
+   +       checkbox. By default it is enabled.
+   +     </tal:comment>
+   +     <input type="checkbox" id="continue_new_keyword"
+   +           name="__redirect_to"
+   +           tal:attributes="value
+   +                           string:${request/base}${request/env/PATH_INFO}?@template=item;
+   +                           checked python:True" />
+   +     <label for="continue_new_keyword" i18n:translate="">Continue adding keywords.</label>
+   +   </td>
+      </tr>
+
+Note remove the leading '+' when adding this to the templates.
+
+The key component here is support for the '__redirect_to' query
+property. It is a url which can be used when creating any new item
+(issue, user, keyword ....). It controls the next page displayed after
+creating the item. If '__redirect_to' is not set, then you end up on
+the page for the newly created item.
+
 html/_generic.404.html in trackers use page template
 ----------------------------------------------------
 
