@@ -94,7 +94,7 @@ Section **main**
 
  templates -- ``html``
   Path to the HTML templates directory. The path may be either absolute
-  or relative to the directory containig this config file.
+  or relative to the directory containing this config file.
 
  static_files -- default *blank*
   Path to directory holding additional static files available via Web
@@ -1484,7 +1484,7 @@ Neither b. or e. use templates and stop before the template is
 determined. For other contexts the template used is specified by the
 ``@template`` variable, which defaults to:
 
-- only classname suplied:        "index"
+- only classname supplied:       "index"
 - full item designator supplied: "item"
 
 
@@ -1798,6 +1798,15 @@ access the test template using the "@template" URL argument::
 
 and it won't affect your users using the "issue.item" template.
 
+You can also put templates into a subdirectory of the template
+directory. So if you specify::
+
+   http://your.tracker.example/tracker/issue?@template=test/item
+
+you will use the template at: ``test/issue.item.html``. If that
+template doesn't exit it will try to use
+``test/_generic.item.html``. If that template doesn't exist
+it will return an error.
 
 How the templates work
 ----------------------

@@ -1157,7 +1157,17 @@ class Client:
 
         tplname = name     
         if view:
-            tplname = '%s.%s' % (name, view)
+            # Support subdirectories for templates. Value is path/to/VIEW
+            # or just VIEW if the template is in the html directory of
+            # the tracker.
+            slash_loc = view.rfind("/")
+            if slash_loc == -1:
+                # try plain class.view
+                tplname = '%s.%s' % (name, view)
+            else:
+                # try path/class.view
+                tplname = '%s/%s.%s'%(
+                    view[:slash_loc], name, view[slash_loc+1:])
 
         if loader.check(tplname):
             return tplname
@@ -1167,7 +1177,10 @@ class Client:
         if not view:
             raise templating.NoTemplate('Template "%s" doesn\'t exist' % name)
 
-        generic = '_generic.%s' % view
+        if slash_loc == -1:
+            generic = '_generic.%s' % view
+        else:
+            generic = '%s/_generic.%s' % (view[:slash_loc], view[slash_loc+1:])
         if loader.check(generic):
             return generic
 

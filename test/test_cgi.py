@@ -12,7 +12,7 @@ import unittest, os, shutil, errno, sys, difflib, cgi, re, StringIO
 
 from roundup.cgi import client, actions, exceptions
 from roundup.cgi.exceptions import FormError
-from roundup.cgi.templating import HTMLItem, HTMLRequest
+from roundup.cgi.templating import HTMLItem, HTMLRequest, NoTemplate
 from roundup.cgi.form_parser import FormParser
 from roundup import init, instance, password, hyperdb, date
 
@@ -1084,5 +1084,84 @@ class FormTestCase(unittest.TestCase):
         # but not acting like the column name is not found
         self.assertRaises(exceptions.SeriousError,
             actions.ExportCSVAction(cl).handle)
+
+class TemplateTestCase(unittest.TestCase):
+    ''' Test the template resolving code, i.e. what can be given to @template
+    '''
+    def setUp(self):
+        self.dirname = '_test_template'
+        # set up and open a tracker
+        self.instance = db_test_base.setupTracker(self.dirname)
+
+        # open the database
+        self.db = self.instance.open('admin')
+        self.db.tx_Source = "web"
+        self.db.user.create(username='Chef', address='chef@bork.bork.bork',
+            realname='Bork, Chef', roles='User')
+        self.db.user.create(username='mary', address='mary@test.test',
+            roles='User', realname='Contrary, Mary')
+        self.db.post_init()
+
+    def tearDown(self):
+        self.db.close()
+        try:
+            shutil.rmtree(self.dirname)
+        except OSError, error:
+            if error.errno not in (errno.ENOENT, errno.ESRCH): raise
+
+    def testTemplateSubdirectory(self):
+        # test for templates in subdirectories
+
+        # make the directory
+        subdir = self.dirname + "/html/subdir"
+        os.mkdir(subdir)
+
+        # get the client instance The form is needed to initialize,
+        # but not used since I call selectTemplate directly.
+        t = client.Client(self.instance, "user",
+                {'PATH_INFO':'/user', 'REQUEST_METHOD':'POST'},
+         form=makeForm({"@template": "item"}))
+
+        # create new file in subdir and a dummy file outside of
+        # the tracker's html subdirectory
+        shutil.copyfile(self.dirname + "/html/issue.item.html",
+                        subdir + "/issue.item.html")
+        shutil.copyfile(self.dirname + "/html/user.item.html",
+                        self.dirname + "/user.item.html")
+
+        # create link outside the html subdir. This should fail due to
+        # path traversal check.
+        os.symlink("../../user.item.html", subdir + "/user.item.html")
+        # it will be removed and replaced by a later test
+
+        # make sure a simple non-subdir template works.
+        # user.item.html exists so this works.
+        # note that the extension is not included just the basename
+        self.assertEqual("user.item", t.selectTemplate("user", "item"))
+
+        # there is no html/subdir/user.item.{,xml,html} so it will
+        # raise NoTemplate.
+        self.assertRaises(NoTemplate,
+                          t.selectTemplate, "user", "subdir/item")
+
+        # there is an html/subdir/issue.item.html so this succeeeds
+        r = t.selectTemplate("issue", "subdir/item")
+        self.assertEqual("subdir/issue.item", r)
+
+        # there is a self.directory + /html/subdir/user.item.html file,
+        # but it is a link to self.dir /user.item.html which is outside
+        # the html subdir so is rejected by the path traversal check.
+        self.assertRaises(NoTemplate,
+                          t.selectTemplate, "user", "subdir/item")
+
+        # clear out the link and create a new one to self.dirname +
+        # html/user.item.html which is inside the html subdir
+        # so the template check returns the symbolic link path.
+        os.remove(subdir + "/user.item.html")
+        os.symlink("../user.item.html", subdir + "/user.item.xml")
+
+        # template check works
+        r = t.selectTemplate("user", "subdir/item")
+        self.assertEquals("subdir/user.item", r)
 
 # vim: set filetype=python sts=4 sw=4 et si :

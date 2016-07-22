@@ -173,6 +173,19 @@ If your deployed tracker is based on: classic, minimal, responsive or
 devel templates and has not changed the html/_generic.404.html file,
 you can copy in the new file to get this additional functionality.
 
+Organize templates into subdirectories
+--------------------------------------
+
+The @template parameter to the web interface allows the use of
+subdirectories. So a setting of @template=view/view for an issue would
+use the template in the tracker's html/view/issue.view.html. Similarly
+for a caller class, you could put all the templates under the
+html/caller directory with names like: html/caller/caller.item.html,
+html/caller/caller.index.html etc. You may want to symbolically link the
+html/_generic* templates into your subdirectory so that missing
+templates (e.g. a missing caller.edit.html template) can be satisfied
+by the _generic.edit.html template.
+
 Schema change to allow "Show Unassigned" issues link to work for Anonymous user
 -------------------------------------------------------------------------------
 
