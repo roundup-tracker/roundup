@@ -1399,6 +1399,10 @@ class StringHTMLProperty(HTMLProperty):
             # just return the matched text
             return match.group(0)
 
+    def url_quote(self):
+        """ Return the string in plain format but escaped for use in a url """
+        return urllib.quote(self.plain())
+
     def hyperlinked(self):
         """ Render a "hyperlinked" version of the text """
         return self.plain(hyperlink=1)

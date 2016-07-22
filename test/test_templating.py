@@ -104,6 +104,11 @@ class HTMLClassTestCase(TemplatingTestCase) :
         cls = HTMLClass(self.client, "issue")
         cls["nosy"]
 
+    def test_string_url_quote(self):
+        ''' test that urlquote quotes the string '''
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', 'test string< foo@bar')
+        self.assertEqual(p.url_quote(), 'test%20string%3C%20foo%40bar')
+
     def test_url_match(self):
         '''Test the URL regular expression in StringHTMLProperty.
         '''

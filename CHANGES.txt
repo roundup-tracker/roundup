@@ -303,6 +303,12 @@ Fixed:
   the subject when encountering a double prefix, e.g.
   Subject: [frobulated] [frobulatedagain] this part would be lost
   (Ralf Schlatterbeck)
+- issue2550795: @dispname query args in page.html search links
+  not valid html. Some queries with names that include spaces are not
+  properly url encoded/quoted. I.E. a space should be replaced with
+  %20. Fixes to allow a url_query method to be applied to
+  HTMLStringProperty to properly quote string values passed as part of
+  a url.
 
 2016-01-11: 1.5.1
 

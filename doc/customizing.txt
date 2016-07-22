@@ -2422,6 +2422,9 @@ multiline   only on String properties - render a multiline form edit
             field for the property
 email       only on String properties - render the value of the property
             as an obscured email address
+url_quote   only on String properties. It quotes any characters in the
+            string so it is safe to use in a url. E.G. a space is
+            replaced with %20.
 confirm     only on Password properties - render a second form edit field
             for the property, used for confirmation that the user typed
             the password correctly. Generates a field with name

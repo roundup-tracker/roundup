@@ -54,7 +54,7 @@ status_notresolved string:-1,1,2,3,4,5,6,7;
    <span i18n:translate=""
     ><b>Your Queries</b> (<a href="query?@template=edit">edit</a>)</span><br>
    <tal:block tal:repeat="qs request/user/queries">
-    <a href="#" tal:attributes="href string:${qs/klass}?${qs/url}&@dispname=${qs/name}"
+    <a href="#" tal:attributes="href string:${qs/klass}?${qs/url}&@dispname=${qs/name/url_quote}"
        tal:content="qs/name">link</a><br>
    </tal:block>
   </p>

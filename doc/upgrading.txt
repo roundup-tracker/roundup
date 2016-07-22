@@ -186,6 +186,27 @@ html/_generic* templates into your subdirectory so that missing
 templates (e.g. a missing caller.edit.html template) can be satisfied
 by the _generic.edit.html template.
 
+Properly quote query dispname (displayed name) in page.html
+-----------------------------------------------------------
+
+A new method has been added to HTMLStringProperty called url_quote.
+The default templates have been updated to use this in the "Your
+Query" section of the trackers html/page.html file. You will want to
+change your template. Lines starting with - are the original line and
+you want to change it to match the line starting with the + (remove
+the + from the line)::
+
+      <tal:block tal:repeat="qs request/user/queries">
+  -    <a href="#" tal:attributes="href string:${qs/klass}?${qs/url}&@dispname=${qs/name}"
+  +    <a href="#" tal:attributes="href string:${qs/klass}?${qs/url}&@dispname=${qs/name/url_quote}"
+	  tal:content="qs/name">link</a><br>
+      </tal:block>
+
+Find the tal:repeat line that loops over all queries. Then
+change the value assigned to @dispname in the href attribute from
+${qs/name} to ${qs/name/url_quote}. Note that you should *not* change
+the value for tal:content.
+
 Schema change to allow "Show Unassigned" issues link to work for Anonymous user
 -------------------------------------------------------------------------------
 

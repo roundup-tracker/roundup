@@ -227,7 +227,7 @@
               <span i18n:translate=""><b>Your Queries</b> (<a class="nomargin" href="query?@template=edit">edit</a>)</span><br/>
               <ul tal:repeat="qs request/user/queries">
                 <li>
-                  <a tal:attributes="href string:${qs/klass}?${qs/url}&@dispname=${qs/name}" tal:content="qs/name">link</a>
+                  <a tal:attributes="href string:${qs/klass}?${qs/url}&@dispname=${qs/name/url_quote}" tal:content="qs/name">link</a>
                 </li>
               </ul>
            </li>
