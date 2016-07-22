@@ -1139,6 +1139,21 @@ class TemplateTestCase(unittest.TestCase):
         # note that the extension is not included just the basename
         self.assertEqual("user.item", t.selectTemplate("user", "item"))
 
+
+        # make sure home templates work
+        self.assertEqual("home", t.selectTemplate(None, ""))
+        self.assertEqual("home.classlist", t.selectTemplate(None, "classlist"))
+
+        # home.item doesn't exist should return _generic.item.
+        self.assertEqual("_generic.item", t.selectTemplate(None, "item"))
+
+        # test case where there is no view so generic template can't
+        # be determined.
+        with self.assertRaises(NoTemplate) as cm:
+            t.selectTemplate("user", "")
+        self.assertEqual(cm.exception.message,
+                         '''Template "user" doesn't exist''')
+
         # there is no html/subdir/user.item.{,xml,html} so it will
         # raise NoTemplate.
         self.assertRaises(NoTemplate,
@@ -1151,6 +1166,9 @@ class TemplateTestCase(unittest.TestCase):
         # there is a self.directory + /html/subdir/user.item.html file,
         # but it is a link to self.dir /user.item.html which is outside
         # the html subdir so is rejected by the path traversal check.
+        # Prefer NoTemplate here, or should the code be changed to
+        # report a new PathTraversal exception? Could the PathTraversal
+        # exception leak useful info to an attacker??
         self.assertRaises(NoTemplate,
                           t.selectTemplate, "user", "subdir/item")
 
