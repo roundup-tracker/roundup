@@ -109,6 +109,30 @@ class HTMLClassTestCase(TemplatingTestCase) :
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', 'test string< foo@bar')
         self.assertEqual(p.url_quote(), 'test%20string%3C%20foo%40bar')
 
+    def test_string_email(self):
+        ''' test that email obscures the email '''
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', 'rouilj@foo.example.com')
+        self.assertEqual(p.email(), 'rouilj at foo example ...')
+
+    def test_string_plain_or_hyperlinked(self):
+        ''' test that email obscures the email '''
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', 'A string <b> with rouilj@example.com embedded &lt; html</b>')
+        self.assertEqual(p.plain(), 'A string <b> with rouilj@example.com embedded &lt; html</b>')
+        self.assertEqual(p.plain(escape=1), 'A string &lt;b&gt; with rouilj@example.com embedded &amp;lt; html&lt;/b&gt;')
+        self.assertEqual(p.plain(hyperlink=1), 'A string &lt;b&gt; with <a href="mailto:rouilj@example.com">rouilj@example.com</a> embedded &amp;lt; html&lt;/b&gt;')
+        self.assertEqual(p.plain(escape=1, hyperlink=1), 'A string &lt;b&gt; with <a href="mailto:rouilj@example.com">rouilj@example.com</a> embedded &amp;lt; html&lt;/b&gt;')
+
+        self.assertEqual(p.hyperlinked(), 'A string &lt;b&gt; with <a href="mailto:rouilj@example.com">rouilj@example.com</a> embedded &amp;lt; html&lt;/b&gt;')
+
+    def test_string_field(self):
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', 'A string <b> with rouilj@example.com embedded &lt; html</b>')
+        self.assertEqual(p.field(), '<input type="text" name="test1@test" value="A string &lt;b&gt; with rouilj@example.com embedded &amp;lt; html&lt;/b&gt;" size="30">')
+
+    def test_string_multiline(self):
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', 'A string <b> with rouilj@example.com embedded &lt; html</b>')
+        self.assertEqual(p.multiline(), '<textarea  name="test1@test" id="test1@test" rows="5" cols="40">A string &lt;b&gt; with rouilj@example.com embedded &amp;lt; html&lt;/b&gt;</textarea>')
+        self.assertEqual(p.multiline(rows=300, cols=100, **{'class':'css_class'}), '<textarea class="css_class" name="test1@test" id="test1@test" rows="300" cols="100">A string &lt;b&gt; with rouilj@example.com embedded &amp;lt; html&lt;/b&gt;</textarea>')
+
     def test_url_match(self):
         '''Test the URL regular expression in StringHTMLProperty.
         '''
