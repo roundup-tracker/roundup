@@ -140,6 +140,8 @@ Features:
   submitting a new keyword. Usually after submission, you will see the
   the page for the new keyword to allow you to change the name of the
   keyword. (John Rouillard)
+- issue2550757 - internal restructuring to allow admin.py to be tested
+  more easily. W. Trevor King (wking)/ John Rouillard.
 
 Fixed:
 

@@ -72,6 +72,7 @@ class AdminTool:
         self.tracker_home = ''
         self.db = None
         self.db_uncommitted = False
+        self.force = None
 
     def get_class(self, classname):
         """Get the class - raise an exception if it doesn't exist.
@@ -378,36 +379,35 @@ Command help:
         # check for both old- and new-style configs
         if list(filter(os.path.exists, [config_ini_file,
                 os.path.join(tracker_home, 'config.py')])):
-            ok = raw_input(_(
+            if not self.force:
+                ok = raw_input(_(
 """WARNING: There appears to be a tracker in "%(tracker_home)s"!
 If you re-install it, you will lose all the data!
 Erase it? Y/N: """) % locals())
-            if ok.strip().lower() != 'y':
-                return 0
+                if ok.strip().lower() != 'y':
+                    return 0
 
             # clear it out so the install isn't confused
             shutil.rmtree(tracker_home)
 
         # select template
         templates = self.listTemplates()
-        template = len(args) > 1 and args[1] or ''
-        if template not in templates:
-            print _('Templates:'), ', '.join(templates)
-        while template not in templates:
-            template = raw_input(_('Select template [classic]: ')).strip()
-            if not template:
-                template = 'classic'
+        template = self._get_choice(
+            list_name=_('Templates:'),
+            prompt=_('Select template'),
+            options=templates,
+            argument=len(args) > 1 and args[1] or '',
+            default='classic')
 
         # select hyperdb backend
         import roundup.backends
         backends = roundup.backends.list_backends()
-        backend = len(args) > 2 and args[2] or ''
-        if backend not in backends:
-            print _('Back ends:'), ', '.join(backends)
-        while backend not in backends:
-            backend = raw_input(_('Select backend [anydbm]: ')).strip()
-            if not backend:
-                backend = 'anydbm'
+        backend = self._get_choice(
+            list_name=_('Back ends:'),
+            prompt=_('Select backend'),
+            options=backends,
+            argument=len(args) > 2 and args[2] or '',
+            default='anydbm')
         # XXX perform a unit test based on the user's selections
 
         # Process configuration file definitions
@@ -456,6 +456,20 @@ Erase it? Y/N: """) % locals())
 }
         return 0
 
+    def _get_choice(self, list_name, prompt, options, argument, default=None):
+        if default is None:
+            default = options[0]  # just pick the first one
+        if argument in options:
+            return argument
+        if self.force:
+            return default
+        sys.stdout.write('%s: %s\n' % (list_name, ', '.join(options)))
+        while argument not in options:
+            argument = raw_input('%s [%s]: ' % (prompt, default))
+            if not argument:
+                return default
+        return argument
+
     def do_genconfig(self, args):
         ''"""Usage: genconfig <filename>
         Generate a new tracker config file (ini style) with default values
@@ -494,12 +508,13 @@ Erase it? Y/N: """) % locals())
 
         # is there already a database?
         if tracker.exists():
-            ok = raw_input(_(
+            if not self.force:
+                ok = raw_input(_(
 """WARNING: The database is already initialised!
 If you re-initialise it, you will lose all the data!
 Erase it? Y/N: """))
-            if ok.strip().lower() != 'y':
-                return 0
+                if ok.strip().lower() != 'y':
+                    return 0
 
             # nuke it
             tracker.nuke()
@@ -1449,7 +1464,10 @@ Erase it? Y/N: """))
 
         # make sure we have a tracker_home
         while not self.tracker_home:
-            self.tracker_home = raw_input(_('Enter tracker home: ')).strip()
+            if not self.force:
+                self.tracker_home = raw_input(_('Enter tracker home: ')).strip()
+            else:
+                self.tracker_home = os.curdir
 
         # before we open the db, we may be doing an install or init
         if command == 'initialise':

@@ -2174,6 +2174,34 @@ class DBTest(commonDBTest):
         finally:
             roundup.admin.sys = sys
 
+
+    # test duplicate relative tracker home initialisation (issue2550757)
+    def testAdminDuplicateInitialisation(self):
+        import roundup.admin
+        output = []
+        def stderrwrite(s):
+            output.append(s)
+        roundup.admin.sys = MockNull ()
+        t = '_test_initialise'
+        try:
+            roundup.admin.sys.stderr.write = stderrwrite
+            tool = roundup.admin.AdminTool()
+            tool.force = True
+            args = (None, 'classic', 'anydbm',
+                    'MAIL_DOMAIN=%s' % config.MAIL_DOMAIN)
+            tool.do_install(t, args=args)
+            args = (None, 'mypasswd')
+            tool.do_initialise(t, args=args)
+            tool.do_initialise(t, args=args)
+            try:  # python >=2.7
+                self.assertNotIn(t, os.listdir(t))
+            except AttributeError:
+                self.assertFalse('db' in os.listdir(t))
+        finally:
+            roundup.admin.sys = sys
+            if os.path.exists(t):
+                shutil.rmtree(t)
+
     def testAddProperty(self):
         self.db.issue.create(title="spam", status='1')
         self.db.commit()
