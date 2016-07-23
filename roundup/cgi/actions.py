@@ -40,6 +40,99 @@ class Action:
         self.permission()
         return self.handle()
 
+    def clean_url(self, url):
+        '''Return URL validated to be under self.base and properly escaped
+
+        If url not properly escaped or validation fails raise ValueError.
+
+        To try to prevent XSS attacks, validate that the url that is
+        passed in is under self.base for the tracker. This is used to
+        clean up "__came_from" and "__redirect_to" form variables used
+        by the LoginAction and NewItemAction actions.
+
+        The url that is passed in must be a properly url quoted
+        argument. I.E. all characters that are not valid according to
+        RFC3986 must be % encoded. Schema should be lower case.
+
+        It parses the passed url into components.
+
+        It verifies that the scheme is http or https (so a redirect can
+        force https even if normal access to the tracker is via http).
+        Validates that the network component is the same as in self.base.
+        Validates that the path component in the base url starts the url's
+        path component. It not it raises ValueError. If everything
+        validates:
+
+        For each component, Appendix A of RFC 3986 says the following
+        are allowed:
+
+        pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
+        query         = *( pchar / "/" / "?" )
+        unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
+        pct-encoded   = "%" HEXDIG HEXDIG
+        sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
+                         / "*" / "+" / "," / ";" / "="
+
+        Checks all parts with a regexp that matches any run of 0 or
+        more allowed characters. If the component doesn't validate,
+        raise ValueError. Don't attempt to urllib_.quote it. Either
+        it's correct as it comes in or it's a ValueError.
+
+        Finally paste the whole thing together and return the new url.
+        '''
+
+        parsed_url_tuple = urllib_.urlparse(url)
+        parsed_base_url_tuple = urllib_.urlparse(self.base)
+
+        info={ 'url': url,
+               'base_url': self.base,
+               'base_scheme': parsed_base_url_tuple.scheme,
+               'base_netloc': parsed_base_url_tuple.netloc,
+               'base_path': parsed_base_url_tuple.path,
+               'url_scheme': parsed_url_tuple.scheme,
+               'url_netloc': parsed_url_tuple.netloc,
+               'url_path': parsed_url_tuple.path,
+               'url_params': parsed_url_tuple.params,
+               'url_query': parsed_url_tuple.query,
+               'url_fragment': parsed_url_tuple.fragment }
+
+        if parsed_base_url_tuple.scheme == "https":
+            if parsed_url_tuple.scheme != "https":
+                raise ValueError(self._("Base url %(base_url)s requires https. Redirect url %(url)s uses http.")%info)
+        else:
+            if parsed_url_tuple.scheme not in ('http', 'https'):
+                raise ValueError(self._("Unrecognized scheme in %(url)s")%info)
+
+        if parsed_url_tuple.netloc <> parsed_base_url_tuple.netloc:
+            raise ValueError(self._("Net location in %(url)s does not match base: %(base_netloc)s")%info)
+
+        if parsed_url_tuple.path.find(parsed_base_url_tuple.path) <> 0:
+            raise ValueError(self._("Base path %(base_path)s is not a prefix for url %(url)s")%info)
+
+        # I am not sure if this has to be language sensitive.
+        # Do ranges depend on the LANG of the user??
+        # Is there a newer spec for URI's than what I am referencing?
+
+        # Also it really should be % HEXDIG HEXDIG that's allowed
+        # If %%% passes, the roundup server should be able to ignore/
+        # quote it so it doesn't do anything bad otherwise we have a
+        # different vector to handle.
+        allowed_pattern = re.compile(r'''^[A-Za-z0-9@:/?._~%!$&'()*+,;=-]*$''')
+
+        if not allowed_pattern.match(parsed_url_tuple.path):
+           raise ValueError(self._("Path component (%(url_path)s) in %(url)s is not properly escaped")%info)
+
+        if not allowed_pattern.match(parsed_url_tuple.params):
+           raise ValueError(self._("Params component (%(url_params)s) in %(url)s is not properly escaped")%info)
+
+        if not allowed_pattern.match(parsed_url_tuple.query):
+            raise ValueError(self._("Query component (%(url_query)s) in %(url)s is not properly escaped")%info)
+
+        if not allowed_pattern.match(parsed_url_tuple.fragment):
+            raise ValueError(self._("Fragment component (%(url_fragment)s) in %(url)s is not properly escaped")%info)
+
+        return(urllib_.urlunparse(parsed_url_tuple))
+
     name = ''
     permissionType = None
     def permission(self):
@@ -729,7 +822,8 @@ class NewItemAction(EditCommon):
         # Allow an option to stay on the page to create new things
         if '__redirect_to' in self.form:
             raise exceptions.Redirect('%s&@ok_message=%s'%(
-                self.form['__redirect_to'].value, urllib_.quote(messages)))
+                self.clean_url(self.form['__redirect_to'].value),
+                urllib_.quote(messages)))
 
         # otherwise redirect to the new item's page
         raise exceptions.Redirect('%s%s%s?@ok_message=%s&@template=%s' % (
@@ -1046,7 +1140,9 @@ class LoginAction(Action):
             # 4. Define a new redirect_url missing the @...message entries.
             #    This will be redefined if there is a login error to include
             #      a new error message
-            redirect_url_tuple = urllib_.urlparse(self.form['__came_from'].value)
+
+            clean_url = self.clean_url(self.form['__came_from'].value)
+            redirect_url_tuple = urllib_.urlparse(clean_url)
             # now I have a tuple form for the __came_from url
             try:
                 query=urllib_.parse_qs(redirect_url_tuple.query)

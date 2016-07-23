@@ -1173,6 +1173,110 @@ class TemplateHtmlRendering(unittest.TestCase):
         self.assertNotEqual(-1, result.index('ok message'))
         # print result
 
+    def testclean_url(self):
+        ''' test the clean_url function '''
+        action = actions.Action(self.client)
+        clean_url = action.clean_url
+
+        # Christmas tree url: test of every component that passes
+        self.assertEqual(
+            clean_url("http://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=foo&parm=(zot)#issue"),
+            'http://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=foo&parm=(zot)#issue')
+
+        # allow replacing http with https if base is http
+        self.assertEqual(
+            clean_url("https://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=foo&parm=(zot)#issue"),
+            'https://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=foo&parm=(zot)#issue')
+
+
+        # change base to use https and make sure we don't redirect to http
+        saved_base = action.base
+        action.base = "https://tracker.example/cgi-bin/roundup.cgi/bugs/"
+        with self.assertRaises(ValueError) as cm:
+            clean_url("http://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=foo&parm=(zot)#issue")
+        self.assertEqual(cm.exception.message, 'Base url https://tracker.example/cgi-bin/roundup.cgi/bugs/ requires https. Redirect url http://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=foo&parm=(zot)#issue uses http.')
+        action.base = saved_base
+
+        # url doesn't have to be valid to roundup, just has to be contained
+        # inside of roundup. No zoik class is defined
+        self.assertEqual(clean_url("http://tracker.example/cgi-bin/roundup.cgi/bugs/zoik7;parm=bar?@template=foo&parm=(zot)#issue"), "http://tracker.example/cgi-bin/roundup.cgi/bugs/zoik7;parm=bar?@template=foo&parm=(zot)#issue")
+
+        # test with wonky schemes
+        with self.assertRaises(ValueError) as cm:
+            clean_url("email://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=foo&parm=(zot)#issue"),
+        self.assertEqual(cm.exception.message, 'Unrecognized scheme in email://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=foo&parm=(zot)#issue')
+
+        with self.assertRaises(ValueError) as cm:
+            clean_url("http%3a//tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=foo&parm=(zot)#issue"),
+        self.assertEqual(cm.exception.message, 'Unrecognized scheme in http%3a//tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=foo&parm=(zot)#issue')
+
+        # test different netloc/path prefix
+        # assert port
+        with self.assertRaises(ValueError) as cm:
+            clean_url("http://tracker.example:1025/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=foo&parm=(zot)#issue"),
+        self.assertEqual(cm.exception.message, 'Net location in http://tracker.example:1025/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=foo&parm=(zot)#issue does not match base: tracker.example')
+
+        #assert user
+        with self.assertRaises(ValueError) as cm:
+            clean_url("http://user@tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=foo&parm=(zot)#issue"),
+        self.assertEqual(cm.exception.message, 'Net location in http://user@tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=foo&parm=(zot)#issue does not match base: tracker.example')
+
+        #assert user:password
+        with self.assertRaises(ValueError) as cm:
+            clean_url("http://user:pass@tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=foo&parm=(zot)#issue"),
+        self.assertEqual(cm.exception.message, 'Net location in http://user:pass@tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=foo&parm=(zot)#issue does not match base: tracker.example')
+
+        # try localhost http scheme
+        with self.assertRaises(ValueError) as cm:
+            clean_url("http://localhost/cgi-bin/roundup.cgi/bugs/user3")
+        self.assertEqual(cm.exception.message, 'Net location in http://localhost/cgi-bin/roundup.cgi/bugs/user3 does not match base: tracker.example')
+
+        # try localhost https scheme
+        with self.assertRaises(ValueError) as cm:
+            clean_url("https://localhost/cgi-bin/roundup.cgi/bugs/user3")
+        self.assertEqual(cm.exception.message, 'Net location in https://localhost/cgi-bin/roundup.cgi/bugs/user3 does not match base: tracker.example')
+
+        # try different host
+        with self.assertRaises(ValueError) as cm:
+            clean_url("http://bad.guys.are.us/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=foo&parm=(zot)#issue"),
+        self.assertEqual(cm.exception.message, 'Net location in http://bad.guys.are.us/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=foo&parm=(zot)#issue does not match base: tracker.example')
+
+        # change the base path to .../bug from .../bugs
+        with self.assertRaises(ValueError) as cm:
+            clean_url("http://tracker.example/cgi-bin/roundup.cgi/bug/user3;parm=bar?@template=foo&parm=(zot)#issue"),
+        self.assertEqual(cm.exception.message, 'Base path /cgi-bin/roundup.cgi/bugs/ is not a prefix for url http://tracker.example/cgi-bin/roundup.cgi/bug/user3;parm=bar?@template=foo&parm=(zot)#issue')
+
+        # change the base path eliminate - in cgi-bin
+        with self.assertRaises(ValueError) as cm:
+            clean_url("http://tracker.example/cgibin/roundup.cgi/bug/user3;parm=bar?@template=foo&parm=(zot)#issue"),
+        self.assertEqual(cm.exception.message, 'Base path /cgi-bin/roundup.cgi/bugs/ is not a prefix for url http://tracker.example/cgibin/roundup.cgi/bug/user3;parm=bar?@template=foo&parm=(zot)#issue')
+
+
+        # scan for unencoded characters
+        # we skip schema and net location since unencoded character
+        # are allowed only by an explicit match to a reference.
+        #
+        # break components with unescaped character '<'
+        # path component
+        with self.assertRaises(ValueError) as cm:
+            clean_url("http://tracker.example/cgi-bin/roundup.cgi/bugs/<user3;parm=bar?@template=foo&parm=(zot)#issue"),
+        self.assertEqual(cm.exception.message, 'Path component (/cgi-bin/roundup.cgi/bugs/<user3) in http://tracker.example/cgi-bin/roundup.cgi/bugs/<user3;parm=bar?@template=foo&parm=(zot)#issue is not properly escaped')
+
+        # params component
+        with self.assertRaises(ValueError) as cm:
+            clean_url("http://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=b<ar?@template=foo&parm=(zot)#issue"),
+        self.assertEqual(cm.exception.message, 'Params component (parm=b<ar) in http://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=b<ar?@template=foo&parm=(zot)#issue is not properly escaped')
+
+        # query component
+        with self.assertRaises(ValueError) as cm:
+            clean_url("http://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=<foo>&parm=(zot)#issue"),
+        self.assertEqual(cm.exception.message, 'Query component (@template=<foo>&parm=(zot)) in http://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=<foo>&parm=(zot)#issue is not properly escaped')
+
+        # fragment component
+        with self.assertRaises(ValueError) as cm:
+            clean_url("http://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=foo&parm=(zot)#iss<ue"),
+        self.assertEqual(cm.exception.message, 'Fragment component (iss<ue) in http://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=foo&parm=(zot)#iss<ue is not properly escaped')
+
 class TemplateTestCase(unittest.TestCase):
     ''' Test the template resolving code, i.e. what can be given to @template
     '''

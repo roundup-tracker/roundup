@@ -130,7 +130,10 @@ Login from a search or after logout works better
 The login form has been improved to work with some back end code
 changes. Now when a user logs in they stay on the same page where they
 started the login. To make this work, you must change the tal that is
-used to set the ``__came_from`` form variable.
+used to set the ``__came_from`` form variable. Note that the url
+assigned to __came_from must be url encoded/quoted and be under the
+tracker's base url. If the base_url uses http, you can set the url to 
+https.
 
 Replace the existing code in the tracker's html/page.html page that
 looks similar to (look for name="__came_from")::
@@ -200,7 +203,9 @@ The key component here is support for the '__redirect_to' query
 property. It is a url which can be used when creating any new item
 (issue, user, keyword ....). It controls the next page displayed after
 creating the item. If '__redirect_to' is not set, then you end up on
-the page for the newly created item.
+the page for the newly created item. The url value assigned to
+__redirect_to must be under the tracker's base url and must be properly
+url encoded.
 
 html/_generic.404.html in trackers use page template
 ----------------------------------------------------
