@@ -23,6 +23,7 @@ class ActionTestCase(unittest.TestCase):
         self.client.add_ok_message = lambda x : add_message(
             self.client._ok_message, x)
         self.client.form = self.form
+        self.client.base = "http://whoami.com/path/"
         class TemplatingUtils:
             pass
         self.client.instance.interfaces.TemplatingUtils = TemplatingUtils
@@ -323,8 +324,8 @@ class LoginTestCase(ActionTestCase):
 
         # test if we are logged out; should kill the @action=logout
         self.form.value[:] = []         # clear out last test's setup values
-        self.assertLoginRaisesRedirect("http://localhost:9017/demo/issue39?%40startwith=0&%40pagesize=50",
-                                 'foo', 'right', "http://localhost:9017/demo/issue39?@action=logout&@pagesize=50&@startwith=0")
+        self.assertLoginRaisesRedirect("http://whoami.com/path/issue39?%40startwith=0&%40pagesize=50",
+                                 'foo', 'right', "http://whoami.com/path/issue39?@action=logout&@pagesize=50&@startwith=0")
 
     def testInvalidLoginRedirect(self):
         self.client.db.security.hasPermission = lambda *args, **kwargs: True

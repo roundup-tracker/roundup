@@ -82,7 +82,10 @@ class Action:
         '''
 
         parsed_url_tuple = urllib_.urlparse(url)
-        parsed_base_url_tuple = urllib_.urlparse(self.base)
+        if self.base:
+            parsed_base_url_tuple = urllib_.urlparse(self.base)
+        else:
+            raise ValueError(self._("Base url not set. Check configuration."))
 
         info={ 'url': url,
                'base_url': self.base,
