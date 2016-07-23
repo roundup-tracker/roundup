@@ -40,7 +40,7 @@ class Action:
         self.permission()
         return self.handle()
 
-    def clean_url(self, url):
+    def examine_url(self, url):
         '''Return URL validated to be under self.base and properly escaped
 
         If url not properly escaped or validation fails raise ValueError.
@@ -822,7 +822,7 @@ class NewItemAction(EditCommon):
         # Allow an option to stay on the page to create new things
         if '__redirect_to' in self.form:
             raise exceptions.Redirect('%s&@ok_message=%s'%(
-                self.clean_url(self.form['__redirect_to'].value),
+                self.examine_url(self.form['__redirect_to'].value),
                 urllib_.quote(messages)))
 
         # otherwise redirect to the new item's page
@@ -1141,7 +1141,7 @@ class LoginAction(Action):
             #    This will be redefined if there is a login error to include
             #      a new error message
 
-            clean_url = self.clean_url(self.form['__came_from'].value)
+            clean_url = self.examine_url(self.form['__came_from'].value)
             redirect_url_tuple = urllib_.urlparse(clean_url)
             # now I have a tuple form for the __came_from url
             try:
