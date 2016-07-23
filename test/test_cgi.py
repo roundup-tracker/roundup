@@ -1085,6 +1085,94 @@ class FormTestCase(unittest.TestCase):
         self.assertRaises(exceptions.SeriousError,
             actions.ExportCSVAction(cl).handle)
 
+class TemplateHtmlRendering(unittest.TestCase):
+    ''' try to test the rendering code for tal '''
+    def setUp(self):
+        self.dirname = '_test_template'
+        # set up and open a tracker
+        self.instance = db_test_base.setupTracker(self.dirname)
+
+        # open the database
+        self.db = self.instance.open('admin')
+        self.db.tx_Source = "web"
+        self.db.user.create(username='Chef', address='chef@bork.bork.bork',
+            realname='Bork, Chef', roles='User')
+        self.db.user.create(username='mary', address='mary@test.test',
+            roles='User', realname='Contrary, Mary')
+        self.db.post_init()
+
+        # create a client instance and hijack write_html
+        self.client = client.Client(self.instance, "user",
+                {'PATH_INFO':'/user', 'REQUEST_METHOD':'POST'},
+                form=makeForm({"@template": "item"}))
+
+        self.client._error_message = []
+        self.client._ok_message = []
+        self.client.db = self.db
+        self.client.userid = '1'
+        self.client.language = ('en',)
+
+        self.output = []
+        # ugly hack to get html_write to return data here.
+        def html_write(s):
+            self.output.append(s)
+
+        # hijack html_write
+        self.client.write_html = html_write
+
+        self.db.issue.create(title='foo')
+
+    def tearDown(self):
+        self.db.close()
+        try:
+            shutil.rmtree(self.dirname)
+        except OSError, error:
+            if error.errno not in (errno.ENOENT, errno.ESRCH): raise
+
+    def testrenderFrontPage(self):
+        self.client.renderFrontPage("hello world RaNdOmJunk")
+        # make sure we can find the "hello world RaNdOmJunk"
+        # message in the output.
+        self.assertNotEqual(-1,
+           self.output[0].index('<p class="error-message">hello world RaNdOmJunk <br/ > </p>'))
+        # make sure we can find issue 1 title foo in the output
+        self.assertNotEqual(-1,
+           self.output[0].index('<a href="issue1">foo</a>'))
+
+        # make sure we can find the last SHA1 sum line at the end of the
+        # page
+        self.assertNotEqual(-1,
+           self.output[0].index('<!-- SHA: c87a4e18d59a527331f1d367c0c6cc67ee123e63 -->'))
+
+    def testrenderContext(self):
+        # set up the client;
+        # run determine_context to set the required client attributes
+        # run renderContext(); check result for proper page
+
+        # this will generate the default home page like
+        # testrenderFrontPage
+        self.client.form=makeForm({})
+        self.client.path = ''
+        self.client.determine_context()
+        self.assertEqual((self.client.classname, self.client.template, self.client.nodeid), (None, '', None))
+        self.assertEqual(self.client._ok_message, [])
+
+        result = self.client.renderContext()
+        self.assertNotEqual(-1,
+           result.index('<!-- SHA: c87a4e18d59a527331f1d367c0c6cc67ee123e63 -->'))
+
+        # now look at the user index page
+        self.client.form=makeForm({ "@ok_message": "ok message", "@template": "index"})
+        self.client.path = 'user'
+        self.client.determine_context()
+        self.assertEqual((self.client.classname, self.client.template, self.client.nodeid), ('user', 'index', None))
+        self.assertEqual(self.client._ok_message, ['ok message'])
+
+        result = self.client.renderContext()
+        self.assertNotEqual(-1, result.index('<title>User listing - Roundup issue tracker</title>'))
+        self.assertNotEqual(-1, result.index('ok message'))
+        # print result
+
 class TemplateTestCase(unittest.TestCase):
     ''' Test the template resolving code, i.e. what can be given to @template
     '''
