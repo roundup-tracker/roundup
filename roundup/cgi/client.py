@@ -550,16 +550,32 @@ class Client:
             self.response_code = 304
             self.header()
         except NotFound, e:
-            self.response_code = 404
-            self.template = '404'
-            try:
-                cl = self.db.getclass(self.classname)
-                self.write_html(self.renderContext())
-            except KeyError:
-                # we can't map the URL to a class we know about
-                # reraise the NotFound and let roundup_server
-                # handle it
-                raise NotFound(e)
+            if self.response_code == 400:
+                # We can't find a parameter (e.g. property name
+                # incorrect). Tell the user what was raised.
+                # Do not change to the 404 template since the
+                # base url is valid just query args are not.
+                # copy the page format from SeriousError _str_ exception.
+                error_page = """
+                <html><head><title>Roundup issue tracker: An error has occurred</title>
+                <link rel="stylesheet" type="text/css" href="@@file/style.css">
+                </head>
+                <body class="body" marginwidth="0" marginheight="0">
+                   <p class="error-message">%s</p>
+                </body></html>
+                """
+                self.write_html(error_page%str(e))
+            else:
+                self.response_code = 404
+                self.template = '404'
+                try:
+                    cl = self.db.getclass(self.classname)
+                    self.write_html(self.renderContext())
+                except KeyError:
+                    # we can't map the URL to a class we know about
+                    # reraise the NotFound and let roundup_server
+                    # handle it
+                    raise NotFound(e)
         except FormError, e:
             self.add_error_message(self._('Form Error: ') + str(e))
             self.write_html(self.renderContext())

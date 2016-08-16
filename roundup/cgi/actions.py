@@ -1256,11 +1256,11 @@ class ExportCSVAction(Action):
         props = klass.getprops()
         for cname in columns:
             if cname not in props:
-                # TODO raise exceptions.NotFound(.....) does not give message
-                # so using SeriousError instead
-                self.client.response_code = 404
-                raise exceptions.SeriousError(
-                    self._('Column "%(column)s" not found on %(class)s')
+                # use error code 400: Bad Request. Do not use
+                # error code 404: Not Found.
+                self.client.response_code = 400
+                raise exceptions.NotFound(
+                    self._('Column "%(column)s" not found in %(class)s')
                     % {'column': cgi.escape(cname), 'class': request.classname})
 
         # full-text search

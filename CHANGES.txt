@@ -317,6 +317,10 @@ Fixed:
   %20. Fixes to allow a url_query method to be applied to
   HTMLStringProperty to properly quote string values passed as part of
   a url.
+- issue2550755: exceptions.NotFound(msg) msg is not reported to user
+  in cgi. When an invalid column is specified return error code 400
+  rather than 404. Make error code 400 also return an error message to
+  the user. Reported by: Bernhard Reiter, analysis, fix by John Rouillard.
 
 2016-01-11: 1.5.1
 
