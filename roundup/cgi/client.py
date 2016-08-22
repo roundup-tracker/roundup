@@ -295,6 +295,10 @@ class Client:
         self.env = env
         self.setTranslator(translator)
         self.mailer = Mailer(instance.config)
+        # If True the form contents wins over the database contents when
+        # rendering html properties. This is set when an error occurs so
+        # that we don't lose submitted form contents.
+        self.form_wins = False
 
         # save off the path
         self.path = env['PATH_INFO']
@@ -421,6 +425,9 @@ class Client:
 
     def add_error_message(self, msg, escape=True):
         add_message(self._error_message, msg, escape)
+        # Want to interpret form values when rendering when an error
+        # occurred:
+        self.form_wins = True
 
     def inner_main(self):
         """Process a request.

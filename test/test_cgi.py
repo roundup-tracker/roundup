@@ -13,8 +13,12 @@ import unittest, os, shutil, errno, sys, difflib, cgi, re, StringIO
 from roundup.cgi import client, actions, exceptions
 from roundup.cgi.exceptions import FormError
 from roundup.cgi.templating import HTMLItem, HTMLRequest, NoTemplate
+from roundup.cgi.templating import HTMLProperty, _HTMLItem
 from roundup.cgi.form_parser import FormParser
 from roundup import init, instance, password, hyperdb, date
+
+# For testing very simple rendering
+from roundup.cgi.engine_zopetal import RoundupPageTemplate
 
 from mocknull import MockNull
 
@@ -117,13 +121,20 @@ class FormTestCase(unittest.TestCase):
         self.FV_SPECIAL = re.compile(FormParser.FV_LABELS%classes,
             re.VERBOSE)
 
-    def parseForm(self, form, classname='test', nodeid=None):
+    def setupClient(self, form, classname, nodeid=None, template='item'):
         cl = client.Client(self.instance, None, {'PATH_INFO':'/',
             'REQUEST_METHOD':'POST'}, makeForm(form))
         cl.classname = classname
         cl.nodeid = nodeid
         cl.language = ('en',)
+        cl.userid = '1'
         cl.db = self.db
+        cl.user = 'admin'
+        cl.template = template
+        return cl
+
+    def parseForm(self, form, classname='test', nodeid=None):
+        cl = self.setupClient(form, classname, nodeid)
         return cl.parsePropsFromForm(create=1)
 
     def tearDown(self):
@@ -771,6 +782,76 @@ class FormTestCase(unittest.TestCase):
             ({('issue', None): {}, ('file', '-1'): {'content': 'foo',
             'name': 'foo.txt', 'type': 'text/plain'}},
             [('issue', None, 'files', [('file', '-1')])]))
+
+    def testFormValuePreserveOnError(self):
+        page_template = """
+        <html>
+         <body>
+          <p tal:condition="options/error_message|nothing"
+             tal:repeat="m options/error_message"
+             tal:content="structure m"/>
+          <p tal:content="context/title/plain"/>
+          <p tal:content="context/priority/plain"/>
+          <p tal:content="context/status/plain"/>
+          <p tal:content="context/nosy/plain"/>
+          <p tal:content="context/keyword/plain"/>
+          <p tal:content="structure context/superseder/field"/>
+         </body>
+        </html>
+        """.strip ()
+        self.db.keyword.create (name = 'key1')
+        self.db.keyword.create (name = 'key2')
+        nodeid = self.db.issue.create (title = 'Title', priority = '1',
+            status = '1', nosy = ['1'], keyword = ['1'])
+        self.db.commit ()
+        form = {':note': 'msg-content', 'title': 'New title',
+            'priority': '2', 'status': '2', 'nosy': '1,2', 'keyword': '',
+            'superseder': '5000', ':action': 'edit'}
+        cl = self.setupClient(form, 'issue', '1')
+        pt = RoundupPageTemplate()
+        pt.pt_edit(page_template, 'text/html')
+        out = []
+        def wh(s):
+            out.append(s)
+        cl.write_html = wh
+        # Enable the following if we get a templating error:
+        #def send_error (*args, **kw):
+        #    import pdb; pdb.set_trace()
+        #cl.send_error_to_admin = send_error
+        # Need to rollback the database on error -- this usually happens
+        # in web-interface (and for other databases) anyway, need it for
+        # testing that the form values are really used, not the database!
+        # We do this together with the setup of the easy template above
+        def load_template(x):
+            cl.db.rollback()
+            return pt
+        cl.instance.templates.load = load_template
+        cl.selectTemplate = MockNull()
+        cl.determine_context = MockNull ()
+        def hasPermission(s, p, classname=None, d=None, e=None, **kw):
+            return True
+        actions.Action.hasPermission = hasPermission
+        e1 = _HTMLItem.is_edit_ok
+        _HTMLItem.is_edit_ok = lambda x : True
+        e2 = HTMLProperty.is_edit_ok
+        HTMLProperty.is_edit_ok = lambda x : True
+        cl.inner_main()
+        _HTMLItem.is_edit_ok = e1
+        HTMLProperty.is_edit_ok = e2
+        self.assertEqual(len(out), 1)
+        self.assertEqual(out [0].strip (), """
+        <html>
+         <body>
+          <p>Edit Error: issue has no node 5000</p>
+          <p>New title</p>
+          <p>urgent</p>
+          <p>deferred</p>
+          <p>admin, anonymous</p>
+          <p></p>
+          <p><input type="text" name="superseder" value="5000" size="30"></p>
+         </body>
+        </html>
+        """.strip ())
 
     #
     # SECURITY

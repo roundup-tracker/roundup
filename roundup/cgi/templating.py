@@ -1251,7 +1251,7 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
             is_in = form.has_key(self._formname)
         except TypeError:
             is_in = False
-        if not self._value and is_in:
+        if is_in and (not self._value or self._client.form_wins):
             if isinstance(prop, hyperdb.Multilink):
                 value = lookupIds(self._db, prop,
                                   handleListCGIValue(form[self._formname]),
