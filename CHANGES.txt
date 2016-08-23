@@ -317,6 +317,10 @@ Fixed:
   %20. Fixes to allow a url_query method to be applied to
   HTMLStringProperty to properly quote string values passed as part of
   a url.
+- issue2550755: exceptions.NotFound(msg) msg is not reported to user
+  in cgi. When an invalid column is specified return error code 400
+  rather than 404. Make error code 400 also return an error message to
+  the user. Reported by: Bernhard Reiter, analysis, fix by John Rouillard.
 - issue1408570: Finally fix that form values are lost on edit
   exceptions. This occured for example if editing an issue with the
   classic template and setting 'superseder' to a non-existing issue
