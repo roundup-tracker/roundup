@@ -1151,10 +1151,10 @@ class FormTestCase(unittest.TestCase):
         output = StringIO.StringIO()
         cl.request = MockNull()
         cl.request.wfile = output
-        self.assertRaises(exceptions.SeriousError,
+        self.assertRaises(exceptions.NotFound,
             actions.ExportCSVAction(cl).handle)
 
-    def testCSVExportFailPermission(self):
+    def testCSVExportFailPermissionBadColumn(self):
         cl = self._make_client({'@columns': 'id,email,password'}, nodeid=None,
             userid='2')
         cl.classname = 'user'
@@ -1163,7 +1163,22 @@ class FormTestCase(unittest.TestCase):
         cl.request.wfile = output
         # used to be self.assertRaises(exceptions.Unauthorised,
         # but not acting like the column name is not found
-        self.assertRaises(exceptions.SeriousError,
+        # see issue2550755 - should this return Unauthorised?
+        # The unauthorised user should never get to the point where
+        # they can determine if the column name is valid or not.
+        self.assertRaises(exceptions.NotFound,
+            actions.ExportCSVAction(cl).handle)
+
+    def testCSVExportFailPermissionValidColumn(self):
+        cl = self._make_client({'@columns': 'id,address,password'}, nodeid=None,
+            userid='2')
+        cl.classname = 'user'
+        output = StringIO.StringIO()
+        cl.request = MockNull()
+        cl.request.wfile = output
+        # used to be self.assertRaises(exceptions.Unauthorised,
+        # but not acting like the column name is not found
+        self.assertRaises(exceptions.Unauthorised,
             actions.ExportCSVAction(cl).handle)
 
 class TemplateHtmlRendering(unittest.TestCase):
