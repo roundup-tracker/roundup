@@ -198,12 +198,13 @@ class Multilink(_Pointer):
                     'link' and 'unlink' events placed in their journal
     """
 
-    def __init__(self, classname, do_journal = 'yes', required = False, quiet=False):
+    def __init__(self, classname, do_journal = 'yes', required = False, quiet=False, try_id_parsing='yes'):
 
         super(Multilink, self).__init__(classname,
                                         do_journal,
                                         required = required,
-                                        default_value = [], quiet=quiet)
+                                        default_value = [], quiet=quiet,
+                                        try_id_parsing=try_id_parsing)
 
     def from_raw(self, value, db, klass, propname, itemid, **kw):
         if not value:
