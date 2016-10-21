@@ -597,6 +597,8 @@ class FormParser:
                 # Avoid emptying the file
                 if props.has_key('content') and not props['content']:
                     del props ['content']
+                    if id is not None and id.startswith('-'):
+                        del all_props[(cn, id)]
         return all_props, all_links
 
     def parse_file(self, fpropdef, fprops, v):
