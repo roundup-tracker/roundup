@@ -594,11 +594,31 @@ class FormParser:
                 # new item (any class) with no content - ignore
                 del all_props[(cn, id)]
             elif isinstance(self.db.classes[cn], hyperdb.FileClass):
-                # Avoid emptying the file
-                if props.has_key('content') and not props['content']:
-                    del props ['content']
+                # three cases:
+                # id references existng file. If content is empty,
+                #    remove content from form so we don't wipe
+                #    existing file contents.
+                # id is -1, -2 ... I.E. a new file.
+                #  if content is not defined remove all fields that
+                #     reference that file.
+                #  if content is defined, let it pass through even if
+                #     content is empty. Yes people can upload/create
+                #     empty files.
+                print("props are %r",props)
+                print("class is: %s",cn)
+                if props.has_key('content'):
+                    if id is not None and \
+                       not id.startswith('-') and \
+                       not props['content']:
+                        # This is an existing file with emtpy content
+                        # value in the form.
+                        del props ['content']
+                else:
+                    # this is a new file without any content property.
                     if id is not None and id.startswith('-'):
                         del all_props[(cn, id)]
+                # if this is a new file with content (even 0 length content)
+                # allow it through and create the zero length file.
         return all_props, all_links
 
     def parse_file(self, fpropdef, fprops, v):
