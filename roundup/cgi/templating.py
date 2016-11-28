@@ -2826,11 +2826,10 @@ submitted = false;
 function submit_once() {
     if (submitted) {
         alert("Your request is being processed.\\nPlease be patient.");
-        event.returnValue = 0;    // work-around for IE
-        return 0;
+        return false;
     }
     submitted = true;
-    return 1;
+    return true;
 }
 
 function help_window(helpurl, width, height) {

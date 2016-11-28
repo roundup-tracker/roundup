@@ -326,6 +326,13 @@ Fixed:
   classic template and setting 'superseder' to a non-existing issue
   number. All changes to the form where the original field was non-empty
   were lost.
+- Fix submit_once Javascript function: This needs to return a boolean
+  value (not and integer like 0 or 1). And the work-around for an
+  ancient version of Internet Explorer would make it break for a recent
+  Firefox. The old version would show the popup but after clicking away
+  the alert it would load the page. The new version (tested with
+  Chromium and Firefox) doesn't load the page.
+  
 
 2016-01-11: 1.5.1
 
