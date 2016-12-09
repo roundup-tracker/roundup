@@ -336,6 +336,8 @@ Fixed:
   Firefox. The old version would show the popup but after clicking away
   the alert it would load the page. The new version (tested with
   Chromium and Firefox) doesn't load the page.
+- Fix Traceback in backends/portalocker.py on windows due to missing
+  windll import, thanks to Heiko Stegmann for suggesting a first fix.
   
 
 2016-01-11: 1.5.1

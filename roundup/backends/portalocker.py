@@ -54,6 +54,7 @@ import os
 if os.name == 'nt':
     import msvcrt
     import ctypes
+    from ctypes import windll
     from ctypes.wintypes import BOOL, DWORD, HANDLE
 
     LOCK_SH = 0    # the default
