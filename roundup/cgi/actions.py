@@ -400,11 +400,12 @@ class SearchAction(Action):
         because the leading '?' is not part of the query string.
 
         Implementation note:
-        But maybe the template should be part of the stored query:
-        template = self.getFromForm('template')
-        if template:
-            return req.indexargs_url('', {'@template' : template})[1:]
+        We now store the template with the query if the template name is
+        different from 'index'
         """
+        template = self.getFromForm('template')
+        if template and template != 'index':
+            return req.indexargs_url('', {'@template' : template})[1:]
         return req.indexargs_url('', {})[1:]
 
     def getFromForm(self, name):

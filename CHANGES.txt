@@ -142,6 +142,10 @@ Features:
   keyword. (John Rouillard)
 - issue2550757 - internal restructuring to allow admin.py to be tested
   more easily. W. Trevor King (wking)/ John Rouillard.
+- When storing user-defined queries we now store the template with the
+  query if the template name is different from 'index'. This allows
+  stored queries for templates different from the default 'index'
+  template.
 
 Fixed:
 
