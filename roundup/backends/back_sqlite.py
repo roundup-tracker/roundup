@@ -54,6 +54,13 @@ class Database(rdbms_common.Database):
     # used by some code to switch styles of query
     implements_intersect = 1
 
+    # used in generic backend to determine if db supports
+    # 'DOUBLE PRECISION' for floating point numbers. Note that sqlite
+    # already has double precision as its standard 'REAL' type. So this
+    # is set to False here.
+
+    implements_double_precision = False
+
     hyperdb_to_sql_datatypes = {
         hyperdb.String : 'VARCHAR(255)',
         hyperdb.Date   : 'VARCHAR(30)',

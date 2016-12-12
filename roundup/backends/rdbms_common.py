@@ -453,6 +453,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                     klass.index(nodeid)
         self.indexer.save_index()
 
+    # Used here in the generic backend to determine if the database
+    # supports 'DOUBLE PRECISION' for floating point numbers.
+    implements_double_precision = True
+
     hyperdb_to_sql_datatypes = {
         hyperdb.String : 'TEXT',
         hyperdb.Date   : 'TIMESTAMP',
@@ -464,9 +468,12 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         hyperdb.Integer   : 'INTEGER',
     }
 
-    def hyperdb_to_sql_datatype(self, propclass):
+    def hyperdb_to_sql_datatype(self, propclass, prop = None):
 
         datatype = self.hyperdb_to_sql_datatypes.get(propclass)
+        if self.implements_double_precision and prop and \
+          isinstance(prop, Number) and prop.use_double:
+            datatype = 'DOUBLE PRECISION'
         if datatype:
             return datatype
         
@@ -500,7 +507,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 #and prop.find('Multilink') != -1:
                 #mls.append(col)
 
-            datatype = self.hyperdb_to_sql_datatype(prop.__class__)
+            datatype = self.hyperdb_to_sql_datatype(prop.__class__, prop)
             cols.append(('_'+col, datatype))
 
             # Intervals stored as two columns
@@ -579,7 +586,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 self.create_multilink_table(spec, propname)
             else:
                 # add the column
-                coltype = self.hyperdb_to_sql_datatype(prop.__class__)
+                coltype = self.hyperdb_to_sql_datatype(prop.__class__, prop)
                 sql = 'alter table _%s add column _%s %s'%(
                     spec.classname, propname, coltype)
                 self.sql(sql)

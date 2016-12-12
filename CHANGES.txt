@@ -145,7 +145,10 @@ Features:
 - When storing user-defined queries we now store the template with the
   query if the template name is different from 'index'. This allows
   stored queries for templates different from the default 'index'
-  template.
+  template. (Ralf Schlatterbeck)
+- Number properties now have an optional attribute use_double to request
+  double precision float as the storage type for this property. (Ralf
+  Schlatterbeck)
 
 Fixed:
 
@@ -329,15 +332,16 @@ Fixed:
   exceptions. This occured for example if editing an issue with the
   classic template and setting 'superseder' to a non-existing issue
   number. All changes to the form where the original field was non-empty
-  were lost.
+  were lost. (Ralf Schlatterbeck)
 - Fix submit_once Javascript function: This needs to return a boolean
   value (not and integer like 0 or 1). And the work-around for an
   ancient version of Internet Explorer would make it break for a recent
   Firefox. The old version would show the popup but after clicking away
   the alert it would load the page. The new version (tested with
-  Chromium and Firefox) doesn't load the page.
+  Chromium and Firefox) doesn't load the page. (Ralf Schlatterbeck)
 - Fix Traceback in backends/portalocker.py on windows due to missing
   windll import, thanks to Heiko Stegmann for suggesting a first fix.
+  (Ralf Schlatterbeck)
   
 
 2016-01-11: 1.5.1

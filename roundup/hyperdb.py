@@ -293,6 +293,17 @@ class Boolean(_Type):
 
 class Number(_Type):
     """An object designating a numeric property"""
+    def __init__(self, use_double = False, **kw):
+        """ The value use_double tells the database backend to use a
+            floating-point format with more precision than the default.
+            Usually implemented by type 'double precision' in the sql
+            backend. The default is to use single-precision float (aka
+            'real') in the db. Note that sqlite already uses 8-byte for
+            floating point numbers.
+        """
+        self.use_double = use_double
+        _Type.__init__ (self, **kw)
+        super(Number, self).__init__(**kw)
     def from_raw(self, value, **kw):
         value = value.strip()
         try:

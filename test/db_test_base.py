@@ -80,9 +80,11 @@ def setupSchema(db, create, module):
     status.setkey("name")
     priority = module.Class(db, "priority", name=String(), order=String())
     priority.setkey("name")
-    user = module.Class(db, "user", username=String(), password=Password(quiet=True),
-                        assignable=Boolean(quiet=True), age=Number(quiet=True), roles=String(), address=String(),
-                        rating=Integer(quiet=True), supervisor=Link('user'),realname=String(quiet=True))
+    user = module.Class(db, "user", username=String(),
+        password=Password(quiet=True), assignable=Boolean(quiet=True),
+        age=Number(quiet=True), roles=String(), address=String(),
+        rating=Integer(quiet=True), supervisor=Link('user'),
+        realname=String(quiet=True), longnumber=Number(use_double=True))
     user.setkey("username")
     file = module.FileClass(db, "file", name=String(), type=String(),
         comment=String(indexme="yes"), fooz=Password())
@@ -92,18 +94,16 @@ def setupSchema(db, create, module):
     mynosy = Multilink("user")
     mynosy.quiet = True
     issue = module.IssueClass(db, "issue", title=String(indexme="yes"),
-                              status=Link("status"), nosy=mynosy, deadline=Date(quiet=True),
-                              foo=Interval(quiet=True, default_value=date.Interval('-1w')), files=Multilink("file"), assignedto=Link('user', quiet=True),
-        priority=Link('priority'), spam=Multilink('msg'),
-        feedback=Link('msg'))
+        status=Link("status"), nosy=mynosy, deadline=Date(quiet=True),
+        foo=Interval(quiet=True, default_value=date.Interval('-1w')),
+        files=Multilink("file"), assignedto=Link('user', quiet=True),
+        priority=Link('priority'), spam=Multilink('msg'), feedback=Link('msg'))
     stuff = module.Class(db, "stuff", stuff=String())
     session = module.Class(db, 'session', title=String())
     msg = module.FileClass(db, "msg", date=Date(),
-                           author=Link("user", do_journal='no'),
-                           files=Multilink('file'), inreplyto=String(),
-                           messageid=String(),
-                           recipients=Multilink("user", do_journal='no')
-                           )
+        author=Link("user", do_journal='no'), files=Multilink('file'),
+        inreplyto=String(), messageid=String(),
+        recipients=Multilink("user", do_journal='no'))
     session.disableJournalling()
     db.post_init()
     if create:
@@ -537,6 +537,34 @@ class DBTest(commonDBTest):
         nid = self.db.user.create(username='foo', age=1)
         self.db.user.set(nid, age=None)
         self.assertEqual(self.db.user.get(nid, "age"), None)
+
+    # Long number
+    def testDoubleChange(self):
+        lnl = 100.12345678
+        ln  = 100.123456789
+        lng = 100.12345679
+        nid = self.db.user.create(username='foo', longnumber=ln)
+        self.assertEqual(self.db.user.get(nid, 'longnumber') < lng, True)
+        self.assertEqual(self.db.user.get(nid, 'longnumber') > lnl, True)
+        lnl = 1.0012345678e55
+        ln  = 1.00123456789e55
+        lng = 1.0012345679e55
+        self.db.user.set(nid, longnumber=ln)
+        self.assertEqual(self.db.user.get(nid, 'longnumber') < lng, True)
+        self.assertEqual(self.db.user.get(nid, 'longnumber') > lnl, True)
+        self.db.user.set(nid, longnumber=-1)
+        self.assertEqual(self.db.user.get(nid, 'longnumber'), -1)
+        self.db.user.set(nid, longnumber=0)
+        self.assertEqual(self.db.user.get(nid, 'longnumber'), 0)
+
+        nid = self.db.user.create(username='bar', longnumber=0)
+        self.assertEqual(self.db.user.get(nid, 'longnumber'), 0)
+
+    def testDoubleUnset(self):
+        nid = self.db.user.create(username='foo', longnumber=1.2345)
+        self.db.user.set(nid, longnumber=None)
+        self.assertEqual(self.db.user.get(nid, "longnumber"), None)
+
 
     # Integer
     def testIntegerChange(self):

@@ -656,7 +656,8 @@ A Class is comprised of one or more properties of the following types:
 * Date properties store date-and-time stamps. Their values are Timestamp
   objects.
 * Integer properties store integer values. (Number can store real/float values.)
-* Number properties store numeric values.
+* Number properties store numeric values. There is an option to use
+  double-precision floating point numbers.
 * Boolean properties store on/off, yes/no, true/false values.
 * A Link property refers to a single other item selected from a
   specified class. The class is part of the property; the value is an
@@ -671,6 +672,8 @@ behaviour:
   property should be part of the full text index. The default is 'no' but this
   can be set to 'yes' to allow a property's contents to be in the full
   text index.
+* Number properties can have a ``use_double`` attribute that, when set
+  to ``True``, will use double precision floating point in the database.
 * Link and Multilink properties can have several attributes:
   
   - ``do_journal``: By default, every change of a link property is
