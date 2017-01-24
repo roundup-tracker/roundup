@@ -12,12 +12,10 @@ addons:
       # Required to install pyme
       - libgpgme11-dev
       - swig
-      # allow wget to pull https url's
-      - ca-certificates
 
 before_install:
   - cd /tmp
-  - wget -q --ca-certificate $TRAVIS_BUILD_DIR/tools/lets-encrypt-x3-cross-signed.pem https://oligarchy.co.uk/xapian/1.2.8/xapian-bindings-1.2.8.tar.gz
+  - curl -s -O https://oligarchy.co.uk/xapian/1.2.8/xapian-bindings-1.2.8.tar.gz
   - tar -zxvf xapian-bindings-1.2.8.tar.gz
   - cd xapian-bindings-1.2.8/
   - ./configure --prefix=$VIRTUAL_ENV --with-python && make && make install
