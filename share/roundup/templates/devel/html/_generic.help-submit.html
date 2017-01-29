@@ -61,7 +61,8 @@ function checkListForm() {
      onclick="text_field.value=original_field;f=getListForm();if (f) {reviseList_framed(f, this)};return false"
             />
      <input type="submit" id="btn_apply" class="apply"
-            value=" Apply " onclick="callingform[field].value=text_field.value; parent.close();"
+            value=" Apply " onclick="callingform[field].value=text_field.value;   if ('createEvent' in document) { var evt = document.createEvent('HTMLEvents');  evt.initEvent('change', true, true); callingform[field].dispatchEvent(evt); } else
+{ callingform[field].fireEvent('onchange'); } parent.close();"
             i18n:attributes="value" />
  </form>
  <script type="text/javascript"><!--

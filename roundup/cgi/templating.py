@@ -3083,8 +3083,9 @@ class TemplatingUtils:
         for week in calendar.monthcalendar(display.year, display.month):
             res.append('  <tr>')
             for day in week:
-                link = "javascript:form[field].value = '%d-%02d-%02d'; " \
-                      "window.close ();"%(display.year, display.month, day)
+                 link = "javascript:form[field].value = '%d-%02d-%02d'; " \
+                      "if ('createEvent' in document) { var evt = document.createEvent('HTMLEvents'); evt.initEvent('change', true, true); form[field].dispatchEvent(evt); } else { form[field].fireEvent('onchange'); }" \
+                       "window.close ();"%(display.year, display.month, day)
                 if (day == curr_date.day and display.month == curr_date.month
                         and display.year == curr_date.year):
                     # highlight

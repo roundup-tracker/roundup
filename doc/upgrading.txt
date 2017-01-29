@@ -207,6 +207,34 @@ the page for the newly created item. The url value assigned to
 __redirect_to must be under the tracker's base url and must be properly
 url encoded.
 
+Helper popups trigger change events on the original page
+--------------------------------------------------------
+
+The helper popups used to set dates (from a calendar), change lists of
+users or lists of issues did not notify the browser that the fields
+had been changed. This release adds code to trigger the change event.
+
+To add the change event to the calendar popup, you don't need to do
+any changes to the tracker. It is all done in the roundup python code
+in templating.py.
+
+To add the change event when updating users using the help-submit
+template, copy
+share/roundup/templates/devel/html/_generic.help-submit.html and
+replace your tracker's html/_generic.help-submit.html.  If you have
+done local changes to this file, change your file to include the code
+that defines the onclick event for the input field with
+id="btn_apply".
+
+To add the change event when updating lists of issues copy
+share/roundup/templates/devel/html/help_controls.js to your tracer's
+html directory. If you have made local changes to the javascript file,
+merge the two if/else blocks labeled::
+
+   /* trigger change event on the field we changed */
+
+into your help_controls.js
+
 html/_generic.404.html in trackers use page template
 ----------------------------------------------------
 

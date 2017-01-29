@@ -52,12 +52,30 @@ function updateOpener() {
   // write back to opener window
   if (document.frm_help.check==undefined) { return; }
   form[field].value = text_field.value;
+
+  /* trigger change event on the field we changed */
+  if ("createEvent" in document) {
+    var evt = document.createEvent("HTMLEvents");
+    evt.initEvent("change", true, true);
+    form[field].dispatchEvent(evt);
+  }
+    else
+	form[field].fireEvent("onchange");
 }
 
 function updateList() {
   // write back to opener window
   if (document.frm_help.check==undefined) { return; }
   form[field].value = determineList();
+
+  /* trigger change event on the field we changed */
+  if ("createEvent" in document) {
+    var evt = document.createEvent("HTMLEvents");
+    evt.initEvent("change", true, true);
+    form[field].dispatchEvent(evt);
+  }
+    else
+	form[field].fireEvent("onchange");
 }
 
 function updatePreview() {

@@ -149,6 +149,13 @@ Features:
 - Number properties now have an optional attribute use_double to request
   double precision float as the storage type for this property. (Ralf
   Schlatterbeck)
+- issue2550796: Calendar and Classhelp selection tools don't cause
+  onchange event to be triggered.
+  Using the helper popups for modifying lists of users, lists of
+  issues, dates etc.. now trigger the change event on the form's
+  field. This allows onchange javascript to trigger to highlight
+  changes, recalculate other form values etc.  See ``upgrading.txt``
+  for details on applying these changes to your tracker. (John Rouillard)
 
 Fixed:
 
