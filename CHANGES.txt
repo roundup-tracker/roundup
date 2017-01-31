@@ -156,6 +156,10 @@ Features:
   field. This allows onchange javascript to trigger to highlight
   changes, recalculate other form values etc.  See ``upgrading.txt``
   for details on applying these changes to your tracker. (John Rouillard)
+- menu template function has a new parameter "showdef". When set to a
+  string, the string is appended to the displayed option value. This
+  allows the user to reset the value for the menu (select) to the
+  original value. (John Rouillard)
 
 Fixed:
 
