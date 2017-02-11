@@ -2053,7 +2053,7 @@ class LinkHTMLProperty(HTMLProperty):
                           **kwargs)
 
     def menu(self, size=None, height=None, showid=0, additional=[], value=None,
-             sort_on=None, html_kwargs={}, translate=True, **conditions):
+             sort_on=None, html_kwargs={}, translate=True, showdef=None, **conditions):
         """ Render a form select list for this property
 
             "size" is used to limit the length of the list labels
@@ -2071,6 +2071,11 @@ class LinkHTMLProperty(HTMLProperty):
             "translate" indicates if we should do translation of labels
             using gettext -- this is often desired (e.g. for status
             labels) but sometimes not.
+            "showdef" marks the default value with the string passed
+                as the showdef argument. It is appended to the selected
+                value so the user can reset the menu to the original value.
+                Note that the marker may be removed if the length of
+                the option label and the marker exceed the size.
 
             The remaining keyword arguments are used as conditions for
             filtering the items in the list - they're passed as the
@@ -2139,8 +2144,13 @@ class LinkHTMLProperty(HTMLProperty):
 
             # figure if this option is selected
             s = ''
+            # record the marker for the selected item if requested
+            selected_mark=''
+
             if value in [optionid, option]:
                 s = 'selected="selected" '
+                if ( showdef ):
+                    selected_mark = showdef
 
             # figure the label
             if showid:
@@ -2150,6 +2160,7 @@ class LinkHTMLProperty(HTMLProperty):
             else:
                 lab = option
 
+            lab = lab + selected_mark
             # truncate if it's too long
             if size is not None and len(lab) > size:
                 lab = lab[:size-3] + '...'
