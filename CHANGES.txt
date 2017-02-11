@@ -349,7 +349,8 @@ Fixed:
 - Fix Traceback in backends/portalocker.py on windows due to missing
   windll import, thanks to Heiko Stegmann for suggesting a first fix.
   (Ralf Schlatterbeck)
-  
+- issue2550933 - Fix Traceback in cgi/templating.py when a string is
+  passed to PasswordHTMLProperty::plain. (John Rouillard)
 
 2016-01-11: 1.5.1
 

@@ -1554,7 +1554,10 @@ class PasswordHTMLProperty(HTMLProperty):
 
         if self._value is None:
             return ''
-        value = self._value.dummystr()
+        try:
+            value = self._value.dummystr()
+        except AttributeError:
+            value = self._('[hidden]')
         if escape:
             value = cgi.escape(value)
         return value
