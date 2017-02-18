@@ -1183,7 +1183,7 @@ class Client:
         # determine if view is oktmpl|errortmpl. If so assign the
         # right one to the view parameter. If we don't have alternate
         # templates, just leave view alone.
-        if (view.find('|') != -1 ):
+        if (view and view.find('|') != -1 ):
             # we have alternate templates, parse them apart.
             (oktmpl, errortmpl) = view.split("|", 2)
             if self._error_message: 
