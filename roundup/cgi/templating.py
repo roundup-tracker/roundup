@@ -2763,7 +2763,10 @@ env: %(env)s
                 if k in exclude:
                     continue
                 if type(v) == type([]):
-                    if isinstance(cls.get_transitive_prop(k), hyperdb.String):
+                    # id's are stored as strings but should be treated
+                    # as integers in lists.
+                    if (isinstance(cls.get_transitive_prop(k), hyperdb.String)
+                        and k != 'id'):
                         add(k, ' '.join(v))
                     else:
                         add(k, ','.join(v))
