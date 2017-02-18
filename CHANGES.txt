@@ -167,6 +167,15 @@ Features:
   usually be the same template used to edit the form. See the section
   on "Implementing Modal Editing Using @template" in
   ``customizing.txt``. (John Rouillard)
+- New form of check function is permitted in permission definitions.
+  If the check function is defined as:
+      check(db, userid, itemid, **ctx)
+  the ctx variable will have:
+     ctx['property'] the name of the property being checked or None
+     ctx['classname'] the class that is being checked or None
+     ctx['permission'] the name of the permission (e.g. View, Edit)
+  At some future date the older 3 argument style check command will
+  be deprecated. See ``upgrading.txt`` for details.
 
 Fixed:
 

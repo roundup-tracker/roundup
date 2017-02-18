@@ -345,6 +345,57 @@ permission for the user role. After the change it should look like::
 
 where the last three lines are the ones you need to add.
 
+Enhancement to check command for Permissions
+--------------------------------------------
+
+A new form of check function is permitted in permission definitions.
+The three argument form is still supported and will work the same
+as it always has (although it may be depricated in the future).
+
+If the check function is defined as::
+
+      check(db, userid, itemid, **ctx)
+
+the ctx variable will have the context to use when determining access
+rights::
+
+     ctx['property'] the name of the property being checked or None if
+            it's a class check.
+
+     ctx['classname'] the name of the class that is being checked
+            (issue, query ....).
+
+     ctx['permission'] the name of the permission (e.g. View, Edit...).
+
+This should make defining complex permissions much easier. Consider::
+
+    def issue_private_access(db, userid, itemid, **ctx):
+        if not db.issue.get(itemid, 'private'):
+           # allow access to everything if not private	
+	   return True
+
+	# It is a private issue hide nosy list
+	# Note that the nosy property *must* be listed
+	# in permissions argument to the addPermission
+	# definition otherwise this check command
+	# is not run.
+	if ctx['property'] == 'nosy':
+	   return False # deny access to this property
+
+	# allow access for editing, viewing etc. of the class
+	return True
+
+
+    e = db.security.addPermission(name='Edit', klass='issue',
+                                  check=issue_private_access,
+				  properties=['nosy'],
+                                  description="Edit issue checks")
+
+It is suggested that you change your checks to use the ``**ctx``
+parameter. This is expected to be the preferred form in the future.
+You do not need to use the ``ctx`` parameter in the function if you do
+not need it.
+
 Migrating from 1.5.0 to 1.5.1
 =============================
 

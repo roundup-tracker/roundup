@@ -155,8 +155,13 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         self.assertEquals(has('Test', none, 'test', property='c'), 0)
         self.assertEquals(has('Test', none, 'test'), 0)
 
-        # check function
-        check = lambda db, userid, itemid: itemid == '1'
+        # check function new style. Make sure that other args are passed.
+        def check(db,userid,itemid, **other):
+            prop = other['property']
+            prop = other['classname']
+            prop = other['permission']
+            return (itemid == '1')
+
         addRole(name='Role3')
         addToRole('Role3', add(name="Test", klass="test", check=check))
         user3 = self.db.user.create(username='user3', roles='Role3')

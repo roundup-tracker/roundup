@@ -27,12 +27,28 @@ class Permission:
     '''
     def __init__(self, name='', description='', klass=None,
             properties=None, check=None):
+        import inspect
         self.name = name
         self.description = description
         self.klass = klass
         self.properties = properties
         self._properties_dict = support.TruthDict(properties)
         self.check = check
+
+        if check is None:
+            self.check_version = 0
+        else:
+            args=inspect.getargspec(check)
+            # FIXME change args[2] to args.keywords since python
+            # 2.6 made getargspec a named tuple once roundup 1.6 released.
+            # If there is a **parameter defined in the function spec, the
+            #  value of the 3rd argument in the tuple is not None.
+            if args[2] is None:
+                # function definition is function(db, userid, itemid)
+                self.check_version = 1
+            else:
+                # function definition is function(db, userid, itemid, **other)
+                self.check_version = 2
 
     def test(self, db, permission, classname, property, userid, itemid):
         if permission != self.name:
@@ -48,8 +64,12 @@ class Permission:
 
         # check code
         if itemid is not None and self.check is not None:
-            if not self.check(db, userid, itemid):
-                return 0
+            if self.check_version == 1:
+                if not self.check(db, userid, itemid):
+                    return 0
+            elif self.check_version == 2:
+                if not self.check(db, userid, itemid, property=property, permission=permission, classname=classname):
+                    return 0
 
         # we have a winner
         return 1

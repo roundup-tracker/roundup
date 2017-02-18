@@ -1183,7 +1183,7 @@ Put together, these settings appear in the tracker's ``schema.py`` file::
     # Users should be able to edit their own details -- this permission
     # is limited to only the situation where the Viewed or Edited item
     # is their own.
-    def own_record(db, userid, itemid):
+    def own_record(db, userid, itemid, **ctx):
         '''Determine whether the userid matches the item being accessed.'''
         return userid == itemid
     p = db.security.addPermission(name='View', klass='user', check=own_record,
@@ -1297,11 +1297,35 @@ The ``addPermission`` method takes a couple of optional parameters:
   new Permission to (eg. ``... klass='user', properties=('name',
   'email') ...``)
 **check**
-  A function to be execute which returns boolean determining whether the
-  Permission is allowed. The function has the signature ``check(db, userid,
-  itemid)`` where ``db`` is a handle on the open database, ``userid`` is
+  A function to be executed which returns boolean determining whether
+  the Permission is allowed. If it returns True, the permission is
+  allowed, if it returns False the permission is denied.  The function
+  can have one of two signatures::
+
+     check(db, userid, itemid)
+
+  or::
+
+     check(db, userid, itemid, **ctx)
+
+  where ``db`` is a handle on the open database, ``userid`` is
   the user attempting access and ``itemid`` is the specific item being
-  accessed.
+  accessed. If the second form is used the ``ctx`` dictionary is
+  defined with the following values::
+
+     ctx['property'] the name of the property being checked or None if
+            it's a class check.
+
+     ctx['classname'] the name of the class that is being checked
+            (issue, query ....).
+
+     ctx['permission'] the name of the permission (e.g. View, Edit...).
+
+The second form is preferred as it makes it easier to implement more
+complex permission schemes. An example of the use of ``ctx`` can be
+found in the ``upgrading.txt`` or `upgrading.html`_ document.
+
+.. _`upgrading.html`: upgrading.html
 
 Example Scenarios
 ~~~~~~~~~~~~~~~~~
