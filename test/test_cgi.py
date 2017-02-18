@@ -1269,6 +1269,40 @@ class TemplateHtmlRendering(unittest.TestCase):
         self.assertNotEqual(-1, result.index('ok message'))
         # print result
 
+    def testRenderAltTemplates(self):
+        # check that right page is returned when rendering
+        #  @template=oktempl|errortmpl
+
+        # set up the client;
+        # run determine_context to set the required client attributes
+        # run renderContext(); check result for proper page
+
+        # Test ok state template that uses user.forgotten.html
+        self.client.form=makeForm({"@template": "forgotten|item"})
+        self.client.path = 'user'
+        self.client.determine_context()
+        self.assertEqual((self.client.classname, self.client.template, self.client.nodeid), ('user', 'forgotten|item', None))
+        self.assertEqual(self.client._ok_message, [])
+        
+        result = self.client.renderContext()
+        self.assertNotEqual(-1,
+                            result.index('<!-- SHA: 6fdb58c55fd854904ae98906d5935549a221fabf -->'))
+
+        # now set an error in the form to get error template user.item.html
+        self.client.form=makeForm({"@template": "forgotten|item",
+                                   "@error_message": "this is an error"})
+        self.client.path = 'user'
+        self.client.determine_context()
+        self.assertEqual((self.client.classname, self.client.template, self.client.nodeid), ('user', 'forgotten|item', None))
+        self.assertEqual(self.client._ok_message, [])
+        self.assertEqual(self.client._error_message, ["this is an error"])
+        
+        result = self.client.renderContext()
+        print result
+        self.assertNotEqual(-1,
+                            result.index('<!-- SHA: 3b7ce7cbf24f77733c9b9f64a569d6429390cc3f -->'))
+
+
     def testexamine_url(self):
         ''' test the examine_url function '''
 

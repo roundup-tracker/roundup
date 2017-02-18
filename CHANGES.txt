@@ -160,6 +160,13 @@ Features:
   string, the string is appended to the displayed option value. This
   allows the user to reset the value for the menu (select) to the
   original value. (John Rouillard)
+- @template html url parameter can be set to "oktmpl|errortmpl". When
+  a form is submitted, if the form passes validation the oktmpl is
+  used for the resulting page. If the form fails submission the
+  errortmpl page is used to display the form. The errortmpl will
+  usually be the same template used to edit the form. See the section
+  on "Implementing Modal Editing Using @template" in
+  ``customizing.txt``. (John Rouillard)
 
 Fixed:
 

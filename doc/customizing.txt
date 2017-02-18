@@ -1825,6 +1825,48 @@ template doesn't exit it will try to use
 ``test/_generic.item.html``. If that template doesn't exist
 it will return an error.
 
+Implementing Modal Editing Using @template
+------------------------------------------
+
+Many item templates allow you to edit the item. They contain
+code that renders edit boxes if the user has edit permissions.
+Otherwise the template will just display the item information.
+
+In some cases you want to do a modal edit. The user has to take some
+action (click a button or follow a link) to shift from display mode to
+edit mode. When the changes are submitted, ending the edit mode,
+the user is returned to display mode.
+
+Modal workflows usually slow things down and are not implemented by
+default templates. However for some workflows a modal edit is useful.
+For example a batch edit mode that allows the user to edit a number of
+issues all from one form could be implemented as a modal workflow of:
+
+* search for issues to modify
+* switch to edit mode and change values
+* exit back to the results of the search
+
+To implement the modal edit, assume you have an issue.edit.html
+template that implements an edit form.  On the display page (a version
+of issue.item.html modified to only display information) add a link
+that calls the display url, but adds ``@template=edit`` to the link.
+
+This will now display the edit page. On the edit page you want to add
+a hidden text field to your form named ``@template`` with the value:
+``item|edit``.  When the form is submitted it is validated. If the
+form is correct the user will see the item rendered using the item
+template. If there is an error (validation failed) the item will be
+rendered using the edit template. The edit template that is rendered
+will display all the changes that the user made to the form before it
+was submitted. The user can correct the error and resubmit the changes
+until the form validates.
+
+If the form failed to validate but the ``@template`` field had the
+value ``item`` the user would still see the error, but all of the data
+the user entered would be discarded. The user would have to redo all
+the edits again.
+
+
 How the templates work
 ----------------------
 
@@ -2219,7 +2261,7 @@ list        lists all of the active (not retired) items in the class.
 csv         return the items of this class as a chunk of CSV text.
 propnames   lists the names of the properties of this class.
 filter      lists of items from this class, filtered and sorted. Two
-            options are avaible for sorting:
+            options are available for sorting:
 
             1. by the current *request* filterspec/filter/sort/group args
             2. by the "filterspec", "sort" and "group" keyword args.

@@ -1163,6 +1163,13 @@ class Client:
             classname (name parameter) and template request variable
             (view parameter) and return its name.
 
+            View can be a single template or two templates separated
+            by a vbar '|' character.  If the Client object has a
+            non-empty _error_message attribute, the right hand
+            template (error template) will be used. If the
+            _error_message is empty, the left hand template (ok
+            template) will be used.
+
             In most cases the name will be "classname.view", but
             if "view" is None, then template name "classname" will
             be returned.
@@ -1172,6 +1179,20 @@ class Client:
 
             [ ] cover with tests
         """
+
+        # determine if view is oktmpl|errortmpl. If so assign the
+        # right one to the view parameter. If we don't have alternate
+        # templates, just leave view alone.
+        if (view.find('|') != -1 ):
+            # we have alternate templates, parse them apart.
+            (oktmpl, errortmpl) = view.split("|", 2)
+            if self._error_message: 
+                # we have an error, use errortmpl
+                view = errortmpl
+            else:
+                # no error message recorded, use oktmpl
+                view = oktmpl
+
         loader = self.instance.templates
 
         # if classname is not set, use "home" template
