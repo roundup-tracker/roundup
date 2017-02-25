@@ -771,7 +771,7 @@ SETTINGS = (
             "If this is false but add_authorinfo is true, only the name\n"
             "of the actor is added which protects the mail address of the\n"
             "actor from being exposed at mail archives, etc."),
-    ), "Outgoing email options.\nUsed for nozy messages and approval requests"),
+    ), "Outgoing email options.\nUsed for nosy messages and approval requests"),
     ("mailgw", (
         (EmailBodyOption, "keep_quoted_text", "yes",
             "Keep email citations when accepting messages.\n"
