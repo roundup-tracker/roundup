@@ -1337,7 +1337,7 @@ class StringHTMLProperty(HTMLProperty):
 
     def _hyper_repl(self, match):
         if match.group('url'):
-            return self._hyper_repl_url(match, '<a href="%s">%s</a>%s')
+            return self._hyper_repl_url(match, '<a href="%s" rel="nofollow">%s</a>%s')
         elif match.group('email'):
             return self._hyper_repl_email(match, '<a href="mailto:%s">%s</a>')
         elif len(match.group('id')) < 10:

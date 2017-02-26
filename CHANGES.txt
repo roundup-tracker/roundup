@@ -424,6 +424,11 @@ Features:
 - Add RejectRaw exception to allow unescaped HTML error messages to be
   displayed to the user (thanks Ezio Melotti for the initial patch)
   (John Kristensen)
+- Add rel=nofollow to http and https url's in the body of messages.
+  This should reduce the value of a public roundup tracker to spammers.
+  References like issue20 or msg10 will hyperlink without
+  rel=nofollow so that robots can index them. Similar work was done
+  for the history display in roundup 1.5.0. (John Rouillard)
 
 Fixed:
 
