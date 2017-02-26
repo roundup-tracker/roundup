@@ -3031,8 +3031,19 @@ class TemplatingUtils:
         template  = request.form.getfirst("@template", "calendar")
         form      = request.form.getfirst("form")
         property  = request.form.getfirst("property")
-        curr_date = date.Date(date_str) # to highlight
-        display   = date.Date(display)  # to show
+        curr_date = ""
+        try:
+            # date_str and display can be set to an invalid value
+            # if user submits a value like "d4" and gets an edit error.
+            # If either or both invalid just ignore that we can't parse it
+            # and assign them to today.
+            curr_date = date.Date(date_str) # to highlight
+            display   = date.Date(display)  # to show
+        except ValueError:
+            # we couldn't parse the date
+            # just let the calendar display
+            curr_date = current_date
+            display = current_date
         day       = display.day
 
         # for navigation
