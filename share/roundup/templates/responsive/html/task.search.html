@@ -241,6 +241,7 @@
  <td tal:define="value request/form/@queryname/value | nothing">
   <input name="@queryname" tal:attributes="value value"/>
   <input type="hidden" name="@old-queryname" tal:attributes="value value"/>
+  <input type="hidden" name="@template" value="index|search"/>
  </td>
 </tr>
 

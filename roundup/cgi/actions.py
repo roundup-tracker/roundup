@@ -299,6 +299,8 @@ class SearchAction(Action):
             key = self.db.query.getkey()
             if key:
                 # edit the old way, only one query per name
+                # Note that use of queryname as key will automatically
+                # raise an error if there are duplicate names.
                 try:
                     qid = self.db.query.lookup(old_queryname)
                     if not self.hasPermission('Edit', 'query', itemid=qid):
@@ -313,9 +315,29 @@ class SearchAction(Action):
                     qid = self.db.query.create(name=queryname,
                         klass=self.classname, url=url)
             else:
+                uid = self.db.getuid()
+
+                # if the queryname is being changed from the old
+                # (original) value, make sure new queryname is not
+                # already in use by user.
+                # if in use, return to edit/search screen and let
+                # user change it.
+
+                if old_queryname != queryname:
+                    # we have a name change
+                    qids = self.db.query.filter(None, {'name': queryname,
+                                                       'creator': uid})
+                    for qid in qids:
+                        # require an exact name match
+                        if queryname != self.db.query.get(qid, 'name'):
+                            continue
+                        # whoops we found a duplicate; report error and return
+                        message=_("You already own a query named '%s'. Please choose another name.")%(queryname)
+                        self.client.add_error_message(message)
+                        return
+
                 # edit the new way, query name not a key any more
                 # see if we match an existing private query
-                uid = self.db.getuid()
                 qids = self.db.query.filter(None, {'name': old_queryname,
                         'private_for': uid})
                 if not qids:
@@ -350,6 +372,16 @@ class SearchAction(Action):
 
             # commit the query change to the database
             self.db.commit()
+
+            # This redirects to the index page. Add the @dispname
+            # url param to the request so that the query name
+            # is displayed.
+            req.form.list.append(
+                cgi.MiniFieldStorage(
+                    "@dispname", queryname
+                )
+            )
+
 
     def fakeFilterVars(self):
         """Add a faked :filter form variable for each filtering prop."""

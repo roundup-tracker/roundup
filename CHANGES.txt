@@ -378,6 +378,25 @@ Fixed:
 - issue2550932 - html_calendar produces templating errors for bad date
   strings. Fixed to ignore bad date and highlight todays date in the
   calendar popup.
+- Query handling requires that query names for a user are unique.
+  Different users are allowed to use the same query name. Under some
+  circumstances a user could generate a second query with the same
+  name. The SearchAction function has been corrected to report this
+  error. Also the index.search.html template in the classic tracker
+  and corresponding templates in the other example trackers
+  has been modified to include:
+    <input type="hidden" name="@template" value="index|search"/>
+  so an error from SearchAction will display an error message and keep
+  the user on the search page so they can correct the error. See
+  ``doc/upgrading.txt``. (John Rouillard)
+- When a new named search is created, the index page that is displayed
+  doesn't show the name. This has been fixed by setting the @dispname
+  to the query's name. (John Rouillard)
+- Passing args into indexargs_url(..,{'@queryname': request/dispname
+  or None, 'Title': 'some' }) where the value of the arg is None
+  will not add the arg to the url. In the example above @queryname
+  will only be in the url if dispname is set in the request.
+  (John Rouillard)
 
 2016-01-11: 1.5.1
 

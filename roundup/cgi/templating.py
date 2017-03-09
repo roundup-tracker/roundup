@@ -2780,12 +2780,21 @@ env: %(env)s
 
     def indexargs_url(self, url, args):
         """ Embed the current index args in a URL
+
+            If the value of an arg (in args dict) is None,
+            the argument is excluded from the url. If you want
+            an empty value use an empty string '' as the value.
+            Use this in templates to conditionally
+            include an arg if it is set to a value. E.G.
+            {..., '@queryname': request.dispname or None, ...}
+            will include @queryname in the url if there is a
+            dispname otherwise the parameter will be omitted
+            from the url.
         """
         q = urllib.quote
         sc = self.special_char
         l = ['%s=%s'%(k,isinstance(v, basestring) and q(v) or v)
-                for k,v in args.items()]
-
+             for k,v in args.items() if v != None ]
         # pull out the special values (prefixed by @ or :)
         specials = {}
         for key in args.keys():

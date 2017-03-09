@@ -396,6 +396,24 @@ parameter. This is expected to be the preferred form in the future.
 You do not need to use the ``ctx`` parameter in the function if you do
 not need it.
 
+Improve query editing
+---------------------
+
+The query editing interface will now report an error if the user
+creates a new query that they are already using. By default the query
+editing page (issue.search.html) displays the index page when the
+search is triggered. Since the user expects to see the results of the
+query, this is usually the right thing. But now that the code properly
+checks for duplicate search names, the user should stay on the search
+page if there is an error. To add this to your existing
+index.search.html page, add the following line after the hidden field
+@old-queryname:
+
+  <input type="hidden" name="@template" value="index|search"/>
+
+With this addition, the index template is displayed if there is no
+error, and the user stays on the search template if there is an error.
+
 Migrating from 1.5.0 to 1.5.1
 =============================
 
