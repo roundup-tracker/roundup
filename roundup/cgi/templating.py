@@ -368,9 +368,9 @@ def lookupKeys(linkcl, key, ids, num_re=num_re):
     for entry in ids:
         if num_re.match(entry):
             try:
-		label = linkcl.get(entry, key)
-	    except IndexError:
-		# fall back to id if illegal (avoid template crash)
+                label = linkcl.get(entry, key)
+            except IndexError:
+                # fall back to id if illegal (avoid template crash)
                 label = entry
             # fall back to designator if label is None
             if label is None: label = '%s%s'%(linkcl.classname, entry)
