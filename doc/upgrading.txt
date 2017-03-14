@@ -399,15 +399,15 @@ not need it.
 Improve query editing
 ---------------------
 
-The query editing interface will now report an error if the user
-creates a new query that they are already using. By default the query
-editing page (issue.search.html) displays the index page when the
-search is triggered. Since the user expects to see the results of the
-query, this is usually the right thing. But now that the code properly
-checks for duplicate search names, the user should stay on the search
-page if there is an error. To add this to your existing
-index.search.html page, add the following line after the hidden field
-@old-queryname:
+If a user creates a query with the same name as one of their existing
+queries, the query editing interface will now report an error. By
+default the query editing page (issue.search.html) displays the index
+page when the search is triggered. This is usually correct since the
+user expects to see the results of the query. But now that
+the code properly checks for duplicate search names, the user should
+stay on the search page if there is an error. To add this to your
+existing index.search.html page, add the following line after the
+hidden field @old-queryname:
 
   <input type="hidden" name="@template" value="index|search"/>
 
