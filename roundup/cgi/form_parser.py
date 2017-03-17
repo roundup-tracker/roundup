@@ -604,8 +604,6 @@ class FormParser:
                 #  if content is defined, let it pass through even if
                 #     content is empty. Yes people can upload/create
                 #     empty files.
-                print("props are %r",props)
-                print("class is: %s",cn)
                 if props.has_key('content'):
                     if id is not None and \
                        not id.startswith('-') and \
