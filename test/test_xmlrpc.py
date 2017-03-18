@@ -197,20 +197,21 @@ class XmlrpcTest(object):
     def testAuthFilter(self):
         # this checks if we properly check for search permissions
         self.db.security.permissions = {}
+        self.db.security.set_props_only_default(props_only=False)
         self.db.security.addRole(name='User')
         self.db.security.addRole(name='Project')
         self.db.security.addPermissionToRole('User', 'Web Access')
         self.db.security.addPermissionToRole('Project', 'Web Access')
         # Allow viewing keyword
         p = self.db.security.addPermission(name='View', klass='keyword')
-        print "View keyword class: %r"p
+        print "View keyword class: %r"%p
         self.db.security.addPermissionToRole('User', p)
         # Allow viewing interesting things (but not keyword) on issue
         # But users might only view issues where they are on nosy
         # (so in the real world the check method would be better)
         p = self.db.security.addPermission(name='View', klass='issue',
             properties=("title", "status"), check=lambda x,y,z: True)
-        print "View keyword class w/ props: %r"p
+        print "View keyword class w/ props: %r"%p
         self.db.security.addPermissionToRole('User', p)
         # Allow role "Project" access to whole issue
         p = self.db.security.addPermission(name='View', klass='issue')
@@ -239,12 +240,12 @@ class XmlrpcTest(object):
         # this might check for keyword owner in the real world)
         p = self.db.security.addPermission(name='View', klass='issue',
             check=lambda x,y,z: False)
-        print "View issue class: %r"p
+        print "View issue class: %r"%p
         self.db.security.addPermissionToRole('User', p)
         # Allow user to search for issue.status
         p = self.db.security.addPermission(name='Search', klass='issue',
             properties=("status",))
-        print "View Search class w/ props: %r"p
+        print "View Search class w/ props: %r"%p
         self.db.security.addPermissionToRole('User', p)
 
         keyw = {'keyword':self.db.keyword.lookup('d1')}
