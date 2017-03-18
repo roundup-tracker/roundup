@@ -1280,7 +1280,7 @@ When adding a new Permission, you will need to:
 1. add it to your tracker's ``schema.py`` so it is created, using
    ``security.addPermission``, for example::
 
-    self.security.addPermission(name="View", klass='frozzle',
+    db.security.addPermission(name="View", klass='frozzle',
         description="User is allowed to access frozzles")
 
    will set up a new "View" permission on the Class "frozzle".
@@ -1290,12 +1290,36 @@ When adding a new Permission, you will need to:
 4. add it to the appropriate xxxPermission methods on in your tracker
    interfaces module
 
-The ``addPermission`` method takes a couple of optional parameters:
+The ``addPermission`` method takes a few optional parameters:
 
 **properties**
   A sequence of property names that are the only properties to apply the
   new Permission to (eg. ``... klass='user', properties=('name',
   'email') ...``)
+**props_only**
+  A boolean value (set to false by default) that is a new feature
+  in roundup 1.6.
+  A permission defined using
+     ``properties=('list', 'of', 'property', 'names')``
+  is used to determine access for things other than just those
+  properties. For example a check for View permission on the issue
+  class or an issue item can use any View permission for the issue
+  class even if that permission has a property list.  This can be
+  confusing and surprising as you would think that a permission
+  including properties would be used only for determining the
+  access permission for those properties.
+
+  Setting ``props_only=True`` will make the permission valid only for
+  those properties.
+
+  If you use a lot of permissions with property checks, it can be
+  difficult to change all of them. Calling the function:
+
+    db.security.set_props_only_default(True)
+
+  at the top of ``schema.py`` will make every permission creation
+  behave as though props_only was set to True. It is expected that the
+  default of True will become the default in a future Roundup release.
 **check**
   A function to be executed which returns boolean determining whether
   the Permission is allowed. If it returns True, the permission is

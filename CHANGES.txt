@@ -176,6 +176,10 @@ Features:
      ctx['permission'] the name of the permission (e.g. View, Edit)
   At some future date the older 3 argument style check command will
   be deprecated. See ``upgrading.txt`` for details.
+- New property for permissions added to simplify the model. See
+  ``customizing.txt`` and search for props_only and
+    set_props_only_default in the section 'Adding a new Permission'.
+    (John Rouillard)
 
 Fixed:
 

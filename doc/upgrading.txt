@@ -396,6 +396,25 @@ parameter. This is expected to be the preferred form in the future.
 You do not need to use the ``ctx`` parameter in the function if you do
 not need it.
 
+Changes to property permissions
+-------------------------------
+
+If you create a permission:
+
+    db.security.addPermission(name='View', klass='user',
+       properties=['theme'], check=own_record,
+       description="User is allowed to view their own theme")
+
+that combines checks and properties, the permission also matches a
+permission check for the View permission on the user class.  So this
+also allows the user to see their user record. It is unexpected that
+checking for access without a property would match this permission.
+
+This release adds support for making a permission like above only be
+used during property permission tests. See ``customizing.txt`` and
+search for props_only and set_props_only_default in the section
+'Adding a new Permission'
+
 Improve query editing
 ---------------------
 

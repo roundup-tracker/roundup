@@ -79,23 +79,54 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         self.assertEquals(get('View', 'issue'), ai)
 
         # property
-        epi = add(name="Edit", klass="issue", properties=['title'])
-        self.assertEquals(get('Edit', 'issue', properties=['title']), epi)
-        api = add(name="View", klass="issue", properties=['title'])
-        self.assertEquals(get('View', 'issue', properties=['title']), api)
+        epi1 = add(name="Edit", klass="issue", properties=['title'])
+        self.assertEquals(get('Edit', 'issue', properties=['title']), epi1)
+        epi2 = add(name="Edit", klass="issue", properties=['title'],
+                  props_only=True)
+        self.assertEquals(get('Edit', 'issue', properties=['title'], props_only=False), epi1)
+        self.assertEquals(get('Edit', 'issue', properties=['title'], props_only=True), epi2)
+        self.db.security.set_props_only_default(True)
+        self.assertEquals(get('Edit', 'issue', properties=['title']), epi2)
+        api1 = add(name="View", klass="issue", properties=['title'])
+        self.assertEquals(get('View', 'issue', properties=['title']), api1)
+        self.db.security.set_props_only_default(False)
+        api2 = add(name="View", klass="issue", properties=['title'])
+        self.assertEquals(get('View', 'issue', properties=['title']), api2)
+        self.assertNotEquals(get('View', 'issue', properties=['title']), api1)
         
         # check function
         dummy = lambda: 0
         eci = add(name="Edit", klass="issue", check=dummy)
         self.assertEquals(get('Edit', 'issue', check=dummy), eci)
+        # props_only only makes sense if you are setting props.
+        # make it a no-op unless properties is set.
+        self.assertEquals(get('Edit', 'issue', check=dummy,
+                              props_only=True), eci)
         aci = add(name="View", klass="issue", check=dummy)
         self.assertEquals(get('View', 'issue', check=dummy), aci)
 
         # all
         epci = add(name="Edit", klass="issue", properties=['title'],
             check=dummy)
+
+        self.db.security.set_props_only_default(False)
+        # implicit props_only=False
         self.assertEquals(get('Edit', 'issue', properties=['title'],
-            check=dummy), epci)
+                              check=dummy), epci)
+        # explicit props_only=False
+        self.assertEquals(get('Edit', 'issue', properties=['title'],
+                              check=dummy, props_only=False), epci)
+
+        # implicit props_only=True
+        self.db.security.set_props_only_default(True)
+        self.assertRaises(ValueError, get, 'Edit', 'issue',
+                                          properties=['title'],
+                                          check=dummy)
+        # explicit props_only=False
+        self.assertRaises(ValueError, get, 'Edit', 'issue',
+                                          properties=['title'],
+                                          check=dummy, props_only=True)
+
         apci = add(name="View", klass="issue", properties=['title'],
             check=dummy)
         self.assertEquals(get('View', 'issue', properties=['title'],
@@ -130,17 +161,101 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         addRole(name='Role2')
         addToRole('Role2', add(name="Test", klass="test", properties=['a','b']))
         user2 = self.db.user.create(username='user2', roles='Role2')
+
+        # check function
+        check_old_style = lambda db, userid, itemid: itemid == '2'
+        #def check_old_style(db, userid, itemid):
+        #    print "checking userid, itemid: %r"%((userid,itemid),)
+        #    return(itemid == '2')
+
+        # setup to check function new style. Make sure that
+        # other args are passed.
+        def check(db,userid,itemid, **other):
+            prop = other['property']
+            prop = other['classname']
+            prop = other['permission']
+            return (itemid == '1')
+
+        addRole(name='Role3')
+        addToRole('Role3', add(name="Test", klass="test", check=check))
+        user3 = self.db.user.create(username='user3', roles='Role3')
+
+        addRole(name='Role4')
+        addToRole('Role4', add(name="Test", klass="test", check=check,
+                               properties='a', props_only=True))
+        user4 = self.db.user.create(username='user4', roles='Role4')
+
+        self.db.security.set_props_only_default(props_only=True)
+        addRole(name='Role5')
+        addToRole('Role5', add(name="Test", klass="test",
+                               check=check_old_style, properties=['a']))
+        user5 = self.db.user.create(username='user5', roles='Role5')
+
+        self.db.security.set_props_only_default(False)
+        addRole(name='Role6')
+        addToRole('Role6', add(name="Test", klass="test", check=check,
+                               properties=['a', 'b']))
+        user6 = self.db.user.create(username='user6', roles='Role6')
+
+        addRole(name='Role7')
+        addToRole('Role7', add(name="Test", klass="test",
+                               check=check_old_style,
+                               properties=['a', 'b']))
+        user7 = self.db.user.create(username='user7', roles='Role7')
+        print user7
+
         # *any* access to class
         self.assertEquals(has('Test', user1, 'test'), 1)
         self.assertEquals(has('Test', user2, 'test'), 1)
+        self.assertEquals(has('Test', user3, 'test'), 1)
+        # user4 and user5 should not return true as the permission
+        # is limited to property checks
+        self.assertEquals(has('Test', user4, 'test'), 0)
+        self.assertEquals(has('Test', user5, 'test'), 0)
+        # user6 will will return access
+        self.assertEquals(has('Test', user6, 'test'), 1)
+        # will work because check is ignored, if check was
+        # used this would work but next test would fail
+        self.assertEquals(has('Test', user7, 'test', itemid='2'), 1)
+        # returns true because class tests ignore the check command
+        # if there is no itemid no check command is run
+        self.assertEquals(has('Test', user7, 'test'), 1)
+        self.assertEquals(has('Test', none, 'test'), 0)
+
 
         # *any* access to item
         self.assertEquals(has('Test', user1, 'test', itemid='1'), 1)
         self.assertEquals(has('Test', user2, 'test', itemid='1'), 1)
+        self.assertEquals(has('Test', user3, 'test', itemid='1'), 1)
+        self.assertEquals(has('Test', user4, 'test', itemid='1'), 0)
+        self.assertEquals(has('Test', user5, 'test', itemid='1'), 0)
+        self.assertEquals(has('Test', user6, 'test', itemid='1'), 1)
+        self.assertEquals(has('Test', user7, 'test', itemid='2'), 1)
+        self.assertEquals(has('Test', user7, 'test', itemid='1'), 0)
         self.assertEquals(has('Test', super, 'test', itemid='1'), 1)
         self.assertEquals(has('Test', none, 'test', itemid='1'), 0)
 
-        # now property test
+        # now property test: no default itemid so check functions not run.
+        self.assertEquals(has('Test', user7, 'test', property='a'), 1)
+        self.assertEquals(has('Test', user7, 'test', property='b'), 1)
+        self.assertEquals(has('Test', user7, 'test', property='c'), 0)
+
+        self.assertEquals(has('Test', user6, 'test', property='a'), 1)
+        self.assertEquals(has('Test', user6, 'test', property='b'), 1)
+        self.assertEquals(has('Test', user6, 'test', property='c'), 0)
+
+        self.assertEquals(has('Test', user5, 'test', property='a'), 1)
+        self.assertEquals(has('Test', user5, 'test', property='b'), 0)
+        self.assertEquals(has('Test', user5, 'test', property='c'), 0)
+
+        self.assertEquals(has('Test', user4, 'test', property='a'), 1)
+        self.assertEquals(has('Test', user4, 'test', property='b'), 0)
+        self.assertEquals(has('Test', user4, 'test', property='c'), 0)
+
+        self.assertEquals(has('Test', user3, 'test', property='a'), 1)
+        self.assertEquals(has('Test', user3, 'test', property='b'), 1)
+        self.assertEquals(has('Test', user3, 'test', property='c'), 1)
+
         self.assertEquals(has('Test', user2, 'test', property='a'), 1)
         self.assertEquals(has('Test', user2, 'test', property='b'), 1)
         self.assertEquals(has('Test', user2, 'test', property='c'), 0)
@@ -155,22 +270,17 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         self.assertEquals(has('Test', none, 'test', property='c'), 0)
         self.assertEquals(has('Test', none, 'test'), 0)
 
-        # check function new style. Make sure that other args are passed.
-        def check(db,userid,itemid, **other):
-            prop = other['property']
-            prop = other['classname']
-            prop = other['permission']
-            return (itemid == '1')
-
-        addRole(name='Role3')
-        addToRole('Role3', add(name="Test", klass="test", check=check))
-        user3 = self.db.user.create(username='user3', roles='Role3')
-        # *any* access to class
-        self.assertEquals(has('Test', user1, 'test'), 1)
-        self.assertEquals(has('Test', user2, 'test'), 1)
-        self.assertEquals(has('Test', user3, 'test'), 1)
-        self.assertEquals(has('Test', none, 'test'), 0)
         # now check function
+        self.assertEquals(has('Test', user7, 'test', itemid='1'), 0)
+        self.assertEquals(has('Test', user7, 'test', itemid='2'), 1)
+        self.assertEquals(has('Test', user6, 'test', itemid='1'), 1)
+        self.assertEquals(has('Test', user6, 'test', itemid='2'), 0)
+        # check functions will not run for user4/user5 since the
+        # only perms are for properties only.
+        self.assertEquals(has('Test', user5, 'test', itemid='1'), 0)
+        self.assertEquals(has('Test', user5, 'test', itemid='2'), 0)
+        self.assertEquals(has('Test', user4, 'test', itemid='1'), 0)
+        self.assertEquals(has('Test', user4, 'test', itemid='2'), 0)
         self.assertEquals(has('Test', user3, 'test', itemid='1'), 1)
         self.assertEquals(has('Test', user3, 'test', itemid='2'), 0)
         self.assertEquals(has('Test', user2, 'test', itemid='1'), 1)
@@ -181,6 +291,52 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         self.assertEquals(has('Test', super, 'test', itemid='2'), 1)
         self.assertEquals(has('Test', none, 'test', itemid='1'), 0)
         self.assertEquals(has('Test', none, 'test', itemid='2'), 0)
+
+        # now mix property and check commands
+        # check is old style props_only = false
+        self.assertEquals(has('Test', user7, 'test', property="c",
+                              itemid='2'), 0)
+        self.assertEquals(has('Test', user7, 'test', property="c",
+                              itemid='1'), 0)
+
+        self.assertEquals(has('Test', user7, 'test', property="a",
+                              itemid='2'), 1)
+        self.assertEquals(has('Test', user7, 'test', property="a",
+                              itemid='1'), 0)
+
+        # check is new style props_only = false
+        self.assertEquals(has('Test', user6, 'test', itemid='2',
+                              property='c'), 0)
+        self.assertEquals(has('Test', user6, 'test', itemid='1',
+                              property='c'), 0)
+        self.assertEquals(has('Test', user6, 'test', itemid='2',
+                              property='b'), 0)
+        self.assertEquals(has('Test', user6, 'test', itemid='1',
+                              property='b'), 1)
+        self.assertEquals(has('Test', user6, 'test', itemid='2',
+                              property='a'), 0)
+        self.assertEquals(has('Test', user6, 'test', itemid='1',
+                              property='a'), 1)
+
+        # check is old style props_only = true
+        self.assertEquals(has('Test', user5, 'test', itemid='2',
+                              property='b'), 0)
+        self.assertEquals(has('Test', user5, 'test', itemid='1',
+                              property='b'), 0)
+        self.assertEquals(has('Test', user5, 'test', itemid='2',
+                              property='a'), 1)
+        self.assertEquals(has('Test', user5, 'test', itemid='1',
+                              property='a'), 0)
+
+        # check is new style props_only = true
+        self.assertEquals(has('Test', user4, 'test', itemid='2',
+                              property='b'), 0)
+        self.assertEquals(has('Test', user4, 'test', itemid='1',
+                              property='b'), 0)
+        self.assertEquals(has('Test', user4, 'test', itemid='2',
+                              property='a'), 0)
+        self.assertEquals(has('Test', user4, 'test', itemid='1',
+                              property='a'), 1)
 
     def testTransitiveSearchPermissions(self):
         add = self.db.security.addPermission
