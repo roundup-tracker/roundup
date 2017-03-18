@@ -1644,6 +1644,54 @@ for each action are:
 **search**
  Determine whether the user has permission to view this class.
 
+Protecting users from web application attacks
+---------------------------------------------
+
+There is a class of attacks known as Cross Site Request Forgeries
+(CSRF). Malicious code running in the browser can making a
+request to roundup while you are logged into roundup.  The
+malicious code piggy backs on your existing roundup session to
+make changes without your knowledge. Roundup 1.6 has support for
+defending against this by analyzing the
+
+* Referer,
+* Origin, and
+* Host or 
+* X-Forwarded-Host
+
+HTTP headers. It compares the headers to the value of the web setting
+in the [tracker] section of the tracker's ``config.ini``.
+
+Also a per form token (also called a nonce) can be enabled for
+the tracker using the ``csrf_enforce_token`` option in
+config.ini.  When enabled, roundup will validate a hidden form
+field called ``@csrf``. If the validation fails (or the token
+is used more than one) the request is rejected.  The ``@csrf``
+input field is added automatically by calling the ``submit``
+function/path. It can also be added manually by calling
+anti_csrf_nonce() directly. For example:
+
+   <input name="@csrf" type="hidden"
+      tal:attributes="value python:utils.anti_csrf_nonce(lifetime=10)">
+
+By default a nonce lifetime is 2 weeks. However the lifetime (in
+minutes) can be set by passing a lifetime argument as shown
+above. The example above makes the nonce lifetime 10 minutes.
+ 
+Search for @csrf in this document for more examples. There are
+more examples and information in ``upgrading.txt``.
+
+The token protects you because malicious code supplied by another
+site is unable to obtain the token. Thus many attempts they make
+to submit a request are rejected.
+
+The protection on the xmlrpc interface is untested, but is based
+on a valid header check against the roundup url and the presence
+of the ``X-REQUESTED-WITH`` header. Work to improve this is a
+future project after the 1.6 release.
+
+The enforcement levels an be modified in ``config.ini``. Refer to
+that file for details.
 
 Special form variables
 ----------------------
@@ -2366,7 +2414,7 @@ classhelp   display a link to a javascript popup containing this class'
             javascript help_window function - it's the name of the form
             the "property" belongs to.
 
-submit      generate a submit button (and action hidden element)
+submit      generate a submit button (and action and @csrf hidden elements)
 renderWith  render this class with the given template.
 history     returns 'New node - no history' :)
 is_edit_ok  is the user allowed to Edit the current class?
@@ -2399,7 +2447,7 @@ There are several methods available on these wrapper objects:
 =============== ========================================================
 Method          Description
 =============== ========================================================
-submit          generate a submit button (and action hidden element)
+submit          generate a submit button (and action and @csrf hidden elements)
 journal         return the journal of the current item (**not
                 implemented**)
 history         render the journal of the current item as HTML
@@ -3609,6 +3657,12 @@ Then a submit button so that the user can submit the new category::
       submit button will go here
      </td>
     </tr>
+
+The ``context/submit`` bit generates the submit button but also
+generates the @action and @csrf hidden fields. The @action field is
+used to tell roundup how to process the form. The @csrf field provides
+a unique single use token to defend against CSRF attacks. (More about
+anti-csrf measures can be found in ``upgrading.txt``.)
 
 Finally we finish off the tags we used at the start to do the METAL
 stuff::
@@ -5097,16 +5151,21 @@ To edit the status of all items in the item index view, edit the
 
     <tr>
      <td tal:attributes="colspan python:len(request.columns)">
+      <input name="@csrf" type="hidden"		
+           tal:attributes="value python:utils.anti_csrf_nonce()">
       <input type="submit" value=" Save Changes ">
       <input type="hidden" name="@action" value="edit">
       <tal:block replace="structure request/indexargs_form" />
      </td>
     </tr>
 
-   which gives us a submit button, indicates that we are performing an edit
-   on any changed statuses. The final ``tal:block`` will make sure that the
-   current index view parameters (filtering, columns, etc) will be used in 
-   rendering the next page (the results of the editing).
+   which gives us a submit button, indicates that we are performing an
+   edit on any changed statuses, and provides a defense against cross
+   site request forgery attacks.
+
+   The final ``tal:block`` will make sure that the current index view
+   parameters (filtering, columns, etc) will be used in rendering the
+   next page (the results of the editing).
 
 
 Displaying only message summaries in the issue display
@@ -5189,6 +5248,8 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
 
     <form method="POST" onSubmit="return submit_once()"
           enctype="multipart/form-data">
+       <input name="@csrf" type="hidden"
+          tal:attributes="value python:utils.anti_csrf_nonce()">
       <input type="hidden" name="@template" value="add_page1">
       <input type="hidden" name="@action" value="page1_submit">
 
@@ -5205,6 +5266,8 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
           tal:condition="context/is_edit_ok"
           tal:define="cat request/form/category/value">
 
+      <input name="@csrf" type="hidden"
+          tal:attributes="value python:utils.anti_csrf_nonce()">
       <input type="hidden" name="@template" value="add_page2">
       <input type="hidden" name="@required" value="title">
       <input type="hidden" name="category" tal:attributes="value cat">

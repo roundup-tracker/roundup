@@ -1141,6 +1141,14 @@ class LogoutAction(Action):
         self.client.nodeid = None
         self.client.template = None
 
+        # Redirect to a new page on logout. This regenerates
+        # CSRF tokens so they are associated with the
+        # anonymous user and not the user who logged out. If
+        # we don't the user gets an invalid CSRF token error
+        # As above choose the home page since everybody can
+        # see that.
+        raise exceptions.Redirect, self.base
+
 class LoginAction(Action):
     def handle(self):
         """Attempt to log a user in.

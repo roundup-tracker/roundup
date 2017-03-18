@@ -293,6 +293,19 @@ class RunDetectorOption(Option):
         else:
             raise OptionValueError(self, value, self.class_description)
 
+class CsrfSettingOption(Option):
+
+    """How should a csrf measure be enforced: required, yes, logfailure, no"""
+
+    class_description = "Allowed values: required, yes, logfailure, no"
+
+    def str2value(self, value):
+        _val = value.lower()
+        if _val in ("required", "yes", "logfailure", "no"):
+            return _val
+        else:
+            raise OptionValueError(self, value, self.class_description)
+
 class EmailBodyOption(Option):
 
     """When to replace message body or strip quoting: always, never or for new items only"""
@@ -633,6 +646,98 @@ SETTINGS = (
             "variables supplied by your web server (in that order).\n"
             "Set this option to 'no' if you do not wish to use HTTP Basic\n"
             "Authentication in your web interface."),
+        (CsrfSettingOption, 'csrf_enforce_token', "yes",
+            """How do we deal with @csrf fields in posted forms.
+Set this to 'required' to block the post and notify
+    the user if the field is missing or invalid.
+Set this to 'yes' to block the post and notify the user
+    if the token is invalid, but accept the form if
+    the field is missing
+Set this to 'logfailure' to log a notice to the roundup
+    log if the field is invalid or missing, but accept
+    the post.
+Set this to 'no' to ignore the field and accept the post.
+            """),
+        (IntegerNumberOption, 'csrf_token_lifetime', "20160",
+            """csrf_tokens have a limited lifetime. If they are not
+used they are purged from the database after this
+number of minutes. Default (20160) is 2 weeks."""),
+        (CsrfSettingOption, 'csrf_enforce_token', "yes",
+            """How do we deal with @csrf fields in posted forms.
+Set this to 'required' to block the post and notify
+    the user if the field is missing or invalid.
+Set this to 'yes' to block the post and notify the user
+    if the token is invalid, but accept the form if
+    the field is missing
+Set this to 'logfailure' to log a notice to the roundup
+    log if the field is invalid or missing, but accept
+    the post.
+Set this to 'no' to ignore the field and accept the post.
+            """),
+        (CsrfSettingOption, 'csrf_enforce_header_X-REQUESTED-WITH', "yes",
+            """This is only used for xmlrpc requests. This test is
+done after Origin and Referer headers are checked. It only
+verifies that the X-Requested-With header exists. The value
+is ignored.
+Set this to 'required' to block the post and notify
+    the user if the header is missing or invalid.
+Set this to 'yes' is the same as required.
+Set this to 'logfailure' is the same as 'no'.
+Set this to 'no' to ignore the header and accept the post."""),
+        (CsrfSettingOption, 'csrf_enforce_header_referer', "yes",
+            """Verify that the Referer http header matches the
+tracker.web setting in config.ini.
+Set this to 'required' to block the post and notify
+    the user if the header is missing or invalid.
+Set this to 'yes' to block the post and notify the user
+    if the header is invalid, but accept the form if
+    the field is missing
+Set this to 'logfalure' to log a notice to the roundup
+    log if the header is invalid or missing, but accept
+    the post.
+Set this to 'no' to ignore the header and accept the post."""),
+        (CsrfSettingOption, 'csrf_enforce_header_origin', "yes",
+            """Verify that the Origin http header matches the
+tracker.web setting in config.ini.
+Set this to 'required' to block the post and notify
+    the user if the header is missing or invalid.
+Set this to 'yes' to block the post and notify the user
+    if the header is invalid, but accept the form if
+    the field is missing
+Set this to 'logfailure' to log a notice to the roundup
+    log if the header is invalid or missing, but accept
+    the post.
+Set this to 'no' to ignore the header and accept the post."""),
+        (CsrfSettingOption, 'csrf_enforce_header_x-forwarded-host', "yes",
+            """Verify that the X-Forwarded-Host http header matches
+the host part of the tracker.web setting in config.ini.
+Set this to 'required' to block the post and notify
+    the user if the header is missing or invalid.
+Set this to 'yes' to block the post and notify the user
+    if the header is invalid, but accept the form if
+    the field is missing
+Set this to 'logfailure' to log a notice to the roundup
+    log if the header is invalid or missing, but accept
+    the post.
+Set this to 'no' to ignore the header and accept the post."""),
+        (CsrfSettingOption, 'csrf_enforce_header_host', "yes",
+            """"If there is no X-Forward-Host header, verify that
+the Host http header matches the host part of the
+tracker.web setting in config.ini.
+Set this to 'required' to block the post and notify
+    the user if the header is missing or invalid.
+Set this to 'yes' to block the post and notify the user
+    if the header is invalid, but accept the form if
+    the field is missing
+Set this to 'logfailure' to log a notice to the roundup
+    log if the header is invalid or missing, but accept
+    the post.
+Set this to 'no' to ignore the header and accept the post."""),
+        (IntegerNumberOption, 'csrf_header_min_count', "1",
+            """Minimum number of header checks that must pass
+to accept the request. Set to 0 to accept post
+even if no header checks pass. Usually the Host header check
+always passes, so setting it less than 1 is not recommended."""),
         (BooleanOption, 'use_browser_language', "yes",
             "Whether to use HTTP Accept-Language, if present.\n"
             "Browsers send a language-region preference list.\n"

@@ -8,6 +8,23 @@ class MockDatabase(MockNull):
     def getclass(self, name):
         return self.classes[name]
 
+    # setup for csrf testing of otks database api
+    storage = {}
+    def set(self, key, **props):
+        MockDatabase.storage[key] = {}
+        MockDatabase.storage[key].update(props)
+
+    def get(self, key, field, default=None):
+        if key not in MockDatabase.storage:
+            return default
+        return MockDatabase.storage[key][field]
+
+    def exists(self,key):
+        return key in MockDatabase.storage
+
+    def getOTKManager(self):
+        return MockDatabase()
+
 class TemplatingTestCase(unittest.TestCase):
     def setUp(self):
         self.form = FieldStorage()
@@ -15,6 +32,11 @@ class TemplatingTestCase(unittest.TestCase):
         self.client.db = db = MockDatabase()
         db.security.hasPermission = lambda *args, **kw: True
         self.client.form = self.form
+
+        # add client props for testing anti_csrf_nonce
+        self.client.session_api = MockNull(_sid="1234567890")
+        self.client.db.getuid = lambda : 10
+        self.client.db.config = {'WEB_CSRF_TOKEN_LIFETIME': 10 }
 
 class HTMLDatabaseTestCase(TemplatingTestCase):
     def test_HTMLDatabase___getitem__(self):
@@ -103,6 +125,63 @@ class HTMLClassTestCase(TemplatingTestCase) :
             )
         cls = HTMLClass(self.client, "issue")
         cls["nosy"]
+
+    def test_anti_csrf_nonce(self):
+        '''call the csrf creation function and do basic length test
+
+           Store the data in a mock db with the same api as the otk
+           db. Make sure nonce is 64 chars long. Lookup the nonce in
+           db and retrieve data. Verify that the nonce lifetime is
+           correct (within 1 second of 1 week - lifetime), the uid is
+           correct (1), the dummy sid is correct.
+
+           Consider three cases:
+             * create nonce via module function setting lifetime
+             * create nonce via TemplatingUtils method setting lifetime
+             * create nonce via module function with default lifetime
+
+        '''
+
+        # the value below is number of seconds in a week.
+        week_seconds = 648000 
+        for test in [ 'module', 'template', 'default_time' ]:
+            if test == 'module':
+                # test the module function
+                nonce1 = anti_csrf_nonce(self, self.client, lifetime=1)
+                # lifetime * 60 is the offset
+                greater_than = week_seconds - 1 * 60
+            elif test == 'template':
+                # call the function through the TemplatingUtils class
+                cls = TemplatingUtils(self.client)
+                nonce1 = cls.anti_csrf_nonce(lifetime=5)
+                greater_than = week_seconds - 5 * 60
+            elif test == 'default_time':
+                # use the module function but with no lifetime
+                nonce1 = anti_csrf_nonce(self, self.client)
+                # see above for web nonce lifetime.
+                greater_than = week_seconds - 10 * 60
+
+            self.assertEqual(len(nonce1), 64)
+            otks=self.client.db.getOTKManager()
+
+            uid = otks.get(nonce1, 'uid', default=None)
+            sid = otks.get(nonce1, 'sid', default=None)
+            timestamp = otks.get(nonce1, '__timestamp', default=None)
+
+            self.assertEqual(uid, 10) 
+            self.assertEqual(sid, self.client.session_api._sid)
+
+            ts = time.time()
+        
+            # lower bound of the difference is above. Upper bound
+            # of difference is run time between time.time() in
+            # the call to anti_csrf_nonce and the time.time() call
+            # that assigns ts above. I declare that difference
+            # to be less than 1 second for this to pass.
+            self.assertEqual(True,
+                       greater_than < ts - timestamp < (greater_than + 1) )
+
+            print "completed", test
 
     def test_string_url_quote(self):
         ''' test that urlquote quotes the string '''
@@ -362,9 +441,9 @@ class Batch(ZTUtils.Batch):
     def previous(self):
     def next(self):
 
-class TemplatingUtils:
-    def __init__(self, client):
-    def Batch(self, sequence, size, start, end=0, orphan=0, overlap=0):
+#class TemplatingUtils:
+#    def __init__(self, client):
+#    def Batch(self, sequence, size, start, end=0, orphan=0, overlap=0):
 
 class NoTemplate(Exception):
 class Unauthorised(Exception):

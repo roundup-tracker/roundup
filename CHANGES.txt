@@ -178,8 +178,16 @@ Features:
   be deprecated. See ``upgrading.txt`` for details.
 - New property for permissions added to simplify the model. See
   ``customizing.txt`` and search for props_only and
-    set_props_only_default in the section 'Adding a new Permission'.
-    (John Rouillard)
+  set_props_only_default in the section 'Adding a new Permission'.
+  (John Rouillard)
+- issue2550690 - Inadequate CSRF protection. Improvements in
+  Cross Site Request Forgery protection to check HTTP headers
+  and nonces. If the header/nonce is present, they are
+  validated. But if headers or nonces are missing access is
+  granted. The enforcement policy can be set in config.ini.
+  Requiring enforcement will need some changes to
+  templates. Support for protecting xmlrpc endpoint not well
+  tested.  See ``upgrading.txt``. (John Rouillard)
 
 Fixed:
 

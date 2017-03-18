@@ -2,11 +2,23 @@
 """
 __docformat__ = 'restructuredtext'
 
+import logging
+logger = logging.getLogger('roundup')
+
 import base64, binascii, cgi, codecs, mimetypes, os
-import quopri, random, re, stat, sys, time
-import socket, errno
+import quopri, re, stat, sys, time
+import socket, errno, hashlib
 import email.utils
 from traceback import format_exc
+
+try: 
+    # Use the cryptographic source of randomness if available
+    from random import SystemRandom
+    random=SystemRandom()
+    logger.debug("Importing good random generator")
+except ImportError:
+    from random import random
+    logger.warning("**SystemRandom not available. Using poor random generator")
 
 try:
     from OpenSSL.SSL import SysCallError
@@ -220,6 +232,10 @@ class Client:
       should be sent to the client
     - "response_code" is the HTTP response code to send to the client
     - "translator" is TranslationService instance
+    - "client-nonce" is a unique value for this client connection. Can be
+       used as a nonce for CSP headers and to sign javascript code
+       presented to the browser. This is different from the CSRF nonces
+       and can not be used for anti-csrf measures.
 
     During the processing of a request, the following attributes are used:
 
@@ -240,11 +256,11 @@ class Client:
 
     User Identification:
      Users that are absent in session data are anonymous and are logged
-     in as that user. This typically gives them all Permissions assigned to the
-     Anonymous Role.
+     in as that user. This typically gives them all Permissions assigned
+     to the Anonymous Role.
 
-     Every user is assigned a session. "session_api" is the interface to work
-     with session data.
+     Every user is assigned a session. "session_api" is the interface
+     to work with session data.
 
     Special form variables:
      Note that in various places throughout this code, special form
@@ -320,6 +336,10 @@ class Client:
         # {(path, name): (value, expire)}
         self._cookies = {}
 
+        # define a unique nonce. Can be used for Content Security Policy
+        # nonces for scripts.
+        self.client_nonce = self._gen_nonce()
+
         # see if we need to re-parse the environment for the form (eg Zope)
         if form is None:
             self.form = cgi.FieldStorage(fp=request.rfile, environ=env)
@@ -354,6 +374,12 @@ class Client:
         self.nodeid = None
         self.classname = None
         self.template = None
+
+    def _gen_nonce(self):
+        """ generate a unique nonce """
+        n = '%s%s%s'%(random.random(), id(self), time.time() )
+        n = hashlib.sha256(n).hexdigest()
+        return n
 
     def setTranslator(self, translator=None):
         """Replace the translation engine
@@ -409,12 +435,15 @@ class Client:
         self.determine_user()
         self.check_anonymous_access()
 
-        # Call the appropriate XML-RPC method.
-        handler = xmlrpc.RoundupDispatcher(self.db,
+        if self.handle_csrf(xmlrpc=True):
+            # Call the appropriate XML-RPC method.
+            handler = xmlrpc.RoundupDispatcher(self.db,
                                            self.instance.actions,
                                            self.translator,
                                            allow_none=True)
-        output = handler.dispatch(input)
+            output = handler.dispatch(input)
+        else:
+            raise Unauthorised, self._error_message
 
         self.setHeader("Content-Type", "text/xml")
         self.setHeader("Content-Length", str(len(output)))
@@ -479,9 +508,15 @@ class Client:
                 # so do the Anonymous Web Acess check now
                 self.check_anonymous_access()
 
-                # possibly handle a form submit action (may change self.classname
-                # and self.template, and may also append error/ok_messages)
-                html = self.handle_action()
+                # check for a valid csrf token identifying the right user
+                if self.handle_csrf():
+                    # csrf checks pass. Run actions etc.
+                    # possibly handle a form submit action (may change
+                    # self.classname and self.template, and may also
+                    # append error/ok_messages)
+                    html = self.handle_action()
+                else:
+                    html = None
 
                 if html:
                     self.write_html(html)
@@ -779,6 +814,10 @@ class Client:
                         self.make_user_anonymous()
                         raise
                     user = username
+                    # try to seed with something harder to guess than
+                    # just the time. If random is SystemRandom,
+                    # this is a no-op.
+                    random.seed(password + time.time()) 
 
         # if user was not set by http authorization, try session lookup
         if not user:
@@ -841,6 +880,242 @@ class Client:
             if not self.db.security.hasPermission('Web Access', self.userid):
                 raise Unauthorised(self._("Anonymous users are not "
                     "allowed to use the web interface"))
+
+
+    def handle_csrf(self, xmlrpc=False):
+        '''Handle csrf token lookup and validate current user and session
+
+            This implements (or tries to implement) the
+            Session-Dependent Nonce from
+            https://seclab.stanford.edu/websec/csrf/csrf.pdf.
+
+            Changing this to an HMAC(sessionid,secret) will
+            remove the need for saving a fair amount of
+            state on the server (one nonce per form per
+            page). If you have multiple forms/page this can
+            lead to abandoned csrf tokens that have to time
+            out and get cleaned up.But you lose per form
+            tokens which may be an advantage. Also the HMAC
+            is constant for the session, so provides more
+            occasions for it to be exposed.
+
+            This only runs on post (or put and delete for
+            future use).  Nobody should be changing data
+            with a get.
+
+            A session token lifetime is settable in
+            config.ini.  A future enhancement to the
+            creation routines should allow for the requester
+            of the token to set the lifetime.t
+
+            The unique session key and user id is stored
+            with the token. The token is valid if the stored
+            values match the current client's userid and
+            session.
+
+            If a user logs out, the csrf keys are
+            invalidated since no other connection should
+            have the same session id.
+
+            At least to start I am reporting anti-csrf to
+            the user.  If it's an attacker who can see the
+            site, they can see the @csrf fields and can
+            probably figure out that he needs to supply
+            valid headers. Or they can just read this code
+            8-).  So hiding it doesn't seem to help but it
+            does arguably show the enforcement settings, but
+            given the newness of this code notifying the
+            user and having them notify the admins for
+            debugging seems to be an advantage.
+
+        '''
+        # Assume: never allow changes via GET
+        if self.env['REQUEST_METHOD'] not in ['POST', 'PUT', 'DELETE']:
+            return True
+        config=self.instance.config
+        user=self.db.getuid()
+
+        # the HTTP headers we check.
+        # Note that the xmlrpc header is missing. Its enforcement is
+        # different (yes/required are the same for example)
+        # so we don't include here.
+        header_names = [
+            "ORIGIN",
+            "REFERER",
+            "X-FORWARDED-HOST",
+            "HOST"
+            ]
+
+        header_pass = 0  # count of passing header checks
+
+        # if any headers are required and missing, report
+        # an error
+        for header in header_names:
+            if (config["WEB_CSRF_ENFORCE_HEADER_%s"%header] == 'required'
+                    and "HTTP_%s"%header not in self.env):
+                self.add_error_message(self._("Missing header: %s")%header)
+                logger.error(self._("csrf header %s required but missing for user%s."), header, user)
+                return False
+                
+        # if you change these make sure to consider what
+        # happens if header variable exists but is empty.
+        # self.base.find("") returns 0 for example not -1
+        #
+        # self.base always matches: ^https?://hostname
+        enforce=config['WEB_CSRF_ENFORCE_HEADER_ORIGIN']
+        if 'HTTP_ORIGIN' in self.env and enforce != "no":
+            origin = self.env['HTTP_ORIGIN']
+            foundat = self.base.find(origin +'/')
+            if foundat != 0:
+                if enforce in ('required', 'yes'):
+                    self.add_error_message("Invalid Origin %s"%origin)
+                    logger.error(self._("csrf Origin header check failed for user%s. Value=%s"), user, origin)
+                    return False
+                elif enforce == 'logfailure':
+                    logger.warning(self._("csrf Origin header check failed for user%s. Value=%s"), user, origin)
+            else:
+                header_pass += 1
+                
+        enforce=config['WEB_CSRF_ENFORCE_HEADER_REFERER']
+        if 'HTTP_REFERER' in self.env and enforce != "no":
+            referer = self.env['HTTP_REFERER']
+            # self.base always has trailing /
+            foundat = referer.find(self.base)
+            if foundat != 0:
+                if enforce in ('required', 'yes'):
+                    self.add_error_message(self._("Invalid Referer %s, %s")%(referer,self.base))
+                    logger.error(self._("csrf Referer header check failed for user%s. Value=%s"), user, referer)
+                    return False
+                elif enforce == 'logfailure':
+                    logger.warning(self._("csrf Referer header check failed for user%s. Value=%s"), user, referer)
+            else:
+                header_pass += 1
+
+        enforce=config['WEB_CSRF_ENFORCE_HEADER_X-FORWARDED-HOST']
+        if 'HTTP_X-FORWARDED-HOST' in self.env and enforce != "no":
+            host = self.env['HTTP_X-FORWARDED-HOST']
+            foundat = self.base.find('://' + host + '/')
+            # 4 means self.base has http:/ prefix, 5 means https:/ prefix
+            if foundat not in [4, 5]:
+                if enforce in ('required', 'yes'):
+                    self.add_error_message(self._("Invalid X-FORWARDED-HOST %s")%host)
+                    logger.error(self._("csrf X-FORWARDED-HOST header check failed for user%s. Value=%s"), user, host)
+                    return False
+                elif enforce == 'logfailure':
+                    logger.warning(self._("csrf X-FORWARDED-HOST header check failed for user%s. Value=%s"), user, host)
+            else:
+                header_pass += 1
+        else:
+            # https://seclab.stanford.edu/websec/csrf/csrf.pdf
+            # recommends checking HTTP HOST header as well.
+            # If there is an X-FORWARDED-HOST header, check
+            # that only. The proxy setting X-F-H has probably set
+            # the host header to a local hostname that is
+            # internal name of system not name supplied by user.
+            enforce=config['WEB_CSRF_ENFORCE_HEADER_HOST']
+            if 'HTTP_HOST' in self.env and enforce != "no":
+                host = self.env['HTTP_HOST']
+                foundat = self.base.find('://' + host + '/')
+                # 4 means http:// prefix, 5 means https:// prefix
+                if foundat not in [4, 5]:
+                    if enforce in ('required', 'yes'):
+                        self.add_error_message(self._("Invalid HOST %s")%host)
+                        logger.error(self._("csrf HOST header check failed for user%s. Value=%s"), user, host)
+                        return False
+                    elif enforce == 'logfailure':
+                        logger.warning(self._("csrf HOST header check failed for user%s. Value=%s"), user, host)
+                else:
+                    header_pass += 1
+
+        enforce=config['WEB_CSRF_HEADER_MIN_COUNT']
+        if header_pass < enforce:
+            self.add_error_message(self._("Unable to verify sufficient headers"))
+            logger.error(self._("Csrf: unable to verify sufficient headers"))
+            return False
+
+        enforce=config['WEB_CSRF_ENFORCE_HEADER_X-REQUESTED-WITH']
+        if xmlrpc and (enforce in ['required', 'yes']):
+            # if we get here we have usually passed at least one
+            # header check. We check for presence of this custom
+            # header for xmlrpc calls only.
+            # E.G. X-Requested-With: XMLHttpRequest
+            # see: https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Protecting_REST_Services:_Use_of_Custom_Request_Headers
+            if 'HTTP_X-REQUESTED-WITH' not in self.env:
+                self.add_error_message("Required Header Missing")
+                logger.error(self._("csrf X-REQUESED-WITH xmlrpc required header check failed for user%s."), user)
+                return False
+
+        otks=self.db.getOTKManager()
+        enforce=config['WEB_CSRF_ENFORCE_TOKEN']
+        if "@csrf" not in self.form:
+            if enforce == 'required':
+                self.add_error_message(self._("No csrf token found"))
+                return False
+            else:
+                if enforce == 'logfailure':
+                    # FIXME include url
+                    logger.warning(self._("csrf field missing for user%s"), user)
+                return True
+
+        key=self.form['@csrf'].value
+        uid = otks.get(key, 'uid', default=None)
+        sid = otks.get(key, 'sid', default=None)
+        current_session = self.session_api._sid
+        # validate against user and session
+
+        '''
+        # I think now that LogoutAction redirects to
+        # self.base ([tracker] web parameter in config.ini),
+        # this code is not needed. However I am keeping it
+        # around in case it has to come back to life.
+        # Delete if this is still around in 3/2018.
+        #   rouilj 3/2017.
+        #
+        # Note using this code may cause a CSRF Login vulnerability.
+        # Handle the case where user logs out and tries to
+        # log in again in same window.
+        # The csrf token for the login button is associated
+        # with the prior login, so it will not validate.
+        #
+        # To bypass error, Verify that uid != user and that
+        # user is '2' (anonymous) and there is no current
+        # session key. Validate that the csrf exists
+        # in the db and uid and sid are not None.
+        # Also validate that the action is Login.
+        # Lastly requre at least one csrf header check to pass.
+        # If all of those work process the login.
+        if user != uid and \
+           user == '2' and \
+           current_session is None and \
+           uid is not None and \
+           sid is not None and \
+           "@action" in self.form and \
+           self.form["@action"].value == "Login":
+            if header_pass > 0:
+                otks.destroy(key)
+                return True
+            else:
+                self.add_error_message("Reload window before logging in.")
+        '''
+
+        if uid != user:
+            if enforce in ('required', "yes"):
+                self.add_error_message(self._("Invalid csrf token found: %s")%key)
+                otks.destroy(key)
+                return False
+            elif enforce == 'logfailure':
+                    logger.warning(self._("csrf uid mismatch for user%s."), user)
+        if self.session_api._sid != sid:
+            if enforce in ('required', "yes"):
+                self.add_error_message(self._(
+                    "Invalid csrf session found: %s")%key)
+                otks.destroy(key)
+                return False
+            elif enforce == 'logfailure':
+                    logger.warning(self._("csrf session mismatch for user%s."), user)
+        # Remove the key so a previous csrf key can't be replayed.
+        otks.destroy(key)
+        return True
 
     def opendb(self, username):
         """Open the database and set the current user.

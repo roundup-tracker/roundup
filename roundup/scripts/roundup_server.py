@@ -375,9 +375,21 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             env['HTTP_HOST'] = self.headers ['host']
         except KeyError:
             env['HTTP_HOST'] = ''
+        xfh = self.headers.getheader('X-Forwarded-Host', None)
+        if xfh:
+            env['HTTP_X-FORWARDED-HOST'] = xfh
         if os.environ.has_key('CGI_SHOW_TIMING'):
             env['CGI_SHOW_TIMING'] = os.environ['CGI_SHOW_TIMING']
         env['HTTP_ACCEPT_LANGUAGE'] = self.headers.get('accept-language')
+        referer = self.headers.get('Referer')
+        if referer:
+            env['HTTP_REFERER'] = referer
+        origin = self.headers.get('Origin')
+        if origin:
+            env['HTTP_ORIGIN'] = origin
+        xrw = self.headers.get('x-requested-with')
+        if xrw:
+            env['HTTP_X-REQUESTED-WITH'] = xrw
         range = self.headers.getheader('range')
         if range:
             env['HTTP_RANGE'] = range

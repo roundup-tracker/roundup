@@ -121,16 +121,19 @@ class FormTestCase(unittest.TestCase):
         self.FV_SPECIAL = re.compile(FormParser.FV_LABELS%classes,
             re.VERBOSE)
 
-    def setupClient(self, form, classname, nodeid=None, template='item'):
+    def setupClient(self, form, classname, nodeid=None, template='item', env_addon=None):
         cl = client.Client(self.instance, None, {'PATH_INFO':'/',
             'REQUEST_METHOD':'POST'}, makeForm(form))
         cl.classname = classname
+        cl.base = 'http://whoami.com/path/'
         cl.nodeid = nodeid
         cl.language = ('en',)
         cl.userid = '1'
         cl.db = self.db
         cl.user = 'admin'
         cl.template = template
+        if env_addon is not None:
+            cl.env.update(env_addon)
         return cl
 
     def parseForm(self, form, classname='test', nodeid=None):
@@ -807,7 +810,8 @@ class FormTestCase(unittest.TestCase):
         form = {':note': 'msg-content', 'title': 'New title',
             'priority': '2', 'status': '2', 'nosy': '1,2', 'keyword': '',
             'superseder': '5000', ':action': 'edit'}
-        cl = self.setupClient(form, 'issue', '1')
+        cl = self.setupClient(form, 'issue', '1',
+                env_addon = {'HTTP_REFERER': 'http://whoami.com/path/'})
         pt = RoundupPageTemplate()
         pt.pt_edit(page_template, 'text/html')
         out = []
@@ -852,6 +856,127 @@ class FormTestCase(unittest.TestCase):
          </body>
         </html>
         """.strip ())
+
+    def testCsrfHeaderProtection(self):
+        # need to set SENDMAILDEBUG to prevent
+        # downstream issue when email is sent on successful
+        # issue creation. Also delete the file afterwards
+        # just tomake sure that someother test looking for
+        # SENDMAILDEBUG won't trip over ours.
+        if not os.environ.has_key('SENDMAILDEBUG'):
+            os.environ['SENDMAILDEBUG'] = 'mail-test1.log'
+        SENDMAILDEBUG = os.environ['SENDMAILDEBUG']
+
+        page_template = """
+        <html>
+         <body>
+          <p tal:condition="options/error_message|nothing"
+             tal:repeat="m options/error_message"
+             tal:content="structure m"/>
+          <p tal:content="context/title/plain"/>
+          <p tal:content="context/priority/plain"/>
+          <p tal:content="context/status/plain"/>
+          <p tal:content="context/nosy/plain"/>
+          <p tal:content="context/keyword/plain"/>
+          <p tal:content="structure context/superseder/field"/>
+         </body>
+        </html>
+        """.strip ()
+        self.db.keyword.create (name = 'key1')
+        self.db.keyword.create (name = 'key2')
+        nodeid = self.db.issue.create (title = 'Title', priority = '1',
+            status = '1', nosy = ['1'], keyword = ['1'])
+        self.db.commit ()
+        form = {':note': 'msg-content', 'title': 'New title',
+            'priority': '2', 'status': '2', 'nosy': '1,2', 'keyword': '',
+            ':action': 'edit'}
+        cl = self.setupClient(form, 'issue', '1')
+        pt = RoundupPageTemplate()
+        pt.pt_edit(page_template, 'text/html')
+        out = []
+        print "out1: ", id(out), out
+        def wh(s):
+            out.append(s)
+        cl.write_html = wh
+        # Enable the following if we get a templating error:
+        #def send_error (*args, **kw):
+        #    import pdb; pdb.set_trace()
+        #cl.send_error_to_admin = send_error
+        # Need to rollback the database on error -- this usually happens
+        # in web-interface (and for other databases) anyway, need it for
+        # testing that the form values are really used, not the database!
+        # We do this together with the setup of the easy template above
+        def load_template(x):
+            cl.db.rollback()
+            return pt
+        cl.instance.templates.load = load_template
+        cl.selectTemplate = MockNull()
+        cl.determine_context = MockNull ()
+        def hasPermission(s, p, classname=None, d=None, e=None, **kw):
+            return True
+        actions.Action.hasPermission = hasPermission
+        e1 = _HTMLItem.is_edit_ok
+        _HTMLItem.is_edit_ok = lambda x : True
+        e2 = HTMLProperty.is_edit_ok
+        HTMLProperty.is_edit_ok = lambda x : True
+
+        # test with no headers and config by default requires 1 
+        cl.inner_main()
+        match_at=out[0].find('Unable to verify sufficient headers')
+        print out[0]
+        self.assertNotEqual(match_at, -1)
+        del(out[0])
+
+        # all the rest of these allow at least one header to pass
+        # and the edit happens with a redirect back to issue 1
+        cl.env['HTTP_REFERER'] = 'http://whoami.com/path/'
+        cl.inner_main()
+        match_at=out[0].find('Redirecting to <a href="http://whoami.com/path/issue1?@ok_message')
+        self.assertEqual(match_at, 0)
+        del(cl.env['HTTP_REFERER'])
+        del(out[0])
+
+        cl.env['HTTP_ORIGIN'] = 'http://whoami.com'
+        cl.inner_main()
+        match_at=out[0].find('Redirecting to <a href="http://whoami.com/path/issue1?@ok_message')
+        self.assertEqual(match_at, 0)
+        del(cl.env['HTTP_ORIGIN'])
+        del(out[0])
+
+        cl.env['HTTP_X-FORWARDED-HOST'] = 'whoami.com'
+        # if there is an X-FORWARDED-HOST header it is used and
+        # HOST header is ignored. X-FORWARDED-HOST should only be
+        # passed/set by a proxy. In this case the HOST header is
+        # the proxy's name for the web server and not the name
+        # thatis exposed to the world.
+        cl.env['HTTP_HOST'] = 'frontend1.whoami.net'
+        cl.inner_main()
+        match_at=out[0].find('Redirecting to <a href="http://whoami.com/path/issue1?@ok_message')
+        self.assertNotEqual(match_at, -1)
+        del(cl.env['HTTP_X-FORWARDED-HOST'])
+        del(cl.env['HTTP_HOST'])
+        del(out[0])
+
+        cl.env['HTTP_HOST'] = 'whoami.com'
+        cl.inner_main()
+        match_at=out[0].find('Redirecting to <a href="http://whoami.com/path/issue1?@ok_message')
+        self.assertEqual(match_at, 0)
+        del(cl.env['HTTP_HOST'])
+        del(out[0])
+
+        # try failing headers
+        cl.env['HTTP_X-FORWARDED-HOST'] = 'whoami.net'
+        # this raises an error as the header check passes and 
+        # it did the edit and tries to send mail.
+        cl.inner_main()
+        match_at=out[0].find('Invalid X-FORWARDED-HOST whoami.net')
+        self.assertNotEqual(match_at, -1)
+        del(out[0])
+
+        # clean up from email log
+        if os.path.exists(SENDMAILDEBUG):
+            os.remove(SENDMAILDEBUG)
+        #raise ValueError
 
     #
     # SECURITY
@@ -1281,6 +1406,7 @@ class TemplateHtmlRendering(unittest.TestCase):
         self.client.form=makeForm({"@template": "forgotten|item"})
         self.client.path = 'user'
         self.client.determine_context()
+        self.client.session_api = MockNull(_sid="1234567890")
         self.assertEqual((self.client.classname, self.client.template, self.client.nodeid), ('user', 'forgotten|item', None))
         self.assertEqual(self.client._ok_message, [])
         

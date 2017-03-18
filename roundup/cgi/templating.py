@@ -23,6 +23,7 @@ __docformat__ = 'restructuredtext'
 import cgi, urllib, re, os.path, mimetypes, csv, string
 import calendar
 import textwrap
+import time, hashlib
 
 from roundup import hyperdb, date, support
 from roundup import i18n
@@ -30,6 +31,12 @@ from roundup.i18n import _
 
 from KeywordsExpr import render_keywords_expression_editor
 
+try: 
+    # Use the cryptographic source of randomness if available
+    from random import SystemRandom
+    random=SystemRandom()
+except ImportError:
+    from random import random
 try:
     import cPickle as pickle
 except ImportError:
@@ -58,6 +65,45 @@ from roundup.cgi import TranslationService, ZTUtils
 # it is left here for backward compatibility
 # until all Web UI translations are done via client.translator object
 translationService = TranslationService.get_translation()
+
+def anti_csrf_nonce(self, client, lifetime=None):
+    ''' Create a nonce for defending against CSRF attack.
+
+        This creates a nonce by hex encoding the sha256 of
+        random.random(), the address of the object requesting
+        the nonce and time.time().
+
+        Then it stores the nonce, the session id for the user
+        and the user id in the one time key database for use
+        by the csrf validator that runs in the client::inner_main
+        module/function.
+    '''
+    otks=client.db.getOTKManager()
+    # include id(self) as the exact location of self (including address)
+    # is unpredicatable (depends on number of previous connections etc.)
+    key = '%s%s%s'%(random.random(),id(self),time.time())
+    key = hashlib.sha256(key).hexdigest()
+        
+    while otks.exists(key):
+        key = '%s%s%s'%(random.random(),id(self),time.time())
+        key = hashlib.sha256(key).hexdigest()
+
+    # lifetime is in minutes.
+    if lifetime is None:
+        lifetime = client.db.config['WEB_CSRF_TOKEN_LIFETIME']
+
+    # offset to time.time is calculated as:
+    #  default lifetime is 1 week after __timestamp.
+    # That's the cleanup period hardcoded in otk.clean().
+    # If a user wants a 10 minute lifetime calculate
+    # 10 minutes newer than 1 week ago.
+    #   lifetime - 10800 (number of minutes in a week)
+    # convert to seconds and add (possible negative number)
+    # from time.time().
+    otks.set(key, uid=client.db.getuid(),
+             sid=client.session_api._sid,
+             __timestamp=time.time() + ((lifetime - 10800) * 60) )
+    return key
 
 ### templating
 
@@ -725,7 +771,10 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         if not self.is_edit_ok():
             return ''
 
-        return self.input(type="hidden", name="@action", value=action) + \
+        return self.input(type="hidden", name="@csrf",
+                          value=anti_csrf_nonce(self, self._client)) + \
+            '\n' + \
+            self.input(type="hidden", name="@action", value=action) + \
             '\n' + \
             self.input(type="submit", name="submit_button", value=self._(label))
 
@@ -863,9 +912,15 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         Also sneak in the lastactivity and action hidden elements.
         """
         return self.input(type="hidden", name="@lastactivity",
-            value=self.activity.local(0)) + '\n' + \
-            self.input(type="hidden", name="@action", value=action) + '\n' + \
-            self.input(type="submit", name="submit_button", value=self._(label))
+            value=self.activity.local(0)) + \
+            '\n' + \
+            self.input(type="hidden", name="@csrf",
+                       value=anti_csrf_nonce(self, self._client)) + \
+            '\n' + \
+            self.input(type="hidden", name="@action", value=action) + \
+            '\n' + \
+            self.input(type="submit", name="submit_button",
+                       value=self._(label))
 
     def journal(self, direction='descending'):
         """ Return a list of HTMLJournalEntry instances.
@@ -2999,6 +3054,9 @@ class TemplatingUtils:
     def Batch(self, sequence, size, start, end=0, orphan=0, overlap=0):
         return Batch(self.client, sequence, size, start, end, orphan,
             overlap)
+
+    def anti_csrf_nonce(self, lifetime=None):
+        return anti_csrf_nonce(self, self.client, lifetime=lifetime)
 
     def url_quote(self, url):
         """URL-quote the supplied text."""
