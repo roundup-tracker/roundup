@@ -1050,11 +1050,12 @@ class Client:
         if "@csrf" not in self.form:
             if enforce == 'required':
                 self.add_error_message(self._("No csrf token found"))
+                logger.error(self._("required csrf field missing for user%s"), user)
                 return False
             else:
                 if enforce == 'logfailure':
                     # FIXME include url
-                    logger.warning(self._("csrf field missing for user%s"), user)
+                    logger.warning(self._("required csrf field missing for user%s"), user)
                 return True
 
         key=self.form['@csrf'].value
@@ -1093,28 +1094,29 @@ class Client:
            self.form["@action"].value == "Login":
             if header_pass > 0:
                 otks.destroy(key)
+                self.db.commit()
                 return True
             else:
                 self.add_error_message("Reload window before logging in.")
         '''
 
+        # The key has been used or compromised. Delete it to prevent replay.
+        otks.destroy(key)
+        self.db.commit()
+
         if uid != user:
             if enforce in ('required', "yes"):
                 self.add_error_message(self._("Invalid csrf token found: %s")%key)
-                otks.destroy(key)
                 return False
             elif enforce == 'logfailure':
                     logger.warning(self._("csrf uid mismatch for user%s."), user)
-        if self.session_api._sid != sid:
+        if current_session != sid:
             if enforce in ('required', "yes"):
                 self.add_error_message(self._(
                     "Invalid csrf session found: %s")%key)
-                otks.destroy(key)
                 return False
             elif enforce == 'logfailure':
                     logger.warning(self._("csrf session mismatch for user%s."), user)
-        # Remove the key so a previous csrf key can't be replayed.
-        otks.destroy(key)
         return True
 
     def opendb(self, username):

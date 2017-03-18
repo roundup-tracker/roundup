@@ -83,7 +83,7 @@ def anti_csrf_nonce(self, client, lifetime=None):
     # is unpredicatable (depends on number of previous connections etc.)
     key = '%s%s%s'%(random.random(),id(self),time.time())
     key = hashlib.sha256(key).hexdigest()
-        
+
     while otks.exists(key):
         key = '%s%s%s'%(random.random(),id(self),time.time())
         key = hashlib.sha256(key).hexdigest()
@@ -103,6 +103,7 @@ def anti_csrf_nonce(self, client, lifetime=None):
     otks.set(key, uid=client.db.getuid(),
              sid=client.session_api._sid,
              __timestamp=time.time() + ((lifetime - 10800) * 60) )
+    client.db.commit()
     return key
 
 ### templating
