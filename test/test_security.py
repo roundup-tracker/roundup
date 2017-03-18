@@ -132,6 +132,11 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         self.assertEquals(get('View', 'issue', properties=['title'],
             check=dummy), apci)
 
+        # Reset to default. Somehow this setting looks like it
+        # was bleeding through to other tests in test_xmlrpc.
+        # Is the security module being loaded only once for all tests??
+        self.db.security.set_props_only_default(False)
+
     def testDBinit(self):
         self.db.user.create(username="demo", roles='User')
         self.db.user.create(username="anonymous", roles='Anonymous')
