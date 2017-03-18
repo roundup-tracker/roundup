@@ -387,6 +387,9 @@ class Security:
             Permission.limit_perm_to_props_only = \
                                     bool(props_only)
 
+    def get_props_only_default(self):
+        return Permission.limit_perm_to_props_only
+
     def addPermissionToRole(self, rolename, permission, classname=None,
             properties=None, check=None, props_only=None):
         ''' Add the permission to the role's permission list.

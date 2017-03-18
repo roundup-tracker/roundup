@@ -31,6 +31,8 @@ class XmlrpcTest(object):
         # open the database
         self.db = self.instance.open('admin')
 
+        print "props_only default", self.db.security.get_props_only_default()
+
         # Get user id (user4 maybe). Used later to get data from db.
         self.joeid = 'user' + self.db.user.create(username='joe',
             password=password.Password('random'), address='random@home.org',
@@ -197,7 +199,7 @@ class XmlrpcTest(object):
     def testAuthFilter(self):
         # this checks if we properly check for search permissions
         self.db.security.permissions = {}
-        self.db.security.set_props_only_default(props_only=False)
+        # self.db.security.set_props_only_default(props_only=False)
         self.db.security.addRole(name='User')
         self.db.security.addRole(name='Project')
         self.db.security.addPermissionToRole('User', 'Web Access')
