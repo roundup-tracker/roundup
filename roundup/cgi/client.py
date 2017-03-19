@@ -1086,17 +1086,24 @@ class Client:
                     logger.warning(self._("required csrf field missing for user%s"), user)
                 return True
 
+        # Expire old csrf tokens now so we don't use them.  These will
+        # be committed after the otks.destroy below.  Note that the
+        # self.clean_up run as part of determine_user() will run only
+        # once an hour. If we have short lived (e.g. 5 minute) keys
+        # they will live too long if we depend on clean_up. So we do
+        # our own.
+        otks.clean()
+
         key=self.form['@csrf'].value
         uid = otks.get(key, 'uid', default=None)
         sid = otks.get(key, 'sid', default=None)
-        if __debug__:
-            ts = otks.get(key, '__timestamp', default=None)
-            print("Found key %s for user%s sess: %s, ts %s, time %s"%(key, uid, sid, ts, time.time()))
-        current_session = self.session_api._sid
 
-        # The key has been used or compromised. Delete it to prevent replay.
+        # The key has been used or compromised.
+        # Delete it to prevent replay.
         otks.destroy(key)
         self.db.commit()
+
+        current_session = self.session_api._sid
 
         '''
         # I think now that LogoutAction redirects to

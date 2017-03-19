@@ -97,12 +97,13 @@ def anti_csrf_nonce(self, client, lifetime=None):
     # That's the cleanup period hardcoded in otk.clean().
     # If a user wants a 10 minute lifetime calculate
     # 10 minutes newer than 1 week ago.
-    #   lifetime - 10800 (number of minutes in a week)
+    #   lifetime - 10080 (number of minutes in a week)
     # convert to seconds and add (possible negative number)
-    # from time.time().
+    # to current time (time.time()).
+    ts = time.time() + ((lifetime - 10080) * 60)
     otks.set(key, uid=client.db.getuid(),
              sid=client.session_api._sid,
-             __timestamp=time.time() + ((lifetime - 10800) * 60) )
+             __timestamp=ts )
     client.db.commit()
     return key
 

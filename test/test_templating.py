@@ -143,8 +143,13 @@ class HTMLClassTestCase(TemplatingTestCase) :
         '''
 
         # the value below is number of seconds in a week.
-        week_seconds = 648000 
+        week_seconds = 604800
+
+        otks=self.client.db.getOTKManager()
+
         for test in [ 'module', 'template', 'default_time' ]:
+            print "Testing:", test
+            
             if test == 'module':
                 # test the module function
                 nonce1 = anti_csrf_nonce(self, self.client, lifetime=1)
@@ -162,7 +167,6 @@ class HTMLClassTestCase(TemplatingTestCase) :
                 greater_than = week_seconds - 10 * 60
 
             self.assertEqual(len(nonce1), 64)
-            otks=self.client.db.getOTKManager()
 
             uid = otks.get(nonce1, 'uid', default=None)
             sid = otks.get(nonce1, 'sid', default=None)
@@ -171,7 +175,11 @@ class HTMLClassTestCase(TemplatingTestCase) :
             self.assertEqual(uid, 10) 
             self.assertEqual(sid, self.client.session_api._sid)
 
-            ts = time.time()
+            now = time.time()
+
+            print "now, timestamp, greater, difference", \
+                     now, timestamp, greater_than, now - timestamp
+
         
             # lower bound of the difference is above. Upper bound
             # of difference is run time between time.time() in
@@ -179,9 +187,7 @@ class HTMLClassTestCase(TemplatingTestCase) :
             # that assigns ts above. I declare that difference
             # to be less than 1 second for this to pass.
             self.assertEqual(True,
-                       greater_than < ts - timestamp < (greater_than + 1) )
-
-            print "completed", test
+                       greater_than <= now - timestamp < (greater_than + 1) )
 
     def test_string_url_quote(self):
         ''' test that urlquote quotes the string '''
