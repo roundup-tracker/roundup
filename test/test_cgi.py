@@ -12,7 +12,7 @@ import unittest, os, shutil, errno, sys, difflib, cgi, re, StringIO
 
 from roundup.cgi import client, actions, exceptions
 from roundup.cgi.exceptions import FormError
-from roundup.cgi.templating import HTMLItem, HTMLRequest, NoTemplate
+from roundup.cgi.templating import HTMLItem, HTMLRequest, NoTemplate, anti_csrf_nonce
 from roundup.cgi.templating import HTMLProperty, _HTMLItem
 from roundup.cgi.form_parser import FormParser
 from roundup import init, instance, password, hyperdb, date
@@ -857,7 +857,7 @@ class FormTestCase(unittest.TestCase):
         </html>
         """.strip ())
 
-    def testCsrfHeaderProtection(self):
+    def testCsrfProtection(self):
         # need to set SENDMAILDEBUG to prevent
         # downstream issue when email is sent on successful
         # issue creation. Also delete the file afterwards
@@ -894,7 +894,6 @@ class FormTestCase(unittest.TestCase):
         pt = RoundupPageTemplate()
         pt.pt_edit(page_template, 'text/html')
         out = []
-        print "out1: ", id(out), out
         def wh(s):
             out.append(s)
         cl.write_html = wh
@@ -923,7 +922,6 @@ class FormTestCase(unittest.TestCase):
         # test with no headers and config by default requires 1 
         cl.inner_main()
         match_at=out[0].find('Unable to verify sufficient headers')
-        print out[0]
         self.assertNotEqual(match_at, -1)
         del(out[0])
 
@@ -971,6 +969,32 @@ class FormTestCase(unittest.TestCase):
         cl.inner_main()
         match_at=out[0].find('Invalid X-FORWARDED-HOST whoami.net')
         self.assertNotEqual(match_at, -1)
+        del(cl.env['HTTP_X-FORWARDED-HOST'])
+        del(out[0])
+
+        import copy
+
+        form2 = copy.copy(form)
+        form2.update({'@csrf': 'booogus'})
+        # add a bogus csrf field to the form and rerun the inner_main
+        cl.form = makeForm(form2)
+
+        cl.env['HTTP_REFERER'] = 'http://whoami.com/path/'
+        cl.inner_main()
+        match_at=out[0].find('Invalid csrf token found: booogus')
+        self.assertEqual(match_at, 36)
+        del(out[0])
+
+        form2 = copy.copy(form)
+        nonce = anti_csrf_nonce(cl, cl)
+        form2.update({'@csrf': nonce})
+        # add a real csrf field to the form and rerun the inner_main
+        cl.form = makeForm(form2)
+        cl.inner_main()
+        # csrf passes and redirects to the new issue.
+        match_at=out[0].find('Redirecting to <a href="http://whoami.com/path/issue1?@ok_message')
+        self.assertEqual(match_at, 0)
+        del(cl.env['HTTP_REFERER'])
         del(out[0])
 
         # clean up from email log
