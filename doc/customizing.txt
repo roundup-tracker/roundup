@@ -1299,8 +1299,10 @@ The ``addPermission`` method takes a few optional parameters:
 **props_only**
   A boolean value (set to false by default) that is a new feature
   in roundup 1.6.
-  A permission defined using
+  A permission defined using:
+
      ``properties=('list', 'of', 'property', 'names')``
+
   is used to determine access for things other than just those
   properties. For example a check for View permission on the issue
   class or an issue item can use any View permission for the issue
