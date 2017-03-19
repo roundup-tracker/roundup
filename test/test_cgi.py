@@ -1356,6 +1356,7 @@ class TemplateHtmlRendering(unittest.TestCase):
         self.client.db = self.db
         self.client.userid = '1'
         self.client.language = ('en',)
+        self.client.session_api = MockNull(_sid="1234567890")
 
         self.output = []
         # ugly hack to get html_write to return data here.
@@ -1435,8 +1436,9 @@ class TemplateHtmlRendering(unittest.TestCase):
         self.assertEqual(self.client._ok_message, [])
         
         result = self.client.renderContext()
+        print result
         self.assertNotEqual(-1,
-                            result.index('<!-- SHA: 6fdb58c55fd854904ae98906d5935549a221fabf -->'))
+                            result.index('<!-- SHA: eb5dd0bec7a57d58cb7edbeb939fb0390ed1bf74 -->'))
 
         # now set an error in the form to get error template user.item.html
         self.client.form=makeForm({"@template": "forgotten|item",
