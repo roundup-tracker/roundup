@@ -65,7 +65,8 @@
        enctype="multipart/form-data"
        tal:attributes="action context/designator"
        tal:condition="python:request.user.hasPermission('SB: May Classify')">
- 
+       <input name="@csrf" type="hidden"
+	      tal:attributes="value python:utils.anti_csrf_nonce()">
       <input type="hidden" name="@action" value="spambayes_classify">
       <input type="submit" name="trainspam" value="Mark as SPAM" i18n:attributes="value">
       <input type="submit" name="trainham" value="Mark as HAM (not SPAM)" i18n:attributes="value">

@@ -25,6 +25,8 @@ associated with your account can be changed after login.</p>
       <tr>
         <td>&nbsp;</td>
         <td>
+	  <input name="@csrf" type="hidden"
+		 tal:attributes="value python:utils.anti_csrf_nonce()">
           <input type="hidden" name="@action" value="passrst">
           <input type="hidden" name="@template" value="forgotten">
           <input type="submit" value="Request password reset"

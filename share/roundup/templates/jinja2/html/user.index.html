@@ -37,6 +37,8 @@
             <td>
               <form method="POST" action='user{{ user.id }}' class='form-inline'>
                 <input type="hidden" name="@template" value="index">
+		<input name="@csrf" type="hidden"
+		       value="{{ utils.anti_csrf_nonce() }}">
                 <input type="hidden" name="@action" value="retire">
                 <input type="submit" value="{{ i18n.gettext('retire') }}" class='btn btn-small'>
               </form>

@@ -30,6 +30,8 @@
     <input type='text' class='input-xlarge' name='name'>
     <input type="hidden" name="@required" value="name">
     <input type="hidden" name="@template" value="item">
+    <input name="@csrf" type="hidden"
+	   value="{{ utils.anti_csrf_nonce() }}">
     <input type="hidden" name="@action" value="new">
     <input type='submit' class='btn btn-primary' value="{{ i18n.gettext('Create keyword') }}">
   </form>

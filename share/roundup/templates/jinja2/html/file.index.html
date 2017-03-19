@@ -23,6 +23,7 @@
         <td>
           <form method="POST" action='issue{{ context.id }}'>
             <input type="hidden" name="@remove@files" value='{{ file.id }}'>
+	    <input name="@csrf" type="hidden" value="{{ utils.anti_csrf_nonce() }}">
             <input type="hidden" name="@action" value="{{ i18n.gettext('edit') }}">
             <input type="submit" value="{{ i18n.gettext('remove') }}">
           </form>

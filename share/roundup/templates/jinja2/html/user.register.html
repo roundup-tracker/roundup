@@ -80,6 +80,8 @@
       <tr class='form-actions'>
         <td>
         <input type="hidden" name="@template" value="register">
+	<input name="@csrf" type="hidden"
+	       value="{{ utils.anti_csrf_nonce() }}">
         <input type="hidden" name="@action" value="register">
         <input type="submit" name="submit" value="{{ i18n.gettext('Register') }}">
         </td>

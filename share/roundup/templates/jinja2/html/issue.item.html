@@ -57,6 +57,8 @@
           {% if context.is_edit_ok %}
             <form method="POST" action='issue{{ context.id }}' class='form-inline'>
               <input type="hidden" name="@remove@messages" value='{{ msg.id }}'>
+	      <input name="@csrf" type="hidden"
+		     value="{{ utils.anti_csrf_nonce() }}">
               <input type="hidden" name="@action" value="edit">
               <input type="submit" value="remove">
             </form>

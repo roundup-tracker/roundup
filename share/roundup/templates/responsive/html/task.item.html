@@ -304,6 +304,8 @@
           <form style="padding:0" tal:condition="file/is_edit_ok"
              tal:attributes="action string:bug${context/id}">
               <input type="hidden" name="@remove@files" tal:attributes="value file/id">
+	      <input name="@csrf" type="hidden"
+		     tal:attributes="value python:utils.anti_csrf_nonce()">
               <input type="hidden" name="@action" value="edit">
               <input type="submit" value="remove" i18n:attributes="value">
           </form>

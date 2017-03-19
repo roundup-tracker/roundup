@@ -34,6 +34,7 @@
     <form method="POST" action='{{ context.designator() }}'>
       <textarea rows="15" style="width:90%" name="rows">{{ context.csv }}</textarea>
       <br>
+      <input name="@csrf" type="hidden" value="{{ utils.anti_csrf_nonce() }}">
       <input type="hidden" name="@action" value="{{ i18n.gettext('editCSV') }}">
       <input type="submit" value="{{ i18n.gettext('Edit Items') }}">
     </form>

@@ -83,6 +83,8 @@
          <input type="submit" class="form-small" value="Show bug:" i18n:attributes="value"/>
          <input class="form-small" size="4" type="text" name="@number"/>
          <input type="hidden" name="@type" value="bug"/>
+	 <input name="@csrf" type="hidden"
+		tal:attributes="value python:utils.anti_csrf_nonce()">
          <input type="hidden" name="@action" value="show"/>
         </form>
        </li>
@@ -128,6 +130,8 @@
          <input type="submit" class="form-small" value="Show task:" i18n:attributes="value"/>
          <input class="form-small" size="4" type="text" name="@number"/>
          <input type="hidden" name="@type" value="task"/>
+	 <input name="@csrf" type="hidden"
+		tal:attributes="value python:utils.anti_csrf_nonce()">
          <input type="hidden" name="@action" value="show"/>
         </form>
        </li>
@@ -160,6 +164,8 @@
          <tal:span i18n:translate="">Login</tal:span><br/>
          <input size="10" name="__login_name"/><br/>
          <input size="10" type="password" name="__login_password"/><br/>
+	 <input name="@csrf" type="hidden"
+		tal:attributes="value python:utils.anti_csrf_nonce()">
          <input type="hidden" name="@action" value="Login"/>
          <input type="checkbox" name="remember" id="remember"/>
          <label for="remember" i18n:translate="">Remember me?</label><br/>
