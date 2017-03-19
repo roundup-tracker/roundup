@@ -57,6 +57,8 @@
  <tr>
   <td>&nbsp;</td>
   <td>
+    <input name="@csrf" type="hidden"
+	   tal:attributes="value python:utils.anti_csrf_nonce()">
    <input type="hidden" name=":action" value="register">
    <input type="submit" name="submit" value="Register" i18n:attributes="value">
   </td>

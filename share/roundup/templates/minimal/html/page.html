@@ -94,6 +94,8 @@ status_notresolved string:-1,1,2,3,4,5,6,7;
      i18n:attributes="value"><input class="form-small" size="4"
      type="text" name="@number">
     <input type="hidden" name="@type" value="issue">
+    <input name="@csrf" type="hidden"
+	   tal:attributes="value python:utils.anti_csrf_nonce()">
     <input type="hidden" name="@action" value="show">
    </p>
   </form>
@@ -129,6 +131,8 @@ status_notresolved string:-1,1,2,3,4,5,6,7;
     <b i18n:translate="">Login</b><br>
     <input size="10" name="__login_name"><br>
     <input size="10" type="password" name="__login_password"><br>
+    <input name="@csrf" type="hidden"
+	   tal:attributes="value python:utils.anti_csrf_nonce()">
     <input type="hidden" name="@action" value="Login">
     <input type="checkbox" name="remember" id="remember">
     <label for="remember" i18n:translate="">Remember me?</label><br>

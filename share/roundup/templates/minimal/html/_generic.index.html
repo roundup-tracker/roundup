@@ -47,6 +47,8 @@
       tal:attributes="action context/designator">
 <textarea rows="15" style="width:90%" name="rows" tal:content="context/csv"></textarea>
 <br>
+<input name="@csrf" type="hidden"
+	     tal:attributes="value python:utils.anti_csrf_nonce()">
 <input type="hidden" name="@action" value="editCSV">
 <input type="submit" value="Edit Items" i18n:attributes="value">
 </form>
