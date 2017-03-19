@@ -1,0 +1,5 @@
+[run]
+
+# ignore the dist utils. They are not part of the code base
+# we are going to test. They are used by maintainers only.
+omit = roundup/dist/*
