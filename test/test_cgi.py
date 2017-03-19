@@ -972,14 +972,16 @@ class FormTestCase(unittest.TestCase):
         del(cl.env['HTTP_X-FORWARDED-HOST'])
         del(out[0])
 
-        import copy
+        # header checks succeed
+        # check nonce handling.
+        cl.env['HTTP_REFERER'] = 'http://whoami.com/path/'
 
+        import copy
         form2 = copy.copy(form)
         form2.update({'@csrf': 'booogus'})
         # add a bogus csrf field to the form and rerun the inner_main
         cl.form = makeForm(form2)
 
-        cl.env['HTTP_REFERER'] = 'http://whoami.com/path/'
         cl.inner_main()
         match_at=out[0].find('Invalid csrf token found: booogus')
         self.assertEqual(match_at, 36)
@@ -987,6 +989,11 @@ class FormTestCase(unittest.TestCase):
 
         form2 = copy.copy(form)
         nonce = anti_csrf_nonce(cl, cl)
+        # verify that we can see the nonce
+        otks = cl.db.getOTKManager()
+        isitthere = otks.exists(nonce)
+        self.assertEqual(isitthere, True)
+
         form2.update({'@csrf': nonce})
         # add a real csrf field to the form and rerun the inner_main
         cl.form = makeForm(form2)
@@ -994,9 +1001,46 @@ class FormTestCase(unittest.TestCase):
         # csrf passes and redirects to the new issue.
         match_at=out[0].find('Redirecting to <a href="http://whoami.com/path/issue1?@ok_message')
         self.assertEqual(match_at, 0)
-        del(cl.env['HTTP_REFERER'])
         del(out[0])
 
+        # try a replay attack
+        cl.inner_main()
+        # This should fail as token was wiped by last run.
+        match_at=out[0].find('Invalid csrf token found: %s'%nonce)
+        print "replay of csrf after post use", out[0]
+        self.assertEqual(match_at, 36)
+        del(out[0])
+
+        # make sure that a get deletes the csrf.
+        cl.env['REQUEST_METHOD'] = 'GET' 
+        cl.env['HTTP_REFERER'] = 'http://whoami.com/path/'
+        form2 = copy.copy(form)
+        nonce = anti_csrf_nonce(cl, cl)
+        form2.update({'@csrf': nonce})
+        # add a real csrf field to the form and rerun the inner_main
+        cl.form = makeForm(form2)
+        cl.inner_main()
+        # csrf passes but fail creating new issue because not a post
+        match_at=out[0].find('<p>Invalid request</p>')
+        self.assertEqual(match_at, 33)
+        del(out[0])
+        
+        # the token should be gone
+        isitthere = otks.exists(nonce)
+        self.assertEqual(isitthere, False)
+
+        # change to post and should fail w/ invalid csrf
+        # since get deleted the token.
+        cl.env.update({'REQUEST_METHOD': 'POST'})
+        print cl.env
+        cl.inner_main()
+        match_at=out[0].find('Invalid csrf token found: %s'%nonce)
+        print "post failure after get", out[0]
+        self.assertEqual(match_at, 36)
+        del(out[0])
+
+        del(cl.env['HTTP_REFERER'])
+        
         # clean up from email log
         if os.path.exists(SENDMAILDEBUG):
             os.remove(SENDMAILDEBUG)

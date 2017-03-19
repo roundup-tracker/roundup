@@ -929,9 +929,38 @@ class Client:
             debugging seems to be an advantage.
 
         '''
+        # Create the otks handle here as we need it almost immediately.
+        # If this is perf issue, set to None here and check below
+        # once all header checks have passed if it needs to be opened.
+        otks=self.db.getOTKManager()
+
         # Assume: never allow changes via GET
         if self.env['REQUEST_METHOD'] not in ['POST', 'PUT', 'DELETE']:
+            if "@csrf" in self.form:
+                # We have a nonce being used with a method it should
+                # not be. If the nonce exists, report to admin so they
+                # can fix the nonce leakage and destroy it. (nonces
+                # used in a get are more exposed than those used in a
+                # post.) Note, I don't attempt to validate here since
+                # existance here is the sign of a failure.  If nonce
+                # exists try to report the referer header to try to
+                # find where this comes from so it can be fixed.  If
+                # nonce doesn't exist just ignore it. Maybe we should
+                # report, but somebody could spam us with a ton of
+                # invalid keys and fill up the logs.
+                if 'HTTP_REFERER' in self.env:
+                    referer = self.env['HTTP_REFERER']
+                else:
+                    referer = self._("Referer header not available.")
+                key=self.form['@csrf'].value
+                if otks.exists(key):
+                    logger.error(
+                        self._("csrf key used with wrong method from: %s"),
+                        referer)
+                    otks.destroy(key)
+                    self.db.commit()
             return True
+
         config=self.instance.config
         user=self.db.getuid()
 
@@ -1045,7 +1074,6 @@ class Client:
                 logger.error(self._("csrf X-REQUESED-WITH xmlrpc required header check failed for user%s."), user)
                 return False
 
-        otks=self.db.getOTKManager()
         enforce=config['WEB_CSRF_ENFORCE_TOKEN']
         if "@csrf" not in self.form:
             if enforce == 'required':
@@ -1061,8 +1089,14 @@ class Client:
         key=self.form['@csrf'].value
         uid = otks.get(key, 'uid', default=None)
         sid = otks.get(key, 'sid', default=None)
+        if __debug__:
+            ts = otks.get(key, '__timestamp', default=None)
+            print("Found key %s for user%s sess: %s, ts %s, time %s"%(key, uid, sid, ts, time.time()))
         current_session = self.session_api._sid
-        # validate against user and session
+
+        # The key has been used or compromised. Delete it to prevent replay.
+        otks.destroy(key)
+        self.db.commit()
 
         '''
         # I think now that LogoutAction redirects to
@@ -1100,13 +1134,11 @@ class Client:
                 self.add_error_message("Reload window before logging in.")
         '''
 
-        # The key has been used or compromised. Delete it to prevent replay.
-        otks.destroy(key)
-        self.db.commit()
-
+        # validate against user and session
         if uid != user:
             if enforce in ('required', "yes"):
                 self.add_error_message(self._("Invalid csrf token found: %s")%key)
+                logger.error(self._("csrf uid mismatch for user%s."), user)
                 return False
             elif enforce == 'logfailure':
                     logger.warning(self._("csrf uid mismatch for user%s."), user)
@@ -1114,6 +1146,7 @@ class Client:
             if enforce in ('required', "yes"):
                 self.add_error_message(self._(
                     "Invalid csrf session found: %s")%key)
+                logger.error(self._("csrf session mismatch for user%s."), user)
                 return False
             elif enforce == 'logfailure':
                     logger.warning(self._("csrf session mismatch for user%s."), user)
