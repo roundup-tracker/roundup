@@ -157,6 +157,8 @@ function post_to_url(path, params, method) {
 </tr>
 </tal:block>
 <tr><td colspan="5">
+    <input name="@csrf" type="hidden"
+	   tal:attributes="value python:utils.anti_csrf_nonce()">
    <input type="hidden" name="@action" value="edit">
    <input type="hidden" name="@template" value="edit">
    <input type="submit" value="Save Selection" i18n:attributes="value">
