@@ -1981,6 +1981,9 @@ class Client:
             # mark as secure if https, see issue2550689
             if self.secure:
                 cookie += " secure;"
+            ssc = self.db.config['WEB_SAMESITE_COOKIE_SETTING']
+            if ssc != "None":
+                cookie += " SameSite=%s;"%ssc
             # prevent theft of session cookie, see issue2550689
             cookie += " HttpOnly;"
             headers.append(('Set-Cookie', cookie))

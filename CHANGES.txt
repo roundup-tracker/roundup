@@ -188,6 +188,10 @@ Features:
   Requiring enforcement will need some changes to
   templates. Support for protecting xmlrpc endpoint not well
   tested.  See ``upgrading.txt``. (John Rouillard)
+- Added support for using the SameSite cookie option on the
+  session cookie. Default is lax, but there is a settable
+  option in config.ini file to change to strict or
+  suppress it entirely. See ``upgrading.txt``. (John Rouillard)
 
 Fixed:
 

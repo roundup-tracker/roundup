@@ -101,6 +101,19 @@ It is suggested that you change your templates so every form
 has an @csrf field and change the setting to 'required' for
 the csrf_enforce_token.
 
+Support for SameSite cookie option for session cookie
+-----------------------------------------------------
+
+Support for serving the session cookie using the SameSite cookie option
+has been added. By default it is set to lax to provide a better user
+experience. But this can be changes to strict or the option can be
+removed entirely.
+
+Using the process for merging config.ini changes described in
+`Cross Site Request Forgery Detection Added`_ you can add the
+``samesite_cookie_setting`` to the ``[web]`` section of the config
+file.
+
 Fix for path traversal changes template resolution
 --------------------------------------------------
 

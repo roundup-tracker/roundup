@@ -306,6 +306,20 @@ class CsrfSettingOption(Option):
         else:
             raise OptionValueError(self, value, self.class_description)
 
+class SameSiteSettingOption(Option):
+
+    """How should the SameSite cookie setting be set: strict, lax
+or should it not be added (none)"""
+
+    class_description = "Allowed values: Strict, Lax, None"
+
+    def str2value(self, value):
+        _val = value.lower()
+        if _val in ("strict", "lax", "none"):
+            return _val.capitalize()
+        else:
+            raise OptionValueError(self, value, self.class_description)
+        
 class EmailBodyOption(Option):
 
     """When to replace message body or strip quoting: always, never or for new items only"""
@@ -646,6 +660,15 @@ SETTINGS = (
             "variables supplied by your web server (in that order).\n"
             "Set this option to 'no' if you do not wish to use HTTP Basic\n"
             "Authentication in your web interface."),
+        (SameSiteSettingOption, 'samesite_cookie_setting', "Lax",
+            """Set the mode of the SameSite cookie option for
+the session cookie. Choices are 'Lax' or
+'Strict'. 'None' can be used to suppress the
+option. Strict mode provides additional security
+against CSRF attacks, but may confuse users who
+are logged into roundup and open a roundup link
+from a source other than roundup (e.g. link in
+email)."""),
         (CsrfSettingOption, 'csrf_enforce_token', "yes",
             """How do we deal with @csrf fields in posted forms.
 Set this to 'required' to block the post and notify
