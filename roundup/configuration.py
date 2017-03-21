@@ -675,7 +675,7 @@ Set this to 'required' to block the post and notify
     the user if the field is missing or invalid.
 Set this to 'yes' to block the post and notify the user
     if the token is invalid, but accept the form if
-    the field is missing
+    the field is missing.
 Set this to 'logfailure' to log a notice to the roundup
     log if the field is invalid or missing, but accept
     the post.
@@ -691,7 +691,7 @@ Set this to 'required' to block the post and notify
     the user if the field is missing or invalid.
 Set this to 'yes' to block the post and notify the user
     if the token is invalid, but accept the form if
-    the field is missing
+    the field is missing.
 Set this to 'logfailure' to log a notice to the roundup
     log if the field is invalid or missing, but accept
     the post.
@@ -714,8 +714,8 @@ Set this to 'required' to block the post and notify
     the user if the header is missing or invalid.
 Set this to 'yes' to block the post and notify the user
     if the header is invalid, but accept the form if
-    the field is missing
-Set this to 'logfalure' to log a notice to the roundup
+    the field is missing.
+Set this to 'logfailure' to log a notice to the roundup
     log if the header is invalid or missing, but accept
     the post.
 Set this to 'no' to ignore the header and accept the post."""),
@@ -726,7 +726,7 @@ Set this to 'required' to block the post and notify
     the user if the header is missing or invalid.
 Set this to 'yes' to block the post and notify the user
     if the header is invalid, but accept the form if
-    the field is missing
+    the field is missing.
 Set this to 'logfailure' to log a notice to the roundup
     log if the header is invalid or missing, but accept
     the post.
@@ -738,7 +738,7 @@ Set this to 'required' to block the post and notify
     the user if the header is missing or invalid.
 Set this to 'yes' to block the post and notify the user
     if the header is invalid, but accept the form if
-    the field is missing
+    the field is missing.
 Set this to 'logfailure' to log a notice to the roundup
     log if the header is invalid or missing, but accept
     the post.
@@ -751,7 +751,7 @@ Set this to 'required' to block the post and notify
     the user if the header is missing or invalid.
 Set this to 'yes' to block the post and notify the user
     if the header is invalid, but accept the form if
-    the field is missing
+    the field is missing.
 Set this to 'logfailure' to log a notice to the roundup
     log if the header is invalid or missing, but accept
     the post.
@@ -886,7 +886,7 @@ always passes, so setting it less than 1 is not recommended."""),
             "(eg. iso-8859-1).",
             ["EMAIL_CHARSET"]),
         (FilePathOption, "debug", "",
-            "Setting this option makes Roundup to write all outgoing email\n"
+            "Setting this option makes Roundup write all outgoing email\n"
             "messages to this file *instead* of sending them.\n"
             "This option has the same effect as environment variable"
             " SENDMAILDEBUG.\nEnvironment variable takes precedence."),
