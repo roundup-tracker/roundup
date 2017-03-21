@@ -19,13 +19,11 @@ import unittest
 
 import pytest
 from roundup.hyperdb import DatabaseError
+from roundup.backends import get_backend, have_backend
 
 from db_test_base import DBTest, ROTest, config, SchemaTest, ClassicInitTest
 from db_test_base import ConcurrentDBTest, HTMLItemTest, FilterCacheTest
 from db_test_base import ClassicInitBase, setupTracker
-
-from roundup.backends import get_backend, have_backend
-from roundup.backends.back_postgresql import psycopg
 
 if not have_backend('postgresql'):
     # FIX: workaround for a bug in pytest.mark.skip():
@@ -34,9 +32,16 @@ if not have_backend('postgresql'):
     skip_postgresql = mark_class(pytest.mark.skip(
         reason='Skipping PostgreSQL tests: backend not available'))
 else:
-    skip_postgresql = lambda func, *args, **kwargs: func
+    try:
+        from roundup.backends.back_postgresql import psycopg, db_command
+        db_command(config, 'select 1')
+        skip_postgresql = lambda func, *args, **kwargs: func
+    except( DatabaseError ) as msg:
+        from .pytest_patcher import mark_class
+        skip_postgresql = mark_class(pytest.mark.skip(
+            reason='Skipping PostgreSQL tests: database not available'))
 
-
+@skip_postgresql
 class postgresqlOpener:
     if have_backend('postgresql'):
         module = get_backend('postgresql')
