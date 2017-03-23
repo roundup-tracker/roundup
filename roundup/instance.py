@@ -209,8 +209,9 @@ update your config.ini
             sys.path.remove(dirpath)
         return extensions
 
-    def init(self, adminpw):
+    def init(self, adminpw, tx_Source=None):
         db = self.open('admin')
+        db.tx_Source = tx_Source
         self._execfile('initial_data.py', {'db': db, 'adminpw': adminpw,
             'admin_email': self.config['ADMIN_EMAIL']})
         db.commit()

@@ -520,7 +520,8 @@ Erase it? Y/N: """))
             tracker.nuke()
 
         # GO
-        tracker.init(password.Password(adminpw, config=tracker.config))
+        tracker.init(password.Password(adminpw, config=tracker.config),
+                     tx_Source = 'cli')
 
         return 0
 
