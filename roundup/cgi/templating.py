@@ -2904,7 +2904,7 @@ env: %(env)s
 
     def base_javascript(self):
         return """
-<script type="text/javascript">
+<script nonce="%s" type="text/javascript">
 submitted = false;
 function submit_once() {
     if (submitted) {
@@ -2920,7 +2920,7 @@ function help_window(helpurl, width, height) {
     HelpWin.focus ()
 }
 </script>
-"""%self.base
+"""%(self._client.client_nonce,self.base)
 
     def batch(self, permission='View'):
         """ Return a batch object for results from the "current search"

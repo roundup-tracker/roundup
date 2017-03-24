@@ -998,9 +998,10 @@ class RegoCommon(Action):
         # to want to reload the page, or something)
         return '''<html><head><title>%s</title></head>
             <body><p><a href="%s">%s</a></p>
-            <script type="text/javascript">
+            <script nonce="%s" type="text/javascript">
             window.setTimeout('window.location = "%s"', 1000);
-            </script>'''%(message, url, message, url)
+            </script>'''%(message, url, message,
+                          self.client.client_nonce, url)
 
 class ConfRegoAction(RegoCommon):
     def handle(self):
