@@ -107,7 +107,9 @@ filter  arguments: *classname, list or None, attributes*
 
 sample python client
 ====================
-::
+
+This client will work if you turn off the x-requested-with header and
+the only CSRF header check you require is the HTTP host header::
 
         >>> import xmlrpclib
         >>> roundup_server = xmlrpclib.ServerProxy('http://admin:admin@localhost:8917/demo/xmlrpc', allow_none=True)
@@ -136,3 +138,34 @@ sample python client
         []
         >>> roundup_server.lookup('user','admin')
         '1'
+
+The one below adds Referer and X-Requested-With headers so it can pass
+stronger CSRF detection methods. Note if you are using http rather
+than https, replace xmlrpclib.SafeTransport with xmlrpclib.Transport::
+
+    import xmlrpclib
+
+    class SpecialTransport(xmlrpclib.SafeTransport):
+
+	def send_content(self, connection, request_body):
+
+	    connection.putheader("Referer", "https://localhost/demo/")
+	    connection.putheader("Origin", "https://localhost")
+	    connection.putheader("X-Requested-With", "XMLHttpRequest")
+
+	    connection.putheader("Content-Type", "text/xml")	
+	    connection.putheader("Content-Length", str(len(request_body)))
+	    connection.endheaders()
+	    if request_body:
+		connection.send(request_body)
+
+    roundup_server = xmlrpclib.ServerProxy(
+	'https://admin:admin@localhost/demo/xmlrpc',
+	transport=SpecialTransport(),
+	verbose=False,
+	allow_none=True)
+
+    print roundup_server.schema()
+    print roundup_server.display('user2', 'username')
+    print roundup_server.display('issue1', 'status')
+    print roundup_server.filter('user',['1','2','3'],{'username':'demo'})
