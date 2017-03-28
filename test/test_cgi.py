@@ -12,6 +12,7 @@ import unittest, os, shutil, errno, sys, difflib, cgi, re, StringIO
 
 from roundup.cgi import client, actions, exceptions
 from roundup.cgi.exceptions import FormError
+from roundup.exceptions import UsageError
 from roundup.cgi.templating import HTMLItem, HTMLRequest, NoTemplate, anti_csrf_nonce
 from roundup.cgi.templating import HTMLProperty, _HTMLItem
 from roundup.cgi.form_parser import FormParser
@@ -1046,6 +1047,61 @@ class FormTestCase(unittest.TestCase):
             os.remove(SENDMAILDEBUG)
         #raise ValueError
 
+    def testXmlrpcCsrfProtection(self):
+        # set the password for admin so we can log in.
+        passwd=password.Password('admin')
+        self.db.user.set('1', password=passwd)
+
+        out = []
+        def wh(s):
+            out.append(s)
+
+        # xmlrpc has no form content
+        form = {}
+        cl = client.Client(self.instance, None,
+                           {'REQUEST_METHOD':'POST',
+                            'PATH_INFO':'xmlrpc',
+                            'CONTENT_TYPE': 'text/plain',
+                            'HTTP_AUTHORIZATION': 'Basic YWRtaW46YWRtaW4=',
+                            'HTTP_REFERER': 'http://whoami.com/path/',
+                            'HTTP_X-REQUESTED-WITH': "XMLHttpRequest"
+                        }, form)
+        cl.db = self.db
+        cl.base = 'http://whoami.com/path/'
+        cl._socket_op = lambda *x : True
+        cl._error_message = []
+        cl.request = MockNull()
+        cl.write = wh # capture output
+
+        # Should return explanation because content type is text/plain
+        # and not text/xml
+        cl.handle_xmlrpc()
+        self.assertEqual(out[0], "This is the endpoint of Roundup <a href='http://www.roundup-tracker.org/docs/xmlrpc.html'>XML-RPC interface</a>.")
+        del(out[0])
+
+        # Should return admin user indicating auth works and
+        # header checks succeed (REFERER and X-REQUESTED-WITH)
+        cl.env['CONTENT_TYPE'] = "text/xml"
+        # ship the form with the value holding the xml value.
+        # I have no clue why this works but ....
+        cl.form = MockNull(file = True, value = "<?xml version='1.0'?>\n<methodCall>\n<methodName>display</methodName>\n<params>\n<param>\n<value><string>user1</string></value>\n</param>\n<param>\n<value><string>username</string></value>\n</param>\n</params>\n</methodCall>\n" )
+        answer ="<?xml version='1.0'?>\n<methodResponse>\n<params>\n<param>\n<value><struct>\n<member>\n<name>username</name>\n<value><string>admin</string></value>\n</member>\n</struct></value>\n</param>\n</params>\n</methodResponse>\n"
+        cl.handle_xmlrpc()
+        print out
+        self.assertEqual(out[0], answer)
+        del(out[0])
+
+        # remove the X-REQUESTED-WITH header and get a failure.
+        del(cl.env['HTTP_X-REQUESTED-WITH'])
+        self.assertRaises(UsageError,cl.handle_xmlrpc)
+
+        # change config to not require X-REQUESTED-WITH header
+        cl.db.config['WEB_CSRF_ENFORCE_HEADER_X-REQUESTED-WITH'] = 'logfailure'
+        cl.handle_xmlrpc()
+        print out
+        self.assertEqual(out[0], answer)
+        del(out[0])
+
     #
     # SECURITY
     #
@@ -1481,6 +1537,7 @@ class TemplateHtmlRendering(unittest.TestCase):
         
         result = self.client.renderContext()
         print result
+        # sha1sum of classic tracker user.forgotten.template must be found
         self.assertNotEqual(-1,
                             result.index('<!-- SHA: eb5dd0bec7a57d58cb7edbeb939fb0390ed1bf74 -->'))
 
@@ -1495,6 +1552,7 @@ class TemplateHtmlRendering(unittest.TestCase):
         
         result = self.client.renderContext()
         print result
+        # sha1sum of classic tracker user.item.template must be found
         self.assertNotEqual(-1,
                             result.index('<!-- SHA: 3b7ce7cbf24f77733c9b9f64a569d6429390cc3f -->'))
 

@@ -28,7 +28,8 @@ except ImportError:
 from roundup import roundupdb, date, hyperdb, password
 from roundup.cgi import templating, cgitb, TranslationService
 from roundup.cgi import actions
-from roundup.exceptions import LoginError, Reject, RejectRaw, Unauthorised
+from roundup.exceptions import LoginError, Reject, RejectRaw, \
+                               Unauthorised, UsageError
 from roundup.cgi.exceptions import (
     FormError, NotFound, NotModified, Redirect, SendFile, SendStaticFile,
     DetectorError, SeriousError)
@@ -817,7 +818,7 @@ class Client:
                     # try to seed with something harder to guess than
                     # just the time. If random is SystemRandom,
                     # this is a no-op.
-                    random.seed(password + time.time()) 
+                    random.seed("%s%s"%(password,time.time())) 
 
         # if user was not set by http authorization, try session lookup
         if not user:
@@ -1063,16 +1064,23 @@ class Client:
             return False
 
         enforce=config['WEB_CSRF_ENFORCE_HEADER_X-REQUESTED-WITH']
-        if xmlrpc and (enforce in ['required', 'yes']):
-            # if we get here we have usually passed at least one
-            # header check. We check for presence of this custom
-            # header for xmlrpc calls only.
-            # E.G. X-Requested-With: XMLHttpRequest
-            # see: https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Protecting_REST_Services:_Use_of_Custom_Request_Headers
-            if 'HTTP_X-REQUESTED-WITH' not in self.env:
-                self.add_error_message("Required Header Missing")
-                logger.error(self._("csrf X-REQUESED-WITH xmlrpc required header check failed for user%s."), user)
-                return False
+        if xmlrpc:
+            if enforce in ['required', 'yes']:
+                # if we get here we have usually passed at least one
+                # header check. We check for presence of this custom
+                # header for xmlrpc calls only.
+                # E.G. X-Requested-With: XMLHttpRequest
+                # Note we do not use CSRF nonces for xmlrpc requests.
+                #
+                # see: https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Protecting_REST_Services:_Use_of_Custom_Request_Headers
+                if 'HTTP_X-REQUESTED-WITH' not in self.env:
+                    logger.error(self._("csrf X-REQUESTED-WITH xmlrpc required header check failed for user%s."), user)
+                    raise UsageError, "Required Header Missing"
+                    return False  # unreached
+                else:
+                    return True
+            else:
+                return True
 
         enforce=config['WEB_CSRF_ENFORCE_TOKEN']
         if "@csrf" not in self.form:
