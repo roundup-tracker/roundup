@@ -596,11 +596,20 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
 
         return HTMLItem(self._client, self.classname, itemid)
 
-    def properties(self, sort=1):
-        """ Return HTMLProperty for all of this class' properties.
+    def properties(self, sort=1, cansearch=True):
+        """ Return HTMLProperty for allowed class' properties.
+
+            To return all properties call it with cansearch=False
+            and it will return properties the user is unable to
+            search.
         """
         l = []
+        canSearch=self._db.security.hasSearchPermission
+        userid=self._client.userid
         for name, prop in self._props.items():
+            if cansearch and \
+               not canSearch(userid, self._classname, name):
+                continue
             for klass, htmlklass in propclasses:
                 if isinstance(prop, klass):
                     value = prop.get_default_value()

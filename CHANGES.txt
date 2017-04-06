@@ -413,6 +413,11 @@ Fixed:
   will not add the arg to the url. In the example above @queryname
   will only be in the url if dispname is set in the request.
   (John Rouillard)
+- The HTMLClass::properties() method produced a list of properties
+  that the user could not search. As a result these properties can not
+  be used for sorting or grouping index pages. This patch eliminates
+  the confusion that results from this mismatch by verifying that all
+  properties returned are searchable. (John Rouillard)
 
 2016-01-11: 1.5.1
 

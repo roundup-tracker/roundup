@@ -2354,7 +2354,8 @@ There are several methods available on these wrapper objects:
 Method      Description
 =========== =============================================================
 properties  return a `hyperdb property wrapper`_ for all of this class's
-            properties.
+            properties that are searchable by the user. You can use
+            the argument cansearch=False to get all properties.
 list        lists all of the active (not retired) items in the class.
 csv         return the items of this class as a chunk of CSV text.
 propnames   lists the names of the properties of this class.
