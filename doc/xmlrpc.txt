@@ -140,8 +140,9 @@ the only CSRF header check you require is the HTTP host header::
         '1'
 
 The one below adds Referer and X-Requested-With headers so it can pass
-stronger CSRF detection methods. Note if you are using http rather
-than https, replace xmlrpclib.SafeTransport with xmlrpclib.Transport::
+stronger CSRF detection methods. It also generates a fault message
+from the server and reports it. Note if you are using http rather than
+https, replace xmlrpclib.SafeTransport with xmlrpclib.Transport::
 
     import xmlrpclib
 
@@ -169,3 +170,9 @@ than https, replace xmlrpclib.SafeTransport with xmlrpclib.Transport::
     print roundup_server.display('user2', 'username')
     print roundup_server.display('issue1', 'status')
     print roundup_server.filter('user',['1','2','3'],{'username':'demo'})
+
+   # this will fail with a fault
+   try:
+      print roundup_server.filter('usr',['0','2','3'],{'username':'demo'})
+   except Exception, msg:
+      print msg

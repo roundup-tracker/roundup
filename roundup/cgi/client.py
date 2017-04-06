@@ -47,6 +47,7 @@ from email.MIMEBase import MIMEBase
 from email.MIMEText import MIMEText
 from email.MIMEMultipart import MIMEMultipart
 import roundup.anypy.email_
+import xmlrpclib
 
 def initialiseSecurity(security):
     '''Create some Permissions and Roles on the security object
@@ -436,15 +437,27 @@ class Client:
         self.determine_user()
         self.check_anonymous_access()
 
-        if self.handle_csrf(xmlrpc=True):
-            # Call the appropriate XML-RPC method.
+        try:
+            # coverting from function returning true/false to 
+            # raising exceptions
+            # Call csrf with xmlrpc checks enabled.
+            # It will return True if everything is ok,
+            # raises exception on check failure.
+            csrf_ok =  self.handle_csrf(xmlrpc=True)
+        except (Unauthorised, UsageError), msg:
+            # report exception back to server
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            output = xmlrpclib.dumps(
+                xmlrpclib.Fault(1, "%s:%s" % (exc_type, exc_value)),
+                allow_none=True)
+            csrf_ok = False # we had an error, failed check
+
+        if csrf_ok == True:
             handler = xmlrpc.RoundupDispatcher(self.db,
                                            self.instance.actions,
                                            self.translator,
                                            allow_none=True)
             output = handler.dispatch(input)
-        else:
-            raise Unauthorised, self._error_message
 
         self.setHeader("Content-Type", "text/xml")
         self.setHeader("Content-Length", str(len(output)))
@@ -510,7 +523,17 @@ class Client:
                 self.check_anonymous_access()
 
                 # check for a valid csrf token identifying the right user
-                if self.handle_csrf():
+                csrf_ok = True
+                try:
+                    # coverting from function returning true/false to 
+                    # raising exceptions
+                    csrf_ok = self.handle_csrf()
+                except (UsageError, Unauthorised), msg:
+                    csrf_ok = False
+                    self.form_wins = True
+                    self._error_message = msg
+
+                if csrf_ok:
                     # csrf checks pass. Run actions etc.
                     # possibly handle a form submit action (may change
                     # self.classname and self.template, and may also
@@ -943,7 +966,7 @@ class Client:
                 # can fix the nonce leakage and destroy it. (nonces
                 # used in a get are more exposed than those used in a
                 # post.) Note, I don't attempt to validate here since
-                # existance here is the sign of a failure.  If nonce
+                # existence here is the sign of a failure.  If nonce
                 # exists try to report the referer header to try to
                 # find where this comes from so it can be fixed.  If
                 # nonce doesn't exist just ignore it. Maybe we should
@@ -960,15 +983,17 @@ class Client:
                         referer)
                     otks.destroy(key)
                     self.db.commit()
+            # do return here. Keys have been obsoleted.
+            # we didn't do a expire cycle of session keys, 
+            # but that's ok.
             return True
 
         config=self.instance.config
-        user=self.db.getuid()
+        current_user=self.db.getuid()
 
-        # the HTTP headers we check.
-        # Note that the xmlrpc header is missing. Its enforcement is
-        # different (yes/required are the same for example)
-        # so we don't include here.
+        # List HTTP headers we check. Note that the xmlrpc header is
+        # missing. Its enforcement is different (yes/required are the
+        # same for example) so we don't include here.
         header_names = [
             "ORIGIN",
             "REFERER",
@@ -978,34 +1003,14 @@ class Client:
 
         header_pass = 0  # count of passing header checks
 
-        # if any headers are required and missing, report
-        # an error
+        # If required headers are missing, raise an error
         for header in header_names:
             if (config["WEB_CSRF_ENFORCE_HEADER_%s"%header] == 'required'
                     and "HTTP_%s"%header not in self.env):
-                self.add_error_message(self._("Missing header: %s")%header)
-                logger.error(self._("csrf header %s required but missing for user%s."), header, user)
-                return False
+                logger.error(self._("csrf header %s required but missing for user%s."), header, current_user)
+                raise Unauthorised, self._("Missing header: %s")%header
                 
-        # if you change these make sure to consider what
-        # happens if header variable exists but is empty.
-        # self.base.find("") returns 0 for example not -1
-        #
         # self.base always matches: ^https?://hostname
-        enforce=config['WEB_CSRF_ENFORCE_HEADER_ORIGIN']
-        if 'HTTP_ORIGIN' in self.env and enforce != "no":
-            origin = self.env['HTTP_ORIGIN']
-            foundat = self.base.find(origin +'/')
-            if foundat != 0:
-                if enforce in ('required', 'yes'):
-                    self.add_error_message("Invalid Origin %s"%origin)
-                    logger.error(self._("csrf Origin header check failed for user%s. Value=%s"), user, origin)
-                    return False
-                elif enforce == 'logfailure':
-                    logger.warning(self._("csrf Origin header check failed for user%s. Value=%s"), user, origin)
-            else:
-                header_pass += 1
-                
         enforce=config['WEB_CSRF_ENFORCE_HEADER_REFERER']
         if 'HTTP_REFERER' in self.env and enforce != "no":
             referer = self.env['HTTP_REFERER']
@@ -1013,28 +1018,43 @@ class Client:
             foundat = referer.find(self.base)
             if foundat != 0:
                 if enforce in ('required', 'yes'):
-                    self.add_error_message(self._("Invalid Referer %s, %s")%(referer,self.base))
-                    logger.error(self._("csrf Referer header check failed for user%s. Value=%s"), user, referer)
-                    return False
+                    logger.error(self._("csrf Referer header check failed for user%s. Value=%s"), current_user, referer)
+                    raise Unauthorised, self._("Invalid Referer %s, %s")%(referer,self.base)
                 elif enforce == 'logfailure':
-                    logger.warning(self._("csrf Referer header check failed for user%s. Value=%s"), user, referer)
+                    logger.warning(self._("csrf Referer header check failed for user%s. Value=%s"), current_user, referer)
             else:
                 header_pass += 1
 
-        enforce=config['WEB_CSRF_ENFORCE_HEADER_X-FORWARDED-HOST']
-        if 'HTTP_X-FORWARDED-HOST' in self.env and enforce != "no":
-            host = self.env['HTTP_X-FORWARDED-HOST']
-            foundat = self.base.find('://' + host + '/')
-            # 4 means self.base has http:/ prefix, 5 means https:/ prefix
-            if foundat not in [4, 5]:
+        # if you change these make sure to consider what
+        # happens if header variable exists but is empty.
+        # self.base.find("") returns 0 for example not -1
+        enforce=config['WEB_CSRF_ENFORCE_HEADER_ORIGIN']
+        if 'HTTP_ORIGIN' in self.env and enforce != "no":
+            origin = self.env['HTTP_ORIGIN']
+            foundat = self.base.find(origin +'/')
+            if foundat != 0:
                 if enforce in ('required', 'yes'):
-                    self.add_error_message(self._("Invalid X-FORWARDED-HOST %s")%host)
-                    logger.error(self._("csrf X-FORWARDED-HOST header check failed for user%s. Value=%s"), user, host)
-                    return False
+                    logger.error(self._("csrf Origin header check failed for user%s. Value=%s"), current_user, origin)
+                    raise Unauthorised, self._("Invalid Origin %s"%origin)
                 elif enforce == 'logfailure':
-                    logger.warning(self._("csrf X-FORWARDED-HOST header check failed for user%s. Value=%s"), user, host)
+                    logger.warning(self._("csrf Origin header check failed for user%s. Value=%s"), current_user, origin)
             else:
                 header_pass += 1
+                
+        enforce=config['WEB_CSRF_ENFORCE_HEADER_X-FORWARDED-HOST']
+        if 'HTTP_X-FORWARDED-HOST' in self.env:
+            if enforce != "no":
+                host = self.env['HTTP_X-FORWARDED-HOST']
+                foundat = self.base.find('://' + host + '/')
+                # 4 means self.base has http:/ prefix, 5 means https:/ prefix
+                if foundat not in [4, 5]:
+                    if enforce in ('required', 'yes'):
+                        logger.error(self._("csrf X-FORWARDED-HOST header check failed for user%s. Value=%s"), current_user, host)
+                        raise Unauthorised, self._("Invalid X-FORWARDED-HOST %s")%host
+                    elif enforce == 'logfailure':
+                        logger.warning(self._("csrf X-FORWARDED-HOST header check failed for user%s. Value=%s"), current_user, host)
+                else:
+                    header_pass += 1
         else:
             # https://seclab.stanford.edu/websec/csrf/csrf.pdf
             # recommends checking HTTP HOST header as well.
@@ -1049,19 +1069,17 @@ class Client:
                 # 4 means http:// prefix, 5 means https:// prefix
                 if foundat not in [4, 5]:
                     if enforce in ('required', 'yes'):
-                        self.add_error_message(self._("Invalid HOST %s")%host)
-                        logger.error(self._("csrf HOST header check failed for user%s. Value=%s"), user, host)
-                        return False
+                        logger.error(self._("csrf HOST header check failed for user%s. Value=%s"), current_user, host)
+                        raise Unauthorised, self._("Invalid HOST %s")%host
                     elif enforce == 'logfailure':
-                        logger.warning(self._("csrf HOST header check failed for user%s. Value=%s"), user, host)
+                        logger.warning(self._("csrf HOST header check failed for user%s. Value=%s"), current_user, host)
                 else:
                     header_pass += 1
 
         enforce=config['WEB_CSRF_HEADER_MIN_COUNT']
         if header_pass < enforce:
-            self.add_error_message(self._("Unable to verify sufficient headers"))
             logger.error(self._("Csrf: unable to verify sufficient headers"))
-            return False
+            raise UsageError, self._("Unable to verify sufficient headers")
 
         enforce=config['WEB_CSRF_ENFORCE_HEADER_X-REQUESTED-WITH']
         if xmlrpc:
@@ -1074,25 +1092,8 @@ class Client:
                 #
                 # see: https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Protecting_REST_Services:_Use_of_Custom_Request_Headers
                 if 'HTTP_X-REQUESTED-WITH' not in self.env:
-                    logger.error(self._("csrf X-REQUESTED-WITH xmlrpc required header check failed for user%s."), user)
-                    raise UsageError, "Required Header Missing"
-                    return False  # unreached
-                else:
-                    return True
-            else:
-                return True
-
-        enforce=config['WEB_CSRF_ENFORCE_TOKEN']
-        if "@csrf" not in self.form:
-            if enforce == 'required':
-                self.add_error_message(self._("No csrf token found"))
-                logger.error(self._("required csrf field missing for user%s"), user)
-                return False
-            else:
-                if enforce == 'logfailure':
-                    # FIXME include url
-                    logger.warning(self._("required csrf field missing for user%s"), user)
-                return True
+                    logger.error(self._("csrf X-REQUESTED-WITH xmlrpc required header check failed for user%s."), current_user)
+                    raise UsageError, self._("Required Header Missing")
 
         # Expire old csrf tokens now so we don't use them.  These will
         # be committed after the otks.destroy below.  Note that the
@@ -1102,14 +1103,42 @@ class Client:
         # our own.
         otks.clean()
 
-        key=self.form['@csrf'].value
-        uid = otks.get(key, 'uid', default=None)
-        sid = otks.get(key, 'sid', default=None)
+        if xmlrpc:
+            # Save removal of expired keys from database.
+            self.db.commit()
+            # Return from here since we have done housekeeping
+            # and don't use csrf tokens for xmlrpc.
+            return True
 
-        # The key has been used or compromised.
-        # Delete it to prevent replay.
-        otks.destroy(key)
+        # process @csrf tokens past this point.
+        key=None
+        nonce_user = None
+        nonce_session = None
+
+        if '@csrf' in self.form:
+            key=self.form['@csrf'].value
+
+            nonce_user = otks.get(key, 'uid', default=None)
+            nonce_session = otks.get(key, 'sid', default=None)
+            # The key has been used or compromised.
+            # Delete it to prevent replay.
+            otks.destroy(key)
+
+        # commit the deletion/expiration of all keys
         self.db.commit()
+
+        enforce=config['WEB_CSRF_ENFORCE_TOKEN']
+        if key is None: # we do not have an @csrf token
+            if enforce == 'required':
+                logger.error(self._("Required csrf field missing for user%s"), current_user)
+                raise UsageError, self._("Csrf token is missing.")
+            elif enforce == 'logfailure':
+                    # FIXME include url
+                    logger.warning(self._("csrf field not supplied by user%s"), current_user)
+            else:
+                # enforce is either yes or no. Both permit change if token is
+                # missing
+                return True
 
         current_session = self.session_api._sid
 
@@ -1127,18 +1156,18 @@ class Client:
         # The csrf token for the login button is associated
         # with the prior login, so it will not validate.
         #
-        # To bypass error, Verify that uid != user and that
+        # To bypass error, Verify that nonce_user != user and that
         # user is '2' (anonymous) and there is no current
         # session key. Validate that the csrf exists
-        # in the db and uid and sid are not None.
+        # in the db and nonce_user and nonce_session are not None.
         # Also validate that the action is Login.
         # Lastly requre at least one csrf header check to pass.
         # If all of those work process the login.
-        if user != uid and \
-           user == '2' and \
+        if current_user != nonce_user and \
+           current_user == '2' and \
            current_session is None and \
-           uid is not None and \
-           sid is not None and \
+           nonce_user is not None and \
+           nonce_session is not None and \
            "@action" in self.form and \
            self.form["@action"].value == "Login":
             if header_pass > 0:
@@ -1148,23 +1177,28 @@ class Client:
             else:
                 self.add_error_message("Reload window before logging in.")
         '''
-
         # validate against user and session
-        if uid != user:
+        if current_user != nonce_user:
             if enforce in ('required', "yes"):
-                self.add_error_message(self._("Invalid csrf token found: %s")%key)
-                logger.error(self._("csrf uid mismatch for user%s."), user)
-                return False
+                logger.error(
+                    self._("Csrf mismatch user: current user %s != stored user %s, current session, stored session: %s,%s for key %s."),
+                    current_user, nonce_user, current_session, nonce_session, key)
+                raise UsageError, self._("Invalid csrf token found: %s")%key
             elif enforce == 'logfailure':
-                    logger.warning(self._("csrf uid mismatch for user%s."), user)
-        if current_session != sid:
+                logger.warning(
+                    self._("logged only: Csrf mismatch user: current user %s != stored user %s, current session, stored session: %s,%s for key %s."),
+                    current_user, nonce_user, current_session, nonce_session, key)
+        if current_session != nonce_session:
             if enforce in ('required', "yes"):
-                self.add_error_message(self._(
-                    "Invalid csrf session found: %s")%key)
-                logger.error(self._("csrf session mismatch for user%s."), user)
-                return False
+                logger.error(
+                    self._("Csrf mismatch user: current session %s != stored session %s, current user/stored user is: %s for key %s."),
+                    current_session, nonce_session, current_user, key)
+                raise UsageError, self._("Invalid csrf session found: %s")%key
             elif enforce == 'logfailure':
-                    logger.warning(self._("csrf session mismatch for user%s."), user)
+                    logger.warning(
+                        self._("logged only: Csrf mismatch user: current session %s != stored session %s, current user/stored user is: %s for key %s."),
+                    current_session, nonce_session, current_user, key)
+        # we are done and the change can occur.
         return True
 
     def opendb(self, username):
