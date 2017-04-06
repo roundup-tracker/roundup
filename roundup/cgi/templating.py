@@ -2275,7 +2275,9 @@ class MultilinkHTMLProperty(HTMLProperty):
         classname = self._prop.classname
         if check('Web Access', userid):
             for value in values:
-                if check('View', userid, classname, itemid=value):
+                if check('View', userid, classname,
+                         itemid=value,
+                         property=self._db.getclass(classname).labelprop(default_to_id=1)):
                     yield HTMLItem(self._client, classname, value)
 
     def __iter__(self):
