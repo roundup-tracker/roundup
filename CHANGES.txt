@@ -418,6 +418,12 @@ Fixed:
   be used for sorting or grouping index pages. This patch eliminates
   the confusion that results from this mismatch by verifying that all
   properties returned are searchable. (John Rouillard)
+- Mutilinks can be displayed with their labelprop using the plain()
+  method, but they can not be looped over using tal:repeat if the user
+  doesn't have view access to the class the multilink represents. The
+  permissions check was changed to require that the user have View
+  access to the labelprop for the class rather than View access to the
+  class. (John Rouillard)
 
 2016-01-11: 1.5.1
 
