@@ -424,6 +424,9 @@ Fixed:
   permissions check was changed to require that the user have View
   access to the labelprop for the class rather than View access to the
   class. (John Rouillard)
+- issue2550937: fix crash by verifying that sendto is not null before
+  calling mailer.smtp_send. Discovered and patched by Trent Gamblin.
+  Applied by John Rouillard.
 
 2016-01-11: 1.5.1
 

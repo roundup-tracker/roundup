@@ -658,7 +658,8 @@ class IssueClass:
                 if message.get ('In-Reply-To'):
                     send_msg ['In-Reply-To'] = message ['In-Reply-To']
 
-            mailer.smtp_send(sendto, send_msg.as_string())
+            if sendto:
+                mailer.smtp_send(sendto, send_msg.as_string())
             if first:
                 if crypt:
                     # send individual bcc mails, otherwise receivers can
