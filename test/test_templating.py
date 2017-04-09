@@ -316,7 +316,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
     def __getattr__(self, attr):
     def designator(self):
     def getItem(self, itemid, num_re=re.compile('-?\d+')):
-    def properties(self, sort=1):
+    def properties(self, sort=1, cansearch=True):
     def list(self, sort_on=None):
     def csv(self):
     def propnames(self):
