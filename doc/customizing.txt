@@ -2453,7 +2453,10 @@ Method          Description
 submit          generate a submit button (and action and @csrf hidden elements)
 journal         return the journal of the current item (**not
                 implemented**)
-history         render the journal of the current item as HTML
+history         render the journal of the current item as
+                HTML. By default properties marked as "quiet" (see 
+		`design documentation`_) are not shown unless the
+		function is called with the showall=True parameter.
 renderQueryForm specific to the "query" class - render the search form
                 for the query
 hasPermission   specific to the "user" class - determine whether the
