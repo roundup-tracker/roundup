@@ -192,6 +192,10 @@ Features:
   session cookie. Default is lax, but there is a settable
   option in config.ini file to change to strict or
   suppress it entirely. See ``upgrading.txt``. (John Rouillard)
+- Added a new roundup-admin command: updateconfig. Similar to
+  genconfig but it uses values from an existing config.ini
+  rather than default values. Use to update an existing
+  config.ini with new options and help text. (John Rouillard)
 
 Fixed:
 
@@ -427,6 +431,14 @@ Fixed:
 - issue2550937: fix crash by verifying that sendto is not null before
   calling mailer.smtp_send. Discovered and patched by Trent Gamblin.
   Applied by John Rouillard.
+- removed old code from roundup-admin that implemented the obsolete
+  config (do_config) command. (John Rouillard)
+- Modified configuration option static_files to be a space separated
+  list of directories to search for static files in the web interface.
+  If one of the elements is -, the search stops and the TEMPLATES
+  directory is not searched. See:
+    https://sourceforge.net/p/roundup/mailman/message/35773357/
+  subject is "showing template sources to all".
 
 2016-01-11: 1.5.1
 

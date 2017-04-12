@@ -87,6 +87,8 @@ section "ConfigParser -- Configuration file parser":
 
 __ http://docs.python.org/lib/module-ConfigParser.html
 
+Example configuration settings are below.
+ 
 Section **main**
  database -- ``db``
   Database directory path. The path may be either absolute or relative
@@ -97,12 +99,13 @@ Section **main**
   or relative to the directory containing this config file.
 
  static_files -- default *blank*
-  Path to directory holding additional static files available via Web
-  UI.  This directory may contain sitewide images, CSS stylesheets etc.
-  and is searched for these files prior to the TEMPLATES directory
-  specified above.  If this option is not set, all static files are
-  taken from the TEMPLATES directory The path may be either absolute or
-  relative to the directory containig this config file.
+  A list of space separated directory paths (or a single directory).
+  These directories hold additional static files available via Web UI.
+  These directories may contain sitewide images, CSS stylesheets etc. If
+  a '-' is included, the list processing ends and the TEMPLATES
+  directory is not searched after the specified directories.  If this
+  option is not set, all static files are taken from the TEMPLATES
+  directory.
 
  admin_email -- ``roundup-admin``
   Email address that roundup will complain to if it runs into trouble. If
@@ -459,7 +462,8 @@ Section **nosy**
 
 
 You may generate a new default config file using the ``roundup-admin
-genconfig`` command.
+genconfig`` command. You can generate a new config file merging in
+existing settings using the ``roundup-admin updateconfig`` command.
 
 Configuration variables may be referred to in lower or upper case. In code,
 variables not in the "main" section are referred to using their section and

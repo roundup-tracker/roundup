@@ -379,6 +379,31 @@ class FilePathOption(Option):
             _val = os.path.join(self.config["HOME"], _val)
         return _val
 
+class MultiFilePathOption(Option):
+
+    """List of space seperated File or directory path name
+
+    Paths may be either absolute or relative to the HOME. None
+    is returned if there are no elements.
+
+    """
+
+    class_description = "The space separated paths may be either absolute or\n" \
+        "relative to the directory containing this config file."
+
+    def get(self):
+        pathlist = []
+        _val = Option.get(self)
+        for elem in _val.split():
+            if elem and not os.path.isabs(elem):
+                pathlist.append(os.path.join(self.config["HOME"], elem))
+            else:
+                pathlist.append(elem)
+        if pathlist:
+            return pathlist
+        else:
+            return None
+
 class FloatNumberOption(Option):
 
     """Floating point numbers"""
@@ -526,13 +551,15 @@ SETTINGS = (
             "ported from Zope, or 'chameleon' for Chameleon."),
         (FilePathOption, "templates", "html",
             "Path to the HTML templates directory."),
-        (NullableFilePathOption, "static_files", "",
-            "Path to directory holding additional static files\n"
-            "available via Web UI.  This directory may contain\n"
-            "sitewide images, CSS stylesheets etc. and is searched\n"
-            "for these files prior to the TEMPLATES directory\n"
-            "specified above.  If this option is not set, all static\n"
-            "files are taken from the TEMPLATES directory"),
+        (MultiFilePathOption, "static_files", "",
+            "A list of space separated directory paths (or a single\n"
+            "directory).  These directories hold additional static\n"
+            "files available via Web UI.  These directories may\n"
+            "contain sitewide images, CSS stylesheets etc. If a '-'\n"
+            "is included, the list processing ends and the TEMPLATES\n"
+            "directory is not searched after the specified\n"
+            "directories.  If this option is not set, all static\n"
+            "files are taken from the TEMPLATES directory."),
         (MailAddressOption, "admin_email", "roundup-admin",
             "Email address that roundup will complain to if it runs\n"
             "into trouble.\n"

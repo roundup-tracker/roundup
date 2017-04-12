@@ -1439,13 +1439,33 @@ class Client:
             prefix = self.instance.config[dir_option]
             if not prefix:
                 continue
-            # ensure the load doesn't try to poke outside
-            # of the static files directory
-            prefix = os.path.normpath(prefix)
-            filename = os.path.normpath(os.path.join(prefix, file))
-            if os.path.isfile(filename) and filename.startswith(prefix):
+            if type(prefix) is str:
+                # prefix can be a string or list depending on
+                # option. Make it a list to iterate over.
+                prefix = [ prefix ]
+
+            for p in prefix:
+                # if last element of STATIC_FILES ends with '/-',
+                # we failed to find the file and we should
+                # not look in TEMPLATES. So raise exception.
+                if dir_option == 'STATIC_FILES' and p[-2:] == '/-':
+                    raise NotFound(file)
+
+                # ensure the load doesn't try to poke outside
+                # of the static files directory
+                p = os.path.normpath(p)
+                filename = os.path.normpath(os.path.join(p, file))
+                if os.path.isfile(filename) and filename.startswith(p):
+                    break # inner loop over list of directories
+                else:
+                    # reset filename to None as sentinel for use below.
+                    filename = None
+
+            # break out of outer loop over options
+            if filename:
                 break
-        else:
+
+        if filename is None: # we didn't find a filename
             raise NotFound(file)
 
         # last-modified time

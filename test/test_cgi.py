@@ -11,7 +11,7 @@
 import unittest, os, shutil, errno, sys, difflib, cgi, re, StringIO
 
 from roundup.cgi import client, actions, exceptions
-from roundup.cgi.exceptions import FormError
+from roundup.cgi.exceptions import FormError, NotFound
 from roundup.exceptions import UsageError
 from roundup.cgi.templating import HTMLItem, HTMLRequest, NoTemplate, anti_csrf_nonce
 from roundup.cgi.templating import HTMLProperty, _HTMLItem
@@ -1389,6 +1389,105 @@ class FormTestCase(unittest.TestCase):
         self.assertEqual(cl._ok_message, ['Items edited OK'])
         k = self.db.keyword.getnode('1')
         self.assertEqual(k.name, u'\xe4\xf6\xfc'.encode('utf-8'))
+
+    def testserve_static_files(self):
+        # make a client instance
+        cl = self._make_client({})
+
+        # hijack _serve_file so I can see what is found
+        output = []
+        def my_serve_file(a, b, c, d):
+            output.append((a,b,c,d))
+        cl._serve_file = my_serve_file
+
+        # check case where file is not found.
+        self.assertRaises(NotFound,
+                          cl.serve_static_file,"missing.css")
+
+        # TEMPLATES dir is searched by default. So this file exists.
+        # Check the returned values.
+        cl.serve_static_file("issue.index.html")
+        self.assertEquals(output[0][1], "text/html")
+        self.assertEquals(output[0][3], "_test_cgi_form/html/issue.index.html")
+        del output[0] # reset output buffer
+
+        # stop searching TEMPLATES for the files.
+        cl.instance.config['STATIC_FILES'] = '-'
+        # previously found file should not be found
+        self.assertRaises(NotFound,
+                          cl.serve_static_file,"issue.index.html")
+
+        # explicitly allow html directory
+        cl.instance.config['STATIC_FILES'] = 'html -'
+        cl.serve_static_file("issue.index.html")
+        self.assertEquals(output[0][1], "text/html")
+        self.assertEquals(output[0][3], "_test_cgi_form/html/issue.index.html")
+        del output[0] # reset output buffer
+
+        # set the list of files and do not look at the templates directory
+        cl.instance.config['STATIC_FILES'] = 'detectors   extensions -	'
+
+        # find file in first directory
+        cl.serve_static_file("messagesummary.py")
+        self.assertEquals(output[0][1], "text/x-python")
+        self.assertEquals(output[0][3], "_test_cgi_form/detectors/messagesummary.py")
+        del output[0] # reset output buffer
+
+        # find file in second directory
+        cl.serve_static_file("README.txt")
+        self.assertEquals(output[0][1], "text/plain")
+        self.assertEquals(output[0][3], "_test_cgi_form/extensions/README.txt")
+        del output[0] # reset output buffer
+
+        # make sure an embedded - ends the searching.
+        cl.instance.config['STATIC_FILES'] = ' detectors - extensions '
+        self.assertRaises(NotFound, cl.serve_static_file, "README.txt")
+
+        cl.instance.config['STATIC_FILES'] = ' detectors - extensions   '
+        self.assertRaises(NotFound, cl.serve_static_file, "issue.index.html")
+
+        # create an empty README.txt in the first directory
+        f = open('_test_cgi_form/detectors/README.txt', 'a').close()
+        # find file now in first directory
+        cl.serve_static_file("README.txt")
+        self.assertEquals(output[0][1], "text/plain")
+        self.assertEquals(output[0][3], "_test_cgi_form/detectors/README.txt")
+        del output[0] # reset output buffer
+
+        cl.instance.config['STATIC_FILES'] = ' detectors extensions '
+        # make sure lack of trailing - allows searching TEMPLATES
+        cl.serve_static_file("issue.index.html")
+        self.assertEquals(output[0][1], "text/html")
+        self.assertEquals(output[0][3], "_test_cgi_form/html/issue.index.html")
+        del output[0] # reset output buffer
+
+        # Make STATIC_FILES a single element.
+        cl.instance.config['STATIC_FILES'] = 'detectors'
+        # find file now in first directory
+        cl.serve_static_file("messagesummary.py")
+        self.assertEquals(output[0][1], "text/x-python")
+        self.assertEquals(output[0][3], "_test_cgi_form/detectors/messagesummary.py")
+        del output[0] # reset output buffer
+
+        # make sure files found in subdirectory
+        os.mkdir('_test_cgi_form/detectors/css')
+        f = open('_test_cgi_form/detectors/css/README.css', 'a').close()
+        # use subdir in filename
+        cl.serve_static_file("css/README.css")
+        self.assertEquals(output[0][1], "text/css")
+        self.assertEquals(output[0][3], "_test_cgi_form/detectors/css/README.css")
+        del output[0] # reset output buffer
+
+
+        # use subdir in static files path
+        cl.instance.config['STATIC_FILES'] = 'detectors html/css'
+        os.mkdir('_test_cgi_form/html/css')
+        f = open('_test_cgi_form/html/css/README1.css', 'a').close()
+        cl.serve_static_file("README1.css")
+        self.assertEquals(output[0][1], "text/css")
+        self.assertEquals(output[0][3], "_test_cgi_form/html/css/README1.css")
+        del output[0] # reset output buffer
+
 
     def testRoles(self):
         cl = self._make_client({})
