@@ -26,7 +26,7 @@ import csv, getopt, getpass, os, re, shutil, sys, UserDict, operator
 from roundup import date, hyperdb, roundupdb, init, password, token
 from roundup import __version__ as roundup_version
 import roundup.instance
-from roundup.configuration import CoreConfig
+from roundup.configuration import CoreConfig, NoConfigError
 from roundup.i18n import _
 from roundup.exceptions import UsageError
 
@@ -470,15 +470,28 @@ Erase it? Y/N: """) % locals())
                 return default
         return argument
 
-    def do_genconfig(self, args):
+    def do_genconfig(self, args, update=False):
         ''"""Usage: genconfig <filename>
         Generate a new tracker config file (ini style) with default values
         in <filename>.
         """
         if len(args) < 1:
             raise UsageError(_('Not enough arguments supplied'))
-        config = CoreConfig()
+        if update:
+            # load current config for writing
+            config = CoreConfig(self.tracker_home)
+        else:
+            # generate default config
+            config = CoreConfig()
         config.save(args[0])
+
+    def do_updateconfig(self, args):
+        ''"""Usage: updateconfig <filename>
+        Generate an updated tracker config file (ini style) in
+        <filename>. Use current settings from existing roundup
+        tracker in tracker home.
+        """
+        self.do_genconfig(args, update=True)
 
     def do_initialise(self, tracker_home, args):
         ''"""Usage: initialise [adminpw]
@@ -1485,6 +1498,10 @@ Erase it? Y/N: """))
         try:
             tracker = roundup.instance.open(self.tracker_home)
         except ValueError, message:
+            self.tracker_home = ''
+            print _("Error: Couldn't open tracker: %(message)s")%locals()
+            return 1
+        except NoConfigError, message:
             self.tracker_home = ''
             print _("Error: Couldn't open tracker: %(message)s")%locals()
             return 1
