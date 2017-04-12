@@ -1443,9 +1443,6 @@ Erase it? Y/N: """))
             self.help_commands()
             self.help_all()
             return 0
-        if command == 'config':
-            self.do_config(args[1:])
-            return 0
 
         # figure what the command is
         try:
