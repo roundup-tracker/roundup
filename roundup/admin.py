@@ -1012,14 +1012,18 @@ Erase it? Y/N: """))
         return 0
 
     def do_history(self, args):
-        ''"""Usage: history designator
+        ''"""Usage: history designator [skipquiet]
         Show the history entries of a designator.
 
         A designator is a classname and a nodeid concatenated,
         eg. bug1, user10, ...
 
-        Lists the journal entries for the node identified by the designator.
+        Lists the journal entries viewable by the user for the
+        node identified by the designator. If skipquiet is the
+        second argument, journal entries for quiet properties
+        are not shown.
         """
+
         if len(args) < 1:
             raise UsageError(_('Not enough arguments supplied'))
         try:
@@ -1027,8 +1031,15 @@ Erase it? Y/N: """))
         except hyperdb.DesignatorError, message:
             raise UsageError(message)
 
+        skipquiet = False
+        if len(args) == 2:
+            if args[1] != 'skipquiet':
+                raise UsageError("Second argument is not skipquiet")
+            skipquiet = True
+
         try:
-            print self.db.getclass(classname).history(nodeid)
+            print self.db.getclass(classname).history(nodeid,
+                                                      skipquiet=skipquiet)
         except KeyError:
             raise UsageError(_('no such class "%(classname)s"')%locals())
         except IndexError:

@@ -973,7 +973,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                         classname, id, current[prop_n])
 
         # get the journal, sort and reverse
-        history = self._klass.history(self._nodeid)
+        history = self._klass.history(self._nodeid, skipquiet=(not showall))
         history.sort()
         history.reverse()
 
@@ -987,22 +987,13 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         for id, evt_date, user, action, args in history:
             date_s = str(evt_date.local(timezone)).replace("."," ")
             arg_s = ''
-            if action == 'link' and type(args) == type(()):
+            if action in ['link', 'unlink'] and type(args) == type(()):
                 if len(args) == 3:
                     linkcl, linkid, key = args
                     arg_s += '<a rel="nofollow" href="%s%s">%s%s %s</a>'%(linkcl, linkid,
                         linkcl, linkid, key)
                 else:
                     arg_s = str(args)
-
-            elif action == 'unlink' and type(args) == type(()):
-                if len(args) == 3:
-                    linkcl, linkid, key = args
-                    arg_s += '<a rel="nofollow" href="%s%s">%s%s %s</a>'%(linkcl, linkid,
-                        linkcl, linkid, key)
-                else:
-                    arg_s = str(args)
-
             elif type(args) == type({}):
                 cell = []
                 for k in args.keys():
@@ -1041,10 +1032,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                         except NoTemplate:
                             hrefable = 0
 
-                    if (not showall) and prop.quiet:
-                        # Omit quiet properties from history/changelog
-                        continue
-                    elif isinstance(prop, hyperdb.Multilink) and args[k]:
+                    if isinstance(prop, hyperdb.Multilink) and args[k]:
                         ml = []
                         for linkid in args[k]:
                             if isinstance(linkid, type(())):

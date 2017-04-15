@@ -274,7 +274,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def clear(self):
         """Delete all database contents
         """
-        logging.getLogger('roundup.hyperdb').info('clear')
+        logging.getLogger('roundup.hyperdb.backend').info('clear')
         for cn in self.classes:
             for dummy in 'nodes', 'journals':
                 path = os.path.join(self.dir, 'journals.%s'%cn)
@@ -322,7 +322,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # whichdb() function to do this
         if not db_type or hasattr(anydbm, 'whichdb'):
             if __debug__:
-                logging.getLogger('roundup.hyperdb').debug(
+                logging.getLogger('roundup.hyperdb.backend').debug(
                     "opendb anydbm.open(%r, 'c')"%path)
             return anydbm.open(path, 'c')
 
@@ -334,7 +334,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             raise hyperdb.DatabaseError(_("Couldn't open database - the "
                 "required module '%s' is not available")%db_type)
         if __debug__:
-            logging.getLogger('roundup.hyperdb').debug(
+            logging.getLogger('roundup.hyperdb.backend').debug(
                 "opendb %r.open(%r, %r)"%(db_type, path, mode))
         return dbm.open(path, mode)
 
@@ -395,7 +395,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """ perform the saving of data specified by the set/addnode
         """
         if __debug__:
-            logging.getLogger('roundup.hyperdb').debug(
+            logging.getLogger('roundup.hyperdb.backend').debug(
                 'save %s%s %r'%(classname, nodeid, node))
         self.transactions.append((self.doSaveNode, (classname, nodeid, node)))
 
@@ -409,7 +409,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         cache_dict = self.cache.setdefault(classname, {})
         if nodeid in cache_dict:
             if __debug__:
-                logging.getLogger('roundup.hyperdb').debug(
+                logging.getLogger('roundup.hyperdb.backend').debug(
                     'get %s%s cached'%(classname, nodeid))
                 self.stats['cache_hits'] += 1
             return cache_dict[nodeid]
@@ -417,7 +417,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if __debug__:
             self.stats['cache_misses'] += 1
             start_t = time.time()
-            logging.getLogger('roundup.hyperdb').debug(
+            logging.getLogger('roundup.hyperdb.backend').debug(
                 'get %s%s'%(classname, nodeid))
 
         # get from the database and save in the cache
@@ -450,7 +450,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """Remove a node from the database. Called exclusively by the
            destroy() method on Class.
         """
-        logging.getLogger('roundup.hyperdb').info(
+        logging.getLogger('roundup.hyperdb.backend').info(
             'destroy %s%s'%(classname, nodeid))
 
         # remove from cache and newnodes if it's there
@@ -564,15 +564,17 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """ Journal the Action
         'action' may be:
 
-            'create' or 'set' -- 'params' is a dictionary of property values
+            'set' -- 'params' is a dictionary of property values
+            'create' -- 'params' is an empty dictionary as of
+                      Wed Nov 06 11:38:43 2002 +0000
             'link' or 'unlink' -- 'params' is (classname, nodeid, propname)
-            'retire' -- 'params' is None
+            'retired' or 'restored' -- 'params' is None
 
             'creator' -- the user performing the action, which defaults to
             the current user.
         """
         if __debug__:
-            logging.getLogger('roundup.hyperdb').debug(
+            logging.getLogger('roundup.hyperdb.backend').debug(
                 'addjournal %s%s %s %r %s %r'%(classname,
                 nodeid, action, params, creator, creation))
         if creator is None:
@@ -583,7 +585,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def setjournal(self, classname, nodeid, journal):
         """Set the journal to the "journal" list."""
         if __debug__:
-            logging.getLogger('roundup.hyperdb').debug(
+            logging.getLogger('roundup.hyperdb.backend').debug(
                 'setjournal %s%s %r'%(classname, nodeid, journal))
         self.transactions.append((self.doSetJournal, (classname, nodeid,
             journal)))
@@ -685,7 +687,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                         packed += 1
                 db[key] = marshal.dumps(l)
 
-                logging.getLogger('roundup.hyperdb').info(
+                logging.getLogger('roundup.hyperdb.backend').info(
                     'packed %d %s items'%(packed, classname))
 
             if db_type == 'gdbm':
@@ -708,7 +710,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         The only backend this seems to affect is postgres.
         """
-        logging.getLogger('roundup.hyperdb').info('commit %s transactions'%(
+        logging.getLogger('roundup.hyperdb.backend').info('commit %s transactions'%(
             len(self.transactions)))
 
         # keep a handle to all the database files opened
@@ -833,7 +835,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def rollback(self):
         """ Reverse all actions from the current transaction.
         """
-        logging.getLogger('roundup.hyperdb').info('rollback %s transactions'%(
+        logging.getLogger('roundup.hyperdb.backend').info('rollback %s transactions'%(
             len(self.transactions)))
 
         for method, args in self.transactions:
@@ -2098,7 +2100,8 @@ class Class(hyperdb.Class):
         properties = self.getprops()
         r = []
         for nodeid in self.getnodeids():
-            for nodeid, date, user, action, params in self.history(nodeid):
+            for nodeid, date, user, action, params in self.history(nodeid,
+                            enforceperm=False, skipquiet=False):
                 date = date.get_tuple()
                 if action == 'set':
                     export_data = {}

@@ -105,7 +105,12 @@ Features:
     prop.quiet=True
   support for anydb backend, added tests, doc updates, support for
   ignoring quiet setting using showall=True in call to history()
-  function in templates by John Rouillard.
+  function in templates by (John Rouillard). (Note implementation
+  changed while implementing fix for issue2550864. Filtering of
+  quiet properties pushed down to the hyperdb.py::Class::history
+  function. This fixes a small bug in the implementation that caused
+  a limiting the templating history call to display fewer than the
+  the requested number of items if some were quiet.)
 - issue2550767: Add newitemcopy.py detector to notify users of new
   items.  Added to detectors directory and a README.txt generated to
   describe the purpose of the directory. It also says the detectors
@@ -196,6 +201,12 @@ Features:
   genconfig but it uses values from an existing config.ini
   rather than default values. Use to update an existing
   config.ini with new options and help text. (John Rouillard)
+- issue2550864: Potential information leakage via journal/history
+  Hyperdb history function now only returns properties that the user
+  has View permissions on. Can be overridden by setting a parameter
+  when calling the method. Also restructured code that implemented
+  issue1714899 moving it from the templating class to the hyperdb.
+  (John Rouillard)
 
 Fixed:
 

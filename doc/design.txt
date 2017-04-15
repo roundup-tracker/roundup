@@ -286,10 +286,12 @@ E.G. assuming title is part of an Issue::
 will create a property called ``title`` that will be included in the
 get_required_props() output. Calling
 db.issue.properties['title'].get_default_value() will return "not set".
-Changes to the property will not be displayed in emailed change notes,
-the history at the end of the item pages in the web interface and will
-be suppressed in the confirmation notice (displayed as a green banner)
-shown on changes.
+Changes to the property will not be displayed in:
+
+   - emailed change notes,
+   - the history at the end of the item pages in the web interface
+   - in the confirmation notice (displayed as a green banner)
+     shown on changes.
 
 These objects are used when specifying what properties belong in classes::
 

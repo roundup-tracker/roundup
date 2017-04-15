@@ -2461,6 +2461,8 @@ history         render the journal of the current item as
                 HTML. By default properties marked as "quiet" (see 
 		`design documentation`_) are not shown unless the
 		function is called with the showall=True parameter.
+		Properties that are not Viewable to the user are not
+		shown.
 renderQueryForm specific to the "query" class - render the search form
                 for the query
 hasPermission   specific to the "user" class - determine whether the
@@ -3212,6 +3214,13 @@ The final section displayed is the history of the item - its database
 journal. This is generally generated with the template::
 
  <tal:block tal:replace="structure context/history" />
+
+or::
+
+   <tal:block
+       tal:replace="structure python:context.history(showall=True)" />
+
+if you want to show history entries for quiet properties.
 
 *To be done:*
 

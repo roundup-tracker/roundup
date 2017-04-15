@@ -23,12 +23,15 @@ __docformat__ = 'restructuredtext'
 # standard python modules
 import os, re, shutil, sys, weakref
 import traceback
+import logging
 
 # roundup modules
 import date, password
 from support import ensureParentsExist, PrioList
 from roundup.i18n import _
 from roundup.cgi.exceptions import DetectorError
+
+logger = logging.getLogger('roundup.hyperdb')
 
 #
 # Types
@@ -781,9 +784,11 @@ All methods except __repr__ must be implemented by a concrete backend Database.
         """ Journal the Action
         'action' may be:
 
-            'create' or 'set' -- 'params' is a dictionary of property values
+            'set' -- 'params' is a dictionary of property values
+            'create' -- 'params' is an empty dictionary as of
+                      Wed Nov 06 11:38:43 2002 +0000
             'link' or 'unlink' -- 'params' is (classname, nodeid, propname)
-            'retire' -- 'params' is None
+            'retired' or 'restored'-- 'params' is None
         """
         raise NotImplementedError
 
@@ -991,7 +996,7 @@ class Class:
         if there are any references to the node.
         """
 
-    def history(self, nodeid):
+    def history(self, nodeid, enforceperm=True, skipquiet=True):
         """Retrieve the journal of edits on a particular node.
 
         'nodeid' must be the id of an existing node of this class or an
@@ -1003,10 +1008,74 @@ class Class:
 
         'date' is a Timestamp object specifying the time of the change and
         'tag' is the journaltag specified when the database was opened.
+
+        If the property to be displayed is a quiet property, it will
+        not be shown. This can be disabled by setting skipquiet=False.
+
+        If the user requesting the history does not have View access
+        to the property, the journal entry will not be shown. This can
+        be disabled by setting enforceperm=False.
         """
         if not self.do_journal:
             raise ValueError('Journalling is disabled for this class')
-        return self.db.getjournal(self.classname, nodeid)
+
+        perm = self.db.security.hasPermission
+        journal = []
+
+        debug_logging = logger.isEnabledFor(logging.DEBUG)
+
+        for j in self.db.getjournal(self.classname, nodeid):
+            id, evt_date, user, action, args = j
+            if debug_logging:
+                j_repr = "%s"%(j,)
+            else:
+                j_repr=''
+            if args and type(args) == type({}):
+                for k in args.keys():
+                    if skipquiet and self.properties[k].quiet:
+                        logger.debug("skipping quiet property %s in %s",
+                                     k, j_repr)
+                        del j[4][k]
+                        continue
+                    if enforceperm and not perm("View",
+                                self.db.getuid(),
+                                self.classname,
+                                property=k ):
+                        logger.debug("skipping unViewable property %s in %s",
+                                     k, j_repr)
+                        del j[4][k]
+                        continue
+                if not args:
+                    logger.debug("Omitting journal entry for  %s%s"
+                                 " all props quiet in: %s",
+                                 self.classname, nodeid, j_repr)
+                    continue
+                journal.append(j)
+            elif action in ['link', 'unlink' ] and type(args) == type(()):
+                if len(args) == 3:
+                    linkcl, linkid, key = args
+                    cls = self.db.getclass(linkcl)
+                    if skipquiet and cls.properties[key].quiet:
+                        logger.debug("skipping quiet property %s in %s",
+                                     key, j_repr)
+                        continue
+                    if enforceperm and not perm("View",
+                            self.db.getuid(),
+                            self.classname,
+                            property=key):
+                         logger.debug("skipping unViewable property %s in",
+                                      key, j_repr)
+                         continue
+                    journal.append(j)
+                else:
+                    logger.error("Invalid %s journal entry for %s%s: %s",
+                                 action, self.classname, nodeid, j)
+            elif action in ['create', 'retired', 'restored']:
+                journal.append(j)
+            else:
+                logger.warning("Possibly malformed journal for %s%s %s",
+                               self.classname, nodeid, j)
+        return journal
 
     # Locating nodes:
     def hasnode(self, nodeid):
@@ -1583,8 +1652,10 @@ class Node:
             raise AttributeError, str(value)
     def __setitem__(self, name, value):
         self.cl.set(self.nodeid, **{name: value})
-    def history(self):
-        return self.cl.history(self.nodeid)
+    def history(self, enforceperm=True, skipquiet=True):
+        return self.cl.history(self.nodeid,
+                               enforceperm=enforceperm,
+                               skipquiet=skipquiet )
     def retire(self):
         return self.cl.retire(self.nodeid)
 

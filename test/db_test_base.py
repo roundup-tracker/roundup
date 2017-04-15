@@ -125,6 +125,13 @@ def setupSchema(db, create, module):
     # nosy tests require this
     db.security.addPermissionToRole('User', 'View', 'msg')
 
+    # quiet journal tests require this
+    # QuietJournal - reference used later in tests
+    v1 = db.security.addPermission(name='View', klass='user',
+                properties=['username', 'supervisor', 'assignable'],
+                description="Prevent users from seeing roles")
+
+    db.security.addPermissionToRole("User", v1)
 
 class MyTestCase(object):
     def tearDown(self):
@@ -972,39 +979,188 @@ class DBTest(commonDBTest):
         self.db.issue.properties['nosy'].quiet=True
         self.db.issue.properties['deadline'].quiet=True
 
+    def testViewPremJournal(self):
+        pass
+
     def testQuietJournal(self):
-        # FIXME this doesn't work. I need to call
+        # FIXME There should be a test via
         # template.py::_HTMLItem::history() and verify the output.
         # not sure how to get there from here. -- rouilj
-        # make sure that the quiet properties: "assignable" and "age" are not
-        # returned as part of the journal
-        #   so comment out tests here but leave framework for later.
+
+        # The Class::history() method now does filtering of quiet
+        # props. Make sure that the quiet properties: "assignable"
+        # and "age" are not returned as part of the journal
         new_user=self.db.user.create(username="pete", age=10, assignable=False)
         new_issue=self.db.issue.create(title="title", deadline=date.Date('2016-6-30.22:39'))
 
         # change all quiet params. Verify they aren't returned in journal.
         # between this and the issue class every type represented in hyperdb
         # should be initalized with a quiet parameter.
-        result=self.db.user.set(new_user, username="new", age=20, supervisor='3', assignable=True,
-                                password=password.Password("3456"), rating=4, realname="newname")
-        result=self.db.user.history(new_user)
-        #self.assertEqual(result, 20)
+        result=self.db.user.set(new_user, username="new", age=20,
+                                supervisor='1', assignable=True,
+                                password=password.Password("3456"),
+                                rating=4, realname="newname")
+        result=self.db.user.history(new_user, skipquiet=False)
+        '''
+        [('3', <Date 2017-04-14.02:12:20.922>, '1', 'create', {}),
+         ('3', <Date 2017-04-14.02:12:20.922>, '1', 'set', 
+           {'username': 'pete', 'assignable': False, 
+            'supervisor': None, 'realname': None, 'rating': None,
+            'age': 10, 'password': None})]
+        '''
+        expected = {'username': 'pete', 'assignable': False, 
+            'supervisor': None, 'realname': None, 'rating': None,
+            'age': 10, 'password': None}
 
-        # change all quiet params. Verify they aren't returned in object.
-        result=self.db.issue.set(new_issue, title="title2", deadline=date.Date('2016-6-30.22:39'),
+        result.sort()
+        (id, tx_date, user, action, args) = result[-1]
+        # check piecewise ignoring date of transaction
+        self.assertEqual('3', id)
+        self.assertEqual('1', user)
+        self.assertEqual('set', action)
+        self.assertEqual(expected, args)
+
+        # change all quiet params on issue.
+        result=self.db.issue.set(new_issue, title="title2",
+                                 deadline=date.Date('2016-07-30.22:39'),
                                  assignedto="2", nosy=["3", "2"])
         result=self.db.issue.generateCreateNote(new_issue)
-        #self.assertEqual(result, '\n----------\ntitle: title2')
+        self.assertEqual(result, '\n----------\ntitle: title2')
+
+        # check history including quiet properties
+        result=self.db.issue.history(new_issue, skipquiet=False)
+        print result
+        ''' output should be like:
+             [ ... ('1', <Date 2017-04-14.01:41:08.466>, '1', 'set',
+                 {'assignedto': None, 'nosy': (('+', ['3', '2']),),
+                     'deadline': <Date 2016-06-30.22:39:00.000>,
+                     'title': 'title'})
+        '''
+        expected = {'assignedto': None,
+                    'nosy': (('+', ['3', '2']),),
+                    'deadline': date.Date('2016-06-30.22:39'),
+                    'title': 'title'}
+
+        result.sort()
+        print "history include quiet props", result[-1]
+        (id, tx_date, user, action, args) = result[-1]
+        # check piecewise ignoring date of transaction
+        self.assertEqual('1', id)
+        self.assertEqual('1', user)
+        self.assertEqual('set', action)
+        self.assertEqual(expected, args)
+
+        # check history removing quiet properties
+        result=self.db.issue.history(new_issue)
+        ''' output should be like:
+             [ ... ('1', <Date 2017-04-14.01:41:08.466>, '1', 'set',
+                 {'title': 'title'})
+        '''
+        expected = {'title': 'title'}
+
+        result.sort()
+        print "history remove quiet props", result[-1]
+        (id, tx_date, user, action, args) = result[-1]
+        # check piecewise
+        self.assertEqual('1', id)
+        self.assertEqual('1', user)
+        self.assertEqual('set', action)
+        self.assertEqual(expected, args)
 
         # also test that we can make a property noisy
         self.db.issue.properties['nosy'].quiet=False
         self.db.issue.properties['deadline'].quiet=False
-        result=self.db.issue.set(new_issue, title="title2", deadline=date.Date('2016-7-13.22:39'),
+        result=self.db.issue.set(new_issue, title="title2",
+                                 deadline=date.Date('2016-7-13.22:39'),
                                  assignedto="2", nosy=["1", "2"])
         result=self.db.issue.generateCreateNote(new_issue)
-        #self.assertEqual(result, '\n----------\ndeadline: 2016-07-13.22:39:00\nnosy: admin, fred\ntitle: title2')
+        self.assertEqual(result, '\n----------\ndeadline: 2016-07-13.22:39:00\nnosy: admin, fred\ntitle: title2')
+
+
+        # check history removing the current quiet properties
+        result=self.db.issue.history(new_issue)
+        expected = {'nosy': (('+', ['1']), ('-', ['3'])),
+                    'deadline': date.Date("2016-07-30.22:39:00.000")}
+
+        result.sort()
+        (id, tx_date, user, action, args) = result[-1]
+        # check piecewise
+        self.assertEqual('1', id)
+        self.assertEqual('1', user)
+        self.assertEqual('set', action)
+        self.assertEqual(expected, args)
+
+        # reset quiet props
         self.db.issue.properties['nosy'].quiet=True
         self.db.issue.properties['deadline'].quiet=True
+
+        # Change the role for the new_user.
+        # If journal is retrieved by admin this adds the role
+        # change as the last element. If retreived by non-admin
+        # it should not be returned because the user has no
+        # View permissons on role..
+        result=self.db.user.set(new_user, roles="foo, bar")
+
+        # Verify last journal entry as admin is a role change
+        # from None
+        result=self.db.user.history(new_user, skipquiet=False)
+        result.sort()
+        ''' result should end like:
+          [ ...
+          ('3', <Date 2017-04-15.02:06:11.482>, '1', 'set',
+                {'username': 'pete', 'assignable': False,
+                 'supervisor': None, 'realname': None,
+                  'rating': None, 'age': 10, 'password': None}),
+          ('3', <Date 2017-04-15.02:06:11.482>, '1', 'link', 
+                ('issue', '1', 'nosy')),
+          ('3', <Date 2017-04-15.02:06:11.482>, '1', 'unlink',
+                ('issue', '1', 'nosy')), 
+          ('3', <Date 2017-04-15.02:06:11.482>, '1', 'set',
+             {'roles': None})]
+        '''
+        (id, tx_date, user, action, args) = result[-1]
+        expected= {'roles': None }
+
+        self.assertEqual('3', id)
+        self.assertEqual('1', user)
+        self.assertEqual('set', action)
+        self.assertEqual(expected, args)
+
+        # set an existing user's role to User so it can
+        # view some props of the user class (search backwards
+        # for QuietJournal to see the properties, they should be:
+        # 'username', 'supervisor', 'assignable' i.e. age is not
+        # one of them.
+        id = self.db.user.lookup("fred")
+        result=self.db.user.set(id, roles="User")
+        # make the user fred current.
+        self.db.setCurrentUser('fred')
+        self.assertEqual(self.db.getuid(), id)
+
+        # check history as the user fred
+        #   include quiet properties
+        #   but require View perms
+        result=self.db.user.history(new_user, skipquiet=False)
+        result.sort()
+        ''' result should look like
+        [('3', <Date 2017-04-15.01:43:26.911>, '1', 'create', {}),
+        ('3', <Date 2017-04-15.01:43:26.911>, '1', 'set', 
+            {'username': 'pete', 'assignable': False, 
+              'supervisor': None, 'age': 10})]
+        '''
+        # analyze last item
+        (id, tx_date, user, action, args) = result[-1]
+        expected= {'username': 'pete', 'assignable': False, 
+                   'supervisor': None}
+
+        self.assertEqual('3', id)
+        self.assertEqual('1', user)
+        self.assertEqual('set', action)
+        self.assertEqual(expected, args)
+
+        # reset the user to admin
+        self.db.setCurrentUser('admin')
+        self.assertEqual(self.db.getuid(), '1') # admin is always 1
 
     def testJournals(self):
         muid = self.db.user.create(username="mary")
@@ -2191,7 +2347,8 @@ class DBTest(commonDBTest):
                                        ' User may manipulate user Roles through the web (Web Roles)\n',
                                        ' User may use the email interface (Email Access)\n',
                                        'Role "anonymous":\n', 'Role "user":\n',
-                                       ' User is allowed to access msg (View for "msg" only)\n'])
+                                       ' User is allowed to access msg (View for "msg" only)\n',
+                                       ' Prevent users from seeing roles (View for "user": [\'username\', \'supervisor\', \'assignable\'] only)\n'])
 
 
             self.nukeAndCreate()
