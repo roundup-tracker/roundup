@@ -103,6 +103,9 @@ def make(filename, outfile):
     global MESSAGES
     MESSAGES = {}
 
+    msgid = None
+    msgstr = None
+
     # Compute .mo name from .po name and arguments
     if filename.endswith('.po'):
         infile = filename
