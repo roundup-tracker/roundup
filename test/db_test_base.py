@@ -1083,6 +1083,7 @@ class DBTest(commonDBTest):
                     'deadline': date.Date("2016-07-30.22:39:00.000")}
 
         result.sort()
+        print "result unquiet", result
         (id, tx_date, user, action, args) = result[-1]
         # check piecewise
         self.assertEqual('1', id)
