@@ -209,7 +209,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
             Must call self.load_dbschema()
         """
-        raise NotImplemented
+        raise NotImplementedError
 
     def sql(self, sql, args=None, cursor=None):
         """ Execute the sql with the optional args.
