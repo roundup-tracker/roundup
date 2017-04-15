@@ -1070,6 +1070,16 @@ class DBTest(commonDBTest):
         # also test that we can make a property noisy
         self.db.issue.properties['nosy'].quiet=False
         self.db.issue.properties['deadline'].quiet=False
+
+        # FIXME: mysql use should be fixed or
+        # a different way of checking this should be done.
+        # this sleep is a hack.
+        # mysql transation timestamps are in whole
+        # seconds. To get the history to sort in proper
+        # order by using timestamps we have to sleep 2 seconds
+        # here tomake sure the timestamp between this transaction
+        # and the last transaction is at least 1 second apart.
+        import time; time.sleep(2)
         result=self.db.issue.set(new_issue, title="title2",
                                  deadline=date.Date('2016-7-13.22:39'),
                                  assignedto="2", nosy=["1", "2"])
