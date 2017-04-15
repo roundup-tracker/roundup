@@ -1109,7 +1109,10 @@ class DBTest(commonDBTest):
         # If journal is retrieved by admin this adds the role
         # change as the last element. If retreived by non-admin
         # it should not be returned because the user has no
-        # View permissons on role..
+        # View permissons on role.
+        # FIXME delay by two seconds due to mysql missing
+        # fractional seconds. See sleep above for details
+        time.sleep(2)
         result=self.db.user.set(new_user, roles="foo, bar")
 
         # Verify last journal entry as admin is a role change
@@ -1130,7 +1133,7 @@ class DBTest(commonDBTest):
              {'roles': None})]
         '''
         (id, tx_date, user, action, args) = result[-1]
-        expected= {'roles': None }
+        expected = {'roles': None }
 
         self.assertEqual('3', id)
         self.assertEqual('1', user)
@@ -1143,6 +1146,8 @@ class DBTest(commonDBTest):
         # 'username', 'supervisor', 'assignable' i.e. age is not
         # one of them.
         id = self.db.user.lookup("fred")
+        # FIXME mysql timestamp issue see sleeps above
+        time.sleep(2)
         result=self.db.user.set(id, roles="User")
         # make the user fred current.
         self.db.setCurrentUser('fred')
