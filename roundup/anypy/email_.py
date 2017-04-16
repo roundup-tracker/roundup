@@ -102,7 +102,7 @@ def decode_header(header):
             try:
                 word = base64mime.decode(encoded_string)
             except binascii.Error:
-                raise HeaderParseError('Base64 decoding error')
+                raise email.errors.HeaderParseError('Base64 decoding error')
             else:
                 decoded_words.append((word, charset))
         else:
