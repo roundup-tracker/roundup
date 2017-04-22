@@ -672,6 +672,27 @@ A Class is comprised of one or more properties of the following types:
 Properties can have additional attributes to change the default
 behaviour:
 
+* All properties support the following attributes:
+
+   - ``required``: see `design documentation`_. Adds the property to
+     the list returned by calling get_required_props for the class.
+   - ``default_value``: see `design documentation`_ Sets the default
+     value is the property is not set.
+   - ``quiet``: see `design documentation`_. Suppresses user visible
+     to changes to this property. The property change is not reported:
+
+      - in the change feedback/confirmation message in the web
+        interface
+      - the property change section of the nosy email
+      - the web history at the bottom of an item's page
+
+    This can be used to store state of the user interface (e.g. the
+    names of elements that are collapsed or hidden from the
+    user). Making properties that are updated as an indirect result of
+    a user's change (e.g. updating a blockers property, counting
+    number of times an issue was reopened or reassigned etc.) should
+    not be displayed to the user as they can be confusing.
+
 * String properties can have an ``indexme`` attribute that defines if the
   property should be part of the full text index. The default is 'no' but this
   can be set to 'yes' to allow a property's contents to be in the full

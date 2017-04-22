@@ -260,7 +260,7 @@ All property objects support the following settings:
 
 quiet=False:
       if set to True, changes to the property will not be shown to the
-      user. This can be used for adminstrative properties that are
+      user. This can be used for administrative properties that are
       automatically updated when a user makes some other change. This
       reduces confusion by the user and clutter in the display.
       The property change will not be shown in:
