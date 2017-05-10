@@ -2,7 +2,7 @@
 """
 __docformat__ = 'restructuredtext'
 
-import time, quopri, os, socket, smtplib, re, sys, traceback, email
+import time, quopri, os, socket, smtplib, re, sys, traceback, email, logging
 
 from cStringIO import StringIO
 
@@ -57,6 +57,7 @@ class Mailer:
     """Roundup-specific mail sending."""
     def __init__(self, config):
         self.config = config
+        self.logger = logging.getLogger('roundup.mailer')
 
         # set to indicate to roundup not to actually _send_ email
         # this var must contain a file to write the mail to
@@ -197,16 +198,19 @@ class Mailer:
         part = MIMEText(''.join(body))
         message.attach(part)
 
+        self.logger.debug("bounce_message: to=%s, crypt_to=%s", to, crypt_to)
+
         if to:
             # send
             self.set_message_attributes(message, to, subject)
             try:
                 self.smtp_send(to, message.as_string())
-            except MessageSendError:
+            except MessageSendError as e:
                 # squash mail sending errors when bouncing mail
                 # TODO this *could* be better, as we could notify admin of the
                 # problem (even though the vast majority of bounce errors are
                 # because of spam)
+                self.logger.debug("MessageSendError: %s", str(e))
                 pass
         if crypt_to:
             plain = pyme.core.Data(message.as_string())
@@ -223,6 +227,9 @@ class Mailer:
                     adrs.append(adr)
                     keys.append(k)
                 ctx.op_keylist_end()
+            if not adrs:
+                self.logger.debug("bounce_message: no keys found for %s",
+                                  crypt_to)
             crypt_to = adrs
         if crypt_to:
             try:
@@ -237,13 +244,16 @@ class Mailer:
                 part.set_payload(cipher.read())
                 message.attach(part)
             except pyme.GPGMEError:
+                self.logger.debug("bounce_message: Cannot encrypt to %s",
+                                  str(crypto_to))
                 crypt_to = None
         if crypt_to:
             self.set_message_attributes(message, crypt_to, subject)
             try:
                 self.smtp_send(crypt_to, message.as_string())
-            except MessageSendError:
+            except MessageSendError as e:
                 # ignore on error, see above.
+                self.logger.debug("MessageSendError: %s", str(e))
                 pass
 
     def exception_message(self):
