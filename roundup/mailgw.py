@@ -1519,6 +1519,7 @@ class MailGW:
             return self.handle_message(message)
         except MailUsageHelp:
             # bounce the message back to the sender with the usage message
+            self.logger.debug("MailUsageHelp raised, bouncing.")
             fulldoc = '\n'.join(string.split(__doc__, '\n')[2:])
             m = ['']
             m.append('\n\nMail Gateway Help\n=================')
@@ -1527,6 +1528,7 @@ class MailGW:
                 subject="Mail Gateway Help")
         except MailUsageError, value:
             # bounce the message back to the sender with the usage message
+            self.logger.debug("MailUsageError raised, bouncing.")
             fulldoc = '\n'.join(string.split(__doc__, '\n')[2:])
             m = ['']
             m.append(str(value))
@@ -1538,6 +1540,7 @@ class MailGW:
             self.mailer.bounce_message(message, [sendto[0][1]], m, crypt=crypt)
         except Unauthorized, value:
             # just inform the user that he is not authorized
+            self.logger.debug("Unauthorized raised, bouncing.")
             m = ['']
             m.append(str(value))
             if self.parsed_message:
