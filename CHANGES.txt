@@ -452,6 +452,9 @@ Fixed:
   directory is not searched. See:
     https://sourceforge.net/p/roundup/mailman/message/35773357/
   subject is "showing template sources to all".
+- issue2550945: OpenPGP: Extends newissuecopy.py to encrypt if configured.
+  (Bernhard Reiter)
+
 
 2016-01-11: 1.5.1
 
