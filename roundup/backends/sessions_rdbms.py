@@ -13,6 +13,7 @@ class BasicDatabase:
 
         Keys are id strings, values are automatically marshalled data.
     '''
+    name = None
     def __init__(self, db):
         self.db = db
         self.cursor = self.db.cursor

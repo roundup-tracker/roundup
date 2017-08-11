@@ -20,6 +20,7 @@ class BasicDatabase:
         Keys are id strings, values are automatically marshalled data.
     '''
     _db_type = None
+    name = None
 
     def __init__(self, db):
         self.config = db.config
