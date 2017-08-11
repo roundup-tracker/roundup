@@ -633,8 +633,13 @@ class EditCommon(Action):
                             self._('%(class)s %(id)s %(properties)s edited ok')
                             % {'class':cn, 'id':nodeid, 'properties':info})
                     else:
-                        m.append(self._('%(class)s %(id)s - nothing changed')
-                            % {'class':cn, 'id':nodeid})
+                        # this used to produce a message like:
+                        #    issue34 - nothing changed
+                        # which is confusing if only quiet properties
+                        # changed for the class/id. So don't report
+                        # anything is the user didn't explicitly change
+                        # a visible (non-quiet) property.
+                        pass
                 else:
                     assert props
 
