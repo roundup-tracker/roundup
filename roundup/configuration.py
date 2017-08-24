@@ -2,7 +2,11 @@
 #
 __docformat__ = "restructuredtext"
 
-import ConfigParser
+try:
+    import configparser			# Python 3
+except ImportError:
+    import ConfigParser as configparser	# Python 2
+
 import getopt
 import imp
 import logging, logging.config
@@ -1373,7 +1377,7 @@ class Config:
         config_defaults = {"HOME": home_dir}
         if defaults:
             config_defaults.update(defaults)
-        config = ConfigParser.ConfigParser(config_defaults)
+        config = configparser.ConfigParser(config_defaults)
         config.read([config_path])
         # .ini file loaded ok.
         self.HOME = home_dir
