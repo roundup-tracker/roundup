@@ -402,6 +402,7 @@ class SearchAction(Action):
                     continue
                 if isinstance(prop, hyperdb.String):
                     v = self.form[key].value
+                    # If this ever has unbalanced quotes, hilarity will ensue
                     l = token.token_split(v)
                     if len(l) != 1 or l[0] != v:
                         self.form.value.remove(self.form[key])

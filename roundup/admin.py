@@ -1555,7 +1555,10 @@ Erase it? Y/N: """))
                 print _('exit...')
                 break
             if not command: continue
-            args = token.token_split(command)
+            try:
+                args = token.token_split(command)
+            except ValueError:
+                continue	# Ignore invalid quoted token
             if not args: continue
             if args[0] in ('quit', 'exit'): break
             self.run_command(args)
