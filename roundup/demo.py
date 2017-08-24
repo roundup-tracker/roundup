@@ -2,14 +2,19 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 #
+from __future__ import print_function
 
 import errno
 import os
 import shutil
 import socket
 import sys
-import urlparse
 import getopt
+
+try:
+    import urlparse
+except ImportError:
+    import urllib.parse as urlparse
 
 from roundup import configuration
 from roundup.scripts import roundup_server
@@ -51,11 +56,11 @@ def install_demo(home, backend, template):
         if os.path.exists(home + '/config.ini'):
             # clear everything out to avoid conflicts with former
             # extensions and detectors
-            print "Nuking directory left from the previous demo instance."
+            print("Nuking directory left from the previous demo instance.")
             shutil.rmtree(home)
         else:
-            print "Error: Refusing to nuke non-tracker directory:"
-            print "    %s" % home
+            print("Error: Refusing to nuke non-tracker directory:")
+            print("    %s" % home)
             sys.exit(1)
 
     template_dir = os.path.join('share', 'roundup', 'templates', template)
@@ -73,19 +78,19 @@ def install_demo(home, backend, template):
     # pick a fairly odd, random port
     port = 8917
     while 1:
-        print 'Trying to set up web server on port %d ...'%port,
+        print('Trying to set up web server on port %d ...'%port,)
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
             s.connect((hostname, port))
-        except socket.error, e:
+        except socket.error as e:
             if not hasattr(e, 'args') or e.args[0] != errno.ECONNREFUSED:
                 raise
-            print 'should be ok.'
+            print('should be ok.')
             break
         else:
             s.close()
-            print 'already in use.'
+            print('already in use.')
             port += 100
     config['TRACKER_WEB'] = 'http://%s:%s/demo/'%(hostname, port)
 
@@ -117,7 +122,7 @@ def install_demo(home, backend, template):
 
 def run_demo(home):
     """Run the demo tracker instance from its ``home`` directory"""
-    print "Demo Tracker Home:", home
+    print("Demo Tracker Home:", home)
 
     cfg = configuration.CoreConfig(home)
     url = cfg["TRACKER_WEB"]
@@ -145,8 +150,8 @@ then restart demo. If you want to change backend types, you must use "nuke".
 
 def usage(msg = ''):
     if msg:
-        print msg
-    print """\
+        print(msg)
+    print("""\
 Usage: %(script)s [options] [nuke]
 
  Run a demo server. Config and database files are created in
@@ -160,7 +165,7 @@ Options:
  -h                -- print this help message
  -t template       -- specify the tracker template to use
  -b backend        -- specify the database backend to use
-""" % dict(script=sys.argv[0], datadir=TRACKER_HOME+os.sep)
+""" % dict(script=sys.argv[0], datadir=TRACKER_HOME+os.sep))
 
 
 def main():
@@ -171,7 +176,7 @@ def main():
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], 't:b:h')
-    except getopt.GetoptError, e:
+    except getopt.GetoptError as e:
         usage(str(e))
         return 1
     for opt, arg in opts:
@@ -194,11 +199,11 @@ def main():
             usage()
             return 1
 
-        print "Initializing demo instance in:\n    %s" % home
+        print("Initializing demo instance in:\n    %s" % home)
         install_demo(home, backend, template)
     elif opts:
-        print "Error: Arguments are not allowed when running an existing demo."
-        print "       Use the 'nuke' command to start over."
+        print("Error: Arguments are not allowed when running an existing demo.")
+        print("       Use the 'nuke' command to start over.")
         sys.exit(1)
 
     run_demo(home)
