@@ -208,3 +208,18 @@ Joseph S. Myers notes:
 >you describe as systems programs in your porting HOWTO.  I don't think
 >Roundup really is such a systems program, except in limited areas such as
 >dealing with attached files.
+
+>For network data, Roundup is already careful about character sets -
+>converting to UTF-8 on input (see e.g. "if client charset is different
+>from the storage charset, recode form fields" in cgi/client.py, or the
+>code in mailgw.py that checks the encoding of each MIME part and converts
+>to UTF-8).  Presumably in such cases the decoding would remain unchanged
+>for Python 3, but the encoding should be a function that's a no-op for
+>Python 3 to get native str objects there (and likewise for the places
+>where data is turned into Python 2 unicode objects, processed and
+>converted back to UTF-8 - both steps should be no-ops for Python 3).
+>
+>For reading templates, database string data, etc., Roundup knows the
+>storage format is UTF-8 so has no explicit conversions - those are places
+>that will need to be found and made to decode as UTF-8 for Python 3 (or do
+>a no-op for Python 2).
