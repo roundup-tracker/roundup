@@ -37,7 +37,7 @@ class ShowActionTestCase(ActionTestCase):
         """
         try:
             callable(*args, **kwargs)
-        except exception, msg:
+        except exception as msg:
             self.assertEqual(str(msg), message)
         else:
             if hasattr(exception, '__name__'):
@@ -246,7 +246,7 @@ class LoginTestCase(ActionTestCase):
         """
         try:
             callable(*args, **kwargs)
-        except exception, msg:
+        except exception as msg:
             self.assertEqual(str(msg), message)
         else:
             if hasattr(exception, '__name__'):
@@ -396,7 +396,7 @@ class EditItemActionTestCase(ActionTestCase):
             )
         try :
             self.action.handle()
-        except Redirect, msg:
+        except Redirect as msg:
             pass
         self.assertEqual(expect, self.result)
 
@@ -414,7 +414,7 @@ class EditItemActionTestCase(ActionTestCase):
             )
         try :
             self.action.handle()
-        except Redirect, msg:
+        except Redirect as msg:
             pass
         self.assertEqual(expect, self.result)
 
@@ -435,7 +435,7 @@ class EditItemActionTestCase(ActionTestCase):
             )
         try :
             self.action.handle()
-        except Redirect, msg:
+        except Redirect as msg:
             pass
         self.assertEqual(expect, self.result)
 
@@ -448,7 +448,7 @@ class EditItemActionTestCase(ActionTestCase):
             )
         try :
             self.action.handle()
-        except Redirect, msg:
+        except Redirect as msg:
             pass
         self.assertEqual(expect, self.result)
 
@@ -461,7 +461,7 @@ class EditItemActionTestCase(ActionTestCase):
             )
         try :
             self.action.handle()
-        except Redirect, msg:
+        except Redirect as msg:
             pass
         self.assertEqual(expect, self.result)
 

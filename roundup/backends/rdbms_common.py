@@ -3047,7 +3047,7 @@ class FileClass(hyperdb.FileClass, Class):
         if propname == 'content':
             try:
                 return self.db.getfile(self.classname, nodeid, None)
-            except IOError, strerror:
+            except IOError as strerror:
                 # BUG: by catching this we donot see an error in the log.
                 return 'ERROR reading file: %s%s\n%s\n%s'%(
                         self.classname, nodeid, poss_msg, strerror)

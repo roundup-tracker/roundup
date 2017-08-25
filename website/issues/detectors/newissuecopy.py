@@ -13,7 +13,7 @@ def newissuecopy(db, cl, nodeid, oldvalues):
             cl.send_message(nodeid, msgid, change_note,
                 ['r1chardj0n3s@gmail.com', 
                     'roundup-devel@lists.sourceforge.net'])
-        except roundupdb.MessageSendError, message:
+        except roundupdb.MessageSendError as message:
             raise roundupdb.DetectorError, message
 
 def init(db):

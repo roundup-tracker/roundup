@@ -92,7 +92,7 @@ def render(ob, ns):
                     ob = call_with_ns(ob, ns, 2)
                 else:
                     ob = ob()
-            except AttributeError, n:
+            except AttributeError as n:
                 if str(n) != '__call__':
                     raise
     return ob
@@ -321,7 +321,7 @@ def restrictedTraverse(object, path, securityManager,
                 # the object has the attribute "__getitem__"
                 # instead of blindly catching exceptions.
                 o = object[name]
-            except AttributeError, exc:
+            except AttributeError as exc:
                 if str(exc).find('__getitem__') >= 0:
                     # The object does not support the item interface.
                     # Try to re-raise the original attribute error.
@@ -329,7 +329,7 @@ def restrictedTraverse(object, path, securityManager,
                     # ExtensionClass instances.
                     guarded_getattr(object, name)
                 raise
-            except TypeError, exc:
+            except TypeError as exc:
                 if str(exc).find('unsubscriptable') >= 0:
                     # The object does not support the item interface.
                     # Try to re-raise the original attribute error.

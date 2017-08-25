@@ -444,7 +444,7 @@ class Client:
             # It will return True if everything is ok,
             # raises exception on check failure.
             csrf_ok =  self.handle_csrf(xmlrpc=True)
-        except (Unauthorised, UsageError), msg:
+        except (Unauthorised, UsageError) as msg:
             # report exception back to server
             exc_type, exc_value, exc_tb = sys.exc_info()
             output = xmlrpclib.dumps(
@@ -528,7 +528,7 @@ class Client:
                     # coverting from function returning true/false to 
                     # raising exceptions
                     csrf_ok = self.handle_csrf()
-                except (UsageError, Unauthorised), msg:
+                except (UsageError, Unauthorised) as msg:
                     csrf_ok = False
                     self.form_wins = True
                     self._error_message = msg
@@ -568,13 +568,13 @@ class Client:
 
                 # render the content
                 self.write_html(self.renderContext())
-            except SendFile, designator:
+            except SendFile as designator:
                 # The call to serve_file may result in an Unauthorised
                 # exception or a NotModified exception.  Those
                 # exceptions will be handled by the outermost set of
                 # exception handlers.
                 self.serve_file(designator)
-            except SendStaticFile, file:
+            except SendStaticFile as file:
                 self.serve_static_file(str(file))
             except IOError:
                 # IOErrors here are due to the client disconnecting before
@@ -584,9 +584,9 @@ class Client:
                 # OpenSSL.SSL.SysCallError is similar to IOError above
                 pass
 
-        except SeriousError, message:
+        except SeriousError as message:
             self.write_html(str(message))
-        except Redirect, url:
+        except Redirect as url:
             # let's redirect - if the url isn't None, then we need to do
             # the headers, otherwise the headers have been set before the
             # exception was raised
@@ -594,7 +594,7 @@ class Client:
                 self.additional_headers['Location'] = str(url)
                 self.response_code = 302
             self.write_html('Redirecting to <a href="%s">%s</a>'%(url, url))
-        except LoginError, message:
+        except LoginError as message:
             # The user tried to log in, but did not provide a valid
             # username and password.  If we support HTTP
             # authorization, send back a response that will cause the
@@ -607,7 +607,7 @@ class Client:
             else:
                 self.response_code = http_.client.FORBIDDEN
             self.renderFrontPage(str(message))
-        except Unauthorised, message:
+        except Unauthorised as message:
             # users may always see the front page
             self.response_code = 403
             self.renderFrontPage(str(message))
@@ -615,7 +615,7 @@ class Client:
             # send the 304 response
             self.response_code = 304
             self.header()
-        except NotFound, e:
+        except NotFound as e:
             if self.response_code == 400:
                 # We can't find a parameter (e.g. property name
                 # incorrect). Tell the user what was raised.
@@ -642,7 +642,7 @@ class Client:
                     # reraise the NotFound and let roundup_server
                     # handle it
                     raise NotFound(e)
-        except FormError, e:
+        except FormError as e:
             self.add_error_message(self._('Form Error: ') + str(e))
             self.write_html(self.renderContext())
         except IOError:
@@ -834,7 +834,7 @@ class Client:
                         self.make_user_anonymous()
                         login = self.get_action_class('login')(self)
                         login.verifyLogin(username, password)
-                    except LoginError, err:
+                    except LoginError as err:
                         self.make_user_anonymous()
                         raise
                     user = username
@@ -1395,7 +1395,7 @@ class Client:
 
         try:
             mime_type = klass.get(nodeid, 'type')
-        except IndexError, e:
+        except IndexError as e:
             raise NotFound(e)
         # Can happen for msg class:
         if not mime_type:
@@ -1644,9 +1644,9 @@ class Client:
                 s += '</body>'
                 result = result.replace('</body>', s)
             return result
-        except templating.NoTemplate, message:
+        except templating.NoTemplate as message:
             return '<strong>%s</strong>'%cgi.escape(str(message))
-        except templating.Unauthorised, message:
+        except templating.Unauthorised as message:
             raise Unauthorised(cgi.escape(str(message)))
         except:
             # everything else
@@ -1721,7 +1721,7 @@ class Client:
                 return getattr(self, action_klass)()
             else:
                 return action_klass(self).execute()
-        except (ValueError, Reject), err:
+        except (ValueError, Reject) as err:
             escape = not isinstance(err, RejectRaw)
             self.add_error_message(str(err), escape=escape)
 
@@ -1749,7 +1749,7 @@ class Client:
         """
         try:
             call(*args, **kwargs)
-        except socket.error, err:
+        except socket.error as err:
             err_errno = getattr (err, 'errno', None)
             if err_errno is None:
                 try:
@@ -2102,7 +2102,7 @@ class Client:
         """
         try:
             self.mailer.standard_message(to, subject, body, author)
-        except MessageSendError, e:
+        except MessageSendError as e:
             self.add_error_message(str(e))
             return 0
         return 1

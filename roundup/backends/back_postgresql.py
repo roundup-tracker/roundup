@@ -74,7 +74,7 @@ def db_command(config, command, database='postgres'):
 
     try:
         conn = psycopg.connect(**template1)
-    except psycopg.OperationalError, message:
+    except psycopg.OperationalError as message:
         if str(message).find('database "postgres" does not exist') >= 0:
             return db_command(config, command, database='template1')
         raise hyperdb.DatabaseError(message)
@@ -97,7 +97,7 @@ def pg_command(cursor, command):
     '''
     try:
         cursor.execute(command)
-    except psycopg.DatabaseError, err:
+    except psycopg.DatabaseError as err:
         response = str(err).split('\n')[0]
         if "FATAL" not in response :
             msgs = (
@@ -125,7 +125,7 @@ class Sessions(sessions_rdbms.Sessions):
     def set(self, *args, **kwargs):
         try:
             sessions_rdbms.Sessions.set(self, *args, **kwargs)
-        except ProgrammingError, err:
+        except ProgrammingError as err:
             response = str(err).split('\n')[0]
             if -1 != response.find('ERROR') and \
                -1 != response.find('could not serialize access due to concurrent update'):
@@ -160,7 +160,7 @@ class Database(rdbms_common.Database):
             'open database %r'%db['database'])
         try:
             conn = psycopg.connect(**db)
-        except psycopg.OperationalError, message:
+        except psycopg.OperationalError as message:
             raise hyperdb.DatabaseError(message)
 
         cursor = conn.cursor()
@@ -178,7 +178,7 @@ class Database(rdbms_common.Database):
 
         try:
             self.load_dbschema()
-        except ProgrammingError, message:
+        except ProgrammingError as message:
             if str(message).find('schema') == -1:
                 raise
             self.rollback()
@@ -251,7 +251,7 @@ class Database(rdbms_common.Database):
 
         try:
             self.conn.commit()
-        except ProgrammingError, message:
+        except ProgrammingError as message:
             # we've been instructed that this commit is allowed to fail
             if fail_ok and str(message).endswith('could not serialize '
                     'access due to concurrent update'):

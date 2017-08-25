@@ -60,7 +60,7 @@ class XmlrpcTest(object):
         self.db.close()
         try:
             shutil.rmtree(self.dirname)
-        except OSError, error:
+        except OSError as error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
 
     def testAccess(self):
@@ -181,7 +181,7 @@ class XmlrpcTest(object):
         try:
             try:
                 self.server.set('user2', 'realname=someone')
-            except Unauthorised, err:
+            except Unauthorised as err:
                 self.fail('raised %s'%err)
         finally:
             self.db.setCurrentUser('joe')
@@ -191,7 +191,7 @@ class XmlrpcTest(object):
         try:
             try:
                 self.server.create('user', 'username=blah')
-            except Unauthorised, err:
+            except Unauthorised as err:
                 self.fail('raised %s'%err)
         finally:
             self.db.setCurrentUser('joe')

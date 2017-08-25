@@ -28,7 +28,7 @@ class Loader(TALLoaderBase):
         # has it changed?
         try:
             stime = os.stat(src)[os.path.stat.ST_MTIME]
-        except os.error, error:
+        except os.error as error:
             if error.errno != errno.ENOENT:
                 raise
 

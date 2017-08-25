@@ -48,7 +48,7 @@ def have_backend(name):
     try:
         get_backend(name)
         return 1
-    except ImportError, e:
+    except ImportError as e:
         for name in _modules.get(name, (name,)):
             if str(e).startswith('No module named %s'%name):
                 return 0

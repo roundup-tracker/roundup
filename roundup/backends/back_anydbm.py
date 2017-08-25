@@ -633,7 +633,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # not exist
         try:
             db = self.opendb('journals.%s'%classname, 'r')
-        except anydbm.error, error:
+        except anydbm.error as error:
             if str(error) == "need 'c' or 'n' flag to open new db":
                 raise IndexError('no such %s %s'%(classname, nodeid))
             elif error.args[0] != 2:
@@ -2183,7 +2183,7 @@ class FileClass(hyperdb.FileClass, Class):
         if propname == 'content':
             try:
                 return self.db.getfile(self.classname, nodeid, None)
-            except IOError, strerror:
+            except IOError as strerror:
                 # XXX by catching this we don't see an error in the log.
                 return 'ERROR reading file: %s%s\n%s\n%s'%(
                         self.classname, nodeid, poss_msg, strerror)

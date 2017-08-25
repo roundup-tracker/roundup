@@ -43,7 +43,7 @@ def copytree(src, dst, symlinks=0):
     names = [f for f in os.listdir(src) if not f.startswith('.')]
     try:
         os.mkdir(dst)
-    except OSError, error:
+    except OSError as error:
         if error.errno != errno.EEXIST: raise
     for name in names:
         srcname = os.path.join(src, name)

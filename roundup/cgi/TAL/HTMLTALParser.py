@@ -118,7 +118,7 @@ class HTMLTALParser(HTMLParser):
         f.close()
         try:
             self.parseString(data)
-        except TALError, e:
+        except TALError as e:
             e.setFile(file)
             raise
 

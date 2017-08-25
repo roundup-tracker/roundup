@@ -110,7 +110,7 @@ def main():
     try:
         # attempt to interpret string as 'ascii'
         long_description = long_description.encode('ascii')
-    except UnicodeEncodeError, cause:
+    except UnicodeEncodeError as cause:
         print >> sys.stderr, "doc/announcement.txt contains non-ascii: %s" \
             % cause
         sys.exit(42)

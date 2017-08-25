@@ -71,8 +71,8 @@ def newitemcopy(db, cl, nodeid, oldvalues):
         for msgid in msgids:
             try:
                 cl.send_message(nodeid, msgid, create_note, [dispatcher_email])
-            except roundupdb.MessageSendError, message:
-                raise roundupdb.DetectorError, message
+            except roundupdb.MessageSendError as message:
+                raise roundupdb.DetectorError(message)
     else:
         mailer = Mailer(db.config)
         subject = 'New %s%s' % (cl.classname, nodeid)

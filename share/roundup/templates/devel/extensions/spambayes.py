@@ -30,7 +30,7 @@ def train_spambayes(db, content, tokens, is_spam):
     try:
         server.train({'content':content}, tokens, {}, is_spam)
         return (True, None)
-    except (socket.error, xmlrpclib.Error), e:
+    except (socket.error, xmlrpclib.Error) as e:
         return (False, str(e))
 
 

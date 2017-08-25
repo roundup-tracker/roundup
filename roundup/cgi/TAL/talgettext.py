@@ -162,7 +162,7 @@ class UpdatePOEngine(POEngine):
 
         try:
             lines = open(self._filename).readlines()
-        except IOError, msg:
+        except IOError as msg:
             print >> sys.stderr, msg
             sys.exit(1)
 
@@ -235,7 +235,7 @@ def main():
             sys.argv[1:],
             'ho:u:',
             ['help', 'output=', 'update='])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     outfile = None

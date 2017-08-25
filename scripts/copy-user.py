@@ -49,7 +49,7 @@ def copy_user(home1, home2, *userids):
     for userid in userids:
         try:
             userid = str(int(userid))
-        except ValueError, why:
+        except ValueError as why:
             print "Not a numeric user id: %s  Skipping ..." % (userid,)
             continue
         if userid not in userlist:
@@ -65,7 +65,7 @@ def copy_user(home1, home2, *userids):
             db2.user.lookup(user['username'])
             print "User %s: Username '%s' exists in target instance. Skipping ..." % (userid, user['username'])
             continue
-        except KeyError, why:
+        except KeyError as why:
             pass
         print "Copying user %s (%s) ..." % (userid, user['username'])
         db2.user.create(**user)

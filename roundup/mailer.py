@@ -189,7 +189,7 @@ class Mailer:
             body.append(header)
         try:
             bounced_message.rewindbody()
-        except IOError, errmessage:
+        except IOError as errmessage:
             body.append("*** couldn't include message body: %s ***" %
                 errmessage)
         else:
@@ -292,7 +292,7 @@ class Mailer:
                 # instead of to roundup
                 smtp = SMTPConnection(self.config)
                 smtp.sendmail(sender, to, message)
-            except socket.error, value:
+            except socket.error as value:
                 raise MessageSendError("Error: couldn't send email: "
                                        "mailhost %s"%value)
             except smtplib.SMTPException, msg:

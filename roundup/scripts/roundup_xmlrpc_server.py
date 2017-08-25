@@ -99,7 +99,7 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
             instance = RoundupInstance(db, tracker.actions, None)
             self.server.register_instance(instance)
             SimpleXMLRPCRequestHandler.do_POST(self)
-        except Unauthorised, message:
+        except Unauthorised as message:
             self.send_error(403, '%s (%s)'%(self.path, message))
         except:
             if db:
@@ -135,7 +135,7 @@ def run():
     try:
         opts, args = getopt.getopt(sys.argv[1:],
                                    'e:i:p:V', ['encoding=', 'port='])
-    except getopt.GetoptError, e:
+    except getopt.GetoptError as e:
         usage()
         return 1
 

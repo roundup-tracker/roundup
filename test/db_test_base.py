@@ -56,7 +56,7 @@ def setupTracker(dirname, backend="anydbm"):
     global config
     try:
         shutil.rmtree(dirname)
-    except OSError, error:
+    except OSError as error:
         if error.errno not in (errno.ENOENT, errno.ESRCH): raise
     # create the instance
     init.install(dirname, os.path.join(os.path.dirname(__file__),
@@ -2934,7 +2934,7 @@ class ClassicInitBase(object):
         self.dirname = '_test_init_%s'%self.count
         try:
             shutil.rmtree(self.dirname)
-        except OSError, error:
+        except OSError as error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
 
     def tearDown(self):
@@ -2942,7 +2942,7 @@ class ClassicInitBase(object):
             self.db.close()
         try:
             shutil.rmtree(self.dirname)
-        except OSError, error:
+        except OSError as error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
 
 class ClassicInitTest(ClassicInitBase):

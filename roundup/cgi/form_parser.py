@@ -399,7 +399,7 @@ class FormParser:
                 try:
                     value = password.Password(value, scheme = proptype.scheme,
                                               config=self.db.config)
-                except hyperdb.HyperdbValueError, msg:
+                except hyperdb.HyperdbValueError as msg:
                     raise FormError (msg)
             elif d['file']:
                 # This needs to be a Multilink and is checked above
@@ -432,7 +432,7 @@ class FormParser:
                 try:
                     l = hyperdb.rawToHyperdb(self.db, cl, nodeid,
                         propname, value)
-                except hyperdb.HyperdbValueError, msg:
+                except hyperdb.HyperdbValueError as msg:
                     raise FormError (msg)
 
                 # now use that list of ids to modify the multilink
@@ -483,7 +483,7 @@ class FormParser:
                     else:
                         value = hyperdb.rawToHyperdb(self.db, cl, nodeid,
                             propname, value)
-                except hyperdb.HyperdbValueError, msg:
+                except hyperdb.HyperdbValueError as msg:
                     raise FormError (msg)
 
             # register that we got this property
@@ -502,7 +502,7 @@ class FormParser:
                     # no existing value
                     if not propdef.has_key(propname):
                         raise
-                except IndexError, message:
+                except IndexError as message:
                     raise FormError(str(message))
 
                 # make sure the existing multilink is sorted.  We must

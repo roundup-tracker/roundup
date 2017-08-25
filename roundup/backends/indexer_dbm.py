@@ -195,7 +195,7 @@ class Indexer(IndexerBase):
         for segment in segments:
             try:
                 f = open(self.indexdb + segment, 'rb')
-            except IOError, error:
+            except IOError as error:
                 # probably just nonexistent segment index file
                 if error.errno != errno.ENOENT: raise
             else:
@@ -227,7 +227,7 @@ class Indexer(IndexerBase):
         for segment in self.segments:
             try:
                 os.remove(self.indexdb + segment)
-            except OSError, error:
+            except OSError as error:
                 # probably just nonexistent segment index file
                 if error.errno != errno.ENOENT: raise
 

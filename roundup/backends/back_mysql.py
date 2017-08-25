@@ -161,8 +161,8 @@ class Database(rdbms_common.Database):
         self.log_info('open database %r'%(kwargs['db'],))
         try:
             conn = MySQLdb.connect(**kwargs)
-        except MySQLdb.OperationalError, message:
-            raise hyperdb.DatabaseError, message
+        except MySQLdb.OperationalError as message:
+            raise hyperdb.DatabaseError(message)
         cursor = conn.cursor()
         cursor.execute("SET AUTOCOMMIT=0")
         lvl = isolation_levels [self.config.RDBMS_ISOLATION_LEVEL]
@@ -179,10 +179,10 @@ class Database(rdbms_common.Database):
 
         try:
             self.load_dbschema()
-        except MySQLdb.OperationalError, message:
+        except MySQLdb.OperationalError as message:
             if message[0] != ER.NO_DB_ERROR:
                 raise
-        except MySQLdb.ProgrammingError, message:
+        except MySQLdb.ProgrammingError as message:
             if message[0] != ER.NO_SUCH_TABLE:
                 raise hyperdb.DatabaseError, message
             self.init_dbschema()
@@ -583,7 +583,7 @@ class Database(rdbms_common.Database):
         self.log_info('close')
         try:
             self.conn.close()
-        except MySQLdb.ProgrammingError, message:
+        except MySQLdb.ProgrammingError as message:
             if str(message) != 'closing a closed connection':
                 raise
 
@@ -604,14 +604,14 @@ class MysqlClass:
     def create_inner(self, **propvalues):
         try:
             return rdbms_common.Class.create_inner(self, **propvalues)
-        except MySQLdb.IntegrityError, e:
+        except MySQLdb.IntegrityError as e:
             self._handle_integrity_error(e, propvalues)
 
     def set_inner(self, nodeid, **propvalues):
         try:
             return rdbms_common.Class.set_inner(self, nodeid,
                                                 **propvalues)
-        except MySQLdb.IntegrityError, e:
+        except MySQLdb.IntegrityError as e:
             self._handle_integrity_error(e, propvalues)
 
     def _handle_integrity_error(self, e, propvalues):

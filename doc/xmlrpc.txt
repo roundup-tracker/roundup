@@ -174,5 +174,5 @@ https, replace xmlrpclib.SafeTransport with xmlrpclib.Transport::
    # this will fail with a fault
    try:
       print roundup_server.filter('usr',['0','2','3'],{'username':'demo'})
-   except Exception, msg:
+   except Exception as msg:
       print msg

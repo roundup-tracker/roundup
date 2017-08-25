@@ -1,4 +1,4 @@
-#-*- encoding: utf8 -*-
+#-*- encoding: utf-8 -*-
 """ Testing the jinja2 templating engine of roundup-tracker.
 
 Copyright: 2016 Intevation GmbH.
@@ -41,7 +41,7 @@ class Jinja2Test(object):
         self.db.close()
         try:
             shutil.rmtree(self.dirname)
-        except OSError, error:
+        except OSError as error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
 
     def test_zero(self):

@@ -19,8 +19,8 @@ def nosyreaction(db, cl, nodeid, oldvalues):
     for msgid in determineNewMessages(cl, nodeid, oldvalues):
         try:
             cl.nosymessage(nodeid, msgid, oldvalues)
-        except roundupdb.MessageSendError, message:
-            raise roundupdb.DetectorError, message
+        except roundupdb.MessageSendError as message:
+            raise roundupdb.DetectorError(message)
 
 def determineNewMessages(cl, nodeid, oldvalues):
     ''' Figure a list of the messages that are being added to the given

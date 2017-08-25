@@ -145,7 +145,7 @@ class FormTestCase(unittest.TestCase):
         self.db.close()
         try:
             shutil.rmtree(self.dirname)
-        except OSError, error:
+        except OSError as error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
 
     #
@@ -1599,7 +1599,7 @@ class TemplateHtmlRendering(unittest.TestCase):
         self.db.close()
         try:
             shutil.rmtree(self.dirname)
-        except OSError, error:
+        except OSError as error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
 
     def testrenderFrontPage(self):
@@ -1788,7 +1788,7 @@ class TemplateTestCase(unittest.TestCase):
         self.db.close()
         try:
             shutil.rmtree(self.dirname)
-        except OSError, error:
+        except OSError as error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
 
     def testTemplateSubdirectory(self):

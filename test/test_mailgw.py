@@ -2164,7 +2164,7 @@ This is a test submission of a new issue.
         self.db.user.set(anonid, roles='Anonymous')
         try:
             self._handle_mail(message)
-        except Unauthorized, value:
+        except Unauthorized as value:
             body_diff = self.assertEqual(str(value), """
 You are not a registered user.
 
@@ -2183,7 +2183,7 @@ Unknown address: fubar@bork.bork.bork
         self.db.security.role['anonymous'].permissions=p
         try:
             self._handle_mail(message)
-        except Unauthorized, value:
+        except Unauthorized as value:
             body_diff = self.assertEqual(str(value), """
 You are not a registered user. Please register at:
 

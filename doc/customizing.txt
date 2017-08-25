@@ -4473,8 +4473,8 @@ vacation". Not very useful, and relatively easy to stop.
 
                     # send the message
                     cl.send_message(nodeid, msgid, note, sendto)
-            except roundupdb.MessageSendError, message:
-                raise roundupdb.DetectorError, message
+            except roundupdb.MessageSendError as message:
+                raise roundupdb.DetectorError(message)
 
    Note that this is the standard nosy reaction code, with the small
    addition of::
@@ -4925,9 +4925,9 @@ directory of your tracker::
 	   return
 
        # otherwise raise an error
-       raise Unauthorized, \
+       raise Unauthorized( \
 	   'Changes to nosy property not allowed via %s for this issue.'%\
-           tx_Source
+           tx_Source)
 	
    def init(db):
       ''' Install restrict_nosy_changes to run after other auditors. 

@@ -49,7 +49,7 @@ def props_from_args(db, cl, args, itemid=None):
             try:
                 props[key] = hyperdb.rawToHyperdb(db, cl, itemid,
                                                   key, value)
-            except hyperdb.HyperdbValueError, message:
+            except hyperdb.HyperdbValueError as message:
                 raise UsageError, message
         else:
             props[key] = None
@@ -146,7 +146,7 @@ class RoundupInstance:
         try:
             result = cl.create(**props)
             self.db.commit()
-        except (TypeError, IndexError, ValueError), message:
+        except (TypeError, IndexError, ValueError) as message:
             raise UsageError, message
         return result
 
@@ -163,7 +163,7 @@ class RoundupInstance:
         try:
             result = cl.set(itemid, **props)
             self.db.commit()
-        except (TypeError, IndexError, ValueError), message:
+        except (TypeError, IndexError, ValueError) as message:
             raise UsageError, message
         return result
 

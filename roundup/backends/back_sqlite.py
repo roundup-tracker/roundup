@@ -147,7 +147,7 @@ class Database(rdbms_common.Database):
 
         try:
             self.load_dbschema()
-        except sqlite.DatabaseError, error:
+        except sqlite.DatabaseError as error:
             if str(error) != 'no such table: schema':
                 raise
             self.init_dbschema()
@@ -332,7 +332,7 @@ class Database(rdbms_common.Database):
         """
         try:
             self.conn.close()
-        except sqlite.ProgrammingError, value:
+        except sqlite.ProgrammingError as value:
             if str(value) != 'close failed - Connection is closed.':
                 raise
 
@@ -342,7 +342,7 @@ class Database(rdbms_common.Database):
         """
         try:
             self.conn.rollback()
-        except sqlite.ProgrammingError, value:
+        except sqlite.ProgrammingError as value:
             if str(value) != 'rollback failed - Connection is closed.':
                 raise
 
@@ -356,7 +356,7 @@ class Database(rdbms_common.Database):
         """
         try:
             self.conn.commit()
-        except sqlite.DatabaseError, error:
+        except sqlite.DatabaseError as error:
             if str(error) != 'cannot commit - no transaction is active':
                 raise
         # open a new cursor for subsequent work

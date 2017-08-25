@@ -204,7 +204,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.inner_run_cgi()
         except client.NotFound:
             self.send_error(404, self.path)
-        except client.Unauthorised, message:
+        except client.Unauthorised as message:
             self.send_error(403, '%s (%s)'%(self.path, message))
         except:
             exc, val, tb = sys.exc_info()
@@ -677,7 +677,7 @@ class ServerConfig(configuration.Config):
             if self["SSL"]:
                 kwargs['ssl_pem'] = self["PEM"]
             httpd = server_class(*args, **kwargs)
-        except socket.error, e:
+        except socket.error as e:
             if e[0] == errno.EADDRINUSE:
                 raise socket.error, \
                     _("Unable to bind to port %s, port already in use.") \
@@ -880,7 +880,7 @@ def run(port=undefined, success_message=None):
     try:
         (optlist, args) = config.getopt(sys.argv[1:],
             short_options, ("help", "version", "save-config",))
-    except (getopt.GetoptError, configuration.ConfigurationError), e:
+    except (getopt.GetoptError, configuration.ConfigurationError) as e:
         usage(str(e))
         return
 
