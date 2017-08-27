@@ -15,9 +15,9 @@ addons:
 
 before_install:
   - cd /tmp
-  - curl -s -O https://oligarchy.co.uk/xapian/1.2.8/xapian-bindings-1.2.8.tar.gz
-  - tar -zxvf xapian-bindings-1.2.8.tar.gz
-  - cd xapian-bindings-1.2.8/
+  - curl -s -O https://oligarchy.co.uk/xapian/1.2.16/xapian-bindings-1.2.16.tar.xz
+  - tar -Jxvf xapian-bindings-1.2.16.tar.gz
+  - cd xapian-bindings-1.2.16/
   - ./configure --prefix=$VIRTUAL_ENV --with-python && make && make install
 
   # change back to the checked out repository directory
