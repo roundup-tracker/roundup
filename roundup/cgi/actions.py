@@ -976,7 +976,10 @@ You should then receive another email with the new password.
         if not self.client.standard_message([address], subject, body):
             return
 
-        self.client.add_ok_message(self._('Email sent to %s') % address)
+        if 'username' in self.form:
+            self.client.add_ok_message(self._('Email sent to primary notification address for %s.') % name)
+        else:
+            self.client.add_ok_message(self._('Email sent to %s.') % address)
 
 class RegoCommon(Action):
     def finishRego(self):
