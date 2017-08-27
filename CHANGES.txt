@@ -203,10 +203,10 @@ Features:
   config.ini with new options and help text. (John Rouillard)
 - issue2550864: Potential information leakage via journal/history
   Hyperdb history function now only returns properties that the user
-  has View permissions on. Can be overridden by setting a parameter
-  when calling the method. Also restructured code that implemented
-  issue1714899 moving it from the templating class to the hyperdb.
-  (John Rouillard)
+  can View or Edit and links to objects the user can see. Can be
+  overridden by setting a parameter when calling the method.
+  Also restructured code that implemented issue1714899 moving it
+  from the templating class to the hyperdb. (John Rouillard)
 - Improves diagnostics for mail processing: When using logging level = DEBUG,
   bounces and bounce problems are logged. (Bernhard Reiter)
 

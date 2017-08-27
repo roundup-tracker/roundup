@@ -1024,48 +1024,82 @@ class Class:
 
         debug_logging = logger.isEnabledFor(logging.DEBUG)
 
+        uid=self.db.getuid() # id of the person requesting the history
+
         for j in self.db.getjournal(self.classname, nodeid):
+            # hide/remove journal entry if:
+            #   property is quiet
+            #   property is not (viewable or editable)
             id, evt_date, user, action, args = j
             if debug_logging:
                 j_repr = "%s"%(j,)
             else:
                 j_repr=''
             if args and type(args) == type({}):
-                for k in args.keys():
-                    if skipquiet and self.properties[k].quiet:
-                        logger.debug("skipping quiet property %s in %s",
-                                     k, j_repr)
-                        del j[4][k]
+                for key in args.keys():
+                    if skipquiet and self.properties[key].quiet:
+                        logger.debug("skipping quiet property"
+                                     " %s::%s in %s",
+                                     self.classname, key, j_repr)
+                        del j[4][key]
                         continue
-                    if enforceperm and not perm("View",
-                                self.db.getuid(),
+                    if enforceperm and not ( perm("View",
+                                uid,
                                 self.classname,
-                                property=k ):
-                        logger.debug("skipping unViewable property %s in %s",
-                                     k, j_repr)
-                        del j[4][k]
+                                property=key ) or perm("Edit",
+                                uid,
+                                self.classname,
+                                property=key )):
+                        logger.debug("skipping unaccessible property %s::%s seen by user%s in %s",
+                                self.classname, key, uid, j_repr)
+                        del j[4][key]
                         continue
                 if not args:
                     logger.debug("Omitting journal entry for  %s%s"
-                                 " all props quiet in: %s",
+                                 " all props removed in: %s",
                                  self.classname, nodeid, j_repr)
                     continue
                 journal.append(j)
             elif action in ['link', 'unlink' ] and type(args) == type(()):
+                # hide/remove journal entry if:
+                #   link property (key) is quiet
+                #   link property is not (viewable or editable)
+                #   id/object (linkcl, linkid) that is linked/unlinked is not
+                #       (viewable or editable)
                 if len(args) == 3:
+                    # e.g. for issue3 blockedby adds link to issue5 with:
+                    # j = id, evt_date, user, action, args
+                    # 3|20170528045201.484|5|link|('issue', '5', 'blockedby')
                     linkcl, linkid, key = args
                     cls = self.db.getclass(linkcl)
-                    if skipquiet and cls.properties[key].quiet:
-                        logger.debug("skipping quiet property %s in %s",
-                                     key, j_repr)
+                    # is the updated property quiet?
+                    if skipquiet and self.properties[key].quiet:
+                        logger.debug("skipping quiet property"
+                                     " %s::%s in %s",
+                                     self.classname, key, j_repr)
                         continue
-                    if enforceperm and not perm("View",
-                            self.db.getuid(),
+                    # property check on item we want history for
+                    if enforceperm and not (perm("View",
+                            uid,
                             self.classname,
-                            property=key):
-                         logger.debug("skipping unViewable property %s in",
-                                      key, j_repr)
-                         continue
+                            property=key) or perm("Edit",
+                            uid,
+                            self.classname,
+                            property=key)):
+                        logger.debug("skipping unaccessible property %s::%s seen by user%s in %s",
+                                self.classname, key, uid, j_repr)
+                        continue
+                    # check on object linked
+                    if enforceperm and not (perm("View",
+                            uid,
+                            cls.classname,
+                            itemid=linkid) or perm("Edit",
+                            uid,
+                            cls.classname,
+                            itemid=linkid)):
+                        logger.debug("skipping unaccessible target %s%s for user%s in %s",
+                                      cls.classname, linkid, uid, j_repr)
+                        continue
                     journal.append(j)
                 else:
                     logger.error("Invalid %s journal entry for %s%s: %s",
