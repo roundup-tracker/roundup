@@ -1067,6 +1067,7 @@ class Class:
                 #   id/object (linkcl, linkid) that is linked/unlinked is not
                 #       (viewable or editable)
                 if len(args) == 3:
+                    '''
                     # e.g. for issue3 blockedby adds link to issue5 with:
                     # j = id, evt_date, user, action, args
                     # 3|20170528045201.484|5|link|('issue', '5', 'blockedby')
@@ -1100,6 +1101,7 @@ class Class:
                         logger.debug("skipping unaccessible target %s%s for user%s in %s",
                                       cls.classname, linkid, uid, j_repr)
                         continue
+                    '''
                     journal.append(j)
                 else:
                     logger.error("Invalid %s journal entry for %s%s: %s",
