@@ -983,6 +983,20 @@ class DBTest(commonDBTest):
         pass
 
     def testQuietJournal(self):
+        ## This is an example of how to enable logging module
+        ## and report the results. It uses testfixtures
+        ## that can be installed via pip.
+        ## Uncomment below 2 lines:
+        import logging
+        from testfixtures import LogCapture
+        ## then run every call to roundup functions with:
+        #with LogCapture('roundup.hyperdb', level=logging.DEBUG) as l:
+        #    result=self.db.user.history('2')
+        #print l
+        ## change 'roundup.hyperdb' to the logging name you want to capture.
+        ## print l just prints the output. Run using:
+        ## ./run_tests.py --capture=no -k testQuietJournal test/test_anydbm.py
+
         # FIXME There should be a test via
         # template.py::_HTMLItem::history() and verify the output.
         # not sure how to get there from here. -- rouilj
@@ -1100,6 +1114,23 @@ class DBTest(commonDBTest):
         self.assertEqual('1', user)
         self.assertEqual('set', action)
         self.assertEqual(expected, args)
+
+        result=self.db.user.history('2')
+
+        # result should look like:
+        #  [('2', <Date 2017-08-29.01:42:44.283>, '1', 'link',
+        #      ('issue', '1', 'nosy')),
+        #   ('2', <Date 2017-08-29.01:42:40.227>, '1', 'create', {})]
+
+        expected2 = ('issue', '1', 'nosy')
+        (id, tx_date, user, action, args) = result[0]
+
+        self.assertEqual(len(result),2)
+
+        self.assertEqual('2', id)
+        self.assertEqual('1', user)
+        self.assertEqual('link', action)
+        self.assertEqual(expected2, args)
 
         # reset quiet props
         self.db.issue.properties['nosy'].quiet=True

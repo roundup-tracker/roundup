@@ -1022,8 +1022,6 @@ class Class:
         perm = self.db.security.hasPermission
         journal = []
 
-        debug_logging = logger.isEnabledFor(logging.DEBUG)
-
         uid=self.db.getuid() # id of the person requesting the history
 
         for j in self.db.getjournal(self.classname, nodeid):
@@ -1031,7 +1029,7 @@ class Class:
             #   property is quiet
             #   property is not (viewable or editable)
             id, evt_date, user, action, args = j
-            if debug_logging:
+            if logger.isEnabledFor(logging.DEBUG):
                 j_repr = "%s"%(j,)
             else:
                 j_repr=''
@@ -1061,36 +1059,46 @@ class Class:
                     continue
                 journal.append(j)
             elif action in ['link', 'unlink' ] and type(args) == type(()):
-                # hide/remove journal entry if:
-                #   link property (key) is quiet
-                #   link property is not (viewable or editable)
-                #   id/object (linkcl, linkid) that is linked/unlinked is not
-                #       (viewable or editable)
+                # definitions:
+                # myself - object whose history is being filtered
+                # linkee - object/class whose property is changing to
+                #          include/remove myself
+                # link property - property of the linkee class that is changing
+                #
+                # Remove the history item if
+                #   linkee.link property (key) is quiet
+                #   linkee class.link property is not (viewable or editable)
+                #       to user
+                #   [ should linkee object.link property is not
+                #      (viewable or editable) to user be included?? ]
+                #   linkee object (linkcl, linkid) is not
+                #       (viewable or editable) to user
                 if len(args) == 3:
-                    '''
                     # e.g. for issue3 blockedby adds link to issue5 with:
                     # j = id, evt_date, user, action, args
                     # 3|20170528045201.484|5|link|('issue', '5', 'blockedby')
                     linkcl, linkid, key = args
                     cls = self.db.getclass(linkcl)
                     # is the updated property quiet?
-                    if skipquiet and self.properties[key].quiet:
-                        logger.debug("skipping quiet property"
-                                     " %s::%s in %s",
-                                     self.classname, key, j_repr)
+                    if skipquiet and cls.properties[key].quiet:
+                        logger.debug("skipping quiet property: "
+                                     "%s %sed %s%s",
+                                     j_repr, action, self.classname, nodeid)
                         continue
-                    # property check on item we want history for
+                    # can user view the property in linkee class
                     if enforceperm and not (perm("View",
                             uid,
-                            self.classname,
+                            linkcl,
                             property=key) or perm("Edit",
                             uid,
-                            self.classname,
+                            linkcl,
                             property=key)):
-                        logger.debug("skipping unaccessible property %s::%s seen by user%s in %s",
-                                self.classname, key, uid, j_repr)
+                        logger.debug("skipping unaccessible property: "
+                                     "%s with uid %s %sed %s%s",
+                                     j_repr, uid, action,
+                                     self.classname, nodeid)
                         continue
-                    # check on object linked
+                    # check access to linkee object
                     if enforceperm and not (perm("View",
                             uid,
                             cls.classname,
@@ -1098,10 +1106,11 @@ class Class:
                             uid,
                             cls.classname,
                             itemid=linkid)):
-                        logger.debug("skipping unaccessible target %s%s for user%s in %s",
-                                      cls.classname, linkid, uid, j_repr)
+                        logger.debug("skipping unaccessible object: "
+                                     "%s uid %s %sed %s%s",
+                                     j_repr, uid, action,
+                                     self.classname, nodeid)
                         continue
-                    '''
                     journal.append(j)
                 else:
                     logger.error("Invalid %s journal entry for %s%s: %s",
