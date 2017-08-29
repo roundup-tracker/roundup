@@ -1116,14 +1116,16 @@ class DBTest(commonDBTest):
         self.assertEqual(expected, args)
 
         result=self.db.user.history('2')
+        result.sort()
 
         # result should look like:
-        #  [('2', <Date 2017-08-29.01:42:44.283>, '1', 'link',
-        #      ('issue', '1', 'nosy')),
-        #   ('2', <Date 2017-08-29.01:42:40.227>, '1', 'create', {})]
+        #  [('2', <Date 2017-08-29.01:42:40.227>, '1', 'create', {}),
+        #   ('2', <Date 2017-08-29.01:42:44.283>, '1', 'link',
+        #      ('issue', '1', 'nosy')) ]
 
         expected2 = ('issue', '1', 'nosy')
-        (id, tx_date, user, action, args) = result[0]
+
+        (id, tx_date, user, action, args) = result[-1]
 
         self.assertEqual(len(result),2)
 
