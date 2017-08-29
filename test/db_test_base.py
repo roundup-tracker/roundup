@@ -987,8 +987,8 @@ class DBTest(commonDBTest):
         ## and report the results. It uses testfixtures
         ## that can be installed via pip.
         ## Uncomment below 2 lines:
-        import logging
-        from testfixtures import LogCapture
+        #import logging
+        #from testfixtures import LogCapture
         ## then run every call to roundup functions with:
         #with LogCapture('roundup.hyperdb', level=logging.DEBUG) as l:
         #    result=self.db.user.history('2')
