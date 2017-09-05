@@ -34,16 +34,16 @@ NAME_RE = r"[a-zA-Z][a-zA-Z0-9_]*"
 _parse_expr = re.compile(r"(%s):" % NAME_RE).match
 _valid_name = re.compile('%s$' % NAME_RE).match
 
-class TALESError(Exception):
+class TALESError(BaseException):
     """Error during TALES expression evaluation"""
 
 class Undefined(TALESError):
     '''Exception raised on traversal of an undefined path'''
 
-class RegistrationError(Exception):
+class RegistrationError(BaseException):
     '''TALES Type Registration Error'''
 
-class CompilerError(Exception):
+class CompilerError(BaseException):
     '''TALES Compiler Error'''
 
 class Default:
@@ -85,7 +85,7 @@ class ErrorInfo:
     __allow_access_to_unprotected_subobjects__ = 1
 
     def __init__(self, err, position=(None, None)):
-        if isinstance(err, Exception):
+        if isinstance(err, BaseException):
             self.type = err.__class__
             self.value = err
         else:
