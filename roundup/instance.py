@@ -257,7 +257,7 @@ update your config.ini
     def registerUtil(self, name, function):
         self.templating_utils[name] = function
 
-class TrackerError(Exception):
+class TrackerError(BaseException):
     pass
 
 

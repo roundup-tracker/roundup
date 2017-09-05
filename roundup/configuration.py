@@ -22,7 +22,7 @@ import roundup.date
 
 ### Exceptions
 
-class ConfigurationError(Exception):
+class ConfigurationError(BaseException):
     pass
 
 class NoConfigError(ConfigurationError):

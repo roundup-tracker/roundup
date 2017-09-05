@@ -109,10 +109,10 @@ def anti_csrf_nonce(self, client, lifetime=None):
 
 ### templating
 
-class NoTemplate(Exception):
+class NoTemplate(BaseException):
     pass
 
-class Unauthorised(Exception):
+class Unauthorised(BaseException):
     def __init__(self, action, klass, translator=None):
         self.action = action
         self.klass = klass

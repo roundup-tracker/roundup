@@ -6,7 +6,7 @@ __docformat__ = 'restructuredtext'
 from roundup.exceptions import LoginError, Unauthorised
 import cgi
 
-class HTTPException(Exception):
+class HTTPException(BaseException):
     pass
 
 class Redirect(HTTPException):
@@ -18,7 +18,7 @@ class NotFound(HTTPException):
 class NotModified(HTTPException):
     pass
 
-class DetectorError(Exception):
+class DetectorError(BaseException):
     """Raised when a detector throws an exception.
 Contains details of the exception."""
     def __init__(self, subject, html, txt):
@@ -38,13 +38,13 @@ class FormError(ValueError):
     """
     pass
 
-class SendFile(Exception):
+class SendFile(BaseException):
     """Send a file from the database."""
 
-class SendStaticFile(Exception):
+class SendStaticFile(BaseException):
     """Send a static file from the instance html directory."""
 
-class SeriousError(Exception):
+class SeriousError(BaseException):
     """Raised when we can't reasonably display an error message on a
     templated page.
 

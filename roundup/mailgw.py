@@ -119,15 +119,15 @@ class MailGWError(ValueError):
 class MailUsageError(ValueError):
     pass
 
-class MailUsageHelp(Exception):
+class MailUsageHelp(BaseException):
     """ We need to send the help message to the user. """
     pass
 
-class Unauthorized(Exception):
+class Unauthorized(BaseException):
     """ Access denied """
     pass
 
-class IgnoreMessage(Exception):
+class IgnoreMessage(BaseException):
     """ A general class of message that we should ignore. """
     pass
 class IgnoreBulk(IgnoreMessage):
