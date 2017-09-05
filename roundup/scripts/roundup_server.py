@@ -698,7 +698,7 @@ else:
     # allow the win32
     import win32service
 
-    class SvcShutdown(Exception):
+    class SvcShutdown(BaseException):
         pass
 
     class RoundupService(win32serviceutil.ServiceFramework):
