@@ -172,6 +172,12 @@ There are examples in the devel and responsive templates. Search for
 LocalReplace to find the extension file and the change that has to be
 made to the item template.
 
+I can see values in a multilink but not display the items
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Make sure that you have allowed the user to view the labelprop for the
+multilink class. Look for the setlabelprop explanation in the Roundup
+customisation_ documentation.
 
 Using Roundup
 -------------

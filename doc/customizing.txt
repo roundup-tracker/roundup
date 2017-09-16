@@ -857,6 +857,11 @@ a class, the following values are tried for the label:
 So in most cases you can get away without specifying setlabelprop
 explicitly.
 
+You should make sure that users have View access to this property or
+the id property for a class. If the property can not be viewed by a
+user, looping over items in the class (e.g. messages attached to an
+issue) will not work.
+
 setorderprop(property)
 ~~~~~~~~~~~~~~~~~~~~~~
 
