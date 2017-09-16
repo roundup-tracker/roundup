@@ -23,6 +23,39 @@ Contents:
 Migrating from 1.5.1 to 1.6.0
 =============================
 
+Make sure that user can view labelprop on classes (REQUIRED)
+------------------------------------------------------------
+
+If you have View permissions that use ```properties=...```,
+make sure that the labelprop for the class is listed in the
+properties list.
+
+The first one of these that exists must must be in the list:
+
+ 1. the property set by a call to setlabelprop for the class
+ 2. the key of the class (as set by setkey())
+ 3. the "name" property (if it exists)
+ 4. the "title" property (if it exists)
+
+if none of those apply, you must allow
+
+ * the "id" property
+
+E.G. If your class does a setlabelprop("foo") you must include "foo"
+in the properties list even if the class has name or title properties.
+
+See:
+http://www.roundup-tracker.org/docs/customizing.html#setlabelprop-property
+for further details on the labelprop.
+
+If you don't do this, you will find that multilinks (and possibly
+links) may not be displayed properly. E.G. templates that iterate over
+a mutlilink field (with tal:repeat for example) may not show any
+content.
+
+See: https://sourceforge.net/p/roundup/mailman/message/35763294/
+for the initial discussion of the issue.
+
 Cross Site Request Forgery Detection Added
 ------------------------------------------
 
@@ -131,8 +164,8 @@ made it difficult to exploit. However allowing the use of
 subdirectories to organize the templates required that it be fixed.
 
 
-Database back end specified in config.ini
------------------------------------------
+Database back end specified in config.ini (REQUIRED)
+----------------------------------------------------
 
 The ``db/backend_name`` file is no longer used to configure the database
 backend being used for a tracker. The backend is now configured in the
@@ -371,8 +404,8 @@ change the value assigned to @dispname in the href attribute from
 ${qs/name} to ${qs/name/url_quote}. Note that you should *not* change
 the value for tal:content.
 
-Schema change to allow "Show Unassigned" issues link to work for Anonymous user
--------------------------------------------------------------------------------
+Allow "Show Unassigned" issues link to work for Anonymous user
+--------------------------------------------------------------
 
 In this release the anonymous user is allowed to search the user
 class. The following was added to the schema for all templates that
