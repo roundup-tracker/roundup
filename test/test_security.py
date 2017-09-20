@@ -181,8 +181,20 @@ class PermissionTest(MyTestCase, unittest.TestCase):
             prop = other['permission']
             return (itemid == '1')
 
+        # also create a check as a callable of a class
+        #   http://issues.roundup-tracker.org/issue2550952
+        class CheckClass(object):
+            def __call__(self, db,userid,itemid, **other):
+                prop = other['property']
+                prop = other['classname']
+                prop = other['permission']
+                return (itemid == '1')
+
         addRole(name='Role3')
-        addToRole('Role3', add(name="Test", klass="test", check=check))
+        # make sure check=CheckClass() and not check=CheckClass
+        # otherwise we get:
+        # inspectible <slot wrapper '__init__' of 'object' objects>
+        addToRole('Role3', add(name="Test", klass="test", check=CheckClass()))
         user3 = self.db.user.create(username='user3', roles='Role3')
 
         addRole(name='Role4')

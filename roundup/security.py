@@ -47,7 +47,7 @@ class Permission:
 
     def __init__(self, name='', description='', klass=None,
             properties=None, check=None, props_only=None):
-        import inspect
+        from roundup.anypy import findargspec
         self.name = name
         self.description = description
         self.klass = klass
@@ -75,11 +75,11 @@ class Permission:
         if check is None:
             self.check_version = 0
         else:
-            args=inspect.getargspec(check)
-            # FIXME change args[2] to args.keywords since python
-            # 2.6 made getargspec a named tuple once roundup 1.6 released.
+            args=findargspec.findargspec(check)
+            # args[2] is the keywords argument. Leave it as a subscript and
+            # do not use named tuple reference as names change in python 3.
             # If there is a **parameter defined in the function spec, the
-            #  value of the 3rd argument in the tuple is not None.
+            # value of the 3rd argument (2nd index) in the tuple is not None.
             if args[2] is None:
                 # function definition is function(db, userid, itemid)
                 self.check_version = 1
