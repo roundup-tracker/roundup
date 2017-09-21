@@ -86,17 +86,17 @@ rejected. (Note the user's form keeps all the data they
 entered if it was rejected.)
 
 Also the admin can include unique csrf tokens for all forms
-submitted via post (delete and put methods are also
-included, but not currently used by roundup)). The csrf
+submitted using the POST method. (Delete and put methods are also
+included, but not currently used by roundup.) The csrf
 token (nonce) is tied to the user's session. When the user
 submits the form and nonce, the nonce is checked to make
 sure it was issued to the user and the same session. If this
 is not true the post is rejected and the user is notified.
 
-The standard context/submit templating item creates CSRF
-tokens by default. If you have forms that are not using the
-standard submit routine, you should add the following field
-to all forms:
+The standard context/submit templating item creates CSRF tokens by
+default. If you have forms using the POST method that are not using
+the standard submit routine, you should add the following field to all
+forms:
 
    <input name="@csrf" type="hidden"
       tal:attributes="value python:utils.anti_csrf_nonce()">
@@ -134,6 +134,19 @@ missing.
 It is suggested that you change your templates so every form
 has an @csrf field and change the setting to 'required' for
 the csrf_enforce_token.
+
+If you see the @csrf nonce in the URL, you have added the value to a
+form that uses the GET method. You should remove the @csrf token from
+these forms as it is not needed.
+
+If you get an error:
+
+  AttributeError: 'list' object has no attribute 'value'
+
+in handle_csrf, you have more than one @csrf token for the form. This
+usually occurs because the form uses the standard context/submit
+element but you also added an explicit @csrf statement. Simply remove
+the @csrf element for that form.
 
 Support for SameSite cookie option for session cookie
 -----------------------------------------------------
