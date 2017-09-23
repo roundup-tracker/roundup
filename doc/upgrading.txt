@@ -477,18 +477,46 @@ If you have not modified the query.edit.html template in your tracker,
 you should be able to copy the new version from the location above.
 Otherwise you will have to merge the changes into your modified template.
 
-You will need to add the query Restore permission for the User role to
-your tracker's schema.py file.  Place it right after the query retire
-permission for the user role. After the change it should look like::
+Add the query Restore permission for the User role to your tracker's
+schema.py file.  Place it right after the query retire permission for
+the user role. After the change it should look like::
 
   p = db.security.addPermission(name='Retire', klass='query', check=edit_query,
       description="User is allowed to retire their queries")
   db.security.addPermissionToRole('User', p)
-  p = db.security.addPermission(name='Restore', klass='query', check=edit_query,
+  p = db.security.addPermission(name='Restore', klass='query',
+      check=edit_query,
       description="User is allowed to restore their queries")
   db.security.addPermissionToRole('User', p)
 
-where the last three lines are the ones you need to add.
+where the last four lines are the ones you need to add.
+
+Usually you can add this to your User role. If all users have the User
+role in common then all logged in users should be ok. If you have
+users who do not include the User role (e.g. they may only have a
+Provisional role), you should add the search permission to that role
+(e.g. Provisional) as well if you allow them to edit their list of
+queries.
+
+Also see the `new search permissions for query in 1.4.17`_ section
+discussing search permission requirements for editing queries. The
+fixes in this release require the ability to search the creator of all
+queries to work correctly.
+
+If the test script for the `new search permissions for query in
+1.4.17`_ doesn't report that a role has the ability to search queries
+or at least search the creator property for queries, add the following
+permissions to your schema.py::
+
+  s = db.security.addPermission(name='Search', klass='query',
+    properties=['creator'],
+    description="User is allowed to Search queries for creator")
+  db.security.addPermissionToRole('User', s)
+
+If you do not do this, public queries will be listed twice in the edit
+interface. Once in the "Queries I created" section and again in the
+"Queries others created" section of the query edit page
+(``http..../query?@template=edit``).
 
 Enhancement to check command for Permissions
 --------------------------------------------
@@ -739,6 +767,8 @@ version.  If you are starting the server without a configuration file
 and want to explicitly listen to all network interface, you should
 specify the -n option with the address `0.0.0.0`.
 
+.. _new search permissions for query in 1.4.17:
+
 Searching now requires either read-permission without a check method, or
 you will have to add a "Search" permission for a class or a list of
 properties for a class (if you want to allow searching). For the classic
@@ -766,7 +796,7 @@ search for this property::
 
     for cl in sorted(db.getclasses()):
         print "Class:", cl
-        for p in sorted(db.getclass(cl).properties.keys()):
+        for p in sorted(db.getclass(cl).getprops(protected=True).keys()):
             print "    Property:", p
             roles = []
             for role in sorted(db.security.role.iterkeys()):
