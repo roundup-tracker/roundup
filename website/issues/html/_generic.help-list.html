@@ -64,7 +64,7 @@ var text_field = parent.submit.document.frm_help.text_preview;
              <td tal:repeat="prop props">
                  <label class="classhelp-label"
                         tal:attributes="for string:id_$attr"
-                        tal:content="structure python:item[prop]"></label>
+                        tal:content="python:item[prop]"></label>
              </td>
            </tal:block>
          </tr>
@@ -81,3 +81,4 @@ var text_field = parent.submit.document.frm_help.text_preview;
      //--></script>
   </body>
 </html>
+<!-- SHA: 7581a18984d95c2c415df046cfbdda73ad95651e -->
