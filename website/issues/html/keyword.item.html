@@ -1,78 +1,75 @@
-<tal:doc metal:use-macro="templates/page/macros/icing"
-define="edit_ok context/is_edit_ok"
->
-<title metal:fill-slot="head_title">
-<tal:if condition="context/id" i18n:translate=""
- >Keyword <span tal:replace="context/id" i18n:name="id"
- />: <span tal:replace="context/name" i18n:name="title"
- /> - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
-/></tal:if>
-<tal:if condition="not:context/id" i18n:translate=""
- >New Keyword - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
-/></tal:if>
-</title>
-<metal:slot fill-slot="more-javascript">
-<script type="text/javascript" src="@@file/help_controls.js"></script>
-</metal:slot>
-<tal:block metal:fill-slot="body_title"
-  define="edit_ok context/is_edit_ok">
- <span tal:condition="python: not (context.id or edit_ok)"
-  tal:omit-tag="python:1" i18n:translate="">New Keyword</span>
- <span tal:condition="python: not context.id and edit_ok"
-  tal:omit-tag="python:1" i18n:translate="">New Keyword Editing</span>
- <span tal:condition="python: context.id and not edit_ok"
-  tal:omit-tag="python:1" i18n:translate="">Keyword<tal:x
-  replace="context/id" i18n:name="id" /></span>
- <span tal:condition="python: context.id and edit_ok"
-  tal:omit-tag="python:1" i18n:translate="">Keyword<tal:x
-  replace="context/id" i18n:name="id" /> Editing</span>
-</tal:block>
-
+<!-- dollarId: keyword.item,v 1.3 2002/05/22 00:32:34 richard Exp dollar-->
+<tal:block metal:use-macro="templates/page/macros/icing">
+<title metal:fill-slot="head_title" i18n:translate="">Keyword editing - <span
+ i18n:name="tracker" tal:replace="config/TRACKER_NAME" /></title>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1"
+ i18n:translate="">Keyword editing</span>
 <td class="content" metal:fill-slot="content">
 
-<p tal:condition="python:not (context.is_view_ok()
- or request.user.hasRole('Anonymous'))" i18n:translate="">
- You are not allowed to view this page.</p>
-
-<p tal:condition="python:not context.is_view_ok()
- and request.user.hasRole('Anonymous')" i18n:translate="">
- Please login with your username and password.</p>
-
-<div tal:condition="context/is_view_ok">
-
-<form method="POST"
-      tal:define="required python:'name description'.split()"
-      enctype="multipart/form-data"
-      tal:attributes="action context/designator;">
-
-<table class="form">
-
-<tr>
- <th class="required" i18n:translate="">Keyword:</th>
- <td tal:content="structure
- python:context.name.field(size=60)">title</td>
-</tr>
-
-<tr>
- <th class="required" i18n:translate="">Description:</th>
- <td tal:content="structure python:context.description.field(size=60)">description</td>
-
-</tr>
-
- <tr tal:condition="context/is_edit_ok">
-  <td>
-   &nbsp;
-   <input type="hidden" name="@template" value="item">
-   <input type="hidden" name="@required" value="name,description"
-          tal:attributes="value python:','.join(required)">
-  </td>
-  <td><input type="submit" value="save" tal:replace="structure context/submit"><!--submit button here-->
-    <input type="reset">
+<table class="otherinfo" tal:define="keywords db/keyword/list"
+       tal:condition="keywords">
+ <tr><th colspan="4" class="header" i18n:translate="">Existing Keywords</th></tr>
+ <tr tal:repeat="start python:range(0, len(keywords), 4)">
+  <td width="25%" tal:define="batch python:utils.Batch(keywords, 4, start)"
+      tal:repeat="keyword batch">
+    <a tal:attributes="href string:keyword${keyword/id}"
+       tal:content="keyword/name">keyword here</a>
   </td>
  </tr>
-
+ <tr>
+  <td colspan="4" style="border-top: 1px solid gray" i18n:translate="">
+   To edit an existing keyword (for spelling or typing errors),
+   click on its entry above.
+  </td>
+ </tr>
 </table>
+
+<p class="help" tal:condition="not:context/id" i18n:translate="">
+ To create a new keyword, enter it below and click "Submit New Entry".
+</p>
+
+<form method="POST" onSubmit="return submit_once()"
+      enctype="multipart/form-data"
+      tal:attributes="action context/designator">
+
+ <table class="form">
+  <tr>
+   <th i18n:translate="">Keyword</th>
+   <td tal:content="structure python:context.name.field(size=60)">name</td>
+  </tr>
+  <tr>
+    <th class="required" i18n:translate="">Description:</th>
+    <td tal:content="structure python:context.description.field(size=60)">description</td>
+  </tr>
+  <tr>
+   <td tal:condition="not:context/id">
+     <tal:comment tal:replace="nothing">
+       If we get here and do not have an id, we are creating a new
+       keyword. It would be nice to provide some mechanism to
+       determine the preferred state of the "Continue adding keywords"
+       checkbox. By default I have it enabled.
+     </tal:comment>
+     <input type="checkbox" id="continue_new_keyword"
+	    name="__redirect_to"
+	    tal:attributes="value
+			    string:${request/base}${request/env/PATH_INFO}?@template=item;
+			    checked python:True" />
+     <label for="continue_new_keyword" i18n:translate="">Continue adding keywords.</label>
+   </td>
+  </tr>
+
+  <tr>
+   <td>
+    &nbsp;
+    <input type="hidden" name="@required" value="name">
+    <input type="hidden" name="@template" value="item">
+   </td>
+   <td colspan=3 tal:content="structure context/submit">
+    submit button will go here
+   </td>
+  </tr>
+ </table>
 </form>
-</div>
 </td>
-</tal:doc>
+
+</tal:block>
