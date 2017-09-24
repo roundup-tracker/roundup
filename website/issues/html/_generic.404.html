@@ -1,9 +1,14 @@
-<html>
-<head>
-<title>Item Not Found</title>
-</head>
+<!-- dollarId: issue.item,v 1.4 2001/08/03 01:19:43 richard Exp dollar-->
+<tal:block metal:use-macro="templates/page/macros/icing">
+  <title metal:fill-slot="head_title">
+  Item Not Found
+  </title>
+  <tal:block metal:fill-slot="body_title">
+  Item Not Found
+  </tal:block>
 
-<body>
-There is no <span tal:content="context/_classname" /> with id <span tal:content="context/id"/>
-</body>
-</html>
+<td class="content" metal:fill-slot="content">
+    There is no <span tal:content="context/_classname" /> with id
+    <span tal:content="context/id"/>
+</td>
+</tal:block>
