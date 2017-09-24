@@ -1,3 +1,15 @@
 <!-- query.item -->
-<span tal:replace="structure context/renderQueryForm" />
-
+<span tal:condition="context/is_view_ok" tal:replace="structure
+      context/renderQueryForm" />
+<tal:block tal:condition="not:context/is_view_ok">
+  <tal:block metal:use-macro="templates/page/macros/icing">
+    <title metal:fill-slot="head_title">You can not view query</title>
+    <tal:block metal:fill-slot="body_title">
+      You can not view query.
+    </tal:block>
+    <td class="content" metal:fill-slot="content">
+      You are not allowed to view <span tal:content="context/_classname"/>
+      with id <span tal:content="context/id"/>
+    </td>
+  </tal:block>
+</tal:block>

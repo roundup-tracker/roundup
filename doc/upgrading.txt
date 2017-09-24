@@ -518,6 +518,19 @@ interface. Once in the "Queries I created" section and again in the
 "Queries others created" section of the query edit page
 (``http..../query?@template=edit``).
 
+Fix security issues in query.item.html template
+-----------------------------------------------
+The default query.item.html template allows anybody to view all
+queries.
+
+This has been updated in the classic, devel and responsive templates
+to only allow people to view queries they creates or queries that are
+publicly viewable.
+
+If you haven't modified you query.item.html template, simply copy the
+query.item.html template from one of the above default templates to
+your tracker's html directory.
+
 Enhancement to check command for Permissions
 --------------------------------------------
 

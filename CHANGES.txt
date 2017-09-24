@@ -457,6 +457,9 @@ Fixed:
 - CSRF protection broke the retire function for query edit. Fix
   javascript and make sure csrf tokens are provided in the right
   places. (John Rouillard)
+- query.item.html was missing checks to verify that a query should
+  be visible to the user. This is fixed and users can only view
+  queries that they own or that are not private. (John Rouillard)
 
 2016-01-11: 1.5.1
 
