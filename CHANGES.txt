@@ -454,7 +454,9 @@ Fixed:
   subject is "showing template sources to all".
 - issue2550945: OpenPGP: Extends newissuecopy.py to encrypt if configured.
   (Bernhard Reiter)
-
+- CSRF protection broke the retire function for query edit. Fix
+  javascript and make sure csrf tokens are provided in the right
+  places. (John Rouillard)
 
 2016-01-11: 1.5.1
 

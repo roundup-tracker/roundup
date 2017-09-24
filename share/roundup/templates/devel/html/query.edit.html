@@ -5,17 +5,50 @@
 <span metal:fill-slot="body_title" tal:omit-tag="python:1"
  i18n:translate="">"Your Queries" Editing</span>
 
-<td class="content" metal:fill-slot="content">
+<td class="content" metal:fill-slot="content"
+    tal:define="anti_csrf_this_page python:utils.anti_csrf_nonce()" >
 
 <span tal:condition="not:context/is_edit_ok"
  i18n:translate="">You are not allowed to edit queries.</span>
 
-<script language="javascript">
-// This exists solely because I can't figure how to get the & into an
-// attributes TALES expression, and so it keeps getting quoted.
-function retire(qid) {
-    window.location = 'query'+qid+'?@action=retire&@template=edit';
+<script tal:attributes="nonce request/client/client_nonce"
+        language="javascript" >
+// This allows us to make the delete button an immediate action.
+// The post_to_url function comes from:
+//    http://stackoverflow.com/questions/133925/javascript-post-request-like-a-form-submit
+function retire(qid, csrf) {
+    post_to_url('query'+qid, {'@action': 'retire', '@template':'edit',
+                '@csrf': csrf});
 }
+
+function restore(qid, csrf) {
+    post_to_url('query'+qid, {'@action': 'restore', '@template': 'edit',
+                '@csrf': csrf});
+}
+function post_to_url(path, params, method) {
+    method = method || "post"; // Set method to post by default if not specified.
+
+    var form = document.createElement("form");
+    form.setAttribute("method", method);
+    form.setAttribute("action", path);
+
+    for(var key in params) {
+        if(params.hasOwnProperty(key)) {
+            var hiddenField = document.createElement("input");
+            hiddenField.setAttribute("type", "hidden");
+            hiddenField.setAttribute("name", key);
+            hiddenField.setAttribute("value", params[key]);
+
+            form.appendChild(hiddenField);
+         }
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+}
+
+// note restore() is defined above but not yet used in this template.
+// see classic template and integrate it.
 </script>
 
 <form method="POST" onSubmit="return submit_once()" action="query"
@@ -28,7 +61,7 @@ function retire(qid) {
     <th i18n:translate="">Include in "Your Queries"</th>
     <th i18n:translate="">Edit</th>
     <th i18n:translate="">Private to you?</th>
-    <th>&nbsp;</th>
+    <th i18n:translate="">delete/restore<br> (javascript<br>required)</th>
 </tr>
 
 <tr tal:repeat="query mine">
@@ -76,7 +109,7 @@ function retire(qid) {
 
  <td>
   <input type="button" value="Delete" i18n:attributes="value"
-  tal:attributes="onClick python:'''retire('%s')'''%query.id">
+  tal:attributes="onClick python:'''retire('%s','%s')'''%(query.id,anti_csrf_this_page)">
   </td>
 </tr>
 
@@ -97,7 +130,7 @@ function retire(qid) {
 
 <tr><td colspan="5">
    <input name="@csrf" type="hidden"
-	  tal:attributes="value python:utils.anti_csrf_nonce()">
+	  tal:attributes="value anti_csrf_this_page">
    <input type="hidden" name="@action" value="edit">
    <input type="hidden" name="@template" value="edit">
    <input type="submit" value="Save Selection" i18n:attributes="value">
