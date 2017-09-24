@@ -84,6 +84,8 @@ status_notresolved string:-1,1,2,4;
                     type="text" name="@number"/>
              <input type="hidden" name="@type" value="issue"/>
              <input type="hidden" name="@action" value="show"/>
+	     <input name="@csrf" type="hidden"
+		    tal:attributes="value python:utils.anti_csrf_nonce()">
            </form>
          </li>
        </ul>
@@ -91,7 +93,7 @@ status_notresolved string:-1,1,2,4;
    <ul>
      <li tal:condition="python:request.user.username=='anonymous'" class="submenu">
       <b i18n:translate="">User</b>
-      <form method="post" action="#">
+     <form method="post" tal:attributes="action request/base">
        <ul>
       <li>
        <tal:span i18n:translate="">Login</tal:span><br/>
@@ -101,7 +103,14 @@ status_notresolved string:-1,1,2,4;
        <input type="checkbox" name="remember" id="remember"/>
        <label for="remember" i18n:translate="">Remember me?</label><br/>
        <input class="form-small" type="submit" value="Login" i18n:attributes="value"/><br/>
-       <input type="hidden" name="__came_from" tal:attributes="value string:${request/env/PATH_INFO}"/>
+   <input name="@csrf" type="hidden"
+      tal:attributes="value python:utils.anti_csrf_nonce()">
+  <input type="hidden" name="__came_from"
+    tal:condition="exists:request/env/QUERY_STRING"
+    tal:attributes="value string:${request/base}${request/env/PATH_INFO}?${request/env/QUERY_STRING}">
+  <input type="hidden" name="__came_from"
+    tal:condition="not:exists:request/env/QUERY_STRING"
+    tal:attributes="value string:${request/base}${request/env/PATH_INFO}">
        <span tal:replace="structure request/indexargs_form" />
        </li>
        <li>
@@ -116,7 +125,7 @@ status_notresolved string:-1,1,2,4;
      </li>
 
      <li tal:condition="python:request.user.username != 'anonymous'" class="submenu">
-   <p class="label"><b tal:replace="request/user/username">username</b></p>
+   <p class="label"><b tal:replace="python:request.user.username.plain(escape=1)">username</b></p>
     <ul>
     <li>
     <a href="#"
@@ -145,7 +154,7 @@ status_notresolved string:-1,1,2,4;
          tal:condition="python:request.user.hasPermission('View', 'query')">
    <span i18n:translate=""><b>Your Queries</b> (<a class="nomargin" href="query?@template=edit">edit</a>)</span><br/>
    <ul tal:repeat="qs request/user/queries">
-    <li><a tal:attributes="href string:${qs/klass}?${qs/url}&@dispname=${qs/name}"
+    <li><a href="#" tal:attributes="href string:${qs/klass}?${qs/url}&@dispname=${qs/name/url_quote}"
        tal:content="qs/name">link</a></li>
    </ul>
      </li>
