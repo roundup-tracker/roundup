@@ -1,3 +1,5 @@
+<!-- dollarId: issue.index,v 1.2 2001/07/29 04:07:37 richard Exp dollar-->
+
 <tal:block metal:use-macro="templates/page/macros/icing">
 <title metal:fill-slot="head_title" i18n:translate=""
  ><span tal:replace="python:context._classname.capitalize()"
@@ -37,13 +39,16 @@
 
 <p class="form-help">
  Remove entries by deleting their line. Add new entries by appending
- them to the table - put an X in the id column.
+ them to the table - put an X in the id column. If you wish to restore a
+ removed item and you know its id then just put that id in the id column.
 </p>
 </tal:block>
 <form onSubmit="return submit_once()" method="POST"
       tal:attributes="action context/designator">
 <textarea rows="15" style="width:90%" name="rows" tal:content="context/csv"></textarea>
 <br>
+<input name="@csrf" type="hidden"
+       tal:attributes="value python:utils.anti_csrf_nonce()">
 <input type="hidden" name="@action" value="editCSV">
 <input type="submit" value="Edit Items" i18n:attributes="value">
 </form>
