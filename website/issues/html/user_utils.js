@@ -29,6 +29,9 @@ function split_name(that) {
         case 'realname':
             realname=val
             break
+        case 'firstname':
+        case 'lastname':
+           return
         default:
             alert('Ooops - unknown name field '+that.name+'!')
             return
@@ -38,7 +41,7 @@ function split_name(that) {
     function field_empty(name) {
         return the_form[name].value == ''
     }
-    
+
     // no break statements - on purpose!
     switch (that.name) {
         case 'address':
