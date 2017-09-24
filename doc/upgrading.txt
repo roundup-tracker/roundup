@@ -445,6 +445,13 @@ If you are running a tracker that **does not** allow read access for
 anonymous, you should remove this entry as it can be used to perform
 a username guessing attack against a roundup install.
 
+Errors and Troubleshooting
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you notice that the "Unassigned Issues" search on page.html
+is displaying assigned issues for users with the Anonymous role,
+you need to allow search permissions for the user class.
+
 Improvements in Classic Tracker query.edit.html template
 --------------------------------------------------------
 
