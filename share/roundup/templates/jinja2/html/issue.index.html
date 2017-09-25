@@ -12,7 +12,7 @@
 
   {% include 'layout/permission.html' %}
 
-  {% if context.is_view_ok %}
+  {% if context.is_view_ok() %}
     {% if context.list() %}
       <table class='table'>
         <tr class='info'>
@@ -42,13 +42,7 @@
           </tr>
         {% endfor %}
       </table>
-    {% else %}
-      <p class='text-error'>{{ i18n.gettext('There are no issues yet!') }}</p>
-    {% endif %}
-  {% endif %}
-
-  {% include 'layout/pagination.html' %}
-
+      {% include 'layout/pagination.html' %}
   <div class='row-fluid'> 
     <div class='pull-right'>
       <a class='btn btn-success'
@@ -59,5 +53,11 @@
   </div>
 
   {% include 'layout/sort.html' %}
+
+    {% else %}
+      <p class='text-error'>{{ i18n.gettext('There are no issues yet!') }}</p>
+    {% endif %}
+
+  {% endif %}
 
 {% endblock %}

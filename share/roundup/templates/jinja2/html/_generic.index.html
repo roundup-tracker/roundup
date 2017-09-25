@@ -12,7 +12,7 @@
 
   {% include 'layout/permission.html' %}
 
-  {% if context.is_view_ok %}
+  {% if context.is_view_ok() %}
     <p class="form-help">{{ i18n.gettext('
      You may edit the contents of the
      class using this form. Commas, newlines and double quotes (") must be

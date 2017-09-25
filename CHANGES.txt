@@ -460,6 +460,9 @@ Fixed:
 - query.item.html was missing checks to verify that a query should
   be visible to the user. This is fixed and users can only view
   queries that they own or that are not private. (John Rouillard)
+- issue2550953: Patch: fix for context.is_view_ok check in jinja2 template
+  Form controls are displayed when anonymous views indexes but is
+  denied access. (patch by Anton Schur applied by John Rouillard)
 
 2016-01-11: 1.5.1
 
