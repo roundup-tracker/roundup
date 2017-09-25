@@ -68,6 +68,8 @@ get a password for your account.</p>
    <input type="hidden" name="@required" value="username,password,address">
    <input type="hidden" name="@action" value="register">
    <input type="submit" name="submit" value="Register" i18n:attributes="value">
+   <input name="@csrf" type="hidden"
+	  tal:attributes="value python:utils.anti_csrf_nonce()">
   </td>
  </tr>
 </table>

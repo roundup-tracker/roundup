@@ -68,6 +68,8 @@
       <input type="hidden" name="@template" value="index">
       <input type="hidden" name="@action" value="retire">
       <input type="submit" value="retire" i18n:attributes="value">
+      <input name="@csrf" type="hidden"
+	     tal:attributes="value python:utils.anti_csrf_nonce()">
      </form>
  </td>
 </tr>
