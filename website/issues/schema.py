@@ -181,7 +181,7 @@ class may_view_spam:
 for cl in ('file', 'msg'):
     p = db.security.addPermission(name='View', klass=cl,
                                   description="allowed to see metadata object regardless of spam status",
-                                  properties=('creation', 'activity',
+                                  properties=('id', 'creation', 'activity',
                                               'creator', 'actor',
                                               'name', 'spambayes_score',
                                               'spambayes_misclassified',
@@ -268,6 +268,10 @@ db.security.addPermissionToRole('Developer', p)
 # Coordinator may view all user properties.
 db.security.addPermissionToRole('Coordinator', 'View', 'user')
 
+# allow "Show Unassigned" link to work for anon
+p = db.security.addPermission(name='Search', klass='user')
+db.security.addPermissionToRole ('Anonymous', p)
+
 # Allow Coordinator to edit any user, including their roles.
 db.security.addPermissionToRole('Coordinator', 'Edit', 'user')
 db.security.addPermissionToRole('Coordinator', 'Web Roles')
@@ -303,14 +307,26 @@ def edit_query(db, userid, itemid):
     return userid == db.query.get(itemid, 'creator')
 p = db.security.addPermission(name='View', klass='query', check=view_query,
     description="User is allowed to view their own and public queries")
+s = db.security.addPermission(name='Search', klass='query',
+    properties=['creator'],
+    description="User is allowed to Search queries for creator")
 for r in 'User', 'Developer', 'Coordinator':
     db.security.addPermissionToRole(r, p)
+    db.security.addPermissionToRole(r, s)
 p = db.security.addPermission(name='Edit', klass='query', check=edit_query,
     description="User is allowed to edit their queries")
 for r in 'User', 'Developer', 'Coordinator':
     db.security.addPermissionToRole(r, p)
 p = db.security.addPermission(name='Create', klass='query',
     description="User is allowed to create queries")
+for r in 'User', 'Developer', 'Coordinator':
+    db.security.addPermissionToRole(r, p)
+p = db.security.addPermission(name='Retire', klass='query', check=edit_query,
+    description="User is allowed to retire their queries")
+for r in 'User', 'Developer', 'Coordinator':
+    db.security.addPermissionToRole(r, p)
+p = db.security.addPermission(name='Restore', klass='query', check=edit_query,
+    description="User is allowed to restore their queries")
 for r in 'User', 'Developer', 'Coordinator':
     db.security.addPermissionToRole(r, p)
 
