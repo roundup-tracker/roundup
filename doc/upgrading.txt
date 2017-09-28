@@ -135,13 +135,15 @@ It is recommended that you change your templates so every form
 that is not submitted via GET has an @csrf field. Then change
 the csrf_enforce_token setting to 'required'.
 
-Errors and Troubleshooting
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Errors and Troubleshooting - @csrf in url
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you see the @csrf nonce in the URL, you have added the value to a
 form that uses the GET method. You should remove the @csrf token from
 these forms as it is not needed.
 
+Errors and Troubleshooting - AttributeError list object no attribute value
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 If you get an error:
 
   AttributeError: 'list' object has no attribute 'value'
@@ -222,6 +224,17 @@ setting this value in the [main] section of the tracker's
   # will be used in the following order:
   # Possible values: xapian, whoosh, native (internal).
   indexer =
+
+Errors and Troubleshooting - Full text searching not working
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If after the upgrade full text searching is not working try changing
+the indexer value. If this is failing most likely you need to set
+'''indexer = native''' to use the rdbms or db text indexing systems.
+
+Alternatively you can do a
+'''roundup-admin -i /path/to/tracker reindex'''
+to generate a new index using roundup's preferred indexer from the list above.
 
 Stemming improved in Xapian Indexer
 -----------------------------------
@@ -306,8 +319,8 @@ or with::
 the important part is that the action field **must not** include any query
 parameters ('#' includes query params).
 
-Errors and Troubleshooting
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Errors and Troubleshooting - Unrecognized scheme in ...
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 One symptom of failing to do this is getting an error:
 
@@ -445,8 +458,8 @@ If you are running a tracker that **does not** allow read access for
 anonymous, you should remove this entry as it can be used to perform
 a username guessing attack against a roundup install.
 
-Errors and Troubleshooting
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Errors and Troubleshooting - Unassigned issues for anonymous
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you notice that the "Unassigned Issues" search on page.html
 is displaying assigned issues for users with the Anonymous role,
@@ -526,8 +539,8 @@ permissions to your schema.py::
     description="User is allowed to Search queries for creator")
   db.security.addPermissionToRole('User', s)
 
-Errors and Troubleshooting
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Errors and Troubleshooting - Public queries listed twice when editing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you do not do this, public queries will be listed twice in the edit
 interface. Once in the "Queries I created" section and again in the
