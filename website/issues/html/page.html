@@ -77,7 +77,7 @@ status_notresolved string:-1,1,2,4;
            <a href="issue?@template=search&status=1" i18n:translate="">Search</a>
          </li>
          <li>
-           <form method="post" action="#">
+           <form method="post" tal:attributes="action request/base>
              <input type="submit" class="form-small" value="Show issue:"
                     i18n:attributes="value"/>
              <input class="form-small" size="4"
