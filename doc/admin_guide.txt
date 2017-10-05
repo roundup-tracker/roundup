@@ -297,7 +297,8 @@ Migrating Backends
    your tracker to disk.
 3. Copy the tracker home to a new directory.
 4. Delete the "db" directory from the new directory.
-5. Enter the new backend name in the tracker home ``db/backend_name`` file.
+5. Set the value of the ``backend`` key under the ``[database]``
+   section of the tracker's ``config.ini`` file.
 6. Use the roundup-admin "import" command to import the previous export with
    the new tracker home. If non-interactively::
      

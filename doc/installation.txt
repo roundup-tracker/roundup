@@ -880,8 +880,9 @@ Public Tracker Considerations
 If you run a public tracker, you will eventually have to think about
 dealing with spam entered through both the web and mail interfaces.
 
-The `customisation documentation`_ has a simple detector that will block
-a lot of spam attempts. Look for the example "Preventing SPAM".
+See the section on `Preventing SPAM`_ in the
+`customisation documentation`_ that has a simple detector
+that will block lot of spam attempts.
 
 
 Maintenance
@@ -1100,6 +1101,7 @@ from installation and scripts.
 .. _`roundup specification`: spec.html
 .. _`tracker configuration`: customizing.html#tracker-configuration
 .. _`customisation documentation`: customizing.html
+.. _`preventing spam`: customizing.html#preventing-spam
 .. _`Adding a new field to the classic schema`:
    customizing.html#adding-a-new-field-to-the-classic-schema
 .. _`Tracking different types of issues`:
