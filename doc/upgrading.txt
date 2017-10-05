@@ -106,7 +106,7 @@ utils.anti_csrf_nonce() and is put in a database to be
 retreived if the token is used. Token lifetimes are 2 weeks
 by default but can be configured in config.ini. Roundup will
 automatically prune old tokens. Calling anti_csrf_nonce with
-an integer lifetime, for example
+an integer lifetime, for example:
 
    <input name="@csrf" type="hidden"
       tal:attributes="value python:utils.anti_csrf_nonce(lifetime=10)">
@@ -152,6 +152,27 @@ in handle_csrf, you have more than one @csrf token for the form. This
 usually occurs because the form uses the standard context/submit
 element but you also added an explicit @csrf statement. Simply remove
 the @csrf element for that form.
+
+Errors and Troubleshooting - xmlrpc Required Header Missing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When performing and xmlrpc call, if you see something like:
+
+  xmlrpclib.Fault: <Fault 1: "<class
+     'roundup.exceptions.UsageError'>:Required Header Missing">
+
+change the setting of csrf_enforce_header_x-requested-with in
+config.ini to no. So it looks like:
+
+  csrf_enforce_header_x-requested-with = no
+
+Alternatively change your xmlrpc client to add appropriate headers to
+the request including the:
+
+  X-Requested-With:
+
+header as well as any other required csrf headers (e.g. referer, origin)
+configured in config.ini. See the advanced python client at the end of 
+the `xmlrpc guide`_.
 
 Support for SameSite cookie option for session cookie
 -----------------------------------------------------
@@ -2489,3 +2510,4 @@ copy.
 .. _`customisation documentation`: customizing.html
 .. _`security documentation`: security.html
 .. _`administration guide`: admin_guide.html
+.. _`xmlrpc guide`: xmlrpc.html

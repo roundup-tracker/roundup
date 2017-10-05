@@ -139,6 +139,9 @@ the only CSRF header check you require is the HTTP host header::
         >>> roundup_server.lookup('user','admin')
         '1'
 
+advanced python client adding anti-csrf headers
+===============================================
+
 The one below adds Referer and X-Requested-With headers so it can pass
 stronger CSRF detection methods. It also generates a fault message
 from the server and reports it. Note if you are using http rather than
