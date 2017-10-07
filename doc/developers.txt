@@ -60,8 +60,8 @@ A checkout of the roundup sources is in ~roundup/src/roundup-src.
 Small Changes
 -------------
 
-Most small changes can be submitted as patches through the issue
-tracker or sent to `roundup-devel mailing list`_.
+Most small changes can be submitted as patches through the
+`issue tracker`_ or sent to `roundup-devel mailing list`_.
 
 
 Source Repository Access
@@ -424,6 +424,7 @@ At run time, Roundup automatically compiles message catalogs whenever
 .. _gettext module: http://docs.python.org/lib/module-gettext.html
 .. _GNU: http://www.gnu.org/
 .. _GNU mirror sites: http://www.gnu.org/prep/ftp.html
+.. _issue tracker: http://issues.roundup-tracker.org/
 .. _KBabel: http://i18n.kde.org/tools/kbabel/
 .. _KDE: http://www.kde.org/
 .. _linux: http://www.linux.org/
