@@ -209,6 +209,13 @@ Features:
   from the templating class to the hyperdb. (John Rouillard)
 - Improves diagnostics for mail processing: When using logging level = DEBUG,
   bounces and bounce problems are logged. (Bernhard Reiter)
+- In roundup-server, pass X-Forwarded-For and X-Forwarded-Proto
+  headers as the environment variables: HTTP_X-FORWARDED-FOR and
+  HTTP_X_FORWARDED_PROTO. If the user is running roundup server behind
+  a proxy, these headers allow the user to write extensions that can
+  figure out the original client ip and protocol. None of the core
+  roundup code uses these headers/env vars. These headers can be
+  spoofed by bad proxies etc. so you have been warned.
 
 Fixed:
 

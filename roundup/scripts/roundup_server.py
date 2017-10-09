@@ -375,9 +375,38 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             env['HTTP_HOST'] = self.headers ['host']
         except KeyError:
             env['HTTP_HOST'] = ''
+        # https://tools.ietf.org/html/draft-ietf-appsawg-http-forwarded-10
+        # headers.
         xfh = self.headers.getheader('X-Forwarded-Host', None)
         if xfh:
+            # If behind a proxy, this is the hostname supplied
+            # via the Host header to the proxy. Used by core code.
+            # Controlled by the CSRF settings.
             env['HTTP_X-FORWARDED-HOST'] = xfh
+        xff = self.headers.getheader('X-Forwarded-For', None)
+        if xff:
+            # xff is a list of ip addresses for original client/proxies:
+            # X-Forwarded-For: clientIP, proxy1IP, proxy2IP
+            # May not be trustworthy. Do not use in core without
+            # config option to control its use.
+            # Made available for extensions if the user trusts it.
+            # E.g. you may wish to disable recaptcha validation extension
+            # if the ip of the client matches 172.16.0.0.
+            env['HTTP_X-FORWARDED-FOR'] = xff
+        xfp = self.headers.getheader('X-Forwarded-Proto', None)
+        if xfp:
+            # xfp is the protocol (http/https) seen by proxies in the
+            # path of the request. I am not sure if there is only
+            # one value or multiple, but I suspect multiple
+            # is possible so:
+            # X-Forwarded-Proto: https, http
+            # is expected if the path is:
+            #    client -> proxy1 -> proxy2 -> back end server
+            # an proxy1 is an SSL terminator.
+            # May not be trustworthy. Do not use in core without
+            # config option to control its use.
+            # Made available for extensions if the user trusts it.
+            env['HTTP_X-FORWARDED-PROTO'] = xfp
         if os.environ.has_key('CGI_SHOW_TIMING'):
             env['CGI_SHOW_TIMING'] = os.environ['CGI_SHOW_TIMING']
         env['HTTP_ACCEPT_LANGUAGE'] = self.headers.get('accept-language')
