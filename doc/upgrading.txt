@@ -24,6 +24,33 @@ Contents:
 Migrating from 1.5.1 to 1.6.0
 =============================
 
+Update tracker config file
+--------------------------
+
+After installing the new version of roundup, you should
+update the ``config.ini`` file for your tracker. To do this:
+
+ 1. backup your existing ``config.ini`` file
+ 2. using the newly installed code, run::
+
+       roundup-admin -i /path/to/tracker updateconfig config.ini.new
+
+    to create the file config.ini.new. Replace
+    ``/path/to/tracker`` with the path to your tracker.
+ 3. replace your tracker's config.ini with config.ini.new
+
+Using updateconfig keeps all the settings from your
+tracker's config.ini file and adds settings for all the new
+options.
+
+If you have added comments to your original config.ini file,
+merge the added comments into the config.ini.new file.  Then
+replace your tracker's config.ini with config.ini.new.
+
+Read the new config.ini and configure it to enable new
+features. Details on using these features can be found in
+this section.
+
 Make sure that user can view labelprop on classes (REQUIRED)
 ------------------------------------------------------------
 
@@ -66,16 +93,16 @@ Http header verification against the tracker's ``web``
 setting in the ``[tracker]`` section of config.ini for the
 following headers:
 
-# Analyze the ``Referer`` HTTP header to make sure it
-  includes the web setting.
-# Analyse the ``Origin`` HTTP header to make sure the
-  schema://host matches the web setting.
-# Analyze the ``X-Forwarded-Host`` header set by a proxy
-  running in front of roundup to make sure it agrees with
-  the host part of the web setting.
-# Analyze the ``Host`` header to make sure it agrees with
-  the host part of the web setting. This is not done if
-  ``X-Forwarded-Host`` is set.
+ 1. Analyze the ``Referer`` HTTP header to make sure it
+    includes the web setting.
+ 2. Analyze the ``Origin`` HTTP header to make sure the
+    schema://host matches the web setting.
+ 3. Analyze the ``X-Forwarded-Host`` header set by a proxy
+    running in front of roundup to make sure it agrees with
+    the host part of the web setting.
+ 4. Analyze the ``Host`` header to make sure it agrees with
+    the host part of the web setting. This is not done if
+    ``X-Forwarded-Host`` is set.
 
 By default roundup 1.6 does not require any specific header
 to be present. However at least one of the headers above
@@ -114,14 +141,9 @@ an integer lifetime, for example:
 sets the lifetime of that nonce to 10 minutes.
 
 If you want to change the default settings, you have to
-update the web section in your tracker's config.ini's. To do
-this backup your existing config.ini.  Run:
-
-   roundup-admin -i /path/to/tracker genconfig config.ini.new
-
-to create a new config.ini in the file config.ini.new. Then
-merge the new csrf settings into your tracker's config.
-Look for settings that start with csrf. The config.ini.new
+update the web section in your tracker's config.ini file. Follow the
+section above to generate an updated config.ini file. Then
+look for settings that start with csrf. The updated config.ini
 file includes detailed descriptions of the settings.
 
 In general one of four values can be set for these
@@ -228,10 +250,15 @@ Note: the ``backend_name`` file may be located in a directory other than
 ``db/`` if you have configured the ``database`` option in the ``[main]``
 section of the ``config.ini`` file to be something other than ``db``.
 
+Note 2: if you are using the anydbm back end, you still set
+it using the backend option in the rdbms section of the
+config.ini file.
+
 New config file option 'indexer' added
 --------------------------------------
 
-With support for the Whoosh indexer, a new config file option has been
+This release added support for the Whoosh indexer, so a new
+config file option has been
 added. You can force Roundup to use a particular text indexer by
 setting this value in the [main] section of the tracker's
 ``config.ini`` file (usually placed right before indexer_stopwords)::
