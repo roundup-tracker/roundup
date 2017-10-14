@@ -425,8 +425,8 @@ class Message(mimetools.Message):
                         attachments.append(part.text_as_attachment())
                     elif html_part_found:
                         # text/plain part found after html
-                        # save html as attachment
-                        attachments.append(cpart.as_attachment())
+                        # text/html already stored as attachment,
+                        # so just use the text as the content.
                         content = new_content
                         cpart   = part
                     else:

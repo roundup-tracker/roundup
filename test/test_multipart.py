@@ -160,11 +160,15 @@ class MultipartTestCase(unittest.TestCase):
         p = m.getpart()
         self.assert_(p is None)
 
-    def TestExtraction(self, spec, expected):
-        from roundup.dehtml import dehtml
+    def TestExtraction(self, spec, expected, convert_html_with=False):
+        if convert_html_with:
+            from roundup.dehtml import dehtml
+            html2text=dehtml(convert_html_with).html2text
+        else:
+            html2text=None
 
         self.assertEqual(ExampleMessage(spec).extract_content(
-            html2text=dehtml('dhtml').html2text), expected)
+            html2text=html2text), expected)
 
     def testTextPlain(self):
         self.TestExtraction('text/plain', ('foo\n', [], False))
@@ -186,6 +190,7 @@ multipart/mixed
                    [('foo.pdf', 'application/pdf', 'foo\n')], False))
 
     def testMultipartMixedHtml(self):
+        # test with html conversion enabled
         self.TestExtraction("""
 multipart/mixed
     text/html
@@ -193,7 +198,19 @@ multipart/mixed
                   ('bar\n',
                    [('bar.html', 'text/html',
                       '<html><body>bar</body></html>\n'),
-                   ('foo.pdf', 'application/pdf', 'foo\n')], False))
+                   ('foo.pdf', 'application/pdf', 'foo\n')], False),
+                            convert_html_with='dehtml')
+
+        # test with html conversion disabled
+        self.TestExtraction("""
+multipart/mixed
+    text/html
+    application/pdf""",
+                  (None,
+                   [('bar.html', 'text/html',
+                      '<html><body>bar</body></html>\n'),
+                    ('foo.pdf', 'application/pdf', 'foo\n')], False),
+                            convert_html_with=False)
 
     def testMultipartAlternative(self):
         self.TestExtraction("""
@@ -210,7 +227,69 @@ multipart/alternative
                   ('bar\n',
                    [('bar.html', 'text/html',
                       '<html><body>bar</body></html>\n'),
-                   ('foo.pdf', 'application/pdf', 'foo\n')], False))
+                   ('foo.pdf', 'application/pdf', 'foo\n')], False),
+                            convert_html_with='dehtml')
+
+        self.TestExtraction("""
+multipart/alternative
+    text/html
+    application/pdf""",
+                  (None,
+                   [('bar.html', 'text/html',
+                      '<html><body>bar</body></html>\n'),
+                    ('foo.pdf', 'application/pdf', 'foo\n')], False),
+                            convert_html_with=False)
+
+    def testMultipartAlternativeHtmlText(self):
+        # text should take priority over html when html is first
+        self.TestExtraction("""
+multipart/alternative
+    text/html
+    text/plain
+    application/pdf""",
+                  ('foo\n',
+                   [('bar.html', 'text/html',
+                      '<html><body>bar</body></html>\n'),
+                    ('foo.pdf', 'application/pdf', 'foo\n')], False),
+                            convert_html_with='dehtml')
+
+        # text should take priority over html when text is first
+        self.TestExtraction("""
+multipart/alternative
+    text/plain
+    text/html
+    application/pdf""",
+                  ('foo\n',
+                   [('bar.html', 'text/html',
+                      '<html><body>bar</body></html>\n'),
+                    ('foo.pdf', 'application/pdf', 'foo\n')], False),
+                            convert_html_with='dehtml')
+
+        # text should take priority over html when text is second and
+        # html is disabled
+        self.TestExtraction("""
+multipart/alternative
+    text/html
+    text/plain
+    application/pdf""",
+                  ('foo\n',
+                   [('bar.html', 'text/html',
+                      '<html><body>bar</body></html>\n'),
+                    ('foo.pdf', 'application/pdf', 'foo\n')], False),
+                            convert_html_with=False)
+
+        # text should take priority over html when text is first and
+        # html is disabled
+        self.TestExtraction("""
+multipart/alternative
+    text/plain
+    text/html
+    application/pdf""",
+                  ('foo\n',
+                   [('bar.html', 'text/html',
+                      '<html><body>bar</body></html>\n'),
+                    ('foo.pdf', 'application/pdf', 'foo\n')], False),
+                            convert_html_with=False)
 
     def testDeepMultipartAlternative(self):
         self.TestExtraction("""
