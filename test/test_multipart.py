@@ -37,6 +37,7 @@ class ExampleMessage(Message):
              'multipart/mixed': '    boundary="boundary-%(indent)s";\n',
              'multipart/alternative': '    boundary="boundary-%(indent)s";\n',
              'text/plain': '    name="foo.txt"\nfoo\n',
+             'text/html': '    name="bar.html"\n<html><body>bar</body></html>\n',
              'application/pgp-signature': '    name="foo.gpg"\nfoo\n',
              'application/pdf': '    name="foo.pdf"\nfoo\n',
              'message/rfc822': '\nSubject: foo\n\nfoo\n'}
@@ -160,10 +161,13 @@ class MultipartTestCase(unittest.TestCase):
         self.assert_(p is None)
 
     def TestExtraction(self, spec, expected):
-        self.assertEqual(ExampleMessage(spec).extract_content(), expected)
+        from roundup.dehtml import dehtml
+
+        self.assertEqual(ExampleMessage(spec).extract_content(
+            html2text=dehtml('dhtml').html2text), expected)
 
     def testTextPlain(self):
-        self.TestExtraction('text/plain', ('foo\n', []))
+        self.TestExtraction('text/plain', ('foo\n', [], False))
 
     def testAttachedTextPlain(self):
         self.TestExtraction("""
@@ -171,7 +175,7 @@ multipart/mixed
     text/plain
     text/plain""",
                   ('foo\n',
-                   [('foo.txt', 'text/plain', 'foo\n')]))
+                   [('foo.txt', 'text/plain', 'foo\n')], False))
 
     def testMultipartMixed(self):
         self.TestExtraction("""
@@ -179,14 +183,34 @@ multipart/mixed
     text/plain
     application/pdf""",
                   ('foo\n',
-                   [('foo.pdf', 'application/pdf', 'foo\n')]))
+                   [('foo.pdf', 'application/pdf', 'foo\n')], False))
+
+    def testMultipartMixedHtml(self):
+        self.TestExtraction("""
+multipart/mixed
+    text/html
+    application/pdf""",
+                  ('bar\n',
+                   [('bar.html', 'text/html',
+                      '<html><body>bar</body></html>\n'),
+                   ('foo.pdf', 'application/pdf', 'foo\n')], False))
 
     def testMultipartAlternative(self):
         self.TestExtraction("""
 multipart/alternative
     text/plain
     application/pdf
-""", ('foo\n', [('foo.pdf', 'application/pdf', 'foo\n')]))
+        """, ('foo\n', [('foo.pdf', 'application/pdf', 'foo\n')], False))
+
+    def testMultipartAlternativeHtml(self):
+        self.TestExtraction("""
+multipart/alternative
+    text/html
+    application/pdf""",
+                  ('bar\n',
+                   [('bar.html', 'text/html',
+                      '<html><body>bar</body></html>\n'),
+                   ('foo.pdf', 'application/pdf', 'foo\n')], False))
 
     def testDeepMultipartAlternative(self):
         self.TestExtraction("""
@@ -194,13 +218,13 @@ multipart/mixed
     multipart/alternative
         text/plain
         application/pdf
-""", ('foo\n', [('foo.pdf', 'application/pdf', 'foo\n')]))
+        """, ('foo\n', [('foo.pdf', 'application/pdf', 'foo\n')], False))
 
     def testSignedText(self):
         self.TestExtraction("""
 multipart/signed
     text/plain
-    application/pgp-signature""", ('foo\n', []))
+    application/pgp-signature""", ('foo\n', [], False))
 
     def testSignedAttachments(self):
         self.TestExtraction("""
@@ -210,7 +234,7 @@ multipart/signed
         application/pdf
     application/pgp-signature""",
                   ('foo\n',
-                   [('foo.pdf', 'application/pdf', 'foo\n')]))
+                   [('foo.pdf', 'application/pdf', 'foo\n')], False))
 
     def testAttachedSignature(self):
         self.TestExtraction("""
@@ -218,13 +242,13 @@ multipart/mixed
     text/plain
     application/pgp-signature""",
                   ('foo\n',
-                   [('foo.gpg', 'application/pgp-signature', 'foo\n')]))
+                   [('foo.gpg', 'application/pgp-signature', 'foo\n')], False))
 
     def testMessageRfc822(self):
         self.TestExtraction("""
 multipart/mixed
     message/rfc822""",
                   (None,
-                   [('foo.eml', 'message/rfc822', 'Subject: foo\n\nfoo\n')]))
+                   [('foo.eml', 'message/rfc822', 'Subject: foo\n\nfoo\n')], False))
 
 # vim: set filetype=python ts=4 sw=4 et si

@@ -291,6 +291,72 @@ Subject: [issue] Testing...
 
 class MailgwTestCase(MailgwTestAbstractBase, unittest.TestCase):
 
+    def testTextHtmlMessage(self):
+        html_message='''Content-Type: text/html;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Cc: richard@test.test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+Subject: [issue] Testing...
+
+<body>
+<script>
+this must not be in output
+</script>
+<style>
+p {display:block}
+</style>
+    <div class="header"><h1>Roundup</h1>
+        <div id="searchbox" style="display: none">
+          <form class="search" action="../search.html" method="get">
+            <input type="text" name="q" size="18" />
+            <input type="submit" value="Search" />
+            <input type="hidden" name="check_keywords" value="yes" />
+            <input type="hidden" name="area" value="default" />
+          </form>
+        </div>
+        <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+       <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://pypi.python.org/pypi/roundup">Download</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../docs.html">Docs</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="features.html">Roundup Features</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Installing Roundup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="upgrading.html">Upgrading to newer versions of Roundup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="FAQ.html">Roundup FAQ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide.html">User Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="customizing.html">Customising Roundup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="admin_guide.html">Administration Guide</a></li>
+</ul>
+<div class="section" id="prerequisites">
+<h2><a class="toc-backref" href="#id5">Prerequisites</a></h2>
+<p>Roundup requires Python 2.6 or newer (but not Python 3) with a functioning
+anydbm module. Download the latest version from <a class="reference external" href="http://www.python.org/">http://www.python.org/</a>.
+It is highly recommended that users install the latest patch version
+of python as these contain many fixes to serious bugs.</p>
+<p>Some variants of Linux will need an additional &#8220;python dev&#8221; package
+installed for Roundup installation to work. Debian and derivatives, are
+known to require this.</p>
+<p>If you&#8217;re on windows, you will either need to be using the ActiveState python
+distribution (at <a class="reference external" href="http://www.activestate.com/Products/ActivePython/">http://www.activestate.com/Products/ActivePython/</a>), or you&#8217;ll
+have to install the win32all package separately (get it from
+<a class="reference external" href="http://starship.python.net/crew/mhammond/win32/">http://starship.python.net/crew/mhammond/win32/</a>).</p>
+</div>
+</body>
+'''
+
+        self.db.config.MAILGW_CONVERT_HTMLTOTEXT = "dehtml"
+        nodeid = self._handle_mail(html_message)
+        assert not os.path.exists(SENDMAILDEBUG)
+        msgid = self.db.issue.get(nodeid, 'messages')[0]
+        self.assertEqual(self.db.msg.get(msgid, 'content'), '''Roundup\n        Home\nDownload\nDocs\nRoundup Features\nInstalling Roundup\nUpgrading to newer versions of Roundup\nRoundup FAQ\nUser Guide\nCustomising Roundup\nAdministration Guide\nPrerequisites\n\nRoundup requires Python 2.6 or newer (but not Python 3) with a functioning\nanydbm module. Download the latest version from http://www.python.org/.\nIt is highly recommended that users install the latest patch version\nof python as these contain many fixes to serious bugs.\n\nSome variants of Linux will need an additional python dev package\ninstalled for Roundup installation to work. Debian and derivatives, are\nknown to require this.\n\nIf youre on windows, you will either need to be using the ActiveState python\ndistribution (at http://www.activestate.com/Products/ActivePython/), or youll\nhave to install the win32all package separately (get it from\nhttp://starship.python.net/crew/mhammond/win32/).''')
+
+        self.db.config.MAILGW_CONVERT_HTMLTOTEXT = "none"
+        self.assertRaises(MailUsageError, self._handle_mail, html_message)
+
     def testMessageWithFromInIt(self):
         nodeid = self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
@@ -1134,6 +1200,244 @@ some text in inner email
 
 --utf-8--
 ''')
+
+    html_doc='''<html><body>
+<script>
+this must not be in output
+</script>
+<style>
+p {display:block}
+</style>
+    <div class="header"><h1>Roundup</h1>
+        <div id="searchbox" style="display: none">
+          <form class="search" action="../search.html" method="get">
+            <input type="text" name="q" size="18" />
+            <input type="submit" value="Search" />
+            <input type="hidden" name="check_keywords" value="yes" />
+            <input type="hidden" name="area" value="default" />
+          </form>
+        </div>
+        <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+       <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://pypi.python.org/pypi/roundup">Download</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../docs.html">Docs</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="features.html">Roundup Features</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Installing Roundup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="upgrading.html">Upgrading to newer versions of Roundup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="FAQ.html">Roundup FAQ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide.html">User Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="customizing.html">Customising Roundup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="admin_guide.html">Administration Guide</a></li>
+</ul>
+<div class="section" id="prerequisites">
+<h2><a class="toc-backref" href="#id5">Prerequisites</a></h2>
+<p>Roundup requires Python 2.5 or newer (but not Python 3) with a functioning
+anydbm module. Download the latest version from <a class="reference external" href="http://www.python.org/">http://www.python.org/</a>.
+It is highly recommended that users install the latest patch version
+of python as these contain many fixes to serious bugs.</p>
+<p>Some variants of Linux will need an additional &#8220;python dev&#8221; package
+installed for Roundup installation to work. Debian and derivatives, are
+known to require this.</p>
+<p>If you&#8217;re on windows, you will either need to be using the ActiveState python
+distribution (at <a class="reference external" href="http://www.activestate.com/Products/ActivePython/">http://www.activestate.com/Products/ActivePython/</a>), or you&#8217;ll
+have to install the win32all package separately (get it from
+<a class="reference external" href="http://starship.python.net/crew/mhammond/win32/">http://starship.python.net/crew/mhammond/win32/</a>).</p>
+</div>
+umlaut =E4=F6=FC=C4=D6=DC=DF</body>
+</html>
+'''
+# FIXME append  =E4=F6=FC=C4=D6=DC=DF before </body>
+#       to test quoted printable conversion
+
+    multipart_msg_notext = '''From: mary <mary@test.test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: [issue1] Testing...
+Content-Type: multipart/alternative; boundary=001485f339f8f361fb049188dbba
+
+
+--001485f339f8f361fb049188dbba
+Content-Type: text/csv; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+75,23,16,18
+
+--001485f339f8f361fb049188dbba
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+%s
+--001485f339f8f361fb049188dbba--
+'''%html_doc
+
+    def testMultipartTextifyHTML(self):
+        mycontent='''Roundup\n        Home\nDownload\nDocs\nRoundup Features\nInstalling Roundup\nUpgrading to newer versions of Roundup\nRoundup FAQ\nUser Guide\nCustomising Roundup\nAdministration Guide\nPrerequisites\n\nRoundup requires Python 2.5 or newer (but not Python 3) with a functioning\nanydbm module. Download the latest version from http://www.python.org/.\nIt is highly recommended that users install the latest patch version\nof python as these contain many fixes to serious bugs.\n\nSome variants of Linux will need an additional python dev package\ninstalled for Roundup installation to work. Debian and derivatives, are\nknown to require this.\n\nIf youre on windows, you will either need to be using the ActiveState python\ndistribution (at http://www.activestate.com/Products/ActivePython/), or youll\nhave to install the win32all package separately (get it from\nhttp://starship.python.net/crew/mhammond/win32/).\n\numlaut'''
+
+#  \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f
+# append above with leading space to end of mycontent. It is the 
+# translated content when =E4=F6=FC=C4=D6=DC=DF is added to the html
+# input.
+        self.doNewIssue()
+        self.db.config.MAILGW_CONVERT_HTMLTOTEXT = 'dehtml'
+        self._handle_mail(self.multipart_msg_notext)
+        messages = self.db.issue.get('1', 'messages')
+        messages.sort()
+        msg = self.db.msg.getnode(messages[-1])
+        # html converted to utf-8 text
+        self.assertEqual(msg.content, mycontent+" \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f")
+        self.assertEqual(msg.type, None)
+        self.assertEqual(len(msg.files), 2)
+        name = "unnamed" # no name for any files
+        types = { 0: "text/csv", 1: "text/html" }
+        # replace quoted printable string at end of html document
+        # with it's utf-8 encoded equivalent so comparison
+        # works.
+        content = { 0: "75,23,16,18\n", 1: self.html_doc.replace(" =E4=F6=FC=C4=D6=DC=DF"," \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f")}
+        for n, id in enumerate (msg.files):
+            f = self.db.file.getnode (id)
+            self.assertEqual(f.name, name)
+            self.assertEqual(f.type, types[n])
+            self.assertEqual(f.content, content[n])
+
+            self.compareMessages(self._get_mail(),
+'''From roundup-admin@your.tracker.email.domain.example Thu Oct 10 02:42:14 2017
+FROM: roundup-admin@your.tracker.email.domain.example
+TO: chef@bork.bork.bork, richard@test.test
+Content-Type: multipart/mixed; boundary="===============6077820410007357357=="
+MIME-Version: 1.0
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+X-Roundup-issue-status: chatting
+X-Roundup-issue-files: unnamed, unnamed
+Subject: [issue1] Testing...
+To: chef@bork.bork.bork, richard@test.test
+From: "Contrary, Mary" <issue_tracker@your.tracker.email.domain.example>
+Date: Thu, 12 Oct 2017 02:42:14 +0000
+Precedence: bulk
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+X-Roundup-Version: 1.5.1
+
+--===============6077820410007357357==
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+
+Contrary, Mary <mary@test.test> added the comment:
+
+Roundup
+        Home
+Download
+Docs
+Roundup Features
+Installing Roundup
+Upgrading to newer versions of Roundup
+Roundup FAQ
+User Guide
+Customising Roundup
+Administration Guide
+Prerequisites
+
+Roundup requires Python 2.5 or newer (but not Python 3) with a functioning
+anydbm module. Download the latest version from http://www.python.org/.
+It is highly recommended that users install the latest patch version
+of python as these contain many fixes to serious bugs.
+
+Some variants of Linux will need an additional python dev package
+installed for Roundup installation to work. Debian and derivatives, are
+known to require this.
+
+If youre on windows, you will either need to be using the ActiveState python
+distribution (at http://www.activestate.com/Products/ActivePython/), or you=
+ll
+have to install the win32all package separately (get it from
+http://starship.python.net/crew/mhammond/win32/).
+
+umlaut =C3=A4=C3=B6=C3=BC=C3=84=C3=96=C3=9C=C3=9F
+
+----------
+status: unread -> chatting
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
+_______________________________________________________________________
+--===============6077820410007357357==
+Content-Type: text/csv
+MIME-Version: 1.0
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="unnamed"
+
+NzUsMjMsMTYsMTgK
+
+--===============6077820410007357357==
+Content-Type: text/html
+MIME-Version: 1.0
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="unnamed"
+
+PGh0bWw+PGJvZHk+CjxzY3JpcHQ+CnRoaXMgbXVzdCBub3QgYmUgaW4gb3V0cHV0Cjwvc2NyaXB0
+Pgo8c3R5bGU+CnAge2Rpc3BsYXk6YmxvY2t9Cjwvc3R5bGU+CiAgICA8ZGl2IGNsYXNzPSJoZWFk
+ZXIiPjxoMT5Sb3VuZHVwPC9oMT4KICAgICAgICA8ZGl2IGlkPSJzZWFyY2hib3giIHN0eWxlPSJk
+aXNwbGF5OiBub25lIj4KICAgICAgICAgIDxmb3JtIGNsYXNzPSJzZWFyY2giIGFjdGlvbj0iLi4v
+c2VhcmNoLmh0bWwiIG1ldGhvZD0iZ2V0Ij4KICAgICAgICAgICAgPGlucHV0IHR5cGU9InRleHQi
+IG5hbWU9InEiIHNpemU9IjE4IiAvPgogICAgICAgICAgICA8aW5wdXQgdHlwZT0ic3VibWl0IiB2
+YWx1ZT0iU2VhcmNoIiAvPgogICAgICAgICAgICA8aW5wdXQgdHlwZT0iaGlkZGVuIiBuYW1lPSJj
+aGVja19rZXl3b3JkcyIgdmFsdWU9InllcyIgLz4KICAgICAgICAgICAgPGlucHV0IHR5cGU9Imhp
+ZGRlbiIgbmFtZT0iYXJlYSIgdmFsdWU9ImRlZmF1bHQiIC8+CiAgICAgICAgICA8L2Zvcm0+CiAg
+ICAgICAgPC9kaXY+CiAgICAgICAgPHNjcmlwdCB0eXBlPSJ0ZXh0L2phdmFzY3JpcHQiPiQoJyNz
+ZWFyY2hib3gnKS5zaG93KDApOzwvc2NyaXB0PgogICAgPC9kaXY+CiAgICAgICA8dWwgY2xhc3M9
+ImN1cnJlbnQiPgo8bGkgY2xhc3M9InRvY3RyZWUtbDEiPjxhIGNsYXNzPSJyZWZlcmVuY2UgaW50
+ZXJuYWwiIGhyZWY9Ii4uL2luZGV4Lmh0bWwiPkhvbWU8L2E+PC9saT4KPGxpIGNsYXNzPSJ0b2N0
+cmVlLWwxIj48YSBjbGFzcz0icmVmZXJlbmNlIGV4dGVybmFsIiBocmVmPSJodHRwOi8vcHlwaS5w
+eXRob24ub3JnL3B5cGkvcm91bmR1cCI+RG93bmxvYWQ8L2E+PC9saT4KPGxpIGNsYXNzPSJ0b2N0
+cmVlLWwxIGN1cnJlbnQiPjxhIGNsYXNzPSJyZWZlcmVuY2UgaW50ZXJuYWwiIGhyZWY9Ii4uL2Rv
+Y3MuaHRtbCI+RG9jczwvYT48dWwgY2xhc3M9ImN1cnJlbnQiPgo8bGkgY2xhc3M9InRvY3RyZWUt
+bDIiPjxhIGNsYXNzPSJyZWZlcmVuY2UgaW50ZXJuYWwiIGhyZWY9ImZlYXR1cmVzLmh0bWwiPlJv
+dW5kdXAgRmVhdHVyZXM8L2E+PC9saT4KPGxpIGNsYXNzPSJ0b2N0cmVlLWwyIGN1cnJlbnQiPjxh
+IGNsYXNzPSJjdXJyZW50IHJlZmVyZW5jZSBpbnRlcm5hbCIgaHJlZj0iIj5JbnN0YWxsaW5nIFJv
+dW5kdXA8L2E+PC9saT4KPGxpIGNsYXNzPSJ0b2N0cmVlLWwyIj48YSBjbGFzcz0icmVmZXJlbmNl
+IGludGVybmFsIiBocmVmPSJ1cGdyYWRpbmcuaHRtbCI+VXBncmFkaW5nIHRvIG5ld2VyIHZlcnNp
+b25zIG9mIFJvdW5kdXA8L2E+PC9saT4KPGxpIGNsYXNzPSJ0b2N0cmVlLWwyIj48YSBjbGFzcz0i
+cmVmZXJlbmNlIGludGVybmFsIiBocmVmPSJGQVEuaHRtbCI+Um91bmR1cCBGQVE8L2E+PC9saT4K
+PGxpIGNsYXNzPSJ0b2N0cmVlLWwyIj48YSBjbGFzcz0icmVmZXJlbmNlIGludGVybmFsIiBocmVm
+PSJ1c2VyX2d1aWRlLmh0bWwiPlVzZXIgR3VpZGU8L2E+PC9saT4KPGxpIGNsYXNzPSJ0b2N0cmVl
+LWwyIj48YSBjbGFzcz0icmVmZXJlbmNlIGludGVybmFsIiBocmVmPSJjdXN0b21pemluZy5odG1s
+Ij5DdXN0b21pc2luZyBSb3VuZHVwPC9hPjwvbGk+CjxsaSBjbGFzcz0idG9jdHJlZS1sMiI+PGEg
+Y2xhc3M9InJlZmVyZW5jZSBpbnRlcm5hbCIgaHJlZj0iYWRtaW5fZ3VpZGUuaHRtbCI+QWRtaW5p
+c3RyYXRpb24gR3VpZGU8L2E+PC9saT4KPC91bD4KPGRpdiBjbGFzcz0ic2VjdGlvbiIgaWQ9InBy
+ZXJlcXVpc2l0ZXMiPgo8aDI+PGEgY2xhc3M9InRvYy1iYWNrcmVmIiBocmVmPSIjaWQ1Ij5QcmVy
+ZXF1aXNpdGVzPC9hPjwvaDI+CjxwPlJvdW5kdXAgcmVxdWlyZXMgUHl0aG9uIDIuNSBvciBuZXdl
+ciAoYnV0IG5vdCBQeXRob24gMykgd2l0aCBhIGZ1bmN0aW9uaW5nCmFueWRibSBtb2R1bGUuIERv
+d25sb2FkIHRoZSBsYXRlc3QgdmVyc2lvbiBmcm9tIDxhIGNsYXNzPSJyZWZlcmVuY2UgZXh0ZXJu
+YWwiIGhyZWY9Imh0dHA6Ly93d3cucHl0aG9uLm9yZy8iPmh0dHA6Ly93d3cucHl0aG9uLm9yZy88
+L2E+LgpJdCBpcyBoaWdobHkgcmVjb21tZW5kZWQgdGhhdCB1c2VycyBpbnN0YWxsIHRoZSBsYXRl
+c3QgcGF0Y2ggdmVyc2lvbgpvZiBweXRob24gYXMgdGhlc2UgY29udGFpbiBtYW55IGZpeGVzIHRv
+IHNlcmlvdXMgYnVncy48L3A+CjxwPlNvbWUgdmFyaWFudHMgb2YgTGludXggd2lsbCBuZWVkIGFu
+IGFkZGl0aW9uYWwgJiM4MjIwO3B5dGhvbiBkZXYmIzgyMjE7IHBhY2thZ2UKaW5zdGFsbGVkIGZv
+ciBSb3VuZHVwIGluc3RhbGxhdGlvbiB0byB3b3JrLiBEZWJpYW4gYW5kIGRlcml2YXRpdmVzLCBh
+cmUKa25vd24gdG8gcmVxdWlyZSB0aGlzLjwvcD4KPHA+SWYgeW91JiM4MjE3O3JlIG9uIHdpbmRv
+d3MsIHlvdSB3aWxsIGVpdGhlciBuZWVkIHRvIGJlIHVzaW5nIHRoZSBBY3RpdmVTdGF0ZSBweXRo
+b24KZGlzdHJpYnV0aW9uIChhdCA8YSBjbGFzcz0icmVmZXJlbmNlIGV4dGVybmFsIiBocmVmPSJo
+dHRwOi8vd3d3LmFjdGl2ZXN0YXRlLmNvbS9Qcm9kdWN0cy9BY3RpdmVQeXRob24vIj5odHRwOi8v
+d3d3LmFjdGl2ZXN0YXRlLmNvbS9Qcm9kdWN0cy9BY3RpdmVQeXRob24vPC9hPiksIG9yIHlvdSYj
+ODIxNztsbApoYXZlIHRvIGluc3RhbGwgdGhlIHdpbjMyYWxsIHBhY2thZ2Ugc2VwYXJhdGVseSAo
+Z2V0IGl0IGZyb20KPGEgY2xhc3M9InJlZmVyZW5jZSBleHRlcm5hbCIgaHJlZj0iaHR0cDovL3N0
+YXJzaGlwLnB5dGhvbi5uZXQvY3Jldy9taGFtbW9uZC93aW4zMi8iPmh0dHA6Ly9zdGFyc2hpcC5w
+eXRob24ubmV0L2NyZXcvbWhhbW1vbmQvd2luMzIvPC9hPikuPC9wPgo8L2Rpdj4KdW1sYXV0IMOk
+w7bDvMOEw5bDnMOfPC9ib2R5Pgo8L2h0bWw+Cg==
+
+--===============6077820410007357357==--
+''')
+
 
     def testMultipartRFC822Unpack(self):
         self.doNewIssue()

@@ -324,6 +324,19 @@ or should it not be added (none)"""
         else:
             raise OptionValueError(self, value, self.class_description)
         
+class HtmlToTextOption(Option):
+
+    """What module should be used to convert emails with only text/html parts into text for display in roundup. Choose from beautifulsoup 4, dehtml - the internal code or none to disable html to text conversion. If beautifulsoup chosen but not available, dehtml will be used."""
+
+    class_description = "Allowed values: beautifulsoup, dehtml, none"
+
+    def str2value(self, value):
+        _val = value.lower()
+        if _val in ("beautifulsoup", "dehtml", "none"):
+            return _val
+        else:
+            raise OptionValueError(self, value, self.class_description)
+
 class EmailBodyOption(Option):
 
     """When to replace message body or strip quoting: always, never or for new items only"""
@@ -1012,6 +1025,14 @@ always passes, so setting it less than 1 is not recommended."""),
             "multipart/alternative, and this option is set, all other\n"
             "parts of the multipart/alternative are ignored. The default\n"
             "is to keep all parts and attach them to the issue."),
+        (HtmlToTextOption, "convert_htmltotext", "none",
+            "If an email has only text/html parts, use this module\n"
+            "to convert the html to text. Choose from beautifulsoup 4,\n"
+            "dehtml - (internal code), or none to disable conversion.\n"
+            "If 'none' is selected, email without a text/plain part\n"
+            "will be returned to the user with a message. If\n"
+            "beautifulsoup is selected but not installed dehtml will\n"
+            "be used instead."),
         (BooleanOption, "keep_real_from", "no",
             "When handling emails ignore the Resent-From:-header\n"
             "and use the original senders From:-header instead.\n"

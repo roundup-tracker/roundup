@@ -216,6 +216,12 @@ Features:
   figure out the original client ip and protocol. None of the core
   roundup code uses these headers/env vars. These headers can be
   spoofed by bad proxies etc. so you have been warned.
+- issue2550799: provide basic support for handling html only emails
+  Emails missing text/plain parts but with text/html parts can be
+  converted into text. If this is done the email will no longer be
+  bounced back to the sender with an error. Enable by configuring the
+  convert_htmltotext option in your upgraded config.ini. (Initial
+  patch by Igor Ippolitov merged with changes by John Rouillard.)
 
 Fixed:
 
