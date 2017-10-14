@@ -37,7 +37,7 @@ class ExampleMessage(Message):
              'multipart/mixed': '    boundary="boundary-%(indent)s";\n',
              'multipart/alternative': '    boundary="boundary-%(indent)s";\n',
              'text/plain': '    name="foo.txt"\nfoo\n',
-             'text/html': '    name="bar.html"\n<html><body>bar</body></html>\n',
+             'text/html': '    name="bar.html"\n<html><body>bar &gt;</body></html>\n',
              'application/pgp-signature': '    name="foo.gpg"\nfoo\n',
              'application/pdf': '    name="foo.pdf"\nfoo\n',
              'message/rfc822': '\nSubject: foo\n\nfoo\n'}
@@ -195,9 +195,9 @@ multipart/mixed
 multipart/mixed
     text/html
     application/pdf""",
-                  ('bar\n',
+                  ('bar >\n',
                    [('bar.html', 'text/html',
-                      '<html><body>bar</body></html>\n'),
+                      '<html><body>bar &gt;</body></html>\n'),
                    ('foo.pdf', 'application/pdf', 'foo\n')], False),
                             convert_html_with='dehtml')
 
@@ -208,7 +208,7 @@ multipart/mixed
     application/pdf""",
                   (None,
                    [('bar.html', 'text/html',
-                      '<html><body>bar</body></html>\n'),
+                      '<html><body>bar &gt;</body></html>\n'),
                     ('foo.pdf', 'application/pdf', 'foo\n')], False),
                             convert_html_with=False)
 
@@ -224,9 +224,9 @@ multipart/alternative
 multipart/alternative
     text/html
     application/pdf""",
-                  ('bar\n',
+                  ('bar >\n',
                    [('bar.html', 'text/html',
-                      '<html><body>bar</body></html>\n'),
+                      '<html><body>bar &gt;</body></html>\n'),
                    ('foo.pdf', 'application/pdf', 'foo\n')], False),
                             convert_html_with='dehtml')
 
@@ -236,7 +236,7 @@ multipart/alternative
     application/pdf""",
                   (None,
                    [('bar.html', 'text/html',
-                      '<html><body>bar</body></html>\n'),
+                      '<html><body>bar &gt;</body></html>\n'),
                     ('foo.pdf', 'application/pdf', 'foo\n')], False),
                             convert_html_with=False)
 
@@ -249,7 +249,7 @@ multipart/alternative
     application/pdf""",
                   ('foo\n',
                    [('bar.html', 'text/html',
-                      '<html><body>bar</body></html>\n'),
+                      '<html><body>bar &gt;</body></html>\n'),
                     ('foo.pdf', 'application/pdf', 'foo\n')], False),
                             convert_html_with='dehtml')
 
@@ -261,7 +261,7 @@ multipart/alternative
     application/pdf""",
                   ('foo\n',
                    [('bar.html', 'text/html',
-                      '<html><body>bar</body></html>\n'),
+                      '<html><body>bar &gt;</body></html>\n'),
                     ('foo.pdf', 'application/pdf', 'foo\n')], False),
                             convert_html_with='dehtml')
 
@@ -274,7 +274,7 @@ multipart/alternative
     application/pdf""",
                   ('foo\n',
                    [('bar.html', 'text/html',
-                      '<html><body>bar</body></html>\n'),
+                      '<html><body>bar &gt;</body></html>\n'),
                     ('foo.pdf', 'application/pdf', 'foo\n')], False),
                             convert_html_with=False)
 
@@ -287,7 +287,7 @@ multipart/alternative
     application/pdf""",
                   ('foo\n',
                    [('bar.html', 'text/html',
-                      '<html><body>bar</body></html>\n'),
+                      '<html><body>bar &gt;</body></html>\n'),
                     ('foo.pdf', 'application/pdf', 'foo\n')], False),
                             convert_html_with=False)
 
