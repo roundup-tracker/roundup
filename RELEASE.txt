@@ -62,7 +62,7 @@ So, those commands in a nice, cut'n'pasteable form::
  python setup.py sdist --manifest-only
  python setup.py sdist --quiet
  python setup.py bdist_rpm
- python setup.py bdist_wininst
+ python2.5 setup.py bdist_wininst --user-access-control force
  python setup.py register
  python setup.py sdist upload --sign
  python2.5 setup.py bdist_wininst upload --sign
