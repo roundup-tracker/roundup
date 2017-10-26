@@ -1562,8 +1562,10 @@ def fixNewlines(text):
         other systems (eg. email) don't necessarily handle those line
         endings. Our solution is to convert all line endings to LF.
     """
-    text = text.replace('\r\n', '\n')
-    return text.replace('\r', '\n')
+    if text is not None:
+        text = text.replace('\r\n', '\n')
+        return text.replace('\r', '\n')
+    return text
 
 def rawToHyperdb(db, klass, itemid, propname, value, **kw):
     """ Convert the raw (user-input) value to a hyperdb-storable value. The
