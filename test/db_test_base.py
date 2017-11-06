@@ -16,7 +16,7 @@
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 import unittest, os, shutil, errno, imp, sys, time, pprint, base64, os.path
-import logging
+import logging, cgi
 import gpgmelib
 from email.parser import FeedParser
 
@@ -27,6 +27,11 @@ from roundup.mailer import Mailer
 from roundup import date, password, init, instance, configuration, \
     roundupdb, i18n, hyperdb
 from roundup.cgi.templating import HTMLItem
+from roundup.cgi.templating import HTMLProperty, _HTMLItem, anti_csrf_nonce
+from roundup.cgi import client, actions
+from roundup.cgi.engine_zopetal import RoundupPageTemplate
+from roundup.cgi.templating import HTMLItem
+from roundup.exceptions import UsageError, Reject
 
 from mocknull import MockNull
 
@@ -2295,7 +2300,6 @@ class DBTest(commonDBTest):
     # test props from args parsing
     def testAdminOtherCommands(self):
         import roundup.admin
-        from roundup.exceptions import UsageError
 
         # use the filtering setup to create a bunch of items
         ae, dummy1, dummy2 = self.filteringSetup()
@@ -3124,5 +3128,190 @@ class HTMLItemTest(ClassicInitBase):
         ae(str(issue ['assignedto'].username),m%'username')
         ae(bool(issue ['assignedto']['username']),False)
         ae(bool(issue ['priority']['name']),False)
+
+def makeForm(args):
+    form = cgi.FieldStorage()
+    for k,v in args.items():
+        if type(v) is type([]):
+            [form.list.append(cgi.MiniFieldStorage(k, x)) for x in v]
+        elif isinstance(v, FileUpload):
+            x = cgi.MiniFieldStorage(k, v.content)
+            x.filename = v.filename
+            form.list.append(x)
+        else:
+            form.list.append(cgi.MiniFieldStorage(k, v))
+    return form
+
+class FileUpload:
+    def __init__(self, content, filename):
+        self.content = content
+        self.filename = filename
+
+class FormTestParent(object):
+
+    backend = "anydbm"
+    def setupDetectors(self):
+        pass
+
+    def setUp(self):
+        self.dirname = '_test_cgi_form'
+        # set up and open a tracker
+        self.instance = setupTracker(self.dirname, backend = self.backend)
+
+        # We may want to register separate detectors
+        self.setupDetectors()
+
+        # open the database
+        self.db = self.instance.open('admin')
+        self.db.tx_Source = "web"
+        self.db.user.create(username='Chef', address='chef@bork.bork.bork',
+            realname='Bork, Chef', roles='User')
+        self.db.user.create(username='mary', address='mary@test.test',
+            roles='User', realname='Contrary, Mary')
+
+        self.db.issue.addprop(tx_Source=hyperdb.String())
+        self.db.msg.addprop(tx_Source=hyperdb.String())
+        self.db.post_init()
+
+    def setupClient(self, form, classname, nodeid=None, template='item', env_addon=None):
+        cl = client.Client(self.instance, None, {'PATH_INFO':'/',
+            'REQUEST_METHOD':'POST'}, makeForm(form))
+        cl.classname = classname
+        cl.base = 'http://whoami.com/path/'
+        cl.nodeid = nodeid
+        cl.language = ('en',)
+        cl.userid = '1'
+        cl.db = self.db
+        cl.user = 'admin'
+        cl.template = template
+        if env_addon is not None:
+            cl.env.update(env_addon)
+        return cl
+
+    def parseForm(self, form, classname='test', nodeid=None):
+        cl = self.setupClient(form, classname, nodeid)
+        return cl.parsePropsFromForm(create=1)
+
+    def tearDown(self):
+        self.db.close()
+        try:
+            shutil.rmtree(self.dirname)
+        except OSError as error:
+            if error.errno not in (errno.ENOENT, errno.ESRCH): raise
+
+class SpecialAction(actions.EditItemAction):
+    x = False
+    def handle(self):
+        self.__class__.x = True
+        cl = self.db.getclass(self.classname)
+        cl.set(self.nodeid, status='2')
+        cl.set(self.nodeid, title="Just a test")
+        assert(0, "not reached")
+        self.db.commit()
+
+def reject_title(db, cl, nodeid, newvalues):
+    if 'title' in newvalues:
+        raise Reject ("REJECT TITLE CHANGE")
+
+def init_reject(db):
+    db.issue.audit("set", reject_title)
+
+def get_extensions(self, what):
+    """ For monkey-patch of instance.get_extensions: The old method is
+        kept as _get_extensions, we use the new method to return our own
+        auditors/reactors.
+    """
+    if what == 'detectors':
+        return [init_reject]
+    return self._get_extensions(what)
+
+class SpecialActionTest(FormTestParent):
+
+    def setupDetectors(self):
+        self.instance._get_extensions = self.instance.get_extensions
+        def ge(what):
+            return get_extensions(self.instance, what)
+        self.instance.get_extensions = ge
+
+    def setUp(self):
+        FormTestParent.setUp(self)
+
+        self.instance.registerAction('special', SpecialAction)
+        self.issue = self.db.issue.create (title = "hello", status='1')
+        self.db.commit ()
+        if not os.environ.has_key('SENDMAILDEBUG'):
+            os.environ['SENDMAILDEBUG'] = 'mail-test2.log'
+        self.SENDMAILDEBUG = os.environ['SENDMAILDEBUG']
+        page_template = """
+        <html>
+         <body>
+          <p tal:condition="options/error_message|nothing"
+             tal:repeat="m options/error_message"
+             tal:content="structure m"/>
+          <p tal:content="context/title/plain"/>
+          <p tal:content="context/status/plain"/>
+          <p tal:content="structure context/submit"/>
+         </body>
+        </html>
+        """.strip ()
+        self.form = {':action': 'special'}
+        cl = self.setupClient(self.form, 'issue', self.issue)
+        pt = RoundupPageTemplate()
+        pt.pt_edit(page_template, 'text/html')
+        self.out = []
+        def wh(s):
+            self.out.append(s)
+        cl.write_html = wh
+        def load_template(x):
+            return pt
+        cl.instance.templates.load = load_template
+        cl.selectTemplate = MockNull()
+        cl.determine_context = MockNull ()
+        def hasPermission(s, p, classname=None, d=None, e=None, **kw):
+            return True
+        self.hasPermission = actions.Action.hasPermission
+        actions.Action.hasPermission = hasPermission
+        self.e1 = _HTMLItem.is_edit_ok
+        _HTMLItem.is_edit_ok = lambda x : True
+        self.e2 = HTMLProperty.is_edit_ok
+        HTMLProperty.is_edit_ok = lambda x : True
+        # Make sure header check passes
+        cl.env['HTTP_REFERER'] = 'http://whoami.com/path/'
+        self.client = cl
+
+    def tearDown(self):
+        FormTestParent.tearDown(self)
+        # Remove monkey-patches
+        self.instance.get_extensions = self.instance._get_extensions
+        del self.instance._get_extensions
+        actions.Action.hasPermission = self.hasPermission
+        _HTMLItem.is_edit_ok = self.e1
+        HTMLProperty.is_edit_ok = self.e2
+        if os.path.exists(self.SENDMAILDEBUG):
+            #os.remove(self.SENDMAILDEBUG)
+            pass
+
+    def testInnerMain(self):
+        cl = self.client
+        cl.session_api = MockNull(_sid="1234567890")
+        self.form ['@nonce'] = anti_csrf_nonce(cl, cl)
+        cl.form = makeForm(self.form)
+        # inner_main will re-open the database!
+        # Note that in the template above, the rendering of the
+        # context/submit button will also call anti_csrf_nonce which
+        # does a commit of the otk to the database.
+        cl.inner_main()
+        cl.db.close()
+        print self.out
+        # Make sure the action was called
+        self.assertEqual(SpecialAction.x, True)
+        # Check that the Reject worked:
+        self.assertNotEqual(-1, self.out[0].index('REJECT TITLE CHANGE'))
+        # Re-open db
+        self.db.close()
+        self.db = self.instance.open ('admin')
+        # We shouldn't see any changes
+        self.assertEqual(self.db.issue.get(self.issue, 'title'), 'hello')
+        self.assertEqual(self.db.issue.get(self.issue, 'status'), '1')
 
 # vim: set et sts=4 sw=4 :

@@ -13,8 +13,8 @@ import unittest, os, shutil, errno, sys, difflib, cgi, re, StringIO
 from roundup.cgi import client, actions, exceptions
 from roundup.cgi.exceptions import FormError, NotFound
 from roundup.exceptions import UsageError
-from roundup.cgi.templating import HTMLItem, HTMLRequest, NoTemplate, anti_csrf_nonce
-from roundup.cgi.templating import HTMLProperty, _HTMLItem
+from roundup.cgi.templating import HTMLItem, HTMLRequest, NoTemplate
+from roundup.cgi.templating import HTMLProperty, _HTMLItem, anti_csrf_nonce
 from roundup.cgi.form_parser import FormParser
 from roundup import init, instance, password, hyperdb, date
 
@@ -24,11 +24,7 @@ from roundup.cgi.engine_zopetal import RoundupPageTemplate
 from mocknull import MockNull
 
 import db_test_base
-
-class FileUpload:
-    def __init__(self, content, filename):
-        self.content = content
-        self.filename = filename
+from db_test_base import FormTestParent, setupTracker, FileUpload
 
 class FileList:
     def __init__(self, name, *files):
@@ -37,19 +33,6 @@ class FileList:
     def items (self):
         for f in self.files:
             yield (self.name, f)
-
-def makeForm(args):
-    form = cgi.FieldStorage()
-    for k,v in args.items():
-        if type(v) is type([]):
-            [form.list.append(cgi.MiniFieldStorage(k, x)) for x in v]
-        elif isinstance(v, FileUpload):
-            x = cgi.MiniFieldStorage(k, v.content)
-            x.filename = v.filename
-            form.list.append(x)
-        else:
-            form.list.append(cgi.MiniFieldStorage(k, v))
-    return form
 
 cm = client.add_message
 class MessageTestCase(unittest.TestCase):
@@ -86,24 +69,10 @@ class MessageTestCase(unittest.TestCase):
         self.assertEqual(cm([],'<i>x</i>\n<b>x</b>',False),
             ['<i>x</i><br />\n<b>x</b>'])
 
-class FormTestCase(unittest.TestCase):
+class FormTestCase(FormTestParent, unittest.TestCase):
+
     def setUp(self):
-        self.dirname = '_test_cgi_form'
-        # set up and open a tracker
-        self.instance = db_test_base.setupTracker(self.dirname)
-
-        # open the database
-        self.db = self.instance.open('admin')
-        self.db.tx_Source = "web"
-        self.db.user.create(username='Chef', address='chef@bork.bork.bork',
-            realname='Bork, Chef', roles='User')
-        self.db.user.create(username='mary', address='mary@test.test',
-            roles='User', realname='Contrary, Mary')
-
-        self.db.issue.addprop(tx_Source=hyperdb.String())
-        self.db.msg.addprop(tx_Source=hyperdb.String())
-
-        self.db.post_init()
+        FormTestParent.setUp(self)
 
         vars = {}
         thisdir = os.path.dirname(__file__)
@@ -121,32 +90,6 @@ class FormTestCase(unittest.TestCase):
         classes = '|'.join(self.db.classes.keys())
         self.FV_SPECIAL = re.compile(FormParser.FV_LABELS%classes,
             re.VERBOSE)
-
-    def setupClient(self, form, classname, nodeid=None, template='item', env_addon=None):
-        cl = client.Client(self.instance, None, {'PATH_INFO':'/',
-            'REQUEST_METHOD':'POST'}, makeForm(form))
-        cl.classname = classname
-        cl.base = 'http://whoami.com/path/'
-        cl.nodeid = nodeid
-        cl.language = ('en',)
-        cl.userid = '1'
-        cl.db = self.db
-        cl.user = 'admin'
-        cl.template = template
-        if env_addon is not None:
-            cl.env.update(env_addon)
-        return cl
-
-    def parseForm(self, form, classname='test', nodeid=None):
-        cl = self.setupClient(form, classname, nodeid)
-        return cl.parsePropsFromForm(create=1)
-
-    def tearDown(self):
-        self.db.close()
-        try:
-            shutil.rmtree(self.dirname)
-        except OSError as error:
-            if error.errno not in (errno.ENOENT, errno.ESRCH): raise
 
     #
     # form label extraction
@@ -996,7 +939,7 @@ class FormTestCase(unittest.TestCase):
         form2 = copy.copy(form)
         form2.update({'@csrf': 'booogus'})
         # add a bogus csrf field to the form and rerun the inner_main
-        cl.form = makeForm(form2)
+        cl.form = db_test_base.makeForm(form2)
 
         cl.inner_main()
         match_at=out[0].find('Invalid csrf token found: booogus')
@@ -1016,7 +959,7 @@ class FormTestCase(unittest.TestCase):
 
         form2.update({'@csrf': nonce})
         # add a real csrf field to the form and rerun the inner_main
-        cl.form = makeForm(form2)
+        cl.form = db_test_base.makeForm(form2)
         cl.inner_main()
         # csrf passes and redirects to the new issue.
         match_at=out[0].find('Redirecting to <a href="http://whoami.com/path/issue1?@ok_message')
@@ -1040,7 +983,7 @@ class FormTestCase(unittest.TestCase):
         nonce = anti_csrf_nonce(cl, cl)
         form2.update({'@csrf': nonce})
         # add a real csrf field to the form and rerun the inner_main
-        cl.form = makeForm(form2)
+        cl.form = db_test_base.makeForm(form2)
         cl.inner_main()
         # csrf passes but fail creating new issue because not a post
         match_at=out[0].find('<p>Invalid request</p>')
@@ -1137,7 +1080,7 @@ class FormTestCase(unittest.TestCase):
     def _make_client(self, form, classname='user', nodeid='1',
            userid='2', template='item'):
         cl = client.Client(self.instance, None, {'PATH_INFO':'/',
-            'REQUEST_METHOD':'POST'}, makeForm(form))
+            'REQUEST_METHOD':'POST'}, db_test_base.makeForm(form))
         cl.classname = classname
         if nodeid is not None:
             cl.nodeid = nodeid
@@ -1562,7 +1505,7 @@ class TemplateHtmlRendering(unittest.TestCase):
     def setUp(self):
         self.dirname = '_test_template'
         # set up and open a tracker
-        self.instance = db_test_base.setupTracker(self.dirname)
+        self.instance = setupTracker(self.dirname)
 
         # open the database
         self.db = self.instance.open('admin')
@@ -1576,7 +1519,7 @@ class TemplateHtmlRendering(unittest.TestCase):
         # create a client instance and hijack write_html
         self.client = client.Client(self.instance, "user",
                 {'PATH_INFO':'/user', 'REQUEST_METHOD':'POST'},
-                form=makeForm({"@template": "item"}))
+                form=db_test_base.makeForm({"@template": "item"}))
 
         self.client._error_message = []
         self.client._ok_message = []
@@ -1624,7 +1567,7 @@ class TemplateHtmlRendering(unittest.TestCase):
 
         # this will generate the default home page like
         # testrenderFrontPage
-        self.client.form=makeForm({})
+        self.client.form=db_test_base.makeForm({})
         self.client.path = ''
         self.client.determine_context()
         self.assertEqual((self.client.classname, self.client.template, self.client.nodeid), (None, '', None))
@@ -1635,7 +1578,8 @@ class TemplateHtmlRendering(unittest.TestCase):
            result.index('<!-- SHA: c87a4e18d59a527331f1d367c0c6cc67ee123e63 -->'))
 
         # now look at the user index page
-        self.client.form=makeForm({ "@ok_message": "ok message", "@template": "index"})
+        self.client.form=db_test_base.makeForm(
+            { "@ok_message": "ok message", "@template": "index"})
         self.client.path = 'user'
         self.client.determine_context()
         self.assertEqual((self.client.classname, self.client.template, self.client.nodeid), ('user', 'index', None))
@@ -1655,7 +1599,7 @@ class TemplateHtmlRendering(unittest.TestCase):
         # run renderContext(); check result for proper page
 
         # Test ok state template that uses user.forgotten.html
-        self.client.form=makeForm({"@template": "forgotten|item"})
+        self.client.form=db_test_base.makeForm({"@template": "forgotten|item"})
         self.client.path = 'user'
         self.client.determine_context()
         self.client.session_api = MockNull(_sid="1234567890")
@@ -1669,7 +1613,7 @@ class TemplateHtmlRendering(unittest.TestCase):
                             result.index('<!-- SHA: eb5dd0bec7a57d58cb7edbeb939fb0390ed1bf74 -->'))
 
         # now set an error in the form to get error template user.item.html
-        self.client.form=makeForm({"@template": "forgotten|item",
+        self.client.form=db_test_base.makeForm({"@template": "forgotten|item",
                                    "@error_message": "this is an error"})
         self.client.path = 'user'
         self.client.determine_context()
@@ -1773,7 +1717,7 @@ class TemplateTestCase(unittest.TestCase):
     def setUp(self):
         self.dirname = '_test_template'
         # set up and open a tracker
-        self.instance = db_test_base.setupTracker(self.dirname)
+        self.instance = setupTracker(self.dirname)
 
         # open the database
         self.db = self.instance.open('admin')
@@ -1802,7 +1746,7 @@ class TemplateTestCase(unittest.TestCase):
         # but not used since I call selectTemplate directly.
         t = client.Client(self.instance, "user",
                 {'PATH_INFO':'/user', 'REQUEST_METHOD':'POST'},
-         form=makeForm({"@template": "item"}))
+         form=db_test_base.makeForm({"@template": "item"}))
 
         # create new file in subdir and a dummy file outside of
         # the tracker's html subdirectory

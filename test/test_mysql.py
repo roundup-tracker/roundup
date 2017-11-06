@@ -23,6 +23,7 @@ from roundup.backends import get_backend, have_backend
 
 from db_test_base import DBTest, ROTest, config, SchemaTest, ClassicInitTest
 from db_test_base import ConcurrentDBTest, HTMLItemTest, FilterCacheTest
+from db_test_base import SpecialActionTest
 
 
 class mysqlOpener:
@@ -130,6 +131,18 @@ class mysqlSessionTest(mysqlOpener, RDBMSTest, unittest.TestCase):
         RDBMSTest.setUp(self)
     def tearDown(self):
         RDBMSTest.tearDown(self)
+        mysqlOpener.tearDown(self)
+
+@skip_mysql
+class mysqlSpecialActionTestCase(mysqlOpener, SpecialActionTest,
+                             unittest.TestCase):
+    backend = 'mysql'
+    def setUp(self):
+        mysqlOpener.setUp(self)
+        SpecialActionTest.setUp(self)
+
+    def tearDown(self):
+        SpecialActionTest.tearDown(self)
         mysqlOpener.tearDown(self)
 
 # vim: set et sts=4 sw=4 :
