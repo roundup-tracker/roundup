@@ -3291,6 +3291,7 @@ class SpecialActionTest(FormTestParent):
             #os.remove(self.SENDMAILDEBUG)
             pass
 
+    @pytest.mark.xfail
     def testInnerMain(self):
         cl = self.client
         cl.session_api = MockNull(_sid="1234567890")
