@@ -1706,6 +1706,101 @@ Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 _______________________________________________________________________
 ''')
 
+    def testNosyMessageCcBccEtc(self):
+        self.doNewIssue()
+        oldvalues = self.db.getnode('issue', '1').copy()
+        oldvalues['assignedto'] = None
+        # reconstruct old behaviour: This would reuse the
+        # database-handle from the doNewIssue above which has committed
+        # as user "Chef". So we close and reopen the db as that user.
+        #self.db.close() actually don't close 'cos this empties memorydb
+        self.db = self.instance.open('Chef')
+        self.db.issue.set('1', assignedto=self.chef_id)
+        self.db.commit()
+        # note user 3 is both in cc and bcc. The one in cc takes
+        # precedence and stops the bcc copy from being sent to user 3..
+        # new email is generated for bcc peoples: admin and kermit
+        # get it.
+        self.db.issue.nosymessage('1', None, oldvalues,
+                                  cc=['3','4', '5'], bcc=['1', '3', '5'],
+                                  cc_emails=['john@example.com'],
+                                  bcc_emails=["kermit@example.com"])
+        new_mail = ""
+        for line in self._get_mail().split("\n"):
+            if "Message-Id: " in line:
+                continue
+            if "Date: " in line:
+                continue
+            new_mail += line+"\n"
+
+        # new_mail is a mbox style string with 2 emails.
+        # we need to split the emails and compare.
+        new_mails=new_mail.split("\nFrom ")
+        # restore the "From " prefix removed from first line of
+        # second message by strip.
+        new_mails[1]="From " + new_mail.split("\nFrom ")[1]
+
+        self.compareMessages(new_mails[0], """
+FROM: roundup-admin@your.tracker.email.domain.example
+TO: chef@bork.bork.bork, fred@example.com, john@example.com, richard@test.test
+Content-Type: text/plain; charset="utf-8"
+Subject: [issue1] Testing...
+To: chef@bork.bork.bork, fred@example.com, john@example.com, richard@test.test
+From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+X-Roundup-Issue-Status: unread
+X-Roundup-Version: 1.3.3
+In-Reply-To: <dummy_test_message_id>
+MIME-Version: 1.0
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
+Content-Transfer-Encoding: quoted-printable
+
+
+Change by Bork, Chef <chef@bork.bork.bork>:
+
+
+----------
+assignedto:  -> Chef
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
+_______________________________________________________________________
+""")
+
+        self.compareMessages(new_mails[1], """
+FROM: roundup-admin@your.tracker.email.domain.example
+TO: admin@test.com, kermit@example.com
+Content-Type: text/plain; charset="utf-8"
+Subject: [issue1] Testing...
+To: chef@bork.bork.bork, fred@example.com, john@example.com, richard@test.test
+From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+X-Roundup-Issue-Status: unread
+X-Roundup-Version: 1.3.3
+In-Reply-To: <dummy_test_message_id>
+MIME-Version: 1.0
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
+Content-Transfer-Encoding: quoted-printable
+
+
+Change by Bork, Chef <chef@bork.bork.bork>:
+
+
+----------
+assignedto:  -> Chef
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
+_______________________________________________________________________
+""")
+
+
     def testPropertyChangeOnly(self):
         self.doNewIssue()
         oldvalues = self.db.getnode('issue', '1').copy()

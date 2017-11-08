@@ -476,6 +476,10 @@ Fixed:
 - issue2550953: Patch: fix for context.is_view_ok check in jinja2 template
   Form controls are displayed when anonymous views indexes but is
   denied access. (patch by Anton Schur applied by John Rouillard)
+- issue2550957: Duplicate emails (with patch).
+  Bcc and cc users passed to nosymessage are not properly recorded.
+  This results in duplicate emails. (patch by Trent Gamblin (trentgg)
+  applied by John Rouillard).
 
 2016-01-11: 1.5.1
 

@@ -330,6 +330,7 @@ class IssueClass:
         for userid in cc + self.get(issueid, whichnosy):
             if good_recipient(userid):
                 add_recipient(userid, sendto)
+                seen_message[userid] = 1
         if encrypt and not pgproles:
             sendto['crypt'].extend (cc_emails)
         else:
@@ -339,6 +340,7 @@ class IssueClass:
         for userid in bcc:
             if good_recipient(userid):
                 add_recipient(userid, bcc_sendto)
+                seen_message[userid] = 1
         if encrypt and not pgproles:
             bcc_sendto['crypt'].extend (bcc_emails)
         else:
