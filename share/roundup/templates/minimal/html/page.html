@@ -31,8 +31,8 @@ status_notresolved string:-1,1,2,3,4,5,6,7;
    <div id="searchbox">
      <form method="GET" action="issue">
        <input type="hidden" name="@columns"
-	      tal:attributes="value columns_showall"
-	      value="id,activity,title,creator,assignedto,status"/>
+              tal:attributes="value columns_showall"
+              value="id,activity,title,creator,assignedto,status"/>
        <input type="hidden" name="@sort" value="activity"/>
        <input type="hidden" name="@group" value="priority"/>
        <input id="search-text" name="@search_text" size="10"
@@ -95,7 +95,7 @@ status_notresolved string:-1,1,2,3,4,5,6,7;
      type="text" name="@number">
     <input type="hidden" name="@type" value="issue">
     <input name="@csrf" type="hidden"
-	   tal:attributes="value python:utils.anti_csrf_nonce()">
+           tal:attributes="value python:utils.anti_csrf_nonce()">
     <input type="hidden" name="@action" value="show">
    </p>
   </form>
@@ -132,17 +132,17 @@ status_notresolved string:-1,1,2,3,4,5,6,7;
     <input size="10" name="__login_name"><br>
     <input size="10" type="password" name="__login_password"><br>
     <input name="@csrf" type="hidden"
-	   tal:attributes="value python:utils.anti_csrf_nonce()">
+           tal:attributes="value python:utils.anti_csrf_nonce()">
     <input type="hidden" name="@action" value="Login">
     <input type="checkbox" name="remember" id="remember">
     <label for="remember" i18n:translate="">Remember me?</label><br>
     <input type="submit" value="Login" i18n:attributes="value"><br>
     <input type="hidden" name="__came_from"
-	   tal:condition="exists:request/env/QUERY_STRING"
-	   tal:attributes="value string:${request/base}${request/env/PATH_INFO}?${request/env/QUERY_STRING}">
+           tal:condition="exists:request/env/QUERY_STRING"
+           tal:attributes="value string:${request/base}${request/env/PATH_INFO}?${request/env/QUERY_STRING}">
     <input type="hidden" name="__came_from"
-	   tal:condition="not:exists:request/env/QUERY_STRING"
-	   tal:attributes="value string:${request/base}${request/env/PATH_INFO}">
+           tal:condition="not:exists:request/env/QUERY_STRING"
+           tal:attributes="value string:${request/base}${request/env/PATH_INFO}">
     <span tal:replace="structure request/indexargs_form" />
     <a href="user?@template=register"
        tal:condition="python:request.user.hasPermission('Register', 'user')"
@@ -204,7 +204,7 @@ See issue.search.html in the classic template for examples.
     tal:define="required required | python:[]"
     tal:attributes="class python:(name in required) and 'required' or nothing">
   <label tal:attributes="for name" tal:content="label" i18n:translate="">text</label>
-	<metal:x define-slot="behind_the_label" />
+  <metal:x define-slot="behind_the_label" />
 </th>
 
 <td metal:define-macro="search_input">
@@ -218,7 +218,7 @@ See issue.search.html in the classic template for examples.
                          name name;
                          id name">
   <a class="classhelp"
-	 tal:attributes="href python:'''javascript:help_window('issue?@template=calendar&property=%s&form=itemSynopsis', 300, 200)'''%name">(cal)</a>
+     tal:attributes="href python:'''javascript:help_window('issue?@template=calendar&property=%s&form=itemSynopsis', 300, 200)'''%name">(cal)</a>
 </td>
 
 <td metal:define-macro="search_popup">
@@ -256,14 +256,14 @@ Could extend it (METAL 1.1 attribute "extend-macro")
     <option value="" i18n:translate="" disabled="disabled">------------</option>
     <option tal:repeat="s python:db[db_klass].list()"
             tal:attributes="value s/id; selected python:value == s.id"
-						tal:content="python:s[db_content]"
-						i18n:translate=""></option>
+            tal:content="python:s[db_content]"
+            i18n:translate=""></option>
   </select>
 </td>
 
 <!-- currently, there is no convenient API to get a list of all roles -->
 <td metal:define-macro="search_select_roles"
-	  tal:define="onchange onchange | nothing">
+    tal:define="onchange onchange | nothing">
   <select name=roles id=roles tal:attributes="onchange onchange">
     <option value="" i18n:translate="">don't care</option>
     <option value="" i18n:translate="" disabled="disabled">------------</option>

@@ -155,7 +155,7 @@ python:db.user.classhelp('username,realname,address', property='nosy', width='60
          tal:attributes="action string:issue${context/id}">
     <input type="hidden" name="@remove@files" tal:attributes="value file/id">
     <input name="@csrf" type="hidden"
-	   tal:attributes="value python:utils.anti_csrf_nonce()">
+           tal:attributes="value python:utils.anti_csrf_nonce()">
     <input type="hidden" name="@action" value="edit">
     <input type="submit" value="remove" i18n:attributes="value">
    </form>
@@ -178,7 +178,7 @@ python:db.user.classhelp('username,realname,address', property='nosy', width='60
           tal:attributes="action string:issue${context/id}">
      <input type="hidden" name="@remove@messages" tal:attributes="value msg/id">
      <input name="@csrf" type="hidden"
-	    tal:attributes="value python:utils.anti_csrf_nonce()">
+            tal:attributes="value python:utils.anti_csrf_nonce()">
      <input type="hidden" name="@action" value="edit">
      <input type="submit" value="remove" i18n:attributes="value">
     </form>
