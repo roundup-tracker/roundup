@@ -19,9 +19,9 @@
       <label>{{ i18n.gettext('Email Address') }}:</label>
       <input type='text' name="address">
       <input name="@csrf" type="hidden"
-	     value="{{ utils.anti_csrf_nonce() }}">
+             value="{{ utils.anti_csrf_nonce() }}">
       <input name="@csrf" type="hidden"
-	     value="{{ utils.anti_csrf_nonce() }}">
+             value="{{ utils.anti_csrf_nonce() }}">
       <input type="hidden" name="@action" value="passrst">
       <input type="hidden" name="@template" value="forgotten">
       <input type="submit" value="{{ i18n.gettext('Password reset') }}" class='btn btn-primary'>
