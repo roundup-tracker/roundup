@@ -452,7 +452,7 @@ class Proptree(object):
             yield p
             p = p.parent
 
-    def search(self, search_matches=None, sort=True):
+    def search(self, search_matches=None, sort=True, retired=False):
         """ Recursively search for the given properties in a proptree.
         Once all properties are non-transitive, the search generates a
         simple _filter call which does the real work
@@ -463,7 +463,8 @@ class Proptree(object):
                 if p.children:
                     p.search(sort = False)
                 filterspec[p.name] = p.val
-        self.val = self.cls._filter(search_matches, filterspec, sort and self)
+        self.val = self.cls._filter(search_matches, filterspec, sort and self,
+                                    retired=retired)
         return self.val
 
     def sort (self, ids=None):
@@ -1255,7 +1256,7 @@ class Class:
         raise NotImplementedError
 
     def _filter(self, search_matches, filterspec, sort=(None,None),
-            group=(None,None)):
+            group=(None,None), retired=False):
         """For some backends this implements the non-transitive
         search, for more information see the filter method.
         """
@@ -1346,7 +1347,8 @@ class Class:
             sortattr.append(('+', 'id'))
         return sortattr
 
-    def filter(self, search_matches, filterspec, sort=[], group=[]):
+    def filter(self, search_matches, filterspec, sort=[], group=[],
+               retired=False):
         """Return a list of the ids of the active nodes in this class that
         match the 'filter' spec, sorted by the group spec and then the
         sort spec.
@@ -1382,7 +1384,7 @@ class Class:
         """
         sortattr = self._sortattr(sort = sort, group = group)
         proptree = self._proptree(filterspec, sortattr)
-        proptree.search(search_matches)
+        proptree.search(search_matches, retired=retired)
         return proptree.sort()
 
     # non-optimized filter_iter, a backend may chose to implement a

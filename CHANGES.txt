@@ -222,6 +222,12 @@ Features:
   bounced back to the sender with an error. Enable by configuring the
   convert_htmltotext option in your upgraded config.ini. (Initial
   patch by Igor Ippolitov merged with changes by John Rouillard.)
+- Add a 'retired' parameter to Class.filter to allow searching for
+  retired, non-retired or all (retired and non-retired) items similar
+  to the argument of the same name to Class.getnodeids. This is 'False'
+  by default (finding only non-retired items for backwards
+  compatibility) and can be set to None (for finding retired and
+  non-retired items) or True (for finding only retired items).
 
 Fixed:
 

@@ -1683,8 +1683,8 @@ class Class(hyperdb.Class):
         return res
 
     def _filter(self, search_matches, filterspec, proptree,
-            num_re = re.compile('^\d+$')):
-        """Return a list of the ids of the active nodes in this class that
+            num_re = re.compile('^\d+$'), retired=False):
+        """Return a list of the ids of the nodes in this class that
         match the 'filter' spec, sorted by the group spec and then the
         sort spec.
 
@@ -1694,6 +1694,9 @@ class Class(hyperdb.Class):
         and prop is a prop name or None
 
         "search_matches" is a sequence type or None
+
+        "retired" specifies if we should find only non-retired nodes
+        (default) or only retired node (value True) or all nodes.
 
         The filter must match all properties specificed. If the property
         value to match is a list:
@@ -1795,16 +1798,14 @@ class Class(hyperdb.Class):
 
         filterspec = l
 
-        # now, find all the nodes that are active and pass filtering
+        # now, find all the nodes that pass filtering
         matches = []
         cldb = self.db.getclassdb(cn)
         t = 0
         try:
             # TODO: only full-scan once (use items())
-            for nodeid in self.getnodeids(cldb):
+            for nodeid in self.getnodeids(cldb, retired=retired):
                 node = self.db.getnode(cn, nodeid, cldb)
-                if self.db.RETIRED_FLAG in node:
-                    continue
                 # apply filter
                 for t, k, v in filterspec:
                     # handle the id prop

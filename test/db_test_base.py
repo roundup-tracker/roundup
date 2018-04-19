@@ -2166,6 +2166,27 @@ class DBTest(commonDBTest):
             ae(filt(None, {}, ('+','id')),
                 ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'])
 
+    def testFilteringRetiredString(self):
+        ae, filter, filter_iter = self.filteringSetup()
+        self.db.issue.retire('1')
+        self.db.commit()
+        r = { None: (['1'], ['1'], ['1'], ['1', '2', '3'], [])
+            , True: (['1'], ['1'], ['1'], ['1'], [])
+            , False: ([], [], [], ['2', '3'], [])
+            }
+        for filt in filter, filter_iter:
+            for retire in True, False, None:
+                ae(filt(None, {'title': ['one']}, ('+','id'),
+                   retired=retire), r[retire][0])
+                ae(filt(None, {'title': ['issue one']}, ('+','id'),
+                   retired=retire), r[retire][1])
+                ae(filt(None, {'title': ['issue', 'one']}, ('+','id'),
+                   retired=retire), r[retire][2])
+                ae(filt(None, {'title': ['issue']}, ('+','id'),
+                   retired=retire), r[retire][3])
+                ae(filt(None, {'title': ['one', 'two']}, ('+','id'),
+                   retired=retire), r[retire][4])
+
 # XXX add sorting tests for other types
 
     # nuke and re-create db for restore
