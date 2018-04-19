@@ -182,6 +182,9 @@ class Database(back_anydbm.Database):
       modified. Do some sort of conflict checking on the dirty stuff.
     - perhaps detect write collisions (related to above)?
     """
+
+    dbtype = "memorydb"
+
     def __init__(self, config, journaltag=None):
         self.config, self.journaltag = config, journaltag
         self.classes = {}

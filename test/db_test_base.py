@@ -164,9 +164,9 @@ class commonDBTest(MyTestCase):
 
     def iterSetup(self, classname='issue'):
         cls = getattr(self.db, classname)
-        def filt_iter(*args):
+        def filt_iter(*args, **kw):
             """ for checking equivalence of filter and filter_iter """
-            return list(cls.filter_iter(*args))
+            return list(cls.filter_iter(*args, **kw))
         return self.assertEqual, cls.filter, filt_iter
 
     def filteringSetupTransitiveSearch(self, classname='issue'):
@@ -1280,7 +1280,7 @@ class DBTest(commonDBTest):
         # non-existing classes and link/unlink events to non-existing
         # properties in a class: These all may be the result of a schema
         # change and should not lead to a traceback.
-        self.db.user.create(username="mary")
+        self.db.user.create(username="mary", roles="User")
         id = self.db.issue.create(title="spam", status='1')
         self.db.commit()
         journal = self.db.getjournal('issue', id)
@@ -1300,16 +1300,24 @@ class DBTest(commonDBTest):
         self.db.commit()
         result=self.db.issue.history(id)
         result.sort()
-        self.assertEqual(len(result), 4)
-        self.assertEqual(result [1][4], jp1)
-        self.assertEqual(result [2][4], jp2)
-        self.assertEqual(result [3][4], jp3)
+        # anydbm drops unknown properties during serialisation
+        if self.db.dbtype == 'anydbm':
+            self.assertEqual(len(result), 3)
+            self.assertEqual(result [1][4], jp2)
+            self.assertEqual(result [2][4], jp3)
+        else:
+            self.assertEqual(len(result), 4)
+            self.assertEqual(result [1][4], jp1)
+            self.assertEqual(result [2][4], jp2)
+            self.assertEqual(result [3][4], jp3)
         self.db.close()
         # Verify that normal user doesn't see obsolete props/classes
-        self.open_database('mary')
-        setupSchema(self.db, 0, self.module)
-        result=self.db.issue.history(id)
-        self.assertEqual(len(result), 1)
+        # Backend memorydb cannot re-open db for different user
+        if self.db.dbtype != 'memorydb':
+            self.open_database('mary')
+            setupSchema(self.db, 0, self.module)
+            result=self.db.issue.history(id)
+            self.assertEqual(len(result), 1)
 
     def testJournalPreCommit(self):
         id = self.db.user.create(username="mary")
