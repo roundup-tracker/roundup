@@ -1015,6 +1015,10 @@ class Class:
         If the user requesting the history does not have View access
         to the property, the journal entry will not be shown. This can
         be disabled by setting enforceperm=False.
+
+        Note that there is a check for obsolete properties and classes
+        resulting from history changes. These are also only checked if
+        enforceperm is True.
         """
         if not self.do_journal:
             raise ValueError('Journalling is disabled for this class')
@@ -1024,10 +1028,16 @@ class Class:
 
         uid=self.db.getuid() # id of the person requesting the history
 
+        # Roles of the user and the configured obsolete_history_roles
+        hr = set(iter_roles(self.db.config.OBSOLETE_HISTORY_ROLES))
+        ur = set(self.db.user.get_roles(uid))
+        allow_obsolete = bool(hr & ur)
+
         for j in self.db.getjournal(self.classname, nodeid):
             # hide/remove journal entry if:
             #   property is quiet
             #   property is not (viewable or editable)
+            #   property is obsolete and not allow_obsolete
             id, evt_date, user, action, args = j
             if logger.isEnabledFor(logging.DEBUG):
                 j_repr = "%s"%(j,)
@@ -1035,6 +1045,10 @@ class Class:
                 j_repr=''
             if args and type(args) == type({}):
                 for key in args.keys():
+                    if key not in self.properties :
+                        if enforceperm and not allow_obsolete:
+                            del j[4][key]
+                        continue
                     if skipquiet and self.properties[key].quiet:
                         logger.debug("skipping quiet property"
                                      " %s::%s in %s",
@@ -1048,7 +1062,8 @@ class Class:
                                 uid,
                                 self.classname,
                                 property=key )):
-                        logger.debug("skipping unaccessible property %s::%s seen by user%s in %s",
+                        logger.debug("skipping unaccessible property "
+                                     "%s::%s seen by user%s in %s",
                                 self.classname, key, uid, j_repr)
                         del j[4][key]
                         continue
@@ -1078,7 +1093,16 @@ class Class:
                     # j = id, evt_date, user, action, args
                     # 3|20170528045201.484|5|link|('issue', '5', 'blockedby')
                     linkcl, linkid, key = args
-                    cls = self.db.getclass(linkcl)
+                    cls = None
+                    try:
+                        cls = self.db.getclass(linkcl)
+                    except KeyError:
+                        pass
+                    # obsolete property or class
+                    if not cls or key not in cls.properties:
+                        if not enforceperm or allow_obsolete:
+                            journal.append(j)
+                        continue
                     # is the updated property quiet?
                     if skipquiet and cls.properties[key].quiet:
                         logger.debug("skipping quiet property: "

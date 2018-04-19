@@ -145,8 +145,8 @@ class MyTestCase(object):
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
 
-    def open_database(self):
-        self.db = self.module.Database(config, 'admin')
+    def open_database(self, user='admin'):
+        self.db = self.module.Database(config, user)
 
 
 if os.environ.has_key('LOGGING_LEVEL'):
@@ -1274,6 +1274,42 @@ class DBTest(commonDBTest):
         self.db.commit()
         # see if the change was journalled
         self.assertNotEqual(jlen,  len(self.db.getjournal('issue', '1')))
+
+    def testJournalNonexistingProperty(self):
+        # Test for non-existing properties, link/unlink events to
+        # non-existing classes and link/unlink events to non-existing
+        # properties in a class: These all may be the result of a schema
+        # change and should not lead to a traceback.
+        self.db.user.create(username="mary")
+        id = self.db.issue.create(title="spam", status='1')
+        self.db.commit()
+        journal = self.db.getjournal('issue', id)
+        now     = date.Date('.')
+        sec     = date.Interval('0:00:01')
+        sec2    = date.Interval('0:00:02')
+        # Non-existing property changed
+        jp1 = dict(nonexisting = None)
+        journal.append ((id, now, '1', 'set', jp1))
+        # Link from user-class to non-existing property
+        jp2 = ('user', '1', 'xyzzy')
+        journal.append ((id, now+sec, '1', 'link', jp2))
+        # Link from non-existing class
+        jp3 = ('frobozz', '1', 'xyzzy')
+        journal.append ((id, now+sec2, '1', 'link', jp3))
+        self.db.setjournal('issue', id, journal)
+        self.db.commit()
+        result=self.db.issue.history(id)
+        result.sort()
+        self.assertEqual(len(result), 4)
+        self.assertEqual(result [1][4], jp1)
+        self.assertEqual(result [2][4], jp2)
+        self.assertEqual(result [3][4], jp3)
+        self.db.close()
+        # Verify that normal user doesn't see obsolete props/classes
+        self.open_database('mary')
+        setupSchema(self.db, 0, self.module)
+        result=self.db.issue.history(id)
+        self.assertEqual(len(result), 1)
 
     def testJournalPreCommit(self):
         id = self.db.user.create(username="mary")

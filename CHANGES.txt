@@ -480,6 +480,13 @@ Fixed:
   Bcc and cc users passed to nosymessage are not properly recorded.
   This results in duplicate emails. (patch by Trent Gamblin (trentgg)
   applied by John Rouillard).
+- issue2550954: History display breaks on removed properties
+  Now changes to removed properties, and link/unlink events from
+  non-existing properties or classes no longer trigger a traceback.
+  Concerning the visibility: We have a new config-item
+  obsolete_history_roles in the main section that defines which roles
+  may see removed properties. By default only role Admin is allowed to
+  see these.
 
 2016-01-11: 1.5.1
 

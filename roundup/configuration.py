@@ -605,6 +605,14 @@ SETTINGS = (
             " with Email Gateway.\n"
             "This is a comma-separated string of role names"
             " (e.g. 'Admin,User')."),
+        (Option, "obsolete_history_roles", "Admin",
+	    "On schema changes, properties or classes in the history may\n"
+	    "become obsolete.  Since normal access permissions do not apply\n"
+	    "(we don't know if a user should see such a property or class)\n"
+	    "a list of roles is specified here that are allowed to see\n"
+	    "these obsolete properties in the history. By default only the\n"
+	    "admin role may see these history entries, you can make them\n"
+	    "visible to all users by adding, e.g., the 'User' role here."),
         (Option, "error_messages_to", "user",
             # XXX This description needs better wording,
             #   with explicit allowed values list.
