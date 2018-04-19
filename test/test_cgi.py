@@ -1603,29 +1603,33 @@ class TemplateHtmlRendering(unittest.TestCase):
         self.client.path = 'user'
         self.client.determine_context()
         self.client.session_api = MockNull(_sid="1234567890")
-        self.assertEqual((self.client.classname, self.client.template, self.client.nodeid), ('user', 'forgotten|item', None))
+        self.assertEqual(
+          (self.client.classname, self.client.template, self.client.nodeid),
+          ('user', 'forgotten|item', None))
         self.assertEqual(self.client._ok_message, [])
         
         result = self.client.renderContext()
         print result
         # sha1sum of classic tracker user.forgotten.template must be found
-        self.assertNotEqual(-1,
-                            result.index('<!-- SHA: eb5dd0bec7a57d58cb7edbeb939fb0390ed1bf74 -->'))
+        sha1sum = '<!-- SHA: f93570f95f861da40f9c45bbd2b049bb3a7c0fc5 -->'
+        self.assertNotEqual(-1, result.index(sha1sum))
 
         # now set an error in the form to get error template user.item.html
         self.client.form=db_test_base.makeForm({"@template": "forgotten|item",
                                    "@error_message": "this is an error"})
         self.client.path = 'user'
         self.client.determine_context()
-        self.assertEqual((self.client.classname, self.client.template, self.client.nodeid), ('user', 'forgotten|item', None))
+        self.assertEqual(
+          (self.client.classname, self.client.template, self.client.nodeid),
+          ('user', 'forgotten|item', None))
         self.assertEqual(self.client._ok_message, [])
         self.assertEqual(self.client._error_message, ["this is an error"])
         
         result = self.client.renderContext()
         print result
         # sha1sum of classic tracker user.item.template must be found
-        self.assertNotEqual(-1,
-                            result.index('<!-- SHA: 3b7ce7cbf24f77733c9b9f64a569d6429390cc3f -->'))
+        sha1sum = '<!-- SHA: 3b7ce7cbf24f77733c9b9f64a569d6429390cc3f -->'
+        self.assertNotEqual(-1, result.index(sha1sum))
 
 
     def testexamine_url(self):
