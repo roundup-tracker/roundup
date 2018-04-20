@@ -12,6 +12,8 @@ import os, base64, marshal, shutil, time, logging
 
 from roundup import hyperdb, date, password
 from roundup.backends import rdbms_common
+from roundup.backends.sessions_dbm import Sessions, OneTimeKeys
+
 sqlite_version = None
 try:
     import sqlite3 as sqlite
@@ -93,6 +95,19 @@ class Database(rdbms_common.Database):
         hyperdb.Number    : rdbms_common._num_cvt,
         hyperdb.Multilink : lambda x: x,    # used in journal marshalling
     }
+
+    # We're using DBM for managing session info and one-time keys:
+    # For SQL database storage of this info we would need two concurrent
+    # connections to the same database which SQLite doesn't support
+    def getSessionManager(self):
+        if not self.Session:
+            self.Session = Sessions(self)
+        return self.Session
+
+    def getOTKManager(self):
+        if not self.Otk:
+            self.Otk = OneTimeKeys(self)
+        return self.Otk
 
     def sqlite_busy_handler(self, data, table, count):
         """invoked whenever SQLite tries to access a database that is locked"""
@@ -349,7 +364,7 @@ class Database(rdbms_common.Database):
     def __repr__(self):
         return '<roundlite 0x%x>'%id(self)
 
-    def sql_commit(self, fail_ok=False):
+    def sql_commit(self):
         """ Actually commit to the database.
 
             Ignore errors if there's nothing to commit.

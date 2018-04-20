@@ -48,8 +48,8 @@ class memorydbSchemaTest(memorydbOpener, SchemaTest, unittest.TestCase):
     pass
 
 
-from session_common import DBMTest
-class memorydbSessionTest(memorydbOpener, DBMTest, unittest.TestCase):
+from session_common import SessionTest
+class memorydbSessionTest(memorydbOpener, SessionTest, unittest.TestCase):
     def setUp(self):
         self.db = self.module.Database(config, 'admin')
         setupSchema(self.db, 1, self.module)

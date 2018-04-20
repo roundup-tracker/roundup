@@ -5,7 +5,7 @@ Yes, it's called "sessions" - because originally it only defined a session
 class. It's now also used for One Time Key handling too.
 """
 __docformat__ = 'restructuredtext'
-import os, time
+import os, time, logging
 from cgi import escape
 
 class BasicDatabase:
@@ -16,7 +16,7 @@ class BasicDatabase:
     name = None
     def __init__(self, db):
         self.db = db
-        self.cursor = self.db.cursor
+        self.conn, self.cursor = self.db.sql_open_connection()
 
     def clear(self):
         self.cursor.execute('delete from %ss'%self.name)
@@ -112,6 +112,15 @@ class BasicDatabase:
         old = now - week
         self.cursor.execute('delete from %ss where %s_time < %s'%(self.name,
             self.name, self.db.arg), (old, ))
+
+    def commit(self):
+        logger = logging.getLogger('roundup.hyperdb.backend')
+        logger.info('commit %s' % self.name)
+        self.conn.commit()
+        self.cursor = self.conn.cursor()
+
+    def close(self):
+        self.conn.close()
 
 class Sessions(BasicDatabase):
     name = 'session'

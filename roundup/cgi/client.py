@@ -182,7 +182,7 @@ class Session:
         self.client.add_cookie(self.cookie_name, None)
         self._data = {}
         self.session_db.destroy(self._sid)
-        self.client.db.commit()
+        self.session_db.commit()
 
     def get(self, name, default=None):
         return self._data.get(name, default)
@@ -200,7 +200,7 @@ class Session:
             self.client.session = self._sid
         else:
             self.session_db.set(self._sid, **self._data)
-            self.client.db.commit()
+            self.session_db.commit()
 
     def update(self, set_cookie=False, expire=None):
         """ update timestamp in db to avoid expiration
@@ -212,7 +212,7 @@ class Session:
                 lifetime is longer
         """
         self.session_db.updateTimestamp(self._sid)
-        self.client.db.commit()
+        self.session_db.commit()
 
         if set_cookie:
             self.client.add_cookie(self.cookie_name, self._sid, expire=expire)
@@ -697,14 +697,15 @@ class Client:
 
         # XXX: hack - use OTK table to store last_clean time information
         #      'last_clean' string is used instead of otk key
-        last_clean = self.db.getOTKManager().get('last_clean', 'last_use', 0)
+        otks = self.db.getOTKManager()
+        last_clean = otks.get('last_clean', 'last_use', 0)
         if now - last_clean < hour:
             return
 
         self.session_api.clean_up()
-        self.db.getOTKManager().clean()
-        self.db.getOTKManager().set('last_clean', last_use=now)
-        self.db.commit(fail_ok=True)
+        otks.clean()
+        otks.set('last_clean', last_use=now)
+        otks.commit()
 
     def determine_charset(self):
         """Look for client charset in the form parameters or browser cookie.
@@ -982,7 +983,7 @@ class Client:
                         self._("csrf key used with wrong method from: %s"),
                         referer)
                     otks.destroy(key)
-                    self.db.commit()
+                    otks.commit()
             # do return here. Keys have been obsoleted.
             # we didn't do a expire cycle of session keys, 
             # but that's ok.
@@ -1105,7 +1106,7 @@ class Client:
 
         if xmlrpc:
             # Save removal of expired keys from database.
-            self.db.commit()
+            otks.commit()
             # Return from here since we have done housekeeping
             # and don't use csrf tokens for xmlrpc.
             return True
@@ -1125,7 +1126,7 @@ class Client:
             otks.destroy(key)
 
         # commit the deletion/expiration of all keys
-        self.db.commit()
+        otks.commit()
 
         enforce=config['WEB_CSRF_ENFORCE_TOKEN']
         if key is None: # we do not have an @csrf token
@@ -1172,7 +1173,7 @@ class Client:
            self.form["@action"].value == "Login":
             if header_pass > 0:
                 otks.destroy(key)
-                self.db.commit()
+                otks.commit()
                 return True
             else:
                 self.add_error_message("Reload window before logging in.")

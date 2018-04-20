@@ -52,7 +52,7 @@ def db_create(config):
     logging.getLogger('roundup.hyperdb').info(command)
     db_command(config, command)
 
-def db_nuke(config, fail_ok=0):
+def db_nuke(config):
     """Clear all database contents and drop database itself"""
     command = 'DROP DATABASE "%s"'% config.RDBMS_NAME
     logging.getLogger('roundup.hyperdb').info(command)
@@ -151,9 +151,6 @@ class Database(rdbms_common.Database):
     # used by some code to switch styles of query
     implements_intersect = 1
 
-    def getSessionManager(self):
-        return Sessions(self)
-
     def sql_open_connection(self):
         db = connection_dict(self.config, 'database')
         logging.getLogger('roundup.hyperdb').info(
@@ -187,6 +184,9 @@ class Database(rdbms_common.Database):
             self.sql("CREATE TABLE dual (dummy integer)")
             self.sql("insert into dual values (1)")
             self.create_version_2_tables()
+            # Need to commit here, otherwise otk/session will not find
+            # the necessary tables (in a parallel connection!)
+            self.commit()
 
     def create_version_2_tables(self):
         # OTK store
@@ -243,25 +243,6 @@ class Database(rdbms_common.Database):
 
     def __repr__(self):
         return '<roundpsycopgsql 0x%x>' % id(self)
-
-    def sql_commit(self, fail_ok=False):
-        ''' Actually commit to the database.
-        '''
-        logging.getLogger('roundup.hyperdb').info('commit')
-
-        try:
-            self.conn.commit()
-        except ProgrammingError as message:
-            # we've been instructed that this commit is allowed to fail
-            if fail_ok and str(message).endswith('could not serialize '
-                    'access due to concurrent update'):
-                logging.getLogger('roundup.hyperdb').info(
-                    'commit FAILED, but fail_ok')
-            else:
-                raise
-
-        # open a new cursor for subsequent work
-        self.cursor = self.conn.cursor()
 
     def sql_stringquote(self, value):
         ''' psycopg.QuotedString returns a "buffer" object with the

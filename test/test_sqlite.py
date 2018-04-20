@@ -58,6 +58,6 @@ class sqliteSpecialActionTestCase(sqliteOpener, SpecialActionTest,
     backend = 'sqlite'
 
 
-from session_common import RDBMSTest
-class sqliteSessionTest(sqliteOpener, RDBMSTest, unittest.TestCase):
+from session_common import SessionTest
+class sqliteSessionTest(sqliteOpener, SessionTest, unittest.TestCase):
     pass

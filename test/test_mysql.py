@@ -123,14 +123,14 @@ class mysqlFilterCacheTest(mysqlOpener, FilterCacheTest, unittest.TestCase):
         self.nuke_database()
 
 
-from session_common import RDBMSTest
+from session_common import SessionTest
 @skip_mysql
-class mysqlSessionTest(mysqlOpener, RDBMSTest, unittest.TestCase):
+class mysqlSessionTest(mysqlOpener, SessionTest, unittest.TestCase):
     def setUp(self):
         mysqlOpener.setUp(self)
-        RDBMSTest.setUp(self)
+        SessionTest.setUp(self)
     def tearDown(self):
-        RDBMSTest.tearDown(self)
+        SessionTest.tearDown(self)
         mysqlOpener.tearDown(self)
 
 @skip_mysql

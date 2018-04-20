@@ -203,14 +203,14 @@ class postgresqlClassicInitTest(postgresqlOpener, ClassicInitTest,
         postgresqlOpener.tearDown(self)
 
 
-from session_common import RDBMSTest
+from session_common import SessionTest
 @skip_postgresql
-class postgresqlSessionTest(postgresqlOpener, RDBMSTest, unittest.TestCase):
+class postgresqlSessionTest(postgresqlOpener, SessionTest, unittest.TestCase):
     def setUp(self):
         postgresqlOpener.setUp(self)
-        RDBMSTest.setUp(self)
+        SessionTest.setUp(self)
     def tearDown(self):
-        RDBMSTest.tearDown(self)
+        SessionTest.tearDown(self)
         postgresqlOpener.tearDown(self)
 
 @skip_postgresql

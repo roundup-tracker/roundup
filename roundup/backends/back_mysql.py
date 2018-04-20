@@ -563,7 +563,7 @@ class Database(rdbms_common.Database):
         vals = (spec.classname, 1)
         self.sql(sql, vals)
 
-    def sql_commit(self, fail_ok=False):
+    def sql_commit(self):
         ''' Actually commit to the database.
         '''
         self.log_info('commit')

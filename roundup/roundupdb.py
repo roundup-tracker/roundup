@@ -128,6 +128,7 @@ class Database:
         userid = cl.create(**props)
         # clear the props from the otk database
         self.getOTKManager().destroy(otk)
+        # commit cl.create (and otk changes)
         self.commit()
 
         return userid

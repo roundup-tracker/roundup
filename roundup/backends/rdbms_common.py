@@ -189,6 +189,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # database lock
         self.lockfile = None
 
+        # Uppercase to not collide with Class names
+        self.Session = None
+        self.Otk     = None
+
         # open a connection to the database, creating the "conn" attribute
         self.open_connection()
 
@@ -199,10 +203,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         roundupdb.Database.clearCache(self)
 
     def getSessionManager(self):
-        return Sessions(self)
+        if not self.Session:
+            self.Session = Sessions(self)
+        return self.Session
 
     def getOTKManager(self):
-        return OneTimeKeys(self)
+        if not self.Otk:
+            self.Otk = OneTimeKeys(self)
+        return self.Otk
 
     def open_connection(self):
         """ Open a connection to the database, creating it if necessary.
@@ -1411,7 +1419,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 "action<>'create'"%(classname, self.arg)
             self.sql(sql, (date_stamp,))
 
-    def sql_commit(self, fail_ok=False):
+    def sql_commit(self):
         """ Actually commit to the database.
         """
         logging.getLogger('roundup.hyperdb.backend').info('commit')
@@ -1421,20 +1429,21 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # open a new cursor for subsequent work
         self.cursor = self.conn.cursor()
 
-    def commit(self, fail_ok=False):
+    def commit(self):
         """ Commit the current transactions.
 
         Save all data changed since the database was opened or since the
         last commit() or rollback().
-
-        fail_ok indicates that the commit is allowed to fail. This is used
-        in the web interface when committing cleaning of the session
-        database. We don't care if there's a concurrency issue there.
-
-        The only backend this seems to affect is postgres.
         """
         # commit the database
-        self.sql_commit(fail_ok)
+        self.sql_commit()
+
+        # session and otk are committed with the db but not the other
+        # way round
+        if self.Session:
+            self.Session.commit()
+        if self.Otk:
+            self.Otk.commit()
 
         # now, do all the other transaction stuff
         for method, args in self.transactions:
@@ -1483,6 +1492,12 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """
         self.indexer.close()
         self.sql_close()
+        if self.Session:
+            self.Session.close()
+            self.Session = None
+        if self.Otk:
+            self.Otk.close()
+            self.Otk = None
 
 #
 # The base Class class

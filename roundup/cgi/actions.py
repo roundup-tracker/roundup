@@ -911,7 +911,7 @@ class PassResetAction(Action):
                 cl.set(uid, password=password.Password(newpw, config=self.db.config))
                 # clear the props from the otk database
                 otks.destroy(otk)
-                self.db.commit()
+                otks.commit()
             except (ValueError, KeyError) as message:
                 self.client.add_error_message(str(message))
                 return
@@ -965,7 +965,7 @@ Your password is now: %(password)s
         while otks.exists(otk):
             otk = ''.join([random.choice(chars) for x in range(32)])
         otks.set(otk, uid=uid, uaddress=address)
-        self.db.commit()
+        otks.commit()
 
         # send the email
         tracker_name = self.db.config.TRACKER_NAME

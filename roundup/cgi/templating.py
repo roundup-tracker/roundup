@@ -104,7 +104,7 @@ def anti_csrf_nonce(self, client, lifetime=None):
     otks.set(key, uid=client.db.getuid(),
              sid=client.session_api._sid,
              __timestamp=ts )
-    client.db.commit()
+    otks.commit()
     return key
 
 ### templating

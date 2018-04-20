@@ -808,12 +808,6 @@ All methods except __repr__ must be implemented by a concrete backend Database.
 
         Save all data changed since the database was opened or since the
         last commit() or rollback().
-
-        fail_ok indicates that the commit is allowed to fail. This is used
-        in the web interface when committing cleaning of the session
-        database. We don't care if there's a concurrency issue there.
-
-        The only backend this seems to affect is postgres.
         """
         raise NotImplementedError
 

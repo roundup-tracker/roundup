@@ -493,6 +493,12 @@ Fixed:
   obsolete_history_roles in the main section that defines which roles
   may see removed properties. By default only role Admin is allowed to
   see these.
+- Fix issue2550955: Roundup commits although a Reject exception is raised
+  Fix the problem that changes are committed to the database (due to 
+  commits to otk handling) even when a Reject exception occurs. The fix 
+  implements separate database connections for otk/session handling and
+  normal database operation.
+
 
 2016-01-11: 1.5.1
 

@@ -48,8 +48,8 @@ class anydbmHTMLItemTest(HTMLItemTest, unittest.TestCase):
     backend = 'anydbm'
 
 
-from session_common import DBMTest
-class anydbmSessionTest(anydbmOpener, DBMTest, unittest.TestCase):
+from session_common import SessionTest
+class anydbmSessionTest(anydbmOpener, SessionTest, unittest.TestCase):
     pass
 
 class anydbmSpecialActionTestCase(anydbmOpener, SpecialActionTest,

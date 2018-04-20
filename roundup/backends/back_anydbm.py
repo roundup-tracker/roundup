@@ -191,6 +191,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.lockfile.write(str(os.getpid()))
         self.lockfile.flush()
 
+        self.Session = None
+        self.Otk     = None
+
     def post_init(self):
         """Called once the schema initialisation has finished.
         """
@@ -204,10 +207,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.reindex()
 
     def getSessionManager(self):
-        return Sessions(self)
+        if not self.Session:
+            self.Session = Sessions(self)
+        return self.Session
 
     def getOTKManager(self):
-        return OneTimeKeys(self)
+        if not self.Otk:
+            self.Otk = OneTimeKeys(self)
+        return self.Otk
 
     def reindex(self, classname=None, show_progress=False):
         if classname:
@@ -698,17 +705,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     #
     # Basic transaction support
     #
-    def commit(self, fail_ok=False):
+    def commit(self):
         """ Commit the current transactions.
 
         Save all data changed since the database was opened or since the
         last commit() or rollback().
-
-        fail_ok indicates that the commit is allowed to fail. This is used
-        in the web interface when committing cleaning of the session
-        database. We don't care if there's a concurrency issue there.
-
-        The only backend this seems to affect is postgres.
         """
         logging.getLogger('roundup.hyperdb.backend').info('commit %s transactions'%(
             len(self.transactions)))
