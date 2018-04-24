@@ -17,9 +17,9 @@ Release Manager: Anatoly Techtonik
 
 Developer activity by changesets::
 
-  hg churn -c --rev 1.5.0:1.5.1 
+  hg churn -c --rev 1.5.0:1.5.1
   techtonik@gmail.com        98 **********************************************
-  bernhard@intevation.de     44 ********************* Bernhard Reiter 
+  bernhard@intevation.de     44 ********************* Bernhard Reiter
   rsc@runtux.com             37 ***************** Ralf Schlatterbeck
   john@jerrykan.com          26 ************ John Kristensen
   thomas@intevation.de       22 ********** Thomas Arendsen Hein
@@ -30,10 +30,10 @@ Developer activity by changesets::
 Mathias Behrle,
 Ezio Melotti,
 R David Murray,
-James Mack, 
-Thibault Fevry, 
-Kai Storbeck, 
-Kay Hayen, 
+James Mack,
+Thibault Fevry,
+Kai Storbeck,
+Kay Hayen,
 Karl-Philipp Richter
 
 1.5.0
