@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-# Roundup requires Python 2.5+ as mentioned in doc\installation.txt
-VERSION_NEEDED = (2,5)
+# Roundup requires Python 2.7+ as mentioned in doc\installation.txt
+VERSION_NEEDED = (2,7)
 
 import sys
 if sys.version_info < VERSION_NEEDED:

@@ -228,6 +228,8 @@ Features:
   by default (finding only non-retired items for backwards
   compatibility) and can be set to None (for finding retired and
   non-retired items) or True (for finding only retired items).
+- Requires Python 2.7 now, indicated in version_check.py
+  and doc/installation.txt. (Bernhard Reiter)
 
 Fixed:
 
@@ -645,7 +647,7 @@ Fixed:
 - Documentation: configuration messages_to_author value "nosy" now documented
   in chapter "customizing". (Bernhard Reiter)
 - issue2550877 Failures in test_mailgw.py because of duplicated headers
-  and more precise comparision. Writing headers with the email module will use 
+  and more precise comparision. Writing headers with the email module will use
   continuation_ws = ' ' now for python 2.5 and 2.6. (Bernhard Reiter)
 - issue2550870 migrate use of 'rfc822' module to the 'email' module
   (Bernhard Reiter/John Kristensen)

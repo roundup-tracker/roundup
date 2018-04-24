@@ -1,4 +1,4 @@
 Python compatiblity TODO
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Remove support for Python versions < 2.5. As they are not supported anymore.
+Remove support for Python versions < 2.7. As they are not supported anymore.

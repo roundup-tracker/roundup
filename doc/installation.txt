@@ -31,7 +31,7 @@ Roundup scripts
 Prerequisites
 =============
 
-Roundup requires Python 2.5 or newer (but not Python 3) with a functioning
+Roundup requires Python 2.7 or newer (but not Python 3) with a functioning
 anydbm module. Download the latest version from http://www.python.org/.
 It is highly recommended that users install the latest patch version
 of python as these contain many fixes to serious bugs.
@@ -59,7 +59,7 @@ Timezone Definitions
   which brings the `Olson tz database`_ into Python.  If pytz_ is not
   installed, timezones may be specified as numeric hour offsets only.
   This is optional but strongly suggested.
-  
+
 An RDBMS
   Sqlite, MySQL and Postgresql are all supported by Roundup and will be
   used if available. One of these is recommended if you are anticipating a
@@ -296,7 +296,7 @@ Configuring your first tracker
 
    to run the server at port 1080 and bind to all ip addresses on your system.
    Then direct your web browser to ``http://your_host_name:1080/support``.
-   
+
 Choosing Your Template
 ----------------------
 
@@ -1089,9 +1089,8 @@ source directory and make sure there are no errors. If there are errors,
 please let us know!
 
 If the above fails, you may be using the wrong version of python. Try
-``python2 run_tests.py`` or ``python2.X run_tests.py`` where ``X`` is in
-the set 3,4,5,6 depending on the version(s) of python installed.
-If that works, you will need to substitute ``python2`` or ``python2.X``
+``python2 run_tests.py`` or ``python2.7 run_tests.py``.
+If that works, you will need to substitute ``python2`` or ``python2.7``
 for ``python`` in all further commands you use in relation to Roundup --
 from installation and scripts.
 
