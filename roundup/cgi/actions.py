@@ -777,7 +777,7 @@ class EditItemAction(EditCommon):
 
     def handleCollision(self, props):
         message = self._('Edit Error: someone else has edited this %s (%s). '
-            'View <a target="new" href="%s%s">their changes</a> '
+            'View <a target="_blank" href="%s%s">their changes</a> '
             'in a new window.')%(self.classname, ', '.join(props),
             self.classname, self.nodeid)
         self.client.add_error_message(message, escape=False)
