@@ -230,6 +230,10 @@ Features:
   non-retired items) or True (for finding only retired items).
 - Requires Python 2.7 now, indicated in version_check.py
   and doc/installation.txt. (Bernhard Reiter)
+- New -L flag to roundup-server to send http/https request logs
+  through the python logger module (using roundup.http). This allows
+  automatic log rotation. Without it, log file rotation requires restarting
+  the server. (John Rouillard)
 
 Fixed:
 

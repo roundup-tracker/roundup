@@ -24,6 +24,8 @@ __docformat__ = 'restructuredtext'
 import sys
 import os.path as osp
 
+import logging
+
 thisdir = osp.dirname(osp.abspath(__file__))
 rootdir = osp.dirname(osp.dirname(thisdir))
 if (osp.exists(thisdir + '/__init__.py') and
@@ -437,12 +439,20 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         ''' Try to *safely* log to stderr.
         '''
-        try:
-            BaseHTTPServer.BaseHTTPRequestHandler.log_message(self,
-                format, *args)
-        except IOError:
-            # stderr is no longer viable
-            pass
+        if self.CONFIG['LOGHTTPVIALOGGER']:
+            logger = logging.getLogger('roundup.http')
+
+            logger.info("%s - - [%s] %s" %
+                        (self.client_address[0],
+                         self.log_date_time_string(),
+                         format%args))
+        else:
+            try:
+                BaseHTTPServer.BaseHTTPRequestHandler.log_message(self,
+                                                         format, *args)
+            except IOError:
+                # stderr is no longer viable
+                pass
 
     def start_response(self, headers, response):
         self.send_response(response)
@@ -552,6 +562,11 @@ class ServerConfig(configuration.Config):
             (configuration.BooleanOption, "log_hostnames", "no",
                 "Log client machine names instead of IP addresses "
                 "(much slower)"),
+            (configuration.BooleanOption, "loghttpvialogger", "no",
+                "Have http(s) request logging done via python logger module.\n"
+                "If set to yes the python logging module is used with "
+                "qualname\n'roundup.http'. Otherwise logging is done to "
+                "stderr or the file\nspecified using the -l/logfile option."),
             (configuration.NullableFilePathOption, "pidfile", "",
                 "File to which the server records "
                 "the process id of the daemon.\n"
@@ -590,6 +605,7 @@ class ServerConfig(configuration.Config):
         "log_hostnames": "N",
         "multiprocess": "t:",
         "template": "i:",
+        "loghttpvialogger": 'L',
         "ssl": "s",
         "pem": "e:",
     }
@@ -807,6 +823,7 @@ Options:
  -N            log client machine names instead of IP addresses (much slower)
  -i <fname>    set tracker index template
  -s            enable SSL
+ -L            http request logging uses python logging (roundup.http)
  -e <fname>    PEM file containing SSL key and certificate
  -t <mode>     multiprocess mode (default: %(mp_def)s).
                Allowed values: %(mp_types)s.

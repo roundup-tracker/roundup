@@ -696,6 +696,52 @@ hidden field @old-queryname:
 With this addition, the index template is displayed if there is no
 error, and the user stays on the search template if there is an error.
 
+New -L (loghttpvialogger) option to roundup-server
+--------------------------------------------------
+
+Http request logs from roundup-server are sent to stderr or
+can be recorded in a log file (if -l or the logfile options
+is used). However there is no way to rotate the logfile
+without shutting down and restarting the roundup-server.
+
+If the -L flag is used, the python logging module is used
+for logging the http requests. The name for the log
+(qualname) is 'roundup.http'. You can direct these messages
+to a rotating log file by putting the following::
+
+   [loggers]
+   keys=roundup.http
+
+   [logger_roundup.http]
+   level=INFO
+   handlers=rotate_weblog
+   qualname=roundup.http
+   propagate=0
+
+   [handlers]
+   keys=rotate_weblog
+
+   [handler_rotate_weblog]
+   class=logging.handlers.RotatingFileHandler
+   args=('httpd.log','a', 512000, 2)
+   formatter=plain
+
+   [formatters]
+   keys=plain
+
+   [formatter_plain]
+   format=%(message)s
+
+into a file (e.g. logging.ini). Then reference this file in
+the 'config' value of the [logging] section in the trackers
+config.ini file.
+
+Note the log configuration above is an example and can be
+merged into a more full featured logging config file for
+your tracker if you wish. It will create a new file in the
+current working directory called 'httpd.log' and will rotate
+the log file at 500K and keep two old copies of the file.
+
 Migrating from 1.5.0 to 1.5.1
 =============================
 
