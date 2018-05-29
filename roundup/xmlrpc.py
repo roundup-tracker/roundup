@@ -4,12 +4,14 @@
 # For license terms see the file COPYING.txt.
 #
 
+import logging
 from roundup import hyperdb
 from roundup.exceptions import Unauthorised, UsageError
 from roundup.date import Date, Range, Interval
 from roundup import actions
 from SimpleXMLRPCServer import SimpleXMLRPCDispatcher
 from xmlrpclib import Binary
+from traceback import format_exc
 
 def translate(value):
     """Translate value to becomes valid for XMLRPC transmission."""
@@ -52,7 +54,11 @@ def props_from_args(db, cl, args, itemid=None):
             except hyperdb.HyperdbValueError as message:
                 raise UsageError, message
         else:
-            props[key] = None
+            # If we're syncing a file the contents may not be None
+            if key == 'content':
+                props[key] = ''
+            else:
+                props[key] = None
 
     return props
 
@@ -147,7 +153,11 @@ class RoundupInstance:
             result = cl.create(**props)
             self.db.commit()
         except (TypeError, IndexError, ValueError) as message:
-            raise UsageError, message
+            # The exception we get may be a real error, log the traceback if we're debugging
+            logger = logging.getLogger('roundup.xmlrpc')
+            for l in format_exc().split('\n'):
+                logger.debug(l)
+            raise UsageError (message)
         return result
 
     def set(self, designator, *args):
@@ -164,7 +174,11 @@ class RoundupInstance:
             result = cl.set(itemid, **props)
             self.db.commit()
         except (TypeError, IndexError, ValueError) as message:
-            raise UsageError, message
+            # The exception we get may be a real error, log the traceback if we're debugging
+            logger = logging.getLogger('roundup.xmlrpc')
+            for l in format_exc().split('\n'):
+                logger.debug(l)
+            raise UsageError (message)
         return result
 
 

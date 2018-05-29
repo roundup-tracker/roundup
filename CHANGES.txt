@@ -504,6 +504,8 @@ Fixed:
   commits to otk handling) even when a Reject exception occurs. The fix 
   implements separate database connections for otk/session handling and
   normal database operation.
+- Allow empty content property for file and message via xmlrpc
+  interface. This used to raise a traceback in the (sql) backend.
 
 
 2016-01-11: 1.5.1
