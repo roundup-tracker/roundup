@@ -305,7 +305,6 @@ class Number(_Type):
             floating point numbers.
         """
         self.use_double = use_double
-        _Type.__init__ (self, **kw)
         super(Number, self).__init__(**kw)
     def from_raw(self, value, **kw):
         value = value.strip()
