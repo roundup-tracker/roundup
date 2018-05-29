@@ -1043,6 +1043,10 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                                 linkids = [linkid]
                             subml = []
                             for linkid in linkids:
+                                # We're seeing things like
+                                # {'nosy':['38', '113', None, '82']} in the wild
+                                if linkid is None :
+                                    continue
                                 label = classname + linkid
                                 # if we have a label property, try to use it
                                 # TODO: test for node existence even when
@@ -1059,7 +1063,8 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                                     subml.append('<strike>%s</strike>'%label)
                                 else:
                                     if hrefable:
-                                        subml.append('<a rel="nofollow" href="%s%s">%s</a>'%(
+                                        subml.append('<a rel="nofollow" '
+                                                     'href="%s%s">%s</a>'%(
                                             classname, linkid, label))
                                     elif label is None:
                                         subml.append('%s%s'%(classname,
