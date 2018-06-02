@@ -7,9 +7,8 @@ Each entry has the developer who committed the change in brackets.
 Entries without name were done by Richard Jones.
 
 **IMPORTANT** The v1.5.x releases of Roundup were the last to support
-Python v2.5. Support for Python v2.5 is dropped starting with the v1.6.x
-releases of Roundup, at which point v2.7.2 is required to run those
-releases of Roundup.
+Python v2.5 and v2.6.  Starting with the v1.6 releases of Roundup
+v2.7.2 is required to run newer releases of Roundup.
 
 
 201?-??-??: 1.6.0
