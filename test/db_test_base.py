@@ -1282,11 +1282,13 @@ class DBTest(commonDBTest):
         # change and should not lead to a traceback.
         self.db.user.create(username="mary", roles="User")
         id = self.db.issue.create(title="spam", status='1')
+        self.db.issue.set(id, title='green eggs')
         self.db.commit()
         journal = self.db.getjournal('issue', id)
         now     = date.Date('.')
         sec     = date.Interval('0:00:01')
         sec2    = date.Interval('0:00:02')
+        jp0 = dict(title = 'spam')
         # Non-existing property changed
         jp1 = dict(nonexisting = None)
         journal.append ((id, now, '1', 'set', jp1))
@@ -1302,22 +1304,27 @@ class DBTest(commonDBTest):
         result.sort()
         # anydbm drops unknown properties during serialisation
         if self.db.dbtype == 'anydbm':
-            self.assertEqual(len(result), 3)
-            self.assertEqual(result [1][4], jp2)
-            self.assertEqual(result [2][4], jp3)
-        else:
             self.assertEqual(len(result), 4)
-            self.assertEqual(result [1][4], jp1)
+            self.assertEqual(result [1][4], jp0)
             self.assertEqual(result [2][4], jp2)
             self.assertEqual(result [3][4], jp3)
+        else:
+            self.assertEqual(len(result), 5)
+            self.assertEqual(result [1][4], jp0)
+            self.assertEqual(result [2][4], jp1)
+            self.assertEqual(result [3][4], jp2)
+            self.assertEqual(result [4][4], jp3)
         self.db.close()
         # Verify that normal user doesn't see obsolete props/classes
         # Backend memorydb cannot re-open db for different user
         if self.db.dbtype != 'memorydb':
             self.open_database('mary')
             setupSchema(self.db, 0, self.module)
+            # allow mary to see issue fields like title
+            self.db.security.addPermissionToRole('User', 'View', 'issue')
             result=self.db.issue.history(id)
-            self.assertEqual(len(result), 1)
+            self.assertEqual(len(result), 2)
+            self.assertEqual(result [1][4], jp0)
 
     def testJournalPreCommit(self):
         id = self.db.user.create(username="mary")
