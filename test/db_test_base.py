@@ -1282,7 +1282,11 @@ class DBTest(commonDBTest):
         # change and should not lead to a traceback.
         self.db.user.create(username="mary", roles="User")
         id = self.db.issue.create(title="spam", status='1')
+        # FIXME delay by two seconds due to mysql missing
+        # fractional seconds. This keeps the journal order correct.
+        time.sleep(2)
         self.db.issue.set(id, title='green eggs')
+        time.sleep(2)
         self.db.commit()
         journal = self.db.getjournal('issue', id)
         now     = date.Date('.')
