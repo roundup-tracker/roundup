@@ -1452,6 +1452,15 @@ class MailGW:
         '''Read a series of messages from the specified POP server.
         '''
         import getpass, poplib, socket
+        # Monkey-patch poplib to have a large line-limit
+        # Seems that in python2.7 poplib applies a line-length limit not
+        # just to the lines that take care of the pop3 protocol but also
+        # to all email content
+        # See, e.g.,
+        # https://readlist.com/lists/python.org/python-list/69/346982.html
+        # https://stackoverflow.com/questions/30976106/python-poplib-error-proto-line-too-+long?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
+        if 0 < getattr (poplib, '_MAXLINE', -1) < 100*1024:
+            poplib._MAXLINE = 100*1024
         try:
             if not user:
                 user = raw_input('User: ')

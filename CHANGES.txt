@@ -505,6 +505,13 @@ Fixed:
   normal database operation.
 - Allow empty content property for file and message via xmlrpc
   interface. This used to raise a traceback in the (sql) backend.
+- Work around a limitation in python2.7 implementation of poplib (for
+  the pop3 protocol for fetching emails): It seems poplib applies a
+  line-length limit not just to the lines involving the pop3 protocol
+  but to any email content, too. This sometimes leads to tracebacks
+  whenever an email exceeding this limit is encountered. We "fix" this
+  by monkey-patching poplib with a larger line-limit. Thanks to Heiko
+  Stegmann for discovering this.
 
 
 2016-01-11: 1.5.1
