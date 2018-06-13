@@ -169,13 +169,13 @@ https, replace xmlrpclib.SafeTransport with xmlrpclib.Transport::
 	verbose=False,
 	allow_none=True)
 
-    print roundup_server.schema()
-    print roundup_server.display('user2', 'username')
-    print roundup_server.display('issue1', 'status')
-    print roundup_server.filter('user',['1','2','3'],{'username':'demo'})
+    print(roundup_server.schema())
+    print(roundup_server.display('user2', 'username'))
+    print(roundup_server.display('issue1', 'status'))
+    print(roundup_server.filter('user',['1','2','3'],{'username':'demo'}))
 
    # this will fail with a fault
    try:
-      print roundup_server.filter('usr',['0','2','3'],{'username':'demo'})
+      print(roundup_server.filter('usr',['0','2','3'],{'username':'demo'}))
    except Exception as msg:
-      print msg
+      print(msg)

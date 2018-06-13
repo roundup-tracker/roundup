@@ -213,12 +213,12 @@ the following line in the module imports::
 Simple translations are automatically marked by calls to builtin
 message translation function ``_()``::
 
-  print _("This message is translated")
+  print(_("This message is translated"))
 
 Translations for messages whose grammatical depends on a number
 must be done by ``ngettext()`` function::
 
-  print ngettext("Nuked %i file", "Nuked %i files", number_of_files_nuked)
+  print(ngettext("Nuked %i file", "Nuked %i files", number_of_files_nuked))
 
 Deferred Translations
 ~~~~~~~~~~~~~~~~~~~~~
@@ -228,7 +228,7 @@ form [#note_admin.py]_ and must be translated elsewhere.
 Example::
 
   for meal in ("spam", "egg", "beacon"):
-      print _(meal)
+      print(_(meal))
 
 In such cases, strings must be marked for translation without actual
 call to the translating function.  To mark these strings, we use Python

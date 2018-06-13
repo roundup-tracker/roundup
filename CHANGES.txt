@@ -233,6 +233,8 @@ Features:
   through the python logger module (using roundup.http). This allows
   automatic log rotation. Without it, log file rotation requires restarting
   the server. (John Rouillard)
+- Part of issue2550960. Applied patch 0038 to upgrade documentation
+  code examples to support both python 2 and 3. (Joseph Myers)
 
 Fixed:
 

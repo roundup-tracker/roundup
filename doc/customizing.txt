@@ -4374,12 +4374,12 @@ the following into ``detectors/anti_spam.py`` in your tracker::
 
     def reject_html(db, cl, nodeid, newvalues):
         if newvalues['type'] == 'text/html':
-        raise Reject, 'not allowed'
+        raise Reject('not allowed')
 
     def reject_manylinks(db, cl, nodeid, newvalues):
         content = newvalues['content']
         if content.count('http://') > 2:
-        raise Reject, 'not allowed'
+        raise Reject('not allowed')
 
     def init(db):
         db.file.audit('create', reject_html)
@@ -4389,7 +4389,7 @@ You may also wish to block image attachments if your tracker does not
 need that ability::
 
     if newvalues['type'].startswith('image/'):
-        raise Reject, 'not allowed'
+        raise Reject('not allowed')
 
 
 Stop "nosy" messages going to people on vacation
@@ -4453,7 +4453,7 @@ vacation". Not very useful, and relatively easy to stop.
                     if users.get(nosyid, 'username') == 'anonymous':
                         continue
                     # make sure they haven't seen the message already
-                    if not seen_message.has_key(nosyid):
+                    if nosyid not in seen_message:
                         # send it to them
                         sendto.append(nosyid)
                         recipients.append(nosyid)
@@ -4520,7 +4520,7 @@ move issues. You can do this by following these steps:
          ''' Check that the desired transition is valid for the "status"
              property.
          '''
-         if not newvalues.has_key('status'):
+         if 'status' not in newvalues:
              return
          current = cl.get(nodeid, 'status')
          new = newvalues['status']
@@ -4528,8 +4528,8 @@ move issues. You can do this by following these steps:
              return
          ok = db.status.get(current, 'transitions')
          if new not in ok:
-             raise ValueError, 'Status not allowed to move from "%s" to "%s"'%(
-                 db.status.get(current, 'name'), db.status.get(new, 'name'))
+             raise ValueError('Status not allowed to move from "%s" to "%s"'%(
+                 db.status.get(current, 'name'), db.status.get(new, 'name')))
 
      def init(db):
          db.issue.audit('set', checktransition)
@@ -4623,7 +4623,7 @@ resolved. To achieve this:
 
         # don't do anything if there's no blockers or the status hasn't
         # changed
-        if not blockers or not newvalues.has_key('status'):
+        if not blockers or 'status' not in newvalues:
             return
 
         # get the resolved state ID
@@ -4640,7 +4640,7 @@ resolved. To achieve this:
 
         # ok, see if we're trying to resolve
         if newvalues['status'] == resolved_id:
-            raise ValueError, "This issue can't be resolved until %s resolved."%s
+            raise ValueError("This issue can't be resolved until %s resolved."%s)
 
 
     def resolveblockers(db, cl, nodeid, oldvalues):
@@ -4826,23 +4826,23 @@ This results in the following function::
             ok = ('yes',)
             # old node, get the current values from the node if they haven't
             # changed
-            if not newvalues.has_key('nosy'):
+            if 'nosy' not in newvalues:
                 nosy = cl.get(nodeid, 'nosy')
                 for value in nosy:
-                    if not current.has_key(value):
+                    if value not in current:
                         current[value] = 1
 
         # if the nosy list changed in this transaction, init from the new value
-        if newvalues.has_key('nosy'):
+        if 'nosy' in newvalues:
             nosy = newvalues.get('nosy', [])
             for value in nosy:
                 if not db.hasnode('user', value):
                     continue
-                if not current.has_key(value):
+                if value not in current:
                     current[value] = 1
 
         # add users with keyword in nosy_keywords to the nosy list
-        if newvalues.has_key('keyword') and newvalues['keyword'] is not None:
+        if 'keyword' in newvalues and newvalues['keyword'] is not None:
             keyword_ids = newvalues['keyword']
             for keyword in keyword_ids:
                 # loop over all users,
@@ -4857,7 +4857,7 @@ This results in the following function::
                         current[user_id] = 1
 
         # that's it, save off the new nosy list
-        newvalues['nosy'] = current.keys()
+        newvalues['nosy'] = list(current.keys())
 
 These two function are the only ones needed in the file.
 
@@ -4919,7 +4919,7 @@ directory of your tracker::
    def restrict_nosy_changes(db, cl, nodeid, newvalues):
        '''Do not permit changes to nosy via email.'''
 
-       if not (newvalues.has_key('nosy')):
+       if 'nosy' not in newvalues:
            # the nosy field has not changed so no need to check.
            return
 
@@ -4999,14 +4999,14 @@ tracker ``detectors`` directory)::
       ''' Ensure the assignedto value in newvalues is used with the
           Fixer Permission
       '''
-      if not newvalues.has_key('assignedto'):
+      if 'assignedto' not in newvalues:
           # don't care
           return
   
       # get the userid
       userid = newvalues['assignedto']
       if not db.security.hasPermission('Fixer', userid, cl.classname):
-          raise ValueError, 'You do not have permission to edit %s'%cl.classname
+          raise ValueError('You do not have permission to edit %s'%cl.classname)
 
   def init(db):
       db.issue.audit('set', assignedtoMustBeFixer)

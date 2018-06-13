@@ -980,27 +980,27 @@ proceeds when it has three approvals::
     # Permit users only to add themselves to the "approvals" list.
 
     def check_approvals(db, cl, id, newdata):
-        if newdata.has_key("approvals"):
+        if "approvals" in newdata:
             if cl.get(id, "status") == db.status.lookup("approved"):
-                raise Reject, "You can't modify the approvals list " \
-                    "for a project that has already been approved."
+                raise Reject("You can't modify the approvals list "
+                    "for a project that has already been approved.")
             old = cl.get(id, "approvals")
             new = newdata["approvals"]
             for uid in old:
                 if uid not in new and uid != db.getuid():
-                    raise Reject, "You can't remove other users from " \
-                        "the approvals list; you can only remove " \
-                        "yourself."
+                    raise Reject("You can't remove other users from "
+                        "the approvals list; you can only remove "
+                        "yourself.")
             for uid in new:
                 if uid not in old and uid != db.getuid():
-                    raise Reject, "You can't add other users to the " \
-                        "approvals list; you can only add yourself."
+                    raise Reject("You can't add other users to the "
+                        "approvals list; you can only add yourself.")
 
     # When three people have approved a project, change its status from
     # "pending" to "approved".
 
     def approve_project(db, cl, id, olddata):
-        if (olddata.has_key("approvals") and 
+        if ("approvals" in olddata and 
             len(cl.get(id, "approvals")) == 3):
             if cl.get(id, "status") == db.status.lookup("pending"):
                 cl.set(id, status=db.status.lookup("approved"))
@@ -1021,12 +1021,12 @@ to "applied"::
 
     def check_new_patch(db, cl, id, newdata):
         if not newdata["files"]:
-            raise Reject, "You can't submit a new patch without " \
-                          "attaching a patch file."
+            raise Reject("You can't submit a new patch without "
+                         "attaching a patch file.")
         for fileid in newdata["files"]:
             if db.file.get(fileid, "type") != "text/plain":
-                raise Reject, "Submitted patch files must be " \
-                              "text/plain."
+                raise Reject("Submitted patch files must be "
+                             "text/plain.")
 
     # When the status is changed from "approved" to "applied", apply the
     # patch.

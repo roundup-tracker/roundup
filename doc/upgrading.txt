@@ -872,7 +872,7 @@ of your tracker::
               if op == '-':
                   affected [i] = 1
                   break
-  print ', '.join(sorted(affected.iterkeys()))
+  print(', '.join(sorted(affected.keys())))
 
 To find out which files where attached before you can look in the
 history of the affected issue.  For fixing issues you can re-attach the
@@ -923,6 +923,7 @@ directory, it will list for each Class and Property the roles that may
 search for this property::
 
     #!/usr/bin/python
+    from __future__ import print_function
     import os
     from roundup import instance
 
@@ -930,14 +931,14 @@ search for this property::
     db = tracker.open('admin')
 
     for cl in sorted(db.getclasses()):
-        print "Class:", cl
+        print("Class:", cl)
         for p in sorted(db.getclass(cl).getprops(protected=True).keys()):
-            print "    Property:", p
+            print("    Property:", p)
             roles = []
-            for role in sorted(db.security.role.iterkeys()):
+            for role in sorted(db.security.role.keys()):
                 if db.security.roleHasSearchPermission(cl,p,role):
                     roles.append(role)
-            print "        roles may search:", ', '.join(roles)
+            print("        roles may search:", ', '.join(roles))
 
 
 Migrating from 1.4.x to 1.4.12
