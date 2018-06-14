@@ -162,7 +162,7 @@ Fixed:
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
 
-Roundup requires python 2.5 or later (but not 3+) for correct operation.
+Roundup requires python 2.7 or later (but not 3+) for correct operation.
 
 To give Roundup a try, just download (see below), unpack and run::
 
