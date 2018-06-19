@@ -2,13 +2,13 @@ recursive-include share *
 recursive-include roundup *.*
 recursive-include frontends *.*
 recursive-include scripts *.* *-*
-recursive-include tools *.*
+recursive-include tools *.* base64
 recursive-include test *.py *.txt
 recursive-include doc *.html *.png *.txt *.css *.example
-recursive-include detectors *.py
-global-exclude *.pyc *.pyo .DS_Store
+recursive-include detectors *.py README.txt
+global-exclude *.pyc *.pyo .DS_Store *.orig *.rej *~ \#*
 include run_tests.py demo.py *.txt
-include doc/conf.py
+include doc/conf.py doc/roundup-favicon.ico
 exclude 2to3-done.txt
 exclude doc/security.txt
 include locale/*.po locale/*.mo locale/roundup.pot

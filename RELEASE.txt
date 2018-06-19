@@ -18,13 +18,16 @@ Roundup release checklist:
     check that metadata is valid and long descriptions is proper reST:
       python setup.py check --restructuredtext --metadata --strict
 5.  Clean out all *.orig, *.rej, .#* files from the source.
-6.  Remove previuos build files
+6.  Remove previous build files
       python setup.py clean --all
 7.  Rebuild documentation in "share/doc/roundup/html"
       python setup.py build_doc
 8.  python setup.py sdist --manifest-only
-9.  Check the MANIFEST to make sure that any new files are included. If
-    they are not, edit MANIFEST.in to include them. For format docs see
+9.  Check the MANIFEST to make sure that any new files are included.
+      (use hg status --rev <last release or tag>:tip to list changed
+      added and removed files. Last release e.g. 1.5.1 where tip was
+      what would become 1.6)
+    If they are not, edit MANIFEST.in to include them. For format docs see
     http://docs.python.org/2/distutils/sourcedist.html#manifest-template
 10. python setup.py sdist
     (if you find sdist a little verbose, add "--quiet" to the end of the
