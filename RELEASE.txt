@@ -11,6 +11,7 @@ Roundup release checklist:
 2.  Update version
       CHANGES.txt
       roundup/__init__.py
+      website/www/index.txt
 3.  Update documentation
       doc/announcement.txt
       doc/upgrading.txt
