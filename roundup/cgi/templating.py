@@ -706,7 +706,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
     def classhelp(self, properties=None, label=''"(list)", width='500',
             height='600', property='', form='itemSynopsis',
             pagesize=50, inputtype="checkbox", html_kwargs={},
-            sort=None, filter=None):
+            group='', sort=None, filter=None):
         """Pop up a javascript window with class help
 
         This generates a link to a popup window which displays the
@@ -747,6 +747,8 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
             else:
                 sort = self._klass.orderprop()
         sort = '&amp;@sort=' + sort
+        if group :
+            group = '&amp;@group=' + group
         if property:
             property = '&amp;property=%s'%property
         if form:
@@ -765,9 +767,9 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         else:
            filter = ''
         help_url = "%s?@startwith=0&amp;@template=help&amp;"\
-                   "properties=%s%s%s%s%s&amp;@pagesize=%s%s" % \
+                   "properties=%s%s%s%s%s%s&amp;@pagesize=%s%s" % \
                    (self.classname, properties, property, form, type,
-                   sort, pagesize, filter)
+                   group, sort, pagesize, filter)
         onclick = "javascript:help_window('%s', '%s', '%s');return false;" % \
                   (help_url, width, height)
         return '<a class="classhelp" href="%s" onclick="%s" %s>%s</a>' % \
