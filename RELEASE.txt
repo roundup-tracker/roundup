@@ -12,6 +12,7 @@ Roundup release checklist:
       CHANGES.txt
       roundup/__init__.py
       website/www/index.txt
+2a. Update license end date in COPYING.txt
 3.  Update documentation
       doc/announcement.txt
       doc/upgrading.txt
@@ -33,22 +34,24 @@ Roundup release checklist:
 10. python setup.py sdist
     (if you find sdist a little verbose, add "--quiet" to the end of the
      command)
-11. Unpack the new dist file in /tmp then
-      a) run_test.py
+11. Unpack the new tarball created in dist/roundup-<version>.tar.gz
+    file in /tmp then
+      a) run_tests.py
       b) demo.py
     with all available Python versions.
 12. Assuming all is well tag the release in the version-control system.
-13. Build binary packages (requires python 2.6 or newer for
-    bdist_windist to have the --user-access flag.)
-      python setup.py bdist_rpm
-      python setup.py bdist_wininst --user-access-control force
-14. Upload source distributive to PyPI
-      python setup.py sdist upload --sign
-    It should appear on http://pypi.python.org/pypi/roundup in no time.
-15. Send doc/announcement.txt to python-announce@python.org and
+13. Upload source distributive to PyPI - requires you sign up for a
+    pypi account and be added as a maintainer to roundup. Ask existing
+    maintainer for access.
+      python setup.py sdist upload --repository pypi --sign
+    It should appear on http://pypi.python.org/pypi/roundup in no
+    time. If you are using python older than 2.7.13 you need a
+    .pypi rc shown below. URL has changed. If using 2.7.13 or newer,
+    you can remove the "--repository pypi" option.
+14. Send doc/announcement.txt to python-announce@python.org and
     roundup-users@lists.sourceforge.net and
     roundup-devel@lists.sourceforge.net
-16. Refresh website.
+15. Refresh website.
       website/README.txt
       http://www.roundup-tracker.org/ should state that the stable
       version is the one that you released.
@@ -66,13 +69,30 @@ So, those commands in a nice, cut'n'pasteable form::
  python setup.py sdist --manifest-only
  python setup.py sdist --quiet
  python setup.py bdist_rpm
- python2.5 setup.py bdist_wininst --user-access-control force
- python setup.py register
- python setup.py sdist upload --sign
- python2.5 setup.py bdist_wininst upload --sign
+ # not required for pypi.org since 2017 -> python setup.py register
+ python setup.py sdist upload --repository pypi --sign
 
-(if the last two fail make sure you're using python2.5+)
-Note that python2.6 won't correctly create a bdist_wininst install on
-Linux (it will produce a .exe with "linux" in the name). 2.7 still has
-this bug (Ralf)
+Note pypi no longer allows uploads of .exe installers such as produced
+by bdist_wininst. Removed directions for producing the binary
+distribution.
+
+If you get errors on the upload operation, you may need the following
+~/.pypirc file as well
+
+========
+[distutils]
+index-servers =
+    test
+    pypi
+
+[pypi]
+repository: https://upload.pypi.org/legacy/
+username: <your username on pypi.org here>
+password: <your password here>
+
+[test]
+repository: https://test.pypi.org/legacy/
+username: <your username on test.pypi.org here>
+password: <your password here>
+========
 

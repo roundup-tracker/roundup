@@ -2023,7 +2023,7 @@ recommended for production use.
 .. _Chameleon:
    http://chameleon.repoze.org/
 .. _z3c.pt:
-   http://pypi.python.org/pypi/z3c.pt
+   https://pypi.org/project/z3c.pt/
 __ http://chameleon.repoze.org/docs/latest/reference.html#incompatibilities-and-differences
 .. _TAL:
 .. _Template Attribute Language:
