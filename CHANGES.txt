@@ -235,6 +235,8 @@ Features:
   the server. (John Rouillard)
 - Part of issue2550960. Applied patch 0038 to upgrade documentation
   code examples to support both python 2 and 3. (Joseph Myers)
+- Release no longer includes binary windows installer. Pypi no longer
+  accepts it for upload.
 
 Fixed:
 
