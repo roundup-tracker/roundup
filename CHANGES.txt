@@ -11,7 +11,7 @@ Python v2.5 and v2.6.  Starting with the v1.6 releases of Roundup
 v2.7.2 is required to run newer releases of Roundup.
 
 
-201?-??-??: 1.6.0
+2018-??-??: 1.6.0
 
 Features:
 
@@ -235,6 +235,8 @@ Features:
   the server. (John Rouillard)
 - Part of issue2550960. Applied patch 0038 to upgrade documentation
   code examples to support both python 2 and 3. (Joseph Myers)
+- Release no longer includes binary windows installer. Pypi no longer
+  accepts it for upload.
 
 Fixed:
 
@@ -514,6 +516,9 @@ Fixed:
   whenever an email exceeding this limit is encountered. We "fix" this
   by monkey-patching poplib with a larger line-limit. Thanks to Heiko
   Stegmann for discovering this.
+- Fix issue2550963: After refactoring one-time keys from the main
+  database we need to commit the password change in the password reset
+  mechanism separately. This used to be committed by the otk commit.
 
 
 2016-01-11: 1.5.1

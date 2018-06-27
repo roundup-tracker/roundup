@@ -118,11 +118,11 @@ Windows Service
 
 .. _Xapian: http://xapian.org/
 .. _Whoosh: https://bitbucket.org/mchaput/whoosh/wiki/Home
-.. _pytz: http://www.python.org/pypi/pytz
+.. _pytz: https://pypi.org/project/pytz/
 .. _Olson tz database: http://www.twinsun.com/tz/tz-link.htm
 .. _pyopenssl: http://pyopenssl.sourceforge.net
 .. _pyme: http://pyme.sourceforge.net
-.. _pywin32: http://pypi.python.org/pypi/pywin32
+.. _pywin32: https://pypi.org/project/pywin32/
 .. _jinja2: http://jinja.pocoo.org/
 
 
@@ -1113,7 +1113,7 @@ from installation and scripts.
 .. _External hyperlink targets:
 
 .. _apache: http://httpd.apache.org/
-.. _flup: http://pypi.python.org/pypi/flup
+.. _flup: https://pypi.org/project/flup/
 .. _mod_python: http://www.modpython.org/
 .. _MySQLdb: http://sourceforge.net/projects/mysql-python
 .. _Psycopg: http://initd.org/software/initd/psycopg
