@@ -1,3 +1,4 @@
+from __future__ import print_function
 import re
 
 hg_url_base = r'http://sourceforge.net/p/roundup/code/ci/'
@@ -29,12 +30,21 @@ def init(instance):
     instance.registerUtil('localReplace', local_replace)
 
 def quicktest(msgstr, should_replace = True):
-    if not should_replace:
-        print "(no)",
-    print "'%s' -> '%s'" % (msgstr, local_replace(msgstr))
+    testcount['run'] += 1
+    replacedstr = local_replace(msgstr)
+
+    if not (not replacedstr == msgstr ) == should_replace:
+        print("(fail)", end=' ')
+        testcount['failed'] += 1
+
+    if replacedstr == msgstr:
+        print( "'%s'" % (msgstr,))
+    else:
+        print("'%s' -> '%s'" % (msgstr, replacedstr))
 
 if "__main__" == __name__:
-    print "Replacement examples. '(no)' should result in no replacement:"
+    testcount = {'run':0 , 'failed': 0}
+    print("Replacement examples:")
     quicktest(" debian:#222")
     quicktest(" #555")
     quicktest("issue333")
@@ -55,3 +65,5 @@ if "__main__" == __name__:
     quicktest("rev4891:ad3d628e73f2")
     quicktest("hg4891:ad3d628e73f2")
     quicktest("changeset:   4542:46239c21a1eb")
+    print()
+    print(testcount)
