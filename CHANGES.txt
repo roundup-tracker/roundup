@@ -516,6 +516,9 @@ Fixed:
   whenever an email exceeding this limit is encountered. We "fix" this
   by monkey-patching poplib with a larger line-limit. Thanks to Heiko
   Stegmann for discovering this.
+- Fix issue2550963: After refactoring one-time keys from the main
+  database we need to commit the password change in the password reset
+  mechanism separately. This used to be committed by the otk commit.
 
 
 2016-01-11: 1.5.1

@@ -912,6 +912,8 @@ class PassResetAction(Action):
                 # clear the props from the otk database
                 otks.destroy(otk)
                 otks.commit()
+                # commit the password change
+                self.db.commit ()
             except (ValueError, KeyError) as message:
                 self.client.add_error_message(str(message))
                 return
