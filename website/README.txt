@@ -55,10 +55,24 @@ http://web.archive.org/web/20140618231150/http://sourceforge.net/apps/trac/sourc
     # (the warning about "Not trusting file ... " can be ignored
     #  for now https://sourceforge.net/p/forge/site-support/8217/)
     hg pull -u --cwd ${project_home}/src/roundup
+    # see below if this fails with: not trusting file
+      # /home/project-web/roundup/src/roundup/.hg/hgrc from untrusted
+      # user 110231, group 48
 
     # read up on other people changes and add yours
     cd ${project_home}
     vim logbuch.txt
+
+If you get a "not trusting" error the problem is that the .hg files in
+use are not owned by you and hg won;t use them. Add this to your
+~/.hgrc file (create file if needed)
+
+[trusted]
+groups=48
+users=110231
+
+if the uid/gid changes you may have to change the values.
+See: https://www.mercurial-scm.org/wiki/Trust for details
 
 
 updating wiki.roundup-tracker.org
