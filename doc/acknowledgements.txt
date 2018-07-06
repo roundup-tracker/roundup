@@ -6,6 +6,11 @@ We like to thank our community and all organisation and people
 that support us doing so with code, money, time, testing, reports,
 ideas and everything else that helped!
 
+`Announcement with changelog for current release.`_
+
+.. _`Announcement with changelog for current release.`: announcement.html
+
+
 1.6
 ---
 
