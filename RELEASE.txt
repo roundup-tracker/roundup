@@ -14,6 +14,8 @@ Roundup release checklist:
       website/www/index.txt
       website/www/conf.py  (also update copyright)
 2a. Update license end date in COPYING.txt
+2b. Update website/www/doc/acknowledgements.txt (add section for
+    release, churn contributers etc.).
 3.  Update documentation
       doc/announcement.txt
       doc/upgrading.txt
