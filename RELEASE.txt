@@ -12,6 +12,7 @@ Roundup release checklist:
       CHANGES.txt
       roundup/__init__.py
       website/www/index.txt
+      website/www/conf.py  (also update copyright)
 2a. Update license end date in COPYING.txt
 3.  Update documentation
       doc/announcement.txt
