@@ -1,7 +1,7 @@
 I'm proud to release version 1.6 of Roundup which has been possible
 due to the help of several contributors.  This release contains
 important security enhancements, so make sure to read
-`doc/upgrading.txt <http://www.roundup-tracker.org/docs/upgrading.html>`_
+`docs/upgrading.txt <http://www.roundup-tracker.org/docs/upgrading.html>`_
 to bring your tracker up to date. Other changes, as usual, include some
 new features and many bug fixes.
 
