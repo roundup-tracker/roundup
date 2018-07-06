@@ -6,6 +6,47 @@ We like to thank our community and all organisation and people
 that support us doing so with code, money, time, testing, reports,
 ideas and everything else that helped!
 
+1.6
+---
+
+Maintainer: Ralf Schlatterbeck, John Rouillard
+
+Release Manager: John Rouillard
+
+Developer activity by changesets::
+
+  rouilj at ieee.org           234 **********************************************
+  rsc at runtux.com             30 ******
+  john at jerrykan.com          26 *****
+  bernhard at intevation.de     10 **
+  esr at thyrsus.com             8 **
+  techtonik at gmail.com         5 *
+  dangchau1991 at gmail.com      1 
+  pf at artcom-gmbh.de           1 
+  thomas at intevation.de        1 
+
+Frank Niessink,
+Anthony (antmail),
+Bruce Tulloch,
+kinggreedy,
+David Wolever,
+Tom Ekberg,
+Peter Funk,
+Daniel Diniz,
+W. Trevor King,
+Igor Ippolitov,
+Joseph Myers,
+r.david.murray,
+martin.v.loewis,
+Henry (henryl),
+David Wolever,
+Stuart McGraw (smcgraw),
+Philipp Gortan (mephinet),
+Ezio Melotti,
+Heiko Stegmann,
+Trent Gamblin,
+Anton Schur
+
 1.5
 ---
 
