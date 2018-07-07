@@ -126,7 +126,7 @@ def main():
             " customisable.",
           long_description=long_description,
           url='http://www.roundup-tracker.org',
-          download_url='http://pypi.python.org/pypi/roundup',
+          download_url='https://pypi.python.org/pypi/roundup',
           classifiers=['Development Status :: 5 - Production/Stable',
                        'Environment :: Console',
                        'Environment :: Web Environment',
