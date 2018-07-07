@@ -49,7 +49,7 @@ Roundup release checklist:
       python setup.py sdist upload --repository pypi --sign
     It should appear on http://pypi.python.org/pypi/roundup in no
     time. If you are using python older than 2.7.13 you need a
-    .pypi rc shown below. URL has changed. If using 2.7.13 or newer,
+    .pypirc shown below. URL has changed. If using 2.7.13 or newer,
     you can remove the "--repository pypi" option.
 14. Send doc/announcement.txt to python-announce@python.org and
     roundup-users@lists.sourceforge.net and
