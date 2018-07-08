@@ -17,7 +17,9 @@ try:
     random=SystemRandom()
     logger.debug("Importing good random generator")
 except ImportError:
-    from random import random
+    raise
+    from random import Random
+    random=Random()
     logger.warning("**SystemRandom not available. Using poor random generator")
 
 try:
