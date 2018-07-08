@@ -88,17 +88,7 @@ DEFAULT_MULTIPROCESS = MULTIPROCESS_TYPES[-1]
 
 def auto_ssl():
     print _('WARNING: generating temporary SSL certificate')
-    import OpenSSL
-
-    try: 
-        # Use the cryptographic source of randomness if available
-        from random import SystemRandom
-        random=SystemRandom()
-    except ImportError:
-        raise
-        from random import Random
-        random=Random()
-
+    import OpenSSL, random
     pkey = OpenSSL.crypto.PKey()
     pkey.generate_key(OpenSSL.crypto.TYPE_RSA, 768)
     cert = OpenSSL.crypto.X509()

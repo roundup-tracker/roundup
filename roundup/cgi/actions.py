@@ -1,14 +1,5 @@
-import re, cgi, time, csv, codecs
+import re, cgi, time, random, csv, codecs
 from io import BytesIO
-
-try: 
-    # Use the cryptographic source of randomness if available
-    from random import SystemRandom
-    random=SystemRandom()
-except ImportError:
-    raise
-    from random import Random
-    random=Random()
 
 from roundup import hyperdb, token, date, password
 from roundup.actions import Action as BaseAction

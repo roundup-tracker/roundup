@@ -95,18 +95,9 @@ explanatory message given in the exception.
 __docformat__ = 'restructuredtext'
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
-import time, sys, logging
+import time, random, sys, logging
 import traceback
 import email.utils
-
-try: 
-    # Use the cryptographic source of randomness if available
-    from random import SystemRandom
-    random=SystemRandom()
-except ImportError:
-    raise
-    from random import Random
-    random=Random()
 
 from anypy.email_ import decode_header
 

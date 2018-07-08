@@ -19,19 +19,10 @@
 """
 __docformat__ = 'restructuredtext'
 
-import re, string
+import re, string, random
 import os
 from base64 import b64encode, b64decode
 from hashlib import md5, sha1
-
-try: 
-    # Use the cryptographic source of randomness if available
-    from random import SystemRandom
-    random=SystemRandom()
-except ImportError:
-    raise
-    from random import Random
-    random=Random()
 
 try:
     import crypt
@@ -371,13 +362,6 @@ def test():
     assert p != 'not sekrit'
     assert 'sekrit' == p
     assert 'not sekrit' != p
-
-
-    print random.randrange(36, 52)
-    # this seems to return the save password every time
-    # when run inside a roundup daemon.
-    # but it tests out ok. I don't know why. -- rouilj
-    print generatePassword()
 
 if __name__ == '__main__':
     test()

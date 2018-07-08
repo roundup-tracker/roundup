@@ -17,9 +17,7 @@ try:
     random=SystemRandom()
     logger.debug("Importing good random generator")
 except ImportError:
-    raise
-    from random import Random
-    random=Random()
+    from random import random
     logger.warning("**SystemRandom not available. Using poor random generator")
 
 try:
@@ -81,6 +79,19 @@ default_err_msg = ''"""<html><head><title>An error has occurred</title></head>
 The tracker maintainers have been notified of the problem.</p>
 </body></html>"""
 
+def seed_pseudorandom():
+    '''A function to seed the default pseudorandom random number generator
+       which is used to (at minimum):
+          * generate part of email message-id 
+          * generate OTK for password reset
+          * generate the temp recovery password
+
+       This function limits the scope of the 'import random' call
+       as the random identifier is used throughout the code and
+       can refer to SystemRandom.
+    '''
+    import random
+    random.seed()
 
 class LiberalCookie(SimpleCookie):
     """ Python's SimpleCookie throws an exception if the cookie uses invalid
@@ -307,8 +318,14 @@ class Client:
     )
 
     def __init__(self, instance, request, env, form=None, translator=None):
-        # re-seed the random number generator
+        # re-seed the random number generator. Is this is an instance of
+        # random.SystemRandom it has no effect.
         random.seed()
+        # So we also seed the pseudorandom random source obtained from
+        #    import random
+        # to make sure that every forked copy of the client will return
+        # new random numbers.
+        seed_pseudorandom()
         self.start = time.time()
         self.instance = instance
         self.request = request

@@ -20,17 +20,7 @@
 """
 __docformat__ = 'restructuredtext'
 
-import re, os, smtplib, socket, time
-
-try: 
-    # Use the cryptographic source of randomness if available
-    from random import SystemRandom
-    random=SystemRandom()
-except ImportError:
-    raise
-    from random import Random
-    random=Random()
-
+import re, os, smtplib, socket, time, random
 import cStringIO, base64, mimetypes
 import os.path
 import logging

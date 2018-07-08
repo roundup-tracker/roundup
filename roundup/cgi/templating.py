@@ -36,10 +36,7 @@ try:
     from random import SystemRandom
     random=SystemRandom()
 except ImportError:
-    raise
-    from random import Random
-    random=Random()
-
+    from random import random
 try:
     import cPickle as pickle
 except ImportError:
