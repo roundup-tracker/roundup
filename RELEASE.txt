@@ -42,7 +42,11 @@ Roundup release checklist:
       a) run_tests.py
       b) demo.py
     with all available Python versions.
-12. Assuming all is well tag the release in the version-control system.
+12. Assuming all is well tag the release in the version-control
+    system.
+      a) hg tag 1.6.0  # use right version. Should create/commit a changeset
+      b) hg push       # update main repo
+      c) hg sum        # verify that the tag shows up
 13. Upload source distributive to PyPI - requires you sign up for a
     pypi account and be added as a maintainer to roundup. Ask existing
     maintainer for access.
