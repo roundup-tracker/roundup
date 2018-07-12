@@ -1698,7 +1698,7 @@ Also a per form token (also called a nonce) can be enabled for
 the tracker using the ``csrf_enforce_token`` option in
 config.ini.  When enabled, roundup will validate a hidden form
 field called ``@csrf``. If the validation fails (or the token
-is used more than one) the request is rejected.  The ``@csrf``
+is used more than once) the request is rejected.  The ``@csrf``
 input field is added automatically by calling the ``submit``
 function/path. It can also be added manually by calling
 anti_csrf_nonce() directly. For example:
@@ -1722,7 +1722,7 @@ on a valid header check against the roundup url and the presence
 of the ``X-REQUESTED-WITH`` header. Work to improve this is a
 future project after the 1.6 release.
 
-The enforcement levels an be modified in ``config.ini``. Refer to
+The enforcement levels can be modified in ``config.ini``. Refer to
 that file for details.
 
 Special form variables
