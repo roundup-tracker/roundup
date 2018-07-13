@@ -14,6 +14,8 @@ ideas and everything else that helped!
 1.6
 ---
 
+1.6.0
+~~~~~
 Maintainer: Ralf Schlatterbeck, John Rouillard
 
 Release Manager: John Rouillard
