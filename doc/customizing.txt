@@ -2021,10 +2021,10 @@ future release.
 recommended for production use.
 
 .. _Chameleon:
-   http://chameleon.repoze.org/
+   https://pypi.org/project/Chameleon/
 .. _z3c.pt:
    https://pypi.org/project/z3c.pt/
-__ http://chameleon.repoze.org/docs/latest/reference.html#incompatibilities-and-differences
+__ https://chameleon.readthedocs.io/en/latest/reference.html?highlight=differences#incompatibilities-and-differences
 .. _TAL:
 .. _Template Attribute Language:
    http://dev.zope.org/Wikis/DevSite/Projects/ZPT/TAL%20Specification%201.4
