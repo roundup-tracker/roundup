@@ -2027,7 +2027,7 @@ recommended for production use.
 __ https://chameleon.readthedocs.io/en/latest/reference.html?highlight=differences#incompatibilities-and-differences
 .. _TAL:
 .. _Template Attribute Language:
-   http://dev.zope.org/Wikis/DevSite/Projects/ZPT/TAL%20Specification%201.4
+   https://pagetemplates.readthedocs.io/en/latest/history/TALSpecification14.html
 
 
 Basic Templating Actions
@@ -2196,7 +2196,7 @@ Modifiers:
 
 .. _TALES:
 .. _Template Attribute Language Expression Syntax:
-   http://dev.zope.org/Wikis/DevSite/Projects/ZPT/TALES%20Specification%201.3
+   https://pagetemplates.readthedocs.io/en/latest/history/TALESSpecification13.html
 
 
 Template Macros
@@ -2261,7 +2261,7 @@ TAL commands may be used freely inside METAL-using tags (so your
 
 .. _METAL:
 .. _Macro Expansion Template Attribute Language:
-   http://dev.zope.org/Wikis/DevSite/Projects/ZPT/METAL%20Specification%201.0
+   https://pagetemplates.readthedocs.io/en/latest/history/TALESSpecification13.html
 
 Information available to templates
 ----------------------------------
