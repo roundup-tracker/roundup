@@ -442,10 +442,10 @@ At run time, Roundup automatically compiles message catalogs whenever
    http://lists.sourceforge.net/mailman/listinfo/roundup-devel
 .. _TAL:
 .. _Template Attribute Language:
-   http://dev.zope.org/Wikis/DevSite/Projects/ZPT/TAL%20Specification%201.4
+   https://pagetemplates.readthedocs.io/en/latest/history/TALSpecification14.html
 .. _TALES:
 .. _Template Attribute Language Expression Syntax:
-   http://dev.zope.org/Wikis/DevSite/Projects/ZPT/TALES%20Specification%201.3
+   https://pagetemplates.readthedocs.io/en/latest/history/TALESSpecification13.html
 .. _vim: http://www.vim.org/
 .. _ZPTInternationalizationSupport: http://dev.zope.org/Wikis/DevSite/Projects/ComponentArchitecture/ZPTInternationalizationSupport
 
