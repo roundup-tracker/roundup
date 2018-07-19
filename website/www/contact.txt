@@ -3,11 +3,11 @@ Contact
 
 We maintain the following mailing lists:
   
-=================== ===================================================
-roundup-users_      archives `[SourceForge]`__ `[GMane]`__ `[Nabble]`__
-roundup-devel_      archives `[SourceForge]`__ `[GMane]`__ `[Nabble]`__
+=================== ==========================
+roundup-users_      archives `[SourceForge]`__
+roundup-devel_      archives `[SourceForge]`__
 roundup-checkins_   archives `[SourceForge]`__
-=================== ===================================================
+=================== ==========================
 
 These lists are moderated to protect them against spam. 
 Please sign up if you intend to mail repeatedly.
@@ -21,12 +21,8 @@ using IRC client or through WebChat_ interface.
 .. _roundup-checkins: https://lists.sourceforge.net/lists/listinfo/roundup-checkins
 
 .. __: https://sourceforge.net/mailarchive/forum.php?forum_name=roundup-users
-.. __: http://news.gmane.org/gmane.comp.bug-tracking.roundup.user
-.. __: http://roundup.1086182.n5.nabble.com/User-f3164.html
 
 .. __: https://sourceforge.net/mailarchive/forum.php?forum_name=roundup-devel
-.. __: http://news.gmane.org/gmane.comp.bug-tracking.roundup.devel
-.. __: http://roundup.1086182.n5.nabble.com/Developer-f3.html
 
 .. __: https://sourceforge.net/mailarchive/forum.php?forum_name=roundup-checkins
 
