@@ -975,7 +975,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
 
         # get the journal, sort and reverse
         history = self._klass.history(self._nodeid, skipquiet=(not showall))
-        history.sort()
+        history.sort(key=lambda a: a[:3])
         history.reverse()
 
         # restrict the volume
