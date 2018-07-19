@@ -119,7 +119,7 @@ Windows Service
 .. _Xapian: http://xapian.org/
 .. _Whoosh: https://bitbucket.org/mchaput/whoosh/wiki/Home
 .. _pytz: https://pypi.org/project/pytz/
-.. _Olson tz database: http://www.twinsun.com/tz/tz-link.htm
+.. _Olson tz database: https://www.iana.org/time-zones
 .. _pyopenssl: http://pyopenssl.sourceforge.net
 .. _pyme: http://pyme.sourceforge.net
 .. _pywin32: https://pypi.org/project/pywin32/
