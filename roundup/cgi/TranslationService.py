@@ -30,7 +30,7 @@ class TranslationServiceMixin:
         _msg = TALInterpreter.interpolate(_msg, mapping)
         return _msg
 
-    if not _py3:
+    if hasattr(i18n.RoundupTranslations, 'ugettext'):
         def gettext(self, msgid):
             msgid = us2u(msgid)
             msgtrans=self.ugettext(msgid)
