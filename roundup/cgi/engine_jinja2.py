@@ -34,6 +34,7 @@ minimal set (to avoid Roundup state changes from template).
 from __future__ import print_function
 import jinja2
 import gettext
+import sys
 
 from types import MethodType
 
@@ -87,7 +88,8 @@ class Jinja2ProxyPageTemplate(TemplateBase):
         # [ ] limit the information passed to the minimal necessary set
         c = context(client, self, classname, request)
         c.update({'options': options})
-        return self._tpl.render(c).encode(client.charset, )
+        s = self._tpl.render(c)
+        return s if sys.version_info[0] > 2 else s.encode(client.STORAGE_CHARSET, )
 
     def __getitem__(self, name):
         # [ ] figure out what are these for
