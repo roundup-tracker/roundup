@@ -372,9 +372,8 @@ tools that may help you with this process:
 
  - `poEdit`_ by Vaclav Slavik.  Very nice cross-platform GUI editor.
 
- - `KBabel`_.  Being part of `KDE`_, it works in X windows only.
-    At the first glance looks pretty hairy, with all bells and whistles.
-    Haven't had much experience with it, though.
+ - `Lokalize`_. A replacement for KBabel. Being part of `KDE`_, it
+    works in X windows only. Haven't had much experience with it, though.
 
  - ``po-mode`` for `emacs`_.  One of `GNU gettext`_ tools.  Very handy,
    definitely recommended if you are comfortable with emacs.  Cannot
@@ -418,21 +417,21 @@ At run time, Roundup automatically compiles message catalogs whenever
 
 .. _alexander smishlajev:
 .. _als: http://sourceforge.net/users/a1s/
-.. _cygwin: http://www.cygwin.com/
-.. _emacs: http://www.gnu.org/software/emacs/
-.. _gettext package: http://www.gnu.org/software/gettext/
-.. _gettext module: http://docs.python.org/lib/module-gettext.html
+.. _cygwin: https://www.cygwin.com/
+.. _emacs: https://www.gnu.org/software/emacs/
+.. _gettext package: https://www.gnu.org/software/gettext/
+.. _gettext module: https://docs.python.org/2/library/gettext.html
 .. _GNU: http://www.gnu.org/
 .. _GNU mirror sites: http://www.gnu.org/prep/ftp.html
 .. _issue tracker: http://issues.roundup-tracker.org/
-.. _KBabel: http://i18n.kde.org/tools/kbabel/
+.. _Lokalize: Lokalize
 .. _KDE: http://www.kde.org/
-.. _linux: http://www.linux.org/
+.. _linux: https://www.linux.org/
 .. _Plural Forms:
     http://www.gnu.org/software/gettext/manual/html_node/gettext_150.html
 .. _po filetype plugin:
     http://vim.sourceforge.net/scripts/script.php?script_id=695
-.. _PO utilities: http://po-utils.progiciels-bpi.ca/
+.. _PO utilities: https://github.com/pinard/po-utils
 .. _poEdit: http://poedit.sourceforge.net/
 .. _Roundup Source:
 .. _Roundup source distribution:

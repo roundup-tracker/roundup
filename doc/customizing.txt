@@ -66,15 +66,18 @@ schema`_.  Some configuration is also performed using permissions - see the
 automatically register through the email interface, you must grant the
 "Anonymous" Role the "Email Access" Permission.
 
-The following is taken from the `Python Library Reference`__ (May 20, 2004)
+The following is taken from the `Python Library Reference`__ (July 18, 2018)
 section "ConfigParser -- Configuration file parser":
 
- The configuration file consists of sections, led by a "[section]" header
- and followed by "name = value" entries, with line continuations on a
- newline with leading whitespace. Note that leading whitespace is removed
- from values. The optional values can contain format strings which
- refer to other values in the same section. Lines beginning with "#" or ";"
- are ignored and may be used to provide comments. 
+ The configuration file consists of sections, led by a [section] header
+ and followed by name: value entries, with continuations in the style
+ of RFC 822 (see section 3.1.1, “LONG HEADER FIELDS”); name=value is
+ also accepted. Note that leading whitespace is removed from
+ values. The optional values can contain format strings which refer to
+ other values in the same section, or values in a special DEFAULT
+ section. Additional defaults can be provided on initialization and
+ retrieval. Lines beginning with '#' or ';' are ignored and may be
+ used to provide comments.
 
  For example::
 
@@ -85,7 +88,7 @@ section "ConfigParser -- Configuration file parser":
  would resolve the "%(dir)s" to the value of "dir" ("frob" in this case)
  resulting in "foodir" being "frob/whatever".
 
-__ http://docs.python.org/lib/module-ConfigParser.html
+__ https://docs.python.org/2/library/configparser.html
 
 Example configuration settings are below.
  
@@ -2694,7 +2697,7 @@ reverse     only on Multilink properties - produce a list of the linked
 isset       returns True if the property has been set to a value
 =========== ================================================================
 
-__ http://docs.python.org/lib/module-time.html
+__ https://docs.python.org/2/library/time.html
 
 All of the above functions perform checks for permissions required to
 display or edit the data they are manipulating. The simplest case is
@@ -4325,7 +4328,7 @@ Using an LDAP database for user information
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A script that reads users from an LDAP store using
-http://python-ldap.sf.net/ and then compares the list to the users in the
+https://pypi.org/project/python-ldap/ and then compares the list to the users in the
 roundup user database would be pretty easy to write. You'd then have it run
 once an hour / day (or on demand if you can work that into your LDAP store
 workflow). See the example `Using a UN*X passwd file as the user database`_
