@@ -30,16 +30,17 @@ class TranslationServiceMixin:
         _msg = TALInterpreter.interpolate(_msg, mapping)
         return _msg
 
-    def gettext(self, msgid):
-        msgid = us2u(msgid)
-        msgtrans=self.ugettext(msgid)
-        return u2s(msgtrans)
+    if not _py3:
+        def gettext(self, msgid):
+            msgid = us2u(msgid)
+            msgtrans=self.ugettext(msgid)
+            return u2s(msgtrans)
 
-    def ngettext(self, singular, plural, number):
-        singular = us2u(singular)
-        plural = us2u(plural)
-        msgtrans=self.ungettext(singular, plural, number)
-        return u2s(msgtrans)
+        def ngettext(self, singular, plural, number):
+            singular = us2u(singular)
+            plural = us2u(plural)
+            msgtrans=self.ungettext(singular, plural, number)
+            return u2s(msgtrans)
 
 class TranslationService(TranslationServiceMixin, i18n.RoundupTranslations):
     pass
