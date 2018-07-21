@@ -12,6 +12,8 @@ sudo: false
 addons:
   apt:
     packages:
+      # required for install of 1.3.7 version of xapian??
+      - python-sphinx
       # Required to install pyme
       - libgpgme11-dev
       - swig
