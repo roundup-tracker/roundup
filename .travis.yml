@@ -22,7 +22,7 @@ before_install:
   - curl -s -O https://oligarchy.co.uk/xapian/1.3.7/xapian-core-1.3.7.tar.xz
   - tar -Jxvf xapian-core-1.3.7.tar.xz
   - cd xapian-core-1.3.7/
-  - ./configure && make && make install
+  - ./configure && make && sudo make install
   - curl -s -O https://oligarchy.co.uk/xapian/1.3.7/xapian-bindings-1.3.7.tar.xz
   - tar -Jxvf xapian-bindings-1.3.7.tar.xz
   - cd xapian-bindings-1.3.7/
