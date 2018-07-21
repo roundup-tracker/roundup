@@ -11,41 +11,27 @@ sudo: false
 
 addons:
   apt:
+    sources:
+      - sourceline: ppa:xapian-backports/ppa
+
     packages:
-      # required for install of xapian-bindings-1.2.16
+      # Required to build/install the xapian-binding
       - libxapian-dev
-      # required for install of 1.3.7 version of xapian
-      - python-sphinx
       # Required to install pyme
       - libgpgme11-dev
       - swig
 
 before_install:
+  # Sphinx required to build the xapian python bindings
+  - pip install sphinx
+  - XAPIAN_VER=$(dpkg -l libxapian-dev | tail -n 1 | awk '{print $3}' | cut -d '-' -f 1)
   - cd /tmp
-  # commented out section of xapian installing core and bindings.
-  # install core 1.3.7 as version in trusty deb is 1.2. need 1.3 for python 3.
-  #- curl -s -O https://oligarchy.co.uk/xapian/1.3.7/xapian-core-1.3.7.tar.xz
-  #- tar -Jxvf xapian-core-1.3.7.tar.xz
-  #- cd xapian-core-1.3.7/
-  #- ./configure && make && sudo make install
-  #- cd /tmp
-  #- curl -s -O https://oligarchy.co.uk/xapian/1.3.7/xapian-bindings-1.3.7.tar.xz
-  #- tar -Jxvf xapian-bindings-1.3.7.tar.xz
-  #- cd xapian-bindings-1.3.7/
-  #- ./configure --prefix=$VIRTUAL_ENV --with-python && make && make install
-  # the above fails on python 2.7 with:
-  # ImportError: libxapian-1.3.so.8: cannot open shared object file: 
-  #      No such file or directory
-  # That library is installed by xapian-core-1.3.7 above. My guess
-  #  is that the virtualenv is created by travis software before
-  #  before_install is called and xapian-core is installed.
-  #  So libxapian is not present in the virtualenv python install.
-  # See https://travis-ci.org/roundup-tracker/roundup/builds/406481321
-  # Install 1.2.16 xapian-bindings compatible with xapian-dev in ubuntu trusty
-  - curl -s -O https://oligarchy.co.uk/xapian/1.2.16/xapian-bindings-1.2.16.tar.xz
-  - tar -Jxvf xapian-bindings-1.2.16.tar.xz
-  - cd xapian-bindings-1.2.16/
-  - ./configure --prefix=$VIRTUAL_ENV --with-python && make && make install
+  - curl -s -O https://oligarchy.co.uk/xapian/$XAPIAN_VER/xapian-bindings-$XAPIAN_VER.tar.xz
+  - tar -Jxvf xapian-bindings-$XAPIAN_VER.tar.xz
+  - cd xapian-bindings-$XAPIAN_VER/
+  - if [[ $TRAVIS_PYTHON_VERSION == "2."* ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == "3."* ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3; fi
+  - make && make install
 
   # change back to the checked out repository directory
   - cd $TRAVIS_BUILD_DIR
