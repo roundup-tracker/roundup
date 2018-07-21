@@ -66,12 +66,6 @@ msgstr ""
 
 NLSTR = '"\n"'
 
-try:
-    True
-except NameError:
-    True=1
-    False=0
-
 def usage(code, msg=''):
     # Python 2.1 required
     print(__doc__, file=sys.stderr)
