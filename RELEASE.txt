@@ -19,6 +19,10 @@ Roundup release checklist:
 3.  Update documentation
       doc/announcement.txt
       doc/upgrading.txt
+3a. cd to website/www and run 'make linkcheck'. See output in
+    _tmp/linkcheck/output.txt
+       fix broken references in docs
+       verify redirects are correct
 4.  Update setup.py info is needed (contacts, classifiers, etc.), and
     check that metadata is valid and long descriptions is proper reST:
       python setup.py check --restructuredtext --metadata --strict
