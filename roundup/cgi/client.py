@@ -439,8 +439,8 @@ class Client:
     def handle_xmlrpc(self):
         if self.env.get('CONTENT_TYPE') != 'text/xml':
             self.write(b"This is the endpoint of Roundup <a href='" +
-                "http://www.roundup-tracker.org/docs/xmlrpc.html'>" +
-                "XML-RPC interface</a>.")
+                b"http://www.roundup-tracker.org/docs/xmlrpc.html'>" +
+                b"XML-RPC interface</a>.")
             return
 
         # Pull the raw XML out of the form.  The "value" attribute
