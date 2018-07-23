@@ -151,8 +151,8 @@ class RawToHyperdbTest(unittest.TestCase):
 
         with self.assertRaises(hyperdb.HyperdbValueError) as cm:
             self._test('multilink3', '1', '1')
-        self.assertEqual(cm.exception.message,
-                         "property multilink3: '1' is not a test.")
+        self.assertEqual(cm.exception.args,
+                         ("property multilink3: '1' is not a test.",))
 
         self.assertEqual(self._test('multilink3', 'valid', '1'), ['1'])
 
@@ -161,21 +161,21 @@ class RawToHyperdbTest(unittest.TestCase):
 
         with self.assertRaises(hyperdb.HyperdbValueError) as cm:
             self._test('multilink3', '+1', '1')
-        self.assertEqual(cm.exception.message,
-                         "property multilink3: '1' is not a test.")
+        self.assertEqual(cm.exception.args,
+                         ("property multilink3: '1' is not a test.",))
 
         self.assertEqual(self._test('multilink3', '+valid', '1'),
                          ['1', '2', '3'])
 
         with self.assertRaises(hyperdb.HyperdbValueError) as cm:
             self._test('multilink3', '+1,-2', '1')
-        self.assertEqual(cm.exception.message,
-                         "property multilink3: '1' is not a test.")
+        self.assertEqual(cm.exception.args,
+                         ("property multilink3: '1' is not a test.",))
 
         with self.assertRaises(hyperdb.HyperdbValueError) as cm:
             self._test('multilink3', '+valid,-2', '1')
-        self.assertEqual(cm.exception.message,
-                         "property multilink3: '2' is not a test.")
+        self.assertEqual(cm.exception.args,
+                         ("property multilink3: '2' is not a test.",))
 
         self.assertEqual(self._test('multilink3', '+valid,-2valid', '1'), ['1', '3'])
 
@@ -185,7 +185,7 @@ class RawToHyperdbTest(unittest.TestCase):
 
         with self.assertRaises(hyperdb.HyperdbValueError) as cm:
             result = self._test('multilink3', '-valid', None)
-        self.assertEqual(cm.exception.message,
-                   "property multilink3: 'valid' is not currently an element")
+        self.assertEqual(cm.exception.args,
+                         ("property multilink3: 'valid' is not currently an element",))
 
 # vim: set filetype=python ts=4 sw=4 et si

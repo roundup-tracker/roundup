@@ -1643,7 +1643,7 @@ class TemplateHtmlRendering(unittest.TestCase):
         def te(url, exception, raises=ValueError):
             with self.assertRaises(raises) as cm:
                 examine_url(url)
-            self.assertEqual(cm.exception.message, exception)
+            self.assertEqual(cm.exception.args, (exception,))
 
 
         action = actions.Action(self.client)
@@ -1786,8 +1786,8 @@ class TemplateTestCase(unittest.TestCase):
         # be determined.
         with self.assertRaises(NoTemplate) as cm:
             t.selectTemplate("user", "")
-        self.assertEqual(cm.exception.message,
-                         '''Template "user" doesn't exist''')
+        self.assertEqual(cm.exception.args,
+                         ('''Template "user" doesn't exist''',))
 
         # there is no html/subdir/user.item.{,xml,html} so it will
         # raise NoTemplate.
