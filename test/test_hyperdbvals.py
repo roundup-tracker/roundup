@@ -93,7 +93,7 @@ class RawToHyperdbTest(unittest.TestCase):
         self.assert_(isinstance(val, password.Password))
         val = self._test('password', '{crypt}a string')
         self.assert_(isinstance(val, password.Password))
-        s = sha1('a string').hexdigest()
+        s = sha1(b'a string').hexdigest()
         val = self._test('password', '{SHA}'+s)
         self.assert_(isinstance(val, password.Password))
         self.assertEqual(val, 'a string')

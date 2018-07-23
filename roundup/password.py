@@ -108,7 +108,7 @@ def ssha(password, salt):
     '''
     shaval = sha1(password)
     shaval.update( salt )
-    ssha_digest = b64encode( '{}{}'.format(shaval.digest(), salt) ).strip()
+    ssha_digest = b64encode( shaval.digest() + salt ).strip()
     return ssha_digest
 
 def pbkdf2(password, salt, rounds, keylen):
@@ -184,11 +184,11 @@ def encodePassword(plaintext, scheme, other=None, config=None):
             # variable salt length
             salt_len = random.randrange(36, 52)
             salt = os.urandom(salt_len)
-        s = ssha(plaintext, salt)
+        s = ssha(s2b(plaintext), salt)
     elif scheme == 'SHA':
-        s = sha1(plaintext).hexdigest()
+        s = sha1(s2b(plaintext)).hexdigest()
     elif scheme == 'MD5':
-        s = md5(plaintext).hexdigest()
+        s = md5(s2b(plaintext)).hexdigest()
     elif scheme == 'crypt' and crypt is not None:
         if other is not None:
             salt = other
