@@ -3240,9 +3240,10 @@ class MissingValue(object):
         return getattr(self, name)
 
     def __getitem__(self, key): return self
-    def __bool__(self): return 0
+    def __bool__(self): return False
     # Python 2 compatibility:
     __nonzero__ = __bool__
+    def __contains__(self, key): return False
     def __str__(self): return '[%s]'%self.__description
     def __repr__(self): return '<MissingValue 0x%x "%s">'%(id(self),
         self.__description)
