@@ -15,7 +15,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 from roundup.anypy import email_
-from roundup.anypy.strings import s2u
+from roundup.anypy.strings import b2s, s2u
 
 try:
     import pyme, pyme.core
@@ -39,7 +39,7 @@ def nice_sender_header(name, address, charset):
     if not name:
         return address
     try:
-        encname = name.encode('ASCII')
+        encname = b2s(name.encode('ASCII'))
     except UnicodeEncodeError:
         # use Header to encode correctly.
         encname = Header(name, charset=charset).encode()
