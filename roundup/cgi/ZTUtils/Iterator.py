@@ -169,7 +169,7 @@ class IterInner(InnerBase):
 
     def prep_next(self, it):
         try:
-            it._next = it.seq.next()
+            it._next = next(it.seq)
         except StopIteration:
             it._prep_next = self.no_next
             it.end = 1
@@ -181,7 +181,7 @@ class IterIter:
     def __init__(self, it):
         self.it = it
         self.skip = it.nextIndex > 0 and not it.end
-    def next(self):
+    def __next__(self):
         it = self.it
         if self.skip:
             self.skip = 0
@@ -189,6 +189,8 @@ class IterIter:
         if it.next():
             return it.item
         raise StopIteration
+    # Python 2 compatibility:
+    next = __next__
 
 seqInner = SeqInner()
 iterInner = IterInner()

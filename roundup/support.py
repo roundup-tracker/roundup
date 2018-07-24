@@ -76,19 +76,21 @@ class Progress:
 
     def __iter__(self): return self
 
-    def next(self):
+    def __next__(self):
         self.num += 1
 
         if self.num > self.total:
             print(self.info, 'done', ' '*(75-len(self.info)-6))
             sys.stdout.flush()
-            return self.sequence.next()
+            return next(self.sequence)
 
         if self.num % self.stepsize:
-            return self.sequence.next()
+            return next(self.sequence)
 
         self.display()
-        return self.sequence.next()
+        return next(self.sequence)
+    # Python 2 compatibility:
+    next = __next__
 
     def display(self):
         # figure how long we've spent - guess how long to go
