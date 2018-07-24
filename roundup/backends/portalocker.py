@@ -47,6 +47,7 @@ Roundup Changes
    - Added return result
 """
 
+from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
 import os
@@ -151,7 +152,7 @@ if __name__ == '__main__':
     timestamp = strftime("%m/%d/%Y %H:%M:%S\n", localtime(time()))
     log.write( timestamp )
 
-    print "Wrote lines. Hit enter to release lock."
+    print("Wrote lines. Hit enter to release lock.")
     dummy = sys.stdin.readline()
 
     log.close()

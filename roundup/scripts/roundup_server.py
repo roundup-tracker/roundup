@@ -17,6 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 """
+from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
 
@@ -87,7 +88,7 @@ if hasattr(os, 'fork'):
 DEFAULT_MULTIPROCESS = MULTIPROCESS_TYPES[-1]
 
 def auto_ssl():
-    print _('WARNING: generating temporary SSL certificate')
+    print(_('WARNING: generating temporary SSL certificate'))
     import OpenSSL, random
     pkey = OpenSSL.crypto.PKey()
     pkey.generate_key(OpenSSL.crypto.TYPE_RSA, 768)
@@ -236,7 +237,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                     self.wfile.write('''<p>%s: An error occurred. Please check
                     the server log for more information.</p>'''%ts)
                     # out to the logfile
-                    print 'EXCEPTION AT', ts
+                    print('EXCEPTION AT', ts)
                     traceback.print_exc()
 
     do_GET = do_POST = do_HEAD = run_cgi
@@ -472,7 +473,7 @@ def setgid(group):
 
     # if root, setgid to the running user
     if os.getuid():
-        print _('WARNING: ignoring "-g" argument, not root')
+        print(_('WARNING: ignoring "-g" argument, not root'))
         return
 
     try:
@@ -501,7 +502,7 @@ def setuid(user):
         raise ValueError, _("Can't run as root!")
 
     if os.getuid():
-        print _('WARNING: ignoring "-u" argument, not root')
+        print(_('WARNING: ignoring "-u" argument, not root'))
         return
 
     try:
@@ -697,8 +698,8 @@ class ServerConfig(configuration.Config):
 
         # obtain request server class
         if self["MULTIPROCESS"] not in MULTIPROCESS_TYPES:
-            print _("Multiprocess mode \"%s\" is not available, "
-                "switching to single-process") % self["MULTIPROCESS"]
+            print(_("Multiprocess mode \"%s\" is not available, "
+                "switching to single-process") % self["MULTIPROCESS"])
             self["MULTIPROCESS"] = "none"
             server_class = base_server
         elif self["MULTIPROCESS"] == "fork":
@@ -807,7 +808,7 @@ def usage(message=''):
                specified if -d is used.'''
     if message:
         message += '\n'
-    print _('''%(message)sUsage: roundup-server [options] [name=tracker home]*
+    print(_('''%(message)sUsage: roundup-server [options] [name=tracker home]*
 
 Options:
  -v            print the Roundup version number and exit
@@ -869,7 +870,7 @@ How to use "name=tracker home":
     "port": DEFAULT_PORT,
     "mp_def": DEFAULT_MULTIPROCESS,
     "mp_types": ", ".join(MULTIPROCESS_TYPES),
-}
+})
 
 
 def writepidfile(pidfile):
@@ -975,11 +976,11 @@ def run(port=undefined, success_message=None):
             if opt in ("-h", "--help"):
                 usage()
             elif opt in ("-v", "--version"):
-                print '%s (python %s)' % (roundup_version,
-                    sys.version.split()[0])
+                print('%s (python %s)' % (roundup_version,
+                    sys.version.split()[0]))
             elif opt in ("-S", "--save-config"):
                 config.save()
-                print _("Configuration saved to %s") % config.filepath
+                print(_("Configuration saved to %s") % config.filepath)
         # any of the above options prevent server from running
         return
 
@@ -997,8 +998,8 @@ def run(port=undefined, success_message=None):
     # fork the server from our parent if a pidfile is specified
     if config["PIDFILE"]:
         if not hasattr(os, 'fork'):
-            print _("Sorry, you can't run the server as a daemon"
-                " on this Operating System")
+            print(_("Sorry, you can't run the server as a daemon"
+                " on this Operating System"))
             sys.exit(0)
         else:
             if config['NODAEMON']:
@@ -1010,15 +1011,15 @@ def run(port=undefined, success_message=None):
     httpd = config.get_server()
 
     if success_message:
-        print success_message
+        print(success_message)
     else:
-        print _('Roundup server started on %(HOST)s:%(PORT)s') \
-            % config
+        print(_('Roundup server started on %(HOST)s:%(PORT)s')
+              % config)
 
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
-        print 'Keyboard Interrupt: exiting'
+        print('Keyboard Interrupt: exiting')
 
 if __name__ == '__main__':
     run()

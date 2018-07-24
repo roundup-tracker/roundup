@@ -4,6 +4,7 @@
 
 """Extract translatable strings from tracker templates"""
 
+from __future__ import print_function
 import os
 import sys
 
@@ -30,7 +31,7 @@ TEMPLATE_FILE = "messages.pot"
 def run():
     # return unless command line arguments contain single directory path
     if (len(sys.argv) != 2) or (sys.argv[1] in ("-h", "--help")):
-        print _("Usage: %(program)s <tracker home>") % {"program": sys.argv[0]}
+        print(_("Usage: %(program)s <tracker home>") % {"program": sys.argv[0]})
         return
     # collect file paths of html templates
     home = os.path.abspath(sys.argv[1])
@@ -45,7 +46,7 @@ def run():
         htmlfiles = []
     # return if no html files found
     if not htmlfiles:
-        print _("No tracker templates found in directory %s") % home
+        print(_("No tracker templates found in directory %s") % home)
         return
     # change to locale dir to have relative source references
     locale = os.path.join(home, "locale")

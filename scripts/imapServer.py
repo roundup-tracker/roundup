@@ -30,6 +30,7 @@ It also connects to a secure IMAP server. The main reasons for this script are:
   Add an option for changing the uid/gid of the running process.
 """
 
+from __future__ import print_function
 import getpass
 import logging
 import imaplib
@@ -76,7 +77,7 @@ class RoundupMailbox:
                     raise ValueError, 'Invalid Username'
 
             if not self.password:
-                print 'For server %s, user %s' % (self.server, self.username)
+                print('For server %s, user %s' % (self.server, self.username))
                 self.password = getpass.getpass()
                 # password can be empty because it could be superceeded
                 # by a later entry

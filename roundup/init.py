@@ -17,6 +17,7 @@
 #
 """Init (create) a roundup instance.
 """
+from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
 import os, errno, email.parser
@@ -132,9 +133,9 @@ def loadTemplateInfo(path):
         return None
 
     if os.path.exists(os.path.join(path, 'config.py')):
-        print _("WARNING: directory '%s'\n"
+        print(_("WARNING: directory '%s'\n"
             "\tcontains old-style template - ignored"
-            ) % os.path.abspath(path)
+            ) % os.path.abspath(path))
         return None
 
     # load up the template's information

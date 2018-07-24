@@ -33,6 +33,7 @@ Options:
         found.
 """
 
+from __future__ import print_function
 import sys
 import time
 import getopt
@@ -73,9 +74,9 @@ except NameError:
 
 def usage(code, msg=''):
     # Python 2.1 required
-    print >> sys.stderr, __doc__
+    print(__doc__, file=sys.stderr)
     if msg:
-        print >> sys.stderr, msg
+        print(msg, file=sys.stderr)
     sys.exit(code)
 
 
@@ -163,7 +164,7 @@ class UpdatePOEngine(POEngine):
         try:
             lines = open(self._filename).readlines()
         except IOError as msg:
-            print >> sys.stderr, msg
+            print(msg, file=sys.stderr)
             sys.exit(1)
 
         section = None
@@ -205,9 +206,9 @@ class UpdatePOEngine(POEngine):
             elif section == STR:
                 msgstr += '%s\n' % l
             else:
-                print >> sys.stderr, 'Syntax error on %s:%d' % (infile, lno), \
-                      'before:'
-                print >> sys.stderr, l
+                print('Syntax error on %s:%d' % (infile, lno),
+                      'before:', file=sys.stderr)
+                print(l, file=sys.stderr)
                 sys.exit(1)
         # Add last entry
         if section == STR:
@@ -253,7 +254,7 @@ def main():
             engine = UpdatePOEngine(filename=arg)
 
     if not args:
-        print 'nothing to do'
+        print('nothing to do')
         return
 
     # We don't care about the rendered output of the .pt file
@@ -276,7 +277,7 @@ def main():
             POTALInterpreter(program, macros, engine, stream=Devnull(),
                              metal=False)()
         except: # Hee hee, I love bare excepts!
-            print 'There was an error processing', filename
+            print('There was an error processing', filename)
             traceback.print_exc()
 
     # Now output the keys in the engine.  Write them to a file if --output or
@@ -296,8 +297,8 @@ def main():
     except AttributeError:
         pass
     if '' not in messages:
-        print >> outfile, pot_header % {'time': time.ctime(),
-                                        'version': __version__}
+        print(pot_header % {'time': time.ctime(),
+                            'version': __version__}, file=outfile)
 
     msgids = catalog.keys()
     # XXX: You should not sort by msgid, but by filename and position. (SR)

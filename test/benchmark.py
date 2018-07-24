@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys, os, time
 
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
@@ -114,13 +115,13 @@ def main(backendname, time=time.time, numissues=10):
         else:
             sys.stdout.write(' %-6.2f'%(stamp-last))
         last = stamp
-    print ' %-6.2f'%(last-first)
+    print(' %-6.2f'%(last-first))
     sys.stdout.flush()
 
 if __name__ == '__main__':
     #      0         1         2         3         4         5         6
     #      01234567890123456789012345678901234567890123456789012345678901234
-    print 'Test name       fetch  journl jprops lookup filter filtml TOTAL '
+    print('Test name       fetch  journl jprops lookup filter filtml TOTAL ')
     for name in 'anydbm metakit sqlite'.split():
         main(name)
     for name in 'anydbm metakit sqlite'.split():

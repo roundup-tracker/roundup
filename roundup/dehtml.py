@@ -1,4 +1,5 @@
 
+from __future__ import print_function
 class dehtml:
     def __init__(self, converter):
         if converter == "none":
@@ -128,20 +129,20 @@ have to install the win32all package separately (get it from
 
     html2text = dehtml("dehtml").html2text
     if html2text:
-        print html2text(html)
+        print(html2text(html))
 
     try:
         # trap error seen if N_TOKENS not defined when run.
         html2text = dehtml("beautifulsoup").html2text
         if html2text:
-            print html2text(html)
+            print(html2text(html))
     except NameError as e:
-        print "captured error %s"%e
+        print("captured error %s"%e)
 
     html2text = dehtml("none").html2text
     if html2text:
-        print "FAIL: Error, dehtml(none) is returning a function"
+        print("FAIL: Error, dehtml(none) is returning a function")
     else:
-        print "PASS: dehtml(none) is returning None"
+        print("PASS: dehtml(none) is returning None")
 
 

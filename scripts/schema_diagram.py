@@ -10,6 +10,7 @@
 # %> dot -Tps schema.dot -o schema.ps
 # %> gv schema.ps
 #
+from __future__ import print_function
 import sys
 import roundup.instance
 
@@ -18,17 +19,17 @@ instance = roundup.instance.open(sys.argv[1])
 db = instance.open()
 
 # diagram preamble
-print 'digraph schema {'
-print 'size="8,6"'
-print 'node [shape="record" bgcolor="#ffe4c4" style=filled]'
-print 'edge [taillabel="1" headlabel="1" dir=back arrowtail=ediamond]'
+print('digraph schema {')
+print('size="8,6"')
+print('node [shape="record" bgcolor="#ffe4c4" style=filled]')
+print('edge [taillabel="1" headlabel="1" dir=back arrowtail=ediamond]')
 
 # get all the classes
 types = db.classes.keys()
 
 # one record node per class
 for i in range(len(types)):
-    print 'node%d [label=\"{%s|}"]'%(i, types[i])
+    print('node%d [label=\"{%s|}"]'%(i, types[i]))
 
 # now draw in the relations
 for name in db.classes.keys():
@@ -37,12 +38,12 @@ for name in db.classes.keys():
     for a in attributes.keys():
         attribute = attributes[a]
         if isinstance(attribute, roundup.hyperdb.Link):
-            print 'node%d -> node%d [label=%s]'%(types.index(name),
+            print('node%d -> node%d [label=%s]'%(types.index(name),
                                                  types.index(attribute.classname),
-                                                 a)
+                                                 a))
         elif isinstance(attribute, roundup.hyperdb.Multilink):
-            print 'node%d -> node%d [taillabel="*" label=%s]'%(types.index(name),
+            print('node%d -> node%d [taillabel="*" label=%s]'%(types.index(name),
                                                  types.index(attribute.classname),
-                                                 a)
+                                                 a))
 # all done
-print '}'
+print('}')

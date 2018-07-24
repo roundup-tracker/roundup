@@ -3,6 +3,7 @@
 # All rights reserved.
 # For license terms see the file COPYING.txt.
 #
+from __future__ import print_function
 from roundup import msgfmt
 from distutils.command.build import build as base
 import os
@@ -26,7 +27,7 @@ def check_manifest():
     try:
         f = open('MANIFEST')
     except:
-        print '\n*** SOURCE WARNING: The MANIFEST file is missing!'
+        print('\n*** SOURCE WARNING: The MANIFEST file is missing!')
         return
     try:
         manifest = [l.strip() for l in f.readlines()]
@@ -38,9 +39,9 @@ def check_manifest():
         'roundup-mailgw', 'roundup-server', 'roundup-xmlrpc-server'])
     if err:
         n = len(manifest)
-        print '\n*** SOURCE WARNING: There are files missing (%d/%d found)!'%(
-            n-len(err), n)
-        print 'Missing:', '\nMissing: '.join(err)
+        print('\n*** SOURCE WARNING: There are files missing (%d/%d found)!'%(
+            n-len(err), n))
+        print('Missing:', '\nMissing: '.join(err))
 
 def build_message_files(command):
     """For each locale/*.po, build .mo file in target locale directory"""

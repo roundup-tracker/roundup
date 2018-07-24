@@ -14,6 +14,7 @@
 #   channels = irc://chat.freenode.net/channelname
 #
 
+from __future__ import print_function
 import re
 import json
 import socket
@@ -94,7 +95,7 @@ def notify_irker(db, cl, nodeid, oldvalues):
         # Ignore any errors in sending the irker;
         # if the server is down, that's just bad luck
         # XXX might want to do some logging here
-        print '* Sending message to irker failed', str(e)
+        print('* Sending message to irker failed', str(e))
 
 def init(db):
     db.issue.react('create', notify_irker)

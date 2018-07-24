@@ -4,6 +4,7 @@
 
 """Extended CGI traceback handler by Ka-Ping Yee, <ping@lfw.org>.
 """
+from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
 import sys, os, types, string, keyword, linecache, tokenize, inspect, cgi
@@ -213,7 +214,7 @@ def html(context=5, i18n=None):
     return head + string.join(attribs) + string.join(traceback) + '<p>&nbsp;</p>'
 
 def handler():
-    print breaker()
-    print html()
+    print(breaker())
+    print(html())
 
 # vim: set filetype=python ts=4 sw=4 et si :

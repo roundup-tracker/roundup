@@ -15,6 +15,7 @@ Example:
     (copies users 3, 4, 5, 6, 7, 8, 9, 10, 14 and 16)
 """
 
+from __future__ import print_function
 import sys
 import roundup.instance
 
@@ -27,16 +28,16 @@ def copy_user(home1, home2, *userids):
 
     try:
         instance1 = roundup.instance.open(home1)
-        print "Opened source instance: %s" % home1
+        print("Opened source instance: %s" % home1)
     except:
-        print "Can't open source instance: %s" % home1
+        print("Can't open source instance: %s" % home1)
         sys.exit(1)
 
     try:
         instance2 = roundup.instance.open(home2)
-        print "Opened target instance: %s" % home2
+        print("Opened target instance: %s" % home2)
     except:
-        print "Can't open target instance: %s" % home2
+        print("Can't open target instance: %s" % home2)
         sys.exit(1)
 
     db1 = instance1.open('admin')
@@ -50,10 +51,10 @@ def copy_user(home1, home2, *userids):
         try:
             userid = str(int(userid))
         except ValueError as why:
-            print "Not a numeric user id: %s  Skipping ..." % (userid,)
+            print("Not a numeric user id: %s  Skipping ..." % (userid,))
             continue
         if userid not in userlist:
-            print "User %s not in source instance. Skipping ..." % userid
+            print("User %s not in source instance. Skipping ..." % userid)
             continue
 
         user = {}
@@ -63,23 +64,23 @@ def copy_user(home1, home2, *userids):
                 user[attrib] = value
         try:
             db2.user.lookup(user['username'])
-            print "User %s: Username '%s' exists in target instance. Skipping ..." % (userid, user['username'])
+            print("User %s: Username '%s' exists in target instance. Skipping ..." % (userid, user['username']))
             continue
         except KeyError as why:
             pass
-        print "Copying user %s (%s) ..." % (userid, user['username'])
+        print("Copying user %s (%s) ..." % (userid, user['username']))
         db2.user.create(**user)
 
     db2.commit()
     db2.close()
-    print "Closed target instance."
+    print("Closed target instance.")
     db1.close()
-    print "Closed source instance."
+    print("Closed source instance.")
 
 
 if __name__ == "__main__":
     if len(sys.argv) < 4:
-        print __doc__
+        print(__doc__)
         sys.exit(1)
     else:
         copy_user(*sys.argv[1:])

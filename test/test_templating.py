@@ -1,3 +1,4 @@
+from __future__ import print_function
 import unittest
 from cgi import FieldStorage, MiniFieldStorage
 
@@ -148,7 +149,7 @@ class HTMLClassTestCase(TemplatingTestCase) :
         otks=self.client.db.getOTKManager()
 
         for test in [ 'module', 'template', 'default_time' ]:
-            print "Testing:", test
+            print("Testing:", test)
             
             if test == 'module':
                 # test the module function
@@ -177,8 +178,8 @@ class HTMLClassTestCase(TemplatingTestCase) :
 
             now = time.time()
 
-            print "now, timestamp, greater, difference", \
-                     now, timestamp, greater_than, now - timestamp
+            print("now, timestamp, greater, difference",
+                  now, timestamp, greater_than, now - timestamp)
 
         
             # lower bound of the difference is above. Upper bound

@@ -4,6 +4,7 @@
 # For license terms see the file COPYING.txt.
 #
 
+from __future__ import print_function
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
 from xmlrpclib import MultiCall
@@ -31,7 +32,7 @@ class XmlrpcTest(object):
         # open the database
         self.db = self.instance.open('admin')
 
-        print "props_only default", self.db.security.get_props_only_default()
+        print("props_only default", self.db.security.get_props_only_default())
 
         # Get user id (user4 maybe). Used later to get data from db.
         self.joeid = 'user' + self.db.user.create(username='joe',
@@ -163,7 +164,7 @@ class XmlrpcTest(object):
         # test a bogus action
         with self.assertRaises(Exception) as cm:
             self.server.action('bogus')
-        print cm.exception
+        print(cm.exception)
         self.assertEqual(cm.exception.message,
                          'action "bogus" is not supported ')
 
@@ -206,14 +207,14 @@ class XmlrpcTest(object):
         self.db.security.addPermissionToRole('Project', 'Web Access')
         # Allow viewing keyword
         p = self.db.security.addPermission(name='View', klass='keyword')
-        print "View keyword class: %r"%p
+        print("View keyword class: %r"%p)
         self.db.security.addPermissionToRole('User', p)
         # Allow viewing interesting things (but not keyword) on issue
         # But users might only view issues where they are on nosy
         # (so in the real world the check method would be better)
         p = self.db.security.addPermission(name='View', klass='issue',
             properties=("title", "status"), check=lambda x,y,z: True)
-        print "View keyword class w/ props: %r"%p
+        print("View keyword class w/ props: %r"%p)
         self.db.security.addPermissionToRole('User', p)
         # Allow role "Project" access to whole issue
         p = self.db.security.addPermission(name='View', klass='issue')
@@ -242,12 +243,12 @@ class XmlrpcTest(object):
         # this might check for keyword owner in the real world)
         p = self.db.security.addPermission(name='View', klass='issue',
             check=lambda x,y,z: False)
-        print "View issue class: %r"%p
+        print("View issue class: %r"%p)
         self.db.security.addPermissionToRole('User', p)
         # Allow user to search for issue.status
         p = self.db.security.addPermission(name='Search', klass='issue',
             properties=("status",))
-        print "View Search class w/ props: %r"%p
+        print("View Search class w/ props: %r"%p)
         self.db.security.addPermissionToRole('User', p)
 
         keyw = {'keyword':self.db.keyword.lookup('d1')}

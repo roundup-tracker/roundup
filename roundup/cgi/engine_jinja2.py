@@ -31,6 +31,7 @@ minimal set (to avoid Roundup state changes from template).
     https://github.com/mitsuhiko/jinja2/issues/174
 """
 
+from __future__ import print_function
 import jinja2
 import gettext
 
@@ -45,8 +46,8 @@ class Jinja2Loader(LoaderBase):
         extensions = [
             'jinja2.ext.autoescape',
         ]
-        print "Jinja2 templates: ", dir
-        print "Extensions: ", extensions
+        print("Jinja2 templates: ", dir)
+        print("Extensions: ", extensions)
         self._env = jinja2.Environment(
                         loader=jinja2.FileSystemLoader(dir),
                         extensions=extensions

@@ -16,6 +16,7 @@
 
 """Command-line script stub that calls the roundup.mailgw.
 """
+from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
 
@@ -43,8 +44,8 @@ from roundup.i18n import _
 
 def usage(args, message=None):
     if message is not None:
-        print message
-    print _(
+        print(message)
+    print(_(
 """Usage: %(program)s [-v] [-c class] [[-C class] -S field=value]* [instance home] [mail source [specification]]
 
 Options:
@@ -123,7 +124,7 @@ IMAPS_CRAM:
  This supports the same notation as IMAP.
     imaps_cram username:password@server [mailbox]
 
-""")%{'program': args[0]}
+""")%{'program': args[0]})
     return 1
 
 def main(argv):
@@ -141,7 +142,7 @@ def main(argv):
 
     for (opt, arg) in optionsList:
         if opt == '-v':
-            print '%s (python %s)'%(roundup_version, sys.version.split()[0])
+            print('%s (python %s)'%(roundup_version, sys.version.split()[0]))
             return
 
     # figure the instance home

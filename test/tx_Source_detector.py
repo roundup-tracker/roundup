@@ -14,6 +14,7 @@
 # Note that the calls are interleaved, but the proper
 # tx_Source is associated with the same ticket.
 
+from __future__ import print_function
 import time as time
 
 def tx_SourceCheckAudit(db, cl, nodeid, newvalues):
@@ -31,7 +32,7 @@ def tx_SourceCheckAudit(db, cl, nodeid, newvalues):
                                 signature is used
     '''
     if __debug__ and False:
-        print "\n  tx_SourceCheckAudit(%s) db.tx_Source: %s"%(nodeid, db.tx_Source)
+        print("\n  tx_SourceCheckAudit(%s) db.tx_Source: %s"%(nodeid, db.tx_Source))
 
     newvalues['tx_Source'] = db.tx_Source
 
@@ -57,7 +58,7 @@ def tx_SourceCheckReact(db, cl, nodeid, oldvalues):
     '''
 
     if __debug__ and False:
-        print "  tx_SourceCheckReact(%s) db.tx_Source: %s"%(nodeid, db.tx_Source)
+        print("  tx_SourceCheckReact(%s) db.tx_Source: %s"%(nodeid, db.tx_Source))
 
 
 

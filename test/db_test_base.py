@@ -15,6 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
+from __future__ import print_function
 import unittest, os, shutil, errno, imp, sys, time, pprint, base64, os.path
 import logging, cgi
 import gpgmelib
@@ -1048,7 +1049,7 @@ class DBTest(commonDBTest):
 
         # check history including quiet properties
         result=self.db.issue.history(new_issue, skipquiet=False)
-        print result
+        print(result)
         ''' output should be like:
              [ ... ('1', <Date 2017-04-14.01:41:08.466>, '1', 'set',
                  {'assignedto': None, 'nosy': (('+', ['3', '2']),),
@@ -1061,7 +1062,7 @@ class DBTest(commonDBTest):
                     'title': 'title'}
 
         result.sort()
-        print "history include quiet props", result[-1]
+        print("history include quiet props", result[-1])
         (id, tx_date, user, action, args) = result[-1]
         # check piecewise ignoring date of transaction
         self.assertEqual('1', id)
@@ -1078,7 +1079,7 @@ class DBTest(commonDBTest):
         expected = {'title': 'title'}
 
         result.sort()
-        print "history remove quiet props", result[-1]
+        print("history remove quiet props", result[-1])
         (id, tx_date, user, action, args) = result[-1]
         # check piecewise
         self.assertEqual('1', id)
@@ -1112,7 +1113,7 @@ class DBTest(commonDBTest):
                     'deadline': date.Date("2016-07-30.22:39:00.000")}
 
         result.sort()
-        print "result unquiet", result
+        print("result unquiet", result)
         (id, tx_date, user, action, args) = result[-1]
         # check piecewise
         self.assertEqual('1', id)
@@ -3378,7 +3379,7 @@ class SpecialActionTest(FormTestParent):
         # does a commit of the otk to the database.
         cl.inner_main()
         cl.db.close()
-        print self.out
+        print(self.out)
         # Make sure the action was called
         self.assertEqual(SpecialAction.x, True)
         # Check that the Reject worked:

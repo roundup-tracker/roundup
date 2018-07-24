@@ -19,6 +19,7 @@
 #
 
 
+from __future__ import print_function
 from roundup.dist.command.build_doc import build_doc
 from roundup.dist.command.build_scripts import build_scripts
 from roundup.dist.command.build import build, list_message_files
@@ -111,8 +112,8 @@ def main():
         # attempt to interpret string as 'ascii'
         long_description = long_description.encode('ascii')
     except UnicodeEncodeError as cause:
-        print >> sys.stderr, "doc/announcement.txt contains non-ascii: %s" \
-            % cause
+        print("doc/announcement.txt contains non-ascii: %s"
+              % cause, file=sys.stderr)
         sys.exit(42)
 
     setup(name='roundup',
