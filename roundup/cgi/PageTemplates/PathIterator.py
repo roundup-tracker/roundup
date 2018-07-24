@@ -34,7 +34,7 @@ class Iterator(TALES.Iterator):
             return ob1 == ob2
         if isinstance(name, type('')):
             name = name.split('/')
-        name = filter(None, name)
+        name = list(filter(None, name))
         securityManager = getSecurityManager()
         try:
             ob1 = restrictedTraverse(ob1, name, securityManager)

@@ -367,7 +367,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         length = self.headers.getheader('content-length')
         if length:
             env['CONTENT_LENGTH'] = length
-        co = filter(None, self.headers.getheaders('cookie'))
+        co = list(filter(None, self.headers.getheaders('cookie')))
         if co:
             env['HTTP_COOKIE'] = ', '.join(co)
         env['HTTP_AUTHORIZATION'] = self.headers.getheader('authorization')
