@@ -184,7 +184,7 @@ class Database(rdbms_common.Database):
                 raise
         except MySQLdb.ProgrammingError as message:
             if message[0] != ER.NO_SUCH_TABLE:
-                raise hyperdb.DatabaseError, message
+                raise hyperdb.DatabaseError(message)
             self.init_dbschema()
             self.sql("CREATE TABLE `schema` (`schema` TEXT) ENGINE=%s"%
                 self.mysql_backend)
@@ -660,7 +660,7 @@ class MysqlClass:
         # then the snapshot has already been established.
         if e[0] == ER.DUP_ENTRY:
             key = propvalues[self.key]
-            raise ValueError, 'node with key "%s" exists' % key
+            raise ValueError('node with key "%s" exists' % key)
         # We don't know what this exception is; reraise it.
         raise
         

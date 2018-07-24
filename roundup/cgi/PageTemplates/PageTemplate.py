@@ -81,7 +81,7 @@ class PageTemplate:
         __traceback_supplement__ = (PageTemplateTracebackSupplement, self)
 
         if self._v_errors:
-            raise PTRuntimeError, 'Page Template %s has errors.' % self.id
+            raise PTRuntimeError('Page Template %s has errors.' % self.id)
         output = self.StringIO()
         c = self.pt_getContext()
         c.update(extra_context)
@@ -119,13 +119,13 @@ class PageTemplate:
             self._cook()
         __traceback_supplement__ = (PageTemplateTracebackSupplement, self)
         if self._v_errors:
-            raise PTRuntimeError, 'Page Template %s has errors.' % self.id
+            raise PTRuntimeError('Page Template %s has errors.' % self.id)
         return self._v_macros
 
     def __getattr__(self, name):
         if name == 'macros':
             return self.pt_macros()
-        raise AttributeError, name
+        raise AttributeError(name)
 
     def pt_source_file(self):
         return None  # Unknown.

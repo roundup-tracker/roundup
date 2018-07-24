@@ -58,19 +58,19 @@ def audit_user_fields(db, cl, nodeid, newvalues):
 
     for address in get_addresses(newvalues):
         if not valid_address(address):
-            raise ValueError, 'Email address syntax is invalid "%s"'%address
+            raise ValueError('Email address syntax is invalid "%s"'%address)
 
         check_main = db.user.stringFind(address=address)
         # make sure none of the alts are owned by anyone other than us (x!=nodeid)
         check_alts = [x for x in db.user.filter(None, {'alternate_addresses' : address}) if x != nodeid]
         if check_main or check_alts:
-            raise ValueError, 'Email address %s already in use' % address
+            raise ValueError('Email address %s already in use' % address)
 
     newroles = newvalues.get('roles')
     if newroles:
         for rolename in [r.lower().strip() for r in newroles.split(',')]:
             if rolename and not db.security.role.has_key(rolename):
-                raise ValueError, 'Role "%s" does not exist'%rolename
+                raise ValueError('Role "%s" does not exist'%rolename)
 
     tz = newvalues.get('timezone', None)
     if tz:
@@ -83,9 +83,9 @@ def audit_user_fields(db, cl, nodeid, newvalues):
             dt = datetime.datetime.now()
             local = TZ.localize(dt).utctimetuple()
         except IOError:
-            raise ValueError, 'Timezone "%s" does not exist' % tz
+            raise ValueError('Timezone "%s" does not exist' % tz)
         except ValueError:
-            raise ValueError, 'Timezone "%s" exceeds valid range [-23...23]' % tz
+            raise ValueError('Timezone "%s" exceeds valid range [-23...23]' % tz)
 
 def init(db):
     # fire before changes are made

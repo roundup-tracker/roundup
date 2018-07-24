@@ -72,7 +72,7 @@ class FunctionsTestCase(TemplatingTestCase):
             if key == 'ok':
                 return '1'
             if key == 'fail':
-                raise KeyError, 'fail'
+                raise KeyError('fail')
             return key
         db._db.classes = {'issue': MockNull(lookup=lookup)}
         prop = MockNull(classname='issue')

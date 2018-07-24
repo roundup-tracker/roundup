@@ -77,12 +77,12 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
             userid = db.user.lookup(username)
         except KeyError: # No such user
             db.close()
-            raise Unauthorised, 'Invalid user'
+            raise Unauthorised('Invalid user')
         stored = db.user.get(userid, 'password')
         if stored != password:
             # Wrong password
             db.close()
-            raise Unauthorised, 'Invalid user'
+            raise Unauthorised('Invalid user')
         db.setCurrentUser(username)
         return db
 

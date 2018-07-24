@@ -61,20 +61,20 @@ class RoundupMailbox:
             if not self.dbhome:
                 self.dbhome = raw_input('Tracker home: ')
                 if not os.path.exists(self.dbhome):
-                    raise ValueError, 'Invalid home address: ' \
-                        'directory "%s" does not exist.' % self.dbhome
+                    raise ValueError('Invalid home address: ' \
+                        'directory "%s" does not exist.' % self.dbhome)
 
             if not self.server:
                 self.server = raw_input('Server: ')
                 if not self.server:
-                    raise ValueError, 'No Servername supplied'
+                    raise ValueError('No Servername supplied')
                 protocol = raw_input('protocol [imaps]? ')
                 self.protocol = protocol
 
             if not self.username:
                 self.username = raw_input('Username: ')
                 if not self.username:
-                    raise ValueError, 'Invalid Username'
+                    raise ValueError('Invalid Username')
 
             if not self.password:
                 print('For server %s, user %s' % (self.server, self.username))
@@ -88,7 +88,7 @@ class RoundupMailbox:
             #   # select the INBOX, whatever it is called
 
         except (KeyboardInterrupt, EOFError):
-            raise ValueError, 'Canceled by User'
+            raise ValueError('Canceled by User')
 
     def __str__(self):
         return 'Mailbox{ server:%(server)s, protocol:%(protocol)s, ' \
@@ -150,7 +150,7 @@ class IMAPServer:
             user['password'] = mailbox.password
 
         if user['mailboxes'].has_key(mailbox.mailbox):
-            raise ValueError, 'Mailbox is already defined'
+            raise ValueError('Mailbox is already defined')
 
         user['mailboxes'][mailbox.mailbox] = mailbox.dbhome
 
@@ -191,7 +191,7 @@ class IMAPServer:
                     elif protocol == 'imap':
                         serv = imaplib.IMAP4(server)
                     else:
-                        raise ValueError, 'Unknown protocol %s' % protocol
+                        raise ValueError('Unknown protocol %s' % protocol)
 
                     password = u_vals['password']
 

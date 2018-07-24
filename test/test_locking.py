@@ -36,7 +36,7 @@ class LockingTest(unittest.TestCase):
         except:
             pass
         else:
-            raise AssertionError, 'no exception'
+            raise AssertionError('no exception')
         release_lock(f)
         f = acquire_lock(self.path)
         release_lock(f)

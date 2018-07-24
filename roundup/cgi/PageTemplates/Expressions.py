@@ -57,7 +57,7 @@ except ImportError:
 def acquisition_security_filter(orig, inst, name, v, real_validate):
     if real_validate(orig, inst, name, v):
         return 1
-    raise Unauthorized, name
+    raise Unauthorized(name)
 
 def call_with_ns(f, ns, arg=1):
     if arg==2:
@@ -102,7 +102,7 @@ class SubPathExpr:
         self._path = path = path.strip().split('/')
         self._base = base = path.pop(0)
         if base and not _valid_name(base):
-            raise CompilerError, 'Invalid variable name "%s"' % base
+            raise CompilerError('Invalid variable name "%s"' % base)
         # Parse path
         self._dp = dp = []
         for i in range(len(path)):
@@ -220,7 +220,7 @@ class StringExpr:
                     exp = exp[m.end():]
                     m = _interp.search(exp)
                 if '$' in exp:
-                    raise CompilerError, (
+                    raise CompilerError(
                         '$ must be doubled or followed by a simple path')
                 parts.append(exp)
             expr = ''.join(parts)
@@ -308,7 +308,7 @@ def restrictedTraverse(object, path, securityManager,
             o = object[name]
             # Check access to the item.
             if not validate(object, object, name, o):
-                raise Unauthorized, name
+                raise Unauthorized(name)
             object = o
             continue
 

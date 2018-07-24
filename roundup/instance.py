@@ -168,8 +168,7 @@ update your config.ini
                         continue
                     linkto = prop.classname
                     if linkto not in classes:
-                        raise ValueError, \
-                            ("property %s.%s links to non-existent class %s"
+                        raise ValueError("property %s.%s links to non-existent class %s"
                              % (classname, propname, linkto))
 
             db.post_init()
@@ -281,13 +280,13 @@ class OldStyleTrackers:
         import imp
         # sanity check existence of tracker home
         if not os.path.exists(tracker_home):
-            raise ValueError, 'no such directory: "%s"'%tracker_home
+            raise ValueError('no such directory: "%s"'%tracker_home)
 
         # sanity check tracker home contents
         for reqd in 'config dbinit select_db interfaces'.split():
             if not os.path.exists(os.path.join(tracker_home, '%s.py'%reqd)):
-                raise TrackerError, 'File "%s.py" missing from tracker '\
-                    'home "%s"'%(reqd, tracker_home)
+                raise TrackerError('File "%s.py" missing from tracker '\
+                    'home "%s"'%(reqd, tracker_home))
 
         if self.trackers.has_key(tracker_home):
             return imp.load_package(self.trackers[tracker_home],
@@ -304,8 +303,7 @@ class OldStyleTrackers:
         # ensure the tracker has all the required bits
         for required in 'open init Client MailGW'.split():
             if not hasattr(tracker, required):
-                raise TrackerError, \
-                    'Required tracker attribute "%s" missing'%required
+                raise TrackerError('Required tracker attribute "%s" missing'%required)
 
         # load and apply the config
         tracker.config = configuration.CoreConfig(tracker_home)

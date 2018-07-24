@@ -208,7 +208,7 @@ class PathElement(Item, Implicit):
             client.main()
             return ''
         except client.NotFound:
-            raise 'NotFound', REQUEST.URL
+            raise Exception('NotFound ' + REQUEST.URL)
             pass
         except:
             import traceback

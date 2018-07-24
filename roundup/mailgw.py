@@ -207,9 +207,9 @@ def check_pgp_sigs(sigs, gpgctx, author, may_be_unsigned=False):
 
     # we couldn't find a key belonging to the author of the email
     if sigs:
-        raise MailUsageError, _("Message signed with unknown key: %s") % sig.fpr
+        raise MailUsageError(_("Message signed with unknown key: %s") % sig.fpr)
     elif not may_be_unsigned:
-        raise MailUsageError, _("Unsigned Message")
+        raise MailUsageError(_("Unsigned Message"))
 
 class Message(mimetools.Message):
     ''' subclass mimetools.Message so we can retrieve the parts of the
@@ -503,8 +503,7 @@ class Message(mimetools.Message):
         # the message meets the RFC before we try to decrypt it.
         if hdr.getbody().strip() != 'Version: 1' \
            or hdr.gettype() != 'application/pgp-encrypted':
-            raise MailUsageError, \
-                _("Unknown multipart/encrypted version.")
+            raise MailUsageError(_("Unknown multipart/encrypted version."))
 
         context = pyme.core.Context()
         ciphertext = pyme.core.Data(msg.getbody())
@@ -513,7 +512,7 @@ class Message(mimetools.Message):
         result = context.op_decrypt_verify(ciphertext, plaintext)
 
         if result:
-            raise MailUsageError, _("Unable to decrypt your message.")
+            raise MailUsageError(_("Unable to decrypt your message."))
 
         # we've decrypted it but that just means they used our public
         # key to send it to us. now check the signatures to see if it
@@ -542,8 +541,7 @@ class Message(mimetools.Message):
         (msg, sig) = self.getparts()
 
         if sig.gettype() != 'application/pgp-signature':
-            raise MailUsageError, \
-                _("No PGP signature found in message.")
+            raise MailUsageError(_("No PGP signature found in message."))
 
         # msg.getbody() is skipping over some headers that are
         # required to be present for verification to succeed so
@@ -619,9 +617,9 @@ class parsedMessage:
         ''' Check to see if the message contains a valid subject line
         '''
         if not self.subject:
-            raise MailUsageError, _("""
+            raise MailUsageError(_("""
 Emails to Roundup trackers must include a Subject: line!
-""")
+"""))
 
     def parse_subject(self):
         ''' Matches subjects like:
@@ -728,7 +726,7 @@ Emails to Roundup trackers must include a Subject: line!
             classname = self.matches['classname']
 
         if not classname and self.has_prefix and self.pfxmode == 'strict':
-            raise MailUsageError, _("""
+            raise MailUsageError(_("""
 The message you sent to roundup did not contain a properly formed subject
 line. The subject must contain a class name or designator to indicate the
 'topic' of the message. For example:
@@ -740,7 +738,7 @@ line. The subject must contain a class name or designator to indicate the
         in the tracker.
 
 Subject was: '%(subject)s'
-""") % locals()
+""") % locals())
 
         # try to get the class specified - if "loose" or "none" then fall
         # back on the default
@@ -766,15 +764,15 @@ Subject was: '%(subject)s'
         if not self.cl:
             validname = ', '.join(self.db.getclasses())
             if classname:
-                raise MailUsageError, _("""
+                raise MailUsageError(_("""
 The class name you identified in the subject line ("%(classname)s") does
 not exist in the database.
 
 Valid class names are: %(validname)s
 Subject was: "%(subject)s"
-""") % locals()
+""") % locals())
             else:
-                raise MailUsageError, _("""
+                raise MailUsageError(_("""
 You did not identify a class name in the subject line and there is no
 default set for this tracker. The subject must contain a class name or
 designator to indicate the 'topic' of the message. For example:
@@ -786,7 +784,7 @@ designator to indicate the 'topic' of the message. For example:
         in the tracker.
 
 Subject was: '%(subject)s'
-""") % locals()
+""") % locals())
         # get the class properties
         self.properties = self.cl.getprops()
         
@@ -812,13 +810,13 @@ Subject was: '%(subject)s'
 
         # but we do need either a title or a nodeid...
         if nodeid is None and not title:
-            raise MailUsageError, _("""
+            raise MailUsageError(_("""
 I cannot match your message to a node in the database - you need to either
 supply a full designator (with number, eg "[issue123]") or keep the
 previous subject title intact so I can match that.
 
 Subject was: "%(subject)s"
-""") % locals()
+""") % locals())
 
         # If there's no nodeid, check to see if this is a followup and
         # maybe someone's responded to the initial mail that created an
@@ -845,12 +843,12 @@ Subject was: "%(subject)s"
         # if a nodeid was specified, make sure it's valid
         if nodeid is not None and not self.cl.hasnode(nodeid):
             if self.pfxmode == 'strict':
-                raise MailUsageError, _("""
+                raise MailUsageError(_("""
 The node specified by the designator in the subject of your message
 ("%(nodeid)s") does not exist.
 
 Subject was: "%(subject)s"
-""") % locals()
+""") % locals())
             else:
                 nodeid = None
         self.nodeid = nodeid
@@ -890,15 +888,15 @@ Subject was: "%(subject)s"
 
 ...before sending mail to the tracker.""" % locals()
 
-                raise Unauthorized, _("""
+                raise Unauthorized(_("""
 You are not a registered user.%(registration_info)s
 
 Unknown address: %(from_address)s
-""") % locals()
+""") % locals())
             else:
                 # we're registered and we're _still_ not allowed access
-                raise Unauthorized, _(
-                    'You are not permitted to access this tracker.')
+                raise Unauthorized(_(
+                    'You are not permitted to access this tracker.'))
         self.author = author
 
     def check_permissions(self):
@@ -908,15 +906,15 @@ Unknown address: %(from_address)s
         if self.nodeid:
             if not self.db.security.hasPermission('Edit', self.author,
                     self.classname, itemid=self.nodeid):
-                raise Unauthorized, _(
+                raise Unauthorized(_(
                     'You are not permitted to edit %(classname)s.'
-                    ) % self.__dict__
+                    ) % self.__dict__)
         else:
             if not self.db.security.hasPermission('Create', self.author,
                     self.classname):
-                raise Unauthorized, _(
+                raise Unauthorized(_(
                     'You are not permitted to create %(classname)s.'
-                    ) % self.__dict__
+                    ) % self.__dict__)
 
     def commit_and_reopen_as_author(self):
         ''' the author may have been created - make sure the change is
@@ -996,12 +994,12 @@ Unknown address: %(from_address)s
                 if errors:
                     if self.sfxmode == 'strict':
                         errors = '\n- '.join(map(str, errors))
-                        raise MailUsageError, _("""
+                        raise MailUsageError(_("""
 There were problems handling your subject line argument list:
 - %(errors)s
 
 Subject was: "%(subject)s"
-""") % locals()
+""") % locals())
                     else:
                         title += ' ' + argswhole
 
@@ -1048,9 +1046,9 @@ Subject was: "%(subject)s"
                 os.environ['GNUPGHOME'] = self.config.PGP_HOMEDIR
             if self.config.PGP_REQUIRE_INCOMING in ('encrypted', 'both') \
                 and pgp_role() and not self.message.pgp_encrypted():
-                raise MailUsageError, _(
+                raise MailUsageError(_(
                     "This tracker has been configured to require all email "
-                    "be PGP encrypted.")
+                    "be PGP encrypted."))
             if self.message.pgp_signed():
                 self.message.verify_signature(author_address)
                 # signature has been verified
@@ -1086,9 +1084,9 @@ Subject was: "%(subject)s"
                 # store the decrypted message      
                 self.message = message
             elif pgp_role():
-                raise MailUsageError, _("""
+                raise MailUsageError(_("""
 This tracker has been configured to require all email be PGP signed or
-encrypted.""")
+encrypted."""))
 
     def get_content_and_attachments(self):
         ''' get the attachments and first text part from the message
@@ -1116,8 +1114,8 @@ encrypted.""")
             for (name, mime_type, data) in self.attachments:
                 if not self.db.security.hasPermission('Create', self.author,
                     'file'):
-                    raise Unauthorized, _(
-                        'You are not permitted to create files.')
+                    raise Unauthorized(_(
+                        'You are not permitted to create files.'))
                 if not name:
                     name = "unnamed"
                 try:
@@ -1130,9 +1128,9 @@ encrypted.""")
             # allowed to attach the files to an existing node?
             if self.nodeid and not self.db.security.hasPermission('Edit',
                     self.author, self.classname, 'files'):
-                raise Unauthorized, _(
+                raise Unauthorized(_(
                     'You are not permitted to add files to %(classname)s.'
-                    ) % self.__dict__
+                    ) % self.__dict__)
 
             self.msg_props['files'] = files
             if self.nodeid:
@@ -1160,18 +1158,18 @@ encrypted.""")
                 self.classname, self.nodeid, self.config['MAIL_DOMAIN'])
         
         if self.content is None:
-            raise MailUsageError, _("""
+            raise MailUsageError(_("""
 Roundup requires the submission to be plain text. The message parser could
 not find a text/plain part to use.
-""")
+"""))
         # parse the body of the message, stripping out bits as appropriate
         summary, content = parseContent(self.content, config=self.config, is_new_issue = not bool(self.nodeid))
         content = content.strip()
 
         if content:
             if not self.db.security.hasPermission('Create', self.author, 'msg'):
-                raise Unauthorized, _(
-                    'You are not permitted to create messages.')
+                raise Unauthorized(_(
+                    'You are not permitted to create messages.'))
 
             try:
                 message_id = self.db.msg.create(author=self.author,
@@ -1186,9 +1184,9 @@ Mail message was rejected by a detector.
             # allowed to attach the message to the existing node?
             if self.nodeid and not self.db.security.hasPermission('Edit',
                     self.author, self.classname, 'messages'):
-                raise Unauthorized, _(
+                raise Unauthorized(_(
                     'You are not permitted to add messages to %(classname)s.'
-                    ) % self.__dict__
+                    ) % self.__dict__)
 
             if self.nodeid:
                 # add the message to the node's list
@@ -1209,25 +1207,25 @@ Mail message was rejected by a detector.
                 for prop in self.props.keys():
                     if not self.db.security.hasPermission('Edit', self.author,
                             classname, prop):
-                        raise Unauthorized, _('You are not permitted to edit '
+                        raise Unauthorized(_('You are not permitted to edit '
                             'property %(prop)s of class %(classname)s.'
-                            ) % locals()
+                            ) % locals())
                 self.cl.set(self.nodeid, **self.props)
             else:
                 # Check permissions for each property
                 for prop in self.props.keys():
                     if not self.db.security.hasPermission('Create', self.author,
                             classname, prop):
-                        raise Unauthorized, _('You are not permitted to set '
+                        raise Unauthorized(_('You are not permitted to set '
                             'property %(prop)s of class %(classname)s.'
-                            ) % locals()
+                            ) % locals())
                 self.nodeid = self.cl.create(**self.props)
         except (TypeError, IndexError, ValueError, exceptions.Reject) as message:
             self.mailgw.logger.exception("Rejecting email due to node creation error:")
-            raise MailUsageError, _("""
+            raise MailUsageError(_("""
 There was a problem with the message you sent:
    %(message)s
-""") % locals()
+""") % locals())
 
         return self.nodeid
 
@@ -1672,11 +1670,11 @@ class MailGW:
             self.db.getclass(clsname)
         except KeyError:
             mailadmin = self.instance.config['ADMIN_EMAIL']
-            raise MailUsageError, _("""
+            raise MailUsageError(_("""
 The mail gateway is not properly set up. Please contact
 %(mailadmin)s and have them fix the incorrect class specified as:
   %(clsname)s
-""") % locals()
+""") % locals())
         
         if self.arguments:
             # The default type on the commandline is msg
@@ -1703,11 +1701,11 @@ The mail gateway is not properly set up. Please contact
 
                     if errors:
                         mailadmin = self.instance.config['ADMIN_EMAIL']
-                        raise MailUsageError, _("""
+                        raise MailUsageError(_("""
 The mail gateway is not properly set up. Please contact
 %(mailadmin)s and have them fix the incorrect properties:
   %(errors)s
-""") % locals()
+""") % locals())
                     allprops.update(props)
 
         return allprops

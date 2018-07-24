@@ -267,12 +267,12 @@ class Database(back_anydbm.Database):
         """A convenient way of calling self.getclass(classname)."""
         if self.classes.has_key(classname):
             return self.classes[classname]
-        raise AttributeError, classname
+        raise AttributeError(classname)
 
     def addclass(self, cl):
         cn = cl.classname
         if self.classes.has_key(cn):
-            raise ValueError, cn
+            raise ValueError(cn)
         self.classes[cn] = cl
         if cn not in self.items:
             self.items[cn] = cldb()
@@ -300,7 +300,7 @@ class Database(back_anydbm.Database):
         try:
             return self.classes[classname]
         except KeyError:
-            raise KeyError, 'There is no class called "%s"'%classname
+            raise KeyError('There is no class called "%s"'%classname)
 
     #
     # Class DBs
@@ -363,7 +363,7 @@ class Database(back_anydbm.Database):
             res += self.journals.get(classname, {})[nodeid]
         except KeyError:
             if res: return res
-            raise IndexError, nodeid
+            raise IndexError(nodeid)
         return res
 
     def pack(self, pack_before):

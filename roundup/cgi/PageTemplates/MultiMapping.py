@@ -7,14 +7,14 @@ class MultiMapping:
         for store in self.stores:
             if store.has_key(key):
                 return store[key]
-        raise KeyError, key
+        raise KeyError(key)
     _marker = []
     def get(self, key, default=_marker):
         for store in self.stores:
             if store.has_key(key):
                 return store[key]
         if default is self._marker:
-            raise KeyError, key
+            raise KeyError(key)
         return default
     def __len__(self):
         return reduce(operator.add, [len(x) for x in self.stores], 0)

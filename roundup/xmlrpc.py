@@ -39,12 +39,12 @@ def props_from_args(db, cl, args, itemid=None):
         try :
             key, value = arg.split('=', 1)
         except ValueError :
-            raise UsageError, 'argument "%s" not propname=value'%arg
+            raise UsageError('argument "%s" not propname=value'%arg)
         if isinstance(key, unicode):
             try:
                 key = key.encode ('ascii')
             except UnicodeEncodeError:
-                raise UsageError, 'argument %r is no valid ascii keyword'%key
+                raise UsageError('argument %r is no valid ascii keyword'%key)
         if isinstance(value, unicode):
             value = value.encode('utf-8')
         if value:
@@ -52,7 +52,7 @@ def props_from_args(db, cl, args, itemid=None):
                 props[key] = hyperdb.rawToHyperdb(db, cl, itemid,
                                                   key, value)
             except hyperdb.HyperdbValueError as message:
-                raise UsageError, message
+                raise UsageError(message)
         else:
             # If we're syncing a file the contents may not be None
             if key == 'content':
@@ -141,7 +141,7 @@ class RoundupInstance:
         # check for the key property
         key = cl.getkey()
         if key and not props.has_key(key):
-            raise UsageError, 'you must provide the "%s" property.'%key
+            raise UsageError('you must provide the "%s" property.'%key)
 
         for key in props:
             if not self.db.security.hasPermission('Create', self.db.getuid(),

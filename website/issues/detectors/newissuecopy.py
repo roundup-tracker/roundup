@@ -13,7 +13,7 @@ def newissuecopy(db, cl, nodeid, oldvalues):
             cl.send_message(nodeid, msgid, change_note,
                 ['roundup-devel@lists.sourceforge.net'])
         except roundupdb.MessageSendError as message:
-            raise roundupdb.DetectorError, message
+            raise roundupdb.DetectorError(message)
 
 def init(db):
     db.issue.react('create', newissuecopy)

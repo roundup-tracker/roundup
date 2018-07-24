@@ -38,7 +38,7 @@ class Iterator:
         try:
             inner = getattr(self._inner, 'it_' + name)
         except AttributeError:
-            raise AttributeError, name
+            raise AttributeError(name)
         return inner(self)
 
     def next(self):

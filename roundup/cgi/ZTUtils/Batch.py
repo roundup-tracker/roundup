@@ -86,10 +86,10 @@ class Batch:
 
     def __getitem__(self, index):
         if index < 0:
-            if index + self.end < self.first: raise IndexError, index
+            if index + self.end < self.first: raise IndexError(index)
             return self._sequence[index + self.end]
         
-        if index >= self.length: raise IndexError, index
+        if index >= self.length: raise IndexError(index)
         return self._sequence[index + self.first]
 
     def __len__(self):

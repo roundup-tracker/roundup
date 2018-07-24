@@ -79,6 +79,6 @@ class RequestDispatcher(object):
 
     def get_wfile(self):
         if self.__wfile is None:
-            raise ValueError, 'start_response() not called'
+            raise ValueError('start_response() not called')
         return self.__wfile
 

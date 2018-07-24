@@ -79,8 +79,7 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
         __traceback_supplement__ = (PageTemplate.PageTemplateTracebackSupplement, self)
 
         if self._v_errors:
-            raise PageTemplate.PTRuntimeError, \
-                'Page Template %s has errors.'%self.id
+            raise PageTemplate.PTRuntimeError('Page Template %s has errors.'%self.id)
 
         # figure the context
         c = context(client, self, classname, request)

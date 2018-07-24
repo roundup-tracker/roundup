@@ -1028,7 +1028,7 @@ class Client:
             if (config["WEB_CSRF_ENFORCE_HEADER_%s"%header] == 'required'
                     and "HTTP_%s"%header not in self.env):
                 logger.error(self._("csrf header %s required but missing for user%s."), header, current_user)
-                raise Unauthorised, self._("Missing header: %s")%header
+                raise Unauthorised(self._("Missing header: %s")%header)
                 
         # self.base always matches: ^https?://hostname
         enforce=config['WEB_CSRF_ENFORCE_HEADER_REFERER']
@@ -1039,7 +1039,7 @@ class Client:
             if foundat != 0:
                 if enforce in ('required', 'yes'):
                     logger.error(self._("csrf Referer header check failed for user%s. Value=%s"), current_user, referer)
-                    raise Unauthorised, self._("Invalid Referer %s, %s")%(referer,self.base)
+                    raise Unauthorised(self._("Invalid Referer %s, %s")%(referer,self.base))
                 elif enforce == 'logfailure':
                     logger.warning(self._("csrf Referer header check failed for user%s. Value=%s"), current_user, referer)
             else:
@@ -1055,7 +1055,7 @@ class Client:
             if foundat != 0:
                 if enforce in ('required', 'yes'):
                     logger.error(self._("csrf Origin header check failed for user%s. Value=%s"), current_user, origin)
-                    raise Unauthorised, self._("Invalid Origin %s"%origin)
+                    raise Unauthorised(self._("Invalid Origin %s"%origin))
                 elif enforce == 'logfailure':
                     logger.warning(self._("csrf Origin header check failed for user%s. Value=%s"), current_user, origin)
             else:
@@ -1070,7 +1070,7 @@ class Client:
                 if foundat not in [4, 5]:
                     if enforce in ('required', 'yes'):
                         logger.error(self._("csrf X-FORWARDED-HOST header check failed for user%s. Value=%s"), current_user, host)
-                        raise Unauthorised, self._("Invalid X-FORWARDED-HOST %s")%host
+                        raise Unauthorised(self._("Invalid X-FORWARDED-HOST %s")%host)
                     elif enforce == 'logfailure':
                         logger.warning(self._("csrf X-FORWARDED-HOST header check failed for user%s. Value=%s"), current_user, host)
                 else:
@@ -1090,7 +1090,7 @@ class Client:
                 if foundat not in [4, 5]:
                     if enforce in ('required', 'yes'):
                         logger.error(self._("csrf HOST header check failed for user%s. Value=%s"), current_user, host)
-                        raise Unauthorised, self._("Invalid HOST %s")%host
+                        raise Unauthorised(self._("Invalid HOST %s")%host)
                     elif enforce == 'logfailure':
                         logger.warning(self._("csrf HOST header check failed for user%s. Value=%s"), current_user, host)
                 else:
@@ -1099,7 +1099,7 @@ class Client:
         enforce=config['WEB_CSRF_HEADER_MIN_COUNT']
         if header_pass < enforce:
             logger.error(self._("Csrf: unable to verify sufficient headers"))
-            raise UsageError, self._("Unable to verify sufficient headers")
+            raise UsageError(self._("Unable to verify sufficient headers"))
 
         enforce=config['WEB_CSRF_ENFORCE_HEADER_X-REQUESTED-WITH']
         if xmlrpc:
@@ -1113,7 +1113,7 @@ class Client:
                 # see: https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Protecting_REST_Services:_Use_of_Custom_Request_Headers
                 if 'HTTP_X-REQUESTED-WITH' not in self.env:
                     logger.error(self._("csrf X-REQUESTED-WITH xmlrpc required header check failed for user%s."), current_user)
-                    raise UsageError, self._("Required Header Missing")
+                    raise UsageError(self._("Required Header Missing"))
 
         # Expire old csrf tokens now so we don't use them.  These will
         # be committed after the otks.destroy below.  Note that the
@@ -1151,7 +1151,7 @@ class Client:
         if key is None: # we do not have an @csrf token
             if enforce == 'required':
                 logger.error(self._("Required csrf field missing for user%s"), current_user)
-                raise UsageError, self._("Csrf token is missing.")
+                raise UsageError(self._("Csrf token is missing."))
             elif enforce == 'logfailure':
                     # FIXME include url
                     logger.warning(self._("csrf field not supplied by user%s"), current_user)
@@ -1203,7 +1203,7 @@ class Client:
                 logger.error(
                     self._("Csrf mismatch user: current user %s != stored user %s, current session, stored session: %s,%s for key %s."),
                     current_user, nonce_user, current_session, nonce_session, key)
-                raise UsageError, self._("Invalid csrf token found: %s")%key
+                raise UsageError(self._("Invalid csrf token found: %s")%key)
             elif enforce == 'logfailure':
                 logger.warning(
                     self._("logged only: Csrf mismatch user: current user %s != stored user %s, current session, stored session: %s,%s for key %s."),
@@ -1213,7 +1213,7 @@ class Client:
                 logger.error(
                     self._("Csrf mismatch user: current session %s != stored session %s, current user/stored user is: %s for key %s."),
                     current_session, nonce_session, current_user, key)
-                raise UsageError, self._("Invalid csrf session found: %s")%key
+                raise UsageError(self._("Invalid csrf session found: %s")%key)
             elif enforce == 'logfailure':
                     logger.warning(
                         self._("logged only: Csrf mismatch user: current session %s != stored session %s, current user/stored user is: %s for key %s."),
@@ -1685,7 +1685,10 @@ class Client:
                 # receive an error message, and the adminstrator will
                 # receive a traceback, albeit with less information
                 # than the one we tried to generate above.
-                raise exc_info[0], exc_info[1], exc_info[2]
+                if sys.version_info[0] > 2:
+                    raise exc_info[0](exc_info[1]).with_traceback(exc_info[2])
+                else:
+                    exec('raise exc_info[0], exc_info[1], exc_info[2]')
 
     # these are the actions that are available
     actions = (

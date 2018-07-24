@@ -87,8 +87,7 @@ class Password(_Type):
         try:
             return password.Password(encrypted=value, scheme=self.scheme, strict=True)
         except password.PasswordValueError as message:
-            raise HyperdbValueError, \
-                    _('property %s: %s')%(kw['propname'], message)
+            raise HyperdbValueError(_('property %s: %s')%(kw['propname'], message))
 
     def sort_repr (self, cls, val, name):
         if not val:
@@ -110,8 +109,8 @@ class Date(_Type):
         try:
             value = date.Date(value, self.offset(db))
         except ValueError as message:
-            raise HyperdbValueError, _('property %s: %r is an invalid '\
-                'date (%s)')%(kw['propname'], value, message)
+            raise HyperdbValueError(_('property %s: %r is an invalid '\
+                'date (%s)')%(kw['propname'], value, message))
         return value
     def range_from_raw(self, value, db):
         """return Range value from given raw value with offset correction"""
@@ -127,8 +126,8 @@ class Interval(_Type):
         try:
             value = date.Interval(value)
         except ValueError as message:
-            raise HyperdbValueError, _('property %s: %r is an invalid '\
-                'date interval (%s)')%(kw['propname'], value, message)
+            raise HyperdbValueError(_('property %s: %r is an invalid '\
+                'date interval (%s)')%(kw['propname'], value, message))
         return value
     def sort_repr (self, cls, val, name):
         if not val:
@@ -257,8 +256,8 @@ class Multilink(_Pointer):
                 try:
                     curvalue.remove(itemid)
                 except ValueError:
-                    raise HyperdbValueError, _('property %s: %r is not ' \
-                        'currently an element')%(propname, item)
+                    raise HyperdbValueError(_('property %s: %r is not ' \
+                        'currently an element')%(propname, item))
             else:
                 newvalue.append(itemid)
                 if itemid not in curvalue:
@@ -311,8 +310,8 @@ class Number(_Type):
         try:
             value = float(value)
         except ValueError:
-            raise HyperdbValueError, _('property %s: %r is not a number')%(
-                kw['propname'], value)
+            raise HyperdbValueError(_('property %s: %r is not a number')%(
+                kw['propname'], value))
         return value
 
 class Integer(_Type):
@@ -322,8 +321,8 @@ class Integer(_Type):
         try:
             value = int(value)
         except ValueError:
-            raise HyperdbValueError, _('property %s: %r is not an integer')%(
-                kw['propname'], value)
+            raise HyperdbValueError(_('property %s: %r is not an integer')%(
+                kw['propname'], value))
         return value
 #
 # Support for splitting designators
@@ -335,7 +334,7 @@ def splitDesignator(designator, dre=re.compile(r'([^\d]+)(\d+)')):
     """
     m = dre.match(designator)
     if m is None:
-        raise DesignatorError, _('"%s" not a node designator')%designator
+        raise DesignatorError(_('"%s" not a node designator')%designator)
     return m.group(1), m.group(2)
 
 class Proptree(object):
@@ -830,7 +829,7 @@ def iter_roles(roles):
         into something python can use more easily
     '''
     if not roles or not roles.strip():
-        raise StopIteration, "Empty roles given"
+        raise StopIteration("Empty roles given")
     for role in [x.lower().strip() for x in roles.split(',')]:
         yield role
 
@@ -854,8 +853,8 @@ class Class:
         """
         for name in 'creation activity creator actor'.split():
             if properties.has_key(name):
-                raise ValueError, '"creation", "activity", "creator" and '\
-                    '"actor" are reserved'
+                raise ValueError('"creation", "activity", "creator" and '\
+                    '"actor" are reserved')
 
         self.classname = classname
         self.properties = properties
@@ -1160,7 +1159,7 @@ class Class:
            resolution order.
         """
         if labelprop not in self.getprops():
-            raise ValueError, _("Not a property name: %s") % labelprop
+            raise ValueError(_("Not a property name: %s") % labelprop)
         self._labelprop = labelprop
 
     def setorderprop(self, orderprop):
@@ -1168,7 +1167,7 @@ class Class:
            resolution order
         """
         if orderprop not in self.getprops():
-            raise ValueError, _("Not a property name: %s") % orderprop
+            raise ValueError(_("Not a property name: %s") % orderprop)
         self._orderprop = orderprop
 
     def getkey(self):
@@ -1567,11 +1566,11 @@ def convertLinkValue(db, propname, prop, value, idre=re.compile('^\d+$')):
             try:
                 value = linkcl.lookup(value)
             except KeyError as message:
-                raise HyperdbValueError, _('property %s: %r is not a %s.')%(
-                    propname, value, prop.classname)
+                raise HyperdbValueError(_('property %s: %r is not a %s.')%(
+                    propname, value, prop.classname))
         else:
-            raise HyperdbValueError, _('you may only enter ID values '\
-                'for property %s')%propname
+            raise HyperdbValueError(_('you may only enter ID values '\
+                'for property %s')%propname)
     return value
 
 def fixNewlines(text):
@@ -1602,8 +1601,8 @@ def rawToHyperdb(db, klass, itemid, propname, value, **kw):
     try:
         proptype =  properties[propname]
     except KeyError:
-        raise HyperdbValueError, _('%r is not a property of %s')%(propname,
-            klass.classname)
+        raise HyperdbValueError(_('%r is not a property of %s')%(propname,
+            klass.classname))
 
     # if we got a string, strip it now
     if isinstance(value, type('')):
@@ -1708,14 +1707,14 @@ class Node:
             # exceptions should pass through untrapped
             pass
         # nope, no such attribute
-        raise AttributeError, str(value)
+        raise AttributeError(str(value))
     def __getitem__(self, name):
         return self.cl.get(self.nodeid, name)
     def __setattr__(self, name, value):
         try:
             return self.cl.set(self.nodeid, **{name: value})
         except KeyError as value:
-            raise AttributeError, str(value)
+            raise AttributeError(str(value))
     def __setitem__(self, name, value):
         self.cl.set(self.nodeid, **{name: value})
     def history(self, enforceperm=True, skipquiet=True):

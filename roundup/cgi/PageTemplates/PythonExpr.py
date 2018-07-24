@@ -34,8 +34,8 @@ class PythonExpr:
             exec 'def f():\n return %s\n' % expr.strip() in d
             self._f = d['f']
         except:
-            raise CompilerError, ('Python expression error:\n'
-                                  '%s: %s') % exc_info()[:2]
+            raise CompilerError(('Python expression error:\n'
+                                 '%s: %s') % exc_info()[:2])
         self._get_used_names()
 
     def _get_used_names(self):

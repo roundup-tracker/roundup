@@ -385,7 +385,7 @@ class IssueClass:
                 keys.append(k)
             else:
                 msg = _('No key for "%(adr)s" in keyring')%locals()
-                raise MessageSendError, msg
+                raise MessageSendError(msg)
             ctx.op_keylist_end()
         ctx.op_encrypt(keys, 1, plain, cipher)
         cipher.seek(0,0)

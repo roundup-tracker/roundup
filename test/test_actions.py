@@ -45,7 +45,7 @@ class ShowActionTestCase(ActionTestCase):
                 excName = exception.__name__
             else:
                 excName = str(exception)
-            raise self.failureException, excName
+            raise self.failureException(excName)
 
     def testShowAction(self):
         self.client.base = 'BASE/'
@@ -254,7 +254,7 @@ class LoginTestCase(ActionTestCase):
                 excName = exception.__name__
             else:
                 excName = str(exception)
-            raise self.failureException, excName
+            raise self.failureException(excName)
 
     def assertLoginLeavesMessages(self, messages, username=None, password=None):
         if username is not None:

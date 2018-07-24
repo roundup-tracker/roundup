@@ -32,7 +32,7 @@ if here is None:
     if not os.path.exists(path):
         path = os.path.join(here, 'lib', 'python', 'Products', 'ZRoundup')
         if not os.path.exists(path):
-            raise ValueError, "Can't determine where ZRoundup is installed"
+            raise ValueError("Can't determine where ZRoundup is installed")
 
 # product initialisation
 from ZRoundup import ZRoundup, manage_addZRoundupForm, manage_addZRoundup

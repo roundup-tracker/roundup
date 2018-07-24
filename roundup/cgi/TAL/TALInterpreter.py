@@ -755,4 +755,4 @@ class FasterStringIO(StringIO):
 
 
 def _write_ValueError(s):
-    raise ValueError, "I/O operation on closed file"
+    raise ValueError("I/O operation on closed file")

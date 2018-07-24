@@ -113,9 +113,9 @@ def pbkdf2(password, salt, rounds, keylen):
         #NOTE: pbkdf2 allows up to (2**31-1)*20 bytes,
         # but m2crypto has issues on some platforms above 40,
         # and such sizes aren't needed for a password hash anyways...
-        raise ValueError, "key length too large"
+        raise ValueError("key length too large")
     if rounds < 1:
-        raise ValueError, "rounds must be positive number"
+        raise ValueError("rounds must be positive number")
     return _pbkdf2(password, salt, rounds, keylen)
 
 class PasswordValueError(ValueError):
@@ -131,13 +131,13 @@ def pbkdf2_unpack(pbkdf2):
     try:
         rounds, salt, digest = pbkdf2.split("$")
     except ValueError:
-        raise PasswordValueError, "invalid PBKDF2 hash (wrong number of separators)"
+        raise PasswordValueError("invalid PBKDF2 hash (wrong number of separators)")
     if rounds.startswith("0"):
-        raise PasswordValueError, "invalid PBKDF2 hash (zero-padded rounds)"
+        raise PasswordValueError("invalid PBKDF2 hash (zero-padded rounds)")
     try:
         rounds = int(rounds)
     except ValueError:
-        raise PasswordValueError, "invalid PBKDF2 hash (invalid rounds)"
+        raise PasswordValueError("invalid PBKDF2 hash (invalid rounds)")
     raw_salt = h64decode(salt)
     return rounds, salt, raw_salt, digest
 
@@ -157,7 +157,7 @@ def encodePassword(plaintext, scheme, other=None, config=None):
             else:
                 rounds = 10000
         if rounds < 1000:
-            raise PasswordValueError, "invalid PBKDF2 hash (rounds too low)"
+            raise PasswordValueError("invalid PBKDF2 hash (rounds too low)")
         raw_digest = pbkdf2(plaintext, raw_salt, rounds, 20)
         return "%d$%s$%s" % (rounds, salt, h64encode(raw_digest))
     elif scheme == 'SSHA':
@@ -184,7 +184,7 @@ def encodePassword(plaintext, scheme, other=None, config=None):
     elif scheme == 'plaintext':
         s = plaintext
     else:
-        raise PasswordValueError, 'Unknown encryption scheme %r'%scheme
+        raise PasswordValueError('Unknown encryption scheme %r'%scheme)
     return s
 
 def generatePassword(length=12):
@@ -233,7 +233,7 @@ class JournalPassword:
 
         # assume password is plaintext
         if self.password is None:
-            raise ValueError, 'Password not set'
+            raise ValueError('Password not set')
         return cmp(self.password, encodePassword(other, self.scheme,
             self.password or None))
 
@@ -301,7 +301,7 @@ class Password(JournalPassword):
             # currently plaintext - encrypt
             self.setPassword(encrypted, scheme, config=config)
         if strict and self.scheme not in self.known_schemes:
-            raise PasswordValueError, "Unknown encryption scheme: %r" % (self.scheme,)
+            raise PasswordValueError("Unknown encryption scheme: %r" % (self.scheme,))
 
     def setPassword(self, plaintext, scheme=None, config=None):
         """Sets encrypts plaintext."""
@@ -314,7 +314,7 @@ class Password(JournalPassword):
     def __str__(self):
         """Stringify the encrypted password for database storage."""
         if self.password is None:
-            raise ValueError, 'Password not set'
+            raise ValueError('Password not set')
         return '{%s}%s'%(self.scheme, self.password)
 
 def test():

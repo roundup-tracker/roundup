@@ -145,7 +145,7 @@ class DiffHelper:
 
             if res:
                 res.insert(0, 'Generated message not correct (diff follows, expected vs. actual):')
-                raise AssertionError, '\n'.join(res)
+                raise AssertionError('\n'.join(res))
 
     def compareStrings(self, s2, s1, replace={}):
         '''Note the reversal of s2 and s1 - difflib.SequenceMatcher wants
@@ -2571,7 +2571,7 @@ Unknown address: fubar@bork.bork.bork
 """)
             assert not body_diff, body_diff
         else:
-            raise AssertionError, "Unauthorized not raised when handling mail"
+            raise AssertionError("Unauthorized not raised when handling mail")
 
         # Add Web Access role to anonymous, and try again to make sure
         # we get a "please register at:" message this time.
@@ -2594,7 +2594,7 @@ Unknown address: fubar@bork.bork.bork
 """)
             assert not body_diff, body_diff
         else:
-            raise AssertionError, "Unauthorized not raised when handling mail"
+            raise AssertionError("Unauthorized not raised when handling mail")
 
         # Make sure list of users is the same as before.
         m = self.db.user.list()

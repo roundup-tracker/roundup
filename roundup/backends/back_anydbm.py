@@ -241,12 +241,12 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """A convenient way of calling self.getclass(classname)."""
         if classname in self.classes:
             return self.classes[classname]
-        raise AttributeError, classname
+        raise AttributeError(classname)
 
     def addclass(self, cl):
         cn = cl.classname
         if cn in self.classes:
-            raise ValueError, cn
+            raise ValueError(cn)
         self.classes[cn] = cl
 
         # add default Edit and View permissions
@@ -1186,10 +1186,10 @@ class Class(hyperdb.Class):
             return propvalues
 
         if 'creation' in propvalues or 'activity' in propvalues:
-            raise KeyError, '"creation" and "activity" are reserved'
+            raise KeyError('"creation" and "activity" are reserved')
 
         if 'id' in propvalues:
-            raise KeyError, '"id" is reserved'
+            raise KeyError('"id" is reserved')
 
         if self.db.journaltag is None:
             raise hyperdb.DatabaseError(_('Database open read-only'))
