@@ -79,7 +79,7 @@ class TALGenerator:
             endsep = "/>"
         else:
             endsep = " />"
-        for cursor in xrange(len(program)+1):
+        for cursor in range(len(program)+1):
             try:
                 item = program[cursor]
             except IndexError:

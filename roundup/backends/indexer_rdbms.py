@@ -119,7 +119,7 @@ class Indexer(IndexerBase):
 
             join_list = []
             match_list = []
-            for n in xrange(len(l) - 1):
+            for n in range(len(l) - 1):
                 join_list.append(join_tmpl % (n + 2))
                 match_list.append(match_tmpl % (n + 2, self.db.arg))
 

@@ -33,7 +33,7 @@ _bempty = ""
 _bjoin = _bempty.join
 
 def getrandbytes(count):
-    return _bjoin(chr(random.randint(0,255)) for i in xrange(count))
+    return _bjoin(chr(random.randint(0,255)) for i in range(count))
 
 #NOTE: PBKDF2 hash is using this variant of base64 to minimize encoding size,
 #      and have charset that's compatible w/ unix crypt variants
@@ -69,11 +69,11 @@ except ImportError:
         total_blocks = int((keylen+digest_size-1)/digest_size)
         hmac_template = HMAC(password, None, sha1)
         out = _bempty
-        for i in xrange(1, total_blocks+1):
+        for i in range(1, total_blocks+1):
             hmac = hmac_template.copy()
             hmac.update(salt + pack(">L",i))
             block = tmp = hmac.digest()
-            for j in xrange(rounds-1):
+            for j in range(rounds-1):
                 hmac = hmac_template.copy()
                 hmac.update(tmp)
                 tmp = hmac.digest()
