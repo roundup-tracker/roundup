@@ -77,7 +77,10 @@ class FormTestCase(FormTestParent, unittest.TestCase):
 
         vars = {}
         thisdir = os.path.dirname(__file__)
-        execfile(os.path.join(thisdir, "tx_Source_detector.py"), vars)
+        exec(compile(open(os.path.join(thisdir,
+                                       "tx_Source_detector.py")).read(),
+                     os.path.join(thisdir, "tx_Source_detector.py"), 'exec'),
+             vars)
         vars['init'](self.db)
 
         test = self.instance.backend.Class(self.db, "test",

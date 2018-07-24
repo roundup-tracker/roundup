@@ -52,7 +52,10 @@ class XmlrpcTest(object):
 
         thisdir = os.path.dirname(__file__)
         vars = {}
-        execfile(os.path.join(thisdir, "tx_Source_detector.py"), vars)
+        exec(compile(open(os.path.join(thisdir,
+                                       "tx_Source_detector.py")).read(),
+                     os.path.join(thisdir, "tx_Source_detector.py"), 'exec'),
+             vars)
         vars['init'](self.db)
 
         self.server = RoundupInstance(self.db, self.instance.actions, None)

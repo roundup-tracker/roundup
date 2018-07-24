@@ -38,12 +38,12 @@ def create(journaltag, create=True, debug=False):
     vars['FileClass'] = FileClass
     vars['IssueClass'] = IssueClass
     vars['db'] = db
-    execfile(schema, vars)
+    exec(compile(open(schema).read(), schema, 'exec'), vars)
     initial_data = os.path.join(os.path.dirname(__file__),
         '../share/roundup/templates/classic/initial_data.py')
     vars = dict(db=db, admin_email='admin@test.com',
         adminpw=password.Password('sekrit'))
-    execfile(initial_data, vars)
+    exec(compile(open(initial_data).read(), initial_data, 'exec'), vars)
 
     # load standard detectors
     thisdir = os.path.dirname(__file__)
@@ -52,11 +52,13 @@ def create(journaltag, create=True, debug=False):
     for fn in os.listdir(dirname):
         if not fn.endswith('.py'): continue
         vars = {}
-        execfile(os.path.join(dirname, fn), vars)
+        exec(compile(open(os.path.join(dirname, fn)).read(),
+                     os.path.join(dirname, fn), 'exec'), vars)
         vars['init'](db)
 
     vars = {}
-    execfile(os.path.join(thisdir, "tx_Source_detector.py"), vars)
+    exec(compile(open(os.path.join(thisdir, "tx_Source_detector.py")).read(),
+                 os.path.join(thisdir, "tx_Source_detector.py"), 'exec'), vars)
     vars['init'](db)
 
     '''
