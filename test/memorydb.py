@@ -15,6 +15,7 @@ from roundup.backends import indexer_dbm
 from roundup.backends import sessions_dbm
 from roundup.backends import indexer_common
 from roundup.support import ensureParentsExist
+from roundup.anypy.strings import s2b
 
 def new_config(debug=False):
     config = configuration.CoreConfig()
@@ -110,6 +111,18 @@ def create(journaltag, create=True, debug=False):
     return db
 
 class cldb(dict):
+    def __init__(self, **values):
+        super(cldb, self).__init__()
+        for key, value in values.items():
+            super(cldb, self).__setitem__(s2b(key), value)
+    def __getitem__(self, key):
+        return super(cldb, self).__getitem__(s2b(key))
+    def __setitem__(self, key, value):
+        return super(cldb, self).__setitem__(s2b(key), value)
+    def __delitem__(self, key):
+        return super(cldb, self).__delitem__(s2b(key))
+    def __contains__(self, key):
+        return super(cldb, self).__contains__(s2b(key))
     def close(self):
         pass
 
@@ -118,11 +131,21 @@ class BasicDatabase(dict):
 
         Keys are id strings, values are automatically marshalled data.
     '''
+    def __init__(self, **values):
+        super(BasicDatabase, self).__init__()
+        for k, v in values.items():
+            super(BasicDatabase, self).__setitem__(s2b(k), v)
     def __getitem__(self, key):
         if key not in self:
             d = self[key] = {}
             return d
-        return super(BasicDatabase, self).__getitem__(key)
+        return super(BasicDatabase, self).__getitem__(s2b(key))
+    def __setitem__(self, key, value):
+        return super(BasicDatabase, self).__setitem__(s2b(key), value)
+    def __delitem__(self, key):
+        return super(BasicDatabase, self).__delitem__(s2b(key))
+    def __contains__(self, key):
+        return super(BasicDatabase, self).__contains__(s2b(key))
     def exists(self, infoid):
         return infoid in self
     def get(self, infoid, value, default=None):
