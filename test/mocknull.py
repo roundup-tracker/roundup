@@ -16,7 +16,9 @@ class MockNull:
         return getattr(self, name)
 
     def __getitem__(self, key): return self
-    def __nonzero__(self): return 0
+    def __bool__(self): return 0
+    # Python 2 compatibility:
+    __nonzero__ = __bool__
     def __str__(self): return ''
     def __repr__(self): return '<MockNull 0x%x>'%id(self)
     def gettext(self, str): return str
