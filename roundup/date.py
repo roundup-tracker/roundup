@@ -737,7 +737,13 @@ class Interval:
     ):
         """Construct an interval given a specification."""
         self.setTranslator(translator)
-        if isinstance(spec, (int, float, long)):
+        try:
+            # Python 2.
+            arith_types = (int, float, long)
+        except NameError:
+            # Python 3.
+            arith_types = (int, float)
+        if isinstance(spec, arith_types):
             self.from_seconds(spec)
         elif isinstance(spec, basestring):
             self.set(spec, allowdate=allowdate, add_granularity=add_granularity)
