@@ -106,10 +106,10 @@ class Action:
             if parsed_url_tuple.scheme not in ('http', 'https'):
                 raise ValueError(self._("Unrecognized scheme in %(url)s")%info)
 
-        if parsed_url_tuple.netloc <> parsed_base_url_tuple.netloc:
+        if parsed_url_tuple.netloc != parsed_base_url_tuple.netloc:
             raise ValueError(self._("Net location in %(url)s does not match base: %(base_netloc)s")%info)
 
-        if parsed_url_tuple.path.find(parsed_base_url_tuple.path) <> 0:
+        if parsed_url_tuple.path.find(parsed_base_url_tuple.path) != 0:
             raise ValueError(self._("Base path %(base_path)s is not a prefix for url %(url)s")%info)
 
         # I am not sure if this has to be language sensitive.

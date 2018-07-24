@@ -794,7 +794,7 @@ class TALGenerator:
             # in case tal:content, i18n:translate and i18n:name in the
             # same tag insertTranslation opcode has already been
             # emitted
-            if varname and (varname[1] <> I18N_CONTENT):
+            if varname and (varname[1] != I18N_CONTENT):
                 self.emitTranslation(msgid, i18ndata)
         if repeat:
             self.emitRepeat(repeat)
