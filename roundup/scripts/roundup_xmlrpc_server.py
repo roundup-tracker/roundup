@@ -20,7 +20,8 @@ if (osp.exists(thisdir + '/__init__.py') and
 # --/
 
 
-import base64, getopt, os, sys, socket, urllib
+import base64, getopt, os, sys, socket
+from roundup.anypy import urllib_
 from roundup.xmlrpc import translate
 from roundup.xmlrpc import RoundupInstance
 import roundup.instance
@@ -39,7 +40,7 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
 
     def is_rpc_path_valid(self):
         path = self.path.split('/')
-        name = urllib.unquote(path[1]).lower()
+        name = urllib_.unquote(path[1]).lower()
         return name in self.TRACKER_HOMES
 
     def get_tracker(self, name):
@@ -93,7 +94,7 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
         db = None
         try:
             path = self.path.split('/')
-            tracker_name = urllib.unquote(path[1]).lower()
+            tracker_name = urllib_.unquote(path[1]).lower()
             tracker = self.get_tracker(tracker_name)
             db = self.authenticate(tracker)
 

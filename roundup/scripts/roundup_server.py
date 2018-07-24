@@ -36,7 +36,7 @@ if (osp.exists(thisdir + '/__init__.py') and
 # --/
 
 
-import errno, cgi, getopt, os, socket, sys, traceback, urllib, time
+import errno, cgi, getopt, os, socket, sys, traceback, time
 import ConfigParser, BaseHTTPServer, SocketServer, StringIO
 
 try:
@@ -49,6 +49,7 @@ from roundup import configuration, version_check
 from roundup import __version__ as roundup_version
 
 # Roundup modules of use here
+from roundup.anypy import urllib_
 from roundup.cgi import cgitb, client
 from roundup.cgi.PageTemplates.PageTemplate import PageTemplate
 import roundup.instance
@@ -248,7 +249,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         keys = list(self.TRACKER_HOMES.keys())
         if len(keys) == 1:
             self.send_response(302)
-            self.send_header('Location', urllib.quote(keys[0]) + '/index')
+            self.send_header('Location', urllib_.quote(keys[0]) + '/index')
             self.end_headers()
         else:
             self.send_response(200)
@@ -273,7 +274,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             keys.sort()
             for tracker in keys:
                 w('<li><a href="%(tracker_url)s/index">%(tracker_name)s</a>\n'%{
-                    'tracker_url': urllib.quote(tracker),
+                    'tracker_url': urllib_.quote(tracker),
                     'tracker_name': cgi.escape(tracker)})
             w('</ol></body></html>')
 
@@ -332,7 +333,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
         # figure the tracker
         l_path = rest.split('/')
-        tracker_name = urllib.unquote(l_path[1]).lower()
+        tracker_name = urllib_.unquote(l_path[1]).lower()
 
         # handle missing trailing '/'
         if len(l_path) == 2:
@@ -357,7 +358,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         env = {}
         env['TRACKER_NAME'] = tracker_name
         env['REQUEST_METHOD'] = self.command
-        env['PATH_INFO'] = urllib.unquote(rest)
+        env['PATH_INFO'] = urllib_.unquote(rest)
         if query:
             env['QUERY_STRING'] = query
         if self.headers.typeheader is None:

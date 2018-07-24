@@ -20,11 +20,12 @@ todo = """
 __docformat__ = 'restructuredtext'
 
 
-import cgi, urllib, re, os.path, mimetypes, csv, string
+import cgi, re, os.path, mimetypes, csv, string
 import calendar
 import textwrap
 import time, hashlib
 
+from roundup.anypy import urllib_
 from roundup import hyperdb, date, support
 from roundup import i18n
 from roundup.i18n import _
@@ -763,7 +764,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
             for x in filterprops:
                 (name, values) = x.split('=')
                 names.append(name)
-                filtervalues.append('&amp;%s=%s' % (name, urllib.quote(values)))
+                filtervalues.append('&amp;%s=%s' % (name, urllib_.quote(values)))
             filter = '&amp;@filter=%s%s' % (','.join(names), ''.join(filtervalues))
         else:
            filter = ''
@@ -1199,7 +1200,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         req.classname = self._klass.get(self._nodeid, 'klass')
         name = self._klass.get(self._nodeid, 'name')
         req.updateFromURL(self._klass.get(self._nodeid, 'url') +
-            '&@queryname=%s'%urllib.quote(name))
+            '&@queryname=%s'%urllib_.quote(name))
 
         # new template, using the specified classname and request
         # [ ] the custom logic for search page doesn't belong to
@@ -1219,7 +1220,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         """
         name = self._klass.get(self._nodeid, 'name')
         url = '%s%s/%s'%(self._classname, self._nodeid, name)
-        return urllib.quote(url)
+        return urllib_.quote(url)
 
     def copy_url(self, exclude=("messages", "files")):
         """Construct a URL for creating a copy of this item
@@ -1246,7 +1247,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                     query[name] = ",".join(self._klass.get(self._nodeid, name))
 
         return self._classname + "?" + "&".join(
-            ["%s=%s" % (key, urllib.quote(value))
+            ["%s=%s" % (key, urllib_.quote(value))
                 for key, value in query.items()])
 
 class _HTMLUser(_HTMLItem):
@@ -1463,7 +1464,7 @@ class StringHTMLProperty(HTMLProperty):
 
     def url_quote(self):
         """ Return the string in plain format but escaped for use in a url """
-        return urllib.quote(self.plain())
+        return urllib_.quote(self.plain())
 
     def hyperlinked(self):
         """ Render a "hyperlinked" version of the text """
@@ -2855,7 +2856,7 @@ env: %(env)s
             dispname otherwise the parameter will be omitted
             from the url.
         """
-        q = urllib.quote
+        q = urllib_.quote
         sc = self.special_char
         l = ['%s=%s'%(k,isinstance(v, basestring) and q(v) or v)
              for k,v in args.items() if v != None ]
@@ -3069,7 +3070,7 @@ class TemplatingUtils:
 
     def url_quote(self, url):
         """URL-quote the supplied text."""
-        return urllib.quote(url)
+        return urllib_.quote(url)
 
     def html_quote(self, html):
         """HTML-quote the supplied text."""

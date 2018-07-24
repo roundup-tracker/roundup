@@ -21,7 +21,7 @@ This script needs four steps to work:
 And you're done!
 """
 
-import sys, os, csv, time, urllib2, httplib, mimetypes, urlparse
+import sys, os, csv, time, httplib, mimetypes
 
 try:
     import cElementTree as ElementTree
@@ -29,6 +29,7 @@ except ImportError:
     from elementtree import ElementTree
 
 from roundup import instance, hyperdb, date, support, password
+from roundup.anypy import urllib_
 
 today = date.Date('.')
 
@@ -46,7 +47,7 @@ def get_url(aid):
     # magic "group_id" and "atid" values in it that we need
     assert response.status == 302, 'response code was %s'%response.status
     location = response.getheader('location')
-    query = urlparse.urlparse(response.getheader('location'))[-2]
+    query = urllib_.urlparse(response.getheader('location'))[-2]
     info = dict([param.split('=') for param in query.split('&')])
     return DL_URL%info
 
@@ -91,7 +92,7 @@ def fetch_files(xml_file, file_dir):
             f.write('%s %s\n'%(aid, urls[aid]))
             f.close()
         url = urls[aid] + '&file_id=' + fid
-        f = urllib2.urlopen(url)
+        f = urllib_.urlopen(url)
         data = f.read()
         n = open(os.path.join(file_dir, fid), 'w')
         n.write(data)

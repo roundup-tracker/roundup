@@ -13,6 +13,7 @@
 ##############################################################################
 # Modifications for Roundup:
 # 1. commented out zLOG references
+# 2. use roundup.anypy.urllib_
 """
 Generic expat-based XML parser base class.
 """
@@ -83,8 +84,8 @@ class XMLParser:
         self.parser.Parse(s, 1)
 
     def parseURL(self, url):
-        import urllib
-        self.parseStream(urllib.urlopen(url))
+        import roundup.anypy.urllib_
+        self.parseStream(roundup.anypy.urllib_.urlopen(url))
 
     def parseStream(self, stream):
         self.parser.ParseFile(stream)
