@@ -5,7 +5,7 @@ from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval, DatabaseError, Boolean, Number
 from roundup import date, password
 
-from db_test_base import config
+from .db_test_base import config
 
 def setupSchema(db, module):
     status = module.Class(db, "status", name=String())

@@ -18,7 +18,7 @@
 from __future__ import print_function
 import unittest, os, shutil, errno, imp, sys, time, pprint, base64, os.path
 import logging, cgi
-import gpgmelib
+from . import gpgmelib
 from email.parser import FeedParser
 
 import pytest
@@ -34,7 +34,7 @@ from roundup.cgi.engine_zopetal import RoundupPageTemplate
 from roundup.cgi.templating import HTMLItem
 from roundup.exceptions import UsageError, Reject
 
-from mocknull import MockNull
+from .mocknull import MockNull
 
 config = configuration.CoreConfig()
 config.DATABASE = "db"

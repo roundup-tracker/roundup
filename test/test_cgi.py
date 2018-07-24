@@ -22,10 +22,10 @@ from roundup import init, instance, password, hyperdb, date
 # For testing very simple rendering
 from roundup.cgi.engine_zopetal import RoundupPageTemplate
 
-from mocknull import MockNull
+from .mocknull import MockNull
 
-import db_test_base
-from db_test_base import FormTestParent, setupTracker, FileUpload
+from . import db_test_base
+from .db_test_base import FormTestParent, setupTracker, FileUpload
 
 class FileList:
     def __init__(self, name, *files):

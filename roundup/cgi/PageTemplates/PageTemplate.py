@@ -27,7 +27,7 @@ from roundup.cgi.TAL.HTMLTALParser import HTMLTALParser
 from roundup.cgi.TAL.TALGenerator import TALGenerator
 # Do not use cStringIO here!  It's not unicode aware. :(
 from roundup.cgi.TAL.TALInterpreter import TALInterpreter, FasterStringIO
-from Expressions import getEngine
+from .Expressions import getEngine
 
 
 class PageTemplate:

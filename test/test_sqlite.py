@@ -18,9 +18,9 @@
 import unittest, os, shutil, time
 from roundup.backends import get_backend, have_backend
 
-from db_test_base import DBTest, ROTest, SchemaTest, ClassicInitTest, config
-from db_test_base import ConcurrentDBTest, FilterCacheTest
-from db_test_base import SpecialActionTest
+from .db_test_base import DBTest, ROTest, SchemaTest, ClassicInitTest, config
+from .db_test_base import ConcurrentDBTest, FilterCacheTest
+from .db_test_base import SpecialActionTest
 
 class sqliteOpener:
     if have_backend('sqlite'):
@@ -58,6 +58,6 @@ class sqliteSpecialActionTestCase(sqliteOpener, SpecialActionTest,
     backend = 'sqlite'
 
 
-from session_common import SessionTest
+from .session_common import SessionTest
 class sqliteSessionTest(sqliteOpener, SessionTest, unittest.TestCase):
     pass

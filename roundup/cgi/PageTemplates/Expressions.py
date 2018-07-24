@@ -23,7 +23,7 @@ for Python expressions, string literals, and paths.
 """
 
 import re, sys
-from TALES import Engine, CompilerError, _valid_name, NAME_RE, \
+from .TALES import Engine, CompilerError, _valid_name, NAME_RE, \
      Undefined, Default, _parse_expr
 
 
@@ -31,7 +31,7 @@ _engine = None
 def getEngine():
     global _engine
     if _engine is None:
-        from PathIterator import Iterator
+        from .PathIterator import Iterator
         _engine = Engine(Iterator)
         installHandlers(_engine)
     return _engine
@@ -46,7 +46,7 @@ def installHandlers(engine):
     reg('not', NotExpr)
     reg('defer', DeferExpr)
 
-from PythonExpr import getSecurityManager, PythonExpr
+from .PythonExpr import getSecurityManager, PythonExpr
 guarded_getattr = getattr
 try:
     from zExceptions import Unauthorized

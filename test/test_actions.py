@@ -8,7 +8,7 @@ from roundup.cgi.actions import *
 from roundup.cgi.client import add_message
 from roundup.cgi.exceptions import Redirect, Unauthorised, SeriousError, FormError
 
-from mocknull import MockNull
+from .mocknull import MockNull
 
 def true(*args, **kwargs):
     return 1

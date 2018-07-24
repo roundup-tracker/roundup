@@ -2,8 +2,8 @@ import unittest, os, shutil, time
 
 from roundup import hyperdb
 
-from db_test_base import DBTest, ROTest, SchemaTest, config, setupSchema
-import memorydb
+from .db_test_base import DBTest, ROTest, SchemaTest, config, setupSchema
+from . import memorydb
 
 class memorydbOpener:
     module = memorydb
@@ -48,7 +48,7 @@ class memorydbSchemaTest(memorydbOpener, SchemaTest, unittest.TestCase):
     pass
 
 
-from session_common import SessionTest
+from .session_common import SessionTest
 class memorydbSessionTest(memorydbOpener, SessionTest, unittest.TestCase):
     def setUp(self):
         self.db = self.module.Database(config, 'admin')

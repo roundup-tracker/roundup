@@ -12,7 +12,7 @@ Just a test file template for now.
 import shutil # only, needed for tearDown. TODO: Remove when refactored.
 import unittest
 
-import db_test_base
+from . import db_test_base
 
 TESTSUITE_IDENTIFIER='jinja2'
 

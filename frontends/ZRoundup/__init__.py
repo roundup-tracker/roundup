@@ -35,7 +35,7 @@ if here is None:
             raise ValueError("Can't determine where ZRoundup is installed")
 
 # product initialisation
-from ZRoundup import ZRoundup, manage_addZRoundupForm, manage_addZRoundup
+from .ZRoundup import ZRoundup, manage_addZRoundupForm, manage_addZRoundup
 def initialize(context):
     context.registerClass(
         ZRoundup,

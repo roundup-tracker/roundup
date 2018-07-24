@@ -18,6 +18,6 @@ Modified for Roundup 0.5 release:
 '''
 __docformat__ = 'restructuredtext'
 
-from Batch import Batch
-from Iterator import Iterator
+from .Batch import Batch
+from .Iterator import Iterator
 

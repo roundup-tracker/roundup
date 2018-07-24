@@ -15,9 +15,9 @@
 Parse XML and compile to TALInterpreter intermediate code.
 """
 
-from XMLParser import XMLParser
-from TALDefs import XML_NS, ZOPE_I18N_NS, ZOPE_METAL_NS, ZOPE_TAL_NS
-from TALGenerator import TALGenerator
+from .XMLParser import XMLParser
+from .TALDefs import XML_NS, ZOPE_I18N_NS, ZOPE_METAL_NS, ZOPE_TAL_NS
+from .TALGenerator import TALGenerator
 
 class TALParser(XMLParser):
 
@@ -135,8 +135,8 @@ def test():
         file = sys.argv[1]
     p.parseFile(file)
     program, macros = p.getCode()
-    from TALInterpreter import TALInterpreter
-    from DummyEngine import DummyEngine
+    from .TALInterpreter import TALInterpreter
+    from .DummyEngine import DummyEngine
     engine = DummyEngine(macros)
     TALInterpreter(program, macros, engine, sys.stdout, wrap=0)()
 

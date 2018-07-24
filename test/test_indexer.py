@@ -25,10 +25,10 @@ from roundup.backends import get_backend, have_backend
 from roundup.backends.indexer_rdbms import Indexer
 
 # borrow from other tests
-from db_test_base import setupSchema, config
+from .db_test_base import setupSchema, config
 from .test_postgresql import postgresqlOpener, skip_postgresql
 from .test_mysql import mysqlOpener, skip_mysql
-from test_sqlite import sqliteOpener
+from .test_sqlite import sqliteOpener
 
 try:
     import xapian

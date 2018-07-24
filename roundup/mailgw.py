@@ -100,7 +100,7 @@ import time, random, sys, logging
 import traceback
 import email.utils
 
-from anypy.email_ import decode_header
+from .anypy.email_ import decode_header
 
 from roundup import configuration, hyperdb, date, password, exceptions
 from roundup.mailer import Mailer, MessageSendError

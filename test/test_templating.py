@@ -3,7 +3,7 @@ import unittest
 from cgi import FieldStorage, MiniFieldStorage
 
 from roundup.cgi.templating import *
-from test_actions import MockNull, true
+from .test_actions import MockNull, true
 
 class MockDatabase(MockNull):
     def getclass(self, name):

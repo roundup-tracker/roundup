@@ -21,7 +21,7 @@ Dummy TALES engine so that I can test out the TAL implementation.
 import re
 import sys
 
-from TALDefs import NAME_RE, TALESError, ErrorInfo
+from .TALDefs import NAME_RE, TALESError, ErrorInfo
 #from ITALES import ITALESCompiler, ITALESEngine
 #from DocumentTemplate.DT_Util import ustr
 ustr = str

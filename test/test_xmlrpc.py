@@ -15,7 +15,7 @@ from roundup.backends import list_backends
 from roundup.hyperdb import String
 from roundup.cgi import TranslationService
 
-import db_test_base
+from . import db_test_base
 from .test_mysql import skip_mysql
 from .test_postgresql import skip_postgresql
 

@@ -21,9 +21,9 @@ import pytest
 from roundup.hyperdb import DatabaseError
 from roundup.backends import get_backend, have_backend
 
-from db_test_base import DBTest, ROTest, config, SchemaTest, ClassicInitTest
-from db_test_base import ConcurrentDBTest, HTMLItemTest, FilterCacheTest
-from db_test_base import SpecialActionTest
+from .db_test_base import DBTest, ROTest, config, SchemaTest, ClassicInitTest
+from .db_test_base import ConcurrentDBTest, HTMLItemTest, FilterCacheTest
+from .db_test_base import SpecialActionTest
 
 
 class mysqlOpener:
@@ -123,7 +123,7 @@ class mysqlFilterCacheTest(mysqlOpener, FilterCacheTest, unittest.TestCase):
         self.nuke_database()
 
 
-from session_common import SessionTest
+from .session_common import SessionTest
 @skip_mysql
 class mysqlSessionTest(mysqlOpener, SessionTest, unittest.TestCase):
     def setUp(self):

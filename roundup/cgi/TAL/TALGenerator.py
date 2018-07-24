@@ -18,12 +18,12 @@ Code generator for TALInterpreter intermediate code.
 import re
 import cgi
 
-import TALDefs
+from . import TALDefs
 
-from TALDefs import NAME_RE, TAL_VERSION
-from TALDefs import I18NError, METALError, TALError
-from TALDefs import parseSubstitution
-from TranslationContext import TranslationContext, DEFAULT_DOMAIN
+from .TALDefs import NAME_RE, TAL_VERSION
+from .TALDefs import I18NError, METALError, TALError
+from .TALDefs import parseSubstitution
+from .TranslationContext import TranslationContext, DEFAULT_DOMAIN
 
 I18N_REPLACE = 1
 I18N_CONTENT = 2
@@ -40,7 +40,7 @@ class TALGenerator:
 
     def __init__(self, expressionCompiler=None, xml=1, source_file=None):
         if not expressionCompiler:
-            from DummyEngine import DummyEngine
+            from .DummyEngine import DummyEngine
             expressionCompiler = DummyEngine()
         self.expressionCompiler = expressionCompiler
         self.CompilerError = expressionCompiler.getCompilerError()

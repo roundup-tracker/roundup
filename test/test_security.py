@@ -23,7 +23,7 @@ import os, unittest, shutil
 
 from roundup import backends
 import roundup.password
-from db_test_base import setupSchema, MyTestCase, config
+from .db_test_base import setupSchema, MyTestCase, config
 
 
 class PermissionTest(MyTestCase, unittest.TestCase):

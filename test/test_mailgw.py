@@ -12,7 +12,7 @@
 # TODO: test bcc
 
 import email
-import gpgmelib
+from . import gpgmelib
 import unittest, tempfile, os, shutil, errno, imp, sys, difflib, time
 
 import pytest
@@ -40,7 +40,7 @@ from roundup.mailgw import MailGW, Unauthorized, uidFromAddress, \
 from roundup import init, instance, password, __version__
 
 #import db_test_base
-import memorydb
+from . import memorydb
 
 def expectedFailure(method):
     """ For marking a failing test.

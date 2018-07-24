@@ -17,8 +17,8 @@ A TALES Iterator with the ability to use first() and last() on
 subpaths of elements.
 """
 
-import TALES
-from Expressions import restrictedTraverse, Undefs, getSecurityManager
+from . import TALES
+from .Expressions import restrictedTraverse, Undefs, getSecurityManager
 
 class Iterator(TALES.Iterator):
     def __bobo_traverse__(self, REQUEST, name):

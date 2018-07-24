@@ -1,6 +1,6 @@
 import os, shutil, unittest
 
-from db_test_base import config
+from .db_test_base import config
 
 
 class SessionTest(object):

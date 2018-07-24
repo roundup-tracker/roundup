@@ -17,9 +17,9 @@ Parse HTML and compile to TALInterpreter intermediate code.
 
 import sys
 
-from TALGenerator import TALGenerator
-from HTMLParser import HTMLParser, HTMLParseError
-from TALDefs import \
+from .TALGenerator import TALGenerator
+from .HTMLParser import HTMLParser, HTMLParseError
+from .TALDefs import \
      ZOPE_METAL_NS, ZOPE_TAL_NS, ZOPE_I18N_NS, METALError, TALError, I18NError
 
 BOOLEAN_HTML_ATTRS = [

@@ -27,10 +27,10 @@ from StringIO import StringIO
 #from DocumentTemplate.DT_Util import ustr
 ustr = str
 
-from TALDefs import TAL_VERSION, TALError, METALError, attrEscape
-from TALDefs import isCurrentVersion, getProgramVersion, getProgramMode
-from TALGenerator import TALGenerator
-from TranslationContext import TranslationContext
+from .TALDefs import TAL_VERSION, TALError, METALError, attrEscape
+from .TALDefs import isCurrentVersion, getProgramVersion, getProgramMode
+from .TALGenerator import TALGenerator
+from .TranslationContext import TranslationContext
 
 BOOLEAN_HTML_ATTRS = [
     # List of Boolean attributes in HTML that should be rendered in
@@ -579,7 +579,7 @@ class TALInterpreter:
     bytecode_handlers["insertStructure"] = do_insertStructure
 
     def insertHTMLStructure(self, text, repldict):
-        from HTMLTALParser import HTMLTALParser
+        from .HTMLTALParser import HTMLTALParser
         gen = AltTALGenerator(repldict, self.engine.getCompiler(), 0)
         p = HTMLTALParser(gen) # Raises an exception if text is invalid
         p.parseString(text)
@@ -587,7 +587,7 @@ class TALInterpreter:
         self.interpret(program)
 
     def insertXMLStructure(self, text, repldict):
-        from TALParser import TALParser
+        from .TALParser import TALParser
         gen = AltTALGenerator(repldict, self.engine.getCompiler(), 0)
         p = TALParser(gen)
         gen.enable(0)

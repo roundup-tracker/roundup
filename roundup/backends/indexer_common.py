@@ -112,13 +112,13 @@ def get_indexer(config, db):
     if not indexer_name:
         # Try everything
         try:
-            from indexer_xapian import Indexer
+            from .indexer_xapian import Indexer
             return Indexer(db)
         except ImportError:
             pass
 
         try:
-            from indexer_whoosh import Indexer
+            from .indexer_whoosh import Indexer
             return Indexer(db)
         except ImportError:
             pass
@@ -126,11 +126,11 @@ def get_indexer(config, db):
         indexer_name = "native" # fallback to native full text search
 
     if indexer_name == "xapian":
-        from indexer_xapian import Indexer
+        from .indexer_xapian import Indexer
         return Indexer(db)
 
     if indexer_name == "whoosh":
-        from indexer_whoosh import Indexer
+        from .indexer_whoosh import Indexer
         return Indexer(db)
 
     if indexer_name == "native":

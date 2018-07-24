@@ -29,7 +29,7 @@ from roundup import hyperdb, date, support
 from roundup import i18n
 from roundup.i18n import _
 
-from KeywordsExpr import render_keywords_expression_editor
+from .KeywordsExpr import render_keywords_expression_editor
 
 try: 
     # Use the cryptographic source of randomness if available
@@ -244,11 +244,11 @@ def get_loader(dir, template_engine):
 
     for engine_name in engines:
         if engine_name == 'chameleon':
-            from engine_chameleon import Loader
+            from .engine_chameleon import Loader
         elif engine_name == 'jinja2':
-            from engine_jinja2 import Jinja2Loader as Loader
+            from .engine_jinja2 import Jinja2Loader as Loader
         elif engine_name == 'zopetal':
-            from engine_zopetal import Loader
+            from .engine_zopetal import Loader
         else:
             raise Exception('Unknown template engine "%s"' % engine_name)
         ml.add_loader(Loader(dir))
