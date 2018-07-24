@@ -57,14 +57,14 @@ try:
         db.user.lookup('alpha0')
     except:
         # add some users
-        M = N/100
+        M = N//100
         for i in range(M):
             print('\ruser', i, '       ', end=' ')
             sys.stdout.flush()
-            if i/17 == 0:
+            if i//17 == 0:
                 db.user.create(username=names[i%17])
             else:
-                db.user.create(username=names[i%17]+str(i/17))
+                db.user.create(username=names[i%17]+str(i//17))
 
     # assignable user list
     users = db.user.list()

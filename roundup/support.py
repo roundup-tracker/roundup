@@ -70,7 +70,7 @@ class Progress:
         self.total = len(sequence)
         self.start = self.now = time.time()
         self.num = 0
-        self.stepsize = self.total / 100 or 1
+        self.stepsize = self.total // 100 or 1
         self.steptimes = []
         self.display()
 

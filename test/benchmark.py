@@ -53,8 +53,8 @@ def main(backendname, time=time.time, numissues=10):
                 db.issue.set(str(i+1), status='2', assignedto='2', nosy=[])
                 db.issue.set(str(i+1), status='1', assignedto='1',
                     nosy=['1','2'])
-            if (i*100/numissues) != pc:
-                pc = (i*100/numissues)
+            if (i*100//numissues) != pc:
+                pc = (i*100//numissues)
                 sys.stdout.write("%d%%\r"%pc)
                 sys.stdout.flush()
             db.commit()

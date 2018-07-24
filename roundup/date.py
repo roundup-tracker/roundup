@@ -564,9 +564,9 @@ class Date:
             sign = -1
             diff = -diff
         S = diff%60
-        M = (diff/60)%60
-        H = (diff/(60*60))%24
-        d = diff/(24*60*60)
+        M = (diff//60)%60
+        H = (diff//(60*60))%24
+        d = diff//(24*60*60)
         return Interval((0, 0, d, H, M, S), sign=sign,
             translator=self.translator)
 
@@ -895,7 +895,7 @@ class Interval:
         # nope, no idea what to do with this other...
         raise TypeError("Can't add %r"%other)
 
-    def __div__(self, other):
+    def __truediv__(self, other):
         """ Divide this interval by an int value.
 
             Can't divide years and months sensibly in the _same_
@@ -918,7 +918,7 @@ class Interval:
 
             sign = months<0 and -1 or 1
             m = months%12
-            y = months / 12
+            y = months // 12
             return Interval((sign, y, m, 0, 0, 0, 0),
                 translator=self.translator)
 
@@ -932,13 +932,15 @@ class Interval:
             sign = seconds<0 and -1 or 1
             seconds *= sign
             S = seconds%60
-            seconds /= 60
+            seconds //= 60
             M = seconds%60
-            seconds /= 60
+            seconds //= 60
             H = seconds%24
-            d = seconds / 24
+            d = seconds // 24
             return Interval((sign, 0, 0, d, H, M, S),
                 translator=self.translator)
+    # Python 2 compatibility:
+    __div__ = __truediv__
 
     def __repr__(self):
         return '<Interval %s>'%self.__str__()
@@ -946,7 +948,7 @@ class Interval:
     def pretty(self):
         ''' print up the date date using one of these nice formats..
         '''
-        _quarters = self.minute / 15
+        _quarters = self.minute // 15
         if self.year:
             s = self.ngettext("%(number)s year", "%(number)s years",
                 self.year) % {'number': self.year}
@@ -1040,11 +1042,11 @@ class Interval:
         else:
             self.sign = 1
         self.second = val % 60
-        val = val / 60
+        val = val // 60
         self.minute = val % 60
-        val = val / 60
+        val = val // 60
         self.hour = val % 24
-        val = val / 24
+        val = val // 24
         self.day = val
         self.month = self.year = 0
 
@@ -1079,17 +1081,17 @@ def fixTimeOverflow(time):
         sign = seconds<0 and -1 or 1
         seconds *= sign
         S = seconds%60
-        seconds /= 60
+        seconds //= 60
         M = seconds%60
-        seconds /= 60
+        seconds //= 60
         H = seconds%24
-        d = seconds / 24
+        d = seconds // 24
     else:
         months = y*12 + m
         sign = months<0 and -1 or 1
         months *= sign
         m = months%12
-        y = months/12
+        y = months//12
 
     return (sign, y, m, d, H, M, S)
 

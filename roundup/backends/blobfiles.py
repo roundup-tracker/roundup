@@ -221,7 +221,7 @@ class FileStorage:
             name = '%s%s'%(classname, nodeid)
 
         # have a separate subdir for every thousand messages
-        subdir = str(int(nodeid) / 1000)
+        subdir = str(int(nodeid) // 1000)
         return os.path.join(subdir, name)
 
     def _tempfile(self, filename):

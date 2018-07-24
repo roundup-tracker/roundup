@@ -71,7 +71,7 @@ class ExampleMessage(Message):
             if char != ' ':
                 break
             count += 1
-        return count / 4
+        return count // 4
 
 class MultipartTestCase(unittest.TestCase):
     def setUp(self):
