@@ -62,7 +62,7 @@ class Indexer(IndexerBase):
         if os.path.exists(self.indexdb_path):
             shutil.rmtree(self.indexdb_path)
         os.makedirs(self.indexdb_path)
-        os.chmod(self.indexdb_path, 0775)
+        os.chmod(self.indexdb_path, 0o775)
         open(os.path.join(self.indexdb_path, 'version'), 'w').write('1\n')
         self.reindex = 1
         self.changed = 1
@@ -251,7 +251,7 @@ class Indexer(IndexerBase):
             filename = self.indexdb + initchar
             pickle_fh = open(filename, 'wb')
             pickle_fh.write(zlib.compress(pickle_str))
-            os.chmod(filename, 0664)
+            os.chmod(filename, 0o664)
 
         # save done
         self.changed = 0

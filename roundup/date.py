@@ -1012,7 +1012,7 @@ class Interval:
         Months are counted as 30 days, years as 365 days. Returns a Long
         int.
         '''
-        n = self.year * 365L
+        n = self.year * 365
         n = n + self.month * 30
         n = n + self.day
         n = n * 24

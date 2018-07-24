@@ -140,4 +140,4 @@ sys.path.insert(1, "%s/lib/python%s/site-packages")
                         % script_vars)
             finally:
                 file.close()
-                os.chmod(outfile, 0755)
+                os.chmod(outfile, 0o755)

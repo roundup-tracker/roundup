@@ -454,7 +454,7 @@ class DateTestCase(unittest.TestCase):
         ae(date.timestamp(), 2147483647)
         ae(str(date), '2038-01-19.03:14:07')
         date = Date('1901-12-13.20:45:52')
-        ae(date.timestamp(), -0x80000000L)
+        ae(date.timestamp(), -0x80000000)
         ae(str(date), '1901-12-13.20:45:52')
         date = Date('9999')
         ae (date.timestamp(), 253370764800.0)
