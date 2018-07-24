@@ -670,7 +670,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             on _%s(__retired__, _%s)'''%(cn, cn, key)
         try:
             self.sql(sql)
-        except StandardError:
+        except Exception:
             # XXX catch e.g.:
             # _sqlite.DatabaseError: index _status_key_retired_idx already exists
             pass
