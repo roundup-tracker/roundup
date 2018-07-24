@@ -56,6 +56,10 @@ try:
     from docutils.core import publish_parts as ReStructuredText
 except ImportError:
     ReStructuredText = None
+try:
+    from itertools import zip_longest
+except ImportError:
+    from itertools import izip_longest as zip_longest
 
 # bring in the templating support
 from roundup.cgi import TranslationService, ZTUtils
@@ -2614,7 +2618,7 @@ class HTMLRequest(HTMLInputMixin):
         # in that case anyway but...
         if self.classname:
             cls = self.client.db.getclass(self.classname)
-        for f, d in map(None, fields, dirs):
+        for f, d in zip_longest(fields, dirs):
             if f.startswith('-'):
                 dir, propname = '-', f[1:]
             elif d:

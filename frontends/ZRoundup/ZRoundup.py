@@ -88,7 +88,7 @@ class FormWrapper:
     def __getitem__(self, item):
         entry = self.__form[item]
         if isinstance(entry, type([])):
-            entry = map(FormItem, entry)
+            entry = list(map(FormItem, entry))
         else:
             entry = FormItem(entry)
         return entry
