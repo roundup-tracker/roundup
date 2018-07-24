@@ -122,19 +122,19 @@ def parseAttributeReplacements(arg, xml):
     for part in splitParts(arg):
         m = _attr_re.match(part)
         if not m:
-            raise TALError("Bad syntax in attributes: " + `part`)
+            raise TALError("Bad syntax in attributes: " + repr(part))
         name, expr = m.group(1, 2)
         if not xml:
             name = name.lower()
         if dict.has_key(name):
-            raise TALError("Duplicate attribute name in attributes: " + `part`)
+            raise TALError("Duplicate attribute name in attributes: " + repr(part))
         dict[name] = expr
     return dict
 
 def parseSubstitution(arg, position=(None, None)):
     m = _subst_re.match(arg)
     if not m:
-        raise TALError("Bad syntax in substitution text: " + `arg`, position)
+        raise TALError("Bad syntax in substitution text: " + repr(arg), position)
     key, expr = m.group(1, 2)
     if not key:
         key = "text"

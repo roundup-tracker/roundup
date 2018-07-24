@@ -193,10 +193,10 @@ class PathExpr:
         return self._eval(econtext)
 
     def __str__(self):
-        return '%s expression %s' % (self._name, `self._s`)
+        return '%s expression %s' % (self._name, repr(self._s))
 
     def __repr__(self):
-        return '%s:%s' % (self._name, `self._s`)
+        return '%s:%s' % (self._name, repr(self._s))
 
 
 _interp = re.compile(r'\$(%(n)s)|\${(%(n)s(?:/[^}]*)*)}' % {'n': NAME_RE})
@@ -237,10 +237,10 @@ class StringExpr:
         return self._expr % tuple(vvals)
 
     def __str__(self):
-        return 'string expression %s' % `self._s`
+        return 'string expression %s' % repr(self._s)
 
     def __repr__(self):
-        return 'string:%s' % `self._s`
+        return 'string:%s' % repr(self._s)
 
 class NotExpr:
     def __init__(self, name, expr, compiler):
@@ -254,7 +254,7 @@ class NotExpr:
         return (not econtext.evaluateBoolean(self._c)) and 1 or 0
 
     def __repr__(self):
-        return 'not:%s' % `self._s`
+        return 'not:%s' % repr(self._s)
 
 class DeferWrapper:
     def __init__(self, expr, econtext):
@@ -276,7 +276,7 @@ class DeferExpr:
         return DeferWrapper(self._c, econtext)
 
     def __repr__(self):
-        return 'defer:%s' % `self._s`
+        return 'defer:%s' % repr(self._s)
 
 class TraversalError:
     def __init__(self, path, name):

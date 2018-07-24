@@ -1206,29 +1206,29 @@ def test_range():
     rispecs = ('from -1w 2d 4:32 to 4d', '-2w 1d')
     for rspec in rspecs:
         print('>>> Range("%s")' % rspec)
-        print(`Range(rspec, Date)`)
+        print(repr(Range(rspec, Date)))
         print()
     for rspec in rispecs:
         print('>>> Range("%s")' % rspec)
-        print(`Range(rspec, Interval)`)
+        print(repr(Range(rspec, Interval)))
         print()
 
 def test():
     intervals = ("  3w  1  d  2:00", " + 2d", "3w")
     for interval in intervals:
         print('>>> Interval("%s")'%interval)
-        print(`Interval(interval)`)
+        print(repr(Interval(interval)))
 
     dates = (".", "2000-06-25.19:34:02", ". + 2d", "1997-04-17", "01-25",
         "08-13.22:13", "14:25", '2002-12')
     for date in dates:
         print('>>> Date("%s")'%date)
-        print(`Date(date)`)
+        print(repr(Date(date)))
 
     sums = ((". + 2d", "3w"), (".", "  3w  1  d  2:00"))
     for date, interval in sums:
         print('>>> Date("%s") + Interval("%s")'%(date, interval))
-        print(`Date(date) + Interval(interval)`)
+        print(repr(Date(date) + Interval(interval)))
 
 if __name__ == '__main__':
     test()

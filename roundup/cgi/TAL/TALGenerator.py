@@ -207,7 +207,7 @@ class TALGenerator:
         try:
             return self.expressionCompiler.compile(expr)
         except self.CompilerError as err:
-            raise TALError('%s in expression %s' % (err.args[0], `expr`),
+            raise TALError('%s in expression %s' % (err.args[0], repr(expr)),
                            self.position)
 
     def pushProgram(self):
@@ -268,7 +268,7 @@ class TALGenerator:
             m = re.match(
                 r"(?s)\s*(?:(global|local)\s+)?(%s)\s+(.*)\Z" % NAME_RE, part)
             if not m:
-                raise TALError("invalid define syntax: " + `part`,
+                raise TALError("invalid define syntax: " + repr(part),
                                self.position)
             scope, name, expr = m.group(1, 2, 3)
             scope = scope or "local"
@@ -302,7 +302,7 @@ class TALGenerator:
     def emitRepeat(self, arg):
         m = re.match("(?s)\s*(%s)\s+(.*)\Z" % NAME_RE, arg)
         if not m:
-            raise TALError("invalid repeat syntax: " + `arg`,
+            raise TALError("invalid repeat syntax: " + repr(arg),
                            self.position)
         name, expr = m.group(1, 2)
         cexpr = self.compileExpression(expr)
@@ -370,10 +370,10 @@ class TALGenerator:
         program = self.popProgram()
         macroName = macroName.strip()
         if self.macros.has_key(macroName):
-            raise METALError("duplicate macro definition: %s" % `macroName`,
+            raise METALError("duplicate macro definition: %s" % repr(macroName),
                              self.position)
         if not re.match('%s$' % NAME_RE, macroName):
-            raise METALError("invalid macro name: %s" % `macroName`,
+            raise METALError("invalid macro name: %s" % repr(macroName),
                              self.position)
         self.macros[macroName] = program
         self.inMacroDef = self.inMacroDef - 1
@@ -389,7 +389,7 @@ class TALGenerator:
         program = self.popProgram()
         slotName = slotName.strip()
         if not re.match('%s$' % NAME_RE, slotName):
-            raise METALError("invalid slot name: %s" % `slotName`,
+            raise METALError("invalid slot name: %s" % repr(slotName),
                              self.position)
         self.emit("defineSlot", slotName, program)
 
@@ -397,10 +397,10 @@ class TALGenerator:
         program = self.popProgram()
         slotName = slotName.strip()
         if self.slots.has_key(slotName):
-            raise METALError("duplicate fill-slot name: %s" % `slotName`,
+            raise METALError("duplicate fill-slot name: %s" % repr(slotName),
                              self.position)
         if not re.match('%s$' % NAME_RE, slotName):
-            raise METALError("invalid slot name: %s" % `slotName`,
+            raise METALError("invalid slot name: %s" % repr(slotName),
                              self.position)
         self.slots[slotName] = program
         self.inMacroUse = 1
@@ -487,23 +487,23 @@ class TALGenerator:
         self.position = position
         for key, value in taldict.items():
             if key not in TALDefs.KNOWN_TAL_ATTRIBUTES:
-                raise TALError("bad TAL attribute: " + `key`, position)
+                raise TALError("bad TAL attribute: " + repr(key), position)
             if not (value or key == 'omit-tag'):
                 raise TALError("missing value for TAL attribute: " +
-                               `key`, position)
+                               repr(key), position)
         for key, value in metaldict.items():
             if key not in TALDefs.KNOWN_METAL_ATTRIBUTES:
-                raise METALError("bad METAL attribute: " + `key`,
+                raise METALError("bad METAL attribute: " + repr(key),
                                  position)
             if not value:
                 raise TALError("missing value for METAL attribute: " +
-                               `key`, position)
+                               repr(key), position)
         for key, value in i18ndict.items():
             if key not in TALDefs.KNOWN_I18N_ATTRIBUTES:
-                raise I18NError("bad i18n attribute: " + `key`, position)
+                raise I18NError("bad i18n attribute: " + repr(key), position)
             if not value and key in ("attributes", "data", "id"):
                 raise I18NError("missing value for i18n attribute: " +
-                                `key`, position)
+                                repr(key), position)
         todo = {}
         defineMacro = metaldict.get("define-macro")
         useMacro = metaldict.get("use-macro")

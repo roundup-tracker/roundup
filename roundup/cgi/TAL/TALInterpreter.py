@@ -76,7 +76,7 @@ def interpolate(text, mapping):
                 # subst contains high-bit chars...
                 # As we have no way of knowing the correct encoding,
                 # substitue something instead of raising an exception.
-                subst = `subst`[1:-1]
+                subst = repr(subst)[1:-1]
                 text = text.replace(string, subst)
     return text
 
@@ -179,7 +179,7 @@ class TALInterpreter:
     def pushMacro(self, macroName, slots, entering=1):
         if len(self.macroStack) >= self.stackLimit:
             raise METALError("macro nesting limit (%d) exceeded "
-                             "by %s" % (self.stackLimit, `macroName`))
+                             "by %s" % (self.stackLimit, repr(macroName)))
         self.macroStack.append([macroName, slots, entering, self.i18nContext])
 
     def popMacro(self):
@@ -655,12 +655,12 @@ class TALInterpreter:
         else:
             if not isCurrentVersion(macro):
                 raise METALError("macro %s has incompatible version %s" %
-                                 (`macroName`, `getProgramVersion(macro)`),
+                                 (repr(macroName), repr(getProgramVersion(macro))),
                                  self.position)
             mode = getProgramMode(macro)
             if mode != (self.html and "html" or "xml"):
                 raise METALError("macro %s has incompatible mode %s" %
-                                 (`macroName`, `mode`), self.position)
+                                 (repr(macroName), repr(mode)), self.position)
         self.pushMacro(macroName, compiledSlots)
         prev_source = self.sourceFile
         self.interpret(macro)

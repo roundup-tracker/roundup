@@ -144,7 +144,7 @@ class HTMLTALParser(HTMLParser):
              = self.process_ns(tag, attrs)
         if tag in EMPTY_HTML_TAGS and taldict.get("content"):
             raise TALError(
-                "empty HTML tags cannot use tal:content: %s" % `tag`,
+                "empty HTML tags cannot use tal:content: %s" % repr(tag),
                 self.getpos())
         self.tagstack.append(tag)
         self.gen.emitStartElement(tag, attrlist, taldict, metaldict, i18ndict,
@@ -160,7 +160,7 @@ class HTMLTALParser(HTMLParser):
         if taldict.get("content"):
             if tag in EMPTY_HTML_TAGS:
                 raise TALError(
-                    "empty HTML tags cannot use tal:content: %s" % `tag`,
+                    "empty HTML tags cannot use tal:content: %s" % repr(tag),
                     self.getpos())
             self.gen.emitStartElement(tag, attrlist, taldict, metaldict,
                                       i18ndict, self.getpos())
@@ -297,17 +297,17 @@ class HTMLTALParser(HTMLParser):
             if ns == 'tal':
                 if taldict.has_key(keybase):
                     raise TALError("duplicate TAL attribute " +
-                                   `keybase`, self.getpos())
+                                   repr(keybase), self.getpos())
                 taldict[keybase] = value
             elif ns == 'metal':
                 if metaldict.has_key(keybase):
                     raise METALError("duplicate METAL attribute " +
-                                     `keybase`, self.getpos())
+                                     repr(keybase), self.getpos())
                 metaldict[keybase] = value
             elif ns == 'i18n':
                 if i18ndict.has_key(keybase):
                     raise I18NError("duplicate i18n attribute " +
-                                    `keybase`, self.getpos())
+                                    repr(keybase), self.getpos())
                 i18ndict[keybase] = value
             attrlist.append(item)
         if namens in ('metal', 'tal'):

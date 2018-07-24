@@ -92,7 +92,7 @@ class ParserBase:
                     self.error("unexpected '[' char in declaration")
             else:
                 self.error(
-                    "unexpected %s char in declaration" % `rawdata[j]`)
+                    "unexpected %s char in declaration" % repr(rawdata[j]))
             if j < 0:
                 return j
         return -1 # incomplete
@@ -113,7 +113,7 @@ class ParserBase:
                 if s != "<!":
                     self.updatepos(declstartpos, j + 1)
                     self.error("unexpected char in internal subset (in %s)"
-                               % `s`)
+                               % repr(s))
                 if (j + 2) == n:
                     # end of buffer; incomplete
                     return -1
@@ -131,7 +131,7 @@ class ParserBase:
                 if name not in ("attlist", "element", "entity", "notation"):
                     self.updatepos(declstartpos, j + 2)
                     self.error(
-                        "unknown declaration %s in internal subset" % `name`)
+                        "unknown declaration %s in internal subset" % repr(name))
                 # handle the individual names
                 meth = getattr(self, "_parse_doctype_" + name)
                 j = meth(j, declstartpos)
@@ -162,7 +162,7 @@ class ParserBase:
                 j = j + 1
             else:
                 self.updatepos(declstartpos, j)
-                self.error("unexpected char %s in internal subset" % `c`)
+                self.error("unexpected char %s in internal subset" % repr(c))
         # end of buffer reached
         return -1
 

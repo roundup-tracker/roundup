@@ -119,7 +119,7 @@ class DummyEngine:
             try:
                 return eval(expr, self.globals, self.locals)
             except:
-                raise TALESError("evaluation error in %s" % `expr`)
+                raise TALESError("evaluation error in %s" % repr(expr))
         if type == "position":
             # Insert the current source file name, line number,
             # and column offset.
@@ -128,7 +128,7 @@ class DummyEngine:
             else:
                 lineno, offset = None, None
             return '%s (%s,%s)' % (self.source_file, lineno, offset)
-        raise TALESError("unrecognized expression: " + `expression`)
+        raise TALESError("unrecognized expression: " + repr(expression))
 
     def evaluatePathOrVar(self, expr):
         expr = expr.strip()
@@ -137,7 +137,7 @@ class DummyEngine:
         elif self.globals.has_key(expr):
             return self.globals[expr]
         else:
-            raise TALESError("unknown variable: %s" % `expr`)
+            raise TALESError("unknown variable: %s" % repr(expr))
 
     def evaluateValue(self, expr):
         return self.evaluate(expr)
