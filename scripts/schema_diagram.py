@@ -25,7 +25,7 @@ print('node [shape="record" bgcolor="#ffe4c4" style=filled]')
 print('edge [taillabel="1" headlabel="1" dir=back arrowtail=ediamond]')
 
 # get all the classes
-types = db.classes.keys()
+types = list(db.classes.keys())
 
 # one record node per class
 for i in range(len(types)):

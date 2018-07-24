@@ -102,7 +102,7 @@ class FormWrapper:
     def has_key(self, item):
         return item in self.__form
     def keys(self):
-        return self.__form.keys()
+        return list(self.__form.keys())
 
     def __repr__(self):
         return '<ZRoundup.FormWrapper %r>'%self.__form

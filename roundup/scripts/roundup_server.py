@@ -245,7 +245,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def index(self):
         ''' Print up an index of the available trackers
         '''
-        keys = self.TRACKER_HOMES.keys()
+        keys = list(self.TRACKER_HOMES.keys())
         if len(keys) == 1:
             self.send_response(302)
             self.send_header('Location', urllib.quote(keys[0]) + '/index')
@@ -623,7 +623,7 @@ class ServerConfig(configuration.Config):
             return
         # config defaults appear in all sections.
         # filter them out.
-        defaults = config.defaults().keys()
+        defaults = list(config.defaults().keys())
         for name in config.options("trackers"):
             if name not in defaults:
                 self.add_option(TrackerHomeOption(self, "trackers", name))

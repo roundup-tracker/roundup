@@ -1230,8 +1230,7 @@ class DBTest(commonDBTest):
         self.assertEqual(nodeid, '1')
         self.assertEqual(journaltag, self.db.user.lookup('admin'))
         self.assertEqual(action, 'create')
-        keys = params.keys()
-        keys.sort()
+        keys = sorted(params.keys())
         self.assertEqual(keys, [])
 
         # journal entry for link
@@ -2279,11 +2278,11 @@ class DBTest(commonDBTest):
             shutil.rmtree('_test_export')
 
         # compare with snapshot of the database
-        for cn, items in orig.iteritems():
+        for cn, items in orig.items():
             klass = self.db.classes[cn]
             propdefs = klass.getprops(1)
             # ensure retired items are retired :)
-            l = items.keys(); l.sort()
+            l = sorted(items.keys())
             m = klass.list(); m.sort()
             ae(l, m, '%s id list wrong %r vs. %r'%(cn, l, m))
             for id, props in items.items():
@@ -2299,8 +2298,8 @@ class DBTest(commonDBTest):
                             raise
                         # don't get hung up on rounding errors
                         assert not l.__cmp__(value, int_seconds=1)
-        for jc, items in origj.iteritems():
-            for id, oj in items.iteritems():
+        for jc, items in origj.items():
+            for id, oj in items.items():
                 rj = self.db.getjournal(jc, id)
                 # Both mysql and postgresql have some minor issues with
                 # rounded seconds on export/import, so we compare only
@@ -2525,8 +2524,7 @@ class DBTest(commonDBTest):
         # force any post-init stuff to happen
         self.db.post_init()
         props = self.db.issue.getprops()
-        keys = props.keys()
-        keys.sort()
+        keys = sorted(props.keys())
         self.assertEqual(keys, ['activity', 'actor', 'assignedto', 'creation',
             'creator', 'deadline', 'feedback', 'files', 'fixer', 'foo', 'id', 'messages',
             'nosy', 'priority', 'spam', 'status', 'superseder', 'title'])
@@ -2539,8 +2537,7 @@ class DBTest(commonDBTest):
         del self.db.issue.properties['title']
         self.db.post_init()
         props = self.db.issue.getprops()
-        keys = props.keys()
-        keys.sort()
+        keys = sorted(props.keys())
         self.assertEqual(keys, ['activity', 'actor', 'assignedto', 'creation',
             'creator', 'deadline', 'feedback', 'files', 'foo', 'id', 'messages',
             'nosy', 'priority', 'spam', 'status', 'superseder'])
@@ -2554,8 +2551,7 @@ class DBTest(commonDBTest):
         del self.db.issue.properties['title']
         self.db.post_init()
         props = self.db.issue.getprops()
-        keys = props.keys()
-        keys.sort()
+        keys = sorted(props.keys())
         self.assertEqual(keys, ['activity', 'actor', 'assignedto', 'creation',
             'creator', 'deadline', 'feedback', 'files', 'fixer', 'foo', 'id',
             'messages', 'nosy', 'priority', 'spam', 'status', 'superseder'])
@@ -2716,8 +2712,7 @@ class SchemaTest(MyTestCase):
     def test_fileClassProps(self):
         self.open_database()
         a = self.module.FileClass(self.db, 'a')
-        l = a.getprops().keys()
-        l.sort()
+        l = sorted(a.getprops().keys())
         self.assert_(l, ['activity', 'actor', 'content', 'created',
             'creation', 'type'])
 
@@ -3005,7 +3000,7 @@ class FilterCacheTest(commonDBTest):
             for x in range(4):
                 assert(('user', nodeid) in self.db.cache)
                 n = self.db.user.getnode(nodeid)
-                for k, v in user_result[nodeid].iteritems():
+                for k, v in user_result[nodeid].items():
                     ae((k, n[k]), (k, v))
                 for k in 'creation', 'activity':
                     assert(n[k])
@@ -3022,7 +3017,7 @@ class FilterCacheTest(commonDBTest):
             result.append(id)
             assert(('issue', id) in self.db.cache)
             n = self.db.issue.getnode(id)
-            for k, v in issue_result[id].iteritems():
+            for k, v in issue_result[id].items():
                 ae((k, n[k]), (k, v))
             for k in 'creation', 'activity':
                 assert(n[k])
@@ -3030,7 +3025,7 @@ class FilterCacheTest(commonDBTest):
             for x in range(4):
                 assert(('user', nodeid) in self.db.cache)
                 n = self.db.user.getnode(nodeid)
-                for k, v in user_result[nodeid].iteritems():
+                for k, v in user_result[nodeid].items():
                     ae((k, n[k]), (k, v))
                 for k in 'creation', 'activity':
                     assert(n[k])

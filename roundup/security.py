@@ -329,7 +329,7 @@ class Security:
                 except KeyError:
                     return 0
                 props = dict.fromkeys(('id', cls.labelprop(), cls.orderprop()))
-                for p in props.iterkeys():
+                for p in props.keys():
                     for perm in perms:
                         if perm.searchable(prop.classname, p):
                             break
@@ -413,7 +413,7 @@ class Security:
     def filterFilterspec(self, userid, classname, filterspec):
         """ Return a filterspec that has all non-allowed properties removed.
         """
-        return dict ([(k, v) for k, v in filterspec.iteritems()
+        return dict ([(k, v) for k, v in filterspec.items()
             if self.hasSearchPermission(userid,classname,k)])
 
     def filterSortspec(self, userid, classname, sort):

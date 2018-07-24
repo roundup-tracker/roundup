@@ -589,7 +589,7 @@ class FormParser:
         # property to be created. When editing a FileClass node, it should
         # either have a non-empty content property or no property at all. In
         # the latter case, nothing will change.
-        for (cn, id), props in all_props.items():
+        for (cn, id), props in list(all_props.items()):
             if id is not None and id.startswith('-') and not props:
                 # new item (any class) with no content - ignore
                 del all_props[(cn, id)]

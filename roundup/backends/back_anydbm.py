@@ -261,9 +261,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
     def getclasses(self):
         """Return a list of the names of all existing classes."""
-        l = self.classes.keys()
-        l.sort()
-        return l
+        return sorted(self.classes.keys())
 
     def getclass(self, classname):
         """Get the Class object representing a particular class.
@@ -484,7 +482,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """
         properties = self.getclass(classname).getprops()
         d = {}
-        for k, v in node.iteritems():
+        for k, v in node.items():
             if k == self.RETIRED_FLAG:
                 d[k] = v
                 continue
@@ -511,7 +509,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """
         properties = self.getclass(classname).getprops()
         d = {}
-        for k, v in node.iteritems():
+        for k, v in node.items():
             # if the property doesn't exist, or is the "retired" flag then
             # it won't be in the properties dict
             if k not in properties:
@@ -600,7 +598,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def fix_journal(self, classname, journal):
         """ fix password entries to correct type """
         pwprops = {}
-        for pn, prop in self.getclass(classname).properties.iteritems():
+        for pn, prop in self.getclass(classname).properties.items():
             if isinstance(prop, hyperdb.Password):
                 pwprops [pn] = 1
         if not pwprops:
@@ -724,7 +722,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 reindex[method(*args)] = 1
         finally:
             # make sure we close all the database files
-            for db in self.databases.itervalues():
+            for db in self.databases.values():
                 db.close()
             del self.databases
 
@@ -916,7 +914,7 @@ class Class(hyperdb.Class):
 
         # validate propvalues
         num_re = re.compile('^\d+$')
-        for key, value in propvalues.iteritems():
+        for key, value in propvalues.items():
             if key == self.key:
                 try:
                     self.lookup(value)
@@ -1027,7 +1025,7 @@ class Class(hyperdb.Class):
                     raise TypeError('new property "%s" not boolean'%key)
 
         # make sure there's data where there needs to be
-        for key, prop in self.properties.iteritems():
+        for key, prop in self.properties.items():
             if key in propvalues:
                 continue
             if key == self.key:
@@ -1168,7 +1166,7 @@ class Class(hyperdb.Class):
 
         self.fireAuditors('set', nodeid, propvalues)
         oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid))
-        for name, prop in self.getprops(protected=0).iteritems():
+        for name, prop in self.getprops(protected=0).items():
             if name in oldvalues:
                 continue
             if isinstance(prop, hyperdb.Multilink):
@@ -1551,7 +1549,7 @@ class Class(hyperdb.Class):
             db.issue.find(messages='1')
             db.issue.find(messages={'1':1,'3':1}, files={'7':1})
         """
-        for propname, itemids in propspec.iteritems():
+        for propname, itemids in propspec.items():
             # check the prop is OK
             prop = self.properties[propname]
             if not isinstance(prop, hyperdb.Link) and not isinstance(prop, hyperdb.Multilink):
@@ -1566,7 +1564,7 @@ class Class(hyperdb.Class):
                 item = self.db.getnode(self.classname, id, db=cldb)
                 if self.db.RETIRED_FLAG in item:
                     continue
-                for propname, itemids in propspec.iteritems():
+                for propname, itemids in propspec.items():
                     if type(itemids) is not type({}):
                         itemids = {itemids:1}
 
@@ -1616,7 +1614,7 @@ class Class(hyperdb.Class):
                 node = self.db.getnode(self.classname, nodeid, cldb)
                 if self.db.RETIRED_FLAG in node:
                     continue
-                for key, value in requirements.iteritems():
+                for key, value in requirements.items():
                     if key not in node:
                         break
                     if node[key] is None or node[key].lower() != value:
@@ -1720,7 +1718,7 @@ class Class(hyperdb.Class):
         INTERVAL = 'spec:interval'
         OTHER = 'spec:other'
 
-        for k, v in filterspec.iteritems():
+        for k, v in filterspec.items():
             propclass = props[k]
             if isinstance(propclass, hyperdb.Link):
                 if type(v) is not type([]):
@@ -2001,7 +1999,7 @@ class Class(hyperdb.Class):
     def index(self, nodeid):
         """ Add (or refresh) the node to search indexes """
         # find all the String properties that have indexme
-        for prop, propclass in self.getprops().iteritems():
+        for prop, propclass in self.getprops().items():
             if isinstance(propclass, hyperdb.String) and propclass.indexme:
                 # index them under (classname, nodeid, property)
                 try:
@@ -2107,7 +2105,7 @@ class Class(hyperdb.Class):
                 date = date.get_tuple()
                 if action == 'set':
                     export_data = {}
-                    for propname, value in params.iteritems():
+                    for propname, value in params.items():
                         if propname not in properties:
                             # property no longer in the schema
                             continue
@@ -2201,7 +2199,7 @@ class FileClass(hyperdb.FileClass, Class):
 
         # create the oldvalues dict - fill in any missing values
         oldvalues = copy.deepcopy(self.db.getnode(self.classname, itemid))
-        for name, prop in self.getprops(protected=0).iteritems():
+        for name, prop in self.getprops(protected=0).items():
             if name in oldvalues:
                 continue
             if isinstance(prop, hyperdb.Multilink):
@@ -2238,7 +2236,7 @@ class FileClass(hyperdb.FileClass, Class):
         Use the content-type property for the content property.
         """
         # find all the String properties that have indexme
-        for prop, propclass in self.getprops().iteritems():
+        for prop, propclass in self.getprops().items():
             if prop == 'content' and propclass.indexme:
                 mime_type = self.get(nodeid, 'type', self.default_mime_type)
                 self.db.indexer.add_text((self.classname, nodeid, 'content'),

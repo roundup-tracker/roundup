@@ -15,8 +15,7 @@ def generateCreateNote(db, cl, nodeid):
 
     # list the values
     m = []
-    prop_items = props.items()
-    prop_items.sort()
+    prop_items = sorted(props.items())
     for propname, prop in prop_items:
         value = cl.get(nodeid, propname, None)
         # skip boring entries

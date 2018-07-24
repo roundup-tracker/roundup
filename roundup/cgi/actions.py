@@ -1073,7 +1073,7 @@ class RegisterAction(RegoCommon, EditCommon):
 
         # generate the one-time-key and store the props for later
         user_props = props[('user', None)]
-        for propname, proptype in self.db.user.getprops().iteritems():
+        for propname, proptype in self.db.user.getprops().items():
             value = user_props.get(propname, None)
             if value is None:
                 pass

@@ -2059,7 +2059,7 @@ class Client:
 
         headers = list(headers.items())
 
-        for ((path, name), (value, expire)) in self._cookies.iteritems():
+        for ((path, name), (value, expire)) in self._cookies.items():
             cookie = "%s=%s; Path=%s;"%(name, value, path)
             if expire is not None:
                 cookie += " expires=%s;"%get_cookie_date(expire)

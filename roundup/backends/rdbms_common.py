@@ -295,7 +295,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         # handle changes in the schema
         tables = self.database_schema['tables']
-        for classname, spec in self.classes.iteritems():
+        for classname, spec in self.classes.items():
             if classname in tables:
                 dbspec = tables[classname]
                 if self.update_class(spec, dbspec):
@@ -383,7 +383,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def fix_version_4_tables(self):
         # note this is an explicit call now
         c = self.cursor
-        for cn, klass in self.classes.iteritems():
+        for cn, klass in self.classes.items():
             c.execute('select id from _%s where __retired__<>0'%(cn,))
             for (id,) in c.fetchall():
                 c.execute('update _%s set __retired__=%s where id=%s'%(cn,
@@ -396,7 +396,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """Get current journal table contents, drop the table and re-create"""
         c = self.cursor
         cols = ','.join('nodeid date tag action params'.split())
-        for klass in self.classes.itervalues():
+        for klass in self.classes.values():
             # slurp and drop
             sql = 'select %s from %s__journal order by date'%(cols,
                 klass.classname)
@@ -418,9 +418,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """Get current Class tables that contain String properties, and
         convert the VARCHAR columns to TEXT"""
         c = self.cursor
-        for klass in self.classes.itervalues():
+        for klass in self.classes.values():
             # slurp and drop
-            cols, mls = self.determine_columns(list(klass.properties.iteritems()))
+            cols, mls = self.determine_columns(list(klass.properties.items()))
             scols = ','.join([i[0] for i in cols])
             sql = 'select id,%s from _%s'%(scols, klass.classname)
             c.execute(sql)
@@ -450,7 +450,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if classname:
             classes = [self.getclass(classname)]
         else:
-            classes = list(self.classes.itervalues())
+            classes = list(self.classes.values())
         for klass in classes:
             if show_progress:
                 for nodeid in support.Progress('Reindex %s'%klass.classname,
@@ -485,7 +485,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if datatype:
             return datatype
         
-        for k, v in self.hyperdb_to_sql_datatypes.iteritems():
+        for k, v in self.hyperdb_to_sql_datatypes.items():
             if issubclass(propclass, k):
                 return v
 
@@ -622,7 +622,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """Figure out the columns from the spec and also add internal columns
 
         """
-        cols, mls = self.determine_columns(list(spec.properties.iteritems()))
+        cols, mls = self.determine_columns(list(spec.properties.items()))
 
         # add on our special columns
         cols.append(('id', 'INTEGER PRIMARY KEY'))
@@ -894,7 +894,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if fn:
             return fn
 
-        for k, v in self.hyperdb_to_sql_value.iteritems():
+        for k, v in self.hyperdb_to_sql_value.items():
             if issubclass(propklass, k):
                 return v
 
@@ -923,7 +923,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         # determine the column definitions and multilink tables
         cl = self.classes[classname]
-        cols, mls = self.determine_columns(list(cl.properties.iteritems()))
+        cols, mls = self.determine_columns(list(cl.properties.items()))
 
         # we'll be supplied these props if we're doing an import
         values = node.copy()
@@ -938,7 +938,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         del props['id']
 
         # default the non-multilink columns
-        for col, prop in props.iteritems():
+        for col, prop in props.items():
             if col not in values:
                 if isinstance(prop, Multilink):
                     values[col] = []
@@ -1074,7 +1074,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                     self.sql(sql, (entry, nodeid))
 
         # we have multilink changes to apply
-        for col, (add, remove) in multilink_changes.iteritems():
+        for col, (add, remove) in multilink_changes.items():
             tn = '%s_%s'%(classname, col)
             if add:
                 sql = 'insert into %s (nodeid, linkid) values (%s,%s)'%(tn,
@@ -1108,7 +1108,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if fn:
             return fn
 
-        for k, v in self.sql_to_hyperdb_value.iteritems():
+        for k, v in self.sql_to_hyperdb_value.items():
             if issubclass(propklass, k):
                 return v
 
@@ -1131,7 +1131,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """ get all Multilinks of a node (lazy eval may have skipped this)
         """
         cl = self.classes[classname]
-        props = props or [pn for (pn, p) in cl.properties.iteritems()
+        props = props or [pn for (pn, p) in cl.properties.items()
                           if isinstance(p, Multilink)]
         for propname in props:
             if propname not in node:
@@ -1161,7 +1161,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         # figure the columns we're fetching
         cl = self.classes[classname]
-        cols, mls = self.determine_columns(list(cl.properties.iteritems()))
+        cols, mls = self.determine_columns(list(cl.properties.items()))
         scols = ','.join([col for col,dt in cols])
 
         # perform the basic property fetch
@@ -1224,7 +1224,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         # remove from multilnks
         cl = self.getclass(classname)
-        x, mls = self.determine_columns(list(cl.properties.iteritems()))
+        x, mls = self.determine_columns(list(cl.properties.items()))
         for col in mls:
             # get the link ids
             sql = 'delete from %s_%s where nodeid=%s'%(classname, col, self.arg)
@@ -1336,7 +1336,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """Convert the journal params values into safely repr'able and
         eval'able values."""
         properties = self.getclass(classname).getprops()
-        for param, value in params.iteritems():
+        for param, value in params.items():
             if not value:
                 continue
             property = properties[param]
@@ -1367,7 +1367,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         for nodeid, date_stamp, user, action, params in journal:
             params = eval(params)
             if isinstance(params, type({})):
-                for param, value in params.iteritems():
+                for param, value in params.items():
                     if not value:
                         continue
                     property = properties.get(param, None)
@@ -1517,7 +1517,7 @@ class Class(hyperdb.Class):
         """ A dumpable version of the schema that we can store in the
             database
         """
-        return (self.key, [(x, repr(y)) for x,y in self.properties.iteritems()])
+        return (self.key, [(x, repr(y)) for x,y in self.properties.items()])
 
     def enableJournalling(self):
         """Turn journalling on for this class
@@ -1571,7 +1571,7 @@ class Class(hyperdb.Class):
 
         # validate propvalues
         num_re = re.compile('^\d+$')
-        for key, value in propvalues.iteritems():
+        for key, value in propvalues.items():
             if key == self.key:
                 try:
                     self.lookup(value)
@@ -1681,7 +1681,7 @@ class Class(hyperdb.Class):
                     raise TypeError('new property "%s" not boolean'%key)
 
         # make sure there's data where there needs to be
-        for key, prop in self.properties.iteritems():
+        for key, prop in self.properties.items():
             if key in propvalues:
                 continue
             if key == self.key:
@@ -2174,7 +2174,7 @@ class Class(hyperdb.Class):
 
         # validate the args
         props = self.getprops()
-        for propname, nodeids in propspec.iteritems():
+        for propname, nodeids in propspec.items():
             # check the prop is OK
             prop = props[propname]
             if not isinstance(prop, Link) and not isinstance(prop, Multilink):
@@ -2185,7 +2185,7 @@ class Class(hyperdb.Class):
         allvalues = ()
         sql = []
         where = []
-        for prop, values in propspec.iteritems():
+        for prop, values in propspec.items():
             if not isinstance(props[prop], hyperdb.Link):
                 continue
             if type(values) is type({}) and len(values) == 1:
@@ -2210,7 +2210,7 @@ class Class(hyperdb.Class):
                 and %s"""%(self.classname, a, ' and '.join(where)))
 
         # now multilinks
-        for prop, values in propspec.iteritems():
+        for prop, values in propspec.items():
             if not isinstance(props[prop], hyperdb.Multilink):
                 continue
             if not values:
@@ -2790,14 +2790,14 @@ class Class(hyperdb.Class):
             row = cursor.fetchone()
             if not row: break
             # populate cache with current items
-            for (classname, ptid), pt in classes.iteritems():
+            for (classname, ptid), pt in classes.items():
                 nodeid = str(row[pt['id'].sql_idx])
                 key = (classname, nodeid)
                 if key in self.db.cache:
                     self.db._cache_refresh(key)
                     continue
                 node = {}
-                for propname, p in pt.iteritems():
+                for propname, p in pt.items():
                     value = row[p.sql_idx]
                     if value is not None:
                         value = p.to_hyperdb(value)
@@ -2865,7 +2865,7 @@ class Class(hyperdb.Class):
         """Add (or refresh) the node to search indexes
         """
         # find all the String properties that have indexme
-        for prop, propclass in self.getprops().iteritems():
+        for prop, propclass in self.getprops().items():
             if isinstance(propclass, String) and propclass.indexme:
                 self.db.indexer.add_text((self.classname, nodeid, prop),
                     str(self.get(nodeid, prop)))
@@ -2989,7 +2989,7 @@ class Class(hyperdb.Class):
                 date = date.get_tuple()
                 if action == 'set':
                     export_data = {}
-                    for propname, value in params.iteritems():
+                    for propname, value in params.items():
                         if propname not in properties:
                             # property no longer in the schema
                             continue
@@ -3115,7 +3115,7 @@ class FileClass(hyperdb.FileClass, Class):
         Use the content-type property for the content property.
         """
         # find all the String properties that have indexme
-        for prop, propclass in self.getprops().iteritems():
+        for prop, propclass in self.getprops().items():
             if prop == 'content' and propclass.indexme:
                 mime_type = self.get(nodeid, 'type', self.default_mime_type)
                 self.db.indexer.add_text((self.classname, nodeid, 'content'),

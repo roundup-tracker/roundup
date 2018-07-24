@@ -300,9 +300,8 @@ def main():
         print(pot_header % {'time': time.ctime(),
                             'version': __version__}, file=outfile)
 
-    msgids = catalog.keys()
     # XXX: You should not sort by msgid, but by filename and position. (SR)
-    msgids.sort()
+    msgids = sorted(catalog.keys())
     for msgid in msgids:
         positions = catalog[msgid]
         for filename, position in positions:

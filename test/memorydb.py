@@ -134,7 +134,7 @@ class BasicDatabase(dict):
     def set(self, infoid, **newvalues):
         self[infoid].update(newvalues)
     def list(self):
-        return self.keys()
+        return list(self.keys())
     def destroy(self, infoid):
         del self[infoid]
     def commit(self):
@@ -290,9 +290,7 @@ class Database(back_anydbm.Database):
 
     def getclasses(self):
         """Return a list of the names of all existing classes."""
-        l = self.classes.keys()
-        l.sort()
-        return l
+        return sorted(self.classes.keys())
 
     def getclass(self, classname):
         """Get the Class object representing a particular class.

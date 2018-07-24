@@ -1538,7 +1538,7 @@ class UserConfig(Config):
     def _adjust_options(self, config):
         # config defaults appear in all sections.
         # we'll need to filter them out.
-        defaults = config.defaults().keys()
+        defaults = list(config.defaults().keys())
         # see what options are already defined and add missing ones
         preset = [(option.section, option.setting) for option in self.items()]
         for section in config.sections():

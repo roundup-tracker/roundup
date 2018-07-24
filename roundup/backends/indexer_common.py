@@ -40,7 +40,7 @@ class Indexer:
             return {}
 
         designator_propname = {}
-        for nm, propclass in klass.getprops().iteritems():
+        for nm, propclass in klass.getprops().items():
             if _isLink(propclass):
                 designator_propname.setdefault(propclass.classname,
                     []).append(nm)
@@ -49,7 +49,7 @@ class Indexer:
         # and files
         nodeids = {}      # this is the answer
         propspec = {}     # used to do the klass.find
-        for l in designator_propname.itervalues():
+        for l in designator_propname.values():
             for propname in l:
                 propspec[propname] = {}  # used as a set (value doesn't matter)
 

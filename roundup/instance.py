@@ -167,7 +167,7 @@ update your config.ini
             classes = db.getclasses()
             for classname in classes:
                 cl = db.getclass(classname)
-                for propname, prop in cl.getprops().iteritems():
+                for propname, prop in cl.getprops().items():
                     if not isinstance(prop, (hyperdb.Link,
                                              hyperdb.Multilink)):
                         continue

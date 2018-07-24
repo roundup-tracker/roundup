@@ -204,7 +204,7 @@ class Indexer(IndexerBase):
                 dbslice = marshal.loads(pickle_str)
                 if dbslice.get('WORDS'):
                     # if it has some words, add them
-                    for word, entry in dbslice['WORDS'].iteritems():
+                    for word, entry in dbslice['WORDS'].items():
                         db['WORDS'][word] = entry
                 if dbslice.get('FILES'):
                     # if it has some files, add them
@@ -240,7 +240,7 @@ class Indexer(IndexerBase):
         segdicts = {}                           # Need batch of empty dicts
         for segment in letters:
             segdicts[segment] = {}
-        for word, entry in self.words.iteritems():  # Split into segment dicts
+        for word, entry in self.words.items():  # Split into segment dicts
             initchar = word[0].upper()
             segdicts[initchar][word] = entry
 
@@ -269,7 +269,7 @@ class Indexer(IndexerBase):
         del self.fileids[file_index]
 
         # The much harder part, cleanup the word index
-        for key, occurs in self.words.iteritems():
+        for key, occurs in self.words.items():
             if file_index in occurs:
                 del occurs[file_index]
 

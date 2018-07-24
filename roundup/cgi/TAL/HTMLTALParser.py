@@ -61,7 +61,7 @@ BLOCK_LEVEL_HTML_TAGS = [
     ]
 
 TIGHTEN_IMPLICIT_CLOSE_TAGS = (PARA_LEVEL_HTML_TAGS
-                               + BLOCK_CLOSING_TAG_MAP.keys())
+                               + list(BLOCK_CLOSING_TAG_MAP.keys()))
 
 
 class NestingError(HTMLParseError):

@@ -56,8 +56,7 @@ class TALParser(XMLParser):
                 attrlist.append((key, value))
         else:
             # attrs is a dict of {name: value}
-            attrlist = attrs.items()
-            attrlist.sort() # For definiteness
+            attrlist = sorted(attrs.items()) # Sorted for definiteness
         name, attrlist, taldict, metaldict, i18ndict \
               = self.process_ns(name, attrlist)
         attrlist = self.xmlnsattrs() + attrlist
