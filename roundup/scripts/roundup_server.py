@@ -40,6 +40,13 @@ import errno, cgi, getopt, os, socket, sys, traceback, time
 import BaseHTTPServer, SocketServer, StringIO
 
 try:
+    # Python 2.
+    reload
+except NameError:
+    # Python 3.
+    from imp import reload
+
+try:
     from OpenSSL import SSL
 except ImportError:
     SSL = None
