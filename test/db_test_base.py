@@ -415,7 +415,7 @@ class DBTest(commonDBTest):
             # internally for storing NULL. The others would, too
             # because metakit tries to convert date.timestamp to an int
             # for storing and fails with an overflow.
-            for d in [date.Date (x) for x in '2038', '1970', '0033', '9999']:
+            for d in [date.Date (x) for x in ('2038', '1970', '0033', '9999')]:
                 self.db.issue.set(nid, deadline=d)
                 if commit: self.db.commit()
                 c = self.db.issue.get(nid, "deadline")
