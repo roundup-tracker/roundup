@@ -295,7 +295,7 @@ class Mailer:
             except socket.error as value:
                 raise MessageSendError("Error: couldn't send email: "
                                        "mailhost %s"%value)
-            except smtplib.SMTPException, msg:
+            except smtplib.SMTPException as msg:
                 raise MessageSendError("Error: couldn't send email: %s"%msg)
 
 class SMTPConnection(smtplib.SMTP):
