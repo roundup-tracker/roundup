@@ -467,7 +467,7 @@ class TokenEater:
                 # If the entry was gleaned out of a docstring, then add a
                 # comment stating so.  This is to aid translators who may wish
                 # to skip translating some unimportant docstrings.
-                if reduce(operator.__add__, v.values()):
+                if sum(v.values()):
                     isdocstring = 1
                 # k is the message string, v is a dictionary-set of (filename,
                 # lineno) tuples.  We want to sort the entries in v first by
