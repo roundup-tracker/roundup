@@ -604,7 +604,7 @@ class Proptree(object):
             idx += 1
         sortattr.append (val)
         sortattr = zip (*sortattr)
-        for dir, i in reversed(zip(directions, dir_idx)):
+        for dir, i in reversed(list(zip(directions, dir_idx))):
             rev = dir == '-'
             sortattr = sorted (sortattr, key = lambda x:x[i:idx], reverse = rev)
             idx = i
