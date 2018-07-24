@@ -1185,7 +1185,7 @@ Erase it? Y/N: """))
                 sys.stdout.write('Exporting %s WITHOUT the files\r\n'%
                     classname)
 
-            f = open(os.path.join(dir, classname+'.csv'), 'wb')
+            f = open(os.path.join(dir, classname+'.csv'), 'w')
             writer = csv.writer(f, colon_separated)
 
             properties = cl.getprops()
@@ -1218,7 +1218,7 @@ Erase it? Y/N: """))
             f.close()
 
             # export the journals
-            jf = open(os.path.join(dir, classname+'-journals.csv'), 'wb')
+            jf = open(os.path.join(dir, classname+'-journals.csv'), 'w')
             if self.verbose:
                 sys.stdout.write("\nExporting Journal for %s\n" % classname)
                 sys.stdout.flush()
