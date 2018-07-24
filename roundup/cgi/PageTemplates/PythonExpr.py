@@ -40,7 +40,7 @@ class PythonExpr:
 
     def _get_used_names(self):
         self._f_varnames = vnames = []
-        for vname in self._f.func_code.co_names:
+        for vname in self._f.__code__.co_names:
             if vname[0] not in '$_':
                 vnames.append(vname)
 
@@ -63,7 +63,7 @@ class PythonExpr:
     def __call__(self, econtext):
         __traceback_info__ = 'python expression "%s"'%self.expr
         f = self._f
-        f.func_globals.update(self._bind_used_names(econtext))
+        f.__globals__.update(self._bind_used_names(econtext))
         return f()
 
     def __str__(self):
