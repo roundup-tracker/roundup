@@ -1037,16 +1037,16 @@ class Class:
             else:
                 j_repr=''
             if args and type(args) == type({}):
-                for key in args.keys():
+                for key in list(args.keys()):
                     if key not in self.properties :
                         if enforceperm and not allow_obsolete:
-                            del j[4][key]
+                            del args[key]
                         continue
                     if skipquiet and self.properties[key].quiet:
                         logger.debug("skipping quiet property"
                                      " %s::%s in %s",
                                      self.classname, key, j_repr)
-                        del j[4][key]
+                        del args[key]
                         continue
                     if enforceperm and not ( perm("View",
                                 uid,
@@ -1058,7 +1058,7 @@ class Class:
                         logger.debug("skipping unaccessible property "
                                      "%s::%s seen by user%s in %s",
                                 self.classname, key, uid, j_repr)
-                        del j[4][key]
+                        del args[key]
                         continue
                 if not args:
                     logger.debug("Omitting journal entry for  %s%s"
