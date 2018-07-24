@@ -28,6 +28,11 @@ described in `roundup.hyperdb.Database`.
 """
 __docformat__ = 'restructuredtext'
 
+try:
+    import builtins
+except ImportError:
+    import __builtin__ as builtins
+
 import os
 import sys
 import warnings
@@ -80,7 +85,7 @@ used for the tracker.  Please read 'doc/upgrading.txt' to find out how to
 update your config.ini
 """
             try:
-                with file(filename) as backend_file:
+                with open(filename) as backend_file:
                     rdbms_backend = backend_file.readline().strip()
 
                 with warnings.catch_warnings():
@@ -224,7 +229,7 @@ update your config.ini
 
     def _compile(self, fname):
         fname = os.path.join(self.tracker_home, fname)
-        return compile(file(fname).read(), fname, 'exec')
+        return compile(builtins.open(fname).read(), fname, 'exec')
 
     def _exec(self, obj, env):
         if self.libdir:
