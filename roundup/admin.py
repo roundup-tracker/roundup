@@ -31,12 +31,7 @@ import roundup.instance
 from roundup.configuration import CoreConfig, NoConfigError
 from roundup.i18n import _
 from roundup.exceptions import UsageError
-
-# Polyglot code
-try:
-    my_input = raw_input
-except NameError:
-    my_input = input
+from roundup.anypy.my_input import my_input
 
 class CommandDict(UserDict.UserDict):
     """Simple dictionary that lets us do lookups using partial keys.

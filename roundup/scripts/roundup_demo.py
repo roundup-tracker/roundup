@@ -24,6 +24,7 @@ if (osp.exists(thisdir + '/__init__.py') and
 
 from roundup import admin, configuration, demo, instance
 from roundup.i18n import _
+from roundup.anypy.my_input import my_input
 
 def run():
     home = DEFAULT_HOME
@@ -43,12 +44,12 @@ def run():
         # FIXME: i'd like to have an option to abort the tracker creation
         #   say, by entering a single dot.  but i cannot think of
         #   appropriate prompt for that.
-        home = raw_input(
+        home = my_input(
             _('Enter directory path to create demo tracker [%s]: ') % home)
         if not home:
             home = DEFAULT_HOME
         templates = admin.AdminTool().listTemplates().keys()
-        template = raw_input(
+        template = my_input(
             _('Enter tracker template to use (one of (%s)) [%s]: ') %
             (','.join(templates),template))
         if not template:

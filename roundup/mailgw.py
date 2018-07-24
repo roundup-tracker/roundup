@@ -101,6 +101,7 @@ import traceback
 import email.utils
 
 from .anypy.email_ import decode_header
+from roundup.anypy.my_input import my_input
 
 from roundup import configuration, hyperdb, date, password, exceptions
 from roundup.mailer import Mailer, MessageSendError
@@ -1372,7 +1373,7 @@ class MailGW:
         import getpass, imaplib, socket
         try:
             if not user:
-                user = raw_input('User: ')
+                user = my_input('User: ')
             if not password:
                 password = getpass.getpass()
         except (KeyboardInterrupt, EOFError):
@@ -1461,7 +1462,7 @@ class MailGW:
             poplib._MAXLINE = 100*1024
         try:
             if not user:
-                user = raw_input('User: ')
+                user = my_input('User: ')
             if not password:
                 password = getpass.getpass()
         except (KeyboardInterrupt, EOFError):
