@@ -93,7 +93,7 @@ def auto_ssl():
     pkey = OpenSSL.crypto.PKey()
     pkey.generate_key(OpenSSL.crypto.TYPE_RSA, 768)
     cert = OpenSSL.crypto.X509()
-    cert.set_serial_number(random.randint(0, sys.maxint))
+    cert.set_serial_number(random.randint(0, sys.maxsize))
     cert.gmtime_adj_notBefore(0)
     cert.gmtime_adj_notAfter(60 * 60 * 24 * 365) # one year
     cert.get_subject().CN = '*'

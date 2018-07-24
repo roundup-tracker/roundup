@@ -1112,7 +1112,7 @@ always passes, so setting it less than 1 is not recommended."""),
             "\"multiple\" then a separate email is sent to each\n"
             "recipient. If \"single\" then a single email is sent with\n"
             "each recipient as a CC address."),
-        (IntegerNumberOption, "max_attachment_size", sys.maxint,
+        (IntegerNumberOption, "max_attachment_size", sys.maxsize,
             "Attachments larger than the given number of bytes\n"
             "won't be attached to nosy mails. They will be replaced by\n"
             "a link to the tracker's download page for the file.")
