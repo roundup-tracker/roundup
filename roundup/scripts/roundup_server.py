@@ -37,7 +37,7 @@ if (osp.exists(thisdir + '/__init__.py') and
 
 
 import errno, cgi, getopt, os, socket, sys, traceback, time
-import ConfigParser, BaseHTTPServer, SocketServer, StringIO
+import BaseHTTPServer, SocketServer, StringIO
 
 try:
     from OpenSSL import SSL
