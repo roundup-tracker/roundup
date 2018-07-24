@@ -30,7 +30,7 @@ def determineNewMessages(cl, nodeid, oldvalues):
     if oldvalues is None:
         # the action was a create, so use all the messages in the create
         messages = cl.get(nodeid, 'messages')
-    elif oldvalues.has_key('messages'):
+    elif 'messages' in oldvalues:
         # the action was a set (so adding new messages to an existing issue)
         m = {}
         for msgid in oldvalues['messages']:
@@ -38,7 +38,7 @@ def determineNewMessages(cl, nodeid, oldvalues):
         messages = []
         # figure which of the messages now on the issue weren't there before
         for msgid in cl.get(nodeid, 'messages'):
-            if not m.has_key(msgid):
+            if msgid not in m:
                 messages.append(msgid)
     return messages
 
@@ -53,13 +53,13 @@ def updatenosy(db, cl, nodeid, newvalues):
         ok = ('yes',)
         # old node, get the current values from the node if they haven't
         # changed
-        if not newvalues.has_key('nosy'):
+        if 'nosy' not in newvalues:
             nosy = cl.get(nodeid, 'nosy')
             for value in nosy:
                 current_nosy.add(value)
 
     # if the nosy list changed in this transaction, init from the new value
-    if newvalues.has_key('nosy'):
+    if 'nosy' in newvalues:
         nosy = newvalues.get('nosy', [])
         for value in nosy:
             if not db.hasnode('user', value):
@@ -69,7 +69,7 @@ def updatenosy(db, cl, nodeid, newvalues):
     new_nosy = set(current_nosy)
 
     # add assignedto(s) to the nosy list
-    if newvalues.has_key('assignedto') and newvalues['assignedto'] is not None:
+    if 'assignedto' in newvalues and newvalues['assignedto'] is not None:
         propdef = cl.getprops()
         if isinstance(propdef['assignedto'], hyperdb.Link):
             assignedto_ids = [newvalues['assignedto']]
@@ -80,7 +80,7 @@ def updatenosy(db, cl, nodeid, newvalues):
 
     # see if there's any new messages - if so, possibly add the author and
     # recipient to the nosy
-    if newvalues.has_key('messages'):
+    if 'messages' in newvalues:
         if nodeid is None:
             ok = ('new', 'yes')
             messages = newvalues['messages']

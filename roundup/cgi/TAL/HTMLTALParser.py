@@ -183,7 +183,7 @@ class HTMLTALParser(HTMLParser):
         if tag in EMPTY_HTML_TAGS:
             return
         close_to = -1
-        if BLOCK_CLOSING_TAG_MAP.has_key(tag):
+        if tag in BLOCK_CLOSING_TAG_MAP:
             blocks_to_close = BLOCK_CLOSING_TAG_MAP[tag]
             for i in range(len(self.tagstack)):
                 t = self.tagstack[i]
@@ -295,17 +295,17 @@ class HTMLTALParser(HTMLParser):
             if ns and ns != 'unknown':
                 item = (key, value, ns)
             if ns == 'tal':
-                if taldict.has_key(keybase):
+                if keybase in taldict:
                     raise TALError("duplicate TAL attribute " +
                                    repr(keybase), self.getpos())
                 taldict[keybase] = value
             elif ns == 'metal':
-                if metaldict.has_key(keybase):
+                if keybase in metaldict:
                     raise METALError("duplicate METAL attribute " +
                                      repr(keybase), self.getpos())
                 metaldict[keybase] = value
             elif ns == 'i18n':
-                if i18ndict.has_key(keybase):
+                if keybase in i18ndict:
                     raise I18NError("duplicate i18n attribute " +
                                     repr(keybase), self.getpos())
                 i18ndict[keybase] = value

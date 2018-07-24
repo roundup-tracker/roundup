@@ -95,12 +95,12 @@ class FormWrapper:
     def __iter__(self):
         return iter(self.__form)
     def getvalue(self, key, default=None):
-        if self.__form.has_key(key):
+        if key in self.__form:
             return self.__form[key]
         else:
             return default
     def has_key(self, item):
-        return self.__form.has_key(item)
+        return item in self.__form
     def keys(self):
         return self.__form.keys()
 

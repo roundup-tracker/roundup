@@ -140,7 +140,7 @@ class RoundupInstance:
 
         # check for the key property
         key = cl.getkey()
-        if key and not props.has_key(key):
+        if key and key not in props:
             raise UsageError('you must provide the "%s" property.'%key)
 
         for key in props:

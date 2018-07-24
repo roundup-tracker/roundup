@@ -35,7 +35,7 @@ def patches_keyword(db, cl, nodeid, newvalues):
             if patchid in oldkeywords:
                 # This is already marked as a patch
                 return
-        if not newvalues.has_key('keywords'):
+        if 'keywords' not in newvalues:
             newvalues['keywords'] = oldkeywords
         newvalues['keywords'].append(patchid)
 

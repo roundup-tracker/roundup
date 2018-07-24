@@ -852,7 +852,7 @@ class Class:
         must map names to property objects, or a TypeError is raised.
         """
         for name in 'creation activity creator actor'.split():
-            if properties.has_key(name):
+            if name in properties:
                 raise ValueError('"creation", "activity", "creator" and '\
                     '"actor" are reserved')
 
@@ -1192,9 +1192,9 @@ class Class:
         if  k:
             return k
         props = self.getprops()
-        if props.has_key('name'):
+        if 'name' in props:
             return 'name'
-        elif props.has_key('title'):
+        elif 'title' in props:
             return 'title'
         if default_to_id:
             return 'id'
@@ -1216,7 +1216,7 @@ class Class:
         if hasattr(self, '_orderprop'):
             return self._orderprop
         props = self.getprops()
-        if props.has_key('order'):
+        if 'order' in props:
             return 'order'
         return self.labelprop()
 
@@ -1624,7 +1624,7 @@ class FileClass:
         """The newly-created class automatically includes the "content"
         property.
         """
-        if not properties.has_key('content'):
+        if 'content' not in properties:
             properties['content'] = String(indexme='yes')
 
     def export_propnames(self):
@@ -1664,7 +1664,7 @@ class FileClass:
 
         mime_type = None
         props = self.getprops()
-        if props.has_key('type'):
+        if 'type' in props:
             mime_type = self.get(nodeid, 'type')
         if not mime_type:
             mime_type = self.default_mime_type
@@ -1691,14 +1691,14 @@ class Node:
             l.append((name, self.cl.get(self.nodeid, name)))
         return l
     def has_key(self, name):
-        return self.cl.getprops().has_key(name)
+        return name in self.cl.getprops()
     def get(self, name, default=None):
-        if self.has_key(name):
+        if name in self:
             return self[name]
         else:
             return default
     def __getattr__(self, name):
-        if self.__dict__.has_key(name):
+        if name in self.__dict__:
             return self.__dict__[name]
         try:
             return self.cl.get(self.nodeid, name)

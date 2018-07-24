@@ -114,7 +114,7 @@ class Engine:
         if not _valid_name(name):
             raise RegistrationError('Invalid Expression type "%s".' % name)
         types = self.types
-        if types.has_key(name):
+        if name in types:
             raise RegistrationError(
                 'Multiple registrations for Expression type "%s".' %
                 name)

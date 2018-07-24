@@ -93,7 +93,7 @@ class PageTemplate:
         return output.getvalue()
 
     def __call__(self, *args, **kwargs):
-        if not kwargs.has_key('args'):
+        if 'args' not in kwargs:
             kwargs['args'] = args
         return self.pt_render(extra_context={'options': kwargs})
 

@@ -49,10 +49,10 @@ isolation_levels = \
 
 def connection_dict(config, dbnamestr=None):
     d = rdbms_common.connection_dict(config, dbnamestr)
-    if d.has_key('password'):
+    if 'password' in d:
         d['passwd'] = d['password']
         del d['password']
-    if d.has_key('port'):
+    if 'port' in d:
         d['port'] = int(d['port'])
     return d
 
@@ -252,12 +252,12 @@ class Database(rdbms_common.Database):
             for name, s_prop in old_spec[1]:
                 # s_prop is a repr() string of a hyperdb type object
                 if s_prop.find('Multilink') == -1:
-                    if properties.has_key(name):
+                    if name in properties:
                         propnames.append(name)
                     continue
                 tn = '%s_%s'%(cn, name)
 
-                if properties.has_key(name):
+                if name in properties:
                     # grabe the current values
                     sql = 'select linkid, nodeid from %s'%tn
                     self.sql(sql)
@@ -268,7 +268,7 @@ class Database(rdbms_common.Database):
                 sql = 'drop table %s'%tn
                 self.sql(sql)
 
-                if properties.has_key(name):
+                if name in properties:
                     # re-create and populate the new table
                     self.create_multilink_table(klass, name)
                     sql = '''insert into %s (linkid, nodeid) values

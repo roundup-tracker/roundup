@@ -313,7 +313,7 @@ class IssueClass:
                             'View', userid, 'msg', prop, msgid)
             return (userid and
                     (self.db.user.get(userid, 'username') != 'anonymous') and
-                    allowed and not seen_message.has_key(userid))
+                    allowed and userid not in seen_message)
 
         # possibly send the message to the author, as long as they aren't
         # anonymous

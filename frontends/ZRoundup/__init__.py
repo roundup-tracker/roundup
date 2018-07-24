@@ -19,7 +19,7 @@ __version__='1.1'
 import os
 # figure where ZRoundup is installed
 here = None
-if os.environ.has_key('INSTANCE_HOME'):
+if 'INSTANCE_HOME' in os.environ:
     here = os.environ['INSTANCE_HOME']
     path = os.path.join(here, 'Products', 'ZRoundup')
     if not os.path.exists(path):

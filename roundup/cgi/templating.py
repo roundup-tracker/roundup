@@ -343,7 +343,7 @@ def context(client, template=None, classname=None, request=None):
     if client.nodeid:
         c['context'] = HTMLItem(client, classname, client.nodeid,
             anonymous=1)
-    elif client.db.classes.has_key(classname):
+    elif classname in client.db.classes:
         c['context'] = HTMLClass(client, classname, anonymous=1)
     return c
 
@@ -432,7 +432,7 @@ def _set_input_default_args(dic):
     # but for CSS usage it should be present
     dic.setdefault('type', 'text')
     # useful e.g for HTML LABELs:
-    if not dic.has_key('id'):
+    if 'id' not in dic:
         try:
             if dic['text'] in ('radio', 'checkbox'):
                 dic['id'] = '%(name)s-%(value)s' % dic
@@ -960,7 +960,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                 continue
             current[prop_n] = prop.plain(escape=1)
             # make link if hrefable
-            if (self._props.has_key(prop_n) and
+            if (prop_n in self._props and
                     isinstance(self._props[prop_n], hyperdb.Link)):
                 classname = self._props[prop_n].classname
                 try:
@@ -1098,7 +1098,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                             else:
                                 old = label;
                             cell.append('%s: %s' % (self._(k), old))
-                            if current.has_key(k):
+                            if k in current:
                                 cell[-1] += ' -> %s'%current[k]
                                 current[k] = old
 
@@ -1109,7 +1109,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                             d = date.Date(args[k],
                                 translator=self._client).local(timezone)
                         cell.append('%s: %s'%(self._(k), str(d)))
-                        if current.has_key(k):
+                        if k in current:
                             cell[-1] += ' -> %s' % current[k]
                             current[k] = str(d)
 
@@ -1117,33 +1117,33 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                         val = str(date.Interval(args[k],
                             translator=self._client))
                         cell.append('%s: %s'%(self._(k), val))
-                        if current.has_key(k):
+                        if k in current:
                             cell[-1] += ' -> %s'%current[k]
                             current[k] = val
 
                     elif isinstance(prop, hyperdb.String) and args[k]:
                         val = cgi.escape(args[k])
                         cell.append('%s: %s'%(self._(k), val))
-                        if current.has_key(k):
+                        if k in current:
                             cell[-1] += ' -> %s'%current[k]
                             current[k] = val
 
                     elif isinstance(prop, hyperdb.Boolean) and args[k] is not None:
                         val = args[k] and ''"Yes" or ''"No"
                         cell.append('%s: %s'%(self._(k), val))
-                        if current.has_key(k):
+                        if k in current:
                             cell[-1] += ' -> %s'%current[k]
                             current[k] = val
 
                     elif isinstance(prop, hyperdb.Password) and args[k] is not None:
                         val = args[k].dummystr()
                         cell.append('%s: %s'%(self._(k), val))
-                        if current.has_key(k):
+                        if k in current:
                             cell[-1] += ' -> %s'%current[k]
                             current[k] = val
 
                     elif not args[k]:
-                        if current.has_key(k):
+                        if k in current:
                             cell.append('%s: %s'%(self._(k), current[k]))
                             current[k] = '(no value)'
                         else:
@@ -1151,7 +1151,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
 
                     else:
                         cell.append('%s: %s'%(self._(k), str(args[k])))
-                        if current.has_key(k):
+                        if k in current:
                             cell[-1] += ' -> %s'%current[k]
                             current[k] = str(args[k])
 
@@ -1309,7 +1309,7 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
         # is specified in the current form.
         form = self._client.form
         try:
-            is_in = form.has_key(self._formname)
+            is_in = self._formname in form
         except TypeError:
             is_in = False
         if is_in and (not self._value or self._client.form_wins):
@@ -2633,7 +2633,7 @@ class HTMLRequest(HTMLInputMixin):
 
     def _form_has_key(self, name):
         try:
-            return self.form.has_key(name)
+            return name in self.form
         except TypeError:
             pass
         return False
@@ -2739,7 +2739,7 @@ class HTMLRequest(HTMLInputMixin):
         """ Update my attributes using the keyword args
         """
         self.__dict__.update(kwargs)
-        if kwargs.has_key('columns'):
+        if 'columns' in kwargs:
             self.show = support.TruthDict(self.columns)
 
     def description(self):
@@ -2865,9 +2865,9 @@ env: %(env)s
                 specials[key[1:]] = args[key]
 
         # ok, now handle the specials we received in the request
-        if self.columns and not specials.has_key('columns'):
+        if self.columns and 'columns' not in specials:
             l.append(sc+'columns=%s'%(','.join(self.columns)))
-        if self.sort and not specials.has_key('sort'):
+        if self.sort and 'sort' not in specials:
             val = []
             for dir, attr in self.sort:
                 if dir == '-':
@@ -2875,7 +2875,7 @@ env: %(env)s
                 else:
                     val.append(attr)
             l.append(sc+'sort=%s'%(','.join(val)))
-        if self.group and not specials.has_key('group'):
+        if self.group and 'group' not in specials:
             val = []
             for dir, attr in self.group:
                 if dir == '-':
@@ -2883,20 +2883,20 @@ env: %(env)s
                 else:
                     val.append(attr)
             l.append(sc+'group=%s'%(','.join(val)))
-        if self.filter and not specials.has_key('filter'):
+        if self.filter and 'filter' not in specials:
             l.append(sc+'filter=%s'%(','.join(self.filter)))
-        if self.search_text and not specials.has_key('search_text'):
+        if self.search_text and 'search_text' not in specials:
             l.append(sc+'search_text=%s'%q(self.search_text))
-        if not specials.has_key('pagesize'):
+        if 'pagesize' not in specials:
             l.append(sc+'pagesize=%s'%self.pagesize)
-        if not specials.has_key('startwith'):
+        if 'startwith' not in specials:
             l.append(sc+'startwith=%s'%self.startwith)
 
         # finally, the remainder of the filter args in the request
         if self.classname and self.filterspec:
             cls = self.client.db.getclass(self.classname)
             for k,v in self.filterspec.items():
-                if not args.has_key(k):
+                if k not in args:
                     if type(v) == type([]):
                         prop = cls.get_transitive_prop(k)
                         if k != 'id' and isinstance(prop, hyperdb.String):
@@ -3079,7 +3079,7 @@ class TemplatingUtils:
         if not hasattr(self.client.instance, 'templating_utils'):
             # backwards-compatibility
             raise AttributeError(name)
-        if not self.client.instance.templating_utils.has_key(name):
+        if name not in self.client.instance.templating_utils:
             raise AttributeError(name)
         return self.client.instance.templating_utils[name]
 

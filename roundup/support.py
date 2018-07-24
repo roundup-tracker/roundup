@@ -19,7 +19,7 @@ class TruthDict:
             self.__getitem__ = lambda name: 1
 
     def __getitem__(self, name):
-        return self.keys.has_key(name)
+        return name in self.keys
 
 def ensureParentsExist(dest):
     if not os.path.exists(os.path.dirname(dest)):

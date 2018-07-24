@@ -410,7 +410,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             # config option to control its use.
             # Made available for extensions if the user trusts it.
             env['HTTP_X-FORWARDED-PROTO'] = xfp
-        if os.environ.has_key('CGI_SHOW_TIMING'):
+        if 'CGI_SHOW_TIMING' in os.environ:
             env['CGI_SHOW_TIMING'] = os.environ['CGI_SHOW_TIMING']
         env['HTTP_ACCEPT_LANGUAGE'] = self.headers.get('accept-language')
         referer = self.headers.get('Referer')

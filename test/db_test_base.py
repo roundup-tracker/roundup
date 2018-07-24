@@ -150,7 +150,7 @@ class MyTestCase(object):
         self.db = self.module.Database(config, user)
 
 
-if os.environ.has_key('LOGGING_LEVEL'):
+if 'LOGGING_LEVEL' in os.environ:
     logger = logging.getLogger('roundup.hyperdb')
     logger.setLevel(os.environ['LOGGING_LEVEL'])
 
@@ -1443,7 +1443,7 @@ class DBTest(commonDBTest):
         i1 = self.db.issue.create(files=[f1, f2])
         self.db.commit()
         d = self.db.indexer.search(['hello'], self.db.issue)
-        self.assert_(d.has_key(i1))
+        self.assert_(i1 in d)
         d[i1]['files'].sort()
         self.assertEquals(d, {i1: {'files': [f1, f2]}})
         self.assertEquals(self.db.indexer.search(['world'], self.db.issue),
@@ -3316,7 +3316,7 @@ class SpecialActionTest(FormTestParent):
         self.instance.registerAction('special', SpecialAction)
         self.issue = self.db.issue.create (title = "hello", status='1')
         self.db.commit ()
-        if not os.environ.has_key('SENDMAILDEBUG'):
+        if 'SENDMAILDEBUG' not in os.environ:
             os.environ['SENDMAILDEBUG'] = 'mail-test2.log'
         self.SENDMAILDEBUG = os.environ['SENDMAILDEBUG']
         page_template = """

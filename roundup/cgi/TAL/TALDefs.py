@@ -126,7 +126,7 @@ def parseAttributeReplacements(arg, xml):
         name, expr = m.group(1, 2)
         if not xml:
             name = name.lower()
-        if dict.has_key(name):
+        if name in dict:
             raise TALError("Duplicate attribute name in attributes: " + repr(part))
         dict[name] = expr
     return dict

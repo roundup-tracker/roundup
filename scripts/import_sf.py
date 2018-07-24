@@ -85,7 +85,7 @@ def fetch_files(xml_file, file_dir):
 
     for aid, fid in support.Progress('Fetching files', list(to_fetch)):
         if fid in got: continue
-        if not urls.has_key(aid):
+        if aid not in urls:
             urls[aid] = get_url(aid)
             f = open(os.path.join(file_dir, 'urls.txt'), 'a')
             f.write('%s %s\n'%(aid, urls[aid]))
@@ -175,7 +175,7 @@ def import_xml(tracker_home, xml_file, file_dir):
 
         categories.add(d['category'])
 
-        if op.has_key('body'):
+        if 'body' in op:
             l = d.setdefault('messages', [])
             l.insert(0, op)
 
@@ -361,7 +361,7 @@ def write_csv(klass, data):
             if name == 'is retired':
                 continue
             prop = props[name]
-            if entry.has_key(name):
+            if name in entry:
                 if isinstance(prop, hyperdb.Date) or \
                         isinstance(prop, hyperdb.Interval):
                     row.append(repr(entry[name].get_tuple()))

@@ -1006,10 +1006,9 @@ Subject was: "%(subject)s"
 
         # set the issue title to the subject
         title = title.strip()
-        if (title and self.properties.has_key('title') and not
-                issue_props.has_key('title')):
+        if (title and 'title' in self.properties and 'title' not in issue_props):
             issue_props['title'] = title
-        if (self.nodeid and self.properties.has_key('title') and not
+        if (self.nodeid and 'title' in self.properties and not
                 self.config['MAILGW_SUBJECT_UPDATES_TITLE']):
             issue_props['title'] = self.cl.get(self.nodeid,'title')
 
@@ -1017,7 +1016,7 @@ Subject was: "%(subject)s"
         # the props dictionary because function(**props, **issue_props)
         # is a syntax error.
         for prop in issue_props.keys() :
-            if not props.has_key(prop) :
+            if prop not in props :
                 props[prop] = issue_props[prop]
 
         self.props = props
@@ -1105,7 +1104,7 @@ encrypted."""))
     def create_files(self):
         ''' Create a file for each attachment in the message
         '''
-        if not self.properties.has_key('files'):
+        if 'files' not in self.properties:
             return
         files = []
         file_props = self.mailgw.get_class_arguments('file')
@@ -1144,7 +1143,7 @@ encrypted."""))
     def create_msg(self):
         ''' Create msg containing all the relevant information from the message
         '''
-        if not self.properties.has_key('messages'):
+        if 'messages' not in self.properties:
             return
         msg_props = self.mailgw.get_class_arguments('msg')
         self.msg_props.update (msg_props)
@@ -1768,7 +1767,7 @@ def uidFromAddress(db, address, create=1, **user_props):
 
     # try the user alternate addresses if possible
     props = db.user.getprops()
-    if props.has_key('alternate_addresses'):
+    if 'alternate_addresses' in props:
         users = db.user.filter(None, {'alternate_addresses': address})
         # We want an exact match of the email, not just a substring
         # match. Otherwise e.g. support@example.com would match

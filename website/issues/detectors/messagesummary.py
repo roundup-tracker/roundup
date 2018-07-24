@@ -3,7 +3,7 @@ from roundup.mailgw import parseContent
 def summarygenerator(db, cl, nodeid, newvalues):
     ''' If the message doesn't have a summary, make one for it.
     '''
-    if newvalues.has_key('summary') or not newvalues.has_key('content'):
+    if 'summary' in newvalues or 'content' not in newvalues:
         return
 
     summary, content = parseContent(newvalues['content'], config=db.config)

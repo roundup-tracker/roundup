@@ -1,6 +1,6 @@
 
 def audit_html_files(db, cl, nodeid, newvalues):
-    if newvalues.has_key('type') and newvalues['type'] == 'text/html':
+    if 'type' in newvalues and newvalues['type'] == 'text/html':
         newvalues['type'] = 'text/plain'
     
 

@@ -24,7 +24,7 @@ def chatty(db, cl, nodeid, newvalues):
         then set it to 'chatting'
     '''
     # don't fire if there's no new message (ie. chat)
-    if not newvalues.has_key('messages'):
+    if 'messages' not in newvalues:
         return
     if newvalues['messages'] == cl.get(nodeid, 'messages'):
         return
@@ -40,7 +40,7 @@ def chatty(db, cl, nodeid, newvalues):
     current_status = cl.get(nodeid, 'status')
 
     # see if there's an explicit change in this transaction
-    if newvalues.has_key('status'):
+    if 'status' in newvalues:
         # yep, skip
         return
 
@@ -62,7 +62,7 @@ def chatty(db, cl, nodeid, newvalues):
 def presetunread(db, cl, nodeid, newvalues):
     ''' Make sure the status is set on new issues
     '''
-    if newvalues.has_key('status') and newvalues['status']:
+    if 'status' in newvalues and newvalues['status']:
         return
 
     # get the unread state ID

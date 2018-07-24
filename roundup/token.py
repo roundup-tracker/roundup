@@ -106,7 +106,7 @@ def token_split(s, whitespace=' \r\n\t', quotes='\'"',
             # escaped-char conversions (t, r, n)
             # TODO: octal, hexdigit
             state = oldstate
-            if escaped.has_key(c):
+            if c in escaped:
                 c = escaped[c]
         # just add this char to the token and move along
         token = token + c

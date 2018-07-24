@@ -9,7 +9,7 @@ def creator_resolution(db, cl, nodeid, newvalues):
     "confirm-done" first though, but "classic" Roundup doesn't have that
     status)
     '''
-    if not newvalues.has_key('status'):
+    if 'status' not in newvalues:
         return
 
     # get the resolved state ID

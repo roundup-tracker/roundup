@@ -67,7 +67,7 @@ def interpolate(text, mapping):
     # Now substitute with the variables in mapping.
     for string in to_replace:
         var = _get_var_regex.findall(string)[0]
-        if mapping.has_key(var):
+        if var in mapping:
             # Call ustr because we may have an integer for instance.
             subst = ustr(mapping[var])
             try:

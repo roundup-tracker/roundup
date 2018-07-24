@@ -30,7 +30,7 @@ except ImportError:
 
 from cStringIO import StringIO
 
-if not os.environ.has_key('SENDMAILDEBUG'):
+if 'SENDMAILDEBUG' not in os.environ:
     os.environ['SENDMAILDEBUG'] = 'mail-test.log'
 SENDMAILDEBUG = os.environ['SENDMAILDEBUG']
 

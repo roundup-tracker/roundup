@@ -137,19 +137,19 @@ class IMAPServer:
         each mailbox is associated with 1 database home
         """
         log.info('Adding mailbox %s', mailbox)
-        if not self.mailboxes.has_key(mailbox.server):
+        if mailbox.server not in self.mailboxes:
             self.mailboxes[mailbox.server] = {'protocol':'imaps', 'users':{}}
         server = self.mailboxes[mailbox.server]
         if mailbox.protocol:
             server['protocol'] = mailbox.protocol
 
-        if not server['users'].has_key(mailbox.username):
+        if mailbox.username not in server['users']:
             server['users'][mailbox.username] = {'password':'', 'mailboxes':{}}
         user = server['users'][mailbox.username]
         if mailbox.password:
             user['password'] = mailbox.password
 
-        if user['mailboxes'].has_key(mailbox.mailbox):
+        if mailbox.mailbox in user['mailboxes']:
             raise ValueError('Mailbox is already defined')
 
         user['mailboxes'][mailbox.mailbox] = mailbox.dbhome

@@ -32,7 +32,7 @@ class Loader(TALLoaderBase):
             if error.errno != errno.ENOENT:
                 raise
 
-        if self.templates.has_key(src) and \
+        if src in self.templates and \
                 stime <= self.templates[src].mtime:
             # compiled template is up to date
             return self.templates[src]

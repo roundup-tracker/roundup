@@ -271,13 +271,13 @@ class FormParser:
 
             # get more info about the class, and the current set of
             # form props for it
-            if not all_propdef.has_key(cn):
+            if cn not in all_propdef:
                 all_propdef[cn] = cl.getprops()
             propdef = all_propdef[cn]
-            if not all_props.has_key(this):
+            if this not in all_props:
                 all_props[this] = {}
             props = all_props[this]
-            if not got_props.has_key(this):
+            if this not in got_props:
                 got_props[this] = {}
 
             # is this a link command?
@@ -294,11 +294,11 @@ class FormParser:
                     lcn = m.group(1)
                     lcl = self.db.classes[lcn]
                     lnodeid = m.group(2)
-                    if not all_propdef.has_key(lcn):
+                    if lcn not in all_propdef:
                         all_propdef[lcn] = lcl.getprops()
-                    if not all_props.has_key((lcn, lnodeid)):
+                    if (lcn, lnodeid) not in all_props:
                         all_props[(lcn, lnodeid)] = {}
-                    if not got_props.has_key((lcn, lnodeid)):
+                    if (lcn, lnodeid) not in got_props:
                         got_props[(lcn, lnodeid)] = {}
 
                 # make sure the link property is valid
@@ -323,7 +323,7 @@ class FormParser:
                     if m.group('classname'):
                         this = (m.group('classname'), m.group('id'))
                         entry = m.group('propname')
-                    if not all_required.has_key(this):
+                    if this not in all_required:
                         all_required[this] = []
                     all_required[this].append(entry)
                 continue
@@ -336,7 +336,7 @@ class FormParser:
                 mlaction = 'add'
 
             # does the property exist?
-            if not propdef.has_key(propname):
+            if propname not in propdef:
                 if mlaction != 'set':
                     raise FormError (self._('You have submitted a %(action)s '
                         'action for the property "%(property)s" '
@@ -406,7 +406,7 @@ class FormParser:
                 fcn = 'file'
                 fcl = self.db.classes[fcn]
                 fpropname = 'content'
-                if not all_propdef.has_key(fcn):
+                if fcn not in all_propdef:
                     all_propdef[fcn] = fcl.getprops()
                 fpropdef = all_propdef[fcn]
                 have_file = []
@@ -440,7 +440,7 @@ class FormParser:
                     value = l
                 else:
                     # we're modifying the list - get the current list of ids
-                    if props.has_key(propname):
+                    if propname in props:
                         existing = props[propname]
                     elif nodeid and not nodeid.startswith('-'):
                         existing = cl.get(nodeid, propname, [])
@@ -500,7 +500,7 @@ class FormParser:
                 except KeyError:
                     # this might be a new property for which there is
                     # no existing value
-                    if not propdef.has_key(propname):
+                    if propname not in propdef:
                         raise
                 except IndexError as message:
                     raise FormError(str(message))
@@ -553,7 +553,7 @@ class FormParser:
             # register the values we got
             got = got_props.get(thing, {})
             for entry in required[:]:
-                if got.has_key(entry):
+                if entry in got:
                     required.remove(entry)
 
             # If a user doesn't have edit permission for a given property,
@@ -604,7 +604,7 @@ class FormParser:
                 #  if content is defined, let it pass through even if
                 #     content is empty. Yes people can upload/create
                 #     empty files.
-                if props.has_key('content'):
+                if 'content' in props:
                     if id is not None and \
                        not id.startswith('-') and \
                        not props['content']:
@@ -622,10 +622,10 @@ class FormParser:
     def parse_file(self, fpropdef, fprops, v):
         # try to determine the file content-type
         fn = v.filename.split('\\')[-1]
-        if fpropdef.has_key('name'):
+        if 'name' in fpropdef:
             fprops['name'] = fn
         # use this info as the type/filename properties
-        if fpropdef.has_key('type'):
+        if 'type' in fpropdef:
             if hasattr(v, 'type') and v.type:
                 fprops['type'] = v.type
             elif mimetypes.guess_type(fn)[0]:

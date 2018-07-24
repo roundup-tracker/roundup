@@ -41,9 +41,9 @@ class SpambayesClassify(Action):
         (content, tokens) = extract_classinfo(self.db,
                                               self.classname, self.nodeid)
 
-        if self.form.has_key("trainspam"):
+        if "trainspam" in self.form:
             is_spam = True
-        elif self.form.has_key("trainham"):
+        elif "trainham" in self.form:
             is_spam = False
 
         (status, errmsg) = train_spambayes(self.db, content, tokens,

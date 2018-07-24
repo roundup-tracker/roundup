@@ -41,7 +41,7 @@ def get_addresses(user):
     ''' iterate over all known addresses in a newvalues dict
         this takes of the address/alterate_addresses handling
     '''
-    if user.has_key('address'):
+    if 'address' in user:
         yield user['address']
     if user.get('alternate_addresses', None):
         for address in user['alternate_addresses'].split('\n'):
@@ -69,7 +69,7 @@ def audit_user_fields(db, cl, nodeid, newvalues):
     newroles = newvalues.get('roles')
     if newroles:
         for rolename in [r.lower().strip() for r in newroles.split(',')]:
-            if rolename and not db.security.role.has_key(rolename):
+            if rolename and rolename not in db.security.role:
                 raise ValueError('Role "%s" does not exist'%rolename)
 
     tz = newvalues.get('timezone', None)

@@ -808,7 +808,7 @@ class FormTestCase(FormTestParent, unittest.TestCase):
         # issue creation. Also delete the file afterwards
         # just tomake sure that someother test looking for
         # SENDMAILDEBUG won't trip over ours.
-        if not os.environ.has_key('SENDMAILDEBUG'):
+        if 'SENDMAILDEBUG' not in os.environ:
             os.environ['SENDMAILDEBUG'] = 'mail-test1.log'
         SENDMAILDEBUG = os.environ['SENDMAILDEBUG']
 
