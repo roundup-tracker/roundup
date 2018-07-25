@@ -23,7 +23,8 @@ except ImportError:
 try:
     from OpenSSL.SSL import SysCallError
 except ImportError:
-    SysCallError = None
+    class SysCallError(Exception):
+        pass
 
 from roundup import roundupdb, date, hyperdb, password
 from roundup.cgi import templating, cgitb, TranslationService
