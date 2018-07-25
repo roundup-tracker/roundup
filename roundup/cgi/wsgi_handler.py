@@ -10,7 +10,9 @@ import weakref
 
 import roundup.instance
 from roundup.cgi import TranslationService
-from BaseHTTPServer import BaseHTTPRequestHandler, DEFAULT_ERROR_MESSAGE
+from roundup.anypy import http_
+BaseHTTPRequestHandler = http_.server.BaseHTTPRequestHandler
+DEFAULT_ERROR_MESSAGE = http_.server.DEFAULT_ERROR_MESSAGE
 
 
 class Writer(object):

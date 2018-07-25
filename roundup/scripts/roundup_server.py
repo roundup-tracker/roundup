@@ -37,7 +37,7 @@ if (osp.exists(thisdir + '/__init__.py') and
 
 
 import errno, cgi, getopt, os, socket, sys, traceback, time
-import BaseHTTPServer, SocketServer, StringIO
+import SocketServer, StringIO
 
 try:
     # Python 2.
@@ -56,7 +56,7 @@ from roundup import configuration, version_check
 from roundup import __version__ as roundup_version
 
 # Roundup modules of use here
-from roundup.anypy import urllib_
+from roundup.anypy import http_, urllib_
 from roundup.cgi import cgitb, client
 from roundup.cgi.PageTemplates.PageTemplate import PageTemplate
 import roundup.instance
@@ -116,10 +116,10 @@ def auto_ssl():
 
     return ctx
 
-class SecureHTTPServer(BaseHTTPServer.HTTPServer):
+class SecureHTTPServer(http_.server.HTTPServer):
     def __init__(self, server_address, HandlerClass, ssl_pem=None):
         assert SSL, "pyopenssl not installed"
-        BaseHTTPServer.HTTPServer.__init__(self, server_address, HandlerClass)
+        http_.server.HTTPServer.__init__(self, server_address, HandlerClass)
         self.socket = socket.socket(self.address_family, self.socket_type)
         if ssl_pem:
             ctx = SSL.Context(SSL.SSLv23_METHOD)
@@ -177,7 +177,7 @@ class SecureHTTPServer(BaseHTTPServer.HTTPServer):
             conn = ConnFixer(conn)
         return (conn, info)
 
-class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
     TRACKER_HOMES = {}
     TRACKERS = None
     LOG_IPADDRESS = 1
@@ -457,7 +457,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                          format%args))
         else:
             try:
-                BaseHTTPServer.BaseHTTPRequestHandler.log_message(self,
+                http_.server.BaseHTTPRequestHandler.log_message(self,
                                                          format, *args)
             except IOError:
                 # stderr is no longer viable
@@ -702,7 +702,7 @@ class ServerConfig(configuration.Config):
             # socket, so we do this only for non-SSL connections.
             if hasattr(socket, 'setdefaulttimeout'):
                 socket.setdefaulttimeout(60)
-            base_server = BaseHTTPServer.HTTPServer
+            base_server = http_.server.HTTPServer
 
         # obtain request server class
         if self["MULTIPROCESS"] not in MULTIPROCESS_TYPES:
