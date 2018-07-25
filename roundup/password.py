@@ -24,36 +24,53 @@ import os
 from base64 import b64encode, b64decode
 from hashlib import md5, sha1
 
-from roundup.anypy.strings import us2s, s2b
+from roundup.anypy.strings import us2s, b2s, s2b
 
 try:
     import crypt
 except ImportError:
     crypt = None
 
-_bempty = ""
+_bempty = b""
 _bjoin = _bempty.join
 
+def bchr(c):
+    if bytes == str:
+        # Python 2.
+        return chr(c)
+    else:
+        # Python 3.
+        return bytes((c,))
+
+def bord(c):
+    if bytes == str:
+        # Python 2.
+        return ord(c)
+    else:
+        # Python 3.  Elements of bytes are integers.
+        return c
+
 def getrandbytes(count):
-    return _bjoin(chr(random.randint(0,255)) for i in range(count))
+    return _bjoin(bchr(random.randint(0,255)) for i in range(count))
 
 #NOTE: PBKDF2 hash is using this variant of base64 to minimize encoding size,
 #      and have charset that's compatible w/ unix crypt variants
 def h64encode(data):
     """encode using variant of base64"""
-    return b64encode(data, "./").strip("=\n")
+    return b2s(b64encode(data, b"./").strip(b"=\n"))
 
 def h64decode(data):
     """decode using variant of base64"""
+    data = s2b(data)
     off = len(data) % 4
     if off == 0:
-        return b64decode(data, "./")
+        return b64decode(data, b"./")
     elif off == 1:
         raise ValueError("Invalid base64 input")
     elif off == 2:
-        return b64decode(data + "==", "./")
+        return b64decode(data + b"==", b"./")
     else:
-        return b64decode(data + "=", "./")
+        return b64decode(data + b"=", b"./")
 
 try:
     from M2Crypto.EVP import pbkdf2 as _pbkdf2
@@ -64,7 +81,7 @@ except ImportError:
 
     def xor_bytes(left, right):
         "perform bitwise-xor of two byte-strings"
-        return _bjoin(chr(ord(l) ^ ord(r)) for l, r in zip(left, right))
+        return _bjoin(bchr(bord(l) ^ bord(r)) for l, r in zip(left, right))
 
     def _pbkdf2(password, salt, rounds, keylen):
         digest_size = 20 # sha1 generates 20-byte blocks
@@ -98,7 +115,7 @@ def pbkdf2(password, salt, rounds, keylen):
     """pkcs#5 password-based key derivation v2.0
 
     :arg password: passphrase to use to generate key (if unicode, converted to utf-8)
-    :arg salt: salt string to use when generating key (if unicode, converted to utf-8)
+    :arg salt: salt bytes to use when generating key
     :param rounds: number of rounds to use to generate key
     :arg keylen: number of bytes to generate
 
@@ -108,7 +125,6 @@ def pbkdf2(password, salt, rounds, keylen):
         raw bytes of generated key
     """
     password = s2b(us2s(password))
-    salt = s2b(us2s(salt))
     if keylen > 40:
         #NOTE: pbkdf2 allows up to (2**31-1)*20 bytes,
         # but m2crypto has issues on some platforms above 40,
@@ -351,7 +367,7 @@ def test():
 
     # PBKDF2 - low level function
     from binascii import unhexlify
-    k = pbkdf2("password", "ATHENA.MIT.EDUraeburn", 1200, 32)
+    k = pbkdf2("password", b"ATHENA.MIT.EDUraeburn", 1200, 32)
     assert k == unhexlify("5c08eb61fdf71e4e4ec3cf6ba1f5512ba7e52ddbc5e5142f708a31e2e62b1e13")
 
     # PBKDF2 - hash function
