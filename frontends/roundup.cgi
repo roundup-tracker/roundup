@@ -140,14 +140,14 @@ class RequestWrapper:
 # Main CGI handler
 #
 def main(out, err):
-    import os, string
+    import os
     import roundup.instance
     path = os.environ.get('PATH_INFO', '/').split('/')
     request = RequestWrapper(out)
     request.path = os.environ.get('PATH_INFO', '/')
     tracker = path[1]
     os.environ['TRACKER_NAME'] = tracker
-    os.environ['PATH_INFO'] = string.join(path[2:], '/')
+    os.environ['PATH_INFO'] = '/'.join(path[2:])
     if tracker in TRACKER_HOMES:
         # redirect if we need a trailing '/'
         if len(path) == 2:

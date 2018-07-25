@@ -7,7 +7,7 @@
 from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
-import sys, os, string, keyword, linecache, tokenize, inspect, cgi
+import sys, os, keyword, linecache, tokenize, inspect, cgi
 import pydoc, traceback
 
 from roundup.cgi import templating, TranslationService
@@ -180,7 +180,7 @@ def html(context=5, i18n=None):
                 name = '<em>global</em> <strong>%s</strong>' % name
             lvals.append('%s&nbsp;= %s'%(name, value))
         if lvals:
-            lvals = string.join(lvals, ', ')
+            lvals = ', '.join(lvals)
             lvals = indent + '<small><font color="#909090">%s'\
                 '</font></small><br>'%lvals
         else:
@@ -200,7 +200,7 @@ def html(context=5, i18n=None):
             if i == lnum:
                 excerpt.append(lvals)
             i = i + 1
-        traceback.append('<p>' + level + string.join(excerpt, '\n'))
+        traceback.append('<p>' + level + '\n'.join(excerpt))
 
     traceback.reverse()
 
@@ -210,7 +210,7 @@ def html(context=5, i18n=None):
         value = pydoc.html.repr(getattr(evalue, name))
         attribs.append('<br>%s%s&nbsp;= %s' % (indent, name, value))
 
-    return head + string.join(attribs) + string.join(traceback) + '<p>&nbsp;</p>'
+    return head + ' '.join(attribs) + ' '.join(traceback) + '<p>&nbsp;</p>'
 
 def handler():
     print(breaker())
