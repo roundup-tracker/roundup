@@ -24,8 +24,14 @@ class dehtml:
                 raise ImportError # use
         except ImportError:
             # use the fallback below if beautiful soup is not installed.
-            from HTMLParser import HTMLParser
-            from htmlentitydefs import name2codepoint
+            try:
+                # Python 3+.
+                from html.parser import HTMLParser
+                from html.entities import name2codepoint
+            except ImportError:
+                # Python 2.
+                from HTMLParser import HTMLParser
+                from htmlentitydefs import name2codepoint
 
             class DumbHTMLParser(HTMLParser):
                 # class attribute
