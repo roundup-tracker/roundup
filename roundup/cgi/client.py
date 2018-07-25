@@ -44,9 +44,9 @@ from roundup.anypy import http_
 from roundup.anypy import urllib_
 from roundup.anypy import xmlrpc_
 
-from email.MIMEBase import MIMEBase
-from email.MIMEText import MIMEText
-from email.MIMEMultipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 import roundup.anypy.email_
 
 from roundup.anypy.strings import uchr

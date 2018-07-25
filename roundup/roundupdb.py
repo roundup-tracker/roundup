@@ -24,13 +24,13 @@ import re, os, smtplib, socket, time, random
 import base64, mimetypes
 import os.path
 import logging
-from email import Encoders
+from email import encoders
 from email.parser import FeedParser
-from email.Utils import formataddr
-from email.Header import Header
-from email.MIMEText import MIMEText
-from email.MIMEBase import MIMEBase
-from email.MIMEMultipart import MIMEMultipart
+from email.utils import formataddr
+from email.header import Header
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
 
 from roundup import password, date, hyperdb
 from roundup.i18n import _
@@ -643,7 +643,7 @@ class IssueClass:
                         main, sub = mime_type.split('/')
                         part = MIMEBase(main, sub)
                         part.set_payload(content)
-                        Encoders.encode_base64(part)
+                        encoders.encode_base64(part)
                     cd = 'Content-Disposition'
                     part[cd] = 'attachment;\n filename="%s"'%name
                     message.attach(part)
