@@ -1625,7 +1625,7 @@ class CoreConfig(Config):
             h.close()
             logger.removeHandler(hdlr)
         logger.handlers = [hdlr]
-        logger.setLevel(logging._levelNames[self["LOGGING_LEVEL"] or "ERROR"])
+        logger.setLevel(self["LOGGING_LEVEL"] or "ERROR")
 
     def load(self, home_dir):
         """Load configuration from path designated by home_dir argument"""
