@@ -25,6 +25,7 @@ __docformat__ = 'restructuredtext'
 import os, marshal, re, weakref, string, copy, time, shutil, logging
 
 from roundup.anypy.dbm_ import anydbm, whichdb
+from roundup.anypy.strings import b2s
 
 from roundup import hyperdb, date, password, roundupdb, security, support
 from roundup.backends import locking
@@ -675,7 +676,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             db_type = self.determine_db_type(path)
             db = self.opendb(db_name, 'w')
 
-            for key in db.keys():
+            for key in map(b2s, db.keys()):
                 # get the journal for this db entry
                 journal = marshal.loads(db[key])
                 l = []
@@ -1659,7 +1660,7 @@ class Class(hyperdb.Class):
             db = self.db.getclassdb(self.classname)
             must_close = True
         try:
-            res.extend(db.keys())
+            res.extend(map(b2s, db.keys()))
 
             # remove the uncommitted, destroyed nodes
             if self.classname in self.db.destroyednodes:
