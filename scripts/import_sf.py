@@ -21,7 +21,7 @@ This script needs four steps to work:
 And you're done!
 """
 
-import sys, os, csv, time, httplib, mimetypes
+import sys, os, csv, time, mimetypes
 
 try:
     import cElementTree as ElementTree
@@ -29,7 +29,7 @@ except ImportError:
     from elementtree import ElementTree
 
 from roundup import instance, hyperdb, date, support, password
-from roundup.anypy import urllib_
+from roundup.anypy import http_, urllib_
 
 today = date.Date('.')
 
@@ -40,7 +40,7 @@ def get_url(aid):
     figure what the URL should be to access that artifact, and hence any
     attached files."""
     # first we hit this URL...
-    conn = httplib.HTTPConnection("sourceforge.net")
+    conn = http_.client.HTTPConnection("sourceforge.net")
     conn.request("GET", "/support/tracker.php?aid=%s"%aid)
     response = conn.getresponse()
     # which should respond with a redirect to the correct url which has the
