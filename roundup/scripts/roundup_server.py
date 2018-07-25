@@ -375,17 +375,28 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
         env['PATH_INFO'] = urllib_.unquote(rest)
         if query:
             env['QUERY_STRING'] = query
-        if self.headers.typeheader is None:
+        if hasattr(self.headers, 'get_content_type'):
+            # Python 3.  We need the raw header contents.
+            env['CONTENT_TYPE'] = self.headers.get('content-type')
+        elif self.headers.typeheader is None:
+            # Python 2.
             env['CONTENT_TYPE'] = self.headers.type
         else:
+            # Python 2.
             env['CONTENT_TYPE'] = self.headers.typeheader
-        length = self.headers.getheader('content-length')
+        length = self.headers.get('content-length')
         if length:
             env['CONTENT_LENGTH'] = length
-        co = list(filter(None, self.headers.getheaders('cookie')))
+        if hasattr(self.headers, 'get_all'):
+            # Python 3.
+            ch = self.headers.get_all('cookie', [])
+        else:
+            # Python 2.
+            ch = self.headers.getheaders('cookie')
+        co = list(filter(None, ch))
         if co:
             env['HTTP_COOKIE'] = ', '.join(co)
-        env['HTTP_AUTHORIZATION'] = self.headers.getheader('authorization')
+        env['HTTP_AUTHORIZATION'] = self.headers.get('authorization')
         env['SCRIPT_NAME'] = ''
         env['SERVER_NAME'] = self.server.server_name
         env['SERVER_PORT'] = str(self.server.server_port)
@@ -395,13 +406,13 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             env['HTTP_HOST'] = ''
         # https://tools.ietf.org/html/draft-ietf-appsawg-http-forwarded-10
         # headers.
-        xfh = self.headers.getheader('X-Forwarded-Host', None)
+        xfh = self.headers.get('X-Forwarded-Host', None)
         if xfh:
             # If behind a proxy, this is the hostname supplied
             # via the Host header to the proxy. Used by core code.
             # Controlled by the CSRF settings.
             env['HTTP_X-FORWARDED-HOST'] = xfh
-        xff = self.headers.getheader('X-Forwarded-For', None)
+        xff = self.headers.get('X-Forwarded-For', None)
         if xff:
             # xff is a list of ip addresses for original client/proxies:
             # X-Forwarded-For: clientIP, proxy1IP, proxy2IP
@@ -411,7 +422,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             # E.g. you may wish to disable recaptcha validation extension
             # if the ip of the client matches 172.16.0.0.
             env['HTTP_X-FORWARDED-FOR'] = xff
-        xfp = self.headers.getheader('X-Forwarded-Proto', None)
+        xfp = self.headers.get('X-Forwarded-Proto', None)
         if xfp:
             # xfp is the protocol (http/https) seen by proxies in the
             # path of the request. I am not sure if there is only
@@ -437,7 +448,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
         xrw = self.headers.get('x-requested-with')
         if xrw:
             env['HTTP_X-REQUESTED-WITH'] = xrw
-        range = self.headers.getheader('range')
+        range = self.headers.get('range')
         if range:
             env['HTTP_RANGE'] = range
 
