@@ -7,7 +7,8 @@
 from __future__ import print_function
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
-from xmlrpclib import MultiCall
+from roundup.anypy import xmlrpc_
+MultiCall = xmlrpc_.client.MultiCall
 from roundup.cgi.exceptions import *
 from roundup import init, instance, password, hyperdb, date
 from roundup.xmlrpc import RoundupInstance, RoundupDispatcher

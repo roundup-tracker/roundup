@@ -27,8 +27,9 @@ from roundup.xmlrpc import RoundupInstance
 import roundup.instance
 from roundup.instance import TrackerError
 from roundup.cgi.exceptions import Unauthorised
-from SimpleXMLRPCServer import SimpleXMLRPCServer
-from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
+from roundup.anypy import xmlrpc_
+SimpleXMLRPCServer = xmlrpc_.server.SimpleXMLRPCServer
+SimpleXMLRPCRequestHandler = xmlrpc_.server.SimpleXMLRPCRequestHandler
 
 
 class RequestHandler(SimpleXMLRPCRequestHandler):

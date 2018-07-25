@@ -9,8 +9,9 @@ from roundup import hyperdb
 from roundup.exceptions import Unauthorised, UsageError
 from roundup.date import Date, Range, Interval
 from roundup import actions
-from SimpleXMLRPCServer import SimpleXMLRPCDispatcher
-from xmlrpclib import Binary
+from roundup.anypy import xmlrpc_
+SimpleXMLRPCDispatcher = xmlrpc_.server.SimpleXMLRPCDispatcher
+Binary = xmlrpc_.client.Binary
 from traceback import format_exc
 
 def translate(value):

@@ -42,12 +42,12 @@ from roundup.anypy.cookie_ import CookieError, BaseCookie, SimpleCookie, \
     get_cookie_date
 from roundup.anypy import http_
 from roundup.anypy import urllib_
+from roundup.anypy import xmlrpc_
 
 from email.MIMEBase import MIMEBase
 from email.MIMEText import MIMEText
 from email.MIMEMultipart import MIMEMultipart
 import roundup.anypy.email_
-import xmlrpclib
 
 def initialiseSecurity(security):
     '''Create some Permissions and Roles on the security object
@@ -466,8 +466,8 @@ class Client:
         except (Unauthorised, UsageError) as msg:
             # report exception back to server
             exc_type, exc_value, exc_tb = sys.exc_info()
-            output = xmlrpclib.dumps(
-                xmlrpclib.Fault(1, "%s:%s" % (exc_type, exc_value)),
+            output = xmlrpc_.client.dumps(
+                xmlrpc_.client.Fault(1, "%s:%s" % (exc_type, exc_value)),
                 allow_none=True)
             csrf_ok = False # we had an error, failed check
 

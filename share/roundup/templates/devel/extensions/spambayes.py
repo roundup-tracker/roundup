@@ -1,8 +1,9 @@
 import re, math
 from roundup.cgi.actions import Action
 from roundup.cgi.exceptions import *
+from roundup.anypy import xmlrpc_
 
-import xmlrpclib, socket
+import socket
 
 REVPAT = re.compile(r'(r[0-9]+\b|rev(ision)? [0-9]+\b)')
 
@@ -26,11 +27,11 @@ def extract_classinfo(db, classname, nodeid):
 def train_spambayes(db, content, tokens, is_spam):
     spambayes_uri = db.config.detectors['SPAMBAYES_URI']
 
-    server = xmlrpclib.ServerProxy(spambayes_uri, verbose=False)
+    server = xmlrpc_.client.ServerProxy(spambayes_uri, verbose=False)
     try:
         server.train({'content':content}, tokens, {}, is_spam)
         return (True, None)
-    except (socket.error, xmlrpclib.Error) as e:
+    except (socket.error, xmlrpc_.client.Error) as e:
         return (False, str(e))
 
 
