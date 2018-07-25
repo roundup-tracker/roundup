@@ -171,7 +171,7 @@ class TALLoaderBase(LoaderBase):
             f = name + extension
             src = os.path.join(realsrc, f)
             realpath = os.path.realpath(src)
-            if string.find(realpath, realsrc) != 0:
+            if not realpath.startswith(realsrc):
                 return # will raise invalid template
             if os.path.exists(src):
                 return (src, f)
