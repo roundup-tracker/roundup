@@ -72,7 +72,7 @@ from roundup.i18n import _
 # "default" favicon.ico
 # generate by using "icotool" and tools/base64
 import zlib, base64
-favico = zlib.decompress(base64.decodestring('''
+favico = zlib.decompress(base64.decodestring(b'''
 eJztjr1PmlEUh59XgVoshdYPWorFIhaRFq0t9pNq37b60lYSTRzcTFw6GAfj5gDYaF0dTB0MxMSE
 gQQd3FzKJiEC0UCIUUN1M41pV2JCXySg/0ITn5tfzvmdc+85FwT56HSc81UJjXJsk1UsNcsSqCk1
 BS64lK+vr7OyssLJyQl2ux2j0cjU1BQajYZIJEIwGMRms+H3+zEYDExOTjI2Nsbm5iZWqxWv18vW
