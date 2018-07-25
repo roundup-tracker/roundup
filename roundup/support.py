@@ -15,11 +15,12 @@ class TruthDict:
             self.keys = {}
             for col in keys:
                 self.keys[col] = 1
-        else:
-            self.__getitem__ = lambda name: 1
 
     def __getitem__(self, name):
-        return name in self.keys
+        if hasattr(self, 'keys'):
+            return name in self.keys
+        else:
+            return True
 
 def ensureParentsExist(dest):
     if not os.path.exists(os.path.dirname(dest)):
