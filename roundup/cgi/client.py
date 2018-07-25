@@ -50,7 +50,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import roundup.anypy.email_
 
-from roundup.anypy.strings import s2b, uchr
+from roundup.anypy.strings import s2b, b2s, uchr
 
 def initialiseSecurity(security):
     '''Create some Permissions and Roles on the security object
@@ -178,7 +178,7 @@ class Session:
         """ generate a unique session key """
         while 1:
             s = '%s%s'%(time.time(), random.random())
-            s = binascii.b2a_base64(s).strip()
+            s = b2s(binascii.b2a_base64(s2b(s)).strip())
             if not self.session_db.exists(s):
                 break
 
