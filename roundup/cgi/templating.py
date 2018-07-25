@@ -29,7 +29,7 @@ from roundup.anypy import urllib_
 from roundup import hyperdb, date, support
 from roundup import i18n
 from roundup.i18n import _
-from roundup.anypy.strings import is_us, us2s, s2u, u2s, StringIO
+from roundup.anypy.strings import is_us, s2b, us2s, s2u, u2s, StringIO
 
 from .KeywordsExpr import render_keywords_expression_editor
 
@@ -84,11 +84,11 @@ def anti_csrf_nonce(self, client, lifetime=None):
     # include id(self) as the exact location of self (including address)
     # is unpredicatable (depends on number of previous connections etc.)
     key = '%s%s%s'%(random.random(),id(self),time.time())
-    key = hashlib.sha256(key).hexdigest()
+    key = hashlib.sha256(s2b(key)).hexdigest()
 
     while otks.exists(key):
         key = '%s%s%s'%(random.random(),id(self),time.time())
-        key = hashlib.sha256(key).hexdigest()
+        key = hashlib.sha256(s2b(key)).hexdigest()
 
     # lifetime is in minutes.
     if lifetime is None:
