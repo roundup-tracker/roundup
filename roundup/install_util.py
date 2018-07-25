@@ -23,6 +23,8 @@ __docformat__ = 'restructuredtext'
 import os, shutil
 from hashlib import sha1
 
+from roundup.anypy.strings import s2b
+
 sgml_file_types = [".xml", ".ent", ".html"]
 hash_file_types = [".py", ".sh", ".conf", ".cgi"]
 slast_file_types = [".css"]
@@ -31,25 +33,25 @@ digested_file_types = sgml_file_types + hash_file_types + slast_file_types
 
 def extractFingerprint(lines):
     # get fingerprint from last line
-    if lines[-1].startswith("#SHA: "):
+    if lines[-1].startswith(b"#SHA: "):
         # handle .py/.sh comment
         return lines[-1][6:].strip()
-    elif lines[-1].startswith("<!-- SHA: "):
+    elif lines[-1].startswith(b"<!-- SHA: "):
         # handle xml/html files
         fingerprint = lines[-1][10:]
-        fingerprint = fingerprint.replace('-->', '')
+        fingerprint = fingerprint.replace(b'-->', b'')
         return fingerprint.strip()
-    elif lines[-1].startswith("/* SHA: "):
+    elif lines[-1].startswith(b"/* SHA: "):
         # handle css files
         fingerprint = lines[-1][8:]
-        fingerprint = fingerprint.replace('*/', '')
+        fingerprint = fingerprint.replace(b'*/', b'')
         return fingerprint.strip()
     return None
 
 def checkDigest(filename):
     """Read file, check for valid fingerprint, return TRUE if ok"""
     # open and read file
-    inp = open(filename, "r")
+    inp = open(filename, "rb")
     lines = inp.readlines()
     inp.close()
 
@@ -64,7 +66,7 @@ def checkDigest(filename):
         digest.update(line)
 
     # compare current to stored digest
-    return fingerprint == digest.hexdigest()
+    return fingerprint == s2b(digest.hexdigest())
 
 
 class DigestFile:
@@ -75,7 +77,7 @@ class DigestFile:
     def __init__(self, filename):
         self.filename = filename
         self.digest = sha1()
-        self.file = open(self.filename, "w")
+        self.file = open(self.filename, "wb")
 
     def write(self, data):
         lines = data.splitlines()
@@ -83,7 +85,7 @@ class DigestFile:
         # template, then we will want to re-calculate the SHA
         fingerprint = extractFingerprint(lines)
         if fingerprint is not None:
-            data = '\n'.join(lines[:-1]) + '\n'
+            data = b'\n'.join(lines[:-1]) + b'\n'
         self.file.write(data)
         self.digest.update(data)
 
@@ -91,11 +93,11 @@ class DigestFile:
         file, ext = os.path.splitext(self.filename)
 
         if ext in sgml_file_types:
-            self.file.write("<!-- SHA: %s -->\n" % (self.digest.hexdigest(),))
+            self.file.write(s2b("<!-- SHA: %s -->\n" % (self.digest.hexdigest(),)))
         elif ext in hash_file_types:
-            self.file.write("#SHA: %s\n" % (self.digest.hexdigest(),))
+            self.file.write(s2b("#SHA: %s\n" % (self.digest.hexdigest(),)))
         elif ext in slast_file_types:
-            self.file.write("/* SHA: %s */\n" % (self.digest.hexdigest(),))
+            self.file.write(s2b("/* SHA: %s */\n" % (self.digest.hexdigest(),)))
 
         self.file.close()
 
@@ -118,7 +120,7 @@ def copyDigestedFile(src, dst, copystat=1):
     fsrc = None
     fdst = None
     try:
-        fsrc = open(src, 'r')
+        fsrc = open(src, 'rb')
         fdst = DigestFile(dst)
         shutil.copyfileobj(fsrc, fdst)
     finally:
@@ -131,7 +133,7 @@ def copyDigestedFile(src, dst, copystat=1):
 def test():
     import sys
 
-    testdata = open(sys.argv[0], 'r').read()
+    testdata = open(sys.argv[0], 'rb').read()
 
     for ext in digested_file_types:
         testfile = "__digest_test" + ext
@@ -142,7 +144,7 @@ def test():
 
         assert checkDigest(testfile), "digest ok w/o modification"
 
-        mod = open(testfile, 'r+')
+        mod = open(testfile, 'r+b')
         mod.seek(0)
         mod.write('# changed!')
         mod.close()
