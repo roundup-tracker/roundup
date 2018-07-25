@@ -37,7 +37,14 @@ if (osp.exists(thisdir + '/__init__.py') and
 
 
 import errno, cgi, getopt, os, socket, sys, traceback, time
-import SocketServer, StringIO
+import StringIO
+
+try:
+    # Python 3.
+    import socketserver
+except ImportError:
+    # Python 2.
+    import SocketServer as socketserver
 
 try:
     # Python 2.
@@ -711,12 +718,12 @@ class ServerConfig(configuration.Config):
             self["MULTIPROCESS"] = "none"
             server_class = base_server
         elif self["MULTIPROCESS"] == "fork":
-            class ForkingServer(SocketServer.ForkingMixIn,
+            class ForkingServer(socketserver.ForkingMixIn,
                 base_server):
                     pass
             server_class = ForkingServer
         elif self["MULTIPROCESS"] == "thread":
-            class ThreadingServer(SocketServer.ThreadingMixIn,
+            class ThreadingServer(socketserver.ThreadingMixIn,
                 base_server):
                     pass
             server_class = ThreadingServer
