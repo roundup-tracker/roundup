@@ -155,18 +155,21 @@ class Permission:
             self.klass, self.properties, self.check,
             self.limit_perm_to_props_only)
 
-    def __cmp__(self, other):
+    def __eq__(self, other):
         if self.name != other.name:
-            return cmp(self.name, other.name)
+            return False
 
-        if self.klass != other.klass: return 1
-        if self.properties != other.properties: return 1
-        if self.check != other.check: return 1
+        if self.klass != other.klass: return False
+        if self.properties != other.properties: return False
+        if self.check != other.check: return False
         if self.limit_perm_to_props_only != \
-             other.limit_perm_to_props_only: return 1
+             other.limit_perm_to_props_only: return False
 
         # match
-        return 0
+        return True
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def __getitem__(self,index):
         return (self.name, self.klass, self.properties, self.check,

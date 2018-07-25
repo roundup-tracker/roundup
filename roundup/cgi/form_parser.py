@@ -467,7 +467,7 @@ class FormParser:
                     value = existing
                     # Sort the value in the same order used by
                     # Multilink.from_raw.
-                    value.sort(lambda x, y: cmp(int(x),int(y)))
+                    value.sort(key=int)
 
             elif value == '':
                 # other types should be None'd if there's no value
@@ -511,7 +511,7 @@ class FormParser:
                 # The canonical order (given in Multilink.from_raw) is
                 # by the numeric value of the IDs.
                 if isinstance(proptype, hyperdb.Multilink):
-                    existing.sort(lambda x, y: cmp(int(x),int(y)))
+                    existing.sort(key=int)
 
                 # "missing" existing values may not be None
                 if not existing:

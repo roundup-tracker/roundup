@@ -30,6 +30,13 @@ try:
 except ImportError:
     pytz = None
 
+try:
+    cmp
+except NameError:
+    # Python 3.
+    def cmp(a, b):
+        return (a > b) - (a < b)
+
 from roundup import i18n
 
 # no, I don't know why we must anchor the date RE when we only ever use it
@@ -585,6 +592,19 @@ class Date:
             return cmp(int(self.second), int(other.second))
         return cmp(self.second, other.second)
 
+    def __lt__(self, other):
+        return self.__cmp__(other) < 0
+    def __le__(self, other):
+        return self.__cmp__(other) <= 0
+    def __eq__(self, other):
+        return self.__cmp__(other) == 0
+    def __ne__(self, other):
+        return self.__cmp__(other) != 0
+    def __gt__(self, other):
+        return self.__cmp__(other) > 0
+    def __ge__(self, other):
+        return self.__cmp__(other) >= 0
+
     def __str__(self):
         """Return this date as a string in the yyyy-mm-dd.hh:mm:ss format."""
         return self.formal()
@@ -834,13 +854,53 @@ class Interval:
                 y = now - (date + self)
                 self.__init__(y.get_tuple())
 
-    def __cmp__(self, other):
+    def __lt__(self, other):
         """Compare this interval to another interval."""
 
         if other is None:
             # we are always larger than None
-            return 1
-        return cmp(self.as_seconds(), other.as_seconds())
+            return False
+        return self.as_seconds() < other.as_seconds()
+
+    def __le__(self, other):
+        """Compare this interval to another interval."""
+
+        if other is None:
+            # we are always larger than None
+            return False
+        return self.as_seconds() <= other.as_seconds()
+
+    def __eq__(self, other):
+        """Compare this interval to another interval."""
+
+        if other is None:
+            # we are always larger than None
+            return False
+        return self.as_seconds() == other.as_seconds()
+
+    def __ne__(self, other):
+        """Compare this interval to another interval."""
+
+        if other is None:
+            # we are always larger than None
+            return True
+        return self.as_seconds() != other.as_seconds()
+
+    def __gt__(self, other):
+        """Compare this interval to another interval."""
+
+        if other is None:
+            # we are always larger than None
+            return True
+        return self.as_seconds() > other.as_seconds()
+
+    def __ge__(self, other):
+        """Compare this interval to another interval."""
+
+        if other is None:
+            # we are always larger than None
+            return True
+        return self.as_seconds() >= other.as_seconds()
 
     def __str__(self):
         """Return this interval as a string."""

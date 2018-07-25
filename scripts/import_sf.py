@@ -279,7 +279,7 @@ def import_xml(tracker_home, xml_file, file_dir):
 
         # sort messages and assign ids
         d['messages'] = []
-        message_data.sort(lambda a,b:cmp(a['date'],b['date']))
+        message_data.sort(key=lambda a:a['date'])
         for message in message_data:
             message_id += 1
             message['id'] = str(message_id)

@@ -223,19 +223,22 @@ class JournalPassword:
 
     __str__ = dummystr
 
-    def __cmp__(self, other):
+    def __eq__(self, other):
         """Compare this password against another password."""
         # check to see if we're comparing instances
         if isinstance(other, self.__class__):
             if self.scheme != other.scheme:
-                return cmp(self.scheme, other.scheme)
-            return cmp(self.password, other.password)
+                return False
+            return self.password == other.password
 
         # assume password is plaintext
         if self.password is None:
             raise ValueError('Password not set')
-        return cmp(self.password, encodePassword(other, self.scheme,
-            self.password or None))
+        return self.password == encodePassword(other, self.scheme,
+            self.password or None)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
 class Password(JournalPassword):
     """The class encapsulates a Password property type value in the database.

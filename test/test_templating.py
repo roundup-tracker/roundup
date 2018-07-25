@@ -354,7 +354,12 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
     def __init__(self, client, classname, nodeid, prop, name, value,
     def __repr__(self):
     def __str__(self):
-    def __cmp__(self, other):
+    def __lt__(self, other):
+    def __le__(self, other):
+    def __eq__(self, other):
+    def __ne__(self, other):
+    def __gt__(self, other):
+    def __ge__(self, other):
     def is_edit_ok(self):
     def is_view_ok(self):
 
@@ -418,8 +423,8 @@ class MultilinkHTMLProperty(HTMLProperty):
     def field(self, size=30, showid=0):
     def menu(self, size=None, height=None, showid=0, additional=[],
 
-def make_sort_function(db, classname, sort_on=None):
-    def sortfunc(a, b):
+def make_key_function(db, classname, sort_on=None):
+    def keyfunc(a):
 
 def find_sort_key(linkcl):
 

@@ -620,7 +620,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
                     l.append(htmlklass(self._client, self._classname, '',
                                        prop, name, value, self._anonymous))
         if sort:
-            l.sort(lambda a,b:cmp(a._name, b._name))
+            l.sort(key=lambda a:a._name)
         return l
 
     def list(self, sort_on=None):
@@ -628,8 +628,8 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         """
         # get the list and sort it nicely
         l = self._klass.list()
-        sortfunc = make_sort_function(self._db, self._classname, sort_on)
-        l.sort(sortfunc)
+        keyfunc = make_key_function(self._db, self._classname, sort_on)
+        l.sort(key=keyfunc)
 
         # check perms
         check = self._client.db.security.hasPermission
@@ -1338,10 +1338,30 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
                                       self._prop, self._value)
     def __str__(self):
         return self.plain()
-    def __cmp__(self, other):
+    def __lt__(self, other):
         if isinstance(other, HTMLProperty):
-            return cmp(self._value, other._value)
-        return cmp(self._value, other)
+            return self._value < other._value
+        return self._value < other
+    def __le__(self, other):
+        if isinstance(other, HTMLProperty):
+            return self._value <= other._value
+        return self._value <= other
+    def __eq__(self, other):
+        if isinstance(other, HTMLProperty):
+            return self._value == other._value
+        return self._value == other
+    def __ne__(self, other):
+        if isinstance(other, HTMLProperty):
+            return self._value != other._value
+        return self._value != other
+    def __gt__(self, other):
+        if isinstance(other, HTMLProperty):
+            return self._value > other._value
+        return self._value > other
+    def __ge__(self, other):
+        if isinstance(other, HTMLProperty):
+            return self._value >= other._value
+        return self._value >= other
 
     def __bool__(self):
         return not not self._value
@@ -2258,12 +2278,12 @@ class MultilinkHTMLProperty(HTMLProperty):
         if self._value:
             display_value = lookupIds(self._db, self._prop, self._value,
                 fail_ok=1, do_lookup=False)
-            sortfun = make_sort_function(self._db, self._prop.classname)
+            keyfun = make_key_function(self._db, self._prop.classname)
             # sorting fails if the value contains
             # items not yet stored in the database
             # ignore these errors to preserve user input
             try:
-                display_value.sort(sortfun)
+                display_value.sort(key=keyfun)
             except:
                 pass
             self._value = display_value
@@ -2303,7 +2323,7 @@ class MultilinkHTMLProperty(HTMLProperty):
     def sorted(self, property):
         """ Return this multilink sorted by the given property """
         value = list(self.__iter__())
-        value.sort(lambda a,b:cmp(a[property], b[property]))
+        value.sort(key=lambda a:a[property])
         return value
 
     def __contains__(self, value):
@@ -2501,21 +2521,19 @@ def register_propclass(prop, cls):
         propclasses.append((prop, cls))
 
 
-def make_sort_function(db, classname, sort_on=None):
-    """Make a sort function for a given class.
+def make_key_function(db, classname, sort_on=None):
+    """Make a sort key function for a given class.
 
     The list being sorted may contain mixed ids and labels.
     """
     linkcl = db.getclass(classname)
     if sort_on is None:
         sort_on = linkcl.orderprop()
-    def sortfunc(a, b):
+    def keyfunc(a):
         if num_re.match(a):
             a = linkcl.get(a, sort_on)
-        if num_re.match(b):
-            b = linkcl.get(b, sort_on)
-        return cmp(a, b)
-    return sortfunc
+        return a
+    return keyfunc
 
 def handleListCGIValue(value):
     """ Value is either a single item or a list of items. Each item has a

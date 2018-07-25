@@ -153,7 +153,7 @@ matches only one command, e.g. l == li == lis == list."""))
         """ Produce an HTML command list.
         """
         commands = sorted(iter(self.commands.values()),
-            operator.attrgetter('__name__'))
+            key=operator.attrgetter('__name__'))
         for command in commands:
             h = _(command.__doc__).split('\n')
             name = command.__name__[3:]

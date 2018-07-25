@@ -41,16 +41,9 @@ db = instance.open('admin')
 
 resolved_id = db.status.lookup('resolved')
 
-def listCompare(x, y):
-    "compare two tuples such that order is positive on [0] and negative on [1]"
-    if x[0] < y[0]:
-        return -1
-    if x[0] > y[0]:
-        return 1
-    if x[1] > y[1]:
-        return -1
-    if x[1] < y[1]:
-        return 1
+def listKey(x):
+    "key for tuples such that order is positive on [0] and negative on [1]"
+    return (x[0], -x[1])
     return 0
 
 # loop through all the users
@@ -73,7 +66,7 @@ for user_id in db.user.list():
             db.issue.get(issue_id, 'creation'), issue_id))
 
     # sort the issues by timeliness and creation date
-    l.sort(listCompare)
+    l.sort(key=listKey)
     if not l:
         continue
 
