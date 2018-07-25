@@ -1,3 +1,4 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import zlib, base64, sys
-print base64.encodestring(zlib.compress(sys.stdin.read()))
+print(base64.encodestring(zlib.compress(sys.stdin.read())))

@@ -27,13 +27,14 @@ TODO: introduce some structure ;)
 TODO: possibly make this more general and configurable...
 '''
 
+from __future__ import print_function
 import sys, cStringIO, MimeWriter, smtplib
 from roundup import instance, date
 from roundup.mailer import SMTPConnection
 
 # open the instance
 if len(sys.argv) != 2:
-    print 'You need to specify an instance home dir'
+    print('You need to specify an instance home dir')
 instance_home = sys.argv[1]
 instance = instance.open(instance_home)
 db = instance.open('admin')
@@ -94,32 +95,32 @@ for user_id in db.user.list():
     body = part.startbody('text/plain')
     
     # do the plain text bit
-    print >>body, 'Created     ID   Activity  Title'
-    print >>body, '='*75
+    print('Created     ID   Activity  Title', file=body)
+    print('='*75, file=body)
     #             '2 months    213  immediate cc_daemon barfage
     old_priority = None
     for priority_order, activity_date, creation_date, issue_id in l:
         priority = db.issue.get(issue_id, 'priority')
         if (priority != old_priority):
             old_priority = priority
-            print >>body, '    ', db.priority.get(priority,'name')
+            print('    ', db.priority.get(priority,'name'), file=body)
         # pretty creation
         creation = (creation_date - date.Date('.')).pretty()
         activity = (activity_date - date.Date('.')).pretty()
         title = db.issue.get(issue_id, 'title')
         if len(title) > 42:
             title = title[:38] + ' ...'
-        print >>body, '%-11s %-4s %-9s %-42s'%(creation, issue_id,
-            activity, title)
+        print('%-11s %-4s %-9s %-42s'%(creation, issue_id,
+            activity, title), file=body)
 
     # some help to finish off
-    print >>body, '''
+    print('''
 To view or respond to any of the issues listed above, visit the URL
 
    %s
 
 and click on "My Issues". Do NOT respond to this message.
-'''%db.config.TRACKER_WEB
+'''%db.config.TRACKER_WEB, file=body)
 
 
     # now the HTML one
@@ -132,27 +133,27 @@ and click on "My Issues". Do NOT respond to this message.
         'month': ' bgcolor="#ffffcd"',
         'whenever': ' bgcolor="#ffffff"',
     }
-    print >>body, '''<table border>
+    print('''<table border>
 <tr><th>Created</th> <th>ID</th> <th>Activity</th> <th>Title</th></tr>
-'''
+''', file=body)
     old_priority = None
     for priority_order, activity_date, creation_date, issue_id in l:
         priority = db.issue.get(issue_id,'priority')
         if (priority != old_priority):
            old_priority = priority
-           print >>body, '<tr><td>-></td><td>-></td><td>-></td><td><b>%s</b></td></tr>'%db.priority.get(priority,'name')
+           print('<tr><td>-></td><td>-></td><td>-></td><td><b>%s</b></td></tr>'%db.priority.get(priority,'name'), file=body)
         creation = (creation_date - date.Date('.')).pretty()
         title = db.issue.get(issue_id, 'title')
         issue_id = '<a href="%sissue%s">%s</a>'%(db.config.TRACKER_WEB,
             issue_id, issue_id)
         activity = (activity_date - date.Date('.')).pretty()
-        print >>body, '''<tr><td>%s</td><td>%s</td><td>%s</td>
-    <td>%s</td></tr>'''%(creation, issue_id, activity, title)
-    print >>body, '</table>'
+        print('''<tr><td>%s</td><td>%s</td><td>%s</td>
+    <td>%s</td></tr>'''%(creation, issue_id, activity, title), file=body)
+    print('</table>', file=body)
 
-    print >>body, '''<p>To view or respond to any of the issues listed
+    print('''<p>To view or respond to any of the issues listed
         above, simply click on the issue ID. Do <b>not</b> respond to
-        this message.</p>'''
+        this message.</p>''', file=body)
 
     # finish of the multipart
     writer.lastpart()

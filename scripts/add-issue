@@ -8,6 +8,7 @@ created as the current user (%s) if they exist as a Roundup
 user, or "admin" otherwise.
 '''
 
+from __future__ import print_function
 import sys, os, pwd
 
 from roundup import instance, mailgw, date
@@ -15,8 +16,8 @@ from roundup import instance, mailgw, date
 # open the instance
 username = pwd.getpwuid(os.getuid())[0]
 if len(sys.argv) < 3:
-    print "Error: Not enough arguments"
-    print __doc__.strip()%(sys.argv[0], username)
+    print("Error: Not enough arguments")
+    print(__doc__.strip()%(sys.argv[0], username))
     sys.exit(1)
 tracker_home = sys.argv[1]
 issue_priority = sys.argv[2]

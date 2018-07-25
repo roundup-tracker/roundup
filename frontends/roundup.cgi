@@ -17,6 +17,7 @@
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 # python version check
+from __future__ import print_function
 from roundup import version_check
 from roundup.i18n import _
 import sys, time
@@ -73,11 +74,11 @@ try:
     import traceback, StringIO, cgi
     from roundup.cgi import cgitb
 except:
-    print "Content-Type: text/plain\n"
-    print _("Failed to import cgitb!\n\n")
+    print("Content-Type: text/plain\n")
+    print(_("Failed to import cgitb!\n\n"))
     s = StringIO.StringIO()
     traceback.print_exc(None, s)
-    print s.getvalue()
+    print(s.getvalue())
 
 
 #
@@ -89,7 +90,7 @@ def checkconfig():
 
     # see if there's an environment var. ROUNDUP_INSTANCE_HOMES is the
     # old name for it.
-    if os.environ.has_key('ROUNDUP_INSTANCE_HOMES'):
+    if 'ROUNDUP_INSTANCE_HOMES' in os.environ:
         homes = os.environ.get('ROUNDUP_INSTANCE_HOMES')
     else:
         homes = os.environ.get('TRACKER_HOMES', '')
@@ -146,7 +147,7 @@ def main(out, err):
     tracker = path[1]
     os.environ['TRACKER_NAME'] = tracker
     os.environ['PATH_INFO'] = string.join(path[2:], '/')
-    if TRACKER_HOMES.has_key(tracker):
+    if tracker in TRACKER_HOMES:
         # redirect if we need a trailing '/'
         if len(path) == 2:
             request.send_response(301)
@@ -182,19 +183,18 @@ def main(out, err):
                 out.write('Not found: %s'%client.path)
 
     else:
-        import urllib
+        from roundup.anypy import urllib_
         request.send_response(200)
         request.send_header('Content-Type', 'text/html')
         request.end_headers()
         w = request.write
         w(_('<html><head><title>Roundup trackers index</title></head>\n'))
         w(_('<body><h1>Roundup trackers index</h1><ol>\n'))
-        homes = TRACKER_HOMES.keys()
-        homes.sort()
+        homes = sorted(TRACKER_HOMES.keys())
         for tracker in homes:
             w(_('<li><a href="%(tracker_url)s/index">%(tracker_name)s</a>\n')%{
                 'tracker_url': os.environ['SCRIPT_NAME']+'/'+
-                               urllib.quote(tracker),
+                               urllib_.quote(tracker),
                 'tracker_name': cgi.escape(tracker)})
         w(_('</ol></body></html>'))
 
@@ -223,7 +223,7 @@ except:
         ts = time.ctime()
         out.write('''<p>%s: An error occurred. Please check
             the server log for more information.</p>'''%ts)
-        print >> sys.stderr, 'EXCEPTION AT', ts
+        print('EXCEPTION AT', ts, file=sys.stderr)
         traceback.print_exc(0, sys.stderr)
 
 sys.stdout.flush()
