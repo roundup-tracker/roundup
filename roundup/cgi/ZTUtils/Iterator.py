@@ -84,7 +84,7 @@ class Iterator:
             s = s + r * rct
         return s
 
-    def roman(self, lower=string.lower):
+    def roman(self, lower=lambda x:x.lower):
         return lower(self.Roman())
 
     def first(self, name=None):
