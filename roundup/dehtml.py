@@ -1,6 +1,6 @@
 
 from __future__ import print_function
-from roundup.anypy.strings import u2s
+from roundup.anypy.strings import u2s, uchr
 class dehtml:
     def __init__(self, converter):
         if converter == "none":
@@ -70,7 +70,7 @@ class dehtml:
                 def handle_entityref(self, name):
                     if self._skip_data:
                         return
-                    c = unichr(name2codepoint[name])
+                    c = uchr(name2codepoint[name])
                     try:
                         self.text= self.text + c
                     except UnicodeEncodeError:

@@ -49,6 +49,8 @@ from email.MIMEText import MIMEText
 from email.MIMEMultipart import MIMEMultipart
 import roundup.anypy.email_
 
+from roundup.anypy.strings import uchr
+
 def initialiseSecurity(security):
     '''Create some Permissions and Roles on the security object
 
@@ -778,7 +780,7 @@ class Client:
                     uc = int(num[1:], 16)
                 else:
                     uc = int(num)
-                return unichr(uc)
+                return uchr(uc)
 
             for field_name in self.form:
                 field = self.form[field_name]

@@ -73,3 +73,10 @@ def is_us(s):
         return isinstance(s, str)
     else:
         return isinstance(s, str) or isinstance(s, unicode)
+
+def uchr(c):
+    """Return the Unicode string containing the given character."""
+    if _py3:
+        return chr(c)
+    else:
+        return unichr(c)
