@@ -13,7 +13,7 @@
      <th style="padding-right: 10" i18n:translate="">Uploaded By</th>
      <th style="padding-right: 10" i18n:translate="">Date</th>
  </tr>
- <tr tal:repeat="patch batch" tal:attributes="class python:['normal', 'alt'][repeat['patch'].index%6/3]">
+ <tr tal:repeat="patch batch" tal:attributes="class python:['normal', 'alt'][repeat['patch'].index%6//3]">
   <td>
    <a tal:attributes="href string:patch${patch/id}/${patch/name}"
       tal:content="patch/name">dld link</a>
@@ -46,7 +46,7 @@
      <th style="padding-right: 10" i18n:translate="">Uploaded By</th>
      <th style="padding-right: 10" i18n:translate="">Date</th>
  </tr>
- <tr tal:repeat="patch batch" tal:attributes="class python:['normal', 'alt'][repeat['patch'].index%6/3]">
+ <tr tal:repeat="patch batch" tal:attributes="class python:['normal', 'alt'][repeat['patch'].index%6//3]">
   <td>
    <a tal:attributes="href string:patch${patch/id}/${patch/name}"
       tal:content="patch/name">dld link</a>

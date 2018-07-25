@@ -12,7 +12,7 @@
      <th style="padding-right: 10" i18n:translate="">Uploaded By</th>
      <th style="padding-right: 10" i18n:translate="">Date</th>
  </tr>
- <tr tal:repeat="file batch" tal:attributes="class python:['normal', 'alt'][repeat['file'].index%6/3]">
+ <tr tal:repeat="file batch" tal:attributes="class python:['normal', 'alt'][repeat['file'].index%6//3]">
   <td>
    <a tal:attributes="href string:file${file/id}/${file/name}"
       tal:content="file/name">dld link</a>

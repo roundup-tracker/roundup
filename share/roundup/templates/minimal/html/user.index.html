@@ -21,7 +21,7 @@
 </tr>
 <tal:block repeat="user context/list">
  <tr tal:condition="user/is_view_ok"
-    tal:attributes="class python:['normal', 'alt'][repeat['user'].index%6/3]">
+    tal:attributes="class python:['normal', 'alt'][repeat['user'].index%6//3]">
  <td>
   <a tal:attributes="href string:user${user/id}"
      tal:content="user/username">username</a>

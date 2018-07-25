@@ -27,7 +27,7 @@
 </tr>
 
 <tal:block repeat="keyword context/list">
-<tr tal:attributes="class python:['normal', 'alt'][repeat['keyword'].index%6/3]">
+<tr tal:attributes="class python:['normal', 'alt'][repeat['keyword'].index%6//3]">
  <td>
   <a tal:attributes="href string:keyword${keyword/id}"
      tal:content="keyword/name">keyword name</a>

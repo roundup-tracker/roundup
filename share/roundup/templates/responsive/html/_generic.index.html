@@ -57,7 +57,7 @@
  </tr>
  <tal:block repeat="item context/list">
  <tr tal:condition="item/is_view_ok"
-     tal:attributes="class python:['normal', 'alt'][repeat['item'].index%6/3]">
+     tal:attributes="class python:['normal', 'alt'][repeat['item'].index%6//3]">
   <td tal:repeat="property context/propnames"
    tal:content="python: item[property] or default"
   >&nbsp;</td>
