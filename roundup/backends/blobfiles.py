@@ -22,6 +22,8 @@ __docformat__ = 'restructuredtext'
 
 import os
 
+from roundup.anypy.strings import s2b
+
 def files_in_dir(dir):
     if not os.path.exists(dir):
         return 0
@@ -332,6 +334,8 @@ class FileStorage:
         # in multi-tracker (i.e. multi-umask) or modpython scenarios
         # the umask may have changed since last we set it.
         os.umask(self.umask)
+        if isinstance(content, str):
+            content = s2b(content)
         open(name, 'wb').write(content)
 
     def getfile(self, classname, nodeid, property):
