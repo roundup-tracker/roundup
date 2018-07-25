@@ -95,7 +95,7 @@ explanatory message given in the exception.
 from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
-import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
+import string, re, os, mimetools, smtplib, socket, binascii, quopri
 import time, random, sys, logging
 import codecs
 import traceback
@@ -108,6 +108,7 @@ from roundup import configuration, hyperdb, date, password, exceptions
 from roundup.mailer import Mailer, MessageSendError
 from roundup.i18n import _
 from roundup.hyperdb import iter_roles
+from roundup.anypy.strings import StringIO
 
 try:
     import pyme, pyme.core, pyme.constants, pyme.constants.sigsum
@@ -223,7 +224,7 @@ class Message(mimetools.Message):
         '''
         boundary = self.getparam('boundary')
         mid, end = '--'+boundary, '--'+boundary+'--'
-        s = cStringIO.StringIO()
+        s = StringIO()
         while 1:
             line = self.fp.readline()
             if not line:
@@ -303,7 +304,7 @@ class Message(mimetools.Message):
             # the subject of the actual e-mail embedded here
             # we add a '.eml' extension like other email software does it
             self.fp.seek(0)
-            s = cStringIO.StringIO(self.getbody())
+            s = StringIO(self.getbody())
             name = Message(s).getheader('subject')
             if name:
                 name = name + '.eml'
@@ -329,7 +330,7 @@ class Message(mimetools.Message):
             data = binascii.a2b_base64(self.fp.read())
         elif encoding == 'quoted-printable':
             # the quopri module wants to work with files
-            decoded = cStringIO.StringIO()
+            decoded = StringIO()
             quopri.decode(self.fp, decoded)
             data = decoded.getvalue()
         elif encoding == 'uuencoded':
@@ -449,7 +450,7 @@ class Message(mimetools.Message):
                 attachments = []
             html_part = False
         elif unpack_rfc822 and content_type == 'message/rfc822':
-            s = cStringIO.StringIO(self.getbody())
+            s = StringIO(self.getbody())
             m = Message(s)
             ig = ignore_alternatives and not content
             new_content, attachments, html_part = m.extract_content(m.gettype(), ig,
@@ -527,7 +528,7 @@ class Message(mimetools.Message):
         # pyme.core.Data implements a seek method with a different signature
         # than roundup can handle. So we'll put the data in a container that
         # the Message class can work with.
-        c = cStringIO.StringIO()
+        c = StringIO()
         c.write(plaintext.read())
         c.seek(0)
         return Message(c)
@@ -1328,7 +1329,7 @@ class MailGW:
 
             XXX: we may want to read this into a temporary file instead...
         """
-        s = cStringIO.StringIO()
+        s = StringIO()
         s.write(sys.stdin.read())
         s.seek(0)
         self.main(s)
@@ -1424,7 +1425,7 @@ class MailGW:
                 server.store(str(i), '+FLAGS', r'(\Deleted)')
 
                 # process the message
-                s = cStringIO.StringIO(data[0][1])
+                s = StringIO(data[0][1])
                 s.seek(0)
                 self.handle_Message(Message(s))
             server.close()
@@ -1493,7 +1494,7 @@ class MailGW:
             #   [ array of message lines ],
             #   number of octets ]
             lines = server.retr(i)[1]
-            s = cStringIO.StringIO('\n'.join(lines))
+            s = StringIO('\n'.join(lines))
             s.seek(0)
             self.handle_Message(Message(s))
             # delete the message

@@ -7,6 +7,12 @@
 import sys
 _py3 = sys.version_info[0] > 2
 
+import io
+if _py3:
+    StringIO = io.StringIO
+else:
+    StringIO = io.BytesIO
+
 def b2s(b):
     """Convert a UTF-8 encoded bytes object to the internal string format."""
     if _py3:

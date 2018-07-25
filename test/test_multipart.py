@@ -16,7 +16,7 @@
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 import unittest
-from cStringIO import StringIO
+from roundup.anypy.strings import StringIO
 
 from roundup.mailgw import Message
 

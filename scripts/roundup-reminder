@@ -28,9 +28,10 @@ TODO: possibly make this more general and configurable...
 '''
 
 from __future__ import print_function
-import sys, cStringIO, MimeWriter, smtplib
+import sys, MimeWriter, smtplib
 from roundup import instance, date
 from roundup.mailer import SMTPConnection
+from roundup.anypy.strings import StringIO
 
 # open the instance
 if len(sys.argv) != 2:
@@ -71,7 +72,7 @@ for user_id in db.user.list():
         continue
 
     # generate the email message
-    message = cStringIO.StringIO()
+    message = StringIO()
     writer = MimeWriter.MimeWriter(message)
     writer.addheader('Subject', 'Your active %s issues'%db.config.TRACKER_NAME)
     writer.addheader('To', address)

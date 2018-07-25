@@ -21,7 +21,7 @@
 __docformat__ = 'restructuredtext'
 
 import re, os, smtplib, socket, time, random
-import cStringIO, base64, mimetypes
+import base64, mimetypes
 import os.path
 import logging
 from email import Encoders

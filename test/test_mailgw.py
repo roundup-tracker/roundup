@@ -28,7 +28,7 @@ except ImportError:
         reason="Skipping PGP tests: 'pyme' not installed"))
 
 
-from cStringIO import StringIO
+from roundup.anypy.strings import StringIO
 
 if 'SENDMAILDEBUG' not in os.environ:
     os.environ['SENDMAILDEBUG'] = 'mail-test.log'

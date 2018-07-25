@@ -86,7 +86,7 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
         c.update({'options': options})
 
         # and go
-        output = StringIO.StringIO()
+        output = StringIO()
         TALInterpreter.TALInterpreter(self._v_program, self.macros,
             getEngine().getContext(c), output, tal=1, strictinsert=0)()
         return output.getvalue()

@@ -22,8 +22,7 @@ import getopt
 import re
 from types import ListType
 from cgi import escape
-# Do not use cStringIO here!  It's not unicode aware. :(
-from StringIO import StringIO
+from roundup.anypy.strings import StringIO
 #from DocumentTemplate.DT_Util import ustr
 ustr = str
 
@@ -758,18 +757,7 @@ class FasterStringIO(StringIO):
 
     This let's us have a much faster write() method.
     """
-    def close(self):
-        if not self.closed:
-            self.write = _write_ValueError
-            StringIO.close(self)
-
-    def seek(self, pos, mode=0):
-        raise RuntimeError("FasterStringIO.seek() not allowed")
-
-    def write(self, s):
-        #assert self.pos == self.len
-        self.buflist.append(s)
-        self.len = self.pos = self.pos + len(s)
+    pass
 
 
 def _write_ValueError(s):

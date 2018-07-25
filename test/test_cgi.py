@@ -9,7 +9,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 from __future__ import print_function
-import unittest, os, shutil, errno, sys, difflib, cgi, re, StringIO
+import unittest, os, shutil, errno, sys, difflib, cgi, re
 
 from roundup.cgi import client, actions, exceptions
 from roundup.cgi.exceptions import FormError, NotFound
@@ -18,6 +18,7 @@ from roundup.cgi.templating import HTMLItem, HTMLRequest, NoTemplate
 from roundup.cgi.templating import HTMLProperty, _HTMLItem, anti_csrf_nonce
 from roundup.cgi.form_parser import FormParser
 from roundup import init, instance, password, hyperdb, date
+from roundup.anypy.strings import StringIO
 
 # For testing very simple rendering
 from roundup.cgi.engine_zopetal import RoundupPageTemplate
@@ -1458,7 +1459,7 @@ class FormTestCase(FormTestParent, unittest.TestCase):
         cl = self._make_client({'@columns': 'id,name'}, nodeid=None,
             userid='1')
         cl.classname = 'status'
-        output = StringIO.StringIO()
+        output = StringIO()
         cl.request = MockNull()
         cl.request.wfile = output
         actions.ExportCSVAction(cl).handle()
@@ -1471,7 +1472,7 @@ class FormTestCase(FormTestParent, unittest.TestCase):
         cl = self._make_client({'@columns': 'falseid,name'}, nodeid=None,
             userid='1')
         cl.classname = 'status'
-        output = StringIO.StringIO()
+        output = StringIO()
         cl.request = MockNull()
         cl.request.wfile = output
         self.assertRaises(exceptions.NotFound,
@@ -1481,7 +1482,7 @@ class FormTestCase(FormTestParent, unittest.TestCase):
         cl = self._make_client({'@columns': 'id,email,password'}, nodeid=None,
             userid='2')
         cl.classname = 'user'
-        output = StringIO.StringIO()
+        output = StringIO()
         cl.request = MockNull()
         cl.request.wfile = output
         # used to be self.assertRaises(exceptions.Unauthorised,
@@ -1496,7 +1497,7 @@ class FormTestCase(FormTestParent, unittest.TestCase):
         cl = self._make_client({'@columns': 'id,address,password'}, nodeid=None,
             userid='2')
         cl.classname = 'user'
-        output = StringIO.StringIO()
+        output = StringIO()
         cl.request = MockNull()
         cl.request.wfile = output
         # used to be self.assertRaises(exceptions.Unauthorised,

@@ -5,7 +5,7 @@ __docformat__ = 'restructuredtext'
 import os.path
 import chameleon
 
-from roundup.cgi.templating import StringIO, context, TALLoaderBase
+from roundup.cgi.templating import context, TALLoaderBase
 from roundup.anypy.strings import s2u
 
 class Loader(TALLoaderBase):

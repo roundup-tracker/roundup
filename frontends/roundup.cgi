@@ -71,12 +71,13 @@ LOG = DevNull()
 # Set up the error handler
 # 
 try:
-    import traceback, StringIO, cgi
+    import traceback, cgi
+    from roundup.anypy.strings import StringIO
     from roundup.cgi import cgitb
 except:
     print("Content-Type: text/plain\n")
     print(_("Failed to import cgitb!\n\n"))
-    s = StringIO.StringIO()
+    s = StringIO()
     traceback.print_exc(None, s)
     print(s.getvalue())
 

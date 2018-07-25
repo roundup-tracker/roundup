@@ -36,8 +36,7 @@ if (osp.exists(thisdir + '/__init__.py') and
 # --/
 
 
-import errno, cgi, getopt, os, socket, sys, traceback, time
-import StringIO
+import errno, cgi, getopt, io, os, socket, sys, traceback, time
 
 try:
     # Python 3.
@@ -64,6 +63,7 @@ from roundup import __version__ as roundup_version
 
 # Roundup modules of use here
 from roundup.anypy import http_, urllib_
+from roundup.anypy.strings import StringIO
 from roundup.cgi import cgitb, client
 from roundup.cgi.PageTemplates.PageTemplate import PageTemplate
 import roundup.instance
@@ -240,7 +240,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
                         self.wfile.write(cgitb.breaker())
                         self.wfile.write(cgitb.html())
                     except:
-                        s = StringIO.StringIO()
+                        s = StringIO()
                         traceback.print_exc(None, s)
                         self.wfile.write("<pre>")
                         self.wfile.write(cgi.escape(s.getvalue()))
@@ -311,7 +311,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
 
 
             if favicon_fileobj is None:
-                favicon_fileobj = StringIO.StringIO(favico)
+                favicon_fileobj = io.BytesIO(favico)
 
             self.send_response(200)
             self.send_header('Content-Type', 'image/x-icon')

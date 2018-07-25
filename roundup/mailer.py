@@ -4,8 +4,6 @@ __docformat__ = 'restructuredtext'
 
 import time, quopri, os, socket, smtplib, re, sys, traceback, email, logging
 
-from cStringIO import StringIO
-
 from roundup import __version__
 from roundup.date import get_timezone, Date
 

@@ -37,7 +37,7 @@ if (osp.exists(thisdir + '/__init__.py') and
 from roundup import version_check
 from roundup import __version__ as roundup_version
 
-import sys, os, re, cStringIO, getopt, socket, netrc
+import sys, os, re, getopt, socket, netrc
 
 from roundup import mailgw
 from roundup.i18n import _
