@@ -50,7 +50,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import roundup.anypy.email_
 
-from roundup.anypy.strings import uchr
+from roundup.anypy.strings import s2b, uchr
 
 def initialiseSecurity(security):
     '''Create some Permissions and Roles on the security object
@@ -402,7 +402,7 @@ class Client:
     def _gen_nonce(self):
         """ generate a unique nonce """
         n = '%s%s%s'%(random.random(), id(self), time.time() )
-        n = hashlib.sha256(n).hexdigest()
+        n = hashlib.sha256(s2b(n)).hexdigest()
         return n
 
     def setTranslator(self, translator=None):
