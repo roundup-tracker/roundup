@@ -63,7 +63,7 @@ from roundup import __version__ as roundup_version
 
 # Roundup modules of use here
 from roundup.anypy import http_, urllib_
-from roundup.anypy.strings import StringIO
+from roundup.anypy.strings import s2b, StringIO
 from roundup.cgi import cgitb, client
 from roundup.cgi.PageTemplates.PageTemplate import PageTemplate
 import roundup.instance
@@ -237,20 +237,20 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
                 if self.DEBUG_MODE:
                     try:
                         reload(cgitb)
-                        self.wfile.write(cgitb.breaker())
-                        self.wfile.write(cgitb.html())
+                        self.wfile.write(s2b(cgitb.breaker()))
+                        self.wfile.write(s2b(cgitb.html()))
                     except:
                         s = StringIO()
                         traceback.print_exc(None, s)
-                        self.wfile.write("<pre>")
-                        self.wfile.write(cgi.escape(s.getvalue()))
-                        self.wfile.write("</pre>\n")
+                        self.wfile.write(b"<pre>")
+                        self.wfile.write(s2b(cgi.escape(s.getvalue())))
+                        self.wfile.write(b"</pre>\n")
                 else:
                     # user feedback
-                    self.wfile.write(cgitb.breaker())
+                    self.wfile.write(s2b(cgitb.breaker()))
                     ts = time.ctime()
-                    self.wfile.write('''<p>%s: An error occurred. Please check
-                    the server log for more information.</p>'''%ts)
+                    self.wfile.write(s2b('''<p>%s: An error occurred. Please check
+                    the server log for more information.</p>'''%ts))
                     # out to the logfile
                     print('EXCEPTION AT', ts)
                     traceback.print_exc()
@@ -281,16 +281,16 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
                 'true' : 1,
                 'false' : 0,
             }
-            w(pt.pt_render(extra_context=extra))
+            w(s2b(pt.pt_render(extra_context=extra)))
         else:
-            w(_('<html><head><title>Roundup trackers index</title></head>\n'
-                '<body><h1>Roundup trackers index</h1><ol>\n'))
+            w(s2b(_('<html><head><title>Roundup trackers index</title></head>\n'
+                    '<body><h1>Roundup trackers index</h1><ol>\n')))
             keys.sort()
             for tracker in keys:
-                w('<li><a href="%(tracker_url)s/index">%(tracker_name)s</a>\n'%{
+                w(s2b('<li><a href="%(tracker_url)s/index">%(tracker_name)s</a>\n'%{
                     'tracker_url': urllib_.quote(tracker),
-                    'tracker_name': cgi.escape(tracker)})
-            w('</ol></body></html>')
+                    'tracker_name': cgi.escape(tracker)}))
+            w(b'</ol></body></html>')
 
     def inner_run_cgi(self):
         ''' This is the inner part of the CGI handling
@@ -359,7 +359,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
                url += '?' + query
             self.send_header('Location', url)
             self.end_headers()
-            self.wfile.write('Moved Permanently')
+            self.wfile.write(b'Moved Permanently')
             return
 
         # figure out what the rest of the path is
