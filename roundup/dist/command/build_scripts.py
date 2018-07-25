@@ -96,7 +96,13 @@ sys.path.insert(1, "%s/lib/python%s/site-packages")
         """ Create each script listed in 'self.scripts'
         """
 
-        to_module = string.maketrans('-/', '_.')
+        try:
+            # Python 3.
+            maketrans = str.maketrans
+        except AttributeError:
+            # Python 2.
+            maketrans = string.maketrans
+        to_module = maketrans('-/', '_.')
 
         self.mkpath(self.build_dir)
         for script in self.scripts:
@@ -111,7 +117,7 @@ sys.path.insert(1, "%s/lib/python%s/site-packages")
                 continue
 
             module = os.path.splitext(os.path.basename(script))[0]
-            module = string.translate(module, to_module)
+            module = module.translate(to_module)
             script_vars = {
                 'python': self.python_executable,
                 'package': self.package_name,
