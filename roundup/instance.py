@@ -33,6 +33,7 @@ try:
 except ImportError:
     import __builtin__ as builtins
 
+import collections
 import os
 import sys
 import warnings
@@ -133,14 +134,14 @@ update your config.ini
         if self.optimize:
             # execute preloaded schema object
             self._exec(self.schema, env)
-            if callable (self.schema_hook):
+            if isinstance(self.schema_hook, collections.Callable):
                 self.schema_hook(**env)
             # use preloaded detectors
             detectors = self.detectors
         else:
             # execute the schema file
             self._execfile('schema.py', env)
-            if callable (self.schema_hook):
+            if isinstance(self.schema_hook, collections.Callable):
                 self.schema_hook(**env)
             # reload extensions and detectors
             for extension in self.get_extensions('extensions'):
