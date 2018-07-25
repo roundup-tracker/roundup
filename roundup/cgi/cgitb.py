@@ -11,6 +11,7 @@ import sys, os, keyword, linecache, tokenize, inspect, cgi
 import pydoc, traceback
 
 from roundup.cgi import templating, TranslationService
+from roundup.anypy.strings import s2b
 
 def get_translator(i18n=None):
     """Return message translation function (gettext)
@@ -156,12 +157,23 @@ def html(context=5, i18n=None):
                     names.append(token)
             if type == tokenize.NEWLINE: raise IndexError
         def linereader(file=file, lnum=[lnum]):
-            line = linecache.getline(file, lnum[0])
+            line = s2b(linecache.getline(file, lnum[0]))
             lnum[0] = lnum[0] + 1
             return line
 
+        # The interface that is tokenize.tokenize in Python 3 is
+        # called tokenize.generate_tokens in Python 2.  However,
+        # Python 2 has tokenize.tokenize with a different interface,
+        # and Python 3 has an undocumented generate_tokens function,
+        # also with a different interface, so a version check is
+        # needed instead of checking for which functions exist.
+        if sys.version_info[0] > 2:
+            tokenize_fn = tokenize.tokenize
+        else:
+            tokenize_fn = tokenize.generate_tokens
         try:
-            tokenize.tokenize(linereader, tokeneater)
+            for t in tokenize_fn(linereader):
+                tokeneater(*t)
         except IndexError:
             pass
         lvals = []
