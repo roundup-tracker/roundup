@@ -7,7 +7,7 @@
 from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
-import sys, os, types, string, keyword, linecache, tokenize, inspect, cgi
+import sys, os, string, keyword, linecache, tokenize, inspect, cgi
 import pydoc, traceback
 
 from roundup.cgi import templating, TranslationService
@@ -206,10 +206,9 @@ def html(context=5, i18n=None):
 
     exception = '<p><strong>%s</strong>: %s' % (str(etype), str(evalue))
     attribs = []
-    if type(evalue) is types.InstanceType:
-        for name in dir(evalue):
-            value = pydoc.html.repr(getattr(evalue, name))
-            attribs.append('<br>%s%s&nbsp;= %s' % (indent, name, value))
+    for name in dir(evalue):
+        value = pydoc.html.repr(getattr(evalue, name))
+        attribs.append('<br>%s%s&nbsp;= %s' % (indent, name, value))
 
     return head + string.join(attribs) + string.join(traceback) + '<p>&nbsp;</p>'
 
