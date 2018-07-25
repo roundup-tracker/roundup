@@ -108,7 +108,7 @@
     tal:attributes="action request/classname">
 
  <table class="form" tal:define="n_sort python:2">
-  <tal:block tal:repeat="n python:range(n_sort)" tal:condition="batch">
+  <tal:block tal:repeat="n python:list(range(n_sort))" tal:condition="batch">
   <tr tal:define="key python:len(request.sort)>n and request.sort[n]">
    <th>
     <tal:block tal:condition="not:n" i18n:translate="">Sort on:</tal:block>
@@ -129,7 +129,7 @@
    </td>
   </tr>
   </tal:block>
-  <tal:block tal:repeat="n python:range(n_sort)" tal:condition="batch">
+  <tal:block tal:repeat="n python:list(range(n_sort))" tal:condition="batch">
   <tr tal:define="key python:len(request.group)>n and request.group[n]">
    <th>
     <tal:block tal:condition="not:n" i18n:translate="">Group on:</tal:block>

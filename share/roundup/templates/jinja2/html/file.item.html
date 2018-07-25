@@ -25,7 +25,7 @@
 
       <input type="hidden" name="@template" value="item">
       <input type="hidden" name="@required" value="name,type">
-      {% if request.form.has_key('@multilink') %}
+      {% if '@multilink' in request.form %}
         <input type="hidden" name="@multilink"
           value='request.form.@multilink.value()'>
       {% endif %}

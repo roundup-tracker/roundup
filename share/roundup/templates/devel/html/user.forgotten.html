@@ -5,7 +5,7 @@
  i18n:translate="">Password reset request</span>
 <td class="content" metal:fill-slot="content">
 
-<tal:askforinfo tal:condition="python:options['error_message'] or not request.form.has_key('@action')"> 
+<tal:askforinfo tal:condition="python:options['error_message'] or '@action' not in request.form"> 
 
 <p i18n:translate="">You have two options if you have forgotten your password.
 If you know the email address you registered with, enter it below.</p>

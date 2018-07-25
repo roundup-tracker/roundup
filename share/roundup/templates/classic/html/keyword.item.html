@@ -9,7 +9,7 @@
 <table class="otherinfo" tal:define="keywords db/keyword/list"
        tal:condition="keywords">
  <tr><th colspan="4" class="header" i18n:translate="">Existing Keywords</th></tr>
- <tr tal:repeat="start python:range(0, len(keywords), 4)">
+ <tr tal:repeat="start python:list(range(0, len(keywords), 4))">
   <td width="25%" tal:define="batch python:utils.Batch(keywords, 4, start)"
       tal:repeat="keyword batch">
     <a tal:attributes="href string:keyword${keyword/id}"

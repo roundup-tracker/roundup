@@ -34,7 +34,7 @@
    <input type="hidden" name="@template" value="item">
    <input type="hidden" name="@required" value="name,type">
    <input type="hidden" name="@multilink"
-          tal:condition="python:request.form.has_key('@multilink')"
+          tal:condition="python:'@multilink' in request.form"
           tal:attributes="value request/form/@multilink/value">
   </td>
   <td tal:content="structure context/submit">submit button here</td>

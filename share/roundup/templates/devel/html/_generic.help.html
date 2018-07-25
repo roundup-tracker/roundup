@@ -1,6 +1,6 @@
 <tal:block metal:use-macro="templates/help/macros/frame">
 <tal:block metal:fill-slot="content">
-<tal:block tal:condition="python:request.form.has_key('property')">
+<tal:block tal:condition="python:'property' in request.form">
  <form name="frm_help" action="#">
      <table class="classhelp"
             tal:define="props python:request.form['properties'].value.split(',');
@@ -33,7 +33,7 @@ original_field=form[field].value;
 text_field.value=original_field;
 //--></script>
  </tal:block>
- <tal:block tal:condition="python:not request.form.has_key('property')">
+ <tal:block tal:condition="python:'property' not in request.form">
  <tal:block tal:define="batch request/batch;
                         props python:request.form['properties'].value.split(',')">
      <table width="100%">
