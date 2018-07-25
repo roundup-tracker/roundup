@@ -231,7 +231,7 @@ class Context:
         text = self.evaluate(expr)
         if text is Default or text is None:
             return text
-        if isinstance(text, unicode):
+        if isinstance(text, type(u'')):
             return text
         else:
             return ustr(text)

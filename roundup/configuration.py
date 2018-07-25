@@ -540,8 +540,9 @@ class RegExpOption(Option):
         return value.pattern
 
     def str2value(self, value):
-        if not isinstance(value, unicode):
+        if not isinstance(value, type(u'')):
             value = str(value)
+        if not isinstance(value, type(u'')):
             # if it is 7-bit ascii, use it as string,
             # otherwise convert to unicode.
             try:

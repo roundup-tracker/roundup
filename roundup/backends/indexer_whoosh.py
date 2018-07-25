@@ -5,6 +5,7 @@ import re, os
 from whoosh import fields, qparser, index, query, analysis
 
 from roundup.backends.indexer_common import Indexer as IndexerBase
+from roundup.anypy.strings import us2u
 
 class Indexer(IndexerBase):
     def __init__(self, db):
@@ -78,8 +79,7 @@ class Indexer(IndexerBase):
         if not text:
             text = u''
 
-        if not isinstance(text, unicode):
-            text = unicode(text, "utf-8", "replace")
+        text = us2u(text, "replace")
 
         # We use the identifier twice: once in the actual "text" being
         # indexed so we can search on it, and again as the "data" being

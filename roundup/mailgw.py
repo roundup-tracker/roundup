@@ -97,6 +97,7 @@ __docformat__ = 'restructuredtext'
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
 import time, random, sys, logging
+import codecs
 import traceback
 import email.utils
 
@@ -343,7 +344,7 @@ class Message(mimetools.Message):
             charset = charset.lower().replace("windows-", 'cp')
             # Do conversion only if charset specified - handle
             # badly-specified charsets
-            edata = unicode(data, charset, 'replace').encode('utf-8')
+            edata = codecs.decode(data, charset, 'replace').encode('utf-8')
             # Convert from dos eol to unix
             edata = edata.replace('\r\n', '\n')
         else:

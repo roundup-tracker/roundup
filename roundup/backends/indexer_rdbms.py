@@ -5,6 +5,7 @@ propname, itemid) instances.
 import re
 
 from roundup.backends.indexer_common import Indexer as IndexerBase
+from roundup.anypy.strings import us2u, u2s
 
 class Indexer(IndexerBase):
     def __init__(self, db):
@@ -61,10 +62,9 @@ class Indexer(IndexerBase):
             self.db.cursor.execute(sql, (id, ))
 
         # ok, find all the unique words in the text
-        if not isinstance(text, unicode):
-            text = unicode(text, "utf-8", "replace")
+        text = us2u(text, "replace")
         text = text.upper()
-        wordlist = [w.encode("utf-8")
+        wordlist = [u2s(w)
                     for w in re.findall(r'(?u)\b\w{%d,%d}\b'
                                         % (self.minlength, self.maxlength), text)]
         words = set()

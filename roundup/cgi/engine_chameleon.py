@@ -6,6 +6,7 @@ import os.path
 import chameleon
 
 from roundup.cgi.templating import StringIO, context, TALLoaderBase
+from roundup.anypy.strings import s2u
 
 class Loader(TALLoaderBase):
     def __init__(self, dir):
@@ -27,7 +28,7 @@ class RoundupPageTemplate(object):
         def translate(msgid, domain=None, mapping=None, default=None):
             result = client.translator.translate(domain, msgid,
                          mapping=mapping, default=default)
-            return unicode(result, client.translator.OUTPUT_ENCODING)
+            return s2u(result)
 
         output = self._pt.render(None, translate, **c)
         return output.encode(client.charset)

@@ -40,6 +40,7 @@ from types import MethodType
 # http://jinja.pocoo.org/docs/api/#loaders
 
 from roundup.cgi.templating import context, LoaderBase, TemplateBase
+from roundup.anypy.strings import s2u
 
 class Jinja2Loader(LoaderBase):
     def __init__(self, dir):
@@ -59,8 +60,7 @@ class Jinja2Loader(LoaderBase):
         # The automatic conversion will assume 'ascii' and fail sometime.
         # Analysed with roundup 1.5.0 and jinja 2.7.1. See issue2550811.
         self._env.filters["u"] = lambda s: \
-            unicode(s(), "utf-8") if type(s) == MethodType \
-                                  else unicode(s, "utf-8")
+            s2u(s()) if type(s) == MethodType else s2u(s)
 
     def check(self, tplname):
         #print tplname

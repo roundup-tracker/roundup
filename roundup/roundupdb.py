@@ -39,6 +39,8 @@ from roundup.hyperdb import iter_roles
 from roundup.mailer import Mailer, MessageSendError, encode_quopri, \
     nice_sender_header
 
+from roundup.anypy.strings import s2u
+
 try:
     import pyme, pyme.core
     # gpgme_check_version() must have been called once in a programm
@@ -494,7 +496,7 @@ class IssueClass:
         charset = getattr(self.db.config, 'EMAIL_CHARSET', 'utf-8')
 
         # construct the content and convert to unicode object
-        body = unicode('\n'.join(m), 'utf-8').encode(charset)
+        body = s2u('\n'.join(m)).encode(charset)
 
         # make sure the To line is always the same (for testing mostly)
         sendto.sort()
@@ -520,7 +522,7 @@ class IssueClass:
             sendto = [sendto]
 
         # tracker sender info
-        tracker_name = unicode(self.db.config.TRACKER_NAME, 'utf-8')
+        tracker_name = s2u(self.db.config.TRACKER_NAME)
         tracker_name = nice_sender_header(tracker_name, from_address,
             charset)
 

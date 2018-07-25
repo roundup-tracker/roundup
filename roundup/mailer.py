@@ -17,6 +17,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 from roundup.anypy import email_
+from roundup.anypy.strings import s2u
 
 try:
     import pyme, pyme.core
@@ -85,12 +86,12 @@ class Mailer:
         '''
         # encode header values if they need to be
         charset = getattr(self.config, 'EMAIL_CHARSET', 'utf-8')
-        tracker_name = unicode(self.config.TRACKER_NAME, 'utf-8')
+        tracker_name = s2u(self.config.TRACKER_NAME)
         if not author:
             author = (tracker_name, self.config.ADMIN_EMAIL)
             name = author[0]
         else:
-            name = unicode(author[0], 'utf-8')
+            name = s2u(author[0])
         author = nice_sender_header(name, author[1], charset)
         try:
             message['Subject'] = subject.encode('ascii')

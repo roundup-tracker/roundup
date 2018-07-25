@@ -16,12 +16,11 @@
 from roundup import i18n
 from roundup.cgi.PageTemplates import Expressions, PathIterator, TALES
 from roundup.cgi.TAL import TALInterpreter
+from roundup.anypy.strings import us2u, u2s
 
 ### Translation classes
 
 class TranslationServiceMixin:
-
-    OUTPUT_ENCODING = "utf-8"
 
     def translate(self, domain, msgid, mapping=None,
         context=None, target_language=None, default=None
@@ -32,18 +31,15 @@ class TranslationServiceMixin:
         return _msg
 
     def gettext(self, msgid):
-        if not isinstance(msgid, unicode):
-            msgid = unicode(msgid, 'utf8')
+        msgid = us2u(msgid)
         msgtrans=self.ugettext(msgid)
-        return msgtrans.encode(self.OUTPUT_ENCODING)
+        return u2s(msgtrans)
 
     def ngettext(self, singular, plural, number):
-        if not isinstance(singular, unicode):
-            singular = unicode(singular, 'utf8')
-        if not isinstance(plural, unicode):
-            plural = unicode(plural, 'utf8')
+        singular = us2u(singular)
+        plural = us2u(plural)
         msgtrans=self.ungettext(singular, plural, number)
-        return msgtrans.encode(self.OUTPUT_ENCODING)
+        return u2s(msgtrans)
 
 class TranslationService(TranslationServiceMixin, i18n.RoundupTranslations):
     pass
@@ -55,8 +51,7 @@ class NullTranslationService(TranslationServiceMixin,
             return self._fallback.ugettext(message)
         # Sometimes the untranslatable message is a UTF-8 encoded string
         # (thanks to PageTemplate's internals).
-        if not isinstance(message, unicode):
-            return unicode(message, 'utf8')
+        message = us2u(message)
         return message
 
 ### TAL patching

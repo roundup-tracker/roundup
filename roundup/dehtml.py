@@ -1,5 +1,6 @@
 
 from __future__ import print_function
+from roundup.anypy.strings import u2s
 class dehtml:
     def __init__(self, converter):
         if converter == "none":
@@ -17,7 +18,7 @@ class dehtml:
                     for script in soup(["script", "style"]):
                         script.extract()
 
-                    return soup.get_text('\n', strip=True).encode('utf-8')
+                    return u2s(soup.get_text('\n', strip=True))
 
                 self.html2text = html2text
             else:

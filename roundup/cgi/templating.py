@@ -29,6 +29,7 @@ from roundup.anypy import urllib_
 from roundup import hyperdb, date, support
 from roundup import i18n
 from roundup.i18n import _
+from roundup.anypy.strings import is_us, us2s, s2u, u2s
 
 from .KeywordsExpr import render_keywords_expression_editor
 
@@ -1774,7 +1775,7 @@ class BooleanHTMLProperty(HTMLProperty):
             return self.plain(escape=1)
 
         value = self._value
-        if isinstance(value, str) or isinstance(value, unicode):
+        if is_us(value):
             value = value.strip().lower() in ('checked', 'yes', 'true',
                 'on', '1')
 
@@ -1827,8 +1828,7 @@ class DateHTMLProperty(HTMLProperty):
             anonymous=0, offset=None):
         HTMLProperty.__init__(self, client, classname, nodeid, prop, name,
                 value, anonymous=anonymous)
-        if self._value and not (isinstance(self._value, str) or
-                isinstance(self._value, unicode)):
+        if self._value and not is_us(self._value):
             self._value.setTranslator(self._client.translator)
         self._offset = offset
         if self._offset is None :
@@ -1910,9 +1910,9 @@ class DateHTMLProperty(HTMLProperty):
                     raise ValueError(self._('default value for '
                         'DateHTMLProperty must be either DateHTMLProperty '
                         'or string date representation.'))
-        elif isinstance(value, str) or isinstance(value, unicode):
+        elif is_us(value):
             # most likely erroneous input to be passed back to user
-            if isinstance(value, unicode): value = value.encode('utf8')
+            value = us2s(value)
             s = self.input(name=self._formname, value=value, size=size,
                               **kwargs)
             if popcal:
@@ -1923,7 +1923,7 @@ class DateHTMLProperty(HTMLProperty):
 
         if raw_value is None:
             value = ''
-        elif isinstance(raw_value, str) or isinstance(raw_value, unicode):
+        elif is_us(raw_value):
             if format is self._marker:
                 value = raw_value
             else:
@@ -2012,7 +2012,7 @@ class IntervalHTMLProperty(HTMLProperty):
             anonymous=0):
         HTMLProperty.__init__(self, client, classname, nodeid, prop,
             name, value, anonymous)
-        if self._value and not isinstance(self._value, (str, unicode)):
+        if self._value and not is_us(self._value):
             self._value.setTranslator(self._client.translator)
 
     def plain(self, escape=0):
@@ -2967,9 +2967,9 @@ function help_window(helpurl, width, height) {
         klass = self.client.db.getclass(self.classname)
         if self.search_text:
             matches = self.client.db.indexer.search(
-                [w.upper().encode("utf-8", "replace") for w in re.findall(
+                [u2s(w.upper()) for w in re.findall(
                     r'(?u)\b\w{2,25}\b',
-                    unicode(self.search_text, "utf-8", "replace")
+                    s2u(self.search_text, "replace")
                 )], klass)
         else:
             matches = None

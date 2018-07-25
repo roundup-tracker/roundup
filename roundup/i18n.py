@@ -40,6 +40,7 @@ import gettext as gettext_module
 import os
 
 from roundup import msgfmt
+from roundup.anypy.strings import is_us
 
 # List of directories for mo file search (see SF bug 1219689)
 LOCALE_DIRS = [
@@ -79,7 +80,7 @@ def find_locales(language=None):
             if val:
                 languages = val.split(':')
                 break
-    elif isinstance(language, str) or  isinstance(language, unicode):
+    elif is_us(language):
         languages = [language]
     else:
         # 'language' must be iterable

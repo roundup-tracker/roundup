@@ -30,6 +30,7 @@ except ImportError:
 
 from roundup import instance, hyperdb, date, support, password
 from roundup.anypy import http_, urllib_
+from roundup.anypy.strings import s2b, us2s
 
 today = date.Date('.')
 
@@ -295,7 +296,7 @@ def import_xml(tracker_home, xml_file, file_dir):
                     files.append(fid)
                     name = name.strip()
                     try:
-                        f = open(os.path.join(file_dir, fid))
+                        f = open(os.path.join(file_dir, fid), 'rb')
                         content = f.read()
                         f.close()
                     except:
@@ -384,11 +385,11 @@ def write_csv(klass, data):
         if isinstance(klass, hyperdb.FileClass) and entry.get('content'):
             fname = klass.exportFilename('/tmp/imported/', entry['id'])
             support.ensureParentsExist(fname)
-            c = open(fname, 'w')
-            if isinstance(entry['content'], unicode):
-                c.write(entry['content'].encode('utf8'))
-            else:
+            c = open(fname, 'wb')
+            if isinstance(entry['content'], bytes):
                 c.write(entry['content'])
+            else:
+                c.write(s2b(us2s(entry['content'])))
             c.close()
 
     f.close()

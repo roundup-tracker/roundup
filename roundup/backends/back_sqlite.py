@@ -13,6 +13,7 @@ import os, base64, marshal, shutil, time, logging
 from roundup import hyperdb, date, password
 from roundup.backends import rdbms_common
 from roundup.backends.sessions_dbm import Sessions, OneTimeKeys
+from roundup.anypy.strings import uany2s
 
 sqlite_version = None
 try:
@@ -85,7 +86,7 @@ class Database(rdbms_common.Database):
         hyperdb.Multilink : lambda x: x,    # used in journal marshalling
     }
     sql_to_hyperdb_value = {
-        hyperdb.String : lambda x: isinstance(x, unicode) and x.encode('utf8') or str(x),
+        hyperdb.String : uany2s,
         hyperdb.Date   : lambda x: date.Date(str(x)),
         hyperdb.Link   : str, # XXX numeric ids
         hyperdb.Interval  : date.Interval,

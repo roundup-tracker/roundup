@@ -69,6 +69,7 @@ from roundup.backends.sessions_rdbms import Sessions, OneTimeKeys
 from roundup.date import Range
 
 from roundup.backends.back_anydbm import compile_expression
+from roundup.anypy.strings import us2s
 
 
 # dummy value meaning "argument not passed"
@@ -2944,8 +2945,7 @@ class Class(hyperdb.Class):
             elif isinstance(prop, hyperdb.Password):
                 value = password.Password(encrypted=value)
             elif isinstance(prop, String):
-                if isinstance(value, unicode):
-                    value = value.encode('utf8')
+                value = us2s(value)
                 if not isinstance(value, str):
                     raise TypeError('new property "%(propname)s" not a '
                         'string: %(value)r'%locals())

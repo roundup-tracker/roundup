@@ -12,6 +12,7 @@ from roundup import actions
 from roundup.anypy import xmlrpc_
 SimpleXMLRPCDispatcher = xmlrpc_.server.SimpleXMLRPCDispatcher
 Binary = xmlrpc_.client.Binary
+from roundup.anypy.strings import us2s
 from traceback import format_exc
 
 def translate(value):
@@ -41,13 +42,8 @@ def props_from_args(db, cl, args, itemid=None):
             key, value = arg.split('=', 1)
         except ValueError :
             raise UsageError('argument "%s" not propname=value'%arg)
-        if isinstance(key, unicode):
-            try:
-                key = key.encode ('ascii')
-            except UnicodeEncodeError:
-                raise UsageError('argument %r is no valid ascii keyword'%key)
-        if isinstance(value, unicode):
-            value = value.encode('utf-8')
+        key = us2s(key)
+        value = us2s(value)
         if value:
             try:
                 props[key] = hyperdb.rawToHyperdb(db, cl, itemid,

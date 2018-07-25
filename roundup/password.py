@@ -24,6 +24,8 @@ import os
 from base64 import b64encode, b64decode
 from hashlib import md5, sha1
 
+from roundup.anypy.strings import us2s, s2b
+
 try:
     import crypt
 except ImportError:
@@ -105,10 +107,8 @@ def pbkdf2(password, salt, rounds, keylen):
     :returns:
         raw bytes of generated key
     """
-    if isinstance(password, unicode):
-        password = password.encode("utf-8")
-    if isinstance(salt, unicode):
-        salt = salt.encode("utf-8")
+    password = s2b(us2s(password))
+    salt = s2b(us2s(salt))
     if keylen > 40:
         #NOTE: pbkdf2 allows up to (2**31-1)*20 bytes,
         # but m2crypto has issues on some platforms above 40,
@@ -126,8 +126,7 @@ def pbkdf2_unpack(pbkdf2):
     """ unpack pbkdf2 encrypted password into parts,
         assume it has format "{rounds}${salt}${digest}
     """
-    if isinstance(pbkdf2, unicode):
-        pbkdf2 = pbkdf2.encode("ascii")
+    pbkdf2 = us2s(pbkdf2)
     try:
         rounds, salt, digest = pbkdf2.split("$")
     except ValueError:
