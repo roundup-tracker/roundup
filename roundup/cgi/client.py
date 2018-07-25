@@ -438,7 +438,7 @@ class Client:
 
     def handle_xmlrpc(self):
         if self.env.get('CONTENT_TYPE') != 'text/xml':
-            self.write("This is the endpoint of Roundup <a href='" +
+            self.write(b"This is the endpoint of Roundup <a href='" +
                 "http://www.roundup-tracker.org/docs/xmlrpc.html'>" +
                 "XML-RPC interface</a>.")
             return
@@ -479,7 +479,7 @@ class Client:
                                            self.instance.actions,
                                            self.translator,
                                            allow_none=True)
-            output = handler.dispatch(input)
+            output = s2b(handler.dispatch(input))
 
         self.setHeader("Content-Type", "text/xml")
         self.setHeader("Content-Length", str(len(output)))
@@ -1811,7 +1811,9 @@ class Client:
             # client doesn't care about content
             return
 
-        if self.charset != self.STORAGE_CHARSET:
+        if sys.version_info[0] > 2:
+            content = content.encode(self.charset, 'xmlcharrefreplace')
+        elif self.charset != self.STORAGE_CHARSET:
             # recode output
             content = content.decode(self.STORAGE_CHARSET, 'replace')
             content = content.encode(self.charset, 'xmlcharrefreplace')
