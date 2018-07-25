@@ -112,7 +112,7 @@ def html(context=5, i18n=None):
     etype, evalue = sys.exc_info()[0], sys.exc_info()[1]
     if type(etype) is type:
         etype = etype.__name__
-    pyver = 'Python ' + string.split(sys.version)[0] + '<br>' + sys.executable
+    pyver = 'Python ' + sys.version.split()[0] + '<br>' + sys.executable
     head = pydoc.html.heading(
         _('<font size=+1><strong>%(exc_type)s</strong>: %(exc_value)s</font>')
         % {'exc_type': etype, 'exc_value': evalue},

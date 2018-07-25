@@ -95,7 +95,7 @@ explanatory message given in the exception.
 from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
-import string, re, os, mimetools, smtplib, socket, binascii, quopri
+import re, os, mimetools, smtplib, socket, binascii, quopri
 import time, random, sys, logging
 import codecs
 import traceback
@@ -1555,7 +1555,7 @@ class MailGW:
         except MailUsageHelp:
             # bounce the message back to the sender with the usage message
             self.logger.debug("MailUsageHelp raised, bouncing.")
-            fulldoc = '\n'.join(string.split(__doc__, '\n')[2:])
+            fulldoc = '\n'.join(__doc__.split('\n')[2:])
             m = ['']
             m.append('\n\nMail Gateway Help\n=================')
             m.append(fulldoc)
@@ -1564,7 +1564,7 @@ class MailGW:
         except MailUsageError as value:
             # bounce the message back to the sender with the usage message
             self.logger.debug("MailUsageError raised, bouncing.")
-            fulldoc = '\n'.join(string.split(__doc__, '\n')[2:])
+            fulldoc = '\n'.join(__doc__.split('\n')[2:])
             m = ['']
             m.append(str(value))
             m.append('\n\nMail Gateway Help\n=================')
@@ -1719,7 +1719,7 @@ def setPropArrayFromString(self, cl, propString, nodeid=None):
     '''
     props = {}
     errors = []
-    for prop in string.split(propString, ';'):
+    for prop in propString.split(';'):
         # extract the property name and value
         try:
             propname, value = prop.split('=')

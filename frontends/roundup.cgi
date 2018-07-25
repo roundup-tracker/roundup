@@ -86,7 +86,7 @@ except:
 # Check environment for config items
 #
 def checkconfig():
-    import os, string
+    import os
     global TRACKER_HOMES, LOG
 
     # see if there's an environment var. ROUNDUP_INSTANCE_HOMES is the
@@ -97,9 +97,9 @@ def checkconfig():
         homes = os.environ.get('TRACKER_HOMES', '')
     if homes:
         TRACKER_HOMES = {}
-        for home in string.split(homes, os.pathsep):
+        for home in homes.split(os.pathsep):
             try:
-                name, dir = string.split(home, '=', 1)
+                name, dir = home.split('=', 1)
             except ValueError:
                 # ignore invalid definitions
                 continue
@@ -142,7 +142,7 @@ class RequestWrapper:
 def main(out, err):
     import os, string
     import roundup.instance
-    path = string.split(os.environ.get('PATH_INFO', '/'), '/')
+    path = os.environ.get('PATH_INFO', '/').split('/')
     request = RequestWrapper(out)
     request.path = os.environ.get('PATH_INFO', '/')
     tracker = path[1]

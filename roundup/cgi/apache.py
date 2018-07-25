@@ -122,7 +122,7 @@ def handler(req):
     req.add_common_vars()
     _env = dict(req.subprocess_env)
     # XXX classname must be the first item in PATH_INFO.  roundup.cgi does:
-    #       path = string.split(os.environ.get('PATH_INFO', '/'), '/')
+    #       path = os.environ.get('PATH_INFO', '/').split('/')
     #       os.environ['PATH_INFO'] = string.join(path[2:], '/')
     #   we just remove the first character ('/')
     _env["PATH_INFO"] = req.path_info[1:]
