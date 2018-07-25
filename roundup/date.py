@@ -38,6 +38,7 @@ except NameError:
         return (a > b) - (a < b)
 
 from roundup import i18n
+from roundup.anypy.strings import is_us
 
 # no, I don't know why we must anchor the date RE when we only ever use it
 # in a match()
@@ -765,7 +766,7 @@ class Interval:
             arith_types = (int, float)
         if isinstance(spec, arith_types):
             self.from_seconds(spec)
-        elif isinstance(spec, basestring):
+        elif is_us(spec):
             self.set(spec, allowdate=allowdate, add_granularity=add_granularity)
         elif isinstance(spec, Interval):
             (self.sign, self.year, self.month, self.day, self.hour,

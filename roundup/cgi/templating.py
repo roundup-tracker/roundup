@@ -1859,7 +1859,7 @@ class DateHTMLProperty(HTMLProperty):
 
         ret = date.Date('.', translator=self._client)
 
-        if isinstance(str_interval, basestring):
+        if is_us(str_interval):
             sign = 1
             if str_interval[0] == '-':
                 sign = -1
@@ -1896,7 +1896,7 @@ class DateHTMLProperty(HTMLProperty):
             if default is None:
                 raw_value = None
             else:
-                if isinstance(default, basestring):
+                if is_us(default):
                     raw_value = date.Date(default, translator=self._client)
                 elif isinstance(default, date.Date):
                     raw_value = default
@@ -2874,7 +2874,7 @@ env: %(env)s
         """
         q = urllib_.quote
         sc = self.special_char
-        l = ['%s=%s'%(k,isinstance(v, basestring) and q(v) or v)
+        l = ['%s=%s'%(k,is_us(v) and q(v) or v)
              for k,v in args.items() if v != None ]
         # pull out the special values (prefixed by @ or :)
         specials = {}
