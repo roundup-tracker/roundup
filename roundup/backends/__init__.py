@@ -39,7 +39,7 @@ def get_backend(name):
         return vars[name]
     # import the backend module
     module_name = 'back_%s' % name
-    module = __import__(module_name, vars)
+    module = __import__(module_name, vars, level=1)
     vars[name] = module
     return module
 
