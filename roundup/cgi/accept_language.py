@@ -35,8 +35,13 @@ qlre  = "([A-Za-z]+[-[A-Za-z]+]*);q=([\d\.]+)"
 # both
 lre   = re.compile(nqlre + "|" + qlre)
 
-ascii = ''.join([chr(x) for x in range(256)])
 whitespace = ' \t\n\r\v\f'
+try:
+    # Python 3.
+    remove_ws = (str.maketrans('', '', whitespace),)
+except AttributeError:
+    # Python 2.
+    remove_ws = (None, whitespace)
 
 def parse(language_header):
     """parse(string_with_accept_header_content) -> languages list"""
@@ -44,7 +49,7 @@ def parse(language_header):
     if language_header is None: return []
 
     # strip whitespaces.
-    lh = language_header.translate(ascii, whitespace)
+    lh = language_header.translate(*remove_ws)
 
     # if nothing, return
     if lh == "": return []
