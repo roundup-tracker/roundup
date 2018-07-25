@@ -178,7 +178,7 @@ def encodePassword(plaintext, scheme, other=None, config=None):
         if other is not None:
             salt = other
         else:
-            saltchars = './0123456789'+string.letters
+            saltchars = './0123456789'+string.ascii_letters
             salt = random.choice(saltchars) + random.choice(saltchars)
         s = crypt.crypt(plaintext, salt)
     elif scheme == 'plaintext':
@@ -188,7 +188,7 @@ def encodePassword(plaintext, scheme, other=None, config=None):
     return s
 
 def generatePassword(length=12):
-    chars = string.letters+string.digits
+    chars = string.ascii_letters+string.digits
     password = [random.choice(chars) for x in range(length)]
     # make sure there is at least one digit
     password[0] = random.choice(string.digits)
