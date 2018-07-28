@@ -259,6 +259,8 @@ class Database(back_anydbm.Database):
         return '<memorydb instance at %x>'%id(self)
 
     def storefile(self, classname, nodeid, property, content):
+        if isinstance(content, str):
+            content = s2b(content)
         self.tx_files[classname, nodeid, property] = content
         self.transactions.append((self.doStoreFile, (classname, nodeid,
             property)))
