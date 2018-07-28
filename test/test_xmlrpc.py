@@ -169,7 +169,7 @@ class XmlrpcTest(object):
         with self.assertRaises(Exception) as cm:
             self.server.action('bogus')
         print(cm.exception)
-        self.assertEqual(cm.exception.message,
+        self.assertEqual(cm.exception.args[0],
                          'action "bogus" is not supported ')
 
     def testAuthDeniedEdit(self):
