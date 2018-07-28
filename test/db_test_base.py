@@ -34,6 +34,8 @@ from roundup.cgi.engine_zopetal import RoundupPageTemplate
 from roundup.cgi.templating import HTMLItem
 from roundup.exceptions import UsageError, Reject
 
+from roundup.anypy.strings import u2s
+
 from .mocknull import MockNull
 
 config = configuration.CoreConfig()
@@ -285,12 +287,12 @@ class DBTest(commonDBTest):
 
     def testStringUnicode(self):
         # test set & retrieve
-        ustr = u'\xe4\xf6\xfc\u20ac'.encode('utf8')
+        ustr = u2s(u'\xe4\xf6\xfc\u20ac')
         nid = self.db.issue.create(title=ustr, status='1')
         self.assertEqual(self.db.issue.get(nid, 'title'), ustr)
 
         # change and make sure we retrieve the correct value
-        ustr2 = u'change \u20ac change'.encode('utf8')
+        ustr2 = u2s(u'change \u20ac change')
         self.db.issue.set(nid, title=ustr2)
         self.db.commit()
         self.assertEqual(self.db.issue.get(nid, 'title'), ustr2)
@@ -2308,8 +2310,8 @@ class DBTest(commonDBTest):
                     j[1].second = float(int(j[1].second))
                 for j in rj:
                     j[1].second = float(int(j[1].second))
-                oj.sort()
-                rj.sort()
+                oj.sort(key = lambda x: x[:4])
+                rj.sort(key = lambda x: x[:4])
                 ae(oj, rj)
 
         # make sure the retired items are actually imported
@@ -2318,7 +2320,7 @@ class DBTest(commonDBTest):
 
         # make sure id counters are set correctly
         maxid = max([int(id) for id in self.db.user.list()])
-        newid = self.db.user.create(username='testing')
+        newid = int(self.db.user.create(username='testing'))
         assert newid > maxid
 
     # test import/export via admin interface
