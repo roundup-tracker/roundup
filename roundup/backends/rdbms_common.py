@@ -1614,7 +1614,7 @@ class Class(hyperdb.Class):
             elif isinstance(prop, Multilink):
                 if value is None:
                     value = []
-                if not hasattr(value, '__iter__'):
+                if not hasattr(value, '__iter__') or type(value) == type(''):
                     raise TypeError('new property "%s" not an iterable of ids'%key) 
                 # clean up and validate the list of links
                 link_class = self.properties[key].classname
@@ -1874,7 +1874,7 @@ class Class(hyperdb.Class):
             elif isinstance(prop, Multilink):
                 if value is None:
                     value = []
-                if not hasattr(value, '__iter__'):
+                if not hasattr(value, '__iter__') or type(value) == type(''):
                     raise TypeError('new property "%s" not an iterable of'
                         ' ids'%propname)
                 link_class = self.properties[propname].classname
