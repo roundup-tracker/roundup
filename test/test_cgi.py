@@ -1048,7 +1048,7 @@ class FormTestCase(FormTestParent, unittest.TestCase):
         # Should return explanation because content type is text/plain
         # and not text/xml
         cl.handle_xmlrpc()
-        self.assertEqual(out[0], "This is the endpoint of Roundup <a href='http://www.roundup-tracker.org/docs/xmlrpc.html'>XML-RPC interface</a>.")
+        self.assertEqual(out[0], b"This is the endpoint of Roundup <a href='http://www.roundup-tracker.org/docs/xmlrpc.html'>XML-RPC interface</a>.")
         del(out[0])
 
         # Should return admin user indicating auth works and
@@ -1057,7 +1057,7 @@ class FormTestCase(FormTestParent, unittest.TestCase):
         # ship the form with the value holding the xml value.
         # I have no clue why this works but ....
         cl.form = MockNull(file = True, value = "<?xml version='1.0'?>\n<methodCall>\n<methodName>display</methodName>\n<params>\n<param>\n<value><string>user1</string></value>\n</param>\n<param>\n<value><string>username</string></value>\n</param>\n</params>\n</methodCall>\n" )
-        answer ="<?xml version='1.0'?>\n<methodResponse>\n<params>\n<param>\n<value><struct>\n<member>\n<name>username</name>\n<value><string>admin</string></value>\n</member>\n</struct></value>\n</param>\n</params>\n</methodResponse>\n"
+        answer = b"<?xml version='1.0'?>\n<methodResponse>\n<params>\n<param>\n<value><struct>\n<member>\n<name>username</name>\n<value><string>admin</string></value>\n</member>\n</struct></value>\n</param>\n</params>\n</methodResponse>\n"
         cl.handle_xmlrpc()
         print(out)
         self.assertEqual(out[0], answer)
