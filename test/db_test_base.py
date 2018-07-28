@@ -2422,18 +2422,19 @@ class DBTest(commonDBTest):
             # FIXME there should be some test here
  
             issue_class_spec = tool.do_specification(["issue"])
-            self.assertEqual(soutput, ['files: <roundup.hyperdb.Multilink to "file">\n',
-                                       'status: <roundup.hyperdb.Link to "status">\n',
-                                       'feedback: <roundup.hyperdb.Link to "msg">\n',
-                                       'spam: <roundup.hyperdb.Multilink to "msg">\n',
-                                       'nosy: <roundup.hyperdb.Multilink to "user">\n',
-                                       'title: <roundup.hyperdb.String>\n',
-                                       'messages: <roundup.hyperdb.Multilink to "msg">\n',
-                                       'priority: <roundup.hyperdb.Link to "priority">\n',
-                                       'assignedto: <roundup.hyperdb.Link to "user">\n',
-                                       'deadline: <roundup.hyperdb.Date>\n',
-                                       'foo: <roundup.hyperdb.Interval>\n',
-                                       'superseder: <roundup.hyperdb.Multilink to "issue">\n'])
+            self.assertEqual(sorted (soutput),
+                             ['assignedto: <roundup.hyperdb.Link to "user">\n',
+                              'deadline: <roundup.hyperdb.Date>\n',
+                              'feedback: <roundup.hyperdb.Link to "msg">\n',
+                              'files: <roundup.hyperdb.Multilink to "file">\n',
+                              'foo: <roundup.hyperdb.Interval>\n',
+                              'messages: <roundup.hyperdb.Multilink to "msg">\n',
+                              'nosy: <roundup.hyperdb.Multilink to "user">\n',
+                              'priority: <roundup.hyperdb.Link to "priority">\n',
+                              'spam: <roundup.hyperdb.Multilink to "msg">\n',
+                              'status: <roundup.hyperdb.Link to "status">\n',
+                              'superseder: <roundup.hyperdb.Multilink to "issue">\n',
+                              'title: <roundup.hyperdb.String>\n'])
 
             #userclassprop=tool.do_list(["mls"])
             #tool.print_designator = False
