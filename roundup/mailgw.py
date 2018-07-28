@@ -95,7 +95,7 @@ explanatory message given in the exception.
 from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
-import re, os, mimetools, smtplib, socket, binascii, quopri
+import re, os, smtplib, socket, binascii, quopri
 import time, random, sys, logging
 import codecs
 import traceback
@@ -114,6 +114,13 @@ try:
     import pyme, pyme.core, pyme.constants, pyme.constants.sigsum
 except ImportError:
     pyme = None
+
+try:
+    import mimetools
+except ImportError:
+    class mimetools:
+        class Message:
+            pass
 
 SENDMAILDEBUG = os.environ.get('SENDMAILDEBUG', '')
 
