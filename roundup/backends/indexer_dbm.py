@@ -189,7 +189,10 @@ class Indexer(IndexerBase):
         else:
             segments = ['-','#']
             for word in wordlist:
-                segments.append(word[0].upper())
+                initchar = word[0].upper()
+                if initchar not in self.segments:
+                    initchar = '_'
+                segments.append(initchar)
 
         # Load the segments
         for segment in segments:
@@ -242,6 +245,9 @@ class Indexer(IndexerBase):
             segdicts[segment] = {}
         for word, entry in self.words.items():  # Split into segment dicts
             initchar = word[0].upper()
+            if initchar not in letters:
+                # if it's a unicode character, add it to the '_' segment
+                initchar = '_'
             segdicts[initchar][word] = entry
 
         # save
