@@ -15,7 +15,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 from roundup.anypy import email_
-from roundup.anypy.strings import b2s, s2u
+from roundup.anypy.strings import b2s, s2b, s2u
 
 try:
     import pyme, pyme.core
@@ -27,9 +27,9 @@ class MessageSendError(RuntimeError):
     pass
 
 def encode_quopri(msg):
-    orig = msg.get_payload()
+    orig = s2b(msg.get_payload())
     encdata = quopri.encodestring(orig)
-    msg.set_payload(encdata)
+    msg.set_payload(b2s(encdata))
     del msg['Content-Transfer-Encoding']
     msg['Content-Transfer-Encoding'] = 'quoted-printable'
 
@@ -92,7 +92,8 @@ class Mailer:
             name = s2u(author[0])
         author = nice_sender_header(name, author[1], charset)
         try:
-            message['Subject'] = subject.encode('ascii')
+            subject.encode('ascii')
+            message['Subject'] = subject
         except UnicodeError:
             message['Subject'] = Header(subject, charset)
         message['To'] = ', '.join(to)
@@ -104,7 +105,8 @@ class Mailer:
 
         # Add a unique Roundup header to help filtering
         try:
-            message['X-Roundup-Name'] = tracker_name.encode('ascii')
+            tracker_name.encode('ascii')
+            message['X-Roundup-Name'] = tracker_name
         except UnicodeError:
             message['X-Roundup-Name'] = Header(tracker_name, charset)
 

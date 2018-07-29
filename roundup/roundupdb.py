@@ -496,7 +496,9 @@ class IssueClass:
         charset = getattr(self.db.config, 'EMAIL_CHARSET', 'utf-8')
 
         # construct the content and convert to unicode object
-        body = s2u('\n'.join(m)).encode(charset)
+        body = s2u('\n'.join(m))
+        if type(body) != type(''):
+            body = body.encode(charset)
 
         # make sure the To line is always the same (for testing mostly)
         sendto.sort()
@@ -588,7 +590,8 @@ class IssueClass:
                 values = ', '.join(values)
                 header = "X-Roundup-%s-%s"%(self.classname, propname)
                 try:
-                    message[header] = values.encode('ascii')
+                    values.encode('ascii')
+                    message[header] = values
                 except UnicodeError:
                     message[header] = Header(values, charset)
 
