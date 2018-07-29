@@ -553,7 +553,7 @@ class Client:
                 except (UsageError, Unauthorised) as msg:
                     csrf_ok = False
                     self.form_wins = True
-                    self._error_message = msg
+                    self._error_message = msg.args
 
                 if csrf_ok:
                     # csrf checks pass. Run actions etc.
