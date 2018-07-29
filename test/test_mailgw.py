@@ -28,7 +28,7 @@ except ImportError:
         reason="Skipping PGP tests: 'pyme' not installed"))
 
 
-from roundup.anypy.strings import StringIO
+from roundup.anypy.strings import StringIO, u2s
 
 if 'SENDMAILDEBUG' not in os.environ:
     os.environ['SENDMAILDEBUG'] = 'mail-test.log'
@@ -2739,8 +2739,7 @@ This is a test submission of a new issue.
 
     def testEnc01(self):
         self.db.user.set(self.mary_id,
-            realname='\xe4\xf6\xfc\xc4\xd6\xdc\xdf, Mary'.decode
-            ('latin-1').encode('utf-8'))
+            realname=u2s(u'\xe4\xf6\xfc\xc4\xd6\xdc\xdf, Mary'))
         self.doNewIssue()
         self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"

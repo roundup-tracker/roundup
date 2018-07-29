@@ -34,7 +34,7 @@ from roundup.cgi.engine_zopetal import RoundupPageTemplate
 from roundup.cgi.templating import HTMLItem
 from roundup.exceptions import UsageError, Reject
 
-from roundup.anypy.strings import u2s
+from roundup.anypy.strings import b2s, s2b, u2s
 
 from .mocknull import MockNull
 
@@ -2588,9 +2588,9 @@ class DBTest(commonDBTest):
             self.assert_("New submission from admin" in mail_msg)
             self.assert_("one two" in mail_msg)
             self.assert_("File 'test1.txt' not attached" not in mail_msg)
-            self.assert_(base64.encodestring("xxx").rstrip() in mail_msg)
+            self.assert_(b2s(base64.encodestring(s2b("xxx"))).rstrip() in mail_msg)
             self.assert_("File 'test2.txt' not attached" in mail_msg)
-            self.assert_(base64.encodestring("yyy").rstrip() not in mail_msg)
+            self.assert_(b2s(base64.encodestring(s2b("yyy"))).rstrip() not in mail_msg)
         finally :
             roundupdb._ = old_translate_
             Mailer.smtp_send = backup
@@ -2634,9 +2634,9 @@ class DBTest(commonDBTest):
             self.assert_("New submission from admin" in mail_msg)
             self.assert_("one two" in mail_msg)
             self.assert_("File 'test1.txt' not attached" not in mail_msg)
-            self.assert_(base64.encodestring("xxx").rstrip() in mail_msg)
+            self.assert_(b2s(base64.encodestring(s2b("xxx"))).rstrip() in mail_msg)
             self.assert_("File 'test2.txt' not attached" in mail_msg)
-            self.assert_(base64.encodestring("yyy").rstrip() not in mail_msg)
+            self.assert_(b2s(base64.encodestring(s2b("yyy"))).rstrip() not in mail_msg)
             fp = FeedParser()
             mail_msg = str(res[1]["mail_msg"])
             fp.feed(mail_msg)
@@ -2657,9 +2657,9 @@ class DBTest(commonDBTest):
             self.assert_("New submission from admin" in mail_msg)
             self.assert_("one two" in mail_msg)
             self.assert_("File 'test1.txt' not attached" not in mail_msg)
-            self.assert_(base64.encodestring("xxx").rstrip() in mail_msg)
+            self.assert_(b2s(base64.encodestring(s2b("xxx"))).rstrip() in mail_msg)
             self.assert_("File 'test2.txt' not attached" in mail_msg)
-            self.assert_(base64.encodestring("yyy").rstrip() not in mail_msg)
+            self.assert_(b2s(base64.encodestring(s2b("yyy"))).rstrip() not in mail_msg)
         finally :
             roundupdb._ = old_translate_
             Mailer.smtp_send = backup
