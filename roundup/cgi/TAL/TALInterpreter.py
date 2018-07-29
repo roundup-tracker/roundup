@@ -152,7 +152,7 @@ class TALInterpreter:
     def StringIO(self):
         # Third-party products wishing to provide a full Unicode-aware
         # StringIO can do so by monkey-patching this method.
-        return FasterStringIO()
+        return StringIO()
 
     def saveState(self):
         return (self.position, self.col, self.stream,
@@ -749,14 +749,6 @@ class TALInterpreter:
     bytecode_handlers_tal["onError"] = do_onError_tal
     bytecode_handlers_tal["<attrAction>"] = attrAction_tal
     bytecode_handlers_tal["optTag"] = do_optTag_tal
-
-
-class FasterStringIO(StringIO):
-    """Append-only version of StringIO.
-
-    This let's us have a much faster write() method.
-    """
-    pass
 
 
 def _write_ValueError(s):

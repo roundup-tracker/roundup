@@ -25,8 +25,9 @@ import sys
 from roundup.cgi.TAL.TALParser import TALParser
 from roundup.cgi.TAL.HTMLTALParser import HTMLTALParser
 from roundup.cgi.TAL.TALGenerator import TALGenerator
-from roundup.cgi.TAL.TALInterpreter import TALInterpreter, FasterStringIO
+from roundup.cgi.TAL.TALInterpreter import TALInterpreter
 from .Expressions import getEngine
+from roundup.anypy.strings import StringIO
 
 
 class PageTemplate:
@@ -46,7 +47,7 @@ class PageTemplate:
     def StringIO(self):
         # Third-party products wishing to provide a full Unicode-aware
         # StringIO can do so by monkey-patching this method.
-        return FasterStringIO()
+        return StringIO()
 
     def pt_edit(self, text, content_type):
         if content_type:
