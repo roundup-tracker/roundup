@@ -479,7 +479,7 @@ class Client:
                                            self.instance.actions,
                                            self.translator,
                                            allow_none=True)
-            output = s2b(handler.dispatch(input))
+            output = handler.dispatch(input)
 
         self.setHeader("Content-Type", "text/xml")
         self.setHeader("Content-Length", str(len(output)))
@@ -845,10 +845,10 @@ class Client:
                 scheme, challenge = auth.split(' ', 1)
                 if scheme.lower() == 'basic':
                     try:
-                        decoded = base64.decodestring(challenge)
+                        decoded = b2s(base64.b64decode(challenge))
                     except TypeError:
                         # invalid challenge
-                        pass
+                        decoded = ''
                     username, password = decoded.split(':', 1)
                     try:
                         # Current user may not be None, otherwise
