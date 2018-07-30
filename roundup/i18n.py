@@ -203,8 +203,18 @@ def get_translation(language=None, tracker_home=None,
 translation = get_translation()
 # static translation functions
 _ = gettext = translation.gettext
-ugettext = translation.ugettext
+try:
+    # Python 2.
+    ugettext = translation.ugettext
+except AttributeError:
+    # Python 3.
+    ugettext = translation.gettext
 ngettext = translation.ngettext
-ungettext = translation.ungettext
+try:
+    # Python 2.
+    ungettext = translation.ungettext
+except AttributeError:
+    # Python 3.
+    ungettext = translation.ngettext
 
 # vim: set filetype=python sts=4 sw=4 et si :

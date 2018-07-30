@@ -47,13 +47,14 @@ class TranslationService(TranslationServiceMixin, i18n.RoundupTranslations):
 
 class NullTranslationService(TranslationServiceMixin,
         i18n.RoundupNullTranslations):
-    def ugettext(self, message):
-        if self._fallback:
-            return self._fallback.ugettext(message)
-        # Sometimes the untranslatable message is a UTF-8 encoded string
-        # (thanks to PageTemplate's internals).
-        message = us2u(message)
-        return message
+    if hasattr(i18n.RoundupNullTranslations, 'ugettext'):
+        def ugettext(self, message):
+            if self._fallback:
+                return self._fallback.ugettext(message)
+            # Sometimes the untranslatable message is a UTF-8 encoded string
+            # (thanks to PageTemplate's internals).
+            message = us2u(message)
+            return message
 
 ### TAL patching
 #
