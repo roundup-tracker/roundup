@@ -1,0 +1,192 @@
+{% extends 'layout/page.html' %}
+
+{% set cols = request.columns or 'id activity title status assignedto'.split() %}
+{% set sort_on = request.sort and request.sort[0] or None %}
+{% set sort_desc = sort_on and sort_on[0] == '-' %}
+{% set sort_on = (sort_on and sort_on[1]) or 'activity' %}
+{% set group_on = request.group and request.group[0] or None %}
+{% set group_desc = group_on and group_on[0] == '-' %}
+{% set group_on = (group_on and group_on[1]) or 'status' %}
+
+{% macro input(name, type='text') -%}
+  <input type="{{ type }}" name="{{ name }}"
+		 value="{{ request.form.getvalue(name, '')|e }}" />
+{%- endmacro %}
+{% macro display_column(name) -%}
+  <input type="checkbox" name="@columns"
+		 value="{{ name }}" {% if name in cols %}checked{% endif %} />
+{%- endmacro %}
+{% macro sort_column(name) -%}
+  <input type="radio" name="@sort"
+		 value="{{ name }}" {% if name == sort_on %}checked{% endif %} />
+{%- endmacro %}
+{% macro group_column(name) -%}
+  <input type="radio" name="@group"
+		 value="{{ name }}" {% if name == group_on %}checked{% endif %} />
+{%- endmacro %}
+{% macro option_value(option, id, name) -%}
+  <option value="{{ id }}"
+		  {% if id == request.form.getvalue(option, '') %}selected{% endif %}	>{{ name|u|e }}</option>
+{%- endmacro %}
+
+{% block head_title %}
+  Issue searching
+{% endblock %}
+
+{% block page_header %}
+  Issue searching
+{% endblock %}
+
+{% block content %}
+
+<form method="GET" name="itemSynopsis" action="{{ request.classname }}">
+
+<table class="form">
+
+<tr>
+ <th class="header">&nbsp;</th>
+ <th class="header">{{ i18n.gettext('Filter on')|u }}</th>
+ <th class="header">{{ i18n.gettext('Display')|u }}</th>
+ <th class="header">{{ i18n.gettext('Sort on')|u }}</th>
+ <th class="header">{{ i18n.gettext('Group on')|u }}</th>
+</tr>
+
+<tr>
+  <th>{{ i18n.gettext('All text*:')|u }}</th>
+  <td>{{ input('@search_text') }}</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+</tr>
+
+<tr>
+  <th>{{ i18n.gettext('Title:')|u }}</th>
+  <td>{{ input('title') }}</td>
+  <td>{{ display_column('title') }}</td>
+  <td>{{ sort_column('title') }}</td>
+  <td>&nbsp;</td>
+</tr>
+
+<tr>
+  <th>{{ i18n.gettext('Keyword:')|u }}</th>
+  <td><select name="keyword" id="keyword">
+	  {{ option_value('keyword', '', 'don\'t care') }}
+	  {{ option_value('keyword', '-1', 'not selected') }}
+      <option value="" disabled="disabled">------------</option>
+	  {% for keyword in db['keyword'].list() %}
+	  {{ option_value('keyword', keyword.id, keyword.name.plain()) }}
+	  {% endfor %}
+	  </select></td>
+  <td>{{ display_column('id') }}</td>
+  <td>{{ sort_column('id') }}</td>
+  <td>&nbsp;</td>
+</tr>
+
+<tr>
+  <th>{{ i18n.gettext('ID:')|u }}</th>
+  <td>{{ input('id') }}</td>
+  <td>{{ display_column('id') }}</td>
+  <td>{{ sort_column('id') }}</td>
+  <td>&nbsp;</td>
+</tr>
+
+<tr>
+  <th>{{ i18n.gettext('Creation Date:')|u }}</th>
+  <td>{{ input('creation') }}</td>
+  <td>{{ display_column('creation') }}</td>
+  <td>{{ sort_column('creation') }}</td>
+  <td>{{ group_column('creation') }}</td>
+</tr>
+
+<tr>
+  <th>{{ i18n.gettext('Activity:')|u }}</th>
+  <td>{{ input('activity') }}</td>
+  <td>{{ display_column('activity') }}</td>
+  <td>{{ sort_column('activity') }}</td>
+  <td>&nbsp;</td>
+</tr>
+
+<tr>
+  <th>{{ i18n.gettext('Priority:')|u }}</th>
+  <td><select name="priority" id="priority">
+	  {{ option_value('priority', '', 'don\'t care') }}
+	  {{ option_value('priority', '-1', 'not selected') }}
+      <option value="" disabled="disabled">------------</option>
+	  {% for priority in db['priority'].list() %}
+	  {{ option_value('priority', priority.id, priority.name.plain()) }}
+	  {% endfor %}
+	  </select></td>
+  <td>{{ display_column('priority') }}</td>
+  <td>{{ sort_column('priority') }}</td>
+  <td>{{ group_column('priority') }}</td>
+</tr>
+
+<tr>
+  <th>Status:</th>
+  <td><select name="status" id="status">
+	  {{ option_value('status', '', 'don\'t care') }}
+	  {{ option_value('status', '-1', 'not selected') }}
+	  {{ option_value('status', status_notresolved, 'not resolved') }}
+      <option value="" disabled="disabled">------------</option>
+	  {% for status in db['status'].list() %}
+	  {{ option_value('status', status.id, status.name.plain()) }}
+	  {% endfor %}
+	  </select></td>
+  <td>{{ display_column('status') }}</td>
+  <td>{{ sort_column('status') }}</td>
+  <td>{{ group_column('status') }}</td>
+</tr>
+
+<tr>
+  <th>{{ i18n.gettext('Assigned to:')|u }}</th>
+  <td>{{ input('submitter') }}</td>
+  <td>{{ display_column('assignedto') }}</td>
+  <td>{{ sort_column('assignedto') }}</td>
+  <td>{{ group_column('assignedto') }}</td>
+</tr>
+
+<tr>
+ <th>{{ i18n.gettext('No Sort or group:')|u }}</th>
+ <td>&nbsp;</td>
+ <td>&nbsp;</td>
+ <td><input type="radio" name="@sort" value=""></td>
+ <td><input type="radio" name="@group" value=""></td>
+</tr>
+
+<tr>
+<th>{{ i18n.gettext('Pagesize:')|u }}</th>
+<td><input name="@pagesize" size="3" value="{{ request.form.getfirst('@pagesize', '50') }}" /></td>
+</tr>
+
+<tr>
+<th>{{ i18n.gettext('Start With:')|u }}</th>
+<td><input name="@startwith" size="3" value="{{ request.form.getfirst('@startwith', '0') }}" /></td>
+</tr>
+
+<tr>
+<th>{{ i18n.gettext('Sort Descending:')|u }}</th>
+<td><input type="checkbox" name="@sortdir" {% if sort_desc %}checked{% endif %} /></td>
+</tr>
+
+<tr>
+<th>{{ i18n.gettext('Group Descending:')|u }}</th>
+<td><input type="checkbox" name="@groupdir" {% if group_desc %}checked{% endif %} /></td>
+</tr>
+
+<tr>
+  <td>
+   &nbsp;
+   <input type="hidden" name="@action" value="search">
+  </td>
+  <td><input type="submit" value="Search" i18n:attributes="value"></td>
+</tr>
+
+<tr><td>&nbsp;</td>
+ <td colspan="4" class="help">
+   {{ i18n.gettext('*: The "all text" field will look in message bodies and issue titles')|u }}
+ </td>
+</tr>
+</table>
+</form>
+
+{% endblock %}

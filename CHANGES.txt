@@ -13,6 +13,10 @@ v2.7.2 is required to run newer releases of Roundup.
 
 2018-??-?? ?.?.0
 
+Features:
+
+- issue2550901: add search page to jinja2 template (Christof Meerwald)
+
 Fixed:
 
 - issue2550811: work around Unicode encoding issues in jinja2 template

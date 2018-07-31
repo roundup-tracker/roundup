@@ -13,7 +13,7 @@
   {% include 'layout/permission.html' %}
 
   {% if context.is_view_ok() %}
-    {% if context.list() %}
+    {% if request.batch() %}
       <table class='table'>
         <tr class='info'>
 		  {% if request.show.priority %}
@@ -44,7 +44,7 @@
           <td>{{ i18n.gettext('Assigned To')|u }}</td>
 		  {% endif %}
         </tr>
-        {% for issue in context.list() %}
+        {% for issue in request.batch() %}
           <tr>
 		   {% if request.show.priority %}
            <td>{{ issue.priority.plain()|u|e }}</td>
