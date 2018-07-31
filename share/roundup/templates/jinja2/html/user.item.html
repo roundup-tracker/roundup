@@ -2,21 +2,21 @@
 
 {% block head_title %}
   {% if context.id %}
-    {{ i18n.gettext('User') }} {{ context.id }} - {{ config.TRACKER_NAME }}
+    {{ i18n.gettext('User')|u }} {{ context.id }} - {{ config.TRACKER_NAME }}
   {% else %}
-    {{ i18n.gettext('New User') }} - {{ config.TRACKER_NAME }}
+    {{ i18n.gettext('New User')|u }} - {{ config.TRACKER_NAME }}
   {% endif %}
 {% endblock %}
 
 {% block page_header %}
   {% if not (context.id or context.is_edit_ok()) %}
-    {{ i18n.gettext('New User') }}
+    {{ i18n.gettext('New User')|u }}
   {% elif not context.id and context.is_edit_ok() %}
-    {{ i18n.gettext('New User Editing') }}
+    {{ i18n.gettext('New User Editing')|u }}
   {% elif context.id and not context.is_edit_ok() %}
-    {{ i18n.gettext('User') }}{{ context.id }}
+    {{ i18n.gettext('User')|u }}{{ context.id }}
   {% elif context.id and context.is_edit_ok() %}
-    {{ i18n.gettext('User') }}{{ context.id }} {{ i18n.gettext('editing') }}
+    {{ i18n.gettext('User')|u }}{{ context.id }} {{ i18n.gettext('editing')|u }}
   {% endif %}
 {% endblock %}
 
@@ -31,26 +31,26 @@
           action ='{{  context.designator() }}'>
       <table>
         <tr>
-          <th>{{ i18n.gettext('Name') }}</th>
+          <th>{{ i18n.gettext('Name')|u }}</th>
           <td>
-            <input type='text' name="realname" value='{{ context.realname }}'>
+            <input type='text' name="realname" value='{{ context.realname.plain()|u|e }}'>
           </td>
         </tr>
         <tr>
-          <th>{{ i18n.gettext('Login Name') }}</th>
+          <th>{{ i18n.gettext('Login Name')|u }}</th>
           <td>
-            <input type='text' name='username' value='{{ context.username }}'>
+            <input type='text' name='username' value='{{ context.username.plain()|u|e }}'>
           </td>
         </tr>
         {% if context.is_edit_ok() %}
           <tr>
-            <th>{{ i18n.gettext('Login Password') }}</th>
+            <th>{{ i18n.gettext('Login Password')|u }}</th>
             <td>
               <input type='password' name='password'>
             </td>
           </tr>
           <tr>
-            <th>{{ i18n.gettext('Confirm Password') }}</th>
+            <th>{{ i18n.gettext('Confirm Password')|u }}</th>
             <td>
               <input type='password' name='@confirm@password'>
             </td>
@@ -58,42 +58,42 @@
         {% endif %}
         {% if request.user.hasPermission('Web Roles') %}
           <tr>
-            <th>{{ i18n.gettext('Roles <br>(comma separated)') }}</th>
+            <th>{{ i18n.gettext('Roles <br>(comma separated)')|u }}</th>
             <td>
-              <input type='text' name='roles' value='{{ context.roles }}'>
+              <input type='text' name='roles' value='{{ context.roles|u|e }}'>
             </td>
           </tr>
         {% endif %}
         <tr>
-          <th>{{ i18n.gettext('Phone') }}</th>
+          <th>{{ i18n.gettext('Phone')|u }}</th>
           <td>
-            <input type='text' name='phone' value='{{ context.phone }}'>
+            <input type='text' name='phone' value='{{ context.phone.plain()|u|e }}'>
           </td>
         </tr>
         <tr>
-          <th>{{ i18n.gettext('Organisation') }}</th>
+          <th>{{ i18n.gettext('Organisation')|u }}</th>
           <td>
-            <input type='text' name='organisation' value='{{ context.organisation }}'>
+            <input type='text' name='organisation' value='{{ context.organisation.plain()|u|e }}'>
           </td>
         </tr>
         {% if context.timezone %}
           <tr>
-            <th>{{ i18n.gettext('Timezone') }}</th>
+            <th>{{ i18n.gettext('Timezone')|u }}</th>
             <td>
-              <input type='text' name='timezone' value='{{ context.timezone}}'>
+              <input type='text' name='timezone' value='{{ context.timezone|u|e }}'>
             </td>
           </tr>
         {% endif %}
         <tr>
-          <th>{{ i18n.gettext('Email') }}</th>
+          <th>{{ i18n.gettext('Email')|u }}</th>
           <td>
-            <input type='text' name='address' value='{{ context.address }}'>
+            <input type='text' name='address' value='{{ context.address.plain()|u|e }}'>
           </td>
         </tr>
         <tr>
-          <th>{{ i18n.gettext('Alternate email address <br>One address per line') }}</th>
+          <th>{{ i18n.gettext('Alternate email address <br>One address per line')|u }}</th>
           <td>
-            {{ context.alternate_addresses.multiline() }}
+            {{ context.alternate_addresses.multiline()|u }}
           </td>
         </tr>
         {% if context.is_edit_ok() %}
@@ -109,6 +109,6 @@
   {% endif %}
 
   <div class='vspace-five'></div>
-  {{ context.history() }}
+  {{ context.history()|u }}
 
 {% endblock %}

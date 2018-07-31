@@ -1,11 +1,11 @@
 {% extends 'layout/page.html' %}
 
 {% block head_title %}
-  {{ i18n.gettext('List of issues') }}
+  {{ i18n.gettext('List of issues')|u }}
 {% endblock %}
 
 {% block page_header %}
-  {{ i18n.gettext('List of issues') }}
+  {{ i18n.gettext('List of issues')|u }}
 {% endblock %}
 
 {% block content %}
@@ -16,38 +16,74 @@
     {% if context.list() %}
       <table class='table'>
         <tr class='info'>
-          <td>{{ i18n.gettext('Priority') }}</td>
-          <td>{{ i18n.gettext('ID') }}</td>
-          <td>{{ i18n.gettext('Activity') }}</td>
-          <td>{{ i18n.gettext('Actor') }}</td>
-          <td>{{ i18n.gettext('Keyword') }}</td>
-          <td>{{ i18n.gettext('Title') }}</td>
-          <td>{{ i18n.gettext('Status') }}</td>
-          <td>{{ i18n.gettext('Creator') }}</td>
-          <td>{{ i18n.gettext('Assigned To') }}</td>
+		  {% if request.show.priority %}
+          <td>{{ i18n.gettext('Priority')|u }}</td>
+		  {% endif %}
+		  {% if request.show.id %}
+          <td>{{ i18n.gettext('ID')|u }}</td>
+		  {% endif %}
+		  {% if request.show.activity %}
+          <td>{{ i18n.gettext('Activity')|u }}</td>
+		  {% endif %}
+		  {% if request.show.actor %}
+          <td>{{ i18n.gettext('Actor')|u }}</td>
+		  {% endif %}
+		  {% if request.show.keyword %}
+          <td>{{ i18n.gettext('Keyword')|u }}</td>
+		  {% endif %}
+		  {% if request.show.title %}
+          <td>{{ i18n.gettext('Title')|u }}</td>
+		  {% endif %}
+		  {% if request.show.status %}
+          <td>{{ i18n.gettext('Status')|u }}</td>
+		  {% endif %}
+		  {% if request.show.creator %}
+          <td>{{ i18n.gettext('Creator')|u }}</td>
+		  {% endif %}
+		  {% if request.show.assignedto %}
+          <td>{{ i18n.gettext('Assigned To')|u }}</td>
+		  {% endif %}
         </tr>
         {% for issue in context.list() %}
           <tr>
-           <td>{{ issue.priority.plain() }}</td>
+		   {% if request.show.priority %}
+           <td>{{ issue.priority.plain()|u|e }}</td>
+		   {% endif %}
+		   {% if request.show.id %}
            <td>{{ issue.id }}</td>
+		   {% endif %}
+		   {% if request.show.activity %}
            <td>{{ issue.activity }}</td>
-           <td>{{ issue.actor }}</td>
-           <td>{{ issue.keyword.plain() }}</td>
+		   {% endif %}
+		   {% if request.show.actor %}
+           <td>{{ issue.actor|u|e }}</td>
+		   {% endif %}
+		   {% if request.show.keyword %}
+           <td>{{ issue.keyword.plain()|u|e }}</td>
+		   {% endif %}
+		   {% if request.show.title %}
            <td>
-            <a href='issue{{ issue.id }}'>{{ issue.title.plain(hyperlink=0) }}</a>
+            <a href='issue{{ issue.id }}'>{{ issue.title.plain(hyperlink=0)|u|e }}</a>
            </td>
-           <td>{{ issue.status.plain() }}</td>
-           <td>{{ issue.creator.plain() }}</td>
+		   {% endif %}
+		   {% if request.show.status %}
+           <td>{{ issue.status.plain()|u|e }}</td>
+		   {% endif %}
+		   {% if request.show.creator %}
+           <td>{{ issue.creator.plain()|u|e }}</td>
+		   {% endif %}
+		   {% if request.show.assignedto %}
            <td>{{ issue.assignedto.plain() }}</td>
+		   {% endif %}
           </tr>
         {% endfor %}
       </table>
       {% include 'layout/pagination.html' %}
-  <div class='row-fluid'> 
+  <div class='row-fluid'>
     <div class='pull-right'>
       <a class='btn btn-success'
           href="{{ request.indexargs_url('issue', {'@action':'export_csv'}) }}">
-        {{ i18n.gettext('Download as CSV') }}
+        {{ i18n.gettext('Download as CSV')|u }}
       </a>
     </div>
   </div>
@@ -55,7 +91,7 @@
   {% include 'layout/sort.html' %}
 
     {% else %}
-      <p class='text-error'>{{ i18n.gettext('There are no issues yet!') }}</p>
+      <p class='text-error'>{{ i18n.gettext('There are no issues yet!')|u }}</p>
     {% endif %}
 
   {% endif %}

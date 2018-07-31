@@ -1,11 +1,11 @@
 {% extends 'layout/page.html' %}
 
 {% block head_title %}
-  {{ context._classname.capitalize() }} {{ i18n.gettext('editing') }}
+  {{ context._classname.capitalize() }} {{ i18n.gettext('editing')|u }}
 {% endblock %}
 
 {% block page_header %}
-  {{ context._classname.capitalize() }} {{ i18n.gettext('editing') }}
+  {{ context._classname.capitalize() }} {{ i18n.gettext('editing')|u }}
 {% endblock %}
 
 {% block content %}
@@ -32,11 +32,11 @@
      removed item and you know its id then just put that id in the id column.
     ') }}</p>
     <form method="POST" action='{{ context.designator() }}'>
-      <textarea rows="15" style="width:90%" name="rows">{{ context.csv }}</textarea>
+      <textarea rows="15" style="width:90%" name="rows">{{ context.csv() }}</textarea>
       <br>
       <input name="@csrf" type="hidden" value="{{ utils.anti_csrf_nonce() }}">
-      <input type="hidden" name="@action" value="{{ i18n.gettext('editCSV') }}">
-      <input type="submit" value="{{ i18n.gettext('Edit Items') }}">
+      <input type="hidden" name="@action" value="{{ i18n.gettext('editCSV')|u }}">
+      <input type="submit" value="{{ i18n.gettext('Edit Items')|u }}">
     </form>
   {% endif %}
 

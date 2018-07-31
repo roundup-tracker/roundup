@@ -1,11 +1,11 @@
 {% extends 'layout/page.html' %}
 
 {% block head_title %}
-  {{ i18n.gettext('Registration in progress') }} - {{ config.TRACKER_NAME }}
+  {{ i18n.gettext('Registration in progress')|u }} - {{ config.TRACKER_NAME }}
 {% endblock %}
 
 {% block page_header %}
-  {{ i18n.gettext('Registration in progress...') }}
+  {{ i18n.gettext('Registration in progress...')|u }}
 {% endblock %}
 
 {% block content %}

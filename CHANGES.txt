@@ -11,6 +11,15 @@ Python v2.5 and v2.6.  Starting with the v1.6 releases of Roundup
 v2.7.2 is required to run newer releases of Roundup.
 
 
+2018-??-?? ?.?.0
+
+Fixed:
+
+- issue2550811: work around Unicode encoding issues in jinja2 template
+  by explicitly converting data to Unicode; also fixed pagination and
+  selecting columns to display in the issues list (Christof Meerwald)
+
+
 2018-07-13 1.6.0
 
 Features:

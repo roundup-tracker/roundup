@@ -2,7 +2,7 @@
 
 {% block head_title %}
   {% if context.id %}
-    Issue {{ context.id }}: {{ context.title }} - {{ config.TRACKER_NAME }}
+    Issue {{ context.id }}: {{ context.title.plain()|u|e }} - {{ config.TRACKER_NAME }}
   {% else %}
     New Issue - {{ config.TRACKER_NAME }}
   {% endif %}
@@ -73,6 +73,6 @@
 
   <div class='vspace-five'></div>
 
-  {{ context.history() }}
+  {{ context.history()|u }}
 
 {% endblock %}

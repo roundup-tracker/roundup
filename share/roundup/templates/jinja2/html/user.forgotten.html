@@ -1,22 +1,22 @@
 {% extends 'layout/page.html' %}
 
 {% block head_title %}
-  {{ i18n.gettext('Password reset request') }} - {{ config.TRACKER_NAME }}
+  {{ i18n.gettext('Password reset request')|u }} - {{ config.TRACKER_NAME }}
 {% endblock %}
 
 {% block page_header %}
-  {{ i18n.gettext('Password reset request') }}
+  {{ i18n.gettext('Password reset request')|u }}
 {% endblock %}
 
 {% block content %}
 
   <p>
-    {{ i18n.gettext('If you know the email address you registered with, enter it below.') }}
+    {{ i18n.gettext('If you know the email address you registered with, enter it below.')|u }}
   </p>
 
   <form method="POST" action='{{ context.designator() }}'>
     <div class='row-fluid'>
-      <label>{{ i18n.gettext('Email Address') }}:</label>
+      <label>{{ i18n.gettext('Email Address')|u }}:</label>
       <input type='text' name="address">
       <input name="@csrf" type="hidden"
              value="{{ utils.anti_csrf_nonce() }}">
@@ -24,14 +24,14 @@
              value="{{ utils.anti_csrf_nonce() }}">
       <input type="hidden" name="@action" value="passrst">
       <input type="hidden" name="@template" value="forgotten">
-      <input type="submit" value="{{ i18n.gettext('Password reset') }}" class='btn btn-primary'>
+      <input type="submit" value="{{ i18n.gettext('Password reset')|u }}" class='btn btn-primary'>
     </div>
 
     <div class='row-fluid vspace-two'> 
-      <p>{{ i18n.gettext('Or, if you know your username, then enter it below') }}.</p>
-      <label>{{ i18n.gettext('Username') }}:</label>
+      <p>{{ i18n.gettext('Or, if you know your username, then enter it below')|u }}.</p>
+      <label>{{ i18n.gettext('Username')|u }}:</label>
       <input type='text' name="username">
-      <input type="submit" value="{{ i18n.gettext('Password reset') }}" class='btn btn-info'>
+      <input type="submit" value="{{ i18n.gettext('Password reset')|u }}" class='btn btn-info'>
     </div>
   </form>
 

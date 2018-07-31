@@ -1,11 +1,11 @@
 {% extends 'layout/page.html' %}
 
 {% block head_title %}
-  {{ i18n.gettext('User listing') }} - {{ config.TRACKER_NAME }}
+  {{ i18n.gettext('User listing')|u }} - {{ config.TRACKER_NAME }}
 {% endblock %}
 
 {% block page_header %}
-  {{ i18n.gettext('User listing') }}
+  {{ i18n.gettext('User listing')|u }}
 {% endblock %}
 
 {% block content %}
@@ -15,24 +15,24 @@
   {% if context.is_view_ok() %}
     <table class='table'>
       <tr class='info'>
-        <td>{{ i18n.gettext('Username') }}</td>
-        <td>{{ i18n.gettext('Real name') }}</td>
-        <td>{{ i18n.gettext('Organisation') }}</td>
-        <td>{{ i18n.gettext('Email address') }}</td>
-        <td>{{ i18n.gettext('Phone number') }}</td>
+        <td>{{ i18n.gettext('Username')|u }}</td>
+        <td>{{ i18n.gettext('Real name')|u }}</td>
+        <td>{{ i18n.gettext('Organisation')|u }}</td>
+        <td>{{ i18n.gettext('Email address')|u }}</td>
+        <td>{{ i18n.gettext('Phone number')|u }}</td>
         {% if context.is_retire_ok() %}
-          <td>{{ i18n.gettext('Retire') }}</td>
+          <td>{{ i18n.gettext('Retire')|u }}</td>
         {% endif %}
       </tr>
       {% for user in context.list() %}
         <tr>
           <td>
-            <a href='user{{ user.id }}'>{{ user.username }}</a>
+            <a href='user{{ user.id }}'>{{ user.username.plain()|u|e }}</a>
           </td>
-          <td>{{ user.realname.plain() }}</td>
-          <td>{{ user.organisation.plain() }}</td>
-          <td>{{ user.address.email() }}</td>
-          <td>{{ user.phone.plain() }}</td>
+          <td>{{ user.realname.plain()|u|e }}</td>
+          <td>{{ user.organisation.plain()|u|e }}</td>
+          <td>{{ user.address.email()|u|e }}</td>
+          <td>{{ user.phone.plain()|u|e }}</td>
           {% if context.is_retire_ok() %}
             <td>
               <form method="POST" action='user{{ user.id }}' class='form-inline'>
@@ -40,7 +40,7 @@
                 <input name="@csrf" type="hidden"
                        value="{{ utils.anti_csrf_nonce() }}">
                 <input type="hidden" name="@action" value="retire">
-                <input type="submit" value="{{ i18n.gettext('retire') }}" class='btn btn-small'>
+                <input type="submit" value="{{ i18n.gettext('retire')|u }}" class='btn btn-small'>
               </form>
             </td>
           {% endif %}

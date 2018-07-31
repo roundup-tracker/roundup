@@ -1,11 +1,11 @@
 {% extends 'layout/page.html' %}
 
 {% block head_title %}
-  {{ i18n.gettext('Keyword editing') }}
+  {{ i18n.gettext('Keyword editing')|u }}
 {% endblock %}
 
 {% block page_header %}
-  {{ i18n.gettext('Keyword editing') }}
+  {{ i18n.gettext('Keyword editing')|u }}
 {% endblock %}
 
 {% block content %}
@@ -19,10 +19,10 @@
   <ul class='nav nav-pills nav-stacked'>
     {% for keyword in db.keyword.list() %}
       <li>
-        <a href='keyword{{ keyword.id }}'>{{ keyword.name }}</a>
+        <a href='keyword{{ keyword.id }}'>{{ keyword.name.plain()|u|e }}</a>
       </li>
     {% else %}
-      <p class='text-mute'>{{ i18n.gettext('There are no keywords yet.  Be the first -') }}</p>
+      <p class='text-mute'>{{ i18n.gettext('There are no keywords yet.  Be the first -')|u }}</p>
     {% endfor %}
   </ul>
 
@@ -33,6 +33,6 @@
     <input name="@csrf" type="hidden"
            value="{{ utils.anti_csrf_nonce() }}">
     <input type="hidden" name="@action" value="new">
-    <input type='submit' class='btn btn-primary' value="{{ i18n.gettext('Create keyword') }}">
+    <input type='submit' class='btn btn-primary' value="{{ i18n.gettext('Create keyword')|u }}">
   </form>
 {% endblock %}

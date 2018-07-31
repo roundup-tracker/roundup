@@ -1,22 +1,22 @@
-<h4>{{ i18n.gettext('Files') }}</h4>
+<h4>{{ i18n.gettext('Files')|u }}</h4>
 <table class='table'>
   <tr>
-    <th>{{ i18n.gettext('File name') }}</th>
-    <th>{{ i18n.gettext('Uploaded') }}</th>
-    <th>{{ i18n.gettext('Type') }}</th>
-    <th>{{ i18n.gettext('Edit') }}</th>
-    <th>{{ i18n.gettext('Remove') }}</th>
+    <th>{{ i18n.gettext('File name')|u }}</th>
+    <th>{{ i18n.gettext('Uploaded')|u }}</th>
+    <th>{{ i18n.gettext('Type')|u }}</th>
+    <th>{{ i18n.gettext('Edit')|u }}</th>
+    <th>{{ i18n.gettext('Remove')|u }}</th>
   </tr>
   {% for file in context.files %}
     <tr>
       <td>
-        <a href='{{ file.download_url() }}'>{{ file.name }}</a>
+        <a href='{{ file.download_url() }}'>{{ file.name|u|e }}</a>
       </td>
-      <td>{{ file.creator }}, {{ file.creation }}</td>
-      <td>{{ file.type }}</td>
+      <td>{{ file.creator }}, {{ file.creation|u|e }}</td>
+      <td>{{ file.type|u|e }}</td>
       {% if file.is_edit_ok %}
         <td>
-          <a href='file{{ file.id }}'>{{ i18n.gettext('edit') }}</a>
+          <a href='file{{ file.id }}'>{{ i18n.gettext('edit')|u }}</a>
         </td>
       {% endif %}
       {% if context.is_edit_ok %}
@@ -24,8 +24,8 @@
           <form method="POST" action='issue{{ context.id }}'>
             <input type="hidden" name="@remove@files" value='{{ file.id }}'>
             <input name="@csrf" type="hidden" value="{{ utils.anti_csrf_nonce() }}">
-            <input type="hidden" name="@action" value="{{ i18n.gettext('edit') }}">
-            <input type="submit" value="{{ i18n.gettext('remove') }}">
+            <input type="hidden" name="@action" value="{{ i18n.gettext('edit')|u }}">
+            <input type="submit" value="{{ i18n.gettext('remove')|u }}">
           </form>
         </td>
       {% endif %}

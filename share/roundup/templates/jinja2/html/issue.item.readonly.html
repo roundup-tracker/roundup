@@ -1,16 +1,16 @@
 <dl class='dl-horizontal'>
-  <dt>{{ i18n.gettext('Title') }}</dt>
-  <dd>{{ context.title.plain() }}</dd>
-  <dt>{{ i18n.gettext('Priority') }}</dt>
-  <dd>{{ context.priority.plain() }}</dd>
-  <dt>{{ i18n.gettext('Status') }}</dt>
-  <dd>{{ context.status.plain() }}</dd>
-  <dt>{{ i18n.gettext('Superseder') }}</dt>
-  <dd>{{ context.superseder.plain() }}</dd>
-  <dt>{{ i18n.gettext('Nosy list') }}</dt>
-  <dd>{{ context.nosy.plain() }}</dd>
-  <dt>{{ i18n.gettext('Assigned to') }}</dt>
-  <dd>{{ context.assignedto.plain() }}</dd>
-  <dt>{{ i18n.gettext('Keywords') }}</dt>
-  <dd>{{ context.keyword.plain() }}</dd>
+  <dt>{{ i18n.gettext('Title')|u }}</dt>
+  <dd>{{ context.title.plain()|u|e }}</dd>
+  <dt>{{ i18n.gettext('Priority')|u }}</dt>
+  <dd>{{ context.priority.plain()|u|e }}</dd>
+  <dt>{{ i18n.gettext('Status')|u }}</dt>
+  <dd>{{ context.status.plain()|u|e }}</dd>
+  <dt>{{ i18n.gettext('Superseder')|u }}</dt>
+  <dd>{{ context.superseder.plain()|u|e }}</dd>
+  <dt>{{ i18n.gettext('Nosy list')|u }}</dt>
+  <dd>{{ context.nosy.plain()|u|e }}</dd>
+  <dt>{{ i18n.gettext('Assigned to')|u }}</dt>
+  <dd>{{ context.assignedto.plain()|u|e }}</dd>
+  <dt>{{ i18n.gettext('Keywords')|u }}</dt>
+  <dd>{{ context.keyword.plain()|u|e }}</dd>
 </dl>

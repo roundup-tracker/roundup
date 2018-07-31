@@ -1,11 +1,11 @@
 {% extends 'layout/page.html' %}
 
 {% block head_title %}
-  {{ i18n.gettext('Edit Collision') }} - {{ config.TRACKER_NAME }}
+  {{ i18n.gettext('Edit Collision')|u }} - {{ config.TRACKER_NAME }}
 {% endblock %}
 
 {% block page_header %}
-  {{ i18n.gettext('Edit Collision') }} - {{ config.TRACKER_NAME }}
+  {{ i18n.gettext('Edit Collision')|u }} - {{ config.TRACKER_NAME }}
 {% endblock %}
 
 {% block content %}
@@ -13,7 +13,7 @@
     {{ i18n.gettext('There has been a collision.
     Another user updated this node
     while you were editing. Please') }}
-    <a href='{{ context }}'>{{ i18n.gettext('reload') }}</a>
-    {{ i18n.gettext('the node and review your edits.') }}
+    <a href='{{ context }}'>{{ i18n.gettext('reload')|u }}</a>
+    {{ i18n.gettext('the node and review your edits.')|u }}
   </p>
-</tal:block>
+{% endblock %}

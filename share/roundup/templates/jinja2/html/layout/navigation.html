@@ -1,17 +1,20 @@
+{% set columns = 'id,activity,title,creator,status' %}
+{% set columns_showall = 'id,activity,title,creator,assignedto,status' %}
+
 {% if request.user.hasPermission('View', 'query') %}
   <p>
-    <b>{{ i18n.gettext('Your Queries') }}</b> (<a href="query?@template=edit">{{ i18n.gettext('edit') }}</a>)
+    <b>{{ i18n.gettext('Your Queries')|u }}</b> (<a href="query?@template=edit">{{ i18n.gettext('edit')|u }}</a>)
   </p>
 {% endif %}
 
 {% if request.user.hasPermission('View', 'issue') %}
   <ul class='nav nav-list'>
     <li class='nav-header'>
-      <i class='icon-fire'></i>{{ i18n.gettext('Issues') }}
+      <i class='icon-fire'></i>{{ i18n.gettext('Issues')|u }}
     </li>
     {% if request.user.hasPermission('Create', 'issue') %}
       <li>
-        <a href="issue?@template=item">{{ i18n.gettext('Create New') }}</a>
+        <a href="issue?@template=item">{{ i18n.gettext('Create New')|u }}</a>
       </li>
     {% endif %}
 
@@ -24,8 +27,8 @@
         '@search_text': '',
         'status': status_notresolved,
         'assignedto': '-1',
-        '@dispname': i18n.gettext('Show Unassigned'),
-       }) }}">{{ i18n.gettext('Show Unassigned') }}</a>
+        '@dispname': i18n.gettext('Show Unassigned')|u,
+       }) }}">{{ i18n.gettext('Show Unassigned')|u }}</a>
     </li>
     <li>
       <a href="{{ request.indexargs_url('issue', {
@@ -35,18 +38,18 @@
         '@columns': columns_showall,
         '@search_text': '',
         'status': status_notresolved,
-        '@dispname': i18n.gettext('Show All'),
-       }) }}">{{ i18n.gettext('Show All') }}</a>
+        '@dispname': i18n.gettext('Show All')|u,
+       }) }}">{{ i18n.gettext('Show All')|u }}</a>
     </li>
     <li>
-      <a href="issue?@template=search">{{ i18n.gettext('Search') }}</a>
+      <a href="issue?@template=search">{{ i18n.gettext('Search')|u }}</a>
     </li>
     <li>
       <form method="POST" class='form-inline' action="{{ request.base }}">
         <input type="hidden" name="@type" value="issue">
         <input type="hidden" name="@action" value="show">
         <input class="input-mini" type="text" name="@number">
-        <input type="submit" class="btn" value="{{ i18n.gettext('Show issue') }}">
+        <input type="submit" class="btn" value="{{ i18n.gettext('Show issue')|u }}">
       </form>
     </li>
   </ul>
@@ -59,17 +62,17 @@
   {% if request.user.hasPermission('Create', 'keyword')
         or request.user.hasPermission('Edit', 'keyword') %}
     <li class='nav-header'>
-      <i class='icon-star'></i>{{ i18n.gettext('Keywords') }}
+      <i class='icon-star'></i>{{ i18n.gettext('Keywords')|u }}
     </li>
   {% endif %}
   {% if request.user.hasPermission('Create', 'keyword') %}
     <li>
-      <a href="keyword?@template=item">{{ i18n.gettext('Create New') }}</a>
+      <a href="keyword?@template=item">{{ i18n.gettext('Create New')|u }}</a>
     </li>
   {% endif %}
   {% if request.user.hasPermission('Edit', 'keyword') %}
     <li>
-      <a href="keyword?@template=item">{{ i18n.gettext('Edit Existing') }}</a>
+      <a href="keyword?@template=item">{{ i18n.gettext('Edit Existing')|u }}</a>
     </li>
   {% endif %}
 </ul>
@@ -81,24 +84,24 @@
 {% if request.user.hasPermission('View', 'user') %}
   <ul class='nav nav-list'>
     <li class='nav-header'>
-      <i class='icon-eye-open'></i>{{ i18n.gettext('Administration') }}
+      <i class='icon-eye-open'></i>{{ i18n.gettext('Administration')|u }}
     </li>
 
     {% if request.user.hasPermission('Edit', None) %}
       <li>
-        <a href="home?@template=classlist">{{ i18n.gettext('Class List') }}</a>
+        <a href="home?@template=classlist">{{ i18n.gettext('Class List')|u }}</a>
       </li>
     {% endif %}
 
     {% if request.user.hasPermission('View', 'user') or request.user.hasPermission('Edit', 'user') %}
       <li>
-        <a href="user">{{ i18n.gettext('User List') }}</a>
+        <a href="user">{{ i18n.gettext('User List')|u }}</a>
       </li>
     {% endif %}
 
     {% if request.user.hasPermission('Create', 'user') %}
       <li>
-        <a href="user?@template=item">{{ i18n.gettext('Add User') }}</a>
+        <a href="user?@template=item">{{ i18n.gettext('Add User')|u }}</a>
       </li>
     {% endif %}
   </ul>
@@ -109,7 +112,7 @@
   <form method="POST" action='{{ request.base }}'>
     <ul class='nav nav-list'>
       <li class='nav-header'>
-        <i class='icon-user'></i>{{ i18n.gettext('Login') }}
+        <i class='icon-user'></i>{{ i18n.gettext('Login')|u }}
       </li>
       <li>
         <input type='text' name="__login_name" placeholder='username'>
@@ -119,29 +122,29 @@
       </li>
       <li>
         <label class='checkbox'>
-          <input type="checkbox" name="remember"> {{ i18n.gettext('Remember me?') }}
+          <input type="checkbox" name="remember"> {{ i18n.gettext('Remember me?')|u }}
         </label>
       </li>
       <li>
-        <input type="submit" value="{{ i18n.gettext('Login') }}" class='btn btn-inverse'>
+        <input type="submit" value="{{ i18n.gettext('Login')|u }}" class='btn btn-inverse'>
       </li>
       <li class='vspace-one'>
         {% if request.user.hasPermission('Register', 'user') %}
-          <a href="user?@template=register">{{ i18n.gettext('Register') }}</a>
+          <a href="user?@template=register">{{ i18n.gettext('Register')|u }}</a>
         {% endif %}
       </li>
       <li>
-        <a href="user?@template=forgotten">{{ i18n.gettext('Lost your login?') }}</a>
+        <a href="user?@template=forgotten">{{ i18n.gettext('Lost your login?')|u }}</a>
       </li>
     </ul>
-    <input type="hidden" name="@action" value="{{ i18n.gettext('Login') }}">
+    <input type="hidden" name="@action" value="{{ i18n.gettext('Login')|u }}">
     <input type="hidden" name="__came_from" value='{{request.base}}{{request.env.PATH_INFO}}'>
   </form>
   <hr>
 {% else %}
   <ul class='nav nav-list'>
     <li class='nav-header'>
-      <i class='icon-user'></i>{{ i18n.gettext('Hello,') }}
+      <i class='icon-user'></i>{{ i18n.gettext('Hello,')|u }}
       <span class='username'>{{ request.user.username.plain(escape=1) }}</span>
     </li>
     <li>
@@ -153,14 +156,14 @@
         '@search_text': '',
         'status': status_notresolved,
         'assignedto': request.user.id,
-        '@dispname': i18n.gettext('Your Issues'),
-      }) }}">{{ i18n.gettext('Your Issues') }}</a>
+        '@dispname': i18n.gettext('Your Issues')|u,
+      }) }}">{{ i18n.gettext('Your Issues')|u }}</a>
     </li>
     <li>
-      <a href="user{{ request.user.id }}">{{ i18n.gettext('Your Details') }}</a>
+      <a href="user{{ request.user.id }}">{{ i18n.gettext('Your Details')|u }}</a>
     </li>
     <li>
-      <a href="{{ request.indexargs_url('', {'@action':'logout'}) }}">{{ i18n.gettext('Logout') }}</a>
+      <a href="{{ request.indexargs_url('', {'@action':'logout'}) }}">{{ i18n.gettext('Logout')|u }}</a>
     </li>
   </ul>
   <hr>
@@ -168,7 +171,7 @@
 
 <ul class='nav nav-list'>
   <li class='nav-header'>
-    <i class='icon-bookmark'></i>{{ i18n.gettext('Help') }}
+    <i class='icon-bookmark'></i>{{ i18n.gettext('Help')|u }}
   </li>
   <li>
     <a href="http://www.roundup-tracker.org">Roundup docs</a>
