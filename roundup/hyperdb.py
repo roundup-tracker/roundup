@@ -30,53 +30,10 @@ from . import date, password
 from .support import ensureParentsExist, PrioList
 from roundup.i18n import _
 from roundup.cgi.exceptions import DetectorError
+from roundup.anypy.cmp_ import NoneAndDictComparable
 
 logger = logging.getLogger('roundup.hyperdb')
 
-try:
-    None < 0
-    def _NoneComparable(v):
-        return v
-except TypeError:
-    class _NoneComparable(object):
-        def __init__(self, value):
-            self.value = value
-
-        def __cmp__(self, other):
-            if not isinstance(other, self.__class__):
-                raise TypeError('not comparable')
-
-            if self.value is None and other.value is None:
-                return 0
-            elif self.value is None:
-                return -1
-            elif other.value is None:
-                return 1
-            elif type(self.value) == type(()) and type(other.value) == type(()):
-                for lhs, rhs in zip(self.value, other.value):
-                    result = _NoneComparable(lhs).__cmp__(_NoneComparable(rhs))
-                    if result != 0:
-                        return result
-                return len(self.value) - len(other.value)
-            elif self.value < other.value:
-                return -1
-            elif self.value > other.value:
-                return 1
-            else:
-                return 0
-
-        def __eq__(self, other):
-            return self.__cmp__(other) == 0
-        def __ne__(self, other):
-            return self.__cmp__(other) != 0
-        def __lt__(self, other):
-            return self.__cmp__(other) < 0
-        def __le__(self, other):
-            return self.__cmp__(other) <= 0
-        def __ge__(self, other):
-            return self.__cmp__(other) >= 0
-        def __gt__(self, other):
-            return self.__cmp__(other) > 0
 
 #
 # Types
@@ -652,7 +609,7 @@ class Proptree(object):
         for dir, i in reversed(list(zip(directions, dir_idx))):
             rev = dir == '-'
             sortattr = sorted (sortattr,
-                               key = lambda x: _NoneComparable(x[i:idx]),
+                               key = lambda x: NoneAndDictComparable(x[i:idx]),
                                reverse = rev)
             idx = i
         return [x[-1] for x in sortattr]

@@ -1,6 +1,7 @@
 # misc tests
 
 import unittest
+import roundup.anypy.cmp_
 from roundup.cgi.accept_language import parse
 
 class AcceptLanguageTest(unittest.TestCase):
@@ -15,3 +16,7 @@ class AcceptLanguageTest(unittest.TestCase):
         self.assertEqual(parse(None),[])
         self.assertEqual(parse("   "), [])
         self.assertEqual(parse("en,"), ['en'])
+
+class CmpTest(unittest.TestCase):
+    def testCmp(self):
+        roundup.anypy.cmp_._test()

@@ -35,6 +35,7 @@ from roundup.cgi.templating import HTMLItem
 from roundup.exceptions import UsageError, Reject
 
 from roundup.anypy.strings import b2s, s2b, u2s
+from roundup.anypy.cmp_ import NoneAndDictComparable
 
 from .mocknull import MockNull
 
@@ -2310,8 +2311,8 @@ class DBTest(commonDBTest):
                     j[1].second = float(int(j[1].second))
                 for j in rj:
                     j[1].second = float(int(j[1].second))
-                oj.sort(key = lambda x: x[:4])
-                rj.sort(key = lambda x: x[:4])
+                oj.sort(key = NoneAndDictComparable)
+                rj.sort(key = NoneAndDictComparable)
                 ae(oj, rj)
 
         # make sure the retired items are actually imported
