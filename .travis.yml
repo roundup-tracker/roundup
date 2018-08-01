@@ -37,7 +37,8 @@ before_install:
   - cd $TRAVIS_BUILD_DIR
 
 install:
-  - pip install MySQL-python psycopg2 pytz pyme whoosh
+  - pip install psycopg2 pytz whoosh
+  - if [[ $TRAVIS_PYTHON_VERSION == "2."* ]]; then pip install MySQL-python pyme; fi
   - pip install pytest-cov codecov
 
 before_script:
