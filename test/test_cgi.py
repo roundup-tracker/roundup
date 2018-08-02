@@ -18,7 +18,7 @@ from roundup.cgi.templating import HTMLItem, HTMLRequest, NoTemplate
 from roundup.cgi.templating import HTMLProperty, _HTMLItem, anti_csrf_nonce
 from roundup.cgi.form_parser import FormParser
 from roundup import init, instance, password, hyperdb, date
-from roundup.anypy.strings import StringIO
+from roundup.anypy.strings import StringIO, u2s
 
 # For testing very simple rendering
 from roundup.cgi.engine_zopetal import RoundupPageTemplate
@@ -1330,13 +1330,13 @@ class FormTestCase(FormTestParent, unittest.TestCase):
         self.assertEqual(cl._ok_message, ['Items edited OK'])
         k = self.db.keyword.getnode('1')
         self.assertEqual(k.name, 'newkey')
-        form = dict(rows=u'id,name\n1,\xe4\xf6\xfc'.encode('utf-8'))
+        form = dict(rows=u2s(u'id,name\n1,\xe4\xf6\xfc'))
         cl = self._make_client(form, userid='1', classname='keyword')
         cl._ok_message = []
         actions.EditCSVAction(cl).handle()
         self.assertEqual(cl._ok_message, ['Items edited OK'])
         k = self.db.keyword.getnode('1')
-        self.assertEqual(k.name, u'\xe4\xf6\xfc'.encode('utf-8'))
+        self.assertEqual(k.name, u2s(u'\xe4\xf6\xfc'))
 
     def testserve_static_files(self):
         # make a client instance
