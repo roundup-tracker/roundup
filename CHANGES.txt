@@ -16,6 +16,10 @@ v2.7.2 is required to run newer releases of Roundup.
 Features:
 
 - issue2550901: add search page to jinja2 template (Christof Meerwald)
+- issue2550982: use PBKDF2 in Python's hashlib, if available (Python
+  2.7.8+), to improve performance over bundled pure Python
+  version. Note that acceleration via m2crypto is no longer supported
+  (Christof Meerwald)
 
 Fixed:
 

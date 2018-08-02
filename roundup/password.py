@@ -73,9 +73,11 @@ def h64decode(data):
         return b64decode(data + b"=", b"./")
 
 try:
-    from M2Crypto.EVP import pbkdf2 as _pbkdf2
+    from hashlib import pbkdf2_hmac
+    def _pbkdf2(password, salt, rounds, keylen):
+        return pbkdf2_hmac('sha1', password, salt, rounds, keylen)
 except ImportError:
-    #no m2crypto - make our own pbkdf2 function
+    #no hashlib.pbkdf2_hmac - make our own pbkdf2 function
     from struct import pack
     from hmac import HMAC
 
@@ -119,7 +121,7 @@ def pbkdf2(password, salt, rounds, keylen):
     :param rounds: number of rounds to use to generate key
     :arg keylen: number of bytes to generate
 
-    If M2Crypto is present, uses it's implementation as backend.
+    If hashlib supports pbkdf2, uses it's implementation as backend.
 
     :returns:
         raw bytes of generated key
