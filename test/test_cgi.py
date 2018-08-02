@@ -801,7 +801,7 @@ class FormTestCase(FormTestParent, unittest.TestCase):
           <p>deferred</p>
           <p>admin, anonymous</p>
           <p></p>
-          <p><input type="text" name="superseder" value="5000" size="30"></p>
+          <p><input name="superseder" size="30" type="text" value="5000"></p>
          </body>
         </html>
         """.strip ())

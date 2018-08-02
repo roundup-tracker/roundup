@@ -212,7 +212,7 @@ class HTMLClassTestCase(TemplatingTestCase) :
 
     def test_string_field(self):
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', 'A string <b> with rouilj@example.com embedded &lt; html</b>')
-        self.assertEqual(p.field(), '<input type="text" name="test1@test" value="A string &lt;b&gt; with rouilj@example.com embedded &amp;lt; html&lt;/b&gt;" size="30">')
+        self.assertEqual(p.field(), '<input name="test1@test" size="30" type="text" value="A string &lt;b&gt; with rouilj@example.com embedded &amp;lt; html&lt;/b&gt;">')
 
     def test_string_multiline(self):
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', 'A string <b> with rouilj@example.com embedded &lt; html</b>')

@@ -444,7 +444,7 @@ def _set_input_default_args(dic):
 
 def cgi_escape_attrs(**attrs):
     return ' '.join(['%s="%s"'%(k,cgi.escape(str(v), True))
-        for k,v in attrs.items()])
+        for k,v in sorted(attrs.items())])
 
 def input_html4(**attrs):
     """Generate an 'input' (html4) element with given attributes"""
