@@ -366,7 +366,7 @@ privileges to create databases.
 Configure a Web Interface
 -------------------------
 
-There are five web interfaces to choose from:
+There are multiple web interfaces to choose from:
 
 1. `web server cgi-bin`_
 2. `cgi-bin for limited-access hosting`_
