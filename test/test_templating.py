@@ -153,7 +153,7 @@ class HTMLClassTestCase(TemplatingTestCase) :
             
             if test == 'module':
                 # test the module function
-                nonce1 = anti_csrf_nonce(self, self.client, lifetime=1)
+                nonce1 = anti_csrf_nonce(self.client, lifetime=1)
                 # lifetime * 60 is the offset
                 greater_than = week_seconds - 1 * 60
             elif test == 'template':
@@ -163,7 +163,7 @@ class HTMLClassTestCase(TemplatingTestCase) :
                 greater_than = week_seconds - 5 * 60
             elif test == 'default_time':
                 # use the module function but with no lifetime
-                nonce1 = anti_csrf_nonce(self, self.client)
+                nonce1 = anti_csrf_nonce(self.client)
                 # see above for web nonce lifetime.
                 greater_than = week_seconds - 10 * 60
 

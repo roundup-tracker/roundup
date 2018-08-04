@@ -11,13 +11,10 @@ import socket, errno, hashlib
 import email.utils
 from traceback import format_exc
 
-try: 
-    # Use the cryptographic source of randomness if available
-    from random import SystemRandom
-    random=SystemRandom()
+import roundup.anypy.random_ as random_
+if not random_.is_weak:
     logger.debug("Importing good random generator")
-except ImportError:
-    from random import random
+else:
     logger.warning("**SystemRandom not available. Using poor random generator")
 
 try:
@@ -177,8 +174,7 @@ class Session:
     def _gen_sid(self):
         """ generate a unique session key """
         while 1:
-            s = '%s%s'%(time.time(), random.random())
-            s = b2s(binascii.b2a_base64(s2b(s)).strip())
+            s = b2s(binascii.b2a_base64(random_.token_bytes(32)).strip())
             if not self.session_db.exists(s):
                 break
 
@@ -323,7 +319,7 @@ class Client:
     def __init__(self, instance, request, env, form=None, translator=None):
         # re-seed the random number generator. Is this is an instance of
         # random.SystemRandom it has no effect.
-        random.seed()
+        random_.seed()
         # So we also seed the pseudorandom random source obtained from
         #    import random
         # to make sure that every forked copy of the client will return
@@ -401,8 +397,7 @@ class Client:
 
     def _gen_nonce(self):
         """ generate a unique nonce """
-        n = '%s%s%s'%(random.random(), id(self), time.time() )
-        n = hashlib.sha256(s2b(n)).hexdigest()
+        n = b2s(base64.b32encode(random_.token_bytes(40)))
         return n
 
     def setTranslator(self, translator=None):
@@ -864,7 +859,7 @@ class Client:
                     # try to seed with something harder to guess than
                     # just the time. If random is SystemRandom,
                     # this is a no-op.
-                    random.seed("%s%s"%(password,time.time())) 
+                    random_.seed("%s%s"%(password,time.time())) 
 
         # if user was not set by http authorization, try session lookup
         if not user:

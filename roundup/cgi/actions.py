@@ -1,4 +1,4 @@
-import re, cgi, time, random, csv, codecs
+import re, cgi, time, csv, codecs
 
 from roundup import hyperdb, token, date, password
 from roundup.actions import Action as BaseAction
@@ -8,6 +8,7 @@ from roundup.mailgw import uidFromAddress
 from roundup.exceptions import Reject, RejectRaw
 from roundup.anypy import urllib_
 from roundup.anypy.strings import StringIO
+import roundup.anypy.random_ as random_
 
 # Also add action to client.py::Client.actions property
 __all__ = ['Action', 'ShowAction', 'RetireAction', 'RestoreAction', 'SearchAction',
@@ -963,9 +964,9 @@ Your password is now: %(password)s
             return
 
         # generate the one-time-key and store the props for later
-        otk = ''.join([random.choice(chars) for x in range(32)])
+        otk = ''.join([random_.choice(chars) for x in range(32)])
         while otks.exists(otk):
-            otk = ''.join([random.choice(chars) for x in range(32)])
+            otk = ''.join([random_.choice(chars) for x in range(32)])
         otks.set(otk, uid=uid, uaddress=address)
         otks.commit()
 
@@ -1084,9 +1085,9 @@ class RegisterAction(RegoCommon, EditCommon):
             elif isinstance(proptype, hyperdb.Password):
                 user_props[propname] = str(value)
         otks = self.db.getOTKManager()
-        otk = ''.join([random.choice(chars) for x in range(32)])
+        otk = ''.join([random_.choice(chars) for x in range(32)])
         while otks.exists(otk):
-            otk = ''.join([random.choice(chars) for x in range(32)])
+            otk = ''.join([random_.choice(chars) for x in range(32)])
         otks.set(otk, **user_props)
 
         # send the email

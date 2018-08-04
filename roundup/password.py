@@ -19,12 +19,13 @@
 """
 __docformat__ = 'restructuredtext'
 
-import re, string, random
+import re, string
 import os
 from base64 import b64encode, b64decode
 from hashlib import md5, sha1
 
 from roundup.anypy.strings import us2s, b2s, s2b
+import roundup.anypy.random_ as random_
 
 try:
     import crypt
@@ -49,9 +50,6 @@ def bord(c):
     else:
         # Python 3.  Elements of bytes are integers.
         return c
-
-def getrandbytes(count):
-    return _bjoin(bchr(random.randint(0,255)) for i in range(count))
 
 #NOTE: PBKDF2 hash is using this variant of base64 to minimize encoding size,
 #      and have charset that's compatible w/ unix crypt variants
@@ -167,7 +165,7 @@ def encodePassword(plaintext, scheme, other=None, config=None):
         if other:
             rounds, salt, raw_salt, digest = pbkdf2_unpack(other)
         else:
-            raw_salt = getrandbytes(20)
+            raw_salt = random_.token_bytes(20)
             salt = h64encode(raw_salt)
             if config:
                 rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
@@ -184,8 +182,8 @@ def encodePassword(plaintext, scheme, other=None, config=None):
         else:
             #new password
             # variable salt length
-            salt_len = random.randrange(36, 52)
-            salt = os.urandom(salt_len)
+            salt_len = random_.randbelow(52-36) + 36
+            salt = random_.token_bytes(salt_len)
         s = ssha(s2b(plaintext), salt)
     elif scheme == 'SHA':
         s = sha1(s2b(plaintext)).hexdigest()
@@ -196,7 +194,7 @@ def encodePassword(plaintext, scheme, other=None, config=None):
             salt = other
         else:
             saltchars = './0123456789'+string.ascii_letters
-            salt = random.choice(saltchars) + random.choice(saltchars)
+            salt = random_.choice(saltchars) + random_.choice(saltchars)
         s = crypt.crypt(plaintext, salt)
     elif scheme == 'plaintext':
         s = plaintext
@@ -206,10 +204,10 @@ def encodePassword(plaintext, scheme, other=None, config=None):
 
 def generatePassword(length=12):
     chars = string.ascii_letters+string.digits
-    password = [random.choice(chars) for x in range(length)]
+    password = [random_.choice(chars) for x in range(length - 1)]
     # make sure there is at least one digit
-    password[0] = random.choice(string.digits)
-    random.shuffle(password)
+    digitidx = random_.randbelow(length)
+    password[digitidx:digitidx] = [random_.choice(string.digits)]
     return ''.join(password)
 
 class JournalPassword:

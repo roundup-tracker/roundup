@@ -953,7 +953,7 @@ class FormTestCase(FormTestParent, unittest.TestCase):
         del(out[0])
 
         form2 = copy.copy(form)
-        nonce = anti_csrf_nonce(cl, cl)
+        nonce = anti_csrf_nonce(cl)
         # verify that we can see the nonce
         otks = cl.db.getOTKManager()
         isitthere = otks.exists(nonce)
@@ -985,7 +985,7 @@ class FormTestCase(FormTestParent, unittest.TestCase):
         cl.env['REQUEST_METHOD'] = 'GET' 
         cl.env['HTTP_REFERER'] = 'http://whoami.com/path/'
         form2 = copy.copy(form)
-        nonce = anti_csrf_nonce(cl, cl)
+        nonce = anti_csrf_nonce(cl)
         form2.update({'@csrf': nonce})
         # add a real csrf field to the form and rerun the inner_main
         cl.form = db_test_base.makeForm(form2)

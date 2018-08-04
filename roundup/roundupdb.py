@@ -20,7 +20,7 @@
 """
 __docformat__ = 'restructuredtext'
 
-import re, os, smtplib, socket, time, random
+import re, os, smtplib, socket, time
 import base64, mimetypes
 import os.path
 import logging
@@ -39,7 +39,8 @@ from roundup.hyperdb import iter_roles
 from roundup.mailer import Mailer, MessageSendError, encode_quopri, \
     nice_sender_header
 
-from roundup.anypy.strings import s2u
+from roundup.anypy.strings import b2s, s2u
+import roundup.anypy.random_ as random_
 
 try:
     import pyme, pyme.core
@@ -421,9 +422,9 @@ class IssueClass:
         if not messageid:
             # this is an old message that didn't get a messageid, so
             # create one
-            messageid = "<%s.%s.%s%s@%s>"%(time.time(), random.random(),
-                                           self.classname, issueid,
-                                           self.db.config.MAIL_DOMAIN)
+            messageid = "<%s.%s.%s%s@%s>"%(time.time(),
+                b2s(base64.b32encode(random_.token_bytes(10))),
+                self.classname, issueid, self.db.config['MAIL_DOMAIN'])
             if msgid is not None:
                 messages.set(msgid, messageid=messageid)
 

@@ -95,8 +95,8 @@ explanatory message given in the exception.
 from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
-import re, os, smtplib, socket, binascii, quopri
-import time, random, sys, logging
+import base64, re, os, smtplib, socket, binascii, quopri
+import time, sys, logging
 import codecs
 import traceback
 import email.utils
@@ -108,7 +108,8 @@ from roundup import configuration, hyperdb, date, password, exceptions
 from roundup.mailer import Mailer, MessageSendError
 from roundup.i18n import _
 from roundup.hyperdb import iter_roles
-from roundup.anypy.strings import StringIO
+from roundup.anypy.strings import b2s, StringIO
+import roundup.anypy.random_ as random_
 
 try:
     import pyme, pyme.core, pyme.constants, pyme.constants.sigsum
@@ -1163,7 +1164,8 @@ encrypted."""))
         messageid = self.message.getheader('message-id')
         # generate a messageid if there isn't one
         if not messageid:
-            messageid = "<%s.%s.%s%s@%s>"%(time.time(), random.random(),
+            messageid = "<%s.%s.%s%s@%s>"%(time.time(),
+                b2s(base64.b32encode(random_.token_bytes(10))),
                 self.classname, self.nodeid, self.config['MAIL_DOMAIN'])
         
         if self.content is None:

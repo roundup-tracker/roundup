@@ -3370,7 +3370,7 @@ class SpecialActionTest(FormTestParent):
     def testInnerMain(self):
         cl = self.client
         cl.session_api = MockNull(_sid="1234567890")
-        self.form ['@nonce'] = anti_csrf_nonce(cl, cl)
+        self.form ['@nonce'] = anti_csrf_nonce(cl)
         cl.form = makeForm(self.form)
         # inner_main will re-open the database!
         # Note that in the template above, the rendering of the

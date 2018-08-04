@@ -20,7 +20,7 @@ todo = """
 __docformat__ = 'restructuredtext'
 
 
-import cgi, re, os.path, mimetypes, csv, string
+import base64, cgi, re, os.path, mimetypes, csv, string
 import calendar
 import textwrap
 import time, hashlib
@@ -29,16 +29,11 @@ from roundup.anypy import urllib_
 from roundup import hyperdb, date, support
 from roundup import i18n
 from roundup.i18n import _
-from roundup.anypy.strings import is_us, s2b, us2s, s2u, u2s, StringIO
+from roundup.anypy.strings import is_us, b2s, s2b, us2s, s2u, u2s, StringIO
 
 from .KeywordsExpr import render_keywords_expression_editor
 
-try: 
-    # Use the cryptographic source of randomness if available
-    from random import SystemRandom
-    random=SystemRandom()
-except ImportError:
-    from random import random
+import roundup.anypy.random_ as random_
 try:
     import cPickle as pickle
 except ImportError:
@@ -68,12 +63,8 @@ from roundup.cgi import TranslationService, ZTUtils
 # until all Web UI translations are done via client.translator object
 translationService = TranslationService.get_translation()
 
-def anti_csrf_nonce(self, client, lifetime=None):
+def anti_csrf_nonce(client, lifetime=None):
     ''' Create a nonce for defending against CSRF attack.
-
-        This creates a nonce by hex encoding the sha256 of
-        random.random(), the address of the object requesting
-        the nonce and time.time().
 
         Then it stores the nonce, the session id for the user
         and the user id in the one time key database for use
@@ -81,14 +72,10 @@ def anti_csrf_nonce(self, client, lifetime=None):
         module/function.
     '''
     otks=client.db.getOTKManager()
-    # include id(self) as the exact location of self (including address)
-    # is unpredicatable (depends on number of previous connections etc.)
-    key = '%s%s%s'%(random.random(),id(self),time.time())
-    key = hashlib.sha256(s2b(key)).hexdigest()
+    key = b2s(base64.b32encode(random_.token_bytes(40)))
 
     while otks.exists(key):
-        key = '%s%s%s'%(random.random(),id(self),time.time())
-        key = hashlib.sha256(s2b(key)).hexdigest()
+        key = b2s(base64.b32encode(random_.token_bytes(40)))
 
     # lifetime is in minutes.
     if lifetime is None:
@@ -784,7 +771,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
             return ''
 
         return self.input(type="hidden", name="@csrf",
-                          value=anti_csrf_nonce(self, self._client)) + \
+                          value=anti_csrf_nonce(self._client)) + \
             '\n' + \
             self.input(type="hidden", name="@action", value=action) + \
             '\n' + \
@@ -927,7 +914,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
             value=self.activity.local(0)) + \
             '\n' + \
             self.input(type="hidden", name="@csrf",
-                       value=anti_csrf_nonce(self, self._client)) + \
+                       value=anti_csrf_nonce(self._client)) + \
             '\n' + \
             self.input(type="hidden", name="@action", value=action) + \
             '\n' + \
@@ -3082,7 +3069,7 @@ class TemplatingUtils:
             overlap)
 
     def anti_csrf_nonce(self, lifetime=None):
-        return anti_csrf_nonce(self, self.client, lifetime=lifetime)
+        return anti_csrf_nonce(self.client, lifetime=lifetime)
 
     def url_quote(self, url):
         """URL-quote the supplied text."""
