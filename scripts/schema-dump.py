@@ -16,6 +16,7 @@ __authors__ = [
     "anatoly techtonik <techtonik@gmail.com>"
 ]
 
+from __future__ import print_function
 import os
 import sys
 from roundup.anypy import xmlrpc_
