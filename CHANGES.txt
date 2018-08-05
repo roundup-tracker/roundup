@@ -26,6 +26,9 @@ Fixed:
 - issue2550811: work around Unicode encoding issues in jinja2 template
   by explicitly converting data to Unicode; also fixed pagination and
   selecting columns to display in the issues list (Christof Meerwald)
+- issue2550988: fixed fallback to pseudo random number generator in
+  case SystemRandom isn't available, prefer use of secrets module if
+  available (Python 3.6+)
 
 
 2018-07-13 1.6.0
