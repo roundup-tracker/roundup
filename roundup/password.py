@@ -20,7 +20,6 @@
 __docformat__ = 'restructuredtext'
 
 import re, string
-import os
 from base64 import b64encode, b64decode
 from hashlib import md5, sha1
 
