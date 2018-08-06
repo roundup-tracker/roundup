@@ -5,8 +5,14 @@ import re, os, time
 import xapian
 
 from roundup.backends.indexer_common import Indexer as IndexerBase
+from roundup.anypy.strings import b2s, s2b
 
 # TODO: we need to delete documents when a property is *reindexed*
+
+# Note that Xapian always uses UTF-8 encoded string, see
+# https://xapian.org/docs/bindings/python3/introduction.html#strings:
+# "Where std::string is returned, it's always mapped to bytes in
+# Python..."
 
 class Indexer(IndexerBase):
     def __init__(self, db):
@@ -80,7 +86,7 @@ class Indexer(IndexerBase):
         # We use the identifier twice: once in the actual "text" being
         # indexed so we can search on it, and again as the "data" being
         # indexed so we know what we're matching when we get results
-        identifier = '%s:%s:%s'%identifier
+        identifier = s2b('%s:%s:%s'%identifier)
 
         # create the new document
         doc = xapian.Document()
@@ -93,7 +99,7 @@ class Indexer(IndexerBase):
             word = match.group(0)
             if self.is_stopword(word):
                 continue
-            term = stemmer(word.lower())
+            term = stemmer(s2b(word.lower()))
             doc.add_posting(term, match.start(0))
 
         database.replace_document(identifier, doc)
@@ -114,12 +120,12 @@ class Indexer(IndexerBase):
         for term in [word.upper() for word in wordlist
                           if self.minlength <= len(word) <= self.maxlength]:
             if not self.is_stopword(term):
-                terms.append(stemmer(term.lower()))
+                terms.append(stemmer(s2b(term.lower())))
         query = xapian.Query(xapian.Query.OP_AND, terms)
 
         enquire.set_query(query)
         matches = enquire.get_mset(0, database.get_doccount())
 
-        return [tuple(m.document.get_data().split(':'))
+        return [tuple(b2s(m.document.get_data()).split(':'))
             for m in matches]
 
