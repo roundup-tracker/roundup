@@ -298,6 +298,11 @@ class DBTest(commonDBTest):
         self.db.commit()
         self.assertEqual(self.db.issue.get(nid, 'title'), ustr2)
 
+        # test set & retrieve (this time for file contents)
+        nid = self.db.file.create(content=ustr)
+        self.assertEqual(self.db.file.get(nid, 'content'), ustr)
+        self.assertEqual(self.db.file.get(nid, 'binary_content'), s2b(ustr))
+
     # Link
     def testLinkChange(self):
         self.assertRaises(IndexError, self.db.issue.create, title="spam",

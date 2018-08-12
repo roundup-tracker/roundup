@@ -27,6 +27,16 @@ def s2b(s):
     else:
         return s
 
+def bs2b(s):
+    """Convert a string object or UTF-8 encoded bytes to UTF-8 encoded bytes."""
+    if _py3:
+        if isinstance(s, bytes):
+            return s
+        else:
+            return s.encode('utf-8')
+    else:
+        return s
+
 def s2u(s, errors='strict'):
     """Convert a string object to a Unicode string."""
     if _py3:

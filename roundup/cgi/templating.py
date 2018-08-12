@@ -938,28 +938,6 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         if not self.is_view_ok():
             return self._('[hidden]')
 
-        # pre-load the history with the current state
-        current = {}
-        for prop_n in self._props.keys():
-            prop = self[prop_n]
-            if not isinstance(prop, HTMLProperty):
-                continue
-            current[prop_n] = prop.plain(escape=1)
-            # make link if hrefable
-            if (prop_n in self._props and
-                    isinstance(self._props[prop_n], hyperdb.Link)):
-                classname = self._props[prop_n].classname
-                try:
-                    template = self._client.selectTemplate(classname, 'item')
-                    if template.startswith('_generic.'):
-                        raise NoTemplate('not really...')
-                except NoTemplate:
-                    pass
-                else:
-                    id = self._klass.get(self._nodeid, prop_n, None)
-                    current[prop_n] = '<a rel="nofollow" href="%s%s">%s</a>'%(
-                        classname, id, current[prop_n])
-
         # get the journal, sort and reverse
         history = self._klass.history(self._nodeid, skipquiet=(not showall))
         history.sort(key=lambda a: a[:3])
@@ -971,6 +949,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
 
         timezone = self._db.getUserTimezone()
         l = []
+        current = {}
         comments = {}
         for id, evt_date, user, action, args in history:
             date_s = str(evt_date.local(timezone)).replace("."," ")
@@ -998,6 +977,28 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                         cell.append(self._('<em>%s: %s</em>\n')
                             % (self._(k), str(args[k])))
                         continue
+
+                    # load the current state for the property (if we
+                    # haven't already)
+                    if k not in current:
+                        val = self[k]
+                        if not isinstance(val, HTMLProperty):
+                            current[k] = None
+                        else:
+                            current[k] = val.plain(escape=1)
+                            # make link if hrefable
+                            if (isinstance(prop, hyperdb.Link)):
+                                classname = prop.classname
+                                try:
+                                    template = self._client.selectTemplate(classname, 'item')
+                                    if template.startswith('_generic.'):
+                                        raise NoTemplate('not really...')
+                                except NoTemplate:
+                                    pass
+                                else:
+                                    linkid = self._klass.get(self._nodeid, k, None)
+                                    current[k] = '<a rel="nofollow" href="%s%s">%s</a>'%(
+                                        classname, linkid, current[k])
 
                     if args[k] and (isinstance(prop, hyperdb.Multilink) or
                             isinstance(prop, hyperdb.Link)):
@@ -1084,7 +1085,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                             else:
                                 old = label;
                             cell.append('%s: %s' % (self._(k), old))
-                            if k in current:
+                            if k in current and current[k] is not None:
                                 cell[-1] += ' -> %s'%current[k]
                                 current[k] = old
 
@@ -1095,7 +1096,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                             d = date.Date(args[k],
                                 translator=self._client).local(timezone)
                         cell.append('%s: %s'%(self._(k), str(d)))
-                        if k in current:
+                        if k in current and current[k] is not None:
                             cell[-1] += ' -> %s' % current[k]
                             current[k] = str(d)
 
@@ -1103,33 +1104,33 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                         val = str(date.Interval(args[k],
                             translator=self._client))
                         cell.append('%s: %s'%(self._(k), val))
-                        if k in current:
+                        if k in current and current[k] is not None:
                             cell[-1] += ' -> %s'%current[k]
                             current[k] = val
 
                     elif isinstance(prop, hyperdb.String) and args[k]:
                         val = cgi.escape(args[k])
                         cell.append('%s: %s'%(self._(k), val))
-                        if k in current:
+                        if k in current and current[k] is not None:
                             cell[-1] += ' -> %s'%current[k]
                             current[k] = val
 
                     elif isinstance(prop, hyperdb.Boolean) and args[k] is not None:
                         val = args[k] and ''"Yes" or ''"No"
                         cell.append('%s: %s'%(self._(k), val))
-                        if k in current:
+                        if k in current and current[k] is not None:
                             cell[-1] += ' -> %s'%current[k]
                             current[k] = val
 
                     elif isinstance(prop, hyperdb.Password) and args[k] is not None:
                         val = args[k].dummystr()
                         cell.append('%s: %s'%(self._(k), val))
-                        if k in current:
+                        if k in current and current[k] is not None:
                             cell[-1] += ' -> %s'%current[k]
                             current[k] = val
 
                     elif not args[k]:
-                        if k in current:
+                        if k in current and current[k] is not None:
                             cell.append('%s: %s'%(self._(k), current[k]))
                             current[k] = '(no value)'
                         else:
@@ -1137,7 +1138,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
 
                     else:
                         cell.append('%s: %s'%(self._(k), str(args[k])))
-                        if k in current:
+                        if k in current and current[k] is not None:
                             cell[-1] += ' -> %s'%current[k]
                             current[k] = str(args[k])
 

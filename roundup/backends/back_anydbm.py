@@ -25,7 +25,7 @@ __docformat__ = 'restructuredtext'
 import os, marshal, re, weakref, string, copy, time, shutil, logging
 
 from roundup.anypy.dbm_ import anydbm, whichdb
-from roundup.anypy.strings import b2s
+from roundup.anypy.strings import b2s, bs2b
 
 from roundup import hyperdb, date, password, roundupdb, security, support
 from roundup.backends import locking
@@ -2168,7 +2168,7 @@ class FileClass(hyperdb.FileClass, Class):
         newid = self.create_inner(**propvalues)
 
         # store off the content as a file
-        self.db.storefile(self.classname, newid, None, content)
+        self.db.storefile(self.classname, newid, None, bs2b(content))
 
         # fire reactors
         self.fireReactors('create', newid, None)
@@ -2183,11 +2183,14 @@ class FileClass(hyperdb.FileClass, Class):
         poss_msg = 'Possibly an access right configuration problem.'
         if propname == 'content':
             try:
-                return self.db.getfile(self.classname, nodeid, None)
+                return b2s(self.db.getfile(self.classname, nodeid, None))
             except IOError as strerror:
                 # XXX by catching this we don't see an error in the log.
                 return 'ERROR reading file: %s%s\n%s\n%s'%(
                         self.classname, nodeid, poss_msg, strerror)
+        elif propname == 'binary_content':
+            return self.db.getfile(self.classname, nodeid, None)
+
         if default is not _marker:
             return Class.get(self, nodeid, propname, default)
         else:
@@ -2220,7 +2223,7 @@ class FileClass(hyperdb.FileClass, Class):
         # do content?
         if content:
             # store and possibly index
-            self.db.storefile(self.classname, itemid, None, content)
+            self.db.storefile(self.classname, itemid, None, bs2b(content))
             if self.properties['content'].indexme:
                 mime_type = self.get(itemid, 'type', self.default_mime_type)
                 self.db.indexer.add_text((self.classname, itemid, 'content'),

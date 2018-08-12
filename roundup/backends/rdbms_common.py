@@ -69,7 +69,7 @@ from roundup.backends.sessions_rdbms import Sessions, OneTimeKeys
 from roundup.date import Range
 
 from roundup.backends.back_anydbm import compile_expression
-from roundup.anypy.strings import us2s
+from roundup.anypy.strings import b2s, bs2b, us2s
 
 
 # dummy value meaning "argument not passed"
@@ -3055,7 +3055,7 @@ class FileClass(hyperdb.FileClass, Class):
                 content, mime_type)
 
         # store off the content as a file
-        self.db.storefile(self.classname, newid, None, content)
+        self.db.storefile(self.classname, newid, None, bs2b(content))
 
         # fire reactors
         self.fireReactors('create', newid, None)
@@ -3070,11 +3070,14 @@ class FileClass(hyperdb.FileClass, Class):
         poss_msg = 'Possibly a access right configuration problem.'
         if propname == 'content':
             try:
-                return self.db.getfile(self.classname, nodeid, None)
+                return b2s(self.db.getfile(self.classname, nodeid, None))
             except IOError as strerror:
                 # BUG: by catching this we donot see an error in the log.
                 return 'ERROR reading file: %s%s\n%s\n%s'%(
                         self.classname, nodeid, poss_msg, strerror)
+        elif propname == 'binary_content':
+            return self.db.getfile(self.classname, nodeid, None)
+
         if default is not _marker:
             return Class.get(self, nodeid, propname, default)
         else:
@@ -3098,7 +3101,7 @@ class FileClass(hyperdb.FileClass, Class):
         # do content?
         if content:
             # store and possibly index
-            self.db.storefile(self.classname, itemid, None, content)
+            self.db.storefile(self.classname, itemid, None, bs2b(content))
             if self.properties['content'].indexme:
                 mime_type = self.get(itemid, 'type', self.default_mime_type)
                 self.db.indexer.add_text((self.classname, itemid, 'content'),
