@@ -20,6 +20,8 @@ Features:
   2.7.8+), to improve performance over bundled pure Python
   version. Note that acceleration via m2crypto is no longer supported
   (Christof Meerwald)
+- issue2550989: PGP encryption is now done using the gpg module
+  instead of pyme. (Christof Meerwald)
 
 Fixed:
 

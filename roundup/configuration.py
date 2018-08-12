@@ -1051,7 +1051,7 @@ always passes, so setting it less than 1 is not recommended."""),
      ), "Roundup Mail Gateway options"),
     ("pgp", (
         (BooleanOption, "enable", "no",
-            "Enable PGP processing. Requires pyme. If you're planning\n"
+            "Enable PGP processing. Requires gpg. If you're planning\n"
             "to send encrypted PGP mail to the tracker, you should also\n"
             "enable the encrypt-option below, otherwise mail received\n"
             "encrypted might be sent unencrypted to another user."),

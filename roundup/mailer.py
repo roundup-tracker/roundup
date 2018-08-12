@@ -21,9 +21,9 @@ from roundup.anypy import email_
 from roundup.anypy.strings import b2s, s2b, s2u
 
 try:
-    import pyme, pyme.core
+    import gpg, gpg.core
 except ImportError:
-    pyme = None
+    gpg = None
 
 
 class MessageSendError(RuntimeError):
@@ -205,9 +205,9 @@ class Mailer:
                 self.logger.debug("MessageSendError: %s", str(e))
                 pass
         if crypt_to:
-            plain = pyme.core.Data(message.as_string())
-            cipher = pyme.core.Data()
-            ctx = pyme.core.Context()
+            plain = gpg.core.Data(message.as_string())
+            cipher = gpg.core.Data()
+            ctx = gpg.core.Context()
             ctx.set_armor(1)
             keys = []
             adrs = []
@@ -235,7 +235,7 @@ class Mailer:
                 part=MIMEBase('application', 'octet-stream')
                 part.set_payload(cipher.read())
                 message.attach(part)
-            except pyme.GPGMEError:
+            except gpg.GPGMEError:
                 self.logger.debug("bounce_message: Cannot encrypt to %s",
                                   str(crypto_to))
                 crypt_to = None

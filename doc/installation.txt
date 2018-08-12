@@ -101,8 +101,8 @@ pyopenssl
   proxy through a server with SSL support (e.g. apache) then this is
   unnecessary.
 
-pyme
-  If pyme_ is installed you can configure the mail gateway to perform
+gpg
+  If gpg_ is installed you can configure the mail gateway to perform
   verification or decryption of incoming OpenPGP MIME messages. When
   configured, you can require email to be cryptographically signed
   before roundup will allow it to make modifications to issues.
@@ -121,7 +121,7 @@ Windows Service
 .. _pytz: https://pypi.org/project/pytz/
 .. _Olson tz database: https://www.iana.org/time-zones
 .. _pyopenssl: http://pyopenssl.sourceforge.net
-.. _pyme: http://pyme.sourceforge.net
+.. _gpg: https://www.gnupg.org/software/gpgme/index.html
 .. _pywin32: https://pypi.org/project/pywin32/
 .. _jinja2: http://jinja.pocoo.org/
 

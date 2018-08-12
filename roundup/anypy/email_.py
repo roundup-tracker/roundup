@@ -3,6 +3,11 @@ import binascii
 import email
 from email import quoprimime, base64mime
 
+if str == bytes:
+    message_from_bytes = email.message_from_string
+else:
+    message_from_bytes = email.message_from_bytes
+
 ## please import this file if you are using the email module
 
 # Match encoded-word strings in the form =?charset?q?Hello_World?=

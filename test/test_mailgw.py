@@ -18,16 +18,17 @@ import unittest, tempfile, os, shutil, errno, imp, sys, difflib, time
 import pytest
 
 try:
-    import pyme, pyme.core
+    import gpg, gpg.core
     skip_pgp = lambda func, *args, **kwargs: func
 except ImportError:
     # FIX: workaround for a bug in pytest.mark.skip():
     #   https://github.com/pytest-dev/pytest/issues/568
     from .pytest_patcher import mark_class
     skip_pgp = mark_class(pytest.mark.skip(
-        reason="Skipping PGP tests: 'pyme' not installed"))
+        reason="Skipping PGP tests: 'gpg' not installed"))
 
 
+from roundup.anypy.email_ import message_from_bytes
 from roundup.anypy.strings import StringIO, b2s, u2s
 
 if 'SENDMAILDEBUG' not in os.environ:
@@ -4385,20 +4386,16 @@ P81iDOWUp/uyIe5ZfvNI38BBxEYslPTUlDk2GB8J2Vun7IWHoj9a4tY3IotC9jBr
         # trap_exc=1: we want a bounce message:
         self._handle_mail(self.encrypted_msg, trap_exc=1)
         m = self._get_mail()
-        fp = email.parser.FeedParser()
-        fp.feed(m)
-        parts = fp.close().get_payload()
+        parts = email.message_from_string(m).get_payload()
         self.assertEqual(len(parts),2)
         self.assertEqual(parts[0].get_payload().strip(), 'Version: 1')
-        crypt = pyme.core.Data(parts[1].get_payload())
-        plain = pyme.core.Data()
-        ctx = pyme.core.Context()
+        crypt = gpg.core.Data(parts[1].get_payload())
+        plain = gpg.core.Data()
+        ctx = gpg.core.Context()
         res = ctx.op_decrypt(crypt, plain)
         self.assertEqual(res, None)
         plain.seek(0,0)
-        fp = email.parser.FeedParser()
-        fp.feed(plain.read())
-        parts = fp.close().get_payload()
+        parts = message_from_bytes(plain.read()).get_payload()
         self.assertEqual(len(parts),2)
         self.assertEqual(parts[0].get_payload().strip(),
             'You are not permitted to create messages.')

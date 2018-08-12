@@ -11,9 +11,9 @@
 
 import shutil, os
 try:
-    import pyme, pyme.core
+    import gpg, gpg.core
 except ImportError:
-    pyme = None
+    gpg = None
 
 pgp_test_key = """
 -----BEGIN PGP PRIVATE KEY BLOCK-----
@@ -125,10 +125,10 @@ def setUpPGP():
     os.environ['GNUPGHOME'] = pgphome
     # gpgme_check_version() must have been called once in a programm
     # to initialise some subsystems of gpgme. See roundup/roundupdb.py.
-    ctx = pyme.core.Context()
-    key = pyme.core.Data(pgp_test_key)
+    ctx = gpg.core.Context()
+    key = gpg.core.Data(pgp_test_key)
     ctx.op_import(key)
-    key = pyme.core.Data(john_doe_key)
+    key = gpg.core.Data(john_doe_key)
     ctx.op_import(key)
     # trust-modelling with pyme isn't working in 0.8.1
     # based on libgpgme11 1.2.0, also tried in C -- same thing.

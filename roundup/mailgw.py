@@ -103,7 +103,7 @@ import email
 import email.utils
 from email.generator import Generator
 
-from .anypy.email_ import decode_header
+from roundup.anypy.email_ import decode_header, message_from_bytes
 from roundup.anypy.my_input import my_input
 
 from roundup import configuration, hyperdb, date, password, exceptions
@@ -114,9 +114,9 @@ from roundup.anypy.strings import StringIO, b2s, u2s
 import roundup.anypy.random_ as random_
 
 try:
-    import pyme, pyme.core, pyme.constants, pyme.constants.sigsum
+    import gpg, gpg.core, gpg.constants, gpg.constants.sigsum
 except ImportError:
-    pyme = None
+    gpg = None
 
 SENDMAILDEBUG = os.environ.get('SENDMAILDEBUG', '')
 
@@ -173,18 +173,18 @@ def check_pgp_sigs(sigs, gpgctx, author, may_be_unsigned=False):
         # we really only care about the signature of the user who
         # submitted the email
         if key and (author in gpgh_key_getall(key, 'email')):
-            if sig.summary & pyme.constants.sigsum.VALID:
+            if sig.summary & gpg.constants.sigsum.VALID:
                 return True
             else:
                 # try to narrow down the actual problem to give a more useful
                 # message in our bounce
-                if sig.summary & pyme.constants.sigsum.KEY_MISSING:
+                if sig.summary & gpg.constants.sigsum.KEY_MISSING:
                     raise MailUsageError( \
                         _("Message signed with unknown key: %s") % sig.fpr)
-                elif sig.summary & pyme.constants.sigsum.KEY_EXPIRED:
+                elif sig.summary & gpg.constants.sigsum.KEY_EXPIRED:
                     raise MailUsageError( \
                         _("Message signed with an expired key: %s") % sig.fpr)
-                elif sig.summary & pyme.constants.sigsum.KEY_REVOKED:
+                elif sig.summary & gpg.constants.sigsum.KEY_REVOKED:
                     raise MailUsageError( \
                         _("Message signed with a revoked key: %s") % sig.fpr)
                 else:
@@ -415,9 +415,9 @@ class RoundupMessage(email.message.Message):
                 hdr.get_content_type() != 'application/pgp-encrypted'):
             raise MailUsageError(_("Unknown multipart/encrypted version."))
 
-        context = pyme.core.Context()
-        ciphertext = pyme.core.Data(msg.get_payload())
-        plaintext = pyme.core.Data()
+        context = gpg.core.Context()
+        ciphertext = gpg.core.Data(msg.get_payload())
+        plaintext = gpg.core.Data()
 
         result = context.op_decrypt_verify(ciphertext, plaintext)
 
@@ -432,10 +432,10 @@ class RoundupMessage(email.message.Message):
                        may_be_unsigned=may_be_unsigned)
 
         plaintext.seek(0, 0)
-        # pyme.core.Data implements a seek method with a different signature
+        # gpg.core.Data implements a seek method with a different signature
         # than roundup can handle. So we'll put the data in a container that
         # the Message class can work with.
-        return email.message_from_string(plaintext.read(), RoundupMessage)
+        return message_from_bytes(plaintext.read(), RoundupMessage)
 
     def verify_signature(self, author):
         """
@@ -458,10 +458,10 @@ class RoundupMessage(email.message.Message):
         # canonical <CR><LF> sequence."
         # TODO: what about character set conversion?
         canonical_msg = re.sub('(?<!\r)\n', '\r\n', msg.flatten())
-        msg_data = pyme.core.Data(canonical_msg)
-        sig_data = pyme.core.Data(sig.get_payload())
+        msg_data = gpg.core.Data(canonical_msg)
+        sig_data = gpg.core.Data(sig.get_payload())
 
-        context = pyme.core.Context()
+        context = gpg.core.Context()
         context.op_verify(sig_data, msg_data, None)
 
         # check all signatures for validity
@@ -942,7 +942,7 @@ Subject was: "%(subject)s"
         if self.config.PGP_ENABLE:
             if pgp_role() and self.config.PGP_ENCRYPT:
                 self.crypt = True
-            assert pyme, 'pyme is not installed'
+            assert gpg, 'gpg is not installed'
             # signed/encrypted mail must come from the primary address
             author_address = self.db.user.get(self.author, 'address')
             if self.config.PGP_HOMEDIR:

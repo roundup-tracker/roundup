@@ -415,7 +415,7 @@ Section **pgp**
  OpenPGP mail processing options
 
  enable -- ``no``
-  Enable PGP processing. Requires pyme.
+  Enable PGP processing. Requires gpg.
 
  roles -- default *blank*
   If specified, a comma-separated list of roles to perform PGP

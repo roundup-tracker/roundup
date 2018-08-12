@@ -42,17 +42,9 @@ from roundup.anypy.strings import b2s, s2u
 import roundup.anypy.random_ as random_
 
 try:
-    import pyme, pyme.core
-    # gpgme_check_version() must have been called once in a programm
-    # to initialise some subsystems of gpgme.
-    # See the gpgme documentation (at least from v1.1.6 to 1.3.1, e.g.
-    # http://gnupg.org/documentation/manuals/gpgme/Library-Version-Check.html)
-    # This is not done by pyme (at least v0.7.0 - 0.8.1). So we do it here.
-    # FIXME: Make sure it is done only once (the gpgme documentation does
-    # not tell if calling this several times has drawbacks).
-    pyme.core.check_version(None)
+    import gpg, gpg.core
 except ImportError:
-    pyme = None
+    gpg = None
 
 
 class Database:
@@ -374,9 +366,9 @@ class IssueClass:
         """ Encrypt given message to sendto receivers.
             Returns a new RFC 3156 conforming message.
         """
-        plain = pyme.core.Data(message.as_string())
-        cipher = pyme.core.Data()
-        ctx = pyme.core.Context()
+        plain = gpg.core.Data(message.as_string())
+        cipher = gpg.core.Data()
+        ctx = gpg.core.Context()
         ctx.set_armor(1)
         keys = []
         for adr in sendto:

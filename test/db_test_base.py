@@ -19,7 +19,7 @@ from __future__ import print_function
 import unittest, os, shutil, errno, imp, sys, time, pprint, base64, os.path
 import logging, cgi
 from . import gpgmelib
-from email.parser import FeedParser
+from email import message_from_string
 
 import pytest
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
@@ -36,6 +36,7 @@ from roundup.exceptions import UsageError, Reject
 
 from roundup.anypy.strings import b2s, s2b, u2s
 from roundup.anypy.cmp_ import NoneAndDictComparable
+from roundup.anypy.email_ import message_from_bytes
 
 from .mocknull import MockNull
 
@@ -2632,7 +2633,7 @@ class DBTest(commonDBTest):
             roundupdb._ = old_translate_
             Mailer.smtp_send = backup
 
-    @pytest.mark.skipif(gpgmelib.pyme is None, reason='Skipping PGPNosy test')
+    @pytest.mark.skipif(gpgmelib.gpg is None, reason='Skipping PGPNosy test')
     def testPGPNosyMail(self) :
         """Creates one issue with two attachments, one smaller and one larger
            than the set max_attachment_size. Recipients are one with and
@@ -2674,23 +2675,19 @@ class DBTest(commonDBTest):
             self.assert_(b2s(base64.encodestring(s2b("xxx"))).rstrip() in mail_msg)
             self.assert_("File 'test2.txt' not attached" in mail_msg)
             self.assert_(b2s(base64.encodestring(s2b("yyy"))).rstrip() not in mail_msg)
-            fp = FeedParser()
             mail_msg = str(res[1]["mail_msg"])
-            fp.feed(mail_msg)
-            parts = fp.close().get_payload()
+            parts = message_from_string(mail_msg).get_payload()
             self.assertEqual(len(parts),2)
             self.assertEqual(parts[0].get_payload().strip(), 'Version: 1')
-            crypt = gpgmelib.pyme.core.Data(parts[1].get_payload())
-            plain = gpgmelib.pyme.core.Data()
-            ctx = gpgmelib.pyme.core.Context()
+            crypt = gpgmelib.gpg.core.Data(parts[1].get_payload())
+            plain = gpgmelib.gpg.core.Data()
+            ctx = gpgmelib.gpg.core.Context()
             res = ctx.op_decrypt(crypt, plain)
             self.assertEqual(res, None)
             plain.seek(0,0)
-            fp = FeedParser()
-            fp.feed(plain.read())
             self.assert_("From: admin" in mail_msg)
             self.assert_("Subject: [issue1] spam" in mail_msg)
-            mail_msg = str(fp.close())
+            mail_msg = str(message_from_bytes(plain.read()))
             self.assert_("New submission from admin" in mail_msg)
             self.assert_("one two" in mail_msg)
             self.assert_("File 'test1.txt' not attached" not in mail_msg)
