@@ -32,7 +32,7 @@ from roundup.cgi.exceptions import (
     FormError, NotFound, NotModified, Redirect, SendFile, SendStaticFile,
     DetectorError, SeriousError)
 from roundup.cgi.form_parser import FormParser
-from roundup.mailer import Mailer, MessageSendError, encode_quopri
+from roundup.mailer import Mailer, MessageSendError
 from roundup.cgi import accept_language
 from roundup import xmlrpc
 
@@ -1538,12 +1538,11 @@ class Client:
         to = [self.mailer.config.ADMIN_EMAIL]
         message = MIMEMultipart('alternative')
         self.mailer.set_message_attributes(message, to, subject)
-        part = MIMEBase('text', 'html')
-        part.set_charset('utf-8')
-        part.set_payload(html)
-        encode_quopri(part)
+        part = self.mail.get_text_message('utf-8', 'html')
+        part.set_payload(html, part.get_charset())
         message.attach(part)
-        part = MIMEText(txt)
+        part = self.mail.get_text_message()
+        part.set_payload(text, part.get_charset())
         message.attach(part)
         self.mailer.smtp_send(to, message.as_string())
 

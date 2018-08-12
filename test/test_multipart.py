@@ -15,12 +15,30 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
+import email
 import unittest
 from roundup.anypy.strings import StringIO
 
-from roundup.mailgw import Message
+from roundup.mailgw import RoundupMessage
 
-class ExampleMessage(Message):
+def gen_message(spec):
+    """Create a basic MIME message according to 'spec'.
+
+    Each line of a spec has one content-type, which is optionally indented.
+    The indentation signifies how deep in the MIME hierarchy the
+    content-type is.
+
+    """
+
+    def getIndent(line):
+        """Get the current line's indentation, using four-space indents."""
+        count = 0
+        for char in line:
+            if char != ' ':
+                break
+            count += 1
+        return count // 4
+
     # A note on message/rfc822: The content of such an attachment is an
     # email with at least one header line. RFC2046 tells us: """   A
     # media type of "message/rfc822" indicates that the body contains an
@@ -42,36 +60,22 @@ class ExampleMessage(Message):
              'application/pdf': '    name="foo.pdf"\nfoo\n',
              'message/rfc822': '\nSubject: foo\n\nfoo\n'}
 
-    def __init__(self, spec):
-        """Create a basic MIME message according to 'spec'.
+    parts = []
+    for line in spec.splitlines():
+        content_type = line.strip()
+        if not content_type:
+            continue
 
-        Each line of a spec has one content-type, which is optionally indented.
-        The indentation signifies how deep in the MIME hierarchy the
-        content-type is.
+        indent = getIndent(line)
+        if indent:
+            parts.append('\n--boundary-%s\n' % indent)
+        parts.append('Content-type: %s;\n' % content_type)
+        parts.append(table[content_type] % {'indent': indent + 1})
 
-        """
-        parts = []
-        for line in spec.splitlines():
-            content_type = line.strip()
-            if not content_type:
-                continue
+    for i in range(indent, 0, -1):
+        parts.append('\n--boundary-%s--\n' % i)
 
-            indent = self.getIndent(line)
-            if indent:
-                parts.append('\n--boundary-%s\n' % indent)
-            parts.append('Content-type: %s;\n' % content_type)
-            parts.append(self.table[content_type] % {'indent': indent + 1})
-
-        Message.__init__(self, StringIO(''.join(parts)))
-
-    def getIndent(self, line):
-        """Get the current line's indentation, using four-space indents."""
-        count = 0
-        for char in line:
-            if char != ' ':
-                break
-            count += 1
-        return count // 4
+    return email.message_from_file(StringIO(''.join(parts)), RoundupMessage)
 
 class MultipartTestCase(unittest.TestCase):
     def setUp(self):
@@ -110,54 +114,49 @@ class MultipartTestCase(unittest.TestCase):
         self.fp.seek(0)
 
     def testMultipart(self):
-        m = Message(self.fp)
+        m = email.message_from_file(self.fp, RoundupMessage)
         self.assert_(m is not None)
 
-        # skip the first bit
-        p = m.getpart()
-        self.assert_(p is not None)
-        self.assertEqual(p.fp.read(),
-            'This is a multipart message. Ignore this bit.\r\n')
+        it = iter(m.get_payload())
 
         # first text/plain
-        p = m.getpart()
+        p = next(it, None)
         self.assert_(p is not None)
-        self.assertEqual(p.gettype(), 'text/plain')
-        self.assertEqual(p.fp.read(),
+        self.assertEqual(p.get_content_type(), 'text/plain')
+        self.assertEqual(p.get_payload(),
             'Hello, world!\r\n\r\nBlah blah\r\nfoo\r\n-foo\r\n')
 
         # sub-multipart
-        p = m.getpart()
+        p = next(it, None)
         self.assert_(p is not None)
-        self.assertEqual(p.gettype(), 'multipart/alternative')
+        self.assertEqual(p.get_content_type(), 'multipart/alternative')
 
         # sub-multipart text/plain
-        q = p.getpart()
+        qit = iter(p.get_payload())
+        q = next(qit, None)
         self.assert_(q is not None)
-        q = p.getpart()
-        self.assert_(q is not None)
-        self.assertEqual(q.gettype(), 'text/plain')
-        self.assertEqual(q.fp.read(), 'Hello, world!\r\n\r\nBlah blah\r\n')
+        self.assertEqual(q.get_content_type(), 'text/plain')
+        self.assertEqual(q.get_payload(), 'Hello, world!\r\n\r\nBlah blah\r\n')
 
         # sub-multipart text/html
-        q = p.getpart()
+        q = next(qit, None)
         self.assert_(q is not None)
-        self.assertEqual(q.gettype(), 'text/html')
-        self.assertEqual(q.fp.read(), '<b>Hello, world!</b>\r\n')
+        self.assertEqual(q.get_content_type(), 'text/html')
+        self.assertEqual(q.get_payload(), '<b>Hello, world!</b>\r\n')
 
         # sub-multipart end
-        q = p.getpart()
+        q = next(qit, None)
         self.assert_(q is None)
 
         # final text/plain
-        p = m.getpart()
+        p = next(it, None)
         self.assert_(p is not None)
-        self.assertEqual(p.gettype(), 'text/plain')
-        self.assertEqual(p.fp.read(),
+        self.assertEqual(p.get_content_type(), 'text/plain')
+        self.assertEqual(p.get_payload(),
             'Last bit\n')
 
         # end
-        p = m.getpart()
+        p = next(it, None)
         self.assert_(p is None)
 
     def TestExtraction(self, spec, expected, convert_html_with=False):
@@ -167,7 +166,7 @@ class MultipartTestCase(unittest.TestCase):
         else:
             html2text=None
 
-        self.assertEqual(ExampleMessage(spec).extract_content(
+        self.assertEqual(gen_message(spec).extract_content(
             html2text=html2text), expected)
 
     def testTextPlain(self):

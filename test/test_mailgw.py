@@ -28,7 +28,7 @@ except ImportError:
         reason="Skipping PGP tests: 'pyme' not installed"))
 
 
-from roundup.anypy.strings import StringIO, u2s
+from roundup.anypy.strings import StringIO, b2s, u2s
 
 if 'SENDMAILDEBUG' not in os.environ:
     os.environ['SENDMAILDEBUG'] = 'mail-test.log'
@@ -894,7 +894,7 @@ This ist a message without attachment
         self.assertEqual(msg.content, 'test attachment second text/plain')
 
     def testMultipartCharsetUTF8NoAttach(self):
-        c = 'umlaut \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f'
+        c = b2s(b'umlaut \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f')
         self.doNewIssue()
         self.db.config.NOSY_MAX_ATTACHMENT_SIZE = 0
         self._handle_mail(self.multipart_msg_latin1)
@@ -944,7 +944,7 @@ _______________________________________________________________________
 ''')
 
     def testMultipartCharsetLatin1NoAttach(self):
-        c = 'umlaut \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f'
+        c = b2s(b'umlaut \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f')
         self.doNewIssue()
         self.db.config.NOSY_MAX_ATTACHMENT_SIZE = 0
         self.db.config.MAIL_CHARSET = 'iso-8859-1'
@@ -995,7 +995,7 @@ _______________________________________________________________________
 ''')
 
     def testMultipartCharsetUTF8AttachFile(self):
-        c = 'umlaut \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f'
+        c = b2s(b'umlaut \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f')
         self.doNewIssue()
         self._handle_mail(self.multipart_msg_latin1)
         messages = self.db.issue.get('1', 'messages')
@@ -1057,7 +1057,7 @@ PGh0bWw+dW1sYXV0IMOkw7bDvMOEw5bDnMOfPC9odG1sPgo=
 ''')
 
     def testMultipartCharsetLatin1AttachFile(self):
-        c = 'umlaut \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f'
+        c = b2s(b'umlaut \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f')
         self.doNewIssue()
         self.db.config.MAIL_CHARSET = 'iso-8859-1'
         self._handle_mail(self.multipart_msg_latin1)
@@ -1287,7 +1287,7 @@ Content-Transfer-Encoding: quoted-printable
         messages.sort()
         msg = self.db.msg.getnode(messages[-1])
         # html converted to utf-8 text
-        self.assertEqual(msg.content, mycontent+" \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f")
+        self.assertEqual(msg.content, mycontent+b2s(b" \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f"))
         self.assertEqual(msg.type, None)
         self.assertEqual(len(msg.files), 2)
         name = "unnamed" # no name for any files
@@ -1295,7 +1295,7 @@ Content-Transfer-Encoding: quoted-printable
         # replace quoted printable string at end of html document
         # with it's utf-8 encoded equivalent so comparison
         # works.
-        content = { 0: "75,23,16,18\n", 1: self.html_doc.replace(" =E4=F6=FC=C4=D6=DC=DF"," \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f")}
+        content = { 0: "75,23,16,18\n", 1: self.html_doc.replace(" =E4=F6=FC=C4=D6=DC=DF",b2s(b" \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f"))}
         for n, id in enumerate (msg.files):
             f = self.db.file.getnode (id)
             self.assertEqual(f.name, name)
@@ -2648,11 +2648,11 @@ This is a test submission of a new issue.
         self._allowAnonymousSubmit()
         self._handle_mail(message)
         title = self.db.issue.get('1', 'title')
-        self.assertEquals(title, 'Test \xc3\x84\xc3\x96\xc3\x9c umlauts X1 X2')
+        self.assertEquals(title, b2s(b'Test \xc3\x84\xc3\x96\xc3\x9c umlauts X1 X2'))
         m = set(self.db.user.list())
         new = list(m - l)[0]
         name = self.db.user.get(new, 'realname')
-        self.assertEquals(name, 'Firstname \xc3\xa4\xc3\xb6\xc3\x9f Last')
+        self.assertEquals(name, b2s(b'Firstname \xc3\xa4\xc3\xb6\xc3\x9f Last'))
 
     def testNewUserAuthorMixedEncodedNameSpacing(self):
         l = set(self.db.user.list())
@@ -2670,12 +2670,12 @@ This is a test submission of a new issue.
         self._allowAnonymousSubmit()
         self._handle_mail(message)
         title = self.db.issue.get('1', 'title')
-        self.assertEquals(title, 'Test (\xc3\x84\xc3\x96\xc3\x9c) umlauts X1')
+        self.assertEquals(title, b2s(b'Test (\xc3\x84\xc3\x96\xc3\x9c) umlauts X1'))
         m = set(self.db.user.list())
         new = list(m - l)[0]
         name = self.db.user.get(new, 'realname')
         self.assertEquals(name,
-            '(\xc3\xa4\xc3\xb6\xc3\x9f\xc3\xa4\xc3\xb6\xc3\x9f)')
+            b2s(b'(\xc3\xa4\xc3\xb6\xc3\x9f\xc3\xa4\xc3\xb6\xc3\x9f)'))
 
     def testUnknownUser(self):
         l = set(self.db.user.list())
@@ -2839,9 +2839,7 @@ _______________________________________________________________________
 
     def testMultipartEnc01(self):
         self.doNewIssue()
-        self._handle_mail('''Content-Type: text/plain;
-  charset="iso-8859-1"
-From: mary <mary@test.test>
+        self._handle_mail('''From: mary <mary@test.test>
 To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -2893,9 +2891,7 @@ _______________________________________________________________________
 
     def testContentDisposition(self):
         self.doNewIssue()
-        self._handle_mail('''Content-Type: text/plain;
-  charset="iso-8859-1"
-From: mary <mary@test.test>
+        self._handle_mail('''From: mary <mary@test.test>
 To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -4187,7 +4183,7 @@ minute, so we get to </FONT>
     def testForwardedMessageAttachment(self):
         message = '''Return-Path: <rgg@test.test>
 Received: from localhost(127.0.0.1), claiming to be "[115.130.26.69]"
-via SMTP by localhost, id smtpdAAApLaWrq; Tue Apr 13 23:10:05 2010
+  via SMTP by localhost, id smtpdAAApLaWrq; Tue Apr 13 23:10:05 2010
 Message-ID: <4BC4F9C7.50409@test.test>
 Date: Wed, 14 Apr 2010 09:09:59 +1000
 From: Rupert Goldie <rgg@test.test>

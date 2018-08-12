@@ -2579,8 +2579,8 @@ class DBTest(commonDBTest):
             res["mail_to"], res["mail_msg"] = to, msg
         backup, Mailer.smtp_send = Mailer.smtp_send, dummy_snd
         try :
-            f1 = db.file.create(name="test1.txt", content="x" * 20)
-            f2 = db.file.create(name="test2.txt", content="y" * 5000)
+            f1 = db.file.create(name="test1.txt", content="x" * 20, type="application/octet-stream")
+            f2 = db.file.create(name="test2.txt", content="y" * 5000, type="application/octet-stream")
             m  = db.msg.create(content="one two", author="admin",
                 files = [f1, f2])
             i  = db.issue.create(title='spam', files = [f1, f2],
@@ -2597,6 +2597,37 @@ class DBTest(commonDBTest):
             self.assert_(b2s(base64.encodestring(s2b("xxx"))).rstrip() in mail_msg)
             self.assert_("File 'test2.txt' not attached" in mail_msg)
             self.assert_(b2s(base64.encodestring(s2b("yyy"))).rstrip() not in mail_msg)
+        finally :
+            roundupdb._ = old_translate_
+            Mailer.smtp_send = backup
+
+    def testNosyMailTextAndBinary(self) :
+        """Creates one issue with two attachments, one as text and one as binary.
+        """
+        old_translate_ = roundupdb._
+        roundupdb._ = i18n.get_translation(language='C').gettext
+        db = self.db
+        res = dict(mail_to = None, mail_msg = None)
+        def dummy_snd(s, to, msg, res=res) :
+            res["mail_to"], res["mail_msg"] = to, msg
+        backup, Mailer.smtp_send = Mailer.smtp_send, dummy_snd
+        try :
+            f1 = db.file.create(name="test1.txt", content="Hello world", type="text/plain")
+            f2 = db.file.create(name="test2.bin", content=b"\x01\x02\x03\xfe\xff", type="application/octet-stream")
+            m  = db.msg.create(content="one two", author="admin",
+                files = [f1, f2])
+            i  = db.issue.create(title='spam', files = [f1, f2],
+                messages = [m], nosy = [db.user.lookup("fred")])
+
+            db.issue.nosymessage(i, m, {})
+            mail_msg = str(res["mail_msg"])
+            self.assertEqual(res["mail_to"], ["fred@example.com"])
+            self.assert_("From: admin" in mail_msg)
+            self.assert_("Subject: [issue1] spam" in mail_msg)
+            self.assert_("New submission from admin" in mail_msg)
+            self.assert_("one two" in mail_msg)
+            self.assert_("Hello world" in mail_msg)
+            self.assert_(b2s(base64.encodestring(b"\x01\x02\x03\xfe\xff")).rstrip() in mail_msg)
         finally :
             roundupdb._ = old_translate_
             Mailer.smtp_send = backup
@@ -2623,8 +2654,8 @@ class DBTest(commonDBTest):
         try :
             john = db.user.create(username="john", roles='User,pgp',
                 address='john@test.test', realname='John Doe')
-            f1 = db.file.create(name="test1.txt", content="x" * 20)
-            f2 = db.file.create(name="test2.txt", content="y" * 5000)
+            f1 = db.file.create(name="test1.txt", content="x" * 20, type="application/octet-stream")
+            f2 = db.file.create(name="test2.txt", content="y" * 5000, type="application/octet-stream")
             m  = db.msg.create(content="one two", author="admin",
                 files = [f1, f2])
             i  = db.issue.create(title='spam', files = [f1, f2],

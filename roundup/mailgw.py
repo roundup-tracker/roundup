@@ -27,7 +27,7 @@ Incoming messages are examined for multiple parts:
    and given "file" class nodes that are linked to the "msg" node.
  . In a multipart/alternative message or part, we look for a text/plain
    subpart and ignore the other parts.
- . A message/rfc822 is treated similar tomultipart/mixed (except for
+ . A message/rfc822 is treated similar to multipart/mixed (except for
    special handling of the first text part) if unpack_rfc822 is set in
    the mailgw config section.
 
@@ -95,11 +95,13 @@ explanatory message given in the exception.
 from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
-import base64, re, os, smtplib, socket, binascii, quopri
+import base64, re, os, smtplib, socket, binascii
 import time, sys, logging
 import codecs
 import traceback
+import email
 import email.utils
+from email.generator import Generator
 
 from .anypy.email_ import decode_header
 from roundup.anypy.my_input import my_input
@@ -108,20 +110,13 @@ from roundup import configuration, hyperdb, date, password, exceptions
 from roundup.mailer import Mailer, MessageSendError
 from roundup.i18n import _
 from roundup.hyperdb import iter_roles
-from roundup.anypy.strings import b2s, StringIO
+from roundup.anypy.strings import StringIO, b2s, u2s
 import roundup.anypy.random_ as random_
 
 try:
     import pyme, pyme.core, pyme.constants, pyme.constants.sigsum
 except ImportError:
     pyme = None
-
-try:
-    import mimetools
-except ImportError:
-    class mimetools:
-        class Message:
-            pass
 
 SENDMAILDEBUG = os.environ.get('SENDMAILDEBUG', '')
 
@@ -143,11 +138,11 @@ class IgnoreMessage(BaseException):
     """ A general class of message that we should ignore. """
     pass
 class IgnoreBulk(IgnoreMessage):
-        """ This is email from a mailing list or from a vacation program. """
-        pass
+    """ This is email from a mailing list or from a vacation program. """
+    pass
 class IgnoreLoop(IgnoreMessage):
-        """ We've seen this message before... """
-        pass
+    """ We've seen this message before... """
+    pass
 
 def initialiseSecurity(security):
     ''' Create some Permissions and Roles on the security object
@@ -158,26 +153,6 @@ def initialiseSecurity(security):
     p = security.addPermission(name="Email Access",
         description="User may use the email interface")
     security.addPermissionToRole('Admin', p)
-
-def getparam(str, param):
-    ''' From the rfc822 "header" string, extract "param" if it appears.
-    '''
-    if ';' not in str:
-        return None
-    str = str[str.index(';'):]
-    while str[:1] == ';':
-        str = str[1:]
-        if ';' in str:
-            # XXX Should parse quotes!
-            end = str.index(';')
-        else:
-            end = len(str)
-        f = str[:end]
-        if '=' in f:
-            i = f.index('=')
-            if f[:i].strip().lower() == param:
-                return email.utils.unquote(f[i+1:].strip())
-    return None
 
 def gpgh_key_getall(key, attr):
     ''' return list of given attribute for all uids in
@@ -222,57 +197,9 @@ def check_pgp_sigs(sigs, gpgctx, author, may_be_unsigned=False):
     elif not may_be_unsigned:
         raise MailUsageError(_("Unsigned Message"))
 
-class Message(mimetools.Message):
-    ''' subclass mimetools.Message so we can retrieve the parts of the
-        message...
-    '''
-    def getpart(self):
-        ''' Get a single part of a multipart message and return it as a new
-            Message instance.
-        '''
-        boundary = self.getparam('boundary')
-        mid, end = '--'+boundary, '--'+boundary+'--'
-        s = StringIO()
-        while 1:
-            line = self.fp.readline()
-            if not line:
-                break
-            if line.strip() in (mid, end):
-                # according to rfc 1431 the preceding line ending is part of
-                # the boundary so we need to strip that
-                length = s.tell()
-                s.seek(-2, 1)
-                lineending = s.read(2)
-                if lineending == '\r\n':
-                    s.truncate(length - 2)
-                elif lineending[1] in ('\r', '\n'):
-                    s.truncate(length - 1)
-                else:
-                    raise ValueError('Unknown line ending in message.')
-                break
-            s.write(line)
-        if not s.getvalue().strip():
-            return None
-        s.seek(0)
-        return Message(s)
-
-    def getparts(self):
-        """Get all parts of this multipart message."""
-        # skip over the intro to the first boundary
-        self.fp.seek(0)
-        self.getpart()
-
-        # accumulate the other parts
+class RoundupMessage(email.message.Message):
+    def _decode_header(self, hdr):
         parts = []
-        while 1:
-            part = self.getpart()
-            if part is None:
-                break
-            parts.append(part)
-        return parts
-
-    def _decode_header_to_utf8(self, hdr):
-        l = []
         for part, encoding in decode_header(hdr):
             if encoding:
                 part = part.decode(encoding)
@@ -281,86 +208,41 @@ class Message(mimetools.Message):
             # or vice-versa we must preserve a space. Multiple adjacent
             # non-encoded parts should not occur. This is now
             # implemented in our patched decode_header method in anypy
-            l.append(part)
-        return ''.join([s.encode('utf-8') for s in l])
+            parts.append(part)
 
-    def getheader(self, name, default=None):
-        hdr = mimetools.Message.getheader(self, name, default)
-        # TODO are there any other False values possible?
-        # TODO if not hdr: return hdr
-        if hdr is None:
-            return None
-        if not hdr:
-            return ''
-        if hdr:
-            hdr = hdr.replace('\n','') # Inserted by rfc822.readheaders
-        return self._decode_header_to_utf8(hdr)
+        return ''.join([u2s(p) for p in parts])
 
-    def getaddrlist(self, name):
-        # overload to decode the name part of the address
-        l = []
-        for (name, addr) in mimetools.Message.getaddrlist(self, name):
-            name = self._decode_header_to_utf8(name)
-            l.append((name, addr))
-        return l
+    def flatten(self):
+        fp = StringIO()
+        generator = Generator(fp, mangle_from_=False)
+        generator.flatten(self)
+        return fp.getvalue()
 
-    def getname(self):
-        """Find an appropriate name for this message."""
-        name = None
-        if self.gettype() == 'message/rfc822':
-            # handle message/rfc822 specially - the name should be
-            # the subject of the actual e-mail embedded here
-            # we add a '.eml' extension like other email software does it
-            self.fp.seek(0)
-            s = StringIO(self.getbody())
-            name = Message(s).getheader('subject')
-            if name:
-                name = name + '.eml'
-        if not name:
-            # try name on Content-Type
-            name = self.getparam('name')
-            if not name:
-                disp = self.getheader('content-disposition', None)
-                if disp:
-                    name = getparam(disp, 'filename')
+    def get_header(self, header, default=None):
+        value = self.get(header, default)
 
-        if name:
-            return name.strip()
+        if value:
+            return self._decode_header(value.replace('\n', ''))
 
-    def getbody(self):
+        return value
+
+    def get_address_list(self, header):
+        addresses = []
+
+        for name, addr in email.utils.getaddresses(self.get_all(header, [])):
+            addresses.append((self._decode_header(name), addr))
+
+        return addresses
+
+    def get_body(self):
         """Get the decoded message body."""
-        self.rewindbody()
-        encoding = self.getencoding()
-        data = None
-        if encoding == 'base64':
-            # BUG: is base64 really used for text encoding or
-            # are we inserting zip files here.
-            data = binascii.a2b_base64(self.fp.read())
-        elif encoding == 'quoted-printable':
-            # the quopri module wants to work with files
-            decoded = StringIO()
-            quopri.decode(self.fp, decoded)
-            data = decoded.getvalue()
-        elif encoding == 'uuencoded':
-            data = binascii.a2b_uu(self.fp.read())
-        else:
-            # take it as text
-            data = self.fp.read()
+        content = self.get_payload(decode=True)
 
-        # Encode message to unicode
-        charset = self.getparam("charset")
-        if charset:
-            charset = charset.lower().replace("windows-", 'cp')
-            # Do conversion only if charset specified - handle
-            # badly-specified charsets
-            edata = codecs.decode(data, charset, 'replace').encode('utf-8')
-            # Convert from dos eol to unix
-            edata = edata.replace('\r\n', '\n')
-        else:
-            # Leave message content as is
-            edata = data
+        if content is not None:
+            charset = self.get_content_charset()
+            content = u2s(content.decode(charset or 'iso8859-1', 'replace'))
 
-        return edata
+        return content
 
     # General multipart handling:
     #   Take the first text/plain part, anything else is considered an
@@ -392,32 +274,38 @@ class Message(mimetools.Message):
     #   For web forms only.
     # message/rfc822:
     #   Only if configured in [mailgw] unpack_rfc822
-
     def extract_content(self, parent_type=None, ignore_alternatives=False,
-            unpack_rfc822=False, html2text=None):
-        """Extract the body and the attachments recursively.
-
-           If the content is hidden inside a multipart/alternative part,
-           we use the *last* text/plain part of the *first*
-           multipart/alternative in the whole message.
+                        unpack_rfc822=False, html2text=None):
         """
-        content_type = self.gettype()
+        Extract the body and the attachments recursively.
+
+        If the content is hidden inside a multipart/alternative part, we use
+        the *last* text/plain part of the *first* multipart/alternative in
+        the whole message.
+
+        If ignore_alteratives is True then only the alternative parts in the
+        same multipart/alternative part as where the content is found are
+        ignored.
+        """
+        content_type = self.get_content_type()
         content = None
         attachments = []
         html_part = False
 
         if content_type == 'text/plain':
-            content = self.getbody()
+            content = self.get_body()
         elif content_type == 'text/html' and html2text:
             # if user allows html conversion run this.
-            content = html2text(self.getbody())
+            content = html2text(self.get_body())
             attachments.append(self.as_attachment())
             html_part = True
-        elif content_type[:10] == 'multipart/':
+        elif content_type == 'message/rfc822' and not unpack_rfc822:
+            attachments.append(self.as_attachment())
+        elif self.is_multipart():
             content_found = False
             ig = ignore_alternatives
             html_part_found = False
-            for part in self.getparts():
+            for part in self.get_payload():
                 new_content, new_attach, html_part = part.extract_content(
                      content_type, not content and ig, unpack_rfc822,
                     html2text)
@@ -457,67 +345,78 @@ class Message(mimetools.Message):
             if ig and content_type == 'multipart/alternative' and content:
                 attachments = []
             html_part = False
-        elif unpack_rfc822 and content_type == 'message/rfc822':
-            s = StringIO(self.getbody())
-            m = Message(s)
-            ig = ignore_alternatives and not content
-            new_content, attachments, html_part = m.extract_content(m.gettype(), ig,
-                    unpack_rfc822, html2text)
-            attachments.insert(0, m.text_as_attachment())
         elif (parent_type == 'multipart/signed' and
-              content_type == 'application/pgp-signature'):
-            # ignore it so it won't be saved as an attachment
+                content_type == 'application/pgp-signature'):
+            # Don't save signatures for signed messages as attachments
             pass
         else:
             attachments.append(self.as_attachment())
+
         return content, attachments, html_part
 
     def text_as_attachment(self):
         """Return first text/plain part as Message"""
-        if not self.gettype().startswith ('multipart/'):
+        if not self.is_multipart():
             return self.as_attachment()
-        for part in self.getparts():
-            content_type = part.gettype()
-            if content_type == 'text/plain':
-                return part.as_attachment()
-            elif content_type.startswith ('multipart/'):
+        for part in self.get_payload():
+            if part.is_multipart():
                 p = part.text_as_attachment()
                 if p:
                     return p
+            elif part.get_content_type() == 'text/plain':
+                return part.as_attachment()
         return None
 
     def as_attachment(self):
         """Return this message as an attachment."""
-        return (self.getname(), self.gettype(), self.getbody())
+        filename = self.get_filename()
+        content_type = self.get_content_type()
+        content = self.get_body()
+
+        if content is None and self.get_content_type() == 'message/rfc822':
+            # handle message/rfc822 specially - the name should be
+            # the subject of the actual e-mail embedded here
+            # we add a '.eml' extension like other email software does it
+            subject = self.get_payload(0).get('subject')
+            if subject:
+                filename = '{0}.eml'.format(subject)
+
+            content = self.get_payload(0).flatten()
+
+        return (filename, content_type, content)
 
     def pgp_signed(self):
-        ''' RFC 3156 requires OpenPGP MIME mail to have the protocol parameter
-        '''
-        return self.gettype() == 'multipart/signed' \
-            and self.typeheader.find('protocol="application/pgp-signature"') != -1
+        """
+        RFC 3156 requires OpenPGP MIME mail to have the protocol parameter
+        """
+        return (self.get_content_type() == 'multipart/signed' and
+                self.get_param('protocol') == 'application/pgp-signature')
 
     def pgp_encrypted(self):
-        ''' RFC 3156 requires OpenPGP MIME mail to have the protocol parameter
-        '''
-        return self.gettype() == 'multipart/encrypted' \
-            and self.typeheader.find('protocol="application/pgp-encrypted"') != -1
+        """
+        RFC 3156 requires OpenPGP MIME mail to have the protocol parameter
+        """
+        return (self.get_content_type() == 'multipart/encrypted' and
+                self.get_param('protocol') == 'application/pgp-encrypted')
 
     def decrypt(self, author, may_be_unsigned=False):
-        ''' decrypt an OpenPGP MIME message
-            This message must be signed as well as encrypted using the
-            "combined" method if incoming signatures are configured.
-            The decrypted contents are returned as a new message.
         '''
-        (hdr, msg) = self.getparts()
+        Decrypt an OpenPGP MIME message
+
+        This message must be signed as well as encrypted using the "combined"
+        method if incoming signatures are configured.  The decrypted contents
+        are returned as a new message.
+        '''
+        (hdr, msg) = self.get_payload()
         # According to the RFC 3156 encrypted mail must have exactly two parts.
         # The first part contains the control information. Let's verify that
         # the message meets the RFC before we try to decrypt it.
-        if hdr.getbody().strip() != 'Version: 1' \
-           or hdr.gettype() != 'application/pgp-encrypted':
+        if (hdr.get_payload().strip() != 'Version: 1' or
+                hdr.get_content_type() != 'application/pgp-encrypted'):
             raise MailUsageError(_("Unknown multipart/encrypted version."))
 
         context = pyme.core.Context()
-        ciphertext = pyme.core.Data(msg.getbody())
+        ciphertext = pyme.core.Data(msg.get_payload())
         plaintext = pyme.core.Data()
 
         result = context.op_decrypt_verify(ciphertext, plaintext)
@@ -530,43 +429,37 @@ class Message(mimetools.Message):
         # was signed by someone we trust
         result = context.op_verify_result()
         check_pgp_sigs(result.signatures, context, author,
-            may_be_unsigned = may_be_unsigned)
+                       may_be_unsigned=may_be_unsigned)
 
-        plaintext.seek(0,0)
+        plaintext.seek(0, 0)
         # pyme.core.Data implements a seek method with a different signature
         # than roundup can handle. So we'll put the data in a container that
         # the Message class can work with.
-        c = StringIO()
-        c.write(plaintext.read())
-        c.seek(0)
-        return Message(c)
+        return email.message_from_string(plaintext.read(), RoundupMessage)
 
     def verify_signature(self, author):
-        ''' verify the signature of an OpenPGP MIME message
-            This only handles detached signatures. Old style
-            PGP mail (i.e. '-----BEGIN PGP SIGNED MESSAGE----')
-            is archaic and not supported :)
-        '''
+        """
+        Verify the signature of an OpenPGP MIME message
+
+        This only handles detached signatures. Old style PGP mail (i.e.
+        '-----BEGIN PGP SIGNED MESSAGE----') is archaic and not supported :)
+        """
         # we don't check the micalg parameter...gpgme seems to
         # figure things out on its own
-        (msg, sig) = self.getparts()
+        (msg, sig) = self.get_payload()
 
-        if sig.gettype() != 'application/pgp-signature':
+        if sig.get_content_type() != 'application/pgp-signature':
             raise MailUsageError(_("No PGP signature found in message."))
 
-        # msg.getbody() is skipping over some headers that are
-        # required to be present for verification to succeed so
-        # we'll do this by hand
-        msg.fp.seek(0)
         # according to rfc 3156 the data "MUST first be converted
         # to its content-type specific canonical form. For
         # text/plain this means conversion to an appropriate
         # character set and conversion of line endings to the
         # canonical <CR><LF> sequence."
         # TODO: what about character set conversion?
-        canonical_msg = re.sub('(?<!\r)\n', '\r\n', msg.fp.read())
+        canonical_msg = re.sub('(?<!\r)\n', '\r\n', msg.flatten())
         msg_data = pyme.core.Data(canonical_msg)
-        sig_data = pyme.core.Data(sig.getbody())
+        sig_data = pyme.core.Data(sig.get_payload())
 
         context = pyme.core.Context()
         context.op_verify(sig_data, msg_data, None)
@@ -582,16 +475,16 @@ class parsedMessage:
         self.config = mailgw.instance.config
         self.db = mailgw.db
         self.message = message
-        self.subject = message.getheader('subject', '')
+        self.subject = message.get_header('subject', '')
         self.has_prefix = False
         self.matches = dict.fromkeys(['refwd', 'quote', 'classname',
                                  'nodeid', 'title', 'args', 'argswhole'])
         self.keep_real_from = self.config['EMAIL_KEEP_REAL_FROM']
         if self.keep_real_from:
-            self.from_list = message.getaddrlist('from')
+            self.from_list = message.get_address_list('from')
         else:
-            self.from_list = message.getaddrlist('resent-from') \
-                          or message.getaddrlist('from')
+            self.from_list = (message.get_address_list('resent-from') or
+                              message.get_address_list('from'))
         self.pfxmode = self.config['MAILGW_SUBJECT_PREFIX_PARSING']
         self.sfxmode = self.config['MAILGW_SUBJECT_SUFFIX_PARSING']
         # these are filled in by subsequent parsing steps
@@ -612,9 +505,9 @@ class parsedMessage:
             detect loops and
             Precedence: Bulk, or Microsoft Outlook autoreplies
         '''
-        if self.message.getheader('x-roundup-loop', ''):
+        if self.message.get_header('x-roundup-loop', ''):
             raise IgnoreLoop
-        if (self.message.getheader('precedence', '') == 'bulk'
+        if (self.message.get_header('precedence', '') == 'bulk'
                 or self.subject.lower().find("autoreply") > 0):
             raise IgnoreBulk
 
@@ -812,7 +705,7 @@ Subject was: '%(subject)s'
             nodeid = self.matches['nodeid']
 
         # try in-reply-to to match the message if there's no nodeid
-        inreplyto = self.message.getheader('in-reply-to') or ''
+        inreplyto = self.message.get_header('in-reply-to') or ''
         if nodeid is None and inreplyto:
             l = self.db.getclass('msg').stringFind(messageid=inreplyto)
             if l:
@@ -958,8 +851,8 @@ Unknown address: %(from_address)s
         # now update the recipients list
         recipients = []
         tracker_email = self.config['TRACKER_EMAIL'].lower()
-        msg_to = self.message.getaddrlist('to')
-        msg_cc = self.message.getaddrlist('cc')
+        msg_to = self.message.get_address_list('to')
+        msg_cc = self.message.get_address_list('cc')
         for recipient in msg_to + msg_cc:
             r = recipient[1].strip().lower()
             if r == tracker_email or not r:
@@ -1110,7 +1003,6 @@ encrypted."""))
             ignore_alternatives=ig,
             unpack_rfc822=self.config.MAILGW_UNPACK_RFC822,
             html2text=html2text )
-        
 
     def create_files(self):
         ''' Create a file for each attachment in the message
@@ -1119,7 +1011,7 @@ encrypted."""))
             return
         files = []
         file_props = self.mailgw.get_class_arguments('file')
-        
+
         if self.attachments:
             for (name, mime_type, data) in self.attachments:
                 if not self.db.security.hasPermission('Create', self.author,
@@ -1160,8 +1052,8 @@ encrypted."""))
         self.msg_props.update (msg_props)
         
         # Get the message ids
-        inreplyto = self.message.getheader('in-reply-to') or ''
-        messageid = self.message.getheader('message-id')
+        inreplyto = self.message.get_header('in-reply-to') or ''
+        messageid = self.message.get_header('message-id')
         # generate a messageid if there isn't one
         if not messageid:
             messageid = "<%s.%s.%s%s@%s>"%(time.time(),
@@ -1247,7 +1139,7 @@ There was a problem with the message you sent:
 #            issue_re = config['MAILGW_ISSUE_ADDRESS_RE']
 #            if issue_re:
 #                for header in ['to', 'cc', 'bcc']:
-#                    addresses = message.getheader(header, '')
+#                    addresses = message.get_header(header, '')
 #                if addresses:
 #                  # FIXME, this only finds the first match in the addresses.
 #                    issue = re.search(issue_re, addresses, 'i')
@@ -1348,33 +1240,29 @@ class MailGW:
         """ Read a series of messages from the specified unix mailbox file and
             pass each to the mail handler.
         """
-        # open the spool file and lock it
-        import fcntl
-        # FCNTL is deprecated in py2.3 and fcntl takes over all the symbols
-        if hasattr(fcntl, 'LOCK_EX'):
-            FCNTL = fcntl
-        else:
-            import FCNTL
-        f = open(filename, 'r+')
-        fcntl.flock(f.fileno(), FCNTL.LOCK_EX)
+        import mailbox
 
-        # handle and clear the mailbox
+        class mboxRoundupMessage(mailbox.mboxMessage, RoundupMessage):
+            pass
+
         try:
-            from mailbox import UnixMailbox
-            mailbox = UnixMailbox(f, factory=Message)
-            # grab one message
-            message = next(mailbox)
-            while message:
-                # handle this message
-                self.handle_Message(message)
-                message = next(mailbox)
-            # nuke the file contents
-            os.ftruncate(f.fileno(), 0)
-        except:
-            import traceback
+            mbox = mailbox.mbox(filename, factory=mboxRoundupMessage,
+                                create=False)
+            mbox.lock()
+        except (mailbox.NoSuchMailboxError, mailbox.ExternalClashError) as e:
+            if isinstance(e, mailbox.ExternalClashError):
+                mbox.close()
             traceback.print_exc()
             return 1
-        fcntl.flock(f.fileno(), FCNTL.LOCK_UN)
+
+        try:
+            for key in mbox.keys():
+                self.handle_Message(mbox.get(key))
+                mbox.remove(key)
+        finally:
+            mbox.unlock()
+            mbox.close()
+
         return 0
 
     def do_imap(self, server, user='', password='', mailbox='', ssl=0,
@@ -1503,9 +1391,8 @@ class MailGW:
             #   [ array of message lines ],
             #   number of octets ]
             lines = server.retr(i)[1]
-            s = StringIO('\n'.join(lines))
-            s.seek(0)
-            self.handle_Message(Message(s))
+            self.handle_Message(
+                email.message_from_string('\n'.join(lines), RoundupMessage))
             # delete the message
             server.dele(i)
 
@@ -1516,7 +1403,7 @@ class MailGW:
     def main(self, fp):
         ''' fp - the file from which to read the Message.
         '''
-        return self.handle_Message(Message(fp))
+        return self.handle_Message(email.message_from_file(fp, RoundupMessage))
 
     def handle_Message(self, message):
         """Handle an RFC822 Message
@@ -1532,20 +1419,20 @@ class MailGW:
 
         self.parsed_message = None
         crypt = False
-        sendto = message.getaddrlist('resent-from')
+        sendto = message.get_address_list('resent-from')
         if not sendto or self.instance.config['EMAIL_KEEP_REAL_FROM']:
-            sendto = message.getaddrlist('from')
+            sendto = message.get_address_list('from')
         if not sendto:
             # very bad-looking message - we don't even know who sent it
             msg = ['Badly formed message from mail gateway. Headers:']
-            msg.extend(message.headers)
+            msg.extend([': '.join(args) for args in message.items()])
             msg = '\n'.join(map(str, msg))
             self.logger.error(msg)
             return
 
         msg = 'Handling message'
-        if message.getheader('message-id'):
-            msg += ' (Message-id=%r)'%message.getheader('message-id')
+        if message.get_header('message-id'):
+            msg += ' (Message-id=%r)'%message.get_header('message-id')
         self.logger.info(msg)
 
         # try normal message-handling
@@ -1595,14 +1482,14 @@ class MailGW:
             # do not take any action
             # this exception is thrown when email should be ignored
             msg = 'IgnoreMessage raised'
-            if message.getheader('message-id'):
-                msg += ' (Message-id=%r)'%message.getheader('message-id')
+            if message.get_header('message-id'):
+                msg += ' (Message-id=%r)'%message.get_header('message-id')
             self.logger.info(msg)
             return
         except:
             msg = 'Exception handling message'
-            if message.getheader('message-id'):
-                msg += ' (Message-id=%r)'%message.getheader('message-id')
+            if message.get_header('message-id'):
+                msg += ' (Message-id=%r)'%message.get_header('message-id')
             self.logger.exception(msg)
 
             # bounce the message back to the sender with the error message

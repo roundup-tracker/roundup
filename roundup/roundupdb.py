@@ -36,8 +36,7 @@ from roundup import password, date, hyperdb
 from roundup.i18n import _
 from roundup.hyperdb import iter_roles
 
-from roundup.mailer import Mailer, MessageSendError, encode_quopri, \
-    nice_sender_header
+from roundup.mailer import Mailer, MessageSendError, nice_sender_header
 
 from roundup.anypy.strings import b2s, s2u
 import roundup.anypy.random_ as random_
@@ -498,8 +497,6 @@ class IssueClass:
 
         # construct the content and convert to unicode object
         body = s2u('\n'.join(m))
-        if type(body) != type(''):
-            body = body.encode(charset)
 
         # make sure the To line is always the same (for testing mostly)
         sendto.sort()
@@ -610,28 +607,31 @@ class IssueClass:
             # attach files
             if message_files:
                 # first up the text as a part
-                part = MIMEText(body)
-                part.set_charset(charset)
-                encode_quopri(part)
+                part = mailer.get_standard_message()
+                part.set_payload(body, part.get_charset())
                 message.attach(part)
 
                 for fileid in message_files:
                     name = files.get(fileid, 'name')
-                    mime_type = files.get(fileid, 'type')
-                    content = files.get(fileid, 'content')
+                    mime_type = (files.get(fileid, 'type') or
+                                 mimetypes.guess_type(name)[0] or
+                                 'application/octet-stream')
                     if mime_type == 'text/plain':
+                        content = files.get(fileid, 'content')
+                        part = MIMEText('')
+                        del part['Content-Transfer-Encoding']
                         try:
-                            content.decode('ascii')
+                            enc = content.encode('ascii')
+                            part = mailer.get_text_message('us-ascii')
+                            part.set_payload(enc)
                         except UnicodeError:
                             # the content cannot be 7bit-encoded.
                             # use quoted printable
                             # XXX stuffed if we know the charset though :(
-                            part = MIMEText(content)
-                            encode_quopri(part)
-                        else:
-                            part = MIMEText(content)
-                            part['Content-Transfer-Encoding'] = '7bit'
+                            part = mailer.get_text_message('utf-8')
+                            part.set_payload(content, part.get_charset())
                     elif mime_type == 'message/rfc822':
+                        content = files.get(fileid, 'content')
                         main, sub = mime_type.split('/')
                         p = FeedParser()
                         p.feed(content)
@@ -639,11 +639,7 @@ class IssueClass:
                         part.set_payload([p.close()])
                     else:
                         # some other type, so encode it
-                        if not mime_type:
-                            # this should have been done when the file was saved
-                            mime_type = mimetypes.guess_type(name)[0]
-                        if mime_type is None:
-                            mime_type = 'application/octet-stream'
+                        content = files.get(fileid, 'binary_content')
                         main, sub = mime_type.split('/')
                         part = MIMEBase(main, sub)
                         part.set_payload(content)
@@ -653,8 +649,7 @@ class IssueClass:
                     message.attach(part)
 
             else:
-                message.set_payload(body)
-                encode_quopri(message)
+                message.set_payload(body, message.get_charset())
 
             if crypt:
                 send_msg = self.encrypt_to (message, sendto)

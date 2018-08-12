@@ -7,12 +7,15 @@ import time, quopri, os, socket, smtplib, re, sys, traceback, email, logging
 from roundup import __version__
 from roundup.date import get_timezone, Date
 
+from email import charset
 from email.utils import formatdate, formataddr, specialsre, escapesre
+from email.charset import Charset
 from email.message import Message
 from email.header import Header
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.nonmultipart import MIMENonMultipart
 
 from roundup.anypy import email_
 from roundup.anypy.strings import b2s, s2b, s2u
@@ -25,13 +28,6 @@ except ImportError:
 
 class MessageSendError(RuntimeError):
     pass
-
-def encode_quopri(msg):
-    orig = s2b(msg.get_payload())
-    encdata = quopri.encodestring(orig)
-    msg.set_payload(b2s(encdata))
-    del msg['Content-Transfer-Encoding']
-    msg['Content-Transfer-Encoding'] = 'quoted-printable'
 
 def nice_sender_header(name, address, charset):
     # construct an address header so it's as human-readable as possible
@@ -115,16 +111,23 @@ class Mailer:
         # finally, an aid to debugging problems
         message['X-Roundup-Version'] = __version__
 
+    def get_text_message(self, _charset='utf-8', _subtype='plain'):
+        message = MIMENonMultipart('text', _subtype)
+        cs = Charset(_charset)
+        if cs.body_encoding == charset.BASE64:
+            cs.body_encoding = charset.QP
+        message.set_charset(cs)
+        del message['Content-Transfer-Encoding']
+        return message
+
     def get_standard_message(self, multipart=False):
         '''Form a standard email message from Roundup.
         Returns a Message object.
         '''
-        charset = getattr(self.config, 'EMAIL_CHARSET', 'utf-8')
         if multipart:
             message = MIMEMultipart()
         else:
-            message = MIMEText("")
-            message.set_charset(charset)
+            message = self.get_text_message(getattr(self.config, 'EMAIL_CHARSET', 'utf-8'))
 
         return message
 
@@ -132,7 +135,7 @@ class Mailer:
         """Send a standard message.
 
         Arguments:
-        - to: a list of addresses usable by rfc822.parseaddr().
+        - to: a list of addresses usable by email.utils.parseaddr().
         - subject: the subject as a string.
         - content: the body of the message as a string.
         - author: the sender as a (name, address) tuple
@@ -141,8 +144,7 @@ class Mailer:
         """
         message = self.get_standard_message()
         self.set_message_attributes(message, to, subject, author)
-        message.set_payload(content)
-        encode_quopri(message)
+        message.set_payload(s2u(content))
         self.smtp_send(to, message.as_string())
 
     def bounce_message(self, bounced_message, to, error,
@@ -150,8 +152,8 @@ class Mailer:
         """Bounce a message, attaching the failed submission.
 
         Arguments:
-        - bounced_message: an RFC822 Message object.
-        - to: a list of addresses usable by rfc822.parseaddr(). Might be
+        - bounced_message: an mailgw.RoundupMessage object.
+        - to: a list of addresses usable by email.utils.parseaddr(). Might be
           extended or overridden according to the config
           ERROR_MESSAGES_TO setting.
         - error: the reason of failure as a string.
@@ -185,18 +187,7 @@ class Mailer:
         message.attach(part)
 
         # attach the original message to the returned message
-        body = []
-        for header in bounced_message.headers:
-            body.append(header)
-        try:
-            bounced_message.rewindbody()
-        except IOError as errmessage:
-            body.append("*** couldn't include message body: %s ***" %
-                errmessage)
-        else:
-            body.append('\n')
-            body.append(bounced_message.fp.read())
-        part = MIMEText(''.join(body))
+        part = MIMEText(bounced_message.flatten())
         message.attach(part)
 
         self.logger.debug("bounce_message: to=%s, crypt_to=%s", to, crypt_to)
