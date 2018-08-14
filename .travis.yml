@@ -38,7 +38,7 @@ before_install:
   - LIBGPG_ERROR_VERSION=1.32
   - cd /tmp
   - curl -s -O https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-$LIBGPG_ERROR_VERSION.tar.bz2
-  - tar -Jxvf libgpg-error-$LIBGPG_ERROR_VERSION.tar.bz2
+  - tar -jxvf libgpg-error-$LIBGPG_ERROR_VERSION.tar.bz2
   - cd libgpg-error-$LIBGPG_ERROR_VERSION
   - ./configure --prefix=$VIRTUAL_ENV
   - make && make install
@@ -47,7 +47,7 @@ before_install:
   - LIBASSUAN_VERSION=2.5.1
   - cd /tmp
   - curl -s -O https://www.gnupg.org/ftp/gcrypt/libassuan/libassuan-$LIBASSUAN_VERSION.tar.bz2
-  - tar -Jxvf libassuan-$LIBASSUAN_VERSION.tar.bz2
+  - tar -jxvf libassuan-$LIBASSUAN_VERSION.tar.bz2
   - cd libassuan-$LIBASSUAN_VERSION
   - ./configure --prefix=$VIRTUAL_ENV
   - make && make install
@@ -56,7 +56,7 @@ before_install:
   - GPGME_VERSION
   - cd /tmp
   - curl -s -O https://www.gnupg.org/ftp/gcrypt/gpgme/gpgme-$GPGME_VERSION.tar.bz2
-  - tar -Jxvf gpgme-$GPGME_VERSION
+  - tar -jxvf gpgme-$GPGME_VERSION.tar.bz2
   - cd gpgme-$GPGME_VERSION
   - ./configure --prefix=$VIRTUAL_ENV
   - make && make install
