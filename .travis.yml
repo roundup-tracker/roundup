@@ -53,7 +53,7 @@ before_install:
   - make && make install
 
   # gpgme
-  - GPGME_VERSION
+  - GPGME_VERSION=1.11.1
   - cd /tmp
   - curl -s -O https://www.gnupg.org/ftp/gcrypt/gpgme/gpgme-$GPGME_VERSION.tar.bz2
   - tar -jxvf gpgme-$GPGME_VERSION.tar.bz2
