@@ -18,7 +18,6 @@ addons:
       # Required to build/install the xapian-binding
       - libxapian-dev
       # Required to install gpg
-      - libgpgme11-dev
       - swig
 
 before_install:
@@ -33,12 +32,40 @@ before_install:
   - if [[ $TRAVIS_PYTHON_VERSION == "3."* ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3; fi
   - make && make install
 
+  - PATH=$VIRTUAL_ENV/bin:$PATH
+
+  # libgpg-error
+  - LIBGPG_ERROR_VERSION=1.32
+  - cd /tmp
+  - curl -s -O https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-$LIBGPG_ERROR_VERSION.tar.bz2
+  - tar -Jxvf libgpg-error-$LIBGPG_ERROR_VERSION.tar.bz2
+  - cd libgpg-error-$LIBGPG_ERROR_VERSION
+  - ./configure --prefix=$VIRTUAL_ENV
+  - make && make install
+
+  # libassuan
+  - LIBASSUAN_VERSION=2.5.1
+  - cd /tmp
+  - curl -s -O https://www.gnupg.org/ftp/gcrypt/libassuan/libassuan-$LIBASSUAN_VERSION.tar.bz2
+  - tar -Jxvf libassuan-$LIBASSUAN_VERSION.tar.bz2
+  - cd libassuan-$LIBASSUAN_VERSION
+  - ./configure --prefix=$VIRTUAL_ENV
+  - make && make install
+
+  # gpgme
+  - GPGME_VERSION
+  - cd /tmp
+  - curl -s -O https://www.gnupg.org/ftp/gcrypt/gpgme/gpgme-$GPGME_VERSION.tar.bz2
+  - tar -Jxvf gpgme-$GPGME_VERSION
+  - cd gpgme-$GPGME_VERSION
+  - ./configure --prefix=$VIRTUAL_ENV
+  - make && make install
+
   # change back to the checked out repository directory
   - cd $TRAVIS_BUILD_DIR
 
 install:
-  - pip install psycopg2 pytz whoosh
-  # gpg currently disabled
+  - pip install gpg psycopg2 pytz whoosh
   - if [[ $TRAVIS_PYTHON_VERSION == "2."* ]]; then pip install MySQL-python; fi
   - pip install pytest-cov codecov
 
