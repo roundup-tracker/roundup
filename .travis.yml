@@ -19,6 +19,8 @@ addons:
       - libxapian-dev
       # Required to install gpg
       - swig
+      # Required to build gpgme.
+      - gpgsm
 
 before_install:
   # Sphinx required to build the xapian python bindings
