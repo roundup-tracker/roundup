@@ -20,6 +20,16 @@ Contents:
 .. contents::
    :local:
 
+Migrating from 1.6.0 to x.y.0
+=============================
+
+PGP mail processing
+-------------------
+
+Roundup now uses the ``gpg`` module instead of ``pyme`` to process PGP
+mail.  If you have PGP processing enabled, make sure the ``gpg``
+module is installed.
+
 Migrating from 1.5.1 to 1.6.0
 =============================
 
