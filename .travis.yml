@@ -83,6 +83,8 @@ before_script:
   - sed -i 's/CREATE DATABASE \%s/CREATE DATABASE \%s COLLATE utf8_general_ci/' roundup/backends/back_mysql.py
 
 script:
+  - PATH=$VIRTUAL_ENV/bin:$PATH
+  - export LD_LIBRARY_PATH=$VIRTUAL_ENV/lib:$LD_LIBRARY_PATH
   - py.test -v test/ --cov=roundup
 
 after_success:
