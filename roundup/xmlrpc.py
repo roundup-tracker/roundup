@@ -73,7 +73,7 @@ class RoundupInstance:
         s = {}
         for c in self.db.classes:
             cls = self.db.classes[c]
-            props = [(n,repr(v)) for n,v in cls.properties.items()]
+            props = [(n,repr(v)) for n,v in sorted(cls.properties.items())]
             s[c] = props
         return s
 
