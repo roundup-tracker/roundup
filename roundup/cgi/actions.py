@@ -1221,7 +1221,7 @@ class LoginAction(Action):
                                                 redirect_url_tuple.netloc,
                                                 redirect_url_tuple.path,
                                                 redirect_url_tuple.params,
-                                                urllib_.urlencode(query, doseq=True),
+                                                urllib_.urlencode(list(sorted(query.items())), doseq=True),
                                                 redirect_url_tuple.fragment)
                                            )
 
@@ -1239,7 +1239,7 @@ class LoginAction(Action):
                                                     redirect_url_tuple.netloc,
                                                     redirect_url_tuple.path,
                                                     redirect_url_tuple.params,
-                                                    urllib_.urlencode(query, doseq=True),
+                                                    urllib_.urlencode(list(sorted(query.items())), doseq=True),
                                                     redirect_url_tuple.fragment )
                                                )
                 raise exceptions.Redirect(redirect_url)
