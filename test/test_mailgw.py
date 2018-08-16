@@ -56,6 +56,9 @@ def get_body(message):
 
     return message.as_string().split('\n\n', 1)[-1]
 
+def unfold(lst):
+    return [l.replace('\n', '') for l in lst]
+
 
 class Tracker(object):
     def open(self, journaltag):
@@ -131,7 +134,7 @@ class DiffHelper:
                         res.append('content-type mime type headers differ new vs. reference: %r != %r'%(newmimetype, oldmimetype))
                     replace ['--' + newmimeboundary] = '--' + oldmimeboundary
                     replace ['--' + newmimeboundary + '--'] = '--' + oldmimeboundary + '--'
-                elif new.get_all(key, '') != old.get_all(key, ''):
+                elif unfold(new.get_all(key, '')) != unfold(old.get_all(key, '')):
                     # check that all other headers are identical, including
                     # headers that appear more than once.
                     res.append('  %s: %r != %r' % (key, old.get_all(key, ''),
