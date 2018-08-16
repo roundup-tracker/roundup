@@ -8,6 +8,8 @@ from roundup.cgi.actions import *
 from roundup.cgi.client import add_message
 from roundup.cgi.exceptions import Redirect, Unauthorised, SeriousError, FormError
 
+from roundup.anypy.cmp_ import NoneAndDictComparable
+
 from .mocknull import MockNull
 
 def true(*args, **kwargs):
@@ -417,7 +419,8 @@ class EditItemActionTestCase(ActionTestCase):
             self.action.handle()
         except Redirect as msg:
             pass
-        self.assertEqual(expect, self.result)
+        self.assertEqual(sorted(expect, key=NoneAndDictComparable),
+                         sorted(self.result, key=NoneAndDictComparable))
 
     def testFileAttach(self):
         expect = \
