@@ -180,10 +180,10 @@ class Database(rdbms_common.Database):
         try:
             self.load_dbschema()
         except MySQLdb.OperationalError as message:
-            if message[0] != ER.NO_DB_ERROR:
+            if message.args[0] != ER.NO_DB_ERROR:
                 raise
         except MySQLdb.ProgrammingError as message:
-            if message[0] != ER.NO_SUCH_TABLE:
+            if message.args[0] != ER.NO_SUCH_TABLE:
                 raise hyperdb.DatabaseError(message)
             self.init_dbschema()
             self.sql("CREATE TABLE `schema` (`schema` TEXT) ENGINE=%s"%
