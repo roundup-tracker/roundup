@@ -138,7 +138,7 @@ def setUpPGP():
 
 def tearDownPGP():
     if os.path.exists(pgphome):
-        shutil.rmtree(pgphome)
+        shutil.rmtree(pgphome, True) # ignore errors
 
 
 # vim: set filetype=python sts=4 sw=4 et si :
