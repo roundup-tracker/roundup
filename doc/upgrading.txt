@@ -30,6 +30,14 @@ Roundup now uses the ``gpg`` module instead of ``pyme`` to process PGP
 mail.  If you have PGP processing enabled, make sure the ``gpg``
 module is installed.
 
+MySQL client module
+-------------------
+
+Although the ``MySQLdb`` module from
+https://pypi.org/project/MySQL-python/ is still supported, it is
+recommended to switch to the updated module from
+https://pypi.org/project/mysqlclient/.
+
 Migrating from 1.5.1 to 1.6.0
 =============================
 

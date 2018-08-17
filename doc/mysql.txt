@@ -16,7 +16,7 @@ to install:
    if you have no other choice). If you're running < 4.0.18 (but not <4.0)
    then you'll need to use BDB to pass all unit tests. Edit the
    ``roundup/backends/back_mysql.py`` file to enable DBD instead of InnoDB.
-2. Python MySQL interface - http://sourceforge.net/projects/mysql-python
+2. Python MySQL interface - https://pypi.org/project/mysqlclient/
 
 
 Other Configuration

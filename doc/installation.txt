@@ -1115,7 +1115,7 @@ from installation and scripts.
 .. _apache: http://httpd.apache.org/
 .. _flup: https://pypi.org/project/flup/
 .. _mod_python: http://www.modpython.org/
-.. _MySQLdb: http://sourceforge.net/projects/mysql-python
+.. _MySQLdb: https://pypi.org/project/mysqlclient/
 .. _Psycopg: http://initd.org/software/initd/psycopg
 .. _pysqlite: http://pysqlite.org/
 .. _`adding MySQL users`:
