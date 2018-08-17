@@ -1,0 +1,54 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/buildpack-deps:18.04
+
+      - image: circleci/postgres:9.6-alpine-ram
+
+      - image: circleci/mysql:5.7-ram
+        environment:
+          MYSQL_ALLOW_EMPTY_PASSWORD=true
+          MYSQL_ROOT_HOST=%
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      - run:
+          name: install packages
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y libgpgme-dev mysql-client-core-5.7 postgresql-client python3-gpg python3-mysqldb python3-pip python3-psycopg2 python3-pytest python3-pytest-cov python3-tz python3-venv python3-whoosh python3-xapian swig
+
+      - run:
+          name: install dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip3 install codecov
+
+      - run:
+          name: setup databases
+          command: |
+            psql -d postgresql://root@localhost/circle_test -c "CREATE ROLE rounduptest WITH CREATEDB LOGIN PASSWORD 'rounduptest';"
+            mysql -h 127.0.0.1 -u root -e "GRANT ALL ON rounduptest.* TO rounduptest@'127.0.0.1' IDENTIFIED BY \"rounduptest\";"
+            # patch host to 127.0.0.1 to force TCP connection to MySQL
+            sed -i -e 's/\(config[.]RDBMS_HOST =\) "localhost"/\1 "127.0.0.1"/' test/db_test_base.py
+            # HACK: workaround mysql bug: http://bugs.mysql.com/bug.php?id=74901
+            #   needed for test_mysql.mysqlDBTest.testFilteringSpecialChars
+            sed -i -e 's/CREATE DATABASE \%s/CREATE DATABASE \%s COLLATE utf8_general_ci/' roundup/backends/back_mysql.py
+
+      - run:
+          name: run tests
+          command: |
+            . venv/bin/activate
+            py.test-3 -v test/ --cov=roundup
+          environment:
+            MYSQL_HOST: 127.0.0.1
+
+      - run:
+          name: run coverage
+          command: |
+            codecov
