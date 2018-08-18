@@ -108,6 +108,6 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
    XMLRPC calls
 
 .. _sqlite: http://www.hwaci.com/sw/sqlite/
-.. _mysql: http://sourceforge.net/projects/mysql-python
+.. _mysql: https://pypi.org/project/MySQL-python/
 .. _postgresql: http://initd.org/software/initd/psycopg
 

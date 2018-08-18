@@ -22,6 +22,8 @@ Features:
   (Christof Meerwald)
 - issue2550989: PGP encryption is now done using the gpg module
   instead of pyme. (Christof Meerwald)
+- issue2550987: Use updated MySQL client module that supports Python
+  3. (Christof Meerwald)
 
 Fixed:
 
