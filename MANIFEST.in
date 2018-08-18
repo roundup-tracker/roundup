@@ -9,6 +9,5 @@ recursive-include detectors *.py README.txt
 global-exclude *.pyc *.pyo .DS_Store *.orig *.rej *~ \#*
 include run_tests.py demo.py *.txt
 include doc/conf.py doc/roundup-favicon.ico
-exclude 2to3-done.txt
 exclude doc/security.txt
 include locale/*.po locale/*.mo locale/roundup.pot
