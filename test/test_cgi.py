@@ -27,6 +27,7 @@ from .mocknull import MockNull
 
 from . import db_test_base
 from .db_test_base import FormTestParent, setupTracker, FileUpload
+from .cmp_helper import StringFragmentCmpHelper
 
 class FileList:
     def __init__(self, name, *files):
@@ -71,7 +72,7 @@ class MessageTestCase(unittest.TestCase):
         self.assertEqual(cm([],'<i>x</i>\n<b>x</b>',False),
             ['<i>x</i><br />\n<b>x</b>'])
 
-class FormTestCase(FormTestParent, unittest.TestCase):
+class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
 
     def setUp(self):
         FormTestParent.setUp(self)
@@ -1066,9 +1067,19 @@ class FormTestCase(FormTestParent, unittest.TestCase):
         # remove the X-REQUESTED-WITH header and get an xmlrpc fault returned
         del(cl.env['HTTP_X-REQUESTED-WITH'])
         cl.handle_xmlrpc()
-        output="<?xml version='1.0'?>\n<methodResponse>\n<fault>\n<value><struct>\n<member>\n<name>faultCode</name>\n<value><int>1</int></value>\n</member>\n<member>\n<name>faultString</name>\n<value><string>&lt;class 'roundup.exceptions.UsageError'&gt;:Required Header Missing</string></value>\n</member>\n</struct></value>\n</fault>\n</methodResponse>\n"
+        frag_faultCode = "<member>\n<name>faultCode</name>\n<value><int>1</int></value>\n</member>\n"
+        frag_faultString = "<member>\n<name>faultString</name>\n<value><string>&lt;class 'roundup.exceptions.UsageError'&gt;:Required Header Missing</string></value>\n</member>\n"
+        output_fragments = ["<?xml version='1.0'?>\n",
+                            "<methodResponse>\n",
+                            "<fault>\n",
+                            "<value><struct>\n",
+                            (frag_faultCode + frag_faultString,
+                             frag_faultString + frag_faultCode),
+                            "</struct></value>\n",
+                            "</fault>\n",
+                            "</methodResponse>\n"]
         print(out[0])
-        self.assertEqual(output,out[0])
+        self.compareStringFragments(out[0], output_fragments)
         del(out[0])
 
         # change config to not require X-REQUESTED-WITH header

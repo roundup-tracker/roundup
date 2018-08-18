@@ -42,6 +42,7 @@ from roundup import init, instance, password, __version__
 
 #import db_test_base
 from . import memorydb
+from .cmp_helper import StringFragmentCmpHelper
 
 def expectedFailure(method):
     """ For marking a failing test.
@@ -293,7 +294,7 @@ Subject: [issue] Testing...
         self.assertEqual(self.db.issue.get(nodeid, 'tx_Source'), 'email')
 
 
-class MailgwTestCase(MailgwTestAbstractBase, unittest.TestCase):
+class MailgwTestCase(MailgwTestAbstractBase, StringFragmentCmpHelper, unittest.TestCase):
 
     def testTextHtmlMessage(self):
         html_message='''Content-Type: text/html;
@@ -351,12 +352,14 @@ have to install the win32all package separately (get it from
 </div>
 </body>
 '''
+        text_fragments = ['Roundup\n        Home\nDownload\nDocs\nRoundup Features\nInstalling Roundup\nUpgrading to newer versions of Roundup\nRoundup FAQ\nUser Guide\nCustomising Roundup\nAdministration Guide\nPrerequisites\n\nRoundup requires Python 2.6 or newer (but not Python 3) with a functioning\nanydbm module. Download the latest version from http://www.python.org/.\nIt is highly recommended that users install the latest patch version\nof python as these contain many fixes to serious bugs.\n\nSome variants of Linux will need an additional ', ('python dev', u2s(u'\u201cpython dev\u201d')), ' package\ninstalled for Roundup installation to work. Debian and derivatives, are\nknown to require this.\n\nIf you', (u2s(u'\u2019'), ''), 're on windows, you will either need to be using the ActiveState python\ndistribution (at http://www.activestate.com/Products/ActivePython/), or you', (u2s(u'\u2019'), ''), 'll\nhave to install the win32all package separately (get it from\nhttp://starship.python.net/crew/mhammond/win32/).']
 
         self.db.config.MAILGW_CONVERT_HTMLTOTEXT = "dehtml"
         nodeid = self._handle_mail(html_message)
         assert not os.path.exists(SENDMAILDEBUG)
         msgid = self.db.issue.get(nodeid, 'messages')[0]
-        self.assertEqual(self.db.msg.get(msgid, 'content'), '''Roundup\n        Home\nDownload\nDocs\nRoundup Features\nInstalling Roundup\nUpgrading to newer versions of Roundup\nRoundup FAQ\nUser Guide\nCustomising Roundup\nAdministration Guide\nPrerequisites\n\nRoundup requires Python 2.6 or newer (but not Python 3) with a functioning\nanydbm module. Download the latest version from http://www.python.org/.\nIt is highly recommended that users install the latest patch version\nof python as these contain many fixes to serious bugs.\n\nSome variants of Linux will need an additional python dev package\ninstalled for Roundup installation to work. Debian and derivatives, are\nknown to require this.\n\nIf youre on windows, you will either need to be using the ActiveState python\ndistribution (at http://www.activestate.com/Products/ActivePython/), or youll\nhave to install the win32all package separately (get it from\nhttp://starship.python.net/crew/mhammond/win32/).''')
+        self.compareStringFragments(self.db.msg.get(msgid, 'content'),
+                                    text_fragments)
 
         self.db.config.MAILGW_CONVERT_HTMLTOTEXT = "none"
         self.assertRaises(MailUsageError, self._handle_mail, html_message)
@@ -1278,7 +1281,7 @@ Content-Transfer-Encoding: quoted-printable
 '''%html_doc
 
     def testMultipartTextifyHTML(self):
-        mycontent='''Roundup\n        Home\nDownload\nDocs\nRoundup Features\nInstalling Roundup\nUpgrading to newer versions of Roundup\nRoundup FAQ\nUser Guide\nCustomising Roundup\nAdministration Guide\nPrerequisites\n\nRoundup requires Python 2.5 or newer (but not Python 3) with a functioning\nanydbm module. Download the latest version from http://www.python.org/.\nIt is highly recommended that users install the latest patch version\nof python as these contain many fixes to serious bugs.\n\nSome variants of Linux will need an additional python dev package\ninstalled for Roundup installation to work. Debian and derivatives, are\nknown to require this.\n\nIf youre on windows, you will either need to be using the ActiveState python\ndistribution (at http://www.activestate.com/Products/ActivePython/), or youll\nhave to install the win32all package separately (get it from\nhttp://starship.python.net/crew/mhammond/win32/).\n\numlaut'''
+        text_fragments = ['Roundup\n        Home\nDownload\nDocs\nRoundup Features\nInstalling Roundup\nUpgrading to newer versions of Roundup\nRoundup FAQ\nUser Guide\nCustomising Roundup\nAdministration Guide\nPrerequisites\n\nRoundup requires Python 2.5 or newer (but not Python 3) with a functioning\nanydbm module. Download the latest version from http://www.python.org/.\nIt is highly recommended that users install the latest patch version\nof python as these contain many fixes to serious bugs.\n\nSome variants of Linux will need an additional ', ('python dev', u2s(u'\u201cpython dev\u201d')), ' package\ninstalled for Roundup installation to work. Debian and derivatives, are\nknown to require this.\n\nIf you', (u2s(u'\u2019'), ''), 're on windows, you will either need to be using the ActiveState python\ndistribution (at http://www.activestate.com/Products/ActivePython/), or you', (u2s(u'\u2019'), ''), 'll\nhave to install the win32all package separately (get it from\nhttp://starship.python.net/crew/mhammond/win32/).\n\numlaut']
 
 #  \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f
 # append above with leading space to end of mycontent. It is the 
@@ -1291,7 +1294,8 @@ Content-Transfer-Encoding: quoted-printable
         messages.sort()
         msg = self.db.msg.getnode(messages[-1])
         # html converted to utf-8 text
-        self.assertEqual(msg.content, mycontent+b2s(b" \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f"))
+        self.compareStringFragments(msg.content,
+                                    text_fragments + [b2s(b" \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f")])
         self.assertEqual(msg.type, None)
         self.assertEqual(len(msg.files), 2)
         name = "unnamed" # no name for any files
@@ -1299,14 +1303,20 @@ Content-Transfer-Encoding: quoted-printable
         # replace quoted printable string at end of html document
         # with it's utf-8 encoded equivalent so comparison
         # works.
-        content = { 0: "75,23,16,18\n", 1: self.html_doc.replace(" =E4=F6=FC=C4=D6=DC=DF",b2s(b" \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f"))}
+        content = { 0: "75,23,16,18\n",
+                    1: self.html_doc.replace(" =E4=F6=FC=C4=D6=DC=DF",
+                                             b2s(b" \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f")) }
         for n, id in enumerate (msg.files):
             f = self.db.file.getnode (id)
             self.assertEqual(f.name, name)
             self.assertEqual(f.type, types[n])
             self.assertEqual(f.content, content[n])
 
-            self.compareMessages(self._get_mail(),
+            self.compareMessages(self._get_mail()
+                                 .replace('=E2=80=99', '')
+                                 .replace('=E2=80=9C', '')
+                                 .replace('=E2=80=9D', '')
+                                 .replace('==\n', '===\n\n').replace('=\n', ''),
 '''From roundup-admin@your.tracker.email.domain.example Thu Oct 10 02:42:14 2017
 FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test.test
@@ -1358,8 +1368,7 @@ installed for Roundup installation to work. Debian and derivatives, are
 known to require this.
 
 If youre on windows, you will either need to be using the ActiveState python
-distribution (at http://www.activestate.com/Products/ActivePython/), or you=
-ll
+distribution (at http://www.activestate.com/Products/ActivePython/), or youll
 have to install the win32all package separately (get it from
 http://starship.python.net/crew/mhammond/win32/).
 
