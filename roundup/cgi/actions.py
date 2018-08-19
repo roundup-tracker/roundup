@@ -504,7 +504,7 @@ class EditCSVAction(Action):
                 # If a CSV line just mentions an id and the corresponding
                 # item is retired, then the item is restored.
                 cl.restore(itemid)
-                continue
+                exists = 1
             else:
                 exists = 1
 

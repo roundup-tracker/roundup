@@ -1349,6 +1349,36 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         k = self.db.keyword.getnode('1')
         self.assertEqual(k.name, u2s(u'\xe4\xf6\xfc'))
 
+    def testEditCSVRestore(self):
+        form = dict(rows='id,name\n1,key1\n2,key2')
+        cl = self._make_client(form, userid='1', classname='keyword')
+        cl._ok_message = []
+        actions.EditCSVAction(cl).handle()
+        self.assertEqual(cl._ok_message, ['Items edited OK'])
+        k = self.db.keyword.getnode('1')
+        self.assertEqual(k.name, 'key1')
+        k = self.db.keyword.getnode('2')
+        self.assertEqual(k.name, 'key2')
+
+        form = dict(rows='id,name\n1,key1')
+        cl = self._make_client(form, userid='1', classname='keyword')
+        cl._ok_message = []
+        actions.EditCSVAction(cl).handle()
+        self.assertEqual(cl._ok_message, ['Items edited OK'])
+        k = self.db.keyword.getnode('1')
+        self.assertEqual(k.name, 'key1')
+        self.assertEqual(self.db.keyword.is_retired('2'), True)
+
+        form = dict(rows='id,name\n1,newkey1\n2,newkey2')
+        cl = self._make_client(form, userid='1', classname='keyword')
+        cl._ok_message = []
+        actions.EditCSVAction(cl).handle()
+        self.assertEqual(cl._ok_message, ['Items edited OK'])
+        k = self.db.keyword.getnode('1')
+        self.assertEqual(k.name, 'newkey1')
+        k = self.db.keyword.getnode('2')
+        self.assertEqual(k.name, 'newkey2')
+
     def testserve_static_files(self):
         # make a client instance
         cl = self._make_client({})

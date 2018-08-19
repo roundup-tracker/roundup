@@ -32,7 +32,10 @@ Fixed:
   selecting columns to display in the issues list (Christof Meerwald)
 - issue2550988: fixed fallback to pseudo random number generator in
   case SystemRandom isn't available, prefer use of secrets module if
-  available (Python 3.6+)
+  available (Python 3.6+) (Christof Meerwald)
+- issue2550993: fixed edit CSV action to update restored items to the
+  new value instead of restoring with the previous value (Christof
+  Meerwald)
 
 
 2018-07-13 1.6.0
