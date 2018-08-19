@@ -34,9 +34,8 @@ minimal set (to avoid Roundup state changes from template).
 from __future__ import print_function
 import jinja2
 import gettext
+import mimetypes
 import sys
-
-from types import MethodType
 
 # http://jinja.pocoo.org/docs/api/#loaders
 
@@ -45,37 +44,36 @@ from roundup.anypy.strings import s2u
 
 class Jinja2Loader(LoaderBase):
     def __init__(self, dir):
-        extensions = [
-            'jinja2.ext.autoescape',
-        ]
-        print("Jinja2 templates: ", dir)
-        print("Extensions: ", extensions)
         self._env = jinja2.Environment(
-                        loader=jinja2.FileSystemLoader(dir),
-                        extensions=extensions
-                    )
+            loader=jinja2.FileSystemLoader(dir),
+            extensions=[]
+        )
 
         # Adding a custom filter that can transform roundup's vars to unicode
         # This is necessary because jinja2 can only deal with unicode objects
         # and roundup uses utf-8 for the internal representation.
         # The automatic conversion will assume 'ascii' and fail sometime.
         # Analysed with roundup 1.5.0 and jinja 2.7.1. See issue2550811.
-        self._env.filters["u"] = lambda s: \
-            s2u(s()) if type(s) == MethodType else s2u(s)
+        self._env.filters["u"] = s2u
+
+    def _find(self, tplname):
+        for extension in ('', '.html', '.xml'):
+            try:
+                filename = tplname + extension
+                return self._env.get_template(filename)
+            except jinja2.TemplateNotFound:
+                continue
+
+        return None
 
     def check(self, tplname):
-        #print tplname
-        try:
-            #print self._env.get_template(tplname + '.html')
-            self._env.get_template(tplname + '.html')
-        except jinja2.TemplateNotFound:
-            return
-        else:
-            return True
+        return bool(self._find(tplname))
 
     def load(self, tplname):
-        #src, filename = self.check(tplname)
-        return Jinja2ProxyPageTemplate(self._env.get_template(tplname + '.html'))
+        tpl = self._find(tplname)
+        pt = Jinja2ProxyPageTemplate(tpl)
+        pt.content_type = mimetypes.guess_type(tpl.filename)[0] or 'text/html'
+        return pt
 
     def precompile(self):
         pass

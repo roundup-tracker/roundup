@@ -24,6 +24,9 @@ Features:
   instead of pyme. (Christof Meerwald)
 - issue2550987: Use updated MySQL client module that supports Python
   3. (Christof Meerwald)
+- issue2550967: the jinja2 loader has been extended to look for .xml
+  files as well as .html files similar to the TAL loader. (Christof
+  Meerwald)
 
 Fixed:
 
