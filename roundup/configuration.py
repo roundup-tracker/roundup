@@ -2,9 +2,15 @@
 #
 __docformat__ = "restructuredtext"
 
-try:
+# Some systems have a backport of the Python 3 configparser module to
+# Python 2: <https://pypi.org/project/configparser/>.  That breaks
+# Roundup if used with Python 2 because it generates unicode objects
+# where not expected by the Python code.  Thus, a version check is
+# used here instead of try/except.
+import sys
+if sys.version_info[0] > 2:
     import configparser			# Python 3
-except ImportError:
+else:
     import ConfigParser as configparser	# Python 2
 
 import getopt
@@ -12,7 +18,6 @@ import imp
 import logging, logging.config
 import os
 import re
-import sys
 import time
 import smtplib
 
