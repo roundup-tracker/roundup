@@ -39,6 +39,8 @@ Fixed:
 - issue2550993: fixed edit CSV action to update restored items to the
   new value instead of restoring with the previous value (Christof
   Meerwald)
+- issue2550994: avoid breakage caused by use of backports of Python 3
+  configparser module to Python 2. (Joseph Myers)
 
 
 2018-07-13 1.6.0
