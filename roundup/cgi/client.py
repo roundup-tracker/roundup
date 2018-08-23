@@ -1538,11 +1538,11 @@ class Client:
         to = [self.mailer.config.ADMIN_EMAIL]
         message = MIMEMultipart('alternative')
         self.mailer.set_message_attributes(message, to, subject)
-        part = self.mail.get_text_message('utf-8', 'html')
+        part = self.mailer.get_text_message('utf-8', 'html')
         part.set_payload(html, part.get_charset())
         message.attach(part)
-        part = self.mail.get_text_message()
-        part.set_payload(text, part.get_charset())
+        part = self.mailer.get_text_message()
+        part.set_payload(txt, part.get_charset())
         message.attach(part)
         self.mailer.smtp_send(to, message.as_string())
 
