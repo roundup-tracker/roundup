@@ -807,6 +807,16 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         </html>
         """.strip ())
 
+    def testXMLTemplate(self):
+        page_template = """<?xml version="1.0" encoding="UTF-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:tal="http://xml.zope.org/namespaces/tal" xmlns:metal="http://xml.zope.org/namespaces/metal"></feed>"""
+        pt = RoundupPageTemplate()
+        pt.pt_edit(page_template, 'application/xml')
+
+        cl = self.setupClient({ }, 'issue',
+                env_addon = {'HTTP_REFERER': 'http://whoami.com/path/'})
+        out = pt.render(cl, 'issue', MockNull())
+        self.assertEquals(out, '<?xml version="1.0" encoding="UTF-8"?><feed\n    xmlns="http://www.w3.org/2005/Atom"/>\n')
+
     def testCsrfProtection(self):
         # need to set SENDMAILDEBUG to prevent
         # downstream issue when email is sent on successful

@@ -49,6 +49,10 @@ class XMLParser:
 
     def __init__(self, encoding=None):
         self.parser = p = self.createParser()
+        # Make sure we don't get fed unicode strings in Python 2 as we
+        # can't handle those
+        if hasattr(self.parser, 'returns_unicode'):
+            self.parser.returns_unicode = False
         if self.ordered_attributes:
             try:
                 self.parser.ordered_attributes = self.ordered_attributes
