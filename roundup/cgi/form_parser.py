@@ -469,7 +469,7 @@ class FormParser:
                     # Multilink.from_raw.
                     value.sort(key=int)
 
-            elif value == '':
+            elif value == '' or value == b'':
                 # other types should be None'd if there's no value
                 value = None
             else:
