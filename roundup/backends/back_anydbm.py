@@ -25,7 +25,7 @@ __docformat__ = 'restructuredtext'
 import os, marshal, re, weakref, string, copy, time, shutil, logging
 
 from roundup.anypy.dbm_ import anydbm, whichdb
-from roundup.anypy.strings import b2s, bs2b
+from roundup.anypy.strings import b2s, bs2b, repr_export, eval_import
 
 from roundup import hyperdb, date, password, roundupdb, security, support
 from roundup.backends import locking
@@ -2031,10 +2031,10 @@ class Class(hyperdb.Class):
                 value = value.get_tuple()
             elif isinstance(proptype, hyperdb.Password):
                 value = str(value)
-            l.append(repr(value))
+            l.append(repr_export(value))
 
         # append retired flag
-        l.append(repr(self.is_retired(nodeid)))
+        l.append(repr_export(self.is_retired(nodeid)))
 
         return l
 
@@ -2057,8 +2057,9 @@ class Class(hyperdb.Class):
             # Figure the property for this column
             propname = propnames[i]
 
-            # Use eval to reverse the repr() used to output the CSV
-            value = eval(proplist[i])
+            # Use eval_import to reverse the repr_export() used to
+            # output the CSV
+            value = eval_import(proplist[i])
 
             # "unmarshal" where necessary
             if propname == 'id':
@@ -2127,8 +2128,9 @@ class Class(hyperdb.Class):
                             value = str(value)
                         export_data[propname] = value
                     params = export_data
-                r.append([repr(nodeid), repr(date), repr(user),
-                    repr(action), repr(params)])
+                r.append([repr_export(nodeid), repr_export(date),
+                          repr_export(user), repr_export(action),
+                          repr_export(params)])
         return r
 
 class FileClass(hyperdb.FileClass, Class):

@@ -31,6 +31,7 @@ from .support import ensureParentsExist, PrioList
 from roundup.i18n import _
 from roundup.cgi.exceptions import DetectorError
 from roundup.anypy.cmp_ import NoneAndDictComparable
+from roundup.anypy.strings import eval_import
 
 logger = logging.getLogger('roundup.hyperdb')
 
@@ -1498,7 +1499,7 @@ class Class:
         last = 0
         r = []
         for n, l in a:
-            nodeid, jdate, user, action, params = map(eval, l)
+            nodeid, jdate, user, action, params = map(eval_import, l)
             assert (str(n) == nodeid)
             if n != last:
                 if r:

@@ -32,6 +32,7 @@ from roundup.configuration import CoreConfig, NoConfigError
 from roundup.i18n import _
 from roundup.exceptions import UsageError
 from roundup.anypy.my_input import my_input
+from roundup.anypy.strings import repr_export
 
 try:
     from UserDict import UserDict
@@ -1201,13 +1202,13 @@ Erase it? Y/N: """))
                     sys.stdout.flush()
                 node = cl.getnode(nodeid)
                 exp = cl.export_list(propnames, nodeid)
-                lensum = sum ([len (repr(node[p])) for p in propnames])
+                lensum = sum ([len (repr_export(node[p])) for p in propnames])
                 # for a safe upper bound of field length we add
                 # difference between CSV len and sum of all field lengths
                 d = sum ([len(x) for x in exp]) - lensum
                 assert (d > 0)
                 for p in propnames:
-                    ll = len(repr(node[p])) + d
+                    ll = len(repr_export(node[p])) + d
                     if ll > max_len:
                         max_len = ll
                 writer.writerow(exp)

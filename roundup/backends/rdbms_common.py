@@ -69,7 +69,7 @@ from roundup.backends.sessions_rdbms import Sessions, OneTimeKeys
 from roundup.date import Range
 
 from roundup.backends.back_anydbm import compile_expression
-from roundup.anypy.strings import b2s, bs2b, us2s
+from roundup.anypy.strings import b2s, bs2b, us2s, repr_export, eval_import
 
 
 # dummy value meaning "argument not passed"
@@ -1302,7 +1302,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if isinstance(params, type({})):
             self._journal_marshal(params, classname)
 
-        params = repr(params)
+        params = repr_export(params)
 
         dc = self.to_sql_value(hyperdb.Date)
         journaldate = dc(journaldate)
@@ -1328,7 +1328,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             # make the journalled data marshallable
             if isinstance(params, type({})):
                 self._journal_marshal(params, classname)
-            params = repr(params)
+            params = repr_export(params)
 
             self.save_journal(classname, cols, nodeid, dc(journaldate),
                 journaltag, action, params)
@@ -1366,7 +1366,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         res = []
         properties = self.getclass(classname).getprops()
         for nodeid, date_stamp, user, action, params in journal:
-            params = eval(params)
+            params = eval_import(params)
             if isinstance(params, type({})):
                 for param, value in params.items():
                     if not value:
@@ -2892,8 +2892,8 @@ class Class(hyperdb.Class):
                 value = value.get_tuple()
             elif isinstance(proptype, hyperdb.Password):
                 value = str(value)
-            l.append(repr(value))
-        l.append(repr(self.is_retired(nodeid)))
+            l.append(repr_export(value))
+        l.append(repr_export(self.is_retired(nodeid)))
         return l
 
     def import_list(self, propnames, proplist):
@@ -2914,10 +2914,11 @@ class Class(hyperdb.Class):
         if not "id" in propnames:
             newid = self.db.newid(self.classname)
         else:
-            newid = eval(proplist[propnames.index("id")])
+            newid = eval_import(proplist[propnames.index("id")])
         for i in range(len(propnames)):
-            # Use eval to reverse the repr() used to output the CSV
-            value = eval(proplist[i])
+            # Use eval_import to reverse the repr_export() used to
+            # output the CSV
+            value = eval_import(proplist[i])
 
             # Figure the property for this column
             propname = propnames[i]
@@ -3010,7 +3011,7 @@ class Class(hyperdb.Class):
                     # old tracker with data stored in the create!
                     params = {}
                 l = [nodeid, date, user, action, params]
-                r.append(list(map(repr, l)))
+                r.append(list(map(repr_export, l)))
         return r
 
 class FileClass(hyperdb.FileClass, Class):
