@@ -674,8 +674,9 @@ class ServerConfig(configuration.Config):
 
     def set_logging(self):
         """Initialise logging to the configured file, if any."""
-        # appending, unbuffered
-        sys.stdout = sys.stderr = open(self["LOGFILE"], 'a', 0)
+        # appending, line-buffered (Python 3 does not allow unbuffered
+        # text files)
+        sys.stdout = sys.stderr = open(self["LOGFILE"], 'a', 1)
 
     def get_server(self):
         """Return HTTP server object to run"""
