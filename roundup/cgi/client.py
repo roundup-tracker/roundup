@@ -1806,7 +1806,10 @@ class Client:
             return
 
         if sys.version_info[0] > 2:
-            content = content.encode(self.charset, 'xmlcharrefreplace')
+            # An action setting appropriate headers for a non-HTML
+            # response may return a bytes object directly.
+            if not isinstance(content, bytes):
+                content = content.encode(self.charset, 'xmlcharrefreplace')
         elif self.charset != self.STORAGE_CHARSET:
             # recode output
             content = content.decode(self.STORAGE_CHARSET, 'replace')
