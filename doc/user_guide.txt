@@ -630,7 +630,7 @@ POP:
  not supplied on the command-line.
 
 POPS:
- Connect to a POP server over ssl. This requires python 2.4 or later.
+ Connect to a POP server over ssl.
  This supports the same notation as POP::
 
     pops username:password@server

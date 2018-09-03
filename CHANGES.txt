@@ -8,7 +8,8 @@ Entries without name were done by Richard Jones.
 
 **IMPORTANT** The v1.5.x releases of Roundup were the last to support
 Python v2.5 and v2.6.  Starting with the v1.6 releases of Roundup
-v2.7.2 is required to run newer releases of Roundup.
+v2.7.2 is required to run newer releases of Roundup.  From v?.?
+onwards Python 3.4 and later are also supported.
 
 
 2018-??-?? ?.?.0
@@ -27,6 +28,9 @@ Features:
 - issue2550967: the jinja2 loader has been extended to look for .xml
   files as well as .html files similar to the TAL loader. (Christof
   Meerwald)
+- Support for Python 3 (3.4 and later).  See doc/upgrading.txt for
+  details of what is required to move an existing tracker from Python
+  2 to Python 3 (Joseph Myers, Christof Meerwald)
 
 Fixed:
 

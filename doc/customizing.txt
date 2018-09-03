@@ -2339,9 +2339,6 @@ The following variables are available to templates.
     If no translation is found, return singular if *number* is 1;
     return plural otherwise.
 
-    This function requires python2.3; in earlier python versions
-    may not work as expected.
-
 The context variable
 ~~~~~~~~~~~~~~~~~~~~
 

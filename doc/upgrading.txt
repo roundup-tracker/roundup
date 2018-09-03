@@ -38,6 +38,20 @@ https://pypi.org/project/MySQL-python/ is still supported, it is
 recommended to switch to the updated module from
 https://pypi.org/project/mysqlclient/.
 
+Python 3 support
+----------------
+
+Many of the ``.html`` and ``.py`` files from Roundup that are copied
+into tracker directories have changed for Python 3 support.  If you
+wish to move an existing tracker to Python 3, you need to merge in
+those changes.  If your tracker uses the ``anydbm`` backend, you also
+need to export the tracker contents using ``roundup-admin export``
+running under Python 2, and them import them using ``roundup-admin
+import`` running under Python 3, as for a migration to a different
+backend.  If using the ``sqlite`` backend, you do not need to export
+and import, but need to delete the ``db/otks`` and ``db/sessions``
+files when changing Python version.
+
 Migrating from 1.5.1 to 1.6.0
 =============================
 
