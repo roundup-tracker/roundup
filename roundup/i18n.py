@@ -137,7 +137,8 @@ def get_mofile(languages, localedir, domain=None):
         # see what we've found
         if motime < potime:
             # compile
-            msgfmt.make(pofile, mofile)
+            mo = msgfmt.Msgfmt(pofile).get()
+            open(mofile, 'wb').write(mo)
         elif motime == 0:
             # no files found - proceed to the next locale name
             continue
