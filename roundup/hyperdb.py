@@ -1101,6 +1101,13 @@ class Class:
                         if not enforceperm or allow_obsolete:
                             journal.append(j)
                         continue
+                    # obsolete linked-to item
+                    try:
+                        k = cls.get (linkid, key)
+                    except IndexError:
+                        if not enforceperm or allow_obsolete:
+                            journal.append(j)
+                        continue
                     # is the updated property quiet?
                     if skipquiet and cls.properties[key].quiet:
                         logger.debug("skipping quiet property: "

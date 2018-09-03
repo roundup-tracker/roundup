@@ -45,6 +45,8 @@ Fixed:
   Meerwald)
 - issue2550994: avoid breakage caused by use of backports of Python 3
   configparser module to Python 2. (Joseph Myers)
+- Make non-existent items in history not cause a traceback (Ralf
+  Schlatterbeck)
 
 
 2018-07-13 1.6.0
