@@ -5050,6 +5050,12 @@ First up, we create the new Role and Permission structure in
     p = db.security.addPermission(name='View', klass='issue',
         check=own_issue, description='Can only view own issues')
     db.security.addPermissionToRole('Provisional User', p)
+    # This allows the interface to get the names of the properties
+    # in the issue. Used for selecting sorting and grouping
+    # on the index page.
+    p = db.security.addPermission(name='Search', klass='issue')
+    db.security.addPermissionToRole ('Provisional User', p)
+
 
     # Assign the Permissions for issue-related classes
     for cl in 'file', 'msg', 'query', 'keyword':
