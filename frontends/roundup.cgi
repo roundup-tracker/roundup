@@ -20,6 +20,7 @@
 from __future__ import print_function
 from roundup import version_check
 from roundup.i18n import _
+from roundup.anypy.strings import s2b, StringIO
 import sys, time
 
 #
@@ -72,7 +73,6 @@ LOG = DevNull()
 # 
 try:
     import traceback, cgi
-    from roundup.anypy.strings import StringIO
     from roundup.cgi import cgitb
 except:
     print("Content-Type: text/plain\n")
@@ -125,11 +125,11 @@ class RequestWrapper:
     def write(self, data):
         self.wfile.write(data)
     def send_response(self, code):
-        self.write('Status: %s\r\n'%code)
+        self.write(s2b('Status: %s\r\n'%code))
     def send_header(self, keyword, value):
-        self.write("%s: %s\r\n" % (keyword, value))
+        self.write(s2b("%s: %s\r\n" % (keyword, value)))
     def end_headers(self):
-        self.write("\r\n")
+        self.write(b"\r\n")
     def start_response(self, headers, response):
         self.send_response(response)
         for key, value in headers:
@@ -161,7 +161,7 @@ def main(out, err):
                 os.environ.get('REQUEST_URI', ''))
             request.send_header('Location', absolute_url)
             request.end_headers()
-            out.write('Moved Permanently')
+            out.write(b'Moved Permanently')
         else:
             tracker_home = TRACKER_HOMES[tracker]
             tracker = roundup.instance.open(tracker_home)
@@ -176,12 +176,12 @@ def main(out, err):
                 request.send_response(403)
                 request.send_header('Content-Type', 'text/html')
                 request.end_headers()
-                out.write('Unauthorised')
+                out.write(b'Unauthorised')
             except roundup.cgi.client.NotFound:
                 request.send_response(404)
                 request.send_header('Content-Type', 'text/html')
                 request.end_headers()
-                out.write('Not found: %s'%client.path)
+                out.write(s2b('Not found: %s'%client.path))
 
     else:
         from roundup.anypy import urllib_
@@ -189,15 +189,15 @@ def main(out, err):
         request.send_header('Content-Type', 'text/html')
         request.end_headers()
         w = request.write
-        w(_('<html><head><title>Roundup trackers index</title></head>\n'))
-        w(_('<body><h1>Roundup trackers index</h1><ol>\n'))
+        w(s2b(_('<html><head><title>Roundup trackers index</title></head>\n')))
+        w(s2b(_('<body><h1>Roundup trackers index</h1><ol>\n')))
         homes = sorted(TRACKER_HOMES.keys())
         for tracker in homes:
-            w(_('<li><a href="%(tracker_url)s/index">%(tracker_name)s</a>\n')%{
+            w(s2b(_('<li><a href="%(tracker_url)s/index">%(tracker_name)s</a>\n')%{
                 'tracker_url': os.environ['SCRIPT_NAME']+'/'+
                                urllib_.quote(tracker),
-                'tracker_name': cgi.escape(tracker)})
-        w(_('</ol></body></html>'))
+                'tracker_name': cgi.escape(tracker)}))
+        w(s2b(_('</ol></body></html>')))
 
 #
 # Now do the actual CGI handling
@@ -211,7 +211,11 @@ try:
         msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
     checkconfig()
     sys.stdout = sys.stderr = LOG
-    main(out, err)
+    if sys.version_info[0] > 2:
+        out_buf = out.buffer
+    else:
+        out_buf = out
+    main(out_buf, err)
 except SystemExit:
     pass
 except:
