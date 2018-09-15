@@ -11,6 +11,7 @@ import weakref
 import roundup.instance
 from roundup.cgi import TranslationService
 from roundup.anypy import http_
+from roundup.anypy.strings import s2b
 BaseHTTPRequestHandler = http_.server.BaseHTTPRequestHandler
 DEFAULT_ERROR_MESSAGE = http_.server.DEFAULT_ERROR_MESSAGE
 
@@ -50,7 +51,7 @@ class RequestDispatcher(object):
             message, explain = BaseHTTPRequestHandler.responses[code]
             request.start_response([('Content-Type', 'text/html'),
                 ('Connection', 'close')], code)
-            request.wfile.write(DEFAULT_ERROR_MESSAGE % locals())
+            request.wfile.write(s2b(DEFAULT_ERROR_MESSAGE % locals()))
             return []
 
         tracker = roundup.instance.open(self.home, not self.debug)
@@ -68,7 +69,7 @@ class RequestDispatcher(object):
             client.main()
         except roundup.cgi.client.NotFound:
             request.start_response([('Content-Type', 'text/html')], 404)
-            request.wfile.write('Not found: %s'%client.path)
+            request.wfile.write(s2b('Not found: %s'%client.path))
 
         # all body data has been written using wfile
         return []
