@@ -2227,9 +2227,12 @@ class FileClass(hyperdb.FileClass, Class):
             # store and possibly index
             self.db.storefile(self.classname, itemid, None, bs2b(content))
             if self.properties['content'].indexme:
+                index_content = content
+                if bytes != str and isinstance(content, bytes):
+                    index_content = content.decode('utf-8', errors='ignore')
                 mime_type = self.get(itemid, 'type', self.default_mime_type)
                 self.db.indexer.add_text((self.classname, itemid, 'content'),
-                    content, mime_type)
+                    index_content, mime_type)
             propvalues['content'] = content
 
         # fire reactors
@@ -2245,8 +2248,12 @@ class FileClass(hyperdb.FileClass, Class):
         for prop, propclass in self.getprops().items():
             if prop == 'content' and propclass.indexme:
                 mime_type = self.get(nodeid, 'type', self.default_mime_type)
+                index_content = self.get(nodeid, 'binary_content')
+                if bytes != str and isinstance(index_content, bytes):
+                    index_content = index_content.decode('utf-8',
+                                                         errors='ignore')
                 self.db.indexer.add_text((self.classname, nodeid, 'content'),
-                    str(self.get(nodeid, 'content')), mime_type)
+                    index_content, mime_type)
             elif isinstance(propclass, hyperdb.String) and propclass.indexme:
                 # index them under (classname, nodeid, property)
                 try:
