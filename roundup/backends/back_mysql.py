@@ -36,7 +36,7 @@ __docformat__ = 'restructuredtext'
 from roundup import date, hyperdb, password
 from roundup.backends import rdbms_common
 import MySQLdb
-import os, shutil
+import os, shutil, sys
 from MySQLdb.constants import ER
 import logging
 
@@ -54,6 +54,8 @@ def connection_dict(config, dbnamestr=None):
         del d['password']
     if 'port' in d:
         d['port'] = int(d['port'])
+    if sys.version_info[0] > 2:
+        d['charset'] = 'utf8'
     return d
 
 def db_nuke(config):
@@ -90,6 +92,8 @@ def db_create(config):
     conn = MySQLdb.connect(**kwargs)
     cursor = conn.cursor()
     command = "CREATE DATABASE %s"%config.RDBMS_NAME
+    if sys.version_info[0] > 2:
+        command += ' CHARACTER SET utf8'
     logging.info(command)
     cursor.execute(command)
     conn.commit()
