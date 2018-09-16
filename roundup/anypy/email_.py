@@ -5,8 +5,10 @@ from email import quoprimime, base64mime
 
 if str == bytes:
     message_from_bytes = email.message_from_string
+    message_from_binary_file = email.message_from_file
 else:
     message_from_bytes = email.message_from_bytes
+    message_from_binary_file = email.message_from_binary_file
 
 ## please import this file if you are using the email module
 

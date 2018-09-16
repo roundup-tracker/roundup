@@ -13,7 +13,7 @@
 
 import email
 from . import gpgmelib
-import unittest, tempfile, os, shutil, errno, imp, sys, difflib, time
+import unittest, tempfile, os, shutil, errno, imp, sys, difflib, time, io
 
 import pytest
 
@@ -29,7 +29,7 @@ except ImportError:
 
 
 from roundup.anypy.email_ import message_from_bytes
-from roundup.anypy.strings import StringIO, b2s, u2s
+from roundup.anypy.strings import b2s, u2s, s2b
 
 if 'SENDMAILDEBUG' not in os.environ:
     os.environ['SENDMAILDEBUG'] = 'mail-test.log'
@@ -244,7 +244,7 @@ class MailgwTestAbstractBase(DiffHelper):
     def _handle_mail(self, message, args=(), trap_exc=0):
         handler = self._create_mailgw(message, args)
         handler.trapExceptions = trap_exc
-        return handler.main(StringIO(message))
+        return handler.main(io.BytesIO(s2b(message)))
 
     def _get_mail(self):
         """Reads an email that has been written to file via debug output.

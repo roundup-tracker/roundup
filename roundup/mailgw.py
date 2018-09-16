@@ -95,7 +95,7 @@ explanatory message given in the exception.
 from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
-import base64, re, os, smtplib, socket, binascii
+import base64, re, os, smtplib, socket, binascii, io, functools
 import time, sys, logging
 import codecs
 import traceback
@@ -103,7 +103,8 @@ import email
 import email.utils
 from email.generator import Generator
 
-from roundup.anypy.email_ import decode_header, message_from_bytes
+from roundup.anypy.email_ import decode_header, message_from_bytes, \
+    message_from_binary_file
 from roundup.anypy.my_input import my_input
 
 from roundup import configuration, hyperdb, date, password, exceptions
@@ -1230,8 +1231,12 @@ class MailGW:
 
             XXX: we may want to read this into a temporary file instead...
         """
-        s = StringIO()
-        s.write(sys.stdin.read())
+        s = io.BytesIO()
+        if sys.version_info[0] > 2:
+            stdin = sys.stdin.buffer
+        else:
+            stdin = sys.stdin
+        s.write(stdin.read())
         s.seek(0)
         self.main(s)
         return 0
@@ -1245,23 +1250,42 @@ class MailGW:
         class mboxRoundupMessage(mailbox.mboxMessage, RoundupMessage):
             pass
 
+        # The mailbox class constructs email.message.Message objects
+        # using various email.message_from_* methods, without allowing
+        # control over the _class argument passed to them to specify a
+        # subclass to be used.  We need RoundupMessage to be used for
+        # subparts of multipart messages, so patch those methods to
+        # pass _class.
         try:
-            mbox = mailbox.mbox(filename, factory=mboxRoundupMessage,
-                                create=False)
-            mbox.lock()
-        except (mailbox.NoSuchMailboxError, mailbox.ExternalClashError) as e:
-            if isinstance(e, mailbox.ExternalClashError):
-                mbox.close()
-            traceback.print_exc()
-            return 1
+            patch_methods = ('message_from_bytes', 'message_from_string',
+                             'message_from_file', 'message_from_binary_file')
+            orig_methods = {}
+            for method in patch_methods:
+                if hasattr(email, method):
+                    orig = getattr(email, method)
+                    orig_methods[method] = orig
+                    setattr(email, method,
+                            functools.partial(orig, _class=RoundupMessage))
+            try:
+                mbox = mailbox.mbox(filename, factory=mboxRoundupMessage,
+                                    create=False)
+                mbox.lock()
+            except (mailbox.NoSuchMailboxError, mailbox.ExternalClashError) as e:
+                if isinstance(e, mailbox.ExternalClashError):
+                    mbox.close()
+                traceback.print_exc()
+                return 1
 
-        try:
-            for key in mbox.keys():
-                self.handle_Message(mbox.get(key))
-                mbox.remove(key)
+            try:
+                for key in mbox.keys():
+                    self.handle_Message(mbox.get(key))
+                    mbox.remove(key)
+            finally:
+                mbox.unlock()
+                mbox.close()
         finally:
-            mbox.unlock()
-            mbox.close()
+            for method in orig_methods:
+                setattr(email, method, orig)
 
         return 0
 
@@ -1322,9 +1346,9 @@ class MailGW:
                 server.store(str(i), '+FLAGS', r'(\Deleted)')
 
                 # process the message
-                s = StringIO(data[0][1])
+                s = io.BytesIO(data[0][1])
                 s.seek(0)
-                self.handle_Message(Message(s))
+                self.handle_Message(message_from_bytes(s, RoundupMessage))
             server.close()
         finally:
             try:
@@ -1392,7 +1416,7 @@ class MailGW:
             #   number of octets ]
             lines = server.retr(i)[1]
             self.handle_Message(
-                email.message_from_string('\n'.join(lines), RoundupMessage))
+                message_from_bytes(b'\n'.join(lines), RoundupMessage))
             # delete the message
             server.dele(i)
 
@@ -1403,7 +1427,7 @@ class MailGW:
     def main(self, fp):
         ''' fp - the file from which to read the Message.
         '''
-        return self.handle_Message(email.message_from_file(fp, RoundupMessage))
+        return self.handle_Message(message_from_binary_file(fp, RoundupMessage))
 
     def handle_Message(self, message):
         """Handle an RFC822 Message
