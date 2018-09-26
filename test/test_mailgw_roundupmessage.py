@@ -126,7 +126,7 @@ class BodyRoundupMessageTests(TestCase):
             dGVzdCBlbmNvZGVkIG1lc3NhZ2U=
         """)
 
-        self.assertEqual(msg.get_body(), 'test encoded message')
+        self.assertEqual(msg.get_body(), b'test encoded message')
 
 
 class AsAttachmentRoundupMessageTests(TestCase):
@@ -153,7 +153,7 @@ class AsAttachmentRoundupMessageTests(TestCase):
         self.assertEqual(
             msg.as_attachment(),
             ('message.dat', 'application/octet-stream',
-             'test encoded message'))
+             b'test encoded message'))
 
     def test_rfc822(self):
         msg = message_from_string("""
@@ -221,7 +221,7 @@ class ExtractContentRoundupMessageTests(TestCase):
 
         self.assertEqual(msg.extract_content(), (
             'foo\n',
-            [('foo.pdf', 'application/pdf', 'foo\n')],
+            [('foo.pdf', 'application/pdf', b'foo\n')],
             False
         ))
 
@@ -257,11 +257,11 @@ class ExtractContentRoundupMessageTests(TestCase):
 
         self.assertEqual(msg.extract_content(), (
             'foo2\n', [
-                ('foo.pdf', 'application/pdf', 'foo\n'),
+                ('foo.pdf', 'application/pdf', b'foo\n'),
                 ('foo.txt', 'text/plain', 'foo\n'),
                 ('foo.html', 'text/html', '<html>foo</html>\n'),
                 ('foo3.txt', 'text/plain', 'foo3\n'),
-                ('foo2.pdf', 'application/pdf', 'foo2\n'),
+                ('foo2.pdf', 'application/pdf', b'foo2\n'),
             ],
             False
         ))
@@ -286,7 +286,7 @@ class ExtractContentRoundupMessageTests(TestCase):
         self.assertEqual(msg.extract_content(ignore_alternatives=True), (
             'foo2\n', [
                 ('foo3.txt', 'text/plain', 'foo3\n'),
-                ('foo2.pdf', 'application/pdf', 'foo2\n'),
+                ('foo2.pdf', 'application/pdf', b'foo2\n'),
             ],
             False
         ))
@@ -314,7 +314,7 @@ class ExtractContentRoundupMessageTests(TestCase):
 
         self.assertEqual(msg.extract_content(), (
             'foo\n',
-            [('foo.pdf', 'application/pdf', 'foo\n')],
+            [('foo.pdf', 'application/pdf', b'foo\n')],
             False
         ))
 
@@ -328,7 +328,7 @@ class ExtractContentRoundupMessageTests(TestCase):
 
         self.assertEqual(msg.extract_content(), (
             'foo\n',
-            [('foo.gpg', 'application/pgp-signature', 'foo\n')],
+            [('foo.gpg', 'application/pgp-signature', b'foo\n')],
             False
         ))
 

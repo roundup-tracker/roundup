@@ -832,7 +832,6 @@ some text in inner email
 --001485f339f8f361fb049188dbba--
 '''
 
-    @pytest.mark.xfail
     def testOctetStreamTranscoding(self):
         self.doNewIssue()
         self._handle_mail(self.octetstream_msg)
@@ -841,13 +840,13 @@ some text in inner email
         msg = self.db.msg.getnode (messages[-1])
         assert(len(msg.files) == 1)
         names = {0 : 'testfile'}
-        content = ['''This is a file containing text
+        content = [b'''This is a file containing text
 in latin-1 format \xE4\xF6\xFC\xC4\xD6\xDC\xDF
 ''']
         for n, id in enumerate (msg.files):
             f = self.db.file.getnode (id)
             self.assertEqual(f.name, names.get (n, 'unnamed'))
-            self.assertEqual(f.content, content [n])
+            self.assertEqual(f.binary_content, content [n])
 
     def testMultipartKeepAlternatives(self):
         self.doNewIssue()

@@ -241,7 +241,8 @@ class RoundupMessage(email.message.Message):
 
         if content is not None:
             charset = self.get_content_charset()
-            content = u2s(content.decode(charset or 'iso8859-1', 'replace'))
+            if charset or self.get_content_maintype() == 'text':
+                content = u2s(content.decode(charset or 'iso8859-1', 'replace'))
 
         return content
 

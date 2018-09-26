@@ -186,7 +186,7 @@ multipart/mixed
     text/plain
     application/pdf""",
                   ('foo\n',
-                   [('foo.pdf', 'application/pdf', 'foo\n')], False))
+                   [('foo.pdf', 'application/pdf', b'foo\n')], False))
 
     def testMultipartMixedHtml(self):
         # test with html conversion enabled
@@ -197,7 +197,7 @@ multipart/mixed
                   ('bar >\n',
                    [('bar.html', 'text/html',
                       '<html><body>bar &gt;</body></html>\n'),
-                   ('foo.pdf', 'application/pdf', 'foo\n')], False),
+                   ('foo.pdf', 'application/pdf', b'foo\n')], False),
                             convert_html_with='dehtml')
 
         # test with html conversion disabled
@@ -208,7 +208,7 @@ multipart/mixed
                   (None,
                    [('bar.html', 'text/html',
                       '<html><body>bar &gt;</body></html>\n'),
-                    ('foo.pdf', 'application/pdf', 'foo\n')], False),
+                    ('foo.pdf', 'application/pdf', b'foo\n')], False),
                             convert_html_with=False)
 
     def testMultipartAlternative(self):
@@ -216,7 +216,7 @@ multipart/mixed
 multipart/alternative
     text/plain
     application/pdf
-        """, ('foo\n', [('foo.pdf', 'application/pdf', 'foo\n')], False))
+        """, ('foo\n', [('foo.pdf', 'application/pdf', b'foo\n')], False))
 
     def testMultipartAlternativeHtml(self):
         self.TestExtraction("""
@@ -226,7 +226,7 @@ multipart/alternative
                   ('bar >\n',
                    [('bar.html', 'text/html',
                       '<html><body>bar &gt;</body></html>\n'),
-                   ('foo.pdf', 'application/pdf', 'foo\n')], False),
+                   ('foo.pdf', 'application/pdf', b'foo\n')], False),
                             convert_html_with='dehtml')
 
         self.TestExtraction("""
@@ -236,7 +236,7 @@ multipart/alternative
                   (None,
                    [('bar.html', 'text/html',
                       '<html><body>bar &gt;</body></html>\n'),
-                    ('foo.pdf', 'application/pdf', 'foo\n')], False),
+                    ('foo.pdf', 'application/pdf', b'foo\n')], False),
                             convert_html_with=False)
 
     def testMultipartAlternativeHtmlText(self):
@@ -249,7 +249,7 @@ multipart/alternative
                   ('foo\n',
                    [('bar.html', 'text/html',
                       '<html><body>bar &gt;</body></html>\n'),
-                    ('foo.pdf', 'application/pdf', 'foo\n')], False),
+                    ('foo.pdf', 'application/pdf', b'foo\n')], False),
                             convert_html_with='dehtml')
 
         # text should take priority over html when text is first
@@ -261,7 +261,7 @@ multipart/alternative
                   ('foo\n',
                    [('bar.html', 'text/html',
                       '<html><body>bar &gt;</body></html>\n'),
-                    ('foo.pdf', 'application/pdf', 'foo\n')], False),
+                    ('foo.pdf', 'application/pdf', b'foo\n')], False),
                             convert_html_with='dehtml')
 
         # text should take priority over html when text is second and
@@ -274,7 +274,7 @@ multipart/alternative
                   ('foo\n',
                    [('bar.html', 'text/html',
                       '<html><body>bar &gt;</body></html>\n'),
-                    ('foo.pdf', 'application/pdf', 'foo\n')], False),
+                    ('foo.pdf', 'application/pdf', b'foo\n')], False),
                             convert_html_with=False)
 
         # text should take priority over html when text is first and
@@ -287,7 +287,7 @@ multipart/alternative
                   ('foo\n',
                    [('bar.html', 'text/html',
                       '<html><body>bar &gt;</body></html>\n'),
-                    ('foo.pdf', 'application/pdf', 'foo\n')], False),
+                    ('foo.pdf', 'application/pdf', b'foo\n')], False),
                             convert_html_with=False)
 
     def testDeepMultipartAlternative(self):
@@ -296,7 +296,7 @@ multipart/mixed
     multipart/alternative
         text/plain
         application/pdf
-        """, ('foo\n', [('foo.pdf', 'application/pdf', 'foo\n')], False))
+        """, ('foo\n', [('foo.pdf', 'application/pdf', b'foo\n')], False))
 
     def testSignedText(self):
         self.TestExtraction("""
@@ -312,7 +312,7 @@ multipart/signed
         application/pdf
     application/pgp-signature""",
                   ('foo\n',
-                   [('foo.pdf', 'application/pdf', 'foo\n')], False))
+                   [('foo.pdf', 'application/pdf', b'foo\n')], False))
 
     def testAttachedSignature(self):
         self.TestExtraction("""
@@ -320,7 +320,7 @@ multipart/mixed
     text/plain
     application/pgp-signature""",
                   ('foo\n',
-                   [('foo.gpg', 'application/pgp-signature', 'foo\n')], False))
+                   [('foo.gpg', 'application/pgp-signature', b'foo\n')], False))
 
     def testMessageRfc822(self):
         self.TestExtraction("""
