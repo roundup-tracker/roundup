@@ -47,6 +47,8 @@ Fixed:
   configparser module to Python 2. (Joseph Myers)
 - Make non-existent items in history not cause a traceback (Ralf
   Schlatterbeck)
+- issue2550722: avoid errors from selecting "no selection" on
+  multilink. (Joseph Myers)
 
 
 2018-07-13 1.6.0

@@ -183,9 +183,6 @@ class RawToHyperdbTest(unittest.TestCase):
 
         self.assertEqual(self._test('multilink3', '', None), [])
 
-        with self.assertRaises(hyperdb.HyperdbValueError) as cm:
-            result = self._test('multilink3', '-valid', None)
-        self.assertEqual(cm.exception.args,
-                         ("property multilink3: 'valid' is not currently an element",))
+        self.assertEqual(self._test('multilink3', '-valid', None), [])
 
 # vim: set filetype=python ts=4 sw=4 et si

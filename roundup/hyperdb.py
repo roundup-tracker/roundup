@@ -259,8 +259,11 @@ class Multilink(_Pointer):
                 try:
                     curvalue.remove(itemid)
                 except ValueError:
-                    raise HyperdbValueError(_('property %s: %r is not ' \
-                        'currently an element')%(propname, item))
+                    # This can occur if the edit adding the element
+                    # produced an error, so the form has it in the
+                    # "no selection" choice but it's not set in the
+                    # database.
+                    pass
             else:
                 newvalue.append(itemid)
                 if itemid not in curvalue:

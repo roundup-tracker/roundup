@@ -2395,6 +2395,10 @@ class MultilinkHTMLProperty(HTMLProperty):
 
         if value is None:
             value = self._value
+        # When rendering from form contents, 'value' may contain
+        # elements starting '-' from '- no selection -' having been
+        # selected on a previous form submission.
+        value = [v for v in value if not v.startswith('-')]
 
         linkcl = self._db.getclass(self._prop.classname)
 
