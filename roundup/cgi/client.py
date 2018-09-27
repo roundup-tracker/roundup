@@ -837,14 +837,24 @@ class Client:
             elif self.env.get('HTTP_AUTHORIZATION', ''):
                 # try handling Basic Auth ourselves
                 auth = self.env['HTTP_AUTHORIZATION']
-                scheme, challenge = auth.split(' ', 1)
+                try:
+                    scheme, challenge = auth.split(' ', 1)
+                except ValueError:
+                    # Invalid header.
+                    scheme = ''
+                    challenge = ''
                 if scheme.lower() == 'basic':
                     try:
                         decoded = b2s(base64.b64decode(challenge))
                     except TypeError:
                         # invalid challenge
                         decoded = ''
-                    username, password = decoded.split(':', 1)
+                    try:
+                        username, password = decoded.split(':', 1)
+                    except ValueError:
+                        # Invalid challenge.
+                        username = ''
+                        password = ''
                     try:
                         # Current user may not be None, otherwise
                         # instatiation of the login action will fail.
