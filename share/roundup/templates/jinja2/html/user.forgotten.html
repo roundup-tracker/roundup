@@ -20,8 +20,6 @@
       <input type='text' name="address">
       <input name="@csrf" type="hidden"
              value="{{ utils.anti_csrf_nonce() }}">
-      <input name="@csrf" type="hidden"
-             value="{{ utils.anti_csrf_nonce() }}">
       <input type="hidden" name="@action" value="passrst">
       <input type="hidden" name="@template" value="forgotten">
       <input type="submit" value="{{ i18n.gettext('Password reset')|u }}" class='btn btn-primary'>
