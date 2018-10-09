@@ -46,8 +46,6 @@ the same username as your sourceforge username.</p>
  <tr><td></td><td><input type="submit" value="Request password reset"
    i18n:attributes="value"></td></tr>
 </table>
-<input name="@csrf" type="hidden"
-       tal:attributes="value python:utils.anti_csrf_nonce()">
 </form>
 
 <p i18n:translate="">A confirmation email will be sent to you -
