@@ -1,60 +1,70 @@
 {% set status_notresolved = '-1,1,2,3,4,5,6,7'
 %}<!doctype html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="description" content="Roundup is a python-based, MIT licensed issue-tracking system with command-line, web and e-mail interfaces">
-    <meta name="viewport" content="width=device-width">
-    <title>{% block head_title %}{% endblock %}</title>
-    <link rel="stylesheet" type="text/css" href="@@file/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="@@file/bootstrap-responsive.min.css">
-    <link rel="stylesheet" type="text/css" href="@@file/style.css">
-    {% block extracss %} {% endblock %}
-  </head>
-  <body>
-    {% block navbar %}
-      {% include 'layout/banner.html' %}
-    {% endblock %}
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content="Roundup is a python-based, MIT licensed issue-tracking system with command-line, web and e-mail interfaces">
+        <meta name="viewport" content="width=device-width">
+        <title>{% block head_title %}{% endblock %}</title>
+        <link rel="stylesheet" type="text/css" href="@@file/bootstrap.min.css">
+        {% block extracss %} {% endblock %}
+    </head>
+    <body>
+        {% block navbar %}
+        {% include 'layout/banner.html' %}
+        {% endblock %}
 
-    {% block page_content %}
-      <div class='container-fluid'>
-        <div class='row-fluid'>
-          <div class='span3 navigation'>
-            {% block leftnav %}
-              {% include 'layout/navigation.html' %}
-            {% endblock %}
-          </div>
+        {% block page_content %}
+        <div class='container-fluid'>
+            <div class='row'>
+                <div class='col-2 navigation'>
+                    {% block leftnav %}
+                    {% include 'layout/navigation.html' %}
+                    {% endblock %}
+                </div>
 
-          <div class='span9'>
-              <div class='page-header'>
-                <h1> {% block page_header %} {% endblock %} </h1>
-                {% if options.error_message %}
-                  <p class='alert alert-block alert-error fade in'> 
-                    {{ options.error_message }}
-                    <button type='button' class='close' data-dismiss='alert'>X</button>
-                  </p>
-                {% endif %}
-                {% if options.ok_message %}
-                  <p class='alert alert-block alert-success fade in'> 
-                    {{ options.ok_message }}
-                    <button type='button' class='close' data-dismiss='alert'>X</button>
-                  </p>
-                {% endif %}
-              </div>
-            {% block content %}
-            {% endblock %}
-          </div>
+                <div class='col-10'>
+                    <div class='pb-2 mt-4 mb-2 border-bottom'>
+                        <h3> {% block page_header %} {% endblock %} </h3>
+                        {% if options.error_message %}
+                        <div class='alert alert-danger alert-dismissible fade show'>
+                            <ul class="mb-0">
+                                {% for message in options.error_message %}
+                                <li>{{ message }}</li>
+                                {% endfor %}
+                            </ul>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        {% endif %}
+                        {% if options.ok_message %}
+                        <div class='alert alert-success alert-dismissible fade show'>
+                            <ul class="mb-0">
+                                {% for message in options.ok_message %}
+                                <li>{{ message }}</li>
+                                {% endfor %}
+                            </ul>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% block content %}
+                    {% endblock %}
+                </div>
+            </div>
         </div>
-      </div>
-    {% endblock %}
+        {% endblock %}
 
-    {% block footer %}
-      {% include 'layout/footer.html' %}
-    {% endblock %}
+        {% block footer %}
+        {% include 'layout/footer.html' %}
+        {% endblock %}
 
-    <script src='@@file/jquery-1.9.0.min.js'></script>
-    <script src='@@file/bootstrap.min.js'></script>
-    {% block extrajs %} {% endblock %}
-  </body>
+        <script src='@@file/jquery-1.9.0.min.js'></script>
+        <script src='@@file/bootstrap.min.js'></script>
+        {% block extrajs %} {% endblock %}
+    </body>
 </html>
