@@ -762,8 +762,11 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
                (help_url, onclick, cgi_escape_attrs(**html_kwargs),
                 self._(label))
 
-    def submit(self, label=''"Submit New Entry", action="new"):
+    def submit(self, label=''"Submit New Entry", action="new", html_kwargs={}):
         """ Generate a submit button (and action hidden element)
+
+            "html_kwargs" specified additional html args for the
+            generated html <select>
 
         Generate nothing if we're not editable.
         """
@@ -775,7 +778,8 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
             '\n' + \
             self.input(type="hidden", name="@action", value=action) + \
             '\n' + \
-            self.input(type="submit", name="submit_button", value=self._(label))
+            self.input(type="submit", name="submit_button", value=self._(label),
+                                                                **html_kwargs)
 
     def history(self):
         if not self.is_view_ok():
@@ -905,8 +909,11 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         """Is this item retired?"""
         return self._klass.is_retired(self._nodeid)
 
-    def submit(self, label=''"Submit Changes", action="edit"):
+    def submit(self, label=''"Submit Changes", action="edit", html_kwargs={}):
         """Generate a submit button.
+
+            "html_kwargs" specified additional html args for the
+            generated html <select>
 
         Also sneak in the lastactivity and action hidden elements.
         """
@@ -919,7 +926,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
             self.input(type="hidden", name="@action", value=action) + \
             '\n' + \
             self.input(type="submit", name="submit_button",
-                       value=self._(label))
+                       value=self._(label), **html_kwargs)
 
     def journal(self, direction='descending'):
         """ Return a list of HTMLJournalEntry instances.
