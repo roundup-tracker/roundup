@@ -1,97 +1,70 @@
-<form method="POST"
-      {% if context.id %}
-        action='issue{{ context.id }}'
-      {% else %}
-        action='issue'
-      {% endif %}
-      name="itemSynopsis"
-      enctype="multipart/form-data"
-  >
-  <fieldset>
-    <!-- title -->
-    <div class='row-fluid'>
-      <div class='control-group'>
-        <label class='control-label' for='title'>{{ i18n.gettext('Title')|u }}</label>
-        <div class='controls'>
-          <input name='title' id='title' type='text' class='input-xxlarge' value='{{ context.title.plain()|u|e }}' required>
+<form class="col-xl-6" method="POST" {% if context.id %} action='issue{{ context.id }}' {% else %} action='issue' {% endif %} name="itemSynopsis" enctype="multipart/form-data">
+    <fieldset>
+        <!-- title -->
+        <div class='form-group row'>
+            <label class='col-3 col-form-label' for='title'>{{ i18n.gettext('Title')|u }}</label>
+            <div class='col-9'>
+                <input class="form-control" name='title' id='title' type='text' class='input-lg' value='{{ context.title.plain()|u|e }}' required>
+            </div>
         </div>
-      </div>
-    </div> <!-- row-fluid -->
 
-    <!-- priority & Status -->
-    <div class='row-fluid'>
-      <div class='control-group span6'>
-        <label class='control-label' for='priority'>{{ i18n.gettext('Priority')|u }}</label>
-        <div class='controls'>
-          {{ context.priority.menu()|u }}
+        <div class='form-group row'>
+            <label class='col-3 col-form-label' for='priority'>{{ i18n.gettext('Priority')|u }}</label>
+            <div class='col-3'>
+                {{ context.priority.menu(html_kwargs={"class": "custom-select"})|u }}
+            </div>
+            <label class='col-3 col-form-label' for='status'>{{ i18n.gettext('Status')|u }}</label>
+            <div class='col-3'>
+                {{ context.status.menu(html_kwargs={"class": "custom-select"})|u }}
+            </div>
         </div>
-      </div>
-      <div class='control-group span6'>
-        <label class='control-label' for='status'>{{ i18n.gettext('Status')|u }}</label>
-        <div class='controls'>
-          {{ context.status.menu()|u }}
-        </div>
-      </div>
-    </div> <!-- row-fluid -->
 
-    <!-- Superseder & nosy list -->
-    <div class='row-fluid'>
-      <div class='control-group span6'>
-        <label class='control-label' for='superseder'>{{ i18n.gettext('Superseder')|u }}</label>
-        <div class='controls'>
-          <input type='text' name='superseder' id='superseder' value='{{ context.superseder.plain()|u|e }}'>
+        <!-- Superseder & nosy list -->
+        <div class='form-group row'>
+            <label class='col-3 col-form-label' for='superseder'>{{ i18n.gettext('Superseder')|u }}</label>
+            <div class='col-3'>
+                <input class="form-control" type='text' name='superseder' id='superseder' value='{{ context.superseder.plain()|u|e }}'>
+            </div>
+            <label class='col-3 col-form-label' for='nosylist'>{{ i18n.gettext('Nosy list')|u }}</label>
+            <div class='col-3'>
+                <input class="form-control" type='text' name='nosy' id='nosylist' value='{{ context.nosy.plain()|u|e }}'>
+            </div>
         </div>
-      </div>
-      <div class='control-group span6'>
-        <label class='control-label' for='nosylist'>{{ i18n.gettext('Nosy list')|u }}</label>
-        <div class='controls'>
-          <input type='text' name='nosy' id='nosylist' value='{{ context.nosy.plain()|u|e }}'>
-        </div>
-      </div>
-    </div> <!-- row-fluid -->
 
-    <!-- Assigned to & keywords -->
-    <div class='row-fluid'>
-      <div class='control-group span6'>
-        <label class='control-label' for='assignedto'>{{ i18n.gettext('Assigned to')|u }}</label>
-        <div class='controls'>
-          {{ context.assignedto.menu()|u }}
-        </div>
-      </div>
-      <div class='control-group span6'>
-        <label class='control-label' for='keyword'>{{ i18n.gettext('Keywords')|u }}</label>
-        <div class='controls'>
-          <input type='text' name='keyword' id='keyword' value='{{ context.keyword.plain()|u|e }}'>
-        </div>
-      </div>
-    </div> <!-- row-fluid -->
+        <!-- Assigned to & keywords -->
+        <div class='form-group row'>
+            <label class='col-3 col-form-label' for='assignedto'>{{ i18n.gettext('Assigned to')|u }}</label>
+            <div class='col-3'>
+                {{ context.assignedto.menu(html_kwargs={"class": "custom-select"})|u }}
+            </div>
+            <label class='col-3 col-form-label' for='keyword'>{{ i18n.gettext('Keywords')|u }}</label>
+            <div class='col-3'>
+                <input class="form-control" type='text' name='keyword' id='keyword' value='{{ context.keyword.plain()|u|e }}'>
+            </div>
+        </div> <!-- form-group row -->
 
-    <!-- Note -->
-    <div class='row-fluid'>
-      <div class='control-group'>
-        <label class='control-label' for='change_note'>{{ i18n.gettext('Change note')|u }}</label>
-        <div class='controls'>
-          <textarea name="@note" rows="5" class='input-xxlarge' id='change_note'></textarea>
-        </div>
-      </div>
-    </div> <!-- row-fluid -->
+        <!-- Note -->
+        <div class='form-group row'>
+            <label class='col-3 col-form-label' for='change_note'>{{ i18n.gettext('Change note')|u }}</label>
+            <div class='col-9'>
+                <textarea class="form-control" name="@note" rows="5" class='input-lg' id='change_note'></textarea>
+            </div>
+        </div> <!-- form-group row -->
 
-    <!-- File upload -->
-    <div class='row-fluid'>
-      <div class='control-group'>
-        <label class='control-label' for='file_upload'>{{ i18n.gettext('File')|u }}</label>
-        <div class='controls'>
-          <input type="file" name="@file" id='file_upload'>
-        </div>
-      </div>
-    </div> <!-- row-fluid -->
-  </fieldset>
-  <div class='form-actions'>
-    {{ context.submit() }}
-    {% if context.id %}
-      <a href='{{ context.copy_url() }}'>{{ i18n.gettext('Make a copy')|u }}</a>
-    {% endif %}
-  </div>
-  <input type="hidden" name="@template" value="item">
-  <input type="hidden" name="@required" value="title,priority">
+        <!-- File upload -->
+        <div class='form-group row'>
+            <label class='col-3 col-form-label' for='file_upload'>{{ i18n.gettext('File')|u }}</label>
+            <div class='col-3'>
+            <input class="form-control-file" type="file" name="@file" id='file_upload'>
+            </div>
+        </div> <!-- form-group row -->
+    </fieldset>
+    <div class='form-actions'>
+        {{ context.submit(html_kwargs={"class": "btn btn-primary"}) }}
+        {% if context.id %}
+        <a href='{{ context.copy_url() }}'>{{ i18n.gettext('Make a copy')|u }}</a>
+        {% endif %}
+    </div>
+    <input type="hidden" name="@template" value="item">
+    <input type="hidden" name="@required" value="title,priority">
 </form>
