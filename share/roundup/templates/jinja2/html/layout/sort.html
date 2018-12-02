@@ -1,37 +1,55 @@
 <hr>
 <form method="GET" action='{{ request.classname }}'>
-  <div class='row-fluid'>
-    <div class='span6'>
-      <span class='label label-info'>{{ i18n.gettext('Sort on')|u }}</span>
-      {% for i in range(2) %}
-        <p>
-          <select name='@sort{{i}}'>
-            {% for prop in context.properties() %}
-              <option value='{{ prop._name }}'>{{ prop._name }}</option>
+    <div class='form-group row'>
+        <div class='col-1'>
+            <span class="float-right">{{ i18n.gettext('Sort on')|u }}</span>
+        </div>
+        <fieldset class="form-group">
+            {% for i in range(2) %}
+            <div class="row">
+                <div class='col-auto'>
+                    <select class="custom-select" name='@sort{{i}}'>
+                        {% for prop in context.properties() %}
+                        <option value='{{ prop._name }}'>{{ prop._name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <div class="custom-control custom-checkbox my-1 mr-sm-2">
+                        <input type="checkbox" class="custom-control-input" name='@sortdir{{i}}' id='@sortdir{{i}}'>
+                        <label class="custom-control-label" for="@sortdir{{i}}">Descending</label>
+                    </div>
+                </div>
+            </div>
             {% endfor %}
-          </select>
-          <em>Descending</em>
-          <input type="checkbox" name='@sortdir{{i}}'>
-        </p>
-      {% endfor %}
+        </fieldset>
     </div>
-    <div class='span6'>
-      <span class='label label-info'>{{ i18n.gettext('Group on')|u }}</span>
-      {% for i in range(2) %}
-        <p>
-          <select name='@group{{i}}'>
-            {% for prop in context.properties() %}
-              <option value='{{ prop._name }}'>{{ prop._name }}</option>
+    <div class='form-group row'>
+        <div class='col-1'>
+            <span class="float-right">{{ i18n.gettext('Group on')|u }}</span>
+        </div>
+        <fieldset class="form-group">
+            {% for i in range(2) %}
+            <div class="row">
+                <div class='col-auto'>
+                    <select class="custom-select" name='@group{{i}}'>
+                        {%- for prop in context.properties() %}
+                        <option value='{{ prop._name }}'>{{ prop._name }}</option>
+                        {%- endfor %}
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <div class="custom-control custom-checkbox my-1 mr-sm-2">
+                        <input type="checkbox" class="custom-control-input" name='@groupdir{{i}}' id='@groupdir{{i}}'>
+                        <label class="custom-control-label" for="@groupdir{{i}}">Descending</label>
+                    </div>
+                </div>
+            </div>
             {% endfor %}
-          </select>
-          <em>Descending</em>
-          <input type="checkbox" name='@groupdir{{i}}'>
-        </p>
-      {% endfor %}
+        </fieldset>
     </div>
-  </div>
-  <div class='form-actions'>
-    <input type='submit' value='{{ i18n.gettext("Redisplay") }}' class='btn btn-primary'>
-    {{ request.indexargs_form(sort=0, group=0) }}
-  </div>
+    <div class='form-actions'>
+        <input type='submit' value='{{ i18n.gettext("Redisplay") }}' class='btn btn-primary'>
+        {{ request.indexargs_form(sort=0, group=0) }}
+    </div>
 </form>
