@@ -1,114 +1,113 @@
 {% extends 'layout/page.html' %}
 
 {% block head_title %}
-  {% if context.id %}
-    {{ i18n.gettext('User')|u }} {{ context.id }} - {{ config.TRACKER_NAME }}
-  {% else %}
-    {{ i18n.gettext('New User')|u }} - {{ config.TRACKER_NAME }}
-  {% endif %}
+{% if context.id %}
+{{ i18n.gettext('User')|u }} {{ context.id }} - {{ config.TRACKER_NAME }}
+{% else %}
+{{ i18n.gettext('New User')|u }} - {{ config.TRACKER_NAME }}
+{% endif %}
 {% endblock %}
 
 {% block page_header %}
-  {% if not (context.id or context.is_edit_ok()) %}
-    {{ i18n.gettext('New User')|u }}
-  {% elif not context.id and context.is_edit_ok() %}
-    {{ i18n.gettext('New User Editing')|u }}
-  {% elif context.id and not context.is_edit_ok() %}
-    {{ i18n.gettext('User')|u }}{{ context.id }}
-  {% elif context.id and context.is_edit_ok() %}
-    {{ i18n.gettext('User')|u }}{{ context.id }} {{ i18n.gettext('editing')|u }}
-  {% endif %}
+{% if not (context.id or context.is_edit_ok()) %}
+{{ i18n.gettext('New User')|u }}
+{% elif not context.id and context.is_edit_ok() %}
+{{ i18n.gettext('New User Editing')|u }}
+{% elif context.id and not context.is_edit_ok() %}
+{{ i18n.gettext('User')|u }}{{ context.id }}
+{% elif context.id and context.is_edit_ok() %}
+{{ i18n.gettext('User')|u }}{{ context.id }} {{ i18n.gettext('editing')|u }}
+{% endif %}
 {% endblock %}
 
 {% block content %}
 
-  {% include 'layout/permission.html' %}
+{% include 'layout/permission.html' %}
 
-  {% if context.is_view_ok() %}
-    <form method="POST"
-          name ="itemSynopsis"
-          enctype ="multipart/form-data"
-          action ='{{  context.designator() }}'>
-      <table>
+{% if context.is_view_ok() %}
+<form class="pb-5" method="POST"
+                   name ="itemSynopsis"
+                   enctype ="multipart/form-data"
+                   action ='{{  context.designator() }}'>
+    <table>
         <tr>
-          <th>{{ i18n.gettext('Name')|u }}</th>
-          <td>
-            <input type='text' name="realname" value='{{ context.realname.plain()|u|e }}'>
-          </td>
+            <th>{{ i18n.gettext('Name')|u }}</th>
+            <td>
+                <input class="form-control" type='text' name="realname" value='{{ context.realname.plain()|u|e }}'>
+            </td>
         </tr>
         <tr>
-          <th>{{ i18n.gettext('Login Name')|u }}</th>
-          <td>
-            <input type='text' name='username' value='{{ context.username.plain()|u|e }}'>
-          </td>
+            <th>{{ i18n.gettext('Login Name')|u }}</th>
+            <td>
+                <input class="form-control"  type='text' name='username' value='{{ context.username.plain()|u|e }}'>
+            </td>
         </tr>
         {% if context.is_edit_ok() %}
-          <tr>
+        <tr>
             <th>{{ i18n.gettext('Login Password')|u }}</th>
             <td>
-              <input type='password' name='password'>
+                <input class="form-control"  type='password' name='password'>
             </td>
-          </tr>
-          <tr>
+        </tr>
+        <tr>
             <th>{{ i18n.gettext('Confirm Password')|u }}</th>
             <td>
-              <input type='password' name='@confirm@password'>
+                <input class="form-control"  type='password' name='@confirm@password'>
             </td>
-          </tr>
+        </tr>
         {% endif %}
         {% if request.user.hasPermission('Web Roles') %}
-          <tr>
+        <tr>
             <th>{{ i18n.gettext('Roles <br>(comma separated)')|u }}</th>
             <td>
-              <input type='text' name='roles' value='{{ context.roles|u|e }}'>
+                <input class="form-control"  type='text' name='roles' value='{{ context.roles|u|e }}'>
             </td>
-          </tr>
+        </tr>
         {% endif %}
         <tr>
-          <th>{{ i18n.gettext('Phone')|u }}</th>
-          <td>
-            <input type='text' name='phone' value='{{ context.phone.plain()|u|e }}'>
-          </td>
+            <th>{{ i18n.gettext('Phone')|u }}</th>
+            <td>
+                <input class="form-control"  type='text' name='phone' value='{{ context.phone.plain()|u|e }}'>
+            </td>
         </tr>
         <tr>
-          <th>{{ i18n.gettext('Organisation')|u }}</th>
-          <td>
-            <input type='text' name='organisation' value='{{ context.organisation.plain()|u|e }}'>
-          </td>
+            <th>{{ i18n.gettext('Organisation')|u }}</th>
+            <td>
+                <input class="form-control"  type='text' name='organisation' value='{{ context.organisation.plain()|u|e }}'>
+            </td>
         </tr>
         {% if context.timezone %}
-          <tr>
+        <tr>
             <th>{{ i18n.gettext('Timezone')|u }}</th>
             <td>
-              <input type='text' name='timezone' value='{{ context.timezone|u|e }}'>
+                <input class="form-control"  type='text' name='timezone' value='{{ context.timezone|u|e }}'>
             </td>
-          </tr>
+        </tr>
         {% endif %}
         <tr>
-          <th>{{ i18n.gettext('Email')|u }}</th>
-          <td>
-            <input type='text' name='address' value='{{ context.address.plain()|u|e }}'>
-          </td>
+            <th>{{ i18n.gettext('Email')|u }}</th>
+            <td>
+                <input class="form-control"  type='text' name='address' value='{{ context.address.plain()|u|e }}'>
+            </td>
         </tr>
         <tr>
-          <th>{{ i18n.gettext('Alternate email address <br>One address per line')|u }}</th>
-          <td>
-            {{ context.alternate_addresses.multiline()|u }}
-          </td>
+            <th>{{ i18n.gettext('Alternate email address <br>One address per line')|u }}</th>
+            <td>
+                {{ context.alternate_addresses.multiline(class="form-control")|u }}
+            </td>
         </tr>
         {% if context.is_edit_ok() %}
-          <tr class='form-actions'>
+        <tr class='form-actions'>
             <td>
-            <input type="hidden" name="@template" value="item">
-            {{ context.submit() }}
+                <input type="hidden" name="@template" value="item">
+                {{ context.submit(html_kwargs={ "class": "btn btn-success" }) }}
             </td>
-          </tr>
+        </tr>
         {% endif %}
-      </table>
-    </form>
-  {% endif %}
+    </table>
+</form>
+{% endif %}
 
-  <div class='vspace-five'></div>
-  {{ context.history()|u }}
+{{ context.history()|u }}
 
 {% endblock %}
