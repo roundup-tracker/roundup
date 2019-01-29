@@ -363,6 +363,10 @@ class Client:
         # see if we need to re-parse the environment for the form (eg Zope)
         if form is None:
             self.form = cgi.FieldStorage(fp=request.rfile, environ=env)
+            # In some case (e.g. content-type application/xml), cgi
+            # will not parse anything. Fake a list property in this case
+            if self.form.list is None:
+                self.form.list = []
         else:
             self.form = form
 
