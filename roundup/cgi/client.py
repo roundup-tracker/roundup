@@ -35,6 +35,7 @@ from roundup.cgi.form_parser import FormParser
 from roundup.mailer import Mailer, MessageSendError
 from roundup.cgi import accept_language
 from roundup import xmlrpc
+from roundup import rest
 
 from roundup.anypy.cookie_ import CookieError, BaseCookie, SimpleCookie, \
     get_cookie_date
@@ -428,6 +429,8 @@ class Client:
         try:
             if self.path == 'xmlrpc':
                 self.handle_xmlrpc()
+            elif self.path == 'rest' or self.path[:5] == 'rest/':
+                self.handle_rest()
             else:
                 self.inner_main()
         finally:
@@ -481,6 +484,27 @@ class Client:
             output = handler.dispatch(input)
 
         self.setHeader("Content-Type", "text/xml")
+        self.setHeader("Content-Length", str(len(output)))
+        self.write(output)
+
+    def handle_rest(self):
+        # Pull the parameters data out of the form.  The "value" attribute
+        # will be the raw content of the request.
+        input = self.form.value
+
+        # Set the charset and language
+        self.determine_charset()
+        self.determine_language()
+        # Open the database as the correct user.
+        # TODO: add everything to RestfulDispatcher
+        self.determine_user()
+        self.check_anonymous_access()
+
+        # Call rest library to handle the request
+        handler = rest.RestfulInstance(self.db)
+        output = handler.dispatch(self.env['REQUEST_METHOD'], self.path, input)
+
+        # self.setHeader("Content-Type", "text/xml")
         self.setHeader("Content-Length", str(len(output)))
         self.write(output)
 
@@ -1354,7 +1378,7 @@ class Client:
             if int(self.nodeid) > 2**31:
                 # Postgres will complain with a ProgrammingError
                 # if we try to pass in numbers that are too large
-                raise NotFound ('%s/%s'%(self.classname, self.nodeid))
+                raise NotFound('%s/%s'%(self.classname, self.nodeid))
             if not klass.hasnode(self.nodeid):
                 raise NotFound('%s/%s'%(self.classname, self.nodeid))
             # with a designator, we default to item view
