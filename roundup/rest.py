@@ -19,27 +19,51 @@ class RestfulInstance(object):
         # TODO: database, translator and instance.actions
         self.db = db
 
-    def action_get(self, resource, input):
-        classname, itemid = hyperdb.splitDesignator(resource)
-        cl = self.db.getclass(classname)
-        props = cl.properties.keys()
-        props.sort()
-        for p in props:
-            if not self.db.security.hasPermission('View', self.db.getuid(),
-                                                  classname, p, itemid):
-                raise Unauthorised('Permission to view %s of %s denied' %
-                                   (p, resource))
-            result = [(prop, cl.get(itemid, prop)) for prop in props]
+    def action_get(self, resource_uri, input):
+        # TODO: split this into collection URI and resource URI
+        class_name = resource_uri
+        try:
+            class_obj = self.db.getclass(class_name)
+            """prop_name = class_obj.labelprop()
+            result = [class_obj.get(item_id, prop_name)
+                      for item_id in class_obj.list()
+                      if self.db.security.hasPermission('View', self.db.getuid(),
+                                                        class_name, prop_name, item_id)
+                      ]
+            result = json.JSONEncoder().encode(result)"""
+            result = [{'id': item_id}
+                      for item_id in class_obj.list()
+                      if self.db.security.hasPermission('View', self.db.getuid(),
+                                                        class_name, None, item_id)
+                      ]
+            result = json.JSONEncoder().encode(result)
+            #result = `len(dict(result))` + ' ' + `len(result)`
+        except KeyError:
+            pass
+
+        try:
+            class_name, item_id = hyperdb.splitDesignator(resource_uri)
+            class_obj = self.db.getclass(class_name)
+            props = class_obj.properties.keys()
+            props.sort()
+            result = [(prop_name, class_obj.get(item_id, prop_name))
+                      for prop_name in props
+                      if self.db.security.hasPermission('View', self.db.getuid(),
+                                                        class_name, prop_name, item_id)
+                      ]
+            # Note: is this a bug by having an extra indent in xmlrpc ?
+            result = json.JSONEncoder().encode(dict(result))
+        except hyperdb.DesignatorError:
+            pass
 
         # print type(result)
         # print type(dict(result))
-        return json.JSONEncoder().encode(dict(result))
+        return result
         # return json.dumps(dict(result))
         # return dict(result)
 
     def dispatch(self, method, uri, input):
-        print method
-        print uri
+        print "METHOD: " + method + " URI: " + uri
         print type(input)
         pprint.pprint(input)
 
@@ -67,6 +91,5 @@ class RestfulInstance(object):
         else:
             pass
 
-        print output
-        print len(output)
+        print "Response Length: " + `len(output)` + " - Response Content (First 50 char): " + output[:50]
         return output
