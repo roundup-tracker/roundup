@@ -488,10 +488,6 @@ class Client:
         self.write(output)
 
     def handle_rest(self):
-        # Pull the parameters data out of the form.  The "value" attribute
-        # will be the raw content of the request.
-        input = self.form.value
-
         # Set the charset and language
         self.determine_charset()
         self.determine_language()
@@ -502,7 +498,8 @@ class Client:
 
         # Call rest library to handle the request
         handler = rest.RestfulInstance(self.db)
-        output = handler.dispatch(self.env['REQUEST_METHOD'], self.path, input)
+        output = handler.dispatch(self.env['REQUEST_METHOD'], self.path,
+                                  self.form)
 
         # self.setHeader("Content-Type", "text/xml")
         self.setHeader("Content-Length", str(len(output)))
