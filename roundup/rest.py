@@ -98,6 +98,7 @@ class RestfulInstance(object):
     def action_delete(self, resource_uri, input):
         # TODO: should I allow user to delete the whole collection ?
         # TODO: BUG with DELETE without form data. Working with random data
+        #       crash at line self.form = cgi.FieldStorage(fp=request.rfile, environ=env)
         class_name = resource_uri
         try:
             class_obj = self.db.getclass(class_name)
@@ -136,24 +137,14 @@ class RestfulInstance(object):
         input_form = ["%s=%s" % (item.name, item.value) for item in input]
         # TODO: process input_form directly instead of making a new array
         # TODO: rest server
-        # TODO: use named function for this instead
         # TODO: check roundup/actions.py
         # TODO: if uri_path has more than 2 child, return 404
         # TODO: custom JSONEncoder to handle other data type
         # TODO: catch all error and display error.
-        output = "METHOD is not supported"
-        if method == "GET":
-            output = self.action_get(uri_path[1], input_form)
-        elif method == "POST":
-            output = self.action_post(uri_path[1], input_form)
-        elif method == "PUT":
-            output = self.action_put(uri_path[1], input_form)
-        elif method == "DELETE":
-            output = self.action_delete(uri_path[1], input_form)
-        elif method == "PATCH":
-            output = self.action_patch(uri_path[1], input_form)
-        else:
-            pass
+        try:
+            output = getattr(self, "action_%s" % method.lower())(uri_path[1], input_form)
+        except AttributeError:
+            raise NotImplementedError
 
         print "Response Length: %s - Response Content (First 50 char): %s" %\
               (len(output), output[:50])
