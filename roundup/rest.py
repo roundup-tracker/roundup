@@ -125,7 +125,7 @@ class RestfulInstance(object):
         # check for the key property
         key = class_obj.getkey()
         if key and key not in props:
-            raise UsageError('Must provide the "%s" property.' % key)
+            raise UsageError("Must provide the '%s' property." % key)
 
         for key in props:
             if not self.db.security.hasPermission('Create', self.db.getuid(),
@@ -138,7 +138,9 @@ class RestfulInstance(object):
             item_id = class_obj.create(**props)
             self.db.commit()
         except (TypeError, IndexError, ValueError), message:
-            raise UsageError(message)
+            raise ValueError(message)
+        except KeyError, msg:
+            raise UsageError("Must provide the %s property." % msg)
 
         # set the header Location
         link = self.base_path + class_name + item_id
@@ -152,10 +154,10 @@ class RestfulInstance(object):
         return 201, result
 
     def post_element(self, class_name, item_id, input):
-        raise Reject('Invalid request')
+        raise Reject('POST to an item is not allowed')
 
     def put_collection(self, class_name, input):
-        raise Reject('Invalid request')
+        raise Reject('PUT a class is not allowed')
 
     def put_element(self, class_name, item_id, input):
         class_obj = self.db.getclass(class_name)
@@ -170,7 +172,7 @@ class RestfulInstance(object):
             result = class_obj.set(item_id, **props)
             self.db.commit()
         except (TypeError, IndexError, ValueError), message:
-            raise UsageError(message)
+            raise ValueError(message)
 
         result = {
             'id': item_id,
@@ -219,7 +221,7 @@ class RestfulInstance(object):
         return 200, result
 
     def patch_collection(self, class_name, input):
-        raise Reject('Invalid request')
+        raise Reject('PATCH a class is not allowed')
 
     def patch_element(self, class_name, item_id, input):
         raise NotImplementedError
@@ -288,8 +290,11 @@ class RestfulInstance(object):
             output = error_obj(400, msg)
             self.client.response_code = 400
         except (AttributeError, Reject), msg:
-            output = error_obj(405, 'Method Not Allowed. ' + str(msg))
+            output = error_obj(405, msg)
             self.client.response_code = 405
+        except ValueError, msg:
+            output = error_obj(409, msg)
+            self.client.response_code = 409
         except NotImplementedError:
             output = error_obj(402, 'Method is under development')
             self.client.response_code = 402
