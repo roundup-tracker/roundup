@@ -8,6 +8,7 @@ from roundup import password, hyperdb
 from roundup.rest import RestfulInstance
 from roundup.backends import list_backends
 from roundup.cgi import client
+import random
 
 import db_test_base
 
@@ -92,6 +93,149 @@ class TestCase(unittest.TestCase):
         )
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['data']['data'], 'joe')
+
+    def testFilter(self):
+        """
+        Retrieve all three users
+        obtain data for 'joe'
+        """
+        # create sample data
+        try:
+            self.db.status.create(name='open')
+        except ValueError:
+            pass
+        try:
+            self.db.status.create(name='closed')
+        except ValueError:
+            pass
+        try:
+            self.db.priority.create(name='normal')
+        except ValueError:
+            pass
+        try:
+            self.db.priority.create(name='critical')
+        except ValueError:
+            pass
+        self.db.issue.create(
+            title='foo4',
+            status=self.db.status.lookup('closed'),
+            priority=self.db.priority.lookup('critical')
+        )
+        self.db.issue.create(
+            title='foo1',
+            status=self.db.status.lookup('open'),
+            priority=self.db.priority.lookup('normal')
+        )
+        issue_open_norm = self.db.issue.create(
+            title='foo2',
+            status=self.db.status.lookup('open'),
+            priority=self.db.priority.lookup('normal')
+        )
+        issue_closed_norm = self.db.issue.create(
+            title='foo3',
+            status=self.db.status.lookup('closed'),
+            priority=self.db.priority.lookup('normal')
+        )
+        issue_closed_crit = self.db.issue.create(
+            title='foo4',
+            status=self.db.status.lookup('closed'),
+            priority=self.db.priority.lookup('critical')
+        )
+        issue_open_crit = self.db.issue.create(
+            title='foo5',
+            status=self.db.status.lookup('open'),
+            priority=self.db.priority.lookup('critical')
+        )
+        base_path = self.dummy_client.env['PATH_INFO'] + 'issue'
+
+        # Retrieve all issue status=open
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('where_status', 'open')
+        ]
+        results = self.server.get_collection('issue', form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertIn(get_obj(base_path, issue_open_norm), results['data'])
+        self.assertIn(get_obj(base_path, issue_open_crit), results['data'])
+        self.assertNotIn(
+            get_obj(base_path, issue_closed_norm), results['data']
+        )
+
+        # Retrieve all issue status=closed and priority=critical
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('where_status', 'closed'),
+            cgi.MiniFieldStorage('where_priority', 'critical')
+        ]
+        results = self.server.get_collection('issue', form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertIn(get_obj(base_path, issue_closed_crit), results['data'])
+        self.assertNotIn(get_obj(base_path, issue_open_crit), results['data'])
+        self.assertNotIn(
+            get_obj(base_path, issue_closed_norm), results['data']
+        )
+
+        # Retrieve all issue status=closed and priority=normal,critical
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('where_status', 'closed'),
+            cgi.MiniFieldStorage('where_priority', 'normal,critical')
+        ]
+        results = self.server.get_collection('issue', form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertIn(get_obj(base_path, issue_closed_crit), results['data'])
+        self.assertIn(get_obj(base_path, issue_closed_norm), results['data'])
+        self.assertNotIn(get_obj(base_path, issue_open_crit), results['data'])
+        self.assertNotIn(get_obj(base_path, issue_open_norm), results['data'])
+
+    def testPagination(self):
+        """
+        Retrieve all three users
+        obtain data for 'joe'
+        """
+        # create sample data
+        for i in range(0, random.randint(5, 10)):
+            self.db.issue.create(title='foo' + str(i))
+
+        # Retrieving all the issues
+        results = self.server.get_collection('issue', self.empty_form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        total_length = len(results['data'])
+
+        # Pagination will be 70% of the total result
+        page_size = total_length * 70 // 100
+        page_zero_expected = page_size
+        page_one_expected = total_length - page_zero_expected
+
+        # Retrieve page 0
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('page_size', page_size),
+            cgi.MiniFieldStorage('page_index', 0)
+        ]
+        results = self.server.get_collection('issue', form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['data']), page_zero_expected)
+
+        # Retrieve page 1
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('page_size', page_size),
+            cgi.MiniFieldStorage('page_index', 1)
+        ]
+        results = self.server.get_collection('issue', form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['data']), page_one_expected)
+
+        # Retrieve page 2
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('page_size', page_size),
+            cgi.MiniFieldStorage('page_index', 2)
+        ]
+        results = self.server.get_collection('issue', form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['data']), 0)
 
     def testPut(self):
         """
@@ -316,6 +460,13 @@ class TestCase(unittest.TestCase):
         self.assertEqual(results['attributes']['title'], None)
         self.assertEqual(len(results['attributes']['nosy']), 0)
         self.assertEqual(results['attributes']['nosy'], [])
+
+
+def get_obj(path, id):
+    return {
+        'id': id,
+        'link': path + id
+    }
 
 
 def test_suite():
