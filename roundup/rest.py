@@ -12,10 +12,12 @@ import pprint
 import sys
 import time
 import traceback
-import xml
+import re
+
 from roundup import hyperdb
 from roundup import date
 from roundup.exceptions import *
+from roundup.cgi.exceptions import *
 
 
 def _data_decorator(func):
@@ -24,6 +26,9 @@ def _data_decorator(func):
         # get the data / error from function
         try:
             code, data = func(self, *args, **kwargs)
+        except NotFound, msg:
+            code = 404
+            data = msg
         except IndexError, msg:
             code = 404
             data = msg
@@ -131,6 +136,84 @@ def parse_accept_header(accept):
         result.append((media_type, dict(media_params), q))
     result.sort(lambda x, y: -cmp(x[2], y[2]))
     return result
+
+
+class Routing(object):
+    __route_map = {}
+    __var_to_regex = re.compile(r"<:(\w+)>")
+    url_to_regex = r"([\w.\-~!$&'()*+,;=:@\%%]+)"
+
+    @classmethod
+    def route(cls, rule, methods='GET'):
+        """A decorator that is used to register a view function for a
+        given URL rule:
+            @self.route('/')
+            def index():
+                return 'Hello World'
+
+        rest/ will be added to the beginning of the url string
+
+        Args:
+            rule (string): the URL rule
+            methods (string or tuple or list): the http method
+        """
+        # strip the '/' character from rule string
+        rule = rule.strip('/')
+
+        # add 'rest/' to the rule string
+        if not rule.startswith('rest/'):
+            rule = '^rest/' + rule + '$'
+
+        if isinstance(methods, basestring):  # convert string to tuple
+            methods = (methods,)
+        methods = set(item.upper() for item in methods)
+
+        # convert a rule to a compiled regex object
+        # so /data/<:class>/<:id> will become
+        #    /data/([charset]+)/([charset]+)
+        # and extract the variable names to a list [(class), (id)]
+        func_vars = cls.__var_to_regex.findall(rule)
+        rule = re.compile(cls.__var_to_regex.sub(cls.url_to_regex, rule))
+
+        # then we decorate it:
+        # route_map[regex][method] = func
+        def decorator(func):
+            rule_route = cls.__route_map.get(rule, {})
+            func_obj = {
+                'func': func,
+                'vars': func_vars
+            }
+            for method in methods:
+                rule_route[method] = func_obj
+            cls.__route_map[rule] = rule_route
+            return func
+        return decorator
+
+    @classmethod
+    def execute(cls, instance, path, method, input):
+        # format the input
+        path = path.strip('/').lower()
+        method = method.upper()
+
+        # find the rule match the path
+        # then get handler match the method
+        for path_regex in cls.__route_map:
+            match_obj = path_regex.match(path)
+            if match_obj:
+                try:
+                    func_obj = cls.__route_map[path_regex][method]
+                except KeyError:
+                    raise Reject('Method %s not allowed' % method)
+
+                # retrieve the vars list and the function caller
+                list_vars = func_obj['vars']
+                func = func_obj['func']
+
+                # zip the varlist into a dictionary, and pass it to the caller
+                args = dict(zip(list_vars, match_obj.groups()))
+                args['input'] = input
+                return func(instance, **args)
+        raise NotFound('Nothing matches the given URI')
 
 
 class RestfulInstance(object):
@@ -280,6 +363,7 @@ class RestfulInstance(object):
 
         return result
 
+    @Routing.route("/data/<:class_name>", 'GET')
     @_data_decorator
     def get_collection(self, class_name, input):
         """GET resource from class URI.
@@ -297,6 +381,8 @@ class RestfulInstance(object):
                 id: id of the object
                 link: path to the object
         """
+        if class_name not in self.db.classes:
+            raise NotFound('Class %s not found' % class_name)
         if not self.db.security.hasPermission(
             'View', self.db.getuid(), class_name
         ):
@@ -348,6 +434,7 @@ class RestfulInstance(object):
         self.client.setHeader("X-Count-Total", str(len(result)))
         return 200, result
 
+    @Routing.route("/data/<:class_name>/<:item_id>", 'GET')
     @_data_decorator
     def get_element(self, class_name, item_id, input):
         """GET resource from object URI.
@@ -368,6 +455,8 @@ class RestfulInstance(object):
                 link: link to the object
                 attributes: a dictionary represent the attributes of the object
         """
+        if class_name not in self.db.classes:
+            raise NotFound('Class %s not found' % class_name)
         if not self.db.security.hasPermission(
             'View', self.db.getuid(), class_name, itemid=item_id
         ):
@@ -394,6 +483,7 @@ class RestfulInstance(object):
 
         return 200, result
 
+    @Routing.route("/data/<:class_name>/<:item_id>/<:attr_name>", 'GET')
     @_data_decorator
     def get_attribute(self, class_name, item_id, attr_name, input):
         """GET resource from attribute URI.
@@ -415,6 +505,8 @@ class RestfulInstance(object):
                 link: link to the attribute
                 data: data of the requested attribute
         """
+        if class_name not in self.db.classes:
+            raise NotFound('Class %s not found' % class_name)
         if not self.db.security.hasPermission(
             'View', self.db.getuid(), class_name, attr_name, item_id
         ):
@@ -435,6 +527,7 @@ class RestfulInstance(object):
 
         return 200, result
 
+    @Routing.route("/data/<:class_name>", 'POST')
     @_data_decorator
     def post_collection(self, class_name, input):
         """POST a new object to a class
@@ -452,6 +545,8 @@ class RestfulInstance(object):
                 id: id of the object
                 link: path to the object
         """
+        if class_name not in self.db.classes:
+            raise NotFound('Class %s not found' % class_name)
         if not self.db.security.hasPermission(
             'Create', self.db.getuid(), class_name
         ):
@@ -495,21 +590,7 @@ class RestfulInstance(object):
         }
         return 201, result
 
-    @_data_decorator
-    def post_element(self, class_name, item_id, input):
-        """POST to an object of a class is not allowed"""
-        raise Reject('POST to an item is not allowed')
-
-    @_data_decorator
-    def post_attribute(self, class_name, item_id, attr_name, input):
-        """POST to an attribute of an object is not allowed"""
-        raise Reject('POST to an attribute is not allowed')
-
-    @_data_decorator
-    def put_collection(self, class_name, input):
-        """PUT a class is not allowed"""
-        raise Reject('PUT a class is not allowed')
-
+    @Routing.route("/data/<:class_name>/<:item_id>", 'PUT')
     @_data_decorator
     def put_element(self, class_name, item_id, input):
         """PUT a new content to an object
@@ -530,6 +611,8 @@ class RestfulInstance(object):
                 attributes: a dictionary represent only changed attributes of
                             the object
         """
+        if class_name not in self.db.classes:
+            raise NotFound('Class %s not found' % class_name)
         class_obj = self.db.getclass(class_name)
 
         props = self.props_from_args(class_obj, input.value, item_id)
@@ -555,6 +638,7 @@ class RestfulInstance(object):
         }
         return 200, result
 
+    @Routing.route("/data/<:class_name>/<:item_id>/<:attr_name>", 'PUT')
     @_data_decorator
     def put_attribute(self, class_name, item_id, attr_name, input):
         """PUT an attribute to an object
@@ -574,6 +658,8 @@ class RestfulInstance(object):
                 attributes: a dictionary represent only changed attributes of
                             the object
         """
+        if class_name not in self.db.classes:
+            raise NotFound('Class %s not found' % class_name)
         if not self.db.security.hasPermission(
             'Edit', self.db.getuid(), class_name, attr_name, item_id
         ):
@@ -604,6 +690,7 @@ class RestfulInstance(object):
 
         return 200, result
 
+    @Routing.route("/data/<:class_name>", 'DELETE')
     @_data_decorator
     def delete_collection(self, class_name, input):
         """DELETE all objects in a class
@@ -618,6 +705,8 @@ class RestfulInstance(object):
                 status (string): 'ok'
                 count (int): number of deleted objects
         """
+        if class_name not in self.db.classes:
+            raise NotFound('Class %s not found' % class_name)
         if not self.db.security.hasPermission(
             'Delete', self.db.getuid(), class_name
         ):
@@ -644,6 +733,7 @@ class RestfulInstance(object):
 
         return 200, result
 
+    @Routing.route("/data/<:class_name>/<:item_id>", 'DELETE')
     @_data_decorator
     def delete_element(self, class_name, item_id, input):
         """DELETE an object in a class
@@ -658,6 +748,8 @@ class RestfulInstance(object):
             dict:
                 status (string): 'ok'
         """
+        if class_name not in self.db.classes:
+            raise NotFound('Class %s not found' % class_name)
         if not self.db.security.hasPermission(
             'Delete', self.db.getuid(), class_name, itemid=item_id
         ):
@@ -673,6 +765,7 @@ class RestfulInstance(object):
 
         return 200, result
 
+    @Routing.route("/data/<:class_name>/<:item_id>/<:attr_name>", 'DELETE')
     @_data_decorator
     def delete_attribute(self, class_name, item_id, attr_name, input):
         """DELETE an attribute in a object by setting it to None or empty
@@ -688,6 +781,8 @@ class RestfulInstance(object):
             dict:
                 status (string): 'ok'
         """
+        if class_name not in self.db.classes:
+            raise NotFound('Class %s not found' % class_name)
         if not self.db.security.hasPermission(
             'Edit', self.db.getuid(), class_name, attr_name, item_id
         ):
@@ -716,11 +811,7 @@ class RestfulInstance(object):
 
         return 200, result
 
-    @_data_decorator
-    def patch_collection(self, class_name, input):
-        """PATCH a class is not allowed"""
-        raise Reject('PATCH a class is not allowed')
-
+    @Routing.route("/data/<:class_name>/<:item_id>", 'PATCH')
     @_data_decorator
     def patch_element(self, class_name, item_id, input):
         """PATCH an object
@@ -744,6 +835,8 @@ class RestfulInstance(object):
                 attributes: a dictionary represent only changed attributes of
                             the object
         """
+        if class_name not in self.db.classes:
+            raise NotFound('Class %s not found' % class_name)
         try:
             op = input['op'].value.lower()
         except KeyError:
@@ -779,6 +872,7 @@ class RestfulInstance(object):
         }
         return 200, result
 
+    @Routing.route("/data/<:class_name>/<:item_id>/<:attr_name>", 'PATCH')
     @_data_decorator
     def patch_attribute(self, class_name, item_id, attr_name, input):
         """PATCH an attribute of an object
@@ -803,6 +897,8 @@ class RestfulInstance(object):
                 attributes: a dictionary represent only changed attributes of
                             the object
         """
+        if class_name not in self.db.classes:
+            raise NotFound('Class %s not found' % class_name)
         try:
             op = input['op'].value.lower()
         except KeyError:
@@ -842,6 +938,7 @@ class RestfulInstance(object):
         }
         return 200, result
 
+    @Routing.route("/data/<:class_name>", 'OPTIONS')
     @_data_decorator
     def options_collection(self, class_name, input):
         """OPTION return the HTTP Header for the class uri
@@ -850,8 +947,11 @@ class RestfulInstance(object):
             int: http status code 204 (No content)
             body (string): an empty string
         """
+        if class_name not in self.db.classes:
+            raise NotFound('Class %s not found' % class_name)
         return 204, ""
 
+    @Routing.route("/data/<:class_name>/<:item_id>", 'OPTIONS')
     @_data_decorator
     def options_element(self, class_name, item_id, input):
         """OPTION return the HTTP Header for the object uri
@@ -860,12 +960,15 @@ class RestfulInstance(object):
             int: http status code 204 (No content)
             body (string): an empty string
         """
+        if class_name not in self.db.classes:
+            raise NotFound('Class %s not found' % class_name)
         self.client.setHeader(
             "Accept-Patch",
             "application/x-www-form-urlencoded, multipart/form-data"
         )
         return 204, ""
 
+    @Routing.route("/data/<:class_name>/<:item_id>/<:attr_name>", 'OPTIONS')
     @_data_decorator
     def option_attribute(self, class_name, item_id, attr_name, input):
         """OPTION return the HTTP Header for the attribute uri
@@ -874,12 +977,15 @@ class RestfulInstance(object):
             int: http status code 204 (No content)
             body (string): an empty string
         """
+        if class_name not in self.db.classes:
+            raise NotFound('Class %s not found' % class_name)
         self.client.setHeader(
             "Accept-Patch",
             "application/x-www-form-urlencoded, multipart/form-data"
         )
         return 204, ""
 
+    @Routing.route("/summary")
     @_data_decorator
     def summary(self, input):
         """Get a summary of resource from class URI.
@@ -983,44 +1089,13 @@ class RestfulInstance(object):
             "HEAD, OPTIONS, GET, PUT, DELETE, PATCH"
         )
 
-        # PATH is split to multiple pieces
-        # 0 - rest
-        # 1 - data
-        # 2 - resource
-        # 3 - attribute
-        uri_split = uri.lower().split("/")
-
         # Call the appropriate method
-        if len(uri_split) == 2 and uri_split[1] == 'summary':
-            output = self.summary(input)
-        elif 4 >= len(uri_split) > 2 and uri_split[1] == 'data':
-            resource_uri = uri_split[2]
-            try:
-                class_name, item_id = hyperdb.splitDesignator(resource_uri)
-            except hyperdb.DesignatorError:
-                class_name = resource_uri
-                item_id = None
-
-            if class_name not in self.db.classes:
-                output = self.error_obj(404, "Not found")
-            elif item_id is None:
-                if len(uri_split) == 3:
-                    output = getattr(
-                        self, "%s_collection" % method.lower()
-                    )(class_name, input)
-                else:
-                    output = self.error_obj(404, "Not found")
-            else:
-                if len(uri_split) == 3:
-                    output = getattr(
-                        self, "%s_element" % method.lower()
-                    )(class_name, item_id, input)
-                else:
-                    output = getattr(
-                        self, "%s_attribute" % method.lower()
-                    )(class_name, item_id, uri_split[3], input)
-        else:
-            output = self.error_obj(404, "Not found")
+        try:
+            output = Routing.execute(self, uri, method, input)
+        except NotFound, msg:
+            output = self.error_obj(404, msg)
+        except Reject, msg:
+            output = self.error_obj(405, msg)
 
         # Format the content type
         if data_type.lower() == "json":
