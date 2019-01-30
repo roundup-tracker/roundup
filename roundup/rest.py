@@ -14,7 +14,58 @@ import time
 import traceback
 from roundup import hyperdb
 from roundup.exceptions import *
-from roundup import xmlrpc
+
+
+def _data_decorator(func):
+    """Wrap the returned data into an object."""
+    def format_object(self, *args, **kwargs):
+        # get the data / error from function
+        try:
+            code, data = func(self, *args, **kwargs)
+        except IndexError, msg:
+            code = 404
+            data = msg
+        except Unauthorised, msg:
+            code = 403
+            data = msg
+        except (hyperdb.DesignatorError, UsageError), msg:
+            code = 400
+            data = msg
+        except (AttributeError, Reject), msg:
+            code = 405
+            data = msg
+        except ValueError, msg:
+            code = 409
+            data = msg
+        except NotImplementedError:
+            code = 402  # nothing to pay, just a mark for debugging purpose
+            data = 'Method under development'
+        except:
+            exc, val, tb = sys.exc_info()
+            code = 400
+            # if self.DEBUG_MODE in roundup_server
+            # else data = 'An error occurred. Please check...',
+            data = val
+
+            # out to the logfile
+            print 'EXCEPTION AT', time.ctime()
+            traceback.print_exc()
+
+        # decorate it
+        self.client.response_code = code
+        if code >= 400:  # any error require error format
+            result = {
+                'error': {
+                    'status': code,
+                    'msg': data
+                }
+            }
+        else:
+            result = {
+                'data': data
+            }
+        return result
+    return format_object
 
 
 class RestfulInstance(object):
@@ -88,55 +139,6 @@ class RestfulInstance(object):
                 raise UsageError(msg)
 
         return prop
-
-    def _data_decorator(func):
-        """Wrap the returned data into an object.."""
-        def format_object(self, *args, **kwargs):
-            try:
-                code, data = func(self, *args, **kwargs)
-            except IndexError, msg:
-                code = 404
-                data = msg
-            except Unauthorised, msg:
-                code = 403
-                data = msg
-            except (hyperdb.DesignatorError, UsageError), msg:
-                code = 400
-                data = msg
-            except (AttributeError, Reject), msg:
-                code = 405
-                data = msg
-            except ValueError, msg:
-                code = 409
-                data = msg
-            except NotImplementedError:
-                code = 402  # nothing to pay, just a mark for debugging purpose
-                data = 'Method under development'
-            except:
-                exc, val, tb = sys.exc_info()
-                code = 400
-                # if self.DEBUG_MODE in roundup_server
-                # else data = 'An error occurred. Please check...',
-                data = val
-
-                # out to the logfile
-                print 'EXCEPTION AT', time.ctime()
-                traceback.print_exc()
-
-            self.client.response_code = code
-            if code >= 400:  # any error require error format
-                result = {
-                    'error': {
-                        'status': code,
-                        'msg': data
-                    }
-                }
-            else:
-                result = {
-                    'data': data
-                }
-            return result
-        return format_object
 
     @_data_decorator
     def get_collection(self, class_name, input):

@@ -56,9 +56,9 @@ class TestCase(unittest.TestCase):
             'HTTP_HOST': 'localhost',
             'TRACKER_NAME': 'rounduptest'
         }
-        dummy_client = client.Client(self.instance, None, env, [], None)
+        self.dummy_client = client.Client(self.instance, None, env, [], None)
 
-        self.server = RestfulInstance(dummy_client, self.db)
+        self.server = RestfulInstance(self.dummy_client, self.db)
 
     def tearDown(self):
         self.db.close()
@@ -74,22 +74,22 @@ class TestCase(unittest.TestCase):
         obtain data for 'joe'
         """
         # Retrieve all three users.
-        code, results = self.server.get_collection('user', {})
-        self.assertEqual(code, 200)
-        self.assertEqual(len(results), 3)
+        results = self.server.get_collection('user', {})
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['data']), 3)
 
         # Obtain data for 'joe'.
-        code, results = self.server.get_element('user', self.joeid, {})
-        self.assertEqual(code, 200)
+        results = self.server.get_element('user', self.joeid, {})['data']
+        self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['attributes']['username'], 'joe')
         self.assertEqual(results['attributes']['realname'], 'Joe Random')
 
         # Obtain data for 'joe'.
-        code, results = self.server.get_attribute(
+        results = self.server.get_attribute(
             'user', self.joeid, 'username', {}
         )
-        self.assertEqual(code, 200)
-        self.assertEqual(results['data'], 'joe')
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(results['data']['data'], 'joe')
 
     def testPut(self):
         """
@@ -101,30 +101,29 @@ class TestCase(unittest.TestCase):
         form.list = [
             cgi.MiniFieldStorage('data', 'Joe Doe Doe')
         ]
-        code, results = self.server.put_attribute(
+        results = self.server.put_attribute(
             'user', self.joeid, 'realname', form
         )
-        code, results = self.server.get_attribute(
+        results = self.server.get_attribute(
             'user', self.joeid, 'realname', {}
         )
-        self.assertEqual(code, 200)
-        self.assertEqual(results['data'], 'Joe Doe Doe')
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(results['data']['data'], 'Joe Doe Doe')
 
         # Reset joe's 'realname'.
         form = cgi.FieldStorage()
         form.list = [
             cgi.MiniFieldStorage('realname', 'Joe Doe')
         ]
-        code, results = self.server.put_element('user', self.joeid, form)
-        code, results = self.server.get_element('user', self.joeid, {})
-        self.assertEqual(code, 200)
-        self.assertEqual(results['attributes']['realname'], 'Joe Doe')
+        results = self.server.put_element('user', self.joeid, form)
+        results = self.server.get_element('user', self.joeid, {})
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(results['data']['attributes']['realname'], 'Joe Doe')
 
         # check we can't change admin's details
-        self.assertRaises(
-            Unauthorised,
-            self.server.put_element, 'user', '1', form
-        )
+        results = self.server.put_element('user', '1', form)
+        self.assertEqual(self.dummy_client.response_code, 403)
+        self.assertEqual(results['error']['status'], 403)
 
     def testPost(self):
         """
@@ -135,12 +134,12 @@ class TestCase(unittest.TestCase):
         form.list = [
             cgi.MiniFieldStorage('title', 'foo')
         ]
-        code, results = self.server.post_collection('issue', form)
-        self.assertEqual(code, 201)
-        issueid = results['id']
-        code, results = self.server.get_element('issue', issueid, {})
-        self.assertEqual(code, 200)
-        self.assertEqual(results['attributes']['title'], 'foo')
+        results = self.server.post_collection('issue', form)
+        self.assertEqual(self.dummy_client.response_code, 201)
+        issueid = results['data']['id']
+        results = self.server.get_element('issue', issueid, {})
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(results['data']['attributes']['title'], 'foo')
         self.assertEqual(self.db.issue.get(issueid, "tx_Source"), 'web')
 
     def testPostFile(self):
@@ -152,11 +151,11 @@ class TestCase(unittest.TestCase):
         form.list = [
             cgi.MiniFieldStorage('content', 'hello\r\nthere')
         ]
-        code, results = self.server.post_collection('file', form)
-        self.assertEqual(code, 201)
-        fileid = results['id']
-        code, results = self.server.get_element('file', fileid, {})
-        self.assertEqual(code, 200)
+        results = self.server.post_collection('file', form)
+        self.assertEqual(self.dummy_client.response_code, 201)
+        fileid = results['data']['id']
+        results = self.server.get_element('file', fileid, {})['data']
+        self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['attributes']['content'], 'hello\r\nthere')
 
     def testAuthDeniedPut(self):
@@ -168,10 +167,9 @@ class TestCase(unittest.TestCase):
         form.list = [
             cgi.MiniFieldStorage('realname', 'someone')
         ]
-        self.assertRaises(
-            Unauthorised,
-            self.server.put_element, 'user', '1', form
-        )
+        results = self.server.put_element('user', '1', form)
+        self.assertEqual(self.dummy_client.response_code, 403)
+        self.assertEqual(results['error']['status'], 403)
 
     def testAuthDeniedPost(self):
         """
@@ -181,10 +179,9 @@ class TestCase(unittest.TestCase):
         form.list = [
             cgi.MiniFieldStorage('username', 'blah')
         ]
-        self.assertRaises(
-            Unauthorised,
-            self.server.post_collection, 'user', form
-        )
+        results = self.server.post_collection('user', form)
+        self.assertEqual(self.dummy_client.response_code, 403)
+        self.assertEqual(results['error']['status'], 403)
 
     def testAuthAllowedPut(self):
         """
@@ -196,10 +193,9 @@ class TestCase(unittest.TestCase):
             cgi.MiniFieldStorage('realname', 'someone')
         ]
         try:
-            try:
-                self.server.put_element('user', '2', form)
-            except Unauthorised, err:
-                self.fail('raised %s' % err)
+            self.server.put_element('user', '2', form)
+        except Unauthorised, err:
+            self.fail('raised %s' % err)
         finally:
             self.db.setCurrentUser('joe')
 
@@ -213,10 +209,9 @@ class TestCase(unittest.TestCase):
             cgi.MiniFieldStorage('username', 'blah')
         ]
         try:
-            try:
-                self.server.post_collection('user', form)
-            except Unauthorised, err:
-                self.fail('raised %s' % err)
+            self.server.post_collection('user', form)
+        except Unauthorised, err:
+            self.fail('raised %s' % err)
         finally:
             self.db.setCurrentUser('joe')
 
@@ -228,19 +223,19 @@ class TestCase(unittest.TestCase):
         issue_id = self.db.issue.create(title='foo', nosy=['1'])
 
         # remove the title and nosy
-        code, results = self.server.delete_attribute(
+        results = self.server.delete_attribute(
             'issue', issue_id, 'title', {}
         )
-        self.assertEqual(code, 200)
+        self.assertEqual(self.dummy_client.response_code, 200)
 
-        code, results = self.server.delete_attribute(
+        results = self.server.delete_attribute(
             'issue', issue_id, 'nosy', {}
         )
-        self.assertEqual(code, 200)
+        self.assertEqual(self.dummy_client.response_code, 200)
 
         # verify the result
-        code, results = self.server.get_element('issue', issue_id, {})
-        self.assertEqual(code, 200)
+        results = self.server.get_element('issue', issue_id, {})['data']
+        self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(len(results['attributes']['nosy']), 0)
         self.assertListEqual(results['attributes']['nosy'], [])
         self.assertEqual(results['attributes']['title'], None)
@@ -258,12 +253,12 @@ class TestCase(unittest.TestCase):
             cgi.MiniFieldStorage('op', 'add'),
             cgi.MiniFieldStorage('nosy', '2')
         ]
-        code, results = self.server.patch_element('issue', issue_id, form)
-        self.assertEqual(code, 200)
+        results = self.server.patch_element('issue', issue_id, form)
+        self.assertEqual(self.dummy_client.response_code, 200)
 
         # verify the result
-        code, results = self.server.get_element('issue', issue_id, {})
-        self.assertEqual(code, 200)
+        results = self.server.get_element('issue', issue_id, {})['data']
+        self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(len(results['attributes']['nosy']), 2)
         self.assertListEqual(results['attributes']['nosy'], ['1', '2'])
 
@@ -281,12 +276,12 @@ class TestCase(unittest.TestCase):
             cgi.MiniFieldStorage('nosy', '2'),
             cgi.MiniFieldStorage('status', '3')
         ]
-        code, results = self.server.patch_element('issue', issue_id, form)
-        self.assertEqual(code, 200)
+        results = self.server.patch_element('issue', issue_id, form)
+        self.assertEqual(self.dummy_client.response_code, 200)
 
         # verify the result
-        code, results = self.server.get_element('issue', issue_id, {})
-        self.assertEqual(code, 200)
+        results = self.server.get_element('issue', issue_id, {})['data']
+        self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['attributes']['status'], '3')
         self.assertEqual(len(results['attributes']['nosy']), 1)
         self.assertListEqual(results['attributes']['nosy'], ['2'])
@@ -305,12 +300,12 @@ class TestCase(unittest.TestCase):
             cgi.MiniFieldStorage('nosy', ''),
             cgi.MiniFieldStorage('title', '')
         ]
-        code, results = self.server.patch_element('issue', issue_id, form)
-        self.assertEqual(code, 200)
+        results = self.server.patch_element('issue', issue_id, form)
+        self.assertEqual(self.dummy_client.response_code, 200)
 
         # verify the result
-        code, results = self.server.get_element('issue', issue_id, {})
-        self.assertEqual(code, 200)
+        results = self.server.get_element('issue', issue_id, {})['data']
+        self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['attributes']['title'], None)
         self.assertEqual(len(results['attributes']['nosy']), 0)
         self.assertEqual(results['attributes']['nosy'], [])
