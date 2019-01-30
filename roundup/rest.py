@@ -139,9 +139,14 @@ class RestfulInstance(object):
         except (TypeError, IndexError, ValueError), message:
             raise UsageError(message)
 
+        # set the header Location
+        link = self.base_path + class_name + item_id
+        self.client.setHeader("Location", link)
+
+        # set the response body
         result = {
             'id': item_id,
-            'link': self.base_path + class_name + item_id
+            'link': link
         }
         return 201, result
 
@@ -225,6 +230,14 @@ class RestfulInstance(object):
         # 2 - attribute
         resource_uri = uri.split("/")[1]
 
+        self.client.setHeader("Access-Control-Allow-Methods",
+                              "HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH")
+        self.client.setHeader("Access-Control-Allow-Headers",
+                              "Content-Type, Authorization,"
+                              "X-HTTP-Method-Override")
+        self.client.setHeader("Allow",
+                              "HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH")
+
         output = None
         try:
             if resource_uri in self.db.classes:
@@ -264,9 +277,9 @@ class RestfulInstance(object):
             print 'EXCEPTION AT', time.ctime()
             traceback.print_exc()
         finally:
+            self.client.setHeader("Content-Type", "application/json")
             output = RoundupJSONEncoder().encode(output)
 
-        print "Length: %s - Content(50 char): %s" % (len(output), output[:50])
         return output
 
 
