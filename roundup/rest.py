@@ -28,7 +28,7 @@ def _data_decorator(func):
         except Unauthorised, msg:
             code = 403
             data = msg
-        except (hyperdb.DesignatorError, UsageError), msg:
+        except UsageError, msg:
             code = 400
             data = msg
         except (AttributeError, Reject), msg:
@@ -72,7 +72,7 @@ class RestfulInstance(object):
     """The RestfulInstance performs REST request from the client"""
 
     def __init__(self, client, db):
-        self.client = client  # it might be unnecessary to receive the client
+        self.client = client
         self.db = db
 
         protocol = 'http'
@@ -139,6 +139,20 @@ class RestfulInstance(object):
                 raise UsageError(msg)
 
         return prop
+
+    def error_obj(self, status, msg, source=None):
+        """Return an error object"""
+        self.client.response_code = status
+        result = {
+            'error': {
+                'status': status,
+                'msg': msg
+            }
+        }
+        if source is not None:
+            result['error']['source'] = source
+
+        return result
 
     @_data_decorator
     def get_collection(self, class_name, input):
@@ -744,9 +758,9 @@ class RestfulInstance(object):
         #            default (application/json)
 
         # format_header need a priority parser
-        format_ext = os.path.splitext(urlparse.urlparse(uri).path)[1][1:]
-        format_header = headers.getheader('Accept')[12:]
-        format_output = format_ext or format_header or "json"
+        ext_type = os.path.splitext(urlparse.urlparse(uri).path)[1][1:]
+        accept_header = headers.getheader('Accept')[12:]
+        data_type = ext_type or accept_header or "json"
 
         # check for pretty print
         try:
@@ -760,42 +774,39 @@ class RestfulInstance(object):
             "Access-Control-Allow-Headers",
             "Content-Type, Authorization, X-HTTP-Method-Override"
         )
-        if resource_uri in self.db.classes:
-            self.client.setHeader(
-                "Allow",
-                "HEAD, OPTIONS, GET, POST, DELETE"
-            )
-            self.client.setHeader(
-                "Access-Control-Allow-Methods",
-                "HEAD, OPTIONS, GET, POST, DELETE"
-            )
-        else:
-            self.client.setHeader(
-                "Allow",
-                "HEAD, OPTIONS, GET, PUT, DELETE, PATCH"
-            )
-            self.client.setHeader(
-                "Access-Control-Allow-Methods",
-                "HEAD, OPTIONS, GET, PUT, DELETE, PATCH"
-            )
+        self.client.setHeader(
+            "Allow",
+            "HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH"
+        )
+        self.client.setHeader(
+            "Access-Control-Allow-Methods",
+            "HEAD, OPTIONS, GET, PUT, DELETE, PATCH"
+        )
+        try:
+            class_name, item_id = hyperdb.splitDesignator(resource_uri)
+        except hyperdb.DesignatorError, msg:
+            class_name = resource_uri
+            item_id = None
 
         # Call the appropriate method
-        output = None
-        if resource_uri in self.db.classes:
-            output = getattr(
-                self, "%s_collection" % method.lower()
-                )(resource_uri, input)
-        else:
-            class_name, item_id = hyperdb.splitDesignator(resource_uri)
-            if len(uri_split) == 3:
+        if (class_name not in self.db.classes) or (len(uri_split) > 3):
+            output = self.error_obj(404, "Not found")
+        elif item_id is None:
+            if len(uri_split) == 2:
                 output = getattr(
-                    self, "%s_attribute" % method.lower()
-                    )(class_name, item_id, uri_split[2], input)
-            else:
+                    self, "%s_collection" % method.lower()
+                )(class_name, input)
+        else:
+            if len(uri_split) == 2:
                 output = getattr(
                     self, "%s_element" % method.lower()
-                    )(class_name, item_id, input)
+                )(class_name, item_id, input)
+            else:
+                output = getattr(
+                    self, "%s_attribute" % method.lower()
+                )(class_name, item_id, uri_split[2], input)
 
+        # Format the content type
         if format_output.lower() == "json":
             self.client.setHeader("Content-Type", "application/json")
             if pretty_output:
