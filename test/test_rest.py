@@ -82,11 +82,32 @@ class TestCase(unittest.TestCase):
         self.assertEqual(results['attributes']['username'], 'joe')
         self.assertEqual(results['attributes']['realname'], 'Joe Random')
 
+        # Obtain data for 'joe'.
+        code, results = self.server.get_attribute(
+            'user', self.joeid, 'username', {}
+        )
+        self.assertEqual(code, 200)
+        self.assertEqual(results['data'], 'joe')
+
     def testPut(self):
         """
         Change joe's 'realname'
         Check if we can't change admin's detail
         """
+        # change Joe's realname via attribute uri
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('data', 'Joe Doe Doe')
+        ]
+        code, results = self.server.put_attribute(
+            'user', self.joeid, 'realname', form
+        )
+        code, results = self.server.get_attribute(
+            'user', self.joeid, 'realname', {}
+        )
+        self.assertEqual(code, 200)
+        self.assertEqual(results['data'], 'Joe Doe Doe')
+
         # Reset joe's 'realname'.
         form = cgi.FieldStorage()
         form.list = [
@@ -196,6 +217,31 @@ class TestCase(unittest.TestCase):
                 self.fail('raised %s' % err)
         finally:
             self.db.setCurrentUser('joe')
+
+    def testDeleteAttributeUri(self):
+        """
+        Test Delete an attribute
+        """
+        # create a new issue with userid 1 in the nosy list
+        issue_id = self.db.issue.create(title='foo', nosy=['1'])
+
+        # remove the title and nosy
+        code, results = self.server.delete_attribute(
+            'issue', issue_id, 'title', {}
+        )
+        self.assertEqual(code, 200)
+
+        code, results = self.server.delete_attribute(
+            'issue', issue_id, 'nosy', {}
+        )
+        self.assertEqual(code, 200)
+
+        # verify the result
+        code, results = self.server.get_element('issue', issue_id, {})
+        self.assertEqual(code, 200)
+        self.assertEqual(len(results['attributes']['nosy']), 0)
+        self.assertListEqual(results['attributes']['nosy'], [])
+        self.assertEqual(results['attributes']['title'], None)
 
     def testPatchAdd(self):
         """
