@@ -255,6 +255,12 @@ class RestfulInstance(object):
         format_header = self.client.request.headers.getheader('Accept')[12:]
         format_output = format_ext or format_header or "json"
 
+        # check for pretty print
+        try:
+            pretty_output = input['pretty'].value.lower() == "true"
+        except KeyError:
+            pretty_output = False
+
         self.client.setHeader("Access-Control-Allow-Origin", "*")
         self.client.setHeader("Access-Control-Allow-Headers",
                               "Content-Type, Authorization, "
@@ -312,7 +318,11 @@ class RestfulInstance(object):
         finally:
             if format_output.lower() == "json":
                 self.client.setHeader("Content-Type", "application/json")
-                output = RoundupJSONEncoder().encode(output)
+                if pretty_output:
+                    indent = 4
+                else:
+                    indent = None
+                output = RoundupJSONEncoder(indent=indent).encode(output)
             else:
                 self.client.response_code = 406
                 output = ""
