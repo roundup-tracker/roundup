@@ -82,7 +82,8 @@ class RestfulInstance(object):
             raise Unauthorised('Permission to view %s denied' % class_name)
         class_obj = self.db.getclass(class_name)
         prop_name = class_obj.labelprop()
-        result = [{'id': item_id, prop_name: class_obj.get(item_id, prop_name)}
+        class_path = self.base_path + class_name
+        result = [{'id': item_id, 'link': class_path + item_id}
                   for item_id in class_obj.list()
                   if self.db.security.hasPermission('View', self.db.getuid(),
                                                     class_name,
@@ -102,8 +103,12 @@ class RestfulInstance(object):
                   if self.db.security.hasPermission('View', self.db.getuid(),
                                                     class_name, prop_name,
                                                     item_id)]
-        result = dict(result)
-        result['id'] = item_id
+        result = {
+            'id': item_id,
+            'type': class_name,
+            'link': self.base_path + class_name + item_id,
+            'attributes': dict(result)
+        }
 
         return result
 
@@ -135,7 +140,10 @@ class RestfulInstance(object):
         except (TypeError, IndexError, ValueError), message:
             raise UsageError(message)
 
-        result = {id: item_id}
+        result = {
+            'id': item_id,
+            'link': self.base_path + class_name + item_id
+        }
         return result
 
     def post_element(self, class_name, item_id, input):
@@ -159,7 +167,12 @@ class RestfulInstance(object):
         except (TypeError, IndexError, ValueError), message:
             raise UsageError(message)
 
-        result['id'] = item_id
+        result = {
+            'id': item_id,
+            'type': class_name,
+            'link': self.base_path + class_name + item_id,
+            'attribute': result
+        }
         return result
 
     def delete_collection(self, class_name, input):
@@ -174,11 +187,15 @@ class RestfulInstance(object):
                 raise Unauthorised('Permission to delete %s %s denied' %
                                    (class_name, item_id))
 
+        count = len(class_obj.list())
         for item_id in class_obj.list():
             self.db.destroynode(class_name, item_id)
 
         self.db.commit()
-        result = {"status": "ok"}
+        result = {
+            'status': 'ok',
+            'count': count
+        }
 
         return result
 
@@ -190,7 +207,9 @@ class RestfulInstance(object):
 
         self.db.destroynode(class_name, item_id)
         self.db.commit()
-        result = {"status": "ok"}
+        result = {
+            'status': 'ok'
+        }
 
         return result
 
@@ -224,8 +243,8 @@ class RestfulInstance(object):
             output = error_obj(403, msg)
         except (hyperdb.DesignatorError, UsageError), msg:
             output = error_obj(400, msg)
-        except (AttributeError, Reject):
-            output = error_obj(405, 'Method Not Allowed')
+        except (AttributeError, Reject), msg:
+            output = error_obj(405, 'Method Not Allowed. ' + str(msg))
         except NotImplementedError:
             output = error_obj(402, 'Method is under development')
             # nothing to pay, just a mark for debugging purpose
