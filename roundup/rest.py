@@ -43,12 +43,14 @@ def _data_decorator(func):
         except:
             exc, val, tb = sys.exc_info()
             code = 400
-            # if self.DEBUG_MODE in roundup_server
-            # else data = 'An error occurred. Please check...',
-            data = val
-
+            ts = time.ctime()
+            if self.client.request.DEBUG_MODE:
+                data = val
+            else:
+                data = '%s: An error occurred. Please check the server log' \
+                       ' for more information.' % ts
             # out to the logfile
-            print 'EXCEPTION AT', time.ctime()
+            print 'EXCEPTION AT', ts
             traceback.print_exc()
 
         # decorate it
@@ -70,6 +72,8 @@ def _data_decorator(func):
 
 class RestfulInstance(object):
     """The RestfulInstance performs REST request from the client"""
+
+    __default_patch_op = "replace"  # default operator for PATCH method
 
     def __init__(self, client, db):
         self.client = client
@@ -621,7 +625,7 @@ class RestfulInstance(object):
         try:
             op = input['op'].value.lower()
         except KeyError:
-            op = "replace"
+            op = self.__default_patch_op
         class_obj = self.db.getclass(class_name)
 
         props = self.props_from_args(class_obj, input.value, item_id)
@@ -689,8 +693,7 @@ class RestfulInstance(object):
         try:
             op = input['op'].value.lower()
         except KeyError:
-            op = "replace"
-        class_obj = self.db.getclass(class_name)
+            op = self.__default_patch_op
 
         if not self.db.security.hasPermission(
             'Edit', self.db.getuid(), class_name, attr_name, item_id
@@ -818,7 +821,7 @@ class RestfulInstance(object):
         )
         try:
             class_name, item_id = hyperdb.splitDesignator(resource_uri)
-        except hyperdb.DesignatorError, msg:
+        except hyperdb.DesignatorError:
             class_name = resource_uri
             item_id = None
 
