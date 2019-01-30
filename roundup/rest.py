@@ -224,6 +224,15 @@ class RestfulInstance(object):
     def patch_element(self, class_name, item_id, input):
         raise NotImplementedError
 
+    def options_collection(self, class_name, input):
+        return 204, ""
+
+    def options_element(self, class_name, item_id, input):
+        self.client.setHeader("Accept-Patch",
+                              "application/x-www-form-urlencoded, "
+                              "multipart/form-data")
+        return 204, ""
+
     def dispatch(self, method, uri, input):
         # PATH is split to multiple pieces
         # 0 - rest
@@ -253,9 +262,9 @@ class RestfulInstance(object):
         try:
             if resource_uri in self.db.classes:
                 self.client.setHeader("Allow",
-                                      "HEAD, OPTIONS, POST, DELETE")
+                                      "HEAD, OPTIONS, GET, POST, DELETE")
                 self.client.setHeader("Access-Control-Allow-Methods",
-                                      "HEAD, OPTIONS, POST, DELETE")
+                                      "HEAD, OPTIONS, GET, POST, DELETE")
                 response_code, output = getattr(self, "%s_collection" % method.lower())(
                     resource_uri, input)
             else:
