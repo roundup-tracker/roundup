@@ -796,16 +796,16 @@ class RestfulInstance(object):
                     self, "%s_element" % method.lower()
                     )(class_name, item_id, input)
 
-            if format_output.lower() == "json":
-                self.client.setHeader("Content-Type", "application/json")
-                if pretty_output:
-                    indent = 4
-                else:
-                    indent = None
-                output = RoundupJSONEncoder(indent=indent).encode(output)
+        if format_output.lower() == "json":
+            self.client.setHeader("Content-Type", "application/json")
+            if pretty_output:
+                indent = 4
             else:
-                self.client.response_code = 406
-                output = "Content type is not accepted by client"
+                indent = None
+            output = RoundupJSONEncoder(indent=indent).encode(output)
+        else:
+            self.client.response_code = 406
+            output = "Content type is not accepted by client"
 
         return output
 
