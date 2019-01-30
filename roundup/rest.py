@@ -152,7 +152,7 @@ class RestfulInstance(object):
             'View', self.db.getuid(), class_name, itemid=item_id
         ):
             raise Unauthorised(
-                'Permission to view %s item %d denied' % (class_name, item_id)
+                'Permission to view %s item %s denied' % (class_name, item_id)
             )
 
         class_obj = self.db.getclass(class_name)
@@ -379,7 +379,11 @@ class RestfulInstance(object):
             elif op == 'replace':
                 pass
             elif op == 'remove':
-                props[prop] = None
+                current_prop = class_obj.get(item_id, prop)
+                if isinstance(current_prop, list):
+                    props[prop] = []
+                else:
+                    props[prop] = None
             else:
                 raise UsageError('PATCH Operation %s is not allowed' % op)
 
