@@ -69,6 +69,13 @@ class RestfulInstance(object):
         self.client = client  # it might be unnecessary to receive the client
         self.db = db
 
+        protocol = 'http'
+        host = self.client.env['HTTP_HOST']
+        tracker = self.client.env['TRACKER_NAME']
+        self.base_path = '%s://%s/%s/rest/' % (protocol, host, tracker)
+
+        print self.base_path
+
     def get_collection(self, class_name, input):
         if not self.db.security.hasPermission('View', self.db.getuid(),
                                               class_name):
@@ -197,6 +204,7 @@ class RestfulInstance(object):
         # PATH is split to multiple pieces
         # 0 - rest
         # 1 - resource
+        # 2 - attribute
         resource_uri = uri.split("/")[1]
 
         output = None
@@ -210,6 +218,8 @@ class RestfulInstance(object):
                     class_name, item_id, input)
 
             output = data_obj(output)
+        except IndexError, msg:
+            output = error_obj(404, msg)
         except Unauthorised, msg:
             output = error_obj(403, msg)
         except (hyperdb.DesignatorError, UsageError), msg:
@@ -218,7 +228,7 @@ class RestfulInstance(object):
             output = error_obj(405, 'Method Not Allowed')
         except NotImplementedError:
             output = error_obj(402, 'Method is under development')
-            # nothing to pay, just mark that this is under development
+            # nothing to pay, just a mark for debugging purpose
         except:
             # if self.DEBUG_MODE in roundup_server
             # else msg = 'An error occurred. Please check...',
