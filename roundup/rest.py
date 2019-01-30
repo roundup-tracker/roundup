@@ -18,8 +18,7 @@ from roundup import xmlrpc
 
 
 class RestfulInstance(object):
-    """Dummy Handler for REST
-    """
+    """The RestfulInstance performs REST request from the client"""
 
     def __init__(self, client, db):
         self.client = client  # it might be unnecessary to receive the client
@@ -31,6 +30,18 @@ class RestfulInstance(object):
         self.base_path = '%s://%s/%s/rest/' % (protocol, host, tracker)
 
     def props_from_args(self, cl, args, itemid=None):
+        """Construct a list of properties from the given arguments,
+        and return them after validation.
+
+        Args:
+            cl (string): class object of the resource
+            args (list): the submitted form of the user
+            itemid (string, optional): itemid of the object
+
+        Returns:
+            dict: dictionary of validated properties
+
+        """
         class_props = cl.properties.keys()
         props = {}
         # props = dict.fromkeys(class_props, None)
@@ -63,6 +74,8 @@ class RestfulInstance(object):
 
     @staticmethod
     def error_obj(status, msg, source=None):
+        """Wrap the error data into an object. This function is temporally and
+        will be changed to a decorator later."""
         result = {
             'error': {
                 'status': status,
@@ -76,12 +89,29 @@ class RestfulInstance(object):
 
     @staticmethod
     def data_obj(data):
+        """Wrap the returned data into an object. This function is temporally
+        and will be changed to a decorator later."""
         result = {
             'data': data
         }
         return result
 
     def get_collection(self, class_name, input):
+        """GET resource from class URI.
+
+        This function returns only items have View permission
+        class_name should be valid already
+
+        Args:
+            class_name (string): class name of the resource (Ex: issue, msg)
+            input (list): the submitted form of the user
+
+        Returns:
+            int: http status code 200 (OK)
+            list: list of reference item in the class
+                id: id of the object
+                link: path to the object
+        """
         if not self.db.security.hasPermission(
             'View', self.db.getuid(), class_name
         ):
@@ -100,6 +130,24 @@ class RestfulInstance(object):
         return 200, result
 
     def get_element(self, class_name, item_id, input):
+        """GET resource from object URI.
+
+        This function returns only properties have View permission
+        class_name and item_id should be valid already
+
+        Args:
+            class_name (string): class name of the resource (Ex: issue, msg)
+            item_id (string): id of the resource (Ex: 12, 15)
+            input (list): the submitted form of the user
+
+        Returns:
+            int: http status code 200 (OK)
+            dict: a dictionary represents the object
+                id: id of the object
+                type: class name of the object
+                link: link to the object
+                attributes: a dictionary represent the attributes of the object
+        """
         if not self.db.security.hasPermission(
             'View', self.db.getuid(), class_name, itemid=item_id
         ):
@@ -127,6 +175,21 @@ class RestfulInstance(object):
         return 200, result
 
     def post_collection(self, class_name, input):
+        """POST a new object to a class
+
+        If the item is successfully created, the "Location" header will also
+        contain the link to the created object
+
+        Args:
+            class_name (string): class name of the resource (Ex: issue, msg)
+            input (list): the submitted form of the user
+
+        Returns:
+            int: http status code 201 (Created)
+            dict: a reference item to the created object
+                id: id of the object
+                link: path to the object
+        """
         if not self.db.security.hasPermission(
             'Create', self.db.getuid(), class_name
         ):
@@ -171,12 +234,32 @@ class RestfulInstance(object):
         return 201, result
 
     def post_element(self, class_name, item_id, input):
+        """POST to an object of a class is not allowed"""
         raise Reject('POST to an item is not allowed')
 
     def put_collection(self, class_name, input):
+        """PUT a class is not allowed"""
         raise Reject('PUT a class is not allowed')
 
     def put_element(self, class_name, item_id, input):
+        """PUT a new content to an object
+
+        Replace the content of the existing object
+
+        Args:
+            class_name (string): class name of the resource (Ex: issue, msg)
+            item_id (string): id of the resource (Ex: 12, 15)
+            input (list): the submitted form of the user
+
+        Returns:
+            int: http status code 200 (OK)
+            dict: a dictionary represents the modified object
+                id: id of the object
+                type: class name of the object
+                link: link to the object
+                attributes: a dictionary represent only changed attributes of
+                            the object
+        """
         class_obj = self.db.getclass(class_name)
 
         props = self.props_from_args(class_obj, input.value, item_id)
@@ -203,6 +286,18 @@ class RestfulInstance(object):
         return 200, result
 
     def delete_collection(self, class_name, input):
+        """DELETE all objects in a class
+
+        Args:
+            class_name (string): class name of the resource (Ex: issue, msg)
+            input (list): the submitted form of the user
+
+        Returns:
+            int: http status code 200 (OK)
+            dict:
+                status (string): 'ok'
+                count (int): number of deleted objects
+        """
         if not self.db.security.hasPermission(
             'Delete', self.db.getuid(), class_name
         ):
@@ -230,6 +325,18 @@ class RestfulInstance(object):
         return 200, result
 
     def delete_element(self, class_name, item_id, input):
+        """DELETE an object in a class
+
+        Args:
+            class_name (string): class name of the resource (Ex: issue, msg)
+            item_id (string): id of the resource (Ex: 12, 15)
+            input (list): the submitted form of the user
+
+        Returns:
+            int: http status code 200 (OK)
+            dict:
+                status (string): 'ok'
+        """
         if not self.db.security.hasPermission(
             'Delete', self.db.getuid(), class_name, itemid=item_id
         ):
@@ -246,6 +353,7 @@ class RestfulInstance(object):
         return 200, result
 
     def patch_collection(self, class_name, input):
+        """PATCH a class is not allowed"""
         raise Reject('PATCH a class is not allowed')
 
     def patch_element(self, class_name, item_id, input):
@@ -290,9 +398,21 @@ class RestfulInstance(object):
         return 200, result
 
     def options_collection(self, class_name, input):
+        """OPTION return the HTTP Header for the class uri
+
+        Returns:
+            int: http status code 204 (No content)
+            body (string): an empty string
+        """
         return 204, ""
 
     def options_element(self, class_name, item_id, input):
+        """OPTION return the HTTP Header for the object uri
+
+        Returns:
+            int: http status code 204 (No content)
+            body (string): an empty string
+        """
         self.client.setHeader(
             "Accept-Patch",
             "application/x-www-form-urlencoded, "
@@ -301,6 +421,7 @@ class RestfulInstance(object):
         return 204, ""
 
     def dispatch(self, method, uri, input):
+        """format and process the request"""
         # PATH is split to multiple pieces
         # 0 - rest
         # 1 - resource
@@ -327,40 +448,43 @@ class RestfulInstance(object):
         except KeyError:
             pretty_output = False
 
+        # add access-control-allow-* to support CORS
         self.client.setHeader("Access-Control-Allow-Origin", "*")
         self.client.setHeader(
             "Access-Control-Allow-Headers",
             "Content-Type, Authorization, X-HTTP-Method-Override"
         )
+        if resource_uri in self.db.classes:
+            self.client.setHeader(
+                "Allow",
+                "HEAD, OPTIONS, GET, POST, DELETE"
+            )
+            self.client.setHeader(
+                "Access-Control-Allow-Methods",
+                "HEAD, OPTIONS, GET, POST, DELETE"
+            )
+        else:
+            self.client.setHeader(
+                "Allow",
+                "HEAD, OPTIONS, GET, PUT, DELETE, PATCH"
+            )
+            self.client.setHeader(
+                "Access-Control-Allow-Methods",
+                "HEAD, OPTIONS, GET, PUT, DELETE, PATCH"
+            )
 
+        # Call the appropriate method
         output = None
         try:
             if resource_uri in self.db.classes:
-                self.client.setHeader(
-                    "Allow",
-                    "HEAD, OPTIONS, GET, POST, DELETE"
-                )
-                self.client.setHeader(
-                    "Access-Control-Allow-Methods",
-                    "HEAD, OPTIONS, GET, POST, DELETE"
-                )
                 response_code, output = getattr(
                     self, "%s_collection" % method.lower()
                     )(resource_uri, input)
             else:
                 class_name, item_id = hyperdb.splitDesignator(resource_uri)
-                self.client.setHeader(
-                    "Allow",
-                    "HEAD, OPTIONS, GET, PUT, DELETE, PATCH"
-                )
-                self.client.setHeader(
-                    "Access-Control-Allow-Methods",
-                    "HEAD, OPTIONS, GET, PUT, DELETE, PATCH"
-                )
                 response_code, output = getattr(
                     self, "%s_element" % method.lower()
                     )(class_name, item_id, input)
-
             output = RestfulInstance.data_obj(output)
             self.client.response_code = response_code
         except IndexError, msg:
@@ -408,6 +532,8 @@ class RestfulInstance(object):
 
 
 class RoundupJSONEncoder(json.JSONEncoder):
+    """RoundupJSONEncoder overrides the default JSONEncoder to handle all
+    types of the object without returning any error"""
     def default(self, obj):
         try:
             result = json.JSONEncoder.default(self, obj)
