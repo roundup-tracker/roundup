@@ -31,6 +31,13 @@ Features:
 - Support for Python 3 (3.4 and later).  See doc/upgrading.txt for
   details of what is required to move an existing tracker from Python
   2 to Python 3 (Joseph Myers, Christof Meerwald)
+- Merge the Google Summer of Code Project of 2015, the implementation of
+  a REST-API for Roundup. This was implemented by Chau Nguyen under the
+  supervision of Ezio Melotti. Some additions were made, most notably we
+  never destroy an object in the database but retire them with the
+  DELETE method. We also don't allow to DELETE a whole class. Python3
+  support was also fixed and we have cherry-picked two patches from the
+  bugs.python.org branch in the files affected by the REST-API changes.
 
 Fixed:
 
