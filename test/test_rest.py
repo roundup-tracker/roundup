@@ -1,16 +1,18 @@
-import unittest, os, shutil, errno, sys, difflib, cgi, re
+import unittest
+import os
+import shutil
+import errno
 
-from xmlrpclib import MultiCall
 from roundup.cgi.exceptions import *
-from roundup import init, instance, password, hyperdb, date
+from roundup import password, hyperdb
 from roundup.rest import RestfulInstance
 from roundup.backends import list_backends
-from roundup.hyperdb import String
-from roundup.cgi import TranslationService, client
+from roundup.cgi import client
 
 import db_test_base
 
 NEEDS_INSTANCE = 1
+
 
 class TestCase(unittest.TestCase):
 
@@ -312,6 +314,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(results['attributes']['title'], None)
         self.assertEqual(len(results['attributes']['nosy']), 0)
         self.assertEqual(results['attributes']['nosy'], [])
+
 
 def test_suite():
     suite = unittest.TestSuite()
