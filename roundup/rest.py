@@ -12,6 +12,7 @@ import pprint
 import sys
 import time
 import traceback
+import xml
 from roundup import hyperdb
 from roundup.exceptions import *
 
@@ -220,6 +221,59 @@ class RestfulInstance(object):
         }
         if source is not None:
             result['error']['source'] = source
+
+        return result
+
+    def patch_data(self, op, old_val, new_val):
+        """Perform patch operation based on old_val and new_val
+
+        Args:
+            op (string): PATCH operation: add, replace, remove
+            old_val: old value of the property
+            new_val: new value of the property
+
+        Returns:
+            result (string): value after performed the operation
+        """
+        # add operation: If neither of the value is None, use the other one
+        #                Otherwise, concat those 2 value
+        if op == 'add':
+            if old_val is None:
+                result = new_val
+            elif new_val is None:
+                result = old_val
+            else:
+                result = old_val + new_val
+        # Replace operation: new value is returned
+        elif op == 'replace':
+            result = new_val
+        # Remove operation:
+        #   if old_val is not a list/dict, change it to None
+        #   if old_val is a list/dict, but the parameter is empty,
+        #       change it to none
+        #   if old_val is a list/dict, and parameter is not empty
+        #       proceed to remove the values from parameter from the list/dict
+        elif op == 'remove':
+            if isinstance(old_val, list):
+                if new_val is None:
+                    result = []
+                elif isinstance(new_val, list):
+                    result = [x for x in old_val if x not in new_val]
+                else:
+                    if new_val in old_val:
+                        old_val.remove(new_val)
+            elif isinstance(old_val, dict):
+                if new_val is None:
+                    result = {}
+                elif isinstance(new_val, dict):
+                    for x in new_val:
+                        old_val.pop(x, None)
+                else:
+                    old_val.pop(new_val, None)
+            else:
+                result = None
+        else:
+            raise UsageError('PATCH Operation %s is not allowed' % op)
 
         return result
 
@@ -704,18 +758,9 @@ class RestfulInstance(object):
                     (prop, class_name, item_id)
                 )
 
-            if op == 'add':
-                props[prop] = class_obj.get(item_id, prop) + props[prop]
-            elif op == 'replace':
-                pass
-            elif op == 'remove':
-                current_prop = class_obj.get(item_id, prop)
-                if isinstance(current_prop, list):
-                    props[prop] = []
-                else:
-                    props[prop] = None
-            else:
-                raise UsageError('PATCH Operation %s is not allowed' % op)
+            props[prop] = self.patch_data(
+                op, class_obj.get(item_id, prop), props[prop]
+            )
 
         try:
             result = class_obj.set(item_id, **props)
@@ -776,18 +821,9 @@ class RestfulInstance(object):
             )
         }
 
-        if op == 'add':
-            props[prop] = class_obj.get(item_id, prop) + props[prop]
-        elif op == 'replace':
-            pass
-        elif op == 'remove':
-            current_prop = class_obj.get(item_id, prop)
-            if isinstance(current_prop, list):
-                props[prop] = []
-            else:
-                props[prop] = None
-        else:
-            raise UsageError('PATCH Operation %s is not allowed' % op)
+        props[prop] = self.patch_data(
+            op, class_obj.get(item_id, prop), props[prop]
+        )
 
         try:
             result = class_obj.set(item_id, **props)

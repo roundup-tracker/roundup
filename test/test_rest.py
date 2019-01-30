@@ -440,7 +440,7 @@ class TestCase(unittest.TestCase):
         """
         Test Patch Action 'Remove'
         """
-        # create a new issue with userid 1 in the nosy list
+        # create a new issue with userid 1 and 2 in the nosy list
         issue_id = self.db.issue.create(title='foo', nosy=['1', '2'])
 
         # remove the nosy list and the title
@@ -460,6 +460,29 @@ class TestCase(unittest.TestCase):
         self.assertEqual(results['attributes']['title'], None)
         self.assertEqual(len(results['attributes']['nosy']), 0)
         self.assertEqual(results['attributes']['nosy'], [])
+
+    def testPatchRemove(self):
+        """
+        Test Patch Action 'Remove' only some element from a list
+        """
+        # create a new issue with userid 1, 2, 3 in the nosy list
+        issue_id = self.db.issue.create(title='foo', nosy=['1', '2', '3'])
+
+        # remove the nosy list and the title
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('op', 'remove'),
+            cgi.MiniFieldStorage('nosy', '1, 2'),
+        ]
+        results = self.server.patch_element('issue', issue_id, form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+
+        # verify the result
+        results = self.server.get_element('issue', issue_id, self.empty_form)
+        results = results['data']
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['attributes']['nosy']), 1)
+        self.assertEqual(results['attributes']['nosy'], ['3'])
 
 
 def get_obj(path, id):
