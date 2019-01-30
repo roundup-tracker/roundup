@@ -51,26 +51,43 @@ class RestfulInstance(object):
             value = arg.value
             if key not in class_props:
                 continue
-            if isinstance(key, unicode):
-                try:
-                    key = key.encode('ascii')
-                except UnicodeEncodeError:
-                    raise UsageError(
-                        'argument %r is no valid ascii keyword' % key
-                    )
-            if isinstance(value, unicode):
-                value = value.encode('utf-8')
-            if value:
-                try:
-                    props[key] = hyperdb.rawToHyperdb(
-                        self.db, cl, itemid, key, value
-                    )
-                except hyperdb.HyperdbValueError, msg:
-                    raise UsageError(msg)
-            else:
-                props[key] = None
+            props[key] = self.prop_from_arg(cl, key, value, itemid)
 
         return props
+
+    def prop_from_arg(self, cl, key, value, itemid=None):
+        """Construct a property from the given argument,
+        and return them after validation.
+
+        Args:
+            cl (string): class object of the resource
+            key (string): attribute key
+            value (string): attribute value
+            itemid (string, optional): itemid of the object
+
+        Returns:
+            value: value of validated properties
+
+        """
+        prop = None
+        if isinstance(key, unicode):
+            try:
+                key = key.encode('ascii')
+            except UnicodeEncodeError:
+                raise UsageError(
+                    'argument %r is no valid ascii keyword' % key
+                )
+        if isinstance(value, unicode):
+            value = value.encode('utf-8')
+        if value:
+            try:
+                prop = hyperdb.rawToHyperdb(
+                    self.db, cl, itemid, key, value
+                )
+            except hyperdb.HyperdbValueError, msg:
+                raise UsageError(msg)
+
+        return prop
 
     @staticmethod
     def error_obj(status, msg, source=None):
@@ -152,7 +169,7 @@ class RestfulInstance(object):
             'View', self.db.getuid(), class_name, itemid=item_id
         ):
             raise Unauthorised(
-                'Permission to view %s item %s denied' % (class_name, item_id)
+                'Permission to view %s%s denied' % (class_name, item_id)
             )
 
         class_obj = self.db.getclass(class_name)
@@ -170,6 +187,46 @@ class RestfulInstance(object):
             'type': class_name,
             'link': self.base_path + class_name + item_id,
             'attributes': dict(result)
+        }
+
+        return 200, result
+
+    def get_attribute(self, class_name, item_id, attr_name, input):
+        """GET resource from attribute URI.
+
+        This function returns only attribute has View permission
+        class_name should be valid already
+
+        Args:
+            class_name (string): class name of the resource (Ex: issue, msg)
+            item_id (string): id of the resource (Ex: 12, 15)
+            attr_name (string): attribute of the resource (Ex: title, nosy)
+            input (list): the submitted form of the user
+
+        Returns:
+            int: http status code 200 (OK)
+            list: a dictionary represents the attribute
+                id: id of the object
+                type: class name of the attribute
+                link: link to the attribute
+                data: data of the requested attribute
+        """
+        if not self.db.security.hasPermission(
+            'View', self.db.getuid(), class_name, attr_name, item_id
+        ):
+            raise Unauthorised(
+                'Permission to view %s%s %s denied' %
+                (class_name, item_id, attr_name)
+            )
+
+        class_obj = self.db.getclass(class_name)
+        data = class_obj.get(item_id, attr_name)
+        result = {
+            'id': item_id,
+            'type': type(data),
+            'link': "%s%s%s/%s" %
+                    (self.base_path, class_name, item_id, attr_name),
+            'data': data
         }
 
         return 200, result
@@ -237,6 +294,10 @@ class RestfulInstance(object):
         """POST to an object of a class is not allowed"""
         raise Reject('POST to an item is not allowed')
 
+    def post_attribute(self, class_name, item_id, attr_name, input):
+        """POST to an attribute of an object is not allowed"""
+        raise Reject('POST to an attribute is not allowed')
+
     def put_collection(self, class_name, input):
         """PUT a class is not allowed"""
         raise Reject('PUT a class is not allowed')
@@ -283,6 +344,54 @@ class RestfulInstance(object):
             'link': self.base_path + class_name + item_id,
             'attribute': result
         }
+        return 200, result
+
+    def put_attribute(self, class_name, item_id, attr_name, input):
+        """PUT an attribute to an object
+
+        Args:
+            class_name (string): class name of the resource (Ex: issue, msg)
+            item_id (string): id of the resource (Ex: 12, 15)
+            attr_name (string): attribute of the resource (Ex: title, nosy)
+            input (list): the submitted form of the user
+
+        Returns:
+            int: http status code 200 (OK)
+            dict:a dictionary represents the modified object
+                id: id of the object
+                type: class name of the object
+                link: link to the object
+                attributes: a dictionary represent only changed attributes of
+                            the object
+        """
+        if not self.db.security.hasPermission(
+            'Edit', self.db.getuid(), class_name, attr_name, item_id
+        ):
+            raise Unauthorised(
+                'Permission to edit %s%s %s denied' %
+                (class_name, item_id, attr_name)
+            )
+
+        class_obj = self.db.getclass(class_name)
+        props = {
+            attr_name: self.prop_from_arg(
+                class_obj, attr_name, input['data'].value, item_id
+            )
+        }
+
+        try:
+            result = class_obj.set(item_id, **props)
+            self.db.commit()
+        except (TypeError, IndexError, ValueError), message:
+            raise ValueError(message)
+
+        result = {
+            'id': item_id,
+            'type': class_name,
+            'link': self.base_path + class_name + item_id,
+            'attribute': result
+        }
+
         return 200, result
 
     def delete_collection(self, class_name, input):
@@ -352,11 +461,74 @@ class RestfulInstance(object):
 
         return 200, result
 
+    def delete_attribute(self, class_name, item_id, attr_name, input):
+        """DELETE an attribute in a object by setting it to None or empty
+
+        Args:
+            class_name (string): class name of the resource (Ex: issue, msg)
+            item_id (string): id of the resource (Ex: 12, 15)
+            attr_name (string): attribute of the resource (Ex: title, nosy)
+            input (list): the submitted form of the user
+
+        Returns:
+            int: http status code 200 (OK)
+            dict:
+                status (string): 'ok'
+        """
+        if not self.db.security.hasPermission(
+            'Edit', self.db.getuid(), class_name, attr_name, item_id
+        ):
+            raise Unauthorised(
+                'Permission to delete %s%s %s denied' %
+                (class_name, item_id, attr_name)
+            )
+
+        class_obj = self.db.getclass(class_name)
+        props = {}
+        prop_obj = class_obj.get(item_id, attr_name)
+        if isinstance(prop_obj, list):
+            props[attr_name] = []
+        else:
+            props[attr_name] = None
+
+        try:
+            class_obj.set(item_id, **props)
+            self.db.commit()
+        except (TypeError, IndexError, ValueError), message:
+            raise ValueError(message)
+
+        result = {
+            'status': 'ok'
+        }
+
+        return 200, result
+
     def patch_collection(self, class_name, input):
         """PATCH a class is not allowed"""
         raise Reject('PATCH a class is not allowed')
 
     def patch_element(self, class_name, item_id, input):
+        """PATCH an object
+
+        Patch an element using 3 operators
+        ADD : Append new value to the object's attribute
+        REPLACE: Replace object's attribute
+        REMOVE: Clear object's attribute
+
+        Args:
+            class_name (string): class name of the resource (Ex: issue, msg)
+            item_id (string): id of the resource (Ex: 12, 15)
+            input (list): the submitted form of the user
+
+        Returns:
+            int: http status code 200 (OK)
+            dict: a dictionary represents the modified object
+                id: id of the object
+                type: class name of the object
+                link: link to the object
+                attributes: a dictionary represent only changed attributes of
+                            the object
+        """
         try:
             op = input['op'].value.lower()
         except KeyError:
@@ -401,6 +573,78 @@ class RestfulInstance(object):
         }
         return 200, result
 
+    def patch_attribute(self, class_name, item_id, attr_name, input):
+        """PATCH an attribute of an object
+
+        Patch an element using 3 operators
+        ADD : Append new value to the attribute
+        REPLACE: Replace attribute
+        REMOVE: Clear attribute
+
+        Args:
+            class_name (string): class name of the resource (Ex: issue, msg)
+            item_id (string): id of the resource (Ex: 12, 15)
+            attr_name (string): attribute of the resource (Ex: title, nosy)
+            input (list): the submitted form of the user
+
+        Returns:
+            int: http status code 200 (OK)
+            dict: a dictionary represents the modified object
+                id: id of the object
+                type: class name of the object
+                link: link to the object
+                attributes: a dictionary represent only changed attributes of
+                            the object
+        """
+        try:
+            op = input['op'].value.lower()
+        except KeyError:
+            op = "replace"
+        class_obj = self.db.getclass(class_name)
+
+        if not self.db.security.hasPermission(
+            'Edit', self.db.getuid(), class_name, attr_name, item_id
+        ):
+            raise Unauthorised(
+                'Permission to edit %s%s %s denied' %
+                (class_name, item_id, attr_name)
+            )
+
+        prop = attr_name
+        class_obj = self.db.getclass(class_name)
+        props = {
+            prop: self.prop_from_arg(
+                class_obj, prop, input['data'].value, item_id
+            )
+        }
+
+        if op == 'add':
+            props[prop] = class_obj.get(item_id, prop) + props[prop]
+        elif op == 'replace':
+            pass
+        elif op == 'remove':
+            current_prop = class_obj.get(item_id, prop)
+            if isinstance(current_prop, list):
+                props[prop] = []
+            else:
+                props[prop] = None
+        else:
+            raise UsageError('PATCH Operation %s is not allowed' % op)
+
+        try:
+            result = class_obj.set(item_id, **props)
+            self.db.commit()
+        except (TypeError, IndexError, ValueError), message:
+            raise ValueError(message)
+
+        result = {
+            'id': item_id,
+            'type': class_name,
+            'link': self.base_path + class_name + item_id,
+            'attribute': result
+        }
+        return 200, result
+
     def options_collection(self, class_name, input):
         """OPTION return the HTTP Header for the class uri
 
@@ -419,8 +663,20 @@ class RestfulInstance(object):
         """
         self.client.setHeader(
             "Accept-Patch",
-            "application/x-www-form-urlencoded, "
-            "multipart/form-data"
+            "application/x-www-form-urlencoded, multipart/form-data"
+        )
+        return 204, ""
+
+    def option_attribute(self, class_name, item_id, attr_name, input):
+        """OPTION return the HTTP Header for the attribute uri
+
+        Returns:
+            int: http status code 204 (No content)
+            body (string): an empty string
+        """
+        self.client.setHeader(
+            "Accept-Patch",
+            "application/x-www-form-urlencoded, multipart/form-data"
         )
         return 204, ""
 
@@ -430,7 +686,8 @@ class RestfulInstance(object):
         # 0 - rest
         # 1 - resource
         # 2 - attribute
-        resource_uri = uri.split("/")[1]
+        uri_split = uri.split("/")
+        resource_uri = uri_split[1]
 
         # if X-HTTP-Method-Override is set, follow the override method
         headers = self.client.request.headers
@@ -486,9 +743,14 @@ class RestfulInstance(object):
                     )(resource_uri, input)
             else:
                 class_name, item_id = hyperdb.splitDesignator(resource_uri)
-                response_code, output = getattr(
-                    self, "%s_element" % method.lower()
-                    )(class_name, item_id, input)
+                if len(uri_split) == 3:
+                    response_code, output = getattr(
+                        self, "%s_attribute" % method.lower()
+                        )(class_name, item_id, uri_split[2], input)
+                else:
+                    response_code, output = getattr(
+                        self, "%s_element" % method.lower()
+                        )(class_name, item_id, input)
             output = RestfulInstance.data_obj(output)
             self.client.response_code = response_code
         except IndexError, msg:
