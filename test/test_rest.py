@@ -146,7 +146,7 @@ class TestCase(unittest.TestCase):
             status=self.db.status.lookup('open'),
             priority=self.db.priority.lookup('critical')
         )
-        base_path = self.dummy_client.env['PATH_INFO'] + 'issue'
+        base_path = self.dummy_client.env['PATH_INFO'] + 'data/issue/'
 
         # Retrieve all issue status=open
         form = cgi.FieldStorage()

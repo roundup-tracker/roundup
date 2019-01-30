@@ -238,7 +238,8 @@ class RestfulInstance(object):
         protocol = 'http'
         host = self.client.env['HTTP_HOST']
         tracker = self.client.env['TRACKER_NAME']
-        self.base_path = '%s://%s/%s/rest/' % (protocol, host, tracker)
+        self.base_path = '%s://%s/%s/rest' % (protocol, host, tracker)
+        self.data_path = self.base_path + '/data'
 
     def props_from_args(self, cl, args, itemid=None):
         """Construct a list of properties from the given arguments,
@@ -393,7 +394,7 @@ class RestfulInstance(object):
             raise Unauthorised('Permission to view %s denied' % class_name)
 
         class_obj = self.db.getclass(class_name)
-        class_path = self.base_path + class_name
+        class_path = '%s/%s/' % (self.data_path, class_name)
 
         # Handle filtering and pagination
         filter_props = {}
@@ -494,7 +495,7 @@ class RestfulInstance(object):
         result = {
             'id': item_id,
             'type': class_name,
-            'link': self.base_path + class_name + item_id,
+            'link': '%s/%s/%s' % (self.data_path, class_name, item_id),
             'attributes': dict(result)
         }
 
@@ -537,8 +538,8 @@ class RestfulInstance(object):
         result = {
             'id': item_id,
             'type': type(data),
-            'link': "%s%s%s/%s" %
-                    (self.base_path, class_name, item_id, attr_name),
+            'link': "%s/%s/%s/%s" %
+                    (self.data_path, class_name, item_id, attr_name),
             'data': data
         }
 
@@ -597,7 +598,7 @@ class RestfulInstance(object):
             raise UsageError("Must provide the %s property." % msg)
 
         # set the header Location
-        link = self.base_path + class_name + item_id
+        link = '%s/%s/%s' % (self.data_path, class_name, item_id)
         self.client.setHeader("Location", link)
 
         # set the response body
@@ -650,7 +651,7 @@ class RestfulInstance(object):
         result = {
             'id': item_id,
             'type': class_name,
-            'link': self.base_path + class_name + item_id,
+            'link': '%s/%s/%s' % (self.data_path, class_name, item_id),
             'attribute': result
         }
         return 200, result
@@ -701,7 +702,7 @@ class RestfulInstance(object):
         result = {
             'id': item_id,
             'type': class_name,
-            'link': self.base_path + class_name + item_id,
+            'link': '%s/%s/%s' % (self.data_path, class_name, item_id),
             'attribute': result
         }
 
@@ -885,7 +886,7 @@ class RestfulInstance(object):
             result = {
                 'id': item_id,
                 'type': class_name,
-                'link': self.base_path + class_name + item_id,
+                'link': '%s/%s/%s' % (self.data_path, class_name, item_id),
                 'result': result
             }
         else:
@@ -914,7 +915,7 @@ class RestfulInstance(object):
             result = {
                 'id': item_id,
                 'type': class_name,
-                'link': self.base_path + class_name + item_id,
+                'link': '%s/%s/%s' % (self.data_path, class_name, item_id),
                 'attribute': result
             }
         return 200, result
@@ -980,7 +981,7 @@ class RestfulInstance(object):
         result = {
             'id': item_id,
             'type': class_name,
-            'link': self.base_path + class_name + item_id,
+            'link': '%s/%s/%s' % (self.data_path, class_name, item_id),
             'attribute': result
         }
         return 200, result
