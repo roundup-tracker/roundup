@@ -14,6 +14,7 @@ import time
 import traceback
 import xml
 from roundup import hyperdb
+from roundup import date
 from roundup.exceptions import *
 
 
@@ -70,6 +71,7 @@ def _data_decorator(func):
         return result
     return format_object
 
+
 def parse_accept_header(accept):
     """
     Parse the Accept header *accept*, returning a list with 3-tuples of
@@ -111,7 +113,7 @@ def parse_accept_header(accept):
                             version = media_params.append(('version',
                                                            float(rest)))
                         except ValueError:
-                            version = 1.0 # could not be parsed
+                            version = 1.0  # could not be parsed
                 # add the vendor code as a media param
                 media_params.append(('vendor', vnd))
                 # and re-write media_type to something like application/json so
@@ -129,6 +131,7 @@ def parse_accept_header(accept):
         result.append((media_type, dict(media_params), q))
     result.sort(lambda x, y: -cmp(x[2], y[2]))
     return result
+
 
 class RestfulInstance(object):
     """The RestfulInstance performs REST request from the client"""
@@ -877,6 +880,68 @@ class RestfulInstance(object):
         )
         return 204, ""
 
+    @_data_decorator
+    def summary(self, input):
+        """Get a summary of resource from class URI.
+
+        This function returns only items have View permission
+        class_name should be valid already
+
+        Args:
+            class_name (string): class name of the resource (Ex: issue, msg)
+            input (list): the submitted form of the user
+
+        Returns:
+            int: http status code 200 (OK)
+            list:
+        """
+        if not self.db.security.hasPermission(
+            'View', self.db.getuid(), 'issue'
+        ) and not self.db.security.hasPermission(
+            'View', self.db.getuid(), 'status'
+        ) and not self.db.security.hasPermission(
+            'View', self.db.getuid(), 'issue'
+        ):
+            raise Unauthorised('Permission to view summary denied')
+
+        old = date.Date('-1w')
+
+        created = []
+        summary = {}
+        messages = []
+
+        # loop through all the recently-active issues
+        for issue_id in self.db.issue.filter(None, {'activity': '-1w;'}):
+            num = 0
+            status_name = self.db.status.get(
+                self.db.issue.get(issue_id, 'status'),
+                'name'
+            )
+            issue_object = {
+                'id': issue_id,
+                'link': self.base_path + 'issue' + issue_id,
+                'title': self.db.issue.get(issue_id, 'title')
+            }
+            for x, ts, uid, action, data in self.db.issue.history(issue_id):
+                if ts < old:
+                    continue
+                if action == 'create':
+                    created.append(issue_object)
+                elif action == 'set' and 'messages' in data:
+                    num += 1
+            summary.setdefault(status_name, []).append(issue_object)
+            messages.append((num, issue_object))
+
+        messages.sort(reverse=True)
+
+        result = {
+            'created': created,
+            'summary': summary,
+            'most_discussed': messages[:10]
+        }
+
+        return 200, result
+
     def dispatch(self, method, uri, input):
         """format and process the request"""
         # if X-HTTP-Method-Override is set, follow the override method
@@ -920,34 +985,42 @@ class RestfulInstance(object):
 
         # PATH is split to multiple pieces
         # 0 - rest
-        # 1 - resource
-        # 2 - attribute
-        uri_split = uri.split("/")
-        resource_uri = uri_split[1]
-
-        try:
-            class_name, item_id = hyperdb.splitDesignator(resource_uri)
-        except hyperdb.DesignatorError:
-            class_name = resource_uri
-            item_id = None
+        # 1 - data
+        # 2 - resource
+        # 3 - attribute
+        uri_split = uri.lower().split("/")
 
         # Call the appropriate method
-        if (class_name not in self.db.classes) or (len(uri_split) > 3):
-            output = self.error_obj(404, "Not found")
-        elif item_id is None:
-            if len(uri_split) == 2:
-                output = getattr(
-                    self, "%s_collection" % method.lower()
-                )(class_name, input)
-        else:
-            if len(uri_split) == 2:
-                output = getattr(
-                    self, "%s_element" % method.lower()
-                )(class_name, item_id, input)
+        if len(uri_split) == 2 and uri_split[1] == 'summary':
+            output = self.summary(input)
+        elif 4 >= len(uri_split) > 2 and uri_split[1] == 'data':
+            resource_uri = uri_split[2]
+            try:
+                class_name, item_id = hyperdb.splitDesignator(resource_uri)
+            except hyperdb.DesignatorError:
+                class_name = resource_uri
+                item_id = None
+
+            if class_name not in self.db.classes:
+                output = self.error_obj(404, "Not found")
+            elif item_id is None:
+                if len(uri_split) == 3:
+                    output = getattr(
+                        self, "%s_collection" % method.lower()
+                    )(class_name, input)
+                else:
+                    output = self.error_obj(404, "Not found")
             else:
-                output = getattr(
-                    self, "%s_attribute" % method.lower()
-                )(class_name, item_id, uri_split[2], input)
+                if len(uri_split) == 3:
+                    output = getattr(
+                        self, "%s_element" % method.lower()
+                    )(class_name, item_id, input)
+                else:
+                    output = getattr(
+                        self, "%s_attribute" % method.lower()
+                    )(class_name, item_id, uri_split[3], input)
+        else:
+            output = self.error_obj(404, "Not found")
 
         # Format the content type
         if data_type.lower() == "json":
