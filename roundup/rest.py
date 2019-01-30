@@ -178,13 +178,47 @@ class RestfulInstance(object):
 
         class_obj = self.db.getclass(class_name)
         class_path = self.base_path + class_name
+
+        # Handle filtering and pagination
+        filter_props = {}
+        page = {
+            'size': None,
+            'index': None
+        }
+        for form_field in input.value:
+            key = form_field.name
+            value = form_field.value
+            if key.startswith("where_"):  # serve the filter purpose
+                key = key[6:]
+                filter_props[key] = [
+                    getattr(self.db, key).lookup(p)
+                    for p in value.split(",")
+                ]
+            elif key.startswith("page_"):  # serve the paging purpose
+                key = key[5:]
+                value = int(value)
+                page[key] = value
+
+        if not filter_props:
+            obj_list = class_obj.list()
+        else:
+            obj_list = class_obj.filter(None, filter_props)
+
+        # extract result from data
         result = [
             {'id': item_id, 'link': class_path + item_id}
-            for item_id in class_obj.list()
+            for item_id in obj_list
             if self.db.security.hasPermission(
                 'View', self.db.getuid(), class_name, itemid=item_id
             )
         ]
+
+        # pagination
+        if page['size'] is not None and page['index'] is not None:
+            page_start = max(page['index'] * page['size'], 0)
+            page_end = min(page_start + page['size'], len(result))
+            result = result[page_start:page_end]
+
         self.client.setHeader("X-Count-Total", str(len(result)))
         return 200, result
 
@@ -807,7 +841,7 @@ class RestfulInstance(object):
                 )(class_name, item_id, uri_split[2], input)
 
         # Format the content type
-        if format_output.lower() == "json":
+        if data_type.lower() == "json":
             self.client.setHeader("Content-Type", "application/json")
             if pretty_output:
                 indent = 4

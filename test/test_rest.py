@@ -57,6 +57,7 @@ class TestCase(unittest.TestCase):
             'TRACKER_NAME': 'rounduptest'
         }
         self.dummy_client = client.Client(self.instance, None, env, [], None)
+        self.empty_form = cgi.FieldStorage()
 
         self.server = RestfulInstance(self.dummy_client, self.db)
 
@@ -74,19 +75,20 @@ class TestCase(unittest.TestCase):
         obtain data for 'joe'
         """
         # Retrieve all three users.
-        results = self.server.get_collection('user', {})
+        results = self.server.get_collection('user', self.empty_form)
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(len(results['data']), 3)
 
         # Obtain data for 'joe'.
-        results = self.server.get_element('user', self.joeid, {})['data']
+        results = self.server.get_element('user', self.joeid, self.empty_form)
+        results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['attributes']['username'], 'joe')
         self.assertEqual(results['attributes']['realname'], 'Joe Random')
 
         # Obtain data for 'joe'.
         results = self.server.get_attribute(
-            'user', self.joeid, 'username', {}
+            'user', self.joeid, 'username', self.empty_form
         )
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['data']['data'], 'joe')
@@ -105,7 +107,7 @@ class TestCase(unittest.TestCase):
             'user', self.joeid, 'realname', form
         )
         results = self.server.get_attribute(
-            'user', self.joeid, 'realname', {}
+            'user', self.joeid, 'realname', self.empty_form
         )
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['data']['data'], 'Joe Doe Doe')
@@ -116,7 +118,7 @@ class TestCase(unittest.TestCase):
             cgi.MiniFieldStorage('realname', 'Joe Doe')
         ]
         results = self.server.put_element('user', self.joeid, form)
-        results = self.server.get_element('user', self.joeid, {})
+        results = self.server.get_element('user', self.joeid, self.empty_form)
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['data']['attributes']['realname'], 'Joe Doe')
 
@@ -137,7 +139,7 @@ class TestCase(unittest.TestCase):
         results = self.server.post_collection('issue', form)
         self.assertEqual(self.dummy_client.response_code, 201)
         issueid = results['data']['id']
-        results = self.server.get_element('issue', issueid, {})
+        results = self.server.get_element('issue', issueid, self.empty_form)
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['data']['attributes']['title'], 'foo')
         self.assertEqual(self.db.issue.get(issueid, "tx_Source"), 'web')
@@ -154,7 +156,8 @@ class TestCase(unittest.TestCase):
         results = self.server.post_collection('file', form)
         self.assertEqual(self.dummy_client.response_code, 201)
         fileid = results['data']['id']
-        results = self.server.get_element('file', fileid, {})['data']
+        results = self.server.get_element('file', fileid, self.empty_form)
+        results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['attributes']['content'], 'hello\r\nthere')
 
@@ -224,17 +227,18 @@ class TestCase(unittest.TestCase):
 
         # remove the title and nosy
         results = self.server.delete_attribute(
-            'issue', issue_id, 'title', {}
+            'issue', issue_id, 'title', self.empty_form
         )
         self.assertEqual(self.dummy_client.response_code, 200)
 
         results = self.server.delete_attribute(
-            'issue', issue_id, 'nosy', {}
+            'issue', issue_id, 'nosy', self.empty_form
         )
         self.assertEqual(self.dummy_client.response_code, 200)
 
         # verify the result
-        results = self.server.get_element('issue', issue_id, {})['data']
+        results = self.server.get_element('issue', issue_id, self.empty_form)
+        results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(len(results['attributes']['nosy']), 0)
         self.assertListEqual(results['attributes']['nosy'], [])
@@ -257,7 +261,8 @@ class TestCase(unittest.TestCase):
         self.assertEqual(self.dummy_client.response_code, 200)
 
         # verify the result
-        results = self.server.get_element('issue', issue_id, {})['data']
+        results = self.server.get_element('issue', issue_id, self.empty_form)
+        results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(len(results['attributes']['nosy']), 2)
         self.assertListEqual(results['attributes']['nosy'], ['1', '2'])
@@ -280,7 +285,8 @@ class TestCase(unittest.TestCase):
         self.assertEqual(self.dummy_client.response_code, 200)
 
         # verify the result
-        results = self.server.get_element('issue', issue_id, {})['data']
+        results = self.server.get_element('issue', issue_id, self.empty_form)
+        results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['attributes']['status'], '3')
         self.assertEqual(len(results['attributes']['nosy']), 1)
@@ -304,7 +310,8 @@ class TestCase(unittest.TestCase):
         self.assertEqual(self.dummy_client.response_code, 200)
 
         # verify the result
-        results = self.server.get_element('issue', issue_id, {})['data']
+        results = self.server.get_element('issue', issue_id, self.empty_form)
+        results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['attributes']['title'], None)
         self.assertEqual(len(results['attributes']['nosy']), 0)
