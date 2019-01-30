@@ -81,14 +81,13 @@ class RestfulInstance(object):
                                               class_name):
             raise Unauthorised('Permission to view %s denied' % class_name)
         class_obj = self.db.getclass(class_name)
-        prop_name = class_obj.labelprop()
         class_path = self.base_path + class_name
         result = [{'id': item_id, 'link': class_path + item_id}
                   for item_id in class_obj.list()
                   if self.db.security.hasPermission('View', self.db.getuid(),
                                                     class_name,
                                                     itemid=item_id)]
-        return result
+        return 200, result
 
     def get_element(self, class_name, item_id, input):
         if not self.db.security.hasPermission('View', self.db.getuid(),
@@ -110,7 +109,7 @@ class RestfulInstance(object):
             'attributes': dict(result)
         }
 
-        return result
+        return 200, result
 
     def post_collection(self, class_name, input):
         if not self.db.security.hasPermission('Create', self.db.getuid(),
@@ -144,7 +143,7 @@ class RestfulInstance(object):
             'id': item_id,
             'link': self.base_path + class_name + item_id
         }
-        return result
+        return 201, result
 
     def post_element(self, class_name, item_id, input):
         raise Reject('Invalid request')
@@ -173,7 +172,7 @@ class RestfulInstance(object):
             'link': self.base_path + class_name + item_id,
             'attribute': result
         }
-        return result
+        return 200, result
 
     def delete_collection(self, class_name, input):
         if not self.db.security.hasPermission('Delete', self.db.getuid(),
@@ -197,7 +196,7 @@ class RestfulInstance(object):
             'count': count
         }
 
-        return result
+        return 200, result
 
     def delete_element(self, class_name, item_id, input):
         if not self.db.security.hasPermission('Delete', self.db.getuid(),
@@ -211,7 +210,7 @@ class RestfulInstance(object):
             'status': 'ok'
         }
 
-        return result
+        return 200, result
 
     def patch_collection(self, class_name, input):
         raise Reject('Invalid request')
@@ -229,15 +228,15 @@ class RestfulInstance(object):
         output = None
         try:
             if resource_uri in self.db.classes:
-                output = getattr(self, "%s_collection" % method.lower())(
+                response_code, output = getattr(self, "%s_collection" % method.lower())(
                     resource_uri, input)
             else:
                 class_name, item_id = hyperdb.splitDesignator(resource_uri)
-                output = getattr(self, "%s_element" % method.lower())(
+                response_code, output = getattr(self, "%s_element" % method.lower())(
                     class_name, item_id, input)
 
             output = data_obj(output)
-            self.client.response_code = 200
+            self.client.response_code = response_code
         except IndexError, msg:
             output = error_obj(404, msg)
             self.client.response_code = 404
