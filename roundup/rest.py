@@ -89,7 +89,23 @@ class RestfulInstance(object):
         raise Reject('Invalid request')
 
     def put_element(self, class_name, item_id, input):
-        raise NotImplementedError
+        class_obj = self.db.getclass(class_name)
+
+        input_data = ["%s=%s" % (item.name, item.value) for item in input.value]
+        props = xmlrpc.props_from_args(self.db, class_obj, input_data, item_id)
+        for p in props.iterkeys():
+            if not self.db.security.hasPermission('Edit', self.db.getuid(),
+                                                  class_name, p, item_id):
+                raise Unauthorised('Permission to edit %s of %s%s denied' %
+                                   (p, class_name, item_id))
+        try:
+            result = class_obj.set(item_id, **props)
+            self.db.commit()
+        except (TypeError, IndexError, ValueError), message:
+            raise UsageError(message)
+
+        result['id'] = item_id
+        return result
 
     def delete_collection(self, class_name, input):
         if not self.db.security.hasPermission('Delete', self.db.getuid(),
