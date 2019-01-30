@@ -224,7 +224,38 @@ class RestfulInstance(object):
         raise Reject('PATCH a class is not allowed')
 
     def patch_element(self, class_name, item_id, input):
-        raise NotImplementedError
+        op = input['op'].value.lower()
+        class_obj = self.db.getclass(class_name)
+
+        props = props_from_args(self.db, class_obj, input.value, item_id)
+
+        for prop, value in props.iteritems():
+            if not self.db.security.hasPermission('Edit', self.db.getuid(),
+                                                  class_name, prop, item_id):
+                raise Unauthorised('Permission to edit %s of %s%s denied' %
+                                   (prop, class_name, item_id))
+            if op == 'add':
+                props[prop] = class_obj.get(item_id, prop) + props[prop]
+            elif op == 'replace':
+                pass
+            elif op == 'remove':
+                props[prop] = None
+            else:
+                raise UsageError('PATCH Operation %s is not allowed' % op)
+
+        try:
+            result = class_obj.set(item_id, **props)
+            self.db.commit()
+        except (TypeError, IndexError, ValueError), message:
+            raise ValueError(message)
+
+        result = {
+            'id': item_id,
+            'type': class_name,
+            'link': self.base_path + class_name + item_id,
+            'attribute': result
+        }
+        return 200, result
 
     def options_collection(self, class_name, input):
         return 204, ""
