@@ -89,30 +89,56 @@ class RestfulInstance(object):
 
         return prop
 
-    @staticmethod
-    def error_obj(status, msg, source=None):
-        """Wrap the error data into an object. This function is temporally and
-        will be changed to a decorator later."""
-        result = {
-            'error': {
-                'status': status,
-                'msg': msg
-            }
-        }
-        if source is not None:
-            result['error']['source'] = source
+    def _data_decorator(func):
+        """Wrap the returned data into an object.."""
+        def format_object(self, *args, **kwargs):
+            try:
+                code, data = func(self, *args, **kwargs)
+            except IndexError, msg:
+                code = 404
+                data = msg
+            except Unauthorised, msg:
+                code = 403
+                data = msg
+            except (hyperdb.DesignatorError, UsageError), msg:
+                code = 400
+                data = msg
+            except (AttributeError, Reject), msg:
+                code = 405
+                data = msg
+            except ValueError, msg:
+                code = 409
+                data = msg
+            except NotImplementedError:
+                code = 402  # nothing to pay, just a mark for debugging purpose
+                data = 'Method under development'
+            except:
+                exc, val, tb = sys.exc_info()
+                code = 400
+                # if self.DEBUG_MODE in roundup_server
+                # else data = 'An error occurred. Please check...',
+                data = val
 
-        return result
+                # out to the logfile
+                print 'EXCEPTION AT', time.ctime()
+                traceback.print_exc()
 
-    @staticmethod
-    def data_obj(data):
-        """Wrap the returned data into an object. This function is temporally
-        and will be changed to a decorator later."""
-        result = {
-            'data': data
-        }
-        return result
+            self.client.response_code = code
+            if code >= 400:  # any error require error format
+                result = {
+                    'error': {
+                        'status': code,
+                        'msg': data
+                    }
+                }
+            else:
+                result = {
+                    'data': data
+                }
+            return result
+        return format_object
 
+    @_data_decorator
     def get_collection(self, class_name, input):
         """GET resource from class URI.
 
@@ -146,6 +172,7 @@ class RestfulInstance(object):
         self.client.setHeader("X-Count-Total", str(len(result)))
         return 200, result
 
+    @_data_decorator
     def get_element(self, class_name, item_id, input):
         """GET resource from object URI.
 
@@ -191,6 +218,7 @@ class RestfulInstance(object):
 
         return 200, result
 
+    @_data_decorator
     def get_attribute(self, class_name, item_id, attr_name, input):
         """GET resource from attribute URI.
 
@@ -231,6 +259,7 @@ class RestfulInstance(object):
 
         return 200, result
 
+    @_data_decorator
     def post_collection(self, class_name, input):
         """POST a new object to a class
 
@@ -290,18 +319,22 @@ class RestfulInstance(object):
         }
         return 201, result
 
+    @_data_decorator
     def post_element(self, class_name, item_id, input):
         """POST to an object of a class is not allowed"""
         raise Reject('POST to an item is not allowed')
 
+    @_data_decorator
     def post_attribute(self, class_name, item_id, attr_name, input):
         """POST to an attribute of an object is not allowed"""
         raise Reject('POST to an attribute is not allowed')
 
+    @_data_decorator
     def put_collection(self, class_name, input):
         """PUT a class is not allowed"""
         raise Reject('PUT a class is not allowed')
 
+    @_data_decorator
     def put_element(self, class_name, item_id, input):
         """PUT a new content to an object
 
@@ -346,6 +379,7 @@ class RestfulInstance(object):
         }
         return 200, result
 
+    @_data_decorator
     def put_attribute(self, class_name, item_id, attr_name, input):
         """PUT an attribute to an object
 
@@ -394,6 +428,7 @@ class RestfulInstance(object):
 
         return 200, result
 
+    @_data_decorator
     def delete_collection(self, class_name, input):
         """DELETE all objects in a class
 
@@ -433,6 +468,7 @@ class RestfulInstance(object):
 
         return 200, result
 
+    @_data_decorator
     def delete_element(self, class_name, item_id, input):
         """DELETE an object in a class
 
@@ -461,6 +497,7 @@ class RestfulInstance(object):
 
         return 200, result
 
+    @_data_decorator
     def delete_attribute(self, class_name, item_id, attr_name, input):
         """DELETE an attribute in a object by setting it to None or empty
 
@@ -503,10 +540,12 @@ class RestfulInstance(object):
 
         return 200, result
 
+    @_data_decorator
     def patch_collection(self, class_name, input):
         """PATCH a class is not allowed"""
         raise Reject('PATCH a class is not allowed')
 
+    @_data_decorator
     def patch_element(self, class_name, item_id, input):
         """PATCH an object
 
@@ -573,6 +612,7 @@ class RestfulInstance(object):
         }
         return 200, result
 
+    @_data_decorator
     def patch_attribute(self, class_name, item_id, attr_name, input):
         """PATCH an attribute of an object
 
@@ -645,6 +685,7 @@ class RestfulInstance(object):
         }
         return 200, result
 
+    @_data_decorator
     def options_collection(self, class_name, input):
         """OPTION return the HTTP Header for the class uri
 
@@ -654,6 +695,7 @@ class RestfulInstance(object):
         """
         return 204, ""
 
+    @_data_decorator
     def options_element(self, class_name, item_id, input):
         """OPTION return the HTTP Header for the object uri
 
@@ -667,6 +709,7 @@ class RestfulInstance(object):
         )
         return 204, ""
 
+    @_data_decorator
     def option_attribute(self, class_name, item_id, attr_name, input):
         """OPTION return the HTTP Header for the attribute uri
 
@@ -736,53 +779,21 @@ class RestfulInstance(object):
 
         # Call the appropriate method
         output = None
-        try:
-            if resource_uri in self.db.classes:
-                response_code, output = getattr(
-                    self, "%s_collection" % method.lower()
-                    )(resource_uri, input)
+        if resource_uri in self.db.classes:
+            output = getattr(
+                self, "%s_collection" % method.lower()
+                )(resource_uri, input)
+        else:
+            class_name, item_id = hyperdb.splitDesignator(resource_uri)
+            if len(uri_split) == 3:
+                output = getattr(
+                    self, "%s_attribute" % method.lower()
+                    )(class_name, item_id, uri_split[2], input)
             else:
-                class_name, item_id = hyperdb.splitDesignator(resource_uri)
-                if len(uri_split) == 3:
-                    response_code, output = getattr(
-                        self, "%s_attribute" % method.lower()
-                        )(class_name, item_id, uri_split[2], input)
-                else:
-                    response_code, output = getattr(
-                        self, "%s_element" % method.lower()
-                        )(class_name, item_id, input)
-            output = RestfulInstance.data_obj(output)
-            self.client.response_code = response_code
-        except IndexError, msg:
-            output = RestfulInstance.error_obj(404, msg)
-            self.client.response_code = 404
-        except Unauthorised, msg:
-            output = RestfulInstance.error_obj(403, msg)
-            self.client.response_code = 403
-        except (hyperdb.DesignatorError, UsageError), msg:
-            output = RestfulInstance.error_obj(400, msg)
-            self.client.response_code = 400
-        except (AttributeError, Reject), msg:
-            output = RestfulInstance.error_obj(405, msg)
-            self.client.response_code = 405
-        except ValueError, msg:
-            output = RestfulInstance.error_obj(409, msg)
-            self.client.response_code = 409
-        except NotImplementedError:
-            output = RestfulInstance.error_obj(402, 'Method under development')
-            self.client.response_code = 402
-            # nothing to pay, just a mark for debugging purpose
-        except:
-            # if self.DEBUG_MODE in roundup_server
-            # else msg = 'An error occurred. Please check...',
-            exc, val, tb = sys.exc_info()
-            output = RestfulInstance.error_obj(400, val)
-            self.client.response_code = 400
+                output = getattr(
+                    self, "%s_element" % method.lower()
+                    )(class_name, item_id, input)
 
-            # out to the logfile, it would be nice if the server do it for me
-            print 'EXCEPTION AT', time.ctime()
-            traceback.print_exc()
-        finally:
             if format_output.lower() == "json":
                 self.client.setHeader("Content-Type", "application/json")
                 if pretty_output:
