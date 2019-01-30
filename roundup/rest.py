@@ -226,7 +226,10 @@ class RestfulInstance(object):
         raise Reject('PATCH a class is not allowed')
 
     def patch_element(self, class_name, item_id, input):
-        op = input['op'].value.lower()
+        try:
+            op = input['op'].value.lower()
+        except KeyError:
+            op = "replace"
         class_obj = self.db.getclass(class_name)
 
         props = props_from_args(self.db, class_obj, input.value, item_id)
