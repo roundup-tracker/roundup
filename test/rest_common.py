@@ -10,7 +10,7 @@ from roundup.backends import list_backends
 from roundup.cgi import client
 import random
 
-import db_test_base
+from .db_test_base import setupTracker
 
 NEEDS_INSTANCE = 1
 
@@ -22,7 +22,7 @@ class TestCase():
     def setUp(self):
         self.dirname = '_test_rest'
         # set up and open a tracker
-        self.instance = db_test_base.setupTracker(self.dirname, self.backend)
+        self.instance = setupTracker(self.dirname, self.backend)
 
         # open the database
         self.db = self.instance.open('admin')
@@ -49,7 +49,9 @@ class TestCase():
 
         thisdir = os.path.dirname(__file__)
         vars = {}
-        execfile(os.path.join(thisdir, "tx_Source_detector.py"), vars)
+        with open(os.path.join(thisdir, "tx_Source_detector.py")) as f:
+            code = compile(f.read(), "tx_Source_detector.py", "exec")
+            exec(code, vars)
         vars['init'](self.db)
 
         env = {
@@ -66,7 +68,7 @@ class TestCase():
         self.db.close()
         try:
             shutil.rmtree(self.dirname)
-        except OSError, error:
+        except OSError as error:
             if error.errno not in (errno.ENOENT, errno.ESRCH):
                 raise
 
@@ -341,7 +343,7 @@ class TestCase():
         ]
         try:
             self.server.put_element('user', '2', form)
-        except Unauthorised, err:
+        except Unauthorised as err:
             self.fail('raised %s' % err)
         finally:
             self.db.setCurrentUser('joe')
@@ -357,7 +359,7 @@ class TestCase():
         ]
         try:
             self.server.post_collection('user', form)
-        except Unauthorised, err:
+        except Unauthorised as err:
             self.fail('raised %s' % err)
         finally:
             self.db.setCurrentUser('joe')

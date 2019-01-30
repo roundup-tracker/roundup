@@ -5,7 +5,12 @@ This module is free software, you may redistribute it
 and/or modify under the same terms as Python.
 """
 
-import urlparse
+from __future__ import print_function
+
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 import os
 import json
 import pprint
@@ -20,6 +25,12 @@ from roundup import actions
 from roundup.exceptions import *
 from roundup.cgi.exceptions import *
 
+# Py3 compatible basestring
+try:
+    basestring
+except NameError:
+    basestring = str
+    unicode = str
 
 def _data_decorator(func):
     """Wrap the returned data into an object."""
@@ -27,22 +38,22 @@ def _data_decorator(func):
         # get the data / error from function
         try:
             code, data = func(self, *args, **kwargs)
-        except NotFound, msg:
+        except NotFound as msg:
             code = 404
             data = msg
-        except IndexError, msg:
+        except IndexError as msg:
             code = 404
             data = msg
-        except Unauthorised, msg:
+        except Unauthorised as msg:
             code = 403
             data = msg
-        except UsageError, msg:
+        except UsageError as msg:
             code = 400
             data = msg
-        except (AttributeError, Reject), msg:
+        except (AttributeError, Reject) as msg:
             code = 405
             data = msg
-        except ValueError, msg:
+        except ValueError as msg:
             code = 409
             data = msg
         except NotImplementedError:
@@ -52,13 +63,13 @@ def _data_decorator(func):
             exc, val, tb = sys.exc_info()
             code = 400
             ts = time.ctime()
-            if self.client.request.DEBUG_MODE:
+            if getattr (self.client.request, 'DEBUG_MODE', None):
                 data = val
             else:
                 data = '%s: An error occurred. Please check the server log' \
                        ' for more information.' % ts
             # out to the logfile
-            print 'EXCEPTION AT', ts
+            print ('EXCEPTION AT', ts)
             traceback.print_exc()
 
         # decorate it
@@ -284,19 +295,15 @@ class RestfulInstance(object):
         prop = None
         if isinstance(key, unicode):
             try:
-                key = key.encode('ascii')
+                x = key.encode('ascii')
             except UnicodeEncodeError:
                 raise UsageError(
                     'argument %r is no valid ascii keyword' % key
                 )
-        if isinstance(value, unicode):
-            value = value.encode('utf-8')
         if value:
             try:
-                prop = hyperdb.rawToHyperdb(
-                    self.db, cl, itemid, key, value
-                )
-            except hyperdb.HyperdbValueError, msg:
+                prop = hyperdb.rawToHyperdb(self.db, cl, itemid, key, value)
+            except hyperdb.HyperdbValueError as msg:
                 raise UsageError(msg)
 
         return prop
@@ -478,9 +485,7 @@ class RestfulInstance(object):
                 props = value.split(",")
 
         if props is None:
-            props = class_obj.properties.keys()
-
-        props.sort()  # sort properties
+            props = list(sorted(class_obj.properties.keys()))
 
         try:
             result = [
@@ -490,7 +495,7 @@ class RestfulInstance(object):
                     'View', self.db.getuid(), class_name, prop_name,
                 )
             ]
-        except KeyError, msg:
+        except KeyError as msg:
             raise UsageError("%s field not valid" % msg)
         result = {
             'id': item_id,
@@ -592,9 +597,9 @@ class RestfulInstance(object):
         try:
             item_id = class_obj.create(**props)
             self.db.commit()
-        except (TypeError, IndexError, ValueError), message:
+        except (TypeError, IndexError, ValueError) as message:
             raise ValueError(message)
-        except KeyError, msg:
+        except KeyError as msg:
             raise UsageError("Must provide the %s property." % msg)
 
         # set the header Location
@@ -634,7 +639,7 @@ class RestfulInstance(object):
         class_obj = self.db.getclass(class_name)
 
         props = self.props_from_args(class_obj, input.value, item_id)
-        for p in props.iterkeys():
+        for p in props:
             if not self.db.security.hasPermission(
                 'Edit', self.db.getuid(), class_name, p, item_id
             ):
@@ -645,7 +650,7 @@ class RestfulInstance(object):
         try:
             result = class_obj.set(item_id, **props)
             self.db.commit()
-        except (TypeError, IndexError, ValueError), message:
+        except (TypeError, IndexError, ValueError) as message:
             raise ValueError(message)
 
         result = {
@@ -696,7 +701,7 @@ class RestfulInstance(object):
         try:
             result = class_obj.set(item_id, **props)
             self.db.commit()
-        except (TypeError, IndexError, ValueError), message:
+        except (TypeError, IndexError, ValueError) as message:
             raise ValueError(message)
 
         result = {
@@ -820,7 +825,7 @@ class RestfulInstance(object):
         try:
             class_obj.set(item_id, **props)
             self.db.commit()
-        except (TypeError, IndexError, ValueError), message:
+        except (TypeError, IndexError, ValueError) as message:
             raise ValueError(message)
 
         result = {
@@ -893,7 +898,7 @@ class RestfulInstance(object):
             # else patch operation is processing data
             props = self.props_from_args(class_obj, input.value, item_id)
 
-            for prop, value in props.iteritems():
+            for prop in props:
                 if not self.db.security.hasPermission(
                     'Edit', self.db.getuid(), class_name, prop, item_id
                 ):
@@ -909,7 +914,7 @@ class RestfulInstance(object):
             try:
                 result = class_obj.set(item_id, **props)
                 self.db.commit()
-            except (TypeError, IndexError, ValueError), message:
+            except (TypeError, IndexError, ValueError) as message:
                 raise ValueError(message)
 
             result = {
@@ -975,7 +980,7 @@ class RestfulInstance(object):
         try:
             result = class_obj.set(item_id, **props)
             self.db.commit()
-        except (TypeError, IndexError, ValueError), message:
+        except (TypeError, IndexError, ValueError) as message:
             raise ValueError(message)
 
         result = {
@@ -1113,7 +1118,7 @@ class RestfulInstance(object):
         # priority : extension from uri (/rest/issue.json),
         #            header (Accept: application/json, application/xml)
         #            default (application/json)
-        ext_type = os.path.splitext(urlparse.urlparse(uri).path)[1][1:]
+        ext_type = os.path.splitext(urlparse(uri).path)[1][1:]
         data_type = ext_type or accept_type or self.__default_accept_type
 
         # check for pretty print
@@ -1140,9 +1145,9 @@ class RestfulInstance(object):
         # Call the appropriate method
         try:
             output = Routing.execute(self, uri, method, input)
-        except NotFound, msg:
+        except NotFound as msg:
             output = self.error_obj(404, msg)
-        except Reject, msg:
+        except Reject as msg:
             output = self.error_obj(405, msg)
 
         # Format the content type
