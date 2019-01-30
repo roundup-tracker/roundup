@@ -255,7 +255,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
                     print('EXCEPTION AT', ts)
                     traceback.print_exc()
 
-    do_GET = do_POST = do_HEAD = run_cgi
+    do_GET = do_POST = do_HEAD = do_PUT = do_DELETE = do_PATCH = run_cgi
 
     def index(self):
         ''' Print up an index of the available trackers

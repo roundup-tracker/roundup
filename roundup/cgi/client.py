@@ -35,6 +35,7 @@ from roundup.cgi.form_parser import FormParser
 from roundup.mailer import Mailer, MessageSendError
 from roundup.cgi import accept_language
 from roundup import xmlrpc
+from roundup import rest
 
 from roundup.anypy.cookie_ import CookieError, BaseCookie, SimpleCookie, \
     get_cookie_date
@@ -363,6 +364,10 @@ class Client:
         # see if we need to re-parse the environment for the form (eg Zope)
         if form is None:
             self.form = cgi.FieldStorage(fp=request.rfile, environ=env)
+            # In some case (e.g. content-type application/xml), cgi
+            # will not parse anything. Fake a list property in this case
+            if self.form.list is None:
+                self.form.list = []
         else:
             self.form = form
 
@@ -421,9 +426,14 @@ class Client:
     def main(self):
         """ Wrap the real main in a try/finally so we always close off the db.
         """
+        xmlrpc_enabled = self.instance.config.WEB_ENABLE_XMLRPC
+        rest_enabled   = self.instance.config.WEB_ENABLE_REST
         try:
-            if self.path == 'xmlrpc':
+            if xmlrpc_enabled and self.path == 'xmlrpc':
                 self.handle_xmlrpc()
+            elif rest_enabled and (self.path == 'rest' or
+                                   self.path[:5] == 'rest/'):
+                self.handle_rest()
             else:
                 self.inner_main()
         finally:
@@ -477,6 +487,24 @@ class Client:
             output = handler.dispatch(input)
 
         self.setHeader("Content-Type", "text/xml")
+        self.setHeader("Content-Length", str(len(output)))
+        self.write(output)
+
+    def handle_rest(self):
+        # Set the charset and language
+        self.determine_charset()
+        self.determine_language()
+        # Open the database as the correct user.
+        # TODO: add everything to RestfulDispatcher
+        self.determine_user()
+        self.check_anonymous_access()
+
+        # Call rest library to handle the request
+        handler = rest.RestfulInstance(self, self.db)
+        output = handler.dispatch(self.env['REQUEST_METHOD'], self.path,
+                                  self.form)
+
+        # self.setHeader("Content-Type", "text/xml")
         self.setHeader("Content-Length", str(len(output)))
         self.write(output)
 
@@ -1346,6 +1374,10 @@ class Client:
             try:
                 klass = self.db.getclass(self.classname)
             except KeyError:
+                raise NotFound('%s/%s'%(self.classname, self.nodeid))
+            if int(self.nodeid) > 2**31:
+                # Postgres will complain with a ProgrammingError
+                # if we try to pass in numbers that are too large
                 raise NotFound('%s/%s'%(self.classname, self.nodeid))
             if not klass.hasnode(self.nodeid):
                 raise NotFound('%s/%s'%(self.classname, self.nodeid))
