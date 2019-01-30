@@ -426,10 +426,13 @@ class Client:
     def main(self):
         """ Wrap the real main in a try/finally so we always close off the db.
         """
+        xmlrpc_enabled = self.instance.config.WEB_ENABLE_XMLRPC
+        rest_enabled   = self.instance.config.WEB_ENABLE_REST
         try:
-            if self.path == 'xmlrpc':
+            if xmlrpc_enabled and self.path == 'xmlrpc':
                 self.handle_xmlrpc()
-            elif self.path == 'rest' or self.path[:5] == 'rest/':
+            elif rest_enabled and (self.path == 'rest' or
+                                   self.path[:5] == 'rest/'):
                 self.handle_rest()
             else:
                 self.inner_main()
