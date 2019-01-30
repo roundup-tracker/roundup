@@ -69,11 +69,76 @@ def _data_decorator(func):
         return result
     return format_object
 
+def parse_accept_header(accept):
+    """
+    Parse the Accept header *accept*, returning a list with 3-tuples of
+    [(str(media_type), dict(params), float(q_value)),] ordered by q values.
+
+    If the accept header includes vendor-specific types like::
+        application/vnd.yourcompany.yourproduct-v1.1+json
+
+    It will actually convert the vendor and version into parameters and
+    convert the content type into `application/json` so appropriate content
+    negotiation decisions can be made.
+
+    Default `q` for values that are not specified is 1.0
+
+    # Based on https://gist.github.com/samuraisam/2714195
+    # Also, based on a snipped found in this project:
+    #   https://github.com/martinblech/mimerender
+    """
+    result = []
+    for media_range in accept.split(","):
+        parts = media_range.split(";")
+        media_type = parts.pop(0).strip()
+        media_params = []
+        # convert vendor-specific content types into something useful (see
+        # docstring)
+        typ, subtyp = media_type.split('/')
+        # check for a + in the sub-type
+        if '+' in subtyp:
+            # if it exists, determine if the subtype is a vendor-specific type
+            vnd, sep, extra = subtyp.partition('+')
+            if vnd.startswith('vnd'):
+                # and then... if it ends in something like "-v1.1" parse the
+                # version out
+                if '-v' in vnd:
+                    vnd, sep, rest = vnd.rpartition('-v')
+                    if len(rest):
+                        # add the version as a media param
+                        try:
+                            version = media_params.append(('version',
+                                                           float(rest)))
+                        except ValueError:
+                            version = 1.0 # could not be parsed
+                # add the vendor code as a media param
+                media_params.append(('vendor', vnd))
+                # and re-write media_type to something like application/json so
+                # it can be used usefully when looking up emitters
+                media_type = '{}/{}'.format(typ, extra)
+        q = 1.0
+        for part in parts:
+            (key, value) = part.lstrip().split("=", 1)
+            key = key.strip()
+            value = value.strip()
+            if key == "q":
+                q = float(value)
+            else:
+                media_params.append((key, value))
+        result.append((media_type, dict(media_params), q))
+    result.sort(lambda x, y: -cmp(x[2], y[2]))
+    return result
 
 class RestfulInstance(object):
     """The RestfulInstance performs REST request from the client"""
 
     __default_patch_op = "replace"  # default operator for PATCH method
+    __accepted_content_type = {
+        "application/json": "json",
+        "*/*": "json"
+        # "application/xml": "xml"
+    }
+    __default_accept_type = "json"
 
     def __init__(self, client, db):
         self.client = client
@@ -778,26 +843,23 @@ class RestfulInstance(object):
 
     def dispatch(self, method, uri, input):
         """format and process the request"""
-        # PATH is split to multiple pieces
-        # 0 - rest
-        # 1 - resource
-        # 2 - attribute
-        uri_split = uri.split("/")
-        resource_uri = uri_split[1]
-
         # if X-HTTP-Method-Override is set, follow the override method
         headers = self.client.request.headers
         method = headers.getheader('X-HTTP-Method-Override') or method
+
+        # parse Accept header and get the content type
+        accept_header = parse_accept_header(headers.getheader('Accept'))
+        accept_type = "invalid"
+        for part in accept_header:
+            if part[0] in self.__accepted_content_type:
+                accept_type = self.__accepted_content_type[part[0]]
 
         # get the request format for response
         # priority : extension from uri (/rest/issue.json),
         #            header (Accept: application/json, application/xml)
         #            default (application/json)
-
-        # format_header need a priority parser
         ext_type = os.path.splitext(urlparse.urlparse(uri).path)[1][1:]
-        accept_header = headers.getheader('Accept')[12:]
-        data_type = ext_type or accept_header or "json"
+        data_type = ext_type or accept_type or self.__default_accept_type
 
         # check for pretty print
         try:
@@ -819,6 +881,14 @@ class RestfulInstance(object):
             "Access-Control-Allow-Methods",
             "HEAD, OPTIONS, GET, PUT, DELETE, PATCH"
         )
+
+        # PATH is split to multiple pieces
+        # 0 - rest
+        # 1 - resource
+        # 2 - attribute
+        uri_split = uri.split("/")
+        resource_uri = uri_split[1]
+
         try:
             class_name, item_id = hyperdb.splitDesignator(resource_uri)
         except hyperdb.DesignatorError:
