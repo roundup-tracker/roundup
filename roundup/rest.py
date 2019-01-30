@@ -7,9 +7,13 @@ and/or modify under the same terms as Python.
 
 import json
 import pprint
+import sys
+import time
+import traceback
 from roundup import hyperdb
 from roundup.exceptions import *
 from roundup import xmlrpc
+
 
 def props_from_args(db, cl, args, itemid=None):
     props = {}
@@ -35,6 +39,7 @@ def props_from_args(db, cl, args, itemid=None):
             props[key] = None
 
     return props
+
 
 class RestfulInstance(object):
     """Dummy Handler for REST
@@ -183,15 +188,27 @@ class RestfulInstance(object):
                 class_name, item_id = hyperdb.splitDesignator(resource_uri)
                 output = getattr(self, "%s_element" % method.lower())(
                     class_name, item_id, input)
-        except hyperdb.DesignatorError:
-            raise NotImplementedError('Invalid URI')
-        except AttributeError:
-            raise NotImplementedError('Method is invalid')
+        except (hyperdb.DesignatorError, UsageError, Unauthorised), msg:
+            output = {'status': 'error', 'msg': msg}
+        except (AttributeError, Reject):
+            output = {'status': 'error', 'msg': 'Method is not allowed'}
+        except NotImplementedError:
+            output = {'status': 'error', 'msg': 'Method is under development'}
+        except:
+            # if self.DEBUG_MODE in roundup_server
+            # else msg = 'An error occurred. Please check...',
+            exc, val, tb = sys.exc_info()
+            output = {'status': 'error', 'msg': val}
+
+            # out to the logfile, it would be nice if the server do it for me
+            print 'EXCEPTION AT', time.ctime()
+            traceback.print_exc()
         finally:
             output = RoundupJSONEncoder().encode(output)
 
         print "Length: %s - Content(50 char): %s" % (len(output), output[:50])
         return output
+
 
 class RoundupJSONEncoder(json.JSONEncoder):
     def default(self, obj):
