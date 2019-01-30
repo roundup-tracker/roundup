@@ -11,6 +11,30 @@ from roundup import hyperdb
 from roundup.exceptions import *
 from roundup import xmlrpc
 
+def props_from_args(db, cl, args, itemid=None):
+    props = {}
+    for arg in args:
+        try:
+            key = arg.name
+            value = arg.value
+        except ValueError:
+            raise UsageError('argument "%s" not propname=value' % arg)
+        if isinstance(key, unicode):
+            try:
+                key = key.encode('ascii')
+            except UnicodeEncodeError:
+                raise UsageError('argument %r is no valid ascii keyword' % key)
+        if isinstance(value, unicode):
+            value = value.encode('utf-8')
+        if value:
+            try:
+                props[key] = hyperdb.rawToHyperdb(db, cl, itemid, key, value)
+            except hyperdb.HyperdbValueError:
+                pass  # pass if a parameter is not a property of the class
+        else:
+            props[key] = None
+
+    return props
 
 class RestfulInstance(object):
     """Dummy Handler for REST
@@ -58,8 +82,7 @@ class RestfulInstance(object):
         class_obj = self.db.getclass(class_name)
 
         # convert types
-        input_data = ["%s=%s" % (item.name, item.value) for item in input.value]
-        props = xmlrpc.props_from_args(self.db, class_obj, input_data)
+        props = props_from_args(self.db, class_obj, input.value)
 
         # check for the key property
         key = class_obj.getkey()
@@ -91,8 +114,7 @@ class RestfulInstance(object):
     def put_element(self, class_name, item_id, input):
         class_obj = self.db.getclass(class_name)
 
-        input_data = ["%s=%s" % (item.name, item.value) for item in input.value]
-        props = xmlrpc.props_from_args(self.db, class_obj, input_data, item_id)
+        props = props_from_args(self.db, class_obj, input.value, item_id)
         for p in props.iterkeys():
             if not self.db.security.hasPermission('Edit', self.db.getuid(),
                                                   class_name, p, item_id):
