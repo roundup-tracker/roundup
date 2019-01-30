@@ -5,6 +5,8 @@ This module is free software, you may redistribute it
 and/or modify under the same terms as Python.
 """
 
+import urlparse
+import os
 import json
 import pprint
 import sys
@@ -74,8 +76,6 @@ class RestfulInstance(object):
         tracker = self.client.env['TRACKER_NAME']
         self.base_path = '%s://%s/%s/rest/' % (protocol, host, tracker)
 
-        print self.base_path
-
     def get_collection(self, class_name, input):
         if not self.db.security.hasPermission('View', self.db.getuid(),
                                               class_name):
@@ -87,6 +87,7 @@ class RestfulInstance(object):
                   if self.db.security.hasPermission('View', self.db.getuid(),
                                                     class_name,
                                                     itemid=item_id)]
+        self.client.setHeader("X-Count-Total", str(len(result)))
         return 200, result
 
     def get_element(self, class_name, item_id, input):
@@ -230,21 +231,39 @@ class RestfulInstance(object):
         # 2 - attribute
         resource_uri = uri.split("/")[1]
 
-        self.client.setHeader("Access-Control-Allow-Methods",
-                              "HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH")
+        # if X-HTTP-Method-Override is set, follow the override method
+        method = self.client.request.headers.getheader('X-HTTP-Method-Override') or method
+
+        # get the request format for response
+        # priority : extension from uri (/rest/issue.json),
+        #            header (Accept: application/json, application/xml)
+        #            default (application/json)
+
+        # format_header need a priority parser
+        format_ext = os.path.splitext(urlparse.urlparse(uri).path)[1][1:]
+        format_header = self.client.request.headers.getheader('Accept')[12:]
+        format_output = format_ext or format_header or "json"
+
+        self.client.setHeader("Access-Control-Allow-Origin", "*")
         self.client.setHeader("Access-Control-Allow-Headers",
-                              "Content-Type, Authorization,"
+                              "Content-Type, Authorization, "
                               "X-HTTP-Method-Override")
-        self.client.setHeader("Allow",
-                              "HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH")
 
         output = None
         try:
             if resource_uri in self.db.classes:
+                self.client.setHeader("Allow",
+                                      "HEAD, OPTIONS, POST, DELETE")
+                self.client.setHeader("Access-Control-Allow-Methods",
+                                      "HEAD, OPTIONS, POST, DELETE")
                 response_code, output = getattr(self, "%s_collection" % method.lower())(
                     resource_uri, input)
             else:
                 class_name, item_id = hyperdb.splitDesignator(resource_uri)
+                self.client.setHeader("Allow",
+                                      "HEAD, OPTIONS, GET, PUT, DELETE, PATCH")
+                self.client.setHeader("Access-Control-Allow-Methods",
+                                      "HEAD, OPTIONS, GET, PUT, DELETE, PATCH")
                 response_code, output = getattr(self, "%s_element" % method.lower())(
                     class_name, item_id, input)
 
@@ -277,8 +296,12 @@ class RestfulInstance(object):
             print 'EXCEPTION AT', time.ctime()
             traceback.print_exc()
         finally:
-            self.client.setHeader("Content-Type", "application/json")
-            output = RoundupJSONEncoder().encode(output)
+            if format_output.lower() == "json":
+                self.client.setHeader("Content-Type", "application/json")
+                output = RoundupJSONEncoder().encode(output)
+            else:
+                self.client.response_code = 406
+                output = ""
 
         return output
 
