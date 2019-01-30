@@ -18,13 +18,15 @@ from roundup import xmlrpc
 
 
 def props_from_args(db, cl, args, itemid=None):
+    class_props = cl.properties.keys()
     props = {}
+    # props = dict.fromkeys(class_props, None)
+
     for arg in args:
-        try:
-            key = arg.name
-            value = arg.value
-        except ValueError:
-            raise UsageError('argument "%s" not propname=value' % arg)
+        key = arg.name
+        value = arg.value
+        if key not in class_props:
+            continue
         if isinstance(key, unicode):
             try:
                 key = key.encode('ascii')
@@ -35,8 +37,8 @@ def props_from_args(db, cl, args, itemid=None):
         if value:
             try:
                 props[key] = hyperdb.rawToHyperdb(db, cl, itemid, key, value)
-            except hyperdb.HyperdbValueError:
-                pass  # pass if a parameter is not a property of the class
+            except hyperdb.HyperdbValueError, msg:
+                raise UsageError(msg)
         else:
             props[key] = None
 
