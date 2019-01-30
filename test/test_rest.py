@@ -461,6 +461,25 @@ class TestCase(unittest.TestCase):
         self.assertEqual(len(results['attributes']['nosy']), 0)
         self.assertEqual(results['attributes']['nosy'], [])
 
+    def testPatchAction(self):
+        """
+        Test Patch Action 'Action'
+        """
+        # create a new issue with userid 1 and 2 in the nosy list
+        issue_id = self.db.issue.create(title='foo')
+
+        # execute action retire
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('op', 'action'),
+            cgi.MiniFieldStorage('action_name', 'retire')
+        ]
+        results = self.server.patch_element('issue', issue_id, form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+
+        # verify the result
+        self.assertTrue(self.db.issue.is_retired(issue_id))
+
     def testPatchRemove(self):
         """
         Test Patch Action 'Remove' only some element from a list

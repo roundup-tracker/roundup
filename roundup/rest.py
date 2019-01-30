@@ -16,6 +16,7 @@ import re
 
 from roundup import hyperdb
 from roundup import date
+from roundup import actions
 from roundup.exceptions import *
 from roundup.cgi.exceptions import *
 
@@ -230,6 +231,9 @@ class RestfulInstance(object):
     def __init__(self, client, db):
         self.client = client
         self.db = db
+        self.translator = client.translator
+        self.actions = client.instance.actions.copy()
+        self.actions.update({'retire': actions.Retire})
 
         protocol = 'http'
         host = self.client.env['HTTP_HOST']
@@ -856,33 +860,63 @@ class RestfulInstance(object):
             op = self.__default_patch_op
         class_obj = self.db.getclass(class_name)
 
-        props = self.props_from_args(class_obj, input.value, item_id)
+        # if patch operation is action, call the action handler
+        action_args = [class_name + item_id]
+        if op == 'action':
+            # extract action_name and action_args from form fields
+            for form_field in input.value:
+                key = form_field.name
+                value = form_field.value
+                if key == "action_name":
+                    name = value
+                elif key.startswith('action_args'):
+                    action_args.append(value)
 
-        for prop, value in props.iteritems():
-            if not self.db.security.hasPermission(
-                'Edit', self.db.getuid(), class_name, prop, item_id
-            ):
-                raise Unauthorised(
-                    'Permission to edit %s of %s%s denied' %
-                    (prop, class_name, item_id)
+            if name in self.actions:
+                action_type = self.actions[name]
+            else:
+                raise UsageError(
+                    'action "%s" is not supported %s' %
+                    (name, ','.join(self.actions.keys()))
+                )
+            action = action_type(self.db, self.translator)
+            result = action.execute(*action_args)
+
+            result = {
+                'id': item_id,
+                'type': class_name,
+                'link': self.base_path + class_name + item_id,
+                'result': result
+            }
+        else:
+            # else patch operation is processing data
+            props = self.props_from_args(class_obj, input.value, item_id)
+
+            for prop, value in props.iteritems():
+                if not self.db.security.hasPermission(
+                    'Edit', self.db.getuid(), class_name, prop, item_id
+                ):
+                    raise Unauthorised(
+                        'Permission to edit %s of %s%s denied' %
+                        (prop, class_name, item_id)
+                    )
+
+                props[prop] = self.patch_data(
+                    op, class_obj.get(item_id, prop), props[prop]
                 )
 
-            props[prop] = self.patch_data(
-                op, class_obj.get(item_id, prop), props[prop]
-            )
+            try:
+                result = class_obj.set(item_id, **props)
+                self.db.commit()
+            except (TypeError, IndexError, ValueError), message:
+                raise ValueError(message)
 
-        try:
-            result = class_obj.set(item_id, **props)
-            self.db.commit()
-        except (TypeError, IndexError, ValueError), message:
-            raise ValueError(message)
-
-        result = {
-            'id': item_id,
-            'type': class_name,
-            'link': self.base_path + class_name + item_id,
-            'attribute': result
-        }
+            result = {
+                'id': item_id,
+                'type': class_name,
+                'link': self.base_path + class_name + item_id,
+                'attribute': result
+            }
         return 200, result
 
     @Routing.route("/data/<:class_name>/<:item_id>/<:attr_name>", 'PATCH')
