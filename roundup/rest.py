@@ -465,15 +465,28 @@ class RestfulInstance(object):
             )
 
         class_obj = self.db.getclass(class_name)
-        props = class_obj.properties.keys()
+        props = None
+        for form_field in input.value:
+            key = form_field.name
+            value = form_field.value
+            if key == "fields":
+                props = value.split(",")
+
+        if props is None:
+            props = class_obj.properties.keys()
+
         props.sort()  # sort properties
-        result = [
-            (prop_name, class_obj.get(item_id, prop_name))
-            for prop_name in props
-            if self.db.security.hasPermission(
-                'View', self.db.getuid(), class_name, prop_name,
-            )
-        ]
+
+        try:
+            result = [
+                (prop_name, class_obj.get(item_id, prop_name))
+                for prop_name in props
+                if self.db.security.hasPermission(
+                    'View', self.db.getuid(), class_name, prop_name,
+                )
+            ]
+        except KeyError, msg:
+            raise UsageError("%s field not valid" % msg)
         result = {
             'id': item_id,
             'type': class_name,
