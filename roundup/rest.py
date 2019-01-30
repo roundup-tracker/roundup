@@ -50,7 +50,7 @@ class RestfulInstance(object):
             raise Unauthorised('Permission to view %s denied' % class_name)
         class_obj = self.db.getclass(class_name)
         prop_name = class_obj.labelprop()
-        result = [{'id': item_id, 'name': class_obj.get(item_id, prop_name)}
+        result = [{'id': item_id, prop_name: class_obj.get(item_id, prop_name)}
                   for item_id in class_obj.list()
                   if self.db.security.hasPermission('View', self.db.getuid(),
                                                     class_name,
@@ -71,6 +71,7 @@ class RestfulInstance(object):
                                                     class_name, prop_name,
                                                     item_id)]
         result = dict(result)
+        result['id'] = item_id
 
         return result
 
@@ -187,7 +188,15 @@ class RestfulInstance(object):
         except AttributeError:
             raise NotImplementedError('Method is invalid')
         finally:
-            output = json.JSONEncoder().encode(output)
+            output = RoundupJSONEncoder().encode(output)
 
         print "Length: %s - Content(50 char): %s" % (len(output), output[:50])
         return output
+
+class RoundupJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        try:
+            result = json.JSONEncoder.default(self, obj)
+        except TypeError:
+            result = str(obj)
+        return result
