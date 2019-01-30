@@ -237,22 +237,29 @@ class RestfulInstance(object):
                     class_name, item_id, input)
 
             output = data_obj(output)
+            self.client.response_code = 200
         except IndexError, msg:
             output = error_obj(404, msg)
+            self.client.response_code = 404
         except Unauthorised, msg:
             output = error_obj(403, msg)
+            self.client.response_code = 403
         except (hyperdb.DesignatorError, UsageError), msg:
             output = error_obj(400, msg)
+            self.client.response_code = 400
         except (AttributeError, Reject), msg:
             output = error_obj(405, 'Method Not Allowed. ' + str(msg))
+            self.client.response_code = 405
         except NotImplementedError:
             output = error_obj(402, 'Method is under development')
+            self.client.response_code = 402
             # nothing to pay, just a mark for debugging purpose
         except:
             # if self.DEBUG_MODE in roundup_server
             # else msg = 'An error occurred. Please check...',
             exc, val, tb = sys.exc_info()
             output = error_obj(400, val)
+            self.client.response_code = 400
 
             # out to the logfile, it would be nice if the server do it for me
             print 'EXCEPTION AT', time.ctime()
