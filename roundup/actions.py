@@ -2,6 +2,7 @@
 # Copyright (C) 2009 Stefan Seefeld
 # All rights reserved.
 # For license terms see the file COPYING.txt.
+# Actions used in REST and XMLRPC APIs
 #
 
 from roundup.exceptions import Unauthorised
@@ -40,7 +41,19 @@ class Action:
     _ = gettext
 
 
-class Retire(Action):
+class PermCheck(Action):
+    def permission(self, designator):
+
+        classname, itemid = hyperdb.splitDesignator(designator)
+        perm = self.db.security.hasPermission
+
+        if not perm('Retire', self.db.getuid(), classname=classname
+                   , itemid=itemid):
+            raise Unauthorised(self._('You do not have permission to retire '
+                                      'or restore the %(classname)s class.')
+                                      %locals())
+
+class Retire(PermCheck):
 
     def handle(self, designator):
 
@@ -57,12 +70,13 @@ class Retire(Action):
         self.db.commit()
 
 
-    def permission(self, designator):
+class Restore(PermCheck):
+
+    def handle(self, designator):
 
         classname, itemid = hyperdb.splitDesignator(designator)
 
-        if not self.db.security.hasPermission('Edit', self.db.getuid(),
-                                              classname=classname, itemid=itemid):
-            raise Unauthorised(self._('You do not have permission to '
-                                      'retire the %(classname)s class.')%classname)
-            
+        # do the restore
+        self.db.getclass(classname).restore(itemid)
+        self.db.commit()
+

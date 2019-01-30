@@ -179,7 +179,7 @@ class RoundupInstance:
         return result
 
 
-    builtin_actions = {'retire': actions.Retire}
+    builtin_actions = dict (retire = actions.Retire, restore = actions.Restore)
 
     def action(self, name, *args):
         """Execute a named action."""
@@ -189,7 +189,8 @@ class RoundupInstance:
         elif name in self.builtin_actions:
             action_type = self.builtin_actions[name]
         else:
-            raise Exception('action "%s" is not supported %s' % (name, ','.join(self.actions.keys())))
+            raise Exception('action "%s" is not supported %s'
+                           % (name, ','.join(self.actions.keys())))
         action = action_type(self.db, self.translator)
         return action.execute(*args)
 

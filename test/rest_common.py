@@ -39,6 +39,9 @@ class TestCase():
         self.db.commit()
         self.db.close()
         self.db = self.instance.open('joe')
+        # Allow joe to retire
+        p = self.db.security.addPermission(name='Retire', klass='issue')
+        self.db.security.addPermissionToRole('User', p)
 
         self.db.tx_Source = 'web'
 

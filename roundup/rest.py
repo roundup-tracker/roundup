@@ -243,8 +243,11 @@ class RestfulInstance(object):
         self.client = client
         self.db = db
         self.translator = client.translator
-        self.actions = client.instance.actions.copy()
-        self.actions.update({'retire': actions.Retire})
+        # This used to be initialized from client.instance.actions which
+        # would include too many actions that do not make sense in the
+        # REST-API context, so for now we only permit the retire and
+        # restore actions.
+        self.actions = dict (retire = actions.Retire, restore = actions.Restore)
 
         protocol = 'http'
         host = self.client.env['HTTP_HOST']
@@ -716,7 +719,9 @@ class RestfulInstance(object):
     @Routing.route("/data/<:class_name>", 'DELETE')
     @_data_decorator
     def delete_collection(self, class_name, input):
-        """DELETE all objects in a class
+        """DELETE (retire) all objects in a class
+           There is currently no use-case, so this is disabled and
+           always returns Unauthorised.
 
         Args:
             class_name (string): class name of the resource (Ex: issue, msg)
@@ -728,25 +733,26 @@ class RestfulInstance(object):
                 status (string): 'ok'
                 count (int): number of deleted objects
         """
+        raise Unauthorised('Deletion of a whole class disabled')
         if class_name not in self.db.classes:
             raise NotFound('Class %s not found' % class_name)
         if not self.db.security.hasPermission(
-            'Delete', self.db.getuid(), class_name
+            'Retire', self.db.getuid(), class_name
         ):
             raise Unauthorised('Permission to delete %s denied' % class_name)
 
         class_obj = self.db.getclass(class_name)
         for item_id in class_obj.list():
             if not self.db.security.hasPermission(
-                'Delete', self.db.getuid(), class_name, itemid=item_id
+                'Retire', self.db.getuid(), class_name, itemid=item_id
             ):
                 raise Unauthorised(
-                    'Permission to delete %s %s denied' % (class_name, item_id)
+                    'Permission to retire %s %s denied' % (class_name, item_id)
                 )
 
         count = len(class_obj.list())
         for item_id in class_obj.list():
-            self.db.destroynode(class_name, item_id)
+            class_obj.retire (item_id)
 
         self.db.commit()
         result = {
@@ -759,7 +765,7 @@ class RestfulInstance(object):
     @Routing.route("/data/<:class_name>/<:item_id>", 'DELETE')
     @_data_decorator
     def delete_element(self, class_name, item_id, input):
-        """DELETE an object in a class
+        """DELETE (retire) an object in a class
 
         Args:
             class_name (string): class name of the resource (Ex: issue, msg)
@@ -773,14 +779,15 @@ class RestfulInstance(object):
         """
         if class_name not in self.db.classes:
             raise NotFound('Class %s not found' % class_name)
+        class_obj = self.db.classes [class_name]
         if not self.db.security.hasPermission(
-            'Delete', self.db.getuid(), class_name, itemid=item_id
+            'Retire', self.db.getuid(), class_name, itemid=item_id
         ):
             raise Unauthorised(
-                'Permission to delete %s %s denied' % (class_name, item_id)
+                'Permission to retire %s %s denied' % (class_name, item_id)
             )
 
-        self.db.destroynode(class_name, item_id)
+        class_obj.retire (item_id)
         self.db.commit()
         result = {
             'status': 'ok'
