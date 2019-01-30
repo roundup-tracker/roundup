@@ -20,6 +20,7 @@ from roundup.backends import get_backend
 
 from .db_test_base import DBTest, ROTest, SchemaTest, ClassicInitTest, config
 from .db_test_base import HTMLItemTest, SpecialActionTest
+from .rest_common import TestCase as RestTestCase
 
 class anydbmOpener:
     module = get_backend('anydbm')
@@ -54,6 +55,9 @@ class anydbmSessionTest(anydbmOpener, SessionTest, unittest.TestCase):
 
 class anydbmSpecialActionTestCase(anydbmOpener, SpecialActionTest,
                                   unittest.TestCase):
+    backend = 'anydbm'
+
+class anydbmRestTest (RestTestCase, unittest.TestCase):
     backend = 'anydbm'
 
 # vim: set filetype=python ts=4 sw=4 et si

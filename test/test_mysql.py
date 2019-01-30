@@ -24,6 +24,7 @@ from roundup.backends import get_backend, have_backend
 from .db_test_base import DBTest, ROTest, config, SchemaTest, ClassicInitTest
 from .db_test_base import ConcurrentDBTest, HTMLItemTest, FilterCacheTest
 from .db_test_base import SpecialActionTest
+from .rest_common import TestCase as RestTestCase
 
 
 class mysqlOpener:
@@ -144,5 +145,9 @@ class mysqlSpecialActionTestCase(mysqlOpener, SpecialActionTest,
     def tearDown(self):
         SpecialActionTest.tearDown(self)
         mysqlOpener.tearDown(self)
+
+@skip_mysql
+class mysqlRestTest (RestTestCase, unittest.TestCase):
+    backend = 'mysql'
 
 # vim: set et sts=4 sw=4 :

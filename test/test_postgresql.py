@@ -24,6 +24,7 @@ from roundup.backends import get_backend, have_backend
 from .db_test_base import DBTest, ROTest, config, SchemaTest, ClassicInitTest
 from .db_test_base import ConcurrentDBTest, HTMLItemTest, FilterCacheTest
 from .db_test_base import ClassicInitBase, setupTracker, SpecialActionTest
+from .rest_common import TestCase as RestTestCase
 
 if not have_backend('postgresql'):
     # FIX: workaround for a bug in pytest.mark.skip():
@@ -224,5 +225,9 @@ class postgresqlSpecialActionTestCase(postgresqlOpener, SpecialActionTest,
     def tearDown(self):
         SpecialActionTest.tearDown(self)
         postgresqlOpener.tearDown(self)
+
+@skip_postgresql
+class postgresqlRestTest (RestTestCase, unittest.TestCase):
+    backend = 'postgresql'
 
 # vim: set et sts=4 sw=4 :

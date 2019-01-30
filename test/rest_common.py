@@ -15,7 +15,7 @@ import db_test_base
 NEEDS_INSTANCE = 1
 
 
-class TestCase(unittest.TestCase):
+class TestCase():
 
     backend = None
 
@@ -509,15 +509,6 @@ def get_obj(path, id):
         'id': id,
         'link': path + id
     }
-
-
-def test_suite():
-    suite = unittest.TestSuite()
-    for l in list_backends():
-        dct = dict(backend=l)
-        subcls = type(TestCase)('TestCase_%s' % l, (TestCase,), dct)
-        suite.addTest(unittest.makeSuite(subcls))
-    return suite
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
