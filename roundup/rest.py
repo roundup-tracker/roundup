@@ -83,25 +83,40 @@ class RestfulInstance(object):
         return result
 
     def post_element(self, class_name, item_id, input):
-        raise NotImplementedError
+        raise Reject('Invalid request')
 
     def put_collection(self, class_name, input):
-        raise NotImplementedError
+        raise Reject('Invalid request')
 
     def put_element(self, class_name, item_id, input):
         raise NotImplementedError
 
     def delete_collection(self, class_name, input):
-        # TODO: should I allow user to delete the whole collection ?
-        raise NotImplementedError
+        if not self.db.security.hasPermission('Delete', self.db.getuid(),
+                                              class_name):
+            raise Unauthorised('Permission to delete %s denied' % class_name)
+
+        class_obj = self.db.getclass(class_name)
+        for item_id in class_obj.list():
+            if not self.db.security.hasPermission('Delete', self.db.getuid(),
+                                                  class_name, itemid=item_id):
+                raise Unauthorised('Permission to delete %s %s denied' %
+                                   (class_name, item_id))
+
+        for item_id in class_obj.list():
+            self.db.destroynode(class_name, item_id)
+
+        self.db.commit()
+        result = {"status": "ok"}
+
+        return result
 
     def delete_element(self, class_name, item_id, input):
         if not self.db.security.hasPermission('Delete', self.db.getuid(),
                                               class_name, itemid=item_id):
             raise Unauthorised('Permission to delete %s %s denied' %
                                (class_name, item_id))
-        if item_id != input['id'].value:
-            raise UsageError('Must provide id key as confirmation')
+
         self.db.destroynode(class_name, item_id)
         self.db.commit()
         result = {"status": "ok"}
@@ -109,7 +124,7 @@ class RestfulInstance(object):
         return result
 
     def patch_collection(self, class_name, input):
-        raise NotImplementedError
+        raise Reject('Invalid request')
 
     def patch_element(self, class_name, item_id, input):
         raise NotImplementedError
