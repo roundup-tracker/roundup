@@ -41,12 +41,32 @@ def props_from_args(db, cl, args, itemid=None):
     return props
 
 
+def error_obj(status, msg, source=None):
+    result = {
+        'error': {
+            'status': status,
+            'msg': msg
+        }
+    }
+    if source is not None:
+        result['error']['source'] = source
+
+    return result
+
+
+def data_obj(data):
+    result = {
+        'data': data
+    }
+    return result
+
+
 class RestfulInstance(object):
     """Dummy Handler for REST
     """
 
-    def __init__(self, db):
-        # TODO: database, translator and instance.actions
+    def __init__(self, client, db):
+        self.client = client  # it might be unnecessary to receive the client
         self.db = db
 
     def get_collection(self, class_name, input):
@@ -188,17 +208,22 @@ class RestfulInstance(object):
                 class_name, item_id = hyperdb.splitDesignator(resource_uri)
                 output = getattr(self, "%s_element" % method.lower())(
                     class_name, item_id, input)
-        except (hyperdb.DesignatorError, UsageError, Unauthorised), msg:
-            output = {'status': 'error', 'msg': msg}
+
+            output = data_obj(output)
+        except Unauthorised, msg:
+            output = error_obj(403, msg)
+        except (hyperdb.DesignatorError, UsageError), msg:
+            output = error_obj(400, msg)
         except (AttributeError, Reject):
-            output = {'status': 'error', 'msg': 'Method is not allowed'}
+            output = error_obj(405, 'Method Not Allowed')
         except NotImplementedError:
-            output = {'status': 'error', 'msg': 'Method is under development'}
+            output = error_obj(402, 'Method is under development')
+            # nothing to pay, just mark that this is under development
         except:
             # if self.DEBUG_MODE in roundup_server
             # else msg = 'An error occurred. Please check...',
             exc, val, tb = sys.exc_info()
-            output = {'status': 'error', 'msg': val}
+            output = error_obj(400, val)
 
             # out to the logfile, it would be nice if the server do it for me
             print 'EXCEPTION AT', time.ctime()

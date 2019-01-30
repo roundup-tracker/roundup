@@ -497,7 +497,7 @@ class Client:
         self.check_anonymous_access()
 
         # Call rest library to handle the request
-        handler = rest.RestfulInstance(self.db)
+        handler = rest.RestfulInstance(self, self.db)
         output = handler.dispatch(self.env['REQUEST_METHOD'], self.path,
                                   self.form)
 
