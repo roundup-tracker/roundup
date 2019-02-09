@@ -38,6 +38,11 @@ Features:
   DELETE method. We also don't allow to DELETE a whole class. Python3
   support was also fixed and we have cherry-picked two patches from the
   bugs.python.org branch in the files affected by the REST-API changes.
+- Patch to client.py and roundup-server needed by REST-API
+  code. Support OPTIONS verb and prevent hangs when processing a verb
+  other than GET that doesn't have a payload. E.G. DELETE, PATCH or
+  OPTIONS. Verbs like PUT and POST usually have payloads, so this
+  patch doesn't touch processing of these methods. (John Rouillard)
 
 Fixed:
 

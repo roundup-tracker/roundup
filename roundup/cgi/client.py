@@ -363,6 +363,18 @@ class Client:
 
         # see if we need to re-parse the environment for the form (eg Zope)
         if form is None:
+            # cgi.FieldStorage doesn't special case OPTIONS, DELETE or
+            # PATCH verbs. They are processed like POST. So FieldStorage
+            # hangs on these verbs trying to read posted data that
+            # will never arrive.
+            # If not defined, set CONTENT_LENGTH to 0 so it doesn't
+            # hang reading the data.
+            if self.env['REQUEST_METHOD'] in ['OPTIONS', 'DELETE', 'PATCH']:
+                if 'CONTENT_LENGTH' not in self.env:
+                    self.env['CONTENT_LENGTH'] = 0
+                    logger.debug("Setting CONTENT_LENGTH to 0 for method: %s",
+                                self.env['REQUEST_METHOD'])
+
             self.form = cgi.FieldStorage(fp=request.rfile, environ=env)
             # In some case (e.g. content-type application/xml), cgi
             # will not parse anything. Fake a list property in this case
