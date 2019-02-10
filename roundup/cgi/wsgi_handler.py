@@ -11,7 +11,7 @@ import weakref
 import roundup.instance
 from roundup.cgi import TranslationService
 from roundup.anypy import http_
-from roundup.anypy.strings import s2b
+from roundup.anypy.strings import s2b, bs2b
 BaseHTTPRequestHandler = http_.server.BaseHTTPRequestHandler
 DEFAULT_ERROR_MESSAGE = http_.server.DEFAULT_ERROR_MESSAGE
 
@@ -22,8 +22,8 @@ class Writer(object):
         self.request = request #weakref.ref(request)
     def write(self, data):
         f = self.request.get_wfile()
-        self.write = f
-        return f(data)
+        self.write = lambda data: f(bs2b(data))
+        return self.write(data)
 
 class RequestDispatcher(object):
     def __init__(self, home, debug=False, timing=False, lang=None):
