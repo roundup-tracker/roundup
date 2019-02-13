@@ -778,7 +778,7 @@ and feed it to roundup-admin on standard input. E.G.
 
   cat init_tracker | roundup-admin -i tracker_dir
 
-(for more details see http://issues.roundup-tracker.org/issue2550789.)
+(for more details see https://issues.roundup-tracker.org/issue2550789.)
 
 Using with the shell
 --------------------

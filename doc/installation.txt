@@ -47,7 +47,7 @@ you get the error message::
 
 you need to install a 32 bit version of python. The 64 bit versions
 use a different registry key that the installer doesn't detect. See:
-http://issues.roundup-tracker.org/issue2550718 for details.
+https://issues.roundup-tracker.org/issue2550718 for details.
 
 Optional Components
 ===================

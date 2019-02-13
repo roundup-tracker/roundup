@@ -41,7 +41,7 @@ etc.) and force the tracker to use it by setting the ``indexer``
 setting in the tracker's ``config.ini``.
 
 This fix was supplied by telsch. See issue
-http://issues.roundup-tracker.org/issue2550743 for further info or if
+https://issues.roundup-tracker.org/issue2550743 for further info or if
 you are interested in developing a patch to roundup to help work
 around this issue.
 
