@@ -2,7 +2,7 @@ Roundup has three web sites:
 
  * http://www.roundup-tracker.org/
  * http://wiki.roundup-tracker.org/
- * http://issues.roundup-tracker.org/
+ * https://issues.roundup-tracker.org/
 
 www and wiki are hosted on SourceForge.
 

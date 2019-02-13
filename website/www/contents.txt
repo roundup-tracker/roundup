@@ -13,7 +13,7 @@ Contents:
    Home <index>
    Download <http://pypi.python.org/pypi/roundup>
    docs
-   Issues <http://issues.roundup-tracker.org>
+   Issues <https://issues.roundup-tracker.org>
    contact
    Wiki <http://wiki.roundup-tracker.org>
    code
