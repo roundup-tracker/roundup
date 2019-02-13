@@ -199,7 +199,7 @@ I'm getting infinite redirects in the browser
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A wrong value for the ``tracker`` -> ``web`` setting may also result in
-infinite redirects, see http://issues.roundup-tracker.org/issue2537286
+infinite redirects, see https://issues.roundup-tracker.org/issue2537286
 
 
 How is sorting performed, and why does it seem to fail sometimes?

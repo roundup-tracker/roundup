@@ -23,7 +23,7 @@ All development is coordinated through two resources:
 - roundup-devel mailing list at
   http://lists.sourceforge.net/mailman/listinfo/roundup-devel
 - The issue tracker running at
-  http://issues.roundup-tracker.org/
+  https://issues.roundup-tracker.org/
 
 Website, wiki
 -------------
@@ -48,7 +48,7 @@ The machine is operated by Upfronthosting in South Africa. The meta
 tracker is http://psf.upfronthosting.co.za/roundup/meta/
 In this tracker, Upfronthosting people are the users izak and roche.
 
-The Roundup tracker http://issues.roundup-tracker.org/ is in
+The Roundup tracker https://issues.roundup-tracker.org/ is in
 ~roundup/trackers/roundup
 
 The configuration is in the "website/issues" section of Roundup's
@@ -423,7 +423,7 @@ At run time, Roundup automatically compiles message catalogs whenever
 .. _gettext module: https://docs.python.org/2/library/gettext.html
 .. _GNU: http://www.gnu.org/
 .. _GNU mirror sites: http://www.gnu.org/prep/ftp.html
-.. _issue tracker: http://issues.roundup-tracker.org/
+.. _issue tracker: https://issues.roundup-tracker.org/
 .. _Lokalize: Lokalize
 .. _KDE: http://www.kde.org/
 .. _linux: https://www.linux.org/
