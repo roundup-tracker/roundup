@@ -1128,7 +1128,7 @@ class RestfulInstance(object):
 
         if ( ext_type ):
             # strip extension so uri make sense
-            .../issue.json -> .../issue
+            # .../issue.json -> .../issue
             uri = uri[:-( len(ext_type) + 1 )]
 
         # check for pretty print
