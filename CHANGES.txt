@@ -63,6 +63,8 @@ Fixed:
   multilink. (Joseph Myers)
 - issue2550992: avoid errors from invalid Authorization
   headers. (Joseph Myers)
+- issue2551022: support non-ASCII prefixes in instance config for
+  finding static files. (Cédric Krier)
 
 
 2018-07-13 1.6.0

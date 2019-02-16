@@ -48,7 +48,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import roundup.anypy.email_
 
-from roundup.anypy.strings import s2b, b2s, uchr
+from roundup.anypy.strings import s2b, b2s, uchr, is_us
 
 def initialiseSecurity(security):
     '''Create some Permissions and Roles on the security object
@@ -1511,7 +1511,7 @@ class Client:
             prefix = self.instance.config[dir_option]
             if not prefix:
                 continue
-            if type(prefix) is str:
+            if is_us(prefix):
                 # prefix can be a string or list depending on
                 # option. Make it a list to iterate over.
                 prefix = [ prefix ]
