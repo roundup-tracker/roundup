@@ -43,6 +43,10 @@ Features:
   other than GET that doesn't have a payload. E.G. DELETE, PATCH or
   OPTIONS. Verbs like PUT and POST usually have payloads, so this
   patch doesn't touch processing of these methods. (John Rouillard)
+- Patches to new rest code:
+   - Generated links in responses should use the base url specified
+     in config.ini.
+  (John Rouillard)
 - issue2550833: the export_csv web action now returns labels/names
   rather than id's. Replace calls to export_csv with the export_csv_id
   action to return the same data as the old export_csv action. (Tom

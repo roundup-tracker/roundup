@@ -249,10 +249,8 @@ class RestfulInstance(object):
         # restore actions.
         self.actions = dict (retire = actions.Retire, restore = actions.Restore)
 
-        protocol = 'http'
-        host = self.client.env['HTTP_HOST']
-        tracker = self.client.env['TRACKER_NAME']
-        self.base_path = '%s://%s/%s/rest' % (protocol, host, tracker)
+        # note TRACKER_WEB ends in a /
+        self.base_path = '%srest' % (self.db.config.TRACKER_WEB)
         self.data_path = self.base_path + '/data'
 
     def props_from_args(self, cl, args, itemid=None):
