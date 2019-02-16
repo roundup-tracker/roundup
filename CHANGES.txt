@@ -46,6 +46,9 @@ Features:
 - Patches to new rest code:
    - Generated links in responses should use the base url specified
      in config.ini.
+   - allow user (e.g. in browser) to override response type/Accept
+     header using extension in url. E.G. .../issues.json. This fixes
+     the existing code so it works.
   (John Rouillard)
 - issue2550833: the export_csv web action now returns labels/names
   rather than id's. Replace calls to export_csv with the export_csv_id

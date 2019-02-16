@@ -1126,6 +1126,11 @@ class RestfulInstance(object):
         ext_type = os.path.splitext(urlparse(uri).path)[1][1:]
         data_type = ext_type or accept_type or self.__default_accept_type
 
+        if ( ext_type ):
+            # strip extension so uri make sense
+            .../issue.json -> .../issue
+            uri = uri[:-( len(ext_type) + 1 )]
+
         # check for pretty print
         try:
             pretty_output = input['pretty'].value.lower() == "true"
