@@ -49,6 +49,11 @@ Features:
    - allow user (e.g. in browser) to override response type/Accept
      header using extension in url. E.G. .../issues.json. This fixes
      the existing code so it works.
+   - fix SECURITY issue. Retrieving the item of a class
+     (e.g. /rest/data/user/2) would display properties the user wasn't
+     allowed to access. Note that unlike the web interface,  passwords
+     and roles for users are still retreivable if the user has access
+     rights to the properties.
   (John Rouillard)
 - issue2550833: the export_csv web action now returns labels/names
   rather than id's. Replace calls to export_csv with the export_csv_id

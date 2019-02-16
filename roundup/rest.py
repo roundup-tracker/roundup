@@ -494,7 +494,7 @@ class RestfulInstance(object):
                 for prop_name in props
                 if self.db.security.hasPermission(
                     'View', self.db.getuid(), class_name, prop_name,
-                )
+                        item_id )
             ]
         except KeyError as msg:
             raise UsageError("%s field not valid" % msg)
