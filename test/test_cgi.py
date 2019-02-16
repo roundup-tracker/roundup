@@ -1507,16 +1507,40 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         self.assert_(not item.hasRole(''))
 
     def testCSVExport(self):
-        cl = self._make_client({'@columns': 'id,name'}, nodeid=None,
-            userid='1')
-        cl.classname = 'status'
+        cl = self._make_client(
+            {'@columns': 'id,title,status,keyword,assignedto,nosy'},
+            nodeid=None, userid='1')
+        cl.classname = 'issue'
+
+        demo_id=self.db.user.create(username='demo', address='demo@test.test',
+            roles='User', realname='demo')
+        key_id1=self.db.keyword.create(name='keyword1')
+        key_id2=self.db.keyword.create(name='keyword2')
+        self.db.issue.create(title='foo1', status='2', assignedto='4', nosy=['3',demo_id])
+        self.db.issue.create(title='bar2', status='1', assignedto='3', keyword=[key_id1,key_id2])
+        self.db.issue.create(title='baz32', status='4')
         output = StringIO()
         cl.request = MockNull()
         cl.request.wfile = output
+        # call export version that outputs names
         actions.ExportCSVAction(cl).handle()
-        self.assertEquals('id,name\r\n1,unread\r\n2,deferred\r\n3,chatting\r\n'
-            '4,need-eg\r\n5,in-progress\r\n6,testing\r\n7,done-cbb\r\n'
-            '8,resolved\r\n',
+        #print(output.getvalue())
+        self.assertEquals('id,title,status,keyword,assignedto,nosy\r\n'
+'1,foo1,deferred,,"Contrary, Mary","Bork, Chef;demo;Contrary, Mary"\r\n'
+'2,bar2,unread,keyword1;keyword2,"Bork, Chef","Bork, Chef"\r\n'
+'3,baz32,need-eg,,,\r\n',
+
+            output.getvalue())
+        output = StringIO()
+        cl.request = MockNull()
+        cl.request.wfile = output
+        # call export version that outputs id numbers
+        actions.ExportCSVWithIdAction(cl).handle()
+        #print(output.getvalue())
+        self.assertEquals('id,title,status,keyword,assignedto,nosy\r\n'
+                          "1,foo1,2,[],4,\"['3', '5', '4']\"\r\n"
+                          "2,bar2,1,\"['1', '2']\",3,['3']\r\n"
+                          '3,baz32,4,[],None,[]\r\n',
             output.getvalue())
 
     def testCSVExportBadColumnName(self):
@@ -1545,6 +1569,68 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
             actions.ExportCSVAction(cl).handle)
 
     def testCSVExportFailPermissionValidColumn(self):
+        passwd=password.Password('foo')
+        demo_id=self.db.user.create(username='demo', address='demo@test.test',
+                                    roles='User', realname='demo',
+                                    password=passwd)
+        cl = self._make_client({'@columns': 'id,username,address,password'},
+                               nodeid=None, userid=demo_id)
+        cl.classname = 'user'
+        output = StringIO()
+        cl.request = MockNull()
+        cl.request.wfile = output
+        # used to be self.assertRaises(exceptions.Unauthorised,
+        # but not acting like the column name is not found
+
+        actions.ExportCSVAction(cl).handle()
+        #print(output.getvalue())
+        self.assertEquals('id,username,address,password\r\n'
+                          '1,admin,[hidden],[hidden]\r\n'
+                          '2,anonymous,[hidden],[hidden]\r\n'
+                          '3,Chef,[hidden],[hidden]\r\n'
+                          '4,mary,[hidden],[hidden]\r\n'
+                          '5,demo,demo@test.test,%s\r\n'%(passwd),
+            output.getvalue())
+
+    def testCSVExportWithId(self):
+        cl = self._make_client({'@columns': 'id,name'}, nodeid=None,
+            userid='1')
+        cl.classname = 'status'
+        output = StringIO()
+        cl.request = MockNull()
+        cl.request.wfile = output
+        actions.ExportCSVWithIdAction(cl).handle()
+        self.assertEquals('id,name\r\n1,unread\r\n2,deferred\r\n3,chatting\r\n'
+            '4,need-eg\r\n5,in-progress\r\n6,testing\r\n7,done-cbb\r\n'
+            '8,resolved\r\n',
+            output.getvalue())
+
+    def testCSVExportWithIdBadColumnName(self):
+        cl = self._make_client({'@columns': 'falseid,name'}, nodeid=None,
+            userid='1')
+        cl.classname = 'status'
+        output = StringIO()
+        cl.request = MockNull()
+        cl.request.wfile = output
+        self.assertRaises(exceptions.NotFound,
+            actions.ExportCSVWithIdAction(cl).handle)
+
+    def testCSVExportWithIdFailPermissionBadColumn(self):
+        cl = self._make_client({'@columns': 'id,email,password'}, nodeid=None,
+            userid='2')
+        cl.classname = 'user'
+        output = StringIO()
+        cl.request = MockNull()
+        cl.request.wfile = output
+        # used to be self.assertRaises(exceptions.Unauthorised,
+        # but not acting like the column name is not found
+        # see issue2550755 - should this return Unauthorised?
+        # The unauthorised user should never get to the point where
+        # they can determine if the column name is valid or not.
+        self.assertRaises(exceptions.NotFound,
+            actions.ExportCSVWithIdAction(cl).handle)
+
+    def testCSVExportWithIdFailPermissionValidColumn(self):
         cl = self._make_client({'@columns': 'id,address,password'}, nodeid=None,
             userid='2')
         cl.classname = 'user'
@@ -1554,7 +1640,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         # used to be self.assertRaises(exceptions.Unauthorised,
         # but not acting like the column name is not found
         self.assertRaises(exceptions.Unauthorised,
-            actions.ExportCSVAction(cl).handle)
+            actions.ExportCSVWithIdAction(cl).handle)
 
 class TemplateHtmlRendering(unittest.TestCase):
     ''' try to test the rendering code for tal '''

@@ -14,7 +14,7 @@ import roundup.anypy.random_ as random_
 __all__ = ['Action', 'ShowAction', 'RetireAction', 'RestoreAction', 'SearchAction',
            'EditCSVAction', 'EditItemAction', 'PassResetAction',
            'ConfRegoAction', 'RegisterAction', 'LoginAction', 'LogoutAction',
-           'NewItemAction', 'ExportCSVAction']
+           'NewItemAction', 'ExportCSVAction', 'ExportCSVWithIdAction']
 
 # used by a couple of routines
 chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
@@ -1294,6 +1294,159 @@ class LoginAction(Action):
 class ExportCSVAction(Action):
     name = 'export'
     permissionType = 'View'
+    list_sep = ';'              # Separator for list types
+
+    def handle(self):
+        ''' Export the specified search query as CSV. '''
+        # figure the request
+        request = templating.HTMLRequest(self.client)
+        filterspec = request.filterspec
+        sort = request.sort
+        group = request.group
+        columns = request.columns
+        klass = self.db.getclass(request.classname)
+
+        # check if all columns exist on class
+        # the exception must be raised before sending header
+        props = klass.getprops()
+        for cname in columns:
+            if cname not in props:
+                # use error code 400: Bad Request. Do not use
+                # error code 404: Not Found.
+                self.client.response_code = 400
+                raise exceptions.NotFound(
+                    self._('Column "%(column)s" not found in %(class)s')
+                    % {'column': cgi.escape(cname), 'class': request.classname})
+
+        # full-text search
+        if request.search_text:
+            matches = self.db.indexer.search(
+                re.findall(r'\b\w{2,25}\b', request.search_text), klass)
+        else:
+            matches = None
+
+        header = self.client.additional_headers
+        header['Content-Type'] = 'text/csv; charset=%s' % self.client.charset
+        # some browsers will honor the filename here...
+        header['Content-Disposition'] = 'inline; filename=query.csv'
+
+        self.client.header()
+
+        if self.client.env['REQUEST_METHOD'] == 'HEAD':
+            # all done, return a dummy string
+            return 'dummy'
+
+        wfile = self.client.request.wfile
+        if self.client.charset != self.client.STORAGE_CHARSET:
+            wfile = codecs.EncodedFile(wfile,
+                self.client.STORAGE_CHARSET, self.client.charset, 'replace')
+
+        writer = csv.writer(wfile)
+
+        # handle different types of columns.
+        def repr_no_right(cls, col):
+            """User doesn't have the right to see the value of col."""
+            def fct(arg):
+                return "[hidden]"
+            return fct
+        def repr_link(cls, col):
+            """Generate a function which returns the string representation of
+            a link depending on `cls` and `col`."""
+            def fct(arg):
+                if arg == None:
+                    return ""
+                else:
+                    return str(cls.get(arg, col))
+            return fct
+        def repr_list(cls, col):
+            def fct(arg):
+                if arg == None:
+                    return ""
+                elif type(arg) is list:
+                    seq = [str(cls.get(val, col)) for val in arg]
+                    return self.list_sep.join(seq)
+            return fct
+        def repr_date():
+            def fct(arg):
+                if arg == None:
+                    return ""
+                else:
+                    if (arg.local(self.db.getUserTimezone()).pretty('%H:%M') ==
+                        '00:00'):
+                        fmt = '%Y-%m-%d'
+                    else:
+                        fmt = '%Y-%m-%d %H:%M'
+                return arg.local(self.db.getUserTimezone()).pretty(fmt)
+            return fct
+        def repr_val():
+            def fct(arg):
+                if arg == None:
+                    return ""
+                else:
+                    return str(arg)
+            return fct
+
+        props = klass.getprops()
+        
+        # Determine translation map.
+        ncols = []
+        represent = {}
+        for col in columns:
+            ncols.append(col)
+            represent[col] = repr_val()
+            if isinstance(props[col], hyperdb.Multilink):
+                cname = props[col].classname
+                cclass = self.db.getclass(cname)
+                represent[col] = repr_list(cclass, 'name')
+                if not self.hasPermission(self.permissionType, classname=cname):
+                    represent[col] = repr_no_right(cclass, 'name')
+                else:
+                    if 'name' in cclass.getprops():
+                        represent[col] = repr_list(cclass, 'name')
+                    elif cname == 'user':
+                        represent[col] = repr_list(cclass, 'realname')
+            if isinstance(props[col], hyperdb.Link):
+                cname = props[col].classname
+                cclass = self.db.getclass(cname)
+                if not self.hasPermission(self.permissionType, classname=cname):
+                    represent[col] = repr_no_right(cclass, 'name')
+                else:
+                    if 'name' in cclass.getprops():
+                        represent[col] = repr_link(cclass, 'name')
+                    elif cname == 'user':
+                        represent[col] = repr_link(cclass, 'realname')
+            if isinstance(props[col], hyperdb.Date):
+                represent[col] = repr_date()
+
+        columns = ncols
+        # generate the CSV output
+        self.client._socket_op(writer.writerow, columns)
+        # and search
+        for itemid in klass.filter(matches, filterspec, sort, group):
+            row = []
+            # don't put out a row of [hidden] fields if the user has
+            # no access to the issue.
+            if not self.hasPermission(self.permissionType, itemid=itemid,
+                                      classname=request.classname):
+                continue
+            for name in columns:
+                # check permission for this property on this item
+                # TODO: Permission filter doesn't work for the 'user' class
+                if not self.hasPermission(self.permissionType, itemid=itemid,
+                        classname=request.classname, property=name):
+                    repr_function = repr_no_right(request.classname, name)
+                else:
+                    repr_function = represent[name]
+                row.append(repr_function(klass.get(itemid, name)))
+            self.client._socket_op(writer.writerow, row)
+        return '\n'
+
+class ExportCSVWithIdAction(Action):
+    ''' A variation of ExportCSVAction that returns ID number rather than
+        names. This is the original csv export function.
+    '''
+    name = 'export'
+    permissionType = 'View'
 
     def handle(self):
         ''' Export the specified search query as CSV. '''
@@ -1346,10 +1499,24 @@ class ExportCSVAction(Action):
         # and search
         for itemid in klass.filter(matches, filterspec, sort, group):
             row = []
+            # FIXME should this code raise an exception if an item
+            # is included that can't be accessed? Enabling this
+            # check will just skip the row for the inaccessible item.
+            # This makes it act more like the web interface.
+            #if not self.hasPermission(self.permissionType, itemid=itemid,
+            #                          classname=request.classname):
+            #    continue
             for name in columns:
                 # check permission to view this property on this item
-                if not self.hasPermission('View', itemid=itemid,
+                if not self.hasPermission(self.permissionType, itemid=itemid,
                         classname=request.classname, property=name):
+                    # FIXME: is this correct, or should we just
+                    # emit a '[hidden]' string. Note that this may
+                    # allow an attacker to figure out hidden schema
+                    # properties.
+                    # A bad property name will result in an exception.
+                    # A valid property results in a column of '[hidden]'
+                    #   values.
                     raise exceptions.Unauthorised(self._(
                         'You do not have permission to view %(class)s'
                     ) % {'class': request.classname})
@@ -1357,7 +1524,6 @@ class ExportCSVAction(Action):
             self.client._socket_op(writer.writerow, row)
 
         return '\n'
-
 
 class Bridge(BaseAction):
     """Make roundup.actions.Action executable via CGI request.

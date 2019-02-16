@@ -1756,6 +1756,7 @@ class Client:
         ('retire',      actions.RetireAction),
         ('show',        actions.ShowAction),
         ('export_csv',  actions.ExportCSVAction),
+        ('export_csv_id',  actions.ExportCSVWithIdAction),
     )
     def handle_action(self):
         """ Determine whether there should be an Action called.
