@@ -14,7 +14,9 @@ v2.7.2 is required to run newer releases of Roundup.
 2019-??-?? 1.6.1
 
 Features:
-- doc updates. Link rot fixed and some grammar changes. (John Rouillard) 
+- doc updates. Link rot fixed and some grammar changes.
+  'Provisional User' config example fixed. Issue tracker is
+  now https. (John Rouillard) 
 
 Fixed:
 
