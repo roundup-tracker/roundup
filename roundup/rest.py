@@ -1086,7 +1086,7 @@ class RestfulInstance(object):
             )
             issue_object = {
                 'id': issue_id,
-                'link': self.base_path + 'issue' + issue_id,
+                'link': self.base_path + '/data/issue/' + issue_id,
                 'title': self.db.issue.get(issue_id, 'title')
             }
             for x, ts, uid, action, data in self.db.issue.history(issue_id):
