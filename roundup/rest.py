@@ -208,6 +208,9 @@ class Routing(object):
     def execute(cls, instance, path, method, input):
         # format the input
         path = path.strip('/').lower()
+        if path == 'rest':
+            # allow handler to be called for /rest/
+            path = 'rest/'
         method = method.upper()
 
         # find the rule match the path
