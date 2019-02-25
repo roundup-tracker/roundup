@@ -32,6 +32,9 @@ except NameError:
     basestring = str
     unicode = str
 
+import logging
+logger = logging.getLogger('roundup.rest')
+
 def _data_decorator(func):
     """Wrap the returned data into an object."""
     def format_object(self, *args, **kwargs):
@@ -1110,7 +1113,21 @@ class RestfulInstance(object):
         """format and process the request"""
         # if X-HTTP-Method-Override is set, follow the override method
         headers = self.client.request.headers
-        method = headers.getheader('X-HTTP-Method-Override') or method
+        # Never allow GET to be an unsafe operation (i.e. data changing).
+        # User must use POST to "tunnel" DELETE, PUT, OPTIONS etc.
+        override = headers.getheader('X-HTTP-Method-Override')
+        output = None
+        if override:
+            if method.upper() != 'GET':
+                logger.debug(
+                    'Method overridden from %s to %s', method, override)
+                method = override
+            else:
+                output = self.error_obj(400,
+                               "X-HTTP-Method-Override: %s can not be used with GET method. Use Post instead." % override)
+                logger.info(
+                    'Ignoring X-HTTP-Method-Override for GET request on %s',
+                    uri)
 
         # parse Accept header and get the content type
         accept_header = parse_accept_header(headers.getheader('Accept'))
@@ -1154,7 +1171,10 @@ class RestfulInstance(object):
 
         # Call the appropriate method
         try:
-            output = Routing.execute(self, uri, method, input)
+            # If output was defined by a prior error
+            # condition skip call
+            if not output:
+                output = Routing.execute(self, uri, method, input)
         except NotFound as msg:
             output = self.error_obj(404, msg)
         except Reject as msg:
