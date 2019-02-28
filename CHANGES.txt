@@ -82,7 +82,11 @@ Fixed:
   headers. (Joseph Myers)
 - issue2551022: support non-ASCII prefixes in instance config for
   finding static files. (Cédric Krier)
-
+- issue2551023: Fix CSRF headers for use with wsgi and cgi. The
+  env variable array used - separators rather than _. Compare:
+  HTTP_X-REQUESTED-WITH to HTTP_X_REQUESTED_WITH. The last is
+  correct. Also fix roundup-server to produce the latter form. (Patch
+  by Cédric Krier, reviewed/applied John Rouillard.)
 
 2018-07-13 1.6.0
 

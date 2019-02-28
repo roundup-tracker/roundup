@@ -411,7 +411,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             # If behind a proxy, this is the hostname supplied
             # via the Host header to the proxy. Used by core code.
             # Controlled by the CSRF settings.
-            env['HTTP_X-FORWARDED-HOST'] = xfh
+            env['HTTP_X_FORWARDED_HOST'] = xfh
         xff = self.headers.get('X-Forwarded-For', None)
         if xff:
             # xff is a list of ip addresses for original client/proxies:
@@ -421,7 +421,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             # Made available for extensions if the user trusts it.
             # E.g. you may wish to disable recaptcha validation extension
             # if the ip of the client matches 172.16.0.0.
-            env['HTTP_X-FORWARDED-FOR'] = xff
+            env['HTTP_X_FORWARDED_FOR'] = xff
         xfp = self.headers.get('X-Forwarded-Proto', None)
         if xfp:
             # xfp is the protocol (http/https) seen by proxies in the
@@ -435,7 +435,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             # May not be trustworthy. Do not use in core without
             # config option to control its use.
             # Made available for extensions if the user trusts it.
-            env['HTTP_X-FORWARDED-PROTO'] = xfp
+            env['HTTP_X_FORWARDED_PROTO'] = xfp
         if 'CGI_SHOW_TIMING' in os.environ:
             env['CGI_SHOW_TIMING'] = os.environ['CGI_SHOW_TIMING']
         env['HTTP_ACCEPT_LANGUAGE'] = self.headers.get('accept-language')
@@ -447,7 +447,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             env['HTTP_ORIGIN'] = origin
         xrw = self.headers.get('x-requested-with')
         if xrw:
-            env['HTTP_X-REQUESTED-WITH'] = xrw
+            env['HTTP_X_REQUESTED_WITH'] = xrw
         range = self.headers.get('range')
         if range:
             env['HTTP_RANGE'] = range
