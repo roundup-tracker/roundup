@@ -888,7 +888,7 @@ class FormTestCase(FormTestParent, unittest.TestCase):
         del(cl.env['HTTP_ORIGIN'])
         del(out[0])
 
-        cl.env['HTTP_X-FORWARDED-HOST'] = 'whoami.com'
+        cl.env['HTTP_X_FORWARDED_HOST'] = 'whoami.com'
         # if there is an X-FORWARDED-HOST header it is used and
         # HOST header is ignored. X-FORWARDED-HOST should only be
         # passed/set by a proxy. In this case the HOST header is
@@ -899,7 +899,7 @@ class FormTestCase(FormTestParent, unittest.TestCase):
         match_at=out[0].find('Redirecting to <a href="http://whoami.com/path/issue1?@ok_message')
         print "result of subtest 4:", out[0]
         self.assertNotEqual(match_at, -1)
-        del(cl.env['HTTP_X-FORWARDED-HOST'])
+        del(cl.env['HTTP_X_FORWARDED_HOST'])
         del(cl.env['HTTP_HOST'])
         del(out[0])
 
@@ -912,14 +912,14 @@ class FormTestCase(FormTestParent, unittest.TestCase):
         del(out[0])
 
         # try failing headers
-        cl.env['HTTP_X-FORWARDED-HOST'] = 'whoami.net'
+        cl.env['HTTP_X_FORWARDED_HOST'] = 'whoami.net'
         # this raises an error as the header check passes and 
         # it did the edit and tries to send mail.
         cl.inner_main()
         match_at=out[0].find('Invalid X-FORWARDED-HOST whoami.net')
         print "result of subtest 6:", out[0]
         self.assertNotEqual(match_at, -1)
-        del(cl.env['HTTP_X-FORWARDED-HOST'])
+        del(cl.env['HTTP_X_FORWARDED_HOST'])
         del(out[0])
 
         # header checks succeed
@@ -1031,7 +1031,7 @@ class FormTestCase(FormTestParent, unittest.TestCase):
                             'CONTENT_TYPE': 'text/plain',
                             'HTTP_AUTHORIZATION': 'Basic YWRtaW46YWRtaW4=',
                             'HTTP_REFERER': 'http://whoami.com/path/',
-                            'HTTP_X-REQUESTED-WITH': "XMLHttpRequest"
+                            'HTTP_X_REQUESTED_WITH': "XMLHttpRequest"
                         }, form)
         cl.db = self.db
         cl.base = 'http://whoami.com/path/'
@@ -1059,7 +1059,7 @@ class FormTestCase(FormTestParent, unittest.TestCase):
         del(out[0])
 
         # remove the X-REQUESTED-WITH header and get an xmlrpc fault returned
-        del(cl.env['HTTP_X-REQUESTED-WITH'])
+        del(cl.env['HTTP_X_REQUESTED_WITH'])
         cl.handle_xmlrpc()
         output="<?xml version='1.0'?>\n<methodResponse>\n<fault>\n<value><struct>\n<member>\n<name>faultCode</name>\n<value><int>1</int></value>\n</member>\n<member>\n<name>faultString</name>\n<value><string>&lt;class 'roundup.exceptions.UsageError'&gt;:Required Header Missing</string></value>\n</member>\n</struct></value>\n</fault>\n</methodResponse>\n"
         print out[0]

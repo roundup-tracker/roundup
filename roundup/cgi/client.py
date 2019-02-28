@@ -1026,7 +1026,7 @@ class Client:
         # If required headers are missing, raise an error
         for header in header_names:
             if (config["WEB_CSRF_ENFORCE_HEADER_%s"%header] == 'required'
-                    and "HTTP_%s"%header not in self.env):
+                    and "HTTP_%s" % header.replace('-', '_') not in self.env):
                 logger.error(self._("csrf header %s required but missing for user%s."), header, current_user)
                 raise Unauthorised, self._("Missing header: %s")%header
                 
@@ -1062,9 +1062,9 @@ class Client:
                 header_pass += 1
                 
         enforce=config['WEB_CSRF_ENFORCE_HEADER_X-FORWARDED-HOST']
-        if 'HTTP_X-FORWARDED-HOST' in self.env:
+        if 'HTTP_X_FORWARDED_HOST' in self.env:
             if enforce != "no":
-                host = self.env['HTTP_X-FORWARDED-HOST']
+                host = self.env['HTTP_X_FORWARDED_HOST']
                 foundat = self.base.find('://' + host + '/')
                 # 4 means self.base has http:/ prefix, 5 means https:/ prefix
                 if foundat not in [4, 5]:
@@ -1111,7 +1111,7 @@ class Client:
                 # Note we do not use CSRF nonces for xmlrpc requests.
                 #
                 # see: https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Protecting_REST_Services:_Use_of_Custom_Request_Headers
-                if 'HTTP_X-REQUESTED-WITH' not in self.env:
+                if 'HTTP_X_REQUESTED_WITH' not in self.env:
                     logger.error(self._("csrf X-REQUESTED-WITH xmlrpc required header check failed for user%s."), current_user)
                     raise UsageError, self._("Required Header Missing")
 
