@@ -25,6 +25,8 @@ from roundup import actions
 from roundup.exceptions import *
 from roundup.cgi.exceptions import *
 
+from hashlib import md5
+
 # Py3 compatible basestring
 try:
     basestring
@@ -59,6 +61,9 @@ def _data_decorator(func):
         except ValueError as msg:
             code = 409
             data = msg
+        except PreconditionFailed as msg:
+            code = 412
+            data = msg
         except NotImplementedError:
             code = 402  # nothing to pay, just a mark for debugging purpose
             data = 'Method under development'
@@ -91,6 +96,66 @@ def _data_decorator(func):
         return result
     return format_object
 
+def calculate_etag (node, classname="Missing", id="0"):
+    '''given a hyperdb node generate a hashed representation of it to be
+    used as an etag.
+
+    This code needs a __repr__ function in the Password class. This
+    replaces the repr(items) which would be:
+
+      <roundup.password.Password instance at 0x7f3442406170>
+
+    with the string representation:
+
+       {PBKDF2}10000$k4d74EDgxlbH...A
+
+    This makes the representation repeatable as the location of the
+    password instance is not static and we need a constant value to
+    calculate the etag.
+
+    Note that repr() is chosen for the node rather than str() since
+    repr is meant to be an unambiguous representation.
+
+    classname and id are used for logging only.
+    '''
+
+    items = node.items(protected=True) # include every item
+    etag = md5(repr(items)).hexdigest()
+    logger.debug("object=%s%s; tag=%s; repr=%s", classname, id,
+                 etag, repr(node.items(protected=True)))
+    return etag
+
+def check_etag (node, etags, classname="Missing", id="0"):
+    '''Take a list of etags and compare to the etag for the given node.
+
+    Iterate over all supplied etags,
+       If a tag fails to match, return False.
+       If at least one etag matches, return True.
+       If all etags are None, return False.
+
+    '''
+    have_etag_match=False
+
+    node_etag = calculate_etag(node, classname, id)
+
+    for etag in etags:
+        if etag != None:
+            if etag != node_etag:
+                return False
+            have_etag_match=True
+
+    if have_etag_match:
+        return True
+    else:
+        return False
+
+def obtain_etags(headers,input):
+    '''Get ETags value from headers or payload data'''
+    etags = []
+    if '@etag' in input:
+        etags.append(input['@etag'].value);
+    etags.append(headers.getheader("ETag", None))
+    return etags
 
 def parse_accept_header(accept):
     """
@@ -484,6 +549,8 @@ class RestfulInstance(object):
             )
 
         class_obj = self.db.getclass(class_name)
+        node = class_obj.getnode(item_id)
+        etag = calculate_etag(node, class_name, item_id)
         props = None
         for form_field in input.value:
             key = form_field.name
@@ -496,7 +563,7 @@ class RestfulInstance(object):
 
         try:
             result = [
-                (prop_name, class_obj.get(item_id, prop_name))
+                (prop_name, node.__getattr__(prop_name))
                 for prop_name in props
                 if self.db.security.hasPermission(
                     'View', self.db.getuid(), class_name, prop_name,
@@ -508,9 +575,11 @@ class RestfulInstance(object):
             'id': item_id,
             'type': class_name,
             'link': '%s/%s/%s' % (self.data_path, class_name, item_id),
-            'attributes': dict(result)
+            'attributes': dict(result),
+            '@etag': etag
         }
 
+        self.client.setHeader("ETag", '"%s"'%etag)
         return 200, result
 
     @Routing.route("/data/<:class_name>/<:item_id>/<:attr_name>", 'GET')
@@ -546,15 +615,19 @@ class RestfulInstance(object):
             )
 
         class_obj = self.db.getclass(class_name)
-        data = class_obj.get(item_id, attr_name)
+        node = class_obj.getnode(item_id)
+        etag = calculate_etag(node, class_name, item_id)
+        data = node.__getattr__(attr_name)
         result = {
             'id': item_id,
             'type': type(data),
             'link': "%s/%s/%s/%s" %
                     (self.data_path, class_name, item_id, attr_name),
-            'data': data
+            'data': data,
+            '@etag': etag
         }
 
+        self.client.setHeader("ETag", '"%s"'%etag )
         return 200, result
 
     @Routing.route("/data/<:class_name>", 'POST')
@@ -655,6 +728,12 @@ class RestfulInstance(object):
                     (p, class_name, item_id)
                 )
         try:
+            if not check_etag(class_obj.getnode(item_id),
+                       obtain_etags(self.client.request.headers, input),
+                       class_name,
+                       item_id):
+                raise PreconditionFailed("Etag is missing or does not match."
+                        "Retreive asset and retry modification if valid.")
             result = class_obj.set(item_id, **props)
             self.db.commit()
         except (TypeError, IndexError, ValueError) as message:
@@ -697,7 +776,6 @@ class RestfulInstance(object):
                 'Permission to edit %s%s %s denied' %
                 (class_name, item_id, attr_name)
             )
-
         class_obj = self.db.getclass(class_name)
         props = {
             attr_name: self.prop_from_arg(
@@ -706,6 +784,11 @@ class RestfulInstance(object):
         }
 
         try:
+            if not check_etag(class_obj.getnode(item_id),
+                        obtain_etags(self.client.request.headers, input),
+                        class_name, item_id):
+                raise PreconditionFailed("Etag is missing or does not match."
+                        "Retreive asset and retry modification if valid.")
             result = class_obj.set(item_id, **props)
             self.db.commit()
         except (TypeError, IndexError, ValueError) as message:
@@ -791,6 +874,13 @@ class RestfulInstance(object):
                 'Permission to retire %s %s denied' % (class_name, item_id)
             )
 
+        if not check_etag(class_obj.getnode(item_id),
+                obtain_etags(self.client.request.headers, input),
+                class_name,
+                item_id):
+            raise PreconditionFailed("Etag is missing or does not match."
+                        "Retreive asset and retry modification if valid.")
+
         class_obj.retire (item_id)
         self.db.commit()
         result = {
@@ -834,6 +924,13 @@ class RestfulInstance(object):
             props[attr_name] = None
 
         try:
+            if not check_etag(class_obj.getnode(item_id),
+                       obtain_etags(self.client.request.headers, input),
+                       class_name,
+                       item_id):
+                raise PreconditionFailed("Etag is missing or does not match."
+                        "Retreive asset and retry modification if valid.")
+
             class_obj.set(item_id, **props)
             self.db.commit()
         except (TypeError, IndexError, ValueError) as message:
@@ -876,6 +973,13 @@ class RestfulInstance(object):
         except KeyError:
             op = self.__default_patch_op
         class_obj = self.db.getclass(class_name)
+
+        if not check_etag(class_obj.getnode(item_id),
+                obtain_etags(self.client.request.headers, input),
+                class_name,
+                item_id):
+            raise PreconditionFailed("Etag is missing or does not match."
+                        "Retreive asset and retry modification if valid.")
 
         # if patch operation is action, call the action handler
         action_args = [class_name + item_id]
@@ -978,6 +1082,14 @@ class RestfulInstance(object):
 
         prop = attr_name
         class_obj = self.db.getclass(class_name)
+
+        if not check_etag(class_obj.getnode(item_id),
+                obtain_etags(self.client.request.headers, input),
+                class_name,
+                item_id):
+            raise PreconditionFailed("Etag is missing or does not match."
+                        "Retreive asset and retry modification if valid.")
+
         props = {
             prop: self.prop_from_arg(
                 class_obj, prop, input['data'].value, item_id

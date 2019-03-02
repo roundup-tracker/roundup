@@ -5,12 +5,14 @@ import errno
 
 from roundup.cgi.exceptions import *
 from roundup import password, hyperdb
-from roundup.rest import RestfulInstance
+from roundup.rest import RestfulInstance, calculate_etag
 from roundup.backends import list_backends
 from roundup.cgi import client
 import random
 
 from .db_test_base import setupTracker
+
+from .mocknull import MockNull
 
 NEEDS_INSTANCE = 1
 
@@ -62,7 +64,8 @@ class TestCase():
             'HTTP_HOST': 'localhost',
             'TRACKER_NAME': 'rounduptest'
         }
-        self.dummy_client = client.Client(self.instance, None, env, [], None)
+        self.dummy_client = client.Client(self.instance, MockNull(), env, [], None)
+        self.dummy_client.request.headers.getheader = self.get_etag_header
         self.empty_form = cgi.FieldStorage()
 
         self.server = RestfulInstance(self.dummy_client, self.db)
@@ -74,6 +77,12 @@ class TestCase():
         except OSError as error:
             if error.errno not in (errno.ENOENT, errno.ESRCH):
                 raise
+
+    def get_etag_header (self, header, not_found=None):
+        try:
+            return self.etag_header
+        except AttributeError:
+            return None
 
     def testGet(self):
         """
@@ -242,12 +251,73 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(len(results['data']), 0)
 
+
+    def testEtagProcessing(self):
+        '''
+        Etags can come from two places:
+           ETag http header
+           @etags value posted in the form
+
+        Both will be checked if availble. If either one
+        fails, the etag check will fail.
+
+        Run over header only, etag in form only, both,
+        each one broke and no etag. Use the put command
+        to triger the etag checking code.
+        '''
+        for mode in ('header', 'etag', 'both',
+                     'brokenheader', 'brokenetag', 'none'):
+            try:
+                # clean up any old header
+                del(self.etag_header)
+            except AttributeError:
+                pass
+
+            form = cgi.FieldStorage()
+            etag = calculate_etag(self.db.user.getnode(self.joeid))
+            form.list = [
+                cgi.MiniFieldStorage('data', 'Joe Doe Doe'),
+            ]
+
+            if mode == 'header':
+                print "Mode = %s"%mode
+                self.etag_header = etag
+            elif mode == 'etag':
+                print "Mode = %s"%mode
+                form.list.append(cgi.MiniFieldStorage('@etag', etag))
+            elif mode == 'both':
+                print "Mode = %s"%mode
+                self.etag_header = etag
+                form.list.append(cgi.MiniFieldStorage('@etag', etag))
+            elif mode == 'brokenheader':
+                print "Mode = %s"%mode
+                self.etag_header = 'bad'
+                form.list.append(cgi.MiniFieldStorage('@etag', etag))
+            elif mode == 'brokenetag':
+                print "Mode = %s"%mode
+                self.etag_header = etag
+                form.list.append(cgi.MiniFieldStorage('@etag', 'bad'))
+            elif mode == 'none':
+                print "Mode = %s"%mode
+            else:
+                self.fail("unknown mode found")
+
+            results = self.server.put_attribute(
+                'user', self.joeid, 'realname', form
+            )
+            if mode not in ('brokenheader', 'brokenetag', 'none'):
+                self.assertEqual(self.dummy_client.response_code, 200)
+            else:
+                self.assertEqual(self.dummy_client.response_code, 412)
+
+
     def testPut(self):
         """
         Change joe's 'realname'
         Check if we can't change admin's detail
         """
-        # change Joe's realname via attribute uri
+        # fail to change Joe's realname via attribute uri
+        # no etag
         form = cgi.FieldStorage()
         form.list = [
             cgi.MiniFieldStorage('data', 'Joe Doe Doe')
@@ -255,18 +325,41 @@ class TestCase():
         results = self.server.put_attribute(
             'user', self.joeid, 'realname', form
         )
+        self.assertEqual(self.dummy_client.response_code, 412)
+        results = self.server.get_attribute(
+            'user', self.joeid, 'realname', self.empty_form
+        )
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(results['data']['data'], 'Joe Random')
+
+        # change Joe's realname via attribute uri
+        form = cgi.FieldStorage()
+        etag = calculate_etag(self.db.user.getnode(self.joeid))
+        form.list = [
+            cgi.MiniFieldStorage('data', 'Joe Doe Doe'),
+        ]
+
+        self.etag_header = etag # use etag in header
+        results = self.server.put_attribute(
+            'user', self.joeid, 'realname', form
+        )
+        self.assertEqual(self.dummy_client.response_code, 200)
         results = self.server.get_attribute(
             'user', self.joeid, 'realname', self.empty_form
         )
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['data']['data'], 'Joe Doe Doe')
+        del(self.etag_header)
 
         # Reset joe's 'realname'.
         form = cgi.FieldStorage()
+        etag = calculate_etag(self.db.user.getnode(self.joeid))
         form.list = [
-            cgi.MiniFieldStorage('realname', 'Joe Doe')
+            cgi.MiniFieldStorage('realname', 'Joe Doe'),
+            cgi.MiniFieldStorage('@etag', etag)
         ]
         results = self.server.put_element('user', self.joeid, form)
+        self.assertEqual(self.dummy_client.response_code, 200)
         results = self.server.get_element('user', self.joeid, self.empty_form)
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['data']['attributes']['realname'], 'Joe Doe')
@@ -374,14 +467,32 @@ class TestCase():
         # create a new issue with userid 1 in the nosy list
         issue_id = self.db.issue.create(title='foo', nosy=['1'])
 
+        # No etag, so this should return 412 - Precondition Failed
+        # With no changes
+        results = self.server.delete_attribute(
+            'issue', issue_id, 'nosy', self.empty_form
+        )
+        self.assertEqual(self.dummy_client.response_code, 412)
+        results = self.server.get_element('issue', issue_id, self.empty_form)
+        results = results['data']
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['attributes']['nosy']), 1)
+        self.assertListEqual(results['attributes']['nosy'], ['1'])
+
+        form = cgi.FieldStorage()
+        etag = calculate_etag(self.db.issue.getnode(issue_id))
+        form.list.append(cgi.MiniFieldStorage('@etag', etag))
         # remove the title and nosy
         results = self.server.delete_attribute(
-            'issue', issue_id, 'title', self.empty_form
+            'issue', issue_id, 'title', form
         )
         self.assertEqual(self.dummy_client.response_code, 200)
 
+        del(form.list[-1])
+        etag = calculate_etag(self.db.issue.getnode(issue_id))
+        form.list.append(cgi.MiniFieldStorage('@etag', etag))
         results = self.server.delete_attribute(
-            'issue', issue_id, 'nosy', self.empty_form
+            'issue', issue_id, 'nosy', form
         )
         self.assertEqual(self.dummy_client.response_code, 200)
 
@@ -400,11 +511,22 @@ class TestCase():
         # create a new issue with userid 1 in the nosy list
         issue_id = self.db.issue.create(title='foo', nosy=['1'])
 
-        # add userid 2 to the nosy list
+        # fail to add userid 2 to the nosy list
+        # no etag
         form = cgi.FieldStorage()
         form.list = [
             cgi.MiniFieldStorage('op', 'add'),
             cgi.MiniFieldStorage('nosy', '2')
+        ]
+        results = self.server.patch_element('issue', issue_id, form)
+        self.assertEqual(self.dummy_client.response_code, 412)
+
+        etag = calculate_etag(self.db.issue.getnode(issue_id))
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('op', 'add'),
+            cgi.MiniFieldStorage('nosy', '2'),
+            cgi.MiniFieldStorage('@etag', etag)
         ]
         results = self.server.patch_element('issue', issue_id, form)
         self.assertEqual(self.dummy_client.response_code, 200)
@@ -423,7 +545,8 @@ class TestCase():
         # create a new issue with userid 1 in the nosy list and status = 1
         issue_id = self.db.issue.create(title='foo', nosy=['1'], status='1')
 
-        # replace userid 2 to the nosy list and status = 3
+        # fail to replace userid 2 to the nosy list and status = 3
+        # no etag.
         form = cgi.FieldStorage()
         form.list = [
             cgi.MiniFieldStorage('op', 'replace'),
@@ -431,8 +554,25 @@ class TestCase():
             cgi.MiniFieldStorage('status', '3')
         ]
         results = self.server.patch_element('issue', issue_id, form)
+        self.assertEqual(self.dummy_client.response_code, 412)
+        results = self.server.get_element('issue', issue_id, self.empty_form)
+        results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(results['attributes']['status'], '1')
+        self.assertEqual(len(results['attributes']['nosy']), 1)
+        self.assertListEqual(results['attributes']['nosy'], ['1'])
 
+        # replace userid 2 to the nosy list and status = 3
+        etag = calculate_etag(self.db.issue.getnode(issue_id))
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('op', 'replace'),
+            cgi.MiniFieldStorage('nosy', '2'),
+            cgi.MiniFieldStorage('status', '3'),
+            cgi.MiniFieldStorage('@etag', etag)
+        ]
+        results = self.server.patch_element('issue', issue_id, form)
+        self.assertEqual(self.dummy_client.response_code, 200)
         # verify the result
         results = self.server.get_element('issue', issue_id, self.empty_form)
         results = results['data']
@@ -448,12 +588,31 @@ class TestCase():
         # create a new issue with userid 1 and 2 in the nosy list
         issue_id = self.db.issue.create(title='foo', nosy=['1', '2'])
 
-        # remove the nosy list and the title
+        # fail to remove the nosy list and the title
+        # no etag
         form = cgi.FieldStorage()
         form.list = [
             cgi.MiniFieldStorage('op', 'remove'),
             cgi.MiniFieldStorage('nosy', ''),
             cgi.MiniFieldStorage('title', '')
+        ]
+        results = self.server.patch_element('issue', issue_id, form)
+        self.assertEqual(self.dummy_client.response_code, 412)
+        results = self.server.get_element('issue', issue_id, self.empty_form)
+        results = results['data']
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(results['attributes']['title'], 'foo')
+        self.assertEqual(len(results['attributes']['nosy']), 2)
+        self.assertEqual(results['attributes']['nosy'], ['1', '2'])
+
+        # remove the nosy list and the title
+        form = cgi.FieldStorage()
+        etag = calculate_etag(self.db.issue.getnode(issue_id))
+        form.list = [
+            cgi.MiniFieldStorage('op', 'remove'),
+            cgi.MiniFieldStorage('nosy', ''),
+            cgi.MiniFieldStorage('title', ''),
+            cgi.MiniFieldStorage('@etag', etag)
         ]
         results = self.server.patch_element('issue', issue_id, form)
         self.assertEqual(self.dummy_client.response_code, 200)
@@ -473,11 +632,24 @@ class TestCase():
         # create a new issue with userid 1 and 2 in the nosy list
         issue_id = self.db.issue.create(title='foo')
 
-        # execute action retire
+        # fail to execute action retire
+        # no etag
         form = cgi.FieldStorage()
         form.list = [
             cgi.MiniFieldStorage('op', 'action'),
             cgi.MiniFieldStorage('action_name', 'retire')
+        ]
+        results = self.server.patch_element('issue', issue_id, form)
+        self.assertEqual(self.dummy_client.response_code, 412)
+        self.assertFalse(self.db.issue.is_retired(issue_id))
+
+        # execute action retire
+        form = cgi.FieldStorage()
+        etag = calculate_etag(self.db.issue.getnode(issue_id))
+        form.list = [
+            cgi.MiniFieldStorage('op', 'action'),
+            cgi.MiniFieldStorage('action_name', 'retire'),
+            cgi.MiniFieldStorage('@etag', etag)
         ]
         results = self.server.patch_element('issue', issue_id, form)
         self.assertEqual(self.dummy_client.response_code, 200)
@@ -492,11 +664,28 @@ class TestCase():
         # create a new issue with userid 1, 2, 3 in the nosy list
         issue_id = self.db.issue.create(title='foo', nosy=['1', '2', '3'])
 
-        # remove the nosy list and the title
+        # fail to remove the nosy list and the title
+        # no etag
         form = cgi.FieldStorage()
         form.list = [
             cgi.MiniFieldStorage('op', 'remove'),
             cgi.MiniFieldStorage('nosy', '1, 2'),
+        ]
+        results = self.server.patch_element('issue', issue_id, form)
+        self.assertEqual(self.dummy_client.response_code, 412)
+        results = self.server.get_element('issue', issue_id, self.empty_form)
+        results = results['data']
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['attributes']['nosy']), 3)
+        self.assertEqual(results['attributes']['nosy'], ['1', '2', '3'])
+
+        # remove the nosy list and the title
+        form = cgi.FieldStorage()
+        etag = calculate_etag(self.db.issue.getnode(issue_id))
+        form.list = [
+            cgi.MiniFieldStorage('op', 'remove'),
+            cgi.MiniFieldStorage('nosy', '1, 2'),
+            cgi.MiniFieldStorage('@etag', etag)
         ]
         results = self.server.patch_element('issue', issue_id, form)
         self.assertEqual(self.dummy_client.response_code, 200)

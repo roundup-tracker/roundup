@@ -18,6 +18,9 @@ class NotFound(HTTPException):
 class NotModified(HTTPException):
     pass
 
+class PreconditionFailed(HTTPException):
+    pass
+
 class DetectorError(BaseException):
     """Raised when a detector throws an exception.
 Contains details of the exception."""

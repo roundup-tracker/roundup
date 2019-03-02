@@ -294,6 +294,9 @@ class Password(JournalPassword):
             self.password = None
             self.plaintext = None
 
+    def __repr__(self):
+        return self.__str__()
+
     def needs_migration(self):
         """ Password has insecure scheme or other insecure parameters
             and needs migration to new password scheme
