@@ -1166,6 +1166,42 @@ class RestfulInstance(object):
         )
         return 204, ""
 
+    @Routing.route("/")
+    @_data_decorator
+    def describe(self, input):
+        """Describe the rest endpoint"""
+        result = {
+            "default_version": "1",
+            "supported_versions": [ "1" ],
+            "links": [ { "uri": self.base_path +"/summary",
+                        "rel": "summary"},
+                       { "uri": self.base_path,
+                         "rel": "self"},
+                       { "uri": self.base_path + "/data",
+                         "rel": "data"}
+                   ]
+        }
+
+        return 200, result
+
+    @Routing.route("/data")
+    @_data_decorator
+    def data(self, input):
+        """Describe the sublements of data
+
+           FIXME: should have a key for every element under data in
+                  the schema the user can access.
+           This is just an example.
+        """
+        result = {
+            "issue": { "link": self.base_path + "/data/" + "issue" },
+            "status": { "link": self.base_path + "/data/" + "status" },
+            "keyword": { "link": self.base_path + "/data/" + "keyword" },
+            "user": { "link": self.base_path + "/data/" + "user" }
+        }
+
+        return 200, result
+
     @Routing.route("/summary")
     @_data_decorator
     def summary(self, input):
