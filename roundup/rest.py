@@ -19,6 +19,11 @@ import time
 import traceback
 import re
 
+try:
+    from dicttoxml import dicttoxml
+except ImportError:
+    dicttoxml = None
+
 from roundup import hyperdb
 from roundup import date
 from roundup import actions
@@ -305,8 +310,8 @@ class RestfulInstance(object):
     __default_patch_op = "replace"  # default operator for PATCH method
     __accepted_content_type = {
         "application/json": "json",
-        "*/*": "json"
-        # "application/xml": "xml"
+        "*/*": "json",
+        "application/xml": "xml"
     }
     __default_accept_type = "json"
 
@@ -620,7 +625,7 @@ class RestfulInstance(object):
         data = node.__getattr__(attr_name)
         result = {
             'id': item_id,
-            'type': type(data),
+            'type': str(type(data)),
             'link': "%s/%s/%s/%s" %
                     (self.data_path, class_name, item_id, attr_name),
             'data': data,
@@ -1303,6 +1308,9 @@ class RestfulInstance(object):
             else:
                 indent = None
             output = RoundupJSONEncoder(indent=indent).encode(output)
+        elif data_type.lower() == "xml" and dicttoxml:
+            self.client.setHeader("Content-Type", "application/xml")
+            output = dicttoxml(output, root=False)
         else:
             self.client.response_code = 406
             output = "Content type is not accepted by client"
