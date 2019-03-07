@@ -39,7 +39,7 @@ However, SFTP is ugly to script in non-interactive
 mode, so we use SSH access to fetch everything and
 build from server side.
 
-logging into sf.net
+Working with sf.net
 -------------------
 Current docs are taken down with SourceForge Trac,
 so working instructions are available from here:
@@ -74,6 +74,10 @@ users=110231
 if the uid/gid changes you may have to change the values.
 See: https://www.mercurial-scm.org/wiki/Trust for details
 
+When done working in the sf shell, you can destroy it early
+to free resources:
+
+    shutdown
 
 updating wiki.roundup-tracker.org
 ---------------------------------
@@ -104,8 +108,8 @@ the whole procedure looks like so:
     cd ${project_home}/src/roundup/website/www
     make clean
     make html
-    # you can check which files updated
-    #diff -qur ./html/ ${project_home}/htdocs/
+    # you can check which files updated (the date will change with many files)
+    #diff -ur --brief ${project_home}/htdocs/ ./html/
     # copy to website dir
     cp -r -p ./html/* ${project_home}/htdocs/
     # copy legacy html doc to website docs/ dir
@@ -113,8 +117,3 @@ the whole procedure looks like so:
     cp -r -p ../../doc/html_extra/* ${project_home}/htdocs/docs/
     # or try it with rsync (skip --dry-run when ready)
     #rsync --dry-run -v --checksum --recursive ./html/* ${project_home}/htdocs/
-
-When done working in the shell, you can destroy it early
-to free resources:
-
-    shutdown
