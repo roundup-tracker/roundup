@@ -1306,9 +1306,9 @@ class RestfulInstance(object):
 
         # check for pretty print
         try:
-            pretty_output = input['pretty'].value.lower() == "true"
+            pretty_output = not input['pretty'].value.lower() == "false"
         except KeyError:
-            pretty_output = False
+            pretty_output = True
 
         # add access-control-allow-* to support CORS
         self.client.setHeader("Access-Control-Allow-Origin", "*")
