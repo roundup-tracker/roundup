@@ -557,14 +557,19 @@ class RestfulInstance(object):
         node = class_obj.getnode(item_id)
         etag = calculate_etag(node, class_name, item_id)
         props = None
+        protected=False
         for form_field in input.value:
             key = form_field.name
             value = form_field.value
             if key == "fields":
                 props = value.split(",")
+            if key == "@protected":
+                # allow client to request read only
+                # properties like creator, activity etc.
+                protected = value.lower() == "true"
 
         if props is None:
-            props = list(sorted(class_obj.properties.keys()))
+            props = list(sorted(class_obj.getprops(protected=protected)))
 
         try:
             result = [
