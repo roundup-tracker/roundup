@@ -484,7 +484,7 @@ class RestfulInstance(object):
         filter_props = {}
         page = {
             'size': None,
-            'index': None
+            'index': 1   # setting just size starts at page 1
         }
         for form_field in input.value:
             key = form_field.name
@@ -506,21 +506,43 @@ class RestfulInstance(object):
             obj_list = class_obj.filter(None, filter_props)
 
         # extract result from data
-        result = [
+        result={}
+        result['collection'] = [
             {'id': item_id, 'link': class_path + item_id}
             for item_id in obj_list
             if self.db.security.hasPermission(
                 'View', self.db.getuid(), class_name, itemid=item_id
             )
         ]
+        result_len = len(result['collection'])
 
-        # pagination
-        if page['size'] is not None and page['index'] is not None:
-            page_start = max(page['index'] * page['size'], 0)
-            page_end = min(page_start + page['size'], len(result))
-            result = result[page_start:page_end]
+        # pagination - page_index from 1...N
+        if page['size'] is not None:
+            page_start = max((page['index']-1) * page['size'], 0)
+            page_end = min(page_start + page['size'], result_len)
+            result['collection'] = result['collection'][page_start:page_end]
+            result['@links'] = {}
+            for rel in ('next', 'prev', 'self'):
+                if rel == 'next':
+                    # if current index includes all data, continue
+                    if page['index']*page['size'] > result_len: continue
+                    index=page['index']+1
+                if rel == 'prev':
+                    if page['index'] <= 1: continue
+                    index=page['index']-1
+                if rel == 'self': index=page['index']
 
-        self.client.setHeader("X-Count-Total", str(len(result)))
+                result['@links'][rel] = []
+                result['@links'][rel].append({
+                    'rel': rel,
+                    'uri': "%s/%s?page_index=%s&"%(self.data_path,
+                                                   class_name,index) \
+                       + '&'.join([ "%s=%s"%(field.name,field.value) \
+                         for field in input.value \
+                           if field.name != "page_index"]) })
+
+        result['@total_size'] = result_len
+        self.client.setHeader("X-Count-Total", str(result_len))
         return 200, result
 
     @Routing.route("/data/<:class_name>/<:item_id>", 'GET')
@@ -1356,7 +1378,9 @@ class RestfulInstance(object):
             self.client.response_code = 406
             output = "Content type is not accepted by client"
 
-        return output
+        # Make output json end in a newline to
+        # separate from following text in logs etc..
+        return output + "\n"
 
 
 class RoundupJSONEncoder(json.JSONEncoder):

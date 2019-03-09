@@ -61,6 +61,10 @@ Features:
    - If dict2xml.py is installed, the rest interface can produce an XML
      format response if the accept header is set to text/xml.
      (See: https://pypi.org/project/dict2xml/)
+   - When retrieving collection move list of collection elements to
+     collection property. Add @links property with self, next and prev
+     links (where needed). Add @total_size with size of entire
+     collection (unpaginated). Pagination index starts at 1 not 0.
   (John Rouillard)
 - issue2550833: the export_csv web action now returns labels/names
   rather than id's. Replace calls to export_csv with the export_csv_id

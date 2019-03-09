@@ -92,7 +92,13 @@ class TestCase():
         # Retrieve all three users.
         results = self.server.get_collection('user', self.empty_form)
         self.assertEqual(self.dummy_client.response_code, 200)
-        self.assertEqual(len(results['data']), 3)
+        self.assertEqual(len(results['data']['collection']), 3)
+        self.assertEqual(results['data']['@total_size'], 3)
+        print self.dummy_client.additional_headers["X-Count-Total"]
+        self.assertEqual(
+            self.dummy_client.additional_headers["X-Count-Total"],
+            "3"
+        )
 
         # Obtain data for 'joe'.
         results = self.server.get_element('user', self.joeid, self.empty_form)
@@ -169,10 +175,13 @@ class TestCase():
         ]
         results = self.server.get_collection('issue', form)
         self.assertEqual(self.dummy_client.response_code, 200)
-        self.assertIn(get_obj(base_path, issue_open_norm), results['data'])
-        self.assertIn(get_obj(base_path, issue_open_crit), results['data'])
+        self.assertIn(get_obj(base_path, issue_open_norm),
+                      results['data']['collection'])
+        self.assertIn(get_obj(base_path, issue_open_crit),
+                      results['data']['collection'])
         self.assertNotIn(
-            get_obj(base_path, issue_closed_norm), results['data']
+            get_obj(base_path, issue_closed_norm),
+            results['data']['collection']
         )
 
         # Retrieve all issue status=closed and priority=critical
@@ -183,10 +192,13 @@ class TestCase():
         ]
         results = self.server.get_collection('issue', form)
         self.assertEqual(self.dummy_client.response_code, 200)
-        self.assertIn(get_obj(base_path, issue_closed_crit), results['data'])
-        self.assertNotIn(get_obj(base_path, issue_open_crit), results['data'])
+        self.assertIn(get_obj(base_path, issue_closed_crit),
+                      results['data']['collection'])
+        self.assertNotIn(get_obj(base_path, issue_open_crit),
+                         results['data']['collection'])
         self.assertNotIn(
-            get_obj(base_path, issue_closed_norm), results['data']
+            get_obj(base_path, issue_closed_norm),
+            results['data']['collection']
         )
 
         # Retrieve all issue status=closed and priority=normal,critical
@@ -197,39 +209,48 @@ class TestCase():
         ]
         results = self.server.get_collection('issue', form)
         self.assertEqual(self.dummy_client.response_code, 200)
-        self.assertIn(get_obj(base_path, issue_closed_crit), results['data'])
-        self.assertIn(get_obj(base_path, issue_closed_norm), results['data'])
-        self.assertNotIn(get_obj(base_path, issue_open_crit), results['data'])
-        self.assertNotIn(get_obj(base_path, issue_open_norm), results['data'])
+        self.assertIn(get_obj(base_path, issue_closed_crit),
+                      results['data']['collection'])
+        self.assertIn(get_obj(base_path, issue_closed_norm),
+                      results['data']['collection'])
+        self.assertNotIn(get_obj(base_path, issue_open_crit),
+                         results['data']['collection'])
+        self.assertNotIn(get_obj(base_path, issue_open_norm),
+                         results['data']['collection'])
 
     def testPagination(self):
         """
-        Retrieve all three users
-        obtain data for 'joe'
+        Test pagination. page_size is required and is an integer
+        starting at 1. page_index is optional and is an integer
+        starting at 1. Verify that pagination links are present
+        if paging, @total_size and X-Count-Total header match
+        number of items.        
         """
         # create sample data
-        for i in range(0, random.randint(5, 10)):
+        for i in range(0, random.randint(8,15)):
             self.db.issue.create(title='foo' + str(i))
 
         # Retrieving all the issues
         results = self.server.get_collection('issue', self.empty_form)
         self.assertEqual(self.dummy_client.response_code, 200)
-        total_length = len(results['data'])
+        total_length = len(results['data']['collection'])
+        # Verify no pagination links if paging not used
+        self.assertFalse('@links' in results['data'])
+        self.assertEqual(results['data']['@total_size'], total_length)
+        self.assertEqual(
+            self.dummy_client.additional_headers["X-Count-Total"],
+            str(total_length)
+        )
 
-        # Pagination will be 70% of the total result
-        page_size = total_length * 70 // 100
-        page_zero_expected = page_size
-        page_one_expected = total_length - page_zero_expected
 
-        # Retrieve page 0
-        form = cgi.FieldStorage()
-        form.list = [
-            cgi.MiniFieldStorage('page_size', page_size),
-            cgi.MiniFieldStorage('page_index', 0)
-        ]
-        results = self.server.get_collection('issue', form)
-        self.assertEqual(self.dummy_client.response_code, 200)
-        self.assertEqual(len(results['data']), page_zero_expected)
+        # Pagination will be 45% of the total result
+        # So 2 full pages and 1 partial page.
+        page_size = total_length * 45 // 100
+        page_one_expected = page_size
+        page_two_expected = page_size
+        page_three_expected = total_length - (2*page_one_expected)
+        base_url="http://tracker.example/cgi-bin/roundup.cgi/" \
+                 "bugs/rest/data/issue"
 
         # Retrieve page 1
         form = cgi.FieldStorage()
@@ -239,7 +260,18 @@ class TestCase():
         ]
         results = self.server.get_collection('issue', form)
         self.assertEqual(self.dummy_client.response_code, 200)
-        self.assertEqual(len(results['data']), page_one_expected)
+        self.assertEqual(len(results['data']['collection']),
+                         page_one_expected)
+        self.assertTrue('@links' in results['data'])
+        self.assertTrue('self' in results['data']['@links'])
+        self.assertTrue('next' in results['data']['@links'])
+        self.assertFalse('prev' in results['data']['@links'])
+        self.assertEqual(results['data']['@links']['self'][0]['uri'],
+                         "%s?page_index=1&page_size=%s"%(base_url,page_size))
+        self.assertEqual(results['data']['@links']['next'][0]['uri'],
+                         "%s?page_index=2&page_size=%s"%(base_url,page_size))
+
+        page_one_results = results # save this for later
 
         # Retrieve page 2
         form = cgi.FieldStorage()
@@ -249,8 +281,61 @@ class TestCase():
         ]
         results = self.server.get_collection('issue', form)
         self.assertEqual(self.dummy_client.response_code, 200)
-        self.assertEqual(len(results['data']), 0)
+        self.assertEqual(len(results['data']['collection']), page_two_expected)
+        self.assertTrue('@links' in results['data'])
+        self.assertTrue('self' in results['data']['@links'])
+        self.assertTrue('next' in results['data']['@links'])
+        self.assertTrue('prev' in results['data']['@links'])
+        self.assertEqual(results['data']['@links']['self'][0]['uri'],
+                         "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue?page_index=2&page_size=%s"%page_size)
+        self.assertEqual(results['data']['@links']['next'][0]['uri'],
+                         "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue?page_index=3&page_size=%s"%page_size)
+        self.assertEqual(results['data']['@links']['prev'][0]['uri'],
+                         "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue?page_index=1&page_size=%s"%page_size)
+        self.assertEqual(results['data']['@links']['self'][0]['rel'],
+                         'self')
+        self.assertEqual(results['data']['@links']['next'][0]['rel'],
+                         'next')
+        self.assertEqual(results['data']['@links']['prev'][0]['rel'],
+                         'prev')
 
+        # Retrieve page 3
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('page_size', page_size),
+            cgi.MiniFieldStorage('page_index', 3)
+        ]
+        results = self.server.get_collection('issue', form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['data']['collection']), page_three_expected)
+        self.assertTrue('@links' in results['data'])
+        self.assertTrue('self' in results['data']['@links'])
+        self.assertFalse('next' in results['data']['@links'])
+        self.assertTrue('prev' in results['data']['@links'])
+        self.assertEqual(results['data']['@links']['self'][0]['uri'],
+                         "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue?page_index=3&page_size=%s"%page_size)
+        self.assertEqual(results['data']['@links']['prev'][0]['uri'],
+                         "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue?page_index=2&page_size=%s"%page_size)
+
+        # Verify that page_index is optional
+        # Should start at page 1
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('page_size', page_size),
+        ]
+        results = self.server.get_collection('issue', form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['data']['collection']), page_size)
+        self.assertTrue('@links' in results['data'])
+        self.assertTrue('self' in results['data']['@links'])
+        self.assertTrue('next' in results['data']['@links'])
+        self.assertFalse('prev' in results['data']['@links'])
+        self.assertEqual(page_one_results, results)
+
+        # FIXME add tests for out of range once we decide what response
+        # is needed to:
+        #   page_size < 0
+        #   page_index < 0
 
     def testEtagProcessing(self):
         '''
