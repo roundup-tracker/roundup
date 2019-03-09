@@ -615,6 +615,16 @@ class Date:
         return f%(self.year, self.month, self.day, self.hour, self.minute,
             self.second)
 
+    def isoformat(self):
+        ''' Represent the date/time in isoformat standard
+
+            Originally needed for xml output support using
+            dicttoxml in the rest interface.
+        '''
+        f = '%%04d-%%02d-%%02d%s%%02d:%%02d:%s'%("T", "%02.6d")
+        return f%(self.year, self.month, self.day, self.hour, self.minute,
+            self.second)
+
     def pretty(self, format='%d %B %Y'):
         ''' print up the date date using a pretty format...
 
@@ -1073,6 +1083,15 @@ class Interval:
     def serialise(self):
         sign = self.sign > 0 and '+' or '-'
         return '%s%04d%02d%02d%02d%02d%02d'%(sign, self.year, self.month,
+            self.day, self.hour, self.minute, self.second)
+
+    def isoformat(self):
+        '''Represent interval as an ISO 8061 duration (absolute value)
+        
+           Originally needed for xml output support using
+           dicttoxml in the rest interface.
+        '''
+        return 'P%04dY%02dM%02dDT%02dH%02dM%02dS'%(self.year, self.month,
             self.day, self.hour, self.minute, self.second)
 
     def as_seconds(self):
