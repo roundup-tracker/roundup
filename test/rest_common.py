@@ -97,7 +97,7 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(len(results['data']['collection']), 3)
         self.assertEqual(results['data']['@total_size'], 3)
-        print self.dummy_client.additional_headers["X-Count-Total"]
+        print(self.dummy_client.additional_headers["X-Count-Total"])
         self.assertEqual(
             self.dummy_client.additional_headers["X-Count-Total"],
             "3"
@@ -368,25 +368,25 @@ class TestCase():
             ]
 
             if mode == 'header':
-                print "Mode = %s"%mode
+                print("Mode = %s"%mode)
                 self.headers = {'etag': etag}
             elif mode == 'etag':
-                print "Mode = %s"%mode
+                print("Mode = %s"%mode)
                 form.list.append(cgi.MiniFieldStorage('@etag', etag))
             elif mode == 'both':
-                print "Mode = %s"%mode
+                print("Mode = %s"%mode)
                 self.headers = {'etag': etag}
                 form.list.append(cgi.MiniFieldStorage('@etag', etag))
             elif mode == 'brokenheader':
-                print "Mode = %s"%mode
+                print("Mode = %s"%mode)
                 self.headers = {'etag': 'bad'}
                 form.list.append(cgi.MiniFieldStorage('@etag', etag))
             elif mode == 'brokenetag':
-                print "Mode = %s"%mode
+                print("Mode = %s"%mode)
                 self.headers = {'etag': etag}
                 form.list.append(cgi.MiniFieldStorage('@etag', 'bad'))
             elif mode == 'none':
-                print "Mode = %s"%mode
+                print( "Mode = %s"%mode)
             else:
                 self.fail("unknown mode found")
 
@@ -571,7 +571,6 @@ class TestCase():
         form = cgi.FieldStorage(body_file,
                                 headers=headers,
                                 environ=env)
-        print form
         self.server.client.request.headers.getheader=self.get_header
         results = self.server.dispatch('POST',
                             "/rest/data/issue",
