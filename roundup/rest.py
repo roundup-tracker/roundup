@@ -27,6 +27,7 @@ except ImportError:
 from roundup import hyperdb
 from roundup import date
 from roundup import actions
+from roundup.anypy.strings import bs2b
 from roundup.exceptions import *
 from roundup.cgi.exceptions import *
 
@@ -125,7 +126,7 @@ def calculate_etag (node, classname="Missing", id="0"):
     '''
 
     items = node.items(protected=True) # include every item
-    etag = md5(repr(items)).hexdigest()
+    etag = md5(bs2b(repr(items))).hexdigest()
     logger.debug("object=%s%s; tag=%s; repr=%s", classname, id,
                  etag, repr(node.items(protected=True)))
     return etag
