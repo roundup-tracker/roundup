@@ -14,7 +14,7 @@ from .db_test_base import setupTracker
 
 from .mocknull import MockNull
 
-from roundup.anypy.strings import StringIO
+from io import StringIO
 import json
 
 NEEDS_INSTANCE = 1
@@ -409,7 +409,7 @@ class TestCase():
         # simulate: /rest/data/user/<id>/realname
         # use etag in header
         etag = calculate_etag(self.db.user.getnode(self.joeid))
-        body='{ "data": "Joe Doe 1" }'
+        body=u'{ "data": "Joe Doe 1" }'
         env = { "CONTENT_TYPE": "application/json",
                 "CONTENT_LENGTH": len(body),
                 "REQUEST_METHOD": "PUT"
@@ -442,7 +442,7 @@ class TestCase():
         # simulate: /rest/data/user/<id>/realname
         # use etag in payload
         etag = calculate_etag(self.db.user.getnode(self.joeid))
-        body='{ "@etag": "%s", "data": "Joe Doe 2" }'%etag
+        body=u'{ "@etag": "%s", "data": "Joe Doe 2" }'%etag
         env = { "CONTENT_TYPE": "application/json",
                 "CONTENT_LENGTH": len(body),
                 "REQUEST_METHOD": "PUT"
@@ -510,7 +510,7 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 200)
 
         etag = calculate_etag(self.db.user.getnode(self.joeid))
-        body='{ "address": "demo2@example.com", "@etag": "%s"}'%etag
+        body=u'{ "address": "demo2@example.com", "@etag": "%s"}'%etag
         env = { "CONTENT_TYPE": "application/json",
                 "CONTENT_LENGTH": len(body),
                 "REQUEST_METHOD": "PATCH"
@@ -536,7 +536,7 @@ class TestCase():
 
         # and set it back
         etag = calculate_etag(self.db.user.getnode(self.joeid))
-        body='{ "address": "%s", "@etag": "%s"}'%(
+        body=u'{ "address": "%s", "@etag": "%s"}'%(
             stored_results['data']['attributes']['address'],
             etag)
         # reuse env and headers from prior test.
@@ -557,7 +557,7 @@ class TestCase():
         del(self.headers)
 
         # POST to create new issue
-        body='{ "title": "foo bar", "priority": "critical" }'
+        body=u'{ "title": "foo bar", "priority": "critical" }'
 
         env = { "CONTENT_TYPE": "application/json",
                 "CONTENT_LENGTH": len(body),
