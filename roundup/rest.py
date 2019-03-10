@@ -1331,12 +1331,6 @@ class RestfulInstance(object):
             # .../issue.json -> .../issue
             uri = uri[:-( len(ext_type) + 1 )]
 
-        # check for pretty print
-        try:
-            pretty_output = not input['pretty'].value.lower() == "false"
-        except KeyError:
-            pretty_output = True
-
         # add access-control-allow-* to support CORS
         self.client.setHeader("Access-Control-Allow-Origin", "*")
         self.client.setHeader(
@@ -1351,6 +1345,35 @@ class RestfulInstance(object):
             "Access-Control-Allow-Methods",
             "HEAD, OPTIONS, GET, PUT, DELETE, PATCH"
         )
+
+        # Is there an input.value with format json data?
+        # If so turn it into an object that emulates enough
+        # of the FieldStorge methods/props to allow a response.
+        content_type_header = headers.getheader('Content-Type', None)
+        if type(input.value) == str and content_type_header:
+            parsed_content_type_header = content_type_header
+            # the structure of a content-type header
+            # is complex: mime-type; options(charset ...)
+            # for now we just accept application/json.
+            # FIXME there should be a function:
+            #   parse_content_type_header(content_type_header)
+            # that returns a tuple like the Accept header parser.
+            # Then the test below could use:
+            #   parsed_content_type_header[0].lower() == 'json'
+            # That way we could handle stuff like:
+            #  application/vnd.roundup-foo+json; charset=UTF8
+            # for example.
+            if content_type_header.lower() == "application/json":
+                try:
+                    input = SimulateFieldStorageFromJson(input.value)
+                except ValueError as msg:
+                    output = self.error_obj(400, msg)
+
+        # check for pretty print
+        try:
+            pretty_output = not input['pretty'].value.lower() == "false"
+        except KeyError:
+            pretty_output = True
 
         # Call the appropriate method
         try:
@@ -1392,3 +1415,48 @@ class RoundupJSONEncoder(json.JSONEncoder):
         except TypeError:
             result = str(obj)
         return result
+
+class SimulateFieldStorageFromJson():
+    '''
+    The internals of the rest interface assume the data was sent as 
+    application/x-www-form-urlencoded. So we should have a 
+    FieldStorage and MiniFieldStorage structure.
+
+    However if we want to handle json data, we need to:
+      1) create the Fieldstorage/MiniFieldStorage structure
+    or
+      2) simultate the interface parts of FieldStorage structure
+
+    To do 2, create a object that emulates the:
+
+          object['prop'].value
+
+    references used when accessing a FieldStorage structure.
+
+    That's what this class does.
+
+    '''
+    def __init__(self, json_string):
+        ''' Parse the json string into an internal dict. '''
+        def raise_error_on_constant(x):
+            raise ValueError, "Unacceptable number: %s"%x
+
+        self.json_dict = json.loads(json_string,
+                                    parse_constant = raise_error_on_constant)
+        self.value = [ self.FsValue(index, self.json_dict[index]) for index in self.json_dict.keys() ]
+
+    class FsValue:
+        '''Class that does nothing but response to a .value property '''
+        def __init__(self, name, val):
+            self.name=name
+            self.value=val
+
+    def __getitem__(self, index):
+        '''Return an FsValue created from the value of self.json_dict[index]
+        '''
+        return self.FsValue(index, self.json_dict[index])
+
+    def __contains__(self, index):
+        ''' implement: 'foo' in DICT '''
+        return index in self.json_dict
+

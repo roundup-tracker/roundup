@@ -14,6 +14,9 @@ from .db_test_base import setupTracker
 
 from .mocknull import MockNull
 
+from roundup.anypy.strings import StringIO
+import json
+
 NEEDS_INSTANCE = 1
 
 
@@ -65,7 +68,7 @@ class TestCase():
             'TRACKER_NAME': 'rounduptest'
         }
         self.dummy_client = client.Client(self.instance, MockNull(), env, [], None)
-        self.dummy_client.request.headers.getheader = self.get_etag_header
+        self.dummy_client.request.headers.getheader = self.get_header
         self.empty_form = cgi.FieldStorage()
 
         self.server = RestfulInstance(self.dummy_client, self.db)
@@ -78,11 +81,11 @@ class TestCase():
             if error.errno not in (errno.ENOENT, errno.ESRCH):
                 raise
 
-    def get_etag_header (self, header, not_found=None):
+    def get_header (self, header, not_found=None):
         try:
-            return self.etag_header
-        except AttributeError:
-            return None
+            return self.headers[header.lower()]
+        except (AttributeError, KeyError):
+            return not_found
 
     def testGet(self):
         """
@@ -354,7 +357,7 @@ class TestCase():
                      'brokenheader', 'brokenetag', 'none'):
             try:
                 # clean up any old header
-                del(self.etag_header)
+                del(self.headers)
             except AttributeError:
                 pass
 
@@ -366,21 +369,21 @@ class TestCase():
 
             if mode == 'header':
                 print "Mode = %s"%mode
-                self.etag_header = etag
+                self.headers = {'etag': etag}
             elif mode == 'etag':
                 print "Mode = %s"%mode
                 form.list.append(cgi.MiniFieldStorage('@etag', etag))
             elif mode == 'both':
                 print "Mode = %s"%mode
-                self.etag_header = etag
+                self.headers = {'etag': etag}
                 form.list.append(cgi.MiniFieldStorage('@etag', etag))
             elif mode == 'brokenheader':
                 print "Mode = %s"%mode
-                self.etag_header = 'bad'
+                self.headers = {'etag': 'bad'}
                 form.list.append(cgi.MiniFieldStorage('@etag', etag))
             elif mode == 'brokenetag':
                 print "Mode = %s"%mode
-                self.etag_header = etag
+                self.headers = {'etag': etag}
                 form.list.append(cgi.MiniFieldStorage('@etag', 'bad'))
             elif mode == 'none':
                 print "Mode = %s"%mode
@@ -395,6 +398,195 @@ class TestCase():
             else:
                 self.assertEqual(self.dummy_client.response_code, 412)
 
+    def testDispatch(self):
+        """
+        run changes through rest dispatch(). This also tests
+        sending json payload through code as dispatch is the
+        code that changes json payload into something we can
+        process.
+        """
+        # Set joe's 'realname' using json data.
+        # simulate: /rest/data/user/<id>/realname
+        # use etag in header
+        etag = calculate_etag(self.db.user.getnode(self.joeid))
+        body='{ "data": "Joe Doe 1" }'
+        env = { "CONTENT_TYPE": "application/json",
+                "CONTENT_LENGTH": len(body),
+                "REQUEST_METHOD": "PUT"
+        }
+        headers={"accept": "application/json",
+                 "content-type": env['CONTENT_TYPE'],
+                 "etag": etag
+        }
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=StringIO(body)  # FieldStorage needs a file
+        form = cgi.FieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.getheader=self.get_header
+        results = self.server.dispatch('PUT',
+                            "/rest/data/user/%s/realname"%self.joeid,
+                            form)
+
+        self.assertEqual(self.server.client.response_code, 200)
+        results = self.server.get_element('user', self.joeid, self.empty_form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(results['data']['attributes']['realname'],
+                         'Joe Doe 1')
+        del(self.headers)
+
+        # Set joe's 'realname' using json data.
+        # simulate: /rest/data/user/<id>/realname
+        # use etag in payload
+        etag = calculate_etag(self.db.user.getnode(self.joeid))
+        body='{ "@etag": "%s", "data": "Joe Doe 2" }'%etag
+        env = { "CONTENT_TYPE": "application/json",
+                "CONTENT_LENGTH": len(body),
+                "REQUEST_METHOD": "PUT"
+        }
+        headers={"accept": "application/json",
+                 "content-type": env['CONTENT_TYPE']
+        }
+        self.headers=headers
+        body_file=StringIO(body)  # FieldStorage needs a file
+        form = cgi.FieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.getheader=self.get_header
+        results = self.server.dispatch('PUT',
+                            "/rest/data/user/%s/realname"%self.joeid,
+                            form)
+
+        self.assertEqual(self.server.client.response_code, 200)
+        results = self.server.get_element('user', self.joeid, self.empty_form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(results['data']['attributes']['realname'],
+                         'Joe Doe 2')
+        del(self.headers)
+
+        # change Joe's realname via a normal web form
+        # This generates a FieldStorage that looks like:
+        #  FieldStorage(None, None, [])
+        # use etag from header
+        #
+        # also use a GET on the uri via the dispatch to get
+        # the results from the db.
+        etag = calculate_etag(self.db.user.getnode(self.joeid))
+        headers={"etag": etag,
+                 "accept": "application/json",
+        }
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('data', 'Joe Doe'),
+        ]
+        self.headers = headers
+        self.server.client.request.headers.getheader = self.get_header
+        results = self.server.dispatch('PUT',
+                            "/rest/data/user/%s/realname"%self.joeid,
+                            form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        results = self.server.dispatch('GET',
+                            "/rest/data/user/%s/realname"%self.joeid,
+                                       self.empty_form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        json_dict = json.loads(results)
+
+        self.assertEqual(json_dict['data']['data'], 'Joe Doe')
+        self.assertEqual(json_dict['data']['link'],
+                         "http://tracker.example/cgi-bin/"
+                         "roundup.cgi/bugs/rest/data/user/3/realname") 
+        self.assertEqual(json_dict['data']['type'], "<type 'str'>")
+        self.assertEqual(json_dict['data']["id"], "3")
+        del(self.headers)
+
+
+        # PATCH joe's email address with json
+        # save address so we can use it later
+        stored_results = self.server.get_element('user', self.joeid,
+                                                 self.empty_form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+
+        etag = calculate_etag(self.db.user.getnode(self.joeid))
+        body='{ "address": "demo2@example.com", "@etag": "%s"}'%etag
+        env = { "CONTENT_TYPE": "application/json",
+                "CONTENT_LENGTH": len(body),
+                "REQUEST_METHOD": "PATCH"
+        }
+        headers={"accept": "application/json",
+                 "content-type": env['CONTENT_TYPE']
+        }
+        self.headers=headers
+        body_file=StringIO(body)  # FieldStorage needs a file
+        form = cgi.FieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.getheader=self.get_header
+        results = self.server.dispatch('PATCH',
+                            "/rest/data/user/%s"%self.joeid,
+                            form)
+
+        self.assertEqual(self.server.client.response_code, 200)
+        results = self.server.get_element('user', self.joeid, self.empty_form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(results['data']['attributes']['address'],
+                         'demo2@example.com')
+
+        # and set it back
+        etag = calculate_etag(self.db.user.getnode(self.joeid))
+        body='{ "address": "%s", "@etag": "%s"}'%(
+            stored_results['data']['attributes']['address'],
+            etag)
+        # reuse env and headers from prior test.
+        body_file=StringIO(body)  # FieldStorage needs a file
+        form = cgi.FieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.getheader=self.get_header
+        results = self.server.dispatch('PATCH',
+                            "/rest/data/user/%s"%self.joeid,
+                            form)
+
+        self.assertEqual(self.server.client.response_code, 200)
+        results = self.server.get_element('user', self.joeid, self.empty_form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(results['data']['attributes']['address'],
+                         'random@home.org')
+        del(self.headers)
+
+        # POST to create new issue
+        body='{ "title": "foo bar", "priority": "critical" }'
+
+        env = { "CONTENT_TYPE": "application/json",
+                "CONTENT_LENGTH": len(body),
+                "REQUEST_METHOD": "POST"
+        }
+        headers={"accept": "application/json",
+                 "content-type": env['CONTENT_TYPE']
+        }
+        self.headers=headers
+        body_file=StringIO(body)  # FieldStorage needs a file
+        form = cgi.FieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        print form
+        self.server.client.request.headers.getheader=self.get_header
+        results = self.server.dispatch('POST',
+                            "/rest/data/issue",
+                            form)
+
+        self.assertEqual(self.server.client.response_code, 201)
+        json_dict = json.loads(results)
+        issue_id=json_dict['data']['id']
+        results = self.server.get_element('issue',
+                            str(issue_id), # must be a string not unicode
+                            self.empty_form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(results['data']['attributes']['title'],
+                         'foo bar')
+        del(self.headers)
 
     def testPut(self):
         """
@@ -417,14 +609,14 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['data']['data'], 'Joe Random')
 
-        # change Joe's realname via attribute uri
+        # change Joe's realname via attribute uri - etag in header
         form = cgi.FieldStorage()
         etag = calculate_etag(self.db.user.getnode(self.joeid))
         form.list = [
             cgi.MiniFieldStorage('data', 'Joe Doe Doe'),
         ]
 
-        self.etag_header = etag # use etag in header
+        self.headers = {'etag': etag } # use etag in header
         results = self.server.put_attribute(
             'user', self.joeid, 'realname', form
         )
@@ -434,9 +626,9 @@ class TestCase():
         )
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['data']['data'], 'Joe Doe Doe')
-        del(self.etag_header)
+        del(self.headers)
 
-        # Reset joe's 'realname'.
+        # Reset joe's 'realname'. etag in body
         form = cgi.FieldStorage()
         etag = calculate_etag(self.db.user.getnode(self.joeid))
         form.list = [
