@@ -1439,7 +1439,7 @@ class SimulateFieldStorageFromJson():
     def __init__(self, json_string):
         ''' Parse the json string into an internal dict. '''
         def raise_error_on_constant(x):
-            raise ValueError, "Unacceptable number: %s"%x
+            raise ValueError("Unacceptable number: %s"%x)
 
         self.json_dict = json.loads(json_string,
                                     parse_constant = raise_error_on_constant)
