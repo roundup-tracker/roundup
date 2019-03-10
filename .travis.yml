@@ -1,9 +1,9 @@
 language: python
 python:
   - 2.7
-#  - 3.4
-#  - 3.5
-#  - 3.6
+  - 3.4
+  - 3.5
+  - 3.6
 
 sudo: false
 
@@ -70,11 +70,10 @@ install:
 
 before_script:
   # set up mysql database
-  - mysql -u root -e 'GRANT ALL ON rounduptest.* TO rounduptest@localhost IDENTIFIED BY "rounduptest";'
-  - cat /etc/mysql/my.cnf
   - sudo sed -i -e '/^\[mysqld\]/,/^\[mysql/s/^max_allowed_packet.*/max_allowed_packet = 500M/' /etc/mysql/my.cnf
   - cat /etc/mysql/my.cnf
   - sudo service mysql restart
+  - mysql -u root -e 'GRANT ALL ON rounduptest.* TO rounduptest@localhost IDENTIFIED BY "rounduptest";'
 
   # set up postgresql database
   - psql -c "CREATE ROLE rounduptest WITH CREATEDB LOGIN PASSWORD 'rounduptest';" -U postgres
