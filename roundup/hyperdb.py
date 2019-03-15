@@ -1682,8 +1682,14 @@ class FileClass:
         if not mime_type:
             mime_type = self.default_mime_type
         if props['content'].indexme:
+            index_content = self.get(nodeid, 'binary_content')
+            if bytes != str and isinstance(index_content, bytes):
+                index_content = index_content.decode('utf-8', errors='ignore')
+            # indexer will only index text mime type. It will skip
+            # other types. So if mime type of file is correct, we
+            # call add_text on content.
             self.db.indexer.add_text((self.classname, nodeid, 'content'),
-                self.get(nodeid, 'content'), mime_type)
+                index_content, mime_type)
 
 class Node:
     """ A convenience wrapper for the given node
