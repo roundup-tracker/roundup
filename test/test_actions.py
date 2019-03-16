@@ -73,7 +73,7 @@ class RetireActionTestCase(ActionTestCase):
         self.client.db.security.hasPermission = true
         self.client._ok_message = []
         RetireAction(self.client).handle()
-        self.assert_(len(self.client._ok_message) == 1)
+        self.assertTrue(len(self.client._ok_message) == 1)
 
     def testNoPermission(self):
         self.assertRaises(Unauthorised, RetireAction(self.client).execute)
@@ -98,7 +98,7 @@ class RestoreActionTestCase(ActionTestCase):
         self.client.db.security.hasPermission = true
         self.client._ok_message = []
         RestoreAction(self.client).handle()
-        self.assert_(len(self.client._ok_message) == 1)
+        self.assertTrue(len(self.client._ok_message) == 1)
 
     def testNoPermission(self):
         self.assertRaises(Unauthorised, RestoreAction(self.client).execute)

@@ -41,7 +41,7 @@ class SchemaTestCase(unittest.TestCase):
 
     def testA_Status(self):
         status = back_anydbm.Class(self.db, "status", name=String())
-        self.assert_(status, 'no class object generated')
+        self.assertTrue(status, 'no class object generated')
         status.setkey("name")
         val = status.create(name="unread")
         self.assertEqual(val, '1', 'expecting "1"')
@@ -64,12 +64,12 @@ class SchemaTestCase(unittest.TestCase):
     def testB_Issue(self):
         issue = back_anydbm.Class(self.db, "issue", title=String(),
             status=Link("status"))
-        self.assert_(issue, 'no class object returned')
+        self.assertTrue(issue, 'no class object returned')
 
     def testC_User(self):
         user = back_anydbm.Class(self.db, "user", username=String(),
             password=Password())
-        self.assert_(user, 'no class object returned')
+        self.assertTrue(user, 'no class object returned')
         user.setkey("username")
 
 # vim: set filetype=python sts=4 sw=4 et si :

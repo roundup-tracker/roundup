@@ -4231,7 +4231,7 @@ minute, so we get to </FONT>
         nodeid = self._handle_mail(message)
         assert not os.path.exists(SENDMAILDEBUG)
         msgid = self.db.issue.get(nodeid, 'messages')[0]
-        self.assert_(self.db.msg.get(msgid, 'content').startswith('Hi Richard'))
+        self.assertTrue(self.db.msg.get(msgid, 'content').startswith('Hi Richard'))
         self.assertEqual(self.db.msg.get(msgid, 'files'), ['1', '2'])
         fileid = self.db.msg.get(msgid, 'files')[0]
         self.assertEqual(self.db.file.get(fileid, 'type'), 'text/html')

@@ -674,7 +674,7 @@ class DBTest(commonDBTest):
         self.assertEqual(set(self.db.status.getnodeids(retired=False)),
             set(others))
 
-        self.assert_(self.db.status.is_retired('1'))
+        self.assertTrue(self.db.status.is_retired('1'))
 
         # make sure the list is different
         self.assertNotEqual(a, self.db.status.list())
@@ -683,14 +683,14 @@ class DBTest(commonDBTest):
         self.assertEqual(self.db.status.get('1', 'name'), b)
         self.assertRaises(IndexError, self.db.status.set, '1', name='hello')
         self.db.commit()
-        self.assert_(self.db.status.is_retired('1'))
+        self.assertTrue(self.db.status.is_retired('1'))
         self.assertEqual(self.db.status.get('1', 'name'), b)
         self.assertNotEqual(a, self.db.status.list())
 
         # try to restore retired node
         self.db.status.restore('1')
 
-        self.assert_(not self.db.status.is_retired('1'))
+        self.assertTrue(not self.db.status.is_retired('1'))
 
     def testCacheCreateSet(self):
         self.db.issue.create(title="spam", status='1')
@@ -1451,7 +1451,7 @@ class DBTest(commonDBTest):
         i1 = self.db.issue.create(files=[f1, f2])
         self.db.commit()
         d = self.db.indexer.search(['hello'], self.db.issue)
-        self.assert_(i1 in d)
+        self.assertTrue(i1 in d)
         d[i1]['files'].sort()
         self.assertEquals(d, {i1: {'files': [f1, f2]}})
         self.assertEquals(self.db.indexer.search(['world'], self.db.issue),
@@ -2590,14 +2590,14 @@ class DBTest(commonDBTest):
             db.issue.nosymessage(i, m, {})
             mail_msg = str(res["mail_msg"])
             self.assertEqual(res["mail_to"], ["fred@example.com"])
-            self.assert_("From: admin" in mail_msg)
-            self.assert_("Subject: [issue1] spam" in mail_msg)
-            self.assert_("New submission from admin" in mail_msg)
-            self.assert_("one two" in mail_msg)
-            self.assert_("File 'test1.txt' not attached" not in mail_msg)
-            self.assert_(b2s(base64.encodestring(s2b("xxx"))).rstrip() in mail_msg)
-            self.assert_("File 'test2.txt' not attached" in mail_msg)
-            self.assert_(b2s(base64.encodestring(s2b("yyy"))).rstrip() not in mail_msg)
+            self.assertTrue("From: admin" in mail_msg)
+            self.assertTrue("Subject: [issue1] spam" in mail_msg)
+            self.assertTrue("New submission from admin" in mail_msg)
+            self.assertTrue("one two" in mail_msg)
+            self.assertTrue("File 'test1.txt' not attached" not in mail_msg)
+            self.assertTrue(b2s(base64.encodestring(s2b("xxx"))).rstrip() in mail_msg)
+            self.assertTrue("File 'test2.txt' not attached" in mail_msg)
+            self.assertTrue(b2s(base64.encodestring(s2b("yyy"))).rstrip() not in mail_msg)
         finally :
             roundupdb._ = old_translate_
             Mailer.smtp_send = backup
@@ -2623,12 +2623,12 @@ class DBTest(commonDBTest):
             db.issue.nosymessage(i, m, {})
             mail_msg = str(res["mail_msg"])
             self.assertEqual(res["mail_to"], ["fred@example.com"])
-            self.assert_("From: admin" in mail_msg)
-            self.assert_("Subject: [issue1] spam" in mail_msg)
-            self.assert_("New submission from admin" in mail_msg)
-            self.assert_("one two" in mail_msg)
-            self.assert_("Hello world" in mail_msg)
-            self.assert_(b2s(base64.encodestring(b"\x01\x02\x03\xfe\xff")).rstrip() in mail_msg)
+            self.assertTrue("From: admin" in mail_msg)
+            self.assertTrue("Subject: [issue1] spam" in mail_msg)
+            self.assertTrue("New submission from admin" in mail_msg)
+            self.assertTrue("one two" in mail_msg)
+            self.assertTrue("Hello world" in mail_msg)
+            self.assertTrue(b2s(base64.encodestring(b"\x01\x02\x03\xfe\xff")).rstrip() in mail_msg)
         finally :
             roundupdb._ = old_translate_
             Mailer.smtp_send = backup
@@ -2667,14 +2667,14 @@ class DBTest(commonDBTest):
             self.assertEqual(res[0]["mail_to"], ["fred@example.com"])
             self.assertEqual(res[1]["mail_to"], ["john@test.test"])
             mail_msg = str(res[0]["mail_msg"])
-            self.assert_("From: admin" in mail_msg)
-            self.assert_("Subject: [issue1] spam" in mail_msg)
-            self.assert_("New submission from admin" in mail_msg)
-            self.assert_("one two" in mail_msg)
-            self.assert_("File 'test1.txt' not attached" not in mail_msg)
-            self.assert_(b2s(base64.encodestring(s2b("xxx"))).rstrip() in mail_msg)
-            self.assert_("File 'test2.txt' not attached" in mail_msg)
-            self.assert_(b2s(base64.encodestring(s2b("yyy"))).rstrip() not in mail_msg)
+            self.assertTrue("From: admin" in mail_msg)
+            self.assertTrue("Subject: [issue1] spam" in mail_msg)
+            self.assertTrue("New submission from admin" in mail_msg)
+            self.assertTrue("one two" in mail_msg)
+            self.assertTrue("File 'test1.txt' not attached" not in mail_msg)
+            self.assertTrue(b2s(base64.encodestring(s2b("xxx"))).rstrip() in mail_msg)
+            self.assertTrue("File 'test2.txt' not attached" in mail_msg)
+            self.assertTrue(b2s(base64.encodestring(s2b("yyy"))).rstrip() not in mail_msg)
             mail_msg = str(res[1]["mail_msg"])
             parts = message_from_string(mail_msg).get_payload()
             self.assertEqual(len(parts),2)
@@ -2685,15 +2685,15 @@ class DBTest(commonDBTest):
             res = ctx.op_decrypt(crypt, plain)
             self.assertEqual(res, None)
             plain.seek(0,0)
-            self.assert_("From: admin" in mail_msg)
-            self.assert_("Subject: [issue1] spam" in mail_msg)
+            self.assertTrue("From: admin" in mail_msg)
+            self.assertTrue("Subject: [issue1] spam" in mail_msg)
             mail_msg = str(message_from_bytes(plain.read()))
-            self.assert_("New submission from admin" in mail_msg)
-            self.assert_("one two" in mail_msg)
-            self.assert_("File 'test1.txt' not attached" not in mail_msg)
-            self.assert_(b2s(base64.encodestring(s2b("xxx"))).rstrip() in mail_msg)
-            self.assert_("File 'test2.txt' not attached" in mail_msg)
-            self.assert_(b2s(base64.encodestring(s2b("yyy"))).rstrip() not in mail_msg)
+            self.assertTrue("New submission from admin" in mail_msg)
+            self.assertTrue("one two" in mail_msg)
+            self.assertTrue("File 'test1.txt' not attached" not in mail_msg)
+            self.assertTrue(b2s(base64.encodestring(s2b("xxx"))).rstrip() in mail_msg)
+            self.assertTrue("File 'test2.txt' not attached" in mail_msg)
+            self.assertTrue(b2s(base64.encodestring(s2b("yyy"))).rstrip() not in mail_msg)
         finally :
             roundupdb._ = old_translate_
             Mailer.smtp_send = backup
@@ -2750,7 +2750,7 @@ class SchemaTest(MyTestCase):
         self.open_database()
         a = self.module.FileClass(self.db, 'a')
         l = sorted(a.getprops().keys())
-        self.assert_(l, ['activity', 'actor', 'content', 'created',
+        self.assertTrue(l, ['activity', 'actor', 'content', 'created',
             'creation', 'type'])
 
     def init_ab(self):
@@ -2816,8 +2816,8 @@ class SchemaTest(MyTestCase):
         self.assertEqual(self.db.a.get(aid, 'newint'), None)
         # hack - metakit can't return None for missing values, and we're not
         # really checking for that behavior here anyway
-        self.assert_(not self.db.a.get(aid, 'newnum'))
-        self.assert_(not self.db.a.get(aid, 'newbool'))
+        self.assertTrue(not self.db.a.get(aid, 'newnum'))
+        self.assertTrue(not self.db.a.get(aid, 'newbool'))
         self.assertEqual(self.db.a.get(aid, 'newdate'), None)
         self.assertEqual(self.db.b.get(aid, 'name'), 'bear')
         aid2 = self.db.a.create(name='aardvark', newstr='booz')

@@ -59,8 +59,8 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         u1 = self.db.user.create(username='one', roles='Admin')
         u2 = self.db.user.create(username='two', roles='User')
 
-        self.assert_(self.db.security.hasPermission('Edit', u1, None))
-        self.assert_(not self.db.security.hasPermission('Edit', u2, None))
+        self.assertTrue(self.db.security.hasPermission('Edit', u1, None))
+        self.assertTrue(not self.db.security.hasPermission('Edit', u2, None))
 
 
     def testGetPermission(self):

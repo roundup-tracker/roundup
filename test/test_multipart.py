@@ -115,49 +115,49 @@ class MultipartTestCase(unittest.TestCase):
 
     def testMultipart(self):
         m = email.message_from_file(self.fp, RoundupMessage)
-        self.assert_(m is not None)
+        self.assertTrue(m is not None)
 
         it = iter(m.get_payload())
 
         # first text/plain
         p = next(it, None)
-        self.assert_(p is not None)
+        self.assertTrue(p is not None)
         self.assertEqual(p.get_content_type(), 'text/plain')
         self.assertEqual(p.get_payload(),
             'Hello, world!\r\n\r\nBlah blah\r\nfoo\r\n-foo\r\n')
 
         # sub-multipart
         p = next(it, None)
-        self.assert_(p is not None)
+        self.assertTrue(p is not None)
         self.assertEqual(p.get_content_type(), 'multipart/alternative')
 
         # sub-multipart text/plain
         qit = iter(p.get_payload())
         q = next(qit, None)
-        self.assert_(q is not None)
+        self.assertTrue(q is not None)
         self.assertEqual(q.get_content_type(), 'text/plain')
         self.assertEqual(q.get_payload(), 'Hello, world!\r\n\r\nBlah blah\r\n')
 
         # sub-multipart text/html
         q = next(qit, None)
-        self.assert_(q is not None)
+        self.assertTrue(q is not None)
         self.assertEqual(q.get_content_type(), 'text/html')
         self.assertEqual(q.get_payload(), '<b>Hello, world!</b>\r\n')
 
         # sub-multipart end
         q = next(qit, None)
-        self.assert_(q is None)
+        self.assertTrue(q is None)
 
         # final text/plain
         p = next(it, None)
-        self.assert_(p is not None)
+        self.assertTrue(p is not None)
         self.assertEqual(p.get_content_type(), 'text/plain')
         self.assertEqual(p.get_payload(),
             'Last bit\n')
 
         # end
         p = next(it, None)
-        self.assert_(p is None)
+        self.assertTrue(p is None)
 
     def TestExtraction(self, spec, expected, convert_html_with=False):
         if convert_html_with:

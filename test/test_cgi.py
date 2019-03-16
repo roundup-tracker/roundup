@@ -1259,29 +1259,29 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
 
         perm = self.db.security.hasPermission
         search = self.db.security.hasSearchPermission
-        self.assert_(perm('View', chef, 'iss', 'department', '1'))
-        self.assert_(perm('View', chef, 'iss', 'department', '2'))
-        self.assert_(perm('View', chef, 'iss', 'department', '3'))
-        self.assert_(search(chef, 'iss', 'department'))
+        self.assertTrue(perm('View', chef, 'iss', 'department', '1'))
+        self.assertTrue(perm('View', chef, 'iss', 'department', '2'))
+        self.assertTrue(perm('View', chef, 'iss', 'department', '3'))
+        self.assertTrue(search(chef, 'iss', 'department'))
 
-        self.assert_(not perm('View', mary, 'iss', 'department'))
-        self.assert_(perm('View', mary, 'iss', 'status'))
+        self.assertTrue(not perm('View', mary, 'iss', 'department'))
+        self.assertTrue(perm('View', mary, 'iss', 'status'))
         # Conditionally allow view of whole iss (check is False here,
         # this might check for department owner in the real world)
         p = self.db.security.addPermission(name='View', klass='iss',
             check=lambda x,y,z: False)
         self.db.security.addPermissionToRole('User', p)
-        self.assert_(perm('View', mary, 'iss', 'department'))
-        self.assert_(not perm('View', mary, 'iss', 'department', '1'))
-        self.assert_(not search(mary, 'iss', 'department'))
+        self.assertTrue(perm('View', mary, 'iss', 'department'))
+        self.assertTrue(not perm('View', mary, 'iss', 'department', '1'))
+        self.assertTrue(not search(mary, 'iss', 'department'))
 
-        self.assert_(perm('View', mary, 'iss', 'status'))
-        self.assert_(not search(mary, 'iss', 'status'))
+        self.assertTrue(perm('View', mary, 'iss', 'status'))
+        self.assertTrue(not search(mary, 'iss', 'status'))
         # Allow user to search for iss.status
         p = self.db.security.addPermission(name='Search', klass='iss',
             properties=("status",))
         self.db.security.addPermissionToRole('User', p)
-        self.assert_(search(mary, 'iss', 'status'))
+        self.assertTrue(search(mary, 'iss', 'status'))
 
         dep = {'@action':'search','columns':'id','@filter':'department',
             'department':'1'}
@@ -1492,19 +1492,19 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         cl = self._make_client({})
         self.db.user.set('1', roles='aDmin,    uSer')
         item = HTMLItem(cl, 'user', '1')
-        self.assert_(item.hasRole('Admin'))
-        self.assert_(item.hasRole('User'))
-        self.assert_(item.hasRole('AdmiN'))
-        self.assert_(item.hasRole('UseR'))
-        self.assert_(item.hasRole('UseR','Admin'))
-        self.assert_(item.hasRole('UseR','somethingelse'))
-        self.assert_(item.hasRole('somethingelse','Admin'))
-        self.assert_(not item.hasRole('userr'))
-        self.assert_(not item.hasRole('adminn'))
-        self.assert_(not item.hasRole(''))
-        self.assert_(not item.hasRole(' '))
+        self.assertTrue(item.hasRole('Admin'))
+        self.assertTrue(item.hasRole('User'))
+        self.assertTrue(item.hasRole('AdmiN'))
+        self.assertTrue(item.hasRole('UseR'))
+        self.assertTrue(item.hasRole('UseR','Admin'))
+        self.assertTrue(item.hasRole('UseR','somethingelse'))
+        self.assertTrue(item.hasRole('somethingelse','Admin'))
+        self.assertTrue(not item.hasRole('userr'))
+        self.assertTrue(not item.hasRole('adminn'))
+        self.assertTrue(not item.hasRole(''))
+        self.assertTrue(not item.hasRole(' '))
         self.db.user.set('1', roles='')
-        self.assert_(not item.hasRole(''))
+        self.assertTrue(not item.hasRole(''))
 
     def testCSVExport(self):
         cl = self._make_client(
