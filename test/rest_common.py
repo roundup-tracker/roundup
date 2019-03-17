@@ -68,7 +68,7 @@ class TestCase():
             'TRACKER_NAME': 'rounduptest'
         }
         self.dummy_client = client.Client(self.instance, MockNull(), env, [], None)
-        self.dummy_client.request.headers.getheader = self.get_header
+        self.dummy_client.request.headers.get = self.get_header
         self.empty_form = cgi.FieldStorage()
 
         self.server = RestfulInstance(self.dummy_client, self.db)
@@ -426,7 +426,7 @@ class TestCase():
         form = cgi.FieldStorage(body_file,
                                 headers=headers,
                                 environ=env)
-        self.server.client.request.headers.getheader=self.get_header
+        self.server.client.request.headers.get=self.get_header
         results = self.server.dispatch('PUT',
                             "/rest/data/user/%s/realname"%self.joeid,
                             form)
@@ -455,7 +455,7 @@ class TestCase():
         form = cgi.FieldStorage(body_file,
                                 headers=headers,
                                 environ=env)
-        self.server.client.request.headers.getheader=self.get_header
+        self.server.client.request.headers.get=self.get_header
         results = self.server.dispatch('PUT',
                             "/rest/data/user/%s/realname"%self.joeid,
                             form)
@@ -483,7 +483,7 @@ class TestCase():
             cgi.MiniFieldStorage('data', 'Joe Doe'),
         ]
         self.headers = headers
-        self.server.client.request.headers.getheader = self.get_header
+        self.server.client.request.headers.get = self.get_header
         results = self.server.dispatch('PUT',
                             "/rest/data/user/%s/realname"%self.joeid,
                             form)
@@ -523,7 +523,7 @@ class TestCase():
         form = cgi.FieldStorage(body_file,
                                 headers=headers,
                                 environ=env)
-        self.server.client.request.headers.getheader=self.get_header
+        self.server.client.request.headers.get=self.get_header
         results = self.server.dispatch('PATCH',
                             "/rest/data/user/%s"%self.joeid,
                             form)
@@ -544,7 +544,7 @@ class TestCase():
         form = cgi.FieldStorage(body_file,
                                 headers=headers,
                                 environ=env)
-        self.server.client.request.headers.getheader=self.get_header
+        self.server.client.request.headers.get=self.get_header
         results = self.server.dispatch('PATCH',
                             "/rest/data/user/%s"%self.joeid,
                             form)
@@ -571,7 +571,7 @@ class TestCase():
         form = cgi.FieldStorage(body_file,
                                 headers=headers,
                                 environ=env)
-        self.server.client.request.headers.getheader=self.get_header
+        self.server.client.request.headers.get=self.get_header
         results = self.server.dispatch('POST',
                             "/rest/data/issue",
                             form)
