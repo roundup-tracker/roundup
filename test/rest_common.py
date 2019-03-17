@@ -8,13 +8,14 @@ from roundup import password, hyperdb
 from roundup.rest import RestfulInstance, calculate_etag
 from roundup.backends import list_backends
 from roundup.cgi import client
+from roundup.anypy.strings import b2s, s2b
 import random
 
 from .db_test_base import setupTracker
 
 from .mocknull import MockNull
 
-from io import StringIO
+from io import BytesIO
 import json
 
 NEEDS_INSTANCE = 1
@@ -409,7 +410,7 @@ class TestCase():
         # simulate: /rest/data/user/<id>/realname
         # use etag in header
         etag = calculate_etag(self.db.user.getnode(self.joeid))
-        body=u'{ "data": "Joe Doe 1" }'
+        body=b'{ "data": "Joe Doe 1" }'
         env = { "CONTENT_TYPE": "application/json",
                 "CONTENT_LENGTH": len(body),
                 "REQUEST_METHOD": "PUT"
@@ -422,7 +423,7 @@ class TestCase():
         # we need to generate a FieldStorage the looks like
         #  FieldStorage(None, None, 'string') rather than
         #  FieldStorage(None, None, [])
-        body_file=StringIO(body)  # FieldStorage needs a file
+        body_file=BytesIO(body)  # FieldStorage needs a file
         form = cgi.FieldStorage(body_file,
                                 headers=headers,
                                 environ=env)
@@ -442,7 +443,7 @@ class TestCase():
         # simulate: /rest/data/user/<id>/realname
         # use etag in payload
         etag = calculate_etag(self.db.user.getnode(self.joeid))
-        body=u'{ "@etag": "%s", "data": "Joe Doe 2" }'%etag
+        body=s2b('{ "@etag": "%s", "data": "Joe Doe 2" }'%etag)
         env = { "CONTENT_TYPE": "application/json",
                 "CONTENT_LENGTH": len(body),
                 "REQUEST_METHOD": "PUT"
@@ -451,7 +452,7 @@ class TestCase():
                  "content-type": env['CONTENT_TYPE']
         }
         self.headers=headers
-        body_file=StringIO(body)  # FieldStorage needs a file
+        body_file=BytesIO(body)  # FieldStorage needs a file
         form = cgi.FieldStorage(body_file,
                                 headers=headers,
                                 environ=env)
@@ -492,7 +493,7 @@ class TestCase():
                             "/rest/data/user/%s/realname"%self.joeid,
                                        self.empty_form)
         self.assertEqual(self.dummy_client.response_code, 200)
-        json_dict = json.loads(results)
+        json_dict = json.loads(b2s(results))
 
         self.assertEqual(json_dict['data']['data'], 'Joe Doe')
         self.assertEqual(json_dict['data']['link'],
@@ -510,7 +511,7 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 200)
 
         etag = calculate_etag(self.db.user.getnode(self.joeid))
-        body=u'{ "address": "demo2@example.com", "@etag": "%s"}'%etag
+        body=s2b('{ "address": "demo2@example.com", "@etag": "%s"}'%etag)
         env = { "CONTENT_TYPE": "application/json",
                 "CONTENT_LENGTH": len(body),
                 "REQUEST_METHOD": "PATCH"
@@ -519,7 +520,7 @@ class TestCase():
                  "content-type": env['CONTENT_TYPE']
         }
         self.headers=headers
-        body_file=StringIO(body)  # FieldStorage needs a file
+        body_file=BytesIO(body)  # FieldStorage needs a file
         form = cgi.FieldStorage(body_file,
                                 headers=headers,
                                 environ=env)
@@ -536,11 +537,11 @@ class TestCase():
 
         # and set it back
         etag = calculate_etag(self.db.user.getnode(self.joeid))
-        body=u'{ "address": "%s", "@etag": "%s"}'%(
+        body=s2b('{ "address": "%s", "@etag": "%s"}'%(
             stored_results['data']['attributes']['address'],
-            etag)
+            etag))
         # reuse env and headers from prior test.
-        body_file=StringIO(body)  # FieldStorage needs a file
+        body_file=BytesIO(body)  # FieldStorage needs a file
         form = cgi.FieldStorage(body_file,
                                 headers=headers,
                                 environ=env)
@@ -557,7 +558,7 @@ class TestCase():
         del(self.headers)
 
         # POST to create new issue
-        body=u'{ "title": "foo bar", "priority": "critical" }'
+        body=b'{ "title": "foo bar", "priority": "critical" }'
 
         env = { "CONTENT_TYPE": "application/json",
                 "CONTENT_LENGTH": len(body),
@@ -567,7 +568,7 @@ class TestCase():
                  "content-type": env['CONTENT_TYPE']
         }
         self.headers=headers
-        body_file=StringIO(body)  # FieldStorage needs a file
+        body_file=BytesIO(body)  # FieldStorage needs a file
         form = cgi.FieldStorage(body_file,
                                 headers=headers,
                                 environ=env)
@@ -577,7 +578,7 @@ class TestCase():
                             form)
 
         self.assertEqual(self.server.client.response_code, 201)
-        json_dict = json.loads(results)
+        json_dict = json.loads(b2s(results))
         issue_id=json_dict['data']['id']
         results = self.server.get_element('issue',
                             str(issue_id), # must be a string not unicode
