@@ -20,9 +20,15 @@ import traceback
 import re
 
 try:
-    from dicttoxml import dicttoxml
+    # if dicttoxml installed in roundup directory, use it
+    from .dicttoxml import dicttoxml
 except ImportError:
-    dicttoxml = None
+    try:
+        # else look in sys.path
+        from dicttoxml import dicttoxml
+    except ImportError:
+        # else not supported
+        dicttoxml = None
 
 from roundup import hyperdb
 from roundup import date
@@ -160,7 +166,8 @@ def obtain_etags(headers,input):
     etags = []
     if '@etag' in input:
         etags.append(input['@etag'].value);
-    etags.append(headers.getheader("ETag", None))
+    if "ETag" in headers:
+        etags.append(headers["ETag"])
     return etags
 
 def parse_accept_header(accept):
@@ -220,7 +227,9 @@ def parse_accept_header(accept):
             else:
                 media_params.append((key, value))
         result.append((media_type, dict(media_params), q))
-    result.sort(lambda x, y: -cmp(x[2], y[2]))
+    # was: result.sort(lambda x, y: -cmp(x[2], y[2]))
+    # change for python 3 support
+    result.sort(key=lambda x: x[2], reverse=True)
     return result
 
 
@@ -1299,7 +1308,9 @@ class RestfulInstance(object):
         headers = self.client.request.headers
         # Never allow GET to be an unsafe operation (i.e. data changing).
         # User must use POST to "tunnel" DELETE, PUT, OPTIONS etc.
-        override = headers.getheader('X-HTTP-Method-Override')
+        override = None
+        if 'X-HTTP-Method-Override' in headers:
+            override = headers['X-HTTP-Method-Override']
         output = None
         if override:
             if method.upper() != 'GET':
@@ -1314,7 +1325,9 @@ class RestfulInstance(object):
                     uri)
 
         # parse Accept header and get the content type
-        accept_header = parse_accept_header(headers.getheader('Accept'))
+        accept_header = []
+        if 'Accept' in headers:
+            accept_header = parse_accept_header(headers['Accept'])
         accept_type = "invalid"
         for part in accept_header:
             if part[0] in self.__accepted_content_type:
@@ -1350,7 +1363,9 @@ class RestfulInstance(object):
         # Is there an input.value with format json data?
         # If so turn it into an object that emulates enough
         # of the FieldStorge methods/props to allow a response.
-        content_type_header = headers.getheader('Content-Type', None)
+        content_type_header = None
+        if 'Content-Type' in headers:
+            content_type_header = headers['Content-Type']
         if type(input.value) == str and content_type_header:
             parsed_content_type_header = content_type_header
             # the structure of a content-type header
@@ -1404,7 +1419,7 @@ class RestfulInstance(object):
 
         # Make output json end in a newline to
         # separate from following text in logs etc..
-        return output + "\n"
+        return bs2b(output + "\n")
 
 
 class RoundupJSONEncoder(json.JSONEncoder):

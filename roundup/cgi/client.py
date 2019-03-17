@@ -375,7 +375,18 @@ class Client:
                     logger.debug("Setting CONTENT_LENGTH to 0 for method: %s",
                                 self.env['REQUEST_METHOD'])
 
+            # cgi.FieldStorage must save all data as
+            # binary/bytes. This is needed for handling json and xml
+            # data blobs under python 3. Under python 2, str and binary
+            # are interchangable, not so under 3.
+            def make_file(self):
+                import tempfile
+                return tempfile.TemporaryFile("wb+")
+
+            saved_make_file = cgi.FieldStorage.make_file
+            cgi.FieldStorage.make_file = make_file
             self.form = cgi.FieldStorage(fp=request.rfile, environ=env)
+            cgi.FieldStorage.make_file = saved_make_file
             # In some case (e.g. content-type application/xml), cgi
             # will not parse anything. Fake a list property in this case
             if self.form.list is None:
