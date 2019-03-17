@@ -1364,6 +1364,9 @@ class ExportCSVAction(Action):
                     return ""
                 elif type(arg) is list:
                     seq = [str(cls.get(val, col)) for val in arg]
+                    # python2/python 3 have different order in lists
+                    # sort to not break tests
+                    seq.sort()
                     return self.list_sep.join(seq)
             return fct
         def repr_date():
@@ -1520,7 +1523,14 @@ class ExportCSVWithIdAction(Action):
                     raise exceptions.Unauthorised(self._(
                         'You do not have permission to view %(class)s'
                     ) % {'class': request.classname})
-                row.append(str(klass.get(itemid, name)))
+                value = klass.get(itemid, name)
+                try:
+                    # python2/python 3 have different order in lists
+                    # sort to not break tests
+                    value.sort()
+                except AttributeError:
+                    pass  # value is not sortable, probably str
+                row.append(str(value))
             self.client._socket_op(writer.writerow, row)
 
         return '\n'
