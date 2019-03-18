@@ -1525,20 +1525,21 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         # call export version that outputs names
         actions.ExportCSVAction(cl).handle()
         #print(output.getvalue())
-        self.assertEquals('id,title,status,keyword,assignedto,nosy\r\n'
-'1,foo1,deferred,,"Contrary, Mary","Bork, Chef;demo;Contrary, Mary"\r\n'
-'2,bar2,unread,keyword1;keyword2,"Bork, Chef","Bork, Chef"\r\n'
-'3,baz32,need-eg,,,\r\n',
-
-            output.getvalue())
+        should_be=('id,title,status,keyword,assignedto,nosy\r\n'
+                   '1,foo1,deferred,,"Contrary, Mary","Bork, Chef;Contrary, Mary;demo"\r\n'
+                   '2,bar2,unread,keyword1;keyword2,"Bork, Chef","Bork, Chef"\r\n'
+                   '3,baz32,need-eg,,,\r\n')
+        #print(should_be)
+        #print(output.getvalue())
+        self.assertEqual(output.getvalue(), should_be)
         output = StringIO()
         cl.request = MockNull()
         cl.request.wfile = output
         # call export version that outputs id numbers
         actions.ExportCSVWithIdAction(cl).handle()
-        #print(output.getvalue())
+        print(output.getvalue())
         self.assertEquals('id,title,status,keyword,assignedto,nosy\r\n'
-                          "1,foo1,2,[],4,\"['3', '5', '4']\"\r\n"
+                          "1,foo1,2,[],4,\"['3', '4', '5']\"\r\n"
                           "2,bar2,1,\"['1', '2']\",3,['3']\r\n"
                           '3,baz32,4,[],None,[]\r\n',
             output.getvalue())
