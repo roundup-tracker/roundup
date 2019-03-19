@@ -20,14 +20,20 @@ import traceback
 import re
 
 try:
-    from dicttoxml import dicttoxml
+    # if dicttoxml installed in roundup directory, use it
+    from .dicttoxml import dicttoxml
 except ImportError:
-    dicttoxml = None
+    try:
+        # else look in sys.path
+        from dicttoxml import dicttoxml
+    except ImportError:
+        # else not supported
+        dicttoxml = None
 
 from roundup import hyperdb
 from roundup import date
 from roundup import actions
-from roundup.anypy.strings import bs2b, s2b
+from roundup.anypy.strings import bs2b, b2s
 from roundup.exceptions import *
 from roundup.cgi.exceptions import *
 
@@ -1346,12 +1352,12 @@ class RestfulInstance(object):
             "Access-Control-Allow-Methods",
             "HEAD, OPTIONS, GET, PUT, DELETE, PATCH"
         )
-
         # Is there an input.value with format json data?
         # If so turn it into an object that emulates enough
         # of the FieldStorge methods/props to allow a response.
         content_type_header = headers.get('Content-Type', None)
-        if type(input.value) == str and content_type_header:
+        # python2 is str type, python3 is bytes
+        if type(input.value) in ( str, bytes ) and content_type_header:
             parsed_content_type_header = content_type_header
             # the structure of a content-type header
             # is complex: mime-type; options(charset ...)
@@ -1366,7 +1372,7 @@ class RestfulInstance(object):
             # for example.
             if content_type_header.lower() == "application/json":
                 try:
-                    input = SimulateFieldStorageFromJson(input.value)
+                    input = SimulateFieldStorageFromJson(b2s(input.value))
                 except ValueError as msg:
                     output = self.error_obj(400, msg)
 
@@ -1404,7 +1410,7 @@ class RestfulInstance(object):
 
         # Make output json end in a newline to
         # separate from following text in logs etc..
-        return s2b(output + "\n")
+        return bs2b(output + "\n")
 
 
 class RoundupJSONEncoder(json.JSONEncoder):
