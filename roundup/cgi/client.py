@@ -230,7 +230,18 @@ class Session:
         if set_cookie:
             self.client.add_cookie(self.cookie_name, self._sid, expire=expire)
 
+class BinaryFieldStorage(cgi.FieldStorage):
+    '''This class works around the bug https://bugs.python.org/issue27777.
 
+       cgi.FieldStorage must save all data as binary/bytes. This is
+       needed for handling json and xml data blobs under python
+       3. Under python 2, str and binary are interchangable, not so
+       under 3.
+    '''
+    def make_file(self, mode=None):
+        ''' work around https://bugs.python.org/issue27777 '''
+        import tempfile
+        return tempfile.TemporaryFile("wb+")
 
 class Client:
     """Instantiate to handle one CGI request.
@@ -376,18 +387,10 @@ class Client:
                                 self.env['REQUEST_METHOD'])
 
             # cgi.FieldStorage must save all data as
-            # binary/bytes. This is needed for handling json and xml
-            # data blobs under python 3. Under python 2, str and binary
-            # are interchangable, not so under 3.
-            def make_file(self):
-                ''' work around https://bugs.python.org/issue27777 '''
-                import tempfile
-                return tempfile.TemporaryFile("wb+")
-
-            saved_make_file = cgi.FieldStorage.make_file
-            cgi.FieldStorage.make_file = make_file
-            self.form = cgi.FieldStorage(fp=request.rfile, environ=env)
-            cgi.FieldStorage.make_file = saved_make_file
+            # binary/bytes. Subclass BinaryFieldStorage does this.
+            # It's a workaround for a bug in cgi.FieldStorage. See class
+            # def for details.
+            self.form = BinaryFieldStorage(fp=request.rfile, environ=env)
             # In some case (e.g. content-type application/xml), cgi
             # will not parse anything. Fake a list property in this case
             if self.form.list is None:

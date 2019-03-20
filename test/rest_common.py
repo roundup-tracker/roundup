@@ -399,11 +399,6 @@ class TestCase():
             else:
                 self.assertEqual(self.dummy_client.response_code, 412)
 
-    def make_file(self, arg=None):
-        ''' work around https://bugs.python.org/issue27777 '''
-        import tempfile
-        return tempfile.TemporaryFile("wb+")
-
     def testDispatch(self):
         """
         run changes through rest dispatch(). This also tests
@@ -411,12 +406,6 @@ class TestCase():
         code that changes json payload into something we can
         process.
         """
-
-        # Override the make_file so it is always set to binary
-        # read mode. This is needed so we can send a json 
-        # body.
-        saved_make_file = cgi.FieldStorage.make_file
-        cgi.FieldStorage.make_file = self.make_file
 
         # TEST #1
         # PUT: joe's 'realname' using json data.
@@ -438,7 +427,7 @@ class TestCase():
         #  FieldStorage(None, None, 'string') rather than
         #  FieldStorage(None, None, [])
         body_file=BytesIO(body)  # FieldStorage needs a file
-        form = cgi.FieldStorage(body_file,
+        form = client.BinaryFieldStorage(body_file,
                                 headers=headers,
                                 environ=env)
         self.server.client.request.headers.get=self.get_header
@@ -465,7 +454,7 @@ class TestCase():
         }
         self.headers=None  # have FieldStorage get len from env.
         body_file=BytesIO(body)  # FieldStorage needs a file
-        form = cgi.FieldStorage(body_file,
+        form = client.BinaryFieldStorage(body_file,
                                 headers=None,
                                 environ=env)
         self.server.client.request.headers.get=self.get_header
@@ -544,7 +533,7 @@ class TestCase():
         }
         self.headers=headers
         body_file=BytesIO(body)  # FieldStorage needs a file
-        form = cgi.FieldStorage(body_file,
+        form = client.BinaryFieldStorage(body_file,
                                 headers=headers,
                                 environ=env)
         self.server.client.request.headers.get=self.get_header
@@ -565,7 +554,7 @@ class TestCase():
             etag))
         # reuse env and headers from prior test.
         body_file=BytesIO(body)  # FieldStorage needs a file
-        form = cgi.FieldStorage(body_file,
+        form = client.BinaryFieldStorage(body_file,
                                 headers=headers,
                                 environ=env)
         self.server.client.request.headers.get=self.get_header
@@ -598,7 +587,7 @@ class TestCase():
         }
         self.headers=headers
         body_file=BytesIO(body)  # FieldStorage needs a file
-        form = cgi.FieldStorage(body_file,
+        form = client.BinaryFieldStorage(body_file,
                                 headers=headers,
                                 environ=env)
         self.server.client.request.headers.get=self.get_header
@@ -616,9 +605,6 @@ class TestCase():
         self.assertEqual(results['data']['attributes']['title'],
                          'foo bar')
         del(self.headers)
-
-        # reset the make_file method in the class
-        cgi.FieldStorage.make_file = saved_make_file
 
     def testPut(self):
         """
