@@ -1221,19 +1221,15 @@ class RestfulInstance(object):
     @Routing.route("/data")
     @_data_decorator
     def data(self, input):
-        """Describe the sublements of data
+        """Describe the subelements of data
 
-           FIXME: should have a key for every element under data in
-                  the schema the user can access.
-           This is just an example.
+           One entry for each class the user may view
         """
-        result = {
-            "issue": { "link": self.base_path + "/data/" + "issue" },
-            "status": { "link": self.base_path + "/data/" + "status" },
-            "keyword": { "link": self.base_path + "/data/" + "keyword" },
-            "user": { "link": self.base_path + "/data/" + "user" }
-        }
-
+        result = {}
+        uid = self.db.getuid ()
+        for cls in sorted (self.db.classes) :
+            if self.db.security.hasPermission('View', uid, cls) :
+                result [cls] = dict(link = self.base_path + '/data/' + cls)
         return 200, result
 
     @Routing.route("/summary")
