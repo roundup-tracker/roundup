@@ -179,7 +179,7 @@ def main(out, err):
                 request.send_response(404)
                 request.send_header('Content-Type', 'text/html')
                 request.end_headers()
-                out.write('Not found: %s'%client.path)
+                out.write('Not found: %s'%cgi.escape(client.path))
 
     else:
         import urllib

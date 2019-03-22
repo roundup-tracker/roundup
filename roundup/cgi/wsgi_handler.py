@@ -66,7 +66,7 @@ class RequestDispatcher(object):
             client.main()
         except roundup.cgi.client.NotFound:
             request.start_response([('Content-Type', 'text/html')], 404)
-            request.wfile.write('Not found: %s'%client.path)
+            request.wfile.write('Not found: %s'%cgi.escape(client.path))
 
         # all body data has been written using wfile
         return []
