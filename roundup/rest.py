@@ -651,7 +651,7 @@ class RestfulInstance(object):
                     # Do not show the (possibly HUGE) content prop
                     # unless very verbose, we display the standard
                     # download link instead
-                    if verbose < 2:
+                    if verbose < 3:
                         u = self.db.config.TRACKER_WEB
                         p = u + '%s%s/' % (class_name, node.id)
                         result[pn] = dict(link = p)
