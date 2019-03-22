@@ -493,20 +493,34 @@ class RestfulInstance(object):
             'size': None,
             'index': 1   # setting just size starts at page 1
         }
+        uid = self.db.getuid()
         for form_field in input.value:
             key = form_field.name
             value = form_field.value
-            if key.startswith("where_"):  # serve the filter purpose
+            if key.startswith("@page_"):  # serve the paging purpose
                 key = key[6:]
-                filter_props[key] = [
-                    getattr(self.db, key).lookup(p)
-                    for p in value.split(",")
-                ]
-            elif key.startswith("page_"):  # serve the paging purpose
-                key = key[5:]
                 value = int(value)
                 page[key] = value
-
+            else: # serve the filter purpose
+                prop = class_obj.getprops()[key]
+                # We drop properties without search permission silently
+                # This reflects the current behavior of other roundup
+                # interfaces
+                if not self.db.security.hasSearchPermission(
+                    uid, class_name, key
+                ):
+                    continue
+                if isinstance (prop, (hyperdb.Link, hyperdb.Multilink)):
+                    vals = []
+                    linkcls = self.db.getclass (prop.classname)
+                    for p in value.split(","):
+                        if prop.try_id_parsing and p.isdigit():
+                            vals.append(p)
+                        else:
+                            vals.append(linkcls.lookup(p))
+                    filter_props[key] = vals
+                else:
+                    filter_props[key] = value
         if not filter_props:
             obj_list = class_obj.list()
         else:
@@ -542,11 +556,11 @@ class RestfulInstance(object):
                 result['@links'][rel] = []
                 result['@links'][rel].append({
                     'rel': rel,
-                    'uri': "%s/%s?page_index=%s&"%(self.data_path,
+                    'uri': "%s/%s?@page_index=%s&"%(self.data_path,
                                                    class_name,index) \
                        + '&'.join([ "%s=%s"%(field.name,field.value) \
                          for field in input.value \
-                           if field.name != "page_index"]) })
+                           if field.name != "@page_index"]) })
 
         result['@total_size'] = result_len
         self.client.setHeader("X-Count-Total", str(result_len))
@@ -590,7 +604,7 @@ class RestfulInstance(object):
         for form_field in input.value:
             key = form_field.name
             value = form_field.value
-            if key == "fields":
+            if key == "@fields":
                 props = value.split(",")
             if key == "@protected":
                 # allow client to request read only
@@ -1027,9 +1041,9 @@ class RestfulInstance(object):
             for form_field in input.value:
                 key = form_field.name
                 value = form_field.value
-                if key == "action_name":
+                if key == "@action_name":
                     name = value
-                elif key.startswith('action_args'):
+                elif key.startswith('@action_args'):
                     action_args.append(value)
 
             if name in self.actions:
