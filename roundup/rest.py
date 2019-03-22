@@ -601,6 +601,7 @@ class RestfulInstance(object):
         etag = calculate_etag(node, class_name, item_id)
         props = None
         protected=False
+        verbose=1
         for form_field in input.value:
             key = form_field.name
             value = form_field.value
@@ -610,18 +611,54 @@ class RestfulInstance(object):
                 # allow client to request read only
                 # properties like creator, activity etc.
                 protected = value.lower() == "true"
+            if key == "@verbose":
+                verbose = int (value)
 
+        result = {}
+        uid = self.db.getuid()
         if props is None:
-            props = list(sorted(class_obj.getprops(protected=protected)))
+            props = class_obj.getprops(protected=protected)
 
         try:
-            result = [
-                (prop_name, node.__getattr__(prop_name))
-                for prop_name in props
-                if self.db.security.hasPermission(
-                    'View', self.db.getuid(), class_name, prop_name,
-                        item_id )
-            ]
+            for pn in sorted(props):
+                prop = props[pn]
+                if not self.db.security.hasPermission(
+                    'View', uid, class_name, pn, item_id
+                ):
+                    continue
+                v = getattr(node, pn)
+                if isinstance (prop, (hyperdb.Link, hyperdb.Multilink)):
+                    linkcls = self.db.getclass (prop.classname)
+                    cp = '%s/%s/' % (self.data_path, prop.classname)
+                    if verbose and v:
+                        if isinstance(v, type([])):
+                            r = []
+                            for id in v:
+                                d = dict(id = id, link = cp + id)
+                                if verbose > 1:
+                                    label = linkcls.labelprop()
+                                    d [label] = linkcls.get(id, label)
+                                r.append(d)
+                            result[pn] = r
+                        else:
+                            result[pn] = dict(id = v, link = cp + v)
+                            if verbose > 1:
+                                label = linkcls.labelprop()
+                                result[pn][label] = linkcls.get(v, label)
+                    else:
+                        result[pn] = v
+                elif isinstance (prop, hyperdb.String) and pn == 'content':
+                    # Do not show the (possibly HUGE) content prop
+                    # unless very verbose, we display the standard
+                    # download link instead
+                    if verbose < 2:
+                        u = self.db.config.TRACKER_WEB
+                        p = u + '%s%s/' % (class_name, node.id)
+                        result[pn] = dict(link = p)
+                    else:
+                        result[pn] = v
+                else:
+                    result[pn] = v
         except KeyError as msg:
             raise UsageError("%s field not valid" % msg)
         result = {
