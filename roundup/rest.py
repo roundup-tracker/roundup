@@ -786,7 +786,7 @@ class RestfulInstance(object):
                        class_name,
                        item_id):
                 raise PreconditionFailed("Etag is missing or does not match."
-                        "Retreive asset and retry modification if valid.")
+                        " Retrieve asset and retry modification if valid.")
             result = class_obj.set(item_id, **props)
             self.db.commit()
         except (TypeError, IndexError, ValueError) as message:
@@ -841,7 +841,7 @@ class RestfulInstance(object):
                         obtain_etags(self.client.request.headers, input),
                         class_name, item_id):
                 raise PreconditionFailed("Etag is missing or does not match."
-                        "Retreive asset and retry modification if valid.")
+                        " Retrieve asset and retry modification if valid.")
             result = class_obj.set(item_id, **props)
             self.db.commit()
         except (TypeError, IndexError, ValueError) as message:
@@ -932,7 +932,7 @@ class RestfulInstance(object):
                 class_name,
                 item_id):
             raise PreconditionFailed("Etag is missing or does not match."
-                        "Retreive asset and retry modification if valid.")
+                        " Retrieve asset and retry modification if valid.")
 
         class_obj.retire (item_id)
         self.db.commit()
@@ -982,7 +982,7 @@ class RestfulInstance(object):
                        class_name,
                        item_id):
                 raise PreconditionFailed("Etag is missing or does not match."
-                        "Retreive asset and retry modification if valid.")
+                        " Retrieve asset and retry modification if valid.")
 
             class_obj.set(item_id, **props)
             self.db.commit()
@@ -1022,7 +1022,7 @@ class RestfulInstance(object):
         if class_name not in self.db.classes:
             raise NotFound('Class %s not found' % class_name)
         try:
-            op = input['op'].value.lower()
+            op = input['@op'].value.lower()
         except KeyError:
             op = self.__default_patch_op
         class_obj = self.db.getclass(class_name)
@@ -1032,7 +1032,7 @@ class RestfulInstance(object):
                 class_name,
                 item_id):
             raise PreconditionFailed("Etag is missing or does not match."
-                        "Retreive asset and retry modification if valid.")
+                        " Retrieve asset and retry modification if valid.")
 
         # if patch operation is action, call the action handler
         action_args = [class_name + item_id]
@@ -1121,7 +1121,7 @@ class RestfulInstance(object):
         if class_name not in self.db.classes:
             raise NotFound('Class %s not found' % class_name)
         try:
-            op = input['op'].value.lower()
+            op = input['@op'].value.lower()
         except KeyError:
             op = self.__default_patch_op
 
@@ -1141,7 +1141,7 @@ class RestfulInstance(object):
                 class_name,
                 item_id):
             raise PreconditionFailed("Etag is missing or does not match."
-                        "Retreive asset and retry modification if valid.")
+                        " Retrieve asset and retry modification if valid.")
 
         props = {
             prop: self.prop_from_arg(

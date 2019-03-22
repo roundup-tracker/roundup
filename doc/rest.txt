@@ -1,0 +1,147 @@
+
+====================
+REST API for Roundup
+====================
+
+.. contents::
+   :local:
+
+Introduction
+------------
+
+After the last 1.6.0 Release, a REST-API developed in 2015 during a Google
+Summer of Code (GSOC) by Chau Nguyen, supervised by Ezio Melotti was
+integrated. The code was then updated by John Rouillard and Ralf
+Schlatterbeck to fix some shortcomings and provide the necessary
+functions for a single page web application, e.g. etag support among
+others.
+
+Enabling the REST API
+---------------------
+
+The REST API can be disabled in the ``[web]`` section of ``config.ini``
+via the variable ``enable_rest`` which is ``yes`` by default.
+
+The REST api is reached via the ``/rest/`` endpoint of the tracker URL.
+
+
+Client API
+----------
+
+The top-level REST url ``/rest/`` will display the current version of
+the REST API (Version 1 as of this writing) and some links to relevant
+endpoints of the API. In the following the ``/rest`` prefix is ommitted
+from relative REST-API links for brevety.
+
+Summary
+=======
+
+A Summary page can be reached via ``/data/summary`` via the ``GET`` method.
+This is currently hard-coded for the standard tracker schema shipped
+with roundup and will display a summary of open issues.
+
+Data
+====
+
+All the links mentioned in the following support the http method ``GET``. 
+Results of a ``GET`` request will always return the results as a
+dictionary with the entry ``data`` referring to the returned data.
+
+The ``/data`` link will display a set of classes of the tracker. All
+classes can be reached via ``/data/<classname>`` where ``<classname>``
+is replace with the name of the class to query, e.g. ``/data/issue``.
+Individual items of a class (e.g. a single issue) can be queried by
+giving the issue-id, e.g., ``/data/issue/42``. Individual properties of
+an item can be queried by appending the property, e.g.,
+``/data/issue/42/title``.
+
+When performing the ``GET`` method on a class (e.g. ``/data/issue``), the
+number of items is returned in ``@total_size``. Then a ``collection``
+list follows which contains the id and link to the respective item.
+
+When performing the ``GET`` method on an item (e.g. ``/data/issue/42``), a
+``link`` attribute contains the link to the item, ``id`` contains the
+id, type contains the class name (e.g. ``issue`` in the example) and an
+``etag`` property can be used to detect modifications since the last
+query. The individual properties of the item are returned in an
+``attributes`` dictionary. The properties returned depend on the
+permissions of the account used for the query.
+
+A ``GET`` method on a property (e.g. ``/data/issue/42/title``) returns the
+link, an ``@etag``, the type of the property (e.g. "<type str>") the id
+of the item and the content of the property in ``data``.
+
+Only class links support the ``POST`` method for creation of new items
+of a class, e.g., a new issue via the ``/data/issue`` link. The post
+gets a dictionary of keys/values for the new item. It returns the same
+parameters as the GET method after successful creation.
+
+All endpoints support an ``OPTIONS`` method for determining which
+methods are allowed on a given endpoint.
+
+The method ``PUT`` is allowed on individual items, e.g.
+``/data/issue/42`` as well as properties, e.g.,
+``/data/issue/42/title``. On success it returns the same parameters as
+the respective ``GET`` method. Note that for ``PUT`` an Etag has to be
+supplied, either in the request header or as an @etag parameter.
+
+The method ``DELETE`` is allowed on items, e.g., ``/data/issue/42`` and
+will retire (mark as deleted) the respective item. On success it will
+only return a status code. It is also possible to call ``DELETE`` on a
+property of an item, e.g., ``/data/issue/42/nosy`` to delete the nosy
+list. The same effect can be achieved with a ``PUT`` request and an
+empty new value.
+
+Finally the ``PATCH`` method can be applied to individual items, e.g.,
+``/data/issue/42`` and to properties, e.g., ``/data/issue/42/title``.
+This method gets an operator ``@op=<method>`` where ``<method`` is one
+of ``add``, ``replace``, ``remove``, only for an item (not for a
+property) an additional operator ``action`` is supported. If no operator
+is specified, the default is ``replace``. The first three operators are
+self explanatory. For an ``action`` operator an ``@action_name`` and
+optional ``@action_argsXXX`` parameters have to be supplied. Currently
+there are only two actions without parameters, namely ``retire`` and
+``restore``. The ``retire`` action on an item is the same as a
+``DELETE`` method, it retires the item. The ``restore`` action is the
+inverse of ``retire``, the item is again visible.
+On success the returned value is the same as the respective ``GET``
+method.
+
+sample python client
+====================
+
+The client uses the python ``requests`` library for easier interaction
+with a REST API supporting JSON encoding::
+
+
+        >>> import requests
+        >>> u = 'http://user:password@tracker.example.com/demo/rest/data/'
+        >>> s = requests.session()
+        >>> r = s.get(u + 'issue/42/title')
+        >>> if r.status_code != 200:
+        ...     print("Failed: %s: %s" % (r.status_code, r.reason))
+        ...     exit(1)
+        >>> print (r.json() ['data']['data']
+        TEST Title
+        >>> r = s.post (u + 'issue', data = dict (title = 'TEST Issue'))
+        >>> if not 200 <= r.status_code <= 201:
+        ...     print("Failed: %s: %s" % (r.status_code, r.reason))
+        ...     exit(1)
+        >>> print(r.json())
+
+Retire/Restore::
+        >>> r = s.delete (u + 'issue/42')
+        >>> print (r.json())
+        >>> r = s.get (u + 'issue/42')
+        >>> etag = r.headers['ETag']
+        >>> print("ETag: %s" % etag)
+        >>> etag = r.json()['data']['@etag']
+        >>> print("@etag: %s" % etag)
+        >>> h = dict(ETag = etag)
+        >>> d = {'@op:'action', '@action_name':'retire'}
+        >>> r = s.patch(u + 'issue/42', data = d, headers = h)
+        >>> print(r.json())
+        >>> d = {'@op:'action', '@action_name':'restore'}
+        >>> r = s.patch(u + 'issue/42', data = d, headers = h)
+        >>> print(r.json())
+
