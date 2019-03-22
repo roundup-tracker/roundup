@@ -58,6 +58,21 @@ an item can be queried by appending the property, e.g.,
 When performing the ``GET`` method on a class (e.g. ``/data/issue``), the
 number of items is returned in ``@total_size``. Then a ``collection``
 list follows which contains the id and link to the respective item.
+This endpoint supports pagination. With the attributes @page_size and
+@page_index, pagination is controlled. The @page_size specifies how many
+items are displayed at once. The @page_index (which defaults to 1 if not
+given) specifies which page number of @page_size items is displayed. If
+no @page_size is specified, all items are returned.
+In addition this method supports searching. Search parameters are names
+of properties of the given class, e.g., ``status`` for ``issue``. Links
+and Multilinks can be specified numerically or symbolically, e.g.,
+searching for issues in status ``closed`` can be achieved by searching
+for ``status=closed`` or ``status=3`` (provided the ``closed`` status
+has ID 3). Note that searching for strings (e.g. the issue title)
+performs a case-insensitive substring search, so searching for
+title=Something will find all issues with "Something" or "someThing",
+etc. in the title. There is currently no way to perform an exact string
+match.
 
 When performing the ``GET`` method on an item (e.g. ``/data/issue/42``), a
 ``link`` attribute contains the link to the item, ``id`` contains the
@@ -66,6 +81,17 @@ id, type contains the class name (e.g. ``issue`` in the example) and an
 query. The individual properties of the item are returned in an
 ``attributes`` dictionary. The properties returned depend on the
 permissions of the account used for the query.
+Link and Multilink properties are displayed as a dictionary with a link
+and an id property by default. This is controlled by the @verbose
+attribute which is set to 1 by default. If set to 0, only the id is
+shown for Link and Multilink attributes. If set to 2, the label property
+(usually ``name`` e.g. for status) is also put into the dictionary.
+Content properties of message and file object are by default also shown
+as a dictionary with a sole link attribute. The link is the download
+link for the file or message. If @verbose is >= 3, the content property
+is shown in json as a (possibly very long) string. Currently the json
+serializer cannot handle files not properly utf-8 encoded, so specifying
+@verbose=3 for files is currently discouraged.
 
 A ``GET`` method on a property (e.g. ``/data/issue/42/title``) returns the
 link, an ``@etag``, the type of the property (e.g. "<type str>") the id
