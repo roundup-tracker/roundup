@@ -341,6 +341,32 @@ class TestCase():
         #   page_size < 0
         #   page_index < 0
 
+    def notestEtagGeneration(self):
+        ''' Make sure etag generation is stable
+        
+            FIXME need to mock somehow date.Date() when creating
+            the target to be mocked. The differening dates makes
+            this test impossible.
+        '''
+        newuser = self.db.user.create(
+            username='john',
+            password=password.Password('random1'),
+            address='random1@home.org',
+            realname='JohnRandom',
+            roles='User,Admin'
+        )
+
+        node = self.db.user.getnode(self.joeid)
+        etag = calculate_etag(node)
+        items = node.items(protected=True) # include every item
+        print(repr(items))
+        print(etag)
+        self.assertEqual(etag, "6adf97f83acf6453d4a6a4b1070f3754")
+
+        etag = calculate_etag(self.db.issue.getnode("1"))
+        print(etag)
+        self.assertEqual(etag, "6adf97f83acf6453d4a6a4b1070f3754")
+        
     def testEtagProcessing(self):
         '''
         Etags can come from two places:
