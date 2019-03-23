@@ -527,7 +527,16 @@ class Client:
         self.determine_language()
         # Open the database as the correct user.
         # TODO: add everything to RestfulDispatcher
-        self.determine_user()
+        try:
+            self.determine_user()
+        except LoginError as err:
+            self.response_code = http_.client.UNAUTHORIZED
+            output = b"Invalid Login\n"
+            self.setHeader("Content-Length", str(len(output)))
+            self.setHeader("Content-Type", "text/plain")
+            self.write(output)
+            return
+
         self.check_anonymous_access()
 
         # Call rest library to handle the request
