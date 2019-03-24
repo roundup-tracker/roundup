@@ -237,15 +237,13 @@ class BinaryFieldStorage(cgi.FieldStorage):
        needed for handling json and xml data blobs under python
        3. Under python 2, str and binary are interchangable, not so
        under 3.
-
-       Note that there may be places where this should support text mode.
-       (e.g. a large text file upload??). None are known, but this could be
-       a problem.
     '''
     def make_file(self, mode=None):
         ''' work around https://bugs.python.org/issue27777 '''
         import tempfile
-        return tempfile.TemporaryFile("wb+")
+        if self.length >= 0:
+            return tempfile.TemporaryFile("wb+")
+        return super().make_file()
 
 class Client:
     """Instantiate to handle one CGI request.
