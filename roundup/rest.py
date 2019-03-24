@@ -1450,7 +1450,7 @@ class RestfulInstance(object):
             output = RoundupJSONEncoder(indent=indent).encode(output)
         elif data_type.lower() == "xml" and dicttoxml:
             self.client.setHeader("Content-Type", "application/xml")
-            output = dicttoxml(output, root=False)
+            output = b2s(dicttoxml(output, root=False))
         else:
             self.client.response_code = 406
             output = "Content type is not accepted by client"
