@@ -65,7 +65,8 @@ before_install:
   - cd $TRAVIS_BUILD_DIR
 
 install:
-  - pip install gpg mysqlclient psycopg2 pytz whoosh
+  - pip install mysqlclient==1.3.13
+  - pip install gpg psycopg2 pytz whoosh
   - pip install pytest-cov codecov
 
 before_script:
