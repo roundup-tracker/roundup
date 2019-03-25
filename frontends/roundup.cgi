@@ -181,7 +181,7 @@ def main(out, err):
                 request.send_response(404)
                 request.send_header('Content-Type', 'text/html')
                 request.end_headers()
-                out.write(s2b('Not found: %s'%client.path))
+                out.write(s2b('Not found: %s'%cgi.escape(client.path)))
 
     else:
         from roundup.anypy import urllib_

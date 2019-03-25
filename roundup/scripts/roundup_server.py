@@ -377,13 +377,15 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             env['QUERY_STRING'] = query
         if hasattr(self.headers, 'get_content_type'):
             # Python 3.  We need the raw header contents.
-            env['CONTENT_TYPE'] = self.headers.get('content-type')
+            content_type = self.headers.get('content-type')
         elif self.headers.typeheader is None:
             # Python 2.
-            env['CONTENT_TYPE'] = self.headers.type
+            content_type = self.headers.type
         else:
             # Python 2.
-            env['CONTENT_TYPE'] = self.headers.typeheader
+             content_type = self.headers.typeheader
+        if content_type:
+            env['CONTENT_TYPE'] = content_type
         length = self.headers.get('content-length')
         if length:
             env['CONTENT_LENGTH'] = length

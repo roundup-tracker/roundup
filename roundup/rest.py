@@ -132,7 +132,7 @@ def calculate_etag (node, classname="Missing", id="0"):
     '''
 
     items = node.items(protected=True) # include every item
-    etag = md5(bs2b(repr(items))).hexdigest()
+    etag = md5(bs2b(repr(sorted(items)))).hexdigest()
     logger.debug("object=%s%s; tag=%s; repr=%s", classname, id,
                  etag, repr(node.items(protected=True)))
     return etag
@@ -1336,7 +1336,7 @@ class RestfulInstance(object):
             summary.setdefault(status_name, []).append(issue_object)
             messages.append((num, issue_object))
 
-        messages.sort(reverse=True)
+        sorted(messages, key=lambda tup: tup[0], reverse=True)
 
         result = {
             'created': created,
@@ -1450,7 +1450,7 @@ class RestfulInstance(object):
             output = RoundupJSONEncoder(indent=indent).encode(output)
         elif data_type.lower() == "xml" and dicttoxml:
             self.client.setHeader("Content-Type", "application/xml")
-            output = dicttoxml(output, root=False)
+            output = b2s(dicttoxml(output, root=False))
         else:
             self.client.response_code = 406
             output = "Content type is not accepted by client"
