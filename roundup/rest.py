@@ -135,7 +135,8 @@ def calculate_etag (node, classname="Missing", id="0"):
     etag = md5(bs2b(repr(sorted(items)))).hexdigest()
     logger.debug("object=%s%s; tag=%s; repr=%s", classname, id,
                  etag, repr(node.items(protected=True)))
-    return etag
+    # Quotes are part of ETag spec, normal headers don't have quotes
+    return '"%s"' % etag
 
 def check_etag (node, etags, classname="Missing", id="0"):
     '''Take a list of etags and compare to the etag for the given node.
@@ -151,7 +152,7 @@ def check_etag (node, etags, classname="Missing", id="0"):
     node_etag = calculate_etag(node, classname, id)
 
     for etag in etags:
-        if etag != None:
+        if etag is not None:
             if etag != node_etag:
                 return False
             have_etag_match=True
@@ -166,7 +167,7 @@ def obtain_etags(headers,input):
     etags = []
     if '@etag' in input:
         etags.append(input['@etag'].value);
-    etags.append(headers.get("ETag", None))
+    etags.append(headers.get("If-Match", None))
     return etags
 
 def parse_accept_header(accept):
@@ -459,6 +460,16 @@ class RestfulInstance(object):
 
         return result
 
+    def raise_if_no_etag(self, class_name, item_id, input):
+        class_obj = self.db.getclass(class_name)
+        if not check_etag(class_obj.getnode(item_id),
+                obtain_etags(self.client.request.headers, input),
+                class_name,
+                item_id):
+            raise PreconditionFailed(
+                "If-Match is missing or does not match."
+                " Retrieve asset and retry modification if valid.")
+
     @Routing.route("/data/<:class_name>", 'GET')
     @_data_decorator
     def get_collection(self, class_name, input):
@@ -669,7 +680,7 @@ class RestfulInstance(object):
             '@etag': etag
         }
 
-        self.client.setHeader("ETag", '"%s"'%etag)
+        self.client.setHeader("ETag", etag)
         return 200, result
 
     @Routing.route("/data/<:class_name>/<:item_id>/<:attr_name>", 'GET')
@@ -717,7 +728,7 @@ class RestfulInstance(object):
             '@etag': etag
         }
 
-        self.client.setHeader("ETag", '"%s"'%etag )
+        self.client.setHeader("ETag", etag)
         return 200, result
 
     @Routing.route("/data/<:class_name>", 'POST')
@@ -818,12 +829,7 @@ class RestfulInstance(object):
                     (p, class_name, item_id)
                 )
         try:
-            if not check_etag(class_obj.getnode(item_id),
-                       obtain_etags(self.client.request.headers, input),
-                       class_name,
-                       item_id):
-                raise PreconditionFailed("Etag is missing or does not match."
-                        " Retrieve asset and retry modification if valid.")
+            self.raise_if_no_etag(class_name, item_id, input)
             result = class_obj.set(item_id, **props)
             self.db.commit()
         except (TypeError, IndexError, ValueError) as message:
@@ -874,11 +880,7 @@ class RestfulInstance(object):
         }
 
         try:
-            if not check_etag(class_obj.getnode(item_id),
-                        obtain_etags(self.client.request.headers, input),
-                        class_name, item_id):
-                raise PreconditionFailed("Etag is missing or does not match."
-                        " Retrieve asset and retry modification if valid.")
+            self.raise_if_no_etag(class_name, item_id, input)
             result = class_obj.set(item_id, **props)
             self.db.commit()
         except (TypeError, IndexError, ValueError) as message:
@@ -964,13 +966,7 @@ class RestfulInstance(object):
                 'Permission to retire %s %s denied' % (class_name, item_id)
             )
 
-        if not check_etag(class_obj.getnode(item_id),
-                obtain_etags(self.client.request.headers, input),
-                class_name,
-                item_id):
-            raise PreconditionFailed("Etag is missing or does not match."
-                        " Retrieve asset and retry modification if valid.")
-
+        self.raise_if_no_etag(class_name, item_id, input)
         class_obj.retire (item_id)
         self.db.commit()
         result = {
@@ -1014,13 +1010,7 @@ class RestfulInstance(object):
             props[attr_name] = None
 
         try:
-            if not check_etag(class_obj.getnode(item_id),
-                       obtain_etags(self.client.request.headers, input),
-                       class_name,
-                       item_id):
-                raise PreconditionFailed("Etag is missing or does not match."
-                        " Retrieve asset and retry modification if valid.")
-
+            self.raise_if_no_etag(class_name, item_id, input)
             class_obj.set(item_id, **props)
             self.db.commit()
         except (TypeError, IndexError, ValueError) as message:
@@ -1064,12 +1054,7 @@ class RestfulInstance(object):
             op = self.__default_patch_op
         class_obj = self.db.getclass(class_name)
 
-        if not check_etag(class_obj.getnode(item_id),
-                obtain_etags(self.client.request.headers, input),
-                class_name,
-                item_id):
-            raise PreconditionFailed("Etag is missing or does not match."
-                        " Retrieve asset and retry modification if valid.")
+        self.raise_if_no_etag(class_name, item_id, input)
 
         # if patch operation is action, call the action handler
         action_args = [class_name + item_id]
@@ -1173,12 +1158,7 @@ class RestfulInstance(object):
         prop = attr_name
         class_obj = self.db.getclass(class_name)
 
-        if not check_etag(class_obj.getnode(item_id),
-                obtain_etags(self.client.request.headers, input),
-                class_name,
-                item_id):
-            raise PreconditionFailed("Etag is missing or does not match."
-                        " Retrieve asset and retry modification if valid.")
+        self.raise_if_no_etag(class_name, item_id, input)
 
         props = {
             prop: self.prop_from_arg(

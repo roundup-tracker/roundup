@@ -133,6 +133,11 @@ inverse of ``retire``, the item is again visible.
 On success the returned value is the same as the respective ``GET``
 method.
 
+Note that the ``GET`` method on an item (e.g. ``/data/issue/43``)
+returns an ETag in the http header *and* the ``@etag`` value. When
+modifying the item via ``PUT`` or ``PATCH`` either a ``If-Match`` header
+or an ``@etag`` value in the form have to be provided.
+
 sample python client
 ====================
 
@@ -163,7 +168,7 @@ Retire/Restore::
         >>> print("ETag: %s" % etag)
         >>> etag = r.json()['data']['@etag']
         >>> print("@etag: %s" % etag)
-        >>> h = dict(ETag = etag)
+        >>> h = {'If-Match': etag}
         >>> d = {'@op:'action', '@action_name':'retire'}
         >>> r = s.patch(u + 'issue/42', data = d, headers = h)
         >>> print(r.json())

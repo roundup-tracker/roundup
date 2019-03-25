@@ -375,7 +375,7 @@ class TestCase():
     def testEtagProcessing(self):
         '''
         Etags can come from two places:
-           ETag http header
+           If-Match http header
            @etags value posted in the form
 
         Both will be checked if availble. If either one
@@ -401,7 +401,7 @@ class TestCase():
 
             if mode == 'header':
                 print("Mode = %s"%mode)
-                self.headers = {'etag': etag}
+                self.headers = {'if-match': etag}
             elif mode == 'etag':
                 print("Mode = %s"%mode)
                 form.list.append(cgi.MiniFieldStorage('@etag', etag))
@@ -411,11 +411,11 @@ class TestCase():
                 form.list.append(cgi.MiniFieldStorage('@etag', etag))
             elif mode == 'brokenheader':
                 print("Mode = %s"%mode)
-                self.headers = {'etag': 'bad'}
+                self.headers = {'if-match': 'bad'}
                 form.list.append(cgi.MiniFieldStorage('@etag', etag))
             elif mode == 'brokenetag':
                 print("Mode = %s"%mode)
-                self.headers = {'etag': etag}
+                self.headers = {'if-match': etag}
                 form.list.append(cgi.MiniFieldStorage('@etag', 'bad'))
             elif mode == 'none':
                 print( "Mode = %s"%mode)
@@ -451,7 +451,7 @@ class TestCase():
         headers={"accept": "application/json",
                  "content-type": env['CONTENT_TYPE'],
                  "content-length": env['CONTENT_LENGTH'],
-                 "etag": etag
+                 "if-match": etag
         }
         self.headers=headers
         # we need to generate a FieldStorage the looks like
@@ -478,7 +478,8 @@ class TestCase():
         # simulate: /rest/data/user/<id>/realname
         # use etag in payload
         etag = calculate_etag(self.db.user.getnode(self.joeid))
-        body=s2b('{ "@etag": "%s", "data": "Joe Doe 2" }'%etag)
+        etagb = etag.strip ('"')
+        body=s2b('{ "@etag": "\\"%s\\"", "data": "Joe Doe 2" }'%etagb)
         env = { "CONTENT_TYPE": "application/json",
                 "CONTENT_LENGTH": len(body),
                 "REQUEST_METHOD": "PUT",
@@ -492,7 +493,7 @@ class TestCase():
 
         headers={"accept": "application/json",
                  "content-type": env['CONTENT_TYPE'],
-                 "etag": etag
+                 "if-match": etag
         }
         self.headers=headers # set for dispatch
 
@@ -516,7 +517,7 @@ class TestCase():
         # Also use GET on the uri via the dispatch to retrieve
         # the results from the db.
         etag = calculate_etag(self.db.user.getnode(self.joeid))
-        headers={"etag": etag,
+        headers={"if-match": etag,
                  "accept": "application/json",
         }
         form = cgi.FieldStorage()
@@ -553,7 +554,8 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 200)
 
         etag = calculate_etag(self.db.user.getnode(self.joeid))
-        body=s2b('{ "address": "demo2@example.com", "@etag": "%s"}'%etag)
+        etagb = etag.strip ('"')
+        body=s2b('{ "address": "demo2@example.com", "@etag": "\\"%s\\""}'%etagb)
         env = { "CONTENT_TYPE": "application/json",
                 "CONTENT_LENGTH": len(body),
                 "REQUEST_METHOD": "PATCH"
@@ -580,9 +582,10 @@ class TestCase():
 
         # and set it back reusing env and headers from last test
         etag = calculate_etag(self.db.user.getnode(self.joeid))
-        body=s2b('{ "address": "%s", "@etag": "%s"}'%(
+        etagb = etag.strip ('"')
+        body=s2b('{ "address": "%s", "@etag": "\\"%s\\""}'%(
             stored_results['data']['attributes']['address'],
-            etag))
+            etagb))
         # reuse env and headers from prior test.
         body_file=BytesIO(body)  # FieldStorage needs a file
         form = client.BinaryFieldStorage(body_file,
@@ -665,7 +668,7 @@ class TestCase():
             cgi.MiniFieldStorage('data', 'Joe Doe Doe'),
         ]
 
-        self.headers = {'etag': etag } # use etag in header
+        self.headers = {'if-match': etag } # use etag in header
         results = self.server.put_attribute(
             'user', self.joeid, 'realname', form
         )
