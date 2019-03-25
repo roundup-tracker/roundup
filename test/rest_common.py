@@ -24,6 +24,7 @@ NEEDS_INSTANCE = 1
 class TestCase():
 
     backend = None
+    url_pfx = 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/'
 
     def setUp(self):
         self.dirname = '_test_rest'
@@ -71,6 +72,10 @@ class TestCase():
         self.dummy_client = client.Client(self.instance, MockNull(), env, [], None)
         self.dummy_client.request.headers.get = self.get_header
         self.empty_form = cgi.FieldStorage()
+        self.terse_form = cgi.FieldStorage()
+        self.terse_form.list = [
+            cgi.MiniFieldStorage('@verbose', '0'),
+        ]
 
         self.server = RestfulInstance(self.dummy_client, self.db)
 
@@ -175,7 +180,7 @@ class TestCase():
         # Retrieve all issue status=open
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('where_status', 'open')
+            cgi.MiniFieldStorage('status', 'open')
         ]
         results = self.server.get_collection('issue', form)
         self.assertEqual(self.dummy_client.response_code, 200)
@@ -191,8 +196,8 @@ class TestCase():
         # Retrieve all issue status=closed and priority=critical
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('where_status', 'closed'),
-            cgi.MiniFieldStorage('where_priority', 'critical')
+            cgi.MiniFieldStorage('status', 'closed'),
+            cgi.MiniFieldStorage('priority', 'critical')
         ]
         results = self.server.get_collection('issue', form)
         self.assertEqual(self.dummy_client.response_code, 200)
@@ -208,8 +213,8 @@ class TestCase():
         # Retrieve all issue status=closed and priority=normal,critical
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('where_status', 'closed'),
-            cgi.MiniFieldStorage('where_priority', 'normal,critical')
+            cgi.MiniFieldStorage('status', 'closed'),
+            cgi.MiniFieldStorage('priority', 'normal,critical')
         ]
         results = self.server.get_collection('issue', form)
         self.assertEqual(self.dummy_client.response_code, 200)
@@ -259,8 +264,8 @@ class TestCase():
         # Retrieve page 1
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('page_size', page_size),
-            cgi.MiniFieldStorage('page_index', 1)
+            cgi.MiniFieldStorage('@page_size', page_size),
+            cgi.MiniFieldStorage('@page_index', 1)
         ]
         results = self.server.get_collection('issue', form)
         self.assertEqual(self.dummy_client.response_code, 200)
@@ -271,17 +276,17 @@ class TestCase():
         self.assertTrue('next' in results['data']['@links'])
         self.assertFalse('prev' in results['data']['@links'])
         self.assertEqual(results['data']['@links']['self'][0]['uri'],
-                         "%s?page_index=1&page_size=%s"%(base_url,page_size))
+                         "%s?@page_index=1&@page_size=%s"%(base_url,page_size))
         self.assertEqual(results['data']['@links']['next'][0]['uri'],
-                         "%s?page_index=2&page_size=%s"%(base_url,page_size))
+                         "%s?@page_index=2&@page_size=%s"%(base_url,page_size))
 
         page_one_results = results # save this for later
 
         # Retrieve page 2
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('page_size', page_size),
-            cgi.MiniFieldStorage('page_index', 2)
+            cgi.MiniFieldStorage('@page_size', page_size),
+            cgi.MiniFieldStorage('@page_index', 2)
         ]
         results = self.server.get_collection('issue', form)
         self.assertEqual(self.dummy_client.response_code, 200)
@@ -291,11 +296,11 @@ class TestCase():
         self.assertTrue('next' in results['data']['@links'])
         self.assertTrue('prev' in results['data']['@links'])
         self.assertEqual(results['data']['@links']['self'][0]['uri'],
-                         "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue?page_index=2&page_size=%s"%page_size)
+                         "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue?@page_index=2&@page_size=%s"%page_size)
         self.assertEqual(results['data']['@links']['next'][0]['uri'],
-                         "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue?page_index=3&page_size=%s"%page_size)
+                         "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue?@page_index=3&@page_size=%s"%page_size)
         self.assertEqual(results['data']['@links']['prev'][0]['uri'],
-                         "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue?page_index=1&page_size=%s"%page_size)
+                         "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue?@page_index=1&@page_size=%s"%page_size)
         self.assertEqual(results['data']['@links']['self'][0]['rel'],
                          'self')
         self.assertEqual(results['data']['@links']['next'][0]['rel'],
@@ -306,8 +311,8 @@ class TestCase():
         # Retrieve page 3
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('page_size', page_size),
-            cgi.MiniFieldStorage('page_index', 3)
+            cgi.MiniFieldStorage('@page_size', page_size),
+            cgi.MiniFieldStorage('@page_index', 3)
         ]
         results = self.server.get_collection('issue', form)
         self.assertEqual(self.dummy_client.response_code, 200)
@@ -317,15 +322,15 @@ class TestCase():
         self.assertFalse('next' in results['data']['@links'])
         self.assertTrue('prev' in results['data']['@links'])
         self.assertEqual(results['data']['@links']['self'][0]['uri'],
-                         "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue?page_index=3&page_size=%s"%page_size)
+                         "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue?@page_index=3&@page_size=%s"%page_size)
         self.assertEqual(results['data']['@links']['prev'][0]['uri'],
-                         "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue?page_index=2&page_size=%s"%page_size)
+                         "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue?@page_index=2&@page_size=%s"%page_size)
 
         # Verify that page_index is optional
         # Should start at page 1
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('page_size', page_size),
+            cgi.MiniFieldStorage('@page_size', page_size),
         ]
         results = self.server.get_collection('issue', form)
         self.assertEqual(self.dummy_client.response_code, 200)
@@ -696,6 +701,17 @@ class TestCase():
         results = self.server.get_element('file', fileid, self.empty_form)
         results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(results['attributes']['content'],
+            {'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/file1/'})
+
+        # File content is only shown with verbose=3
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@verbose', '3')
+        ]
+        results = self.server.get_element('file', fileid, form)
+        results = results['data']
+        self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['attributes']['content'], 'hello\r\nthere')
 
     def testAuthDeniedPut(self):
@@ -772,7 +788,8 @@ class TestCase():
         results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(len(results['attributes']['nosy']), 1)
-        self.assertListEqual(results['attributes']['nosy'], ['1'])
+        self.assertListEqual(results['attributes']['nosy'],
+            [{'id': '1', 'link': self.url_pfx + 'user/1'}])
 
         form = cgi.FieldStorage()
         etag = calculate_etag(self.db.issue.getnode(issue_id))
@@ -792,7 +809,7 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 200)
 
         # verify the result
-        results = self.server.get_element('issue', issue_id, self.empty_form)
+        results = self.server.get_element('issue', issue_id, self.terse_form)
         results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(len(results['attributes']['nosy']), 0)
@@ -810,7 +827,7 @@ class TestCase():
         # no etag
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('op', 'add'),
+            cgi.MiniFieldStorage('@op', 'add'),
             cgi.MiniFieldStorage('nosy', '2')
         ]
         results = self.server.patch_element('issue', issue_id, form)
@@ -819,7 +836,7 @@ class TestCase():
         etag = calculate_etag(self.db.issue.getnode(issue_id))
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('op', 'add'),
+            cgi.MiniFieldStorage('@op', 'add'),
             cgi.MiniFieldStorage('nosy', '2'),
             cgi.MiniFieldStorage('@etag', etag)
         ]
@@ -827,7 +844,7 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 200)
 
         # verify the result
-        results = self.server.get_element('issue', issue_id, self.empty_form)
+        results = self.server.get_element('issue', issue_id, self.terse_form)
         results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(len(results['attributes']['nosy']), 2)
@@ -844,13 +861,13 @@ class TestCase():
         # no etag.
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('op', 'replace'),
+            cgi.MiniFieldStorage('@op', 'replace'),
             cgi.MiniFieldStorage('nosy', '2'),
             cgi.MiniFieldStorage('status', '3')
         ]
         results = self.server.patch_element('issue', issue_id, form)
         self.assertEqual(self.dummy_client.response_code, 412)
-        results = self.server.get_element('issue', issue_id, self.empty_form)
+        results = self.server.get_element('issue', issue_id, self.terse_form)
         results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['attributes']['status'], '1')
@@ -861,7 +878,7 @@ class TestCase():
         etag = calculate_etag(self.db.issue.getnode(issue_id))
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('op', 'replace'),
+            cgi.MiniFieldStorage('@op', 'replace'),
             cgi.MiniFieldStorage('nosy', '2'),
             cgi.MiniFieldStorage('status', '3'),
             cgi.MiniFieldStorage('@etag', etag)
@@ -869,7 +886,7 @@ class TestCase():
         results = self.server.patch_element('issue', issue_id, form)
         self.assertEqual(self.dummy_client.response_code, 200)
         # verify the result
-        results = self.server.get_element('issue', issue_id, self.empty_form)
+        results = self.server.get_element('issue', issue_id, self.terse_form)
         results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['attributes']['status'], '3')
@@ -887,13 +904,13 @@ class TestCase():
         # no etag
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('op', 'remove'),
+            cgi.MiniFieldStorage('@op', 'remove'),
             cgi.MiniFieldStorage('nosy', ''),
             cgi.MiniFieldStorage('title', '')
         ]
         results = self.server.patch_element('issue', issue_id, form)
         self.assertEqual(self.dummy_client.response_code, 412)
-        results = self.server.get_element('issue', issue_id, self.empty_form)
+        results = self.server.get_element('issue', issue_id, self.terse_form)
         results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['attributes']['title'], 'foo')
@@ -904,7 +921,7 @@ class TestCase():
         form = cgi.FieldStorage()
         etag = calculate_etag(self.db.issue.getnode(issue_id))
         form.list = [
-            cgi.MiniFieldStorage('op', 'remove'),
+            cgi.MiniFieldStorage('@op', 'remove'),
             cgi.MiniFieldStorage('nosy', ''),
             cgi.MiniFieldStorage('title', ''),
             cgi.MiniFieldStorage('@etag', etag)
@@ -913,7 +930,7 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 200)
 
         # verify the result
-        results = self.server.get_element('issue', issue_id, self.empty_form)
+        results = self.server.get_element('issue', issue_id, self.terse_form)
         results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['attributes']['title'], None)
@@ -931,8 +948,8 @@ class TestCase():
         # no etag
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('op', 'action'),
-            cgi.MiniFieldStorage('action_name', 'retire')
+            cgi.MiniFieldStorage('@op', 'action'),
+            cgi.MiniFieldStorage('@action_name', 'retire')
         ]
         results = self.server.patch_element('issue', issue_id, form)
         self.assertEqual(self.dummy_client.response_code, 412)
@@ -942,8 +959,8 @@ class TestCase():
         form = cgi.FieldStorage()
         etag = calculate_etag(self.db.issue.getnode(issue_id))
         form.list = [
-            cgi.MiniFieldStorage('op', 'action'),
-            cgi.MiniFieldStorage('action_name', 'retire'),
+            cgi.MiniFieldStorage('@op', 'action'),
+            cgi.MiniFieldStorage('@action_name', 'retire'),
             cgi.MiniFieldStorage('@etag', etag)
         ]
         results = self.server.patch_element('issue', issue_id, form)
@@ -963,12 +980,12 @@ class TestCase():
         # no etag
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('op', 'remove'),
+            cgi.MiniFieldStorage('@op', 'remove'),
             cgi.MiniFieldStorage('nosy', '1, 2'),
         ]
         results = self.server.patch_element('issue', issue_id, form)
         self.assertEqual(self.dummy_client.response_code, 412)
-        results = self.server.get_element('issue', issue_id, self.empty_form)
+        results = self.server.get_element('issue', issue_id, self.terse_form)
         results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(len(results['attributes']['nosy']), 3)
@@ -978,7 +995,7 @@ class TestCase():
         form = cgi.FieldStorage()
         etag = calculate_etag(self.db.issue.getnode(issue_id))
         form.list = [
-            cgi.MiniFieldStorage('op', 'remove'),
+            cgi.MiniFieldStorage('@op', 'remove'),
             cgi.MiniFieldStorage('nosy', '1, 2'),
             cgi.MiniFieldStorage('@etag', etag)
         ]
@@ -986,7 +1003,7 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 200)
 
         # verify the result
-        results = self.server.get_element('issue', issue_id, self.empty_form)
+        results = self.server.get_element('issue', issue_id, self.terse_form)
         results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(len(results['attributes']['nosy']), 1)
