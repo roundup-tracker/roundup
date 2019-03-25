@@ -223,7 +223,8 @@ class IssueClass:
 
     def nosymessage(self, issueid, msgid, oldvalues, whichnosy='nosy',
             from_address=None, cc=[], bcc=[], cc_emails = [],
-            bcc_emails = [], subject=None ):
+            bcc_emails = [], subject=None,
+            note_filter = None):
         """Send a message to the members of an issue's nosy list.
 
         The message is sent only to users on the nosy list who are not
@@ -264,6 +265,11 @@ class IssueClass:
         defined, we try to send encrypted mail to *all* users
         *including* cc, bcc, cc_emails and bcc_emails and this might
         fail if not all the keys are available in roundups keyring.
+
+        If note_filter is specified it is a function with this
+        prototype:
+            note_filter(original_note, issueid, newvalues, oldvalues)
+        If called, note_filter returns the new value for the message body.
         """
         encrypt = self.db.config.PGP_ENABLE and self.db.config.PGP_ENCRYPT
         pgproles = self.db.config.PGP_ROLES
@@ -345,6 +351,10 @@ class IssueClass:
             note = self.generateChangeNote(issueid, oldvalues)
         else:
             note = self.generateCreateNote(issueid)
+        if note_filter:
+            cn = self.classname
+            cl = self.db.classes[cn]
+            note = note_filter(note, issueid, self.db, cl, oldvalues)
 
         # If we have new recipients, update the message's recipients
         # and send the mail.

@@ -73,6 +73,11 @@ Features:
   action to return the same data as the old export_csv action. (Tom
   Ekberg (tekberg), Andreas (anrounham14) edited/applied and tests
   created by John Rouillard)
+- issue2551018: Add new note_filter parameter to nosymessage. The
+  function supplied by this parameter can rewrite the body of the
+  nosymessage before it gets sent. See issue:
+  https://issues.roundup-tracker.org/issue2551018 for example
+  nosyreaction and generated email. (Tom Ekberg (tekberg))
 
 Fixed:
 
