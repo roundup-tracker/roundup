@@ -17,6 +17,8 @@
 """Generic Python Expression Handler
 """
 
+import symtable
+
 from .TALES import CompilerError
 from sys import exc_info
 
@@ -31,7 +33,8 @@ class PythonExpr:
         self.expr = expr = expr.strip().replace('\n', ' ')
         try:
             d = {}
-            exec('def f():\n return %s\n' % expr.strip(), d)
+            self.f_code = 'def f():\n return %s\n' % expr.strip()
+            exec(self.f_code, d)
             self._f = d['f']
         except:
             raise CompilerError(('Python expression error:\n'
@@ -40,17 +43,38 @@ class PythonExpr:
 
     def _get_used_names(self):
         self._f_varnames = vnames = []
-        for vname in self._f.__code__.co_names:
-            if vname[0] not in '$_':
+        for vname in self._get_from_symtab():
+            if vname[0] not in '$_.':
                 vnames.append(vname)
+
+    def _get_from_symtab(self):
+        """
+        Get the variables used in the 'f' function.
+        """
+        variables = set()
+        table = symtable.symtable(self.f_code, "<string>", "exec")
+        if table.has_children():
+            variables.update(self._walk_children(table))
+        return variables
+
+    def _walk_children(self, sym):
+        """
+        Get the variables at this level. Recurse to get them all.
+        """
+        variables = set()
+        for child in sym.get_children():
+            variables.update(set(child.get_identifiers()))
+            if child.has_children():
+                variables.update(self._walk_children(child))
+        return variables
 
     def _bind_used_names(self, econtext, _marker=[]):
         # Bind template variables
         names = {'CONTEXTS': econtext.contexts}
-        vars = econtext.vars
+        variables = econtext.vars
         getType = econtext.getCompiler().getTypes().get
         for vname in self._f_varnames:
-            val = vars.get(vname, _marker)
+            val = variables.get(vname, _marker)
             if val is _marker:
                 has = val = getType(vname)
                 if has:

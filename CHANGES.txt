@@ -109,6 +109,9 @@ Fixed:
   found/404. Reported by hannob at
   https://github.com/python/bugs.python.org/issues/34, issue opened by
   JulienPalard.
+- issue2551026: template variable not defined even though it is.
+  Fix issue where variables defined in TAL expression are not
+  available in the scope of the definition. (Tom Ekberg (tekberg))
 
 2018-07-13 1.6.0
 
