@@ -490,8 +490,11 @@ class RestfulInstance(object):
         """
         if class_name not in self.db.classes:
             raise NotFound('Class %s not found' % class_name)
+
+        uid = self.db.getuid()
+
         if not self.db.security.hasPermission(
-            'View', self.db.getuid(), class_name
+            'View', uid, class_name
         ):
             raise Unauthorised('Permission to view %s denied' % class_name)
 
@@ -504,7 +507,7 @@ class RestfulInstance(object):
             'size': None,
             'index': 1   # setting just size starts at page 1
         }
-        uid = self.db.getuid()
+        verbose = 1
         for form_field in input.value:
             key = form_field.name
             value = form_field.value
@@ -512,6 +515,8 @@ class RestfulInstance(object):
                 key = key[6:]
                 value = int(value)
                 page[key] = value
+            elif key == "@verbose":
+                verbose = int (value)
             else: # serve the filter purpose
                 prop = class_obj.getprops()[key]
                 # We drop properties without search permission silently
@@ -543,9 +548,21 @@ class RestfulInstance(object):
             {'id': item_id, 'link': class_path + item_id}
             for item_id in obj_list
             if self.db.security.hasPermission(
-                'View', self.db.getuid(), class_name, itemid=item_id
+                'View', uid, class_name, itemid=item_id
             )
         ]
+
+        # add verbose elements. First identifying label.
+        if verbose > 1:
+            label = class_obj.labelprop()
+            for obj in result['collection']:
+                id = obj['id']
+                if self.db.security.hasPermission(
+                        'View', uid, class_name, property=label,
+                        itemid=id
+                ):
+                    obj[label] = class_obj.get(id, label)
+
         result_len = len(result['collection'])
 
         # pagination - page_index from 1...N

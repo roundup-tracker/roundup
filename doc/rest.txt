@@ -63,14 +63,19 @@ This endpoint supports pagination. With the attributes @page_size and
 items are displayed at once. The @page_index (which defaults to 1 if not
 given) specifies which page number of @page_size items is displayed. If
 no @page_size is specified, all items are returned.
+
+Adding the query parameter @verbose=2 to the GET will include the label
+property in addition to id and link for the items. This is useful as
+documented below in "Searches and selection".
+
 In addition this method supports searching. Search parameters are names
 of properties of the given class, e.g., ``status`` for ``issue``. Links
 and Multilinks can be specified numerically or symbolically, e.g.,
 searching for issues in status ``closed`` can be achieved by searching
 for ``status=closed`` or ``status=3`` (provided the ``closed`` status
-has ID 3). Note that searching for strings (e.g. the issue title)
-performs a case-insensitive substring search, so searching for
-title=Something will find all issues with "Something" or "someThing",
+has ID 3). Note that searching for strings (e.g. the issue title, or a
+keyword name) performs a case-insensitive substring search, so searching
+for title=Something will find all issues with "Something" or "someThing",
 etc. in the title. There is currently no way to perform an exact string
 match.
 
@@ -176,3 +181,90 @@ Retire/Restore::
         >>> r = s.patch(u + 'issue/42', data = d, headers = h)
         >>> print(r.json())
 
+Searches and selection
+======================
+
+One difficult interface issue is selection of items from a long list.
+Using multi-item selects requires loading a lot of data (e.g. consider
+a selection tool to select one or more issues as in the classic
+superseder field).
+
+This can be made easier using javascript selection tools like select2,
+selectize.js, chosen etc. These tools can query a remote data provider
+to get a list of items for the user to select from.
+
+Consider a multi-select box for the superseder property.  Using
+selectize.js (and jquery) code similar to:
+
+ $('#superseder').selectize({
+	valueField: 'id',
+	labelField: 'title',
+	searchField: 'title', ...
+	load: function(query, callback) {
+		if (!query.length) return callback();
+		$.ajax({
+			url: '.../rest/data/issue?@verbose=2&title='
+			    + encodeURIComponent(query),
+			type: 'GET',
+			error: function() {callback();},
+			success: function(res) {
+			  callback(res.data.collection);}
+
+Sets up a box that a user can type the word "request" into. Then
+selectize.js will use that word to generate an ajax request with the
+url: .../rest/data/issue?@verbose=2&title=request
+
+This will return data like:
+
+  {
+    "data": {
+    "@total_size": 440,
+    "collection": [
+      {
+	  "link": ".../rest/data/issue/8",
+	  "id": "8",
+	  "title": "Request for Power plugs"
+      },
+      {
+	  "link": ".../rest/data/issue/27",
+	  "id": "27",
+	  "title": "Request for foo"
+      },
+
+selectize.js will look at these objects (as passed to
+callback(res.data.collection)) and create a select list from the each
+object showing the user the labelField (title) for each object and
+associating each title with the corresponding valueField (id). The
+example above has 440 issues returned from a total of 2000
+issues. Only 440 had the word "request" somewhere in the title greatly
+reducing the amount of data that needed to be transferred.
+
+Similar things can be set up to search a large list of keywords using
+
+  .../rest/data/keyword?@verbose=2&name=some
+
+which would return: "some keyword" "awesome" "somebody" making
+selections for links and multilinks much easier.
+
+Hopefully future enhancements will allow get on a collection to
+include other fields. Why do we want this?  Selectize.js can set up
+option groups (optgroups) in the select pulldown. So by including
+status in the returned data:
+
+      {
+	  "link": ".../rest/data/issue/27",
+	  "id": "27",
+	  "title": "Request for foo",
+	  'status": "open"
+      },
+
+a select widget like:
+
+  === New ===
+  A request
+  === Open ===
+  Request for bar
+  Request for foo
+
+etc. can be generated. Also depending on the javascript library, other
+fields can be used for subsearch and sorting.
