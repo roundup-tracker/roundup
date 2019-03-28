@@ -97,6 +97,17 @@ link for the file or message. If @verbose is >= 3, the content property
 is shown in json as a (possibly very long) string. Currently the json
 serializer cannot handle files not properly utf-8 encoded, so specifying
 @verbose=3 for files is currently discouraged.
+Note that if the class has a key attribute (like e.g., the 'status'
+class in the classic tracker), you can get an individual status by
+specifying the key-attribute e.g. ``/data/status/name=closed``. Note
+that ``name`` in this example must be the key-attribute of the class.
+A short-form (which might no longer be supported in future version of
+the API) is to specify only the value, e.g. ``/data/status/closed``.
+This short-form only works when you're sure that the key of the class is
+not numeric.
+The long-form (with ``=``) is different from a query-parameter like
+``/data/status?@name=closed`` which would find all stati that have
+``closed`` as a substring.
 
 A ``GET`` method on a property (e.g. ``/data/issue/42/title``) returns the
 link, an ``@etag``, the type of the property (e.g. "<type str>") the id

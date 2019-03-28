@@ -605,6 +605,8 @@ class RestfulInstance(object):
         Args:
             class_name (string): class name of the resource (Ex: issue, msg)
             item_id (string): id of the resource (Ex: 12, 15)
+                or (if the class has a key property) this can also be
+                the key name, e.g. class_name = status, item_id = 'open'
             input (list): the submitted form of the user
 
         Returns:
@@ -617,16 +619,37 @@ class RestfulInstance(object):
         """
         if class_name not in self.db.classes:
             raise NotFound('Class %s not found' % class_name)
+        class_obj = self.db.getclass(class_name)
+        uid = self.db.getuid()
+        # If it's not numeric it is a key
+        if item_id.isdigit():
+            id = item_id
+        else:
+            keyprop = class_obj.getkey()
+            try:
+                k, v = item_id.split('=', 1)
+                if k != keyprop:
+                    raise UsageError ("Not key property")
+            except ValueError:
+                v = item_id
+                pass
+            if not self.db.security.hasPermission(
+                'View', uid, class_name, itemid=item_id, property=keyprop
+            ):
+                raise Unauthorised(
+                    'Permission to view %s%s.%s denied'
+                    % (class_name, item_id, keyprop)
+                )
+            id = class_obj.lookup(v)
         if not self.db.security.hasPermission(
-            'View', self.db.getuid(), class_name, itemid=item_id
+            'View', uid, class_name, itemid=id
         ):
             raise Unauthorised(
-                'Permission to view %s%s denied' % (class_name, item_id)
+                'Permission to view %s%s denied' % (class_name, id)
             )
 
-        class_obj = self.db.getclass(class_name)
-        node = class_obj.getnode(item_id)
-        etag = calculate_etag(node, class_name, item_id)
+        node = class_obj.getnode(id)
+        etag = calculate_etag(node, class_name, id)
         props = None
         protected=False
         verbose=1
@@ -651,7 +674,7 @@ class RestfulInstance(object):
             for pn in sorted(props):
                 prop = props[pn]
                 if not self.db.security.hasPermission(
-                    'View', uid, class_name, pn, item_id
+                    'View', uid, class_name, pn, id
                 ):
                     continue
                 v = getattr(node, pn)
@@ -690,7 +713,7 @@ class RestfulInstance(object):
         except KeyError as msg:
             raise UsageError("%s field not valid" % msg)
         result = {
-            'id': item_id,
+            'id': id,
             'type': class_name,
             'link': '%s/%s/%s' % (self.data_path, class_name, item_id),
             'attributes': dict(result),

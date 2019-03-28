@@ -116,6 +116,21 @@ class TestCase():
         self.assertEqual(results['attributes']['username'], 'joe')
         self.assertEqual(results['attributes']['realname'], 'Joe Random')
 
+        # Obtain data for 'joe' via username lookup.
+        results = self.server.get_element('user', 'joe', self.empty_form)
+        results = results['data']
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(results['attributes']['username'], 'joe')
+        self.assertEqual(results['attributes']['realname'], 'Joe Random')
+
+        # Obtain data for 'joe' via username lookup (long form).
+        key = 'username=joe'
+        results = self.server.get_element('user', key, self.empty_form)
+        results = results['data']
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(results['attributes']['username'], 'joe')
+        self.assertEqual(results['attributes']['realname'], 'Joe Random')
+
         # Obtain data for 'joe'.
         results = self.server.get_attribute(
             'user', self.joeid, 'username', self.empty_form
