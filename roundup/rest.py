@@ -284,8 +284,9 @@ class Routing(object):
 
     @classmethod
     def execute(cls, instance, path, method, input):
-        # format the input
-        path = path.strip('/').lower()
+        # format the input, note that we may not lowercase the path
+        # here, URL parameters are case-sensitive
+        path = path.strip('/')
         if path == 'rest':
             # allow handler to be called for /rest/
             path = 'rest/'
@@ -623,7 +624,7 @@ class RestfulInstance(object):
         uid = self.db.getuid()
         # If it's not numeric it is a key
         if item_id.isdigit():
-            id = item_id
+            itemid = item_id
         else:
             keyprop = class_obj.getkey()
             try:
@@ -640,16 +641,16 @@ class RestfulInstance(object):
                     'Permission to view %s%s.%s denied'
                     % (class_name, item_id, keyprop)
                 )
-            id = class_obj.lookup(v)
+            itemid = class_obj.lookup(v)
         if not self.db.security.hasPermission(
-            'View', uid, class_name, itemid=id
+            'View', uid, class_name, itemid=itemid
         ):
             raise Unauthorised(
-                'Permission to view %s%s denied' % (class_name, id)
+                'Permission to view %s%s denied' % (class_name, itemid)
             )
 
-        node = class_obj.getnode(id)
-        etag = calculate_etag(node, class_name, id)
+        node = class_obj.getnode(itemid)
+        etag = calculate_etag(node, class_name, itemid)
         props = None
         protected=False
         verbose=1
@@ -666,7 +667,6 @@ class RestfulInstance(object):
                 verbose = int (value)
 
         result = {}
-        uid = self.db.getuid()
         if props is None:
             props = class_obj.getprops(protected=protected)
 
@@ -674,7 +674,7 @@ class RestfulInstance(object):
             for pn in sorted(props):
                 prop = props[pn]
                 if not self.db.security.hasPermission(
-                    'View', uid, class_name, pn, id
+                    'View', uid, class_name, pn, itemid
                 ):
                     continue
                 v = getattr(node, pn)
@@ -713,7 +713,7 @@ class RestfulInstance(object):
         except KeyError as msg:
             raise UsageError("%s field not valid" % msg)
         result = {
-            'id': id,
+            'id': itemid,
             'type': class_name,
             'link': '%s/%s/%s' % (self.data_path, class_name, item_id),
             'attributes': dict(result),
