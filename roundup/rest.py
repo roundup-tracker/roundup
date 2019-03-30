@@ -583,7 +583,7 @@ class RestfulInstance(object):
             elif key == "@fields" or key == "@attrs":
                 f = value.split(",")
                 if len(f) == 1:
-                    f=value.split(",")
+                    f=value.split(":")
                 for i in f:
                     try:
                         display_props[i] = class_obj.properties[i]

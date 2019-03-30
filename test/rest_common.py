@@ -138,6 +138,258 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['data']['data'], 'joe')
 
+    def testOutputFormat(self):
+        """ test of @fields and @verbose implementation """
+
+        from roundup.exceptions import UsageError
+
+        self.maxDiff = 4000
+        # create sample data
+        try:
+            self.db.status.create(name='open')
+        except ValueError:
+            pass
+        try:
+            self.db.status.create(name='closed')
+        except ValueError:
+            pass
+        try:
+            self.db.priority.create(name='normal')
+        except ValueError:
+            pass
+        try:
+            self.db.priority.create(name='critical')
+        except ValueError:
+            pass
+        self.db.issue.create(
+            title='foo1',
+            status=self.db.status.lookup('open'),
+            priority=self.db.priority.lookup('normal'),
+            nosy = [ "1", "2" ]
+        )
+        issue_open_norm = self.db.issue.create(
+            title='foo2',
+            status=self.db.status.lookup('open'),
+            priority=self.db.priority.lookup('normal'),
+            assignedto = "3"
+        )
+        issue_open_crit = self.db.issue.create(
+            title='foo5',
+            status=self.db.status.lookup('open'),
+            priority=self.db.priority.lookup('critical')
+        )
+        base_path = self.db.config['TRACKER_WEB'] + 'rest/data/issue/'
+
+
+        # Check formating for issues status=open; @fields and verbose tests
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('status', 'open'),
+            cgi.MiniFieldStorage('@fields', 'nosy,status'),
+            cgi.MiniFieldStorage('@verbose', '2')
+        ]
+
+        expected={'data':
+                   {'@total_size': 3,
+                    'collection': [
+                        {'status': {'id': '9',
+                                    'name': 'open',
+                                    'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/status/9'},
+                         'id': '1',
+                         'nosy': [
+                             {'username': 'admin',
+                              'id': '1',
+                              'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/user/1'},
+                             {'username': 'anonymous',
+                              'id': '2',
+                              'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/user/2'}
+                         ],
+                         'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue/1',
+                         'title': 'foo1' },
+                        {'status': {
+                            'id': '9',
+                            'name': 'open',
+                            'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/status/9' },
+                         'id': '2',
+                         'nosy': [
+                             {'username': 'joe',
+                              'id': '3',
+                              'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/user/3'}
+                         ],
+                         'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue/2',
+                         'title': 'foo2'},
+                        {'status': {
+                            'id': '9',
+                            'name': 'open',
+                            'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/status/9'},
+                         'id': '3',
+                         'nosy': [],
+                         'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue/3',
+                         'title': 'foo5'}
+                    ]}}
+
+        results = self.server.get_collection('issue', form)
+        self.assertDictEqual(expected, results)
+
+        # Check formating for issues status=open; @fields and verbose tests
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('status', 'open')
+            # default cgi.MiniFieldStorage('@verbose', '1')
+        ]
+
+        expected={'data':
+                   {'@total_size': 3,
+                    'collection': [
+                        {'id': '1',
+                         'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue/1',},
+                        { 'id': '2',
+                         
+                         'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue/2'},
+                        {'id': '3',
+                         'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue/3'} ]}}
+                    
+
+        results = self.server.get_collection('issue', form)
+        self.assertDictEqual(expected, results)
+
+        # Generate failure case, unknown field.
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('status', 'open'),
+            cgi.MiniFieldStorage('@fields', 'title,foo')
+        ]
+
+        expected={'error': {
+            'msg': UsageError("Failed to find property 'foo' "
+                              "for class issue.",),
+            'status': 400}}
+
+        results = self.server.get_collection('issue', form)
+        # I tried assertDictEqual but seems it can't handle
+        # the exception value of 'msg'. So I am using repr to check.
+        self.assertEqual(repr(sorted(expected['error'])),
+                         repr(sorted(results['error']))
+        )
+
+        # Check formating for issues status=open; @fields and verbose tests
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('status', 'open'),
+            cgi.MiniFieldStorage('@fields', 'nosy,status,assignedto'),
+            cgi.MiniFieldStorage('@verbose', '0')
+        ]
+
+        expected={'data': {
+            '@total_size': 3,
+            'collection': [
+                {'assignedto': None,
+                 'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue/1',
+                 'status': '9',
+                 'nosy': ['1', '2'],
+                 'id': '1'},
+                {'assignedto': '3',
+                 'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue/2',
+                 'status': '9',
+                 'nosy': ['3'],
+                 'id': '2'},
+                {'assignedto': None,
+                 'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue/3',
+                 'status': '9',
+                 'nosy': [],
+                 'id': '3'}]}}
+
+        results = self.server.get_collection('issue', form)
+        print(results)
+        self.assertDictEqual(expected, results)
+
+        # check users
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@fields', 'username,queries,password'),
+            cgi.MiniFieldStorage('@verbose', '0')
+        ]
+        # note this is done as user joe, so we only get queries
+        # and password for joe.
+        expected = {'data': {'collection': [
+            {'id': '1',
+             'username': 'admin',
+             'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/user/1'},
+            {'id': '2',
+             'username': 'anonymous',
+             'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/user/2'},
+            {'password': '[password hidden scheme PBKDF2]',
+             'id': '3',
+             'queries': [],
+             'username': 'joe',
+             'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/user/3'}],
+                '@total_size': 3}}
+
+        results = self.server.get_collection('user', form)
+        self.assertDictEqual(expected, results)
+
+        ## Start testing get_element
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@fields', 'queries,password'),
+            cgi.MiniFieldStorage('@verbose', '2')
+        ]
+        expected = {'data': {
+            'id': '3',
+            'type': 'user',
+            '@etag': '',
+            'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/user/3',
+            'attributes': {
+                'password': '[password hidden scheme PBKDF2]',
+                'queries': [],
+                'username': 'joe'
+            }
+        }}
+
+        results = self.server.get_element('user', self.joeid, form)
+        results['data']['@etag'] = '' # etag depends on date, set to empty
+        self.assertDictEqual(expected,results)
+
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@fields', 'status:priority'),
+            cgi.MiniFieldStorage('@verbose', '1')
+        ]
+        expected = {'data': {
+            'type': 'issue',
+            'id': '3',
+            'attributes': {
+                'status': {
+                    'id': '9', 
+                    'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/status/9'},
+                'priority': {
+                    'id': '1',
+                    'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/priority/1'}},
+            '@etag': '',
+            'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue/3'}}
+
+        results = self.server.get_element('issue', "3", form)
+        results['data']['@etag'] = '' # etag depends on date, set to empty
+        self.assertDictEqual(expected,results)
+
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@fields', 'status,priority'),
+            cgi.MiniFieldStorage('@verbose', '0')
+        ]
+        expected = {'data': {
+            'type': 'issue',
+            'id': '3',
+            'attributes': {
+                'status': '9', 
+                'priority': '1'},
+            '@etag': '',
+            'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue/3'}}
+
+        results = self.server.get_element('issue', "3", form)
+        results['data']['@etag'] = '' # etag depends on date, set to empty
+        self.assertDictEqual(expected,results)
+
     def testFilter(self):
         """
         Retrieve all three users
