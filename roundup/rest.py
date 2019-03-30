@@ -585,7 +585,13 @@ class RestfulInstance(object):
                 if len(f) == 1:
                     f=value.split(",")
                 for i in f:
-                    display_props[i] = class_obj.properties[i]
+                    try:
+                        display_props[i] = class_obj.properties[i]
+                    except KeyError as err:
+                        raise UsageError("Failed to find property '%s' "
+                                         "for class %s."%(i, class_name))
+
+                    
             else: # serve the filter purpose
                 prop = class_obj.getprops()[key]
                 # We drop properties without search permission silently
@@ -738,7 +744,10 @@ class RestfulInstance(object):
                 if len(f) == 1:
                     f=value.split(":")
                 for i in f:
-                    props[i] = class_obj.properties[i]
+                    try:
+                        props[i] = class_obj.properties[i]
+                    except KeyError as err:
+                        raise UsageError("Failed to find property '%s' for class %s."%(i, class_name))
             elif key == "@protected":
                 # allow client to request read only
                 # properties like creator, activity etc.
