@@ -471,6 +471,67 @@ class RestfulInstance(object):
                 "If-Match is missing or does not match."
                 " Retrieve asset and retry modification if valid.")
 
+    def format_item(self, node, item_id, props=None, verbose=1):
+        ''' display class obj as requested by verbose and
+            props.
+        '''
+        uid = self.db.getuid()
+        class_name = node.cl.classname
+        result = {}
+        try:
+            # pn = propname
+            for pn in sorted(props):
+                prop = props[pn]
+                if not self.db.security.hasPermission(
+                        'View', uid, class_name, pn, item_id
+                ):
+                    continue
+                v = getattr(node, pn)
+                if isinstance (prop, (hyperdb.Link, hyperdb.Multilink)):
+                    linkcls = self.db.getclass (prop.classname)
+                    cp = '%s/%s/' % (self.data_path, prop.classname)
+                    if verbose and v:
+                        if isinstance(v, type([])):
+                            r = []
+                            for id in v:
+                                d = dict(id = id, link = cp + id)
+                                if verbose > 1:
+                                    label = linkcls.labelprop()
+                                    d [label] = linkcls.get(id, label)
+                                r.append(d)
+                            result[pn] = r
+                        else:
+                            result[pn] = dict(id = v, link = cp + v)
+                            if verbose > 1:
+                                label = linkcls.labelprop()
+                                result[pn][label] = linkcls.get(v, label)
+                    else:
+                        result[pn] = v
+                elif isinstance (prop, hyperdb.String) and pn == 'content':
+                    # Do not show the (possibly HUGE) content prop
+                    # unless very verbose, we display the standard
+                    # download link instead
+                    if verbose < 3:
+                        u = self.db.config.TRACKER_WEB
+                        p = u + '%s%s/' % (class_name, node.id)
+                        result[pn] = dict(link = p)
+                    else:
+                        result[pn] = v
+                elif isinstance(prop, hyperdb.Password):
+                    if v != None: # locked users like anonymous have None
+                        result[pn] = "[password hidden scheme %s]"%v.scheme
+                    else:
+                        # Don't divulge it's a locked account. Choose most
+                        # secure as default.
+                        result[pn] = "[password hidden scheme PBKDF2]"
+                else:
+                    result[pn] = v
+        except KeyError as msg:
+            raise UsageError("%s field not valid" % msg)
+
+        return result
+
+
     @Routing.route("/data/<:class_name>", 'GET')
     @_data_decorator
     def get_collection(self, class_name, input):
@@ -509,6 +570,7 @@ class RestfulInstance(object):
             'index': 1   # setting just size starts at page 1
         }
         verbose = 1
+        display_props = {}
         for form_field in input.value:
             key = form_field.name
             value = form_field.value
@@ -518,6 +580,12 @@ class RestfulInstance(object):
                 page[key] = value
             elif key == "@verbose":
                 verbose = int (value)
+            elif key == "@fields" or key == "@attrs":
+                f = value.split(",")
+                if len(f) == 1:
+                    f=value.split(",")
+                for i in f:
+                    display_props[i] = class_obj.properties[i]
             else: # serve the filter purpose
                 prop = class_obj.getprops()[key]
                 # We drop properties without search permission silently
@@ -543,26 +611,31 @@ class RestfulInstance(object):
         else:
             obj_list = class_obj.filter(None, filter_props)
 
+        # Sort list as specified by sortorder
+        # This is more useful for things where there is an
+        # explicit order. E.G. status has an order that is
+        # roughly the progression of the issue through
+        # the states so open is before closed.
+        obj_list.sort()
+
+        # add verbose elements. 2 and above get identifying label.
+        if verbose > 1:
+            lp = class_obj.labelprop()
+            display_props[lp] = class_obj.properties[lp]
+
         # extract result from data
         result={}
-        result['collection'] = [
-            {'id': item_id, 'link': class_path + item_id}
-            for item_id in obj_list
+        result['collection']=[]
+        for item_id in obj_list:
             if self.db.security.hasPermission(
-                'View', uid, class_name, itemid=item_id
-            )
-        ]
-
-        # add verbose elements. First identifying label.
-        if verbose > 1:
-            label = class_obj.labelprop()
-            for obj in result['collection']:
-                id = obj['id']
-                if self.db.security.hasPermission(
-                        'View', uid, class_name, property=label,
-                        itemid=id
-                ):
-                    obj[label] = class_obj.get(id, label)
+                    'View', uid, class_name, itemid=item_id):
+                r = {'id': item_id, 'link': class_path + item_id}
+                if display_props:
+                    r.update(self.format_item(class_obj.getnode(item_id),
+                                               item_id,
+                                               props=display_props,
+                                               verbose=verbose))
+                result['collection'].append(r)
 
         result_len = len(result['collection'])
 
@@ -657,66 +730,37 @@ class RestfulInstance(object):
         for form_field in input.value:
             key = form_field.name
             value = form_field.value
-            if key == "@fields":
-                props = value.split(",")
-            if key == "@protected":
+            if key == "@fields" or key == "@attrs":
+                if props is None:
+                    props = {}
+                # support , or : separated elements
+                f=value.split(",")
+                if len(f) == 1:
+                    f=value.split(":")
+                for i in f:
+                    props[i] = class_obj.properties[i]
+            elif key == "@protected":
                 # allow client to request read only
                 # properties like creator, activity etc.
+                # used only if no @fields/@attrs
                 protected = value.lower() == "true"
-            if key == "@verbose":
+            elif key == "@verbose":
                 verbose = int (value)
 
         result = {}
         if props is None:
             props = class_obj.getprops(protected=protected)
+        else:
+            if verbose > 1:
+                lp = class_obj.labelprop()
+                props[lp] = class_obj.properties[lp]
 
-        try:
-            for pn in sorted(props):
-                prop = props[pn]
-                if not self.db.security.hasPermission(
-                    'View', uid, class_name, pn, itemid
-                ):
-                    continue
-                v = getattr(node, pn)
-                if isinstance (prop, (hyperdb.Link, hyperdb.Multilink)):
-                    linkcls = self.db.getclass (prop.classname)
-                    cp = '%s/%s/' % (self.data_path, prop.classname)
-                    if verbose and v:
-                        if isinstance(v, type([])):
-                            r = []
-                            for id in v:
-                                d = dict(id = id, link = cp + id)
-                                if verbose > 1:
-                                    label = linkcls.labelprop()
-                                    d [label] = linkcls.get(id, label)
-                                r.append(d)
-                            result[pn] = r
-                        else:
-                            result[pn] = dict(id = v, link = cp + v)
-                            if verbose > 1:
-                                label = linkcls.labelprop()
-                                result[pn][label] = linkcls.get(v, label)
-                    else:
-                        result[pn] = v
-                elif isinstance (prop, hyperdb.String) and pn == 'content':
-                    # Do not show the (possibly HUGE) content prop
-                    # unless very verbose, we display the standard
-                    # download link instead
-                    if verbose < 3:
-                        u = self.db.config.TRACKER_WEB
-                        p = u + '%s%s/' % (class_name, node.id)
-                        result[pn] = dict(link = p)
-                    else:
-                        result[pn] = v
-                else:
-                    result[pn] = v
-        except KeyError as msg:
-            raise UsageError("%s field not valid" % msg)
         result = {
             'id': itemid,
             'type': class_name,
             'link': '%s/%s/%s' % (self.data_path, class_name, item_id),
-            'attributes': dict(result),
+            'attributes': self.format_item(node, itemid, props=props,
+                                 verbose=verbose),
             '@etag': etag
         }
 
