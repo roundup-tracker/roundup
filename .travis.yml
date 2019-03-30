@@ -22,7 +22,7 @@ addons:
 
 before_install:
   # Sphinx required to build the xapian python bindings
-  - pip install sphinx
+  - pip install sphinx==1.8.5
   - XAPIAN_VER=$(dpkg -l libxapian-dev | tail -n 1 | awk '{print $3}' | cut -d '-' -f 1)
   - cd /tmp
   - curl -s -O https://oligarchy.co.uk/xapian/$XAPIAN_VER/xapian-bindings-$XAPIAN_VER.tar.xz
