@@ -264,37 +264,37 @@ class HTMLClassTestCase(TemplatingTestCase) :
         ae = self.assertEqual
         ae(t('item123123123123'), 'item123123123123')
         ae(t('http://roundup.net/'),
-           '<a href="http://roundup.net/" rel="nofollow">http://roundup.net/</a>')
+           '<a href="http://roundup.net/" rel="nofollow noopener">http://roundup.net/</a>')
         ae(t('&lt;HTTP://roundup.net/&gt;'),
-           '&lt;<a href="HTTP://roundup.net/" rel="nofollow">HTTP://roundup.net/</a>&gt;')
+           '&lt;<a href="HTTP://roundup.net/" rel="nofollow noopener">HTTP://roundup.net/</a>&gt;')
         ae(t('&lt;http://roundup.net/&gt;.'),
-            '&lt;<a href="http://roundup.net/" rel="nofollow">http://roundup.net/</a>&gt;.')
+            '&lt;<a href="http://roundup.net/" rel="nofollow noopener">http://roundup.net/</a>&gt;.')
         ae(t('&lt;www.roundup.net&gt;'),
-           '&lt;<a href="http://www.roundup.net" rel="nofollow">www.roundup.net</a>&gt;')
+           '&lt;<a href="http://www.roundup.net" rel="nofollow noopener">www.roundup.net</a>&gt;')
         ae(t('(www.roundup.net)'),
-           '(<a href="http://www.roundup.net" rel="nofollow">www.roundup.net</a>)')
+           '(<a href="http://www.roundup.net" rel="nofollow noopener">www.roundup.net</a>)')
         ae(t('foo http://msdn.microsoft.com/en-us/library/ms741540(VS.85).aspx bar'),
-           'foo <a href="http://msdn.microsoft.com/en-us/library/ms741540(VS.85).aspx" rel="nofollow">'
+           'foo <a href="http://msdn.microsoft.com/en-us/library/ms741540(VS.85).aspx" rel="nofollow noopener">'
            'http://msdn.microsoft.com/en-us/library/ms741540(VS.85).aspx</a> bar')
         ae(t('(e.g. http://en.wikipedia.org/wiki/Python_(programming_language))'),
-           '(e.g. <a href="http://en.wikipedia.org/wiki/Python_(programming_language)" rel="nofollow">'
+           '(e.g. <a href="http://en.wikipedia.org/wiki/Python_(programming_language)" rel="nofollow noopener">'
            'http://en.wikipedia.org/wiki/Python_(programming_language)</a>)')
         ae(t('(e.g. http://en.wikipedia.org/wiki/Python_(programming_language)).'),
-           '(e.g. <a href="http://en.wikipedia.org/wiki/Python_(programming_language)" rel="nofollow">'
+           '(e.g. <a href="http://en.wikipedia.org/wiki/Python_(programming_language)" rel="nofollow noopener">'
            'http://en.wikipedia.org/wiki/Python_(programming_language)</a>).')
         ae(t('(e.g. http://en.wikipedia.org/wiki/Python_(programming_language))&gt;.'),
-           '(e.g. <a href="http://en.wikipedia.org/wiki/Python_(programming_language)" rel="nofollow">'
+           '(e.g. <a href="http://en.wikipedia.org/wiki/Python_(programming_language)" rel="nofollow noopener">'
            'http://en.wikipedia.org/wiki/Python_(programming_language)</a>)&gt;.')
         ae(t('(e.g. http://en.wikipedia.org/wiki/Python_(programming_language&gt;)).'),
-           '(e.g. <a href="http://en.wikipedia.org/wiki/Python_(programming_language" rel="nofollow">'
+           '(e.g. <a href="http://en.wikipedia.org/wiki/Python_(programming_language" rel="nofollow noopener">'
            'http://en.wikipedia.org/wiki/Python_(programming_language</a>&gt;)).')
         for c in '.,;:!':
             # trailing punctuation is not included
             ae(t('http://roundup.net/%c ' % c),
-               '<a href="http://roundup.net/" rel="nofollow">http://roundup.net/</a>%c ' % c)
+               '<a href="http://roundup.net/" rel="nofollow noopener">http://roundup.net/</a>%c ' % c)
             # but it's included if it's part of the URL
             ae(t('http://roundup.net/%c/' % c),
-               '<a href="http://roundup.net/%c/" rel="nofollow">http://roundup.net/%c/</a>' % (c, c))
+               '<a href="http://roundup.net/%c/" rel="nofollow noopener">http://roundup.net/%c/</a>' % (c, c))
 
 '''
 class HTMLPermissions:

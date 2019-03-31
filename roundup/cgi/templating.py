@@ -957,7 +957,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
             if action in ['link', 'unlink'] and type(args) == type(()):
                 if len(args) == 3:
                     linkcl, linkid, key = args
-                    arg_s += '<a rel="nofollow" href="%s%s">%s%s %s</a>'%(linkcl, linkid,
+                    arg_s += '<a rel="nofollow noopener" href="%s%s">%s%s %s</a>'%(linkcl, linkid,
                         linkcl, linkid, key)
                 else:
                     arg_s = str(args)
@@ -997,7 +997,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                                     pass
                                 else:
                                     linkid = self._klass.get(self._nodeid, k, None)
-                                    current[k] = '<a rel="nofollow" href="%s%s">%s</a>'%(
+                                    current[k] = '<a rel="nofollow noopener" href="%s%s">%s</a>'%(
                                         classname, linkid, current[k])
 
                     if args[k] and (isinstance(prop, hyperdb.Multilink) or
@@ -1052,7 +1052,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                                     subml.append('<strike>%s</strike>'%label)
                                 else:
                                     if hrefable:
-                                        subml.append('<a rel="nofollow" '
+                                        subml.append('<a rel="nofollow noopener" '
                                                      'href="%s%s">%s</a>'%(
                                             classname, linkid, label))
                                     elif label is None:
@@ -1080,7 +1080,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                                 label = None
                         if label is not None:
                             if hrefable:
-                                old = '<a ref="nofollow" href="%s%s">%s</a>'%(classname,
+                                old = '<a ref="nofollow noopener" href="%s%s">%s</a>'%(classname,
                                     args[k], label)
                             else:
                                 old = label;
@@ -1407,7 +1407,7 @@ class StringHTMLProperty(HTMLProperty):
 
     def _hyper_repl(self, match):
         if match.group('url'):
-            return self._hyper_repl_url(match, '<a href="%s" rel="nofollow">%s</a>%s')
+            return self._hyper_repl_url(match, '<a href="%s" rel="nofollow noopener">%s</a>%s')
         elif match.group('email'):
             return self._hyper_repl_email(match, '<a href="mailto:%s">%s</a>')
         elif len(match.group('id')) < 10:

@@ -112,6 +112,9 @@ Fixed:
 - issue2551026: template variable not defined even though it is.
   Fix issue where variables defined in TAL expression are not
   available in the scope of the definition. (Tom Ekberg (tekberg))
+- Make all links created with rel=nofollow include noopener. Deals
+  with possible hijack of original page due to malicious link target.
+  https://mathiasbynens.github.io/rel-noopener/ (John Rouillard)
 
 2018-07-13 1.6.0
 
