@@ -715,7 +715,7 @@ class TestCase():
                 "CONTENT_LENGTH": len(body),
                 "REQUEST_METHOD": "PUT"
         }
-        headers={"accept": "application/json",
+        headers={"accept": "application/json; version=1",
                  "content-type": env['CONTENT_TYPE'],
                  "content-length": env['CONTENT_LENGTH'],
                  "if-match": etag
@@ -738,6 +738,20 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['data']['attributes']['realname'],
                          'Joe Doe 1')
+
+
+        # substitute the version with an unacceptable version
+        # and verify it returns 400 code.
+        self.headers["accept"] = "application/json; version=1.1"
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch('PUT',
+                            "/rest/data/user/%s/realname"%self.joeid,
+                            form)
+        self.assertEqual(self.server.client.response_code, 400)
         del(self.headers)
 
         # TEST #2
@@ -785,11 +799,12 @@ class TestCase():
         # the results from the db.
         etag = calculate_etag(self.db.user.getnode(self.joeid))
         headers={"if-match": etag,
-                 "accept": "application/json",
+                 "accept": "application/vnd.json.test-v1+json",
         }
         form = cgi.FieldStorage()
         form.list = [
             cgi.MiniFieldStorage('data', 'Joe Doe'),
+            cgi.MiniFieldStorage('@apiver', '1'),
         ]
         self.headers = headers
         self.server.client.request.headers.get = self.get_header

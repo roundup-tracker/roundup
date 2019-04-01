@@ -1476,24 +1476,6 @@ class RestfulInstance(object):
                               part[1]['version']))
                     output = self.error_obj(400, msg)
 
-        # check for @apiver in query string
-        try:
-            if not self.api_version:
-                self.api_version = int(input['@apiver'].value)
-        except KeyError:
-            self.api_version = None
-        except ValueError:
-            msg=( "Unrecognized version: %s. "
-                  "See /rest without specifying version "
-                  "for supported versions."%(
-                      input['@apiver'].value))
-            output = self.error_obj(400, msg)
-
-        # FIXME: do we need to raise an error if client did not specify
-        # version? This may be a good thing to require. Note that:
-        # Accept: application/json; version=1 may not be legal but....
-        
-
         # get the request format for response
         # priority : extension from uri (/rest/data/issue.json),
         #            header (Accept: application/json, application/xml)
@@ -1550,6 +1532,23 @@ class RestfulInstance(object):
         except KeyError:
             pretty_output = True
 
+        # check for @apiver in query string
+        try:
+            if not self.api_version:
+                self.api_version = int(input['@apiver'].value)
+        except KeyError:
+            self.api_version = None
+        except ValueError:
+            msg=( "Unrecognized version: %s. "
+                  "See /rest without specifying version "
+                  "for supported versions."%(
+                      input['@apiver'].value))
+            output = self.error_obj(400, msg)
+
+        # FIXME: do we need to raise an error if client did not specify
+        # version? This may be a good thing to require. Note that:
+        # Accept: application/json; version=1 may not be legal but....
+        
         # Call the appropriate method
         try:
             # If output was defined by a prior error
