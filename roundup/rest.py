@@ -327,6 +327,9 @@ class RestfulInstance(object):
     __default_api_version = 1
     __supported_api_versions = [ 1 ]
 
+
+    api_version = None
+
     def __init__(self, client, db):
         self.client = client
         self.db = db
@@ -1450,7 +1453,6 @@ class RestfulInstance(object):
         # parse Accept header and get the content type
         accept_header = parse_accept_header(headers.get('Accept'))
         accept_type = "invalid"
-        self.api_version = None
         for part in accept_header:
             if part[0] in self.__accepted_content_type:
                 accept_type = self.__accepted_content_type[part[0]]
