@@ -209,7 +209,7 @@ def parse_accept_header(accept):
                         # add the version as a media param
                         try:
                             version = media_params.append(('version',
-                                                           float(rest)))
+                                                           rest))
                         except ValueError:
                             version = 1.0  # could not be parsed
                 # add the vendor code as a media param
@@ -323,6 +323,9 @@ class RestfulInstance(object):
         "application/xml": "xml"
     }
     __default_accept_type = "json"
+
+    __default_api_version = 1
+    __supported_api_versions = [ 1 ]
 
     def __init__(self, client, db):
         self.client = client
@@ -477,6 +480,11 @@ class RestfulInstance(object):
         '''
         uid = self.db.getuid()
         class_name = node.cl.classname
+        if self.api_version == None:
+            version = self.__default_api_version
+        else:
+            version = self.api_version
+
         result = {}
         try:
             # pn = propname
@@ -1329,8 +1337,8 @@ class RestfulInstance(object):
     def describe(self, input):
         """Describe the rest endpoint"""
         result = {
-            "default_version": "1",
-            "supported_versions": [ "1" ],
+            "default_version": self.__default_api_version,
+            "supported_versions": self.__supported_api_versions,
             "links": [ { "uri": self.base_path +"/summary",
                         "rel": "summary"},
                        { "uri": self.base_path,
@@ -1442,12 +1450,52 @@ class RestfulInstance(object):
         # parse Accept header and get the content type
         accept_header = parse_accept_header(headers.get('Accept'))
         accept_type = "invalid"
+        self.api_version = None
         for part in accept_header:
             if part[0] in self.__accepted_content_type:
                 accept_type = self.__accepted_content_type[part[0]]
+                # Version order:
+                #  1) accept header version=X specifier
+                #     application/vnd.x.y; version=1
+                #  2) from type in accept-header type/subtype-vX
+                #     application/vnd.x.y-v1
+                #  3) from @apiver in query string to make browser
+                #     use easy
+                # This code handles 1 and 2. Set api_version to none
+                # to trigger @apiver parsing below
+                # Places that need the api_version info should
+                # use default if version = None
+                try:
+                    self.api_version = int(part[1]['version'])
+                except KeyError:
+                    self.api_version = None
+                except ValueError:
+                    msg=( "Unrecognized version: %s. "
+                          "See /rest without specifying version "
+                          "for supported versions."%(
+                              part[1]['version']))
+                    output = self.error_obj(400, msg)
+
+        # check for @apiver in query string
+        try:
+            if not self.api_version:
+                self.api_version = int(input['@apiver'].value)
+        except KeyError:
+            self.api_version = None
+        except ValueError:
+            msg=( "Unrecognized version: %s. "
+                  "See /rest without specifying version "
+                  "for supported versions."%(
+                      input['@apiver'].value))
+            output = self.error_obj(400, msg)
+
+        # FIXME: do we need to raise an error if client did not specify
+        # version? This may be a good thing to require. Note that:
+        # Accept: application/json; version=1 may not be legal but....
+        
 
         # get the request format for response
-        # priority : extension from uri (/rest/issue.json),
+        # priority : extension from uri (/rest/data/issue.json),
         #            header (Accept: application/json, application/xml)
         #            default (application/json)
         ext_type = os.path.splitext(urlparse(uri).path)[1][1:]
