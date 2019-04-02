@@ -192,6 +192,72 @@ Retire/Restore::
         >>> r = s.patch(u + 'issue/42', data = d, headers = h)
         >>> print(r.json())
 
+Adding new rest endpoints
+=========================
+
+Add or edit the file interfaces.py at the root of the tracker
+directory.
+
+In that file add (remove indentation):
+
+    from roundup.rest import Routing, RestfulInstance, _data_decorator
+
+    class RestfulInstance:
+
+	@Routing.route("/summary2")
+	@_data_decorator
+	def summary2(self, input):
+	    result = { "hello": "world" }
+	    return 200, result
+
+will make a new endpoint .../rest/summary2 that you can test with:
+
+    $ curl -X GET .../rest/summary2
+    {
+        "data": {
+            "hello": "world"
+        }
+    }
+
+Similarly appending this to interfaces.py after summary2:
+
+    @Routing.route("/data/<:class_name>/@schema", 'GET')
+    def get_element_schema(self, class_name, input):
+        result = { "schema": {} }
+        uid = self.db.getuid ()
+        if not self.db.security.hasPermission('View', uid, class_name) :
+            raise Unauthorised('Permission to view %s denied' % class_name)
+
+        class_obj = self.db.getclass(class_name)
+        props = class_obj.getprops(protected=False)
+        schema = result['schema']
+
+        for prop in props:
+            schema[prop] = { "type": repr(class_obj.properties[prop]) }
+
+        return result
+
+returns some data about the class
+
+    $ curl -X GET .../rest/data/issue/@schema
+    {   
+	"schema": {
+	    "keyword": {
+		"type": "<roundup.hyperdb.Multilink to \"keyword\">"
+	    },
+	    "title": {
+		"type": "<roundup.hyperdb.String>"
+	    },
+	    "files": {
+		"type": "<roundup.hyperdb.Multilink to \"file\">"
+	    },
+	    "status": {
+		"type": "<roundup.hyperdb.Link to \"status\">"
+	    }, ...
+	}
+    }
+
+
 Searches and selection
 ======================
 
