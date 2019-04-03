@@ -33,7 +33,7 @@ except ImportError:
 from roundup import hyperdb
 from roundup import date
 from roundup import actions
-from roundup.anypy.strings import bs2b, b2s
+from roundup.anypy.strings import bs2b, b2s, u2s, is_us
 from roundup.exceptions import *
 from roundup.cgi.exceptions import *
 
@@ -602,7 +602,7 @@ class RestfulInstance(object):
                         raise UsageError("Failed to find property '%s' "
                                          "for class %s."%(i, class_name))
 
-                    
+
             else: # serve the filter purpose
                 prop = class_obj.getprops()[key]
                 # We drop properties without search permission silently
@@ -1550,7 +1550,7 @@ class RestfulInstance(object):
         # FIXME: do we need to raise an error if client did not specify
         # version? This may be a good thing to require. Note that:
         # Accept: application/json; version=1 may not be legal but....
-        
+
         # Call the appropriate method
         try:
             # If output was defined by a prior error
@@ -1594,8 +1594,8 @@ class RoundupJSONEncoder(json.JSONEncoder):
 
 class SimulateFieldStorageFromJson():
     '''
-    The internals of the rest interface assume the data was sent as 
-    application/x-www-form-urlencoded. So we should have a 
+    The internals of the rest interface assume the data was sent as
+    application/x-www-form-urlencoded. So we should have a
     FieldStorage and MiniFieldStorage structure.
 
     However if we want to handle json data, we need to:
@@ -1616,7 +1616,6 @@ class SimulateFieldStorageFromJson():
         ''' Parse the json string into an internal dict. '''
         def raise_error_on_constant(x):
             raise ValueError("Unacceptable number: %s"%x)
-
         self.json_dict = json.loads(json_string,
                                     parse_constant = raise_error_on_constant)
         self.value = [ self.FsValue(index, self.json_dict[index]) for index in self.json_dict.keys() ]
@@ -1624,8 +1623,13 @@ class SimulateFieldStorageFromJson():
     class FsValue:
         '''Class that does nothing but response to a .value property '''
         def __init__(self, name, val):
-            self.name=name
-            self.value=val
+            self.name=u2s(name)
+            if is_us(val):
+                self.value=u2s(val)
+            elif type(val) == type([]):
+                self.value = [ u2s(v) for v in val ]
+            else:
+                self.value = str(val)
 
     def __getitem__(self, index):
         '''Return an FsValue created from the value of self.json_dict[index]
