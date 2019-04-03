@@ -1609,7 +1609,9 @@ class SimulateFieldStorageFromJson():
 
     references used when accessing a FieldStorage structure.
 
-    That's what this class does.
+    That's what this class does with all names and values as native
+    strings. Note that json is UTF-8, so we convert any unicode to
+    string.
 
     '''
     def __init__(self, json_string):
@@ -1625,10 +1627,13 @@ class SimulateFieldStorageFromJson():
         def __init__(self, name, val):
             self.name=u2s(name)
             if is_us(val):
+                # handle most common type first
                 self.value=u2s(val)
             elif type(val) == type([]):
+                # then lists of strings    
                 self.value = [ u2s(v) for v in val ]
             else:
+                # then stringify anything else (int, float)
                 self.value = str(val)
 
     def __getitem__(self, index):

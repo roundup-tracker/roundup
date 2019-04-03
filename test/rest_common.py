@@ -53,6 +53,9 @@ class TestCase():
         self.db.tx_Source = 'web'
 
         self.db.issue.addprop(tx_Source=hyperdb.String())
+        self.db.issue.addprop(anint=hyperdb.Integer())
+        self.db.issue.addprop(afloat=hyperdb.Number())
+        self.db.issue.addprop(abool=hyperdb.Boolean())
         self.db.msg.addprop(tx_Source=hyperdb.String())
 
         self.db.post_init()
@@ -697,6 +700,67 @@ class TestCase():
             else:
                 self.assertEqual(self.dummy_client.response_code, 412)
 
+    def testDispatchPost(self):
+        """
+        run POST through rest dispatch(). This also tests
+        sending json payload through code as dispatch is the
+        code that changes json payload into something we can
+        process.
+        """
+
+        # TEST #0
+        # POST: issue make joe assignee and admin and demo as
+        # nosy
+        # simulate: /rest/data/issue
+        body=b'{ "title": "Joe Doe has problems", \
+                 "nosy": [ "1", "3" ], \
+                 "assignedto": "2", \
+                 "abool": true, \
+                 "afloat": 2.3, \
+                 "anint": 567890 \
+        }'
+        env = { "CONTENT_TYPE": "application/json",
+                "CONTENT_LENGTH": len(body),
+                "REQUEST_METHOD": "POST"
+        }
+        headers={"accept": "application/json; version=1",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+        }
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch(env["REQUEST_METHOD"],
+                            "/rest/data/issue",
+                            form)
+
+        print(results)
+        self.assertEqual(self.server.client.response_code, 201)
+        json_dict = json.loads(b2s(results))
+        self.assertEqual(json_dict['data']['link'],
+                         "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue/1")
+        self.assertEqual(json_dict['data']['id'], "1")
+        results = self.server.dispatch('GET',
+                            "/rest/data/issue/1", self.empty_form)
+        print(results)
+        json_dict = json.loads(b2s(results))
+        self.assertEqual(json_dict['data']['link'],
+          "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue/1")
+        self.assertEqual(json_dict['data']['attributes']['abool'], True)
+        self.assertEqual(json_dict['data']['attributes']['afloat'], 2.3)
+        self.assertEqual(json_dict['data']['attributes']['anint'], 567890)
+        self.assertEqual(len(json_dict['data']['attributes']['nosy']), 3)
+        self.assertEqual(json_dict['data']['attributes']\
+                          ['assignedto']['link'],
+           "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/user/2")
+
+
     def testDispatch(self):
         """
         run changes through rest dispatch(). This also tests
@@ -704,7 +768,6 @@ class TestCase():
         code that changes json payload into something we can
         process.
         """
-
         # TEST #1
         # PUT: joe's 'realname' using json data.
         # simulate: /rest/data/user/<id>/realname
