@@ -601,10 +601,16 @@ class RestfulInstance(object):
                     except KeyError as err:
                         raise UsageError("Failed to find property '%s' "
                                          "for class %s."%(i, class_name))
-
-
+            elif key.startswith("@"):
+                # ignore any unsupported/previously handled control key
+                # like @apiver
+                pass
             else: # serve the filter purpose
-                prop = class_obj.getprops()[key]
+                try: 
+                    prop = class_obj.getprops()[key]
+                except KeyError:
+                    raise UsageError("Field %s is not valid for %s class."%(
+                        key, class_name))
                 # We drop properties without search permission silently
                 # This reflects the current behavior of other roundup
                 # interfaces
@@ -720,7 +726,7 @@ class RestfulInstance(object):
             try:
                 k, v = item_id.split('=', 1)
                 if k != keyprop:
-                    raise UsageError ("Not key property")
+                    raise UsageError ("Field %s is not key property"%k)
             except ValueError:
                 v = item_id
                 pass
@@ -1546,6 +1552,11 @@ class RestfulInstance(object):
                   "for supported versions."%(
                       input['@apiver'].value))
             output = self.error_obj(400, msg)
+        # sadly del doesn't work on FieldStorage which can be the type of
+        #   input. So I have to ignore keys starting with @ at other
+        # places in the code.
+        # else:
+        #     del(input['@apiver'])  
 
         # FIXME: do we need to raise an error if client did not specify
         # version? This may be a good thing to require. Note that:
