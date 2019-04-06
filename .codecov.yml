@@ -1,0 +1,12 @@
+#  - "path/to/folder"  # ignore folders and all its contents
+#  - "test_*.rb"       # wildcards accepted
+#  - "**/*.py"         # glob accepted
+#  - "[a-z]+/test_.*"  # regexp accepted
+
+# ignore files that are build utils and not executed
+# code, or are deprecated.
+ignore:
+   - "roundup/cgi/TAL/talgettext.py" # utility command
+   - "roundup/cgi/apache.py"  # mod_python is deprecated
+   - "roundup/install_util.py" # another build utlity
+   - "roundup/dist"           # more build utils
