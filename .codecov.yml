@@ -7,6 +7,7 @@
 # code, or are deprecated.
 ignore:
    - "roundup/cgi/TAL/talgettext.py" # utility command
+   - "roundup/cgi/TAL/DummyEngine.py" # test harness
    - "roundup/cgi/apache.py"  # mod_python is deprecated
    - "roundup/install_util.py" # another build utlity
    - "roundup/dist"           # more build utils
