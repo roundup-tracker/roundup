@@ -36,7 +36,7 @@ from relative REST-API links for brevety.
 Summary
 =======
 
-A Summary page can be reached via ``/data/summary`` via the ``GET`` method.
+A Summary page can be reached via ``/summary`` via the ``GET`` method.
 This is currently hard-coded for the standard tracker schema shipped
 with roundup and will display a summary of open issues.
 
@@ -136,13 +136,13 @@ empty new value.
 
 Finally the ``PATCH`` method can be applied to individual items, e.g.,
 ``/data/issue/42`` and to properties, e.g., ``/data/issue/42/title``.
-This method gets an operator ``@op=<method>`` where ``<method`` is one
+This method gets an operator ``@op=<method>`` where ``<method>`` is one
 of ``add``, ``replace``, ``remove``, only for an item (not for a
 property) an additional operator ``action`` is supported. If no operator
 is specified, the default is ``replace``. The first three operators are
 self explanatory. For an ``action`` operator an ``@action_name`` and
 optional ``@action_argsXXX`` parameters have to be supplied. Currently
-there are only two actions without parameters, namely ``retire`` and
+there are only two actions, neither has args, namely ``retire`` and
 ``restore``. The ``retire`` action on an item is the same as a
 ``DELETE`` method, it retires the item. The ``restore`` action is the
 inverse of ``retire``, the item is again visible.
@@ -198,9 +198,10 @@ Adding new rest endpoints
 Add or edit the file interfaces.py at the root of the tracker
 directory.
 
-In that file add (remove indentation):
+In that file add::
 
     from roundup.rest import Routing, RestfulInstance, _data_decorator
+    from roundup.exceptions import Unauthorised
 
     class RestfulInstance:
 
@@ -210,7 +211,7 @@ In that file add (remove indentation):
 	    result = { "hello": "world" }
 	    return 200, result
 
-will make a new endpoint .../rest/summary2 that you can test with:
+will make a new endpoint .../rest/summary2 that you can test with::
 
     $ curl -X GET .../rest/summary2
     {
@@ -219,25 +220,29 @@ will make a new endpoint .../rest/summary2 that you can test with:
         }
     }
 
-Similarly appending this to interfaces.py after summary2:
+Similarly appending this to interfaces.py after summary2::
 
-    @Routing.route("/data/<:class_name>/@schema", 'GET')
-    def get_element_schema(self, class_name, input):
-        result = { "schema": {} }
-        uid = self.db.getuid ()
-        if not self.db.security.hasPermission('View', uid, class_name) :
-            raise Unauthorised('Permission to view %s denied' % class_name)
+    # handle more endpoints
+        @Routing.route("/data/<:class_name>/@schema", 'GET')
+        def get_element_schema(self, class_name, input):
+	    result = { "schema": {} }
+	    uid = self.db.getuid ()
+	    if not self.db.security.hasPermission('View', uid, class_name) :
+		raise Unauthorised('Permission to view %s denied' % class_name)
 
-        class_obj = self.db.getclass(class_name)
-        props = class_obj.getprops(protected=False)
-        schema = result['schema']
+	    class_obj = self.db.getclass(class_name)
+	    props = class_obj.getprops(protected=False)
+	    schema = result['schema']
 
-        for prop in props:
-            schema[prop] = { "type": repr(class_obj.properties[prop]) }
+	    for prop in props:
+		schema[prop] = { "type": repr(class_obj.properties[prop]) }
 
-        return result
+	    return result
 
-returns some data about the class
+..
+  the # comment in the example is needed to preserve indention under Class.
+
+returns some data about the class::
 
     $ curl -X GET .../rest/data/issue/@schema
     {   
@@ -258,6 +263,9 @@ returns some data about the class
     }
 
 
+Adding other endpoints (e.g. to allow an OPTIONS query against
+``/data/issue/@schema``) is left as an exercise for the reader.
+
 Searches and selection
 ======================
 
@@ -271,9 +279,9 @@ selectize.js, chosen etc. These tools can query a remote data provider
 to get a list of items for the user to select from.
 
 Consider a multi-select box for the superseder property.  Using
-selectize.js (and jquery) code similar to:
+selectize.js (and jquery) code similar to::
 
- $('#superseder').selectize({
+    $('#superseder').selectize({
 	valueField: 'id',
 	labelField: 'title',
 	searchField: 'title', ...
@@ -289,9 +297,9 @@ selectize.js (and jquery) code similar to:
 
 Sets up a box that a user can type the word "request" into. Then
 selectize.js will use that word to generate an ajax request with the
-url: .../rest/data/issue?@verbose=2&title=request
+url: ``.../rest/data/issue?@verbose=2&title=request``
 
-This will return data like:
+This will return data like::
 
   {
     "data": {
@@ -307,6 +315,7 @@ This will return data like:
 	  "id": "27",
 	  "title": "Request for foo"
       },
+  ...
 
 selectize.js will look at these objects (as passed to
 callback(res.data.collection)) and create a select list from the each
@@ -316,7 +325,7 @@ example above has 440 issues returned from a total of 2000
 issues. Only 440 had the word "request" somewhere in the title greatly
 reducing the amount of data that needed to be transferred.
 
-Similar things can be set up to search a large list of keywords using
+Similar code can be set up to search a large list of keywords using::
 
   .../rest/data/keyword?@verbose=2&name=some
 
@@ -326,7 +335,7 @@ selections for links and multilinks much easier.
 Hopefully future enhancements will allow get on a collection to
 include other fields. Why do we want this?  Selectize.js can set up
 option groups (optgroups) in the select pulldown. So by including
-status in the returned data:
+status in the returned data::
 
       {
 	  "link": ".../rest/data/issue/27",
@@ -335,7 +344,7 @@ status in the returned data:
 	  'status": "open"
       },
 
-a select widget like:
+a select widget like::
 
   === New ===
   A request

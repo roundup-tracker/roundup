@@ -104,10 +104,17 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
 *xmlrpc interface*
  - simple remote tracker interface with basic HTTP authentication
+   available at the /xmlrpc endpoint.
  - provides same access to tracker as roundup-admin, but based on
    XMLRPC calls
+ - see the `xmlrpc guide`_ for more details simple clients etc.
+
+*restful interface*
+ - accessible using basic HTTP authentication at /rest starting point
+ - see the `rest guide`_ for details.
 
 .. _sqlite: http://www.hwaci.com/sw/sqlite/
 .. _mysql: https://pypi.org/project/MySQL-python/
 .. _postgresql: http://initd.org/software/initd/psycopg
-
+.. _`xmlrpc guide`: xmlrpc.html
+.. _`rest guide`: rest.html

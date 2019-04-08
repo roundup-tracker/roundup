@@ -19,6 +19,7 @@ Contents
    admin_guide
    debugging
    xmlrpc
+   rest
    overview
    Design (original) <design>
    developers
