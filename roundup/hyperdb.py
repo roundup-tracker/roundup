@@ -1724,15 +1724,15 @@ class Node:
         except KeyError as value:
             # we trap this but re-raise it as AttributeError - all other
             # exceptions should pass through untrapped
-            pass
-        # nope, no such attribute
-        raise AttributeError(str(value))
+            raise AttributeError(str(value))
     def __getitem__(self, name):
         return self.cl.get(self.nodeid, name)
     def __setattr__(self, name, value):
         try:
             return self.cl.set(self.nodeid, **{name: value})
         except KeyError as value:
+            # we trap this but re-raise it as AttributeError - all other
+            # exceptions should pass through untrapped
             raise AttributeError(str(value))
     def __setitem__(self, name, value):
         self.cl.set(self.nodeid, **{name: value})
