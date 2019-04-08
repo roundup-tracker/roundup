@@ -537,11 +537,35 @@ class Client:
 
         self.check_anonymous_access()
 
-        # Call rest library to handle the request
-        handler = rest.RestfulInstance(self, self.db)
-        output = handler.dispatch(self.env['REQUEST_METHOD'], self.path,
-                                  self.form)
+        try:
+            # Call csrf with xmlrpc checks enabled.
+            # It will return True if everything is ok,
+            # raises exception on check failure.
+            csrf_ok =  self.handle_csrf(xmlrpc=True)
+        except (Unauthorised, UsageError) as msg:
+            # report exception back to server
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            # FIXME should return what the client requests
+            # via accept header.
+            output = s2b("%s: %s\n"%(exc_type, exc_value))
+            self.response_code = 400
+            self.setHeader("Content-Length", str(len(output)))
+            self.setHeader("Content-Type", "text/plain")
+            self.write(output)
+            csrf_ok = False # we had an error, failed check
+            return
 
+        # With the return above the if will never be false,
+        # Keeping the if so we can remove return to pass
+        # output though  and format output according to accept
+        # header.
+        if csrf_ok == True:
+            # Call rest library to handle the request
+            handler = rest.RestfulInstance(self, self.db)
+            output = handler.dispatch(self.env['REQUEST_METHOD'],
+                                      self.path, self.form)
+
+        # type header set by rest handler
         # self.setHeader("Content-Type", "text/xml")
         self.setHeader("Content-Length", str(len(output)))
         self.write(output)
