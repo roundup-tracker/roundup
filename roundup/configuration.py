@@ -768,7 +768,7 @@ Set this to 'logfailure' to log a notice to the roundup
 Set this to 'no' to ignore the field and accept the post.
             """),
         (CsrfSettingOption, 'csrf_enforce_header_X-REQUESTED-WITH', "yes",
-            """This is only used for xmlrpc requests. This test is
+            """This is only used for xmlrpc and rest requests. This test is
 done after Origin and Referer headers are checked. It only
 verifies that the X-Requested-With header exists. The value
 is ignored.

@@ -170,7 +170,8 @@ with a REST API supporting JSON encoding::
         ...     exit(1)
         >>> print (r.json() ['data']['data']
         TEST Title
-        >>> r = s.post (u + 'issue', data = dict (title = 'TEST Issue'))
+        >>> h = {'X-Requested-With': 'rest', 'Referer': 'http://tracker.example.com/demo/'}
+        >>> r = s.post (u + 'issue', data = dict (title = 'TEST Issue'), headers=h)
         >>> if not 200 <= r.status_code <= 201:
         ...     print("Failed: %s: %s" % (r.status_code, r.reason))
         ...     exit(1)
@@ -184,13 +185,18 @@ Retire/Restore::
         >>> print("ETag: %s" % etag)
         >>> etag = r.json()['data']['@etag']
         >>> print("@etag: %s" % etag)
-        >>> h = {'If-Match': etag}
+        >>> h = {'If-Match': etag, 'X-Requested-With': 'rest', 'Referer': 'http://tracker.example.com/demo/'}
         >>> d = {'@op:'action', '@action_name':'retire'}
         >>> r = s.patch(u + 'issue/42', data = d, headers = h)
         >>> print(r.json())
         >>> d = {'@op:'action', '@action_name':'restore'}
         >>> r = s.patch(u + 'issue/42', data = d, headers = h)
         >>> print(r.json())
+
+Note the addition of headers for: x-requested-with and referer. This
+allows the request to pass the CSRF protection mechanism. You may need
+to add Origin if this check is enabled in your tracker's config.ini.
+
 
 Adding new rest endpoints
 =========================
