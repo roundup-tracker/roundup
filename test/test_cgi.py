@@ -18,7 +18,7 @@ from roundup.cgi.templating import HTMLItem, HTMLRequest, NoTemplate
 from roundup.cgi.templating import HTMLProperty, _HTMLItem, anti_csrf_nonce
 from roundup.cgi.form_parser import FormParser
 from roundup import init, instance, password, hyperdb, date
-from roundup.anypy.strings import StringIO, u2s
+from roundup.anypy.strings import StringIO, u2s, b2s
 
 # For testing very simple rendering
 from roundup.cgi.engine_zopetal import RoundupPageTemplate
@@ -1031,6 +1031,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         #raise ValueError
 
     def testRestCsrfProtection(self):
+        import json
         # set the password for admin so we can log in.
         passwd=password.Password('admin')
         self.db.user.set('1', password=passwd)
@@ -1044,7 +1045,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         form.list = [
             cgi.MiniFieldStorage('title', 'A new issue'),
             cgi.MiniFieldStorage('status', '1'),
-            cgi.MiniFieldStorage('pretty', 'false'),
+            cgi.MiniFieldStorage('@pretty', 'false'),
             cgi.MiniFieldStorage('@apiver', '1'),
         ]
         cl = client.Client(self.instance, None,
@@ -1069,7 +1070,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         # Should return explanation because content type is text/plain
         # and not text/xml
         cl.handle_rest()
-        self.assertEqual(out[0], "<class 'roundup.exceptions.UsageError'>: Required Header Missing\n")
+        self.assertEqual(b2s(out[0]), "<class 'roundup.exceptions.UsageError'>: Required Header Missing\n")
         del(out[0])
 
         cl = client.Client(self.instance, None,
@@ -1094,7 +1095,10 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
 
         # Should work as all required headers are present.
         cl.handle_rest()
-        self.assertEqual(out[0], '{"data": {"link": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue/1", "id": "1"}}\n')
+        answer='{"data": {"link": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue/1", "id": "1"}}\n'
+        response=json.loads(b2s(out[0]))
+        expected=json.loads(answer)
+        self.assertEqual(response,expected)
         del(out[0])
 
     def testXmlrpcCsrfProtection(self):
