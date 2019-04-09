@@ -26,3 +26,8 @@ class MockNull:
     def __repr__(self): return '<MockNull 0x%x>'%id(self)
     def gettext(self, str): return str
     _ = gettext
+    def get(self, name, default=None):
+        try:
+            return self.__dict__[name.lower()]
+        except KeyError:
+            return default

@@ -1030,6 +1030,73 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
             os.remove(SENDMAILDEBUG)
         #raise ValueError
 
+    def testRestCsrfProtection(self):
+        # set the password for admin so we can log in.
+        passwd=password.Password('admin')
+        self.db.user.set('1', password=passwd)
+
+        out = []
+        def wh(s):
+            out.append(s)
+
+        # rest has no form content
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('title', 'A new issue'),
+            cgi.MiniFieldStorage('status', '1'),
+            cgi.MiniFieldStorage('pretty', 'false'),
+            cgi.MiniFieldStorage('@apiver', '1'),
+        ]
+        cl = client.Client(self.instance, None,
+                           {'REQUEST_METHOD':'POST',
+                            'PATH_INFO':'rest/data/issue',
+                            'CONTENT_TYPE': 'application/x-www-form-urlencoded',
+                            'HTTP_AUTHORIZATION': 'Basic YWRtaW46YWRtaW4=',
+                            'HTTP_REFERER': 'http://whoami.com/path/',
+                            'HTTP_ACCEPT': "application/json;version=1"
+                        }, form)
+        cl.db = self.db
+        cl.base = 'http://whoami.com/path/'
+        cl._socket_op = lambda *x : True
+        cl._error_message = []
+        cl.request = MockNull()
+        h = { 'content-type': 'application/json',
+              'accept': 'application/json' }
+        cl.request.headers = MockNull(**h)
+                                      
+        cl.write = wh # capture output
+
+        # Should return explanation because content type is text/plain
+        # and not text/xml
+        cl.handle_rest()
+        self.assertEqual(out[0], "<class 'roundup.exceptions.UsageError'>: Required Header Missing\n")
+        del(out[0])
+
+        cl = client.Client(self.instance, None,
+                           {'REQUEST_METHOD':'POST',
+                            'PATH_INFO':'rest/data/issue',
+                            'CONTENT_TYPE': 'application/x-www-form-urlencoded',
+                            'HTTP_AUTHORIZATION': 'Basic YWRtaW46YWRtaW4=',
+                            'HTTP_REFERER': 'http://whoami.com/path/',
+                            'HTTP_X_REQUESTED_WITH': 'rest',
+                            'HTTP_ACCEPT': "application/json;version=1"
+                        }, form)
+        cl.db = self.db
+        cl.base = 'http://whoami.com/path/'
+        cl._socket_op = lambda *x : True
+        cl._error_message = []
+        cl.request = MockNull()
+        h = { 'content-type': 'application/json',
+              'accept': 'application/json;version=1' }
+        cl.request.headers = MockNull(**h)
+                                      
+        cl.write = wh # capture output
+
+        # Should work as all required headers are present.
+        cl.handle_rest()
+        self.assertEqual(out[0], '{"data": {"link": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue/1", "id": "1"}}\n')
+        del(out[0])
+
     def testXmlrpcCsrfProtection(self):
         # set the password for admin so we can log in.
         passwd=password.Password('admin')
