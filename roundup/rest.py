@@ -1305,6 +1305,10 @@ class RestfulInstance(object):
         """
         if class_name not in self.db.classes:
             raise NotFound('Class %s not found' % class_name)
+        self.client.setHeader(
+            "Allow",
+            "OPTIONS, GET, POST"
+        )
         return 204, ""
 
     @Routing.route("/data/<:class_name>/<:item_id>", 'OPTIONS')
@@ -1322,6 +1326,10 @@ class RestfulInstance(object):
             "Accept-Patch",
             "application/x-www-form-urlencoded, multipart/form-data"
         )
+        self.client.setHeader(
+            "Allow",
+            "OPTIONS, GET, PUT, DELETE, PATCH"
+        )
         return 204, ""
 
     @Routing.route("/data/<:class_name>/<:item_id>/<:attr_name>", 'OPTIONS')
@@ -1335,10 +1343,25 @@ class RestfulInstance(object):
         """
         if class_name not in self.db.classes:
             raise NotFound('Class %s not found' % class_name)
-        self.client.setHeader(
-            "Accept-Patch",
-            "application/x-www-form-urlencoded, multipart/form-data"
-        )
+        class_obj = self.db.getclass(class_name)
+        if attr_name in class_obj.getprops(protected=False):
+            self.client.setHeader(
+                "Accept-Patch",
+                "application/x-www-form-urlencoded, multipart/form-data"
+            )
+            self.client.setHeader(
+                "Allow",
+                "OPTIONS, GET, PUT, DELETE, PATCH"
+            )
+        elif attr_name in class_obj.getprops(protected=True):
+            # It must match a protected prop. These can't be written.
+            self.client.setHeader(
+                "Allow",
+                "OPTIONS, GET"
+            )
+        else:
+            raise NotFound('Attribute %s not valid for Class %s' %(
+                attr_name,class_name))
         return 204, ""
 
     @Routing.route("/")
@@ -1504,7 +1527,7 @@ class RestfulInstance(object):
         )
         self.client.setHeader(
             "Allow",
-            "HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH"
+            "OPTIONS, GET, POST, PUT, DELETE, PATCH"
         )
         self.client.setHeader(
             "Access-Control-Allow-Methods",
