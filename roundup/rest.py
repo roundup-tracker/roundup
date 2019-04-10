@@ -1536,7 +1536,7 @@ class RestfulInstance(object):
 
         # check for pretty print
         try:
-            pretty_output = not input['pretty'].value.lower() == "false"
+            pretty_output = not input['@pretty'].value.lower() == "false"
         except KeyError:
             pretty_output = True
 
