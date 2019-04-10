@@ -1096,6 +1096,11 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         # Should work as all required headers are present.
         cl.handle_rest()
         answer='{"data": {"link": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue/1", "id": "1"}}\n'
+        # check length to see if pretty is turned off.
+        self.assertEqual(len(out[0]), 99)
+
+        # compare as dicts not strings due to different key ordering
+        # between python versions.
         response=json.loads(b2s(out[0]))
         expected=json.loads(answer)
         self.assertEqual(response,expected)
