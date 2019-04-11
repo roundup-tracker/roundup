@@ -908,8 +908,11 @@ class Class(hyperdb.Class):
         if self.db.journaltag is None:
             raise hyperdb.DatabaseError(_('Database open read-only'))
 
-        if 'creation' in propvalues or 'activity' in propvalues:
-            raise KeyError('"creation" and "activity" are reserved')
+
+        if ('creator' in propvalues or 'actor' in propvalues or 
+             'creation' in propvalues or 'activity' in propvalues):
+            raise KeyError('"creator", "actor", "creation" and '
+                '"activity" are reserved')
         # new node's id
         newid = self.db.newid(self.classname)
 
@@ -1184,8 +1187,10 @@ class Class(hyperdb.Class):
         if not propvalues:
             return propvalues
 
-        if 'creation' in propvalues or 'activity' in propvalues:
-            raise KeyError('"creation" and "activity" are reserved')
+        if ('creator' in propvalues or 'actor' in propvalues or 
+             'creation' in propvalues or 'activity' in propvalues):
+            raise KeyError('"creator", "actor", "creation" and '
+                '"activity" are reserved')
 
         if 'id' in propvalues:
             raise KeyError('"id" is reserved')

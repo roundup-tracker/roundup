@@ -115,6 +115,8 @@ Fixed:
 - Make all links created with rel=nofollow include noopener. Deals
   with possible hijack of original page due to malicious link target.
   https://mathiasbynens.github.io/rel-noopener/ (John Rouillard)
+- Fix bug where some protected properties were not identified as such
+  when using the anydbm backend (John Rouillard)
 
 2018-07-13 1.6.0
 
