@@ -4,6 +4,7 @@ import shutil
 import errno
 
 from roundup.cgi.exceptions import *
+from roundup.hyperdb import HyperdbValueError
 from roundup.exceptions import *
 from roundup import password, hyperdb
 from roundup.rest import RestfulInstance, calculate_etag
@@ -1295,6 +1296,26 @@ class TestCase():
                          expected['error']['status'])
         self.assertEqual(type(results['error']['msg']),
                          type(expected['error']['msg']))
+        self.assertEqual(str(results['error']['msg']),
+                         str(expected['error']['msg']))
+        self.assertEqual(self.dummy_client.response_code, 400)
+
+        # delete bogus property
+        etag = calculate_etag(self.db.issue.getnode(issue_id))
+        form.list.append(cgi.MiniFieldStorage('@etag', etag))
+        results = self.server.delete_attribute(
+            'issue', issue_id, 'nosuchprop', form
+        )
+        expected= {'error': {'status': 400,
+                    'msg': UsageError("Attribute 'nosuchprop' not valid "
+                                      "for class issue.")}}
+        print(results)
+        self.assertEqual(results['error']['status'],
+                         expected['error']['status'])
+        self.assertEqual(type(results['error']['msg']),
+                         type(expected['error']['msg']))
+        self.assertEqual(str(results['error']['msg']),
+                         str(expected['error']['msg']))
         self.assertEqual(self.dummy_client.response_code, 400)
 
     def testPatchAdd(self):
@@ -1330,6 +1351,46 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(len(results['attributes']['nosy']), 2)
         self.assertListEqual(results['attributes']['nosy'], ['1', '2'])
+
+        etag = calculate_etag(self.db.issue.getnode(issue_id))
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@op', 'add'),
+            cgi.MiniFieldStorage('data', '3'),
+            cgi.MiniFieldStorage('@etag', etag)
+        ]
+        results = self.server.patch_attribute('issue', issue_id, 'nosy', form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+
+        # verify the result
+        results = self.server.get_element('issue', issue_id, self.terse_form)
+        results = results['data']
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['attributes']['nosy']), 3)
+        self.assertListEqual(results['attributes']['nosy'], ['1', '2', '3'])
+
+
+        # patch invalid property
+        etag = calculate_etag(self.db.issue.getnode(issue_id))
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@op', 'add'),
+            cgi.MiniFieldStorage('data', '3'),
+            cgi.MiniFieldStorage('@etag', etag)
+        ]
+        results = self.server.patch_attribute('issue', issue_id, 'notGoingToWork', form)
+        self.assertEqual(self.dummy_client.response_code, 400)
+        print(results)
+        expected={'error': {'status': 400,
+                            'msg': UsageError(
+                                HyperdbValueError(
+                            "'notGoingToWork' is not a property of issue",),)}}
+        self.assertEqual(results['error']['status'],
+                         expected['error']['status'])
+        self.assertEqual(type(results['error']['msg']),
+                         type(expected['error']['msg']))
+        self.assertEqual(str(results['error']['msg']),
+                         str(expected['error']['msg']))
 
     def testPatchReplace(self):
         """
@@ -1373,6 +1434,23 @@ class TestCase():
         self.assertEqual(results['attributes']['status'], '3')
         self.assertEqual(len(results['attributes']['nosy']), 1)
         self.assertListEqual(results['attributes']['nosy'], ['2'])
+
+        # replace status = 2 using status attribute
+        etag = calculate_etag(self.db.issue.getnode(issue_id))
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@op', 'replace'),
+            cgi.MiniFieldStorage('data', '2'),
+            cgi.MiniFieldStorage('@etag', etag)
+        ]
+        results = self.server.patch_attribute('issue', issue_id, 'status',
+                                              form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        # verify the result
+        results = self.server.get_element('issue', issue_id, self.terse_form)
+        results = results['data']
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(results['attributes']['status'], '2')
 
         # try to set a protected prop. It should fail.
         etag = calculate_etag(self.db.issue.getnode(issue_id))
