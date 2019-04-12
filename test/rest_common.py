@@ -4,6 +4,7 @@ import shutil
 import errno
 
 from roundup.cgi.exceptions import *
+from roundup.exceptions import *
 from roundup import password, hyperdb
 from roundup.rest import RestfulInstance, calculate_etag
 from roundup.backends import list_backends
@@ -56,6 +57,7 @@ class TestCase():
         self.db.issue.addprop(anint=hyperdb.Integer())
         self.db.issue.addprop(afloat=hyperdb.Number())
         self.db.issue.addprop(abool=hyperdb.Boolean())
+        self.db.issue.addprop(requireme=hyperdb.String(required=True))
         self.db.msg.addprop(tx_Source=hyperdb.String())
 
         self.db.post_init()
@@ -143,8 +145,6 @@ class TestCase():
 
     def testOutputFormat(self):
         """ test of @fields and @verbose implementation """
-
-        from roundup.exceptions import UsageError
 
         self.maxDiff = 4000
         # create sample data
@@ -620,7 +620,7 @@ class TestCase():
         ''' Make sure etag generation is stable
         
             FIXME need to mock somehow date.Date() when creating
-            the target to be mocked. The differening dates makes
+            the target to be mocked. The differing dates makes
             this test impossible.
         '''
         newuser = self.db.user.create(
@@ -985,7 +985,7 @@ class TestCase():
                          'foo bar')
         del(self.headers)
 
-    def testPut(self):
+    def testPutElement(self):
         """
         Change joe's 'realname'
         Check if we can't change admin's detail
@@ -1026,9 +1026,14 @@ class TestCase():
         del(self.headers)
 
         # Reset joe's 'realname'. etag in body
+        # Also try to set protected items. The protected items should
+        # be ignored on put_element to make it easy to get the item
+        # with all fields, change one field and put the result without
+        # having to filter out protected items.
         form = cgi.FieldStorage()
         etag = calculate_etag(self.db.user.getnode(self.joeid))
         form.list = [
+            cgi.MiniFieldStorage('creator', '3'),
             cgi.MiniFieldStorage('realname', 'Joe Doe'),
             cgi.MiniFieldStorage('@etag', etag)
         ]
@@ -1038,10 +1043,78 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['data']['attributes']['realname'], 'Joe Doe')
 
-        # check we can't change admin's details
+        # We are joe, so check we can't change admin's details
         results = self.server.put_element('user', '1', form)
         self.assertEqual(self.dummy_client.response_code, 403)
         self.assertEqual(results['error']['status'], 403)
+
+        # Try to reset joe's 'realname' and add a broken prop.
+        # This should result in no change to the name and
+        # a 400 UsageError stating prop does not exist.
+        form = cgi.FieldStorage()
+        etag = calculate_etag(self.db.user.getnode(self.joeid))
+        form.list = [
+            cgi.MiniFieldStorage('JustKidding', '3'),
+            cgi.MiniFieldStorage('realname', 'Joe Doe'),
+            cgi.MiniFieldStorage('@etag', etag)
+        ]
+        results = self.server.put_element('user', self.joeid, form)
+        expected= {'error': {'status': 400,
+                             'msg': UsageError('Property JustKidding not '
+                                               'found in class user')}}
+        self.assertEqual(results['error']['status'],
+                         expected['error']['status'])
+        self.assertEqual(type(results['error']['msg']),
+                         type(expected['error']['msg']))
+        self.assertEqual(self.dummy_client.response_code, 400)
+        results = self.server.get_element('user', self.joeid, self.empty_form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(results['data']['attributes']['realname'], 'Joe Doe')
+
+    def testPutAttribute(self):
+        # put protected property
+        # make sure we don't have permission issues
+        self.db.setCurrentUser('admin')
+        form = cgi.FieldStorage()
+        etag = calculate_etag(self.db.user.getnode(self.joeid))
+        form.list = [
+            cgi.MiniFieldStorage('data', '3'),
+            cgi.MiniFieldStorage('@etag', etag)
+        ]
+        results = self.server.put_attribute(
+            'user', self.joeid, 'creator', form
+        )
+        expected= {'error': {'status': 400, 'msg': 
+                             UsageError('\'"creator", "actor", "creation" and '
+                                        '"activity" are reserved\'')}}
+        print(results)
+        self.assertEqual(results['error']['status'],
+                         expected['error']['status'])
+        self.assertEqual(type(results['error']['msg']),
+                         type(expected['error']['msg']))
+        self.assertEqual(self.dummy_client.response_code, 400)
+
+        # put invalid property
+        # make sure we don't have permission issues
+        self.db.setCurrentUser('admin')
+        form = cgi.FieldStorage()
+        etag = calculate_etag(self.db.user.getnode(self.joeid))
+        form.list = [
+            cgi.MiniFieldStorage('data', '3'),
+            cgi.MiniFieldStorage('@etag', etag)
+        ]
+        results = self.server.put_attribute(
+            'user', self.joeid, 'youMustBeKiddingMe', form
+        )
+        expected= {'error': {'status': 400,
+                             'msg': UsageError("'youMustBeKiddingMe' "
+                                      "is not a property of user")}}
+        print(results)
+        self.assertEqual(results['error']['status'],
+                         expected['error']['status'])
+        self.assertEqual(type(results['error']['msg']),
+                         type(expected['error']['msg']))
+        self.assertEqual(self.dummy_client.response_code, 400)
 
     def testPost(self):
         """
@@ -1149,6 +1222,7 @@ class TestCase():
         """
         Test Delete an attribute
         """
+        self.maxDiff = 4000
         # create a new issue with userid 1 in the nosy list
         issue_id = self.db.issue.create(title='foo', nosy=['1'])
 
@@ -1189,6 +1263,39 @@ class TestCase():
         self.assertEqual(len(results['attributes']['nosy']), 0)
         self.assertListEqual(results['attributes']['nosy'], [])
         self.assertEqual(results['attributes']['title'], None)
+
+        # delete protected property
+        etag = calculate_etag(self.db.issue.getnode(issue_id))
+        form.list.append(cgi.MiniFieldStorage('@etag', etag))
+        results = self.server.delete_attribute(
+            'issue', issue_id, 'creator', form
+        )
+        expected= {'error': {
+            'status': 400, 
+            'msg': UsageError("Attribute 'creator' can not be updated for class issue.")
+        }}
+
+        self.assertEqual(results['error']['status'],
+                         expected['error']['status'])
+        self.assertEqual(type(results['error']['msg']),
+                         type(expected['error']['msg']))
+        self.assertEqual(self.dummy_client.response_code, 400)
+
+        # delete required property
+        etag = calculate_etag(self.db.issue.getnode(issue_id))
+        form.list.append(cgi.MiniFieldStorage('@etag', etag))
+        results = self.server.delete_attribute(
+            'issue', issue_id, 'requireme', form
+        )
+        expected= {'error': {'status': 400,
+                    'msg': UsageError("Attribute 'requireme' is "
+                        "required by class issue and can not be deleted.")}}
+        print(results)
+        self.assertEqual(results['error']['status'],
+                         expected['error']['status'])
+        self.assertEqual(type(results['error']['msg']),
+                         type(expected['error']['msg']))
+        self.assertEqual(self.dummy_client.response_code, 400)
 
     def testPatchAdd(self):
         """
@@ -1267,6 +1374,26 @@ class TestCase():
         self.assertEqual(len(results['attributes']['nosy']), 1)
         self.assertListEqual(results['attributes']['nosy'], ['2'])
 
+        # try to set a protected prop. It should fail.
+        etag = calculate_etag(self.db.issue.getnode(issue_id))
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@op', 'replace'),
+            cgi.MiniFieldStorage('creator', '2'),
+            cgi.MiniFieldStorage('@etag', etag)
+        ]
+        results = self.server.patch_element('issue', issue_id, form)
+        expected= {'error': {'status': 400,
+                             'msg': KeyError('"creator", "actor", "creation" and "activity" are reserved',)}}
+        print(results)
+        self.assertEqual(results['error']['status'],
+                         expected['error']['status'])
+        self.assertEqual(type(results['error']['msg']),
+                         type(expected['error']['msg']))
+        self.assertEqual(str(results['error']['msg']),
+                         str(expected['error']['msg']))
+        self.assertEqual(self.dummy_client.response_code, 400)
+
     def testPatchRemoveAll(self):
         """
         Test Patch Action 'Remove'
@@ -1310,6 +1437,46 @@ class TestCase():
         self.assertEqual(results['attributes']['title'], None)
         self.assertEqual(len(results['attributes']['nosy']), 0)
         self.assertEqual(results['attributes']['nosy'], [])
+
+        # try to remove a protected prop. It should fail.
+        etag = calculate_etag(self.db.issue.getnode(issue_id))
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@op', 'remove'),
+            cgi.MiniFieldStorage('creator', '2'),
+            cgi.MiniFieldStorage('@etag', etag)
+        ]
+        results = self.server.patch_element('issue', issue_id, form)
+        expected= {'error': {'status': 400,
+                             'msg': KeyError('"creator", "actor", "creation" and "activity" are reserved',)}}
+        print(results)
+        self.assertEqual(results['error']['status'],
+                         expected['error']['status'])
+        self.assertEqual(type(results['error']['msg']),
+                         type(expected['error']['msg']))
+        self.assertEqual(str(results['error']['msg']),
+                         str(expected['error']['msg']))
+        self.assertEqual(self.dummy_client.response_code, 400)
+
+        # try to remove a required prop. it should fail
+        etag = calculate_etag(self.db.issue.getnode(issue_id))
+        form.list = [
+            cgi.MiniFieldStorage('@op', 'remove'),
+            cgi.MiniFieldStorage('requireme', ''),
+            cgi.MiniFieldStorage('@etag', etag)
+        ]
+        results = self.server.patch_element('issue', issue_id, form)
+        expected= {'error': {'status': 400,
+                             'msg': UsageError("Attribute 'requireme' is required by class issue and can not be removed.")
+                             }}
+        print(results)
+        self.assertEqual(results['error']['status'],
+                         expected['error']['status'])
+        self.assertEqual(type(results['error']['msg']),
+                         type(expected['error']['msg']))
+        self.assertEqual(str(results['error']['msg']),
+                         str(expected['error']['msg']))
+        self.assertEqual(self.dummy_client.response_code, 400)
 
     def testPatchAction(self):
         """

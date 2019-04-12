@@ -64,7 +64,7 @@ def _data_decorator(func):
         except Unauthorised as msg:
             code = 403
             data = msg
-        except UsageError as msg:
+        except (UsageError, KeyError) as msg:
             code = 400
             data = msg
         except (AttributeError, Reject) as msg:
@@ -344,7 +344,7 @@ class RestfulInstance(object):
         self.base_path = '%srest' % (self.db.config.TRACKER_WEB)
         self.data_path = self.base_path + '/data'
 
-    def props_from_args(self, cl, args, itemid=None):
+    def props_from_args(self, cl, args, itemid=None, skip_protected=True):
         """Construct a list of properties from the given arguments,
         and return them after validation.
 
@@ -354,18 +354,46 @@ class RestfulInstance(object):
             itemid (string, optional): itemid of the object
 
         Returns:
-            dict: dictionary of validated properties
+            dict: dictionary of validated properties excluding
+                  protected properties if strip_protected=True.
+
+        Raises: UsageError if property does not exist and is not
+           prefixed with @ indicating it's a meta variable.
+
 
         """
-        class_props = cl.properties.keys()
+        unprotected_class_props = cl.properties.keys()
+        protected_class_props = [ p for p in 
+                                  list(cl.getprops(protected=True))
+                                  if p not in unprotected_class_props ]
         props = {}
         # props = dict.fromkeys(class_props, None)
 
         for arg in args:
             key = arg.name
             value = arg.value
-            if key not in class_props:
+            if key.startswith('@'):
+                # meta setting, not db property setting/reference
                 continue
+            if key in protected_class_props:
+                # Skip protected props as a convenience.
+                # Allows user to get object with all props,
+                # change one prop, submit entire object
+                # without having to remove any protected props
+                # FIXME: Enhancement: raise error if value of prop
+                # doesn't match db entry. In this case assume user
+                # is really trying to set value. Another possibility is
+                # they have an old copy of the data and it has been
+                # updated. In the update case, we want etag validation
+                # to generate the exception to reduce confusion. I think
+                # etag validation occurs before this function is called but
+                # I am not positive.
+                if skip_protected:
+                    continue
+            elif key not in unprotected_class_props:
+                # report bad props as this is an error.
+                raise UsageError("Property %s not found in class %s"%(key,
+                                                                cl.classname))
             props[key] = self.prop_from_arg(cl, key, value, itemid)
 
         return props
@@ -390,7 +418,7 @@ class RestfulInstance(object):
                 x = key.encode('ascii')
             except UnicodeEncodeError:
                 raise UsageError(
-                    'argument %r is no valid ascii keyword' % key
+                    'argument %r is not a valid ascii keyword' % key
                 )
         if value:
             try:
@@ -944,6 +972,10 @@ class RestfulInstance(object):
             self.db.commit()
         except (TypeError, IndexError, ValueError) as message:
             raise ValueError(message)
+        except KeyError as message:
+            # key error returned for changing protected keys
+            # and changing invalid keys
+            raise UsageError(message)
 
         result = {
             'id': item_id,
@@ -995,6 +1027,10 @@ class RestfulInstance(object):
             self.db.commit()
         except (TypeError, IndexError, ValueError) as message:
             raise ValueError(message)
+        except KeyError as message:
+            # key error returned for changing protected keys
+            # and changing invalid keys
+            raise UsageError(message)
 
         result = {
             'id': item_id,
@@ -1112,6 +1148,16 @@ class RestfulInstance(object):
             )
 
         class_obj = self.db.getclass(class_name)
+        if attr_name not in class_obj.getprops(protected=False):
+            if attr_name in class_obj.getprops(protected=True):
+                raise UsageError("Attribute '%s' can not be updated " \
+                                 "for class %s."%(attr_name, class_name))
+            else:
+                raise UsageError("Attribute '%s' not valid for class %s."%(
+                    attr_name, class_name))
+        if attr_name in class_obj.get_required_props():
+                raise UsageError("Attribute '%s' is required by class %s and can not be deleted."%(
+                    attr_name, class_name))
         props = {}
         prop_obj = class_obj.get(item_id, attr_name)
         if isinstance(prop_obj, list):
@@ -1125,6 +1171,10 @@ class RestfulInstance(object):
             self.db.commit()
         except (TypeError, IndexError, ValueError) as message:
             raise ValueError(message)
+        except KeyError as message:
+            # key error returned for changing protected keys
+            # and changing invalid keys
+            raise UsageError(message)
 
         result = {
             'status': 'ok'
@@ -1196,8 +1246,10 @@ class RestfulInstance(object):
             }
         else:
             # else patch operation is processing data
-            props = self.props_from_args(class_obj, input.value, item_id)
+            props = self.props_from_args(class_obj, input.value, item_id,
+                                         skip_protected=False)
 
+            required_props = class_obj.get_required_props()
             for prop in props:
                 if not self.db.security.hasPermission(
                     'Edit', self.db.getuid(), class_name, prop, item_id
@@ -1205,6 +1257,11 @@ class RestfulInstance(object):
                     raise Unauthorised(
                         'Permission to edit %s of %s%s denied' %
                         (prop, class_name, item_id)
+                    )
+                if op == 'remove' and prop in required_props:
+                    raise UsageError(
+                        "Attribute '%s' is required by class %s "
+                        "and can not be removed."%(prop, class_name)
                     )
 
                 props[prop] = self.patch_data(
@@ -1267,6 +1324,10 @@ class RestfulInstance(object):
 
         prop = attr_name
         class_obj = self.db.getclass(class_name)
+        if attr_name not in class_obj.getprops(protected=False):
+            if attr_name in class_obj.getprops(protected=True):
+                raise UsageError("Attribute '%s' can not be updated " \
+                                 "for class %s."%(attr_name, class_name))
 
         self.raise_if_no_etag(class_name, item_id, input)
 
@@ -1285,6 +1346,10 @@ class RestfulInstance(object):
             self.db.commit()
         except (TypeError, IndexError, ValueError) as message:
             raise ValueError(message)
+        except KeyError as message:
+            # key error returned for changing protected keys
+            # and changing invalid keys
+            raise UsageError(message)
 
         result = {
             'id': item_id,
@@ -1608,6 +1673,9 @@ class RestfulInstance(object):
             self.client.setHeader("Content-Type", "application/xml")
             output = b2s(dicttoxml(output, root=False))
         else:
+            # FIXME?? consider moving this earlier. We should
+            # error out before doing any work if we can't
+            # display acceptable output.
             self.client.response_code = 406
             output = "Content type is not accepted by client"
 
