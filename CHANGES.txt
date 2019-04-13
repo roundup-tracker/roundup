@@ -117,6 +117,10 @@ Fixed:
   https://mathiasbynens.github.io/rel-noopener/ (John Rouillard)
 - Fix bug where some protected properties were not identified as such
   when using the anydbm backend (John Rouillard)
+- issue2551041 - change permission check from "Create User" to "Register
+  User" in page.html for the responsive and devel templates. (reporter
+  Cédric Krier, John Rouillard)
+
 
 2018-07-13 1.6.0
 
