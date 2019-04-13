@@ -1085,15 +1085,15 @@ class TestCase():
         results = self.server.put_attribute(
             'user', self.joeid, 'creator', form
         )
-        expected= {'error': {'status': 400, 'msg': 
-                             UsageError('\'"creator", "actor", "creation" and '
+        expected= {'error': {'status': 405, 'msg': 
+                             AttributeError('\'"creator", "actor", "creation" and '
                                         '"activity" are reserved\'')}}
         print(results)
         self.assertEqual(results['error']['status'],
                          expected['error']['status'])
         self.assertEqual(type(results['error']['msg']),
                          type(expected['error']['msg']))
-        self.assertEqual(self.dummy_client.response_code, 400)
+        self.assertEqual(self.dummy_client.response_code, 405)
 
         # put invalid property
         # make sure we don't have permission issues
@@ -1272,15 +1272,15 @@ class TestCase():
             'issue', issue_id, 'creator', form
         )
         expected= {'error': {
-            'status': 400, 
-            'msg': UsageError("Attribute 'creator' can not be updated for class issue.")
+            'status': 405, 
+            'msg': AttributeError("Attribute 'creator' can not be updated for class issue.")
         }}
 
         self.assertEqual(results['error']['status'],
                          expected['error']['status'])
         self.assertEqual(type(results['error']['msg']),
                          type(expected['error']['msg']))
-        self.assertEqual(self.dummy_client.response_code, 400)
+        self.assertEqual(self.dummy_client.response_code, 405)
 
         # delete required property
         etag = calculate_etag(self.db.issue.getnode(issue_id))

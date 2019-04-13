@@ -1030,7 +1030,7 @@ class RestfulInstance(object):
         except KeyError as message:
             # key error returned for changing protected keys
             # and changing invalid keys
-            raise UsageError(message)
+            raise AttributeError(message)
 
         result = {
             'id': item_id,
@@ -1150,7 +1150,7 @@ class RestfulInstance(object):
         class_obj = self.db.getclass(class_name)
         if attr_name not in class_obj.getprops(protected=False):
             if attr_name in class_obj.getprops(protected=True):
-                raise UsageError("Attribute '%s' can not be updated " \
+                raise AttributeError("Attribute '%s' can not be deleted " \
                                  "for class %s."%(attr_name, class_name))
             else:
                 raise UsageError("Attribute '%s' not valid for class %s."%(
@@ -1326,7 +1326,7 @@ class RestfulInstance(object):
         class_obj = self.db.getclass(class_name)
         if attr_name not in class_obj.getprops(protected=False):
             if attr_name in class_obj.getprops(protected=True):
-                raise UsageError("Attribute '%s' can not be updated " \
+                raise AttributeError("Attribute '%s' can not be updated " \
                                  "for class %s."%(attr_name, class_name))
 
         self.raise_if_no_etag(class_name, item_id, input)
@@ -1671,7 +1671,31 @@ class RestfulInstance(object):
             output = RoundupJSONEncoder(indent=indent).encode(output)
         elif data_type.lower() == "xml" and dicttoxml:
             self.client.setHeader("Content-Type", "application/xml")
-            output = b2s(dicttoxml(output, root=False))
+            if 'error' in output:
+                # capture values in error with types unsupported
+                # by dicttoxml e.g. an exception, into something it
+                # can handle
+                import numbers
+                import collections
+                for key,val in output['error'].items():
+                    if isinstance(val, numbers.Number) or type(val) in \
+                       (str, unicode):
+                        pass
+                    elif hasattr(val, 'isoformat'): # datetime
+                        pass
+                    elif type(val) == bool:
+                        pass
+                    elif isinstance(val, dict):
+                        pass
+                    elif isinstance(val, collections.Iterable):
+                        pass
+                    elif val is None:
+                        pass
+                    else:
+                        output['error'][key] = str(val)
+
+            output = '<?xml version="1.0" encoding="UTF-8" ?>\n' + \
+                     b2s(dicttoxml(output, root=False))
         else:
             # FIXME?? consider moving this earlier. We should
             # error out before doing any work if we can't
