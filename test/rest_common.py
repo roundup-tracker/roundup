@@ -1472,6 +1472,28 @@ class TestCase():
                          str(expected['error']['msg']))
         self.assertEqual(self.dummy_client.response_code, 400)
 
+        # try to set a protected prop using patch_attribute. It should
+        # fail with a 405 bad/unsupported method.
+        etag = calculate_etag(self.db.issue.getnode(issue_id))
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@op', 'replace'),
+            cgi.MiniFieldStorage('data', '2'),
+            cgi.MiniFieldStorage('@etag', etag)
+        ]
+        results = self.server.patch_attribute('issue', issue_id, 'creator', 
+                                              form)
+        expected= {'error': {'status': 405,
+                             'msg': AttributeError("Attribute 'creator' can not be updated for class issue.",)}}
+        print(results)
+        self.assertEqual(results['error']['status'],
+                         expected['error']['status'])
+        self.assertEqual(type(results['error']['msg']),
+                         type(expected['error']['msg']))
+        self.assertEqual(str(results['error']['msg']),
+                         str(expected['error']['msg']))
+        self.assertEqual(self.dummy_client.response_code, 405)
+
     def testPatchRemoveAll(self):
         """
         Test Patch Action 'Remove'
