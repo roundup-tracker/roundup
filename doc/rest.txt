@@ -185,7 +185,9 @@ Retire/Restore::
         >>> print("ETag: %s" % etag)
         >>> etag = r.json()['data']['@etag']
         >>> print("@etag: %s" % etag)
-        >>> h = {'If-Match': etag, 'X-Requested-With': 'rest', 'Referer': 'http://tracker.example.com/demo/'}
+        >>> h = {'If-Match': etag, 
+        ...   'X-Requested-With': 'rest',
+        ...   'Referer': 'http://tracker.example.com/demo/'}
         >>> d = {'@op:'action', '@action_name':'retire'}
         >>> r = s.patch(u + 'issue/42', data = d, headers = h)
         >>> print(r.json())
@@ -195,82 +197,119 @@ Retire/Restore::
 
 Note the addition of headers for: x-requested-with and referer. This
 allows the request to pass the CSRF protection mechanism. You may need
-to add Origin if this check is enabled in your tracker's config.ini.
+to add an Origin header if this check is enabled in your tracker's
+config.ini (look for csrf_enforce_header_origin).
 
+Safely Re-sending POST
+======================
 
-Adding new rest endpoints
-=========================
+POST is used to create new object in a class. E.G. a new issue.  One
+problem is that a POST may time out. Because it is not idempotent like
+a PUT or DELETE, retrying the interrupted POST may result in the
+creation of a duplicate issue.
 
-Add or edit the file interfaces.py at the root of the tracker
-directory.
+To solve this problem, a two step process inspired by the POE - Post
+Once Exactly spec:
+https://tools.ietf.org/html/draft-nottingham-http-poe-00 is provided.
 
-In that file add::
+This mechanism returns a single use URL. POSTing to the URL creates
+a new object in the class.
 
-    from roundup.rest import Routing, RestfulInstance, _data_decorator
-    from roundup.exceptions import Unauthorised
+First we get the URL. Here is an example using curl::
 
-    class RestfulInstance:
+  curl -u demo:demo -s -X POST -H "Referer: https://.../demo/" \
+      -H "X-requested-with: rest" \
+      -H "Content-Type: application/json" \
+      --data '' \
+      https://.../demo/rest/data/issue/@poe
 
-	@Routing.route("/summary2")
-	@_data_decorator
-	def summary2(self, input):
-	    result = { "hello": "world" }
-	    return 200, result
+This will return a json payload like::
 
-will make a new endpoint .../rest/summary2 that you can test with::
-
-    $ curl -X GET .../rest/summary2
-    {
-        "data": {
-            "hello": "world"
-        }
+  {
+    "data": {
+        "expires": 1555266310.4457426,
+        "link": "https://.../demo/rest/data/issue/@poe/vizl713xHtIzANRW9jPb3bWXePRzmehdmSXzEta1"
     }
+  }
 
-Similarly appending this to interfaces.py after summary2::
+The value of expires is a Unix timestamp in seconds. In this case it
+has the default lifetime of 30 minutes after the current time. Using
+the link more than 30 minutes into the future will cause a 400 error.
 
-    # handle more endpoints
-        @Routing.route("/data/<:class_name>/@schema", 'GET')
-        def get_element_schema(self, class_name, input):
-	    result = { "schema": {} }
-	    uid = self.db.getuid ()
-	    if not self.db.security.hasPermission('View', uid, class_name) :
-		raise Unauthorised('Permission to view %s denied' % class_name)
+Within 30 minutes, the link can be used to post an issue with the same
+payload that would normally be sent to:
+``https://.../demo/rest/data/issue``.
 
-	    class_obj = self.db.getclass(class_name)
-	    props = class_obj.getprops(protected=False)
-	    schema = result['schema']
+For example::
 
-	    for prop in props:
-		schema[prop] = { "type": repr(class_obj.properties[prop]) }
+   curl -u demo:demo -s -X POST \
+     -H "Referer: https://.../demo/" \
+     -H "X-requested-with: rest" \
+     -H "Content-Type: application/json"  \
+     --data-binary '{ "title": "a problem" }' \
+     https://.../demo/rest/data/issue/@poe/vizl713xHtIzANRW9jPb3bWXePRzmehdmSXzEta1
 
-	    return result
+returns::
 
-..
-  the # comment in the example is needed to preserve indention under Class.
-
-returns some data about the class::
-
-    $ curl -X GET .../rest/data/issue/@schema
-    {   
-	"schema": {
-	    "keyword": {
-		"type": "<roundup.hyperdb.Multilink to \"keyword\">"
-	    },
-	    "title": {
-		"type": "<roundup.hyperdb.String>"
-	    },
-	    "files": {
-		"type": "<roundup.hyperdb.Multilink to \"file\">"
-	    },
-	    "status": {
-		"type": "<roundup.hyperdb.Link to \"status\">"
-	    }, ...
-	}
+  {
+    "data": {
+        "link": "https://.../demo/rest/data/issue/2280",
+        "id": "2280"
     }
+  }
 
+Once the @poe link is used and creates an issue, it becomes invalid
+and can't be used again.  Posting to it after the issue, or other
+object, is created, results in a 400 error [#poe_retry]_.
 
-Adding other endpoints (e.g. to allow an OPTIONS query against
-``/data/issue/@schema``) is left as an exercise for the reader.
+Note that POE links are by restricted to the class that was used to
+get the link. So you can only create an issue using the link returned
+from ``rest/data/issue/@poe``. You can create a generic POE link by adding
+the "generic" field to the post payload::
+
+  curl -u demo:demo -s -X POST -H "Referer: https://.../demo/" \
+      -H "X-requested-with: rest" \
+      --data 'lifetime=100&generic=1' \
+      https://.../demo/rest/data/issue/@poe
+
+This will return a link under: ``https://.../demo/rest/data/issue/@poe``::
+
+  {
+    "data": {
+        "expires": 1555268640.9606116,
+        "link":
+    "https://.../demo/rest/data/issue/@poe/slPrzmEq6Q9BTjvcKhfxMNZL4uHXjbHCidY1ludZ"
+    }
+  }
+
+You could use the link and change 'issue' to 'user' and it would work
+to create a user. Creating generic POE tokens is *not* recommended,
+but is available if a use case requires it.
+
+This example also changes the lifetime of the POE url.  This link has
+a lifetime of 15 minutes (900 seconds). Using it after 16 minutes will
+result in a 400 error. A lifetime up to 1 hour can be specified.
+
+POE url's are an optional mechanism. If:
+
+* you do not expect your client to retry a failed post,
+* a failed post is unlikely (e.g. you are running over a local lan),
+* there is a human using the client and who can intervene if a post
+  fails
+
+you can use the url ``https://.../demo/data/<class>``. However if you
+are using this mechanism to automate creation of objects and will
+automatically retry a post until it succeeds, please use the POE
+mechanism.
+
+.. [#poe_retry] At some future date, performing a POST to the POE link
+        soon after it has been used to create an object will
+        change. It will not return a 400 error. It will will trigger a
+        redirect to the url for the created object. After some period
+        of time (maybe a week) the POE link will be removed and return
+        a 400 error. This is meant to allow the client (a time limited
+        way) to retrieve the created resource when the response was
+        lost.
 
 Searches and selection
 ======================
@@ -360,3 +399,85 @@ a select widget like::
 
 etc. can be generated. Also depending on the javascript library, other
 fields can be used for subsearch and sorting.
+
+
+Programming the REST API
+------------------------
+
+You can extend the rest api for a tracker. This describes how to add
+new rest end points. At some point it will also describe the rest.py
+structure and implementation.
+
+Adding new rest endpoints
+=========================
+
+Add or edit the file interfaces.py at the root of the tracker
+directory.
+
+In that file add::
+
+    from roundup.rest import Routing, RestfulInstance, _data_decorator
+    from roundup.exceptions import Unauthorised
+
+    class RestfulInstance:
+
+	@Routing.route("/summary2")
+	@_data_decorator
+	def summary2(self, input):
+	    result = { "hello": "world" }
+	    return 200, result
+
+will make a new endpoint .../rest/summary2 that you can test with::
+
+    $ curl -X GET .../rest/summary2
+    {
+        "data": {
+            "hello": "world"
+        }
+    }
+
+Similarly appending this to interfaces.py after summary2::
+
+    # handle more endpoints
+        @Routing.route("/data/<:class_name>/@schema", 'GET')
+        def get_element_schema(self, class_name, input):
+	    result = { "schema": {} }
+	    uid = self.db.getuid ()
+	    if not self.db.security.hasPermission('View', uid, class_name) :
+		raise Unauthorised('Permission to view %s denied' % class_name)
+
+	    class_obj = self.db.getclass(class_name)
+	    props = class_obj.getprops(protected=False)
+	    schema = result['schema']
+
+	    for prop in props:
+		schema[prop] = { "type": repr(class_obj.properties[prop]) }
+
+	    return result
+
+..
+  the # comment in the example is needed to preserve indention under Class.
+
+returns some data about the class::
+
+    $ curl -X GET .../rest/data/issue/@schema
+    {   
+	"schema": {
+	    "keyword": {
+		"type": "<roundup.hyperdb.Multilink to \"keyword\">"
+	    },
+	    "title": {
+		"type": "<roundup.hyperdb.String>"
+	    },
+	    "files": {
+		"type": "<roundup.hyperdb.Multilink to \"file\">"
+	    },
+	    "status": {
+		"type": "<roundup.hyperdb.Link to \"status\">"
+	    }, ...
+	}
+    }
+
+
+Adding other endpoints (e.g. to allow an OPTIONS query against
+``/data/issue/@schema``) is left as an exercise for the reader.

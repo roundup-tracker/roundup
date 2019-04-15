@@ -85,6 +85,8 @@ class TestCase():
 
         self.server = RestfulInstance(self.dummy_client, self.db)
 
+        self.db.Otk = self.db.getOTKManager()
+
     def tearDown(self):
         self.db.close()
         try:
@@ -984,6 +986,238 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['data']['attributes']['title'],
                          'foo bar')
+        del(self.headers)
+
+    def testPostPOE(self):
+        ''' test post once exactly: get POE url, create issue
+            using POE url. Use dispatch entry point.
+        '''
+        import time
+        # setup environment
+        etag = "not needed"
+        body=b'{ "title": "foo bar", "priority": "critical" }'
+        env = { "CONTENT_TYPE": "application/json",
+                "CONTENT_LENGTH": len(body),
+                "REQUEST_METHOD": "POST"
+        }
+        headers={"accept": "application/json",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": len(body)
+        }
+        self.headers=headers
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+
+        ## Obtain the POE url.
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch('POST',
+                            "/rest/data/issue/@poe",
+                            form)
+
+        self.assertEqual(self.server.client.response_code, 200)
+        json_dict = json.loads(b2s(results))
+        url=json_dict['data']['link']
+
+        # strip tracker web prefix leaving leading /.
+        url = url[len(self.db.config['TRACKER_WEB'])-1:]
+
+        ## create an issue using poe url.
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch('POST',
+                            url,
+                            form)
+
+        self.assertEqual(self.server.client.response_code, 201)
+        json_dict = json.loads(b2s(results))
+        issue_id=json_dict['data']['id']
+        results = self.server.get_element('issue',
+                            str(issue_id), # must be a string not unicode
+                            self.empty_form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(results['data']['attributes']['title'],
+                         'foo bar')
+
+        ## Reuse POE url. It will fail.
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch('POST',
+                            url,
+                            form)
+        # get the last component stripping the trailing /
+        poe=url[url.rindex('/')+1:]
+        self.assertEqual(self.server.client.response_code, 400)
+        results = json.loads(b2s(results))
+        self.assertEqual(results['error']['status'], 400)
+        self.assertEqual(results['error']['msg'],
+                         "POE token \'%s\' not valid."%poe)
+
+        ## Try using GET on POE url. Should fail with method not
+        ## allowed (405)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch('GET',
+                            "/rest/data/issue/@poe",
+                            form)
+        self.assertEqual(self.server.client.response_code, 405)
+
+
+        ## Try creating generic POE url.
+        body_poe=b'{"generic": "null", "lifetime": "100" }'
+        body_file=BytesIO(body_poe)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch('POST',
+                            "/rest/data/issue/@poe",
+                            form)
+        json_dict = json.loads(b2s(results))
+        url=json_dict['data']['link']
+
+        # strip tracker web prefix leaving leading /.
+        url = url[len(self.db.config['TRACKER_WEB'])-1:]
+        url = url.replace('/issue/', '/keyword/')
+
+        body_keyword=b'{"name": "keyword"}'
+        body_file=BytesIO(body_keyword)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        results = self.server.dispatch('POST',
+                            url,
+                            form)
+        self.assertEqual(self.server.client.response_code, 201)
+        json_dict = json.loads(b2s(results))
+        url=json_dict['data']['link']
+        id=json_dict['data']['id']
+        self.assertEqual(id, "1")
+        self.assertEqual(url, "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/keyword/1")
+
+        ## Create issue POE url and try to use for keyword.
+        ## This should fail.
+        body_poe=b'{"lifetime": "100" }'
+        body_file=BytesIO(body_poe)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch('POST',
+                            "/rest/data/issue/@poe",
+                            form)
+        json_dict = json.loads(b2s(results))
+        url=json_dict['data']['link']
+
+        # strip tracker web prefix leaving leading /.
+        url = url[len(self.db.config['TRACKER_WEB'])-1:]
+        url = url.replace('/issue/', '/keyword/')
+
+        body_keyword=b'{"name": "keyword"}'
+        body_file=BytesIO(body_keyword)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        results = self.server.dispatch('POST',
+                            url,
+                            form)
+        poe=url[url.rindex('/')+1:]
+        self.assertEqual(self.server.client.response_code, 400)
+        json_dict = json.loads(b2s(results))
+        stat=json_dict['error']['status']
+        msg=json_dict['error']['msg']
+        self.assertEqual(stat, 400)
+        self.assertEqual(msg, "POE token '%s' not valid for keyword, was generated for class issue"%poe)
+
+
+        ## Create POE with 10 minute lifetime and verify
+        ## expires is within 10 minutes.
+        body_poe=b'{"lifetime": "30" }'
+        body_file=BytesIO(body_poe)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch('POST',
+                            "/rest/data/issue/@poe",
+                            form)
+        json_dict = json.loads(b2s(results))
+        expires=int(json_dict['data']['expires'])
+        # allow up to 3 seconds between time stamp creation
+        # done under dispatch and this point.
+        expected=int(time.time() + 30)
+        print("expected=%d, expires=%d"%(expected,expires))
+        self.assertTrue((expected - expires) < 3 and (expected - expires) >= 0)
+
+
+        ## Use a token created above as joe by a different user.
+        self.db.setCurrentUser('admin')
+        url=json_dict['data']['link']
+        # strip tracker web prefix leaving leading /.
+        url = url[len(self.db.config['TRACKER_WEB'])-1:]
+        body_file=BytesIO(body_keyword)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                         headers=headers,
+                                         environ=env)
+        results = self.server.dispatch('POST',
+                                       url,
+                                       form)
+        print(results)
+        self.assertEqual(self.server.client.response_code, 400)
+        json_dict = json.loads(b2s(results))
+        # get the last component stripping the trailing /
+        poe=url[url.rindex('/')+1:]
+        self.assertEqual(json_dict['error']['msg'],
+                         "POE token '%s' not valid."%poe)
+
+        ## Create POE with bogus lifetime
+        body_poe=b'{"lifetime": "10.2" }'
+        body_file=BytesIO(body_poe)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch('POST',
+                            "/rest/data/issue/@poe",
+                            form)
+        self.assertEqual(self.server.client.response_code, 400)
+        print(results)
+        json_dict = json.loads(b2s(results))
+        self.assertEqual(json_dict['error']['msg'],
+                         "Value \'lifetime\' must be an integer specify "
+                         "lifetime in seconds. Got 10.2.")
+
+        ## Create POE with lifetime > 1 hour
+        body_poe=b'{"lifetime": "3700" }'
+        body_file=BytesIO(body_poe)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch('POST',
+                            "/rest/data/issue/@poe",
+                            form)
+        self.assertEqual(self.server.client.response_code, 400)
+        print(results)
+        json_dict = json.loads(b2s(results))
+        self.assertEqual(json_dict['error']['msg'],
+                         "Value 'lifetime' must be between 1 second and 1 "
+                         "hour (3600 seconds). Got 3700.")
+
+        ## Create POE with lifetime < 1 second
+        body_poe=b'{"lifetime": "-1" }'
+        body_file=BytesIO(body_poe)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch('POST',
+                            "/rest/data/issue/@poe",
+                            form)
+        self.assertEqual(self.server.client.response_code, 400)
+        print(results)
+        json_dict = json.loads(b2s(results))
+        self.assertEqual(json_dict['error']['msg'],
+                         "Value 'lifetime' must be between 1 second and 1 "
+                         "hour (3600 seconds). Got -1.")
         del(self.headers)
 
     def testPutElement(self):

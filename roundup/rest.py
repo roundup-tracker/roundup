@@ -49,6 +49,16 @@ except NameError:
 import logging
 logger = logging.getLogger('roundup.rest')
 
+import roundup.anypy.random_ as random_
+if not random_.is_weak:
+    logger.debug("Importing good random generator")
+else:
+    logger.warning("**SystemRandom not available. Using poor random generator")
+
+import time
+
+chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+
 def _data_decorator(func):
     """Wrap the returned data into an object."""
     def format_object(self, *args, **kwargs):
@@ -234,7 +244,7 @@ def parse_accept_header(accept):
 class Routing(object):
     __route_map = {}
     __var_to_regex = re.compile(r"<:(\w+)>")
-    url_to_regex = r"([\w.\-~!$&'()*+,;=:@\%%]+)"
+    url_to_regex = r"([\w.\-~!$&'()*+,;=:\%%]+)"
 
     @classmethod
     def route(cls, rule, methods='GET'):
@@ -368,6 +378,9 @@ class RestfulInstance(object):
                                   if p not in unprotected_class_props ]
         props = {}
         # props = dict.fromkeys(class_props, None)
+
+        if not args:
+            raise UsageError("No properties found.")
 
         for arg in args:
             key = arg.name
@@ -887,6 +900,94 @@ class RestfulInstance(object):
                 id: id of the object
                 link: path to the object
         """
+        return self.post_collection_inner(class_name, input)
+
+    @Routing.route("/data/<:class_name>/@poe", 'POST')
+    @_data_decorator
+    def post_once_exactly_collection(self, class_name, input):
+        otks=self.db.Otk
+        poe_key = ''.join([random_.choice(chars) for x in range(40)])
+        while otks.exists(u2s(poe_key)):
+            poe_key = ''.join([random_.choice(chars) for x in range(40)])
+
+        try:
+            lifetime=int(input['lifetime'].value)
+        except KeyError as e:
+            lifetime=30 * 60 # 30 minutes
+        except ValueError as e:
+            raise UsageError("Value 'lifetime' must be an integer specify lifetime in seconds. Got %s."%input['lifetime'].value)
+
+        if lifetime > 3600 or lifetime < 1:
+            raise UsageError("Value 'lifetime' must be between 1 second and 1 hour (3600 seconds). Got %s."%input['lifetime'].value)
+
+        try:
+            # if generic tag exists, we don't care about the value
+            is_generic=input['generic']
+            # we generate a generic POE token
+            is_generic=True
+        except KeyError as e:
+            is_generic=False
+
+        # a POE must be used within lifetime (30 minutes default).
+        # Default OTK lifetime is 1 week. So to make different
+        # lifetime, take current time, subtract 1 week and add
+        # lifetime.
+        ts = time.time() - (60 * 60 * 24 * 7) + lifetime
+        if is_generic:
+            otks.set(u2s(poe_key), uid=self.db.getuid(),
+                     __timestamp=ts )
+        else:
+            otks.set(u2s(poe_key), uid=self.db.getuid(),
+                     class_name=class_name,
+                     __timestamp=ts )
+        otks.commit()
+
+        return 200, { 'link': '%s/%s/@poe/%s'%(self.data_path, class_name, poe_key),
+                      'expires' : ts + (60 * 60 * 24 * 7) }
+
+    @Routing.route("/data/<:class_name>/@poe/<:post_token>", 'POST')
+    @_data_decorator
+    def post_once_exactly_collection(self, class_name, post_token, input):
+        otks=self.db.Otk
+
+        # remove expired keys so we don't use an expired key
+        otks.clean()
+
+        if not otks.exists(u2s(post_token)):
+            # Don't log this failure. Would allow attackers to fill
+            # logs.
+            raise UsageError("POE token '%s' not valid."%post_token)
+
+        # find out what user owns the key
+        user = otks.get(u2s(post_token), 'uid', default=None)
+        # find out what class it was meant for
+        cn = otks.get(u2s(post_token), 'class_name', default=None)
+
+        # Invalidate the key as it has been used.
+        otks.destroy(u2s(post_token))
+        otks.commit()
+
+        # verify the same user that requested the key is the user
+        # using the key.
+        if user != self.db.getuid():
+            # Tell the roundup admin that there is an issue
+            # as the key got compromised.
+            logger.warn(
+                'Post Once key owned by user%s was denied. Used by user%s',user, self.db.getuid()
+            )
+            # Should we indicate to user that the token is invalid
+            # because they are not the user who owns the key? It could
+            # be a logic bug in the application. But I assume that
+            # the key has been stolen and we don't want to tip our hand.
+            raise UsageError("POE token '%s' not valid."%post_token)
+
+        if cn != class_name and cn != None:
+            raise UsageError("POE token '%s' not valid for %s, was generated for class %s"%(post_token, class_name, cn))
+
+        # handle this as though they POSTed to /rest/data/class
+        return self.post_collection_inner(class_name, input)
+
+    def post_collection_inner(self, class_name, input):
         if class_name not in self.db.classes:
             raise NotFound('Class %s not found' % class_name)
         if not self.db.security.hasPermission(
@@ -1744,9 +1845,13 @@ class SimulateFieldStorageFromJson():
         ''' Parse the json string into an internal dict. '''
         def raise_error_on_constant(x):
             raise ValueError("Unacceptable number: %s"%x)
-        self.json_dict = json.loads(json_string,
+        try:
+            self.json_dict = json.loads(json_string,
                                     parse_constant = raise_error_on_constant)
-        self.value = [ self.FsValue(index, self.json_dict[index]) for index in self.json_dict.keys() ]
+            self.value = [ self.FsValue(index, self.json_dict[index]) for index in self.json_dict.keys() ]
+        except ValueError as e:
+            self.json_dict = {}
+            self.value = None
 
     class FsValue:
         '''Class that does nothing but response to a .value property '''
