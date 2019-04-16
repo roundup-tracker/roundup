@@ -954,9 +954,6 @@ class TestCase():
         # TEST #5
         # POST: create new issue
         # no etag needed
-        # FIXME at some point we probably want to implement
-        # Post Once Only, so we need to add a Post Once Exactly
-        # test and a resubmit as well.
         etag = "not needed"
         body=b'{ "title": "foo bar", "priority": "critical" }'
         env = { "CONTENT_TYPE": "application/json",
@@ -986,14 +983,10 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['data']['attributes']['title'],
                          'foo bar')
-        del(self.headers)
 
-    def testPostPOE(self):
-        ''' test post once exactly: get POE url, create issue
-            using POE url. Use dispatch entry point.
-        '''
-        import time
-        # setup environment
+        # TEST #6
+        # POST: an invalid class
+        # no etag needed
         etag = "not needed"
         body=b'{ "title": "foo bar", "priority": "critical" }'
         env = { "CONTENT_TYPE": "application/json",
@@ -1006,6 +999,106 @@ class TestCase():
         }
         self.headers=headers
         body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch('POST',
+                            "/rest/data/nonissue",
+                            form)
+
+        self.assertEqual(self.server.client.response_code, 404)
+        json_dict = json.loads(b2s(results))
+        status=json_dict['error']['status']
+        msg=json_dict['error']['msg']
+        self.assertEqual(status, 404)
+        self.assertEqual(msg, 'Class nonissue not found')
+
+        # TEST #7
+        # POST: status without key field of name
+        # also test that version spec in accept header is accepted
+        # no etag needed
+        etag = "not needed"
+        body=b'{ "order": 5 }'
+        env = { "CONTENT_TYPE": "application/json",
+                "CONTENT_LENGTH": len(body),
+                "REQUEST_METHOD": "POST"
+        }
+        headers={"accept": "application/json; version=1",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": len(body)
+        }
+        self.headers=headers
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        self.db.setCurrentUser('admin') # must be admin to create status
+        results = self.server.dispatch('POST',
+                            "/rest/data/status",
+                            form)
+
+        self.assertEqual(self.server.client.response_code, 400)
+        json_dict = json.loads(b2s(results))
+        status=json_dict['error']['status']
+        msg=json_dict['error']['msg']
+        self.assertEqual(status, 400)
+        self.assertEqual(msg, "Must provide the 'name' property.")
+
+
+        # TEST #8
+        # DELETE: delete issue 1
+        etag = calculate_etag(self.db.issue.getnode("1"))
+        etagb = etag.strip ('"')
+        env = {"CONTENT_TYPE": "application/json",
+               "CONTENT_LEN": 0,
+               "REQUEST_METHOD": "DELETE" }
+        # use text/plain header and request json output by appending
+        # .json to the url.
+        headers={"accept": "text/plain",
+                 "content-type": env['CONTENT_TYPE'],
+                 "if-match": '"%s"'%etagb,
+                 "content-length": 0,
+        }
+        self.headers=headers
+        body_file=BytesIO(b'')  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        self.db.setCurrentUser('admin') # must be admin to delete issue
+        results = self.server.dispatch('DELETE',
+                            "/rest/data/issue/1.json",
+                            form)
+        self.assertEqual(self.server.client.response_code, 200)
+        json_dict = json.loads(b2s(results))
+        print(results)
+        status=json_dict['data']['status']
+        status=json_dict['data']['status']
+        self.assertEqual(status, 'ok')
+
+        del(self.headers)
+
+    def testPostPOE(self):
+        ''' test post once exactly: get POE url, create issue
+            using POE url. Use dispatch entry point.
+        '''
+        import time
+        # setup environment
+        etag = "not needed"
+        empty_body=b''
+        env = { "CONTENT_TYPE": "application/json",
+                "CONTENT_LENGTH": len(empty_body),
+                "REQUEST_METHOD": "POST"
+        }
+        headers={"accept": "application/json",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": len(empty_body)
+        }
+        self.headers=headers
+        # use empty_body to test code path for missing/empty json
+        body_file=BytesIO(empty_body)  # FieldStorage needs a file
         form = client.BinaryFieldStorage(body_file,
                                 headers=headers,
                                 environ=env)
@@ -1024,6 +1117,20 @@ class TestCase():
         url = url[len(self.db.config['TRACKER_WEB'])-1:]
 
         ## create an issue using poe url.
+        body=b'{ "title": "foo bar", "priority": "critical" }'
+        env = { "CONTENT_TYPE": "application/json",
+                "CONTENT_LENGTH": len(body),
+                "REQUEST_METHOD": "POST"
+        }
+        headers={"accept": "application/json",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": len(body)
+        }
+        self.headers=headers
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
         self.server.client.request.headers.get=self.get_header
         results = self.server.dispatch('POST',
                             url,

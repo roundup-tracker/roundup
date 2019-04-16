@@ -1730,26 +1730,33 @@ class RestfulInstance(object):
             pretty_output = True
 
         # check for @apiver in query string
+        msg=( "Unrecognized version: %s. "
+              "See /rest without specifying version "
+              "for supported versions." )
         try:
             if not self.api_version:
                 self.api_version = int(input['@apiver'].value)
         except KeyError:
             self.api_version = None
         except ValueError:
-            msg=( "Unrecognized version: %s. "
-                  "See /rest without specifying version "
-                  "for supported versions."%(
-                      input['@apiver'].value))
-            output = self.error_obj(400, msg)
+            output = self.error_obj(400, msg%input['@apiver'].value)
+
+        # by this time the API version is set. Error if we don't
+        # support it?
+        if self.api_version is None:
+            # FIXME: do we need to raise an error if client did not specify
+            # version? This may be a good thing to require. Note that:
+            # Accept: application/json; version=1 may not be legal but....
+            #    Use default if not specified for now.
+            self.api_version = self.__default_api_version
+        elif self.api_version not in self.__supported_api_versions:
+              raise UsageError(msg%self.api_version)
+
         # sadly del doesn't work on FieldStorage which can be the type of
-        #   input. So I have to ignore keys starting with @ at other
+        # input. So we have to ignore keys starting with @ at other
         # places in the code.
         # else:
         #     del(input['@apiver'])  
-
-        # FIXME: do we need to raise an error if client did not specify
-        # version? This may be a good thing to require. Note that:
-        # Accept: application/json; version=1 may not be legal but....
 
         # Call the appropriate method
         try:
