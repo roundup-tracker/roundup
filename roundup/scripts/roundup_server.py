@@ -753,7 +753,7 @@ class ServerConfig(configuration.Config):
                 kwargs['ssl_pem'] = self["PEM"]
             httpd = server_class(*args, **kwargs)
         except socket.error as e:
-            if e[0] == errno.EADDRINUSE:
+            if e.args[0] == errno.EADDRINUSE:
                 raise socket.error(_("Unable to bind to port %s, port already in use.") \
                     % self["PORT"])
             raise
@@ -1036,7 +1036,12 @@ def run(port=undefined, success_message=None):
                 daemonize(config["PIDFILE"])
 
     # create the server
-    httpd = config.get_server()
+    try:
+        httpd = config.get_server()
+    except Exception as e:
+        # capture all exceptions and pretty print them
+        print(e)
+        sys.exit(2)
 
     if success_message:
         print(success_message)
