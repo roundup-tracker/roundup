@@ -5369,6 +5369,73 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
    you're done (the standard context/submit method can do this for you).
 
 
+Silent Submit
+~~~~~~~~~~~~~
+
+When working on an issue, most of the time the people on the nosy list
+need to be notified of changes. There are cases where a user wants to
+add a comment to an issue and not bother other users on the nosy
+list.
+This feature is called Silent Submit because it allows the user to
+silently modify an issue and not tell anyone.
+
+There are several parts to this change. The main activity part
+involves editing the stock detectors/nosyreaction.py file in your
+tracker. Insert the following lines near the top of the nosyreaction
+function::
+
+    # Did user click button to do a silent change?
+    try:
+        if db.web['submit'] == "silent_change":
+            return
+    except (AttributeError, KeyError) as err:
+        # The web attribute or submit key don't exist.
+        # That's fine. We were probably triggered by an email
+        # or cli based change.
+        pass
+  
+This checks the submit button to see if it is the silent type. If there
+are exceptions trying to make that determination they are ignored and
+processing continues. You may wonder how db.web gets set. This is done
+by creating an extension. Add the file extensions/edit.py with
+this content::
+
+  from roundup.cgi.actions import EditItemAction
+
+  class Edit2Action(EditItemAction):
+    def handle(self):
+        self.db.web = {}  # create the dict
+        # populate the dict by getting the value of the submit_button
+        # element from the form.
+        self.db.web['submit'] = self.form['submit_button'].value
+
+        # call the core EditItemAction to process the edit.
+        EditItemAction.handle(self)
+
+  def init(instance):
+    '''Override the default edit action with this new version'''
+    instance.registerAction('edit', Edit2Action)
+	
+This code is a wrapper for the roundup EditItemAction. It checks the
+form's submit button to save the value element. The rest of the changes
+needed for the Silent Submit feature involves editing
+html/issue.item.html to add the silent submit button. In
+the stock issue.item.html the submit button is on a line that contains
+"submit button". Replace that line with something like the following::
+
+	    <input type="submit" name="submit_button"
+		   tal:condition="context/is_edit_ok"
+		   value="Submit Changes">&nbsp;
+	    <button type="submit" name="submit_button"
+		    tal:condition="context/is_edit_ok"
+		    title="Click this to submit but not send nosy email."
+		    value="silent_change" i18n:translate="">
+	      Silent Change</button>
+
+Note the difference in the value attribute for the two submit buttons.
+The value "silent_change" in the button specification must match the
+string in the nosy reaction function.
+
 Debugging Trackers
 ==================
 
