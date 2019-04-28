@@ -244,7 +244,7 @@ def parse_accept_header(accept):
 class Routing(object):
     __route_map = {}
     __var_to_regex = re.compile(r"<:(\w+)>")
-    url_to_regex = r"([\w.\-~!$&'()*+,;=:\%%]+)"
+    url_to_regex = r"([\\w.\-~!$&'()*+,;=:\%%]+)"
 
     @classmethod
     def route(cls, rule, methods='GET'):
