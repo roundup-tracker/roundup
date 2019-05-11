@@ -26,7 +26,7 @@ class ActionTestCase(unittest.TestCase):
         self.client.db.Otk.data = {}
         self.client.db.Otk.getall = self.data_get
         self.client.db.Otk.set = self.data_set
-        self.client.db.config = {'WEB_LOGIN_ATTEMPTS_MIN': 20}
+        self.client.db.config.WEB_LOGIN_ATTEMPTS_MIN = 20
         self.client._ok_message = []
         self.client._error_message = []
         self.client.add_error_message = lambda x : add_message(

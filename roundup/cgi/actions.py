@@ -35,7 +35,7 @@ class Action:
         self.base = client.base
         self.user = client.user
         self.context = templating.context(client)
-        self.loginLimit = RateLimit(self.db.config['WEB_LOGIN_ATTEMPTS_MIN'], timedelta(seconds=60))
+        self.loginLimit = RateLimit(client.db.config.WEB_LOGIN_ATTEMPTS_MIN, timedelta(seconds=60))
 
     def handle(self):
         """Action handler procedure"""
