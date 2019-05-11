@@ -718,6 +718,12 @@ SETTINGS = (
             "variables supplied by your web server (in that order).\n"
             "Set this option to 'no' if you do not wish to use HTTP Basic\n"
             "Authentication in your web interface."),
+        (IntegerNumberOption, 'login_attempts_min', "3",
+            "Limit login attempts per user per minute to this number.\n"
+            "By default the 4th login attempt in a minute will notify\n"
+            "the user that they need to wait 20 seconds before trying to\n"
+            "log in again. This limits password guessing attacks and\n"
+            "shouldn't need to be changed.\n"),
         (SameSiteSettingOption, 'samesite_cookie_setting', "Lax",
             """Set the mode of the SameSite cookie option for
 the session cookie. Choices are 'Lax' or

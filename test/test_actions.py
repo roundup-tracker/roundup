@@ -7,8 +7,11 @@ from roundup.date import Date, Interval
 from roundup.cgi.actions import *
 from roundup.cgi.client import add_message
 from roundup.cgi.exceptions import Redirect, Unauthorised, SeriousError, FormError
+from roundup.exceptions import Reject
 
 from roundup.anypy.cmp_ import NoneAndDictComparable
+from time import sleep
+from datetime import datetime
 
 from .mocknull import MockNull
 
@@ -19,6 +22,11 @@ class ActionTestCase(unittest.TestCase):
     def setUp(self):
         self.form = FieldStorage(environ={'QUERY_STRING': ''})
         self.client = MockNull()
+        self.client.db.Otk = MockNull()
+        self.client.db.Otk.data = {}
+        self.client.db.Otk.getall = self.data_get
+        self.client.db.Otk.set = self.data_set
+        self.client.db.config = {'WEB_LOGIN_ATTEMPTS_MIN': 20}
         self.client._ok_message = []
         self.client._error_message = []
         self.client.add_error_message = lambda x : add_message(
@@ -30,6 +38,12 @@ class ActionTestCase(unittest.TestCase):
         class TemplatingUtils:
             pass
         self.client.instance.interfaces.TemplatingUtils = TemplatingUtils
+
+    def data_get(self, key):
+        return self.client.db.Otk.data[key]
+
+    def data_set(self, key, **value):
+        self.client.db.Otk.data[key] = value
 
 class ShowActionTestCase(ActionTestCase):
     def assertRaisesMessage(self, exception, callable, message, *args,
@@ -356,6 +370,30 @@ class LoginTestCase(ActionTestCase):
         self.form.value[:] = []         # clear out last test's setup values
         self.assertLoginRaisesRedirect("http://whoami.com/path/issue255?%40error_message=Invalid+login",
                                  'foo', 'wrong', "http://whoami.com/path/issue255")
+
+    def testLoginRateLimit(self):
+        ''' Set number of logins in setup to 20 per minute. Three second
+            delay between login attempts doesn't trip rate limit.
+            Default limit is 3/min, but that means we sleep for 20
+            seconds so I override the default limit to speed this up.
+        '''
+        # Do the first login setting an invalid login name
+        self.assertLoginLeavesMessages(['Invalid login'], 'nouser')
+        # use up the rest of the 20 login attempts
+        for i in range(19):
+            self.client._error_message = []
+            self.assertLoginLeavesMessages(['Invalid login'])
+
+        self.assertRaisesMessage(Reject, LoginAction(self.client).handle,
+               'Logins occurring too fast. Please wait: 3 seconds.')
+
+        sleep(3) # sleep as requested so we can do another login
+        self.client._error_message = []
+        self.assertLoginLeavesMessages(['Invalid login']) # this is expected
+        
+        # and make sure we need to wait another three seconds
+        self.assertRaisesMessage(Reject, LoginAction(self.client).handle,
+               'Logins occurring too fast. Please wait: 3 seconds.')
 
 class EditItemActionTestCase(ActionTestCase):
     def setUp(self):

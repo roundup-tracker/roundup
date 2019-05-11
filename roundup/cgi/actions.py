@@ -5,10 +5,14 @@ from roundup.actions import Action as BaseAction
 from roundup.i18n import _
 from roundup.cgi import exceptions, templating
 from roundup.mailgw import uidFromAddress
+from roundup.rate_limit import Store, RateLimit
 from roundup.exceptions import Reject, RejectRaw
 from roundup.anypy import urllib_
 from roundup.anypy.strings import StringIO
 import roundup.anypy.random_ as random_
+
+import time
+from datetime import timedelta
 
 # Also add action to client.py::Client.actions property
 __all__ = ['Action', 'ShowAction', 'RetireAction', 'RestoreAction', 'SearchAction',
@@ -31,6 +35,7 @@ class Action:
         self.base = client.base
         self.user = client.user
         self.context = templating.context(client)
+        self.loginLimit = RateLimit(self.db.config['WEB_LOGIN_ATTEMPTS_MIN'], timedelta(seconds=60))
 
     def handle(self):
         """Action handler procedure"""
@@ -1226,7 +1231,34 @@ class LoginAction(Action):
                                            )
 
         try:
-            self.verifyLogin(self.client.user, password)
+            # Implement rate limiting of logins by login name.
+            # Use prefix to prevent key collisions maybe??
+            rlkey="LOGIN-" + self.client.user
+            limit=self.loginLimit
+            s=Store()
+            otk=self.client.db.Otk
+            try:
+                val=otk.getall(rlkey)
+                s.set_tat_as_string(rlkey, val['tat'])
+            except KeyError:
+                # ignore if tat not set, it's 1970-1-1 by default.
+                pass
+            # see if rate limit exceeded and we need to reject the attempt
+            reject=s.update(rlkey, limit)
+
+            # Calculate a timestamp that will make OTK expire the
+            # unused entry 1 hour in the future
+            ts = time.time() - (60 * 60 * 24 * 7) + 3600
+            otk.set(rlkey, tat=s.get_tat_as_string(rlkey),
+                                   __timestamp=ts)
+            otk.commit()
+
+            if reject:
+                # User exceeded limits: find out how long to wait
+                status=s.status(rlkey, limit)
+                raise Reject(_("Logins occurring too fast. Please wait: %d seconds.")%status['Retry-After'])
+            else:
+                self.verifyLogin(self.client.user, password)
         except exceptions.LoginError as err:
             self.client.make_user_anonymous()
             for arg in err.args:

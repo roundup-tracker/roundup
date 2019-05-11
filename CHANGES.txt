@@ -78,6 +78,10 @@ Features:
   nosymessage before it gets sent. See issue:
   https://issues.roundup-tracker.org/issue2551018 for example
   nosyreaction and generated email. (Tom Ekberg (tekberg))
+- issue2550949: Rate limit password guesses/login attempts.  Rate
+  limit mechanism added for web page logins. Default is 3 login
+  attempts/minute for a user. After which one login attempt every 20
+  seconds can be done. (John Rouillard)
 
 Fixed:
 
