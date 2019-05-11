@@ -3272,6 +3272,10 @@ class FormTestParent(object):
 
         # open the database
         self.db = self.instance.open('admin')
+        self.db.Otk = MockNull()
+        self.db.Otk.data = {}
+        self.db.Otk.getall = self.data_get
+        self.db.Otk.set = self.data_set
         self.db.tx_Source = "web"
         self.db.user.create(username='Chef', address='chef@bork.bork.bork',
             realname='Bork, Chef', roles='User')
@@ -3296,6 +3300,12 @@ class FormTestParent(object):
         if env_addon is not None:
             cl.env.update(env_addon)
         return cl
+
+    def data_get(self, key):
+        return self.db.Otk.data[key]
+
+    def data_set(self, key, **value):
+        self.db.Otk.data[key] = value
 
     def parseForm(self, form, classname='test', nodeid=None):
         cl = self.setupClient(form, classname, nodeid)
