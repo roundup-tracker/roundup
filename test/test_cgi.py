@@ -11,6 +11,8 @@
 from __future__ import print_function
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
+import pytest
+
 from roundup.cgi import client, actions, exceptions
 from roundup.cgi.exceptions import FormError, NotFound
 from roundup.exceptions import UsageError
@@ -451,7 +453,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
             ':confirm:password': ''}, 'user', nodeid),
             ({('user', nodeid): {}}, []))
 
-    def no_testPasswordMigration(self):
+    @pytest.mark.xfail
+    def testPasswordMigration(self):
         # FIXME
         chef = self.db.user.lookup('Chef')
         form = dict(__login_name='Chef', __login_password='foo')
