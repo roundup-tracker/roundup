@@ -5,7 +5,7 @@ from roundup.actions import Action as BaseAction
 from roundup.i18n import _
 from roundup.cgi import exceptions, templating
 from roundup.mailgw import uidFromAddress
-from roundup.rate_limit import Store, RateLimit
+from roundup.rate_limit import Gcra, RateLimit
 from roundup.exceptions import Reject, RejectRaw
 from roundup.anypy import urllib_
 from roundup.anypy.strings import StringIO
@@ -1235,27 +1235,27 @@ class LoginAction(Action):
             # Use prefix to prevent key collisions maybe??
             rlkey="LOGIN-" + self.client.user
             limit=self.loginLimit
-            s=Store()
+            gcra=Gcra()
             otk=self.client.db.Otk
             try:
                 val=otk.getall(rlkey)
-                s.set_tat_as_string(rlkey, val['tat'])
+                gcra.set_tat_as_string(rlkey, val['tat'])
             except KeyError:
                 # ignore if tat not set, it's 1970-1-1 by default.
                 pass
             # see if rate limit exceeded and we need to reject the attempt
-            reject=s.update(rlkey, limit)
+            reject=gcra.update(rlkey, limit)
 
             # Calculate a timestamp that will make OTK expire the
             # unused entry 1 hour in the future
             ts = time.time() - (60 * 60 * 24 * 7) + 3600
-            otk.set(rlkey, tat=s.get_tat_as_string(rlkey),
+            otk.set(rlkey, tat=gcra.get_tat_as_string(rlkey),
                                    __timestamp=ts)
             otk.commit()
 
             if reject:
                 # User exceeded limits: find out how long to wait
-                status=s.status(rlkey, limit)
+                status=gcra.status(rlkey, limit)
                 raise Reject(_("Logins occurring too fast. Please wait: %d seconds.")%status['Retry-After'])
             else:
                 self.verifyLogin(self.client.user, password)

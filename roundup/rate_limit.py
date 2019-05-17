@@ -16,7 +16,7 @@ class RateLimit:
         return self.period.total_seconds() / self.count
 
 
-class Store:
+class Gcra:
 
     memory = {}
 
@@ -82,7 +82,7 @@ class Store:
 
         # static defined headers according to limit
         ret['X-RateLimit-Limit'] = limit.count
-        ret['X-RateLimit-Limit-Period'] = limit.period.total_seconds()
+        ret['X-RateLimit-Limit-Period'] = int(limit.period.total_seconds())
 
         # status of current limit as of now
         now = datetime.utcnow()
