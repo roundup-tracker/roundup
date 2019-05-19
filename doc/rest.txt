@@ -5,16 +5,17 @@ REST API for Roundup
 
 .. contents::
    :local:
+   :depth: 3
 
 Introduction
 ------------
 
-After the last 1.6.0 Release, a REST-API developed in 2015 during a Google
-Summer of Code (GSOC) by Chau Nguyen, supervised by Ezio Melotti was
-integrated. The code was then updated by John Rouillard and Ralf
-Schlatterbeck to fix some shortcomings and provide the necessary
-functions for a single page web application, e.g. etag support among
-others.
+After the last 1.6.0 Release, a REST-API developed in 2015 during a
+Google Summer of Code (GSOC) by Chau Nguyen, supervised by Ezio
+Melotti was integrated. The code was updated by John Rouillard and
+Ralf Schlatterbeck to fix some shortcomings and provide the necessary
+functions for a single page web application, e.g. etag support,
+pagination, field embedding among others.
 
 Enabling the REST API
 ---------------------
@@ -22,30 +23,204 @@ Enabling the REST API
 The REST API can be disabled in the ``[web]`` section of ``config.ini``
 via the variable ``enable_rest`` which is ``yes`` by default.
 
-The REST api is reached via the ``/rest/`` endpoint of the tracker URL.
+The REST api is reached via the ``/rest/`` endpoint of the tracker
+URL. Partial URLs paths below (not starting with https) will have
+/rest removed for brevity.
 
+Preventing CSRF Attacks
+=======================
+
+Clients should set the header X-REQUESTED-WITH to any value and the
+tracker's config.ini should have ``csrf_enforce_header_x-requested-with
+= yes`` or ``required``.
+
+Rate Limiting the API
+=====================
+
+This is a work in progress. Check the release notes to see if your
+version of roundup includes Rate Limiting for the API (which is
+different from rate limiting login attempts on the web interface).
+
+This is enabled by setting the ``api_calls_per_interval`` and
+``api_interval_in_sec`` configuration parameters in the ``[web]``
+section of ``config.ini``. The settings are documented in the
+config.ini file.
+
+If ``api_calls_per_interval = 60`` and ``api_interval_in_sec = 60``
+the user can make 60 calls in a minute. They can use them all up in the
+first second and then get one call back every second. With
+``api_calls_per_interval = 60`` and ``api_interval_in_sec = 3600`` (1
+hour) they can use all 60 calls in the first second and they get one
+additional call every 10 seconds. ``api_calls_per_interval`` is the
+burst rate that you are willing to allow within `api_interval_in_sec``
+seconds. The average rate of use is the ratio of
+``api_calls_per_interval/api_interval_in_sec``. So you can have many
+values that permit one call per second on average: 1/1, 60/60,
+3600/3600, but they all have a different maximum burst rates: 1/sec,
+60/sec and 3600/sec.
+
+A single page app may make 20 or 30 calls to populate the page (e.g. a
+list of open issues). Then wait a few seconds for the user to select
+an issue. When displaying the issue, it needs another 20 or calls to
+populate status dropdowns, pull the first 10 messages in the issue
+etc. Controlling the burst rate as well as the average rate is a
+tuning exercise left for the tracker admin.
+
+Also the rate limit is a little lossy. Under heavy load, it is
+possible for it to miscount allowing more than burst count. Errors of
+up to 10% have been seen on slower hardware.
 
 Client API
 ----------
 
 The top-level REST url ``/rest/`` will display the current version of
 the REST API (Version 1 as of this writing) and some links to relevant
-endpoints of the API. In the following the ``/rest`` prefix is ommitted
-from relative REST-API links for brevety.
+endpoints of the API. In the following the ``/rest`` prefix is omitted
+from relative REST-API links for brevity.
 
-Summary
+Headers
 =======
+
+If rate limiting is enabled there are 3 "standard" headers:
+
+   **X-RateLimit-Limit**:  Calls allowed per period.
+
+   **X-RateLimit-Remaining**: Calls available to be completed in this window.
+
+   **X-RateLimit-Reset**: window ends in this many seconds. (Note,
+   not an epoch timestamp). After this time, all
+   X-RateLimit-Limit calls are available again.
+
+and one helpful header to report the period that is missing
+from other lists of rate limit headers:
+
+   **X-RateLimit-Limit-Period**: Defines period in seconds for X-RateLimit-Limit.
+
+Also if the user has exceeded the rate limit, this header is added:
+
+   **Retry-After**: The number of second to wait until 1 api call will succeed.
+
+
+General Guidelines
+==================
+
+Performing a ``GET`` on an item or property of an item will rethrn an
+ETag header or an @etag property. This needs to be submitted with
+``DELETE``, ``PUT`` and ``PATCH`` operations on the item using an
+``If-Match`` header or an ``"@etag`` property in the data payload if
+the method supports a payload.
+
+The exact details of returned data is determined by the value of the
+``@verbose`` query parameter.  The various supported values and their
+effects are described in the following sections.
+
+The default return format is JSON. If you add the ``dicttoxml.py``
+module you can request XML formatted data using the header ``Accept:
+application/xml`` in your request. Both output formats are similar in
+structure.
+
+All output is wrapped in an envelope called ``data``.
+
+When using collection endpoints (think list of issues, users ...), the
+``data`` envelope contains metadata (e.g. total number of items) as
+well as a ``collections`` list of objects::
+
+  { "data": {
+      "meta data field1": "value",
+      "meta data field2": "value",
+      "collecton": [
+            { "link": "url to item",
+              "id": "internal identifier for item" },
+	    { "link": "url to second item",
+              "id": "id item 2" },
+      ... ]
+      "@links": {
+         "relation": [
+                  { "rel": "relation/subrelation",
+                    "uri": "uri to use to implement relation" },
+                  ...
+                  ],
+         "relation2": [ {...} ], ...
+      }
+    }
+  }
+
+available meta data is described in the documention for the
+collections endpoint. 
+
+The ``link`` fields implement HATEOS by supplying a url for the
+resource represented by that object. The "link" parameter with the
+value of a url is a special case of the @links parameter.
+
+In the @links object, each relationship is a list of full link json
+objects.  These include rel (relationship) and uri properties. In the
+future this may be extended to include other data like content-type.
+However including a full @links object for every item includes a lot
+of overhead since in most cases only the self relationship needs to be
+represented.
+
+Because every object, link and multilink ends up getting a url, the
+shorter 'link' representation is used for this special case. The
+``link`` property expresses the ``self`` relationship and its value is
+the uri property of the full link object. In collections, properties
+from each item can be embedded in the returned data (see ``@fields``
+below). This can not be done if the property is called link as that
+conflicts with the self url.
+
+When using an item endpoint (think an individual issue), metadata is
+included in the ``data`` envelope. Inside of the envelope, the
+``attributes`` object contains the data for the field/properties of
+the issue. Example::
+
+  { "data": {
+      "meta data field1": "value",
+      "type": "type of item, issue, user ..."
+      "link": "link to retreive item",
+      "attributes": {
+          "title": "title of issue",
+          "nosy": [ 
+	            { "link": "url for user4",
+                      "id": "4" }
+          ],
+
+      ... }
+    }
+  }
+
+Using a property endpoint (e.g. title or nosy list for an issue) the
+``data`` wrapper has a ``data`` subfield that represents the value of
+the property. This ``data`` subfield may be a simple string (all types
+except mutlilink) or a list of strings (multilink
+properties). Example::
+
+  { "data": {
+        "type": "description of class",
+        "@etag": "\"f15e6942f00a41960de45f9413684591\"",
+        "link": "link to retreive property",
+        "id": "id for object with this property",
+        "data": "value of property"
+    }
+  }
+
+
+Special Endpoints
+=================
+
+There are a few special endpoints that provide some additional data.
+Tracker admiinstrators can add new endpoints. See
+"Programming the REST API"_ below.
+
+/summary
+^^^^^^^^
 
 A Summary page can be reached via ``/summary`` via the ``GET`` method.
 This is currently hard-coded for the standard tracker schema shipped
 with roundup and will display a summary of open issues.
 
-Data
-====
+/data
+^^^^^
 
-All the links mentioned in the following support the http method ``GET``. 
-Results of a ``GET`` request will always return the results as a
-dictionary with the entry ``data`` referring to the returned data.
+This is the primary entry point for data from the tracker.
 
 The ``/data`` link will display a set of classes of the tracker. All
 classes can be reached via ``/data/<classname>`` where ``<classname>``
@@ -55,153 +230,284 @@ giving the issue-id, e.g., ``/data/issue/42``. Individual properties of
 an item can be queried by appending the property, e.g.,
 ``/data/issue/42/title``.
 
-When performing the ``GET`` method on a class (e.g. ``/data/issue``), the
-number of items is returned in ``@total_size``. Then a ``collection``
-list follows which contains the id and link to the respective item.
-This endpoint supports pagination. With the attributes @page_size and
-@page_index, pagination is controlled. The @page_size specifies how many
-items are displayed at once. The @page_index (which defaults to 1 if not
-given) specifies which page number of @page_size items is displayed. If
-no @page_size is specified, all items are returned.
 
-Adding the query parameter @verbose=2 to the GET will include the label
-property in addition to id and link for the items. This is useful as
-documented below in "Searches and selection".
+All the links mentioned in the following support the http method ``GET``. 
+Results of a ``GET`` request will always return the results as a
+dictionary with the entry ``data`` referring to the returned data.
 
-In addition this method supports searching. Search parameters are names
-of properties of the given class, e.g., ``status`` for ``issue``. Links
-and Multilinks can be specified numerically or symbolically, e.g.,
-searching for issues in status ``closed`` can be achieved by searching
-for ``status=closed`` or ``status=3`` (provided the ``closed`` status
-has ID 3). Note that searching for strings (e.g. the issue title, or a
-keyword name) performs a case-insensitive substring search, so searching
-for title=Something will find all issues with "Something" or "someThing",
-etc. in the title. There is currently no way to perform an exact string
-match.
+Details are in the sections below.
 
-When performing the ``GET`` method on an item (e.g. ``/data/issue/42``), a
-``link`` attribute contains the link to the item, ``id`` contains the
-id, type contains the class name (e.g. ``issue`` in the example) and an
-``etag`` property can be used to detect modifications since the last
-query. The individual properties of the item are returned in an
-``attributes`` dictionary. The properties returned depend on the
-permissions of the account used for the query.
-Link and Multilink properties are displayed as a dictionary with a link
-and an id property by default. This is controlled by the @verbose
-attribute which is set to 1 by default. If set to 0, only the id is
-shown for Link and Multilink attributes. If set to 2, the label property
-(usually ``name`` e.g. for status) is also put into the dictionary.
-Content properties of message and file object are by default also shown
-as a dictionary with a sole link attribute. The link is the download
-link for the file or message. If @verbose is >= 3, the content property
-is shown in json as a (possibly very long) string. Currently the json
-serializer cannot handle files not properly utf-8 encoded, so specifying
-@verbose=3 for files is currently discouraged.
-Note that if the class has a key attribute (like e.g., the 'status'
-class in the classic tracker), you can get an individual status by
-specifying the key-attribute e.g. ``/data/status/name=closed``. Note
-that ``name`` in this example must be the key-attribute of the class.
-A short-form (which might no longer be supported in future version of
-the API) is to specify only the value, e.g. ``/data/status/closed``.
-This short-form only works when you're sure that the key of the class is
-not numeric.
-The long-form (with ``=``) is different from a query-parameter like
-``/data/status?@name=closed`` which would find all stati that have
-``closed`` as a substring.
+/data/\ *class* Collection
+==========================
 
-A ``GET`` method on a property (e.g. ``/data/issue/42/title``) returns the
-link, an ``@etag``, the type of the property (e.g. "<type str>") the id
-of the item and the content of the property in ``data``.
+When performing the ``GET`` method on a class (e.g. ``/data/issue``),
+the ``data`` object includes the number of items available in
+``@total_size``. A a ``collection`` list follows which contains the id
+and link to the respective item.  For example a get on
+https://.../rest/data/issue returns::
+
+    {
+	"data": {
+	    "collection": [
+		{
+		    "id": "1",
+		    "link": "https://.../rest/data/issue/1"
+		},
+		{
+		    "id": "100",
+		    "link": "https://.../rest/data/issue/100"
+		}
+	...
+	    ],
+	    "@total_size": 171
+	}
+    }
+
+Collection endpoints support a number of features as seen in the next
+sections.
+
+Searching
+^^^^^^^^^
+
+Searching is done by adding roundup field names and values as query
+parameters. Using: https://.../rest/data/issue you can search using:
+
+.. list-table:: Query Parameters Examples
+  :header-rows: 1
+  :widths: 20 20 80
+
+  * - Query parameter
+    - Field type
+    - Explanation
+  * - ``title=foo``
+    - String
+    - perform a substring search and find any issue with the word foo
+      in the title.
+  * - ``status=2``
+    - Link
+    - find any issue whose status link is set to the id 2.
+  * - ``status=open``
+    - Link
+    - find any issue where the name of the status is open.
+      Note this is not a string match so using nosy=ope will fail.
+  * - ``nosy=1``
+    - MultiLink
+    - find any issue where the multilink nosy includes the id 1.
+  * - ``nosy=admin``
+    - MultiLink
+    - find any issue where the multilink nosy includes the user admin.
+      Note this is not a string match so using nosy=admi will fail.
+  * - ``booleanfield=1`` - also values: true, TRUE, yes, YES etc. Other
+      values match false.
+    - Boolean
+    - find an issue with the boolean field set to true.
+
+As seen above, Links and Multilinks can be specified numerically or
+symbolically, e.g., searching for issues in status ``closed`` can be
+achieved by searching for ``status=closed`` or ``status=3`` (provided
+the ``closed`` status has ID 3). Note that even though the symbolic
+name is a string, in this case it is also a key value. As a result it
+only does an exact match.
+
+Searching for strings (e.g. the issue title, or a keyword name)
+performs a case-insensitive substring search, so searching for
+title=Something will find all issues with "Something" or "someThing",
+etc. in the title. There is currently no way to perform an exact
+string match.
+
+To make this clear, searching
+``https://.../rest/data/issue?keyword=foo`` will not work unless there
+is a keyword with a name field of ``foo`` which is the key field of
+the keyword. However searching the text property ``name`` using
+``https://.../rest/data/keyword?name=foo`` (note searching keyword
+class not issue class) will return matches for ``foo``, ``foobar``,
+``foo taz`` etc.
+
+In all cases the field ``@total_size`` is reported which is the total
+number of items available if you were to retreive all of them.
+
+Other data types: Date, Interval Integer, Number need examples and may
+need work to allow range searches. Full text search (e.g. over the
+body of msgs) is a work in progress.
+
+Pagination
+^^^^^^^^^^
+
+Collection endpoints support pagination. This is controlled by query
+parameters ``@page_size`` and ``@page_index`` (Note the use of the
+leading `@` to make the parameters distinguishable from field names.)
+
+.. list-table:: Query Parameters Examples
+  :header-rows: 1
+  :widths: 20 80
+
+  * - Query parameter
+    - Explanation
+  * -  ``@page_size``
+    - specifies how many items are displayed at once. If no
+      ``@page_size`` is specified, all matching items are returned.
+  * - ``@page_index``
+    - (which defaults to 1 if not given) specifies which page number
+      of ``@page_size`` items is displayed.
+
+Also when pagenation is enabled the returned data include pagenation
+links along side the collection data. This looks like::
+
+  { "data":
+    { 
+       "collection": { ... }, 
+       "@total_size": 222,
+       "@links": {
+	   "self": [
+	       {
+		   "uri":
+	   "https://.../rest/data/issue?@page_index=1&@fields=status&@page_size=5",
+		   "rel": "self"
+	       }
+	   ],
+	   "next": [
+	       {
+		   "uri":
+	   "https://.../rest/data/issue?@page_index=2&@fields=status&@page_size=5",
+		   "rel": "next"
+	       }
+	   ]
+	 }
+      }
+  }
+
+The ``@links`` parameter is a dictionary indexed by
+relationships. Each relationship is a list of one or more full link
+json objects. Above we have link relations to move to the next
+page. If we weren't at the first page, there would be a ``prev``
+relation to move to the previous page. Also we have a self relation
+(which is missing the @page_index, hence we are at page 1) that can be
+used to get the same page again.
+
+
+Field embedding and verbose output
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In collections, you can specify what fields should be embedded in the
+returned data. There are some shortcuts provided using the
+``@verbose`` parameter. All the examples in this section are for a GET
+operation on ``https://.../rest/data/issue``.
+
+.. list-table:: Query Parameters Examples
+  :header-rows: 1
+  :widths: 20 80
+
+  * - Query parameter
+    - Explanation
+  * - ``@verbose=0``
+    - each item in the collection has its "id" property displayed
+      and a link with the URL to retreive the item.
+  * - ``@verbose=1``
+    - for collections this output is the same as ``@verbose=0``. This
+      is the default.
+  * - ``@verbose=2``
+    - each item in the collection includes the "label" property in
+      addition to "id" property and a link for the item.
+      This is useful as documented below in "Searches and selection"_.
+  * - ``@verbose=3``
+    - will display the content property of messages and files. Note
+      warnings about this below. Using this for collections is
+      discouraged as it is slow and produces a lot of data.
+  * - ``@fields=status,title``
+    - will return the ``status``  and ``title`` fields for the issue displayed
+      according to the @verbose parameter
+
+In addition collections support the ``@fields`` parameter which is a
+colon or comma separated list of fields to embed in the response. For
+example ``https://.../rest/data/issue?@verbose=2`` is the same as:
+``https://.../rest/data/issue?@fields=title`` since the label property
+for an issue is its title. You can use both ``@verbose`` and
+``@fields`` to get additional info. For example
+``https://.../rest/data/issue?@verbose=2&@fields=status`` returns::
+
+  {
+      "data": {
+	  "collection": [
+	      {
+		  "link":
+      "https://.../rest/data/issue/1",
+		  "title": "Welcome to the tracker START HERE",
+		  "id": "1",
+		  "status": {
+		      "link":
+      "https://.../rest/data/status/1",
+		      "id": "1",
+		      "name": "new"
+		  }
+	      },
+    ...
+  }
+
+the format of the status field (included because of
+``@fields=status``) includes the label for the status. This is due to
+inclusion of ``@verbose=2``. Without verbose you would see::
+
+  {
+      "data": {
+	  "collection": [
+	      {
+		  "link":
+      "https://.../rest/data/issue/1",
+		  "id": "1",
+		  "status": {
+		      "link":
+      "https://.../rest/data/status/1",
+		      "id": "1"
+		  }
+	      },
+     ...
+  }
+
+Note that the ``link`` field that is returned doesn't exist in the
+database. It is a construct of the rest interface. This means that you
+can not set ``@fields=link`` and get the link property included in the
+output.
+
+Also using ``@fields=@etag`` will not work to retreive the etag for
+items in the collection.
+
+See the `Searches and selection`_ section for the use cases supported
+by these features.
+
+
+Other query params
+^^^^^^^^^^^^^^^^^^
+
+This table lists other supported parameters:
+
+.. list-table:: Query Parameters Examples
+  :header-rows: 1
+  :widths: 20 80
+
+  * - Query parameter
+    - Explanation
+  * - ``@pretty=false``
+    - by default json data is pretty printed to make it readable to
+      humans. This eases testing and with compression enabled the
+      extra whitespace doesn't bloat the returned payload excessively.
+      You can disable pretty printing by using this query parameter.
+      Note the default is true, so @pretty=true is not supported at
+      this time.
+
+Using the POST method
+^^^^^^^^^^^^^^^^^^^^^
 
 Only class links support the ``POST`` method for creation of new items
 of a class, e.g., a new issue via the ``/data/issue`` link. The post
 gets a dictionary of keys/values for the new item. It returns the same
 parameters as the GET method after successful creation.
 
-All endpoints support an ``OPTIONS`` method for determining which
-methods are allowed on a given endpoint.
+If you perform a get on an item with ``@verbose=0``, it is in the
+correct form to use as a the payload of a post.
 
-The method ``PUT`` is allowed on individual items, e.g.
-``/data/issue/42`` as well as properties, e.g.,
-``/data/issue/42/title``. On success it returns the same parameters as
-the respective ``GET`` method. Note that for ``PUT`` an Etag has to be
-supplied, either in the request header or as an @etag parameter.
-
-The method ``DELETE`` is allowed on items, e.g., ``/data/issue/42`` and
-will retire (mark as deleted) the respective item. On success it will
-only return a status code. It is also possible to call ``DELETE`` on a
-property of an item, e.g., ``/data/issue/42/nosy`` to delete the nosy
-list. The same effect can be achieved with a ``PUT`` request and an
-empty new value.
-
-Finally the ``PATCH`` method can be applied to individual items, e.g.,
-``/data/issue/42`` and to properties, e.g., ``/data/issue/42/title``.
-This method gets an operator ``@op=<method>`` where ``<method>`` is one
-of ``add``, ``replace``, ``remove``, only for an item (not for a
-property) an additional operator ``action`` is supported. If no operator
-is specified, the default is ``replace``. The first three operators are
-self explanatory. For an ``action`` operator an ``@action_name`` and
-optional ``@action_argsXXX`` parameters have to be supplied. Currently
-there are only two actions, neither has args, namely ``retire`` and
-``restore``. The ``retire`` action on an item is the same as a
-``DELETE`` method, it retires the item. The ``restore`` action is the
-inverse of ``retire``, the item is again visible.
-On success the returned value is the same as the respective ``GET``
-method.
-
-Note that the ``GET`` method on an item (e.g. ``/data/issue/43``)
-returns an ETag in the http header *and* the ``@etag`` value. When
-modifying the item via ``PUT`` or ``PATCH`` either a ``If-Match`` header
-or an ``@etag`` value in the form have to be provided.
-
-sample python client
-====================
-
-The client uses the python ``requests`` library for easier interaction
-with a REST API supporting JSON encoding::
-
-
-        >>> import requests
-        >>> u = 'http://user:password@tracker.example.com/demo/rest/data/'
-        >>> s = requests.session()
-        >>> r = s.get(u + 'issue/42/title')
-        >>> if r.status_code != 200:
-        ...     print("Failed: %s: %s" % (r.status_code, r.reason))
-        ...     exit(1)
-        >>> print (r.json() ['data']['data']
-        TEST Title
-        >>> h = {'X-Requested-With': 'rest', 'Referer': 'http://tracker.example.com/demo/'}
-        >>> r = s.post (u + 'issue', data = dict (title = 'TEST Issue'), headers=h)
-        >>> if not 200 <= r.status_code <= 201:
-        ...     print("Failed: %s: %s" % (r.status_code, r.reason))
-        ...     exit(1)
-        >>> print(r.json())
-
-Retire/Restore::
-        >>> r = s.delete (u + 'issue/42')
-        >>> print (r.json())
-        >>> r = s.get (u + 'issue/42')
-        >>> etag = r.headers['ETag']
-        >>> print("ETag: %s" % etag)
-        >>> etag = r.json()['data']['@etag']
-        >>> print("@etag: %s" % etag)
-        >>> h = {'If-Match': etag, 
-        ...   'X-Requested-With': 'rest',
-        ...   'Referer': 'http://tracker.example.com/demo/'}
-        >>> d = {'@op:'action', '@action_name':'retire'}
-        >>> r = s.patch(u + 'issue/42', data = d, headers = h)
-        >>> print(r.json())
-        >>> d = {'@op:'action', '@action_name':'restore'}
-        >>> r = s.patch(u + 'issue/42', data = d, headers = h)
-        >>> print(r.json())
-
-Note the addition of headers for: x-requested-with and referer. This
-allows the request to pass the CSRF protection mechanism. You may need
-to add an Origin header if this check is enabled in your tracker's
-config.ini (look for csrf_enforce_header_origin).
 
 Safely Re-sending POST
-======================
+^^^^^^^^^^^^^^^^^^^^^^
 
 POST is used to create new object in a class. E.G. a new issue.  One
 problem is that a POST may time out. Because it is not idempotent like
@@ -302,14 +608,410 @@ are using this mechanism to automate creation of objects and will
 automatically retry a post until it succeeds, please use the POE
 mechanism.
 
-.. [#poe_retry] At some future date, performing a POST to the POE link
-        soon after it has been used to create an object will
+.. [#poe_retry] As a future enhancement, performing a POST to the POE
+        link soon after it has been used to create an object will
         change. It will not return a 400 error. It will will trigger a
-        redirect to the url for the created object. After some period
-        of time (maybe a week) the POE link will be removed and return
-        a 400 error. This is meant to allow the client (a time limited
-        way) to retrieve the created resource when the response was
-        lost.
+        301 redirect to the url for the created object. After some
+        period of time (maybe a week) the POE link will be removed and
+        return a 400 error. This is meant to allow the client (a time
+        limited way) to retrieve the created resource if the
+        response was lost.
+
+Other Supported Methods for Collections
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Supports the ``OPTIONS`` method for determining which methods are
+allowed on a given endpoint.
+
+Does not support PUT, DELETE or PATCH.
+
+/data/\ *class*/\ *id* item
+===========================
+
+When performing the ``GET`` method on an item
+(e.g. ``/data/issue/42``), a ``link`` attribute contains the link to
+the item, ``id`` contains the id, ``type`` contains the class name
+(e.g. ``issue`` in the example) and an ``etag`` property can be used
+to detect modifications since the last query.
+
+Individual properties of the item are returned in an ``attributes``
+dictionary. The properties returned depend on the permissions of the
+account used for the query.
+
+By default all (visible to the current user) attributes/properties are
+returned. You can limit this by using the ``@fields`` query parameter
+similar to how it is used in collections. This way you can only return
+the fields you are interested in reducing network load as well as
+memory and parsing time on the client side.
+
+Link and Multilink properties are displayed as a dictionary with a
+``link`` and an ``id`` property by default. This is controlled by the
+``@verbose`` attribute which is set to 1 by default. If set to 0, only
+the id is shown for Link and Multilink attributes. In this form, the
+data can be modified and sent back using ``PUT`` to change the item.
+If set to 2, the label property (usually ``name`` e.g. for status) is
+also put into the dictionary.  Content properties of message and file
+object are by default also shown as a dictionary with a sole link
+attribute. The link is the download link for the file or message. If
+@verbose is >= 3, the content property is shown in json as a (possibly
+very long) string. Currently the json serializer cannot handle files
+not properly utf-8 encoded, so specifying @verbose=3 for files is
+currently discouraged.
+
+An example of returned values::
+
+  {
+      "data": {
+	  "type": "issue",
+	  "@etag": "\"f15e6942f00a41960de45f9413684591\"",
+	  "link": "https://.../rest/data/issue/23",
+	  "attributes": {
+	      "keyword": [],
+	      "messages": [
+		  {
+		      "link": "https://.../rest/data/msg/375",
+		      "id": "375"
+		  },
+		  {
+		      "link": "https://.../rest/data/msg/376",
+		      "id": "376"
+		  },
+		  ...
+	      ],
+	      "files": [],
+	      "status": {
+		  "link": "https://.../rest/data/status/2",
+		  "id": "2"
+	      },
+	      "title": "This is a title title",
+	      "superseder": [],
+	      "nosy": [
+		  {
+		      "link": "https://.../rest/data/user/4",
+		      "id": "4"
+		  },
+		  {
+		      "link": "https://.../rest/data/user/5",
+		      "id": "5"
+		  }
+	      ],
+	      "assignedto": null,
+	  },
+	  "id": "23"
+      }
+  }
+
+Retrieve item using key value
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If the class has a key attribute, e.g. the 'status' class in the
+classic tracker, it can be used to retried the item.
+
+You can get an individual status by specifying the key-attribute value
+e.g. ``/data/status/name=closed``. Note that ``name`` in this example
+must be the key-attribute of the class.  A short-form (which might not
+be supported in future version of the API) is to specify only the
+value, e.g. ``/data/status/closed``.  This short-form only works when
+you're sure that the key of the class is not numeric. E.G. if the name
+was "7", /data/status/7 would return the status with id 7 not the
+status with name "7". To get the status with name 7, you must use
+the long form /data/status/name=7
+
+The long-form (with ``=``) is different from a query-parameter like
+``/data/status?name=closed`` which would find all stati (statuses)
+that have ``closed`` as a substring.
+
+
+Other Supported Methods for Items
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The method ``PUT`` is allowed on individual items, e.g.
+``/data/issue/42`` On success it returns the same parameters as the
+respective ``GET`` method. Note that for ``PUT`` an Etag has to be
+supplied, either in the request header or as an @etag parameter. An
+example::
+
+  curl -u admin:admin -X PUT \
+     --header 'Referer: https://example.com/demo/' \
+     --header 'X-Requested-With: rest' \
+     --header "Content-Type: application/json" \
+     --header "Accept: application/json" \
+     --header 'If-Match: "dd41f02d6f8b4c34b439fc712b522fb3"' \
+     --data '{ "nosy": [ "1", "5" ] }' \
+     "https://example.com/demo/rest/data/issue/23"
+
+  {
+      "data": {
+	  "attribute": {
+	      "nosy": [
+		  "1",
+		  "5"
+	      ]
+	  },
+	  "type": "issue",
+	  "link":
+	  "https://example.com/demo/rest/data/issue/23",
+	  "id": "23"
+      }
+  }
+
+If the above command is repeated with the data attribute::
+
+     --data '{ "nosy": [ "1", "5" ], "title": "This is now my title" }'
+
+this is returned::
+
+  {
+      "data": {
+	  "attribute": {
+	      "title": "This is now my title"
+	  },
+	  "type": "issue",
+	  "link":
+      "https://rouilj.dynamic-dns.net/demo/rest/data/issue/23",
+	  "id": "23"
+      }
+  }
+
+Note that nosy is not in the attributes returned. It is the same as
+before, so no change has happened and it is not reported.
+Changing both nosy and title::
+
+  curl -u admin:admin -X PUT \
+    --header 'Referer: https://.../' \
+    --header 'X-Requested-With: rest' \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header 'If-Match: "8209add59a79713d64f4d1a072aef740"' \
+    --data '{ "nosy": [ "4", "5" ], "title": "This is now my new title"  }' \
+   "https://rouilj.dynamic-dns.net/demo/rest/data/issue/23"
+
+which returns both title and nosy attributes::
+
+    {
+	"data": {
+	    "attribute": {
+		"title": "This is now my new title",
+		"nosy": [
+		    "4",
+		    "5"
+		]
+	    },
+	    "type": "issue",
+	    "link":
+	    "https://rouilj.dynamic-dns.net/demo/rest/data/issue/23",
+	    "id": "23"
+	}
+    }
+
+Note that mixing url query parameters with payload submission doesn't
+work. So using::
+
+  https://.../rest/data/issue/23?@pretty=false
+
+doesn't have the desired effect. However it can be put in the data
+payload:
+
+ curl -u admin:admin ...
+   --data '{ "nosy": [ "4", "5" ], "title": "...", "@pretty": "false"  }'
+
+produces::
+
+   {"data": {"attribute": {}, "type": "issue",
+     "link": "https://...", "id": "23"}}
+
+the lines are wrapped for display purposes, in real life it's one long
+line.
+
+The method ``DELETE`` is allowed on items, e.g., ``/data/issue/42``
+and will retire (mark as deleted) the respective item. On success it
+will only return a status code. The item is still available if
+accessed directly by it's item url. The item will not show up in
+searches where it would have been matched if not retired.
+
+Finally the ``PATCH`` method can be applied to individual items, e.g.,
+``/data/issue/42``. This method gets an operator ``@op=<method>``
+where ``<method>`` is one of ``add``, ``replace``, ``remove``. For
+items, an additional operator ``action`` is supported. If no operator
+is specified, the default is ``replace``. The first three operators
+are self explanatory. For an ``action`` operator an ``@action_name``
+and optional ``@action_argsXXX`` parameters have to be
+supplied. Currently there are only two actions, neither has args,
+namely ``retire`` and ``restore``. The ``retire`` action on an item is
+the same as a ``DELETE`` method, it retires the item. The ``restore``
+action is the inverse of ``retire``, the item is again visible.  On
+success the returned value is the same as the respective ``GET``
+method. An example to add a user to the nosy list of an item is:
+
+  curl -u admin:admin -p -X PATCH \
+     --header "Content-Type: application/x-www-form-urlencoded" \
+     --header "Accept: application/json" \
+     --header 'If-Match: "c6e2d81019acff1da7a2da45f93939bd"' \
+     --data-urlencode '@op=add' \
+     --data 'nosy=3' \
+     "https://.../rest/data/issue/23"
+
+which returns::
+
+  {
+      "data": {
+	  "attribute": {
+	      "nosy": [
+		  "3",
+		  "4"
+	      ]
+	  },
+	  "type": "issue",
+	  "link": "https://.../rest/data/issue/23",
+	  "id": "23"
+      }
+  }
+
+Note that the changed values are returned so you can update
+internal state in your app with the new data.
+
+The ``GET`` method on an item (e.g. ``/data/issue/43``) returns an
+ETag in the http header *and* the ``@etag`` value in the json
+payload. When modifying a property via ``PUT`` or ``PATCH`` or
+``DELETE`` the etag value for the item must be supplied using an
+``If-Match`` header. If you are using ``PUT`` or ``PATCH`` an
+``@etag`` value can be supplied in the payload in place of the
+``If-Match`` header.
+
+/data/\ *class*/\ *id*/\ *property* field
+=========================================
+
+A ``GET`` method on a property (e.g. ``/data/issue/42/title``) returns the
+link, an ``@etag``, the type of the property (e.g. "<type str>") the id
+of the item and the content of the property in ``data``.
+
+For example::
+
+  {
+      "data": {
+	  "link": "https://.../rest/data/issue/22/title",
+	  "data": "I need Broken PC",
+	  "type": "<class 'str'>",
+	  "id": "22",
+	  "@etag": "\"370510512b2d8fc3f98aac3d762cc7b1\""
+      }
+  }
+
+
+All endpoints support an ``OPTIONS`` method for determining which
+methods are allowed on a given endpoint.
+
+Other Supported Methods for fields
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The method ``PUT`` is allowed on a property e.g.,
+``/data/issue/42/title``. On success it returns the same parameters as
+the respective ``GET`` method. Note that for ``PUT`` an Etag has to be
+supplied, either in the request header or as an @etag parameter.
+Example using multipart/form-data rather than json::
+
+  curl -vs -u provisional:provisional -X PUT \
+   --header "Accept: application/json" \
+   --data "data=Provisional" \
+   --header "If-Match: 079eba599152f3eed00567e23258fecf" \
+   --data-urlencode "@etag=079eba599152f3eed00567e23258fecf" \
+    "https://.../rest/data/user/5/realname"
+
+This example updates a leadtime field that is declared as an interval
+type::
+
+  curl -vs -u demo:demo -X PUT \
+    --header "Accept: application/json" \
+    --header 'Content-Type: application/json' \
+    --header "Referer: https://.../" \
+    --header "x-requested-with: rest" \
+    --header 'If-Match: "e2e6cc43c3475a4a3d9e5343617c11c3"' \
+    --data '{"leadtime": "2d" }'  \
+    "https://.../rest/data/issue/10"
+
+It is also possible to call ``DELETE`` on a
+property of an item, e.g., ``/data/issue/42/nosy`` to delete the nosy
+list. The same effect can be achieved with a ``PUT`` request and an
+empty new value. This may fail if the property is required.
+
+The ``PATCH`` method can be applied to properties, e.g.,
+``/data/issue/42/title``.  This method gets an operator
+``@op=<method>`` where ``<method>`` is one of ``add``, ``replace``,
+``remove``. If no operator is specified, the default is ``replace``
+which is the same as performing a PUT on the field url. ``add`` and
+``remove`` allow ading and removing values from MultiLink
+properties. This is easier than having to rewrite the entire value for
+the field using the ``replace`` operator or doing a PUT to the field.
+On success the returned value is the same as the respective ``GET``
+method.
+
+The ``GET`` method on an item (e.g. ``/data/issue/43``) returns an
+ETag in the http header *and* the ``@etag`` value in the json
+payload. When modifying a property via ``PUT`` or ``PATCH`` or
+``DELETE`` the etag value for the item must be supplied using an
+``If-Match`` header. If you are using ``PUT`` or ``PATCH`` an
+``@etag`` value can be supplied in the payload in place of the
+``If-Match`` header.
+
+Tunneling Methods via POST
+==========================
+
+If you are working through a proxy and unable to use http method like
+PUT, PATCH or DELETE you can use POST to perform the action. To tunnel
+an action throught POST, send the ``X-HTTP-METHOD-OVERRIDE`` header
+with a value of DELETE or other capitalized HTTP verb. The body of the
+POST should be what you would send if you were using the method
+without tunneling.
+
+Examples and Use Cases
+----------------------
+
+sample python client
+====================
+
+The client uses the python ``requests`` library for easier interaction
+with a REST API supporting JSON encoding::
+
+
+        >>> import requests
+        >>> u = 'http://user:password@tracker.example.com/demo/rest/data/'
+        >>> s = requests.session()
+        >>> r = s.get(u + 'issue/42/title')
+        >>> if r.status_code != 200:
+        ...     print("Failed: %s: %s" % (r.status_code, r.reason))
+        ...     exit(1)
+        >>> print (r.json() ['data']['data']
+        TEST Title
+        >>> h = {'X-Requested-With': 'rest', 'Referer': 'http://tracker.example.com/demo/'}
+        >>> r = s.post (u + 'issue', data = dict (title = 'TEST Issue'), headers=h)
+        >>> if not 200 <= r.status_code <= 201:
+        ...     print("Failed: %s: %s" % (r.status_code, r.reason))
+        ...     exit(1)
+        >>> print(r.json())
+
+Retire/Restore::
+        >>> r = s.delete (u + 'issue/42')
+        >>> print (r.json())
+        >>> r = s.get (u + 'issue/42')
+        >>> etag = r.headers['ETag']
+        >>> print("ETag: %s" % etag)
+        >>> etag = r.json()['data']['@etag']
+        >>> print("@etag: %s" % etag)
+        >>> h = {'If-Match': etag, 
+        ...   'X-Requested-With': 'rest',
+        ...   'Referer': 'http://tracker.example.com/demo/'}
+        >>> d = {'@op:'action', '@action_name':'retire'}
+        >>> r = s.patch(u + 'issue/42', data = d, headers = h)
+        >>> print(r.json())
+        >>> d = {'@op:'action', '@action_name':'restore'}
+        >>> r = s.patch(u + 'issue/42', data = d, headers = h)
+        >>> print(r.json())
+
+Note the addition of headers for: x-requested-with and referer. This
+allows the request to pass the CSRF protection mechanism. You may need
+to add an Origin header if this check is enabled in your tracker's
+config.ini (look for csrf_enforce_header_origin).
+
 
 Searches and selection
 ======================
@@ -377,17 +1079,22 @@ Similar code can be set up to search a large list of keywords using::
 which would return: "some keyword" "awesome" "somebody" making
 selections for links and multilinks much easier.
 
-Hopefully future enhancements will allow get on a collection to
-include other fields. Why do we want this?  Selectize.js can set up
-option groups (optgroups) in the select pulldown. So by including
-status in the returned data::
+A get on a collection endpoint can include other properties. Why do we
+want this?  Selectize.js can set up option groups (optgroups) in the
+select pulldown. So by including status in the returned data using
+a url like ``https://.../rest/data/issue?@verbose=2&@fields=status``
+we get::
 
-      {
-	  "link": ".../rest/data/issue/27",
-	  "id": "27",
-	  "title": "Request for foo",
-	  'status": "open"
-      },
+   {
+     "link": "https://.../rest/data/issue/1001",
+     "title": "Request for Broken PC",
+     "id": "1001",
+     "status": {
+        "link": "https://.../rest/data/status/6",
+        "id": "6",
+        "name": "resolved"
+      }
+   }
 
 a select widget like::
 
@@ -481,3 +1188,12 @@ returns some data about the class::
 
 Adding other endpoints (e.g. to allow an OPTIONS query against
 ``/data/issue/@schema``) is left as an exercise for the reader.
+
+
+Test Examples
+=============
+
+Rate limit tests:
+
+   seq 1 300 | xargs -P 20 -n 1 curl --head -si \
+        https://.../rest/data/status/new \# | grep Remaining
