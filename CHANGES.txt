@@ -124,7 +124,8 @@ Fixed:
 - issue2551041 - change permission check from "Create User" to "Register
   User" in page.html for the responsive and devel templates. (reporter
   Cédric Krier, John Rouillard)
-
+- issue2550144 - fix use of undefined icing macro in devel
+  template. Replace with frame macro. (Cédric Krier)
 
 2018-07-13 1.6.0
 
