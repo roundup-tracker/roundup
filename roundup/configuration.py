@@ -23,6 +23,10 @@ import smtplib
 
 import roundup.date
 
+from roundup.anypy.strings import b2s
+import roundup.anypy.random_ as random_
+import binascii
+
 # XXX i don't think this module needs string translation, does it?
 
 ### Exceptions
@@ -94,6 +98,9 @@ class UnsetDefaultValue:
         return "NO DEFAULT"
 
 NODEFAULT = UnsetDefaultValue()
+
+def create_token():
+    return b2s(binascii.b2a_base64(random_.token_bytes(32)).strip())
 
 ### Option classes
 
@@ -466,6 +473,14 @@ class OctalNumberOption(Option):
 
     def _value2str(self, value):
         return oct(value)
+
+class MandatoryOption(Option):
+    """Option must not be empty"""
+    def str2value(self, value):
+        if not value:
+            raise OptionValueError(self,value,"Value must not be empty.")
+        else:
+            return value
 
 class NullableOption(Option):
 
@@ -851,6 +866,18 @@ always passes, so setting it less than 1 is not recommended."""),
             "Setting this option makes Roundup migrate passwords with\n"
             "an insecure password-scheme to a more secure scheme\n"
             "when the user logs in via the web-interface."),
+        (MandatoryOption, "secret_key", create_token(),
+            "A per tracker secret used in etag calculations for\n"
+            "an object. It must not be empty.\n"
+            "It prevents reverse engineering hidden data in an object\n"
+            "by calculating the etag for a sample object. Then modifying\n"
+            "hidden properties until the sample object's etag matches\n"
+            "the one returned by roundup.\n"
+            "Changing this changes the etag and invalidates updates by\n"
+            "clients. It must be persistent across application restarts.\n"
+            "(Note the default value changes every time\n"
+            "     roundup-admin updateconfig\n"
+            "is run, so it must be explicitly set to a non-empty string.\n"),
     )),
     ("rdbms", (
         (Option, 'name', 'roundup',

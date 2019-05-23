@@ -37,7 +37,7 @@ from roundup.anypy.strings import bs2b, b2s, u2s, is_us
 from roundup.exceptions import *
 from roundup.cgi.exceptions import *
 
-from hashlib import md5
+import hmac
 
 # Py3 compatible basestring
 try:
@@ -118,7 +118,7 @@ def _data_decorator(func):
         return result
     return format_object
 
-def calculate_etag (node, classname="Missing", id="0"):
+def calculate_etag (node, key, classname="Missing", id="0"):
     '''given a hyperdb node generate a hashed representation of it to be
     used as an etag.
 
@@ -142,13 +142,13 @@ def calculate_etag (node, classname="Missing", id="0"):
     '''
 
     items = node.items(protected=True) # include every item
-    etag = md5(bs2b(repr(sorted(items)))).hexdigest()
+    etag = hmac.new(bs2b(repr(sorted(items)))).hexdigest()
     logger.debug("object=%s%s; tag=%s; repr=%s", classname, id,
                  etag, repr(node.items(protected=True)))
     # Quotes are part of ETag spec, normal headers don't have quotes
     return '"%s"' % etag
 
-def check_etag (node, etags, classname="Missing", id="0"):
+def check_etag (node, key, etags, classname="Missing", id="0"):
     '''Take a list of etags and compare to the etag for the given node.
 
     Iterate over all supplied etags,
@@ -159,7 +159,7 @@ def check_etag (node, etags, classname="Missing", id="0"):
     '''
     have_etag_match=False
 
-    node_etag = calculate_etag(node, classname, id)
+    node_etag = calculate_etag(node, key, classname, id)
 
     for etag in etags:
         if etag is not None:
@@ -511,6 +511,7 @@ class RestfulInstance(object):
     def raise_if_no_etag(self, class_name, item_id, input):
         class_obj = self.db.getclass(class_name)
         if not check_etag(class_obj.getnode(item_id),
+                self.db.config.WEB_SECRET_KEY,
                 obtain_etags(self.client.request.headers, input),
                 class_name,
                 item_id):
@@ -787,7 +788,8 @@ class RestfulInstance(object):
             )
 
         node = class_obj.getnode(itemid)
-        etag = calculate_etag(node, class_name, itemid)
+        etag = calculate_etag(node, self.db.config.WEB_SECRET_KEY,
+                              class_name, itemid)
         props = None
         protected=False
         verbose=1
@@ -868,7 +870,8 @@ class RestfulInstance(object):
 
         class_obj = self.db.getclass(class_name)
         node = class_obj.getnode(item_id)
-        etag = calculate_etag(node, class_name, item_id)
+        etag = calculate_etag(node, self.db.config.WEB_SECRET_KEY,
+                              class_name, item_id)
         data = node.__getattr__(attr_name)
         result = {
             'id': item_id,

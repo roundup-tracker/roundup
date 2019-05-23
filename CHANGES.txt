@@ -128,6 +128,9 @@ Fixed:
   template. Replace with frame macro. (Cédric Krier)
 - handle UnicodeDecodeError in file class when file contents are
   not text (e.g. jpg). (John Rouillard)
+- issue2551033: prevent reverse engineering hidden data by using etags
+  as an oracle to identify when the right data has been
+  guessed. (Joseph Myers, John Rouillard)
 
 2018-07-13 1.6.0
 

@@ -23,6 +23,18 @@ Contents:
 Migrating from 1.6.0 to x.y.0
 =============================
 
+Upgrade tracker's config.ini file
+--------------------------------------
+Once you have installed the new roundup, use:
+
+  roundup-admin -i /path/to/tracker updateconfig new_init_file.ini
+
+to generate a new ini file preserving all your settings. You can then
+merge any local comments from the tracker's ``config.ini`` into
+``new_init_file.ini``. Compare the old and new files and configure set
+any new settings as you want. Then replace ``config.ini`` with the new
+init file.
+
 PGP mail processing
 -------------------
 
