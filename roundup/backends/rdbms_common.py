@@ -71,6 +71,7 @@ from roundup.date import Range
 from roundup.backends.back_anydbm import compile_expression
 from roundup.anypy.strings import b2s, bs2b, us2s, repr_export, eval_import
 
+from hashlib import md5
 
 # dummy value meaning "argument not passed"
 _marker = []
@@ -3079,6 +3080,15 @@ class FileClass(hyperdb.FileClass, Class):
                 # BUG: by catching this we donot see an error in the log.
                 return 'ERROR reading file: %s%s\n%s\n%s'%(
                         self.classname, nodeid, poss_msg, strerror)
+            except UnicodeDecodeError as e:
+                # if content is not text (e.g. jpeg file) we get
+                # unicode error trying to convert to string in python 3.
+                # trap it and supply an error message. Include md5sum
+                # of content as this string is included in the etag
+                # calculation of the object.
+                return ('%s%s is not text, retrieve using '
+                        'binary_content property. mdsum: %s')%(self.classname,
+                   nodeid, md5(self.db.getfile(self.classname, nodeid, None)).hexdigest())
         elif propname == 'binary_content':
             return self.db.getfile(self.classname, nodeid, None)
 

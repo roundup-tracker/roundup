@@ -36,6 +36,8 @@ from roundup.backends.sessions_dbm import Sessions, OneTimeKeys
 
 from roundup.backends.indexer_common import get_indexer
 
+from hashlib import md5
+
 def db_exists(config):
     # check for the user db
     for db in 'nodes.user nodes.user.db'.split():
@@ -2195,6 +2197,15 @@ class FileClass(hyperdb.FileClass, Class):
                 # XXX by catching this we don't see an error in the log.
                 return 'ERROR reading file: %s%s\n%s\n%s'%(
                         self.classname, nodeid, poss_msg, strerror)
+            except UnicodeDecodeError as e:
+                # if content is not text (e.g. jpeg file) we get
+                # unicode error trying to convert to string in python 3.
+                # trap it and supply an error message. Include md5sum
+                # of content as this string is included in the etag
+                # calculation of the object.
+                return ('%s%s is not text, retrieve using '
+                        'binary_content property. mdsum: %s')%(self.classname,
+                   nodeid, md5(self.db.getfile(self.classname, nodeid, None)).hexdigest())
         elif propname == 'binary_content':
             return self.db.getfile(self.classname, nodeid, None)
 

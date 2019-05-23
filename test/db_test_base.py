@@ -304,6 +304,32 @@ class DBTest(commonDBTest):
         self.assertEqual(self.db.file.get(nid, 'content'), ustr)
         self.assertEqual(self.db.file.get(nid, 'binary_content'), s2b(ustr))
 
+    def testStringBinary(self):
+        ''' Create file with binary content that is not able
+            to be interpreted as unicode. Try to cause file module
+            trigger and handle UnicodeDecodeError
+            and get valid output
+        '''
+        # test set & retrieve
+        bstr = b'\x00\xF0\x34\x33' # random binary data
+
+        # test set & retrieve (this time for file contents)
+        nid = self.db.file.create(content=bstr)
+        print(nid)
+        print(repr(self.db.file.get(nid, 'content')))
+        print(repr(self.db.file.get(nid, 'binary_content')))
+        p3val='file1 is not text, retrieve using binary_content property. mdsum: 0e1d1b47e4bd1beab3afc9b79f596c1d'
+
+        if sys.version_info[0] > 2:
+            # python 3
+            self.assertEqual(self.db.file.get(nid, 'content'), p3val)
+            self.assertEqual(self.db.file.get(nid, 'binary_content'),
+                             bstr)
+        else:
+            # python 2
+            self.assertEqual(self.db.file.get(nid, 'content'), bstr)
+            self.assertEqual(self.db.file.get(nid, 'binary_content'), bstr)
+
     # Link
     def testLinkChange(self):
         self.assertRaises(IndexError, self.db.issue.create, title="spam",

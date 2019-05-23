@@ -126,6 +126,8 @@ Fixed:
   Cédric Krier, John Rouillard)
 - issue2550144 - fix use of undefined icing macro in devel
   template. Replace with frame macro. (Cédric Krier)
+- handle UnicodeDecodeError in file class when file contents are
+  not text (e.g. jpg). (John Rouillard)
 
 2018-07-13 1.6.0
 
