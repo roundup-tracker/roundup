@@ -142,7 +142,7 @@ def calculate_etag (node, key, classname="Missing", id="0"):
     '''
 
     items = node.items(protected=True) # include every item
-    etag = hmac.new(bs2b(repr(sorted(items)))).hexdigest()
+    etag = hmac.new(bs2b(key),bs2b(repr(sorted(items)))).hexdigest()
     logger.debug("object=%s%s; tag=%s; repr=%s", classname, id,
                  etag, repr(node.items(protected=True)))
     # Quotes are part of ETag spec, normal headers don't have quotes

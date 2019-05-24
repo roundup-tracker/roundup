@@ -87,6 +87,8 @@ class TestCase():
 
         self.db.Otk = self.db.getOTKManager()
 
+        self.db.config['WEB_SECRET_KEY'] = "XyzzykrnKm45Sd"
+
     def tearDown(self):
         self.db.close()
         try:
@@ -619,31 +621,58 @@ class TestCase():
         #   page_size < 0
         #   page_index < 0
 
-    def notestEtagGeneration(self):
+    def testEtagGeneration(self):
         ''' Make sure etag generation is stable
         
-            FIXME need to mock somehow date.Date() when creating
-            the target to be mocked. The differing dates makes
-            this test impossible.
+            This mocks date.Date() when creating the target to be
+            etagged. Differing dates make this test impossible.
         '''
+        from roundup import date
+
+        originalDate = date.Date
+
+        dummy=date.Date('2000-06-26.00:34:02.0')
+
+        # is a closure the best way to return a static Date object??
+        def dummyDate(adate=None):
+            def dummyClosure(adate=None, translator=None):
+                return dummy
+            return dummyClosure
+
+        date.Date = dummyDate()
+        
         newuser = self.db.user.create(
             username='john',
-            password=password.Password('random1'),
+            password=password.Password('random1', scheme='plaintext'),
             address='random1@home.org',
             realname='JohnRandom',
             roles='User,Admin'
         )
 
-        node = self.db.user.getnode(self.joeid)
-        etag = calculate_etag(node, "zysjskakss")
+        # verify etag matches what we calculated in the past
+        node = self.db.user.getnode(newuser)
+        etag = calculate_etag(node, self.db.config['WEB_SECRET_KEY'])
         items = node.items(protected=True) # include every item
-        print(repr(items))
+        print(repr(sorted(items)))
         print(etag)
-        self.assertEqual(etag, "6adf97f83acf6453d4a6a4b1070f3754")
+        self.assertEqual(etag, '"f2901b2653b813eeb277c0dc84c03ba3"')
 
-        etag = calculate_etag(self.db.issue.getnode("1"), "zysjskakss")
+        # modify key and verify we have a different etag
+        etag = calculate_etag(node, self.db.config['WEB_SECRET_KEY'] + "a")
+        items = node.items(protected=True) # include every item
+        print(repr(sorted(items)))
         print(etag)
-        self.assertEqual(etag, "6adf97f83acf6453d4a6a4b1070f3754")
+        self.assertNotEqual(etag, '"f2901b2653b813eeb277c0dc84c03ba3"')
+
+        # change data and verify we have a different etag
+        node.username="Paul"
+        etag = calculate_etag(node, self.db.config['WEB_SECRET_KEY'])
+        items = node.items(protected=True) # include every item
+        print(repr(sorted(items)))
+        print(etag)
+        self.assertEqual(etag, '"98f8052193220afdb649c6caaaa80e40"')
+
+        date.Date = originalDate
         
     def testEtagProcessing(self):
         '''
@@ -668,7 +697,7 @@ class TestCase():
 
             form = cgi.FieldStorage()
             etag = calculate_etag(self.db.user.getnode(self.joeid),
-                                  "zysjskakss")
+                                  self.db.config['WEB_SECRET_KEY'])
             form.list = [
                 cgi.MiniFieldStorage('data', 'Joe Doe Doe'),
             ]
@@ -776,7 +805,8 @@ class TestCase():
         # PUT: joe's 'realname' using json data.
         # simulate: /rest/data/user/<id>/realname
         # use etag in header
-        etag = calculate_etag(self.db.user.getnode(self.joeid), "zysjskakss")
+        etag = calculate_etag(self.db.user.getnode(self.joeid),
+                              self.db.config['WEB_SECRET_KEY'])
         body=b'{ "data": "Joe Doe 1" }'
         env = { "CONTENT_TYPE": "application/json",
                 "CONTENT_LENGTH": len(body),
@@ -825,7 +855,8 @@ class TestCase():
         # Set joe's 'realname' using json data.
         # simulate: /rest/data/user/<id>/realname
         # use etag in payload
-        etag = calculate_etag(self.db.user.getnode(self.joeid), "zysjskakss")
+        etag = calculate_etag(self.db.user.getnode(self.joeid),
+                              self.db.config['WEB_SECRET_KEY'])
         etagb = etag.strip ('"')
         body=s2b('{ "@etag": "\\"%s\\"", "data": "Joe Doe 2" }'%etagb)
         env = { "CONTENT_TYPE": "application/json",
@@ -864,7 +895,8 @@ class TestCase():
         #
         # Also use GET on the uri via the dispatch to retrieve
         # the results from the db.
-        etag = calculate_etag(self.db.user.getnode(self.joeid), "zysjskakss")
+        etag = calculate_etag(self.db.user.getnode(self.joeid),
+                              self.db.config['WEB_SECRET_KEY'])
         headers={"if-match": etag,
                  "accept": "application/vnd.json.test-v1+json",
         }
@@ -902,7 +934,8 @@ class TestCase():
                                                  self.empty_form)
         self.assertEqual(self.dummy_client.response_code, 200)
 
-        etag = calculate_etag(self.db.user.getnode(self.joeid), "zysjskakss")
+        etag = calculate_etag(self.db.user.getnode(self.joeid),
+                              self.db.config['WEB_SECRET_KEY'])
         etagb = etag.strip ('"')
         body=s2b('{ "address": "demo2@example.com", "@etag": "\\"%s\\""}'%etagb)
         env = { "CONTENT_TYPE": "application/json",
@@ -930,7 +963,8 @@ class TestCase():
                          'demo2@example.com')
 
         # and set it back reusing env and headers from last test
-        etag = calculate_etag(self.db.user.getnode(self.joeid), "zysjskakss")
+        etag = calculate_etag(self.db.user.getnode(self.joeid),
+                              self.db.config['WEB_SECRET_KEY'])
         etagb = etag.strip ('"')
         body=s2b('{ "address": "%s", "@etag": "\\"%s\\""}'%(
             stored_results['data']['attributes']['address'],
@@ -1050,7 +1084,8 @@ class TestCase():
 
         # TEST #8
         # DELETE: delete issue 1
-        etag = calculate_etag(self.db.issue.getnode("1"), "zysjskakss")
+        etag = calculate_etag(self.db.issue.getnode("1"),
+                              self.db.config['WEB_SECRET_KEY'])
         etagb = etag.strip ('"')
         env = {"CONTENT_TYPE": "application/json",
                "CONTENT_LEN": 0,
@@ -1351,7 +1386,8 @@ class TestCase():
 
         # change Joe's realname via attribute uri - etag in header
         form = cgi.FieldStorage()
-        etag = calculate_etag(self.db.user.getnode(self.joeid), "zysjskakss")
+        etag = calculate_etag(self.db.user.getnode(self.joeid),
+                              self.db.config['WEB_SECRET_KEY'])
         form.list = [
             cgi.MiniFieldStorage('data', 'Joe Doe Doe'),
         ]
@@ -1374,7 +1410,8 @@ class TestCase():
         # with all fields, change one field and put the result without
         # having to filter out protected items.
         form = cgi.FieldStorage()
-        etag = calculate_etag(self.db.user.getnode(self.joeid), "zysjskakss")
+        etag = calculate_etag(self.db.user.getnode(self.joeid),
+                              self.db.config['WEB_SECRET_KEY'])
         form.list = [
             cgi.MiniFieldStorage('creator', '3'),
             cgi.MiniFieldStorage('realname', 'Joe Doe'),
@@ -1395,7 +1432,8 @@ class TestCase():
         # This should result in no change to the name and
         # a 400 UsageError stating prop does not exist.
         form = cgi.FieldStorage()
-        etag = calculate_etag(self.db.user.getnode(self.joeid), "zysjskakss")
+        etag = calculate_etag(self.db.user.getnode(self.joeid),
+                              self.db.config['WEB_SECRET_KEY'])
         form.list = [
             cgi.MiniFieldStorage('JustKidding', '3'),
             cgi.MiniFieldStorage('realname', 'Joe Doe'),
@@ -1419,7 +1457,8 @@ class TestCase():
         # make sure we don't have permission issues
         self.db.setCurrentUser('admin')
         form = cgi.FieldStorage()
-        etag = calculate_etag(self.db.user.getnode(self.joeid), "zysjskakss")
+        etag = calculate_etag(self.db.user.getnode(self.joeid),
+                              self.db.config['WEB_SECRET_KEY'])
         form.list = [
             cgi.MiniFieldStorage('data', '3'),
             cgi.MiniFieldStorage('@etag', etag)
@@ -1441,7 +1480,8 @@ class TestCase():
         # make sure we don't have permission issues
         self.db.setCurrentUser('admin')
         form = cgi.FieldStorage()
-        etag = calculate_etag(self.db.user.getnode(self.joeid), "zysjskakss")
+        etag = calculate_etag(self.db.user.getnode(self.joeid),
+                              self.db.config['WEB_SECRET_KEY'])
         form.list = [
             cgi.MiniFieldStorage('data', '3'),
             cgi.MiniFieldStorage('@etag', etag)
@@ -1583,7 +1623,8 @@ class TestCase():
             [{'id': '1', 'link': self.url_pfx + 'user/1'}])
 
         form = cgi.FieldStorage()
-        etag = calculate_etag(self.db.issue.getnode(issue_id), "zysjskakss")
+        etag = calculate_etag(self.db.issue.getnode(issue_id),
+                              self.db.config['WEB_SECRET_KEY'])
         form.list.append(cgi.MiniFieldStorage('@etag', etag))
         # remove the title and nosy
         results = self.server.delete_attribute(
@@ -1592,7 +1633,8 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 200)
 
         del(form.list[-1])
-        etag = calculate_etag(self.db.issue.getnode(issue_id), "zysjskakss")
+        etag = calculate_etag(self.db.issue.getnode(issue_id),
+                              self.db.config['WEB_SECRET_KEY'])
         form.list.append(cgi.MiniFieldStorage('@etag', etag))
         results = self.server.delete_attribute(
             'issue', issue_id, 'nosy', form
@@ -1608,7 +1650,8 @@ class TestCase():
         self.assertEqual(results['attributes']['title'], None)
 
         # delete protected property
-        etag = calculate_etag(self.db.issue.getnode(issue_id), "zysjskakss")
+        etag = calculate_etag(self.db.issue.getnode(issue_id),
+                              self.db.config['WEB_SECRET_KEY'])
         form.list.append(cgi.MiniFieldStorage('@etag', etag))
         results = self.server.delete_attribute(
             'issue', issue_id, 'creator', form
@@ -1625,7 +1668,8 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 405)
 
         # delete required property
-        etag = calculate_etag(self.db.issue.getnode(issue_id), "zysjskakss")
+        etag = calculate_etag(self.db.issue.getnode(issue_id),
+                              self.db.config['WEB_SECRET_KEY'])
         form.list.append(cgi.MiniFieldStorage('@etag', etag))
         results = self.server.delete_attribute(
             'issue', issue_id, 'requireme', form
@@ -1643,7 +1687,8 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 400)
 
         # delete bogus property
-        etag = calculate_etag(self.db.issue.getnode(issue_id), "zysjskakss")
+        etag = calculate_etag(self.db.issue.getnode(issue_id),
+                              self.db.config['WEB_SECRET_KEY'])
         form.list.append(cgi.MiniFieldStorage('@etag', etag))
         results = self.server.delete_attribute(
             'issue', issue_id, 'nosuchprop', form
@@ -1677,7 +1722,8 @@ class TestCase():
         results = self.server.patch_element('issue', issue_id, form)
         self.assertEqual(self.dummy_client.response_code, 412)
 
-        etag = calculate_etag(self.db.issue.getnode(issue_id), "zysjskakss")
+        etag = calculate_etag(self.db.issue.getnode(issue_id),
+                              self.db.config['WEB_SECRET_KEY'])
         form = cgi.FieldStorage()
         form.list = [
             cgi.MiniFieldStorage('@op', 'add'),
@@ -1694,7 +1740,8 @@ class TestCase():
         self.assertEqual(len(results['attributes']['nosy']), 2)
         self.assertListEqual(results['attributes']['nosy'], ['1', '2'])
 
-        etag = calculate_etag(self.db.issue.getnode(issue_id), "zysjskakss")
+        etag = calculate_etag(self.db.issue.getnode(issue_id),
+                              self.db.config['WEB_SECRET_KEY'])
         form = cgi.FieldStorage()
         form.list = [
             cgi.MiniFieldStorage('@op', 'add'),
@@ -1713,7 +1760,8 @@ class TestCase():
 
 
         # patch invalid property
-        etag = calculate_etag(self.db.issue.getnode(issue_id), "zysjskakss")
+        etag = calculate_etag(self.db.issue.getnode(issue_id),
+                              self.db.config['WEB_SECRET_KEY'])
         form = cgi.FieldStorage()
         form.list = [
             cgi.MiniFieldStorage('@op', 'add'),
@@ -1759,7 +1807,8 @@ class TestCase():
         self.assertListEqual(results['attributes']['nosy'], ['1'])
 
         # replace userid 2 to the nosy list and status = 3
-        etag = calculate_etag(self.db.issue.getnode(issue_id), "zysjskakss")
+        etag = calculate_etag(self.db.issue.getnode(issue_id),
+                              self.db.config['WEB_SECRET_KEY'])
         form = cgi.FieldStorage()
         form.list = [
             cgi.MiniFieldStorage('@op', 'replace'),
@@ -1778,7 +1827,8 @@ class TestCase():
         self.assertListEqual(results['attributes']['nosy'], ['2'])
 
         # replace status = 2 using status attribute
-        etag = calculate_etag(self.db.issue.getnode(issue_id), "zysjskakss")
+        etag = calculate_etag(self.db.issue.getnode(issue_id),
+                              self.db.config['WEB_SECRET_KEY'])
         form = cgi.FieldStorage()
         form.list = [
             cgi.MiniFieldStorage('@op', 'replace'),
@@ -1795,7 +1845,8 @@ class TestCase():
         self.assertEqual(results['attributes']['status'], '2')
 
         # try to set a protected prop. It should fail.
-        etag = calculate_etag(self.db.issue.getnode(issue_id), "zysjskakss")
+        etag = calculate_etag(self.db.issue.getnode(issue_id),
+                              self.db.config['WEB_SECRET_KEY'])
         form = cgi.FieldStorage()
         form.list = [
             cgi.MiniFieldStorage('@op', 'replace'),
@@ -1816,7 +1867,8 @@ class TestCase():
 
         # try to set a protected prop using patch_attribute. It should
         # fail with a 405 bad/unsupported method.
-        etag = calculate_etag(self.db.issue.getnode(issue_id), "zysjskakss")
+        etag = calculate_etag(self.db.issue.getnode(issue_id),
+                              self.db.config['WEB_SECRET_KEY'])
         form = cgi.FieldStorage()
         form.list = [
             cgi.MiniFieldStorage('@op', 'replace'),
@@ -1862,7 +1914,8 @@ class TestCase():
 
         # remove the nosy list and the title
         form = cgi.FieldStorage()
-        etag = calculate_etag(self.db.issue.getnode(issue_id), "zysjskakss")
+        etag = calculate_etag(self.db.issue.getnode(issue_id),
+                              self.db.config['WEB_SECRET_KEY'])
         form.list = [
             cgi.MiniFieldStorage('@op', 'remove'),
             cgi.MiniFieldStorage('nosy', ''),
@@ -1881,7 +1934,8 @@ class TestCase():
         self.assertEqual(results['attributes']['nosy'], [])
 
         # try to remove a protected prop. It should fail.
-        etag = calculate_etag(self.db.issue.getnode(issue_id), "zysjskakss")
+        etag = calculate_etag(self.db.issue.getnode(issue_id),
+                              self.db.config['WEB_SECRET_KEY'])
         form = cgi.FieldStorage()
         form.list = [
             cgi.MiniFieldStorage('@op', 'remove'),
@@ -1901,7 +1955,8 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 400)
 
         # try to remove a required prop. it should fail
-        etag = calculate_etag(self.db.issue.getnode(issue_id), "zysjskakss")
+        etag = calculate_etag(self.db.issue.getnode(issue_id),
+                              self.db.config['WEB_SECRET_KEY'])
         form.list = [
             cgi.MiniFieldStorage('@op', 'remove'),
             cgi.MiniFieldStorage('requireme', ''),
@@ -1940,7 +1995,8 @@ class TestCase():
 
         # execute action retire
         form = cgi.FieldStorage()
-        etag = calculate_etag(self.db.issue.getnode(issue_id), "zysjskakss")
+        etag = calculate_etag(self.db.issue.getnode(issue_id),
+                              self.db.config['WEB_SECRET_KEY'])
         form.list = [
             cgi.MiniFieldStorage('@op', 'action'),
             cgi.MiniFieldStorage('@action_name', 'retire'),
@@ -1976,7 +2032,8 @@ class TestCase():
 
         # remove the nosy list and the title
         form = cgi.FieldStorage()
-        etag = calculate_etag(self.db.issue.getnode(issue_id), "zysjskakss")
+        etag = calculate_etag(self.db.issue.getnode(issue_id),
+                              self.db.config['WEB_SECRET_KEY'])
         form.list = [
             cgi.MiniFieldStorage('@op', 'remove'),
             cgi.MiniFieldStorage('nosy', '1, 2'),
