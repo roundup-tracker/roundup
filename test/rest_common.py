@@ -640,39 +640,39 @@ class TestCase():
             return dummyClosure
 
         date.Date = dummyDate()
-        
-        newuser = self.db.user.create(
-            username='john',
-            password=password.Password('random1', scheme='plaintext'),
-            address='random1@home.org',
-            realname='JohnRandom',
-            roles='User,Admin'
-        )
+        try:
+            newuser = self.db.user.create(
+                username='john',
+                password=password.Password('random1', scheme='plaintext'),
+                address='random1@home.org',
+                realname='JohnRandom',
+                roles='User,Admin'
+            )
 
-        # verify etag matches what we calculated in the past
-        node = self.db.user.getnode(newuser)
-        etag = calculate_etag(node, self.db.config['WEB_SECRET_KEY'])
-        items = node.items(protected=True) # include every item
-        print(repr(sorted(items)))
-        print(etag)
-        self.assertEqual(etag, '"f2901b2653b813eeb277c0dc84c03ba3"')
+            # verify etag matches what we calculated in the past
+            node = self.db.user.getnode(newuser)
+            etag = calculate_etag(node, self.db.config['WEB_SECRET_KEY'])
+            items = node.items(protected=True) # include every item
+            print(repr(sorted(items)))
+            print(etag)
+            self.assertEqual(etag, '"f2901b2653b813eeb277c0dc84c03ba3"')
 
-        # modify key and verify we have a different etag
-        etag = calculate_etag(node, self.db.config['WEB_SECRET_KEY'] + "a")
-        items = node.items(protected=True) # include every item
-        print(repr(sorted(items)))
-        print(etag)
-        self.assertNotEqual(etag, '"f2901b2653b813eeb277c0dc84c03ba3"')
+            # modify key and verify we have a different etag
+            etag = calculate_etag(node, self.db.config['WEB_SECRET_KEY'] + "a")
+            items = node.items(protected=True) # include every item
+            print(repr(sorted(items)))
+            print(etag)
+            self.assertNotEqual(etag, '"f2901b2653b813eeb277c0dc84c03ba3"')
 
-        # change data and verify we have a different etag
-        node.username="Paul"
-        etag = calculate_etag(node, self.db.config['WEB_SECRET_KEY'])
-        items = node.items(protected=True) # include every item
-        print(repr(sorted(items)))
-        print(etag)
-        self.assertEqual(etag, '"98f8052193220afdb649c6caaaa80e40"')
-
-        date.Date = originalDate
+            # change data and verify we have a different etag
+            node.username="Paul"
+            etag = calculate_etag(node, self.db.config['WEB_SECRET_KEY'])
+            items = node.items(protected=True) # include every item
+            print(repr(sorted(items)))
+            print(etag)
+            self.assertEqual(etag, '"98f8052193220afdb649c6caaaa80e40"')
+        finally:
+            date.Date = originalDate
         
     def testEtagProcessing(self):
         '''
