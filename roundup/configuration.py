@@ -760,6 +760,20 @@ interface. By default the REST endpoint is the string 'rest' plus any
 additional REST-API parameters after the roundup web url configured in
 the tracker section. If this variable is set to 'no', the rest path has
 no special meaning and will yield an error message."""),
+        (IntegerNumberOption, 'api_calls_per_interval', "0",
+         "Limit API calls per api_interval_in_sec seconds to\n"
+         "this number.\n"         
+         "Determines the burst rate and the rate that new api\n"
+         "calls will be made available. If set to 360 and\n"
+         "api_intervals_in_sec is set to 3600, the 361st call in\n"
+         "10 seconds results in a 429 error to the caller. It\n"
+         "tells them to wait 10 seconds (360/3600) before making\n"
+         "another api request. A value of 0 turns off rate\n"
+         "limiting in the API. Tune this as needed. See rest\n"
+         "documentation for more info.\n"),
+        (IntegerNumberOption, 'api_interval_in_sec', "3600",
+         "Defines the interval in seconds over which an api client can\n"
+         "make api_calls_per_interval api calls. Tune this as needed.\n"),
         (CsrfSettingOption, 'csrf_enforce_token', "yes",
             """How do we deal with @csrf fields in posted forms.
 Set this to 'required' to block the post and notify

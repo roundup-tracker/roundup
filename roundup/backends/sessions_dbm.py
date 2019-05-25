@@ -129,7 +129,26 @@ class BasicDatabase:
 
         # open the database with the correct module
         dbm = __import__(db_type)
-        return dbm.open(path, mode)
+
+        retries_left=15
+        while True:
+            try:
+                handle = dbm.open(path, mode)
+                break
+            except OSError as e:
+                # Primarily we want to catch and retry:
+                #   [Errno 11] Resource temporarily unavailable retry
+                # FIXME: make this more specific
+                if retries_left < 0:
+                    # We have used up the retries. Reraise the exception
+                    # that got us here.
+                    raise
+                else:
+                    # delay retry a bit
+                    time.sleep(0.01)
+                    retries_left = retries_left -1
+                    continue  # the while loop
+        return handle
 
     def commit(self):
         pass

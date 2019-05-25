@@ -3,6 +3,9 @@ import os
 import shutil
 import errno
 
+from time import sleep
+from datetime import datetime
+
 from roundup.cgi.exceptions import *
 from roundup.hyperdb import HyperdbValueError
 from roundup.exceptions import *
@@ -621,6 +624,111 @@ class TestCase():
         #   page_size < 0
         #   page_index < 0
 
+    def testRestRateLimit(self):
+
+        self.db.config['WEB_API_CALLS_PER_INTERVAL'] = 20
+        self.db.config['WEB_API_INTERVAL_IN_SEC'] = 60
+
+        print("Now realtime start:", datetime.utcnow())
+        # don't set an accept header; json should be the default
+        # use up all our allowed api calls
+        for i in range(20):
+            # i is 0 ... 19
+            self.client_error_message = []
+            results = self.server.dispatch('GET',
+                            "/rest/data/user/%s/realname"%self.joeid,
+                            self.empty_form)
+ 
+            # is successful
+            self.assertEqual(self.server.client.response_code, 200)
+            # does not have Retry-After header as we have
+            # suceeded with this query
+            self.assertFalse("Retry-After" in
+                             self.server.client.additional_headers) 
+            # remaining count is correct
+            self.assertEqual(
+                self.server.client.additional_headers["X-RateLimit-Remaining"],
+                self.db.config['WEB_API_CALLS_PER_INTERVAL'] -1 - i
+                )
+
+        # trip limit
+        self.server.client.additional_headers.clear()
+        results = self.server.dispatch('GET',
+                     "/rest/data/user/%s/realname"%self.joeid,
+                            self.empty_form)
+        print(results)
+        self.assertEqual(self.server.client.response_code, 429)
+
+        self.assertEqual(
+            self.server.client.additional_headers["X-RateLimit-Limit"],
+            self.db.config['WEB_API_CALLS_PER_INTERVAL'])
+        self.assertEqual(
+            self.server.client.additional_headers["X-RateLimit-Limit-Period"],
+            self.db.config['WEB_API_INTERVAL_IN_SEC'])
+        self.assertEqual(
+            self.server.client.additional_headers["X-RateLimit-Remaining"],
+            0)
+        # value will be almost 60. Allow 1-2 seconds for all 20 rounds.
+        self.assertAlmostEqual(
+            self.server.client.additional_headers["X-RateLimit-Reset"],
+            59, delta=1)
+        self.assertEqual(
+            str(self.server.client.additional_headers["Retry-After"]),
+            "3.0")  # check as string
+
+        print("Reset:", self.server.client.additional_headers["X-RateLimit-Reset"])
+        print("Now realtime pre-sleep:", datetime.utcnow())
+        sleep(3.1) # sleep as requested so we can do another login
+        print("Now realtime post-sleep:", datetime.utcnow())
+
+        # this should succeed
+        self.server.client.additional_headers.clear()
+        results = self.server.dispatch('GET',
+                     "/rest/data/user/%s/realname"%self.joeid,
+                            self.empty_form)
+        print(results)
+        print("Reset:", self.server.client.additional_headers["X-RateLimit-Reset-date"])
+        print("Now realtime:", datetime.utcnow())
+        print("Now ts header:", self.server.client.additional_headers["Now"])
+        print("Now date header:", self.server.client.additional_headers["Now-date"])
+
+        self.assertEqual(self.server.client.response_code, 200)
+
+        self.assertEqual(
+            self.server.client.additional_headers["X-RateLimit-Limit"],
+            self.db.config['WEB_API_CALLS_PER_INTERVAL'])
+        self.assertEqual(
+            self.server.client.additional_headers["X-RateLimit-Limit-Period"],
+            self.db.config['WEB_API_INTERVAL_IN_SEC'])
+        self.assertEqual(
+            self.server.client.additional_headers["X-RateLimit-Remaining"],
+            0)
+        self.assertFalse("Retry-After" in
+                         self.server.client.additional_headers) 
+        # we still need to wait a minute for everything to clear
+        self.assertAlmostEqual(
+            self.server.client.additional_headers["X-RateLimit-Reset"],
+            59, delta=1)
+
+        # and make sure we need to wait another three seconds
+        # as we consumed the last api call
+        results = self.server.dispatch('GET',
+                     "/rest/data/user/%s/realname"%self.joeid,
+                            self.empty_form)
+
+        self.assertEqual(self.server.client.response_code, 429)
+        self.assertEqual(
+            str(self.server.client.additional_headers["Retry-After"]),
+            "3.0")  # check as string
+
+        json_dict = json.loads(b2s(results))
+        self.assertEqual(json_dict['error']['msg'],
+                         "Api rate limits exceeded. Please wait: 3 seconds.")
+
+        # reset rest params
+        self.db.config['WEB_API_CALLS_PER_INTERVAL'] = 0
+        self.db.config['WEB_API_INTERVAL_IN_SEC'] = 3600
+            
     def testEtagGeneration(self):
         ''' Make sure etag generation is stable
         

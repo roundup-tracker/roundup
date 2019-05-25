@@ -33,11 +33,14 @@ except ImportError:
 from roundup import hyperdb
 from roundup import date
 from roundup import actions
+from roundup.i18n import _
 from roundup.anypy.strings import bs2b, b2s, u2s, is_us
+from roundup.rate_limit import RateLimit, Gcra
 from roundup.exceptions import *
 from roundup.cgi.exceptions import *
 
 import hmac
+from datetime import timedelta
 
 # Py3 compatible basestring
 try:
@@ -1635,14 +1638,80 @@ class RestfulInstance(object):
 
         return 200, result
 
+    def getRateLimit(self):
+        ''' By default set one rate limit for all users. Values
+            for period (in seconds) and count set in config.
+            However there is no reason these settings couldn't
+            be pulled from the user's entry in the database. So define
+            this method to allow a user to change it in the interfaces.py
+            to use a field in the user object.
+        '''
+        # FIXME verify can override from interfaces.py.
+        calls = self.db.config.WEB_API_CALLS_PER_INTERVAL
+        interval = self.db.config.WEB_API_INTERVAL_IN_SEC
+        if calls and interval:
+            return RateLimit(calls,timedelta(seconds=interval))
+        else:
+            # disable rate limiting if either parameter is 0
+            return None
+
     def dispatch(self, method, uri, input):
         """format and process the request"""
+        output = None
+
+        # Before we do anything has the user hit the rate limit.
+        # This should (but doesn't at the moment) bypass
+        # all other processing to minimize load of badly
+        # behaving client.
+
+        # Get the limit here and not in the init() routine to allow
+        # for a different rate limit per user.
+        apiRateLimit = self.getRateLimit()
+
+        if apiRateLimit:  # if None, disable rate limiting
+            gcra=Gcra()
+            # unique key is an "ApiLimit-" prefix and the uid)
+            apiLimitKey = "ApiLimit-%s"%self.db.getuid()
+            otk=self.db.Otk
+            try:
+                val=otk.getall(apiLimitKey)
+                gcra.set_tat_as_string(apiLimitKey, val['tat'])
+            except KeyError:
+                # ignore if tat not set, it's 1970-1-1 by default.
+                pass
+            # see if rate limit exceeded and we need to reject the attempt
+            reject=gcra.update(apiLimitKey, apiRateLimit)
+
+            # Calculate a timestamp that will make OTK expire the
+            # unused entry 1 hour in the future
+            ts = time.time() - (60 * 60 * 24 * 7) + 3600
+            otk.set(apiLimitKey, tat=gcra.get_tat_as_string(apiLimitKey),
+                    __timestamp=ts)
+            otk.commit()
+
+            limitStatus=gcra.status(apiLimitKey, apiRateLimit)
+            if reject:
+                for header, value in limitStatus.items():
+                    self.client.setHeader(header, value)
+                    # User exceeded limits: tell humans how long to wait
+                    # Headers above will do the right thing for api
+                    # aware clients.
+                    msg=_("Api rate limits exceeded. Please wait: %d seconds.")%limitStatus['Retry-After']
+                    output = self.error_obj(429, msg, source="ApiRateLimiter")
+            else:
+                for header,value in limitStatus.items():
+                    # Retry-After will be 0 because
+                    # user still has quota available.
+                    # Don't put out the header.
+                    if header in ( 'Retry-After', ):
+                        continue
+                    self.client.setHeader(header, value)
+
         # if X-HTTP-Method-Override is set, follow the override method
         headers = self.client.request.headers
         # Never allow GET to be an unsafe operation (i.e. data changing).
         # User must use POST to "tunnel" DELETE, PUT, OPTIONS etc.
         override = headers.get('X-HTTP-Method-Override')
-        output = None
         if override:
             if method.upper() == 'POST':
                 logger.debug(
