@@ -16,6 +16,9 @@ from roundup.cgi import client
 from roundup.anypy.strings import b2s, s2b
 import random
 
+from roundup.backends.sessions_dbm import OneTimeKeys
+from roundup.anypy.dbm_ import anydbm, whichdb
+
 from .db_test_base import setupTracker
 
 from .mocknull import MockNull
@@ -38,6 +41,14 @@ class TestCase():
 
         # open the database
         self.db = self.instance.open('admin')
+
+        # Create the Otk db.
+        # This allows a test later on to open the existing db and
+        # set a class attribute to test the open retry loop
+        # just as though this process was using a pre-existing db
+        # rather then the new one we create.
+        otk = OneTimeKeys(self.db)
+        otk.set('key', key="value")
 
         # Get user id (user4 maybe). Used later to get data from db.
         self.joeid = self.db.user.create(
@@ -629,6 +640,12 @@ class TestCase():
         self.db.config['WEB_API_CALLS_PER_INTERVAL'] = 20
         self.db.config['WEB_API_INTERVAL_IN_SEC'] = 60
 
+        # Otk code never passes through the
+        # retry loop. Not sure why but I can force it
+        # through the loop by setting the internal _db_type
+        # setting once the db is created by the previous command.
+        self.db.Otk._db_type = whichdb("%s/%s"%(self.db.Otk.dir, self.db.Otk.name))
+        
         print("Now realtime start:", datetime.utcnow())
         # don't set an accept header; json should be the default
         # use up all our allowed api calls
