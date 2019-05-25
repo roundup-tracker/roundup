@@ -655,14 +655,14 @@ class TestCase():
             items = node.items(protected=True) # include every item
             print(repr(sorted(items)))
             print(etag)
-            self.assertEqual(etag, '"f2901b2653b813eeb277c0dc84c03ba3"')
+            self.assertEqual(etag, '"0433784660a141e8262835171e70fd2f"')
 
             # modify key and verify we have a different etag
             etag = calculate_etag(node, self.db.config['WEB_SECRET_KEY'] + "a")
             items = node.items(protected=True) # include every item
             print(repr(sorted(items)))
             print(etag)
-            self.assertNotEqual(etag, '"f2901b2653b813eeb277c0dc84c03ba3"')
+            self.assertNotEqual(etag, '"0433784660a141e8262835171e70fd2f"')
 
             # change data and verify we have a different etag
             node.username="Paul"
@@ -670,7 +670,7 @@ class TestCase():
             items = node.items(protected=True) # include every item
             print(repr(sorted(items)))
             print(etag)
-            self.assertEqual(etag, '"98f8052193220afdb649c6caaaa80e40"')
+            self.assertEqual(etag, '"8abeacd284d58655c620d60389e29d4d"')
         finally:
             date.Date = originalDate
         

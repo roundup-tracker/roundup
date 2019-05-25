@@ -118,7 +118,8 @@ def _data_decorator(func):
         return result
     return format_object
 
-def calculate_etag (node, key, classname="Missing", id="0"):
+def calculate_etag (node, key, classname="Missing", id="0",
+                    repr_format="json"):
     '''given a hyperdb node generate a hashed representation of it to be
     used as an etag.
 
@@ -142,13 +143,15 @@ def calculate_etag (node, key, classname="Missing", id="0"):
     '''
 
     items = node.items(protected=True) # include every item
-    etag = hmac.new(bs2b(key),bs2b(repr(sorted(items)))).hexdigest()
+    etag = hmac.new(bs2b(key),bs2b(repr_format + 
+                                   repr(sorted(items)))).hexdigest()
     logger.debug("object=%s%s; tag=%s; repr=%s", classname, id,
                  etag, repr(node.items(protected=True)))
     # Quotes are part of ETag spec, normal headers don't have quotes
     return '"%s"' % etag
 
-def check_etag (node, key, etags, classname="Missing", id="0"):
+def check_etag (node, key, etags, classname="Missing", id="0",
+                repr_format="json"):
     '''Take a list of etags and compare to the etag for the given node.
 
     Iterate over all supplied etags,
@@ -159,7 +162,8 @@ def check_etag (node, key, etags, classname="Missing", id="0"):
     '''
     have_etag_match=False
 
-    node_etag = calculate_etag(node, key, classname, id)
+    node_etag = calculate_etag(node, key, classname, id,
+                               repr_format=repr_format)
 
     for etag in etags:
         if etag is not None:
@@ -508,13 +512,13 @@ class RestfulInstance(object):
 
         return result
 
-    def raise_if_no_etag(self, class_name, item_id, input):
+    def raise_if_no_etag(self, class_name, item_id, input, repr_format="json"):
         class_obj = self.db.getclass(class_name)
         if not check_etag(class_obj.getnode(item_id),
                 self.db.config.WEB_SECRET_KEY,
                 obtain_etags(self.client.request.headers, input),
                 class_name,
-                item_id):
+                          item_id, repr_format=repr_format):
             raise PreconditionFailed(
                 "If-Match is missing or does not match."
                 " Retrieve asset and retry modification if valid.")
@@ -789,7 +793,7 @@ class RestfulInstance(object):
 
         node = class_obj.getnode(itemid)
         etag = calculate_etag(node, self.db.config.WEB_SECRET_KEY,
-                              class_name, itemid)
+                              class_name, itemid, repr_format="json")
         props = None
         protected=False
         verbose=1
@@ -871,7 +875,7 @@ class RestfulInstance(object):
         class_obj = self.db.getclass(class_name)
         node = class_obj.getnode(item_id)
         etag = calculate_etag(node, self.db.config.WEB_SECRET_KEY,
-                              class_name, item_id)
+                              class_name, item_id,  repr_format="json")
         data = node.__getattr__(attr_name)
         result = {
             'id': item_id,
