@@ -1641,16 +1641,18 @@ class RestfulInstance(object):
         override = headers.get('X-HTTP-Method-Override')
         output = None
         if override:
-            if method.upper() != 'GET':
+            if method.upper() == 'POST':
                 logger.debug(
                     'Method overridden from %s to %s', method, override)
                 method = override
             else:
                 output = self.error_obj(400,
-                               "X-HTTP-Method-Override: %s can not be used with GET method. Use Post instead." % override)
+                       "X-HTTP-Method-Override: %s must be used with "
+                       "POST method not %s."% (override, method.upper()))
                 logger.info(
-                    'Ignoring X-HTTP-Method-Override for GET request on %s',
-                    uri)
+                    'Ignoring X-HTTP-Method-Override using %s request on %s',
+                    method.upper(), uri)
+
 
         # parse Accept header and get the content type
         accept_header = parse_accept_header(headers.get('Accept'))
