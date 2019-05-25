@@ -644,7 +644,12 @@ class TestCase():
         # retry loop. Not sure why but I can force it
         # through the loop by setting the internal _db_type
         # setting once the db is created by the previous command.
-        self.db.Otk._db_type = whichdb("%s/%s"%(self.db.Otk.dir, self.db.Otk.name))
+        try:
+            self.db.Otk._db_type = whichdb("%s/%s"%(self.db.Otk.dir, self.db.Otk.name))
+        except AttributeError:
+            # if dir attribute doesn't exist the primary db is not
+            # sqlite or anydbm. So don't need to exercise code.
+            pass
         
         print("Now realtime start:", datetime.utcnow())
         # don't set an accept header; json should be the default
