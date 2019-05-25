@@ -203,6 +203,9 @@ def parse_accept_header(accept):
     #   https://github.com/martinblech/mimerender
     """
     result = []
+    if not accept:
+        return result
+
     for media_range in accept.split(","):
         parts = media_range.split(";")
         media_type = parts.pop(0).strip()
@@ -1653,10 +1656,9 @@ class RestfulInstance(object):
                     'Ignoring X-HTTP-Method-Override using %s request on %s',
                     method.upper(), uri)
 
-
         # parse Accept header and get the content type
         accept_header = parse_accept_header(headers.get('Accept'))
-        accept_type = "invalid"
+        accept_type =  self.__default_accept_type
         for part in accept_header:
             if part[0] in self.__accepted_content_type:
                 accept_type = self.__accepted_content_type[part[0]]
@@ -1687,7 +1689,7 @@ class RestfulInstance(object):
         #            header (Accept: application/json, application/xml)
         #            default (application/json)
         ext_type = os.path.splitext(urlparse(uri).path)[1][1:]
-        data_type = ext_type or accept_type or self.__default_accept_type
+        data_type = ext_type or accept_type
 
         if ( ext_type ):
             # strip extension so uri make sense
