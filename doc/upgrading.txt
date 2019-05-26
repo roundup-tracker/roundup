@@ -66,6 +66,13 @@ you do not need to export and import, but need to delete the
 If using the ``postgresql`` backend, you do not need to export and
 import and no other special database-related steps are needed.
 
+Octal values in config.ini change from the python 2 representation
+with a leading ``0`` (``022``). They now use a leading ``0o``
+(``0o22``). Note that the ``0o`` format is properly handled under
+python 2. You can use the ``newfile.ini`` generated using
+``python3 roundup-admin ... updateconfig newfile.ini``
+if you want to go back to using python 2.
+
 Migrating from 1.5.1 to 1.6.0
 =============================
 
