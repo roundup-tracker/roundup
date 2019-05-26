@@ -662,7 +662,7 @@ SETTINGS = (
             "Additional stop-words for the full-text indexer specific to\n"
             "your tracker. See the indexer source for the default list of\n"
             "stop-words (eg. A,AND,ARE,AS,AT,BE,BUT,BY, ...)"),
-        (OctalNumberOption, "umask", "02",
+        (OctalNumberOption, "umask", "0o002",
             "Defines the file creation mode mask."),
         (IntegerNumberOption, 'csv_field_size', '131072',
             "Maximum size of a csv-field during import. Roundups export\n"
