@@ -1192,12 +1192,14 @@ Adding other endpoints (e.g. to allow an OPTIONS query against
 Creating Custom Rate Limits
 ===========================
 
-Using the file ``interfaces.py`` in the tracker home directory, you
-can replace the rate limiter function. This lets you return a
-different rate limiter rather then the one that is provided in the
-rate_limiter.py file. If you add a ``rate_limit_interval`` and
-``rate_limit_calls`` as integers in the user object you can do
-something like this in interfaces.py::
+You can replace the default rate limiter that is configured using
+the tracker's ``config.ini``. You can return different rate
+limits based on the user, time of day, phase of moon etc.
+
+Assume you add two integer valued properties to the user
+object. Let's call them ``rate_limit_interval`` and
+``rate_limit_calls``. Add code similar to this to interfaces.py
+to override the default rate limiter code::
 
     from roundup.rest import RestfulInstance, RateLimit
     from datetime import timedelta
@@ -1225,9 +1227,10 @@ something like this in interfaces.py::
 
     RestfulInstance.getRateLimit = grl
 
-this should replace the default getRateLimit with the new grl function
-that looks for per user values for the number of calls and period.
-If either is set to 0, the defaults from ``config.ini`` file are used.
+this should replace the default getRateLimit with the new grl
+function.  This new function uses values for the number of calls
+and period that are specific to a user.  If either is set to 0,
+the defaults from ``config.ini`` file are used.
 
 Test Examples
 =============
