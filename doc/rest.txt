@@ -1189,6 +1189,45 @@ returns some data about the class::
 Adding other endpoints (e.g. to allow an OPTIONS query against
 ``/data/issue/@schema``) is left as an exercise for the reader.
 
+Creating Custom Rate Limits
+===========================
+
+Using the file ``interfaces.py`` in the tracker home directory, you
+can replace the rate limiter function. This lets you return a
+different rate limiter rather then the one that is provided in the
+rate_limiter.py file. If you add a ``rate_limit_interval`` and
+``rate_limit_calls`` as integers in the user object you can do
+something like this in interfaces.py::
+
+    from roundup.rest import RestfulInstance, RateLimit
+    from datetime import timedelta
+
+    def grl(self):
+        calls = self.db.config.WEB_API_CALLS_PER_INTERVAL
+        interval = self.db.config.WEB_API_INTERVAL_IN_SEC
+
+        if calls and interval: # use to disable all rate limits
+
+            uid = self.db.getuid()
+            class_obj = self.db.getclass('user')
+            node = class_obj.getnode(uid)
+
+	    # set value to 0 to use WEB_API_CALLS_PER_INTERVAL
+	    user_calls = node.__getattr__('rate_limit_calls')
+	    # set to 0 to use WEB_API_INTERVAL_IN_SEC
+	    user_interval = node.__getattr__('rate_limit_interval')
+	    
+            return RateLimit(user_calls or calls,
+	       	   timedelta(seconds=(user_interval or interval)))
+        else:
+            # disable rate limiting if either parameter is 0
+            return None
+
+    RestfulInstance.getRateLimit = grl
+
+this should replace the default getRateLimit with the new grl function
+that looks for per user values for the number of calls and period.
+If either is set to 0, the defaults from ``config.ini`` file are used.
 
 Test Examples
 =============
