@@ -6,7 +6,7 @@
 
 from datetime import timedelta, datetime
 
-class RateLimit:
+class RateLimit:  # pylint: disable=too-few-public-methods
     def __init__(self, count, period):
         self.count = count
         self.period = period
@@ -17,8 +17,8 @@ class RateLimit:
 
 
 class Gcra:
-
-    memory = {}
+    def __init__(self):
+        self.memory = {}
 
     def get_tat(self, key):
         # This should return a previous tat for the key or the current time.
@@ -47,7 +47,7 @@ class Gcra:
         self.memory[key] = datetime.strptime(tat,"%Y-%m-%dT%H:%M:%S.%f")
 
     def update(self, key, limit, testonly=False):
-        '''Determine if the item assocaited with the key should be
+        '''Determine if the item associated with the key should be
            rejected given the RateLimit limit.
         '''
         now = datetime.utcnow()
@@ -91,7 +91,7 @@ class Gcra:
             (limit.period - (tat - now)).total_seconds() \
              /limit.inverse),ret['X-RateLimit-Limit'])
 
-        tat_epochsec = (tat - datetime(1970, 1, 1)).total_seconds()
+        # tat_in_epochsec = (tat - datetime(1970, 1, 1)).total_seconds()
         seconds_to_tat = (tat - now).total_seconds()
         ret['X-RateLimit-Reset'] = max(seconds_to_tat, 0)
         ret['X-RateLimit-Reset-date'] = "%s"%tat
