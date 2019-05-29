@@ -13,7 +13,6 @@ except ImportError:
     from urlparse import urlparse
 import os
 import json
-import pprint
 import sys
 import time
 import traceback
@@ -21,7 +20,7 @@ import re
 
 try:
     # if dicttoxml installed in roundup directory, use it
-    from .dicttoxml import dicttoxml
+    from roundup.dicttoxml import dicttoxml
 except ImportError:
     try:
         # else look in sys.path
@@ -57,8 +56,6 @@ if not random_.is_weak:
     logger.debug("Importing good random generator")
 else:
     logger.warning("**SystemRandom not available. Using poor random generator")
-
-import time
 
 chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
@@ -183,7 +180,7 @@ def obtain_etags(headers,input):
     '''Get ETags value from headers or payload data'''
     etags = []
     if '@etag' in input:
-        etags.append(input['@etag'].value);
+        etags.append(input['@etag'].value)
     etags.append(headers.get("If-Match", None))
     return etags
 
@@ -228,10 +225,10 @@ def parse_accept_header(accept):
                     if len(rest):
                         # add the version as a media param
                         try:
-                            version = media_params.append(('version',
+                            media_params.append(('version',
                                                            rest))
                         except ValueError:
-                            version = 1.0  # could not be parsed
+                            pass # return no version value; use rest default
                 # add the vendor code as a media param
                 media_params.append(('vendor', vnd))
                 # and re-write media_type to something like application/json so
@@ -540,6 +537,9 @@ class RestfulInstance(object):
         else:
             version = self.api_version
 
+        # version never gets used since we only
+        # support version 1 at this time. Set it as
+        # placeholder for later use.
         result = {}
         try:
             # pn = propname
@@ -781,7 +781,6 @@ class RestfulInstance(object):
                     raise UsageError ("Field %s is not key property"%k)
             except ValueError:
                 v = item_id
-                pass
             if not self.db.security.hasPermission(
                 'View', uid, class_name, itemid=item_id, property=keyprop
             ):
@@ -1173,6 +1172,9 @@ class RestfulInstance(object):
                 count (int): number of deleted objects
         """
         raise Unauthorised('Deletion of a whole class disabled')
+        ''' Hide original code to silence pylint.
+            Leave it here in case we need to re-enable.
+            FIXME: Delete in December 2020 if not used.
         if class_name not in self.db.classes:
             raise NotFound('Class %s not found' % class_name)
         if not self.db.security.hasPermission(
@@ -1200,6 +1202,7 @@ class RestfulInstance(object):
         }
 
         return 200, result
+        '''
 
     @Routing.route("/data/<:class_name>/<:item_id>", 'DELETE')
     @_data_decorator
@@ -1270,8 +1273,8 @@ class RestfulInstance(object):
                 raise UsageError("Attribute '%s' not valid for class %s."%(
                     attr_name, class_name))
         if attr_name in class_obj.get_required_props():
-                raise UsageError("Attribute '%s' is required by class %s and can not be deleted."%(
-                    attr_name, class_name))
+            raise UsageError("Attribute '%s' is required by class %s and can not be deleted."%(
+                attr_name, class_name))
         props = {}
         prop_obj = class_obj.get(item_id, attr_name)
         if isinstance(prop_obj, list):
@@ -1746,7 +1749,8 @@ class RestfulInstance(object):
                     self.api_version = int(part[1]['version'])
                 except KeyError:
                     self.api_version = None
-                except ValueError:
+                except (ValueError, TypeError):
+                    # TypeError if int(None)
                     msg=( "Unrecognized version: %s. "
                           "See /rest without specifying version "
                           "for supported versions."%(
@@ -1830,7 +1834,7 @@ class RestfulInstance(object):
             #    Use default if not specified for now.
             self.api_version = self.__default_api_version
         elif self.api_version not in self.__supported_api_versions:
-              raise UsageError(msg%self.api_version)
+            raise UsageError(msg%self.api_version)
 
         # sadly del doesn't work on FieldStorage which can be the type of
         # input. So we have to ignore keys starting with @ at other
