@@ -1245,14 +1245,34 @@ class TestCase():
         self.assertEqual(status, 'ok')
 
         # TEST #9
-        # GET: test that version can be set with
-        #   ; version=z or application/vnd.x.y-vz+json
+        # GET: test that version can be set with accept:
+        #    ... ; version=z
+        # or
+        #    application/vnd.x.y-vz+json
+        # or
+        #    @apiver
         # simulate: /rest/data/issue
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@apiver', 'L'),
+        ]
+        headers={"accept": "application/json; notversion=z" }
+        self.headers=headers
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch('GET',
+                            "/rest/data/issue/1", form)
+        print(results)
+        json_dict = json.loads(b2s(results))
+        self.assertEqual(json_dict['error']['status'], 400)
+        self.assertEqual(json_dict['error']['msg'],
+              "Unrecognized version: L. See /rest without "
+              "specifying version for supported versions.")
+
         headers={"accept": "application/json; version=z" }
         self.headers=headers
         self.server.client.request.headers.get=self.get_header
         results = self.server.dispatch('GET',
-                            "/rest/data/issue/1", self.empty_form)
+                            "/rest/data/issue/1", form)
         print(results)
         json_dict = json.loads(b2s(results))
         self.assertEqual(json_dict['error']['status'], 400)
@@ -1287,6 +1307,65 @@ class TestCase():
         self.assertEqual(json_dict['error']['msg'],
               "Unrecognized version: a. See /rest without "
               "specifying version for supported versions.")
+
+        # TEST #10
+        # check /rest and /rest/summary and /rest/notthere
+        expected_rest = {
+          "data": {
+              "supported_versions": [
+                  1
+              ],
+              "default_version": 1,
+              "links": [
+                  {
+                      "rel": "summary",
+                      "uri": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/summary"
+                  },
+                  {
+                      "rel": "self",
+                      "uri": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest"
+                  },
+                  {
+                      "rel": "data",
+                      "uri": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data"
+                  }
+              ]
+          }
+        }
+
+        self.headers={}
+        results = self.server.dispatch('GET',
+                            "/rest", self.empty_form)
+        print(results)
+        self.assertEqual(self.server.client.response_code, 200)
+        results_dict = json.loads(b2s(results))
+        self.assertEqual(results_dict, expected_rest)
+
+
+        results = self.server.dispatch('GET',
+                            "/rest/", self.empty_form)
+        print(results)
+        self.assertEqual(self.server.client.response_code, 200)
+        results_dict = json.loads(b2s(results))
+        self.assertEqual(results_dict, expected_rest)
+
+        results = self.server.dispatch('GET',
+                            "/rest/summary", self.empty_form)
+        print(results)
+        self.assertEqual(self.server.client.response_code, 200)
+
+        results = self.server.dispatch('GET',
+                            "/rest/summary/", self.empty_form)
+        print(results)
+        self.assertEqual(self.server.client.response_code, 200)
+
+        results = self.server.dispatch('GET',
+                            "/rest/notthere", self.empty_form)
+        self.assertEqual(self.server.client.response_code, 404)
+
+        results = self.server.dispatch('GET',
+                            "/rest/notthere/", self.empty_form)
+        self.assertEqual(self.server.client.response_code, 404)
 
         del(self.headers)
 
