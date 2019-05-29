@@ -1244,6 +1244,50 @@ class TestCase():
         status=json_dict['data']['status']
         self.assertEqual(status, 'ok')
 
+        # TEST #9
+        # GET: test that version can be set with
+        #   ; version=z or application/vnd.x.y-vz+json
+        # simulate: /rest/data/issue
+        headers={"accept": "application/json; version=z" }
+        self.headers=headers
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch('GET',
+                            "/rest/data/issue/1", self.empty_form)
+        print(results)
+        json_dict = json.loads(b2s(results))
+        self.assertEqual(json_dict['error']['status'], 400)
+        self.assertEqual(json_dict['error']['msg'],
+              "Unrecognized version: z. See /rest without "
+              "specifying version for supported versions.")
+
+        headers={"accept": "application/vnd.roundup.test-vz+json" }
+        self.headers=headers
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch('GET',
+                            "/rest/data/issue/1", self.empty_form)
+        print(results)
+        self.assertEqual(self.server.client.response_code, 400)
+        json_dict = json.loads(b2s(results))
+        self.assertEqual(json_dict['error']['status'], 400)
+        self.assertEqual(json_dict['error']['msg'],
+              "Unrecognized version: z. See /rest without "
+              "specifying version for supported versions.")
+
+        # verify that version priority is correct; should be version=...
+        headers={"accept": "application/vnd.roundup.test-vz+json; version=a"
+        }
+        self.headers=headers
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch('GET',
+                            "/rest/data/issue/1", self.empty_form)
+        print(results)
+        self.assertEqual(self.server.client.response_code, 400)
+        json_dict = json.loads(b2s(results))
+        self.assertEqual(json_dict['error']['status'], 400)
+        self.assertEqual(json_dict['error']['msg'],
+              "Unrecognized version: a. See /rest without "
+              "specifying version for supported versions.")
+
         del(self.headers)
 
     def testPostPOE(self):
