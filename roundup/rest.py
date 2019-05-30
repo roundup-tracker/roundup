@@ -241,6 +241,12 @@ def parse_accept_header(accept):
             value = value.strip()
             if key == "q":
                 q = float(value)
+                if q > 1.0:
+                    # Not sure what to do here. Can't find spec
+                    # about how to handle q > 1.0. Since invalid
+                    # I choose to make it lowest in priority.
+                    pass
+                    q = 0.0001
             else:
                 media_params.append((key, value))
         result.append((media_type, dict(media_params), q))
@@ -337,7 +343,6 @@ class RestfulInstance(object):
     __accepted_content_type = {
         "application/json": "json",
         "*/*": "json",
-        "application/xml": "xml"
     }
     __default_accept_type = "json"
 
@@ -360,6 +365,9 @@ class RestfulInstance(object):
         # note TRACKER_WEB ends in a /
         self.base_path = '%srest' % (self.db.config.TRACKER_WEB)
         self.data_path = self.base_path + '/data'
+
+        if dicttoxml: # add xml if supported
+            self.__accepted_content_type["application/xml"] = "xml"
 
     def props_from_args(self, cl, args, itemid=None, skip_protected=True):
         """Construct a list of properties from the given arguments,
@@ -1729,9 +1737,18 @@ class RestfulInstance(object):
                     method.upper(), uri)
 
         # parse Accept header and get the content type
+        # Acceptable types ordered with preferred one first
+        # in list.
         accept_header = parse_accept_header(headers.get('Accept'))
-        accept_type =  self.__default_accept_type
+        if not accept_header:
+            accept_type = self.__default_accept_type
+        else:
+            accept_type = None
         for part in accept_header:
+            if accept_type:
+                # we accepted the best match, stop searching for
+                # lower quality matches.
+                break
             if part[0] in self.__accepted_content_type:
                 accept_type = self.__accepted_content_type[part[0]]
                 # Version order:
@@ -1762,7 +1779,7 @@ class RestfulInstance(object):
         #            header (Accept: application/json, application/xml)
         #            default (application/json)
         ext_type = os.path.splitext(urlparse(uri).path)[1][1:]
-        data_type = ext_type or accept_type
+        data_type = ext_type or accept_type or "invalid"
 
         if ( ext_type ):
             # strip extension so uri make sense
@@ -1893,7 +1910,9 @@ class RestfulInstance(object):
             # error out before doing any work if we can't
             # display acceptable output.
             self.client.response_code = 406
-            output = "Content type is not accepted by client"
+            output = ( "Requested content type is not available.\n"
+                       "Acceptable types: %s"%(
+                           ", ".join(self.__accepted_content_type.keys())))
 
         # Make output json end in a newline to
         # separate from following text in logs etc..

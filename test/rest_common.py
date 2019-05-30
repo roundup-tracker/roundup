@@ -1368,6 +1368,114 @@ class TestCase():
 
         del(self.headers)
 
+    def testAcceptHeaderParsing(self):
+        # TEST #1
+        # json highest priority
+        self.server.client.request.headers.get=self.get_header
+        headers={"accept": "application/json; version=1,"
+                           "application/xml; q=0.5; version=2,"
+                           "text/plain; q=0.75; version=2"
+        }
+        self.headers=headers
+        results = self.server.dispatch('GET',
+                                       "/rest/data/status/1",
+                                       self.empty_form)
+        print(results)
+        self.assertEqual(self.server.client.response_code, 200)
+        self.assertEqual(self.server.client.additional_headers['Content-Type'],
+                         "application/json")
+
+        # TEST #2
+        # text highest priority
+        headers={"accept": "application/json; q=0.5; version=1,"
+                           "application/xml; q=0.25; version=2,"
+                           "text/plain; q=1.0; version=3"
+        }
+        self.headers=headers
+        results = self.server.dispatch('GET',
+                                       "/rest/data/status/1",
+                                       self.empty_form)
+        print(results)
+        self.assertEqual(self.server.client.response_code, 200)
+        self.assertEqual(self.server.client.additional_headers['Content-Type'],
+                         "application/json")
+
+        # TEST #3
+        # no acceptable type
+        headers={"accept": "text/plain; q=1.0; version=2"
+        }
+        self.headers=headers
+        results = self.server.dispatch('GET',
+                                       "/rest/data/status/1",
+                                       self.empty_form)
+        print(results)
+        self.assertEqual(self.server.client.response_code, 406)
+        self.assertEqual(self.server.client.additional_headers['Content-Type'],
+                         "application/json")
+
+        # TEST #4
+        # no accept header, should use default json
+        headers={}
+        self.headers=headers
+        results = self.server.dispatch('GET',
+                                       "/rest/data/status/1",
+                                       self.empty_form)
+        print(results)
+        self.assertEqual(self.server.client.response_code, 200)
+        self.assertEqual(self.server.client.additional_headers['Content-Type'],
+                         "application/json")
+
+        # TEST #5
+        # wildcard accept header, should use default json
+        headers={ "accept": "*/*"}
+        self.headers=headers
+        results = self.server.dispatch('GET',
+                                       "/rest/data/status/1",
+                                       self.empty_form)
+        print(results)
+        self.assertEqual(self.server.client.response_code, 200)
+        self.assertEqual(self.server.client.additional_headers['Content-Type'],
+                         "application/json")
+
+        # TEST #6
+        # invalid q factor if not ignored/demoted
+        # application/json is selected with invalid version
+        # and errors.
+        # this ends up choosing */* which triggers json.
+        self.server.client.request.headers.get=self.get_header
+        headers={"accept": "application/json; q=1.5; version=99,"
+                           "*/*; q=0.9; version=1,"
+                           "text/plain; q=3.75; version=2"
+        }
+        self.headers=headers
+        results = self.server.dispatch('GET',
+                                       "/rest/data/status/1",
+                                       self.empty_form)
+        print(results)
+        self.assertEqual(self.server.client.response_code, 200)
+        self.assertEqual(self.server.client.additional_headers['Content-Type'],
+                         "application/json")
+
+
+        '''
+        # only works if dicttoxml.py is installed.
+        #   not installed for testing
+        # TEST #7
+        # xml wins
+        headers={"accept": "application/json; q=0.5; version=2,"
+                           "application/xml; q=0.75; version=1,"
+                           "text/plain; q=1.0; version=2"
+        }
+        self.headers=headers
+        results = self.server.dispatch('GET',
+                                       "/rest/data/status/1",
+                                       self.empty_form)
+        print(results)
+        self.assertEqual(self.server.client.response_code, 200)
+        self.assertEqual(self.server.client.additional_headers['Content-Type'],
+                         "application/xml")
+        '''
+
     def testMethodOverride(self):
         # TEST #1
         # Use GET, PUT, PATCH to tunnel DELETE expect error
@@ -1408,7 +1516,7 @@ class TestCase():
         etag = calculate_etag(self.db.status.getnode("1"),
                               self.db.config['WEB_SECRET_KEY'])
         etagb = etag.strip ('"')
-        headers={"accept": "application/json; q=0.75, application/xml; q=1",
+        headers={"accept": "application/json; q=1.0, application/xml; q=0.75",
                  "if-match": '"%s"'%etagb,
                  "content-length": 0,
                  "x-http-method-override": "DElETE"
