@@ -245,7 +245,6 @@ def parse_accept_header(accept):
                     # Not sure what to do here. Can't find spec
                     # about how to handle q > 1.0. Since invalid
                     # I choose to make it lowest in priority.
-                    pass
                     q = 0.0001
             else:
                 media_params.append((key, value))
