@@ -1358,6 +1358,49 @@ class TestCase():
         print(results)
         self.assertEqual(self.server.client.response_code, 200)
 
+        expected_data = {
+            "data": {
+                "issue": {
+                    "link": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue"
+                },
+                "priority": {
+                    "link": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/priority"
+                },
+                "user": {
+                    "link": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/user"
+                },
+                "query": {
+                    "link": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/query"
+                },
+                "status": {
+                    "link": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/status"
+                },
+                "keyword": {
+                    "link": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/keyword"
+                },
+                "msg": {
+                    "link": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/msg"
+                },
+                "file": {
+                    "link": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/file"
+                }
+            }
+        }
+
+        results = self.server.dispatch('GET',
+                            "/rest/data", self.empty_form)
+        print(results)
+        self.assertEqual(self.server.client.response_code, 200)
+        results_dict = json.loads(b2s(results))
+        self.assertEqual(results_dict, expected_data)
+
+        results = self.server.dispatch('GET',
+                            "/rest/data/", self.empty_form)
+        print(results)
+        self.assertEqual(self.server.client.response_code, 200)
+        results_dict = json.loads(b2s(results))
+        self.assertEqual(results_dict, expected_data)
+
         results = self.server.dispatch('GET',
                             "/rest/notthere", self.empty_form)
         self.assertEqual(self.server.client.response_code, 404)
