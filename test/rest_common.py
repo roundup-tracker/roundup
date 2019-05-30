@@ -1241,7 +1241,6 @@ class TestCase():
         json_dict = json.loads(b2s(results))
         print(results)
         status=json_dict['data']['status']
-        status=json_dict['data']['status']
         self.assertEqual(status, 'ok')
 
         # TEST #9
@@ -1368,6 +1367,69 @@ class TestCase():
         self.assertEqual(self.server.client.response_code, 404)
 
         del(self.headers)
+
+    def testMethodOverride(self):
+        # TEST #1
+        # Use GET, PUT, PATCH to tunnel DELETE expect error
+        
+        body=b'{ "order": 5 }'
+        env = { "CONTENT_TYPE": "application/json",
+                "CONTENT_LENGTH": len(body),
+                "REQUEST_METHOD": "POST"
+        }
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        self.server.client.request.headers.get=self.get_header
+        for method in ( "GET", "PUT", "PATCH" ):
+            headers={"accept": "application/json; version=1",
+                     "content-type": env['CONTENT_TYPE'],
+                     "content-length": len(body),
+                     "x-http-method-override": "DElETE",
+                 }
+            self.headers=headers
+            form = client.BinaryFieldStorage(body_file,
+                                         headers=headers,
+                                         environ=env)
+            self.db.setCurrentUser('admin') # must be admin to create status
+            results = self.server.dispatch(method,
+                                           "/rest/data/status",
+                                           form)
+
+            self.assertEqual(self.server.client.response_code, 400)
+            json_dict = json.loads(b2s(results))
+            status=json_dict['error']['status']
+            msg=json_dict['error']['msg']
+            self.assertEqual(status, 400)
+            self.assertEqual(msg, "X-HTTP-Method-Override: DElETE must be "
+                             "used with POST method not %s."%method)
+
+        # TEST #2
+        # DELETE: delete issue 1 via post tunnel
+        self.assertFalse(self.db.status.is_retired("1"))
+        etag = calculate_etag(self.db.status.getnode("1"),
+                              self.db.config['WEB_SECRET_KEY'])
+        etagb = etag.strip ('"')
+        headers={"accept": "application/json; q=0.75, application/xml; q=1",
+                 "if-match": '"%s"'%etagb,
+                 "content-length": 0,
+                 "x-http-method-override": "DElETE"
+        }
+        self.headers=headers
+        body_file=BytesIO(b'')  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        self.db.setCurrentUser('admin') # must be admin to delete issue
+        results = self.server.dispatch('POST',
+                            "/rest/data/status/1",
+                            form)
+        print(results)
+        self.assertEqual(self.server.client.response_code, 200)
+        json_dict = json.loads(b2s(results))
+        status=json_dict['data']['status']
+        self.assertEqual(status, 'ok')
+        self.assertTrue(self.db.status.is_retired("1"))
+        
 
     def testPostPOE(self):
         ''' test post once exactly: get POE url, create issue
