@@ -2224,6 +2224,24 @@ class TestCase():
         self.assertEqual(len(results['attributes']['nosy']), 3)
         self.assertListEqual(results['attributes']['nosy'], ['1', '2', '3'])
 
+        # patch with no new_val/data
+        etag = calculate_etag(self.db.issue.getnode(issue_id),
+                              self.db.config['WEB_SECRET_KEY'])
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@op', 'add'),
+            cgi.MiniFieldStorage('data', ''),
+            cgi.MiniFieldStorage('@etag', etag)
+        ]
+        results = self.server.patch_attribute('issue', issue_id, 'nosy', form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+
+        # verify the result
+        results = self.server.get_element('issue', issue_id, self.terse_form)
+        results = results['data']
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['attributes']['nosy']), 3)
+        self.assertListEqual(results['attributes']['nosy'], ['1', '2', '3'])
 
         # patch invalid property
         etag = calculate_etag(self.db.issue.getnode(issue_id),
@@ -2474,6 +2492,21 @@ class TestCase():
         # verify the result
         self.assertTrue(self.db.issue.is_retired(issue_id))
 
+        # execute action restore
+        form = cgi.FieldStorage()
+        etag = calculate_etag(self.db.issue.getnode(issue_id),
+                              self.db.config['WEB_SECRET_KEY'])
+        form.list = [
+            cgi.MiniFieldStorage('@op', 'action'),
+            cgi.MiniFieldStorage('@action_name', 'restore'),
+            cgi.MiniFieldStorage('@etag', etag)
+        ]
+        results = self.server.patch_element('issue', issue_id, form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+
+        # verify the result
+        self.assertTrue(not self.db.issue.is_retired(issue_id))
+
     def testPatchRemove(self):
         """
         Test Patch Action 'Remove' only some element from a list
@@ -2496,7 +2529,7 @@ class TestCase():
         self.assertEqual(len(results['attributes']['nosy']), 3)
         self.assertEqual(results['attributes']['nosy'], ['1', '2', '3'])
 
-        # remove the nosy list and the title
+        # remove 1 and 2 from the nosy list
         form = cgi.FieldStorage()
         etag = calculate_etag(self.db.issue.getnode(issue_id),
                               self.db.config['WEB_SECRET_KEY'])
@@ -2514,6 +2547,25 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(len(results['attributes']['nosy']), 1)
         self.assertEqual(results['attributes']['nosy'], ['3'])
+
+        # delete last element: 3
+        etag = calculate_etag(self.db.issue.getnode(issue_id),
+                              self.db.config['WEB_SECRET_KEY'])
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@op', 'remove'),
+            cgi.MiniFieldStorage('data', '3'),
+            cgi.MiniFieldStorage('@etag', etag)
+        ]
+        results = self.server.patch_attribute('issue', issue_id, 'nosy', form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+
+        # verify the result
+        results = self.server.get_element('issue', issue_id, self.terse_form)
+        results = results['data']
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['attributes']['nosy']), 0)
+        self.assertListEqual(results['attributes']['nosy'], [])
 
 
 def get_obj(path, id):
