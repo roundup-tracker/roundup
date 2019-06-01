@@ -1350,6 +1350,9 @@ class DBTest(commonDBTest):
         else:
             self.assertEqual(len(result), 5)
             self.assertEqual(result [1][4], jp0)
+            print(result) # following test fails sometimes under sqlite
+                          # in travis. Looks like an ordering issue
+                          # in python 3.5. Print result to debug.
             self.assertEqual(result [2][4], jp1)
             self.assertEqual(result [3][4], jp2)
             self.assertEqual(result [4][4], jp3)
