@@ -131,6 +131,10 @@ Fixed:
 - issue2551033: prevent reverse engineering hidden data by using etags
   as an oracle to identify when the right data has been
   guessed. (Joseph Myers, John Rouillard)
+- issue2551029: Jinja2 template install error. Update configuration
+  code to make sure valid backend database is set. Remove config.ini
+  from templates to make sure that roundup-admin install writes a new
+  default config.ini based on configuration.py.
 
 2018-07-13 1.6.0
 

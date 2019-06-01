@@ -27,6 +27,8 @@ from roundup.anypy.strings import b2s
 import roundup.anypy.random_ as random_
 import binascii
 
+from roundup.backends import list_backends
+
 # XXX i don't think this module needs string translation, does it?
 
 ### Exceptions
@@ -336,6 +338,17 @@ or should it not be added (none)"""
         else:
             raise OptionValueError(self, value, self.class_description)
         
+class DatabaseBackend(Option):
+    """handle exact text of backend and make sure it's available"""
+    class_description = "Available backends: %s"%", ".join(list_backends())
+
+    def str2value(self, value):
+        _val = value.lower()
+        if _val in list_backends():
+            return _val
+        else:
+            raise OptionValueError(self, value, self.class_description)
+
 class HtmlToTextOption(Option):
 
     """What module should be used to convert emails with only text/html parts into text for display in roundup. Choose from beautifulsoup 4, dehtml - the internal code or none to disable html to text conversion. If beautifulsoup chosen but not available, dehtml will be used."""
@@ -894,11 +907,11 @@ always passes, so setting it less than 1 is not recommended."""),
             "is run, so it must be explicitly set to a non-empty string.\n"),
     )),
     ("rdbms", (
+        (DatabaseBackend, 'backend', NODEFAULT,
+            "Database backend."),
         (Option, 'name', 'roundup',
             "Name of the database to use.",
             ['MYSQL_DBNAME']),
-        (Option, 'backend', '',
-            "Database backend."),
         (NullableOption, 'host', 'localhost',
             "Database server host.",
             ['MYSQL_DBHOST']),
@@ -947,8 +960,8 @@ always passes, so setting it less than 1 is not recommended."""),
             "Database isolation level, currently supported for\n"
             "PostgreSQL and mysql. See, e.g.,\n"
             "http://www.postgresql.org/docs/9.1/static/transaction-iso.html"),
-    ), "Settings in this section are used"
-        " by RDBMS backends only"
+    ), "Settings in this section (except for backend) are used"
+        " by RDBMS backends only."
     ),
     ("logging", (
         (FilePathOption, "config", "",
