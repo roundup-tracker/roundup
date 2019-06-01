@@ -140,6 +140,9 @@ Fixed:
   default config.ini based on configuration.py.
 - issue2551040: New release of psycopg2 drops support for psycopg1 -
   need to rewrite. Now uses psycopg2 throughout. (John Rouillard)
+- issue2551009: Flint not supported error during reindex. Upgrading
+  doc updates to discuss this when reindexing. (Reported by Gabi,
+  Change by John Rouillard)
 
 2018-07-13 1.6.0
 

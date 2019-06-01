@@ -334,7 +334,16 @@ the indexer value. If this is failing most likely you need to set
 
 Alternatively you can do a
 '''roundup-admin -i /path/to/tracker reindex'''
-to generate a new index using roundup's preferred indexer from the list above.
+to generate a new index using roundup's preferred indexer from the
+list above.
+
+Xapian error with flint when reindexing
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+If you reindex and are using xapian, you may get the error that
+"flint" is not supported (looks like flint was removed after xapian
+1.2.x). To fix this, you can delete the full text search database
+located in the tracker home directory in the file '''db/text-index'''
+and then perform a reindex.
 
 Stemming improved in Xapian Indexer
 -----------------------------------

@@ -244,8 +244,14 @@ or
   X-Roundup-issue-category: Network, Security, Linux
 
 Then you can set up a filter looking for X-Roundup-issue-category
-followed by Network or Security in your mail program. Directions on
-using your mail program ae beyond the scope of theis FAQ entry.
+followed by Network or Security in your mail program.
+
+Also for newer (post version 1.6.X) releases there is also a header:
+
+  X-Roundup-issue-Id: 22
+
+for messages from issue22. Directions on using your mail program are
+beyond the scope of this FAQ entry.
 
 (If you don't see a header for a multilink or link property, look for
 msg_header_property in the roundup docs. In some cases you have to
