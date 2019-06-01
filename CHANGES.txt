@@ -31,6 +31,9 @@ Fixed:
   found/404. Reported by hannob at
   https://github.com/python/bugs.python.org/issues/34, issue opened by
   JulienPalard.
+- issue2551029: Jinja2 template install error. Remove config.ini
+  from templates to make sure that roundup-admin install writes a new
+  default config.ini based on configuration.py.
 
 
 2018-07-13 1.6.0
