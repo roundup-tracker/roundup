@@ -544,6 +544,14 @@ class TimezoneOption(Option):
         "If pytz is not installed, value must be integer number\n" \
         "giving local timezone offset from UTC in hours."
 
+    # fix issue2551030, default value for timezone
+    # Must be 0 if no pytz can be UTC if pytz.
+    try:
+        import pytz
+        defaulttz = "UTC"
+    except ImportError:
+        defaulttz = "0"
+
     def str2value(self, value):
         try:
             roundup.date.get_timezone(value)
@@ -552,6 +560,7 @@ class TimezoneOption(Option):
                     "Timezone name or numeric hour offset required")
         return value
 
+    
 class RegExpOption(Option):
 
     """Regular Expression option (value is Regular Expression Object)"""
@@ -658,7 +667,8 @@ SETTINGS = (
             "If you wish to make them xhtml, then you'll need to change this\n"
             "var to 'xhtml' too so all auto-generated HTML is compliant.\n"
             "Allowed values: html4, xhtml"),
-        (TimezoneOption, "timezone", "UTC", "Default timezone offset,"
+        (TimezoneOption, "timezone", TimezoneOption.defaulttz,
+            "Default timezone offset,"
             " applied when user's timezone is not set.",
             ["DEFAULT_TIMEZONE"]),
         (BooleanOption, "instant_registration", "no",

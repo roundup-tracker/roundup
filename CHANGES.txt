@@ -12,7 +12,7 @@ v2.7.2 is required to run newer releases of Roundup.  From v?.?
 onwards Python 3.4 and later are also supported.
 
 
-2018-??-?? ?.?.0
+2019-??-?? ?.?.0
 
 Features:
 
@@ -143,6 +143,8 @@ Fixed:
 - issue2551009: Flint not supported error during reindex. Upgrading
   doc updates to discuss this when reindexing. (Reported by Gabi,
   Change by John Rouillard)
+- issue2551030: Roundup fails to start if pytz to access Olson
+  timezone database not installed. (John Rouillard)
 
 2018-07-13 1.6.0
 
