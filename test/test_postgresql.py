@@ -34,7 +34,7 @@ if not have_backend('postgresql'):
         reason='Skipping PostgreSQL tests: backend not available'))
 else:
     try:
-        from roundup.backends.back_postgresql import psycopg, db_command
+        from roundup.backends.back_postgresql import psycopg2, db_command
         db_command(config, 'select 1')
         skip_postgresql = lambda func, *args, **kwargs: func
     except( DatabaseError ) as msg:
@@ -110,7 +110,7 @@ class postgresqlJournalTest(postgresqlOpener, ClassicInitBase,
         try:
             self.db1.close()
             self.db2.close()
-        except psycopg.InterfaceError as exc:
+        except psycopg2.InterfaceError as exc:
             if 'connection already closed' in str(exc): pass
             else: raise
         ClassicInitBase.tearDown(self)

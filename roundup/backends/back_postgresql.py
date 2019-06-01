@@ -4,7 +4,7 @@
 # under the same terms as Python, so long as this copyright message and
 # disclaimer are retained in their original form.
 #
-'''Postgresql backend via psycopg for Roundup.'''
+'''Postgresql backend via psycopg2 for Roundup.'''
 __docformat__ = 'restructuredtext'
 
 import os, shutil, time
@@ -13,13 +13,13 @@ ISOLATION_LEVEL_READ_COMMITTED = None
 ISOLATION_LEVEL_REPEATABLE_READ = None
 ISOLATION_LEVEL_SERIALIZABLE = None
 
-from psycopg2 import psycopg1 as psycopg
+import psycopg2
 from psycopg2.extensions import QuotedString
 from psycopg2.extensions import ISOLATION_LEVEL_READ_UNCOMMITTED
 from psycopg2.extensions import ISOLATION_LEVEL_READ_COMMITTED
 from psycopg2.extensions import ISOLATION_LEVEL_REPEATABLE_READ
 from psycopg2.extensions import ISOLATION_LEVEL_SERIALIZABLE
-from psycopg2.psycopg1 import ProgrammingError
+from psycopg2 import ProgrammingError
 from psycopg2.extensions import TransactionRollbackError
 
 import logging
@@ -66,15 +66,15 @@ def db_command(config, command, database='postgres'):
     fail by conflicting with another user.
 
     Since PostgreSQL version 8.1 there is a database "postgres",
-    before "template1" seems to habe been used, so we fall back to it. 
+    before "template1" seems to have been used, so we fall back to it. 
     Compare to issue2550543.
     '''
     template1 = connection_dict(config)
     template1['database'] = database
 
     try:
-        conn = psycopg.connect(**template1)
-    except psycopg.OperationalError as message:
+        conn = psycopg2.connect(**template1)
+    except psycopg2.OperationalError as message:
         if str(message).find('database "postgres" does not exist') >= 0:
             return db_command(config, command, database='template1')
         raise hyperdb.DatabaseError(message)
@@ -97,7 +97,7 @@ def pg_command(cursor, command):
     '''
     try:
         cursor.execute(command)
-    except psycopg.DatabaseError as err:
+    except psycopg2.DatabaseError as err:
         response = str(err).split('\n')[0]
         if "FATAL" not in response :
             msgs = (
@@ -115,7 +115,7 @@ def db_exists(config):
     """Check if database already exists"""
     db = connection_dict(config, 'database')
     try:
-        conn = psycopg.connect(**db)
+        conn = psycopg2.connect(**db)
         conn.close()
         return 1
     except:
@@ -156,8 +156,8 @@ class Database(rdbms_common.Database):
         logging.getLogger('roundup.hyperdb').info(
             'open database %r'%db['database'])
         try:
-            conn = psycopg.connect(**db)
-        except psycopg.OperationalError as message:
+            conn = psycopg2.connect(**db)
+        except psycopg2.OperationalError as message:
             raise hyperdb.DatabaseError(message)
 
         cursor = conn.cursor()
@@ -245,7 +245,7 @@ class Database(rdbms_common.Database):
         return '<roundpsycopgsql 0x%x>' % id(self)
 
     def sql_stringquote(self, value):
-        ''' psycopg.QuotedString returns a "buffer" object with the
+        ''' psycopg2.QuotedString returns a "buffer" object with the
             single-quotes around it... '''
         return str(QuotedString(str(value)))[1:-1]
 

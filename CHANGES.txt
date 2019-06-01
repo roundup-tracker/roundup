@@ -138,6 +138,8 @@ Fixed:
   code to make sure valid backend database is set. Remove config.ini
   from templates to make sure that roundup-admin install writes a new
   default config.ini based on configuration.py.
+- issue2551040: New release of psycopg2 drops support for psycopg1 -
+  need to rewrite. Now uses psycopg2 throughout. (John Rouillard)
 
 2018-07-13 1.6.0
 
