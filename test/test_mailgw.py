@@ -559,6 +559,7 @@ Message-Id: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
 X-Roundup-Issue-Status: unread
+X-Roundup-Issue-Id: 1
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -605,6 +606,7 @@ Message-Id: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
 X-Roundup-Issue-Status: unread
+X-Roundup-Issue-Id: 1
 Content-Transfer-Encoding: quoted-printable
 
 This is a test submission of a new issue.
@@ -648,6 +650,7 @@ Message-Id: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
 X-Roundup-Issue-Status: unread
+X-Roundup-Issue-Id: 1
 Content-Transfer-Encoding: quoted-printable
 
 New submission from Bork, Chef:
@@ -977,6 +980,7 @@ X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
 X-Roundup-Issue-Status: chatting
 X-Roundup-Issue-Files: unnamed
+X-Roundup-Issue-Id: 1
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -1028,6 +1032,7 @@ X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
 X-Roundup-Issue-Status: chatting
 X-Roundup-Issue-Files: unnamed
+X-Roundup-Issue-Id: 1
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -1077,6 +1082,7 @@ X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
 X-Roundup-Issue-Status: chatting
 X-Roundup-Issue-Files: unnamed
+X-Roundup-Issue-Id: 1
 
 
 --utf-8
@@ -1140,6 +1146,7 @@ X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
 X-Roundup-Issue-Status: chatting
 X-Roundup-Issue-Files: unnamed
+X-Roundup-Issue-Id: 1
 
 
 --utf-8
@@ -1199,6 +1206,7 @@ X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
 X-Roundup-Issue-Status: chatting
 X-Roundup-Issue-Files: Fwd: Original email subject.eml
+X-Roundup-Issue-Id: 1
 
 
 --utf-8
@@ -1381,6 +1389,7 @@ Precedence: bulk
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
 X-Roundup-Version: 1.5.1
+X-Roundup-Issue-Id: 1
 
 --===============6077820410007357357==
 MIME-Version: 1.0
@@ -1542,6 +1551,7 @@ X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
 X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
+X-Roundup-Issue-Id: 1
 
 
 Contrary, Mary <mary@test.test> added the comment:
@@ -1591,6 +1601,7 @@ X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
 X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
+X-Roundup-Issue-Id: 1
 
 
 richard <richard@test.test> added the comment:
@@ -1643,6 +1654,7 @@ X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
 X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
+X-Roundup-Issue-Id: 1
 
 richard <richard@test.test> added the comment:
 
@@ -1698,6 +1710,7 @@ X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
 X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
+X-Roundup-Issue-Id: 1
 
 richard <richard@test.test> added the comment:
 
@@ -1745,6 +1758,7 @@ X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
 X-Roundup-Issue-Status: unread
 Content-Transfer-Encoding: quoted-printable
+X-Roundup-Issue-Id: 2
 
 
 New submission from richard <richard@test.test>:
@@ -1809,6 +1823,7 @@ X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
 X-Roundup-Issue-Status: unread
 X-Roundup-Version: 1.3.3
+X-Roundup-Issue-Id: 1
 In-Reply-To: <dummy_test_message_id>
 MIME-Version: 1.0
 Reply-To: Roundup issue tracker
@@ -1839,6 +1854,7 @@ X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
 X-Roundup-Issue-Status: unread
 X-Roundup-Version: 1.3.3
+X-Roundup-Issue-Id: 1
 In-Reply-To: <dummy_test_message_id>
 MIME-Version: 1.0
 Reply-To: Roundup issue tracker
@@ -1896,6 +1912,7 @@ X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
 X-Roundup-Issue-Status: unread
 X-Roundup-Version: 1.3.3
+X-Roundup-Issue-Id: 1
 In-Reply-To: <dummy_test_message_id>
 MIME-Version: 1.0
 Reply-To: Roundup issue tracker
@@ -1946,6 +1963,7 @@ X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
 X-Roundup-Issue-Status: unread
 X-Roundup-Version: 1.3.3
+X-Roundup-Issue-Id: 1
 In-Reply-To: <dummy_test_message_id>
 MIME-Version: 1.0
 Reply-To: Roundup issue tracker
@@ -1998,6 +2016,7 @@ X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
 X-Roundup-Issue-Status: unread
 X-Roundup-Version: 1.3.3
+X-Roundup-Issue-Id: 1
 In-Reply-To: <dummy_test_message_id>
 MIME-Version: 1.0
 Reply-To: Roundup issue tracker
@@ -2049,6 +2068,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Id: 1
 X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
@@ -2163,6 +2183,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Id: 1
 X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
@@ -2210,6 +2231,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Id: 1
 X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
@@ -2248,6 +2270,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Id: 1
 X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
@@ -2286,6 +2309,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Id: 1
 X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
@@ -2323,6 +2347,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Id: 1
 X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
@@ -2360,6 +2385,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Id: 1
 X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
@@ -2399,6 +2425,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Id: 1
 X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
@@ -2445,6 +2472,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Id: 1
 X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
@@ -2546,6 +2574,7 @@ MIME-Version: 1.0
 Message-Id: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Id: 1
 X-Roundup-Issue-Status: unread
 Content-Transfer-Encoding: quoted-printable
 
@@ -2591,6 +2620,7 @@ MIME-Version: 1.0
 Message-Id: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Id: 1
 X-Roundup-Issue-Status: unread
 Content-Transfer-Encoding: quoted-printable
 
@@ -2636,6 +2666,7 @@ MIME-Version: 1.0
 Message-Id: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Id: 1
 X-Roundup-Issue-Status: unread
 Content-Transfer-Encoding: quoted-printable
 
@@ -2883,6 +2914,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Id: 1
 X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
@@ -2932,6 +2964,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Id: 1
 X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
@@ -2985,6 +3018,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Id: 1
 X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
@@ -3061,6 +3095,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Id: 1
 X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
@@ -3936,6 +3971,7 @@ Message-Id: <dummy_test_message_id_2>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Id: 1
 X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 
@@ -3984,6 +4020,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Id: 1
 X-Roundup-Issue-Status: chatting
 X-Roundup-Issue-keyword: Foo, Baz This
 Content-Transfer-Encoding: quoted-printable
@@ -4021,6 +4058,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Id: 1
 X-Roundup-Issue-Status: chatting
 X-Roundup-Issue-Assignedto: mary
 Content-Transfer-Encoding: quoted-printable
@@ -4073,6 +4111,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
+X-Roundup-Issue-Id: 1
 X-Roundup-Issue-Status: chatting
 Content-Transfer-Encoding: quoted-printable
 

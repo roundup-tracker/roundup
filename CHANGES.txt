@@ -82,6 +82,9 @@ Features:
   limit mechanism added for web page logins. Default is 3 login
   attempts/minute for a user. After which one login attempt every 20
   seconds can be done. (John Rouillard)
+- issue2551043: Add X-Roundup-issue-id email header. Add a new header
+  to make it easier to filter notification emails without having to
+  parse the subject line. (John Rouillard)
 
 Fixed:
 

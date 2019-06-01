@@ -595,6 +595,16 @@ class IssueClass:
                 except UnicodeError:
                     message[header] = Header(values, charset)
 
+            # Add header for main id number to make filtering
+            # email easier than extracting from subject line.
+            header = "X-Roundup-%s-Id"%(self.classname)
+            values = issueid
+            try:
+                values.encode('ascii')
+                message[header] = values
+            except UnicodeError:
+                message[header] = Header(values, charset)
+
             if not inreplyto:
                 # Default the reply to the first message
                 msgs = self.get(issueid, 'messages')
