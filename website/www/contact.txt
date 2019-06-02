@@ -16,14 +16,14 @@ You may talk to Roundup developers directly via IRC irc://irc.oftc.net/roundup
 using IRC client or through WebChat_ interface.
 
 
-.. _roundup-users: https://lists.sourceforge.net/lists/listinfo/roundup-users
-.. _roundup-devel: https://lists.sourceforge.net/lists/listinfo/roundup-devel
-.. _roundup-checkins: https://lists.sourceforge.net/lists/listinfo/roundup-checkins
+.. _roundup-users: https://sourceforge.net/projects/roundup/lists/roundup-users
+.. _roundup-devel: https://sourceforge.net/projects/roundup/lists/roundup-devel
+.. _roundup-checkins: https://sourceforge.net/projects/roundup/lists/roundup-checkins
 
-.. __: https://sourceforge.net/mailarchive/forum.php?forum_name=roundup-users
+.. __: https://sourceforge.net/p/roundup/mailman/roundup-users/
 
-.. __: https://sourceforge.net/mailarchive/forum.php?forum_name=roundup-devel
+.. __: https://sourceforge.net/p/roundup/mailman/roundup-devel/
 
-.. __: https://sourceforge.net/mailarchive/forum.php?forum_name=roundup-checkins
+.. __: https://sourceforge.net/p/roundup/mailman/roundup-checkins/
 
-.. _WebChat: http://webchat.oftc.net/?randomnick=1&channels=roundup&prompt=1
+.. _WebChat: https://webchat.oftc.net/?randomnick=1&channels=roundup&prompt=1

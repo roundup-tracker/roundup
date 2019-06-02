@@ -11,7 +11,7 @@ Contents:
    :maxdepth: 2
 
    Home <index>
-   Download <http://pypi.python.org/pypi/roundup>
+   Download <https://pypi.org/project/roundup/>
    docs
    Issues <https://issues.roundup-tracker.org>
    contact
