@@ -15,6 +15,10 @@ Living without a mailserver
 Remove the nosy reactor - delete the tracker file
 ``detectors/nosyreactor.py`` from your tracker home.
 
+You do need to configure the ``[mail]`` section of
+config.ini. Specifically the ``domain`` and ``host`` settings have to
+have a value. The values don't matter, but the config parser will
+complain if they are not set.
 
 The cgi-bin is very slow!
 ~~~~~~~~~~~~~~~~~~~~~~~~~
