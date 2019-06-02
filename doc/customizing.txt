@@ -680,7 +680,7 @@ behaviour:
    - ``required``: see `design documentation`_. Adds the property to
      the list returned by calling get_required_props for the class.
    - ``default_value``: see `design documentation`_ Sets the default
-     value is the property is not set.
+     value if the property is not set.
    - ``quiet``: see `design documentation`_. Suppresses user visible
      to changes to this property. The property change is not reported:
 
