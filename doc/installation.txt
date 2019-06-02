@@ -32,7 +32,7 @@ Prerequisites
 =============
 
 Roundup requires Python 2.7 or newer (but not Python 3) with a functioning
-anydbm module. Download the latest version from http://www.python.org/.
+anydbm module. Download the latest version from https://www.python.org/.
 It is highly recommended that users install the latest patch version
 of python as these contain many fixes to serious bugs.
 
@@ -116,7 +116,7 @@ Windows Service
   You can run Roundup as a Windows service if pywin32_ is installed.
   Otherwise it must be started manually.
 
-.. _Xapian: http://xapian.org/
+.. _Xapian: https://xapian.org/
 .. _Whoosh: https://bitbucket.org/mchaput/whoosh/wiki/Home
 .. _pytz: https://pypi.org/project/pytz/
 .. _Olson tz database: https://www.iana.org/time-zones
@@ -728,7 +728,7 @@ Exim4.
 
   For more Debian-specific information, see suggested addition to
   README.Debian in
-  http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=343283, which will
+  https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=343283, which will
   hopefully be merged into the Debian package eventually.
 
 This config makes a few assumptions:
@@ -1114,9 +1114,9 @@ from installation and scripts.
 
 .. _apache: http://httpd.apache.org/
 .. _flup: https://pypi.org/project/flup/
-.. _mod_python: http://www.modpython.org/
-.. _MySQLdb: http://sourceforge.net/projects/mysql-python
-.. _Psycopg: http://initd.org/software/initd/psycopg
-.. _pysqlite: http://pysqlite.org/
+.. _mod_python: http://modpython.org/
+.. _MySQLdb: https://pypi.org/project/mysqlclient/
+.. _Psycopg: http://initd.org/psycopg/
+.. _pysqlite: https://pysqlite.org/
 .. _`adding MySQL users`:
-    http://dev.mysql.com/doc/refman/5.1/en/adding-users.html
+    https://dev.mysql.com/doc/refman/8.0/en/adding-users.html

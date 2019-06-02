@@ -21,7 +21,7 @@ Design Document`_ and the `implementation notes`_.
 All development is coordinated through two resources:
 
 - roundup-devel mailing list at
-  http://lists.sourceforge.net/mailman/listinfo/roundup-devel
+  https://sourceforge.net/projects/roundup/lists/roundup-devel
 - The issue tracker running at
   https://issues.roundup-tracker.org/
 
@@ -416,35 +416,35 @@ At run time, Roundup automatically compiles message catalogs whenever
 .. _External hyperlink targets:
 
 .. _alexander smishlajev:
-.. _als: http://sourceforge.net/users/a1s/
+.. _als: https://sourceforge.net/u/a1s/profile/
 .. _cygwin: https://www.cygwin.com/
 .. _emacs: https://www.gnu.org/software/emacs/
-.. _gettext package: https://www.gnu.org/software/gettext/
+.. _gettext package: http://www.gnu.org/savannah-checkouts/gnu/gettext/manual/gettext.html
 .. _gettext module: https://docs.python.org/2/library/gettext.html
 .. _GNU: http://www.gnu.org/
 .. _GNU mirror sites: http://www.gnu.org/prep/ftp.html
 .. _issue tracker: https://issues.roundup-tracker.org/
 .. _Lokalize: Lokalize
-.. _KDE: http://www.kde.org/
+.. _KDE: https://kde.org/
 .. _linux: https://www.linux.org/
 .. _Plural Forms:
-    http://www.gnu.org/software/gettext/manual/html_node/gettext_150.html
+    http://www.gnu.org/savannah-checkouts/gnu/gettext/manual/gettext.html
 .. _po filetype plugin:
-    http://vim.sourceforge.net/scripts/script.php?script_id=695
+    https://vim.sourceforge.io/scripts/script.php?script_id=695
 .. _PO utilities: https://github.com/pinard/po-utils
-.. _poEdit: http://poedit.sourceforge.net/
+.. _poEdit: https://poedit.net/
 .. _Roundup Source:
 .. _Roundup source distribution:
 .. _Roundup binary distribution:
-    http://sourceforge.net/project/showfiles.php?group_id=31577
+    https://sourceforge.net/projects/roundup/files/
 .. _roundup-devel mailing list:
-   http://lists.sourceforge.net/mailman/listinfo/roundup-devel
+   https://sourceforge.net/projects/roundup/lists/roundup-devel
 .. _TAL:
 .. _Template Attribute Language:
    https://pagetemplates.readthedocs.io/en/latest/history/TALSpecification14.html
 .. _TALES:
 .. _Template Attribute Language Expression Syntax:
    https://pagetemplates.readthedocs.io/en/latest/history/TALESSpecification13.html
-.. _vim: http://www.vim.org/
+.. _vim: https://www.vim.org/
 .. _ZPTInternationalizationSupport: http://dev.zope.org/Wikis/DevSite/Projects/ComponentArchitecture/ZPTInternationalizationSupport
 

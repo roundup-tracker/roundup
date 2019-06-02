@@ -1762,7 +1762,7 @@ should not affect users of 0.5 installations - but if you find you're
 getting errors from form submissions, please ask for help on the Roundup
 users mailing list:
 
-  http://lists.sourceforge.net/lists/listinfo/roundup-users
+  https://sourceforge.net/projects/roundup/lists/roundup-users
 
 See the customisation doc section on `Form Values`__ for documentation of the
 new form variables possible.

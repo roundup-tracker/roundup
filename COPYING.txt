@@ -1,3 +1,5 @@
+Note links for http://www.zope.com/Marks and  http://www.ekit.com/ are dead.
+
 Roundup Licensing
 -----------------
 
