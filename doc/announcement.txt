@@ -305,7 +305,7 @@ Fixed:
   added.
 - Validate Integer and Numeric type filter parameters rather than
   passing output down to db level. Initial patch at:
-  http://hg.python.org/tracker/roundup/rev/98508a47c126 by
+  https://hg.python.org/tracker/roundup/rev/98508a47c126 by
   Martin.V.Loewis. Numeric test patch applied, Integer code and tests
   developed by John Rouillard.
 - issue1926124: fix crash in roundup_admin migrate option.
@@ -534,11 +534,11 @@ To give Roundup a try, just download (see below), unpack and run::
     python demo.py
 
 Release info and download page:
-     http://pypi.org/project/roundup
+     https://pypi.org/project/roundup
 Source and documentation is available at the website:
      http://roundup-tracker.org/
 Mailing lists - the place to ask questions:
-     http://sourceforge.net/mail/?group_id=31577
+     https://sourceforge.net/p/roundup/mailman/
 
 
 About Roundup
