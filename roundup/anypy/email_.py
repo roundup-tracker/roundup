@@ -2,8 +2,6 @@ import re
 import binascii
 import email
 from email import quoprimime, base64mime
-
-from roundup.anypy.strings import bs2b
 from email import charset as _charset
 
 if str == bytes:
@@ -48,12 +46,11 @@ def decode_header(header):
     """
     # If it is a Header object, we can just return the encoded chunks.
     if hasattr(header, '_chunks'):
-        # no bs2b here. _charset._encode should return bytes
         return [(_charset._encode(string, str(charset)), str(charset))
                     for string, charset in header._chunks]
     # If no encoding, just return the header with no charset.
     if not ecre.search(header):
-        return [(bs2b(header), None)]
+        return [(header, None)]
     # First step is to parse all the encoded parts into triplets of the form
     # (encoded_string, encoding, charset).  For unencoded strings, the last
     # two parts will be None.
@@ -117,7 +114,7 @@ def decode_header(header):
             last_word = word
             last_charset = charset
         elif charset != last_charset:
-            collapsed.append((bs2b(last_word), last_charset))
+            collapsed.append((last_word, last_charset))
             last_word = word
             last_charset = charset
         elif last_charset is None:
@@ -125,6 +122,6 @@ def decode_header(header):
             last_word += BSPACE + word
         else:
             last_word += word
-    collapsed.append((bs2b(last_word), last_charset))
+    collapsed.append((last_word, last_charset))
     return collapsed
 

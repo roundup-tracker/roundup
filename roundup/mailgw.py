@@ -202,15 +202,19 @@ class RoundupMessage(email.message.Message):
     def _decode_header(self, hdr):
         parts = []
         for part, encoding in decode_header(hdr):
-            if encoding:
-                part = part.decode(encoding)
-            else:
-                # if the encoding is unknown, try decoding with utf-8
-                # and fallback on iso-8859-1 if that fails
-                try:
-                    part = part.decode('utf-8')
-                except UnicodeDecodeError:
-                    part = part.decode('iso-8859-1')
+            # decode_header might return either bytes or unicode,
+            # see https://bugs.python.org/issue21492
+            # If part is bytes, try to decode it with the specified
+            # encoding if it's provided, otherwise try utf-8 and
+            # fallback on iso-8859-1 if that fails.
+            if isinstance(part, bytes):
+                if encoding:
+                    part = part.decode(encoding)
+                else:
+                    try:
+                        part = part.decode('utf-8')
+                    except UnicodeDecodeError:
+                        part = part.decode('iso-8859-1')
             # RFC 2047 specifies that between encoded parts spaces are
             # swallowed while at the borders from encoded to non-encoded
             # or vice-versa we must preserve a space. Multiple adjacent
