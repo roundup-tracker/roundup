@@ -537,7 +537,7 @@ Emails to Roundup trackers must include a Subject: line!
     def parse_subject(self):
         ''' Matches subjects like:
         Re: "[issue1234] title of issue [status=resolved]"
-        
+
         Each part of the subject is matched, stored, then removed from the
         start of the subject string as needed. The stored values are then
         returned
@@ -610,11 +610,11 @@ Emails to Roundup trackers must include a Subject: line!
         if self.matches['quote'] and not self.matches['argswhole'] \
            and self.matches['title'].endswith('"'):
             self.matches['title'] = self.matches['title'][:-1]
-        
+
     def rego_confirm(self):
         ''' Check for registration OTK and confirm the registration if found
         '''
-        
+
         if self.config['EMAIL_REGISTRATION_CONFIRMATION']:
             otk_re = re.compile('-- key (?P<otk>[a-zA-Z0-9]{32})')
             otk = otk_re.search(self.matches['title'] or '')
@@ -700,14 +700,14 @@ Subject was: '%(subject)s'
 """) % locals())
         # get the class properties
         self.properties = self.cl.getprops()
-        
+
 
     def get_nodeid(self):
         ''' Determine the nodeid from the message and return it if found
         '''
         title = self.matches['title']
         subject = self.subject
-        
+
         if self.pfxmode == 'none':
             nodeid = None
         else:
@@ -880,10 +880,10 @@ Unknown address: %(from_address)s
         ''' Generate all the props for the new/updated node and return them
         '''
         subject = self.subject
-        
+
         # get the commandline arguments for issues
         issue_props = self.mailgw.get_class_arguments('issue', self.classname)
-        
+
         #
         # handle the subject argument list
         #
@@ -892,11 +892,11 @@ Unknown address: %(from_address)s
         args = self.matches['args']
         argswhole = self.matches['argswhole']
         title = self.matches['title']
-        
-        # Reform the title 
+
+        # Reform the title
         if self.matches['nodeid'] and self.nodeid is None:
             title = subject
-        
+
         if args:
             if self.sfxmode == 'none':
                 title += ' ' + argswhole
@@ -993,7 +993,7 @@ Subject was: "%(subject)s"
                         # something failed with the message decryption/sig
                         # chain. Pass the error up.
                         raise
-                # store the decrypted message      
+                # store the decrypted message
                 self.message = message
             elif pgp_role():
                 raise MailUsageError(_("""
@@ -1059,7 +1059,7 @@ encrypted."""))
             return
         msg_props = self.mailgw.get_class_arguments('msg')
         self.msg_props.update (msg_props)
-        
+
         # Get the message ids
         inreplyto = self.message.get_header('in-reply-to') or ''
         messageid = self.message.get_header('message-id')
@@ -1068,7 +1068,7 @@ encrypted."""))
             messageid = "<%s.%s.%s%s@%s>"%(time.time(),
                 b2s(base64.b32encode(random_.token_bytes(10))),
                 self.classname, self.nodeid, self.config['MAIL_DOMAIN'])
-        
+
         if self.content is None:
             raise MailUsageError(_("""
 Roundup requires the submission to be plain text. The message parser could
@@ -1110,7 +1110,7 @@ Mail message was rejected by a detector.
                 self.props['messages'] = [message_id]
 
     def create_node(self):
-        ''' Create/update a node using self.props 
+        ''' Create/update a node using self.props
         '''
         classname = self.classname
         try:
@@ -1590,7 +1590,7 @@ class MailGW:
 
         classname = classname or class_type
         cls_lookup = { 'issue' : classname }
-        
+
         # Allow other issue-type classes -- take the real classname from
         # previous parsing-steps of the message:
         clsname = cls_lookup.get (class_type, class_type)
@@ -1605,21 +1605,21 @@ The mail gateway is not properly set up. Please contact
 %(mailadmin)s and have them fix the incorrect class specified as:
   %(clsname)s
 """) % locals())
-        
+
         if self.arguments:
             # The default type on the commandline is msg
             if class_type == 'msg':
                 current_type = class_type
             else:
                 current_type = None
-            
+
             # Handle the arguments specified by the email gateway command line.
             # We do this by looping over the list of self.arguments looking for
             # a -C to match the class we want, then use the -S setting string.
             for option, propstring in self.arguments:
                 if option in ( '-C', '--class'):
                     current_type = propstring.strip()
-                    
+
                     if current_type != class_type:
                         current_type = None
 
