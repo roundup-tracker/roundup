@@ -28,7 +28,7 @@ import csv, getopt, getpass, os, re, shutil, sys, UserDict, operator
 from roundup import date, hyperdb, roundupdb, init, password, token
 from roundup import __version__ as roundup_version
 import roundup.instance
-from roundup.configuration import CoreConfig, NoConfigError
+from roundup.configuration import CoreConfig, NoConfigError, UserConfig
 from roundup.i18n import _
 from roundup.exceptions import UsageError
 
@@ -429,8 +429,30 @@ Erase it? Y/N: """) % locals())
             defns = {}
 
         defns['rdbms_backend'] = backend
+
+        # load config_ini.ini from template if it exists.
+        # it sets parameters like template_engine that are
+        # template specific.
+        template_config=UserConfig(templates[template]['path'] +
+                                   "/config_ini.ini")
+        for k in template_config.keys():
+            if k == 'HOME': # ignore home. It is a default param.
+                continue
+            defns[k] = template_config[k]
+
         # install!
         init.install(tracker_home, templates[template]['path'], settings=defns)
+
+        # Remove config_ini.ini file from tracker_home (not template dir).
+        # Ignore file not found - not all templates have
+        #   config_ini.ini files.
+        try:
+            os.remove(tracker_home + "/config_ini.ini")
+        except OSError as e:  # FileNotFound exception under py3
+            if e.errno == 2:
+                pass
+            else:
+                raise
 
         print(_("""
 ---------------------------------------------------------------------------

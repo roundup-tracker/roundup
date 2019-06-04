@@ -34,7 +34,11 @@ Fixed:
 - issue2551029: Jinja2 template install error. Remove config.ini
   from templates to make sure that roundup-admin install writes a new
   default config.ini based on configuration.py.
-
+- issue2551029: Jinja2 template install error. Handle issue with
+  template's config.ini not getting updated. Provide an alternate
+  file: config_ini.ini for required config settings that are merged
+  into the default values producing an up to date config.ini on
+  install.
 
 2018-07-13 1.6.0
 
