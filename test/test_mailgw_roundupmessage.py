@@ -75,6 +75,34 @@ class HeaderRoundupMessageTests(TestCase):
         This is a test submission of a new issue.
     """)
 
+    # From line has a null/empty encoding spec
+    # to trigger failure in mailgw.py:RoundupMessage::_decode_header
+    bad_msg_utf8 = message_from_string("""
+        Content-Type: text/plain;
+            charset="iso-8859-1"
+        From: =??b?SOKCrGxsbw=====?= <hello@example.com>
+        To: Issue Tracker <issue_tracker@example.com>
+        Cc: =?utf8?b?SOKCrGxsbw==?= <hello@example.com>,
+            Some User <some.user@example.com>
+        Message-Id: <dummy_test_message_id>
+        Subject: [issue] Testing...
+
+        This is a test submission of a new issue.
+    """)
+
+    bad_msg_iso_8859_1 = message_from_string("""
+        Content-Type: text/plain;
+            charset="iso-8859-1"
+        From: =??q?\x80SOKCrGxsbw=====?= <hello@example.com>
+        To: Issue Tracker <issue_tracker@example.com>
+        Cc: =?utf8?b?SOKCrGxsbw==?= <hello@example.com>,
+            Some User <some.user@example.com>
+        Message-Id: <dummy_test_message_id>
+        Subject: [issue] Testing...
+
+        This is a test submission of a new issue.
+    """)
+
     def test_get_plain_header(self):
         self.assertEqual(
             self.msg.get_header('to'),
@@ -84,6 +112,21 @@ class HeaderRoundupMessageTests(TestCase):
         self.assertEqual(
             self.msg.get_header('from'),
             'H€llo <hello@example.com>')
+
+        # issue2551008 null encoding causes crash.
+        self.assertEqual(
+            self.bad_msg_utf8.get_header('from'),
+            'H€llo <hello@example.com>')
+
+        # the decoded value is not what the user wanted,
+        # but they should have created a valid header
+        # if they wanted the right outcome...
+        self.assertIn(
+            self.bad_msg_iso_8859_1.get_header('from'),
+            (
+                '\xc2\x80SOKCrGxsbw===== <hello@example.com>', # python 2
+                '\x80SOKCrGxsbw===== <hello@example.com>'      # python 3
+            ))
 
     def test_get_address_list(self):
         self.assertEqual(self.msg.get_address_list('cc'), [

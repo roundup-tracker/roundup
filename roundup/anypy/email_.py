@@ -2,6 +2,7 @@ import re
 import binascii
 import email
 from email import quoprimime, base64mime
+from email import charset as _charset
 
 if str == bytes:
     message_from_bytes = email.message_from_string
