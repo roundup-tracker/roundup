@@ -380,9 +380,9 @@ Features:
 
 Fixed:
 
-- issue1615201: Optionally restore the original (version 0.6) mailgw 
-  behaviour of ignoring a Resent-From:-header and using the real 
-  From-header instead: new configuration option EMAIL_KEEP_REAL_FROM 
+- issue1615201: Optionally restore the original (version 0.6) mailgw
+  behaviour of ignoring a Resent-From:-header and using the real
+  From-header instead: new configuration option EMAIL_KEEP_REAL_FROM
   (Peter Funk aka Pefu).
 - issue2550717: Changed a couple of residual email references into
   E-Mail in German translation (John Rouillard)
@@ -395,7 +395,7 @@ Fixed:
   multilink values (in classic template). Applied patch so it
   now errors the same way as an update does. (applied by John Rouillard)
 - issue2550757: one bug raised by issue fixed. Patch created by
-  W. Trevor King (wking) for documentation of mailgw applied by 
+  W. Trevor King (wking) for documentation of mailgw applied by
   John Rouillard.
 - Fix processing of additional arguments to cgi method 'menu': This
   would not work if more than one additional argument is used.
@@ -643,8 +643,8 @@ Fixed:
   may see removed properties. By default only role Admin is allowed to
   see these.
 - Fix issue2550955: Roundup commits although a Reject exception is raised
-  Fix the problem that changes are committed to the database (due to 
-  commits to otk handling) even when a Reject exception occurs. The fix 
+  Fix the problem that changes are committed to the database (due to
+  commits to otk handling) even when a Reject exception occurs. The fix
   implements separate database connections for otk/session handling and
   normal database operation.
 - Allow empty content property for file and message via xmlrpc
@@ -717,11 +717,11 @@ Features:
 
 Fixed:
 
-- issue2550869 Duplicate mail headers (Reply-To, Message-ID, In-Reply-To) 
+- issue2550869 Duplicate mail headers (Reply-To, Message-ID, In-Reply-To)
   when sending out email. Reported with first fix by Mathias Behrle.
   (Bernhard Reiter)
-- issue2550830 An empty LinkHTMLProperty cannot be compared successfully. 
-  Improves the query editing page. Reported and fixed by R David Murray 
+- issue2550830 An empty LinkHTMLProperty cannot be compared successfully.
+  Improves the query editing page. Reported and fixed by R David Murray
   (Bernhard Reiter).
 - Fix Release-date of 1.5.0 in this file (thanks to Bernhard for
   discovery) (Ralf Schlatterbeck)
@@ -815,18 +815,18 @@ Fixed:
   always work. (Ralf Schlatterbeck)
 - issue2550881 demo.py: Add pointer how to access demo from remote host.
   Suggested by Karl-Philipp Richter. (Bernhard Reiter)
-- issue2550884 roundup-mailgw --help text improved to explain the allowed 
+- issue2550884 roundup-mailgw --help text improved to explain the allowed
   parameters better. Suggested by by Karl-Philipp Richter. (Bernhard Reiter)
 - Fix form-parsing: If multiple new items are added to a multilink
   property, the old version would create the new items but only link
   one. (Ralf Schlatterbeck)
-- issue2550892 (translation error of priority in locale de) Thanks 
+- issue2550892 (translation error of priority in locale de) Thanks
   Martin Thomas Swaton for reporting. (Bernhard Reiter)
 - Help-Window now gets focus, this prevents the case that help doesn't
   work because an old help-window is below the main window.
   (Ralf Schlatterbeck)
-- issue2550811 20% fix: jinja2 template engine now has an example 
-  how to use non-ascii unicode contents with a custom filter ('| u'). 
+- issue2550811 20% fix: jinja2 template engine now has an example
+  how to use non-ascii unicode contents with a custom filter ('| u').
   See updates on http://www.roundup-tracker.org/cgi-bin/moin.cgi/Jinja2
   (Bernhard Reiter)
 
@@ -867,7 +867,7 @@ Features:
 - Experimental support for Jinja2, try 'jinja2' for template_engine
   in config (anatoly techtonik)
 - A new jinja2 template based on Classic schema and using Twitter
-  bootstrap for responsive behaviour.  Run as - 
+  bootstrap for responsive behaviour.  Run as -
   python demo.py -t jinja2 nuke (Pradip P Caulagi)
 - roundup_admin.py and other scripts can now be run directly from the
   sources dir as roundup\scripts\roundup_admin.py (anatoly techtonik)
@@ -887,7 +887,7 @@ Fixed:
 
 - issue2550789: add documentation on how to initialise a tracker
   without exposing the admin password.
-- issue2550805: Postgres should search title attribute case insensitive 
+- issue2550805: Postgres should search title attribute case insensitive
   like sqlite. Reported and fixed by Tom Ekberg. (Bernhard Reiter)
 - Removed some old left over "rlog" references in documentation and code.
   Makes the debugging.txt advise for the database unit tests work again.
@@ -897,7 +897,7 @@ Fixed:
 - Make roundup play nice with setup tools (for using with virtualenv)
   (Pradip Caulagi)
 - [minor] Template responsive: make demo.py work out of the box with it,
-  by setting the static_files config.ini setting to "static". 
+  by setting the static_files config.ini setting to "static".
   Footer: link fixed and hardcoded last modified date removed. (Bernhard Reiter)
 - demo.py print location of tracker home and fully erase its directory
   when nuking (anatoly techtonik)
@@ -963,7 +963,7 @@ Fixed:
   least python 2.5, thanks to John P. Rouillard for discovering this.
   (committed by Ralf Schlatterbeck)
 - Fix version_check.py to require at least python 2.5 (anatoly techtonik)
-- Fixing the download button re-activating the cheeseshop plugin in the 
+- Fixing the download button re-activating the cheeseshop plugin in the
   sphinx config. Thanks to Richard for the hint. (Bernhard Reiter)
 - issue2550783 devel template's schema.py permissions referenced the
   organization property for the user, but the property is called
