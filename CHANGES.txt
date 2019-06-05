@@ -150,6 +150,8 @@ Fixed:
   file: config_ini.ini for required config settings that are merged
   into the default values producing an up to date config.ini on
   install.
+- issue2551008: fix incorrect encoding handling in mailgw.py
+  (Ezio Melotti, John Rouillard)
 
 2018-07-13 1.6.0
 
