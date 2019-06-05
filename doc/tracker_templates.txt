@@ -25,6 +25,12 @@ Templates contain:
 - modules ``schema.py`` and ``initial_data.py``
 - directories ``html``, ``detectors`` and ``extensions``
   (with appropriate contents)
+- optional ``config_ini.ini`` file. It is structured like a tracker's
+  ``config.ini`` but contains only headers (e.g. ``[main]``) and
+  *required* parameters that are different from defaults:
+  e.g. ``template_engine = jinja2`` and ``static_files =
+  static``. These settings override the default values saved to the
+  tracker's ``config.ini``.
 - template "marker" file ``TEMPLATE-INFO.txt``, which contains
   the name of the template, a description of the template
   and its intended audience.
