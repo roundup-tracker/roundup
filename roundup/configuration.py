@@ -495,6 +495,25 @@ class MandatoryOption(Option):
         else:
             return value
 
+class WebUrlOption(Option):
+    """URL MUST start with http/https scheme and end with '/'"""
+
+    def str2value(self, value):
+        if not value:
+            raise OptionValueError(self,value,"Value must not be empty.")
+
+        error_msg = ''
+        if not value.startswith(('http://', 'https://')):
+            error_msg = "Value must start with http:// or https://.\n"
+
+        if not value.endswith('/'):
+            error_msg += "Value must end with /."
+
+        if error_msg:
+            raise OptionValueError(self,value,error_msg)
+        else:
+            return value
+
 class NullableOption(Option):
 
     """Option that is set to None if its string value is one of NULL strings
@@ -714,13 +733,13 @@ SETTINGS = (
     ("tracker", (
         (Option, "name", "Roundup issue tracker",
             "A descriptive name for your roundup instance."),
-        (Option, "web", NODEFAULT,
+        (WebUrlOption, "web", NODEFAULT,
             "The web address that the tracker is viewable at.\n"
             "This will be included in information"
             " sent to users of the tracker.\n"
             "The URL MUST include the cgi-bin part or anything else\n"
             "that is required to get to the home page of the tracker.\n"
-            "You MUST include a trailing '/' in the URL."),
+            "URL MUST start with http/https scheme and end with '/'"),
         (MailAddressOption, "email", "issue_tracker",
             "Email address that mail to roundup should go to.\n"
             "If no domain is specified then mail_domain is added."),

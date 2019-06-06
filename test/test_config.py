@@ -50,3 +50,21 @@ class ConfigTest(unittest.TestCase):
         """Run configure tests looking for invalid option name
         """
         self.assertEquals(config._get_option("FOO"), "value")
+
+    def testTrackerWeb(self):
+        config = configuration.CoreConfig()
+
+        self.assertEqual(None,
+             config._get_option('TRACKER_WEB').set("http://foo.example/bar/"))
+        self.assertEqual(None,
+             config._get_option('TRACKER_WEB').set("https://foo.example/bar/"))
+
+        self.assertRaises(configuration.OptionValueError,
+             config._get_option('TRACKER_WEB').set, "https://foo.example/bar")
+
+        self.assertRaises(configuration.OptionValueError,
+             config._get_option('TRACKER_WEB').set, "htt://foo.example/bar/")
+
+        self.assertRaises(configuration.OptionValueError,
+             config._get_option('TRACKER_WEB').set, "htt://foo.example/bar")
+
