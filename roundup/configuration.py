@@ -484,6 +484,7 @@ class IntegerNumberGeqZeroOption(Option):
             if v < 0:
                 raise OptionValueError(self, value,
                       "Integer number greater than or equal to zero required")
+            return v
         except OptionValueError:
             raise # pass through subclass
         except ValueError:
