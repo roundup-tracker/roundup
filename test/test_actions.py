@@ -395,6 +395,19 @@ class LoginTestCase(ActionTestCase):
         self.assertRaisesMessage(Reject, LoginAction(self.client).handle,
                'Logins occurring too fast. Please wait: 3 seconds.')
 
+    def testLoginRateLimitOff(self):
+        ''' Set number of logins to 0 per minute. Verify that
+            we can do 1000 which for manual login might as well be off. 
+        '''
+
+        self.client.db.config.WEB_LOGIN_ATTEMPTS_MIN = 0
+
+        # Do the first login setting an invalid login name
+        self.assertLoginLeavesMessages(['Invalid login'], 'nouser')
+        for i in range(1000):
+            self.client._error_message = []
+            self.assertLoginLeavesMessages(['Invalid login'])
+
 class EditItemActionTestCase(ActionTestCase):
     def setUp(self):
         ActionTestCase.setUp(self)

@@ -1233,32 +1233,35 @@ class LoginAction(Action):
         try:
             # Implement rate limiting of logins by login name.
             # Use prefix to prevent key collisions maybe??
-            rlkey="LOGIN-" + self.client.user
-            limit=self.loginLimit
-            gcra=Gcra()
-            otk=self.client.db.Otk
-            try:
-                val=otk.getall(rlkey)
-                gcra.set_tat_as_string(rlkey, val['tat'])
-            except KeyError:
-                # ignore if tat not set, it's 1970-1-1 by default.
-                pass
-            # see if rate limit exceeded and we need to reject the attempt
-            reject=gcra.update(rlkey, limit)
+            # set client.db.config.WEB_LOGIN_ATTEMPTS_MIN to 0
+            #  to disable
+            if self.client.db.config.WEB_LOGIN_ATTEMPTS_MIN: # if 0 - off
+                rlkey="LOGIN-" + self.client.user
+                limit=self.loginLimit
+                gcra=Gcra()
+                otk=self.client.db.Otk
+                try:
+                    val=otk.getall(rlkey)
+                    gcra.set_tat_as_string(rlkey, val['tat'])
+                except KeyError:
+                    # ignore if tat not set, it's 1970-1-1 by default.
+                    pass
+                # see if rate limit exceeded and we need to reject the attempt
+                reject=gcra.update(rlkey, limit)
 
-            # Calculate a timestamp that will make OTK expire the
-            # unused entry 1 hour in the future
-            ts = time.time() - (60 * 60 * 24 * 7) + 3600
-            otk.set(rlkey, tat=gcra.get_tat_as_string(rlkey),
-                                   __timestamp=ts)
-            otk.commit()
+                # Calculate a timestamp that will make OTK expire the
+                # unused entry 1 hour in the future
+                ts = time.time() - (60 * 60 * 24 * 7) + 3600
+                otk.set(rlkey, tat=gcra.get_tat_as_string(rlkey),
+                                       __timestamp=ts)
+                otk.commit()
 
-            if reject:
-                # User exceeded limits: find out how long to wait
-                status=gcra.status(rlkey, limit)
-                raise Reject(_("Logins occurring too fast. Please wait: %d seconds.")%status['Retry-After'])
-            else:
-                self.verifyLogin(self.client.user, password)
+                if reject:
+                    # User exceeded limits: find out how long to wait
+                    status=gcra.status(rlkey, limit)
+                    raise Reject(_("Logins occurring too fast. Please wait: %d seconds.")%status['Retry-After'])
+
+            self.verifyLogin(self.client.user, password)
         except exceptions.LoginError as err:
             self.client.make_user_anonymous()
             for arg in err.args:

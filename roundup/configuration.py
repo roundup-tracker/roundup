@@ -474,6 +474,21 @@ class IntegerNumberOption(Option):
         except ValueError:
             raise OptionValueError(self, value, "Integer number required")
 
+class IntegerNumberGeqZeroOption(Option):
+
+    """Integer numbers greater than or equal to zero."""
+
+    def str2value(self, value):
+        try:
+            v = int(value)
+            if v < 0:
+                raise OptionValueError(self, value,
+                      "Integer number greater than or equal to zero required")
+        except OptionValueError:
+            raise # pass through subclass
+        except ValueError:
+            raise OptionValueError(self, value, "Integer number required")
+
 class OctalNumberOption(Option):
 
     """Octal Integer numbers"""
@@ -775,12 +790,13 @@ SETTINGS = (
             "variables supplied by your web server (in that order).\n"
             "Set this option to 'no' if you do not wish to use HTTP Basic\n"
             "Authentication in your web interface."),
-        (IntegerNumberOption, 'login_attempts_min', "3",
+        (IntegerNumberGeqZeroOption, 'login_attempts_min', "3",
             "Limit login attempts per user per minute to this number.\n"
             "By default the 4th login attempt in a minute will notify\n"
             "the user that they need to wait 20 seconds before trying to\n"
             "log in again. This limits password guessing attacks and\n"
-            "shouldn't need to be changed.\n"),
+            "shouldn't need to be changed. Rate limiting on login can\n"
+            "be disabled by setting the value to 0."),
         (SameSiteSettingOption, 'samesite_cookie_setting', "Lax",
             """Set the mode of the SameSite cookie option for
 the session cookie. Choices are 'Lax' or

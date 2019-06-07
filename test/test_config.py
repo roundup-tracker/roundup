@@ -68,3 +68,17 @@ class ConfigTest(unittest.TestCase):
         self.assertRaises(configuration.OptionValueError,
              config._get_option('TRACKER_WEB').set, "htt://foo.example/bar")
 
+    def testLoginRateLimit(self):
+        config = configuration.CoreConfig()
+
+        self.assertEqual(None,
+                   config._get_option('WEB_LOGIN_ATTEMPTS_MIN').set("0"))
+        self.assertEqual(None,
+                    config._get_option('WEB_LOGIN_ATTEMPTS_MIN').set("200"))
+
+        self.assertRaises(configuration.OptionValueError,
+                   config._get_option('WEB_LOGIN_ATTEMPTS_MIN').set, "fred")
+
+        self.assertRaises(configuration.OptionValueError,
+                   config._get_option('WEB_LOGIN_ATTEMPTS_MIN').set, "-1")
+
