@@ -453,9 +453,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
             ':confirm:password': ''}, 'user', nodeid),
             ({('user', nodeid): {}}, []))
 
-    @pytest.mark.xfail
     def testPasswordMigration(self):
-        # FIXME
         chef = self.db.user.lookup('Chef')
         form = dict(__login_name='Chef', __login_password='foo')
         cl = self._make_client(form)
