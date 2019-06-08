@@ -722,14 +722,14 @@ SETTINGS = (
             "stop-words (eg. A,AND,ARE,AS,AT,BE,BUT,BY, ...)"),
         (OctalNumberOption, "umask", "0o002",
             "Defines the file creation mode mask."),
-        (IntegerNumberOption, 'csv_field_size', '131072',
+        (IntegerNumberGeqZeroOption, 'csv_field_size', '131072',
             "Maximum size of a csv-field during import. Roundups export\n"
             "format is a csv (comma separated values) variant. The csv\n"
             "reader has a limit on the size of individual fields\n"
             "starting with python 2.5. Set this to a higher value if you\n"
             "get the error 'Error: field larger than field limit' during\n"
             "import."),
-        (IntegerNumberOption, 'password_pbkdf2_default_rounds', '10000',
+        (IntegerNumberGeqZeroOption, 'password_pbkdf2_default_rounds', '10000',
             "Sets the default number of rounds used when encoding passwords\n"
             "using the PBKDF2 scheme. Set this to a higher value on faster\n"
             "systems which want more security.\n"
@@ -819,7 +819,7 @@ interface. By default the REST endpoint is the string 'rest' plus any
 additional REST-API parameters after the roundup web url configured in
 the tracker section. If this variable is set to 'no', the rest path has
 no special meaning and will yield an error message."""),
-        (IntegerNumberOption, 'api_calls_per_interval', "0",
+        (IntegerNumberGeqZeroOption, 'api_calls_per_interval', "0",
          "Limit API calls per api_interval_in_sec seconds to\n"
          "this number.\n"         
          "Determines the burst rate and the rate that new api\n"
@@ -830,7 +830,7 @@ no special meaning and will yield an error message."""),
          "another api request. A value of 0 turns off rate\n"
          "limiting in the API. Tune this as needed. See rest\n"
          "documentation for more info.\n"),
-        (IntegerNumberOption, 'api_interval_in_sec', "3600",
+        (IntegerNumberGeqZeroOption, 'api_interval_in_sec', "3600",
          "Defines the interval in seconds over which an api client can\n"
          "make api_calls_per_interval api calls. Tune this as needed.\n"),
         (CsrfSettingOption, 'csrf_enforce_token', "yes",
@@ -845,7 +845,7 @@ Set this to 'logfailure' to log a notice to the roundup
     the post.
 Set this to 'no' to ignore the field and accept the post.
             """),
-        (IntegerNumberOption, 'csrf_token_lifetime', "20160",
+        (IntegerNumberGeqZeroOption, 'csrf_token_lifetime', "20160",
             """csrf_tokens have a limited lifetime. If they are not
 used they are purged from the database after this
 number of minutes. Default (20160) is 2 weeks."""),
@@ -920,7 +920,7 @@ Set this to 'logfailure' to log a notice to the roundup
     log if the header is invalid or missing, but accept
     the post.
 Set this to 'no' to ignore the header and accept the post."""),
-        (IntegerNumberOption, 'csrf_header_min_count', "1",
+        (IntegerNumberGeqZeroOption, 'csrf_header_min_count', "1",
             """Minimum number of header checks that must pass
 to accept the request. Set to 0 to accept post
 even if no header checks pass. Usually the Host header check
@@ -978,11 +978,11 @@ always passes, so setting it less than 1 is not recommended."""),
         (NullableOption, 'read_default_group', 'roundup',
             "Name of the group to use in the MySQL defaults file (.my.cnf).\n"
             "Only used in MySQL connections."),
-        (IntegerNumberOption, 'sqlite_timeout', '30',
+        (IntegerNumberGeqZeroOption, 'sqlite_timeout', '30',
             "Number of seconds to wait when the SQLite database is locked\n"
             "Default: use a 30 second timeout (extraordinarily generous)\n"
             "Only used in SQLite connections."),
-        (IntegerNumberOption, 'cache_size', '100',
+        (IntegerNumberGeqZeroOption, 'cache_size', '100',
             "Size of the node cache (in elements)"),
         (BooleanOption, "allow_create", "yes",
             "Setting this option to 'no' protects the database against table creations."),
@@ -1039,7 +1039,7 @@ always passes, so setting it less than 1 is not recommended."""),
             "If username is not empty, password (below) MUST be set!"),
         (Option, "password", NODEFAULT, "SMTP login password.\n"
             "Set this if your mail host requires authenticated access."),
-        (IntegerNumberOption, "port", smtplib.SMTP_PORT,
+        (IntegerNumberGeqZeroOption, "port", smtplib.SMTP_PORT,
             "Default port to send SMTP on.\n"
             "Set this if your mail server runs on a different port."),
         (NullableOption, "local_hostname", '',
@@ -1236,7 +1236,7 @@ always passes, so setting it less than 1 is not recommended."""),
             "\"multiple\" then a separate email is sent to each\n"
             "recipient. If \"single\" then a single email is sent with\n"
             "each recipient as a CC address."),
-        (IntegerNumberOption, "max_attachment_size", sys.maxsize,
+        (IntegerNumberGeqZeroOption, "max_attachment_size", sys.maxsize,
             "Attachments larger than the given number of bytes\n"
             "won't be attached to nosy mails. They will be replaced by\n"
             "a link to the tracker's download page for the file.")
