@@ -230,7 +230,8 @@ class Session:
         if set_cookie:
             self.client.add_cookie(self.cookie_name, self._sid, expire=expire)
 
-class BinaryFieldStorage(cgi.FieldStorage):
+# import from object as well so it's a new style object and I can use super()
+class BinaryFieldStorage(cgi.FieldStorage, object):
     '''This class works around the bug https://bugs.python.org/issue27777.
 
        cgi.FieldStorage must save all data as binary/bytes. This is
@@ -243,7 +244,7 @@ class BinaryFieldStorage(cgi.FieldStorage):
         import tempfile
         if self.length >= 0:
             return tempfile.TemporaryFile("wb+")
-        return super().make_file()
+        return super(BinaryFieldStorage, self).make_file()
 
 class Client:
     """Instantiate to handle one CGI request.
