@@ -66,6 +66,9 @@ Roundup release checklist:
 15. Send doc/announcement.txt to python-announce@python.org and
     roundup-users@lists.sourceforge.net and
     roundup-devel@lists.sourceforge.net
+15b. Update entry on https://freshcode.club/projects/roundup-tracker
+15c. Update entries for fossies by emailing announcement to
+     announce@fossies.org
 16. Refresh website.
       website/README.txt
       http://www.roundup-tracker.org/ should state that the stable
