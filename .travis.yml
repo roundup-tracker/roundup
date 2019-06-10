@@ -1,18 +1,48 @@
 language: python
 
 # matrix:
-#   - name: "python <= 3.6"
+#  include:
+#    - name: "python <= 3.6"
 python:
   - "2.7"
   - "3.4"
   - "3.5"
   - "3.6"
+  - "3.7"
 
 #  allow_failures:
 #    - name: "Python >3.6"
 #      python:
 #        - "3.7"  # not available in travis with 14.04 ubuntu base.
 #      dist: xenial
+
+# try:
+#  define top level 5x2 matrix
+# python:
+#   - "2.7"
+#   - "3.4"
+#   - "3.5"
+#   - "3.6"
+#   - "3.7"
+dist:
+ - trusty
+ - xenial
+#
+# filter in only trusty and python <= 3.6; xenial and python >= 3.7
+matrix:
+  include:
+    - name: "python <= 3.6"
+      python:
+        - "2.7"
+        - "3.4"
+        - "3.5"
+        - "3.6"
+      dist: trusty
+  allow_failures:
+    - name: "Python >3.6"
+      python:
+        - "3.7"  # not available in travis with 14.04 ubuntu base.
+      dist: xenial
 
 sudo: false
 
