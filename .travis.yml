@@ -82,7 +82,7 @@ before_script:
   - sudo service mysql restart
   - mysql -u root -e 'GRANT ALL ON rounduptest.* TO rounduptest@localhost IDENTIFIED BY "rounduptest";'
 
-  - sudo service postgres restart; sleep 30
+  - sudo service postgresql restart; sleep 30
   # set up postgresql database
   - psql -c "CREATE ROLE rounduptest WITH CREATEDB LOGIN PASSWORD 'rounduptest';" -U postgres
 
