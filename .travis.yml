@@ -1,18 +1,18 @@
 language: python
 
-matrix:
-  include:
-    - "Python <= 3.6"
-      python:
-        - "2.7"
-        - "3.4"
-        - "3.5"
-        - "3.6"
-  allow_failures:
-    - name: "Python >3.6"
-      python:
-        - "3.7"
-      dist: xenial
+# matrix:
+#   - name: "python <= 3.6"
+python:
+  - "2.7"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+
+#  allow_failures:
+#    - name: "Python >3.6"
+#      python:
+#        - "3.7"  # not available in travis with 14.04 ubuntu base.
+#      dist: xenial
 
 sudo: false
 
