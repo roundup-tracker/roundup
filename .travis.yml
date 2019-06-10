@@ -2,8 +2,7 @@ language: python
 
 matrix:
   include:
-    - name: "Python <=3.6"
-      python:
+    - python:
         - 2.7
         - 3.4
         - 3.5
