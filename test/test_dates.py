@@ -88,7 +88,7 @@ class DateTestCase(unittest.TestCase):
         ae(str(Date('1800-07-15')), '1800-07-15.00:00:00')
 
     def testLeapYear(self):
-        self.assertEquals(str(Date('2008-02-29')), '2008-02-29.00:00:00')
+        self.assertEqual(str(Date('2008-02-29')), '2008-02-29.00:00:00')
 
     def testDateError(self):
         self.assertRaises(ValueError, Date, "12")
