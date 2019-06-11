@@ -12,7 +12,7 @@ dist:
 
 matrix:
     allow_failures:  # 3.7 not ready for prime time yet.
-        python: 3.7
+      - python: 3.7
 
 sudo: false
 
