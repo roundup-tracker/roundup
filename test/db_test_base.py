@@ -459,18 +459,18 @@ class DBTest(commonDBTest):
     def testDateLeapYear(self):
         nid = self.db.issue.create(title='spam', status='1',
             deadline=date.Date('2008-02-29'))
-        self.assertEquals(str(self.db.issue.get(nid, 'deadline')),
+        self.assertEqual(str(self.db.issue.get(nid, 'deadline')),
             '2008-02-29.00:00:00')
-        self.assertEquals(self.db.issue.filter(None,
+        self.assertEqual(self.db.issue.filter(None,
             {'deadline': '2008-02-29'}), [nid])
-        self.assertEquals(list(self.db.issue.filter_iter(None,
+        self.assertEqual(list(self.db.issue.filter_iter(None,
             {'deadline': '2008-02-29'})), [nid])
         self.db.issue.set(nid, deadline=date.Date('2008-03-01'))
-        self.assertEquals(str(self.db.issue.get(nid, 'deadline')),
+        self.assertEqual(str(self.db.issue.get(nid, 'deadline')),
             '2008-03-01.00:00:00')
-        self.assertEquals(self.db.issue.filter(None,
+        self.assertEqual(self.db.issue.filter(None,
             {'deadline': '2008-02-29'}), [])
-        self.assertEquals(list(self.db.issue.filter_iter(None,
+        self.assertEqual(list(self.db.issue.filter_iter(None,
             {'deadline': '2008-02-29'})), [])
 
     def testDateUnset(self):
@@ -1404,22 +1404,22 @@ class DBTest(commonDBTest):
         i1 = self.db.issue.create(files=[f1, f2], title="flebble plop")
         i2 = self.db.issue.create(title="flebble the frooz")
         self.db.commit()
-        self.assertEquals(self.db.indexer.search([], self.db.issue), {})
-        self.assertEquals(self.db.indexer.search(['hello'], self.db.issue),
+        self.assertEqual(self.db.indexer.search([], self.db.issue), {})
+        self.assertEqual(self.db.indexer.search(['hello'], self.db.issue),
             {i1: {'files': [f1]}})
         # content='world' has the wrong content-type and shouldn't be indexed
-        self.assertEquals(self.db.indexer.search(['world'], self.db.issue), {})
-        self.assertEquals(self.db.indexer.search(['frooz'], self.db.issue),
+        self.assertEqual(self.db.indexer.search(['world'], self.db.issue), {})
+        self.assertEqual(self.db.indexer.search(['frooz'], self.db.issue),
             {i2: {}})
-        self.assertEquals(self.db.indexer.search(['flebble'], self.db.issue),
+        self.assertEqual(self.db.indexer.search(['flebble'], self.db.issue),
             {i1: {}, i2: {}})
 
         # test AND'ing of search terms
-        self.assertEquals(self.db.indexer.search(['frooz', 'flebble'],
+        self.assertEqual(self.db.indexer.search(['frooz', 'flebble'],
             self.db.issue), {i2: {}})
 
         # unindexed stopword
-        self.assertEquals(self.db.indexer.search(['the'], self.db.issue), {})
+        self.assertEqual(self.db.indexer.search(['the'], self.db.issue), {})
 
     def testIndexerSearchingLink(self):
         m1 = self.db.msg.create(content="one two")
@@ -1427,7 +1427,7 @@ class DBTest(commonDBTest):
         m2 = self.db.msg.create(content="two three")
         i2 = self.db.issue.create(feedback=m2)
         self.db.commit()
-        self.assertEquals(self.db.indexer.search(['two'], self.db.issue),
+        self.assertEqual(self.db.indexer.search(['two'], self.db.issue),
             {i1: {'messages': [m1]}, i2: {'feedback': [m2]}})
 
     def testIndexerSearchMulti(self):
@@ -1436,12 +1436,12 @@ class DBTest(commonDBTest):
         i1 = self.db.issue.create(messages=[m1])
         i2 = self.db.issue.create(spam=[m2])
         self.db.commit()
-        self.assertEquals(self.db.indexer.search([], self.db.issue), {})
-        self.assertEquals(self.db.indexer.search(['one'], self.db.issue),
+        self.assertEqual(self.db.indexer.search([], self.db.issue), {})
+        self.assertEqual(self.db.indexer.search(['one'], self.db.issue),
             {i1: {'messages': [m1]}})
-        self.assertEquals(self.db.indexer.search(['two'], self.db.issue),
+        self.assertEqual(self.db.indexer.search(['two'], self.db.issue),
             {i1: {'messages': [m1]}, i2: {'spam': [m2]}})
-        self.assertEquals(self.db.indexer.search(['three'], self.db.issue),
+        self.assertEqual(self.db.indexer.search(['three'], self.db.issue),
             {i2: {'spam': [m2]}})
 
     def testReindexingChange(self):
@@ -1450,14 +1450,14 @@ class DBTest(commonDBTest):
         i1 = issue.create(title="flebble plop")
         i2 = issue.create(title="flebble frooz")
         self.db.commit()
-        self.assertEquals(search(['plop'], issue), {i1: {}})
-        self.assertEquals(search(['flebble'], issue), {i1: {}, i2: {}})
+        self.assertEqual(search(['plop'], issue), {i1: {}})
+        self.assertEqual(search(['flebble'], issue), {i1: {}, i2: {}})
 
         # change i1's title
         issue.set(i1, title="plop")
         self.db.commit()
-        self.assertEquals(search(['plop'], issue), {i1: {}})
-        self.assertEquals(search(['flebble'], issue), {i2: {}})
+        self.assertEqual(search(['plop'], issue), {i1: {}})
+        self.assertEqual(search(['flebble'], issue), {i2: {}})
 
     def testReindexingClear(self):
         search = self.db.indexer.search
@@ -1465,14 +1465,14 @@ class DBTest(commonDBTest):
         i1 = issue.create(title="flebble plop")
         i2 = issue.create(title="flebble frooz")
         self.db.commit()
-        self.assertEquals(search(['plop'], issue), {i1: {}})
-        self.assertEquals(search(['flebble'], issue), {i1: {}, i2: {}})
+        self.assertEqual(search(['plop'], issue), {i1: {}})
+        self.assertEqual(search(['flebble'], issue), {i1: {}, i2: {}})
 
         # unset i1's title
         issue.set(i1, title="")
         self.db.commit()
-        self.assertEquals(search(['plop'], issue), {})
-        self.assertEquals(search(['flebble'], issue), {i2: {}})
+        self.assertEqual(search(['plop'], issue), {})
+        self.assertEqual(search(['flebble'], issue), {i2: {}})
 
     def testFileClassReindexing(self):
         f1 = self.db.file.create(content='hello')
@@ -1482,38 +1482,38 @@ class DBTest(commonDBTest):
         d = self.db.indexer.search(['hello'], self.db.issue)
         self.assertTrue(i1 in d)
         d[i1]['files'].sort()
-        self.assertEquals(d, {i1: {'files': [f1, f2]}})
-        self.assertEquals(self.db.indexer.search(['world'], self.db.issue),
+        self.assertEqual(d, {i1: {'files': [f1, f2]}})
+        self.assertEqual(self.db.indexer.search(['world'], self.db.issue),
             {i1: {'files': [f2]}})
         self.db.file.set(f1, content="world")
         self.db.commit()
         d = self.db.indexer.search(['world'], self.db.issue)
         d[i1]['files'].sort()
-        self.assertEquals(d, {i1: {'files': [f1, f2]}})
-        self.assertEquals(self.db.indexer.search(['hello'], self.db.issue),
+        self.assertEqual(d, {i1: {'files': [f1, f2]}})
+        self.assertEqual(self.db.indexer.search(['hello'], self.db.issue),
             {i1: {'files': [f2]}})
 
     def testFileClassIndexingNoNoNo(self):
         f1 = self.db.file.create(content='hello')
         self.db.commit()
-        self.assertEquals(self.db.indexer.search(['hello'], self.db.file),
+        self.assertEqual(self.db.indexer.search(['hello'], self.db.file),
             {'1': {}})
 
         f1 = self.db.file_nidx.create(content='hello')
         self.db.commit()
-        self.assertEquals(self.db.indexer.search(['hello'], self.db.file_nidx),
+        self.assertEqual(self.db.indexer.search(['hello'], self.db.file_nidx),
             {})
 
     def testForcedReindexing(self):
         self.db.issue.create(title="flebble frooz")
         self.db.commit()
-        self.assertEquals(self.db.indexer.search(['flebble'], self.db.issue),
+        self.assertEqual(self.db.indexer.search(['flebble'], self.db.issue),
             {'1': {}})
         self.db.indexer.quiet = 1
         self.db.indexer.force_reindex()
         self.db.post_init()
         self.db.indexer.quiet = 9
-        self.assertEquals(self.db.indexer.search(['flebble'], self.db.issue),
+        self.assertEqual(self.db.indexer.search(['flebble'], self.db.issue),
             {'1': {}})
 
     def testIndexingPropertiesOnImport(self):
@@ -1525,7 +1525,7 @@ class DBTest(commonDBTest):
         self.db.commit()
 
         # Content of title attribute is indexed
-        self.assertEquals(self.db.indexer.search([title], self.db.issue),
+        self.assertEqual(self.db.indexer.search([title], self.db.issue),
             {str(nodeid):{}})
 
 
@@ -2387,9 +2387,9 @@ class DBTest(commonDBTest):
             tool.do_export (['_test_export'])
             self.assertEqual(len(output), 2)
             self.assertEqual(output [1], '\n')
-            self.failUnless(output [0].startswith
+            self.assertTrue(output [0].startswith
                 ('Warning: config csv_field_size should be at least'))
-            self.failUnless(int(output[0].split()[-1]) > 500)
+            self.assertTrue(int(output[0].split()[-1]) > 500)
 
             if hasattr(roundup.admin.csv, 'field_size_limit'):
                 self.nukeAndCreate()
@@ -2498,7 +2498,7 @@ class DBTest(commonDBTest):
             # basic usage test. TODO add full output verification
             soutput[:] = [] # empty for next round of output
             tool.usage(message="Hello World")
-            self.failUnless(soutput[0].startswith('Problem: Hello World'), None)
+            self.assertTrue(soutput[0].startswith('Problem: Hello World'), None)
 
             # check security output
             soutput[:] = [] # empty for next round of output
