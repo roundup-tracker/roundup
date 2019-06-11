@@ -826,7 +826,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         cl = self.setupClient({ }, 'issue',
                 env_addon = {'HTTP_REFERER': 'http://whoami.com/path/'})
         out = pt.render(cl, 'issue', MockNull())
-        self.assertEquals(out, '<?xml version="1.0" encoding="UTF-8"?><feed\n    xmlns="http://www.w3.org/2005/Atom"/>\n')
+        self.assertEqual(out, '<?xml version="1.0" encoding="UTF-8"?><feed\n    xmlns="http://www.w3.org/2005/Atom"/>\n')
 
     def testCsrfProtection(self):
         # need to set SENDMAILDEBUG to prevent
@@ -1503,8 +1503,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         # TEMPLATES dir is searched by default. So this file exists.
         # Check the returned values.
         cl.serve_static_file("issue.index.html")
-        self.assertEquals(output[0][1], "text/html")
-        self.assertEquals(output[0][3], "_test_cgi_form/html/issue.index.html")
+        self.assertEqual(output[0][1], "text/html")
+        self.assertEqual(output[0][3], "_test_cgi_form/html/issue.index.html")
         del output[0] # reset output buffer
 
         # stop searching TEMPLATES for the files.
@@ -1516,8 +1516,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         # explicitly allow html directory
         cl.instance.config['STATIC_FILES'] = 'html -'
         cl.serve_static_file("issue.index.html")
-        self.assertEquals(output[0][1], "text/html")
-        self.assertEquals(output[0][3], "_test_cgi_form/html/issue.index.html")
+        self.assertEqual(output[0][1], "text/html")
+        self.assertEqual(output[0][3], "_test_cgi_form/html/issue.index.html")
         del output[0] # reset output buffer
 
         # set the list of files and do not look at the templates directory
@@ -1525,14 +1525,14 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
 
         # find file in first directory
         cl.serve_static_file("messagesummary.py")
-        self.assertEquals(output[0][1], "text/x-python")
-        self.assertEquals(output[0][3], "_test_cgi_form/detectors/messagesummary.py")
+        self.assertEqual(output[0][1], "text/x-python")
+        self.assertEqual(output[0][3], "_test_cgi_form/detectors/messagesummary.py")
         del output[0] # reset output buffer
 
         # find file in second directory
         cl.serve_static_file("README.txt")
-        self.assertEquals(output[0][1], "text/plain")
-        self.assertEquals(output[0][3], "_test_cgi_form/extensions/README.txt")
+        self.assertEqual(output[0][1], "text/plain")
+        self.assertEqual(output[0][3], "_test_cgi_form/extensions/README.txt")
         del output[0] # reset output buffer
 
         # make sure an embedded - ends the searching.
@@ -1546,23 +1546,23 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         f = open('_test_cgi_form/detectors/README.txt', 'a').close()
         # find file now in first directory
         cl.serve_static_file("README.txt")
-        self.assertEquals(output[0][1], "text/plain")
-        self.assertEquals(output[0][3], "_test_cgi_form/detectors/README.txt")
+        self.assertEqual(output[0][1], "text/plain")
+        self.assertEqual(output[0][3], "_test_cgi_form/detectors/README.txt")
         del output[0] # reset output buffer
 
         cl.instance.config['STATIC_FILES'] = ' detectors extensions '
         # make sure lack of trailing - allows searching TEMPLATES
         cl.serve_static_file("issue.index.html")
-        self.assertEquals(output[0][1], "text/html")
-        self.assertEquals(output[0][3], "_test_cgi_form/html/issue.index.html")
+        self.assertEqual(output[0][1], "text/html")
+        self.assertEqual(output[0][3], "_test_cgi_form/html/issue.index.html")
         del output[0] # reset output buffer
 
         # Make STATIC_FILES a single element.
         cl.instance.config['STATIC_FILES'] = 'detectors'
         # find file now in first directory
         cl.serve_static_file("messagesummary.py")
-        self.assertEquals(output[0][1], "text/x-python")
-        self.assertEquals(output[0][3], "_test_cgi_form/detectors/messagesummary.py")
+        self.assertEqual(output[0][1], "text/x-python")
+        self.assertEqual(output[0][3], "_test_cgi_form/detectors/messagesummary.py")
         del output[0] # reset output buffer
 
         # make sure files found in subdirectory
@@ -1570,8 +1570,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         f = open('_test_cgi_form/detectors/css/README.css', 'a').close()
         # use subdir in filename
         cl.serve_static_file("css/README.css")
-        self.assertEquals(output[0][1], "text/css")
-        self.assertEquals(output[0][3], "_test_cgi_form/detectors/css/README.css")
+        self.assertEqual(output[0][1], "text/css")
+        self.assertEqual(output[0][3], "_test_cgi_form/detectors/css/README.css")
         del output[0] # reset output buffer
 
 
@@ -1580,8 +1580,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         os.mkdir('_test_cgi_form/html/css')
         f = open('_test_cgi_form/html/css/README1.css', 'a').close()
         cl.serve_static_file("README1.css")
-        self.assertEquals(output[0][1], "text/css")
-        self.assertEquals(output[0][3], "_test_cgi_form/html/css/README1.css")
+        self.assertEqual(output[0][1], "text/css")
+        self.assertEqual(output[0][3], "_test_cgi_form/html/css/README1.css")
         del output[0] # reset output buffer
 
 
@@ -1635,7 +1635,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         # call export version that outputs id numbers
         actions.ExportCSVWithIdAction(cl).handle()
         print(output.getvalue())
-        self.assertEquals('id,title,status,keyword,assignedto,nosy\r\n'
+        self.assertEqual('id,title,status,keyword,assignedto,nosy\r\n'
                           "1,foo1,2,[],4,\"['3', '4', '5']\"\r\n"
                           "2,bar2,1,\"['1', '2']\",3,['3']\r\n"
                           '3,baz32,4,[],None,[]\r\n',
@@ -1682,7 +1682,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
 
         actions.ExportCSVAction(cl).handle()
         #print(output.getvalue())
-        self.assertEquals('id,username,address,password\r\n'
+        self.assertEqual('id,username,address,password\r\n'
                           '1,admin,[hidden],[hidden]\r\n'
                           '2,anonymous,[hidden],[hidden]\r\n'
                           '3,Chef,[hidden],[hidden]\r\n'
@@ -1698,7 +1698,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         cl.request = MockNull()
         cl.request.wfile = output
         actions.ExportCSVWithIdAction(cl).handle()
-        self.assertEquals('id,name\r\n1,unread\r\n2,deferred\r\n3,chatting\r\n'
+        self.assertEqual('id,name\r\n1,unread\r\n2,deferred\r\n3,chatting\r\n'
             '4,need-eg\r\n5,in-progress\r\n6,testing\r\n7,done-cbb\r\n'
             '8,resolved\r\n',
             output.getvalue())
@@ -2050,6 +2050,6 @@ class TemplateTestCase(unittest.TestCase):
 
         # template check works
         r = t.selectTemplate("user", "subdir/item")
-        self.assertEquals("subdir/user.item", r)
+        self.assertEqual("subdir/user.item", r)
 
 # vim: set filetype=python sts=4 sw=4 et si :
