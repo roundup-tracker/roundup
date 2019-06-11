@@ -93,7 +93,7 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         self.db.security.set_props_only_default(False)
         api2 = add(name="View", klass="issue", properties=['title'])
         self.assertEquals(get('View', 'issue', properties=['title']), api2)
-        self.assertNotEquals(get('View', 'issue', properties=['title']), api1)
+        self.assertNotEqual(get('View', 'issue', properties=['title']), api1)
         
         # check function
         dummy = lambda: 0

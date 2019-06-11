@@ -229,7 +229,7 @@ class HTMLClassTestCase(TemplatingTestCase) :
                     self.assertEqual(m, None, '%r matched (%r)'%(s, m.groupdict()))
                 return
             else:
-                self.assertNotEquals(m, None, '%r did not match'%s)
+                self.assertNotEqual(m, None, '%r did not match'%s)
             d = m.groupdict()
             for g in groups:
                 self.assertEqual(d[g], groups[g], '%s %r != %r in %r'%(g, d[g],
