@@ -237,11 +237,11 @@ class CollisionDetectionTestCase(ActionTestCase):
         self.action.classname = 'test'
         self.action.nodeid = '1'
         self.client.parsePropsFromForm = lambda: ({('test','1'):{1:1}}, [])
-        self.failUnless(self.action.detectCollision(self.now,
+        self.assertTrue(self.action.detectCollision(self.now,
             self.now + Interval("1d")))
-        self.failIf(self.action.detectCollision(self.now,
+        self.assertFail(self.action.detectCollision(self.now,
             self.now - Interval("1d")))
-        self.failIf(self.action.detectCollision(None, self.now))
+        self.assertFail(self.action.detectCollision(None, self.now))
 
 class LoginTestCase(ActionTestCase):
     def setUp(self):
