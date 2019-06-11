@@ -31,7 +31,7 @@ class SessionTest(object):
 
     def testDestroy(self):
         self.sessions.set('random_key', text='hello, world!')
-        self.assertEquals(self.sessions.getall('random_key'),
+        self.assertEqual(self.sessions.getall('random_key'),
             {'text': 'hello, world!'})
         self.sessions.destroy('random_key')
         self.assertRaises(KeyError, self.sessions.getall, 'random_key')

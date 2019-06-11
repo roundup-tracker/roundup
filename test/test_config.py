@@ -51,7 +51,7 @@ class ConfigTest(unittest.TestCase):
     def test_validConfigKeyword(self):
         """Run configure tests looking for invalid option name
         """
-        self.assertEquals(config._get_option("FOO"), "value")
+        self.assertEqual(config._get_option("FOO"), "value")
 
     def testTrackerWeb(self):
         config = configuration.CoreConfig()

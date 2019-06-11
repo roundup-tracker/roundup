@@ -2773,7 +2773,7 @@ This is a test submission of a new issue.
         m = set(self.db.user.list())
         new = list(m - l)[0]
         name = self.db.user.get(new, 'realname')
-        self.assertEquals(name, 'H€llo')
+        self.assertEqual(name, 'H€llo')
 
     def testNewUserAuthorMixedEncodedName(self):
         l = set(self.db.user.list())
@@ -2792,11 +2792,11 @@ This is a test submission of a new issue.
         self._allowAnonymousSubmit()
         self._handle_mail(message)
         title = self.db.issue.get('1', 'title')
-        self.assertEquals(title, b2s(b'Test \xc3\x84\xc3\x96\xc3\x9c umlauts X1 X2'))
+        self.assertEqual(title, b2s(b'Test \xc3\x84\xc3\x96\xc3\x9c umlauts X1 X2'))
         m = set(self.db.user.list())
         new = list(m - l)[0]
         name = self.db.user.get(new, 'realname')
-        self.assertEquals(name, b2s(b'Firstname \xc3\xa4\xc3\xb6\xc3\x9f Last'))
+        self.assertEqual(name, b2s(b'Firstname \xc3\xa4\xc3\xb6\xc3\x9f Last'))
 
     def testNewUserAuthorMixedEncodedNameSpacing(self):
         l = set(self.db.user.list())
@@ -2814,11 +2814,11 @@ This is a test submission of a new issue.
         self._allowAnonymousSubmit()
         self._handle_mail(message)
         title = self.db.issue.get('1', 'title')
-        self.assertEquals(title, b2s(b'Test (\xc3\x84\xc3\x96\xc3\x9c) umlauts X1'))
+        self.assertEqual(title, b2s(b'Test (\xc3\x84\xc3\x96\xc3\x9c) umlauts X1'))
         m = set(self.db.user.list())
         new = list(m - l)[0]
         name = self.db.user.get(new, 'realname')
-        self.assertEquals(name,
+        self.assertEqual(name,
             b2s(b'(\xc3\xa4\xc3\xb6\xc3\x9f\xc3\xa4\xc3\xb6\xc3\x9f)'))
 
     def testUnknownUser(self):

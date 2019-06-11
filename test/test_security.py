@@ -75,17 +75,17 @@ class PermissionTest(MyTestCase, unittest.TestCase):
 
         # class
         ei = add(name="Edit", klass="issue")
-        self.assertEquals(get('Edit', 'issue'), ei)
+        self.assertEqual(get('Edit', 'issue'), ei)
         ai = add(name="View", klass="issue")
-        self.assertEquals(get('View', 'issue'), ai)
+        self.assertEqual(get('View', 'issue'), ai)
 
         # property
         epi1 = add(name="Edit", klass="issue", properties=['title'])
-        self.assertEquals(get('Edit', 'issue', properties=['title']), epi1)
+        self.assertEqual(get('Edit', 'issue', properties=['title']), epi1)
         epi2 = add(name="Edit", klass="issue", properties=['title'],
                   props_only=True)
-        self.assertEquals(get('Edit', 'issue', properties=['title'], props_only=False), epi1)
-        self.assertEquals(get('Edit', 'issue', properties=['title'], props_only=True), epi2)
+        self.assertEqual(get('Edit', 'issue', properties=['title'], props_only=False), epi1)
+        self.assertEqual(get('Edit', 'issue', properties=['title'], props_only=True), epi2)
         self.db.security.set_props_only_default(True)
         self.assertEquals(get('Edit', 'issue', properties=['title']), epi2)
         api1 = add(name="View", klass="issue", properties=['title'])

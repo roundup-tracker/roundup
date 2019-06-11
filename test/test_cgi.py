@@ -1217,7 +1217,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
 
     def testClassPermission(self):
         cl = self._make_client(dict(username='bob'))
-        self.failUnlessRaises(exceptions.Unauthorised,
+        self.assertRaises(exceptions.Unauthorised,
             actions.EditItemAction(cl).handle)
         cl.nodeid = '1'
         self.assertRaises(exceptions.Unauthorised,
@@ -1249,7 +1249,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         self.assertRaises(exceptions.Redirect,
             actions.EditItemAction(cl).handle)
         cl = self._make_client({'password':'bob', '@confirm@password':'bob'})
-        self.failUnlessRaises(exceptions.Unauthorised,
+        self.assertRaises(exceptions.Unauthorised,
             actions.EditItemAction(cl).handle)
 
     def testCreatePermission(self):
