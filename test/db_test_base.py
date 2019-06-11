@@ -16,7 +16,14 @@
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 from __future__ import print_function
-import unittest, os, shutil, errno, imp, sys, time, pprint, base64, os.path
+import unittest, os, shutil, errno, imp, sys, time, pprint, os.path
+
+try:
+    from base64 import encodebytes as base64_encode  # python3 only
+except ImportError:
+    # python2 and deplricated in 3
+    from base64 import encodestring as base64_encode
+
 import logging, cgi
 from . import gpgmelib
 from email import message_from_string
@@ -2624,9 +2631,9 @@ class DBTest(commonDBTest):
             self.assertTrue("New submission from admin" in mail_msg)
             self.assertTrue("one two" in mail_msg)
             self.assertTrue("File 'test1.txt' not attached" not in mail_msg)
-            self.assertTrue(b2s(base64.encodestring(s2b("xxx"))).rstrip() in mail_msg)
+            self.assertTrue(b2s(base64_encode(s2b("xxx"))).rstrip() in mail_msg)
             self.assertTrue("File 'test2.txt' not attached" in mail_msg)
-            self.assertTrue(b2s(base64.encodestring(s2b("yyy"))).rstrip() not in mail_msg)
+            self.assertTrue(b2s(base64_encode(s2b("yyy"))).rstrip() not in mail_msg)
         finally :
             roundupdb._ = old_translate_
             Mailer.smtp_send = backup
@@ -2657,7 +2664,7 @@ class DBTest(commonDBTest):
             self.assertTrue("New submission from admin" in mail_msg)
             self.assertTrue("one two" in mail_msg)
             self.assertTrue("Hello world" in mail_msg)
-            self.assertTrue(b2s(base64.encodestring(b"\x01\x02\x03\xfe\xff")).rstrip() in mail_msg)
+            self.assertTrue(b2s(base64_encode(b"\x01\x02\x03\xfe\xff")).rstrip() in mail_msg)
         finally :
             roundupdb._ = old_translate_
             Mailer.smtp_send = backup
@@ -2701,9 +2708,9 @@ class DBTest(commonDBTest):
             self.assertTrue("New submission from admin" in mail_msg)
             self.assertTrue("one two" in mail_msg)
             self.assertTrue("File 'test1.txt' not attached" not in mail_msg)
-            self.assertTrue(b2s(base64.encodestring(s2b("xxx"))).rstrip() in mail_msg)
+            self.assertTrue(b2s(base64_encode(s2b("xxx"))).rstrip() in mail_msg)
             self.assertTrue("File 'test2.txt' not attached" in mail_msg)
-            self.assertTrue(b2s(base64.encodestring(s2b("yyy"))).rstrip() not in mail_msg)
+            self.assertTrue(b2s(base64_encode(s2b("yyy"))).rstrip() not in mail_msg)
             mail_msg = str(res[1]["mail_msg"])
             parts = message_from_string(mail_msg).get_payload()
             self.assertEqual(len(parts),2)
@@ -2720,9 +2727,9 @@ class DBTest(commonDBTest):
             self.assertTrue("New submission from admin" in mail_msg)
             self.assertTrue("one two" in mail_msg)
             self.assertTrue("File 'test1.txt' not attached" not in mail_msg)
-            self.assertTrue(b2s(base64.encodestring(s2b("xxx"))).rstrip() in mail_msg)
+            self.assertTrue(b2s(base64_encode(s2b("xxx"))).rstrip() in mail_msg)
             self.assertTrue("File 'test2.txt' not attached" in mail_msg)
-            self.assertTrue(b2s(base64.encodestring(s2b("yyy"))).rstrip() not in mail_msg)
+            self.assertTrue(b2s(base64_encode(s2b("yyy"))).rstrip() not in mail_msg)
         finally :
             roundupdb._ = old_translate_
             Mailer.smtp_send = backup
