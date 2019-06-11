@@ -87,24 +87,24 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         self.assertEqual(get('Edit', 'issue', properties=['title'], props_only=False), epi1)
         self.assertEqual(get('Edit', 'issue', properties=['title'], props_only=True), epi2)
         self.db.security.set_props_only_default(True)
-        self.assertEquals(get('Edit', 'issue', properties=['title']), epi2)
+        self.assertEqual(get('Edit', 'issue', properties=['title']), epi2)
         api1 = add(name="View", klass="issue", properties=['title'])
-        self.assertEquals(get('View', 'issue', properties=['title']), api1)
+        self.assertEqual(get('View', 'issue', properties=['title']), api1)
         self.db.security.set_props_only_default(False)
         api2 = add(name="View", klass="issue", properties=['title'])
-        self.assertEquals(get('View', 'issue', properties=['title']), api2)
+        self.assertEqual(get('View', 'issue', properties=['title']), api2)
         self.assertNotEqual(get('View', 'issue', properties=['title']), api1)
         
         # check function
         dummy = lambda: 0
         eci = add(name="Edit", klass="issue", check=dummy)
-        self.assertEquals(get('Edit', 'issue', check=dummy), eci)
+        self.assertEqual(get('Edit', 'issue', check=dummy), eci)
         # props_only only makes sense if you are setting props.
         # make it a no-op unless properties is set.
-        self.assertEquals(get('Edit', 'issue', check=dummy,
+        self.assertEqual(get('Edit', 'issue', check=dummy,
                               props_only=True), eci)
         aci = add(name="View", klass="issue", check=dummy)
-        self.assertEquals(get('View', 'issue', check=dummy), aci)
+        self.assertEqual(get('View', 'issue', check=dummy), aci)
 
         # all
         epci = add(name="Edit", klass="issue", properties=['title'],
@@ -112,10 +112,10 @@ class PermissionTest(MyTestCase, unittest.TestCase):
 
         self.db.security.set_props_only_default(False)
         # implicit props_only=False
-        self.assertEquals(get('Edit', 'issue', properties=['title'],
+        self.assertEqual(get('Edit', 'issue', properties=['title'],
                               check=dummy), epci)
         # explicit props_only=False
-        self.assertEquals(get('Edit', 'issue', properties=['title'],
+        self.assertEqual(get('Edit', 'issue', properties=['title'],
                               check=dummy, props_only=False), epci)
 
         # implicit props_only=True
@@ -130,7 +130,7 @@ class PermissionTest(MyTestCase, unittest.TestCase):
 
         apci = add(name="View", klass="issue", properties=['title'],
             check=dummy)
-        self.assertEquals(get('View', 'issue', properties=['title'],
+        self.assertEqual(get('View', 'issue', properties=['title'],
             check=dummy), apci)
 
         # Reset to default. Somehow this setting looks like it
@@ -159,9 +159,9 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         addRole(name='Role1')
         addToRole('Role1', add(name="Test", klass="test"))
         user1 = self.db.user.create(username='user1', roles='Role1')
-        self.assertEquals(has('Test', user1, 'test'), 1)
-        self.assertEquals(has('Test', super, 'test'), 1)
-        self.assertEquals(has('Test', none, 'test'), 0)
+        self.assertEqual(has('Test', user1, 'test'), 1)
+        self.assertEqual(has('Test', super, 'test'), 1)
+        self.assertEqual(has('Test', none, 'test'), 0)
 
         # property
         addRole(name='Role2')
@@ -223,137 +223,137 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         print(user7)
 
         # *any* access to class
-        self.assertEquals(has('Test', user1, 'test'), 1)
-        self.assertEquals(has('Test', user2, 'test'), 1)
-        self.assertEquals(has('Test', user3, 'test'), 1)
+        self.assertEqual(has('Test', user1, 'test'), 1)
+        self.assertEqual(has('Test', user2, 'test'), 1)
+        self.assertEqual(has('Test', user3, 'test'), 1)
         # user4 and user5 should not return true as the permission
         # is limited to property checks
-        self.assertEquals(has('Test', user4, 'test'), 0)
-        self.assertEquals(has('Test', user5, 'test'), 0)
+        self.assertEqual(has('Test', user4, 'test'), 0)
+        self.assertEqual(has('Test', user5, 'test'), 0)
         # user6 will will return access
-        self.assertEquals(has('Test', user6, 'test'), 1)
+        self.assertEqual(has('Test', user6, 'test'), 1)
         # will work because check is ignored, if check was
         # used this would work but next test would fail
-        self.assertEquals(has('Test', user7, 'test', itemid='2'), 1)
+        self.assertEqual(has('Test', user7, 'test', itemid='2'), 1)
         # returns true because class tests ignore the check command
         # if there is no itemid no check command is run
-        self.assertEquals(has('Test', user7, 'test'), 1)
-        self.assertEquals(has('Test', none, 'test'), 0)
+        self.assertEqual(has('Test', user7, 'test'), 1)
+        self.assertEqual(has('Test', none, 'test'), 0)
 
 
         # *any* access to item
-        self.assertEquals(has('Test', user1, 'test', itemid='1'), 1)
-        self.assertEquals(has('Test', user2, 'test', itemid='1'), 1)
-        self.assertEquals(has('Test', user3, 'test', itemid='1'), 1)
-        self.assertEquals(has('Test', user4, 'test', itemid='1'), 0)
-        self.assertEquals(has('Test', user5, 'test', itemid='1'), 0)
-        self.assertEquals(has('Test', user6, 'test', itemid='1'), 1)
-        self.assertEquals(has('Test', user7, 'test', itemid='2'), 1)
-        self.assertEquals(has('Test', user7, 'test', itemid='1'), 0)
-        self.assertEquals(has('Test', super, 'test', itemid='1'), 1)
-        self.assertEquals(has('Test', none, 'test', itemid='1'), 0)
+        self.assertEqual(has('Test', user1, 'test', itemid='1'), 1)
+        self.assertEqual(has('Test', user2, 'test', itemid='1'), 1)
+        self.assertEqual(has('Test', user3, 'test', itemid='1'), 1)
+        self.assertEqual(has('Test', user4, 'test', itemid='1'), 0)
+        self.assertEqual(has('Test', user5, 'test', itemid='1'), 0)
+        self.assertEqual(has('Test', user6, 'test', itemid='1'), 1)
+        self.assertEqual(has('Test', user7, 'test', itemid='2'), 1)
+        self.assertEqual(has('Test', user7, 'test', itemid='1'), 0)
+        self.assertEqual(has('Test', super, 'test', itemid='1'), 1)
+        self.assertEqual(has('Test', none, 'test', itemid='1'), 0)
 
         # now property test: no default itemid so check functions not run.
-        self.assertEquals(has('Test', user7, 'test', property='a'), 1)
-        self.assertEquals(has('Test', user7, 'test', property='b'), 1)
-        self.assertEquals(has('Test', user7, 'test', property='c'), 0)
+        self.assertEqual(has('Test', user7, 'test', property='a'), 1)
+        self.assertEqual(has('Test', user7, 'test', property='b'), 1)
+        self.assertEqual(has('Test', user7, 'test', property='c'), 0)
 
-        self.assertEquals(has('Test', user6, 'test', property='a'), 1)
-        self.assertEquals(has('Test', user6, 'test', property='b'), 1)
-        self.assertEquals(has('Test', user6, 'test', property='c'), 0)
+        self.assertEqual(has('Test', user6, 'test', property='a'), 1)
+        self.assertEqual(has('Test', user6, 'test', property='b'), 1)
+        self.assertEqual(has('Test', user6, 'test', property='c'), 0)
 
-        self.assertEquals(has('Test', user5, 'test', property='a'), 1)
-        self.assertEquals(has('Test', user5, 'test', property='b'), 0)
-        self.assertEquals(has('Test', user5, 'test', property='c'), 0)
+        self.assertEqual(has('Test', user5, 'test', property='a'), 1)
+        self.assertEqual(has('Test', user5, 'test', property='b'), 0)
+        self.assertEqual(has('Test', user5, 'test', property='c'), 0)
 
-        self.assertEquals(has('Test', user4, 'test', property='a'), 1)
-        self.assertEquals(has('Test', user4, 'test', property='b'), 0)
-        self.assertEquals(has('Test', user4, 'test', property='c'), 0)
+        self.assertEqual(has('Test', user4, 'test', property='a'), 1)
+        self.assertEqual(has('Test', user4, 'test', property='b'), 0)
+        self.assertEqual(has('Test', user4, 'test', property='c'), 0)
 
-        self.assertEquals(has('Test', user3, 'test', property='a'), 1)
-        self.assertEquals(has('Test', user3, 'test', property='b'), 1)
-        self.assertEquals(has('Test', user3, 'test', property='c'), 1)
+        self.assertEqual(has('Test', user3, 'test', property='a'), 1)
+        self.assertEqual(has('Test', user3, 'test', property='b'), 1)
+        self.assertEqual(has('Test', user3, 'test', property='c'), 1)
 
-        self.assertEquals(has('Test', user2, 'test', property='a'), 1)
-        self.assertEquals(has('Test', user2, 'test', property='b'), 1)
-        self.assertEquals(has('Test', user2, 'test', property='c'), 0)
-        self.assertEquals(has('Test', user1, 'test', property='a'), 1)
-        self.assertEquals(has('Test', user1, 'test', property='b'), 1)
-        self.assertEquals(has('Test', user1, 'test', property='c'), 1)
-        self.assertEquals(has('Test', super, 'test', property='a'), 1)
-        self.assertEquals(has('Test', super, 'test', property='b'), 1)
-        self.assertEquals(has('Test', super, 'test', property='c'), 1)
-        self.assertEquals(has('Test', none, 'test', property='a'), 0)
-        self.assertEquals(has('Test', none, 'test', property='b'), 0)
-        self.assertEquals(has('Test', none, 'test', property='c'), 0)
-        self.assertEquals(has('Test', none, 'test'), 0)
+        self.assertEqual(has('Test', user2, 'test', property='a'), 1)
+        self.assertEqual(has('Test', user2, 'test', property='b'), 1)
+        self.assertEqual(has('Test', user2, 'test', property='c'), 0)
+        self.assertEqual(has('Test', user1, 'test', property='a'), 1)
+        self.assertEqual(has('Test', user1, 'test', property='b'), 1)
+        self.assertEqual(has('Test', user1, 'test', property='c'), 1)
+        self.assertEqual(has('Test', super, 'test', property='a'), 1)
+        self.assertEqual(has('Test', super, 'test', property='b'), 1)
+        self.assertEqual(has('Test', super, 'test', property='c'), 1)
+        self.assertEqual(has('Test', none, 'test', property='a'), 0)
+        self.assertEqual(has('Test', none, 'test', property='b'), 0)
+        self.assertEqual(has('Test', none, 'test', property='c'), 0)
+        self.assertEqual(has('Test', none, 'test'), 0)
 
         # now check function
-        self.assertEquals(has('Test', user7, 'test', itemid='1'), 0)
-        self.assertEquals(has('Test', user7, 'test', itemid='2'), 1)
-        self.assertEquals(has('Test', user6, 'test', itemid='1'), 1)
-        self.assertEquals(has('Test', user6, 'test', itemid='2'), 0)
+        self.assertEqual(has('Test', user7, 'test', itemid='1'), 0)
+        self.assertEqual(has('Test', user7, 'test', itemid='2'), 1)
+        self.assertEqual(has('Test', user6, 'test', itemid='1'), 1)
+        self.assertEqual(has('Test', user6, 'test', itemid='2'), 0)
         # check functions will not run for user4/user5 since the
         # only perms are for properties only.
-        self.assertEquals(has('Test', user5, 'test', itemid='1'), 0)
-        self.assertEquals(has('Test', user5, 'test', itemid='2'), 0)
-        self.assertEquals(has('Test', user4, 'test', itemid='1'), 0)
-        self.assertEquals(has('Test', user4, 'test', itemid='2'), 0)
-        self.assertEquals(has('Test', user3, 'test', itemid='1'), 1)
-        self.assertEquals(has('Test', user3, 'test', itemid='2'), 0)
-        self.assertEquals(has('Test', user2, 'test', itemid='1'), 1)
-        self.assertEquals(has('Test', user2, 'test', itemid='2'), 1)
-        self.assertEquals(has('Test', user1, 'test', itemid='2'), 1)
-        self.assertEquals(has('Test', user1, 'test', itemid='2'), 1)
-        self.assertEquals(has('Test', super, 'test', itemid='1'), 1)
-        self.assertEquals(has('Test', super, 'test', itemid='2'), 1)
-        self.assertEquals(has('Test', none, 'test', itemid='1'), 0)
-        self.assertEquals(has('Test', none, 'test', itemid='2'), 0)
+        self.assertEqual(has('Test', user5, 'test', itemid='1'), 0)
+        self.assertEqual(has('Test', user5, 'test', itemid='2'), 0)
+        self.assertEqual(has('Test', user4, 'test', itemid='1'), 0)
+        self.assertEqual(has('Test', user4, 'test', itemid='2'), 0)
+        self.assertEqual(has('Test', user3, 'test', itemid='1'), 1)
+        self.assertEqual(has('Test', user3, 'test', itemid='2'), 0)
+        self.assertEqual(has('Test', user2, 'test', itemid='1'), 1)
+        self.assertEqual(has('Test', user2, 'test', itemid='2'), 1)
+        self.assertEqual(has('Test', user1, 'test', itemid='2'), 1)
+        self.assertEqual(has('Test', user1, 'test', itemid='2'), 1)
+        self.assertEqual(has('Test', super, 'test', itemid='1'), 1)
+        self.assertEqual(has('Test', super, 'test', itemid='2'), 1)
+        self.assertEqual(has('Test', none, 'test', itemid='1'), 0)
+        self.assertEqual(has('Test', none, 'test', itemid='2'), 0)
 
         # now mix property and check commands
         # check is old style props_only = false
-        self.assertEquals(has('Test', user7, 'test', property="c",
+        self.assertEqual(has('Test', user7, 'test', property="c",
                               itemid='2'), 0)
-        self.assertEquals(has('Test', user7, 'test', property="c",
+        self.assertEqual(has('Test', user7, 'test', property="c",
                               itemid='1'), 0)
 
-        self.assertEquals(has('Test', user7, 'test', property="a",
+        self.assertEqual(has('Test', user7, 'test', property="a",
                               itemid='2'), 1)
-        self.assertEquals(has('Test', user7, 'test', property="a",
+        self.assertEqual(has('Test', user7, 'test', property="a",
                               itemid='1'), 0)
 
         # check is new style props_only = false
-        self.assertEquals(has('Test', user6, 'test', itemid='2',
+        self.assertEqual(has('Test', user6, 'test', itemid='2',
                               property='c'), 0)
-        self.assertEquals(has('Test', user6, 'test', itemid='1',
+        self.assertEqual(has('Test', user6, 'test', itemid='1',
                               property='c'), 0)
-        self.assertEquals(has('Test', user6, 'test', itemid='2',
+        self.assertEqual(has('Test', user6, 'test', itemid='2',
                               property='b'), 0)
-        self.assertEquals(has('Test', user6, 'test', itemid='1',
+        self.assertEqual(has('Test', user6, 'test', itemid='1',
                               property='b'), 1)
-        self.assertEquals(has('Test', user6, 'test', itemid='2',
+        self.assertEqual(has('Test', user6, 'test', itemid='2',
                               property='a'), 0)
-        self.assertEquals(has('Test', user6, 'test', itemid='1',
+        self.assertEqual(has('Test', user6, 'test', itemid='1',
                               property='a'), 1)
 
         # check is old style props_only = true
-        self.assertEquals(has('Test', user5, 'test', itemid='2',
+        self.assertEqual(has('Test', user5, 'test', itemid='2',
                               property='b'), 0)
-        self.assertEquals(has('Test', user5, 'test', itemid='1',
+        self.assertEqual(has('Test', user5, 'test', itemid='1',
                               property='b'), 0)
-        self.assertEquals(has('Test', user5, 'test', itemid='2',
+        self.assertEqual(has('Test', user5, 'test', itemid='2',
                               property='a'), 1)
-        self.assertEquals(has('Test', user5, 'test', itemid='1',
+        self.assertEqual(has('Test', user5, 'test', itemid='1',
                               property='a'), 0)
 
         # check is new style props_only = true
-        self.assertEquals(has('Test', user4, 'test', itemid='2',
+        self.assertEqual(has('Test', user4, 'test', itemid='2',
                               property='b'), 0)
-        self.assertEquals(has('Test', user4, 'test', itemid='1',
+        self.assertEqual(has('Test', user4, 'test', itemid='1',
                               property='b'), 0)
-        self.assertEquals(has('Test', user4, 'test', itemid='2',
+        self.assertEqual(has('Test', user4, 'test', itemid='2',
                               property='a'), 0)
-        self.assertEquals(has('Test', user4, 'test', itemid='1',
+        self.assertEqual(has('Test', user4, 'test', itemid='1',
                               property='a'), 1)
 
     def testTransitiveSearchPermissions(self):
@@ -382,34 +382,34 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         uv = add(name="View", klass="user")
         addToRole('User', uv)
         addToRole('UV', uv)
-        self.assertEquals(has(anon, 'issue', 'messages'), 1)
-        self.assertEquals(has(anon, 'issue', 'messages.author'), 0)
-        self.assertEquals(has(anon, 'issue', 'messages.author.username'), 0)
-        self.assertEquals(has(anon, 'issue', 'messages.recipients'), 0)
-        self.assertEquals(has(anon, 'issue', 'messages.recipients.username'), 0)
-        self.assertEquals(has(user, 'issue', 'messages'), 1)
-        self.assertEquals(has(user, 'issue', 'messages.author'), 1)
-        self.assertEquals(has(user, 'issue', 'messages.author.username'), 1)
-        self.assertEquals(has(user, 'issue', 'messages.recipients'), 1)
-        self.assertEquals(has(user, 'issue', 'messages.recipients.username'), 1)
+        self.assertEqual(has(anon, 'issue', 'messages'), 1)
+        self.assertEqual(has(anon, 'issue', 'messages.author'), 0)
+        self.assertEqual(has(anon, 'issue', 'messages.author.username'), 0)
+        self.assertEqual(has(anon, 'issue', 'messages.recipients'), 0)
+        self.assertEqual(has(anon, 'issue', 'messages.recipients.username'), 0)
+        self.assertEqual(has(user, 'issue', 'messages'), 1)
+        self.assertEqual(has(user, 'issue', 'messages.author'), 1)
+        self.assertEqual(has(user, 'issue', 'messages.author.username'), 1)
+        self.assertEqual(has(user, 'issue', 'messages.recipients'), 1)
+        self.assertEqual(has(user, 'issue', 'messages.recipients.username'), 1)
 
-        self.assertEquals(has(ui, 'issue', 'messages'), 0)
-        self.assertEquals(has(ui, 'issue', 'messages.author'), 0)
-        self.assertEquals(has(ui, 'issue', 'messages.author.username'), 0)
-        self.assertEquals(has(ui, 'issue', 'messages.recipients'), 0)
-        self.assertEquals(has(ui, 'issue', 'messages.recipients.username'), 0)
+        self.assertEqual(has(ui, 'issue', 'messages'), 0)
+        self.assertEqual(has(ui, 'issue', 'messages.author'), 0)
+        self.assertEqual(has(ui, 'issue', 'messages.author.username'), 0)
+        self.assertEqual(has(ui, 'issue', 'messages.recipients'), 0)
+        self.assertEqual(has(ui, 'issue', 'messages.recipients.username'), 0)
 
-        self.assertEquals(has(uim, 'issue', 'messages'), 1)
-        self.assertEquals(has(uim, 'issue', 'messages.author'), 0)
-        self.assertEquals(has(uim, 'issue', 'messages.author.username'), 0)
-        self.assertEquals(has(uim, 'issue', 'messages.recipients'), 0)
-        self.assertEquals(has(uim, 'issue', 'messages.recipients.username'), 0)
+        self.assertEqual(has(uim, 'issue', 'messages'), 1)
+        self.assertEqual(has(uim, 'issue', 'messages.author'), 0)
+        self.assertEqual(has(uim, 'issue', 'messages.author.username'), 0)
+        self.assertEqual(has(uim, 'issue', 'messages.recipients'), 0)
+        self.assertEqual(has(uim, 'issue', 'messages.recipients.username'), 0)
 
-        self.assertEquals(has(uimu, 'issue', 'messages'), 1)
-        self.assertEquals(has(uimu, 'issue', 'messages.author'), 1)
-        self.assertEquals(has(uimu, 'issue', 'messages.author.username'), 1)
-        self.assertEquals(has(uimu, 'issue', 'messages.recipients'), 1)
-        self.assertEquals(has(uimu, 'issue', 'messages.recipients.username'), 1)
+        self.assertEqual(has(uimu, 'issue', 'messages'), 1)
+        self.assertEqual(has(uimu, 'issue', 'messages.author'), 1)
+        self.assertEqual(has(uimu, 'issue', 'messages.author.username'), 1)
+        self.assertEqual(has(uimu, 'issue', 'messages.recipients'), 1)
+        self.assertEqual(has(uimu, 'issue', 'messages.recipients.username'), 1)
 
     # roundup.password has its own built-in test, call it.
     def test_password(self):
