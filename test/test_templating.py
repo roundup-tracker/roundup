@@ -226,13 +226,13 @@ class HTMLClassTestCase(TemplatingTestCase) :
             m = StringHTMLProperty.hyper_re.search(s)
             if nothing:
                 if m:
-                    self.assertEquals(m, None, '%r matched (%r)'%(s, m.groupdict()))
+                    self.assertEqual(m, None, '%r matched (%r)'%(s, m.groupdict()))
                 return
             else:
                 self.assertNotEquals(m, None, '%r did not match'%s)
             d = m.groupdict()
             for g in groups:
-                self.assertEquals(d[g], groups[g], '%s %r != %r in %r'%(g, d[g],
+                self.assertEqual(d[g], groups[g], '%s %r != %r in %r'%(g, d[g],
                     groups[g], s))
 
         #t('123.321.123.321', 'url')
