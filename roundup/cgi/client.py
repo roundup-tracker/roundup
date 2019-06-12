@@ -73,7 +73,7 @@ def initialiseSecurity(security):
 
 def add_message(msg_list, msg, escape=True):
     if escape:
-        msg = html_escape(msg).replace('\n', '<br />\n')
+        msg = html_escape(msg, quote=False).replace('\n', '<br />\n')
     else:
         msg = msg.replace('\n', '<br />\n')
     msg_list.append (msg)
