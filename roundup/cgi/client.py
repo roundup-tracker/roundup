@@ -23,6 +23,11 @@ except ImportError:
     class SysCallError(Exception):
         pass
 
+try:
+    from html import escape as html_escape  # python 3
+except ImportError:
+    from cgi import escape as html_escape   # python 2 fallback
+
 from roundup import roundupdb, date, hyperdb, password
 from roundup.cgi import templating, cgitb, TranslationService
 from roundup.cgi import actions
@@ -68,7 +73,7 @@ def initialiseSecurity(security):
 
 def add_message(msg_list, msg, escape=True):
     if escape:
-        msg = cgi.escape(msg).replace('\n', '<br />\n')
+        msg = html_escape(msg).replace('\n', '<br />\n')
     else:
         msg = msg.replace('\n', '<br />\n')
     msg_list.append (msg)
@@ -1767,9 +1772,9 @@ class Client:
                 result = result.replace('</body>', s)
             return result
         except templating.NoTemplate as message:
-            return '<strong>%s</strong>'%cgi.escape(str(message))
+            return '<strong>%s</strong>'%html_escape(str(message))
         except templating.Unauthorised as message:
-            raise Unauthorised(cgi.escape(str(message)))
+            raise Unauthorised(html_escape(str(message)))
         except:
             # everything else
             if self.instance.config.WEB_DEBUG:
@@ -1862,7 +1867,7 @@ class Client:
                 if name == action_name:
                     break
             else:
-                raise ValueError('No such action "%s"'%cgi.escape(action_name))
+                raise ValueError('No such action "%s"'%html_escape(action_name))
         return action_klass
 
     def _socket_op(self, call, *args, **kwargs):
