@@ -6,7 +6,11 @@ class. It's now also used for One Time Key handling too.
 """
 __docformat__ = 'restructuredtext'
 import os, time, logging
-from cgi import escape
+
+try:
+    from html import escape
+except ImportError:
+    from cgi import escape
 
 class BasicDatabase:
     ''' Provide a nice encapsulation of an RDBMS table.
