@@ -991,7 +991,7 @@ class RestfulInstance(object):
         if user != self.db.getuid():
             # Tell the roundup admin that there is an issue
             # as the key got compromised.
-            logger.warn(
+            logger.warning(
                 'Post Once key owned by user%s was denied. Used by user%s',user, self.db.getuid()
             )
             # Should we indicate to user that the token is invalid
