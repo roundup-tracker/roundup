@@ -8,6 +8,11 @@ import os
 import cgi
 import weakref
 
+try:
+    from html import escape as html_escape  # python 3
+except ImportError:
+    from cgi import escape as html_escape   # python 2 fallback
+
 import roundup.instance
 from roundup.cgi import TranslationService
 from roundup.anypy import http_
@@ -69,7 +74,7 @@ class RequestDispatcher(object):
             client.main()
         except roundup.cgi.client.NotFound:
             request.start_response([('Content-Type', 'text/html')], 404)
-            request.wfile.write(s2b('Not found: %s'%cgi.escape(client.path)))
+            request.wfile.write(s2b('Not found: %s'%html_escape(client.path)))
 
         # all body data has been written using wfile
         return []

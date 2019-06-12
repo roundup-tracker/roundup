@@ -11,6 +11,11 @@ from roundup.anypy import urllib_
 from roundup.anypy.strings import StringIO
 import roundup.anypy.random_ as random_
 
+try:
+    from html import escape as html_escape  # python 3
+except ImportError:
+    from cgi import escape as html_escape   # python 2 fallback
+
 import time
 from datetime import timedelta
 
@@ -1351,7 +1356,7 @@ class ExportCSVAction(Action):
                 self.client.response_code = 400
                 raise exceptions.NotFound(
                     self._('Column "%(column)s" not found in %(class)s')
-                    % {'column': cgi.escape(cname), 'class': request.classname})
+                    % {'column': html_escape(cname), 'class': request.classname})
 
         # full-text search
         if request.search_text:
@@ -1506,7 +1511,7 @@ class ExportCSVWithIdAction(Action):
                 self.client.response_code = 400
                 raise exceptions.NotFound(
                     self._('Column "%(column)s" not found in %(class)s')
-                    % {'column': cgi.escape(cname), 'class': request.classname})
+                    % {'column': html_escape(cname), 'class': request.classname})
 
         # full-text search
         if request.search_text:

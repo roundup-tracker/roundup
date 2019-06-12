@@ -4,7 +4,11 @@
 __docformat__ = 'restructuredtext'
 
 from roundup.exceptions import LoginError, Unauthorised
-import cgi
+
+try:
+    from html import escape as html_escape  # python 3
+except ImportError:
+    from cgi import escape as html_escape   # python 2 fallback
 
 class HTTPException(BaseException):
     pass
@@ -62,6 +66,6 @@ class SeriousError(BaseException):
 <body class="body" marginwidth="0" marginheight="0">
  <p class="error-message">%s</p>
 </body></html>
-"""%cgi.escape(self.args[0])
+"""%html_escape(self.args[0])
 
 # vim: set filetype=python sts=4 sw=4 et si :

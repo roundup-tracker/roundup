@@ -25,6 +25,11 @@ import calendar
 import textwrap
 import time, hashlib
 
+try:
+    from html import escape as html_escape  # python 3
+except ImportError:
+    from cgi import escape as html_escape   # python 2 fallback
+
 from roundup.anypy import urllib_
 from roundup import hyperdb, date, support
 from roundup import i18n
@@ -430,7 +435,7 @@ def _set_input_default_args(dic):
             pass
 
 def cgi_escape_attrs(**attrs):
-    return ' '.join(['%s="%s"'%(k,cgi.escape(str(v), True))
+    return ' '.join(['%s="%s"'%(k,html_escape(str(v), True))
         for k,v in sorted(attrs.items())])
 
 def input_html4(**attrs):
@@ -1044,7 +1049,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                                     if labelprop is not None and \
                                             labelprop != 'id':
                                         label = linkcl.get(linkid, labelprop)
-                                        label = cgi.escape(label)
+                                        label = html_escape(label)
                                 except IndexError:
                                     comments['no_link'] = self._(
                                         "<strike>The linked node"
@@ -1069,7 +1074,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                         # there's no labelprop!
                         if labelprop is not None and labelprop != 'id':
                             try:
-                                label = cgi.escape(linkcl.get(args[k],
+                                label = html_escape(linkcl.get(args[k],
                                     labelprop))
                             except IndexError:
                                 comments['no_link'] = self._(
@@ -1109,7 +1114,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                             current[k] = val
 
                     elif isinstance(prop, hyperdb.String) and args[k]:
-                        val = cgi.escape(args[k])
+                        val = html_escape(args[k])
                         cell.append('%s: %s'%(self._(k), val))
                         if k in current and current[k] is not None:
                             cell[-1] += ' -> %s'%current[k]
@@ -1155,7 +1160,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
             if dre.match(user):
                 user = self._db.user.get(user, 'username')
             l.append('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'%(
-                date_s, cgi.escape(user), self._(action), arg_s))
+                date_s, html_escape(user), self._(action), arg_s))
         if comments:
             l.append(self._(
                 '<tr><td colspan=4><strong>Note:</strong></td></tr>'))
@@ -1490,13 +1495,13 @@ class StringHTMLProperty(HTMLProperty):
         if self._value is None:
             return ''
         if escape:
-            s = cgi.escape(str(self._value))
+            s = html_escape(str(self._value))
         else:
             s = str(self._value)
         if hyperlink:
             # no, we *must* escape this text
             if not escape:
-                s = cgi.escape(s)
+                s = html_escape(s)
             s = self.hyper_re.sub(self._hyper_repl, s)
         return s
 
@@ -1520,11 +1525,11 @@ class StringHTMLProperty(HTMLProperty):
             return ''
         s = '\n'.join(textwrap.wrap(str(self._value), 80))
         if escape:
-            s = cgi.escape(s)
+            s = html_escape(s)
         if hyperlink:
             # no, we *must* escape this text
             if not escape:
-                s = cgi.escape(s)
+                s = html_escape(s)
             s = self.hyper_re.sub(self._hyper_repl, s)
         return s
 
@@ -1584,7 +1589,7 @@ class StringHTMLProperty(HTMLProperty):
         if self._value is None:
             value = ''
         else:
-            value = cgi.escape(str(self._value))
+            value = html_escape(str(self._value))
 
             value = '&quot;'.join(value.split('"'))
         name = self._formname
@@ -1612,7 +1617,7 @@ class StringHTMLProperty(HTMLProperty):
         else:
             value = value.replace('.', ' ')
         if escape:
-            value = cgi.escape(value)
+            value = html_escape(value)
         return value
 
 class PasswordHTMLProperty(HTMLProperty):
@@ -1629,7 +1634,7 @@ class PasswordHTMLProperty(HTMLProperty):
         except AttributeError:
             value = self._('[hidden]')
         if escape:
-            value = cgi.escape(value)
+            value = html_escape(value)
         return value
 
     def field(self, size=30, **kwargs):
@@ -2091,7 +2096,7 @@ class LinkHTMLProperty(HTMLProperty):
         else :
             value = self._value
         if escape:
-            value = cgi.escape(value)
+            value = html_escape(value)
         return value
 
     def field(self, showid=0, size=None, **kwargs):
@@ -2243,7 +2248,7 @@ class LinkHTMLProperty(HTMLProperty):
             tr = str
             if translate:
                 tr = self._
-            lab = cgi.escape(tr(lab))
+            lab = html_escape(tr(lab))
             l.append('<option %svalue="%s">%s</option>'%(s, optionid, lab))
         l.append('</select>')
         return '\n'.join(l)
@@ -2342,7 +2347,7 @@ class MultilinkHTMLProperty(HTMLProperty):
             labels.append(label)
         value = ', '.join(labels)
         if escape:
-            value = cgi.escape(value)
+            value = html_escape(value)
         return value
 
     def field(self, size=30, showid=0, **kwargs):
@@ -2479,7 +2484,7 @@ class MultilinkHTMLProperty(HTMLProperty):
             tr = str
             if translate:
                 tr = self._
-            lab = cgi.escape(tr(lab))
+            lab = html_escape(tr(lab))
             l.append('<option %svalue="%s">%s</option>'%(s, optionid,
                 lab))
         l.append('</select>')
@@ -3082,7 +3087,7 @@ class TemplatingUtils:
 
     def html_quote(self, html):
         """HTML-quote the supplied text."""
-        return cgi.escape(html)
+        return html_escape(html)
 
     def __getattr__(self, name):
         """Try the tracker's templating_utils."""

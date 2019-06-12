@@ -25,6 +25,11 @@ from .TALDefs import I18NError, METALError, TALError
 from .TALDefs import parseSubstitution
 from .TranslationContext import TranslationContext, DEFAULT_DOMAIN
 
+try:
+    from html import escape as html_escape  # python 3
+except ImportError:
+    from cgi import escape as html_escape   # python 2 fallback
+
 I18N_REPLACE = 1
 I18N_CONTENT = 2
 I18N_EXPRESSION = 3
@@ -261,7 +266,7 @@ class TALGenerator:
         self.emit("rawtext", text)
 
     def emitText(self, text):
-        self.emitRawText(cgi.escape(text))
+        self.emitRawText(html_escape(text))
 
     def emitDefines(self, defines):
         for part in TALDefs.splitParts(defines):

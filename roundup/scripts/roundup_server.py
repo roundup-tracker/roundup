@@ -36,7 +36,7 @@ if (osp.exists(thisdir + '/__init__.py') and
 # --/
 
 
-import errno, cgi, getopt, io, os, socket, sys, traceback, time
+import errno, getopt, io, os, socket, sys, traceback, time
 
 try:
     # Python 3.
@@ -56,6 +56,11 @@ try:
     from OpenSSL import SSL
 except ImportError:
     SSL = None
+
+try:
+    from html import escape as html_escape  # python 3
+except ImportError:
+    from cgi import escape as html_escape   # python 2 fallback
 
 # python version check
 from roundup import configuration, version_check
@@ -243,7 +248,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
                         s = StringIO()
                         traceback.print_exc(None, s)
                         self.wfile.write(b"<pre>")
-                        self.wfile.write(s2b(cgi.escape(s.getvalue())))
+                        self.wfile.write(s2b(html_escape(s.getvalue())))
                         self.wfile.write(b"</pre>\n")
                 else:
                     # user feedback
@@ -289,7 +294,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             for tracker in keys:
                 w(s2b('<li><a href="%(tracker_url)s/index">%(tracker_name)s</a>\n'%{
                     'tracker_url': urllib_.quote(tracker),
-                    'tracker_name': cgi.escape(tracker)}))
+                    'tracker_name': html_escape(tracker)}))
             w(b'</ol></body></html>')
 
     def inner_run_cgi(self):

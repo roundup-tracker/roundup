@@ -10,6 +10,11 @@ __docformat__ = 'restructuredtext'
 import sys, os, keyword, linecache, tokenize, inspect, cgi
 import pydoc, traceback
 
+try:
+    from html import escape as html_escape  # python 3
+except ImportError:
+    from cgi import escape as html_escape   # python 2 fallback
+
 from roundup.cgi import templating, TranslationService
 from roundup.anypy.strings import s2b
 
@@ -41,12 +46,12 @@ def niceDict(indent, dict):
     for k in sorted(dict):
         v = dict[k]
         l.append('<tr><td><strong>%s</strong></td><td>%s</td></tr>'%(k,
-            cgi.escape(repr(v))))
+            html_escape(repr(v))))
     return '\n'.join(l)
 
 def pt_html(context=5, i18n=None):
     _ = get_translator(i18n)
-    esc = cgi.escape
+    esc = html_escape
     exc_info = [esc(str(value)) for value in sys.exc_info()[:2]]
     l = [_('<h1>Templating Error</h1>\n'
             '<p><b>%(exc_type)s</b>: %(exc_value)s</p>\n'
@@ -102,7 +107,7 @@ def pt_html(context=5, i18n=None):
 <table style="font-size: 80%%; color: gray">
  <tr><th class="header" align="left">%s</th></tr>
  <tr><td><pre>%s</pre></td></tr>
-</table>''' % (_('Full traceback:'), cgi.escape(''.join(
+</table>''' % (_('Full traceback:'), html_escape(''.join(
         traceback.format_exception(*sys.exc_info())
     ))))
     l.append('<p>&nbsp;</p>')
