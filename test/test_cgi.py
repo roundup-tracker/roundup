@@ -60,6 +60,8 @@ class MessageTestCase(unittest.TestCase):
             ['&lt;&lt;script &gt;&gt;alert(42);5&lt;&lt;/script &gt;&gt;'])
         self.assertEqual(cm([],'<a href="y">x</a>'),
             ['&lt;a href="y"&gt;x&lt;/a&gt;'])
+        self.assertEqual(cm([],'<a href="<y>">x</a>'),
+            ['&lt;a href="&lt;y&gt;"&gt;x&lt;/a&gt;'])
         self.assertEqual(cm([],'<A HREF="y">x</A>'),
             ['&lt;A HREF="y"&gt;x&lt;/A&gt;'])
         self.assertEqual(cm([],'<br>x<br />'), ['&lt;br&gt;x&lt;br /&gt;'])
