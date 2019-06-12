@@ -35,7 +35,6 @@ from roundup.anypy.strings import eval_import
 
 logger = logging.getLogger('roundup.hyperdb')
 
-
 #
 # Types
 #
@@ -837,7 +836,7 @@ def iter_roles(roles):
         into something python can use more easily
     '''
     if not roles or not roles.strip():
-        raise StopIteration("Empty roles given")
+        return
     for role in [x.lower().strip() for x in roles.split(',')]:
         yield role
 
