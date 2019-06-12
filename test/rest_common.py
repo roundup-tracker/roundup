@@ -2,6 +2,7 @@ import unittest
 import os
 import shutil
 import errno
+import cgi
 
 from time import sleep
 from datetime import datetime
