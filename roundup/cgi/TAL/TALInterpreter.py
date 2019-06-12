@@ -20,7 +20,12 @@ Interpreter for a pre-compiled TAL program.
 import sys
 import getopt
 import re
-from cgi import escape
+
+try:
+    from html import escape
+except ImportError:
+    from cgi import escape
+
 from roundup.anypy.strings import StringIO
 #from DocumentTemplate.DT_Util import ustr
 ustr = str
