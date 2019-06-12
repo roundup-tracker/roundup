@@ -29,6 +29,8 @@ except ImportError:
         # else not supported
         dicttoxml = None
 
+from hashlib import md5
+
 from roundup import hyperdb
 from roundup import date
 from roundup import actions
@@ -144,7 +146,7 @@ def calculate_etag (node, key, classname="Missing", id="0",
 
     items = node.items(protected=True) # include every item
     etag = hmac.new(bs2b(key),bs2b(repr_format + 
-                                   repr(sorted(items)))).hexdigest()
+                                   repr(sorted(items))), md5).hexdigest()
     logger.debug("object=%s%s; tag=%s; repr=%s", classname, id,
                  etag, repr(node.items(protected=True)))
     # Quotes are part of ETag spec, normal headers don't have quotes
