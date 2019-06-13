@@ -15,7 +15,7 @@ __docformat__ = 'restructuredtext'
 
 def token_split(s, whitespace=' \r\n\t', quotes='\'"',
         escaped={'r':'\r', 'n':'\n', 't':'\t'}):
-    '''Split the string up into tokens. An occurence of a ``'`` or ``"`` in
+    r'''Split the string up into tokens. An occurence of a ``'`` or ``"`` in
     the input will cause the splitter to ignore whitespace until a matching
     quote char is found. Embedded non-matching quote chars are also skipped.
 
@@ -30,7 +30,7 @@ def token_split(s, whitespace=' \r\n\t', quotes='\'"',
            "Roch'e" Compaan (2 tokens: Roch'e Compaan)
            Roch\'e Compaan  (2 tokens: Roch'e Compaan)
            address="1 2 3"  (1 token: address=1 2 3)
-           \\               (1 token: \\)
+           \\               (1 token: \)
            \n               (1 token: a newline)
            \o               (1 token: \o)
 
