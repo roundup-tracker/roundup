@@ -22,7 +22,12 @@ Page Template-specific implementation of TALES, with handlers
 for Python expressions, string literals, and paths.
 """
 
-import collections, re, sys
+import re, sys
+try:
+    from collections.abc import Callable
+except ImportError:
+    from collections import Callable
+
 from .TALES import Engine, CompilerError, _valid_name, NAME_RE, \
      Undefined, Default, _parse_expr
 
@@ -86,7 +91,7 @@ def render(ob, ns):
         ob = call_with_ns(ob.__render_with_namespace__, ns)
     else:
         base = ob
-        if isinstance(base, collections.Callable):
+        if isinstance(base, Callable):
             try:
                 if getattr(base, 'isDocTemp', 0):
                     ob = call_with_ns(ob, ns, 2)
