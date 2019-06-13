@@ -808,7 +808,7 @@ class Interval:
                  (\d\d\d\d[/-])?(\d\d?)?[/-](\d\d?)?       # [yyyy-]mm-dd
                  \.?                                       # .
                  (\d?\d:\d\d)?(:\d\d)?                     # hh:mm:ss
-               )?''', re.VERBOSE), serialised_re=re.compile('''
+               )?''', re.VERBOSE), serialised_re=re.compile(r'''
             (?P<s>[+-])?1?(?P<y>([ ]{3}\d|\d{4}))(?P<m>\d{2})(?P<d>\d{2})
             (?P<H>\d{2})(?P<M>\d{2})(?P<S>\d{2})''', re.VERBOSE),
             add_granularity=False):

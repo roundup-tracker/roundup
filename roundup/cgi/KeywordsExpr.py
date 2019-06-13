@@ -1,7 +1,7 @@
 # This module is free software, you may redistribute it
 # and/or modify under the same terms as Python.
 
-WINDOW_CONTENT = '''\
+WINDOW_CONTENT = r'''\
 <h3>Keyword Expression Editor:</h3>
 <hr/>
 <div id="content"></div>
