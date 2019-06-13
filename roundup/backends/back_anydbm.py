@@ -919,7 +919,7 @@ class Class(hyperdb.Class):
         newid = self.db.newid(self.classname)
 
         # validate propvalues
-        num_re = re.compile('^\d+$')
+        num_re = re.compile(r'^\d+$')
         for key, value in propvalues.items():
             if key == self.key:
                 try:
@@ -1094,7 +1094,7 @@ class Class(hyperdb.Class):
                 raise ValueError('Journalling is disabled for this class')
             journal = self.db.getjournal(self.classname, nodeid)
             if journal:
-                num_re = re.compile('^\d+$')
+                num_re = re.compile(r'^\d+$')
                 value = journal[0][2]
                 if num_re.match(value):
                     return value
@@ -1114,7 +1114,7 @@ class Class(hyperdb.Class):
                 raise ValueError('Journalling is disabled for this class')
             journal = self.db.getjournal(self.classname, nodeid)
             if journal:
-                num_re = re.compile('^\d+$')
+                num_re = re.compile(r'^\d+$')
                 value = journal[-1][2]
                 if num_re.match(value):
                     return value
@@ -1203,7 +1203,7 @@ class Class(hyperdb.Class):
         node = self.db.getnode(self.classname, nodeid)
         if self.db.RETIRED_FLAG in node:
             raise IndexError
-        num_re = re.compile('^\d+$')
+        num_re = re.compile(r'^\d+$')
 
         # if the journal value is to be different, store it in here
         journalvalues = {}
@@ -1690,7 +1690,7 @@ class Class(hyperdb.Class):
         return res
 
     def _filter(self, search_matches, filterspec, proptree,
-            num_re = re.compile('^\d+$'), retired=False):
+            num_re = re.compile(r'^\d+$'), retired=False):
         """Return a list of the ids of the nodes in this class that
         match the 'filter' spec, sorted by the group spec and then the
         sort spec.

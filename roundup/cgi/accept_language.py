@@ -31,7 +31,7 @@ import heapq
 # regexp for languange-range search
 nqlre = "([A-Za-z]+[-[A-Za-z]+]*)$"
 # regexp for languange-range search with quality value
-qlre  = "([A-Za-z]+[-[A-Za-z]+]*);q=([\d\.]+)"
+qlre  = r"([A-Za-z]+[-[A-Za-z]+]*);q=([\d\.]+)"
 # both
 lre   = re.compile(nqlre + "|" + qlre)
 

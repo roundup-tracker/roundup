@@ -1132,15 +1132,15 @@ always passes, so setting it less than 1 is not recommended."""),
             "Update issue title if incoming subject of email is different.\n"
             "Setting this to \"no\" will ignore the title part of"
             " the subject\nof incoming email messages.\n"),
-        (RegExpOption, "refwd_re", "(\s*\W?\s*(fw|fwd|re|aw|sv|ang)\W)+",
+        (RegExpOption, "refwd_re", r"(\s*\W?\s*(fw|fwd|re|aw|sv|ang)\W)+",
             "Regular expression matching a single reply or forward\n"
             "prefix prepended by the mailer. This is explicitly\n"
             "stripped from the subject during parsing."),
         (RegExpOption, "origmsg_re",
-            "^[>|\s]*-----\s?Original Message\s?-----$",
+            r"^[>|\s]*-----\s?Original Message\s?-----$",
             "Regular expression matching start of an original message\n"
             "if quoted the in body."),
-        (RegExpOption, "sign_re", "^[>|\s]*-- ?$",
+        (RegExpOption, "sign_re", r"^[>|\s]*-- ?$",
             "Regular expression matching the start of a signature\n"
             "in the message body."),
         (RegExpOption, "eol_re", r"[\r\n]+",

@@ -1572,7 +1572,7 @@ class Class(hyperdb.Class):
         newid = self.db.newid(self.classname)
 
         # validate propvalues
-        num_re = re.compile('^\d+$')
+        num_re = re.compile(r'^\d+$')
         for key, value in propvalues.items():
             if key == self.key:
                 try:
@@ -1800,7 +1800,7 @@ class Class(hyperdb.Class):
         node = self.db.getnode(self.classname, nodeid)
         if self.is_retired(nodeid):
             raise IndexError('Requested item is retired')
-        num_re = re.compile('^\d+$')
+        num_re = re.compile(r'^\d+$')
 
         # make a copy of the values dictionary - we'll modify the contents
         propvalues = propvalues.copy()

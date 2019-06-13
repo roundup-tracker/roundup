@@ -41,7 +41,7 @@ class FormParser:
             self._ = self.gettext = _translator.gettext
             self.ngettext = _translator.ngettext
 
-    def parse(self, create=0, num_re=re.compile('^\d+$')):
+    def parse(self, create=0, num_re=re.compile(r'^\d+$')):
         """ Item properties and their values are edited with html FORM
             variables and their values. You can:
 

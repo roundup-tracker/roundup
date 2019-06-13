@@ -797,7 +797,7 @@ class Interval:
         return Interval((self.sign, self.year, self.month, self.day,
             self.hour, self.minute, self.second), translator=self.translator)
 
-    def set(self, spec, allowdate=1, interval_re=re.compile('''
+    def set(self, spec, allowdate=1, interval_re=re.compile(r'''
             \s*(?P<s>[-+])?         # + or -
             \s*((?P<y>\d+\s*)y)?    # year
             \s*((?P<m>\d+\s*)m)?    # month

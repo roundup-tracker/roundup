@@ -376,7 +376,7 @@ class HTMLDatabase:
             m.append(HTMLClass(self._client, item))
         return m
 
-num_re = re.compile('^-?\d+$')
+num_re = re.compile(r'^-?\d+$')
 
 def lookupIds(db, prop, ids, fail_ok=0, num_re=num_re, do_lookup=True):
     """ "fail_ok" should be specified if we wish to pass through bad values
@@ -932,7 +932,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         # XXX do this
         return []
 
-    def history(self, direction='descending', dre=re.compile('^\d+$'),
+    def history(self, direction='descending', dre=re.compile(r'^\d+$'),
                 limit=None, showall=False ):
         """Create an html view of the journal for the item.
 

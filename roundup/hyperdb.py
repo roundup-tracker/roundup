@@ -1570,7 +1570,7 @@ class HyperdbValueError(ValueError):
     """ Error converting a raw value into a Hyperdb value """
     pass
 
-def convertLinkValue(db, propname, prop, value, idre=re.compile('^\d+$')):
+def convertLinkValue(db, propname, prop, value, idre=re.compile(r'^\d+$')):
     """ Convert the link value (may be id or key value) to an id value. """
     linkcl = db.classes[prop.classname]
     if not idre or not idre.match(value):

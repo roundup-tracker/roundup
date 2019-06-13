@@ -305,7 +305,7 @@ class TALGenerator:
         self.emit("condition", cexpr, program)
 
     def emitRepeat(self, arg):
-        m = re.match("(?s)\s*(%s)\s+(.*)\Z" % NAME_RE, arg)
+        m = re.match(r"(?s)\s*(%s)\s+(.*)\Z" % NAME_RE, arg)
         if not m:
             raise TALError("invalid repeat syntax: " + repr(arg),
                            self.position)
