@@ -7,6 +7,15 @@ python:
   - 3.6
   - 3.7
 
+#I would like to build and test the maint-1.6 and trunk/default
+#but we need different environments for these:
+#  maint-1.6 only python 2, install only psycopg2 version with support for
+#     psycopg1 
+branches:
+#  only:
+#    - default
+#    - maint-1.6
+
 dist:
  - xenial
 
