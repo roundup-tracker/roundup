@@ -94,7 +94,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
             intval=hyperdb.Integer(), boolean=hyperdb.Boolean(),
             link=hyperdb.Link('test'), multilink=hyperdb.Multilink('test'),
             date=hyperdb.Date(), messages=hyperdb.Multilink('msg'),
-            interval=hyperdb.Interval())
+            interval=hyperdb.Interval(), pw=hyperdb.Password() )
 
         # compile the labels re
         classes = '|'.join(self.db.classes.keys())
@@ -1442,7 +1442,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         h = HTMLRequest(cl)
         self.assertEqual([x.id for x in h.batch()],['1', '2', '3'])
 
-    def testEditCSV(self):
+    def testEditCSVKeyword(self):
         form = dict(rows='id,name\n1,newkey')
         cl = self._make_client(form, userid='1', classname='keyword')
         cl._ok_message = []
@@ -1457,6 +1457,46 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         self.assertEqual(cl._ok_message, ['Items edited OK'])
         k = self.db.keyword.getnode('1')
         self.assertEqual(k.name, u2s(u'\xe4\xf6\xfc'))
+
+    def testEditCSVTest(self):
+
+        form = dict(rows='\nid,boolean,date,interval,intval,link,messages,multilink,number,pw,string\n1,true,2019-02-10,2d,4,,,,3.4,pass,foo\n2,no,2017-02-10,1d,-9,1,,1,-2.4,poof,bar\n3,no,2017-02-10,1d,-9,2,,1:2,-2.4,ping,bar')
+        cl = self._make_client(form, userid='1', classname='test')
+        cl._ok_message = []
+        actions.EditCSVAction(cl).handle()
+        self.assertEqual(cl._ok_message, ['Items edited OK'])
+        t = self.db.test.getnode('1')
+        self.assertEqual(t.string, 'foo')
+        self.assertEqual(t['string'], 'foo')
+        self.assertEqual(t.boolean, True)
+        t = self.db.test.getnode('3')
+        self.assertEqual(t.multilink, [ "1", "2" ])
+
+        # now edit existing row and delete row
+        form = dict(rows='\nid,boolean,date,interval,intval,link,messages,multilink,number,pw,string\n1,false,2019-03-10,1d,3,1,,1:2,2.2,pass,bar\n2,,,,,1,,1,,,bar')
+        cl = self._make_client(form, userid='1', classname='test')
+        cl._ok_message = []
+        actions.EditCSVAction(cl).handle()
+        self.assertEqual(cl._ok_message, ['Items edited OK'])
+        t = self.db.test.getnode('1')
+        self.assertEqual(t.string, 'bar')
+        self.assertEqual(t['string'], 'bar')
+        self.assertEqual(t.boolean, False)
+        self.assertEqual(t.multilink, [ "1", "2" ])
+        self.assertEqual(t.link, "1")
+
+        t = self.db.test.getnode('3')
+        self.assertTrue(t.cl.is_retired('3'))
+
+
+    def testEditCSVTestBadRow(self):
+        form = dict(rows='\nid,boolean,date,interval,intval,link,messages,multilink,number,pw,string\n1,2019-02-10,2d,4,,,,3.4,pass,foo')
+        cl = self._make_client(form, userid='1', classname='test')
+        cl._ok_message = []
+        cl._error_message = []
+        actions.EditCSVAction(cl).handle()
+        print(cl._error_message)
+        self.assertEqual(cl._error_message, ['Not enough values on line 3'])
 
     def testEditCSVRestore(self):
         form = dict(rows='id,name\n1,key1\n2,key2')

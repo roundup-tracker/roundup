@@ -296,7 +296,7 @@ class HTMLClassTestCase(TemplatingTestCase) :
             ae(t('http://roundup.net/%c/' % c),
                '<a href="http://roundup.net/%c/" rel="nofollow noopener">http://roundup.net/%c/</a>' % (c, c))
 
-'''
+r'''
 class HTMLPermissions:
     def is_edit_ok(self):
     def is_view_ok(self):

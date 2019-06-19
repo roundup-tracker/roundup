@@ -558,6 +558,9 @@ class EditCSVAction(Action):
                     # nuke the existing value
                     if isinstance(prop, hyperdb.Multilink):
                         d[name] = []
+                    elif isinstance(prop, hyperdb.Password):
+                        # create empty password entry
+                        d[name] = password.Password("", config=self.db.config)
                     else:
                         d[name] = None
 
