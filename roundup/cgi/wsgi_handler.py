@@ -20,6 +20,20 @@ from roundup.anypy.strings import s2b, bs2b
 BaseHTTPRequestHandler = http_.server.BaseHTTPRequestHandler
 DEFAULT_ERROR_MESSAGE = http_.server.DEFAULT_ERROR_MESSAGE
 
+class Headers(object):
+    """ Idea more or less stolen from the 'apache.py' in same directory.
+        Except that wsgi stores http headers in environment.
+    """
+    def __init__(self, environ):
+        self.environ = environ
+
+    def mangle_name(self, name):
+        n = name.replace('-', '_').upper()
+        return 'HTTP_' + n
+
+    def get(self, name, default = None):
+        return self.environ.get(self.mangle_name(name), default)
+    getheader = get
 
 class Writer(object):
     '''Perform a start_response if need be when we start writing.'''
@@ -50,6 +64,7 @@ class RequestDispatcher(object):
 
         request.wfile = Writer(request)
         request.__wfile = None
+        request.headers = Headers(environ)
 
         if environ ['REQUEST_METHOD'] == 'OPTIONS':
             code = 501
