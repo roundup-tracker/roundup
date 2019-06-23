@@ -1828,7 +1828,9 @@ class RestfulInstance(object):
         # check for pretty print
         try:
             pretty_output = not input['@pretty'].value.lower() == "false"
-        except KeyError:
+        # Can also return a TypeError ("not indexable")
+        # In case the FieldStorage could not parse the result
+        except (KeyError, TypeError):
             pretty_output = True
 
         # check for @apiver in query string
@@ -1838,7 +1840,9 @@ class RestfulInstance(object):
         try:
             if not self.api_version:
                 self.api_version = int(input['@apiver'].value)
-        except KeyError:
+        # Can also return a TypeError ("not indexable")
+        # In case the FieldStorage could not parse the result
+        except (KeyError, TypeError):
             self.api_version = None
         except ValueError:
             output = self.error_obj(400, msg%input['@apiver'].value)

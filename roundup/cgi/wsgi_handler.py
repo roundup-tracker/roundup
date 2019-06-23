@@ -28,7 +28,12 @@ class Headers(object):
         self.environ = environ
 
     def mangle_name(self, name):
+        """ Content-Type is handled specially, it doesn't have a HTTP_
+            prefix in cgi.
+        """
         n = name.replace('-', '_').upper()
+        if n == 'CONTENT_TYPE':
+            return n
         return 'HTTP_' + n
 
     def get(self, name, default = None):
