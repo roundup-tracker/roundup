@@ -656,9 +656,10 @@ class RestfulInstance(object):
                 f = value.split(",")
                 if len(f) == 1:
                     f=value.split(":")
+                allprops=class_obj.getprops(protected=True)
                 for i in f:
                     try:
-                        display_props[i] = class_obj.properties[i]
+                        display_props[i] = allprops[i]
                     except KeyError as err:
                         raise UsageError("Failed to find property '%s' "
                                          "for class %s."%(i, class_name))
@@ -821,9 +822,10 @@ class RestfulInstance(object):
                 f=value.split(",")
                 if len(f) == 1:
                     f=value.split(":")
+                allprops=class_obj.getprops(protected=True)
                 for i in f:
                     try:
-                        props[i] = class_obj.properties[i]
+                        props[i] = allprops[i]
                     except KeyError as err:
                         raise UsageError("Failed to find property '%s' for class %s."%(i, class_name))
             elif key == "@protected":

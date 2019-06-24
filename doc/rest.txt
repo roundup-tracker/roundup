@@ -414,8 +414,10 @@ operation on ``https://.../rest/data/issue``.
       warnings about this below. Using this for collections is
       discouraged as it is slow and produces a lot of data.
   * - ``@fields=status,title``
-    - will return the ``status``  and ``title`` fields for the issue displayed
-      according to the @verbose parameter
+    - will return the ``status``  and ``title`` fields for the
+      displayed issues. It is added to the fields returned by the
+      @verbose parameter. Protected properties
+      can be included in the list and will be returned.
 
 In addition collections support the ``@fields`` parameter which is a
 colon or comma separated list of fields to embed in the response. For
@@ -642,7 +644,13 @@ By default all (visible to the current user) attributes/properties are
 returned. You can limit this by using the ``@fields`` query parameter
 similar to how it is used in collections. This way you can only return
 the fields you are interested in reducing network load as well as
-memory and parsing time on the client side.
+memory and parsing time on the client side. By default protected
+properties (read only in the database) are not listed. Th
+is makes it easier to submit the attributes from a
+``@verbose=0`` query using PUT. To include protected properties
+in the output og a GET add the query parameter
+``@protected=true`` to the query and attributes like: actor,
+created, creator and activity will be include in the result.
 
 Link and Multilink properties are displayed as a dictionary with a
 ``link`` and an ``id`` property by default. This is controlled by the
