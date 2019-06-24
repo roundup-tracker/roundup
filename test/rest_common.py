@@ -208,14 +208,17 @@ class TestCase():
         form = cgi.FieldStorage()
         form.list = [
             cgi.MiniFieldStorage('status', 'open'),
-            cgi.MiniFieldStorage('@fields', 'nosy,status'),
+            cgi.MiniFieldStorage('@fields', 'nosy,status,creator'),
             cgi.MiniFieldStorage('@verbose', '2')
         ]
 
         expected={'data':
                    {'@total_size': 3,
-                    'collection': [
-                        {'status': {'id': '9',
+                    'collection': [ {
+                         'creator': {'id': '3',
+                                     'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/user/3',
+                                     'username': 'joe'},
+                        'status': {'id': '9',
                                     'name': 'open',
                                     'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/status/9'},
                          'id': '1',
@@ -229,7 +232,10 @@ class TestCase():
                          ],
                          'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue/1',
                          'title': 'foo1' },
-                        {'status': {
+                        { 'creator': {'id': '3',
+                                      'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/user/3',
+                                      'username': 'joe'},
+                        'status': {
                             'id': '9',
                             'name': 'open',
                             'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/status/9' },
@@ -241,7 +247,10 @@ class TestCase():
                          ],
                          'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue/2',
                          'title': 'foo2'},
-                        {'status': {
+                        {'creator': {'id': '3',
+                                     'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/user/3',
+                                     'username': 'joe'},
+                            'status': {
                             'id': '9',
                             'name': 'open',
                             'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/status/9'},
@@ -354,7 +363,7 @@ class TestCase():
         ## Start testing get_element
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('@fields', 'queries,password'),
+            cgi.MiniFieldStorage('@fields', 'queries,password,creator'),
             cgi.MiniFieldStorage('@verbose', '2')
         ]
         expected = {'data': {
@@ -363,6 +372,9 @@ class TestCase():
             '@etag': '',
             'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/user/3',
             'attributes': {
+                'creator': {'id': '1',
+                            'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/user/1',
+                            'username': 'admin'},
                 'password': '[password hidden scheme PBKDF2]',
                 'queries': [],
                 'username': 'joe'
