@@ -27,6 +27,20 @@ The REST api is reached via the ``/rest/`` endpoint of the tracker
 URL. Partial URLs paths below (not starting with https) will have
 /rest removed for brevity.
 
+Make sure that the ``secret_key`` option is defined in the
+``[web]`` section of your tracker's ``config.ini``. Following the
+`upgrading directions`_ using ``roundup-admin ... updateconfig
+...`` will generate the ``secret_key`` comments and setting. Then
+you can merge this into your ``config.ini``.  If you are
+installing a new tracker with ``roundup-admin ... install`` the
+``secret_key`` value is automatically set to some random value.
+
+If ``secret_key`` is not set, the etag value returned by a REST
+call will be change on every call even though the item has not
+changed.
+
+.. _upgrading directions: upgrading.html
+
 Preventing CSRF Attacks
 =======================
 
