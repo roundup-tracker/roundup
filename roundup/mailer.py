@@ -142,9 +142,10 @@ class Mailer:
 
         All strings are assumed to be UTF-8 encoded.
         """
+        charset = getattr(self.config, 'EMAIL_CHARSET', 'utf-8')
         message = self.get_standard_message()
         self.set_message_attributes(message, to, subject, author)
-        message.set_payload(s2u(content))
+        message.set_payload(s2u(content), charset=charset)
         self.smtp_send(to, message.as_string())
 
     def bounce_message(self, bounced_message, to, error,
