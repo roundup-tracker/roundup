@@ -1619,6 +1619,61 @@ Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 _______________________________________________________________________
 ''')
 
+    def testFollowupUTF8(self):
+        self.doNewIssue()
+
+        self._handle_mail('''Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+From: richard <richard@test.test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: [issue1] Testing... [assignedto=mary; nosy=+john]
+
+This is a followup with UTF-8 characters in it:
+=C3=A4=C3=B6=C3=BC=C3=84=C3=96=C3=9C=C3=9F
+''')
+        l = self.db.issue.get('1', 'nosy')
+        l.sort()
+        self.assertEqual(l, [self.chef_id, self.richard_id, self.mary_id,
+            self.john_id])
+
+        self.compareMessages(self._get_mail(),
+'''FROM: roundup-admin@your.tracker.email.domain.example
+TO: chef@bork.bork.bork, john@test.test, mary@test.test
+Content-Type: text/plain; charset="utf-8"
+Subject: [issue1] Testing...
+To: chef@bork.bork.bork, john@test.test, mary@test.test
+From: richard <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker
+ <issue_tracker@your.tracker.email.domain.example>
+MIME-Version: 1.0
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+X-Roundup-Issue-Status: chatting
+Content-Transfer-Encoding: quoted-printable
+X-Roundup-Issue-Id: 1
+
+
+richard <richard@test.test> added the comment:
+
+This is a followup with UTF-8 characters in it:
+=C3=A4=C3=B6=C3=BC=C3=84=C3=96=C3=9C=C3=9F
+
+----------
+assignedto:  -> mary
+nosy: +john, mary
+status: unread -> chatting
+
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
+_______________________________________________________________________
+''')
+
     def testFollowupNoSubjectChange(self):
         self.db.config.MAILGW_SUBJECT_UPDATES_TITLE = 'no'
         self.doNewIssue()
@@ -4384,6 +4439,34 @@ Stack trace:
         self.assertEqual(self.db.msg.get(msgid, 'files'), ['1'])
         fileid = self.db.msg.get(msgid, 'files')[0]
         self.assertEqual(self.db.file.get(fileid, 'type'), 'message/rfc822')
+
+
+    def testStandardMsg(self):
+        self.instance.config['MAIL_DOMAIN'] = 'example.com'
+        name = u'Accented chars \xe4\xf6\xfc\xc4\xd6\xdc\xdf'
+        name = name.encode('utf-8')
+        adr  = 'someone@example.com'
+        to   = [adr]
+        adr  = (name, adr)
+        mailer = roundupdb.Mailer(self.db.config)
+        mailer.standard_message(to, name, name, author=adr)
+        assert os.path.exists(SENDMAILDEBUG)
+        self.compareMessages(self._get_mail(),
+'''
+FROM: roundup-admin@example.com
+TO: someone@example.com
+From: =?utf-8?b?QWNjZW50ZWQgY2hhcnMgw6TDtsO8w4TDlsOcw58=?=
+ <someone@example.com>
+To: someone@example.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Subject: =?utf-8?b?QWNjZW50ZWQgY2hhcnMgw6TDtsO8w4TDlsOcw58=?=
+X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
+Content-Transfer-Encoding: base64
+
+QWNjZW50ZWQgY2hhcnMgw6TDtsO8w4TDlsOcw58=
+''')
 
 
 @skip_pgp
