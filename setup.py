@@ -145,6 +145,7 @@ def main():
                        'Programming Language :: Python :: 3.4',
                        'Programming Language :: Python :: 3.5',
                        'Programming Language :: Python :: 3.6',
+                       'Programming Language :: Python :: 3.7',
                        'Topic :: Communications :: Email',
                        'Topic :: Office/Business',
                        'Topic :: Software Development :: Bug Tracking',
