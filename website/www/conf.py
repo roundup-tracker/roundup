@@ -195,3 +195,8 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
+
+
+linkcheck_ignore = [r'https?://.*localhost:\d+/',
+                    r'http://www.zope.com/Marks'  # reference in license 
+                   ]
