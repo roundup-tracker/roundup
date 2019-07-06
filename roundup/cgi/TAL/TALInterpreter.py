@@ -21,11 +21,8 @@ import sys
 import getopt
 import re
 
-try:
-    from html import escape
-except ImportError:
-    from cgi import escape
 
+from roundup.anypy.html import html_escape as escape
 from roundup.anypy.strings import StringIO
 #from DocumentTemplate.DT_Util import ustr
 ustr = str

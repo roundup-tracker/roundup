@@ -11,10 +11,7 @@ from roundup.anypy import urllib_
 from roundup.anypy.strings import StringIO
 import roundup.anypy.random_ as random_
 
-try:
-    from html import escape as html_escape  # python 3
-except ImportError:
-    from cgi import escape as html_escape   # python 2 fallback
+from roundup.anypy.html import html_escape
 
 import time
 from datetime import timedelta

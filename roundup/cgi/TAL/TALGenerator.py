@@ -25,10 +25,7 @@ from .TALDefs import I18NError, METALError, TALError
 from .TALDefs import parseSubstitution
 from .TranslationContext import TranslationContext, DEFAULT_DOMAIN
 
-try:
-    from html import escape as html_escape  # python 3
-except ImportError:
-    from cgi import escape as html_escape   # python 2 fallback
+from roundup.anypy.html import html_escape
 
 I18N_REPLACE = 1
 I18N_CONTENT = 2

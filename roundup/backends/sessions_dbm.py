@@ -8,10 +8,7 @@ __docformat__ = 'restructuredtext'
 
 import os, marshal, time
 
-try:
-    from html import escape
-except ImportError:
-    from cgi import escape
+from roundup.anypy.html import html_escape as escape
 
 from roundup import hyperdb
 from roundup.i18n import _

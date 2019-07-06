@@ -283,8 +283,8 @@ class TALESTracebackSupplement:
         if not as_html:
             return '   - Names:\n      %s' % s.replace('\n', '\n      ')
         else:
-            from cgi import escape
-            return '<b>Names:</b><pre>%s</pre>' % (escape(s))
+            from roundup.anypy.html import html_escape
+            return '<b>Names:</b><pre>%s</pre>' % (html_escape(s))
 
 
 class SimpleExpr:

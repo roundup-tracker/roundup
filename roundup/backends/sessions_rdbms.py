@@ -7,10 +7,7 @@ class. It's now also used for One Time Key handling too.
 __docformat__ = 'restructuredtext'
 import os, time, logging
 
-try:
-    from html import escape
-except ImportError:
-    from cgi import escape
+from roundup.anypy.html import html_escape as escape
 
 class BasicDatabase:
     ''' Provide a nice encapsulation of an RDBMS table.

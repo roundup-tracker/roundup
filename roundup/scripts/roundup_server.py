@@ -57,10 +57,7 @@ try:
 except ImportError:
     SSL = None
 
-try:
-    from html import escape as html_escape  # python 3
-except ImportError:
-    from cgi import escape as html_escape   # python 2 fallback
+from roundup.anypy.html import html_escape
 
 # python version check
 from roundup import configuration, version_check

@@ -23,10 +23,7 @@ except ImportError:
     class SysCallError(Exception):
         pass
 
-try:
-    from html import escape as html_escape  # python 3
-except ImportError:
-    from cgi import escape as html_escape   # python 2 fallback
+from roundup.anypy.html import html_escape
 
 from roundup import roundupdb, date, hyperdb, password
 from roundup.cgi import templating, cgitb, TranslationService

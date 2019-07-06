@@ -25,10 +25,7 @@ import calendar
 import textwrap
 import time, hashlib
 
-try:
-    from html import escape as html_escape  # python 3
-except ImportError:
-    from cgi import escape as html_escape   # python 2 fallback
+from roundup.anypy.html import html_escape
 
 from roundup.anypy import urllib_
 from roundup import hyperdb, date, support
