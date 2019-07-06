@@ -19,7 +19,7 @@ Roundup release checklist:
       website/www/conf.py  (also update copyright)
 3a. Update license end date in COPYING.txt
 3b. Update doc/acknowledgements.txt (add section for
-    release, churn contributers etc.).
+    release, churn contributers etc.). (Use hg churn -c -r ####..####)
 4.  Update documentation
       doc/announcement.txt
       doc/upgrading.txt
@@ -27,12 +27,14 @@ Roundup release checklist:
     _tmp/linkcheck/output.txt
        fix broken references in docs
        verify redirects are correct
-5.  Update setup.py info is needed (contacts, classifiers, etc.), and
+5.  Update setup.py info if needed (contacts, classifiers, etc.), and
     check that metadata is valid and long descriptions is proper reST:
       python setup.py check --restructuredtext --metadata --strict
 6.  Clean out all *.orig, *.rej, .#* files from the source.
 7.  Remove previous build files
       python setup.py clean --all
+    Rebuild
+      python setup.py build  (sdist generation will fail if this isn't done)
 8.  Rebuild documentation in "share/doc/roundup/html"
       python setup.py build_doc
 9.  python setup.py sdist --manifest-only
@@ -55,7 +57,7 @@ Roundup release checklist:
       a) hg tag 1.6.0  # use right version. Should create/commit a changeset
       b) hg push       # update main repo
       c) hg sum        # verify that the tag shows up
-14. Upload source distributive to PyPI - requires you sign up for a
+14. Upload source distribution to PyPI - requires you sign up for a
     pypi account and be added as a maintainer to roundup. Ask existing
     maintainer for access.
       python setup.py sdist upload --repository pypi --sign
@@ -82,6 +84,7 @@ So, those commands in a nice, cut'n'pasteable form::
  find . -name '*.rej' -exec rm {} \;
  find . -name '.#*' -exec rm {} \;
  python setup.py clean --all
+ python setup.py build
  python setup.py check --restructuredtext --metadata --strict
  python setup.py build_doc
  python setup.py sdist --manifest-only
