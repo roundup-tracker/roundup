@@ -4441,6 +4441,7 @@ Stack trace:
         self.assertEqual(self.db.file.get(fileid, 'type'), 'message/rfc822')
 
 
+    @pytest.mark.xfail
     def testStandardMsg(self):
         self.instance.config['MAIL_DOMAIN'] = 'example.com'
         name = u'Accented chars \xe4\xf6\xfc\xc4\xd6\xdc\xdf'
