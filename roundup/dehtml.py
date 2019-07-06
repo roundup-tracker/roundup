@@ -29,10 +29,12 @@ class dehtml:
                 # Python 3+.
                 from html.parser import HTMLParser
                 from html.entities import name2codepoint
+                pyver=3
             except ImportError:
                 # Python 2.
                 from HTMLParser import HTMLParser
                 from htmlentitydefs import name2codepoint
+                pyver=2
 
             class DumbHTMLParser(HTMLParser):
                 # class attribute
@@ -75,10 +77,13 @@ class dehtml:
                         self.text= self.text + c
                     except UnicodeEncodeError:
                         # print a space as a placeholder
-                        pass
+                        self.text= self.text + ' '
 
             def html2text(html):
-                parser = DumbHTMLParser()
+                if pyver == 3:
+                    parser = DumbHTMLParser(convert_charrefs=True)
+                else:
+                    parser = DumbHTMLParser()
                 parser.feed(html)
                 parser.close()
                 return parser.text
@@ -130,6 +135,9 @@ known to require this.</p>
 distribution (at <a class="reference external" href="http://www.activestate.com/Products/ActivePython/">http://www.activestate.com/Products/ActivePython/</a>), or you&#8217;ll
 have to install the win32all package separately (get it from
 <a class="reference external" href="http://starship.python.net/crew/mhammond/win32/">http://starship.python.net/crew/mhammond/win32/</a>).</p>
+<script>
+  &lt; HELP &GT;
+</script>
 </div>
 </body>
 '''
