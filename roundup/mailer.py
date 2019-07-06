@@ -35,7 +35,7 @@ def nice_sender_header(name, address, charset):
     if not name:
         return address
     try:
-        encname = b2s(name.encode('ASCII'))
+        encname = b2s(name).encode('ASCII')
     except UnicodeEncodeError:
         # use Header to encode correctly.
         encname = Header(name, charset=charset).encode()
