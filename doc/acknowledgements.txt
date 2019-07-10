@@ -14,6 +14,23 @@ ideas and everything else that helped!
 1.6
 ---
 
+1.6.1
+~~~~~
+Maintainer: Ralf Schlatterbeck, John Rouillard
+
+Release Manager: John Rouillard
+
+Developer activity by changesets::
+
+  rouilj at ieee.org            19 **********************************************
+  bernhard at intevation.de      1 **
+  jsm at polyomino.org.uk        1 **
+
+
+Joseph Myers
+Cédric Krier
+hannob/JulienPalard
+
 1.6.0
 ~~~~~
 Maintainer: Ralf Schlatterbeck, John Rouillard
