@@ -10,7 +10,8 @@ Roundup release checklist:
 1.  Regenerate locale/roundup.pot.  See "Extracting Translatable
     Messages" in doc/developers.txt.  This is best done some time in
     advance of the release to allow for translators to update their
-    translations.
+    translations. Merge into .po files by running 'make *.po'
+    in the locale directory.
 2.  Run unit tests! They should pass successfully. "./run_tests.py"
 3.  Update version
       CHANGES.txt
@@ -37,6 +38,7 @@ Roundup release checklist:
       python setup.py build  (sdist generation will fail if this isn't done)
 8.  Rebuild documentation in "share/doc/roundup/html"
       python setup.py build_doc
+8a. Rebuild .mo translation files in distribution - cd locale; make
 9.  python setup.py sdist --manifest-only
 10. Check the MANIFEST to make sure that any new files are included.
       (use hg status --rev <last release or tag>:tip to list changed
@@ -87,6 +89,9 @@ So, those commands in a nice, cut'n'pasteable form::
  python setup.py build
  python setup.py check --restructuredtext --metadata --strict
  python setup.py build_doc
+ cd locale
+ make
+ cd ..
  python setup.py sdist --manifest-only
  python setup.py sdist --quiet
  python setup.py bdist_rpm
