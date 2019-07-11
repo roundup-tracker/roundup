@@ -458,17 +458,17 @@ class TestCase():
             priority=self.db.priority.lookup('normal')
         )
         issue_open_norm = self.db.issue.create(
-            title='foo2',
+            title='foo2 normal',
             status=self.db.status.lookup('open'),
             priority=self.db.priority.lookup('normal')
         )
         issue_closed_norm = self.db.issue.create(
-            title='foo3',
+            title='foo3 closed normal',
             status=self.db.status.lookup('closed'),
             priority=self.db.priority.lookup('normal')
         )
         issue_closed_crit = self.db.issue.create(
-            title='foo4',
+            title='foo4 closed',
             status=self.db.status.lookup('closed'),
             priority=self.db.priority.lookup('critical')
         )
@@ -528,6 +528,98 @@ class TestCase():
                          results['data']['collection'])
         self.assertNotIn(get_obj(base_path, issue_open_norm),
                          results['data']['collection'])
+
+        # Retrieve all issue status=closed and priority=normal,critical
+        # using duplicate priority key's.
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('status', 'closed'),
+            cgi.MiniFieldStorage('priority', 'normal'),
+            cgi.MiniFieldStorage('priority', 'critical')
+        ]
+        results = self.server.get_collection('issue', form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertIn(get_obj(base_path, issue_closed_crit),
+                      results['data']['collection'])
+        self.assertIn(get_obj(base_path, issue_closed_norm),
+                      results['data']['collection'])
+        self.assertNotIn(get_obj(base_path, issue_open_crit),
+                         results['data']['collection'])
+        self.assertNotIn(get_obj(base_path, issue_open_norm),
+                         results['data']['collection'])
+
+        # Retrieve all issues with title containing
+        # closed, normal and 3 using duplicate title filterkeys
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('title', 'closed'),
+            cgi.MiniFieldStorage('title', 'normal'),
+            cgi.MiniFieldStorage('title', '3')
+        ]
+        results = self.server.get_collection('issue', form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertNotIn(get_obj(base_path, issue_closed_crit),
+                      results['data']['collection'])
+        self.assertIn(get_obj(base_path, issue_closed_norm),
+                      results['data']['collection'])
+        self.assertNotIn(get_obj(base_path, issue_open_crit),
+                         results['data']['collection'])
+        self.assertNotIn(get_obj(base_path, issue_open_norm),
+                         results['data']['collection'])
+        self.assertEqual(len(results['data']['collection']), 1)
+
+        # Retrieve all issues (no hits) with title containing
+        # closed, normal and foo3 in this order using title filter
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('title', 'closed normal foo3')
+        ]
+        results = self.server.get_collection('issue', form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertNotIn(get_obj(base_path, issue_closed_crit),
+                      results['data']['collection'])
+        self.assertNotIn(get_obj(base_path, issue_closed_norm),
+                      results['data']['collection'])
+        self.assertNotIn(get_obj(base_path, issue_open_crit),
+                         results['data']['collection'])
+        self.assertNotIn(get_obj(base_path, issue_open_norm),
+                         results['data']['collection'])
+        self.assertEqual(len(results['data']['collection']), 0)
+
+        # Retrieve all issues with title containing
+        # foo3, closed and normal in this order using title filter
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('title', 'foo3 closed normal')
+        ]
+        results = self.server.get_collection('issue', form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertNotIn(get_obj(base_path, issue_closed_crit),
+                      results['data']['collection'])
+        self.assertIn(get_obj(base_path, issue_closed_norm),
+                      results['data']['collection'])
+        self.assertNotIn(get_obj(base_path, issue_open_crit),
+                         results['data']['collection'])
+        self.assertNotIn(get_obj(base_path, issue_open_norm),
+                         results['data']['collection'])
+        self.assertEqual(len(results['data']['collection']), 1)
+
+        # Retrieve all issues with word closed in title
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('title', 'closed'),
+        ]
+        results = self.server.get_collection('issue', form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertIn(get_obj(base_path, issue_closed_crit),
+                      results['data']['collection'])
+        self.assertIn(get_obj(base_path, issue_closed_norm),
+                      results['data']['collection'])
+        self.assertNotIn(get_obj(base_path, issue_open_crit),
+                         results['data']['collection'])
+        self.assertNotIn(get_obj(base_path, issue_open_norm),
+                         results['data']['collection'])
+        self.assertEqual(len(results['data']['collection']), 2)
 
     def testPagination(self):
         """

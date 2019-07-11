@@ -681,7 +681,10 @@ class RestfulInstance(object):
                 ):
                     continue
                 if isinstance (prop, (hyperdb.Link, hyperdb.Multilink)):
-                    vals = []
+                    if key in filter_props:
+                        vals = filter_props[key]
+                    else:
+                        vals = []
                     linkcls = self.db.getclass (prop.classname)
                     for p in value.split(","):
                         if prop.try_id_parsing and p.isdigit():
@@ -690,7 +693,13 @@ class RestfulInstance(object):
                             vals.append(linkcls.lookup(p))
                     filter_props[key] = vals
                 else:
-                    filter_props[key] = value
+                    if key in filter_props:
+                        if isinstance(filter_props[key], list):
+                            filter_props[key].append(value)
+                        else:
+                            filter_props[key]=[filter_props[key],value]
+                    else:
+                        filter_props[key] = value
         if not filter_props:
             obj_list = class_obj.list()
         else:
