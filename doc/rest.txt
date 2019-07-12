@@ -1211,6 +1211,115 @@ returns some data about the class::
 Adding other endpoints (e.g. to allow an OPTIONS query against
 ``/data/issue/@schema``) is left as an exercise for the reader.
 
+Controlling Access to Backend Data
+==================================
+
+Roundup's schema is the primary access control mechanism. Roles and
+Permissions provide the ability to carefully control what data can be
+seen.
+
+However the templating system can access the hyperdb directly which
+allows filtering to happen with admin privs escaping the standard
+permissions scheme. For example access to a user's roles should be
+limited to the user (read only) and an admin.  If you have customized
+your schema to implement `Restricting the list of
+users that are assignable to a task <customizing.html#restricting-the-list-of-users-that-are-assignable-to-a-task>`__ so that only users with a
+Developer role are allowed to be assigned to an issue, a rest end
+point must be added to provide a view that exposes users with this
+permission.
+
+Using the normal ``/data/user?roles=Developer`` will return all the
+users in the system unless you are an admin user because most users
+can't see the roles. Building on the `Adding new rest endpoints`_
+section this code adds a new endpoint `/data/@permission/Developer`
+that returns a list of users with the developer role::
+
+    from roundup.rest import Routing, RestfulInstance
+    from cgi import MiniFieldStorage
+
+    class RestfulInstance(object):
+
+	@Routing.route("/data/@permission/Developer")
+	def get_role_Developer(self, input):
+	    '''An endpoint to return a list of users with Developer
+	       role who can be assigned to an issue.
+
+	       It ignores attempt to search by any property except
+	       username and realname. It also ignores the whole @fields
+	       specification if it specifies a property the user
+	       can't view. Other @ query params (e.g. @page... and
+	       @verbose) are supported.
+
+	       It assumes admin access rights so that the roles property
+	       of the user can be searched. This is needed if the roles
+	       property is not searchable/viewable by normal users. A user
+	       who can search roles can identify users with the admin
+	       role. So it does not respond the same as a rest/data/users
+	       search by a non-admin user.
+	    '''
+	    # get real user id
+	    realuid=self.db.getuid()
+
+	    def allowed_field(fs):
+		if fs.name in ['username', 'realname' ]:
+		    # only allow search matches for these fields
+		    return True
+		elif fs.name in [ '@fields' ]:
+		    for prop in fs.value.split(','):
+			# if any property is unviewable to user, remove
+			# @field entry. If they can't see it for the admin
+			# user, don't let them see it for any user.
+			if not self.db.security.hasPermission(
+				'View', realuid, 'user', property=prop,
+				itemid='1'):
+			    return False
+		    return True
+		elif fs.name.startswith("@"):
+		    # allow @page..., @verbose etc. 
+		    return True
+
+		# deny all other url parmeters
+		return False
+
+	    # Cleanup input.list to prevent user from probing roles
+	    # or viewing things the user should not be able to view.
+	    input.list[:] = [ fs for fs in input.list 
+			      if allowed_field(fs) ]
+
+	    # Add the role filter required to implement the permission
+	    # search
+	    input.list.append(MiniFieldStorage("roles", "Developer"))
+
+	    # change user to acquire permission to search roles
+	    self.db.setCurrentUser('admin') 
+
+	    # Once we have cleaned up the request, pass it to
+	    # get_collection as though /rest/data/users?... has been called
+	    # to get @verbose and other args supported.
+	    return self.get_collection('user', input)
+
+Calling this with: `curl 'http://example.com/demo/rest/data/@permission/Developer?@fields=realname&roles=Users&@verbose=2'`
+produces output similar to::
+
+    {
+	"data": {
+	    "collection": [
+		{
+		    "username": "agent",
+		    "link": http://example.com/demo/rest/data/user/4",
+                    "realname": "James Bond",
+		    "id": "4"
+		}
+	    ],
+	    "@total_size": 1
+	}
+    }
+
+assuming user 4 is the only user with the Developer role. Note that
+the url passes the `roles=User` filter option which is silently
+ignored.
+
+
 Creating Custom Rate Limits
 ===========================
 
