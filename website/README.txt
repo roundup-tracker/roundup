@@ -106,6 +106,7 @@ the whole procedure looks like so:
     . ${project_home}/docbuilder/bin/activate
     # cd to website source and build it
     cd ${project_home}/src/roundup/website/www
+    hg up <release tag>  # make sure you are using the released code
     make clean
     make html
     # you can check which files updated (the date will change with many files)
