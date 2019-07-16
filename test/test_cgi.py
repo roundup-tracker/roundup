@@ -958,7 +958,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         # roundup will report a missing token.
         cl.db.config['WEB_CSRF_ENFORCE_TOKEN'] = 'required'
         cl.inner_main()
-        match_at=out[0].find('<p>Csrf token is missing.</p>')
+        match_at=out[0].find("<p>We can't validate your session (csrf failure). Re-enter any unsaved data and try again.</p>")
         print("result of subtest 6a:", out[0], match_at)
         self.assertEqual(match_at, 33)
         del(out[0])
@@ -971,7 +971,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         cl.form = db_test_base.makeForm(form2)
 
         cl.inner_main()
-        match_at=out[0].find('Invalid csrf token found: booogus')
+        match_at=out[0].find("We can't validate your session (csrf failure). Re-enter any unsaved data and try again.")
         print("result of subtest 7:", out[0])
         self.assertEqual(match_at, 36)
         del(out[0])
@@ -999,7 +999,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         # try a replay attack
         cl.inner_main()
         # This should fail as token was wiped by last run.
-        match_at=out[0].find('Invalid csrf token found: %s'%nonce)
+        match_at=out[0].find("We can't validate your session (csrf failure). Re-enter any unsaved data and try again.")
         print("replay of csrf after post use", out[0])
         print("result of subtest 10:", out[0])
         self.assertEqual(match_at, 36)
@@ -1030,7 +1030,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         cl.env.update({'REQUEST_METHOD': 'POST'})
         print(cl.env)
         cl.inner_main()
-        match_at=out[0].find('Invalid csrf token found: %s'%nonce)
+        match_at=out[0].find("We can't validate your session (csrf failure). Re-enter any unsaved data and try again.")
         print("post failure after get", out[0])
         print("result of subtest 13:", out[0])
         self.assertEqual(match_at, 36)

@@ -1252,7 +1252,7 @@ class Client:
         if key is None: # we do not have an @csrf token
             if enforce == 'required':
                 logger.error(self._("Required csrf field missing for user%s"), current_user)
-                raise UsageError(self._("Csrf token is missing."))
+                raise UsageError(self._("We can't validate your session (csrf failure). Re-enter any unsaved data and try again."))
             elif enforce == 'logfailure':
                     # FIXME include url
                     logger.warning(self._("csrf field not supplied by user%s"), current_user)
