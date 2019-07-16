@@ -1304,7 +1304,7 @@ class Client:
                 logger.error(
                     self._("Csrf mismatch user: current user %s != stored user %s, current session, stored session: %s,%s for key %s."),
                     current_user, nonce_user, current_session, nonce_session, key)
-                raise UsageError(self._("Invalid csrf token found: %s")%key)
+                raise UsageError(self._("We can't validate your session (csrf failure). Re-enter any unsaved data and try again."))
             elif enforce == 'logfailure':
                 logger.warning(
                     self._("logged only: Csrf mismatch user: current user %s != stored user %s, current session, stored session: %s,%s for key %s."),
@@ -1314,7 +1314,7 @@ class Client:
                 logger.error(
                     self._("Csrf mismatch user: current session %s != stored session %s, current user/stored user is: %s for key %s."),
                     current_session, nonce_session, current_user, key)
-                raise UsageError(self._("Invalid csrf session found: %s")%key)
+                raise UsageError(self._("We can't validate your session (csrf failure). Re-enter any unsaved data and try again."))
             elif enforce == 'logfailure':
                     logger.warning(
                         self._("logged only: Csrf mismatch user: current session %s != stored session %s, current user/stored user is: %s for key %s."),
