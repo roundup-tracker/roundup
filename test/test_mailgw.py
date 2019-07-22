@@ -4445,12 +4445,17 @@ Stack trace:
     def testStandardMsg(self):
         self.instance.config['MAIL_DOMAIN'] = 'example.com'
         name = u'Accented chars \xe4\xf6\xfc\xc4\xd6\xdc\xdf'
-        name = name.encode('utf-8')
+        # Python2 wants an UTF-8 string in first component of adr and content
+        # while Python3 wants a String
+        # It *may* be a bug that the subject can be Unicode in python2.
+        # But it doesn't hurt if the encoding happens to be utf-8
+        if sys.version_info[0] <= 2:
+            name = name.encode('utf-8')
         adr  = 'someone@example.com'
         to   = [adr]
         adr  = (name, adr)
         mailer = roundupdb.Mailer(self.db.config)
-        mailer.standard_message(to, name, name, author=adr)
+        mailer.standard_message(to, subject=name, content=name, author=adr)
         assert os.path.exists(SENDMAILDEBUG)
         self.compareMessages(self._get_mail(),
 '''
