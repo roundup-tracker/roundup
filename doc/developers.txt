@@ -35,26 +35,43 @@ of a current checkout.
 Issue Tracker
 -------------
 
-The tracker resides on psf.upfronthosting.co.za. 
-(2012-07-04) 2048 c4:ad:63:92:1b:c0:4a:35:c8:c5:3e:96:51:c0:88:67 (RSA)
+The tracker resides on bugs.ams1.psf.io (188.166.48.69). You can also
+ssh to issues.roundup-tracker.org. They have the same fingerprint:
+
+    ED25519 key fingerprint is f1:f7:3d:bf:3b:01:8d:e1:4e:30:b3:0f:6e:98:b8:9b.
 
 The roundup installation belongs to the user roundup. 
-In ~roundup, all trackers are stored and the roundup code itself. 
-roundup is started through /etc/init.d/roundup;
-other parts of the installation are started through
-/etc/init.d/{postgresql-8-1,spambayes,postfix}.
+The setup uses virtualenv. Use the python version:
 
-The machine is operated by Upfronthosting in South Africa. The meta
-tracker is http://psf.upfronthosting.co.za/roundup/meta/
-In this tracker, Upfronthosting people are the users izak and roche.
+  /srv/roundup/env/bin/python2.7
+
+to get a python with roundup on the PYTHONPATH.
 
 The Roundup tracker https://issues.roundup-tracker.org/ is in
-~roundup/trackers/roundup
+/srv/roundup/trackers/roundup/ with the database set to
+/srv/roundup/data/roundup/. Note that postgres is used for the
+backend, so the database directory above is used for msgs and files.
+
+Source is in: /srv/roundup/src/
+
+Roundup is run using gunicorn and wsgi.
+
+You have 'sudo -u roundup' access if you need to run things as the
+roundup user.
 
 The configuration is in the "website/issues" section of Roundup's
 Mercurical SCM repository and copied manually to the live tracker.
 
-A checkout of the roundup sources is in ~roundup/src/roundup-src.
+To get access to the host, submit a pull request for:
+
+    https://github.com/python/psf-salt
+
+by forking the repo, make a change similar to:
+
+    https://github.com/rouilj/psf-salt/commit/2aa55d0fc5a343f45f5507437d3fba077cbaf852
+
+and submit it as a pull request. Contact ewdurbin via #roundup IRC or by
+adding an issue to the master psf-salt repo.
 
 
 Small Changes
