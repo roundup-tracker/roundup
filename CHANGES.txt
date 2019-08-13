@@ -152,6 +152,12 @@ Fixed:
   install.
 - issue2551008: fix incorrect encoding handling in mailgw.py
   (Ezio Melotti, John Rouillard)
+- issue2551053: the routing dictionary in rest.py used compiled regular
+  expressions as dictionary keys. This worked most of the time because
+  the regex lib uses a cache but resulted in duplicate keys in the
+  dictionary in some cases where a single key should have been used.
+  Thanks to Robert Klonner for discovering the problem, debugging the
+  root cause and providing a first proposed fix.
 
 2018-07-13 1.6.0
 

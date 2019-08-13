@@ -291,18 +291,26 @@ class Routing(object):
         # and extract the variable names to a list [(class), (id)]
         func_vars = cls.__var_to_regex.findall(rule)
         rule = re.compile(cls.__var_to_regex.sub(cls.url_to_regex, rule))
+        # Save pattern to represent regex in route_map dictionary
+        # The entries consist of a 2-tuple of the (rule, dictionary)
+        # where rule is the compiled regex and dictionary contains the
+        # func_obj dict indexed by method.
+        pattern = rule.pattern
 
         # then we decorate it:
-        # route_map[regex][method] = func
+        # route_map[pattern] = (rule, func_dict)
+        # where func_dict is a dictionary of func_obj (see below)
+        # indexed by method name
         def decorator(func):
-            rule_route = cls.__route_map.get(rule, {})
+            rule_route = cls.__route_map.get(pattern, (rule, {}))
+            rule_dict  = rule_route [1]
             func_obj = {
                 'func': func,
                 'vars': func_vars
             }
             for method in methods:
-                rule_route[method] = func_obj
-            cls.__route_map[rule] = rule_route
+                rule_dict[method] = func_obj
+            cls.__route_map[pattern] = rule_route
             return func
         return decorator
 
@@ -318,11 +326,12 @@ class Routing(object):
 
         # find the rule match the path
         # then get handler match the method
-        for path_regex in cls.__route_map:
+        for path_regex, funcs in cls.__route_map.values():
+            # use compiled regex to find rule
             match_obj = path_regex.match(path)
             if match_obj:
                 try:
-                    func_obj = cls.__route_map[path_regex][method]
+                    func_obj = funcs[method]
                 except KeyError:
                     raise Reject('Method %s not allowed' % method)
 
