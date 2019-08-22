@@ -24,7 +24,8 @@ before_install:
   - cd $TRAVIS_BUILD_DIR
 
 install:
-  - pip install MySQL-python psycopg2 pytz pyme whoosh
+  - pip install MySQL-python psycopg2 pytz whoosh
+  - pip install git+https://bitbucket.org/malb/pyme.git
   - pip install pytest-cov codecov
 
 before_script:
