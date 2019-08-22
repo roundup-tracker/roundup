@@ -25,7 +25,11 @@ before_install:
 
 install:
   - pip install MySQL-python psycopg2 pytz whoosh
-  - pip install git+https://bitbucket.org/malb/pyme.git
+  # errors during build with:
+  # make: *** No rule to make target '/gpgme.h', needed by 'gpgme.h'.  Stop.
+  # ... gcc: error: gpgme_wrap.c: No such file or directory
+  # so comment out for now and test will be skipped
+  #- pip install git+https://bitbucket.org/malb/pyme.git
   - pip install pytest-cov codecov
 
 before_script:
