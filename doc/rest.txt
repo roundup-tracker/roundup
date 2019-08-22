@@ -118,7 +118,7 @@ Also if the user has exceeded the rate limit, this header is added:
 General Guidelines
 ==================
 
-Performing a ``GET`` on an item or property of an item will rethrn an
+Performing a ``GET`` on an item or property of an item will return an
 ETag header or an @etag property. This needs to be submitted with
 ``DELETE``, ``PUT`` and ``PATCH`` operations on the item using an
 ``If-Match`` header or an ``"@etag`` property in the data payload if
@@ -221,7 +221,7 @@ Special Endpoints
 =================
 
 There are a few special endpoints that provide some additional data.
-Tracker admiinstrators can add new endpoints. See
+Tracker administrators can add new endpoints. See
 "Programming the REST API"_ below.
 
 /summary
