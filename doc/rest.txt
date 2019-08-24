@@ -118,7 +118,7 @@ Also if the user has exceeded the rate limit, this header is added:
 General Guidelines
 ==================
 
-Performing a ``GET`` on an item or property of an item will rethrn an
+Performing a ``GET`` on an item or property of an item will return an
 ETag header or an @etag property. This needs to be submitted with
 ``DELETE``, ``PUT`` and ``PATCH`` operations on the item using an
 ``If-Match`` header or an ``"@etag`` property in the data payload if
@@ -142,7 +142,7 @@ well as a ``collections`` list of objects::
   { "data": {
       "meta data field1": "value",
       "meta data field2": "value",
-      "collecton": [
+      "collection": [
             { "link": "url to item",
               "id": "internal identifier for item" },
 	    { "link": "url to second item",
@@ -159,7 +159,7 @@ well as a ``collections`` list of objects::
     }
   }
 
-available meta data is described in the documention for the
+available meta data is described in the documentation for the
 collections endpoint. 
 
 The ``link`` fields implement HATEOS by supplying a url for the
@@ -189,7 +189,7 @@ the issue. Example::
   { "data": {
       "meta data field1": "value",
       "type": "type of item, issue, user ..."
-      "link": "link to retreive item",
+      "link": "link to retrieve item",
       "attributes": {
           "title": "title of issue",
           "nosy": [ 
@@ -204,13 +204,13 @@ the issue. Example::
 Using a property endpoint (e.g. title or nosy list for an issue) the
 ``data`` wrapper has a ``data`` subfield that represents the value of
 the property. This ``data`` subfield may be a simple string (all types
-except mutlilink) or a list of strings (multilink
+except multilink) or a list of strings (multilink
 properties). Example::
 
   { "data": {
         "type": "description of class",
         "@etag": "\"f15e6942f00a41960de45f9413684591\"",
-        "link": "link to retreive property",
+        "link": "link to retrieve property",
         "id": "id for object with this property",
         "data": "value of property"
     }
@@ -221,7 +221,7 @@ Special Endpoints
 =================
 
 There are a few special endpoints that provide some additional data.
-Tracker admiinstrators can add new endpoints. See
+Tracker administrators can add new endpoints. See
 "Programming the REST API"_ below.
 
 /summary
@@ -338,7 +338,7 @@ class not issue class) will return matches for ``foo``, ``foobar``,
 ``foo taz`` etc.
 
 In all cases the field ``@total_size`` is reported which is the total
-number of items available if you were to retreive all of them.
+number of items available if you were to retrieve all of them.
 
 Other data types: Date, Interval Integer, Number need examples and may
 need work to allow range searches. Full text search (e.g. over the
@@ -364,7 +364,7 @@ leading `@` to make the parameters distinguishable from field names.)
     - (which defaults to 1 if not given) specifies which page number
       of ``@page_size`` items is displayed.
 
-Also when pagenation is enabled the returned data include pagenation
+Also when pagination is enabled the returned data include pagination
 links along side the collection data. This looks like::
 
   { "data":
@@ -415,7 +415,7 @@ operation on ``https://.../rest/data/issue``.
     - Explanation
   * - ``@verbose=0``
     - each item in the collection has its "id" property displayed
-      and a link with the URL to retreive the item.
+      and a link with the URL to retrieve the item.
   * - ``@verbose=1``
     - for collections this output is the same as ``@verbose=0``. This
       is the default.
@@ -484,7 +484,7 @@ database. It is a construct of the rest interface. This means that you
 can not set ``@fields=link`` and get the link property included in the
 output.
 
-Also using ``@fields=@etag`` will not work to retreive the etag for
+Also using ``@fields=@etag`` will not work to retrieve the etag for
 items in the collection.
 
 See the `Searches and selection`_ section for the use cases supported
@@ -662,7 +662,7 @@ memory and parsing time on the client side. By default protected
 properties (read only in the database) are not listed. Th
 is makes it easier to submit the attributes from a
 ``@verbose=0`` query using PUT. To include protected properties
-in the output og a GET add the query parameter
+in the output of a GET add the query parameter
 ``@protected=true`` to the query and attributes like: actor,
 created, creator and activity will be include in the result.
 
@@ -961,7 +961,7 @@ The ``PATCH`` method can be applied to properties, e.g.,
 ``@op=<method>`` where ``<method>`` is one of ``add``, ``replace``,
 ``remove``. If no operator is specified, the default is ``replace``
 which is the same as performing a PUT on the field url. ``add`` and
-``remove`` allow ading and removing values from MultiLink
+``remove`` allow adding and removing values from MultiLink
 properties. This is easier than having to rewrite the entire value for
 the field using the ``replace`` operator or doing a PUT to the field.
 On success the returned value is the same as the respective ``GET``
@@ -980,7 +980,7 @@ Tunneling Methods via POST
 
 If you are working through a proxy and unable to use http method like
 PUT, PATCH or DELETE you can use POST to perform the action. To tunnel
-an action throught POST, send the ``X-HTTP-METHOD-OVERRIDE`` header
+an action through POST, send the ``X-HTTP-METHOD-OVERRIDE`` header
 with a value of DELETE or other capitalized HTTP verb. The body of the
 POST should be what you would send if you were using the method
 without tunneling.
