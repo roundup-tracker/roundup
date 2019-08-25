@@ -43,9 +43,9 @@ install:
 
 before_script:
   # set up mysql database
-  - ls -l /var/run/mysqld/mysqld.sock
   - sudo service mysql restart
   - sleep 60
+  - ls -l /var/run/mysqld/mysqld.sock
   - mysql -u root -e 'GRANT ALL ON rounduptest.* TO rounduptest@localhost IDENTIFIED BY "rounduptest";'
 
   # set up postgresql database
