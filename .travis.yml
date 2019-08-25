@@ -49,6 +49,7 @@ before_script:
   - mysql -u root -e 'GRANT ALL ON rounduptest.* TO rounduptest@localhost IDENTIFIED BY "rounduptest";'
 
   # set up postgresql database
+  - sudo service postgresql restart; sleep 30
   - psql -c "CREATE ROLE rounduptest WITH CREATEDB LOGIN PASSWORD 'rounduptest';" -U postgres
 
   # HACK: workaround mysql bug: http://bugs.mysql.com/bug.php?id=74901
