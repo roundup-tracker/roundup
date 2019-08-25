@@ -20,10 +20,12 @@ addons:
       - swig
 
 before_install:
+  - pip install sphinx==1.8.5
+  - XAPIAN_VER=$(dpkg -l libxapian-dev | tail -n 1 | awk '{print $3}' | cut -d '-' -f 1)
   - cd /tmp
-  - curl -s -O https://oligarchy.co.uk/xapian/1.2.16/xapian-bindings-1.2.16.tar.xz
-  - tar -Jxvf xapian-bindings-1.2.16.tar.xz
-  - cd xapian-bindings-1.2.16/
+  - curl -s -O https://oligarchy.co.uk/xapian/$XAPIAN_VER/xapian-bindings-1.2.16.tar.xz
+  - tar -Jxvf xapian-bindings-$XAPIAN_VER.tar.xz
+  - cd xapian-bindings-$XAPIAN_VER/
   - ./configure --prefix=$VIRTUAL_ENV --with-python && make && make install
 
   # change back to the checked out repository directory
