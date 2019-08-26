@@ -685,6 +685,8 @@ class RestfulInstance(object):
                         ss = '+'
                         pn = p
                     # Only include properties where we have search permission
+                    # Note that hasSearchPermission already returns 0 for
+                    # non-existing properties.
                     if self.db.security.hasSearchPermission(
                         uid, class_name, pn
                     ):
@@ -694,24 +696,34 @@ class RestfulInstance(object):
                 # like @apiver
                 pass
             else: # serve the filter purpose
+                p = key.split('.', 1)[0]
                 try: 
-                    prop = class_obj.getprops()[key]
+                    prop = class_obj.getprops()[p]
                 except KeyError:
                     raise UsageError("Field %s is not valid for %s class."%(
-                        key, class_name))
+                        p, class_name))
                 # We drop properties without search permission silently
                 # This reflects the current behavior of other roundup
                 # interfaces
+                # Note that hasSearchPermission already returns 0 for
+                # non-existing properties.
                 if not self.db.security.hasSearchPermission(
                     uid, class_name, key
                 ):
                     continue
+
+                linkcls = class_obj
+                for p in key.split('.'):
+                    prop = linkcls.getprops(protected = True)[p]
+                    linkcls = getattr (prop, 'classname', None)
+                    if linkcls:
+                        linkcls = self.db.getclass(linkcls)
+
                 if isinstance (prop, (hyperdb.Link, hyperdb.Multilink)):
                     if key in filter_props:
                         vals = filter_props[key]
                     else:
                         vals = []
-                    linkcls = self.db.getclass (prop.classname)
                     for p in value.split(","):
                         if prop.try_id_parsing and p.isdigit():
                             vals.append(p)

@@ -203,6 +203,44 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['data']['data'], 'joe')
 
+    def testGetTransitive(self):
+        """
+        Retrieve all issues with an 'o' in status
+        sort by status.name (not order)
+        """
+        base_path = self.db.config['TRACKER_WEB'] + 'rest/data/'
+        #self.maxDiff=None
+        self.create_sampledata()
+        self.db.issue.set('2', status=self.db.status.lookup('closed'))
+        self.db.issue.set('3', status=self.db.status.lookup('chatting'))
+        expected={'data':
+                   {'@total_size': 2,
+                    'collection': [
+                      { 'id': '2',
+                        'link': base_path + 'issue/2',
+                        'status':
+                          { 'id': '10',
+                            'link': base_path + 'status/10'
+                          }
+                      },
+                      { 'id': '1',
+                        'link': base_path + 'issue/1',
+                        'status':
+                          { 'id': '9',
+                            'link': base_path + 'status/9'
+                          }
+                      },
+                    ]}
+                 }
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('status.name', 'o'),
+            cgi.MiniFieldStorage('@fields', 'status'),
+            cgi.MiniFieldStorage('@sort', 'status.name'),
+        ]
+        results = self.server.get_collection('issue', form)
+        self.assertDictEqual(expected, results)
+
     def testOutputFormat(self):
         """ test of @fields and @verbose implementation """
 
