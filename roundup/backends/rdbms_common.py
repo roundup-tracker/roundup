@@ -2428,7 +2428,7 @@ class Class(hyperdb.Class):
         # figure the WHERE clause from the filterspec
         mlfilt = 0      # are we joining with Multilink tables?
         sortattr = self._sortattr (group = grp, sort = srt)
-        proptree = self._proptree(exact_match_spec, filterspec, sortattr, retr)
+        proptree = self._proptree(filterspec, exact_match_spec, sortattr, retr)
         mlseen = 0
         for pt in reversed(proptree.sortattr):
             p = pt

@@ -1302,7 +1302,8 @@ class Class:
         """
         raise NotImplementedError
 
-    def _proptree(self, exact_match_spec, filterspec, sortattr=[], retr=False):
+    def _proptree(self, filterspec, exact_match_spec={}, sortattr=[],
+                  retr=False):
         """Build a tree of all transitive properties in the given
         exact_match_spec/filterspec.
         If we retrieve (retr is True) linked items we don't follow
@@ -1458,7 +1459,7 @@ class Class:
         override the filter method instead of implementing _filter.
         """
         sortattr = self._sortattr(sort = sort, group = group)
-        proptree = self._proptree(exact_match_spec, filterspec, sortattr)
+        proptree = self._proptree(filterspec, exact_match_spec, sortattr)
         proptree.search(search_matches, retired=retired)
         if offset is not None or limit is not None:
             items = proptree.sort()
