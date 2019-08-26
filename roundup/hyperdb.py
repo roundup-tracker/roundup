@@ -1399,7 +1399,7 @@ class Class:
         return sortattr
 
     def filter(self, search_matches, filterspec, sort=[], group=[],
-               retired=False, exact_match_spec={}):
+               retired=False, exact_match_spec={}, limit=None, offset=None):
         """Return a list of the ids of the active nodes in this class that
         match the 'filter' spec, sorted by the group spec and then the
         sort spec.
@@ -1425,6 +1425,13 @@ class Class:
         items are returned. If None, both retired and unretired items
         are returned. The default is False, i.e. only live items are
         returned by default.
+
+        The "limit" and "offset" parameters define a limit on the number
+        of results returned and an offset before returning any results,
+        respectively. These can be used when displaying a number of
+        items in a pagination application or similar. A common use-case
+        is returning the first item of a sorted search by specifying
+        limit=1 (i.e. the maximum or minimum depending on sort order).
 
         The filter must match all properties specificed. If the property
         value to match is a list:
@@ -1453,7 +1460,16 @@ class Class:
         sortattr = self._sortattr(sort = sort, group = group)
         proptree = self._proptree(exact_match_spec, filterspec, sortattr)
         proptree.search(search_matches, retired=retired)
+        if offset is not None or limit is not None:
+            items = proptree.sort()
+            if limit and offset:
+                return items[offset:offset+limit]
+            elif offset is not None:
+                return items[offset:]
+            else:
+                return items[:limit]
         return proptree.sort()
+
 
     # non-optimized filter_iter, a backend may chose to implement a
     # better version that provides a real iterator that pre-fills the

@@ -2403,7 +2403,8 @@ class Class(hyperdb.Class):
             return where, v, True # True to indicate original
 
     def _filter_sql (self, search_matches, filterspec, srt=[], grp=[], retr=0,
-                     retired=False, exact_match_spec={}):
+                     retired=False, exact_match_spec={}, limit=None,
+                     offset=None):
         """ Compute the proptree and the SQL/ARGS for a filter.
         For argument description see filter below.
         We return a 3-tuple, the proptree, the sql and the sql-args
@@ -2717,15 +2718,24 @@ class Class(hyperdb.Class):
         else:
             order = ''
 
+        if limit is not None:
+            limit = ' LIMIT %s' % limit
+        else:
+            limit = ''
+        if offset is not None:
+            offset = ' OFFSET %s' % offset
+        else:
+            offset = ''
         cols = ','.join(cols)
         loj = ' '.join(loj)
-        sql = 'select %s from %s %s %s%s'%(cols, frum, loj, where, order)
+        sql = 'select %s from %s %s %s%s%s%s'%(
+            cols, frum, loj, where, order, limit, offset)
         args = tuple(args)
         __traceback_info__ = (sql, args)
         return proptree, sql, args
 
     def filter(self, search_matches, filterspec, sort=[], group=[],
-               retired=False, exact_match_spec={}):
+               retired=False, exact_match_spec={}, limit=None, offset=None):
         """Return a list of the ids of the active nodes in this class that
         match the 'filter' spec, sorted by the group spec and then the
         sort spec
@@ -2750,7 +2760,8 @@ class Class(hyperdb.Class):
 
         sq = self._filter_sql (search_matches, filterspec, sort, group,
                                retired=retired,
-                               exact_match_spec=exact_match_spec)
+                               exact_match_spec=exact_match_spec,
+                               limit=limit, offset=offset)
         # nothing to match?
         if sq is None:
             return []
@@ -2774,7 +2785,8 @@ class Class(hyperdb.Class):
         return l
 
     def filter_iter(self, search_matches, filterspec, sort=[], group=[],
-                    retired=False, exact_match_spec={}):
+                    retired=False, exact_match_spec={}, limit=None,
+                    offset=None):
         """Iterator similar to filter above with same args.
         Limitation: We don't sort on multilinks.
         This uses an optimisation: We put all nodes that are in the
@@ -2785,7 +2797,8 @@ class Class(hyperdb.Class):
         """
         sq = self._filter_sql(search_matches, filterspec, sort, group, retr=1,
                               retired=retired,
-                              exact_match_spec=exact_match_spec)
+                              exact_match_spec=exact_match_spec,
+                              limit=limit, offset=offset)
         # nothing to match?
         if sq is None:
             return

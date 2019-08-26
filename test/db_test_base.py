@@ -2055,6 +2055,25 @@ class DBTest(commonDBTest):
             ae(f(None, {'supervisor.supervisor': '3', 'supervisor': '4'},
                 ('+','username')), ['6', '7'])
 
+    def testFilteringTransitiveLinkUserLimit(self):
+        ae, filter, filter_iter = self.filteringSetupTransitiveSearch('user')
+        for f in filter, filter_iter:
+            ae(f(None, {'supervisor.username': 'ceo'}, ('+','username'),
+                 limit=1), ['4'])
+            ae(f(None, {'supervisor.supervisor.username': 'ceo'},
+                ('+','username'), limit=4), ['6', '7', '8', '9'])
+            ae(f(None, {'supervisor.supervisor': '3'}, ('+','username'),
+                limit=2, offset=2), ['8', '9'])
+            ae(f(None, {'supervisor.supervisor.id': '3'}, ('+','username'),
+                limit=3, offset=1), ['7', '8', '9'])
+            ae(f(None, {'supervisor.username': 'grouplead2'}, ('+','username'),
+                limit=2, offset=2), ['10'])
+            ae(f(None, {'supervisor.username': 'grouplead2',
+                'supervisor.supervisor.username': 'ceo'}, ('+','username'),
+                limit=4, offset=3), [])
+            ae(f(None, {'supervisor.supervisor': '3', 'supervisor': '4'},
+                ('+','username'), limit=1, offset=5), [])
+
     def testFilteringTransitiveLinkSort(self):
         ae, filter, filter_iter = self.filteringSetupTransitiveSearch()
         ae, ufilter, ufilter_iter = self.iterSetup('user')

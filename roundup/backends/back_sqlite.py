@@ -454,14 +454,11 @@ class Database(rdbms_common.Database):
             return [[row[col] for col in cols] for row in l]
 
 class sqliteClass:
-    def filter(self, search_matches, filterspec, sort=(None,None),
-            group=(None,None), retired=False, exact_match_spec={}):
+    def filter(self, *args, **kw):
         """ If there's NO matches to a fetch, sqlite returns NULL
             instead of nothing
         """
-        return [f for f in rdbms_common.Class.filter(self, search_matches,
-            filterspec, sort=sort, group=group, retired=retired,
-            exact_match_spec=exact_match_spec) if f]
+        return [f for f in rdbms_common.Class.filter(self, *args, **kw) if f]
 
 class Class(sqliteClass, rdbms_common.Class):
     pass

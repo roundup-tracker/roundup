@@ -516,7 +516,7 @@ Here is the interface provided by the hyperdatabase::
             """
 
         def filter(self, search_matches, filterspec, sort, group,
-                   retired, exact_match_spec):
+                   retired, exact_match_spec, limit, offset):
             """Return a list of the ids of the active nodes in this class that
             match the 'filter' spec, sorted by the group spec and then the
             sort spec. The arguments sort, group, retired, and
@@ -543,6 +543,14 @@ Here is the interface provided by the hyperdatabase::
             items are returned. If None, both retired and unretired
             items are returned. The default is False, i.e. only live
             items are returned by default.
+
+            The "limit" and "offset" parameters define a limit on the
+            number of results returned and an offset before returning
+            any results, respectively. These can be used when displaying
+            a number of items in a pagination application or similar. A
+            common use-case is returning the first item of a sorted
+            search by specifying limit=1 (i.e. the maximum or minimum
+            depending on sort order).
 
             The filter must match all properties specificed. If the property
             value to match is a list:
