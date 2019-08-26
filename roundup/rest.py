@@ -727,9 +727,14 @@ class RestfulInstance(object):
                     else:
                         filter_props[key] = value
         l = [filter_props]
+        kw = {}
         if sort:
             l.append(sort)
-        obj_list = class_obj.filter(None, *l)
+        if page ['size'] is not None and page ['size'] > 0:
+            kw ['limit'] = page ['size']
+            if page ['index'] is not None and page ['index'] > 1:
+                kw ['offset'] = (page ['index'] - 1) * page ['size']
+        obj_list = class_obj.filter(None, *l, **kw)
 
         # Note: We don't sort explicitly in python. The filter implementation
         # of the DB already sorts by ID if no sort option was given.
@@ -761,15 +766,12 @@ class RestfulInstance(object):
         result_len = len(result['collection'])
 
         # pagination - page_index from 1...N
-        if page['size'] is not None:
-            page_start = max((page['index']-1) * page['size'], 0)
-            page_end = min(page_start + page['size'], result_len)
-            result['collection'] = result['collection'][page_start:page_end]
+        if page['size'] is not None and page['size'] > 0:
             result['@links'] = {}
             for rel in ('next', 'prev', 'self'):
                 if rel == 'next':
                     # if current index includes all data, continue
-                    if page['index']*page['size'] > result_len: continue
+                    if page['size'] > result_len: continue
                     index=page['index']+1
                 if rel == 'prev':
                     if page['index'] <= 1: continue
