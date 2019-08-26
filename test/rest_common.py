@@ -118,6 +118,46 @@ class TestCase():
         except (AttributeError, KeyError, TypeError):
             return not_found
 
+    def create_stati(self):
+        try:
+            self.db.status.create(name='open', order='9')
+        except ValueError:
+            pass
+        try:
+            self.db.status.create(name='closed', order='91')
+        except ValueError:
+            pass
+        try:
+            self.db.priority.create(name='normal')
+        except ValueError:
+            pass
+        try:
+            self.db.priority.create(name='critical')
+        except ValueError:
+            pass
+
+    def create_sampledata(self):
+        """ Create sample data common to some test cases
+        """
+        self.create_stati()
+        self.db.issue.create(
+            title='foo1',
+            status=self.db.status.lookup('open'),
+            priority=self.db.priority.lookup('normal'),
+            nosy = [ "1", "2" ]
+        )
+        issue_open_norm = self.db.issue.create(
+            title='foo2',
+            status=self.db.status.lookup('open'),
+            priority=self.db.priority.lookup('normal'),
+            assignedto = "3"
+        )
+        issue_open_crit = self.db.issue.create(
+            title='foo5',
+            status=self.db.status.lookup('open'),
+            priority=self.db.priority.lookup('critical')
+        )
+
     def testGet(self):
         """
         Retrieve all three users
@@ -167,40 +207,7 @@ class TestCase():
         """ test of @fields and @verbose implementation """
 
         self.maxDiff = 4000
-        # create sample data
-        try:
-            self.db.status.create(name='open')
-        except ValueError:
-            pass
-        try:
-            self.db.status.create(name='closed')
-        except ValueError:
-            pass
-        try:
-            self.db.priority.create(name='normal')
-        except ValueError:
-            pass
-        try:
-            self.db.priority.create(name='critical')
-        except ValueError:
-            pass
-        self.db.issue.create(
-            title='foo1',
-            status=self.db.status.lookup('open'),
-            priority=self.db.priority.lookup('normal'),
-            nosy = [ "1", "2" ]
-        )
-        issue_open_norm = self.db.issue.create(
-            title='foo2',
-            status=self.db.status.lookup('open'),
-            priority=self.db.priority.lookup('normal'),
-            assignedto = "3"
-        )
-        issue_open_crit = self.db.issue.create(
-            title='foo5',
-            status=self.db.status.lookup('open'),
-            priority=self.db.priority.lookup('critical')
-        )
+        self.create_sampledata()
         base_path = self.db.config['TRACKER_WEB'] + 'rest/data/issue/'
 
 
@@ -425,28 +432,41 @@ class TestCase():
         results['data']['@etag'] = '' # etag depends on date, set to empty
         self.assertDictEqual(expected,results)
 
+    def testSorting(self):
+        self.maxDiff = 4000
+        self.create_sampledata()
+        self.db.issue.set('1', status='7')
+        self.db.issue.set('2', status='2')
+        self.db.issue.set('3', status='2')
+        self.db.commit()
+        base_path = self.db.config['TRACKER_WEB'] + 'rest/data/issue/'
+        # change some data for sorting on later
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@fields', 'status'),
+            cgi.MiniFieldStorage('@sort', 'status,-id'),
+            cgi.MiniFieldStorage('@verbose', '0')
+        ]
+
+        # status is sorted by orderprop (property 'order')
+        # which provides the same ordering as the status ID
+        expected={'data': {
+            '@total_size': 3,
+            'collection': [
+                {'link': base_path + '3', 'status': '2', 'id': '3'},
+                {'link': base_path + '2', 'status': '2', 'id': '2'},
+                {'link': base_path + '1', 'status': '7', 'id': '1'}]}}
+
+        results = self.server.get_collection('issue', form)
+        self.assertDictEqual(expected, results)
+
     def testFilter(self):
         """
         Retrieve all three users
         obtain data for 'joe'
         """
         # create sample data
-        try:
-            self.db.status.create(name='open')
-        except ValueError:
-            pass
-        try:
-            self.db.status.create(name='closed')
-        except ValueError:
-            pass
-        try:
-            self.db.priority.create(name='normal')
-        except ValueError:
-            pass
-        try:
-            self.db.priority.create(name='critical')
-        except ValueError:
-            pass
+        self.create_stati()
         self.db.issue.create(
             title='foo4',
             status=self.db.status.lookup('closed'),

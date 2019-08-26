@@ -344,6 +344,20 @@ Other data types: Date, Interval Integer, Number need examples and may
 need work to allow range searches. Full text search (e.g. over the
 body of msgs) is a work in progress.
 
+Sorting
+^^^^^^^
+
+Collection endpoints support sorting. This is controlled by specifying a
+``@sort`` parameter with a list of properties of the searched class.
+Optionally properties can include a sign ('+' or '-') to specify
+ascending or descending sort, respectively. If no sign is given,
+ascending sort is selected for this property. The following example
+would sort by status (in ascending order of the status.order property)
+and then by id of an issue::
+
+    @sort=status,-id
+
+
 Pagination
 ^^^^^^^^^^
 

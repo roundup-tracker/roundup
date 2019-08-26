@@ -650,6 +650,7 @@ class RestfulInstance(object):
         }
         verbose = 1
         display_props = {}
+        sort = []
         for form_field in input.value:
             key = form_field.name
             value = form_field.value
@@ -670,6 +671,24 @@ class RestfulInstance(object):
                     except KeyError as err:
                         raise UsageError("Failed to find property '%s' "
                                          "for class %s."%(i, class_name))
+            elif key == "@sort":
+                f = value.split(",")
+                allprops=class_obj.getprops(protected=True)
+                for p in f :
+                    if not p:
+                        raise UsageError("Empty property "
+                                         "for class %s."%(class_name))
+                    if p[0] in ('-', '+'):
+                        pn = p[1:]
+                        ss = p[0]
+                    else:
+                        ss = '+'
+                        pn = p
+                    # Only include properties where we have search permission
+                    if self.db.security.hasSearchPermission(
+                        uid, class_name, pn
+                    ):
+                        sort.append((ss, pn))
             elif key.startswith("@"):
                 # ignore any unsupported/previously handled control key
                 # like @apiver
@@ -707,17 +726,13 @@ class RestfulInstance(object):
                             filter_props[key]=[filter_props[key],value]
                     else:
                         filter_props[key] = value
-        if not filter_props:
-            obj_list = class_obj.list()
-        else:
-            obj_list = class_obj.filter(None, filter_props)
+        l = [filter_props]
+        if sort:
+            l.append(sort)
+        obj_list = class_obj.filter(None, *l)
 
-        # Sort list as specified by sortorder
-        # This is more useful for things where there is an
-        # explicit order. E.G. status has an order that is
-        # roughly the progression of the issue through
-        # the states so open is before closed.
-        obj_list.sort()
+        # Note: We don't sort explicitly in python. The filter implementation
+        # of the DB already sorts by ID if no sort option was given.
 
         # add verbose elements. 2 and above get identifying label.
         if verbose > 1:
