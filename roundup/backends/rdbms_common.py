@@ -1515,6 +1515,10 @@ class Class(hyperdb.Class):
     # We define the default here, can be changed in derivative class
     case_insensitive_like = 'LIKE'
 
+    # For some databases (mysql) the = operator for strings ignores case.
+    # We define the default here, can be changed in derivative class
+    case_sensitive_equal = '='
+
     def schema(self):
         """ A dumpable version of the schema that we can store in the
             database
@@ -2399,7 +2403,7 @@ class Class(hyperdb.Class):
             return where, v, True # True to indicate original
 
     def _filter_sql (self, search_matches, filterspec, srt=[], grp=[], retr=0,
-                     retired=False):
+                     retired=False, exact_match_spec={}):
         """ Compute the proptree and the SQL/ARGS for a filter.
         For argument description see filter below.
         We return a 3-tuple, the proptree, the sql and the sql-args
@@ -2423,7 +2427,7 @@ class Class(hyperdb.Class):
         # figure the WHERE clause from the filterspec
         mlfilt = 0      # are we joining with Multilink tables?
         sortattr = self._sortattr (group = grp, sort = srt)
-        proptree = self._proptree(filterspec, sortattr, retr)
+        proptree = self._proptree(exact_match_spec, filterspec, sortattr, retr)
         mlseen = 0
         for pt in reversed(proptree.sortattr):
             p = pt
@@ -2468,7 +2472,8 @@ class Class(hyperdb.Class):
                         gen_join = True
 
                         if p.has_values and isinstance(v, type([])):
-                            result = self._filter_multilink_expression(pln, tn, v)
+                            result = self._filter_multilink_expression(pln,
+                                tn, v)
                             # XXX: We dont need an id join if we used the filter
                             gen_join = len(result) == 3
 
@@ -2506,27 +2511,36 @@ class Class(hyperdb.Class):
                     rc = oc = ac = '_%s.id'%pln
             elif isinstance(propclass, String):
                 if 'search' in p.need_for:
+                    exact = []
                     if not isinstance(v, type([])):
                         v = [v]
-
-                    # Quote special search characters '%' and '_' for
-                    # correct matching with LIKE/ILIKE
-                    # Note that we now pass the elements of v as query
-                    # arguments and don't interpolate the quoted string
-                    # into the sql statement. Should be safer.
-                    v = [self.db.search_stringquote(s) for s in v]
+                    new_v = []
+                    for x in v:
+                        if isinstance(x, hyperdb.Exact_Match):
+                            exact.append(True)
+                            new_v.append(x.value)
+                        else:
+                            exact.append(False)
+                            # Quote special search characters '%' and '_' for
+                            # correct matching with LIKE/ILIKE
+                            # Note that we now pass the elements of v as query
+                            # arguments and don't interpolate the quoted string
+                            # into the sql statement. Should be safer.
+                            new_v.append(self.db.search_stringquote(x))
+                    v = new_v
 
                     # now add to the where clause
-                    where.append('('
-                        +' and '.join(["_%s._%s %s %s ESCAPE %s"%(
-                                    pln,
-                                    k,
-                                    self.case_insensitive_like,
-                                    a,
-                                    a) for s in v])
-                        +')')
-                    for vv in v:
-                        args.extend((vv, '\\'))
+                    w = []
+                    for vv, ex in zip(v, exact):
+                        if ex:
+                            w.append("_%s._%s %s %s"%(
+                                pln, k, self.case_sensitive_equal, a))
+                            args.append(vv)
+                        else:
+                            w.append("_%s._%s %s %s ESCAPE %s"%(
+                                pln, k, self.case_insensitive_like, a, a))
+                            args.extend((vv, '\\'))
+                    where.append ('(' + ' and '.join(w) + ')')
                 if 'sort' in p.need_for:
                     oc = ac = 'lower(_%s._%s)'%(pln, k)
             elif isinstance(propclass, Link):
@@ -2711,7 +2725,7 @@ class Class(hyperdb.Class):
         return proptree, sql, args
 
     def filter(self, search_matches, filterspec, sort=[], group=[],
-               retired=False):
+               retired=False, exact_match_spec={}):
         """Return a list of the ids of the active nodes in this class that
         match the 'filter' spec, sorted by the group spec and then the
         sort spec
@@ -2735,7 +2749,8 @@ class Class(hyperdb.Class):
             start_t = time.time()
 
         sq = self._filter_sql (search_matches, filterspec, sort, group,
-                               retired=retired)
+                               retired=retired,
+                               exact_match_spec=exact_match_spec)
         # nothing to match?
         if sq is None:
             return []
@@ -2759,7 +2774,7 @@ class Class(hyperdb.Class):
         return l
 
     def filter_iter(self, search_matches, filterspec, sort=[], group=[],
-                    retired=False):
+                    retired=False, exact_match_spec={}):
         """Iterator similar to filter above with same args.
         Limitation: We don't sort on multilinks.
         This uses an optimisation: We put all nodes that are in the
@@ -2769,7 +2784,8 @@ class Class(hyperdb.Class):
         cache. We're using our own temporary cursor.
         """
         sq = self._filter_sql(search_matches, filterspec, sort, group, retr=1,
-                              retired=retired)
+                              retired=retired,
+                              exact_match_spec=exact_match_spec)
         # nothing to match?
         if sq is None:
             return

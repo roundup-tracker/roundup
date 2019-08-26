@@ -592,6 +592,7 @@ class Database(rdbms_common.Database):
                 raise
 
 class MysqlClass:
+    case_sensitive_equal = 'COLLATE utf8_bin ='
 
     def supports_subselects(self):
         # TODO: AFAIK its version dependent for MySQL

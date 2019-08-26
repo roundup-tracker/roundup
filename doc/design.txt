@@ -515,25 +515,44 @@ Here is the interface provided by the hyperdatabase::
                 db.issue.find(messages={'1':1,'3':1}, files={'7':1})
             """
 
-        def filter(self, search_matches, filterspec, sort, group):
+        def filter(self, search_matches, filterspec, sort, group,
+                   retired, exact_match_spec):
             """Return a list of the ids of the active nodes in this class that
             match the 'filter' spec, sorted by the group spec and then the
-            sort spec.
+            sort spec. The arguments sort, group, retired, and
+            exact_match_spec are optional.
 
-            "search_matches" is a container type
+            "search_matches" is a container type which by default is
+            None and optionally contains IDs of items to match. If
+            non-empty only IDs of the initial set are returned.
 
             "filterspec" is {propname: value(s)}
+            "exact_match_spec" is the same format as "filterspec" but
+            specifies exact match for the given propnames. This only
+            makes a difference for String properties, these specify case
+            insensitive substring search when in "filterspec" and exact
+            match when in exact_match_spec.
 
             "sort" and "group" are [(dir, prop), ...] where dir is '+', '-'
             or None and prop is a prop name or None. Note that for
             backward-compatibility reasons a single (dir, prop) tuple is
             also allowed.
 
+            The parameter retired when set to False, returns only live
+            (un-retired) results. When setting it to True, only retired
+            items are returned. If None, both retired and unretired
+            items are returned. The default is False, i.e. only live
+            items are returned by default.
+
             The filter must match all properties specificed. If the property
             value to match is a list:
 
             1. String properties must match all elements in the list, and
             2. Other properties must match any of the elements in the list.
+
+            This also means that for strings in exact_match_spec it
+            doesn't make sense to specify multiple values because those
+            cannot all be matched.
 
             The propname in filterspec and prop in a sort/group spec may be
             transitive, i.e., it may contain properties of the form

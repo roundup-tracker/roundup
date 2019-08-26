@@ -1749,6 +1749,39 @@ class DBTest(commonDBTest):
             ae(filt(None, {'title': ['One', 'Two']}, ('+','id'), (None,None)),
                 [])
 
+    def testFilteringStringExactMatch(self):
+        ae, filter, filter_iter = self.filteringSetup()
+        # Change title of issue2 to 'issue' so we can test substring
+        # search vs exact search
+        self.db.issue.set('2', title='issue')
+        #self.db.commit()
+        for filt in filter, filter_iter:
+            ae(filt(None, {}, exact_match_spec =
+               {'title': ['one']}), [])
+            ae(filt(None, {}, exact_match_spec =
+               {'title': ['issue one']}), ['1'])
+            ae(filt(None, {}, exact_match_spec =
+               {'title': ['issue', 'one']}), [])
+            ae(filt(None, {}, exact_match_spec =
+               {'title': ['issue']}), ['2'])
+            ae(filt(None, {}, exact_match_spec =
+               {'title': ['one', 'two']}), [])
+            ae(filt(None, {}, exact_match_spec =
+               {'title': ['One']}), [])
+            ae(filt(None, {}, exact_match_spec =
+               {'title': ['Issue One']}), [])
+            ae(filt(None, {}, exact_match_spec =
+               {'title': ['ISSUE', 'ONE']}), [])
+            ae(filt(None, {}, exact_match_spec =
+               {'title': ['iSSUE']}), [])
+            ae(filt(None, {}, exact_match_spec =
+               {'title': ['One', 'Two']}), [])
+            ae(filt(None, {}, exact_match_spec =
+               {'title': ['non four']}), ['4'])
+            # Both, filterspec and exact_match_spec on same prop
+            ae(filt(None, {'title': 'iSSUE'}, exact_match_spec =
+               {'title': ['issue']}), ['2'])
+
     def testFilteringSpecialChars(self):
         """ Special characters in SQL search are '%' and '_', some used
             to lead to a traceback.

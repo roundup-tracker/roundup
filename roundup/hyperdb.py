@@ -342,6 +342,12 @@ def splitDesignator(designator, dre=re.compile(r'([^\d]+)(\d+)')):
         raise DesignatorError(_('"%s" not a node designator')%designator)
     return m.group(1), m.group(2)
 
+class Exact_Match(object):
+    """ Used to encapsulate exact match semantics search values
+    """
+    def __init__(self, value):
+        self.value = value
+
 class Proptree(object):
     """ Simple tree data structure for property lookup. Each node in
     the tree is a roundup Class Property that has to be navigated to
@@ -461,13 +467,29 @@ class Proptree(object):
         simple _filter call which does the real work
         """
         filterspec = {}
+        exact_match_spec = {}
         for p in self.children:
             if 'search' in p.need_for:
                 if p.children:
                     p.search(sort = False)
-                filterspec[p.name] = p.val
+                if isinstance(p.val, type([])):
+                    exact = []
+                    subst = []
+                    for v in p.val:
+                        if isinstance(v, Exact_Match):
+                            exact.append(v.value)
+                        else:
+                            subst.append(v)
+                    if exact:
+                        exact_match_spec[p.name] = exact
+                    if subst:
+                        filterspec[p.name] = subst
+                else:
+                    assert not isinstance(p.val, Exact_Match)
+                    filterspec[p.name] = p.val
         self.val = self.cls._filter(search_matches, filterspec, sort and self,
-                                    retired=retired)
+                                    retired=retired,
+                                    exact_match_spec=exact_match_spec)
         return self.val
 
     def sort (self, ids=None):
@@ -555,15 +577,28 @@ class Proptree(object):
         return ids
 
     def _set_val(self, val):
-        """Check if self._val is already defined. If yes, we compute the
-        intersection of the old and the new value(s)
+        """ Check if self._val is already defined. If yes, we compute the
+            intersection of the old and the new value(s)
+            Note: If self is a Leaf node we need to compute a
+            union: Normally we intersect (logical and) different
+            subqueries into a Link or Multilink property. But for
+            leaves we might have a part of a query in a filterspec and
+            in an exact_match_spec. These have to be all there, the
+            generated search will ensure a logical and of all tests for
+            equality/substring search.
         """
         if self.has_values:
             v = self._val
             if not isinstance(self._val, type([])):
                 v = [self._val]
             vals = set(v)
-            vals.intersection_update(val)
+            if not isinstance(val, type([])):
+                val = [val]
+            # if cls is None we're a leaf
+            if self.cls:
+                vals.intersection_update(val)
+            else:
+                vals.update(val)
             self._val = [v for v in vals]
         else:
             self._val = val
@@ -1261,32 +1296,43 @@ class Class:
         raise NotImplementedError
 
     def _filter(self, search_matches, filterspec, sort=(None,None),
-            group=(None,None), retired=False):
+            group=(None,None), retired=False, exact_match_spec={}):
         """For some backends this implements the non-transitive
         search, for more information see the filter method.
         """
         raise NotImplementedError
 
-    def _proptree(self, filterspec, sortattr=[], retr=False):
+    def _proptree(self, exact_match_spec, filterspec, sortattr=[], retr=False):
         """Build a tree of all transitive properties in the given
-        filterspec.
+        exact_match_spec/filterspec.
         If we retrieve (retr is True) linked items we don't follow
         across multilinks. We also don't follow if the searched value
         can contain NULL values.
         """
         proptree = Proptree(self.db, self, '', self.getprops(), retr=retr)
-        for key, v in filterspec.items():
-            keys = key.split('.')
-            p = proptree
-            mlseen = False
-            for k in keys:
-                if isinstance (p.propclass, Multilink):
-                    mlseen = True
-                isnull = v == '-1' or v is None
-                nullin = isinstance(v, type([])) and ('-1' in v or None in v)
-                r = retr and not mlseen and not isnull and not nullin
-                p = p.append(k, retr=r)
-            p.val = v
+        for exact, spec in enumerate((filterspec, exact_match_spec)):
+            for key, v in spec.items():
+                keys = key.split('.')
+                p = proptree
+                mlseen = False
+                for k in keys:
+                    if isinstance (p.propclass, Multilink):
+                        mlseen = True
+                    isnull = v == '-1' or v is None
+                    islist = isinstance(v, type([]))
+                    nullin = islist and ('-1' in v or None in v)
+                    r = retr and not mlseen and not isnull and not nullin
+                    p = p.append(k, retr=r)
+                if exact:
+                    if isinstance(v, type([])):
+                        vv = []
+                        for x in v:
+                            vv.append(Exact_Match(x))
+                        p.val = vv
+                    else:
+                        p.val = [Exact_Match(v)]
+                else:
+                    p.val = v
         multilinks = {}
         for s in sortattr:
             keys = s[1].split('.')
@@ -1353,19 +1399,32 @@ class Class:
         return sortattr
 
     def filter(self, search_matches, filterspec, sort=[], group=[],
-               retired=False):
+               retired=False, exact_match_spec={}):
         """Return a list of the ids of the active nodes in this class that
         match the 'filter' spec, sorted by the group spec and then the
         sort spec.
 
+        "search_matches" is a container type which by default is None
+        and optionally contains IDs of items to match. If non-empty only
+        IDs of the initial set are returned.
+
         "filterspec" is {propname: value(s)}
+        "exact_match_spec" is the same format as "filterspec" but
+        specifies exact match for the given propnames. This only makes a
+        difference for String properties, these specify case insensitive
+        substring search when in "filterspec" and exact match when in
+        exact_match_spec.
 
         "sort" and "group" are [(dir, prop), ...] where dir is '+', '-'
         or None and prop is a prop name or None. Note that for
         backward-compatibility reasons a single (dir, prop) tuple is
         also allowed.
 
-        "search_matches" is a container type
+        The parameter retired when set to False, returns only live
+        (un-retired) results. When setting it to True, only retired
+        items are returned. If None, both retired and unretired items
+        are returned. The default is False, i.e. only live items are
+        returned by default.
 
         The filter must match all properties specificed. If the property
         value to match is a list:
@@ -1373,11 +1432,15 @@ class Class:
         1. String properties must match all elements in the list, and
         2. Other properties must match any of the elements in the list.
 
-        Note that now the propname in filterspec and prop in a
-        sort/group spec may be transitive, i.e., it may contain
-        properties of the form link.link.link.name, e.g. you can search
-        for all issues where a message was added by a certain user in
-        the last week with a filterspec of
+        This also means that for strings in exact_match_spec it doesn't
+        make sense to specify multiple values because those cannot all
+        be matched exactly.
+
+        The propname in filterspec and prop in a sort/group spec may be
+        transitive, i.e., it may contain properties of the form
+        link.link.link.name, e.g. you can search for all issues where a
+        message was added by a certain user in the last week with a
+        filterspec of
         {'messages.author' : '42', 'messages.creation' : '.-1w;'}
 
         Implementation note:
@@ -1388,7 +1451,7 @@ class Class:
         override the filter method instead of implementing _filter.
         """
         sortattr = self._sortattr(sort = sort, group = group)
-        proptree = self._proptree(filterspec, sortattr)
+        proptree = self._proptree(exact_match_spec, filterspec, sortattr)
         proptree.search(search_matches, retired=retired)
         return proptree.sort()
 

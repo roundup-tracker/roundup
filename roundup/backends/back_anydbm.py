@@ -25,7 +25,7 @@ __docformat__ = 'restructuredtext'
 import os, marshal, re, weakref, string, copy, time, shutil, logging
 
 from roundup.anypy.dbm_ import anydbm, whichdb
-from roundup.anypy.strings import b2s, bs2b, repr_export, eval_import
+from roundup.anypy.strings import b2s, bs2b, repr_export, eval_import, is_us
 
 from roundup import hyperdb, date, password, roundupdb, security, support
 from roundup.backends import locking
@@ -1690,12 +1690,16 @@ class Class(hyperdb.Class):
         return res
 
     def _filter(self, search_matches, filterspec, proptree,
-            num_re = re.compile(r'^\d+$'), retired=False):
+            num_re = re.compile(r'^\d+$'), retired=False,
+            exact_match_spec={}):
         """Return a list of the ids of the nodes in this class that
         match the 'filter' spec, sorted by the group spec and then the
         sort spec.
 
         "filterspec" is {propname: value(s)}
+        same for "exact_match_spec". The latter specifies exact matching
+        for String type while String types in "filterspec" are searched
+        for as case insensitive substring match.
 
         "sort" and "group" are (dir, prop) where dir is '+', '-' or None
         and prop is a prop name or None
@@ -1726,82 +1730,86 @@ class Class(hyperdb.Class):
         INTERVAL = 'spec:interval'
         OTHER = 'spec:other'
 
-        for k, v in filterspec.items():
-            propclass = props[k]
-            if isinstance(propclass, hyperdb.Link):
-                if type(v) is not type([]):
-                    v = [v]
-                u = []
-                for entry in v:
+        for exact, filtertype in enumerate((filterspec, exact_match_spec)):
+            for k, v in filtertype.items():
+                propclass = props[k]
+                if isinstance(propclass, hyperdb.Link):
+                    if type(v) is not type([]):
+                        v = [v]
+                    u = []
+                    for entry in v:
+                        # the value -1 is a special "not set" sentinel
+                        if entry == '-1':
+                            entry = None
+                        u.append(entry)
+                    l.append((LINK, k, u))
+                elif isinstance(propclass, hyperdb.Multilink):
                     # the value -1 is a special "not set" sentinel
-                    if entry == '-1':
-                        entry = None
-                    u.append(entry)
-                l.append((LINK, k, u))
-            elif isinstance(propclass, hyperdb.Multilink):
-                # the value -1 is a special "not set" sentinel
-                if v in ('-1', ['-1']):
-                    v = []
-                elif type(v) is not type([]):
-                    v = [v]
-                l.append((MULTILINK, k, v))
-            elif isinstance(propclass, hyperdb.String) and k != 'id':
-                if type(v) is not type([]):
-                    v = [v]
-                for v in v:
-                    # simple glob searching
-                    v = re.sub(r'([\|\{\}\\\.\+\[\]\(\)])', r'\\\1', v)
-                    v = v.replace('?', '.')
-                    v = v.replace('*', '.*?')
-                    l.append((STRING, k, re.compile(v, re.I)))
-            elif isinstance(propclass, hyperdb.Date):
-                try:
-                    date_rng = propclass.range_from_raw(v, self.db)
-                    l.append((DATE, k, date_rng))
-                except ValueError:
-                    # If range creation fails - ignore that search parameter
-                    pass
-            elif isinstance(propclass, hyperdb.Interval):
-                try:
-                    intv_rng = date.Range(v, date.Interval)
-                    l.append((INTERVAL, k, intv_rng))
-                except ValueError:
-                    # If range creation fails - ignore that search parameter
-                    pass
-
-            elif isinstance(propclass, hyperdb.Boolean):
-                if type(v) == type(""):
-                    v = v.split(',')
-                if type(v) != type([]):
-                    v = [v]
-                bv = []
-                for val in v:
-                    if type(val) is type(''):
-                        bv.append(propclass.from_raw (val))
-                    else:
-                        bv.append(val)
-                l.append((OTHER, k, bv))
-
-            elif k == 'id':
-                if type(v) != type([]):
-                    v = v.split(',')
-                l.append((OTHER, k, [str(int(val)) for val in v]))
-
-            elif isinstance(propclass, hyperdb.Number):
-                if type(v) != type([]):
-                    try :
-                        v = v.split(',')
-                    except AttributeError :
+                    if v in ('-1', ['-1']):
+                        v = []
+                    elif type(v) is not type([]):
                         v = [v]
-                l.append((OTHER, k, [float(val) for val in v]))
-
-            elif isinstance(propclass, hyperdb.Integer):
-                if type(v) != type([]):
-                    try :
-                        v = v.split(',')
-                    except AttributeError :
+                    l.append((MULTILINK, k, v))
+                elif isinstance(propclass, hyperdb.String) and k != 'id':
+                    if type(v) is not type([]):
                         v = [v]
-                l.append((OTHER, k, [int(val) for val in v]))
+                    for x in v:
+                        if exact:
+                            l.append((STRING, k, x))
+                        else:
+                            # simple glob searching
+                            x = re.sub(r'([\|\{\}\\\.\+\[\]\(\)])', r'\\\1', x)
+                            x = x.replace('?', '.')
+                            x = x.replace('*', '.*?')
+                            l.append((STRING, k, re.compile(x, re.I)))
+                elif isinstance(propclass, hyperdb.Date):
+                    try:
+                        date_rng = propclass.range_from_raw(v, self.db)
+                        l.append((DATE, k, date_rng))
+                    except ValueError:
+                        # If range creation fails - ignore that search parameter
+                        pass
+                elif isinstance(propclass, hyperdb.Interval):
+                    try:
+                        intv_rng = date.Range(v, date.Interval)
+                        l.append((INTERVAL, k, intv_rng))
+                    except ValueError:
+                        # If range creation fails - ignore that search parameter
+                        pass
+
+                elif isinstance(propclass, hyperdb.Boolean):
+                    if type(v) == type(""):
+                        v = v.split(',')
+                    if type(v) != type([]):
+                        v = [v]
+                    bv = []
+                    for val in v:
+                        if type(val) is type(''):
+                            bv.append(propclass.from_raw (val))
+                        else:
+                            bv.append(val)
+                    l.append((OTHER, k, bv))
+
+                elif k == 'id':
+                    if type(v) != type([]):
+                        v = v.split(',')
+                    l.append((OTHER, k, [str(int(val)) for val in v]))
+
+                elif isinstance(propclass, hyperdb.Number):
+                    if type(v) != type([]):
+                        try :
+                            v = v.split(',')
+                        except AttributeError :
+                            v = [v]
+                    l.append((OTHER, k, [float(val) for val in v]))
+
+                elif isinstance(propclass, hyperdb.Integer):
+                    if type(v) != type([]):
+                        try :
+                            v = v.split(',')
+                        except AttributeError :
+                            v = [v]
+                    l.append((OTHER, k, [int(val) for val in v]))
 
         filterspec = l
 
@@ -1848,8 +1856,12 @@ class Class(hyperdb.Class):
                     elif t == STRING:
                         if nv is None:
                             nv = ''
-                        # RE search
-                        match = v.search(nv)
+                        if is_us(v):
+                            # Exact match
+                            match = (nv == v)
+                        else:
+                            # RE search
+                            match = v.search(nv)
                     elif t == DATE or t == INTERVAL:
                         if nv is None:
                             match = v is None

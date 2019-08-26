@@ -85,6 +85,7 @@ Features:
 - issue2551043: Add X-Roundup-issue-id email header. Add a new header
   to make it easier to filter notification emails without having to
   parse the subject line. (John Rouillard)
+- The database filter function now can also do an exact string search.
 
 Fixed:
 
