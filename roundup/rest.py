@@ -636,9 +636,7 @@ class RestfulInstance(object):
 
         uid = self.db.getuid()
 
-        if not self.db.security.hasPermission(
-            'View', uid, class_name
-        ):
+        if not self.db.security.hasPermission('View', uid, class_name):
             raise Unauthorised('Permission to view %s denied' % class_name)
 
         class_obj = self.db.getclass(class_name)
@@ -730,14 +728,19 @@ class RestfulInstance(object):
         result={}
         result['collection']=[]
         for item_id in obj_list:
+            r = {}
             if self.db.security.hasPermission(
-                    'View', uid, class_name, itemid=item_id):
+                'View', uid, class_name, itemid=item_id, property='id'
+            ):
                 r = {'id': item_id, 'link': class_path + item_id}
-                if display_props:
-                    r.update(self.format_item(class_obj.getnode(item_id),
-                                               item_id,
-                                               props=display_props,
-                                               verbose=verbose))
+            if display_props :
+                for p in display_props:
+                    if self.db.security.hasPermission(
+                        'View', uid, class_name, itemid=item_id, property=p
+                    ):
+                        r.update(self.format_item(class_obj.getnode(item_id),
+                            item_id, props=display_props, verbose=verbose))
+            if r:
                 result['collection'].append(r)
 
         result_len = len(result['collection'])
