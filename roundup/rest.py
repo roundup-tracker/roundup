@@ -754,7 +754,8 @@ class RestfulInstance(object):
         # add verbose elements. 2 and above get identifying label.
         if verbose > 1:
             lp = class_obj.labelprop()
-            display_props[lp] = class_obj.properties[lp]
+            # Label prop may be a protected property like activity
+            display_props[lp] = class_obj.getprops (protected = True)[lp]
 
         # extract result from data
         result={}
