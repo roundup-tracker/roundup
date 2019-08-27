@@ -644,6 +644,7 @@ class RestfulInstance(object):
 
         # Handle filtering and pagination
         filter_props = {}
+        exact_props  = {}
         page = {
             'size': None,
             'index': 1   # setting just size starts at page 1
@@ -696,6 +697,12 @@ class RestfulInstance(object):
                 # like @apiver
                 pass
             else: # serve the filter purpose
+                exact = False
+                if key.endswith (':') :
+                    exact = True
+                    key = key [:-1]
+                elif key.endswith ('~') :
+                    key = key [:-1]
                 p = key.split('.', 1)[0]
                 try: 
                     prop = class_obj.getprops()[p]
@@ -731,17 +738,24 @@ class RestfulInstance(object):
                             vals.append(linkcls.lookup(p))
                     filter_props[key] = vals
                 else:
-                    if key in filter_props:
-                        if isinstance(filter_props[key], list):
-                            filter_props[key].append(value)
+                    if not isinstance (prop, hyperdb.String):
+                        exact = False
+                    props = filter_props
+                    if exact:
+                        props = exact_props
+                    if key in props:
+                        if isinstance(props[key], list):
+                            props[key].append(value)
                         else:
-                            filter_props[key]=[filter_props[key],value]
+                            props[key] = [props[key],value]
                     else:
-                        filter_props[key] = value
+                        props[key] = value
         l = [filter_props]
         kw = {}
         if sort:
             l.append(sort)
+        if exact_props:
+            kw ['exact_match_spec'] = exact_props
         if page ['size'] is not None and page ['size'] > 0:
             kw ['limit'] = page ['size']
             if page ['index'] is not None and page ['index'] > 1:

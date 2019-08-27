@@ -241,6 +241,34 @@ class TestCase():
         results = self.server.get_collection('issue', form)
         self.assertDictEqual(expected, results)
 
+    def testGetExactMatch(self):
+        """ Retrieve all issues with an exact title
+        """
+        base_path = self.db.config['TRACKER_WEB'] + 'rest/data/'
+        #self.maxDiff=None
+        self.create_sampledata()
+        self.db.issue.set('2', title='This is an exact match')
+        self.db.issue.set('3', title='This is an exact match')
+        self.db.issue.set('1', title='This is AN exact match')
+        expected={'data':
+                   {'@total_size': 2,
+                    'collection': [
+                      { 'id': '2',
+                        'link': base_path + 'issue/2',
+                      },
+                      { 'id': '3',
+                        'link': base_path + 'issue/3',
+                      },
+                    ]}
+                 }
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('title:', 'This is an exact match'),
+            cgi.MiniFieldStorage('@sort', 'status.name'),
+        ]
+        results = self.server.get_collection('issue', form)
+        self.assertDictEqual(expected, results)
+
     def testOutputFormat(self):
         """ test of @fields and @verbose implementation """
 
