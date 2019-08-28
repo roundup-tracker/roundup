@@ -29,7 +29,7 @@ class Theme(ThemeBase):
             u'<div class="menu">',
             u'  <ul>',
             u'    <li><a href="http://www.roundup-tracker.org">Home</a></li>',
-            u'    <li><a href="http://pypi.python.org/pypi/roundup">Download</a></li>',
+            u'    <li><a href="https://pypi.python.org/pypi/roundup">Download</a></li>',
             u'    <li><a href="http://www.roundup-tracker.org/docs.html">Docs</a></li>',
             u'    <li><a href="https://issues.roundup-tracker.org">Issues</a></li>',
             u'    <li><a href="http://www.roundup-tracker.org/contact.html">Contact</a></li>',
