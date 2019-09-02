@@ -161,6 +161,11 @@ Fixed:
   dictionary in some cases where a single key should have been used.
   Thanks to Robert Klonner for discovering the problem, debugging the
   root cause and providing a first proposed fix.
+- Make searching with a multiselect work for Link/Multilink properties
+  that may contain numeric *key* values. For these a menu would render
+  options with IDs and later look up the IDs as *key* of the
+  Link/Multilink. Now numeric IDs take precedence -- like they already
+  do in the menu method of Link and Multilink.
 
 2018-07-13 1.6.0
 

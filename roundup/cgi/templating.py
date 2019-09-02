@@ -384,6 +384,10 @@ def lookupIds(db, prop, ids, fail_ok=0, num_re=num_re, do_lookup=True):
     cl = db.getclass(prop.classname)
     l = []
     for entry in ids:
+        # Do not look up numeric IDs
+        if num_re.match(entry):
+            l.append(entry)
+            continue
         if do_lookup:
             try:
                 item = cl.lookup(entry)
@@ -394,7 +398,7 @@ def lookupIds(db, prop, ids, fail_ok=0, num_re=num_re, do_lookup=True):
                 continue
         # if fail_ok, ignore lookup error
         # otherwise entry must be existing object id rather than key value
-        if fail_ok or num_re.match(entry):
+        if fail_ok:
             l.append(entry)
     return l
 
