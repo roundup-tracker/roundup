@@ -29,6 +29,7 @@ Contains details of the exception."""
         self.subject = subject
         self.html = html
         self.txt = txt
+        BaseException.__init__ (self, subject + ' ' + txt)
 
 class FormError(ValueError):
     """An 'expected' exception occurred during form parsing.
