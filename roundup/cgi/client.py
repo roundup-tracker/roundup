@@ -503,6 +503,7 @@ class Client:
         # Open the database as the correct user.
         try:
             self.determine_user()
+            self.db.tx_Source = "xmlrpc"
         except LoginError as msg:
             output = xmlrpc_.client.dumps(
                 xmlrpc_.client.Fault(401, "%s" % msg),
@@ -557,6 +558,7 @@ class Client:
         # TODO: add everything to RestfulDispatcher
         try:
             self.determine_user()
+            self.db.tx_Source = "rest"
         except LoginError as err:
             self.response_code = http_.client.UNAUTHORIZED
             output = s2b("Invalid Login - %s"%str(err))

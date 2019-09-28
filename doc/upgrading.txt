@@ -64,6 +64,30 @@ tracker's schema.py and add::
 This is usually included near where other permissions like "Web Access"
 or "Email Access" are assigned.
 
+New values for db.tx_Source
+---------------------------
+
+The database attribute tx_Source reports "xmlrpc" and "rest" when the
+/xmlrpc and /rest web endpoints are used. Check all code (extensions,
+detectors, lib) in trackers looking for tx_Source. If you have code
+like::
+
+    if db.tx_Source == "web":
+
+or::
+
+    if db.tx_Source in ['web', 'email-sig-openpgp', 'cli' ]:
+
+you may need to change these to include matches to "rest" and
+"xmlrpc". For example::
+
+    if db.tx_Source in [ "web", "rest", "xmlrpc" ]
+
+or::
+
+    if db.tx_Source in ['web', 'rest', 'xmlrpc', 'email-sig-openpgp', 'cli' ]:
+
+
 Python 3 support
 ----------------
 

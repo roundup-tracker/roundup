@@ -4923,7 +4923,7 @@ directory of your tracker::
            # the nosy field has not changed so no need to check.
            return
 
-       if db.tx_Source in ['web', 'email-sig-openpgp', 'cli' ]:
+       if db.tx_Source in ['web', 'rest', 'xmlrpc', 'email-sig-openpgp', 'cli' ]:
 	   # if the source of the transaction is from an authenticated
 	   # source or a privileged process allow the transaction.
 	   # Other possible sources: 'email'

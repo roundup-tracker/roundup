@@ -94,7 +94,10 @@ Features:
 - issue2551058: Add new permissions: 'Rest Access' and 'Xmlrpc Access'
   to allow per-user access control to rest and xmlrpc interfaces using
   roles.
-
+- issue2551059: added new values for tx_Source to indicate when /rest
+  or /xmlrpc endpoint is being used rather than the normal web
+  endpoints. (John Rouillard)
+  
 Fixed:
 
 - issue2550811: work around Unicode encoding issues in jinja2 template

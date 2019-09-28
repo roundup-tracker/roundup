@@ -26,7 +26,9 @@ def tx_SourceCheckAudit(db, cl, nodeid, newvalues):
           None - Reported when using a script or it is an error if
                  the change arrives by another method.
           "cli" - reported when using roundup-admin
-          "web" - reported when using any web based technique
+          "web" - reported when using html based web pages
+          "rest" - reported when using the /rest web API
+          "xmlrpc" - reported when using the /xmlrpc web API
           "email" - reported when using an unautheticated email based technique
           "email-sig-openpgp" - reported when email with a valid pgp
                                 signature is used
@@ -51,7 +53,9 @@ def tx_SourceCheckReact(db, cl, nodeid, oldvalues):
           None - Reported when using a script or it is an error if
                  the change arrives by another method.
           "cli" - reported when using roundup-admin
-          "web" - reported when using any web based technique
+          "web" - reported when using html based web pages
+          "rest" - reported when using the /rest web API
+          "xmlrpc" - reported when using the /xmlrpc web API
           "email" - reported when using an unautheticated email based technique
           "email-sig-openpgp" - reported when email with a valid pgp
                                 signature is used
