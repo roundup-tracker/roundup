@@ -50,6 +50,20 @@ https://pypi.org/project/MySQL-python/ is still supported, it is
 recommended to switch to the updated module from
 https://pypi.org/project/mysqlclient/.
 
+XMLRPC Access Role
+------------------
+
+A new permission has been added to control access to the XMLRPC
+endpoint. If the user doesn't have the new "Xmlrpc Access" permission,
+they will not be able to log in using the /xmlrpc end point.  To add
+this new permission to the "User" role you should change your
+tracker's schema.py and add::
+
+    db.security.addPermissionToRole('User', 'Xmlrpc Access')
+
+This is usually included near where other permissions like "Web Access"
+or "Email Access" are assigned.
+
 Python 3 support
 ----------------
 

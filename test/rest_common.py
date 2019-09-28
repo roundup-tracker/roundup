@@ -116,6 +116,19 @@ class TestCase():
                        description="Allow jwt access to email",
                        props_only=False)
         self.db.security.addPermissionToRole("User:email", jwt_perms)
+        self.db.security.addPermissionToRole("User:email", "Rest Access")
+
+        # add set of roles for testing jwt's.
+        # this is like the user:email role, but it missing access to the rest endpoint.
+        self.db.security.addRole(name="User:emailnorest",
+                        description="allow email by jwt")
+        jwt_perms = self.db.security.addPermission(name='View',
+                       klass='user',
+                       properties=('id', 'realname', 'address', 'username'),
+                       description="Allow jwt access to email but forget to allow rest",
+                       props_only=False)
+        self.db.security.addPermissionToRole("User:emailnorest", jwt_perms)
+
 
         if jwt:
             # must be 32 chars in length minimum (I think this is at least
@@ -186,6 +199,12 @@ class TestCase():
             self.claim['user:email'] = copy(claim)
             self.claim['user:email']['roles'] = [ "user:email" ]
             self.jwt['user:email'] = b2s(jwt.encode(self.claim['user:email'], secret,
+                                          algorithm='HS256'))
+
+            # generate valid claim with limited user:emailnorest role
+            self.claim['user:emailnorest'] = copy(claim)
+            self.claim['user:emailnorest']['roles'] = [ "user:emailnorest" ]
+            self.jwt['user:emailnorest'] = b2s(jwt.encode(self.claim['user:emailnorest'], secret,
                                           algorithm='HS256'))
 
         self.db.tx_Source = 'web'
@@ -3013,6 +3032,7 @@ class TestCase():
 
     @skip_jwt
     def test_user_email_jwt(self):
+        '''tests "Rest Access" permission present case'''
         # self.dummy_client.main() closes database, so
         # we need a new test with setup called for each test
         out = []
@@ -3078,6 +3098,69 @@ class TestCase():
         self.assertTrue('address' in json_dict['data']['collection'][1])
         self.assertTrue('address' in json_dict['data']['collection'][2])
 
+    @skip_jwt
+    def test_user_emailnorest_jwt(self):
+        '''tests "Rest Access" permission missing case'''
+        # self.dummy_client.main() closes database, so
+        # we need a new test with setup called for each test
+        out = []
+        def wh(s):
+            out.append(s)
+
+        secret = self.db.config.WEB_JWT_SECRET
+
+        # verify library and tokens are correct
+        self.assertRaises(jwt.exceptions.InvalidTokenError,
+                          jwt.decode, self.jwt['expired'],
+                          secret,  algorithms=['HS256'],
+                          audience=self.db.config.TRACKER_WEB,
+                          issuer=self.db.config.TRACKER_WEB)
+
+        result = jwt.decode(self.jwt['user'],
+                            secret,  algorithms=['HS256'],
+                            audience=self.db.config.TRACKER_WEB,
+                            issuer=self.db.config.TRACKER_WEB)
+        self.assertEqual(self.claim['user'],result)
+
+        result = jwt.decode(self.jwt['user:email'],
+                            secret,  algorithms=['HS256'],
+                            audience=self.db.config.TRACKER_WEB,
+                            issuer=self.db.config.TRACKER_WEB)
+        self.assertEqual(self.claim['user:email'],result)
+
+        # set environment for all jwt tests
+        env = {
+            'PATH_INFO': 'rest/data/user',
+            'HTTP_HOST': 'localhost',
+            'TRACKER_NAME': 'rounduptest',
+            "REQUEST_METHOD": "GET"
+        }
+        self.dummy_client = client.Client(self.instance, MockNull(), env,
+                                          [], None)
+        self.dummy_client.db = self.db
+        self.dummy_client.request.headers.get = self.get_header
+        self.empty_form = cgi.FieldStorage()
+        self.terse_form = cgi.FieldStorage()
+        self.terse_form.list = [
+            cgi.MiniFieldStorage('@verbose', '0'),
+        ]
+        self.dummy_client.form = cgi.FieldStorage()
+        self.dummy_client.form.list = [
+            cgi.MiniFieldStorage('@fields', 'username,address'),
+        ]
+        # accumulate json output for further analysis
+        self.dummy_client.write = wh
+
+        # set up for limited user:email role token
+        env['HTTP_AUTHORIZATION'] = 'bearer %s'%self.jwt['user:emailnorest']
+        self.dummy_client.main()
+        json_dict = json.loads(b2s(out[0]))
+        # user will be joe id 3 as auth works
+        self.assertTrue('1', self.db.getuid())
+        { "error": { "status": 403, "msg": "Forbidden." } }
+        self.assertTrue('error' in json_dict)
+        self.assertTrue(json_dict['error']['status'], 403)
+        self.assertTrue(json_dict['error']['msg'], "Forbidden.")
 
     @skip_jwt
     def test_disabled_jwt(self):

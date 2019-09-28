@@ -12,8 +12,8 @@ Introduction
 
 After the last 1.6.0 Release, a REST-API developed in 2015 during a
 Google Summer of Code (GSOC) by Chau Nguyen, supervised by Ezio
-Melotti was integrated. The code was updated by John Rouillard and
-Ralf Schlatterbeck to fix some shortcomings and provide the necessary
+Melotti was integrated. The code was updated by Ralf Schlatterbeck
+and John Rouillard to fix some shortcomings and provide the necessary
 functions for a single page web application, e.g. etag support,
 pagination, field embedding among others.
 
@@ -22,6 +22,15 @@ Enabling the REST API
 
 The REST API can be disabled in the ``[web]`` section of ``config.ini``
 via the variable ``enable_rest`` which is ``yes`` by default.
+
+Users have to be authorized to use the rest api. The user must have
+"Rest Access" permission. To add this to the "User" role change
+schema.py to add::
+
+    db.security.addPermissionToRole('User', 'Rest Access')
+
+This is usually included near where other permissions like "Web Access"
+or "Email Access" are assigned.
 
 The REST api is reached via the ``/rest/`` endpoint of the tracker
 URL. Partial URLs paths below (not starting with https) will have
@@ -1386,6 +1395,7 @@ proper authorization::
             properties=('id', 'times'),
             description="Allow editing timelog for issue", props_only=False)
    db.security.addPermissionToRole("User:timelog", perm)
+   db.security.addPermissionToRole('User:timelog', 'Rest Access')
 
 Then role is named to work with the jwt issue rest call. Starting the role
 name with ``User:`` allows the jwt issue code to create a token with

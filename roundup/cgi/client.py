@@ -62,6 +62,14 @@ def initialiseSecurity(security):
         description="User may access the web interface")
     security.addPermissionToRole('Admin', p)
 
+    p = security.addPermission(name="Rest Access",
+        description="User may access the rest interface")
+    security.addPermissionToRole('Admin', p)
+
+    p = security.addPermission(name="Xmlrpc Access",
+        description="User may access the xmlrpc interface")
+    security.addPermissionToRole('Admin', p)
+
     # doing Role stuff through the web - make sure Admin can
     # TODO: deprecate this and use a property-based control
     p = security.addPermission(name="Web Roles",
@@ -497,9 +505,22 @@ class Client:
             self.determine_user()
         except LoginError as msg:
             output = xmlrpc_.client.dumps(
-                xmlrpc_.client.Fault(1, "%s:%s" % (exc_type, exc_value)),
+                xmlrpc_.client.Fault(401, "%s" % msg),
                 allow_none=True)
+            self.setHeader("Content-Type", "text/xml")
+            self.setHeader("Content-Length", str(len(output)))
+            self.write(s2b(output))
+            return
 
+        if not self.db.security.hasPermission('Xmlrpc Access', self.userid):
+            output = xmlrpc_.client.dumps(
+                xmlrpc_.client.Fault(403, "Forbidden"),
+                allow_none=True)
+            self.setHeader("Content-Type", "text/xml")
+            self.setHeader("Content-Length", str(len(output)))
+            self.write(s2b(output))
+            return
+        
         self.check_anonymous_access()
 
         try:
@@ -544,6 +565,11 @@ class Client:
             self.write(output)
             return
 
+        if not self.db.security.hasPermission('Rest Access', self.userid):
+            self.response_code = 403
+            self.write(s2b('{ "error": { "status": 403, "msg": "Forbidden." } }'))
+            return
+        
         self.check_anonymous_access()
 
         try:

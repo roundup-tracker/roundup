@@ -29,6 +29,8 @@ db.security.addPermission(name='Register', klass='user',
 # Give the regular users access to the web and email interface
 db.security.addPermissionToRole('User', 'Web Access')
 db.security.addPermissionToRole('User', 'Email Access')
+db.security.addPermissionToRole('User', 'Rest Access')
+db.security.addPermissionToRole('User', 'Xmlrpc Access')
 
 # May users view other user information?
 # Comment these lines out if you don't want them to

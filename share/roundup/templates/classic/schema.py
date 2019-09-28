@@ -89,6 +89,8 @@ issue = IssueClass(db, "issue",
 # Give the regular users access to the web and email interface
 db.security.addPermissionToRole('User', 'Web Access')
 db.security.addPermissionToRole('User', 'Email Access')
+db.security.addPermissionToRole('User', 'Rest Access')
+db.security.addPermissionToRole('User', 'Xmlrpc Access')
 
 # Assign the access and edit Permissions for issue, file and message
 # to regular users now

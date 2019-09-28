@@ -205,7 +205,9 @@ db.security.addRole(name='Coordinator', description='A coordinator')
 for r in 'User', 'Developer', 'Coordinator':
     db.security.addPermissionToRole(r, 'Web Access')
     db.security.addPermissionToRole(r, 'Email Access')
-
+    db.security.addPermissionToRole(r, 'Rest Access')
+    db.security.addPermissionToRole(r, 'Xmlrpc Access')
+    
 ##########################
 # User permissions
 ##########################

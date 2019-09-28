@@ -23,12 +23,33 @@ Enabling XML-RPC server
 -----------------------
 There are two ways to run the XML-RPC interface:
 
+  through roundup itself
+
   stand alone roundup-xmlrpc-server
 
-  through roundup itself
+
+through roundup
+---------------
+The XML-RPC service is available from the roundup HTTP server under
+/xmlrpc.
+
+To enable this set ``enable_xmlrpc`` to ``yes`` in the ``[web]``
+section of the ``config.ini`` file in your tracker.
+
+Each user that needs access must include the "Xmlrpc Access" role. To
+add this new permission to the "User" role you should change your
+schema.py to add::
+
+    db.security.addPermissionToRole('User', 'Xmlrpc Access')
+
+This is usually included near where other permissions like "Web Access"
+or "Email Access" are assigned.
 
 stand alone roundup-xmlrpc-server
 ---------------------------------
+Using roundup to access the xmlrpc interface is preferred. Roundup
+provides better control over who can use the interface.
+
 The Roundup XML-RPC standalone server must be started before remote clients can access the
 tracker via XML-RPC. ``roundup-xmlrpc-server`` is installed in the scripts
 directory alongside ``roundup-server`` and roundup-admin``. When invoked, the
@@ -38,11 +59,6 @@ location of the tracker instance must be specified.
 
 The default port is ``8000``. An alternative port can be specified with the
 ``--port`` switch.
-
-through roundup
----------------
-In addition to running a stand alone server described above, the
-XML-RPC service is available from the roundup HTTP server.
 
 security consideration
 ----------------------

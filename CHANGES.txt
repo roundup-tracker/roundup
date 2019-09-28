@@ -91,7 +91,9 @@ Features:
 - issue2551061: Add rudimentary experimental support for JSON Web
   Tokens to allow delegation of limited access rights to third
   parties. See doc/rest.txt for details and intent. (John Rouillard)
- 
+- issue2551058: Add new permissions: 'Rest Access' and 'Xmlrpc Access'
+  to allow per-user access control to rest and xmlrpc interfaces using
+  roles.
 
 Fixed:
 
