@@ -2571,6 +2571,8 @@ class DBTest(commonDBTest):
                                        ' User may retire everything (Retire)\n',
                                        ' User may view everything (View)\n',
                                        ' User may access the web interface (Web Access)\n',
+                                       ' User may access the rest interface (Rest Access)\n',
+                                       ' User may access the xmlrpc interface (Xmlrpc Access)\n',
                                        ' User may manipulate user Roles through the web (Web Roles)\n',
                                        ' User may use the email interface (Email Access)\n',
                                        'Role "anonymous":\n', 'Role "user":\n',
