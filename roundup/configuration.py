@@ -101,8 +101,8 @@ class UnsetDefaultValue:
 
 NODEFAULT = UnsetDefaultValue()
 
-def create_token():
-    return b2s(binascii.b2a_base64(random_.token_bytes(32)).strip())
+def create_token(size=32):
+    return b2s(binascii.b2a_base64(random_.token_bytes(size)).strip())
 
 ### Option classes
 
@@ -951,6 +951,14 @@ always passes, so setting it less than 1 is not recommended."""),
             "(Note the default value changes every time\n"
             "     roundup-admin updateconfig\n"
             "is run, so it must be explicitly set to a non-empty string.\n"),
+        (MandatoryOption, "jwt_secret", "disabled",
+            "This is used to generate/validate json web tokens (jwt).\n"
+            "Even if you don't use jwts it must not be empty.\n"
+            "If less than 256 bits (32 characters) in length it will\n"
+            "disable use of jwt. Changing this invalidates all jwts\n"
+            "issued by the roundup instance requiring *all* users to\n"
+            "generate new jwts. This is experimental and disabled by default.\n"
+            "It must be persistent across application restarts.\n"),
     )),
     ("rdbms", (
         (DatabaseBackend, 'backend', NODEFAULT,

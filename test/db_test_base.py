@@ -64,7 +64,7 @@ config.TRACKER_WEB = "http://tracker.example/cgi-bin/roundup.cgi/bugs/"
 #config.LOGGING_LEVEL = "DEBUG"
 config.init_logging()
 
-def setupTracker(dirname, backend="anydbm"):
+def setupTracker(dirname, backend="anydbm", optimize=False):
     """Install and initialize new tracker in dirname; return tracker instance.
 
     If the directory exists, it is wiped out before the operation.
@@ -84,7 +84,7 @@ def setupTracker(dirname, backend="anydbm"):
                                        'classic'))
     config.RDBMS_BACKEND = backend
     config.save(os.path.join(dirname, 'config.ini'))
-    tracker = instance.open(dirname)
+    tracker = instance.open(dirname, optimize=optimize)
     if tracker.exists():
         tracker.nuke()
     tracker.init(password.Password('sekrit'))

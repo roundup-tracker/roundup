@@ -88,6 +88,10 @@ Features:
 - The database filter method now can also do an exact string search.
 - The database filter method now has limit and offset parameters that
   map to the corresponging parameters of SQL.
+- issue2551061: Add rudimentary experimental support for JSON Web
+  Tokens to allow delegation of limited access rights to third
+  parties. See doc/rest.txt for details and intent. (John Rouillard)
+ 
 
 Fixed:
 

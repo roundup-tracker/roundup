@@ -493,7 +493,13 @@ class Client:
         self.determine_charset()
         self.determine_language()
         # Open the database as the correct user.
-        self.determine_user()
+        try:
+            self.determine_user()
+        except LoginError as msg:
+            output = xmlrpc_.client.dumps(
+                xmlrpc_.client.Fault(1, "%s:%s" % (exc_type, exc_value)),
+                allow_none=True)
+
         self.check_anonymous_access()
 
         try:
@@ -532,7 +538,7 @@ class Client:
             self.determine_user()
         except LoginError as err:
             self.response_code = http_.client.UNAUTHORIZED
-            output = b"Invalid Login\n"
+            output = s2b("Invalid Login - %s"%str(err))
             self.setHeader("Content-Length", str(len(output)))
             self.setHeader("Content-Type", "text/plain")
             self.write(output)
@@ -914,6 +920,11 @@ class Client:
         """Determine who the user is"""
         self.opendb('admin')
 
+        # if we get a jwt, it includes the roles to be used for this session
+        # so we define a new function to encpsulate and return the jwt roles
+        # and not take the roles from the database.
+        override_get_roles = None
+        
         # get session data from db
         # XXX: rename
         self.session_api = Session(self)
@@ -963,6 +974,49 @@ class Client:
                     # just the time. If random is SystemRandom,
                     # this is a no-op.
                     random_.seed("%s%s"%(password,time.time())) 
+                elif scheme.lower() == 'bearer':
+                    try: # will jwt import?
+                        import jwt
+                        from roundup.hyperdb import iter_roles
+                        try: # handle jwt exceptions
+                            secret = self.db.config.WEB_JWT_SECRET
+                            if len(secret) < 32:
+                                # no support for jwt, this is fine.
+                                self.setHeader("WWW-Authenticate", "Basic")
+                                raise LoginError('Support for jwt disabled by admin.')
+                            token = jwt.decode(challenge, secret,
+                                           algorithms=['HS256'],
+                                           audience=self.db.config.TRACKER_WEB,
+                                           issuer=self.db.config.TRACKER_WEB)
+                        except jwt.exceptions.InvalidTokenError as err:
+                            self.setHeader("WWW-Authenticate", "Basic, Bearer")
+                            self.make_user_anonymous()
+                            raise LoginError(str(err))
+
+                        # if we got here token is valid, use the role
+                        # and sub claims.
+                        try:
+                            # make sure to str(token['sub']) the subject. As decoded
+                            # by json, it is unicode which thows an error when used
+                            # with 'nodeid in db' down the call chain.
+                            user = self.db.user.get(str(token['sub']), 'username')
+                        except IndexError:
+                            raise LoginError("Token subject is invalid.")
+
+                        # validate roles
+                        all_rolenames = [ role[0] for role in self.db.security.role.items() ]
+                        for r in token['roles']:
+                            if r.lower() not in all_rolenames:
+                                raise LoginError("Token roles are invalid.")
+                            
+                        # will be used later to override the get_roles method
+                        override_get_roles = \
+                             lambda self: iter_roles(','.join(token['roles']))
+                             
+                    except ImportError:
+                        # no support for jwt, this is fine.
+                        self.setHeader("WWW-Authenticate", "Basic")
+                        raise LoginError('Support for jwt disabled.')
 
         # if user was not set by http authorization, try session lookup
         if not user:
@@ -991,6 +1045,12 @@ class Client:
 
         # reopen the database as the correct user
         self.opendb(self.user)
+        if override_get_roles:
+            # opendb destroys and re-opens the db if instance.optimize
+            # is not true. This deletes an override of get_roles.  So
+            # assign get_roles override from the jwt if needed at this
+            # point.
+            self.db.user.get_roles = override_get_roles
 
     def check_anonymous_access(self):
         """Check that the Anonymous user is actually allowed to use the web

@@ -5,7 +5,27 @@ import errno
 import cgi
 
 from time import sleep
-from datetime import datetime
+from datetime import datetime, timedelta
+
+try:
+    from datetime import timezone
+    myutc = timezone.utc
+except ImportError:
+    # python 2
+    from datetime import tzinfo
+    ZERO = timedelta(0)
+    class UTC(tzinfo):
+        """UTC"""
+        def utcoffset(self, dt):
+            return ZERO
+        
+        def tzname(self, dt):
+            return "UTC"
+        
+        def dst(self, dt):
+            return ZERO
+
+    myutc = UTC()
 
 from roundup.cgi.exceptions import *
 from roundup.hyperdb import HyperdbValueError
@@ -27,6 +47,17 @@ from .mocknull import MockNull
 from io import BytesIO
 import json
 
+from copy import copy
+
+try:
+    import jwt
+    skip_jwt = lambda func, *args, **kwargs: func
+except ImportError:
+    from .pytest_patcher import mark_class
+    jwt=None 
+    skip_jwt = mark_class(pytest.mark.skip(
+        reason='Skipping JWT tests: jwt library not available'))
+    
 NEEDS_INSTANCE = 1
 
 
@@ -38,7 +69,10 @@ class TestCase():
     def setUp(self):
         self.dirname = '_test_rest'
         # set up and open a tracker
-        self.instance = setupTracker(self.dirname, self.backend)
+        # Set optimize=True as code under test (Client.main()::determine_user)
+        # will close and re-open the database on user changes. This wipes
+        # out additions to the schema needed for testing.
+        self.instance = setupTracker(self.dirname, self.backend, optimize=True)
 
         # open the database
         self.db = self.instance.open('admin')
@@ -60,12 +94,99 @@ class TestCase():
             roles='User'
         )
 
+        self.db.user.set('1', address="admin@admin.com")
+        self.db.user.set('2', address="anon@admin.com")
         self.db.commit()
         self.db.close()
         self.db = self.instance.open('joe')
         # Allow joe to retire
         p = self.db.security.addPermission(name='Retire', klass='issue')
         self.db.security.addPermissionToRole('User', p)
+
+        # add set of roles for testing jwt's.
+        self.db.security.addRole(name="User:email",
+                        description="allow email by jwt")
+        # allow the jwt to access everybody's email addresses.
+        # this makes it easier to differentiate between User and
+        # User:email roles by accessing the /rest/data/user
+        # endpoint
+        jwt_perms = self.db.security.addPermission(name='View',
+                       klass='user',
+                       properties=('id', 'realname', 'address', 'username'),
+                       description="Allow jwt access to email",
+                       props_only=False)
+        self.db.security.addPermissionToRole("User:email", jwt_perms)
+
+        if jwt:
+            # must be 32 chars in length minimum (I think this is at least
+            # 256 bits of data)
+
+            secret = "TestingTheJwtSecretTestingTheJwtSecret"
+            self.db.config['WEB_JWT_SECRET'] = secret
+
+            # generate all timestamps in UTC.
+            base_datetime = datetime(1970,1,1, tzinfo=myutc)
+
+            # A UTC timestamp for now.
+            dt = datetime.now(myutc)
+            now_ts = int((dt - base_datetime).total_seconds())
+
+            # one good for a minute
+            dt = dt + timedelta(seconds=60)
+            plus1min_ts = int((dt - base_datetime).total_seconds())
+
+            # one that expired a minute ago
+            dt = dt - timedelta(seconds=120)
+            expired_ts = int((dt - base_datetime).total_seconds())
+
+            # claims match what cgi/client.py::determine_user
+            # is looking for
+            claim= { 'sub': self.db.getuid(),
+                     'iss': self.db.config.TRACKER_WEB,
+                     'aud': self.db.config.TRACKER_WEB,
+                     'roles': [ 'User' ],
+                     'iat': now_ts,
+                     'exp': plus1min_ts,
+            }
+            
+            self.jwt = {}
+            self.claim = {}
+            # generate invalid claim with expired timestamp
+            self.claim['expired'] = copy(claim)
+            self.claim['expired']['exp'] = expired_ts
+            self.jwt['expired'] = b2s(jwt.encode(self.claim['expired'], secret,
+                                             algorithm='HS256'))
+         
+            # generate valid claim with user role
+            self.claim['user'] = copy(claim)
+            self.claim['user']['exp'] = plus1min_ts
+            self.jwt['user'] = b2s(jwt.encode(self.claim['user'], secret,
+                                          algorithm='HS256'))
+            # generate invalid claim bad issuer
+            self.claim['badiss'] = copy(claim)
+            self.claim['badiss']['iss'] = "http://someissuer/bugs"
+            self.jwt['badiss'] = b2s(jwt.encode(self.claim['badiss'], secret,
+                                          algorithm='HS256'))
+            # generate invalid claim bad aud(ience)
+            self.claim['badaud'] = copy(claim)
+            self.claim['badaud']['aud'] = "http://someaudience/bugs"
+            self.jwt['badaud'] = b2s(jwt.encode(self.claim['badaud'], secret,
+                                          algorithm='HS256'))            
+            # generate invalid claim bad sub(ject)
+            self.claim['badsub'] = copy(claim)
+            self.claim['badsub']['sub'] = str("99")
+            self.jwt['badsub'] = b2s(jwt.encode(self.claim['badsub'], secret,
+                                          algorithm='HS256'))            
+            # generate invalid claim bad roles
+            self.claim['badroles'] = copy(claim)
+            self.claim['badroles']['roles'] = [ "badrole1", "badrole2" ]
+            self.jwt['badroles'] = b2s(jwt.encode(self.claim['badroles'], secret,
+                                          algorithm='HS256'))            
+            # generate valid claim with limited user:email role
+            self.claim['user:email'] = copy(claim)
+            self.claim['user:email']['roles'] = [ "user:email" ]
+            self.jwt['user:email'] = b2s(jwt.encode(self.claim['user:email'], secret,
+                                          algorithm='HS256'))
 
         self.db.tx_Source = 'web'
 
@@ -2758,6 +2879,388 @@ class TestCase():
         self.assertEqual(len(results['attributes']['nosy']), 0)
         self.assertListEqual(results['attributes']['nosy'], [])
 
+    @skip_jwt
+    def test_expired_jwt(self):
+        # self.dummy_client.main() closes database, so
+        # we need a new test with setup called for each test
+        out = []
+        def wh(s):
+            out.append(s)
+
+        secret = self.db.config.WEB_JWT_SECRET
+
+        # verify library and tokens are correct
+        self.assertRaises(jwt.exceptions.InvalidTokenError,
+                          jwt.decode, self.jwt['expired'],
+                          secret,  algorithms=['HS256'],
+                          audience=self.db.config.TRACKER_WEB,
+                          issuer=self.db.config.TRACKER_WEB)
+
+        result = jwt.decode(self.jwt['user'],
+                            secret,  algorithms=['HS256'],
+                            audience=self.db.config.TRACKER_WEB,
+                            issuer=self.db.config.TRACKER_WEB)
+        self.assertEqual(self.claim['user'],result)
+
+        result = jwt.decode(self.jwt['user:email'],
+                            secret,  algorithms=['HS256'],
+                            audience=self.db.config.TRACKER_WEB,
+                            issuer=self.db.config.TRACKER_WEB)
+        self.assertEqual(self.claim['user:email'],result)
+
+        # set environment for all jwt tests
+        env = {
+            'PATH_INFO': 'rest/data/user',
+            'HTTP_HOST': 'localhost',
+            'TRACKER_NAME': 'rounduptest',
+            "REQUEST_METHOD": "GET"
+        }
+        self.dummy_client = client.Client(self.instance, MockNull(), env,
+                                          [], None)
+        self.dummy_client.db = self.db
+        self.dummy_client.request.headers.get = self.get_header
+        self.empty_form = cgi.FieldStorage()
+        self.terse_form = cgi.FieldStorage()
+        self.terse_form.list = [
+            cgi.MiniFieldStorage('@verbose', '0'),
+        ]
+        self.dummy_client.form = cgi.FieldStorage()
+        self.dummy_client.form.list = [
+            cgi.MiniFieldStorage('@fields', 'username,address'),
+        ]
+        # accumulate json output for further analysis
+        self.dummy_client.write = wh
+
+        # set up for expired token first
+        env['HTTP_AUTHORIZATION'] = 'bearer %s'%self.jwt['expired']
+        self.dummy_client.main()
+
+        # this will be the admin still as auth failed
+        self.assertEqual('1', self.db.getuid())
+        self.assertEqual(out[0], b'Invalid Login - Signature has expired')
+        del(out[0])
+
+
+    @skip_jwt
+    def test_user_jwt(self):
+        # self.dummy_client.main() closes database, so
+        # we need a new test with setup called for each test
+        out = []
+        def wh(s):
+            out.append(s)
+
+        secret = self.db.config.WEB_JWT_SECRET
+
+        # verify library and tokens are correct
+        self.assertRaises(jwt.exceptions.InvalidTokenError,
+                          jwt.decode, self.jwt['expired'],
+                          secret,  algorithms=['HS256'],
+                          audience=self.db.config.TRACKER_WEB,
+                          issuer=self.db.config.TRACKER_WEB)
+
+        result = jwt.decode(self.jwt['user'],
+                            secret,  algorithms=['HS256'],
+                            audience=self.db.config.TRACKER_WEB,
+                            issuer=self.db.config.TRACKER_WEB)
+        self.assertEqual(self.claim['user'],result)
+
+        result = jwt.decode(self.jwt['user:email'],
+                            secret,  algorithms=['HS256'],
+                            audience=self.db.config.TRACKER_WEB,
+                            issuer=self.db.config.TRACKER_WEB)
+        self.assertEqual(self.claim['user:email'],result)
+
+        # set environment for all jwt tests
+        env = {
+            'PATH_INFO': 'rest/data/user',
+            'HTTP_HOST': 'localhost',
+            'TRACKER_NAME': 'rounduptest',
+            "REQUEST_METHOD": "GET"
+        }
+        self.dummy_client = client.Client(self.instance, MockNull(), env,
+                                          [], None)
+        self.dummy_client.db = self.db
+        self.dummy_client.request.headers.get = self.get_header
+        self.empty_form = cgi.FieldStorage()
+        self.terse_form = cgi.FieldStorage()
+        self.terse_form.list = [
+            cgi.MiniFieldStorage('@verbose', '0'),
+        ]
+        self.dummy_client.form = cgi.FieldStorage()
+        self.dummy_client.form.list = [
+            cgi.MiniFieldStorage('@fields', 'username,address'),
+        ]
+        # accumulate json output for further analysis
+        self.dummy_client.write = wh
+
+        # set up for standard user role token
+        env['HTTP_AUTHORIZATION'] = 'bearer %s'%self.jwt['user']
+        self.dummy_client.main()
+        print(out[0])
+        json_dict = json.loads(b2s(out[0]))
+        print(json_dict)
+        # user will be joe id 3 as auth works
+        self.assertTrue('3', self.db.getuid())
+        # there should be three items in the collection admin, anon, and joe
+        self.assertEqual(3, len(json_dict['data']['collection']))
+        # since this token has no access to email addresses, only joe
+        # should have email addresses. Order is by id by default.
+        self.assertFalse('address' in json_dict['data']['collection'][0])
+        self.assertFalse('address' in json_dict['data']['collection'][1])
+        self.assertTrue('address' in json_dict['data']['collection'][2])
+        del(out[0])
+        self.db.setCurrentUser('admin')
+
+    @skip_jwt
+    def test_user_email_jwt(self):
+        # self.dummy_client.main() closes database, so
+        # we need a new test with setup called for each test
+        out = []
+        def wh(s):
+            out.append(s)
+
+        secret = self.db.config.WEB_JWT_SECRET
+
+        # verify library and tokens are correct
+        self.assertRaises(jwt.exceptions.InvalidTokenError,
+                          jwt.decode, self.jwt['expired'],
+                          secret,  algorithms=['HS256'],
+                          audience=self.db.config.TRACKER_WEB,
+                          issuer=self.db.config.TRACKER_WEB)
+
+        result = jwt.decode(self.jwt['user'],
+                            secret,  algorithms=['HS256'],
+                            audience=self.db.config.TRACKER_WEB,
+                            issuer=self.db.config.TRACKER_WEB)
+        self.assertEqual(self.claim['user'],result)
+
+        result = jwt.decode(self.jwt['user:email'],
+                            secret,  algorithms=['HS256'],
+                            audience=self.db.config.TRACKER_WEB,
+                            issuer=self.db.config.TRACKER_WEB)
+        self.assertEqual(self.claim['user:email'],result)
+
+        # set environment for all jwt tests
+        env = {
+            'PATH_INFO': 'rest/data/user',
+            'HTTP_HOST': 'localhost',
+            'TRACKER_NAME': 'rounduptest',
+            "REQUEST_METHOD": "GET"
+        }
+        self.dummy_client = client.Client(self.instance, MockNull(), env,
+                                          [], None)
+        self.dummy_client.db = self.db
+        self.dummy_client.request.headers.get = self.get_header
+        self.empty_form = cgi.FieldStorage()
+        self.terse_form = cgi.FieldStorage()
+        self.terse_form.list = [
+            cgi.MiniFieldStorage('@verbose', '0'),
+        ]
+        self.dummy_client.form = cgi.FieldStorage()
+        self.dummy_client.form.list = [
+            cgi.MiniFieldStorage('@fields', 'username,address'),
+        ]
+        # accumulate json output for further analysis
+        self.dummy_client.write = wh
+
+        # set up for limited user:email role token
+        env['HTTP_AUTHORIZATION'] = 'bearer %s'%self.jwt['user:email']
+        self.dummy_client.main()
+        json_dict = json.loads(b2s(out[0]))
+        print(json_dict)
+        # user will be joe id 3 as auth works
+        self.assertTrue('3', self.db.getuid())
+        # there should be three items in the collection admin, anon, and joe
+        self.assertEqual(3, len(json_dict['data']['collection']))
+        # However this token has access to email addresses, so all three
+        # should have email addresses. Order is by id by default.
+        self.assertTrue('address' in json_dict['data']['collection'][0])
+        self.assertTrue('address' in json_dict['data']['collection'][1])
+        self.assertTrue('address' in json_dict['data']['collection'][2])
+
+
+    @skip_jwt
+    def test_disabled_jwt(self):
+        # self.dummy_client.main() closes database, so
+        # we need a new test with setup called for each test
+        out = []
+        def wh(s):
+            out.append(s)
+
+        # set environment for all jwt tests
+        env = {
+            'PATH_INFO': 'rest/data/user',
+            'HTTP_HOST': 'localhost',
+            'TRACKER_NAME': 'rounduptest',
+            "REQUEST_METHOD": "GET"
+        }
+        self.dummy_client = client.Client(self.instance, MockNull(), env,
+                                          [], None)
+        self.dummy_client.db = self.db
+        self.dummy_client.request.headers.get = self.get_header
+        self.empty_form = cgi.FieldStorage()
+        self.terse_form = cgi.FieldStorage()
+        self.terse_form.list = [
+            cgi.MiniFieldStorage('@verbose', '0'),
+        ]
+        self.dummy_client.form = cgi.FieldStorage()
+        self.dummy_client.form.list = [
+            cgi.MiniFieldStorage('@fields', 'username,address'),
+        ]
+        # accumulate json output for further analysis
+        self.dummy_client.write = wh
+        # disable jwt validation by making secret too short
+        # use the default value for this in configure.py.
+        self.db.config['WEB_JWT_SECRET'] = "disabled"
+        env['HTTP_AUTHORIZATION'] = 'bearer %s'%self.jwt['user']
+        self.dummy_client.main()
+        # user will be 1 as there is no auth
+        self.assertTrue('1', self.db.getuid())
+        self.assertEqual(out[0], b'Invalid Login - Support for jwt disabled by admin.')
+
+    @skip_jwt
+    def test_bad_issue_jwt(self):
+        # self.dummy_client.main() closes database, so
+        # we need a new test with setup called for each test
+        out = []
+        def wh(s):
+            out.append(s)
+
+        # set environment for all jwt tests
+        env = {
+            'PATH_INFO': 'rest/data/user',
+            'HTTP_HOST': 'localhost',
+            'TRACKER_NAME': 'rounduptest',
+            "REQUEST_METHOD": "GET"
+        }
+        self.dummy_client = client.Client(self.instance, MockNull(), env,
+                                          [], None)
+        self.dummy_client.db = self.db
+        self.dummy_client.request.headers.get = self.get_header
+        self.empty_form = cgi.FieldStorage()
+        self.terse_form = cgi.FieldStorage()
+        self.terse_form.list = [
+            cgi.MiniFieldStorage('@verbose', '0'),
+        ]
+        self.dummy_client.form = cgi.FieldStorage()
+        self.dummy_client.form.list = [
+            cgi.MiniFieldStorage('@fields', 'username,address'),
+        ]
+        # accumulate json output for further analysis
+        self.dummy_client.write = wh
+        env['HTTP_AUTHORIZATION'] = 'bearer %s'%self.jwt['badiss']
+        self.dummy_client.main()
+        # user will be 1 as there is no auth
+        self.assertTrue('1', self.db.getuid())
+        self.assertEqual(out[0], b'Invalid Login - Invalid issuer')
+
+    @skip_jwt
+    def test_bad_audience_jwt(self):
+        # self.dummy_client.main() closes database, so
+        # we need a new test with setup called for each test
+        out = []
+        def wh(s):
+            out.append(s)
+
+        # set environment for all jwt tests
+        env = {
+            'PATH_INFO': 'rest/data/user',
+            'HTTP_HOST': 'localhost',
+            'TRACKER_NAME': 'rounduptest',
+            "REQUEST_METHOD": "GET"
+        }
+        self.dummy_client = client.Client(self.instance, MockNull(), env,
+                                          [], None)
+        self.dummy_client.db = self.db
+        self.dummy_client.request.headers.get = self.get_header
+        self.empty_form = cgi.FieldStorage()
+        self.terse_form = cgi.FieldStorage()
+        self.terse_form.list = [
+            cgi.MiniFieldStorage('@verbose', '0'),
+        ]
+        self.dummy_client.form = cgi.FieldStorage()
+        self.dummy_client.form.list = [
+            cgi.MiniFieldStorage('@fields', 'username,address'),
+        ]
+        # accumulate json output for further analysis
+        self.dummy_client.write = wh
+        env['HTTP_AUTHORIZATION'] = 'bearer %s'%self.jwt['badaud']
+        self.dummy_client.main()
+        # user will be 1 as there is no auth
+        self.assertTrue('1', self.db.getuid())
+        self.assertEqual(out[0], b'Invalid Login - Invalid audience')
+
+    @skip_jwt
+    def test_bad_roles_jwt(self):
+        # self.dummy_client.main() closes database, so
+        # we need a new test with setup called for each test
+        out = []
+        def wh(s):
+            out.append(s)
+
+        # set environment for all jwt tests
+        env = {
+            'PATH_INFO': 'rest/data/user',
+            'HTTP_HOST': 'localhost',
+            'TRACKER_NAME': 'rounduptest',
+            "REQUEST_METHOD": "GET"
+        }
+        self.dummy_client = client.Client(self.instance, MockNull(), env,
+                                          [], None)
+        self.dummy_client.db = self.db
+        self.dummy_client.request.headers.get = self.get_header
+        self.empty_form = cgi.FieldStorage()
+        self.terse_form = cgi.FieldStorage()
+        self.terse_form.list = [
+            cgi.MiniFieldStorage('@verbose', '0'),
+        ]
+        self.dummy_client.form = cgi.FieldStorage()
+        self.dummy_client.form.list = [
+            cgi.MiniFieldStorage('@fields', 'username,address'),
+        ]
+        # accumulate json output for further analysis
+        self.dummy_client.write = wh
+        env['HTTP_AUTHORIZATION'] = 'bearer %s'%self.jwt['badroles']
+        self.dummy_client.main()
+        # user will be 1 as there is no auth
+        self.assertTrue('1', self.db.getuid())
+        self.assertEqual(out[0], b'Invalid Login - Token roles are invalid.')
+
+    @skip_jwt
+    def test_bad_subject_jwt(self):
+        # self.dummy_client.main() closes database, so
+        # we need a new test with setup called for each test
+        out = []
+        def wh(s):
+            out.append(s)
+
+        # set environment for all jwt tests
+        env = {
+            'PATH_INFO': 'rest/data/user',
+            'HTTP_HOST': 'localhost',
+            'TRACKER_NAME': 'rounduptest',
+            "REQUEST_METHOD": "GET"
+        }
+        self.dummy_client = client.Client(self.instance, MockNull(), env,
+                                          [], None)
+        self.dummy_client.db = self.db
+        self.dummy_client.request.headers.get = self.get_header
+        self.empty_form = cgi.FieldStorage()
+        self.terse_form = cgi.FieldStorage()
+        self.terse_form.list = [
+            cgi.MiniFieldStorage('@verbose', '0'),
+        ]
+        self.dummy_client.form = cgi.FieldStorage()
+        self.dummy_client.form.list = [
+            cgi.MiniFieldStorage('@fields', 'username,address'),
+        ]
+        # accumulate json output for further analysis
+        self.dummy_client.write = wh
+        env['HTTP_AUTHORIZATION'] = 'bearer %s'%self.jwt['badsub']
+        self.dummy_client.main()
+        # user will be 1 as there is no auth
+        self.assertTrue('1', self.db.getuid())
+        self.assertEqual(out[0], b'Invalid Login - Token subject is invalid.')
 
 def get_obj(path, id):
     return {

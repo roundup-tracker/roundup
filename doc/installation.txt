@@ -112,6 +112,10 @@ jinja2
   its TEMPLATE-INFO.txt file) you need
   to have the jinja2_ template engine installed.
 
+pyjwt
+  To use jwt tokens for login (experimental), install pyjwt. If you
+  don't have it installed, jwt tokens are not supported.
+  
 Windows Service
   You can run Roundup as a Windows service if pywin32_ is installed.
   Otherwise it must be started manually.

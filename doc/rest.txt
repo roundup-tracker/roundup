@@ -1237,7 +1237,8 @@ allows filtering to happen with admin privs escaping the standard
 permissions scheme. For example access to a user's roles should be
 limited to the user (read only) and an admin.  If you have customized
 your schema to implement `Restricting the list of
-users that are assignable to a task <customizing.html#restricting-the-list-of-users-that-are-assignable-to-a-task>`__ so that only users with a
+users that are assignable to a task <customizing.html#restricting-the-list-of-users-that-are-assignable-to-a-task>`__
+so that only users with a
 Developer role are allowed to be assigned to an issue, a rest end
 point must be added to provide a view that exposes users with this
 permission.
@@ -1333,6 +1334,248 @@ assuming user 4 is the only user with the Developer role. Note that
 the url passes the `roles=User` filter option which is silently
 ignored.
 
+Changing Access Roles with JSON Web Tokens
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+As discussed above Roundup's schema is the access control mechanism.
+However you may want to integrate a third party system with roundup.
+E.G. suppose you use a time tracking service that takes an issue id
+and keeps a running count of how much time was spent on it. Then with
+a single button push it can add the recorded time to the roundup
+issue.
+
+You probably don't want to give this third party service your roundup
+username and credentials. Especially if your roundup instance is under
+your company's single sign on infrastructure.
+
+So what we need is a way for this third part service to impersonate
+you and have access to create a roundup timelog entry (see
+`<customizing.html#adding-a-time-log-to-your-issues>`__. Then add it
+to the associated issue. This should happen without sharing passwords
+and without the third party service to see the issue (except the
+``times`` property), user, or other information in the tracker.
+
+Enter the use of a JSON web token. Roundup has rudimentary ability to
+manage JWTs and use them for authentication and authorization.
+
+There are 5 steps to set this up:
+
+1. install pyjwt library using pip or pip3. If roundup can't find the
+   jwt module you will see the error ``Support for jwt disabled.``
+2. create a new role that allows Create access to timelog and edit
+   access to an issues' ``times`` property.
+3. add support for issuing (and validating) jwts to the rest interface.
+   This uses the `Adding new rest endpoints`_ mechanism.
+4. configure roundup's config.ini [web] jwt_secret with at least 32
+   random characters of data. (You will get a message
+   ``Support for jwt disabled by admin.`` if it's not long enough.)
+5. add an auditor to make sure that users with this role are appending
+   timelog links to the `times` property of the issue.
+
+Create role
+"""""""""""
+
+Adding this snippet of code to the tracker's ``schema.py`` should create a role with the
+proper authorization::
+
+   db.security.addRole(name="User:timelog", description="allow a user to create and append timelogs")
+   perm = db.security.addPermission(name='Create', klass='timelog',
+            description="Allow timelog creation", props_only=False)
+   db.security.addPermissionToRole("User:timelog", perm)
+   perm = db.security.addPermission(name='Edit', klass='issue',
+            properties=('id', 'times'),
+            description="Allow editing timelog for issue", props_only=False)
+   db.security.addPermissionToRole("User:timelog", perm)
+
+Then role is named to work with the jwt issue rest call. Starting the role
+name with ``User:`` allows the jwt issue code to create a token with
+this role if the user requesting the role has the User role.
+
+Create rest endpoints
+"""""""""""""""""""""
+
+Here is code to add to your tracker's ``interfaces.py`` (note code is
+python3)::
+
+    from roundup.rest import Routing, RestfulInstance, _data_decorator
+
+    class RestfulInstance(object):
+	@Routing.route("/jwt/issue", 'POST')
+	@_data_decorator
+	def generate_jwt(self, input):
+	    import jwt
+	    import datetime
+	    from roundup.anypy.strings import b2s
+
+	    # require basic auth to generate a token
+	    # At some point we can support a refresh token.
+	    # maybe a jwt with the "refresh": True claim generated
+	    # using: "refresh": True in the json request payload.
+
+	    denialmsg='Token creation requires login with basic auth.'
+	    if 'HTTP_AUTHORIZATION' in self.client.env:
+		try:
+		    auth = self.client.env['HTTP_AUTHORIZATION']
+		    scheme, challenge = auth.split(' ', 1)
+		except (ValueError, AttributeError):
+		    # bad format for header
+		    raise Unauthorised(denialmsg)
+		if scheme.lower() != 'basic':
+		    raise Unauthorised(denialmsg)
+	    else:
+		raise Unauthorised(denialmsg)
+
+	    # If we reach this point we have validated that the user has
+	    # logged in with a password using basic auth.
+	    all_roles = list(self.db.security.role.items())
+	    rolenames = []
+	    for role in all_roles:
+		rolenames.append(role[0])
+
+	    user_roles = list(self.db.user.get_roles(self.db.getuid()))
+
+	    claim= { 'sub': self.db.getuid(),
+		     'iss': self.db.config.TRACKER_WEB,
+		     'aud': self.db.config.TRACKER_WEB,
+		     'iat': datetime.datetime.utcnow(),
+		   }
+
+	    lifetime = 0
+	    if 'lifetime' in input:
+		if input['lifetime'].value != 'unlimited':
+		    try:
+			lifetime = datetime.timedelta(seconds=int(input['lifetime'].value))
+		    except ValueError:
+			raise UsageError("Value 'lifetime' must be 'unlimited' or an integer to specify" +
+					 " lifetime in seconds. Got %s."%input['lifetime'].value)
+	    else:
+		lifetime = datetime.timedelta(seconds=86400) # 1 day by default
+
+	    if lifetime: # if lifetime = 0 make unlimited by omitting exp claim
+		claim['exp'] = datetime.datetime.utcnow() + lifetime
+
+	    newroles = []
+	    if 'roles' in input:
+		for role in input['roles'].value:
+		    if role not in rolenames:
+			raise UsageError("Role %s is not valid."%role)
+		    if role in user_roles:
+			newroles.append(role)
+			continue
+		    parentrole = role.split(':', 1)[0]
+		    if parentrole in user_roles:
+			newroles.append(role)
+			continue
+
+		    raise UsageError("Role %s is not permitted."%role)
+
+		claim['roles'] = newroles
+	    else:
+		claim['roles'] = user_roles
+	    secret = self.db.config.WEB_JWT_SECRET
+	    myjwt = jwt.encode(claim, secret, algorithm='HS256')
+
+	    result = {"jwt": b2s(myjwt),
+		     }
+
+	    return 200, result
+
+	@Routing.route("/jwt/validate", 'GET')
+	@_data_decorator
+	def validate_jwt(self,input):
+	    import jwt
+	    if not 'jwt' in input:
+		raise UsageError("jwt key must be specified")
+
+	    myjwt = input['jwt'].value
+
+	    secret = self.db.config.WEB_JWT_SECRET
+	    try:
+		result = jwt.decode(myjwt, secret,
+				    algorithms=['HS256'],
+				    audience=self.db.config.TRACKER_WEB,
+				    issuer=self.db.config.TRACKER_WEB,
+		)
+	    except jwt.exceptions.InvalidTokenError as err:
+		return 401, str(err)
+
+	    return 200, result
+
+**Note this is sample code. Use at your own risk.** It breaks a few
+rules about jwts (e.g. it allows you to make unlimited lifetime
+jwts). If you subscribe to the concept of jwt refresh tokens, this code
+will have to be changed as it will only generate jwts with
+username/password authentication.
+
+Currently use of jwts an experiment. If this appeals to you consider
+providing patches to existing code to:
+
+1. record all jwts created by a user
+2. using the record to allow jwts to be revoked and ignored by the
+   roundup core
+3. provide a UI page for managing/revoking jwts
+4. provide a rest api for revoking jwts
+
+These end points can be used like::
+
+   curl -u demo -s -X POST -H "Referer: https://.../demo/" \
+      -H "X-requested-with: rest" \
+      -H "Content-Type: application/json" \
+      --data '{"lifetime": "3600", "roles": [ "user:timelog" ] }' \
+   https://.../demo/rest/jwt/issue
+
+(note roles is a json array/list of strings not a string) to get::
+
+  {
+    "data": {
+            "jwt":  "eyJ0eXAiOiJK......XxMDb-Q3oCnMpyhxPXMAk"
+        }
+  }
+
+The jwt is shortened in the example since it's large. You can validate
+a jwt to see if it's still valid using::
+
+
+  curl -s -H "Referer: https://.../demo/" \
+  -H "X-requested-with: rest" \
+      https://rouilj.dynamic-dns.net/demo/rest/jwt/validate?jwt=eyJ0eXAiOiJK......XxMDb-Q3oCnMpyhxPXMAk
+
+(note no login is required) which returns::
+  
+  {
+    "data": {
+       "user": "3",
+       "roles": [
+            "user:timelog"
+        ],
+       "iss": "https://.../demo/",
+       "aud": "https://.../demo/",
+       "iat": 1569542404,
+       "exp": 1569546004
+     }
+  }				
+
+Final steps
+^^^^^^^^^^^
+
+See the `upgrading documentation`__ on how to regenerate an updated copy of
+config.ini using roundup-admin. Then set the ``jwt_secret`` to at
+least 32 characters (more is better up to 512 bits).
+
+Writing an auditor that uses "db.user.get_roles" to see if the user
+making the change has the ``user:timelog`` role, and then comparing
+the original ``times`` list to the new list to verify that it is being
+added to and not changed otherwise is left as an exercise for the
+reader. (If you develop one, please contribute via the tracker:
+https://issues.roundup-tracker.org/.)
+
+Lastly you can create a JWT using the end point above and make a rest
+call to create a new timelog entry and another call to update the
+issues times property.  If you have other ideas on how jwts can be
+used, please share on the roundup mailing lists. See:
+https://sourceforge.net/p/roundup/mailman/ for directions on
+subscribing and for archives of the lists.
+
 
 Creating Custom Rate Limits
 ===========================
@@ -1378,7 +1621,7 @@ and period that are specific to a user.  If either is set to 0,
 the defaults from ``config.ini`` file are used.
 
 Test Examples
-=============
+^^^^^^^^^^^^^
 
 Rate limit tests:
 
