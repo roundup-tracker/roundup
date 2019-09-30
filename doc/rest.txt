@@ -1272,8 +1272,8 @@ endpoints to new locations. Adding::
         """
         return self.get_collection(classname, input)
 
-will move the response that normally happens at /rest/data/<class> to
-/rest/data2/<class>.
+will make the response at /rest/data2/<class> be the same as what is
+normally at /rest/data/<class>.
 
 
 Controlling Access to Backend Data
