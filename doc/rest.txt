@@ -1611,7 +1611,7 @@ Final steps
 ^^^^^^^^^^^
 
 See the `upgrading directions`_ on how to use the ``updateconfig``
-commandto generate an updated copy of config.ini using
+command to generate an updated copy of config.ini using
 roundup-admin. Then set the ``jwt_secret`` to at least 32 characters
 (more is better up to 512 bits).
 
