@@ -1234,6 +1234,48 @@ returns some data about the class::
 Adding other endpoints (e.g. to allow an OPTIONS query against
 ``/data/issue/@schema``) is left as an exercise for the reader.
 
+Redefine/move rest endpoints
+============================
+
+In addition to adding new endpoints, you can redefine existing
+endpoints. Adding this as described above::
+
+    @Routing.route("/summary")
+    @_data_decorator
+    def summary2(self, input):
+        result = { "hello": "world" }
+        return 200, result
+
+will return::
+
+  {
+    "data": {
+            "hello": "world"
+            }
+  }
+
+
+In addition to overriding existing endpoints, you can move existing
+endpoints to new locations. Adding::
+
+    @Routing.route("/data2/<:classname>")
+    def get_collection2(self, classname, input):
+        """ Remap existing function in rest.py to a new endpoint
+
+            Existing function is decorated with:
+
+                  @Routing.route("/data/<:classname>")
+                  @_data_decorator
+
+            so we need to drop @_data_decorator from this function since
+            we can't apply @_data_decorator twice.
+        """
+        return self.get_collection(classname, input)
+
+will move the response that normally happens at /rest/data/<class> to
+/rest/data/<class>.
+
+
 Controlling Access to Backend Data
 ==================================
 
@@ -1568,9 +1610,10 @@ a jwt to see if it's still valid using::
 Final steps
 ^^^^^^^^^^^
 
-See the `upgrading documentation`__ on how to regenerate an updated copy of
-config.ini using roundup-admin. Then set the ``jwt_secret`` to at
-least 32 characters (more is better up to 512 bits).
+See the `upgrading directions`_ on how to use the ``updateconfig`` to
+generate an updated copy of config.ini using roundup-admin. Then set
+the ``jwt_secret`` to at least 32 characters (more is better up to 512
+bits).
 
 Writing an auditor that uses "db.user.get_roles" to see if the user
 making the change has the ``user:timelog`` role, and then comparing
