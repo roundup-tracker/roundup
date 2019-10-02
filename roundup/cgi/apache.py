@@ -10,6 +10,13 @@
 # This module operates with only one tracker
 # and must be placed in the tracker directory.
 #
+# mod_python is deplricated and not well tested with release 2.0 of
+# roundup. mod_wsgi is the preferred interface. It amy not work
+# with python3.
+
+# The patch from https://issues.roundup-tracker.org/issue2550821
+# is included. Look for this url below. It is not tested, but
+# we assume it's safe and syntax it seems ok.
 
 import cgi
 import os
@@ -119,7 +126,17 @@ def handler(req):
                 __tracker_cache_lock.release()
     # create environment
     # Note: cookies are read from HTTP variables, so we need all HTTP vars
-    req.add_common_vars()
+
+    # https://issues.roundup-tracker.org/issue2550821
+    # Release 3.4 of mod_python uses add_cgi_vars() and depricates
+    # add_common_vars. So try to use the add_cgi_vars and if it fails
+    # with AttributeError because we are running an older mod_apache without
+    # that function, fallback to add_common_vars.
+    try:
+        req.add_cgi_vars()
+    except AttributeError:
+        req.add_common_vars()
+                                                    
     _env = dict(req.subprocess_env)
     # XXX classname must be the first item in PATH_INFO.  roundup.cgi does:
     #       path = os.environ.get('PATH_INFO', '/').split('/')
