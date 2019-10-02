@@ -26,8 +26,8 @@ The cgi-bin is very slow!
 Yep, it sure is. It has to start up Python and load all of the support
 libraries for *every* request.
 
-The solution is to use the built in server (or possibly the mod_python
-or WSGI support).
+The solution is to use the built in server (or possibly mod_wsgi
+or other WSGI support).
 
 To make Roundup more seamless with your website, you may place the built
 in server behind apache and link it into your web tree (see below).

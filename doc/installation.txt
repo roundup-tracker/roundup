@@ -376,8 +376,8 @@ There are multiple web interfaces to choose from:
 2. `cgi-bin for limited-access hosting`_
 3. `stand-alone web server`_
 4. `Zope product - ZRoundup`_
-5. `Apache HTTP Server with mod_python`_
-6. `WSGI handler`_
+5. `WSGI handler`_  (to be written `Apache HTTP Server with mod_wsgi`_)
+6. `Apache HTTP Server with mod_python`_  (deprecated)
 
 You may need to give the web server user permission to access the tracker home
 - see the `UNIX environment steps`_ for information. You may also need to
@@ -505,8 +505,22 @@ code tree lib/python/Products.
 When you next (re)start up Zope, you will be able to add a ZRoundup object
 that interfaces to your new tracker.
 
+Apache HTTP Server with mod_wsgi
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This needs to be developed by somebody. See:
+https://issues.roundup-tracker.org/issue2550566 to see if there has
+been something developed.
+
+See the main web site for `mod_wsgi`_.
+
 Apache HTTP Server with mod_python
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As of roundup 2.0, mod_python support is deprecated. The apache.py
+file is still available, but may be limited to working for Python 2
+only. Using mod_wsgi with Apache is the recommended way to deploy
+roundup under apache.
 
 `Mod_python`_ is an `Apache`_ module that embeds the Python interpreter
 within the server.  Running Roundup this way is much faster than all
@@ -1119,6 +1133,7 @@ from installation and scripts.
 .. _apache: http://httpd.apache.org/
 .. _flup: https://pypi.org/project/flup/
 .. _mod_python: http://modpython.org/
+.. _mod_wsgi: https://pypi.org/project/mod-wsgi/
 .. _MySQLdb: https://pypi.org/project/mysqlclient/
 .. _Psycopg: http://initd.org/psycopg/
 .. _pysqlite: https://pysqlite.org/

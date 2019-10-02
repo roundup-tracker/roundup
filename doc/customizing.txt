@@ -4003,7 +4003,7 @@ be able to give a summary of the total time spent on a particular issue.
    and 40 minutes).
 
 6. If you're using a persistent web server - ``roundup-server`` or
-   ``mod_python`` for example - then you'll need to restart that to pick up
+   ``mod_wsgi`` for example - then you'll need to restart that to pick up
    the code changes. When that's done, you'll be able to use the new
    time logging interface.
 
