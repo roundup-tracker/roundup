@@ -10,8 +10,8 @@
 # This module operates with only one tracker
 # and must be placed in the tracker directory.
 #
-# mod_python is deplricated and not well tested with release 2.0 of
-# roundup. mod_wsgi is the preferred interface. It amy not work
+# mod_python is deprecated and not well tested with release 2.0 of
+# roundup. mod_wsgi is the preferred interface. It may not work
 # with python3.
 
 # The patch from https://issues.roundup-tracker.org/issue2550821
