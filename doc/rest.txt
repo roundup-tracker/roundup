@@ -1439,14 +1439,15 @@ proper authorization::
    db.security.addPermissionToRole("User:timelog", perm)
 
    perm = db.security.addPermission(name='View', klass='issue',
-             properties=('id', 'times'),
-             description="Allow timelog retreival for issue",
-	     props_only=False)
+            properties=('id', 'times'),
+            description="Allow retrieving issue etag or timelog issue",
+            props_only=False)
    db.security.addPermissionToRole("User:timelog", perm)
 
    perm = db.security.addPermission(name='Edit', klass='issue',
             properties=('id', 'times'),
-            description="Allow editing timelog for issue", props_only=False)
+            description="Allow editing timelog for issue",
+            props_only=False)
    db.security.addPermissionToRole("User:timelog", perm)
 
 The role is named to work with the /rest/jwt/issue rest endpoint
@@ -1456,7 +1457,7 @@ role has the User role.
 
 The role *must* have access to the issue ``id`` to retrieve the etag for
 the issue.  The etag is passed in the ``If-Match`` HTTP header when you
-make a call to patch or update the ``timess` property of the issue.
+make a call to patch or update the ``times` property of the issue.
 
 If you use a PATCH rest call with "@op=add" to append the new timelog,
 you don't need View access to the ``times`` property. If you replace the
@@ -1477,106 +1478,106 @@ only been tested with python3)::
     from roundup.rest import Routing, RestfulInstance, _data_decorator
 
     class RestfulInstance(object):
-	@Routing.route("/jwt/issue", 'POST')
-	@_data_decorator
-	def generate_jwt(self, input):
-	    import jwt
-	    import datetime
-	    from roundup.anypy.strings import b2s
+        @Routing.route("/jwt/issue", 'POST')
+        @_data_decorator
+        def generate_jwt(self, input):
+            import jwt
+            import datetime
+            from roundup.anypy.strings import b2s
 
-	    # require basic auth to generate a token
-	    # At some point we can support a refresh token.
-	    # maybe a jwt with the "refresh": True claim generated
-	    # using: "refresh": True in the json request payload.
+            # require basic auth to generate a token
+            # At some point we can support a refresh token.
+            # maybe a jwt with the "refresh": True claim generated
+            # using: "refresh": True in the json request payload.
 
-	    denialmsg='Token creation requires login with basic auth.'
-	    if 'HTTP_AUTHORIZATION' in self.client.env:
-		try:
-		    auth = self.client.env['HTTP_AUTHORIZATION']
-		    scheme, challenge = auth.split(' ', 1)
-		except (ValueError, AttributeError):
-		    # bad format for header
-		    raise Unauthorised(denialmsg)
-		if scheme.lower() != 'basic':
-		    raise Unauthorised(denialmsg)
-	    else:
-		raise Unauthorised(denialmsg)
+            denialmsg='Token creation requires login with basic auth.'
+            if 'HTTP_AUTHORIZATION' in self.client.env:
+                try:
+                    auth = self.client.env['HTTP_AUTHORIZATION']
+                    scheme, challenge = auth.split(' ', 1)
+                except (ValueError, AttributeError):
+                    # bad format for header
+                    raise Unauthorised(denialmsg)
+                if scheme.lower() != 'basic':
+                    raise Unauthorised(denialmsg)
+            else:
+                raise Unauthorised(denialmsg)
 
-	    # If we reach this point we have validated that the user has
-	    # logged in with a password using basic auth.
-	    all_roles = list(self.db.security.role.items())
-	    rolenames = []
-	    for role in all_roles:
-		rolenames.append(role[0])
+            # If we reach this point we have validated that the user has
+            # logged in with a password using basic auth.
+            all_roles = list(self.db.security.role.items())
+            rolenames = []
+            for role in all_roles:
+                rolenames.append(role[0])
 
-	    user_roles = list(self.db.user.get_roles(self.db.getuid()))
+            user_roles = list(self.db.user.get_roles(self.db.getuid()))
 
-	    claim= { 'sub': self.db.getuid(),
-		     'iss': self.db.config.TRACKER_WEB,
-		     'aud': self.db.config.TRACKER_WEB,
-		     'iat': datetime.datetime.utcnow(),
-		   }
+            claim= { 'sub': self.db.getuid(),
+                     'iss': self.db.config.TRACKER_WEB,
+                     'aud': self.db.config.TRACKER_WEB,
+                     'iat': datetime.datetime.utcnow(),
+                   }
 
-	    lifetime = 0
-	    if 'lifetime' in input:
-		if input['lifetime'].value != 'unlimited':
-		    try:
-			lifetime = datetime.timedelta(seconds=int(input['lifetime'].value))
-		    except ValueError:
-			raise UsageError("Value 'lifetime' must be 'unlimited' or an integer to specify" +
-					 " lifetime in seconds. Got %s."%input['lifetime'].value)
-	    else:
-		lifetime = datetime.timedelta(seconds=86400) # 1 day by default
+            lifetime = 0
+            if 'lifetime' in input:
+                if input['lifetime'].value != 'unlimited':
+                    try:
+                        lifetime = datetime.timedelta(seconds=int(input['lifetime'].value))
+                    except ValueError:
+                        raise UsageError("Value 'lifetime' must be 'unlimited' or an integer to specify" +
+                                         " lifetime in seconds. Got %s."%input['lifetime'].value)
+            else:
+                lifetime = datetime.timedelta(seconds=86400) # 1 day by default
 
-	    if lifetime: # if lifetime = 0 make unlimited by omitting exp claim
-		claim['exp'] = datetime.datetime.utcnow() + lifetime
+            if lifetime: # if lifetime = 0 make unlimited by omitting exp claim
+                claim['exp'] = datetime.datetime.utcnow() + lifetime
 
-	    newroles = []
-	    if 'roles' in input:
-		for role in input['roles'].value:
-		    if role not in rolenames:
-			raise UsageError("Role %s is not valid."%role)
-		    if role in user_roles:
-			newroles.append(role)
-			continue
-		    parentrole = role.split(':', 1)[0]
-		    if parentrole in user_roles:
-			newroles.append(role)
-			continue
+            newroles = []
+            if 'roles' in input:
+                for role in input['roles'].value:
+                    if role not in rolenames:
+                        raise UsageError("Role %s is not valid."%role)
+                    if role in user_roles:
+                        newroles.append(role)
+                        continue
+                    parentrole = role.split(':', 1)[0]
+                    if parentrole in user_roles:
+                        newroles.append(role)
+                        continue
 
-		    raise UsageError("Role %s is not permitted."%role)
+                    raise UsageError("Role %s is not permitted."%role)
 
-		claim['roles'] = newroles
-	    else:
-		claim['roles'] = user_roles
-	    secret = self.db.config.WEB_JWT_SECRET
-	    myjwt = jwt.encode(claim, secret, algorithm='HS256')
+                claim['roles'] = newroles
+            else:
+                claim['roles'] = user_roles
+            secret = self.db.config.WEB_JWT_SECRET
+            myjwt = jwt.encode(claim, secret, algorithm='HS256')
 
-	    result = {"jwt": b2s(myjwt),
-		     }
+            result = {"jwt": b2s(myjwt),
+                     }
 
-	    return 200, result
+            return 200, result
 
-	@Routing.route("/jwt/validate", 'GET')
-	@_data_decorator
-	def validate_jwt(self,input):
-	    import jwt
-	    if not 'jwt' in input:
-		raise UsageError("jwt key must be specified")
+        @Routing.route("/jwt/validate", 'GET')
+        @_data_decorator
+        def validate_jwt(self,input):
+            import jwt
+            if not 'jwt' in input:
+                raise UsageError("jwt key must be specified")
 
-	    myjwt = input['jwt'].value
+            myjwt = input['jwt'].value
 
-	    secret = self.db.config.WEB_JWT_SECRET
-	    try:
-		result = jwt.decode(myjwt, secret,
-				    algorithms=['HS256'],
-				    audience=self.db.config.TRACKER_WEB,
-				    issuer=self.db.config.TRACKER_WEB,
-		)
-	    except jwt.exceptions.InvalidTokenError as err:
-		return 401, str(err)
+            secret = self.db.config.WEB_JWT_SECRET
+            try:
+                result = jwt.decode(myjwt, secret,
+                                    algorithms=['HS256'],
+                                    audience=self.db.config.TRACKER_WEB,
+                                    issuer=self.db.config.TRACKER_WEB,
+                )
+            except jwt.exceptions.InvalidTokenError as err:
+                return 401, str(err)
 
-	    return 200, result
+            return 200, result
 
 **Note this is sample code. Use at your own risk.** It breaks a few
 rules about jwts (e.g. it allows you to make unlimited lifetime
