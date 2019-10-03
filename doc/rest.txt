@@ -682,8 +682,8 @@ returned. You can limit this by using the ``@fields`` query parameter
 similar to how it is used in collections. This way you can only return
 the fields you are interested in reducing network load as well as
 memory and parsing time on the client side. By default protected
-properties (read only in the database) are not listed. Th
-is makes it easier to submit the attributes from a
+properties (read only in the database) are not listed. This
+makes it easier to submit the attributes from a
 ``@verbose=0`` query using PUT. To include protected properties
 in the output of a GET add the query parameter
 ``@protected=true`` to the query and attributes like: actor,
@@ -862,7 +862,7 @@ payload:
 
 produces::
 
-   {"data": {"attribute": {}, "type": "issue",
+   {"data": {"attribute": {...}, "type": "issue",
      "link": "https://...", "id": "23"}}
 
 the lines are wrapped for display purposes, in real life it's one long
@@ -1401,7 +1401,7 @@ your company's single sign on infrastructure.
 
 So what we need is a way for this third part service to impersonate
 you and have access to create a roundup timelog entry (see
-`<customizing.html#adding-a-time-log-to-your-issues>`__. Then add it
+`<customizing.html#adding-a-time-log-to-your-issues>`__). Then add it
 to the associated issue. This should happen without sharing passwords
 and without the third party service to see the issue (except the
 ``times`` property), user, or other information in the tracker.
@@ -1413,7 +1413,7 @@ There are 5 steps to set this up:
 
 1. install pyjwt library using pip or pip3. If roundup can't find the
    jwt module you will see the error ``Support for jwt disabled.``
-2. create a new role that allows Create access to timelog and edit
+2. create a new role that allows Create access to timelog and edit/view
    access to an issues' ``times`` property.
 3. add support for issuing (and validating) jwts to the rest interface.
    This uses the `Adding new rest endpoints`_ mechanism.
@@ -1421,7 +1421,7 @@ There are 5 steps to set this up:
    random characters of data. (You will get a message
    ``Support for jwt disabled by admin.`` if it's not long enough.)
 5. add an auditor to make sure that users with this role are appending
-   timelog links to the `times` property of the issue.
+   timelog links to the ``times`` property of the issue.
 
 Create role
 """""""""""
@@ -1429,25 +1429,50 @@ Create role
 Adding this snippet of code to the tracker's ``schema.py`` should create a role with the
 proper authorization::
 
-   db.security.addRole(name="User:timelog", description="allow a user to create and append timelogs")
+   db.security.addRole(name="User:timelog",
+         description="allow a user to create and append timelogs")
+
+   db.security.addPermissionToRole('User:timelog', 'Rest Access')
+
    perm = db.security.addPermission(name='Create', klass='timelog',
             description="Allow timelog creation", props_only=False)
    db.security.addPermissionToRole("User:timelog", perm)
+
+   perm = db.security.addPermission(name='View', klass='issue',
+             properties=('id', 'times'),
+             description="Allow timelog retreival for issue",
+	     props_only=False)
+   db.security.addPermissionToRole("User:timelog", perm)
+
    perm = db.security.addPermission(name='Edit', klass='issue',
             properties=('id', 'times'),
             description="Allow editing timelog for issue", props_only=False)
    db.security.addPermissionToRole("User:timelog", perm)
-   db.security.addPermissionToRole('User:timelog', 'Rest Access')
 
-Then role is named to work with the jwt issue rest call. Starting the role
-name with ``User:`` allows the jwt issue code to create a token with
-this role if the user requesting the role has the User role.
+The role is named to work with the /rest/jwt/issue rest endpoint
+defined below. Starting the role name with ``User:`` allows the jwt
+issue code to create a token with this role if the user requesting the
+role has the User role.
+
+The role *must* have access to the issue ``id`` to retrieve the etag for
+the issue.  The etag is passed in the ``If-Match`` HTTP header when you
+make a call to patch or update the ``timess` property of the issue.
+
+If you use a PATCH rest call with "@op=add" to append the new timelog,
+you don't need View access to the ``times`` property. If you replace the
+``times`` value, you need to read the current value of ``times`` (using
+View permission), append the newly created timelog id to the (array)
+value, and replace the ``times`` value.
+
+Note that the json returned after the operation will include the new
+value of the ``times`` value so your code can verify that it worked.
+This does potentially leak info about the previous id's in the field.
 
 Create rest endpoints
 """""""""""""""""""""
 
-Here is code to add to your tracker's ``interfaces.py`` (note code is
-python3)::
+Here is code to add to your tracker's ``interfaces.py`` (note code has
+only been tested with python3)::
 
     from roundup.rest import Routing, RestfulInstance, _data_decorator
 
