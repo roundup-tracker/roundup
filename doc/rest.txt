@@ -1457,7 +1457,7 @@ role has the User role.
 
 The role *must* have access to the issue ``id`` to retrieve the etag for
 the issue.  The etag is passed in the ``If-Match`` HTTP header when you
-make a call to patch or update the ``times` property of the issue.
+make a call to patch or update the ``times`` property of the issue.
 
 If you use a PATCH rest call with "@op=add" to append the new timelog,
 you don't need View access to the ``times`` property. If you replace the
