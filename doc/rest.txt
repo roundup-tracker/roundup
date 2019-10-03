@@ -60,11 +60,11 @@ tracker's config.ini should have ``csrf_enforce_header_x-requested-with
 Rate Limiting the API
 =====================
 
-This is a work in progress. Check the release notes to see if your
-version of roundup includes Rate Limiting for the API (which is
-different from rate limiting login attempts on the web interface).
+This is a work in progress. This version of roundup includes Rate
+Limiting for the API (which is different from rate limiting login
+attempts on the web interface).
 
-This is enabled by setting the ``api_calls_per_interval`` and
+It is enabled by setting the ``api_calls_per_interval`` and
 ``api_interval_in_sec`` configuration parameters in the ``[web]``
 section of ``config.ini``. The settings are documented in the
 config.ini file.
