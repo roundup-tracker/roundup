@@ -750,7 +750,7 @@ Retrieve item using key value
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If the class has a key attribute, e.g. the 'status' class in the
-classic tracker, it can be used to retried the item.
+classic tracker, it can be used to retrieve the item.
 
 You can get an individual status by specifying the key-attribute value
 e.g. ``/data/status/name=closed``. Note that ``name`` in this example
@@ -855,7 +855,7 @@ work. So using::
   https://.../rest/data/issue/23?@pretty=false
 
 doesn't have the desired effect. However it can be put in the data
-payload:
+payload::
 
  curl -u admin:admin ...
    --data '{ "nosy": [ "4", "5" ], "title": "...", "@pretty": "false"  }'
@@ -871,7 +871,7 @@ line.
 The method ``DELETE`` is allowed on items, e.g., ``/data/issue/42``
 and will retire (mark as deleted) the respective item. On success it
 will only return a status code. The item is still available if
-accessed directly by it's item url. The item will not show up in
+accessed directly by its item url. The item will not show up in
 searches where it would have been matched if not retired.
 
 Finally the ``PATCH`` method can be applied to individual items, e.g.,
@@ -886,7 +886,7 @@ namely ``retire`` and ``restore``. The ``retire`` action on an item is
 the same as a ``DELETE`` method, it retires the item. The ``restore``
 action is the inverse of ``retire``, the item is again visible.  On
 success the returned value is the same as the respective ``GET``
-method. An example to add a user to the nosy list of an item is:
+method. An example to add a user to the nosy list of an item is::
 
   curl -u admin:admin -p -X PATCH \
      --header "Content-Type: application/x-www-form-urlencoded" \
@@ -1364,7 +1364,10 @@ that returns a list of users with the developer role::
 	    # to get @verbose and other args supported.
 	    return self.get_collection('user', input)
 
-Calling this with: `curl 'http://example.com/demo/rest/data/@permission/Developer?@fields=realname&roles=Users&@verbose=2'`
+Calling this with::
+
+   curl 'http://example.com/demo/rest/data/@permission/Developer?@fields=realname&roles=Users&@verbose=2'
+   
 produces output similar to::
 
     {
@@ -1382,7 +1385,7 @@ produces output similar to::
     }
 
 assuming user 4 is the only user with the Developer role. Note that
-the url passes the `roles=User` filter option which is silently
+the url passes the ``roles=User`` filter option which is silently
 ignored.
 
 Changing Access Roles with JSON Web Tokens
@@ -1401,7 +1404,7 @@ your company's single sign on infrastructure.
 
 So what we need is a way for this third part service to impersonate
 you and have access to create a roundup timelog entry (see
-`<customizing.html#adding-a-time-log-to-your-issues>`__). Then add it
+`<customizing.html#adding-a-time-log-to-your-issues>`__ ). Then add it
 to the associated issue. This should happen without sharing passwords
 and without the third party service to see the issue (except the
 ``times`` property), user, or other information in the tracker.
@@ -1702,7 +1705,7 @@ the defaults from ``config.ini`` file are used.
 Test Examples
 ^^^^^^^^^^^^^
 
-Rate limit tests:
+Rate limit tests::
 
    seq 1 300 | xargs -P 20 -n 1 curl --head -si \
         https://.../rest/data/status/new \# | grep Remaining
