@@ -97,7 +97,9 @@ Features:
 - issue2551059: added new values for tx_Source to indicate when /rest
   or /xmlrpc endpoint is being used rather than the normal web
   endpoints. (John Rouillard)
-  
+- issue2551062: roundup-admin security now validates all properties in
+  permissions. It reports invalid properties. (John Rouillard)
+
 Fixed:
 
 - issue2550811: work around Unicode encoding issues in jinja2 template

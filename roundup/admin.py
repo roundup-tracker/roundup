@@ -1446,6 +1446,17 @@ Erase it? Y/N: """))
                     if permission.properties:
                         sys.stdout.write( _(' %(description)s (%(name)s for "%(klass)s"' +
                           ': %(properties)s only)\n')%d )
+                        # verify that properties exist; report bad props
+                        bad_props=[]
+                        cl = self.db.getclass(permission.klass)
+                        class_props = cl.getprops(protected=True)
+                        for p in permission.properties:
+                            if p in class_props:
+                                continue
+                            else:
+                                bad_props.append(p)
+                        if bad_props:
+                            sys.stdout.write( _('\n  **Invalid properties for %(class)s: %(props)s\n\n') % { "class": permission.klass, "props": bad_props })
                     else:
                         sys.stdout.write( _(' %(description)s (%(name)s for "%(klass)s" ' +
                             'only)\n')%d )

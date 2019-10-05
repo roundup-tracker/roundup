@@ -1258,6 +1258,10 @@ Put together, these settings appear in the tracker's ``schema.py`` file::
     #   db.security.addPermissionToRole('Anonymous', 'Create', cl)
     #   db.security.addPermissionToRole('Anonymous', 'Edit', cl)
 
+You can use ``roundup-admin security`` to verify the permissions
+defined in the schema. It also verifies that properties specified in
+permissions are valid for the class. This helps detect typos that can
+cause baffling permission issues.
 
 Automatic Permission Checks
 ---------------------------
@@ -1343,6 +1347,15 @@ The ``addPermission`` method takes a few optional parameters:
   confusing and surprising as you would think that a permission
   including properties would be used only for determining the
   access permission for those properties.
+
+  ``roundup-admin security`` will report invalid properties for the
+  class. For example a permission with an invalid summary property is
+  presented as::
+
+     Allowed to see content of object regardless of spam status
+        (View for "file": ('content', 'summary') only)
+
+     **Invalid properties for file: ['summary']
 
   Setting ``props_only=True`` will make the permission valid only for
   those properties.
