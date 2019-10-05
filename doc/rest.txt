@@ -334,24 +334,56 @@ only does an exact match.
 
 Searching for strings (e.g. the issue title, or a keyword name)
 performs a case-insensitive substring search, so searching for
-title=Something will find all issues with "Something" or "someThing",
-etc. in the title. There is currently no way to perform an exact
-string match.
+``title=Something`` (or in long form title~=Something) will find all
+issues with "Something" or "someThing", etc. in the title. Changing
+the search to ``title:=Something`` (note the `:`) an exact
+case-sensitive string match for exactly one word ``Something`` with a
+capital ``S``. Another example is:
+``title:=test+that+nosy+actually+works.`` where the + signs are spaces
+in the string. Replacing `+` with the `URL encoding`_ for space
+``%20`` will also work. Note that you must match the spaces when
+performing exact matches. So `title:=test++that+nosy+actually+works.``
+matches the word test with two spaces after ``test`` in the title.
 
 To make this clear, searching
-``https://.../rest/data/issue?keyword=foo`` will not work unless there
-is a keyword with a name field of ``foo`` which is the key field of
-the keyword. However searching the text property ``name`` using
-``https://.../rest/data/keyword?name=foo`` (note searching keyword
-class not issue class) will return matches for ``foo``, ``foobar``,
-``foo taz`` etc.
+``https://.../rest/data/issue?keyword=Foo`` will not work unless there
+is a keyword with a (case sensitive) name field of ``Foo`` which is
+the key field of the keyword. However searching the text property
+``name`` using ``https://.../rest/data/keyword?name=Foo`` (note
+searching keyword class not issue class) will return matches for
+``Foo``, ``foobar``, ``foo taz`` etc.
 
 In all cases the field ``@total_size`` is reported which is the total
 number of items available if you were to retrieve all of them.
 
 Other data types: Date, Interval Integer, Number need examples and may
 need work to allow range searches. Full text search (e.g. over the
-body of msgs) is a work in progress.
+body of a msg) is a work in progress.
+
+.. _URL Encoding: https://en.wikipedia.org/wiki/Percent-encoding
+
+Transitive Searching
+~~~~~~~~~~~~~~~~~~~~
+
+In addition to searching an issue by its properties, you can search
+for issues where linked items have a certain property. For example
+using ``/issues?messages.author=1`` will find all issues that include
+(link to) a message created by the admin user. This can also be done
+using: ``/issues?messages.author=admin``. Note that this requires
+search permission for messages.author, user.id, and users.username (to
+perform search with ``admin``. If these search permissions are not
+present, the search will silently drop the attribute.
+
+Similarly you can find all issues where the nosy list includes James
+Bond with: ``issue?nosy.realname=james+bond``. The alternate way to
+perform this is to query the user class for the realname:
+``user?realname=james+bond`` and retrieve the id. Then you can execute
+a second rest call ``issue?nosy=7`` to retrieve issues with id 7.
+
+Make sure that search access to the class/properties are granted to the
+user. Note that users can search a field even if they can't view
+it. However they may be able to use searches to discover the value of
+the field even if they can't view it.
 
 Sorting
 ^^^^^^^
@@ -1427,7 +1459,7 @@ There are 5 steps to set this up:
    timelog links to the ``times`` property of the issue.
 
 Create role
-"""""""""""
+~~~~~~~~~~~
 
 Adding this snippet of code to the tracker's ``schema.py`` should create a role with the
 proper authorization::
@@ -1473,7 +1505,7 @@ value of the ``times`` value so your code can verify that it worked.
 This does potentially leak info about the previous id's in the field.
 
 Create rest endpoints
-"""""""""""""""""""""
+~~~~~~~~~~~~~~~~~~~~~
 
 Here is code to add to your tracker's ``interfaces.py`` (note code has
 only been tested with python3)::
