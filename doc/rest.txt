@@ -32,6 +32,10 @@ schema.py to add::
 This is usually included near where other permissions like "Web Access"
 or "Email Access" are assigned.
 
+You could also create a new role "rest" and assign the "Rest Access"
+permission to that role and then just add the "rest" permissions to
+those users who should have access.
+
 The REST api is reached via the ``/rest/`` endpoint of the tracker
 URL. Partial URLs paths below (not starting with https) will have
 /rest removed for brevity.
@@ -333,17 +337,19 @@ name is a string, in this case it is also a key value. As a result it
 only does an exact match.
 
 Searching for strings (e.g. the issue title, or a keyword name)
-performs a case-insensitive substring search, so searching for
+performs a case-insensitive substring search. Searching for
 ``title=Something`` (or in long form title~=Something) will find all
-issues with "Something" or "someThing", etc. in the title. Changing
-the search to ``title:=Something`` (note the `:`) an exact
-case-sensitive string match for exactly one word ``Something`` with a
-capital ``S``. Another example is:
+issues with "Something" or "someThing", etc. in the title.
+
+Changing the search to ``title:=Something`` (note the `:`) performs an
+exact case-sensitive string match for exactly one word ``Something``
+with a capital ``S``. Another example is:
 ``title:=test+that+nosy+actually+works.`` where the + signs are spaces
-in the string. Replacing `+` with the `URL encoding`_ for space
+in the string. Replacing ``+`` with the `URL encoding`_ for space
 ``%20`` will also work. Note that you must match the spaces when
 performing exact matches. So `title:=test++that+nosy+actually+works.``
-matches the word test with two spaces after ``test`` in the title.
+matches the word ``test`` with two spaces bewteen ``test`` and
+``that`` in the title.
 
 To make this clear, searching
 ``https://.../rest/data/issue?keyword=Foo`` will not work unless there
