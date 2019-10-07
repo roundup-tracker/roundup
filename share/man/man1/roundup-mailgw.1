@@ -1,32 +1,41 @@
-.TH ROUNDUP-MAILGW 1 "24 January 2003"
+.TH ROUNDUP-MAILGW 1 "07 October 2019"
 .SH NAME
 roundup-mailgw \- mail gateway for roundup
 .SH SYNOPSIS
-\fBroundup-mailgw\fP \fIinstance_home\fP [\fImethod\fP]
+\fBroundup-mailgw\fP [\fI-v\fP] [\fI-c\fP \fIdefault_class\fP]
+[[\fI-C\fP \fIclass\fP] \fI-S\fP \fIfield=value\fP]
+[\fIinstance_home\fP] [\fImail source [specification]\fP]
 .SH OPTIONS
 .TP
 \fB-v\fP
 Print version and exit.
+.TP
+\fB-c\fP \fIhyperdb class\fP
+specify the default tracker class - one of issue (the default), msg, file, user etc. Overrides the 
+tracker's mailgw default_class setting.
 .TP
 \fB-C\fP \fIhyperdb class\fP
 specify a tracker class - one of msg (the default), issue, file, user - to
 manipulate with -S options
 .TP
 \fB-S\fP \fIproperty\fP\fB=\fP\fIvalue\fP[\fB;\fP\fIproperty\fP\fB=\fP\fIvalue\fP] \fIpairs\fP
-specify the values to set on the class specified by -C using the same
-format as the Subject line property manipulations
+specify the values to set on the class specified by \fB-C\fP using the same
+format as the Subject line property manipulations. Can also be
+specified with \fB--set\fP.
 .SH DESCRIPTION
-The roundup mail gateway may be called in one of three ways:
+The roundup mail gateway may be called in one of four ways:
 .IP \(bu
-with an instance home as the only argument,
+without arguments which will use the env var ROUNDUP_INSTANCE,
 .IP \(bu
-with both an instance home and a mail spool file, or
+with an instance_home as the only argument,
 .IP \(bu
-with both an instance home and a pop server account.
+with both an instance_home and a mail spool file, or
+.IP \(bu
+with both an instance home and a mail source type and its specification.
 .PP
 \fBPIPE\fP
 .br
-In the first case, the mail gateway reads a single message from the
+In the first and second cases, the mail gateway reads a single message from the
 standard input and submits the message to the roundup.mailgw module.
 
 \fBUNIX mailbox\fP
@@ -55,8 +64,17 @@ The username and password may be omitted:
  \fBpop\fP \fIusername\fP\fB@\fP\fIserver\fP
  \fBpop\fP \fIserver\fP
 .br
-are both valid. The username and/or password will be prompted for if
-not supplied on the command-line.
+are both valid.
+
+\fBPOPS\fP
+.br
+Connect to the POP server over ssl/tls. This requires python 2.4 or
+later. This supports the same notation as POP.
+
+ 
+ \fBpops\fP \fIusername\fP\fB:\fP\fIpassword\fP\fB@\fP\fIserver\fP
+.br
+etc.
 
 \fBAPOP\fP
 .br
@@ -75,12 +93,55 @@ this format:
 
 \fBIMAPS\fP
 .br
-Connect to an IMAP server over ssl.
+Connect to an IMAP server over ssl/tls.
 This supports the same notation as IMAP.
  \fBimaps\fP \fIusername\fP\fB:\fP\fIpassword\fP\fB@\fP\fIserver\fP [\fImailbox\fP]
+
+
+\fBIMAPS_CRAM\fP
+.br
+Connect to an IMAP server over ssl/tls using CRAM-MD5 authentication.
+This supports the same notation as IMAP.
+ \fBimaps_cram\fP \fIusername\fP\fB:\fP\fIpassword\fP\fB@\fP\fIserver\fP [\fImailbox\fP]
+
+.SH ENVIRONMENT VARIABLES
+
+\fBROUNDUP_INSTANCE\fP
+.br
+This can be used to set the instance directory. If it is set, the
+\fIinstance_home\fP argument is optional.
+
+.SH EXAMPLE
+If your msg class has a messsagetype property you can set
+up aliases to receive the different types of messages. Setting up
+an alias in your MTA Using:
+
+  tracker: |/tools/roundup/bin/roundup-mailgw -C msg
+             -S "messagetype=reply - to all" /var/roundup/sysadmin
+
+(the lines are split for readability. In the alias file they will be
+on the same line). Replace /tools/roundup/bin/roundup-mailgw by your
+path to the roundup-mailgw. This creates the email alias "tracker". All
+messages sent to it have their messagetype property set to "reply -
+to all".  The roundup tracker instance is located at
+/var/roundup/sysadmin.
+
+A comment alias would receive emails at tracker_comment with:
+
+  tracker_comment: |/tools/roundup/bin/roundup-mailgw -C msg 
+             -S "messagetype=comment - to technical" /var/roundup/sysadmin
+
+which would be a technical message. These messages can trigger
+different workflows based on the messagetype.
+
+Both examples use the default class specified in the tracker's
+config.ini (usually the issue class).
+
 .SH AUTHOR
 This manpage was written by Bastian Kleineidam
 <calvin@debian.org> for the Debian distribution of roundup.
 
 The main author of roundup is Richard Jones
 <richard@users.sourceforge.net>.
+
+Updates by John Rouillard <rouilj@users.sourceforge.net>.
