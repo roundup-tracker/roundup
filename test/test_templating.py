@@ -419,6 +419,7 @@ class MultilinkHTMLProperty(HTMLProperty):
     def __getitem__(self, num):
     def __contains__(self, value):
     def reverse(self):
+    def sorted(self, property, reverse=False):
     def plain(self, escape=0):
     def field(self, size=30, showid=0):
     def menu(self, size=None, height=None, showid=0, additional=[],

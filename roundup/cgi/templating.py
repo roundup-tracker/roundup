@@ -2310,10 +2310,10 @@ class MultilinkHTMLProperty(HTMLProperty):
         l.reverse()
         return self.viewableGenerator(l)
 
-    def sorted(self, property):
+    def sorted(self, property, reverse=False):
         """ Return this multilink sorted by the given property """
         value = list(self.__iter__())
-        value.sort(key=lambda a:a[property])
+        value.sort(key=lambda a:a[property], reverse=reverse)
         return value
 
     def __contains__(self, value):

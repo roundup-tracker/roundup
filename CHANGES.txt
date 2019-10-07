@@ -177,6 +177,9 @@ Fixed:
   options with IDs and later look up the IDs as *key* of the
   Link/Multilink. Now numeric IDs take precedence -- like they already
   do in the menu method of Link and Multilink.
+- issue2551013: Reversed sorting in hyperdb property wrapper object's
+  sorted() method. Patch by David Sowder, application and doc change
+  by John Rouillard.
 
 2018-07-13 1.6.0
 
