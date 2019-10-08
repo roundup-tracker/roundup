@@ -776,12 +776,14 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         if not self.is_edit_ok():
             return ''
 
-        return self.input(type="hidden", name="@csrf",
-                          value=anti_csrf_nonce(self._client)) + \
+        return \
+            self.input(type="submit", name="submit_button",
+                              value=self._(label)) + \
             '\n' + \
-            self.input(type="hidden", name="@action", value=action) + \
+            self.input(type="hidden", name="@csrf",
+                              value=anti_csrf_nonce(self._client)) + \
             '\n' + \
-            self.input(type="submit", name="submit_button", value=self._(label))
+            self.input(type="hidden", name="@action", value=action)
 
     def history(self):
         if not self.is_view_ok():
@@ -916,16 +918,17 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
 
         Also sneak in the lastactivity and action hidden elements.
         """
-        return self.input(type="hidden", name="@lastactivity",
-            value=self.activity.local(0)) + \
+        return \
+            self.input(type="submit", name="submit_button",
+                       value=self._(label)) + \
+            '\n' + \
+            self.input(type="hidden", name="@lastactivity",
+                       value=self.activity.local(0)) + \
             '\n' + \
             self.input(type="hidden", name="@csrf",
                        value=anti_csrf_nonce(self._client)) + \
             '\n' + \
-            self.input(type="hidden", name="@action", value=action) + \
-            '\n' + \
-            self.input(type="submit", name="submit_button",
-                       value=self._(label))
+            self.input(type="hidden", name="@action", value=action)
 
     def journal(self, direction='descending'):
         """ Return a list of HTMLJournalEntry instances.
