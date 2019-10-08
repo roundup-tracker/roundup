@@ -732,7 +732,9 @@ class RestfulInstance(object):
                     else:
                         vals = []
                     for p in value.split(","):
-                        if prop.try_id_parsing and p.isdigit():
+                        dig = p and p.isdigit() or \
+                            (p[0] in ('-','+') and p[1:].isdigit())
+                        if prop.try_id_parsing and dig:
                             vals.append(p)
                         else:
                             vals.append(linkcls.lookup(p))
