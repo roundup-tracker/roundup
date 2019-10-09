@@ -376,8 +376,9 @@ There are multiple web interfaces to choose from:
 2. `cgi-bin for limited-access hosting`_
 3. `stand-alone web server`_
 4. `Zope product - ZRoundup`_
-5. `WSGI handler`_  (to be written `Apache HTTP Server with mod_wsgi`_)
+5. `Apache HTTP Server with mod_wsgi`_
 6. `Apache HTTP Server with mod_python`_  (deprecated)
+7. `WSGI Variations`_
 
 You may need to give the web server user permission to access the tracker home
 - see the `UNIX environment steps`_ for information. You may also need to
@@ -508,11 +509,157 @@ that interfaces to your new tracker.
 Apache HTTP Server with mod_wsgi
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This needs to be developed by somebody. See:
-https://issues.roundup-tracker.org/issue2550566 to see if there has
-been something developed.
+This is a work in progress thanks to Garth Jensen.
 
-See the main web site for `mod_wsgi`_.
+See the main web site for `mod_wsgi`_ whcih include directions for
+using mod_wsgi-express which is easier if you are not used to apache
+configuration. Also there is the
+`main mod_wsgi  <https://modwsgi.readthedocs.io/en/develop/>`_ for more
+detailed directions.
+
+Background
+^^^^^^^^^^
+
+These notes were developed on a Microsoft Azure VM running Ubuntu
+18.04 LTS.  The instructions below assume:
+
+-  python and roundup are already installed
+-  roundup is running in the system python instance (e.g. no virtual
+   environment)
+-  the tracker ``mytracker`` is installed in the ``trackers`` folder of
+   home directory of a user called ``admin``. Thus, the absolute path to
+   the tracker home directory is ``/home/admin/trackers/mytracker``.
+-  the server has a static public IP address of 11.11.11.101
+
+Install mod-wsgi
+^^^^^^^^^^^^^^^^
+
+You can install/build it using the python package manager pip, or
+install using the OS package manager (apt).
+
+Pip install of mod_wsgi
+'''''''''''''''''''''''
+
+This is the tested method, and offers an easier path to get started,
+but it does mean that you will need to keep up to date with any
+security or other issues. If you use the packages supplied by your OS
+vendor, you may get more timely updates and notifications.
+
+The mod_wsgi docs talk about two installation methods: (1) the
+so-called CMMI method or (2) with pip. The pip method also provides an
+admin script called ``mod_wsgi-express`` that can start up a
+standalone instance of Apache directly from the command line with an
+auto generated configuration. These instructions follow the pip
+method.
+
+
+1. The `mod_wsgi`_ PyPi page lists prerequisites for various types of
+   systems. For Ubuntu, they are apache2 and apache2-dev. To see
+   installed apache packages, you can use ``dpkg -l | grep apache``.
+   If apache2 or apache2-dev are not installed, they install them with:
+   - ``sudo apt update``
+   - ``sudo apt install apache2 apache2-dev``
+2. If ``pip`` is not already installed, install it with
+   ``sudo apt install python-pip``
+
+   If you are using python 3, use ``sudo apt-install python3-pip`` and
+   change references to pip in the directions to pip3.
+3. ``sudo pip install mod_wsgi``. In my case, I got warnings about
+   the user not owning directories, but it said it completed
+   "successfully."
+4. For testing, open port 8000 for TCP on the server. For an Azure VM,
+   this is done with Azure Portal under ``Networking`` > ``Add inbound port``
+   rule.
+5. Test with ``mod_wsgi-express start-server``. This should serve
+   up content on localhost port 8000. You can then direct a browser on
+   the server itself to http://localhost:8000/ or on another machine at
+   the server's domain name or ip address followed by colon then 8000
+   (e.g. http://11.11.11.101:8000/). If successful, you should see a
+   Malt Whiskey image.
+
+Package manager install of mod_wsgi
+'''''''''''''''''''''''''''''''''''
+
+On debian (which should work for Ubuntu), install apache2 with
+libapache2-mod-wsgi:
+
+   -  ``sudo apt update``
+   -  ``sudo apt install apache2 libapache2-mod-wsgi``
+
+this is the less tested method for installing mod_wsgi and may not
+install mod_wsgi-express, which is used below. However there is an
+example apache config included as part of `WSGI Variations`_ that can
+be used to hand craft an apache config.
+
+You should make sure that the version you install is 3.5 or newer due
+to security issues in older releases.
+
+Configure web interface via wsgi_handler
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+1. In the tracker's home directory create a ``wsgi.py`` file with the
+   following content (substituting ``/home/admin/trackers/mytracker``
+   with the absolute path for your tracker's home directory):
+
+   .. code:: python
+
+       from roundup.cgi.wsgi_handler import RequestDispatcher
+       tracker_home = '/home/admin/trackers/mytracker'
+       application = RequestDispatcher(tracker_home)
+
+To run the tracker on Port 8000 as a foreground process
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+1. Change the ``tracker.web`` url in ``config.ini`` to port 8000 at the
+   server domain name or ip address (e.g. http://11.11.11.101:8000/).
+2. Open port 8000 for TCP on the server if you didn't already do so.
+3. ``cd`` to your tracker home directory, then run
+   ``mod_wsgi-express start-server wsgi.py``.
+4. Test by directing a browser on another machine to the url you set
+   ``tracker.web`` to in ``config.ini``.
+
+Run tracker as background daemon
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To run the tracker on Port 80 or as a background process, you'll need
+to configure a UNIX group with appropriate privileges as described in
+`UNIX environment steps`_. These steps are summarized here:
+
+1. To add a group named "mytrackergrp" run: ``sudo groupadd mytrackergrp``.
+2. Add the owner of the tracker home (admin in this example) run:
+   ``sudo usermod -a -G mytrackergrp admin``
+3. Add user that runs Apache (the default on Ubuntu is www-data) run:
+   ``sudo usermod -a -G mytrackergrp www-data``
+4. Add user mail service runs as (e.g. daemon) run: 
+   ``sudo usermod -a -G mytrackergrp daemon``
+5. Change group of the database in the tracker folder run:
+   ``sudo chgrp -R mytrackergrp ~/trackers/mytracker``.
+6. Make sure group can write to the database, and any new files created
+   in the database will be owned by the group run:
+   ``sudo chmod -R g+sw ~/trackers/mytracker/db``
+
+To run mod_wsgi on PORT 80
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+1. Change the ``tracker.web`` url in ``config.ini`` to the server url
+   with no port designator. E.g. http://11.11.11.101.
+2. Open port 80 on the server for TCP traffic if it isn't open already.
+3. Stop the system instance of Apache to make sure it isn't holding on
+   to port 80 run: ``sudo service apache2 stop``.
+
+To run as a foreground process
+''''''''''''''''''''''''''''''
+
+1. From the tracker home directory, run
+   ``sudo mod_wsgi-express start-server wsgi.py --port 80 --user admin --group mytrackergrp``
+
+To run as a background process
+''''''''''''''''''''''''''''''
+
+1. From the tracker home directory, bash
+   ``sudo mod_wsgi-express setup-server wsgi.py --port=80 --user admin --group mytrackergrp --server-root=/etc/mod_wsgi-express-80``
+2. Then, run ``sudo /etc/mod_wsgi-express-80/apachectl start``
+3. To stop, run ``sudo /etc/mod_wsgi-express-80/apachectl stop``
 
 Apache HTTP Server with mod_python
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -647,25 +794,107 @@ The URL for accessing these trackers then become:
 Note that in order to use https connections you must set up Apache for secure
 serving with SSL.
 
-WSGI Handler
-~~~~~~~~~~~~
+WSGI Variations
+~~~~~~~~~~~~~~~
 
-The WSGI handler is quite simple. The following sample code shows how
-to use it::
+This method from Thomas Arendsen Hein goes into a bit more detail and
+is designed to allow you to run multiple roundup trackers each under
+their own user.
 
-    from wsgiref.simple_server import make_server
+The tracker instances are read-only to the tracker user and located
+under /srv/roundup/.  The (writable) data files are stored in the home
+directory of the user running the tracker.
 
-    # obtain the WSGI request dispatcher
-    from roundup.cgi.wsgi_handler import RequestDispatcher
-    tracker_home = 'demo'
-    app = RequestDispatcher(tracker_home)
+To install roundup, download and unpack a distribution tarball and run
+the following as user "roundup"::
 
-    httpd = make_server('', 8917, app)
-    httpd.serve_forever()
+  python setup.py build_doc
+  python setup.py sdist --manifest-only
+  python setup.py install --home="/home/roundup/install" --force
 
-To test the above you should create a demo tracker with ``python demo.py``.
-Edit the ``config.ini`` to change the web URL to "http://localhost:8917/".
+Create a user roundup-foo, group roundup-foo to run the tracker.  Add
+the following apache config to
+/etc/apache2/sites-available/roundup-foo (under debian/Ubunutu, modify
+as needed):
 
+  .. code:: xml
+
+    ServerAdmin webmaster@example.com
+    ErrorLog /var/log/apache2/error.log
+
+    LogLevel notice
+
+    DocumentRoot /var/www/
+
+    <VirtualHost *:80>
+            CustomLog /var/log/apache2/access.log vhost_combined
+
+	    # allow access to roundup docs
+            Alias /doc/ /home/roundup/install/share/doc/roundup/html/
+
+	    # make apache serve static assets like css rather than
+            # having roundup serve the files
+            Alias /foo/@@file/ /srv/roundup/foo/html/
+
+	    # make /foo into /foo/
+            RedirectMatch permanent ^/(foo)$ /$1/
+
+	    # start a wsgi daemon process running as user roundup-foo
+	    # in group roundup-foo. This also changes directory to 
+	    # ~roundup-foo before it starts roundup.wsgi.
+            WSGIDaemonProcess roundup-foo display-name=roundup-foo user=roundup-foo group=roundup-foo threads=25
+
+            # make tracker available at /foo and tie it into the
+	    # wsgi script below.
+            WSGIScriptAlias /foo /srv/roundup/foo/roundup.wsgi
+            <Location /foo>
+                    WSGIProcessGroup roundup-foo
+            </Location>
+    </VirtualHost>
+
+The directory ~roundup-foo should have:
+
+   * a ``db`` subdirectory where messages and files will be stored
+   * a symbolic link called ``instance`` to /srv/roundup/foo which has
+     been initialized using ``roundup-admin``.
+
+The `Apache HTTP Server with mod_wsgi`_ section above has a simple
+WSGI handler.  This is a enhanced version to be put into
+``/srv/roundup/foo/roundup.wsgi``.
+
+   .. code:: python
+
+    import sys, os
+    sys.stdout = sys.stderr
+
+    enabled = True
+
+    if enabled:
+        # Add the directory with the roundup installation
+	# subdirectory to the python path.
+        sys.path.insert(0, '/home/roundup/install/lib/python')
+
+        # obtain the WSGI request dispatcher
+        from roundup.cgi.wsgi_handler import RequestDispatcher
+	
+        tracker_home = os.path.join(os.getcwd(), 'instance')
+        application = RequestDispatcher(tracker_home)
+    else:
+        def application(environ, start_response):
+            status = '503 Service Unavailable'
+            output = 'service is down for maintenance'
+            response_headers = [('Content-type', 'text/plain'),
+                                ('Content-Length', str(len(output)))]
+            start_response(status, response_headers)
+            return [output]
+
+This handler allows you to temporarily disable the tracker by setting
+"enabled = False", apache will automatically detect the changed
+roundup.wsgi file and reload it.
+
+One last change is needed. In the tracker's config.ini change the db
+parameter in the [main] section to be /home/roundup-foo/db. This will
+put the files and messages in the db directory for the user.
 
 Configure an Email Interface
 ----------------------------
