@@ -184,6 +184,8 @@ Fixed:
 - issue2551013: Reversed sorting in hyperdb property wrapper object's
   sorted() method. Patch by David Sowder, application and doc change
   by John Rouillard.
+- issue2551066: IMAP mail handling wasn't working and produced a
+  traceback.
 
 2018-07-13 1.6.0
 

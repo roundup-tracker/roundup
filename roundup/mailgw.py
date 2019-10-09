@@ -1357,9 +1357,9 @@ class MailGW:
                 # mark the message as deleted.
                 server.store(str(i), '+FLAGS', r'(\Deleted)')
 
-                # process the message
-                s = io.BytesIO(data[0][1])
-                s.seek(0)
+                # process the message, data[0][1] is of type 'bytes' for
+                # python3 and a string for python2.
+                s = data[0][1]
                 self.handle_Message(message_from_bytes(s, RoundupMessage))
             server.close()
         finally:
