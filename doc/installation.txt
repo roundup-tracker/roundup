@@ -862,7 +862,7 @@ The directory ~roundup-foo should have:
      been initialized using ``roundup-admin``.
 
 The `Apache HTTP Server with mod_wsgi`_ section above has a simple
-WSGI handler.  This is a enhanced version to be put into
+WSGI handler.  This is an enhanced version to be put into
 ``/srv/roundup/foo/roundup.wsgi``.
 
    .. code:: python
