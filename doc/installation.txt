@@ -511,7 +511,7 @@ Apache HTTP Server with mod_wsgi
 
 This is a work in progress thanks to Garth Jensen.
 
-See the main web site for `mod_wsgi`_ whcih include directions for
+See the main web site for `mod_wsgi`_ which include directions for
 using mod_wsgi-express which is easier if you are not used to apache
 configuration. Also there is the
 `main mod_wsgi  <https://modwsgi.readthedocs.io/en/develop/>`_ for more
@@ -556,9 +556,12 @@ method.
 1. The `mod_wsgi`_ PyPi page lists prerequisites for various types of
    systems. For Ubuntu, they are apache2 and apache2-dev. To see
    installed apache packages, you can use ``dpkg -l | grep apache``.
-   If apache2 or apache2-dev are not installed, they install them with:
+   If apache2 or apache2-dev are not installed, they install them
+   with:
+   
    - ``sudo apt update``
    - ``sudo apt install apache2 apache2-dev``
+   
 2. If ``pip`` is not already installed, install it with
    ``sudo apt install python-pip``
 
