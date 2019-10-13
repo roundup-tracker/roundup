@@ -30,3 +30,6 @@ Contents
    acknowledgements
    Richard Jones implementation notes <implementation>
    license
+
+See: https://wiki.roundup-tracker.org/ReleaseErrata for fixes to
+documentation.
