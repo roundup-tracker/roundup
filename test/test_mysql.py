@@ -35,7 +35,8 @@ class mysqlOpener:
         self.module.db_nuke(config)
 
     def tearDown(self):
-        self.db.close()
+        if self.db:
+	    self.db.close()
         self.nuke_database()
 
     def nuke_database(self):
