@@ -2703,8 +2703,8 @@ sorted      only on Multilink properties - produce a list of the linked
 
             Will list the files by upload date. While
 
-	        python:context.files.sorted('creation', reverse=True)
-		
+               python:context.files.sorted('creation', reverse=True)
+
             Will list the files by upload date in reverse order from
             the prior example.
 reverse     only on Multilink properties - produce a list of the linked
