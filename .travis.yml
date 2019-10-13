@@ -6,7 +6,7 @@ python:
   - 3.5
   - 3.6
   - 3.7
-  - nightly
+#  - nightly
 
 #I would like to build and test the maint-1.6 and trunk/default
 #but we need different environments for these:
