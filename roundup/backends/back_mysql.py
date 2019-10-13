@@ -587,6 +587,13 @@ class Database(rdbms_common.Database):
         self.log_info('close')
         try:
             self.conn.close()
+        # issue2551025: with revision 1.3.14 of mysqlclient.
+        # It looks like you can get an OperationalError 2006
+        # raised for closing a closed handle.
+        except MySQLdb.OperationalError as message:
+            print str(message)
+            if str(message) != '':
+                raise
         except MySQLdb.ProgrammingError as message:
             if str(message) != 'closing a closed connection':
                 raise

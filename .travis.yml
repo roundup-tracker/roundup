@@ -2,10 +2,11 @@ language: python
 
 python:
   - 2.7
-  - 3.4
-  - 3.5
-  - 3.6
-  - 3.7
+#test#  - 3.4
+#test#  - 3.5
+#test#  - 3.6
+#test#  - 3.7
+#test#  - nightly
 
 #I would like to build and test the maint-1.6 and trunk/default
 #but we need different environments for these:
@@ -20,8 +21,8 @@ dist:
  - xenial
 
 matrix:
-    allow_failures:  # 3.7 not ready for prime time yet.
-      - python: 3.7
+    allow_failures:  # nightly not ready for prime time yet.
+      - nightly
 
 sudo: false
 
@@ -83,8 +84,8 @@ before_install:
   - cd $TRAVIS_BUILD_DIR
 
 install:
-  - pip install mysqlclient==1.3.13
-  #- pip install mysqlclient
+  #test#  - pip install mysqlclient==1.3.13
+  - pip install mysqlclient
   - pip install psycopg2
   - pip install gpg pytz whoosh pyjwt
   - pip install pytest-cov codecov
