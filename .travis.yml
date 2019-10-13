@@ -84,7 +84,7 @@ before_install:
   - cd $TRAVIS_BUILD_DIR
 
 install:
-  #test#  - pip install mysqlclient==1.3.13
+#test#  - pip install mysqlclient==1.3.13
   - pip install mysqlclient
   - pip install psycopg2
   - pip install gpg pytz whoosh pyjwt
@@ -108,7 +108,9 @@ before_script:
 script:
   - PATH=$VIRTUAL_ENV/bin:$PATH
   - export LD_LIBRARY_PATH=$VIRTUAL_ENV/lib:$LD_LIBRARY_PATH
-  - py.test -v test/ --cov=roundup
+  - py.test -v test/test_mysql.py
+#test#  - py.test -v test/ --cov=roundup
+  
 
-after_success:
-  - codecov
+#test#after_success:
+#test#  - codecov

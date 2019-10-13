@@ -592,7 +592,7 @@ class Database(rdbms_common.Database):
         # raised for closing a closed handle.
         except MySQLdb.OperationalError as message:
             print str(message)
-            if str(message) != '':
+            if str(message) != "(2006, '')":  # close connection
                 raise
         except MySQLdb.ProgrammingError as message:
             if str(message) != 'closing a closed connection':
