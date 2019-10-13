@@ -830,6 +830,18 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         out = pt.render(cl, 'issue', MockNull())
         self.assertEqual(out, '<?xml version="1.0" encoding="UTF-8"?><feed\n    xmlns="http://www.w3.org/2005/Atom"/>\n')
 
+    def testHttpProxyStrip(self):
+        os.environ['HTTP_PROXY'] = 'http://bad.news/here/'
+        cl = self.setupClient({ }, 'issue',
+                env_addon = {'HTTP_PROXY': 'http://bad.news/here/'})
+        out = []
+        def wh(s):
+            out.append(s)
+        cl.write_html = wh
+        cl.main()
+        self.assertFalse('HTTP_PROXY' in cl.env)
+        self.assertFalse('HTTP_PROXY' in os.environ)
+
     def testCsrfProtection(self):
         # need to set SENDMAILDEBUG to prevent
         # downstream issue when email is sent on successful

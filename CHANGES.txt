@@ -186,6 +186,12 @@ Fixed:
   by John Rouillard.
 - issue2551066: IMAP mail handling wasn't working and produced a
   traceback.
+- issue2550925 if deployed as CGI and client sends an http PROXY
+  header, the tainted HTTP_PROXY environment variable is created. It
+  can affect calls using requests package or curl. A roundup admin
+  would have to write detectors/extensions that use these mechanisms.
+  Not exploitable in default config. (John Rouillard)
+
 
 2018-07-13 1.6.0
 

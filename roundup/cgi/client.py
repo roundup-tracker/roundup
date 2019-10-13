@@ -466,6 +466,14 @@ class Client:
     def main(self):
         """ Wrap the real main in a try/finally so we always close off the db.
         """
+
+        # strip HTTP_PROXY issue2550925 in case
+        # PROXY header is set.
+        if 'HTTP_PROXY' in self.env:
+            del(self.env['HTTP_PROXY'])
+        if 'HTTP_PROXY' in os.environ:
+            del(os.environ['HTTP_PROXY'])
+
         xmlrpc_enabled = self.instance.config.WEB_ENABLE_XMLRPC
         rest_enabled   = self.instance.config.WEB_ENABLE_REST
         try:
