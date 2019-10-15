@@ -1415,6 +1415,7 @@ class RestfulInstance(object):
         action_args = [class_name + item_id]
         if op == 'action':
             # extract action_name and action_args from form fields
+            name = None
             for form_field in input.value:
                 key = form_field.name
                 value = form_field.value
@@ -1427,8 +1428,8 @@ class RestfulInstance(object):
                 action_type = self.actions[name]
             else:
                 raise UsageError(
-                    'action "%s" is not supported %s' %
-                    (name, ','.join(self.actions.keys()))
+                    'action "%s" is not supported, allowed: %s' %
+                    (name, ', '.join(self.actions.keys()))
                 )
             action = action_type(self.db, self.translator)
             result = action.execute(*action_args)
