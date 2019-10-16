@@ -384,8 +384,8 @@ def lookupIds(db, prop, ids, fail_ok=0, num_re=num_re, do_lookup=True):
     cl = db.getclass(prop.classname)
     l = []
     for entry in ids:
-        # Do not look up numeric IDs
-        if num_re.match(entry):
+        # Do not look up numeric IDs if try_id_parsing
+        if prop.try_id_parsing and num_re.match(entry):
             l.append(entry)
             continue
         if do_lookup:
