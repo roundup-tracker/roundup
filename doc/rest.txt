@@ -551,6 +551,118 @@ items in the collection.
 See the `Searches and selection`_ section for the use cases supported
 by these features.
 
+Getting Message and Files Content
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can retreive a message with a url like
+``https://.../demo/rest/data/msg/11``. This returns something like::
+
+  {
+     "data": {
+        "id": "11",
+        "type": "msg",
+        "link": "https://.../demo/rest/data/msg/11",
+	"attributes": {
+            "author": {
+                "id": "5",
+                "link": "https://.../demo/rest/data/user/5"
+            },
+            "content": {
+                "link": "https://.../demo/msg11/"
+            },
+            "date": "2017-10-30.00:53:15",
+            "files": [],
+            "inreplyto": null,
+            "messageid": "<1509324807.14.0.296813919751.issue3@localhost>",
+            "messagetype": {
+                "id": "1",
+                "link": "https://.../demo/rest/data/msgtype/1"
+            },
+            "recipients": [
+                {
+                    "id": "1",
+                    "link": "https://.../demo/rest/data/user/1"
+                },
+                {
+                    "id": "3",
+                    "link": "https://.../demo/rest/data/user/3"
+                },
+                {
+                    "id": "4",
+                    "link": "https://.../demo/rest/data/user/4"
+                }
+            ],
+            "subject": null,
+            "summary": "of has to who. or of account give because the",
+        },
+        "@etag": "\"584f82231079e349031bbb853747df1c\""
+     }
+  }
+
+To retreive the content, you can use the content link property:
+``https://.../demo/msg11/``. The trailing / is required. Without the
+/, you get a web page that includes metadata about the message. With
+the slash you get a text/plain (in most cases) data stream.
+
+Also you can use the url:
+
+and the content property (if the data is utf-8 compatible) now looks
+like::
+
+   ...
+   "author": {
+               "id": "5",
+               "link": "https://.../demo/rest/data/user/5"
+             },
+   "content": "of has to who pleasure. or of account give because the
+       reprehenderit\neu to quisquam velit, passage,
+       was or toil BC quis denouncing quia\nexercise,
+       veritatis et used voluptas I elit, a The...",
+   "date": "2017-10-30.00:53:15",
+   ...
+   
+Lines are wrapped for display, content value is one really long
+line. If the data is not utf-8 compatible, you will get a link.
+
+Retrieving the contents of a file is slightly different. Performing a
+get on a file returns::
+
+  {
+     "data": {
+        "id": "11",
+        "type": "file",
+        "link": "https://.../demo/rest/data/file/11",
+        "attributes": {
+            "acl": null,
+            "content": {
+                "link": "https://.../demo/file11/"
+            },
+            "name": "afile",
+            "status": {
+                "id": "1",
+                "link": "https://.../demo/rest/data/filestatus/1"
+            },
+            "type": "image/vnd.microsoft.icon"
+        },
+        "@etag": "\"74276f75ef71a30a0cce62dc6a8aa1bb\""
+     }
+  }
+
+To get the file contents in binary form, you currently have to go
+outside of the rest interface. You can use the name and content link
+to download the binary data stream. Perform a get on: the link value
+with the name appended. So for this example you would get:
+``https://.../demo/file11/afile``. You will receive a response of type
+application/octet-stream.
+
+using ``@verbose=3`` the content is displayed as (wrapped for display)::
+
+  "content": "file11 is not text, retrieve using binary_content
+              property. mdsum: bd990c0f8833dd991daf610b81b62316",
+	       
+
+You can then use the `binary_content property`_ described below to
+retrieve an encoded copy of the data.
 
 Other query params
 ^^^^^^^^^^^^^^^^^^
@@ -804,6 +916,49 @@ The long-form (with ``=``) is different from a query-parameter like
 ``/data/status?name=closed`` which would find all stati (statuses)
 that have ``closed`` as a substring.
 
+Dealing with Messages and Files
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Using the requests library you can upload a file using::
+
+     d = dict (name = filename, content = content, type = content_type)
+     j = self.post ('file', data = d)
+
+Instead of specifying json = dictionary we specify data = dictionary
+as shown above. (We believe) this encodes the contents using
+application/x-www-form-urlencoded which is not optimal for large files
+due to the encoding overhead.
+
+The requests library can use multipart/form-data which is more
+efficient for large files. To do this specify both, files= *and* data=
+parameters, e.g.::
+
+  # A binary string that can't be decoded as unicode
+  url = 'https://.../demo/rest/data/'
+  content = open ('random-junk', 'rb').read ()
+  fname   = 'a-bigger-testfile'
+  d = dict(name = fname, type='application/octet-stream')
+  c = dict (content = content)
+  r = session.post (url + 'file', files = c, data = d)
+
+Curl can be used to post a file using multipart/form-data with::
+
+   curl -u demo:demo -s -X POST -H "Referer: https://.../demo/" \
+      -H "X-requested-with: rest" \
+      -F "name=afile" -F "type=image/vnd.microsoft.icon" \
+      -F "content=@doc/roundup-favicon.ico" \
+      https://.../demo/rest/data/file
+
+the file is located at doc/roundup-favicon.ico. These calls will
+return something like::
+
+  {
+      "data": {
+          "id": "12",
+          "link": "https://.../demo/rest/data/file/12"
+       }
+  }
+ 
 
 Other Supported Methods for Items
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -851,7 +1006,7 @@ this is returned::
 	  },
 	  "type": "issue",
 	  "link":
-      "https://rouilj.dynamic-dns.net/demo/rest/data/issue/23",
+      "https://.../demo/rest/data/issue/23",
 	  "id": "23"
       }
   }
@@ -867,7 +1022,7 @@ Changing both nosy and title::
     --header "Accept: application/json" \
     --header 'If-Match: "8209add59a79713d64f4d1a072aef740"' \
     --data '{ "nosy": [ "4", "5" ], "title": "This is now my new title"  }' \
-   "https://rouilj.dynamic-dns.net/demo/rest/data/issue/23"
+   "https://.../demo/rest/data/issue/23"
 
 which returns both title and nosy attributes::
 
@@ -882,7 +1037,7 @@ which returns both title and nosy attributes::
 	    },
 	    "type": "issue",
 	    "link":
-	    "https://rouilj.dynamic-dns.net/demo/rest/data/issue/23",
+	    "https://.../demo/rest/data/issue/23",
 	    "id": "23"
 	}
     }
@@ -983,6 +1138,47 @@ For example::
 
 All endpoints support an ``OPTIONS`` method for determining which
 methods are allowed on a given endpoint.
+
+Message and File Content
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Messages and files have content properties. If the data is utf-8
+compatible (e.g. an email message) you can retrieve it with
+rest/data/msg/11/content to obtain::
+
+  {
+    "data": {
+    "id": "11",
+    "type": "<class 'str'>",
+    "link": "https://.../demo/rest/data/msg/11/content",
+    "data": "of has to who pleasure. or of account give because the reprehenderit\neu to quisquam velit, passage, was or...",
+            "@etag": "\"584f82231079e349031bbb853747df1c\""
+    }
+  }		
+
+(the content property is wrapped for display, it is one long line.)
+
+.. _binary_content property:
+
+If the data is not representable in utf-8, you need to use the
+binary_content
+property. E.G. https://.../demo/rest/data/file/11/binary_content
+returns::
+
+  {
+     "data": {
+        "id": "11",
+        "type": "<class 'bytes'>",
+        "link": "https://.../demo/rest/data/file/11/binary_content",
+        "data": "b'\\x00\\x00\\x01\\x00\\x01...\xec?\\x00\\x00'",
+        "@etag": "\"74276f75ef71a30a0cce62dc6a8aa1bb\""
+     }
+  }
+
+(data field elided for display). You can also receive the file content
+as a data stream rather than encoded. See `Getting Message and Files
+Content`_.
+
 
 Other Supported Methods for fields
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1657,7 +1853,7 @@ a jwt to see if it's still valid using::
 
   curl -s -H "Referer: https://.../demo/" \
   -H "X-requested-with: rest" \
-      https://rouilj.dynamic-dns.net/demo/rest/jwt/validate?jwt=eyJ0eXAiOiJK......XxMDb-Q3oCnMpyhxPXMAk
+      https://.../demo/rest/jwt/validate?jwt=eyJ0eXAiOiJK...XxMDb-Q3oCnMpyhxPXMAk
 
 (note no login is required) which returns::
   
