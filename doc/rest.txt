@@ -624,8 +624,8 @@ like::
 Lines are wrapped for display, content value is one really long
 line. If the data is not utf-8 compatible, you will get a link.
 
-Retrieving the contents of a file is slightly different. Performing a
-get on a file returns::
+Retrieving the contents of a file is similar. Performing a
+get on ``https://.../demo/rest/data/file/11`` returns::
 
   {
      "data": {
@@ -648,20 +648,20 @@ get on a file returns::
      }
   }
 
-To get the file contents in binary form, you currently have to go
-outside of the rest interface. You can use the name and content link
-to download the binary data stream. Perform a get on: the link value
-with the name appended. So for this example you would get:
-``https://.../demo/file11/afile``. You will receive a response of type
+To download the file contents for this example you would
+perform an http GET using: ``https://.../demo/file11/``. The trailing
+/ is required. You will receive a response of type
 application/octet-stream.
 
-using ``@verbose=3`` the content is displayed as (wrapped for display)::
+If you perform a get on
+``https://.../demo/rest/data/file/11?@verbose=3`` the content field
+above is displayed as (wrapped for display)::
 
   "content": "file11 is not text, retrieve using binary_content
               property. mdsum: bd990c0f8833dd991daf610b81b62316",
 	       
 
-You can then use the `binary_content property`_ described below to
+You can use the `binary_content property`_ described below to
 retrieve an encoded copy of the data.
 
 Other query params
@@ -1170,7 +1170,7 @@ returns::
         "id": "11",
         "type": "<class 'bytes'>",
         "link": "https://.../demo/rest/data/file/11/binary_content",
-        "data": "b'\\x00\\x00\\x01\\x00\\x01...\xec?\\x00\\x00'",
+        "data": "b'\\x00\\x00\\x01\\x00\\x01...\\xec?\\x00\\x00'",
         "@etag": "\"74276f75ef71a30a0cce62dc6a8aa1bb\""
      }
   }
@@ -1178,6 +1178,8 @@ returns::
 (data field elided for display). You can also receive the file content
 as a data stream rather than encoded. See `Getting Message and Files
 Content`_.
+
+The data is a json encoded hexidecimal representation of the data.
 
 
 Other Supported Methods for fields
