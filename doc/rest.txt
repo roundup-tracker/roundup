@@ -1162,7 +1162,7 @@ rest/data/msg/11/content to obtain::
 
 If the data is not representable in utf-8, you need to use the
 binary_content
-property. E.G. https://.../demo/rest/data/file/11/binary_content
+property. E.G. ``https://.../demo/rest/data/file/11/binary_content``
 returns::
 
   {
