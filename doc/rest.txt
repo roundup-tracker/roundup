@@ -1257,6 +1257,7 @@ with a REST API supporting JSON encoding::
         >>> import requests
         >>> u = 'http://user:password@tracker.example.com/demo/rest/data/'
         >>> s = requests.session()
+	>>> session.auth = ('admin', 'admin')
         >>> r = s.get(u + 'issue/42/title')
         >>> if r.status_code != 200:
         ...     print("Failed: %s: %s" % (r.status_code, r.reason))
@@ -1292,6 +1293,37 @@ Note the addition of headers for: x-requested-with and referer. This
 allows the request to pass the CSRF protection mechanism. You may need
 to add an Origin header if this check is enabled in your tracker's
 config.ini (look for csrf_enforce_header_origin).
+
+A similar curl based retire example is to use:
+
+       curl -s -u admin:admin \
+        -H "Referer: https://tracker.example.com/demo/" \
+	-H "X-requested-with: rest"  \
+	-H "Content-Type: application/json" \
+	https://tracker.example.com/demo/rest/data/status/1
+
+to get the etag manually. Then insert the etag in the If-Match header
+for this retire example::
+
+     curl -s -u admin:admin \
+        -H "Referer: https://tracker.example.com/demo/" \
+	-H "X-requested-with: rest"  \
+	-H "Content-Type: application/json" \
+	-H 'If-Match: "a502faf4d6b8e3897c4ecd66b5597571"' \
+	--data-raw '{ "@op":"action", "@action_name": "retire" }'\
+	-X PATCH \
+	https://tracker.example.com/demo/rest/data/status/1
+
+and restore::
+
+     curl -s -u admin:admin \
+        -H "Referer: https://tracker.example.com/demo/" \
+	-H "X-requested-with: rest"  \
+	-H "Content-Type: application/json" \
+	-H 'If-Match: "a502faf4d6b8e3897c4ecd66b5597571"' \
+	--data-raw '{ "@op":"action", "@action_name": "restore" }'\
+	-X PATCH \
+	https://tracker.example.com/demo/rest/data/status/1
 
 
 Searches and selection
