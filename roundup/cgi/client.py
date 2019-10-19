@@ -952,6 +952,35 @@ class Client:
                     language,
                     tracker_home=self.instance.config["TRACKER_HOME"]))
 
+    def authenticate_bearer_token(self, challenge):
+        ''' authenticate the bearer token. Refactored from determine_user()
+            to alow it to be overridden if needed.
+        '''
+        try: # will jwt import?
+            import jwt
+        except ImportError:
+            # no support for jwt, this is fine.
+            self.setHeader("WWW-Authenticate", "Basic")
+            raise LoginError('Support for jwt disabled.')
+
+        secret = self.db.config.WEB_JWT_SECRET
+        if len(secret) < 32:
+            # no support for jwt, this is fine.
+            self.setHeader("WWW-Authenticate", "Basic")
+            raise LoginError('Support for jwt disabled by admin.')
+
+        try: # handle jwt exceptions
+            token = jwt.decode(challenge, secret,
+                               algorithms=['HS256'],
+                               audience=self.db.config.TRACKER_WEB,
+                               issuer=self.db.config.TRACKER_WEB)
+        except jwt.exceptions.InvalidTokenError as err:
+            self.setHeader("WWW-Authenticate", "Basic, Bearer")
+            self.make_user_anonymous()
+            raise LoginError(str(err))
+
+        return(token)
+    
     def determine_user(self):
         """Determine who the user is"""
         self.opendb('admin')
@@ -1011,48 +1040,29 @@ class Client:
                     # this is a no-op.
                     random_.seed("%s%s"%(password,time.time())) 
                 elif scheme.lower() == 'bearer':
-                    try: # will jwt import?
-                        import jwt
-                        from roundup.hyperdb import iter_roles
-                        try: # handle jwt exceptions
-                            secret = self.db.config.WEB_JWT_SECRET
-                            if len(secret) < 32:
-                                # no support for jwt, this is fine.
-                                self.setHeader("WWW-Authenticate", "Basic")
-                                raise LoginError('Support for jwt disabled by admin.')
-                            token = jwt.decode(challenge, secret,
-                                           algorithms=['HS256'],
-                                           audience=self.db.config.TRACKER_WEB,
-                                           issuer=self.db.config.TRACKER_WEB)
-                        except jwt.exceptions.InvalidTokenError as err:
-                            self.setHeader("WWW-Authenticate", "Basic, Bearer")
-                            self.make_user_anonymous()
-                            raise LoginError(str(err))
+                    token = self.authenticate_bearer_token(challenge)
 
-                        # if we got here token is valid, use the role
-                        # and sub claims.
-                        try:
-                            # make sure to str(token['sub']) the subject. As decoded
-                            # by json, it is unicode which thows an error when used
-                            # with 'nodeid in db' down the call chain.
-                            user = self.db.user.get(str(token['sub']), 'username')
-                        except IndexError:
-                            raise LoginError("Token subject is invalid.")
+                    from roundup.hyperdb import iter_roles
 
-                        # validate roles
-                        all_rolenames = [ role[0] for role in self.db.security.role.items() ]
-                        for r in token['roles']:
-                            if r.lower() not in all_rolenames:
-                                raise LoginError("Token roles are invalid.")
+                    # if we got here token is valid, use the role
+                    # and sub claims.
+                    try:
+                        # make sure to str(token['sub']) the subject. As decoded
+                        # by json, it is unicode which thows an error when used
+                        # with 'nodeid in db' down the call chain.
+                        user = self.db.user.get(str(token['sub']), 'username')
+                    except IndexError:
+                        raise LoginError("Token subject is invalid.")
+
+                    # validate roles
+                    all_rolenames = [ role[0] for role in self.db.security.role.items() ]
+                    for r in token['roles']:
+                        if r.lower() not in all_rolenames:
+                            raise LoginError("Token roles are invalid.")
                             
-                        # will be used later to override the get_roles method
-                        override_get_roles = \
-                             lambda self: iter_roles(','.join(token['roles']))
-                             
-                    except ImportError:
-                        # no support for jwt, this is fine.
-                        self.setHeader("WWW-Authenticate", "Basic")
-                        raise LoginError('Support for jwt disabled.')
+                    # will be used later to override the get_roles method
+                    override_get_roles = \
+                            lambda self: iter_roles(','.join(token['roles']))
 
         # if user was not set by http authorization, try session lookup
         if not user:
