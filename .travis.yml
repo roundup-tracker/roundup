@@ -6,6 +6,7 @@ python:
   - 3.5
   - 3.6
   - 3.7
+  - 3.8
 #  - nightly
 
 #I would like to build and test the maint-1.6 and trunk/default
@@ -22,6 +23,7 @@ dist:
 
 matrix:
     allow_failures:  # nightly not ready for prime time yet.
+      - 3.8
       - nightly
 
 sudo: false
