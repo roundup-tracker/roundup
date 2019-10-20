@@ -10,13 +10,14 @@ Future development may cover:
 [ ] lossless dump/restore cycle
 [ ] data dump and filtering with preserved 
 """
+from __future__ import print_function
+
 __license__ = "Public Domain"
 __version__ = "1.0"
 __authors__ = [
     "anatoly techtonik <techtonik@gmail.com>"
 ]
 
-from __future__ import print_function
 import os
 import sys
 from roundup.anypy import xmlrpc_
