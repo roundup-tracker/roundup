@@ -800,6 +800,9 @@ serving with SSL.
 WSGI Variations
 ~~~~~~~~~~~~~~~
 
+Apache Alternate
+^^^^^^^^^^^^^^^^
+
 This method from Thomas Arendsen Hein goes into a bit more detail and
 is designed to allow you to run multiple roundup trackers each under
 their own user.
@@ -898,6 +901,35 @@ roundup.wsgi file and reload it.
 One last change is needed. In the tracker's config.ini change the db
 parameter in the [main] section to be /home/roundup-foo/db. This will
 put the files and messages in the db directory for the user.
+
+Gunicorn Installation
+^^^^^^^^^^^^^^^^^^^^^
+
+To run with gunicorn use pip to install gunicorn. This configuration
+uses a front end web server like nginx, hiawatha, apache configured as
+a reverse proxy. See your web server's documentation on how to set it
+up as a reverse proxy.
+
+The file wsgi.py should be in the current directory with the
+contents::
+
+  # if roundup is not installed on the default PYTHONPATH
+  # set it here with:
+  import sys
+  sys.path.append('/path/to/roundup/install/directory')
+
+  # obtain the WSGI request dispatcher
+  from roundup.cgi.wsgi_handler import RequestDispatcher
+  tracker_home = '/path/to/tracker/install/directory'
+
+  app =  RequestDispatcher(tracker_home)
+
+Assuming the proxy forwards /tracker, run gunicorn as::
+
+  SCRIPT_NAME=/tracker gunicorn --bind 127.0.0.1:8917 --timeout=10 wsgi:app
+
+this runs roundup at port 8917 on the loopback interface. You should
+configure the reverse proxy to talk to 127.0.0.1 at port 8917.
 
 Configure an Email Interface
 ----------------------------
