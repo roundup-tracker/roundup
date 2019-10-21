@@ -79,30 +79,33 @@ class Gcra:
 
         ret = {}
         tat = self.get_tat(key)
-
         # static defined headers according to limit
-        ret['X-RateLimit-Limit'] = limit.count
-        ret['X-RateLimit-Limit-Period'] = int(limit.period.total_seconds())
+        # all values are strings as that is required when used as headers
+        ret['X-RateLimit-Limit'] = str(limit.count)
+        ret['X-RateLimit-Limit-Period'] = str(
+                                           int(
+                                            limit.period.total_seconds())
+                                          )
 
         # status of current limit as of now
         now = datetime.utcnow()
 
-        ret['X-RateLimit-Remaining'] = min(int(
-            (limit.period - (tat - now)).total_seconds() \
-             /limit.inverse),ret['X-RateLimit-Limit'])
+        current_count = int((limit.period - (tat - now)).total_seconds()\
+                            /limit.inverse)
+        ret['X-RateLimit-Remaining'] = str(min(current_count,limit.count))
 
         # tat_in_epochsec = (tat - datetime(1970, 1, 1)).total_seconds()
         seconds_to_tat = (tat - now).total_seconds()
-        ret['X-RateLimit-Reset'] = max(seconds_to_tat, 0)
+        ret['X-RateLimit-Reset'] = str(max(seconds_to_tat, 0))
         ret['X-RateLimit-Reset-date'] = "%s"%tat
-        ret['Now'] = (now - datetime(1970,1,1)).total_seconds()
+        ret['Now'] = str((now - datetime(1970,1,1)).total_seconds())
         ret['Now-date'] = "%s"%now
 
         if self.update(key, limit, testonly=True):
             # A new request would be rejected if it was processes.
             # The user has to wait until an item is dequeued.
             # One item is dequeued every limit.inverse seconds.
-            ret['Retry-After'] = limit.inverse
+            ret['Retry-After'] = str(int(limit.inverse))
             ret['Retry-After-Timestamp'] = "%s"%(now + timedelta(seconds=limit.inverse))
         else:
             # if we are not rejected, the user can post another
@@ -110,8 +113,8 @@ class Gcra:
             # Do we even need this header if not rejected?
             # RFC implies this is used with a 503 (or presumably
             # 429 which may postdate the rfc). So if no error, no header?
-            # ret['Retry-After'] = 0
-            # ret['Retry-After-Timestamp'] = ret['Now-date']
+            # ret['Retry-After'] = '0'
+            # ret['Retry-After-Timestamp'] = str(ret['Now-date'])
             pass
 
         return ret

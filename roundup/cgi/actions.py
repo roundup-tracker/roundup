@@ -1264,7 +1264,7 @@ class LoginAction(Action):
                 if reject:
                     # User exceeded limits: find out how long to wait
                     status=gcra.status(rlkey, limit)
-                    raise Reject(_("Logins occurring too fast. Please wait: %d seconds.")%status['Retry-After'])
+                    raise Reject(_("Logins occurring too fast. Please wait: %s seconds.")%status['Retry-After'])
 
             self.verifyLogin(self.client.user, password)
         except exceptions.LoginError as err:

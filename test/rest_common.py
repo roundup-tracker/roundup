@@ -1001,7 +1001,7 @@ class TestCase():
             # remaining count is correct
             self.assertEqual(
                 self.server.client.additional_headers["X-RateLimit-Remaining"],
-                self.db.config['WEB_API_CALLS_PER_INTERVAL'] -1 - i
+                str(self.db.config['WEB_API_CALLS_PER_INTERVAL'] -1 - i)
                 )
 
         # trip limit
@@ -1014,20 +1014,20 @@ class TestCase():
 
         self.assertEqual(
             self.server.client.additional_headers["X-RateLimit-Limit"],
-            self.db.config['WEB_API_CALLS_PER_INTERVAL'])
+            str(self.db.config['WEB_API_CALLS_PER_INTERVAL']))
         self.assertEqual(
             self.server.client.additional_headers["X-RateLimit-Limit-Period"],
-            self.db.config['WEB_API_INTERVAL_IN_SEC'])
+            str(self.db.config['WEB_API_INTERVAL_IN_SEC']))
         self.assertEqual(
             self.server.client.additional_headers["X-RateLimit-Remaining"],
-            0)
+            '0')
         # value will be almost 60. Allow 1-2 seconds for all 20 rounds.
         self.assertAlmostEqual(
-            self.server.client.additional_headers["X-RateLimit-Reset"],
+            float(self.server.client.additional_headers["X-RateLimit-Reset"]),
             59, delta=1)
         self.assertEqual(
             str(self.server.client.additional_headers["Retry-After"]),
-            "3.0")  # check as string
+            "3")  # check as string
 
         print("Reset:", self.server.client.additional_headers["X-RateLimit-Reset"])
         print("Now realtime pre-sleep:", datetime.utcnow())
@@ -1049,18 +1049,18 @@ class TestCase():
 
         self.assertEqual(
             self.server.client.additional_headers["X-RateLimit-Limit"],
-            self.db.config['WEB_API_CALLS_PER_INTERVAL'])
+            str(self.db.config['WEB_API_CALLS_PER_INTERVAL']))
         self.assertEqual(
             self.server.client.additional_headers["X-RateLimit-Limit-Period"],
-            self.db.config['WEB_API_INTERVAL_IN_SEC'])
+            str(self.db.config['WEB_API_INTERVAL_IN_SEC']))
         self.assertEqual(
             self.server.client.additional_headers["X-RateLimit-Remaining"],
-            0)
+            '0')
         self.assertFalse("Retry-After" in
                          self.server.client.additional_headers) 
         # we still need to wait a minute for everything to clear
         self.assertAlmostEqual(
-            self.server.client.additional_headers["X-RateLimit-Reset"],
+            float(self.server.client.additional_headers["X-RateLimit-Reset"]),
             59, delta=1)
 
         # and make sure we need to wait another three seconds
@@ -1072,7 +1072,7 @@ class TestCase():
         self.assertEqual(self.server.client.response_code, 429)
         self.assertEqual(
             str(self.server.client.additional_headers["Retry-After"]),
-            "3.0")  # check as string
+            "3")  # check as string
 
         json_dict = json.loads(b2s(results))
         self.assertEqual(json_dict['error']['msg'],

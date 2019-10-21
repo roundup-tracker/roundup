@@ -1778,7 +1778,7 @@ class RestfulInstance(object):
                     # User exceeded limits: tell humans how long to wait
                     # Headers above will do the right thing for api
                     # aware clients.
-                    msg=_("Api rate limits exceeded. Please wait: %d seconds.")%limitStatus['Retry-After']
+                    msg=_("Api rate limits exceeded. Please wait: %s seconds.")%limitStatus['Retry-After']
                     output = self.error_obj(429, msg, source="ApiRateLimiter")
             else:
                 for header,value in limitStatus.items():
