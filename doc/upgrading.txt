@@ -27,13 +27,13 @@ Upgrade tracker's config.ini file
 --------------------------------------
 Once you have installed the new roundup, use:
 
-  roundup-admin -i /path/to/tracker updateconfig new_init_file.ini
+  roundup-admin -i /path/to/tracker updateconfig newconfig.ini
 
 to generate a new ini file preserving all your settings. You can then
 merge any local comments from the tracker's ``config.ini`` into
-``new_init_file.ini``. Compare the old and new files and configure set
-any new settings as you want. Then replace ``config.ini`` with the new
-ini file.
+``newconfig.ini``. Compare the old and new files and configure any new
+settings as you want. Then replace ``config.ini`` with the
+``newconfig.ini`` file.
 
 Python 3 support
 ----------------
@@ -51,12 +51,14 @@ you do not need to export and import, but need to delete the
 If using the ``postgresql`` backend, you do not need to export and
 import and no other special database-related steps are needed.
 
-Octal values in config.ini change from the python 2 representation
+Octal values in config.ini change from the Python 2 representation
 with a leading ``0`` (``022``). They now use a leading ``0o``
 (``0o22``). Note that the ``0o`` format is properly handled under
-python 2. You can use the ``newfile.ini`` generated using
-``python3 roundup-admin ... updateconfig newfile.ini``
-if you want to go back to using python 2.
+python 2. You can use the ``newconfig.ini`` generated using ``python3
+roundup-admin -i ... updateconfig newconfig.ini`` if you want to go
+back to using python 2. (Note going back to Python 2 will require
+the same steps as moving from 2 to 3 except using Python 3 to perform
+the export.)
 
 PGP mail processing
 -------------------
