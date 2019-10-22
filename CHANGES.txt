@@ -191,7 +191,9 @@ Fixed:
   can affect calls using requests package or curl. A roundup admin
   would have to write detectors/extensions that use these mechanisms.
   Not exploitable in default config. (John Rouillard)
-
+- Add config option to keep/delete previous logging config. Needed to
+  make gunicorn --access-logfile work as it uses python logfile module
+  too.
 
 2018-07-13 1.6.0
 

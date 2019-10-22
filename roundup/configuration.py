@@ -1031,6 +1031,9 @@ always passes, so setting it less than 1 is not recommended."""),
             "Minimal severity level of messages written to log file.\n"
             "If above 'config' option is set, this option has no effect.\n"
             "Allowed values: DEBUG, INFO, WARNING, ERROR"),
+        (BooleanOption, "disable_loggers", "no",
+            "If set to yes, only the loggers configured in this section will\n"
+            "be used. Yes will disable gunicorn's --access-log.\n"),
     )),
     ("mail", (
         (Option, "domain", NODEFAULT,
@@ -1738,7 +1741,8 @@ class CoreConfig(Config):
     def init_logging(self):
         _file = self["LOGGING_CONFIG"]
         if _file and os.path.isfile(_file):
-            logging.config.fileConfig(_file)
+            logging.config.fileConfig(_file,
+                   disable_existing_loggers=self["LOGGING_DISABLE_LOGGERS"])
             return
 
         _file = self["LOGGING_FILENAME"]
