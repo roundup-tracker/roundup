@@ -113,7 +113,7 @@ the whole procedure looks like so:
     #rsync --dry-run -v --checksum --recursive ./html/* ${project_home}/htdocs/
 
 
-If you are relasing an alpha/beta arelease, don't update:
+If you are releasing an alpha/beta release, don't update:
 
  ${project_home}/htdocs/docs/
 
