@@ -931,6 +931,20 @@ Assuming the proxy forwards /tracker, run gunicorn as::
 this runs roundup at port 8917 on the loopback interface. You should
 configure the reverse proxy to talk to 127.0.0.1 at port 8917.
 
+uWSGI Installation
+^^^^^^^^^^^^^^^^^^
+
+For a basic roundup install using uWSGI behind a front end server,
+install uwsgi and the python3 (or python) plugin. Then run::
+
+   uwsgi --http-socket 127.0.0.1:8917 \
+       --plugin python3 --mount=/tracker=wsgi.py \
+       --manage-script-name --callable app
+
+using the same wsgi.py as was used for gunicorn. If you get path not
+found errors, check the mount option. The /tracker entry must match
+the path used for the [tracker] web value in the tracker's config.ini.
+
 Configure an Email Interface
 ----------------------------
 
