@@ -62,6 +62,19 @@ roundup user.
 The configuration is in the "website/issues" section of Roundup's
 Mercurical SCM repository and copied manually to the live tracker.
 
+  * get a working copy of roundup/website/issues from the SCM, either via
+        hg clone https://hg.code.sf.net/p/roundup/code
+    or download a snapshot:
+        https://sourceforge.net/p/roundup/code/ci/default/tarball
+
+  * check the differences
+      diff -ur /srv/roundup/trackers/roundup/ roundup/website/issues/
+
+Copy differences using 'sudo -u roundup ...'.
+
+Getting a user account
+~~~~~~~~~~~~~~~~~~~~~~
+
 To get access to the host, submit a pull request for:
 
     https://github.com/python/psf-salt
@@ -166,7 +179,7 @@ from source.  Roundup binary distribution includes MO files only.
 .. _GNU gettext:
 
 GNU gettext package
-^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~
 
 This chapter is full of references to GNU `gettext package`_.
 GNU gettext is a "must have" for nearly all steps of internationalizing
@@ -185,7 +198,7 @@ runtime tools and libraries.  In such cases gettext development tools
 are usually distributed in separate package named ``gettext-devel``.
 
 Marking Strings for Translation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Strings that need translation must be marked in the source code.
 Following subsections explain how this is done in different cases.

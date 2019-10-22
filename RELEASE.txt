@@ -28,8 +28,11 @@ Roundup release checklist:
     _tmp/linkcheck/output.txt
        fix broken references in docs
        verify redirects are correct
-5.  Update setup.py info if needed (contacts, classifiers, etc.), and
-    check that metadata is valid and long descriptions is proper reST:
+5.  Update setup.py info if needed (contacts, classifiers, etc.). When
+    releasing check that Development Status matches release: stable,
+    beta alpha etc.
+
+    Check that metadata is valid and long descriptions is proper reST:
       python setup.py check --restructuredtext --metadata --strict
 6.  Clean out all *.orig, *.rej, .#* files from the source.
 7.  Remove previous build files
@@ -78,7 +81,8 @@ Roundup release checklist:
       http://www.roundup-tracker.org/ should state that the stable
       version is the one that you released.
       http://www.roundup-tracker.org/docs.html should also match the
-      released version (or atleast the major 1.x release.
+      released version (or at least the major non pre-release
+      1.x/2.x version).
 
 So, those commands in a nice, cut'n'pasteable form::
 
@@ -94,7 +98,7 @@ So, those commands in a nice, cut'n'pasteable form::
  cd ..
  python setup.py sdist --manifest-only
  python setup.py sdist --quiet
- python setup.py bdist_rpm
+ ## python setup.py bdist_rpm
  # not required for pypi.org since 2017 -> python setup.py register
  python setup.py sdist upload --repository pypi --sign
 

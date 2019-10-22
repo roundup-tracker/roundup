@@ -20,7 +20,7 @@ Contents:
 .. contents::
    :local:
 
-Migrating from 1.6.0 to x.y.0
+Migrating from 1.6.X to 2.0.0
 =============================
 
 Upgrade tracker's config.ini file
@@ -33,7 +33,30 @@ to generate a new ini file preserving all your settings. You can then
 merge any local comments from the tracker's ``config.ini`` into
 ``new_init_file.ini``. Compare the old and new files and configure set
 any new settings as you want. Then replace ``config.ini`` with the new
-init file.
+ini file.
+
+Python 3 support
+----------------
+
+Many of the ``.html`` and ``.py`` files from Roundup that are copied
+into tracker directories have changed for Python 3 support.  If you
+wish to move an existing tracker to Python 3, you need to merge in
+those changes.  If your tracker uses the ``anydbm`` or ``mysql``
+backends, you also need to export the tracker contents using
+``roundup-admin export`` running under Python 2, and them import them
+using ``roundup-admin import`` running under Python 3, as for a
+migration to a different backend.  If using the ``sqlite`` backend,
+you do not need to export and import, but need to delete the
+``db/otks`` and ``db/sessions`` files when changing Python version.
+If using the ``postgresql`` backend, you do not need to export and
+import and no other special database-related steps are needed.
+
+Octal values in config.ini change from the python 2 representation
+with a leading ``0`` (``022``). They now use a leading ``0o``
+(``0o22``). Note that the ``0o`` format is properly handled under
+python 2. You can use the ``newfile.ini`` generated using
+``python3 roundup-admin ... updateconfig newfile.ini``
+if you want to go back to using python 2.
 
 PGP mail processing
 -------------------
@@ -87,29 +110,6 @@ or::
 
     if db.tx_Source in ['web', 'rest', 'xmlrpc', 'email-sig-openpgp', 'cli' ]:
 
-
-Python 3 support
-----------------
-
-Many of the ``.html`` and ``.py`` files from Roundup that are copied
-into tracker directories have changed for Python 3 support.  If you
-wish to move an existing tracker to Python 3, you need to merge in
-those changes.  If your tracker uses the ``anydbm`` or ``mysql``
-backends, you also need to export the tracker contents using
-``roundup-admin export`` running under Python 2, and them import them
-using ``roundup-admin import`` running under Python 3, as for a
-migration to a different backend.  If using the ``sqlite`` backend,
-you do not need to export and import, but need to delete the
-``db/otks`` and ``db/sessions`` files when changing Python version.
-If using the ``postgresql`` backend, you do not need to export and
-import and no other special database-related steps are needed.
-
-Octal values in config.ini change from the python 2 representation
-with a leading ``0`` (``022``). They now use a leading ``0o``
-(``0o22``). Note that the ``0o`` format is properly handled under
-python 2. You can use the ``newfile.ini`` generated using
-``python3 roundup-admin ... updateconfig newfile.ini``
-if you want to go back to using python 2.
 
 Migrating from 1.5.1 to 1.6.0
 =============================

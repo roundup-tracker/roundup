@@ -1,7 +1,7 @@
 Roundup has three web sites:
 
  * http://www.roundup-tracker.org/
- * http://wiki.roundup-tracker.org/
+ * https://wiki.roundup-tracker.org/
  * https://issues.roundup-tracker.org/
 
 www and wiki are hosted on SourceForge.
@@ -9,27 +9,36 @@ www and wiki are hosted on SourceForge.
 
 updating issues.roundup-tracker.org
 ===================================
-If you don't have access, ask to update on mailing list. You may try to
-ping Ralf, Bernhard or Ezio directly.
-
- * log into issues.roundup-tracker.org
- * get a working copy of roundup/website/issues from the SCM, either via
-      hg clone http://hg.code.sf.net/p/roundup/code
-   or download a snapshot:
-      http://sourceforge.net/p/roundup/code/ci/default/tarball
-
- * check the differences
-      diff -ur /home/roundup/trackers/roundup/ /home/YOURUSERID/roundup/website/issues/
- * copy the files into the tracker instance, using sudo:
-      sudo -u roundup cp <file> /home/roundup/trackers/roundup/...
-   or use rsync to check and only copy the changed files as user roundup like
-      rsync -rvc /home/YOURUSERID/roundup/website/issues/ trackers/roundup/
-      HINT: old files will not be deleted by this rsync command 
- * restart the roundup server:
-      sudo /etc/init.d/roundup restart
+See doc/developers.txt for details on accessing the new location.
 
 
-updating services hosted on sf.net (www and wiki)
+updating wiki.roundup-tracker.org
+=================================
+Wiki isn't hosted on sourceforge anymore. See:
+
+ https://issues.roundup-tracker.org/issue2551045
+
+for details on Implementing wiki move to Waldmann-EDV.
+
+Bern Reiter will be adding new docs on how to update files (if
+possible). Old directions are:
+
+=============
+
+copy new files over to new directories:
+
+    cd ${project_home}/src/roundup/website/wiki
+    cp -r -p static/roundup ${project_home}/htdocs/_wiki/
+    cp -p wiki/data/plugin/theme/roundup.py ${project_home}/persistent/wiki/data/plugin/theme/
+    cd -
+
+If you need to adjust wiki configuration, it is here:
+
+    vim persistent/wiki/wikiconfig.py
+
+==============
+
+updating services hosted on sf.net (www)
 =================================================
 Generic SF instructions for web service recommend
 uploading files through SFTP, described here:
@@ -79,22 +88,6 @@ to free resources:
 
     shutdown
 
-updating wiki.roundup-tracker.org
----------------------------------
-wiki doesn't require building anything, so if you're
-logged in to SF (see above), just copy new files over
-to new directories:
-
-    cd ${project_home}/src/roundup/website/wiki
-    cp -r -p static/roundup ${project_home}/htdocs/_wiki/
-    cp -p wiki/data/plugin/theme/roundup.py ${project_home}/persistent/wiki/data/plugin/theme/
-    cd -
-
-If you need to adjust wiki configuration, it is here:
-
-    vim persistent/wiki/wikiconfig.py
-
-
 updating www.roundup-tracker.org
 ---------------------------------
 Site update requires rebuilding HTML files. For that
@@ -118,3 +111,21 @@ the whole procedure looks like so:
     cp -r -p ../../doc/html_extra/* ${project_home}/htdocs/docs/
     # or try it with rsync (skip --dry-run when ready)
     #rsync --dry-run -v --checksum --recursive ./html/* ${project_home}/htdocs/
+
+
+If you are relasing an alpha/beta arelease, don't update:
+
+ ${project_home}/htdocs/docs/
+
+instead update:
+
+  ${project_home}/htdocs/dev-docs/
+
+and the URL will be: http://www.roundup-tracker.org/dev-docs/docs.html
+
+Note there appears to be a cache somewhere in the path, so you may
+need to use:
+
+  http://www.roundup-tracker.org/dev-docs/docs.html?foo=1
+
+to cache bust.

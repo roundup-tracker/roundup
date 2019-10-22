@@ -8,7 +8,7 @@ Roundup Issue Tracker
 Roundup is a simple-to-use and -install issue-tracking system with command-line, web and e-mail interfaces. 
 It is based on the winning design from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-The current stable version of Roundup is 1.6 which has quite a comprehensive
+The current <strike>stable</strike> version of Roundup is 2.0.0alpha0 which has quite a comprehensive
 :doc:`feature set <docs/features>`. For more information see the :doc:`design overview <docs/design>`,
 and all the other :doc:`documentation <docs>`. Roundup has been deployed for:
 
@@ -30,5 +30,5 @@ Roundup was originally released as version 0.1.1 in late August, 2001. The first
     Got tired of waiting for Roundup to be released. Had just finished major product project, so needed
     something different for a while. Roundup here I come... 
 
-.. _`download`: http://cheeseshop.python.org/pypi/roundup
+.. _`download`: https://pypi.org/project/roundup/
 .. _`change note`: https://sourceforge.net/p/roundup/code/ci/tip/tree/CHANGES.txt

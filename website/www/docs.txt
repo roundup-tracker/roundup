@@ -11,9 +11,16 @@ Docs
    docs/user_guide
    docs/customizing
    docs/admin_guide
+   docs/debugging
    docs/xmlrpc
-   Design (original) <docs/design>
-   docs/developers
+   docs/rest
    docs/tracker_templates
+   docs/glossary
    docs/acknowledgements
    docs/license
+   Design Overview <docs/overview>
+   Design (original) <docs/design>
+   docs/developers
+   Notes about the MySQL Database backend <docs/mysql>
+   Notes about the PostgreSQL Database backend <docs/postgresql>
+   Richard Jones implementation notes <docs/implementation>
