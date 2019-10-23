@@ -1153,11 +1153,16 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
 
                 arg_s = '<br />'.join(cell)
             else:
-                # unkown event!!
-                comments['unknown'] = self._(
-                    "<strong><em>This event is not handled"
-                    " by the history display!</em></strong>")
-                arg_s = '<strong><em>' + str(args) + '</em></strong>'
+                if action in ( 'retired', 'restored' ):
+                    # args = None for these actions
+                    pass
+                else:
+                    # unknown event!!
+                    comments['unknown'] = self._(
+                        "<strong><em>This event %s is not handled"
+                        " by the history display!</em></strong>"%action)
+                    arg_s = '<strong><em>' + str(args) + '</em></strong>'
+
             date_s = date_s.replace(' ', '&nbsp;')
             # if the user's an itemid, figure the username (older journals
             # have the username)
