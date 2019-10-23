@@ -14,6 +14,9 @@ import roundup.instance
 from roundup.cgi import TranslationService
 from roundup.anypy import http_
 from roundup.anypy.strings import s2b, bs2b
+
+from roundup.cgi.client import BinaryFieldStorage
+
 BaseHTTPRequestHandler = http_.server.BaseHTTPRequestHandler
 DEFAULT_ERROR_MESSAGE = http_.server.DEFAULT_ERROR_MESSAGE
 
@@ -69,13 +72,18 @@ class RequestDispatcher(object):
         request.headers = Headers(environ)
 
         if environ ['REQUEST_METHOD'] == 'OPTIONS':
-            code = 501
-            message, explain = BaseHTTPRequestHandler.responses[code]
-            request.start_response([('Content-Type', 'text/html'),
-                ('Connection', 'close')], code)
-            request.wfile.write(s2b(DEFAULT_ERROR_MESSAGE % locals()))
-            return []
-
+            if environ["PATH_INFO"][:5] == "/rest":
+                # rest does support options
+                # This I hope will result in self.form=None
+                environ['CONTENT_LENGTH'] = 0
+            else:
+                code = 501
+                message, explain = BaseHTTPRequestHandler.responses[code]
+                request.start_response([('Content-Type', 'text/html'),
+                                        ('Connection', 'close')], code)
+                request.wfile.write(s2b(DEFAULT_ERROR_MESSAGE % locals()))
+                return []
+        
         tracker = roundup.instance.open(self.home, not self.debug)
 
         # need to strip the leading '/'
@@ -83,7 +91,14 @@ class RequestDispatcher(object):
         if request.timing:
             environ["CGI_SHOW_TIMING"] = request.timing
 
-        form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ)
+        form = BinaryFieldStorage(fp=environ['wsgi.input'], environ=environ)
+
+        if environ ['REQUEST_METHOD'] in ("OPTIONS", "DELETE"):
+            # these methods have no data. When we init tracker.Client
+            # set form to None and request.rfile to None to get a
+            # properly initialized empty form.
+            form = None
+            request.rfile = None
 
         client = tracker.Client(tracker, request, environ, form,
             request.translator)
