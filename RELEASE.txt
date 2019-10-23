@@ -48,7 +48,7 @@ Roundup release checklist:
       added and removed files. Last release e.g. 1.5.1 where tip was
       what would become 1.6) E.G.
       
-      hg status --rev 1.6.0:tip | sed -ne 's/^A //p' | while read i ;
+      hg status --rev 1.6.0:tip | sed -ne 's/^A //p' | while read i ; \
       do echo $i; grep "$i" MANIFEST; done | uniq -c
 
     Anything with a count of 1 is not in the nanifest.
