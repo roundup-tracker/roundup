@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roundup 1.4.6\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2019-10-22 14:37-0400\n"
+"POT-Creation-Date: 2019-10-23 13:45-0400\n"
 "PO-Revision-Date: 2013-10-31 12:19+0100\n"
 "Last-Translator: Stéphane Raimbault <stephane.raimbault@gmail.com>\n"
 "Language-Team: GNOME French Team <gnomefr@traduc.org>\n"
@@ -1921,18 +1921,18 @@ msgstr "Soumettre un nouvelle entrée"
 # :1236:1257 :1304:1327 :1361:1400 :1453:1470 :1549:1569 :1587:1619
 # :1629:1683 :1875
 #: ../roundup/cgi/templating.py:790 ../roundup/cgi/templating.py:948
-#: ../roundup/cgi/templating.py:1497 ../roundup/cgi/templating.py:1526
-#: ../roundup/cgi/templating.py:1546 ../roundup/cgi/templating.py:1559
-#: ../roundup/cgi/templating.py:1609 ../roundup/cgi/templating.py:1632
-#: ../roundup/cgi/templating.py:1639 ../roundup/cgi/templating.py:1675
-#: ../roundup/cgi/templating.py:1712 ../roundup/cgi/templating.py:1745
-#: ../roundup/cgi/templating.py:1834 ../roundup/cgi/templating.py:1855
-#: ../roundup/cgi/templating.py:1945 ../roundup/cgi/templating.py:1965
-#: ../roundup/cgi/templating.py:1983 ../roundup/cgi/templating.py:2015
-#: ../roundup/cgi/templating.py:2025 ../roundup/cgi/templating.py:2089
-#: ../roundup/cgi/templating.py:2336 ../roundup/cgi/templating.py:790:948
-#: :1497:1526 :1546:1559 :1609:1632 :1639:1675 :1712:1745 :1834:1855 :1945:1965
-#: :1983:2015 :2025:2089:2336
+#: ../roundup/cgi/templating.py:1502 ../roundup/cgi/templating.py:1531
+#: ../roundup/cgi/templating.py:1551 ../roundup/cgi/templating.py:1564
+#: ../roundup/cgi/templating.py:1614 ../roundup/cgi/templating.py:1637
+#: ../roundup/cgi/templating.py:1644 ../roundup/cgi/templating.py:1680
+#: ../roundup/cgi/templating.py:1717 ../roundup/cgi/templating.py:1750
+#: ../roundup/cgi/templating.py:1839 ../roundup/cgi/templating.py:1860
+#: ../roundup/cgi/templating.py:1950 ../roundup/cgi/templating.py:1970
+#: ../roundup/cgi/templating.py:1988 ../roundup/cgi/templating.py:2020
+#: ../roundup/cgi/templating.py:2030 ../roundup/cgi/templating.py:2094
+#: ../roundup/cgi/templating.py:2341 ../roundup/cgi/templating.py:790:948
+#: :1502:1531 :1551:1564 :1614:1637 :1644:1680 :1717:1750 :1839:1860 :1950:1970
+#: :1988:2020 :2030:2094:2341
 msgid "[hidden]"
 msgstr "[masqué]"
 
@@ -1970,38 +1970,40 @@ msgstr "<strike>Le noeud lié n'existe plus</strike>"
 msgid "%s: (no value)"
 msgstr "%s : (pas de valeur)"
 
-#: ../roundup/cgi/templating.py:1158
+#: ../roundup/cgi/templating.py:1162
+#, fuzzy, python-format
 msgid ""
-"<strong><em>This event is not handled by the history display!</em></strong>"
+"<strong><em>This event %s is not handled by the history display!</em></"
+"strong>"
 msgstr ""
 "<strong><em>Cet évènement n'est pas géré par l'affichage de l'historique.</"
 "em></strong>"
 
-#: ../roundup/cgi/templating.py:1170
+#: ../roundup/cgi/templating.py:1175
 msgid "<tr><td colspan=4><strong>Note:</strong></td></tr>"
 msgstr "<tr><td colspan=4><strong>Note :</strong></td></tr>"
 
-#: ../roundup/cgi/templating.py:1179
+#: ../roundup/cgi/templating.py:1184
 msgid "History"
 msgstr "Historique"
 
-#: ../roundup/cgi/templating.py:1181
+#: ../roundup/cgi/templating.py:1186
 msgid "<th>Date</th>"
 msgstr "<th>Date</th>"
 
-#: ../roundup/cgi/templating.py:1182
+#: ../roundup/cgi/templating.py:1187
 msgid "<th>User</th>"
 msgstr "<th>Utilisateur</th>"
 
-#: ../roundup/cgi/templating.py:1183
+#: ../roundup/cgi/templating.py:1188
 msgid "<th>Action</th>"
 msgstr "<th>Action</th>"
 
-#: ../roundup/cgi/templating.py:1184
+#: ../roundup/cgi/templating.py:1189
 msgid "<th>Args</th>"
 msgstr "<th>Arguments</th>"
 
-#: ../roundup/cgi/templating.py:1232
+#: ../roundup/cgi/templating.py:1237
 #, python-format
 msgid "Copy of %(class)s %(id)s"
 msgstr "Copie de %(class)s %(id)s"
@@ -2009,20 +2011,20 @@ msgstr "Copie de %(class)s %(id)s"
 # ../roundup/cgi/templating.py:1006 :1404 :1425 :1431
 # ../roundup/cgi/templating.py:1431 ../roundup/cgi/templating.py:1006:1404
 # :1425:1431
-#: ../roundup/cgi/templating.py:1749 ../roundup/cgi/templating.py:1782
-#: ../roundup/cgi/templating.py:1128:1749:1782
+#: ../roundup/cgi/templating.py:1754 ../roundup/cgi/templating.py:1787
+#: ../roundup/cgi/templating.py:1128:1754:1787
 msgid "No"
 msgstr "Non"
 
 # ../roundup/cgi/templating.py:1006 :1404 :1423 :1428
 # ../roundup/cgi/templating.py:1428 ../roundup/cgi/templating.py:1006:1404
 # :1423:1428
-#: ../roundup/cgi/templating.py:1749 ../roundup/cgi/templating.py:1777
-#: ../roundup/cgi/templating.py:1128:1749:1777
+#: ../roundup/cgi/templating.py:1754 ../roundup/cgi/templating.py:1782
+#: ../roundup/cgi/templating.py:1128:1754:1782
 msgid "Yes"
 msgstr "Oui"
 
-#: ../roundup/cgi/templating.py:1903
+#: ../roundup/cgi/templating.py:1908
 msgid ""
 "default value for DateHTMLProperty must be either DateHTMLProperty or string "
 "date representation."
@@ -2030,17 +2032,17 @@ msgstr ""
 "la valeur par défaut pour DateHTMLProperty doit être soit DateHTMLProperty "
 "soit une représentation textuelle de la date."
 
-#: ../roundup/cgi/templating.py:2069
+#: ../roundup/cgi/templating.py:2074
 #, python-format
 msgid "Attempt to look up %(attr)s on a missing value"
 msgstr "Tentative de recherche de %(attr)s sur une valeur manquante"
 
-#: ../roundup/cgi/templating.py:2080
+#: ../roundup/cgi/templating.py:2085
 #, fuzzy, python-format
 msgid "Attempt to look up %(item)s on a missing value"
 msgstr "Tentative de recherche de %(attr)s sur une valeur manquante"
 
-#: ../roundup/cgi/templating.py:2183
+#: ../roundup/cgi/templating.py:2188
 #, python-format
 msgid "<option %svalue=\"-1\">- no selection -</option>"
 msgstr "<option %svalue=\"-1\">- pas de sélection -</option>"

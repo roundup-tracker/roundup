@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: roundup-1.1.2\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2019-10-22 14:37-0400\n"
+"POT-Creation-Date: 2019-10-23 13:45-0400\n"
 "PO-Revision-Date: 2013-10-31 12:21+0100\n"
 "Last-Translator: Nerijus Baliunas <nerijus@users.sourceforge.net>\n"
 "Language-Team: \n"
@@ -1857,18 +1857,18 @@ msgstr "Įvesti naują įrašą"
 # ../roundup/cgi/templating.py:700 :819 :1193 :1214 :1258 :1280 :1314 :1353
 # :1404 :1421 :1497 :1517 :1530 :1547 :1557 :1607 :1794
 #: ../roundup/cgi/templating.py:790 ../roundup/cgi/templating.py:948
-#: ../roundup/cgi/templating.py:1497 ../roundup/cgi/templating.py:1526
-#: ../roundup/cgi/templating.py:1546 ../roundup/cgi/templating.py:1559
-#: ../roundup/cgi/templating.py:1609 ../roundup/cgi/templating.py:1632
-#: ../roundup/cgi/templating.py:1639 ../roundup/cgi/templating.py:1675
-#: ../roundup/cgi/templating.py:1712 ../roundup/cgi/templating.py:1745
-#: ../roundup/cgi/templating.py:1834 ../roundup/cgi/templating.py:1855
-#: ../roundup/cgi/templating.py:1945 ../roundup/cgi/templating.py:1965
-#: ../roundup/cgi/templating.py:1983 ../roundup/cgi/templating.py:2015
-#: ../roundup/cgi/templating.py:2025 ../roundup/cgi/templating.py:2089
-#: ../roundup/cgi/templating.py:2336 ../roundup/cgi/templating.py:790:948
-#: :1497:1526 :1546:1559 :1609:1632 :1639:1675 :1712:1745 :1834:1855 :1945:1965
-#: :1983:2015 :2025:2089:2336
+#: ../roundup/cgi/templating.py:1502 ../roundup/cgi/templating.py:1531
+#: ../roundup/cgi/templating.py:1551 ../roundup/cgi/templating.py:1564
+#: ../roundup/cgi/templating.py:1614 ../roundup/cgi/templating.py:1637
+#: ../roundup/cgi/templating.py:1644 ../roundup/cgi/templating.py:1680
+#: ../roundup/cgi/templating.py:1717 ../roundup/cgi/templating.py:1750
+#: ../roundup/cgi/templating.py:1839 ../roundup/cgi/templating.py:1860
+#: ../roundup/cgi/templating.py:1950 ../roundup/cgi/templating.py:1970
+#: ../roundup/cgi/templating.py:1988 ../roundup/cgi/templating.py:2020
+#: ../roundup/cgi/templating.py:2030 ../roundup/cgi/templating.py:2094
+#: ../roundup/cgi/templating.py:2341 ../roundup/cgi/templating.py:790:948
+#: :1502:1531 :1551:1564 :1614:1637 :1644:1680 :1717:1750 :1839:1860 :1950:1970
+#: :1988:2020 :2030:2094:2341
 msgid "[hidden]"
 msgstr "[paslėpta]"
 
@@ -1905,53 +1905,55 @@ msgstr "<strike>Susieto elemento nebėra</strike>"
 msgid "%s: (no value)"
 msgstr "%s: (no value)"
 
-#: ../roundup/cgi/templating.py:1158
+#: ../roundup/cgi/templating.py:1162
+#, fuzzy, python-format
 msgid ""
-"<strong><em>This event is not handled by the history display!</em></strong>"
+"<strong><em>This event %s is not handled by the history display!</em></"
+"strong>"
 msgstr "<strong><em>Šis įvykis nėra rodomas archyve!</em></strong>"
 
-#: ../roundup/cgi/templating.py:1170
+#: ../roundup/cgi/templating.py:1175
 msgid "<tr><td colspan=4><strong>Note:</strong></td></tr>"
 msgstr "<tr><td colspan=4><strong>Pastaba:</strong></td></tr>"
 
-#: ../roundup/cgi/templating.py:1179
+#: ../roundup/cgi/templating.py:1184
 msgid "History"
 msgstr "Archyvas"
 
-#: ../roundup/cgi/templating.py:1181
+#: ../roundup/cgi/templating.py:1186
 msgid "<th>Date</th>"
 msgstr "<th>Data</th>"
 
-#: ../roundup/cgi/templating.py:1182
+#: ../roundup/cgi/templating.py:1187
 msgid "<th>User</th>"
 msgstr "<th>Vartotojas</th>"
 
-#: ../roundup/cgi/templating.py:1183
+#: ../roundup/cgi/templating.py:1188
 msgid "<th>Action</th>"
 msgstr "<th>Veiksmas</th>"
 
-#: ../roundup/cgi/templating.py:1184
+#: ../roundup/cgi/templating.py:1189
 msgid "<th>Args</th>"
 msgstr "<th>Argumentai</th>"
 
-#: ../roundup/cgi/templating.py:1232
+#: ../roundup/cgi/templating.py:1237
 #, python-format
 msgid "Copy of %(class)s %(id)s"
 msgstr "%(class)s %(id)s kopija"
 
 # ../roundup/cgi/templating.py:993 :1357 :1378 :1384
-#: ../roundup/cgi/templating.py:1749 ../roundup/cgi/templating.py:1782
-#: ../roundup/cgi/templating.py:1128:1749:1782
+#: ../roundup/cgi/templating.py:1754 ../roundup/cgi/templating.py:1787
+#: ../roundup/cgi/templating.py:1128:1754:1787
 msgid "No"
 msgstr "Ne"
 
 # ../roundup/cgi/templating.py:993 :1357 :1376 :1381
-#: ../roundup/cgi/templating.py:1749 ../roundup/cgi/templating.py:1777
-#: ../roundup/cgi/templating.py:1128:1749:1777
+#: ../roundup/cgi/templating.py:1754 ../roundup/cgi/templating.py:1782
+#: ../roundup/cgi/templating.py:1128:1754:1782
 msgid "Yes"
 msgstr "Taip"
 
-#: ../roundup/cgi/templating.py:1903
+#: ../roundup/cgi/templating.py:1908
 msgid ""
 "default value for DateHTMLProperty must be either DateHTMLProperty or string "
 "date representation."
@@ -1959,17 +1961,17 @@ msgstr ""
 "standartinė DateHTMLProperty reikšmė turi būti arba DateHTMLProperty arba "
 "datos reprezentacija kaip simbolių eilutės."
 
-#: ../roundup/cgi/templating.py:2069
+#: ../roundup/cgi/templating.py:2074
 #, python-format
 msgid "Attempt to look up %(attr)s on a missing value"
 msgstr "Bandėte pažiūrėti %(attr)s neegzistuojančiai reikšmei"
 
-#: ../roundup/cgi/templating.py:2080
+#: ../roundup/cgi/templating.py:2085
 #, fuzzy, python-format
 msgid "Attempt to look up %(item)s on a missing value"
 msgstr "Bandėte pažiūrėti %(attr)s neegzistuojančiai reikšmei"
 
-#: ../roundup/cgi/templating.py:2183
+#: ../roundup/cgi/templating.py:2188
 #, python-format
 msgid "<option %svalue=\"-1\">- no selection -</option>"
 msgstr "<option %svalue=\"-1\">- nepasirinkta -</option>"
