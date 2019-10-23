@@ -4,15 +4,15 @@ up to date with changes listed in this file. This may require schema
 and template changes not listed here.
 
 Each entry has the developer who committed the change in brackets.
-Entries without name were done by Richard Jones.
+Many entries without name were done by Richard Jones.
 
 **IMPORTANT** The v1.5.x releases of Roundup were the last to support
 Python v2.5 and v2.6.  Starting with the v1.6 releases of Roundup
-v2.7.2 is required to run newer releases of Roundup.  From v?.?
+v2.7.2 or later are required to run newer releases of Roundup.  From v2.0
 onwards Python 3.4 and later are also supported.
 
 
-2019-??-?? ?.?.0
+2019-10-23 2.0.0 alpha 0
 
 Features:
 
@@ -89,11 +89,11 @@ Features:
 - The database filter method now has limit and offset parameters that
   map to the corresponding parameters of SQL.
 - issue2551061: Add rudimentary experimental support for JSON Web
-  Tokens to allow delegation of limited access rights to third
+  Tokens (jwt) to allow delegation of limited access rights to third
   parties. See doc/rest.txt for details and intent. (John Rouillard)
 - issue2551058: Add new permissions: 'Rest Access' and 'Xmlrpc Access'
   to allow per-user access control to rest and xmlrpc interfaces using
-  roles.
+  roles. (John Rouillard)
 - issue2551059: added new values for tx_Source to indicate when /rest
   or /xmlrpc endpoint is being used rather than the normal web
   endpoints. (John Rouillard)
@@ -184,6 +184,9 @@ Fixed:
 - issue2551013: Reversed sorting in hyperdb property wrapper object's
   sorted() method. Patch by David Sowder, application and doc change
   by John Rouillard.
+- issue2550821 - patches for depricated mod_python apache.py interface
+  (John Rouillard)
+- issue2551005 - deprecation of mod_python (John Rouillard)
 - issue2551066: IMAP mail handling wasn't working and produced a
   traceback.
 - issue2550925 if deployed as CGI and client sends an http PROXY
@@ -194,6 +197,35 @@ Fixed:
 - Add config option to keep/delete previous logging config. Needed to
   make gunicorn --access-logfile work as it uses python logfile module
   too.
+
+2019-07-13 1.6.1
+
+Features:
+- doc updates. Link rot fixed and some grammar changes.
+  'Provisional User' config example fixed. Issue tracker is
+  now https. (John Rouillard)
+
+Fixed:
+
+- issue2550994: avoid breakage caused by use of backports of Python 3
+  configparser module to Python 2. (Joseph Myers)
+- issue2551023: Fix CSRF headers for use with wsgi and cgi. The
+  env variable array used - separators rather than _. Compare:
+  HTTP_X-REQUESTED-WITH to HTTP_X_REQUESTED_WITH. The last is
+  correct. Also fix roundup-server to produce the latter form. (Patch
+  by C<E9>dric Krier, reviewed/applied John Rouillard.)
+- issue2551035 - fix XSS issue in wsgi and cgi when handing url not
+  found/404. Reported by hannob at
+  https://github.com/python/bugs.python.org/issues/34, issue opened
+  by JulienPalard.
+- issue2551029: Jinja2 template install error. Remove config.ini
+  from templates to make sure that roundup-admin install writes a new
+  default config.ini based on configuration.py.
+- issue2551029: Jinja2 template install error. Handle issue with
+  template's config.ini not getting updated. Provide an alternate
+  file: config_ini.ini for required config settings that are merged
+  into the default values producing an up to date config.ini on
+  install.
 
 2018-07-13 1.6.0
 

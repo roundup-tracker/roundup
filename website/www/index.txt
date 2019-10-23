@@ -5,12 +5,23 @@ Roundup Issue Tracker
    :prefix: Download
    :class: note
 
-Roundup is a simple-to-use and -install issue-tracking system with command-line, web and e-mail interfaces. 
-It is based on the winning design from Ka-Ping Yee in the Software Carpentry "Track" design competition.
+Roundup is a simple-to-use and -install issue-tracking system with
+command-line, web and e-mail interfaces.  It is based on the winning
+design from Ka-Ping Yee in the Software Carpentry "Track" design
+competition.
 
-The current <strike>stable</strike> version of Roundup is 2.0.0alpha0 which has quite a comprehensive
-:doc:`feature set <docs/features>`. For more information see the :doc:`design overview <docs/design>`,
-and all the other :doc:`documentation <docs>`. Roundup has been deployed for:
+The current experimental version is `2.0.0alpha0
+<https://pypi.org/project/roundup/2.0.0alpha0/>`_ which has `its own
+set of docs`_. Read the :doc:`announcement for the new features
+<docs/announcement>`. These features include:
+
+   * Python 2 and Python 3 support
+   * a new REST interface
+
+The current stable version of Roundup is 1.6.1 which has quite a
+comprehensive :doc:`feature set <docs/features>`.  For more
+information see the :doc:`design overview <docs/design>`, and all the
+other :doc:`documentation <docs>`. Roundup has been deployed for:
 
     * bug tracking and TODO list management (the classic installation)
     * customer help desk support (with a wizard for the phone answerers, linking to networking, 
@@ -20,9 +31,11 @@ and all the other :doc:`documentation <docs>`. Roundup has been deployed for:
     * conference paper submission and double-blind referee management
     * weblogging (well, almost :) 
 
-...and so on. It's been designed with :doc:`flexibility <docs/customizing>` in mind - it's not just 
-another bug tracker. Roundup ships with a *demo tracker* to play with - after you've unpacked the source, 
-just run "python demo.py" and load up the URL it prints out!
+...and so on. It's been designed with :doc:`flexibility
+<docs/customizing>` in mind - it's not just another bug
+tracker. Roundup ships with a *demo tracker* to play with - after
+you've unpacked the source, just run "python demo.py" and load up the
+URL it prints out!
 
 Roundup was originally released as version 0.1.1 in late August, 2001. The first `change note`_ I wrote says:
 
@@ -32,3 +45,4 @@ Roundup was originally released as version 0.1.1 in late August, 2001. The first
 
 .. _`download`: https://pypi.org/project/roundup/
 .. _`change note`: https://sourceforge.net/p/roundup/code/ci/tip/tree/CHANGES.txt
+.. _`its own set of docs`: http://www.roundup-tracker.org/dev-docs/docs.html
