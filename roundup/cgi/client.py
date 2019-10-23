@@ -1145,7 +1145,7 @@ class Client:
             state on the server (one nonce per form per
             page). If you have multiple forms/page this can
             lead to abandoned csrf tokens that have to time
-            out and get cleaned up.But you lose per form
+            out and get cleaned up. But you lose per form
             tokens which may be an advantage. Also the HMAC
             is constant for the session, so provides more
             occasions for it to be exposed.
@@ -1157,7 +1157,7 @@ class Client:
             A session token lifetime is settable in
             config.ini.  A future enhancement to the
             creation routines should allow for the requester
-            of the token to set the lifetime.t
+            of the token to set the lifetime.
 
             The unique session key and user id is stored
             with the token. The token is valid if the stored
@@ -1187,7 +1187,7 @@ class Client:
 
         # Assume: never allow changes via GET
         if self.env['REQUEST_METHOD'] not in ['POST', 'PUT', 'DELETE']:
-            if "@csrf" in self.form:
+            if (self.form.list is not None) and ("@csrf" in self.form):
                 # We have a nonce being used with a method it should
                 # not be. If the nonce exists, report to admin so they
                 # can fix the nonce leakage and destroy it. (nonces
