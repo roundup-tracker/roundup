@@ -12,6 +12,16 @@ v2.7.2 or later are required to run newer releases of Roundup.  From v2.0
 onwards Python 3.4 and later are also supported.
 
 
+2019-xx-xx 2.0.0...
+
+Features:
+
+Fixed:
+
+- issue2550996 - Give better error message when running with -c
+ (install as windows service) and pywin32 is not importable. Could use
+ better testing on a windows box. (John Rouillard)
+
 2019-10-23 2.0.0 alpha 0
 
 Features:

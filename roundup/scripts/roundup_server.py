@@ -951,9 +951,7 @@ def run(port=undefined, success_message=None):
     '''
     config = ServerConfig()
     # additional options
-    short_options = "hvS"
-    if RoundupService:
-        short_options += 'c'
+    short_options = "hvSc"
     try:
         (optlist, args) = config.getopt(sys.argv[1:],
             short_options, ("help", "version", "save-config",))
@@ -963,6 +961,17 @@ def run(port=undefined, success_message=None):
 
     # if running in windows service mode, don't do any other stuff
     if ("-c", "") in optlist:
+        global RoundupService
+        if not RoundupService:
+            RoundupService = True  # make sure usage displays -c help text
+            error_m = """
+ERROR: -c is not available because roundup couldn't import
+   win32serviceutil from pywin32. See Installation docs
+   for pywin32 details.
+            """
+            usage(error_m)
+            return
+
         # acquire command line options recognized by service
         short_options = "cC:"
         long_options = ["config"]
