@@ -1033,7 +1033,7 @@ always passes, so setting it less than 1 is not recommended."""),
             "Allowed values: DEBUG, INFO, WARNING, ERROR"),
         (BooleanOption, "disable_loggers", "no",
             "If set to yes, only the loggers configured in this section will\n"
-            "be used. Yes will disable gunicorn's --access-log.\n"),
+            "be used. Yes will disable gunicorn's --access-logfile.\n"),
     )),
     ("mail", (
         (Option, "domain", NODEFAULT,
