@@ -102,4 +102,22 @@ class UserAuditorTest(unittest.TestCase):
         # check for all-whitespace (treat as no role)
         self.db.user.set(userid, roles='   ')
 
+    def testBadUsernames(self):
+        ''' ky,le raises:
+        ValueError: Username/Login Name must consist only of the letters a-z (any case), digits 0-9 and the symbols: @._-!+%
+        '''
+
+        for name in [ "ky'le", "ky<br>le" ]:
+            with self.assertRaises(ValueError) as ctx:
+                self.db.user.create(username=name,
+                                    address='kyle@example.com',
+                                    realname='Kyle Broflovski', roles='User')
+                self.assertEqual(str(ctx.exception), "Username/Login Name must "
+                                 "consist only of the letters a-z (any case), "
+                                 "digits 0-9 and the symbols: @._-!%")
+
+        self.db.user.create(username='rouilj-1+mya_ddr@users.example.com',
+            address='kyle1@example.com',
+            realname='Kyle Broflovski', roles='User')
+
 # vim: filetype=python sts=4 sw=4 et si

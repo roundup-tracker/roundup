@@ -112,6 +112,19 @@ or::
 
     if db.tx_Source in ['web', 'rest', 'xmlrpc', 'email-sig-openpgp', 'cli' ]:
 
+Update userauditor.py to restrict usernames
+-------------------------------------------
+
+A username can be created with embedded commas and &lt; and &gt;
+characters. Even though the &lt; and &gt; are usually escaped when
+displayed, the embedded comma makes it difficult to edit lists of
+users as they are comma separated.
+
+If you have not modified your tracker's userauditor.py, you can just
+copy the userauditor.py from the classic template into your tracker's
+detectors directory. Otherwise merge the changes from the template
+userauditor.py. https://issues.roundup-tracker.org/issue2550921 may be
+helpful.
 
 Migrating from 1.5.1 to 1.6.0
 =============================

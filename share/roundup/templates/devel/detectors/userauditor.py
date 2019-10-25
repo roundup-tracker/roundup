@@ -27,6 +27,8 @@ email_regexp = (r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)
 email_rfc = re.compile('^' + email_regexp[0] + '@' + email_regexp[1] + '$', re.IGNORECASE)
 email_local = re.compile('^' + email_regexp[0] + '$', re.IGNORECASE)
 
+valid_username = re.compile('^[a-z0-9_@!%.+-]+$', re.IGNORECASE)
+
 def valid_address(address):
     ''' If we see an @-symbol in the address then check against the full
         RFC syntax. Otherwise it is a local-only address so only check
@@ -54,8 +56,13 @@ def audit_user_fields(db, cl, nodeid, newvalues):
         - email address is unique
         - roles specified exist
         - timezone is valid
+        - username matches A-z0-9_-.@!+% (email symbols)
     '''
 
+    if 'username' in newvalues:
+        if not valid_username.match(newvalues['username']):
+            raise ValueError("Username/Login Name must consist only of the letters a-z (any case), digits 0-9 and the symbols: @._-!+%")
+        
     for address in get_addresses(newvalues):
         if not valid_address(address):
             raise ValueError('Email address syntax is invalid "%s"'%address)

@@ -21,7 +21,10 @@ Fixed:
 - issue2550996 - Give better error message when running with -c
  (install as windows service) and pywin32 is not importable. Could use
  better testing on a windows box. (John Rouillard)
-
+- issue2550921 - Can create login name with , in it. Confuses nosy
+  list editing. Also can embed html tags. Updated userauditor.py
+  to prevent this. See updating.txt.
+  
 2019-10-23 2.0.0 alpha 0
 
 Features:
