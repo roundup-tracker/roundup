@@ -95,7 +95,7 @@ class Indexer(IndexerBase):
 
         for match in re.finditer(r'\b\w{%d,%d}\b'
                                  % (self.minlength, self.maxlength),
-                                 text.upper()):
+                                 text.upper(), re.UNICODE):
             word = match.group(0)
             if self.is_stopword(word):
                 continue
