@@ -169,14 +169,14 @@ class IndexerTest(unittest.TestCase):
     def test_unicode(self):
         """Test with unicode words. see:
            https://issues.roundup-tracker.org/issue1344046"""
-        russian=u'\u0440\u0443\u0441\u0441\u043a\u0438\u0439\u0442\u0435\u043a\u0441\u0442Spr\xfcnge'
+        russian=u'\u0440\u0443\u0441\u0441\u043a\u0438\u0439 \u0442\u0435\u043a\u0441\u0442Spr\xfcnge'
         german=u'Spr\xfcnge'
         self.dex.add_text(('test', '1', 'a'), german )
         self.dex.add_text(('test', '2', 'a'), russian + u' ' + german )
 
         self.assertSeqEqual(self.dex.find([ u'Spr\xfcnge']),
                     [('test', '1', 'a'), ('test', '2', 'a')])
-        self.assertSeqEqual(self.dex.find([u'\u0440\u0443\u0441\u0441\u043a\u0438\u0439\u0442\u0435\u043a\u0441\u0442Spr\xfcnge']),
+        self.assertSeqEqual(self.dex.find([u'\u0440\u0443\u0441\u0441\u043a\u0438\u0439']),
                             [('test', '2', 'a')])
         
     def tearDown(self):
