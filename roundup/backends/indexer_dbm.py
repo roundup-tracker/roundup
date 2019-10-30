@@ -132,11 +132,11 @@ class Indexer(IndexerBase):
         """Split text/plain string into a list of words
         """
         # case insensitive
-        text = str(text).upper()
+        text = text.upper()
 
         # Split the raw text
         return re.findall(r'\b\w{%d,%d}\b' % (self.minlength, self.maxlength),
-                          text)
+                          text, re.UNICODE)
 
     # we override this to ignore too short and too long words
     # and also to fix a bug - the (fail) case.
