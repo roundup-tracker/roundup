@@ -24,7 +24,11 @@ Fixed:
 - issue2550921 - Can create login name with , in it. Confuses nosy
   list editing. Also can embed html tags. Updated userauditor.py
   to prevent this. See updating.txt.
-  
+- issue1344046 - Search for "All text" can't find some Unicode words
+  (John Rouillard, Ezio Melotti)
+- issue1195739 - search in russian does not work (John Rouillard, Ezio
+  Melotti)
+
 2019-10-23 2.0.0 alpha 0
 
 Features:
