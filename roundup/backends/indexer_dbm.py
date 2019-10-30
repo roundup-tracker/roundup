@@ -131,6 +131,9 @@ class Indexer(IndexerBase):
     def text_splitter(self, text):
         """Split text/plain string into a list of words
         """
+        if not text:
+            return []
+        
         # case insensitive
         text = text.upper()
 
