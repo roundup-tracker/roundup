@@ -51,6 +51,13 @@ except ImportError:
         "Skipping Whoosh indexer tests: 'whoosh' not installed"))
 
 
+import sys
+if sys.version_info[0] > 2:
+    unicode_fails_py2 = lambda func, *args, **kwargs: func
+else:
+    unicode_fails_py2 = pytest.mark.xfail(
+       reason="Unicode indexing expected to fail under python 2")
+    
 class db:
     class config(dict):
         DATABASE = 'test-index'
@@ -158,6 +165,15 @@ class IndexerTest(unittest.TestCase):
             self.dex.add_text(('test', str(i), 'many'), 'many')
         self.assertEqual(len(self.dex.find(['many'])), 123)
 
+    @unicode_fails_py2
+    def test_unicode(self):
+        """Test with unicode words. see:
+           https://issues.roundup-tracker.org/issue1344046"""
+        
+        self.dex.add_text(('test', '1', 'a'), u'Spr\xfcnge')
+        self.assertSeqEqual(self.dex.find([u'Spr\xfcnge']),
+                    [('test', '1', 'a')])
+        
     def tearDown(self):
         shutil.rmtree('test-index')
 
