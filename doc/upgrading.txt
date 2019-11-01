@@ -51,6 +51,11 @@ you do not need to export and import, but need to delete the
 If using the ``postgresql`` backend, you do not need to export and
 import and no other special database-related steps are needed.
 
+If you use the whoosh indexer, you will need to reindex. It looks like
+a database created with Python 2 leads to Unicode decode errors when
+accessed by Python 3. Reindexing can take a while (see details below
+look for "reindexing").
+
 Octal values in config.ini change from the Python 2 representation
 with a leading ``0`` (``022``). They now use a leading ``0o``
 (``0o22``). Note that the ``0o`` format is properly handled under
@@ -125,6 +130,26 @@ copy the userauditor.py from the classic template into your tracker's
 detectors directory. Otherwise merge the changes from the template
 userauditor.py. https://issues.roundup-tracker.org/issue2550921 may be
 helpful.
+
+Consider reindexing if you use European languages
+-------------------------------------------------
+
+A couple of bugs dealing with incorrect indexing of European languages
+(Russian and German were reported) have been fixed. Note reindexing
+all your data may take a long time. See:
+https://issues.roundup-tracker.org/issue1195739 and
+https://issues.roundup-tracker.org/issue1344046 for a description of
+the problem. If you determine that this a problem for your tracker,
+you can use::
+
+  roundup-admin -i /path/to/tracker reindex
+
+to rewrite your full text indexes. The tracker used for reindex timing
+had 140MB of file/message data and 2500 issues with a slow 5400RPM
+SATA drive. Using native indexing with sqlite took about 45
+minutes. Using whoosh took about 2 hours. Using xapian took about 6
+hours. All examples were with Python 2. Anecdotal evidence shows
+Python 3 is faster, but YMMV.
 
 Migrating from 1.5.1 to 1.6.0
 =============================
