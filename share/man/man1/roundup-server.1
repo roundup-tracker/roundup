@@ -5,7 +5,7 @@ roundup-server \- start roundup web server
 \fBroundup-server\fP [\fIoptions\fP] [\fBname=\fP\fItracker home\fP]*
 .SH OPTIONS
 .TP
-\fB-C\fP \fIfile\fP
+\fB-C\fP \fIfile\fP or \fB--config\fP \fIfile\fP
 Use options read from the configuration file (see below).
 .TP
 \fB-n\fP \fIhostname\fP
@@ -15,12 +15,20 @@ Sets the host name or IP address to listen on. Default is localhost
 \fB-p\fP \fIport\fP
 Sets the port to listen on (default: 8080).
 .TP
-\fB-d\fP \fIfile\fP
-Daemonize, and write the server's PID to the nominated file.
+\fB-d\fP \fIPIDfile\fP
+Run the server in the background and write the server's PID to the
+file indicated by PIDfile. The -l (or -L) option \fBmust\fP be
+specified if -d is used.
+.TP
+\fB-t\fP \fBfork|debug|none\fP
+Control multi-process mode. Default fork.
 .TP
 \fB-l\fP \fIfile\fP
 Sets a filename to log to (instead of stdout). This is required if the -d
 option is used.
+.TP
+\fB-L\fP
+Have the server log using the Python logger with key roundup.http.
 .TP
 \fB-i\fP \fIfile\fP
 Sets a filename to use as a template for generating the tracker index page.
@@ -43,16 +51,14 @@ Runs the Roundup web server as this UID.
 \fB-g\fP \fIGID\fP
 Runs the Roundup web server as this GID.
 .TP
-\fB-d\fP \fIPIDfile\fP
-Run the server in the background and write the server's PID
-to the file indicated by PIDfile. The -l option \fBmust\fP be
-specified if -d is used.
-.TP
-\fB-v\fP
+\fB-v\fP or \fB--version\fP
 Print version and exit.
 .TP
-\fB-h\fP
+\fB-h\fP or \fB--help\fP
 Print help and exit.
+.TP
+\fB--save-config\fP
+Create or update configuration file and exit.
 .TP
 \fBname=\fP\fItracker home\fP
 Sets the tracker home(s) to use. The \fBname\fP variable is how the tracker is
