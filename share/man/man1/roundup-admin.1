@@ -6,10 +6,15 @@ roundup-admin \- administrate roundup trackers
 .SH OPTIONS
 .TP
 \fB-i\fP \fIinstance home\fP
-specify the issue tracker "home directory" to administer
+Specify the issue tracker "home directory" to administer
 .TP
 \fB-u\fP \fIuser\fP[\fB:\fP\fIpassword\fP]
-the user and password to use for commands
+The user and password to use for commands
+\fB-h\fP
+Print help text.
+.TP
+\fB-d\fP
+Print full designators (e.g. issue1) not just id numbers (1).
 .TP
 \fB-c\fP
 When outputting lists of data, comma-separate them. Same as
@@ -21,6 +26,212 @@ When outputting lists of data, separate items with given string.
 \fB-s\fP
 When outputting lists of data, space-separate them. Same as
 \fB-S " "\fP.
+.TP
+\fB-V\fP
+Be verbose when importing data.
+.TP
+\fB-v\fP
+Report Roundup and Python versions and quit.
+.PP
+Only one of \fB-s\fP, \fB-c\fP or \fB-S\fP can be specified.
+.SH COMMANDS
+If no command is provided on the command line, roundup-admin will
+enter an interactive mode. More details about these commands are
+available using the help command.
+
+A designator is a classname and a nodeid concatenated,
+eg. bug1, user10, .... 
+
+Roundup-admin takes a number of commands:
+.TP
+\fBhelp\fP
+prints help (same as \fB-h\fP)
+.TP
+\fBhelp\fP \fI<subcommand>\fP
+Print command-specific help
+.TP
+\fBhelp all\fP
+Print available help for all commands.
+.TP
+\fBcommit\fP
+Commit changes made to the database during an interactive session.
+
+The changes made during an interactive session are not
+automatically written to the database - they must be committed
+using this command.
+
+One-off commands on the command-line are automatically committed if
+they are successful. See also rollback.
+.TP
+\fBcreate\fP \fIclassname property=value ...\fP
+This creates a new entry of the given class using the property
+name=value arguments provided on the command line after the "create"
+command.
+.TP
+\fBdisplay\fP \fIdesignator[,designator]*\fP
+This lists the properties and their associated values for the given
+node.
+.TP
+\fBexport\fP \fI[[-]class[,class]] export_dir\fP
+Export the database to colon-separated-value files.
+To exclude the files (e.g. for the msg or file class),
+use the exporttables command.
+
+Optionally limit the export to just the named classes
+or exclude the named classes, if the 1st argument starts with '-'.
+
+This action exports the current data from the database into
+colon-separated-value files that are placed in the nominated
+destination directory.
+.TP
+\fBexporttables\fP \fI[[-]class[,class]] export_dir\fP
+Export the database to colon-separated-value files, excluding the
+files below $TRACKER_HOME/db/files/ (which can be archived separately).
+To include the files, use the export command.
+.TP
+\fBfind\fP \fIclassname propname=value ...\fP
+Find the nodes of the given class with a given link property value.
+.TP
+\fBgenconfig\fP \fI<filename>\fP
+Generate a new tracker config file (ini style) with default values
+in \fI<filename>\fP. Note that this does not preserve any settings from
+the current tracker. Use updateconfig for that.
+.TP
+\fBget\fP \fIproperty designator[,designator]*\fP
+Get the given property of one or more designator(s).
+
+Retrieves the property value of the nodes specified
+by the designators.
+
+.TP
+\fBhistory\fP \fIdesignator [skipquiet]\fP
+Lists the journal entries viewable by the user for the
+node identified by the designator. If skipquiet is the
+second argument, journal entries for quiet properties
+are not shown.
+.TP
+\fBimport\fP \fIimport_dir\fP
+Import a database from the directory containing CSV files,
+two per class to import.
+
+The imported nodes will have the same nodeid as defined in the
+import file, thus replacing any existing content.
+
+The new nodes are added to the existing database - if you want to
+create a new database using the imported data, then create a new
+database (or, tediously, retire all the old data). See also export.
+.TP
+\fBinitialise\fP \fI[adminpw]\fP
+Initialise a new Roundup tracker.
+
+The administrator details will be set at this step.
+.TP
+\fBinstall\fP \fI[template [backend [key=val[,key=val]]]]\fP
+Install a new roundup tracker.
+
+The command will prompt for the tracker home directory
+(if not supplied through TRACKER_HOME or the -i option).
+The template and backend may be specified on the command-line
+as arguments, in that order.
+
+Command line arguments following the backend allows you to
+pass initial values for config options.  For example, passing
+"web_http_auth=no,rdbms_user=dinsdale" will override defaults
+for options http_auth in section [web] and user in section [rdbms].
+Please be careful to not use spaces in this argument! (Enclose
+whole argument in quotes if you need spaces in option value).
+
+The initialise command must be called after this command in order
+to initialise the tracker's database. You may edit the tracker's
+initial database contents before running that command by editing
+the tracker's dbinit.py module init() function.
+
+See also initopts help.
+
+.TP
+\fBlist\fP \fIclassname [property]\fP
+Lists all instances of the given class. If the property is not
+specified, the  "label" property is used. The label property is
+tried in order: the key, "name", "title" and then the first
+property, alphabetically.
+
+With \fB-c\fP, \fB-S\fP or \fB-s\fP print a list of item id's if no
+property specified.  If property specified, print list of that
+property for every class instance.
+.TP
+\fBmigrate\fP
+Update a tracker's database to be compatible with the Roundup
+codebase.
+
+You should run the "migrate" command for your tracker once you've
+installed the latest codebase. 
+
+Do this before you use the web, command-line or mail interface and
+before any users access the tracker.
+
+This command will respond with either "Tracker updated" (if you've
+not previously run it on an RDBMS backend) or "No migration action
+required" (if you have run it, or have used another interface to the
+tracker, or possibly because you are using anydbm).
+
+It's safe to run this even if it's not required, so just get into
+the habit.
+.TP
+\fBpack\fP \fIperiod | date\fP
+Remove journal entries older than a period of time specified or
+before a certain date.
+.TP
+\fBreindex\fP \fI[classname|designator]*\fP
+This will re-generate the search indexes for a tracker.
+.TP
+\fBrestore\fP \fIdesignator[,designator]*\fP
+Restore the retired node specified by designator.
+
+The given nodes will become available for users again.
+.TP
+\fBretire\fP \fIdesignator[,designator]*\fP
+This action indicates that a particular node is not to be retrieved
+by the list or find commands, and its key value may be re-used. See
+also restore.
+.TP
+\fBrollback\fP
+Undo all changes that are pending commit to the database.
+
+The changes made during an interactive session are not
+automatically written to the database - they must be committed
+manually. This command undoes all those changes, so a commit
+immediately after would make no changes to the database.
+.TP
+\fBsecurity\fP \fI[Role name]\fP
+Display the Permissions available to one or all Roles.
+.TP
+\fBset\fP \fIitems property=value property=value ...\fP
+Set the given properties of one or more items(s).
+
+The items are specified as a class or as a comma-separated
+list of item designators (ie "designator[,designator,...]").
+
+This command sets the properties to the values for all designators
+given. If the value is missing (ie. "property=") then the property
+is un-set. If the property is a multilink, you specify the linked
+ids for the multilink as comma-separated numbers (ie "1,2,3").
+.TP
+fBspecification\fP \fIclassname\fP
+Show the properties for a classname.
+.TP
+\fBtable\fP \fIclassname [property[,property]*]\fP
+Lists all instances of the given class. If the properties are not
+specified, all properties are displayed. By default, the column
+widths are the width of the largest value.
+.TP
+\fBupdateconfig\fP \fI<filename>\fP
+This is used when updating software. It merges the \fBconfig.ini\fP
+from the tracker with new settings from the new software. The
+merged/updated config file is written to \fI<filename>\fP.
+.PP
+Commands may be abbreviated as long as the abbreviation
+matches only one command, e.g. l == li == lis == list.
+
 .SH FURTHER HELP
  roundup-admin -h
  roundup-admin help                       -- this help
