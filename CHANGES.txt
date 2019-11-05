@@ -16,6 +16,11 @@ onwards Python 3.4 and later are also supported.
 
 Features:
 
+- Allow to pass additional headers to nosymessage, nice if a message
+  needs to be marked as urgent or similar, e.g., Outlook uses an
+  "Importance" header, when set to "high" it highlights the message.
+  (Ralf Schlatterbeck)
+
 Fixed:
 
 - issue2550996 - Give better error message when running with -c

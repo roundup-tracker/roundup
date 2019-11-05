@@ -224,7 +224,7 @@ class IssueClass:
     def nosymessage(self, issueid, msgid, oldvalues, whichnosy='nosy',
             from_address=None, cc=[], bcc=[], cc_emails = [],
             bcc_emails = [], subject=None,
-            note_filter = None):
+            note_filter = None, add_headers={}):
         """Send a message to the members of an issue's nosy list.
 
         The message is sent only to users on the nosy list who are not
@@ -270,6 +270,9 @@ class IssueClass:
         prototype:
             note_filter(original_note, issueid, newvalues, oldvalues)
         If called, note_filter returns the new value for the message body.
+
+        The add_headers parameter allows to set additional headers for
+        the outgoing email.
         """
         encrypt = self.db.config.PGP_ENABLE and self.db.config.PGP_ENCRYPT
         pgproles = self.db.config.PGP_ROLES
@@ -364,10 +367,12 @@ class IssueClass:
                 self.db.msg.set(msgid, recipients=recipients)
         if sendto['plain'] or bcc_sendto['plain']:
             self.send_message(issueid, msgid, note, sendto['plain'],
-                              from_address, bcc_sendto['plain'], subject)
+                              from_address, bcc_sendto['plain'],
+                              subject, add_headers=add_headers)
         if sendto['crypt'] or bcc_sendto['crypt']:
             self.send_message(issueid, msgid, note, sendto['crypt'],
-                from_address, bcc_sendto['crypt'], subject, crypt=True)
+                from_address, bcc_sendto['crypt'], subject, crypt=True,
+                add_headers=add_headers)
 
     # backwards compatibility - don't remove
     sendmessage = nosymessage
@@ -404,9 +409,10 @@ class IssueClass:
         return msg
 
     def send_message(self, issueid, msgid, note, sendto, from_address=None,
-            bcc_sendto=[], subject=None, crypt=False):
+            bcc_sendto=[], subject=None, crypt=False, add_headers={}):
         '''Actually send the nominated message from this issue to the sendto
-           recipients, with the note appended.
+           recipients, with the note appended. It's possible to add
+           headers to the message with the add_headers variable.
         '''
         users = self.db.user
         messages = self.db.msg
@@ -604,6 +610,14 @@ class IssueClass:
                 message[header] = values
             except UnicodeError:
                 message[header] = Header(values, charset)
+            # Generate additional headers
+            for k in add_headers:
+                v = add_headers[k]
+                try:
+                    v.encode('ascii')
+                    message[k] = v
+                except UnicodeError:
+                    message[k] = Header(v, charset)
 
             if not inreplyto:
                 # Default the reply to the first message
