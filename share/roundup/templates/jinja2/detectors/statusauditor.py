@@ -19,10 +19,32 @@
 # SOFTWARE.
 #
 
+from roundup.configuration import BooleanOption, InvalidOptionError
+
 def chatty(db, cl, nodeid, newvalues):
-    ''' If the issue is currently 'unread', 'resolved', 'done-cbb' or None,
-        then set it to 'chatting'
+    ''' If the issue is currently 'resolved', 'done-cbb' or None,
+        then set it to 'chatting'. If issue is 'unread' and
+        chatting_requires_two_users is true, set state
+        to 'chatting' if the person adding the new message is not
+        the same as the person who created the issue. This allows
+        somebody to submit multiple emails describing the problem
+        without changing it to 'chatting'. 'chatting' should
+        indicate at least two people are 'chatting'.
     '''
+    # If set to true, change state from 'unread' to 'chatting' only
+    # if the author of the update is not the person who created the
+    # first message (and thus the issue). If false (default ini file
+    # setting) set 'chatting' when the second message is received.
+    try:
+        chatting_requires_two_users = BooleanOption(None,
+                        "detector::Statusauditor",
+                        "CHATTING_REQUIRES_TWO_USERS").str2value(
+        db.config.detectors[
+        'STATUSAUDITOR_CHATTING_REQUIRES_TWO_USERS' ]
+    )
+    except InvalidOptionError:
+        raise InvalidOptionError("Option STATUSAUDITOR_CHATTING_REQUIRES_TWO_USERS not found in detectors/config.ini. Contact tracker admin to fix.")
+        
     # don't fire if there's no new message (ie. chat)
     if 'messages' not in newvalues:
         return
@@ -52,8 +74,22 @@ def chatty(db, cl, nodeid, newvalues):
         except KeyError:
             pass
 
+    unread = fromstates[0] # grab the 'unread' state which is first
+
     # ok, there's no explicit change, so check if we are in a state that
-    # should be changed
+    # should be changed. First see if we should set 'chatting' based on
+    # who opened the issue.
+    if current_status == unread and chatting_requires_two_users:
+        # find creator of issue and compare to currentuser making
+        # update. If the creator is same as initial author don't
+        # change to 'chatting'.
+        issue_creator = cl.get(nodeid, 'creator')
+        if issue_creator == db.getuid():
+            # person is chatting with themselves, don't set 'chatting'
+            return
+
+    # Current author is not the initiator of the issue so
+    # we are 'chatting'.
     if current_status in fromstates + [None]:
         # yep, we're now chatting
         newvalues['status'] = chatting_id

@@ -20,7 +20,8 @@ Features:
   needs to be marked as urgent or similar, e.g., Outlook uses an
   "Importance" header, when set to "high" it highlights the message.
   (Ralf Schlatterbeck)
-
+- issue2550926 - Original author adding a second message shouldn't set
+  status to 'chatting'. See upgrading.txt for details. (John Rouillard)
 Fixed:
 
 - issue2550996 - Give better error message when running with -c

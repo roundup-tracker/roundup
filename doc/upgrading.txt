@@ -151,6 +151,68 @@ minutes. Using whoosh took about 2 hours. Using xapian took about 6
 hours. All examples were with Python 2. Anecdotal evidence shows
 Python 3 is faster, but YMMV.
 
+Merge improvements in statusauditor.py
+--------------------------------------
+
+By default the detector statusauditor.py will change the status from
+"unread" to "chatting" when a second message is added to an issue.
+The distributed classic and jinja templates implement this feature in
+their copies of ``detectors/statusauditor.py``.
+
+This can be a problem. Consider a person sending email to create an
+issue. Then the person sends a followup message to add some additional
+information to the issue. The followup message will trigger the status
+change from "unread" to "chatting". This is misleading since the
+person is "chatting" with themselves.
+
+Statusauditor.py has been enhanced to prevent the status from changing
+to "chatting" until a second user (person) adds a message.  If you
+want this functionality, you need to merge the distributed
+statusauditor.py with your tracker's statusauditor.py. If you have not
+customized your tracker's statusauditor.py, copy the one from the
+distibuted template. In addition to the python file, you also must
+copy/merge the distributed ``detectors/config.ini`` into your
+tracker's detectors directory. Most people can copy
+``detectors/config.ini`` from the distributed templates as they won't
+have a ``detectors/config.ini`` file. (Note this is
+``detectors/config.ini`` do not confuse it with the main
+``config.ini`` file at the root of the tracker home.)
+
+This enhancement is disabled by default. Enable it by changing the
+value in ``detectors/config.ini`` from:
+
+   chatting_requires_two_users = False
+
+to
+
+   chatting_requires_two_users = True
+
+(the values ``no`` and ``yes`` can also be used). Restart the tracker
+to enable the change.
+
+If you don't do this quite right you will see one of two error
+messages in the web interface when you try to update an issue with a
+message::
+
+   Edit Error: Unsupported configuration option: Option
+      STATUSAUDITOR_CHATTING_REQUIRES_TWO_USERS not found in
+      detectors/config.ini.
+   Contact tracker admin to fix.
+
+This happens if detectors/config.ini is not found or is missing the
+``chatting_requires_two_users`` option in the ``statusauditor``
+section.
+
+If you have an incorrect value (say you use ``T`` rather than
+``True``) you see a different error::
+
+   Edit Error: Invalid value for
+     DETECTOR::STATUSAUDITOR_CHATTING_REQUIRES_TWO_USERS: 'T'
+   Allowed values: yes, no
+
+to fix this set the value to ``yes`` (True) or ``no`` (False).
+
+
 Migrating from 1.5.1 to 1.6.0
 =============================
 
