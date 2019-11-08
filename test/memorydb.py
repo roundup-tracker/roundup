@@ -19,6 +19,8 @@ from roundup.anypy.strings import s2b
 
 def new_config(debug=False):
     config = configuration.CoreConfig()
+    config.detectors = configuration.UserConfig("share/roundup/templates/classic/detectors/config.ini")
+    config.ext = configuration.UserConfig("share/roundup/templates/classic/extensions/config.ini")
     config.DATABASE = "db"
     #config.logging = MockNull()
     # these TRACKER_WEB and MAIL_DOMAIN values are used in mailgw tests
