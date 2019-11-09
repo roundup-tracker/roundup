@@ -119,8 +119,24 @@ class Database:
         cl = self.user
 
         props['roles'] = self.config.NEW_WEB_USER_ROLES
-        userid = cl.create(**props)
-        # clear the props from the otk database
+        try:
+            # ASSUME:: ValueError raised during create due to key value
+            # conflict. I an use message in exception to determine
+            # when I should intercept the exception with a more
+            # friendly error message. If i18n is used to translate
+            # original exception message this will fail and translated
+            # text (probably unfriendly) will be used.
+            userid = cl.create(**props)
+        except ValueError as e:
+            username = props['username']
+            # Try to make error message less cryptic to the user.
+            if str(e) == 'node with key "%s" exists' % username:
+                raise ValueError(
+                    _("Username '%s' already exists."%username))
+            else:
+                raise
+
+            # clear the props from the otk database
         self.getOTKManager().destroy(otk)
         # commit cl.create (and otk changes)
         self.commit()

@@ -15,7 +15,7 @@ import pytest
 
 from roundup.cgi import client, actions, exceptions
 from roundup.cgi.exceptions import FormError, NotFound, Redirect
-from roundup.exceptions import UsageError
+from roundup.exceptions import UsageError, Reject
 from roundup.cgi.templating import HTMLItem, HTMLRequest, NoTemplate
 from roundup.cgi.templating import HTMLProperty, _HTMLItem, anti_csrf_nonce
 from roundup.cgi.form_parser import FormParser
@@ -1542,7 +1542,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         k = self.db.keyword.getnode('2')
         self.assertEqual(k.name, 'newkey2')
 
-    def testRegisterAction(self):
+    def testRegisterActionDelay(self):
         from roundup.cgi.timestamp import pack_timestamp
 
         # need to set SENDMAILDEBUG to prevent
@@ -1607,6 +1607,40 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         # clean up from email log
         if os.path.exists(SENDMAILDEBUG):
             os.remove(SENDMAILDEBUG)
+
+    def testRegisterActionUnusedUserCheck(self):
+        # need to set SENDMAILDEBUG to prevent
+        # downstream issue when email is sent on successful
+        # issue creation. Also delete the file afterwards
+        # just tomake sure that someother test looking for
+        # SENDMAILDEBUG won't trip over ours.
+        if 'SENDMAILDEBUG' not in os.environ:
+            os.environ['SENDMAILDEBUG'] = 'mail-test1.log'
+        SENDMAILDEBUG = os.environ['SENDMAILDEBUG']
+
+        nodeid = self.db.user.create(username='iexist',
+            password=password.Password('foo'))
+
+        # enable check and remove delay time
+        self.db.config.WEB_REGISTRATION_PREVALIDATE_USERNAME = 1
+        self.db.config.WEB_REGISTRATION_DELAY = 0
+
+        # Make a request with existing user. Use iexist.
+        # do not need opaqueregister as we have disabled the delay check
+        cl = self._make_client({'username':'iexist', 'password':'secret',
+                 '@confirm@password':'secret', 'address':'iexist@bork.bork'},
+                               nodeid=None, userid='2')
+        with self.assertRaises(Reject) as cm:
+            actions.RegisterAction(cl).handle()
+        self.assertEqual(cm.exception.args,
+                    ("Username 'iexist' is already used.",))
+
+        cl = self._make_client({'username':'i-do@not.exist',
+                                'password':'secret',
+                '@confirm@password':'secret', 'address':'iexist@bork.bork'},
+                               nodeid=None, userid='2')
+        self.assertRaises(Redirect, actions.RegisterAction(cl).handle)
+        
 
     def testserve_static_files(self):
         # make a client instance

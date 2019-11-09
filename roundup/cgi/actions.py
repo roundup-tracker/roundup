@@ -1094,6 +1094,18 @@ class RegisterAction(RegoCommon, EditCommon, Timestamped):
 
         # generate the one-time-key and store the props for later
         user_props = props[('user', None)]
+        # check that admin has requested username available check
+        check_user = self.db.config['WEB_REGISTRATION_PREVALIDATE_USERNAME']
+        if check_user:
+            try:
+                user_found = self.db.user.lookup(user_props['username'])
+                # if user is found reject the request.
+                raise Reject(
+                    _("Username '%s' is already used.")%user_props['username'])
+            except KeyError:
+                # user not found this is what we want.
+                pass
+                
         for propname, proptype in self.db.user.getprops().items():
             value = user_props.get(propname, None)
             if value is None:

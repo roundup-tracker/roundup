@@ -803,6 +803,12 @@ SETTINGS = (
             "registration form. This limits the rate at which bots\n"
             "can attempt to sign up. Limit can be disabled by setting\n"
             "the value to 0."),
+        (BooleanOption, 'registration_prevalidate_username', "no",
+            "When registering a user, check that the username\n"
+            "is available before sending confirmation email.\n"
+            "Usually a username conflict is detected when\n"
+            "confirming the registration. Disabled by default as\n"
+            "it can be used for guessing existing usernames.\n" ),
         (SameSiteSettingOption, 'samesite_cookie_setting', "Lax",
             """Set the mode of the SameSite cookie option for
 the session cookie. Choices are 'Lax' or
