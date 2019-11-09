@@ -33,11 +33,15 @@ Fixed:
   better testing on a windows box. (John Rouillard)
 - issue2550921 - Can create login name with , in it. Confuses nosy
   list editing. Also can embed html tags. Updated userauditor.py
-  to prevent this. See updating.txt.
+  to prevent this. See updating.txt. (John Rouillard)
 - issue1344046 - Search for "All text" can't find some Unicode words
   (John Rouillard, Ezio Melotti)
 - issue1195739 - search in russian does not work (John Rouillard, Ezio
   Melotti)
+- issue2550920 - Registration with confirmation detects duplcate name
+  when using validation. Added option to allow detection of duplicate
+  username when the user tries to register. Previously user was
+  rejected when confirming registration. (John Rouillard)
 
 2019-10-23 2.0.0 alpha 0
 
