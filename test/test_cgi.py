@@ -1641,6 +1641,9 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
                                nodeid=None, userid='2')
         self.assertRaises(Redirect, actions.RegisterAction(cl).handle)
         
+        # clean up from email log
+        if os.path.exists(SENDMAILDEBUG):
+            os.remove(SENDMAILDEBUG)
 
     def testserve_static_files(self):
         # make a client instance
