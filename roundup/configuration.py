@@ -798,6 +798,11 @@ SETTINGS = (
             "log in again. This limits password guessing attacks and\n"
             "shouldn't need to be changed. Rate limiting on login can\n"
             "be disabled by setting the value to 0."),
+        (IntegerNumberGeqZeroOption, 'registration_delay', "4",
+            "The number of seconds needed to complete the new user\n"
+            "registration form. This limits the rate at which bots\n"
+            "can attempt to sign up. Limit can be disabled by setting\n"
+            "the value to 0."),
         (SameSiteSettingOption, 'samesite_cookie_setting', "Lax",
             """Set the mode of the SameSite cookie option for
 the session cookie. Choices are 'Lax' or
