@@ -19,6 +19,8 @@
 
 <tal:block tal:condition="editok">
 <form method="POST" onSubmit="return submit_once()" enctype="multipart/form-data">
+<input type="hidden" name="opaqueregister"
+       tal:attributes="value python: utils.timestamp()" >
 <input type="hidden" name=":template" value="register">
 <input type="hidden" name=":required" value="username">
 <input type="hidden" name=":required" value="password">

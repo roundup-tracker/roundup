@@ -14,13 +14,15 @@ import unittest, os, shutil, errno, sys, difflib, cgi, re
 import pytest
 
 from roundup.cgi import client, actions, exceptions
-from roundup.cgi.exceptions import FormError, NotFound
+from roundup.cgi.exceptions import FormError, NotFound, Redirect
 from roundup.exceptions import UsageError
 from roundup.cgi.templating import HTMLItem, HTMLRequest, NoTemplate
 from roundup.cgi.templating import HTMLProperty, _HTMLItem, anti_csrf_nonce
 from roundup.cgi.form_parser import FormParser
 from roundup import init, instance, password, hyperdb, date
 from roundup.anypy.strings import StringIO, u2s, b2s
+
+from time import sleep
 
 # For testing very simple rendering
 from roundup.cgi.engine_zopetal import RoundupPageTemplate
@@ -1539,6 +1541,72 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         self.assertEqual(k.name, 'newkey1')
         k = self.db.keyword.getnode('2')
         self.assertEqual(k.name, 'newkey2')
+
+    def testRegisterAction(self):
+        from roundup.cgi.timestamp import pack_timestamp
+
+        # need to set SENDMAILDEBUG to prevent
+        # downstream issue when email is sent on successful
+        # issue creation. Also delete the file afterwards
+        # just tomake sure that someother test looking for
+        # SENDMAILDEBUG won't trip over ours.
+        if 'SENDMAILDEBUG' not in os.environ:
+            os.environ['SENDMAILDEBUG'] = 'mail-test1.log'
+        SENDMAILDEBUG = os.environ['SENDMAILDEBUG']
+
+        
+        # missing opaqueregister
+        cl = self._make_client({'username':'new_user1', 'password':'secret',
+                 '@confirm@password':'secret', 'address':'new_user@bork.bork'},
+                                nodeid=None, userid='2')
+        with self.assertRaises(FormError) as cm:
+            actions.RegisterAction(cl).handle()
+        self.assertEqual(cm.exception.args,
+                    ('Form is corrupted, missing: opaqueregister.',))
+
+        # broken/invalid opaqueregister
+        # strings chosen to generate:
+        #   binascii.Error Incorrect padding
+        #   struct.error requires a string argument of length 4
+        cl = self._make_client({'username':'new_user1',
+                                'password':'secret',
+                                '@confirm@password':'secret',
+                                'address':'new_user@bork.bork',
+                                'opaqueregister': 'zzz' },
+                               nodeid=None, userid='2')
+        with self.assertRaises(FormError) as cm:
+            actions.RegisterAction(cl).handle()
+        self.assertEqual(cm.exception.args, ('Form is corrupted.',))
+
+        cl = self._make_client({'username':'new_user1',
+                                'password':'secret',
+                                '@confirm@password':'secret',
+                                'address':'new_user@bork.bork',
+                                'opaqueregister': 'xyzzyzl=' },
+                               nodeid=None, userid='2')
+        with self.assertRaises(FormError) as cm:
+            actions.RegisterAction(cl).handle()
+        self.assertEqual(cm.exception.args, ('Form is corrupted.',))
+
+        # valid opaqueregister
+        cl = self._make_client({'username':'new_user1', 'password':'secret',
+                 '@confirm@password':'secret', 'address':'new_user@bork.bork',
+                                'opaqueregister': pack_timestamp() },
+                               nodeid=None, userid='2')
+        # submitted too fast, so raises error
+        with self.assertRaises(FormError) as cm:
+            actions.RegisterAction(cl).handle()
+        self.assertEqual(cm.exception.args,
+                    ('Responding to form too quickly.',))
+
+        sleep(4.1) # sleep as requested so submit will take long enough
+        self.assertRaises(Redirect, actions.RegisterAction(cl).handle)
+
+        # FIXME check that email output makes sense at some point
+        
+        # clean up from email log
+        if os.path.exists(SENDMAILDEBUG):
+            os.remove(SENDMAILDEBUG)
 
     def testserve_static_files(self):
         # make a client instance

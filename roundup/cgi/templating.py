@@ -35,6 +35,8 @@ from roundup.anypy.strings import is_us, b2s, s2b, us2s, s2u, u2s, StringIO
 
 from .KeywordsExpr import render_keywords_expression_editor
 
+from roundup.cgi.timestamp import pack_timestamp
+
 import roundup.anypy.random_ as random_
 try:
     import cPickle as pickle
@@ -3090,6 +3092,9 @@ class TemplatingUtils:
     def anti_csrf_nonce(self, lifetime=None):
         return anti_csrf_nonce(self.client, lifetime=lifetime)
 
+    def timestamp(self):
+        return pack_timestamp()
+    
     def url_quote(self, url):
         """URL-quote the supplied text."""
         return urllib_.quote(url)

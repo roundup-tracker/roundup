@@ -18,7 +18,8 @@ get a password for your account.</p>
       enctype="multipart/form-data"
       tal:attributes="action context/designator">
 
-<input type="hidden" name="opaque" tal:attributes="value python: utils.timestamp()" />
+<input type="hidden" name="opaqueregister"
+       tal:attributes="value python: utils.timestamp()" >
 <table class="form">
  <tr>
   <th i18n:translate="">Name</th>

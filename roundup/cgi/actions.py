@@ -6,6 +6,7 @@ from roundup.i18n import _
 from roundup.cgi import exceptions, templating
 from roundup.mailgw import uidFromAddress
 from roundup.rate_limit import Gcra, RateLimit
+from roundup.cgi.timestamp import Timestamped
 from roundup.exceptions import Reject, RejectRaw
 from roundup.anypy import urllib_
 from roundup.anypy.strings import StringIO
@@ -1036,7 +1037,7 @@ class ConfRegoAction(RegoCommon):
             return
         return self.finishRego()
 
-class RegisterAction(RegoCommon, EditCommon):
+class RegisterAction(RegoCommon, EditCommon, Timestamped):
     name = 'register'
     permissionType = 'Register'
 
@@ -1050,6 +1051,15 @@ class RegisterAction(RegoCommon, EditCommon):
         if self.client.env['REQUEST_METHOD'] != 'POST':
             raise Reject(self._('Invalid request'))
 
+        # try to make sure user is not a bot by checking the
+        # hidden field opaqueregister to make sure it's at least
+        # WEB_REGISTRATION_DELAY seconds. If set to 0,
+        # disable the check.
+        delaytime = self.db.config['WEB_REGISTRATION_DELAY']
+
+        if delaytime > 0:
+            self.timecheck('opaqueregister', delaytime)
+        
         # parse the props from the form
         try:
             props, links = self.client.parsePropsFromForm(create=1)

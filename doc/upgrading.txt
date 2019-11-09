@@ -25,7 +25,7 @@ Migrating from 1.6.X to 2.0.0
 
 Upgrade tracker's config.ini file
 --------------------------------------
-Once you have installed the new roundup, use:
+Once you have installed the new roundup, use::
 
   roundup-admin -i /path/to/tracker updateconfig newconfig.ini
 
@@ -41,11 +41,14 @@ Python 3 support
 Many of the ``.html`` and ``.py`` files from Roundup that are copied
 into tracker directories have changed for Python 3 support.  If you
 wish to move an existing tracker to Python 3, you need to merge in
-those changes.  If your tracker uses the ``anydbm`` or ``mysql``
-backends, you also need to export the tracker contents using
-``roundup-admin export`` running under Python 2, and them import them
-using ``roundup-admin import`` running under Python 3, as for a
-migration to a different backend.  If using the ``sqlite`` backend,
+those changes. Also you need to make sure that locally created python
+code in the tracker is correct for Python 3.
+
+If your tracker uses the ``anydbm`` or ``mysql`` backends, you also
+need to export the tracker contents using ``roundup-admin export``
+running under Python 2, and them import them using ``roundup-admin
+import`` running under Python 3. This is detailed in the documention
+for migrating to a different backend.  If using the ``sqlite`` backend,
 you do not need to export and import, but need to delete the
 ``db/otks`` and ``db/sessions`` files when changing Python version.
 If using the ``postgresql`` backend, you do not need to export and
@@ -64,6 +67,40 @@ roundup-admin -i ... updateconfig newconfig.ini`` if you want to go
 back to using python 2. (Note going back to Python 2 will require
 the same steps as moving from 2 to 3 except using Python 3 to perform
 the export.)
+
+Rate Limit New User Registration
+--------------------------------
+
+The new user registration form can be abused by bots to allow
+automated registration for spamming. This can be limited by using the
+new ``config.ini`` ``[web]`` option called
+``registration_delay``. The default is 4 and is the number of seconds
+between the time the form was generated and the time the form is
+processed.
+
+If you do not modify the ``user.register.html`` template in your
+tracker's html directory, you *must* set this to 0. Otherwise you will
+see the error:
+
+  Form is corrupted, missing: opaqueregister.
+
+If set to 0, the rate limit check is disabled.
+
+If you want to use this, you can change your ``user.register.html``
+file to include::
+
+ <input type="hidden" name="opaqueregister" tal:attributes="value python: utils.timestamp()">
+
+The hidden input field can be placed right after the form declaration
+that starts with::
+
+   <form method="POST" onSubmit="return submit_once()"
+
+If you have applied Erik Forsberg's tracker level patch to implement
+(see: https://hg.python.org/tracker/python-dev/rev/83477f735132), you
+can back the code out of the tracker. You must change the name of the
+field in the html template to ``opaqueregistration`` from ``opaque``
+in order to use the core code.
 
 PGP mail processing
 -------------------
@@ -120,8 +157,8 @@ or::
 Update userauditor.py to restrict usernames
 -------------------------------------------
 
-A username can be created with embedded commas and &lt; and &gt;
-characters. Even though the &lt; and &gt; are usually escaped when
+A username can be created with embedded commas and < and >
+characters. Even though the < and > are usually escaped when
 displayed, the embedded comma makes it difficult to edit lists of
 users as they are comma separated.
 

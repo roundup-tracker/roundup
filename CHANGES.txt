@@ -22,6 +22,10 @@ Features:
   (Ralf Schlatterbeck)
 - issue2550926 - Original author adding a second message shouldn't set
   status to 'chatting'. See upgrading.txt for details. (John Rouillard)
+- issue2550919 - Anti-bot signup using 4 second delay. New config.ini
+  param [web] registration_delay must be set to 0 if template
+  user.register.html is not modified.  See upgrading.txt for details.
+
 Fixed:
 
 - issue2550996 - Give better error message when running with -c

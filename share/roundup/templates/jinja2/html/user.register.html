@@ -14,6 +14,8 @@
         name ="itemSynopsis"
         enctype ="multipart/form-data"
         action ='{{  context.designator() }}'>
+    <input type="hidden" name="opaqueregister"
+           value="{{ utils.timestamp() }}" >
     <table>
       <tr>
         <th>{{ i18n.gettext('Name')|u }}</th>
