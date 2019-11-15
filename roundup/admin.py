@@ -121,7 +121,7 @@ class AdminTool:
 
 Options:
  -i instance home  -- specify the issue tracker "home directory" to administer
- -u                -- the user[:password] to use for commands
+ -u                -- the user[:password] to use for commands (default admin)
  -d                -- print full designators not just class id numbers
  -c                -- when outputting lists of data, comma-separate them.
                       Same as '-S ","'.
@@ -1560,7 +1560,7 @@ Erase it? Y/N: """))
 
         # only open the database once!
         if not self.db:
-            self.db = tracker.open('admin')
+            self.db = tracker.open(self.name)
 
         self.db.tx_Source = 'cli'
 
@@ -1620,13 +1620,13 @@ Erase it? Y/N: """))
 
         # handle command-line args
         self.tracker_home = os.environ.get('TRACKER_HOME', '')
-        # TODO: reinstate the user/password stuff (-u arg too)
-        name = password = ''
+        self.name = 'admin'
+        self.password = ''  # unused
         if 'ROUNDUP_LOGIN' in os.environ:
             l = os.environ['ROUNDUP_LOGIN'].split(':')
-            name = l[0]
+            self.name = l[0]
             if len(l) > 1:
-                password = l[1]
+                self.password = l[1]
         self.separator = None
         self.print_designator = 0
         self.verbose = 0
@@ -1658,6 +1658,11 @@ Erase it? Y/N: """))
                 self.separator = ' '
             elif opt == '-d':
                 self.print_designator = 1
+            elif opt == '-u':
+                l = arg.split(':')
+                self.name = l[0]
+                if len(l) > 1:
+                    self.password = l[1]
 
         # if no command - go interactive
         # wrap in a try/finally so we always close off the db

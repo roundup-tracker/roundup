@@ -25,7 +25,14 @@ Features:
 - issue2550919 - Anti-bot signup using 4 second delay. New config.ini
   param [web] registration_delay must be set to 0 if template
   user.register.html is not modified.  See upgrading.txt for details.
-
+- Reimplement -u <login>[:<password>]. This opens the database as the
+  user and applies expected permissions. It also creates history
+  entries for the user. Note that the password is unused, no mention
+  of it is in the spec that I can find, so not sure what it was
+  supposed to be used for as the CLI has full access to the files so a
+  password check is not useful. An edge case is when the login has a :
+  in it. In this case it may not work as expected. So don't do that.
+  
 Fixed:
 
 - issue2550996 - Give better error message when running with -c
