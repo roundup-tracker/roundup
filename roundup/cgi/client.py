@@ -341,6 +341,8 @@ class Client:
         errno.ETIMEDOUT,
     )
 
+    Cache_Control = {}
+    
     def __init__(self, instance, request, env, form=None, translator=None):
         # re-seed the random number generator. Is this is an instance of
         # random.SystemRandom it has no effect.
@@ -1711,6 +1713,17 @@ class Client:
             else:
                 mime_type = 'text/plain'
 
+        # get filename: given a/b/c.js extract c.js
+        fn=file.rpartition("/")[2]
+        if fn in self.Cache_Control:
+            # if filename matches, don't use cache control
+            # for mime type.
+            self.additional_headers['Cache-Control'] = \
+                            self.Cache_Control[fn]
+        elif mime_type in self.Cache_Control:
+            self.additional_headers['Cache-Control'] = \
+                            self.Cache_Control[mime_type]
+            
         self._serve_file(lmt, mime_type, '', filename)
 
     def _serve_file(self, lmt, mime_type, content=None, filename=None):

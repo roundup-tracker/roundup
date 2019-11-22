@@ -1732,8 +1732,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         self.assertEqual(output[0][1], "text/css")
         self.assertEqual(output[0][3], "_test_cgi_form/detectors/css/README.css")
         del output[0] # reset output buffer
-
-
+        
+        cl.Cache_Control['text/css'] = 'public, max-age=3600'
         # use subdir in static files path
         cl.instance.config['STATIC_FILES'] = 'detectors html/css'
         os.mkdir('_test_cgi_form/html/css')
@@ -1741,6 +1741,18 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         cl.serve_static_file("README1.css")
         self.assertEqual(output[0][1], "text/css")
         self.assertEqual(output[0][3], "_test_cgi_form/html/css/README1.css")
+        self.assertTrue( "Cache-Control" in cl.additional_headers )
+        self.assertEqual( cl.additional_headers,
+                          {'Cache-Control': 'public, max-age=3600'} )
+        del output[0] # reset output buffer
+
+        cl.Cache_Control['README1.css'] = 'public, max-age=60'
+        cl.serve_static_file("README1.css")
+        self.assertEqual(output[0][1], "text/css")
+        self.assertEqual(output[0][3], "_test_cgi_form/html/css/README1.css")
+        self.assertTrue( "Cache-Control" in cl.additional_headers )
+        self.assertEqual( cl.additional_headers,
+                          {'Cache-Control': 'public, max-age=60'} )
         del output[0] # reset output buffer
 
 

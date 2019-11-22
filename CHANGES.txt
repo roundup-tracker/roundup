@@ -32,7 +32,11 @@ Features:
   supposed to be used for as the CLI has full access to the files so a
   password check is not useful. An edge case is when the login has a :
   in it. In this case it may not work as expected. So don't do that.
-  
+- Implement Cache-Control headers for static files. Allows tracker
+  admin to control caching for css, js and other static files. See
+  customizing.html. The use is documented in the section describing
+  how to use interfaces.py.
+
 Fixed:
 
 - issue2550996 - Give better error message when running with -c

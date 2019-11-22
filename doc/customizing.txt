@@ -22,7 +22,7 @@ Customisation of Roundup can take one of six forms:
 1. `tracker configuration`_ changes
 2. database, or `tracker schema`_ changes
 3. "definition" class `database content`_ changes
-4. behavioural changes, through detectors_ and extensions_
+4. behavioural changes through detectors_, extensions_ and interfaces.py_
 5. `security / access controls`_
 6. change the `web interface`_
 
@@ -1106,6 +1106,140 @@ flexible extension point mechanism.
     and to web interface. See `Defining new web actions`_ for details.
     Generic action can be added by inheriting from ``action.Action``
     instead of ``cgi.action.Action``.
+
+interfaces.py - hooking into the core of roundup
+================================================
+.. _interfaces.py:
+
+There is a magic trick for hooking into the core of roundup. Using
+this you can:
+
+  * modify class data structures
+  * monkey patch core code to add new functionality
+  * modify the email gateway
+  * add new rest endpoints
+
+but with great power comes great responsibility.
+
+Interfaces.py has been around since the earliest releases of roundup
+and used to be the main way to get a lot of customization done. In
+modern roundup, the extensions_ mechanism is used, but there are places
+where interfaces.py is still useful.
+
+Example: Changing Cache-Control headers
+---------------------------------------
+
+The Client class in cgi/client.py has a lookup table that is used to
+set the Cache-Control headers for static files. The entries in this
+table are set from interfaces.py using::
+
+  from roundup.cgi.client import Client
+
+  Client.Cache_Control['text/css'] = "public, max-age=3600"
+  Client.Cache_Control['application/javascript'] = "public, max-age=30"
+  Client.Cache_Control['rss.xml'] = "public, max-age=900"
+  Client.Cache_Control['local.js'] = "public, max-age=7200"
+
+In this case static files delivered using @@file will have cache
+headers set. These files are searched for along the `static_files`
+path in the tracker's `config.ini`. In the example above:
+
+  * a css file (e.g. @@file/style.css) will be cached for an hour
+  * javascript files (e.g. @@file/libraries/jquery.js) will be cached
+    for 30 seconds
+  * a file named rss.xml will be cached for 5 minutes
+  * a file named local.js will be cached for 2 hours
+
+Note that a file name match overrides the mime type settings.
+
+Example: Implement password complexity checking
+-----------------------------------------------
+
+This example uses the zxcvbn_ module that you can place in the zxcvbn
+subdirectory of your tracker's lib directory.
+
+If you add this to the interfaces.py file in the root directory of
+your tracker (same place as schema.py)::
+
+    import roundup.password as password
+    from roundup.exceptions import Reject
+    from zxcvbn import zxcvbn
+
+    # monkey patch the setPassword method with this method
+    # that checks password strength.
+    origPasswordFunc = password.Password.setPassword
+    def mpPasswordFunc(self, plaintext, scheme, config=None):
+	""" Replace the password set function with one that
+	    verifies that the password is complex enough. It
+	    has to be done at this point and not in an auditor
+	    as the auditor only sees the encrypted password.
+	"""
+	results = zxcvbn(plaintext)
+	if results['score'] < 3:
+	    l = []
+	    map(l.extend, [[results['feedback']['warning']], results['feedback']['suggestions']])
+	    errormsg = " ".join(l)
+	    raise Reject ("Password is too easy to guess. " + errormsg)
+	return origPasswordFunc(self, plaintext, scheme, config=config)
+
+    password.Password.setPassword = mpPasswordFunc
+
+it replaces the setPassword method in the Password class. The new
+version validates that the password is sufficiently complex. Then it
+passes off the setting of password to the original method.
+
+Example: Enhance time intervals
+-------------------------------
+
+To make the user interface easier to use, you may want to support
+other forms for intervals. For example you can support an interval
+like 1.5 by interpreting it the same as 1:30 (1 hour 30 minutes).
+Also you can allow a bare integer (e.g. 45) as a number of minutes.
+
+To do this we intercept the from_raw method of the Interval class in
+hyperdb.py with::
+
+    import roundup.hyperdb as hyperdb
+    origFrom_Raw = hyperdb.Interval.from_raw
+
+    def normalizeperiod(self, value, **kw):
+	''' Convert alternate time forms into standard interval format
+
+	    [+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS]
+
+	    if value is float, it's hour and fractional hours
+	    if value is integer, it's number of minutes
+	'''
+	if ":" not in value:
+	    # Not a specified interval
+	    # if int consider number of minutes
+	    try:
+		isMinutes = int(value)
+		minutes = isMinutes%60
+		hours = (isMinutes - minutes) / 60
+		value = "%d:%d"%(hours,minutes)
+	    except ValueError:
+		pass
+	    # if float, consider it number of hours and fractional hours.
+	    import math
+	    try:
+		afterdecimal, beforedecimal = math.modf(float(value))
+		value = "%d:%d"%(beforedecimal,60*afterdecimal)
+	    except ValueError:
+		pass
+
+	return origFrom_Raw(self, value, **kw)
+
+    hyperdb.Interval.from_raw = normalizeperiod
+
+any call to convert an interval from raw form now has two simpler
+(and more friendly) ways to specify common time intervals.
+
+Other Examples
+--------------
+
+See the `rest interface documentation`_ for instructions on how to add
+new rest endpoints using interfaces.py.
 
 Database Content
 ================
@@ -5474,3 +5608,5 @@ rather than requiring a web server restart.
 
 .. _`design documentation`: design.html
 .. _`developer's guide`: developers.html
+.. _`rest interface documentation`: rest.html#programming-the-rest-api
+.. _`zxcvbn`: https://github.com/dwolfhub/zxcvbn-python
