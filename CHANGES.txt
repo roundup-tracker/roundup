@@ -53,6 +53,8 @@ Fixed:
   when using validation. Added option to allow detection of duplicate
   username when the user tries to register. Previously user was
   rejected when confirming registration. (John Rouillard)
+- French translation gave errors with Python 3 because of ISO-8859-1
+  character in .mo file header. (Joseph Myers)
 
 2019-10-23 2.0.0 alpha 0
 
