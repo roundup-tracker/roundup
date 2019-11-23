@@ -293,6 +293,12 @@ https://.../rest/data/issue returns::
 Collection endpoints support a number of features as seen in the next
 sections.
 
+A server may implement a default maximum number of items in the
+collection.  This can be used to prevent denial of service (DOS).  As
+a result all clients must be programmed to expect pagination
+decorations in the response. See the section on pagination below for
+details.
+
 Searching
 ^^^^^^^^^
 
@@ -459,6 +465,10 @@ relation to move to the previous page. Also we have a self relation
 (which is missing the @page_index, hence we are at page 1) that can be
 used to get the same page again.
 
+Note that the server may choose to limit the number of returned
+entries in the collection as a DOS prevention measure. As a result
+clients must be prepared to handle the incomplete response and request
+the next URL to retrieve all of the entries.
 
 Field embedding and verbose output
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
