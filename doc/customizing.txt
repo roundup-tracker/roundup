@@ -1235,6 +1235,132 @@ hyperdb.py with::
 any call to convert an interval from raw form now has two simpler
 (and more friendly) ways to specify common time intervals.
 
+Example: Modifying the mail gateway
+-----------------------------------
+
+One site receives email on a main gateway. The virtual alias delivery
+table on the postfix server is configured with:
+
+   test-issues@example.com  roundup-test@roundup-vm.example.com
+   test-support@example.com roundup-test+support-a@roundup-vm.example.com
+   test@support.example.com roundup-test+support-b@roundup-vm.example.com
+
+These modifications to the mail gateway for roundup allows anonymous
+submissions. It hides all of the requesters under the "support"
+user. It also makes some other modifications to the mail parser
+allowing keywords to be set and prefixes to be defined based on the
+delivery alias.
+
+This is the entry in interfaces.py::
+
+    import roundup.mailgw
+    import email.utils
+
+    class SupportTracker(object):
+	def __init__(self, prefix=None, keyword=None):
+	    self.prefix = prefix
+	    self.keyword = keyword
+
+    # Define new prefixes and keywords based on local address.
+    support_trackers = {
+	### production instances ###
+
+	### test instances ###
+	'roundup-test+support-a':
+	    SupportTracker(prefix='Support 1', keyword='support1'),
+	'roundup-test+support-b':
+	    SupportTracker(prefix='Support 2', keyword='support2'),
+	'roundup-test2+support-a':
+	    SupportTracker(prefix='Support 1', keyword='support1'),
+	'roundup-test2+support-b':
+	    SupportTracker(prefix='Support 2', keyword='support2'),
+    }
+
+    class parsedMessage(roundup.mailgw.parsedMessage):
+	def __init__(self, mailgw, message, support_tracker):
+	    roundup.mailgw.parsedMessage.__init__(self, mailgw, message)
+	    if support_tracker.prefix:
+		self.prefix = '%s: ' % support_tracker.prefix
+	    else:
+		self.prefix = ''
+	    self.keywords = []
+	    if support_tracker.keyword:
+		try:
+		    self.keywords = [
+			self.db.keyword.lookup(support_tracker.keyword)]
+		except KeyError:
+		    pass
+	    self.config.ADD_AUTHOR_TO_NOSY = 'no'
+	    self.config.ADD_RECIPIENTS_TO_NOSY = 'no'
+	    self.config.MAILGW_KEEP_QUOTED_TEXT = 'yes'
+	    self.config.MAILGW_LEAVE_BODY_UNCHANGED = 'yes'
+	    self.classname = 'issue'
+	    self.pfxmode = 'loose'
+	    self.sfxmode = 'none'
+	    # set the support user id
+	    self.fixed_author = self.db.user.lookup('support')
+	    self.fixed_props = {
+		'nosy': [self.fixed_author],
+		'keyword': self.keywords,
+	    }
+
+	def handle_help(self):
+	    pass
+
+	def check_subject(self):
+	    if not self.subject:
+		self.subject = 'no subject'
+
+	def rego_confirm(self):
+	    pass
+
+	def get_author_id(self):
+	    # force the support user to be the author
+	    self.author = self.fixed_author
+
+	def get_props(self):
+	    self.props = {}
+	    if not self.nodeid:
+		self.props.update(self.fixed_props)
+		self.props['title'] = ("%s%s" % (
+		    self.prefix, self.subject.replace('[', '(').replace(']', ')')))
+
+	def get_content_and_attachments(self):
+	    roundup.mailgw.parsedMessage.get_content_and_attachments(self)
+	    if not self.content:
+		self.content = 'no text'
+	    intro = []
+	    for header in ['From', 'To', 'Cc']:
+		for addr in self.message.getaddrlist(header):
+		    intro.append('%s: %s' % (header, email.utils.formataddr(addr)))
+	    intro.append('Subject: %s' % self.subject)
+	    intro.append('\n')
+	    self.content = '\n'.join(intro) + self.content
+
+    class MailGW(roundup.mailgw.MailGW):
+	def parsed_message_class(self, mailgw, message):
+	    support_tracker = None
+	    # The delivered-to header is unique to postfix
+	    # it is the target address:
+	    #   roundup-test+support-a@roundup-vm.example.com
+            # rather than
+	    #   test-support@example.com
+	    recipients = message.getaddrlist('delivered-to')
+	    if recipients:
+		localpart = recipients[0][1].rpartition('@')[0]
+		support_tracker = support_trackers.get(localpart)
+	    if support_tracker:
+	        # parse the mesage using the parsedMessage class
+		# defined above.
+		return parsedMessage(mailgw, message, support_tracker)
+	    else:
+		# parse the message normally
+		return roundup.mailgw.parsedMessage(mailgw, message)
+
+This is the most complex example section. The mail gateway is also one
+of the more complex subsystems in roundup, and modifying it is not
+trivial.
+
 Other Examples
 --------------
 
