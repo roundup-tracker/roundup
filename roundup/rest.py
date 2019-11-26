@@ -1985,8 +1985,8 @@ class RestfulInstance(object):
             # error out before doing any work if we can't
             # display acceptable output.
             self.client.response_code = 406
-            output = ( "Requested content type is not available.\n"
-                       "Acceptable types: %s"%(
+            output = ( "Requested content type '%s' is not available.\n"
+                       "Acceptable types: %s"%(data_type,
                            ", ".join(self.__accepted_content_type.keys())))
 
         # Make output json end in a newline to

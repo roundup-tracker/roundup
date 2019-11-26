@@ -1544,7 +1544,8 @@ class TestCase():
 
 
         # TEST #8
-        # DELETE: delete issue 1
+        # DELETE: delete issue 1 also test return type by extension
+        #         test bogus extension as well.
         etag = calculate_etag(self.db.issue.getnode("1"),
                               self.db.config['WEB_SECRET_KEY'])
         etagb = etag.strip ('"')
@@ -1569,10 +1570,19 @@ class TestCase():
                             "/rest/data/issue/1.json",
                             form)
         self.assertEqual(self.server.client.response_code, 200)
-        json_dict = json.loads(b2s(results))
         print(results)
+        json_dict = json.loads(b2s(results))
         status=json_dict['data']['status']
         self.assertEqual(status, 'ok')
+
+        results = self.server.dispatch('DELETE',
+                            "/rest/data/issue/1issue:=asdf.jon",
+                            form)
+        self.assertEqual(self.server.client.response_code, 406)
+        print(results)
+        response="Requested content type 'jon' is not available.\n" \
+                 "Acceptable types: */*, application/json, application/xml\n"
+        self.assertEqual(results, response)
 
         # TEST #9
         # GET: test that version can be set with accept:
