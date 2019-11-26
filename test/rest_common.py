@@ -1580,8 +1580,14 @@ class TestCase():
                             form)
         self.assertEqual(self.server.client.response_code, 406)
         print(results)
+        try:  # only verify local copy not system installed copy
+            from roundup.dicttoxml import dicttoxml
+            includexml = ', application/xml'
+        except ImportError:
+            includexml = ''
+        
         response="Requested content type 'jon' is not available.\n" \
-                 "Acceptable types: */*, application/json, application/xml\n"
+                 "Acceptable types: */*, application/json%s\n"%includexml
         self.assertEqual(results, response)
 
         # TEST #9
