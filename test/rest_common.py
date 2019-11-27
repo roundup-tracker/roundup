@@ -1575,8 +1575,8 @@ class TestCase():
         status=json_dict['data']['status']
         self.assertEqual(status, 'ok')
 
-        results = self.server.dispatch('DELETE',
-                            "/rest/data/issue/1issue:=asdf.jon",
+        results = self.server.dispatch('GET',
+                            "/rest/data/issuetitle:=asdf.jon",
                             form)
         self.assertEqual(self.server.client.response_code, 406)
         print(results)
@@ -1607,7 +1607,7 @@ class TestCase():
         self.server.client.request.headers.get=self.get_header
         results = self.server.dispatch('GET',
                             "/rest/data/issue/1", form)
-        print(results)
+        print("9a: " + results)
         json_dict = json.loads(b2s(results))
         self.assertEqual(json_dict['error']['status'], 400)
         self.assertEqual(json_dict['error']['msg'],
@@ -1619,7 +1619,7 @@ class TestCase():
         self.server.client.request.headers.get=self.get_header
         results = self.server.dispatch('GET',
                             "/rest/data/issue/1", form)
-        print(results)
+        print("9b: " + results)
         json_dict = json.loads(b2s(results))
         self.assertEqual(json_dict['error']['status'], 400)
         self.assertEqual(json_dict['error']['msg'],
@@ -1631,7 +1631,7 @@ class TestCase():
         self.server.client.request.headers.get=self.get_header
         results = self.server.dispatch('GET',
                             "/rest/data/issue/1", self.empty_form)
-        print(results)
+        print("9c:" + results)
         self.assertEqual(self.server.client.response_code, 400)
         json_dict = json.loads(b2s(results))
         self.assertEqual(json_dict['error']['status'], 400)
@@ -1646,7 +1646,7 @@ class TestCase():
         self.server.client.request.headers.get=self.get_header
         results = self.server.dispatch('GET',
                             "/rest/data/issue/1", self.empty_form)
-        print(results)
+        print("9d: " + results)
         self.assertEqual(self.server.client.response_code, 400)
         json_dict = json.loads(b2s(results))
         self.assertEqual(json_dict['error']['status'], 400)
@@ -1682,7 +1682,7 @@ class TestCase():
         self.headers={}
         results = self.server.dispatch('GET',
                             "/rest", self.empty_form)
-        print(results)
+        print("10a: " + results)
         self.assertEqual(self.server.client.response_code, 200)
         results_dict = json.loads(b2s(results))
         self.assertEqual(results_dict, expected_rest)
@@ -1690,19 +1690,19 @@ class TestCase():
 
         results = self.server.dispatch('GET',
                             "/rest/", self.empty_form)
-        print(results)
+        print("10b: " + results)
         self.assertEqual(self.server.client.response_code, 200)
         results_dict = json.loads(b2s(results))
         self.assertEqual(results_dict, expected_rest)
 
         results = self.server.dispatch('GET',
                             "/rest/summary", self.empty_form)
-        print(results)
+        print("10c: " + results)
         self.assertEqual(self.server.client.response_code, 200)
 
         results = self.server.dispatch('GET',
                             "/rest/summary/", self.empty_form)
-        print(results)
+        print("10d: " + results)
         self.assertEqual(self.server.client.response_code, 200)
 
         expected_data = {
@@ -1736,14 +1736,14 @@ class TestCase():
 
         results = self.server.dispatch('GET',
                             "/rest/data", self.empty_form)
-        print(results)
+        print("10e: " + results)
         self.assertEqual(self.server.client.response_code, 200)
         results_dict = json.loads(b2s(results))
         self.assertEqual(results_dict, expected_data)
 
         results = self.server.dispatch('GET',
                             "/rest/data/", self.empty_form)
-        print(results)
+        print("10f: " + results)
         self.assertEqual(self.server.client.response_code, 200)
         results_dict = json.loads(b2s(results))
         self.assertEqual(results_dict, expected_data)
