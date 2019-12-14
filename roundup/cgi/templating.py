@@ -437,19 +437,42 @@ def _set_input_default_args(dic):
         except KeyError:
             pass
 
-def cgi_escape_attrs(**attrs):
+def html4_cgi_escape_attrs(**attrs):
+    ''' Boolean attributes like 'disabled', 'required'
+        are represented without a value. E.G.
+        <input required ..> not <input required="required" ...>
+        The latter is xhtml. Recognize booleans by:
+          value is None
+          value is the same as the atribute
+        Code can use either method to indicate a pure boolean.
+    '''
+    return ' '.join(['%s="%s"'%(k,html_escape(str(v), True)) 
+                         if v != None and k != v else '%s'%(k)
+                         for k,v in sorted(attrs.items())])
+
+def xhtml_cgi_escape_attrs(**attrs):
+    ''' Boolean attributes like 'disabled', 'required'
+        are represented with a value that is the same as
+        the attribute name.. E.G.
+           <input required="required" ...> not <input required ..>
+        The latter is html4 or 5. Recognize booleans by:
+          value is None
+          value is the same as the atribute
+        Code can use either method to indicate a pure boolean.
+    '''
     return ' '.join(['%s="%s"'%(k,html_escape(str(v), True))
-        for k,v in sorted(attrs.items())])
+                         if v != None else '%s="%s"'%(k,k)
+                         for k,v in sorted(attrs.items())])
 
 def input_html4(**attrs):
     """Generate an 'input' (html4) element with given attributes"""
     _set_input_default_args(attrs)
-    return '<input %s>'%cgi_escape_attrs(**attrs)
+    return '<input %s>'%html4_cgi_escape_attrs(**attrs)
 
 def input_xhtml(**attrs):
     """Generate an 'input' (xhtml) element with given attributes"""
     _set_input_default_args(attrs)
-    return '<input %s/>'%cgi_escape_attrs(**attrs)
+    return '<input %s/>'%xhtml_cgi_escape_attrs(**attrs)
 
 class HTMLInputMixin(object):
     """ requires a _client property """
@@ -459,8 +482,10 @@ class HTMLInputMixin(object):
             html_version = self._client.instance.config.HTML_VERSION
         if html_version == 'xhtml':
             self.input = input_xhtml
+            self.cgi_escape_attrs=xhtml_cgi_escape_attrs
         else:
             self.input = input_html4
+            self.cgi_escape_attrs=html4_cgi_escape_attrs
         # self._context is used for translations.
         # will be initialized by the first call to .gettext()
         self._context = None
@@ -767,7 +792,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         onclick = "javascript:help_window('%s', '%s', '%s');return false;" % \
                   (help_url, width, height)
         return '<a class="classhelp" href="%s" onclick="%s" %s>%s</a>' % \
-               (help_url, onclick, cgi_escape_attrs(**html_kwargs),
+               (help_url, onclick, self.cgi_escape_attrs(**html_kwargs),
                 self._(label))
 
     def submit(self, label=''"Submit New Entry", action="new"):
@@ -1604,7 +1629,7 @@ class StringHTMLProperty(HTMLProperty):
 
             value = '&quot;'.join(value.split('"'))
         name = self._formname
-        passthrough_args = cgi_escape_attrs(**kwargs)
+        passthrough_args = self.cgi_escape_attrs(**kwargs)
         return ('<textarea %(passthrough_args)s name="%(name)s" id="%(name)s"'
                 ' rows="%(rows)s" cols="%(cols)s">'
                  '%(value)s</textarea>') % locals()
@@ -2181,7 +2206,7 @@ class LinkHTMLProperty(HTMLProperty):
             value = None
 
         linkcl = self._db.getclass(self._prop.classname)
-        l = ['<select %s>'%cgi_escape_attrs(name = self._formname,
+        l = ['<select %s>'%self.cgi_escape_attrs(name = self._formname,
                                             **html_kwargs)]
         k = linkcl.labelprop(1)
         s = ''
@@ -2443,7 +2468,7 @@ class MultilinkHTMLProperty(HTMLProperty):
                 # The "no selection" option.
                 height += 1
             height = min(height, 7)
-        l = ['<select multiple %s>'%cgi_escape_attrs(name = self._formname,
+        l = ['<select multiple %s>'%self.cgi_escape_attrs(name = self._formname,
                                                      size = height,
                                                      **html_kwargs)]
         k = linkcl.labelprop(1)
