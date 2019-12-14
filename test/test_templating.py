@@ -296,6 +296,43 @@ class HTMLClassTestCase(TemplatingTestCase) :
             ae(t('http://roundup.net/%c/' % c),
                '<a href="http://roundup.net/%c/" rel="nofollow noopener">http://roundup.net/%c/</a>' % (c, c))
 
+    def test_input_html4(self):
+        # boolean attributes are just the attribute name
+        # indicate with attr=None or attr="attr"
+        #   e.g. disabled
+
+        input=input_html4(required=None, size=30)
+        self.assertEqual(input, '<input required size="30" type="text">')
+
+        input=input_html4(required="required", size=30)
+        self.assertEqual(input, '<input required size="30" type="text">')
+
+        attrs={"required": None, "class": "required", "size": 30}
+        input=input_html4(**attrs)
+        self.assertEqual(input, '<input class="required" required size="30" type="text">')
+
+        attrs={"disabled": "disabled", "class": "required", "size": 30}
+        input=input_html4(**attrs)
+        self.assertEqual(input, '<input class="required" disabled size="30" type="text">')
+
+    def test_input_xhtml(self):
+        # boolean attributes are attribute name="attribute name"
+        # indicate with attr=None or attr="attr"
+        #    e.g. disabled="disabled"
+        input=input_xhtml(required=None, size=30)
+        self.assertEqual(input, '<input required="required" size="30" type="text"/>')
+
+        input=input_xhtml(required="required", size=30)
+        self.assertEqual(input, '<input required="required" size="30" type="text"/>')
+
+        attrs={"required": None, "class": "required", "size": 30}
+        input=input_xhtml(**attrs)
+        self.assertEqual(input, '<input class="required" required="required" size="30" type="text"/>')
+
+        attrs={"disabled": "disabled", "class": "required", "size": 30}
+        input=input_xhtml(**attrs)
+        self.assertEqual(input, '<input class="required" disabled="disabled" size="30" type="text"/>')
+
 r'''
 class HTMLPermissions:
     def is_edit_ok(self):

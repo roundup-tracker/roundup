@@ -55,6 +55,10 @@ Fixed:
   rejected when confirming registration. (John Rouillard)
 - French translation gave errors with Python 3 because of ISO-8859-1
   character in .mo file header. (Joseph Myers)
+- Fix representation of boolean html attributes to be 'required'
+  rather than the xhtml form of 'required="required"'. Specifiy
+  attribute value same as attribute name or attribute value of None,
+  to output attribute as boolean. (John Rouillard)
 
 2019-10-23 2.0.0 alpha 0
 
