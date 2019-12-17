@@ -249,6 +249,12 @@ If you have an incorrect value (say you use ``T`` rather than
 
 to fix this set the value to ``yes`` (True) or ``no`` (False).
 
+Responsive template changes
+---------------------------
+
+There have been some changes to the responsive template. You can
+diff/merge these changes into your responsive template.
+
 
 Migrating from 1.5.1 to 1.6.0
 =============================

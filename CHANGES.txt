@@ -59,6 +59,9 @@ Fixed:
   rather than the xhtml form of 'required="required"'. Specifiy
   attribute value same as attribute name or attribute value of None,
   to output attribute as boolean. (John Rouillard)
+- issue2551076 - in responsive template, default searches for bugs and
+  tasks sets status=new default should be "don't care". (Report:
+  Ludwig Reiter; Fix: John Rouillard)
 
 2019-10-23 2.0.0 alpha 0
 
