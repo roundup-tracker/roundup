@@ -253,8 +253,14 @@ Responsive template changes
 ---------------------------
 
 There have been some changes to the responsive template. You can
-diff/merge these changes into your responsive template.
+diff/merge these changes into your responsive template based tracker.
 
+Jinja template changes
+----------------------
+
+The jinja template has been upgraded to use bootstrap 4.1.3 (from
+2.2.2). You can diff/merge changes into your jinja template based
+tracker.
 
 Migrating from 1.5.1 to 1.6.0
 =============================

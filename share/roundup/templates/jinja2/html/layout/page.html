@@ -8,8 +8,6 @@
     <meta name="viewport" content="width=device-width">
     <title>{% block head_title %}{% endblock %}</title>
     <link rel="stylesheet" type="text/css" href="@@file/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="@@file/bootstrap-responsive.min.css">
-    <link rel="stylesheet" type="text/css" href="@@file/style.css">
     {% block extracss %} {% endblock %}
   </head>
   <body>
@@ -19,27 +17,39 @@
 
     {% block page_content %}
       <div class='container-fluid'>
-        <div class='row-fluid'>
-          <div class='span3 navigation'>
+        <div class='row'>
+          <div class='col-2 navigation'>
             {% block leftnav %}
               {% include 'layout/navigation.html' %}
             {% endblock %}
           </div>
 
-          <div class='span9'>
-              <div class='page-header'>
-                <h1> {% block page_header %} {% endblock %} </h1>
+          <div class='col-10'>
+            <div class='pb-2 mt-4 mb-2 border-bottom'>
+              <h3> {% block page_header %} {% endblock %} </h3>
                 {% if options.error_message %}
-                  <p class='alert alert-block alert-error fade in'> 
-                    {{ options.error_message }}
-                    <button type='button' class='close' data-dismiss='alert'>X</button>
-                  </p>
+                  <div class='alert alert-danger alert-dismissible fade show'>
+                    <ul class="mb-0">
+                      {% for message in options.error_message %}
+                        <li>{{ message }}</li>
+                      {% endfor %}
+                    </ul>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
                 {% endif %}
                 {% if options.ok_message %}
-                  <p class='alert alert-block alert-success fade in'> 
-                    {{ options.ok_message }}
-                    <button type='button' class='close' data-dismiss='alert'>X</button>
-                  </p>
+                  <div class='alert alert-success alert-dismissible fade show'>
+                    <ul class="mb-0">
+                      {% for message in options.ok_message %}
+                        <li>{{ message }}</li>
+                      {% endfor %}
+                    </ul>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
                 {% endif %}
               </div>
             {% block content %}

@@ -9,7 +9,7 @@
 {% set group_on = (group_on and group_on[1]) or 'status' %}
 
 {% macro input(name, type='text') -%}
-  <input type="{{ type }}" name="{{ name }}"
+  <input class="form-control" type="{{ type }}" name="{{ name }}"
 		 value="{{ request.form.getvalue(name, '')|e }}" />
 {%- endmacro %}
 {% macro display_column(name) -%}
@@ -69,7 +69,7 @@
 
 <tr>
   <th>{{ i18n.gettext('Keyword:')|u }}</th>
-  <td><select name="keyword" id="keyword">
+  <td><select class="custom-select" name="keyword" id="keyword">
 	  {{ option_value('keyword', '', 'don\'t care') }}
 	  {{ option_value('keyword', '-1', 'not selected') }}
       <option value="" disabled="disabled">------------</option>
@@ -108,7 +108,7 @@
 
 <tr>
   <th>{{ i18n.gettext('Priority:')|u }}</th>
-  <td><select name="priority" id="priority">
+  <td><select class="custom-select" name="priority" id="priority">
 	  {{ option_value('priority', '', 'don\'t care') }}
 	  {{ option_value('priority', '-1', 'not selected') }}
       <option value="" disabled="disabled">------------</option>
@@ -123,7 +123,7 @@
 
 <tr>
   <th>Status:</th>
-  <td><select name="status" id="status">
+  <td><select class="custom-select" name="status" id="status">
 	  {{ option_value('status', '', 'don\'t care') }}
 	  {{ option_value('status', '-1', 'not selected') }}
 	  {{ option_value('status', status_notresolved, 'not resolved') }}
@@ -155,12 +155,12 @@
 
 <tr>
 <th>{{ i18n.gettext('Pagesize:')|u }}</th>
-<td><input name="@pagesize" size="3" value="{{ request.form.getfirst('@pagesize', '50') }}" /></td>
+<td><input class="form-control col-4" name="@pagesize" value="{{ request.form.getfirst('@pagesize', '50') }}" /></td>
 </tr>
 
 <tr>
 <th>{{ i18n.gettext('Start With:')|u }}</th>
-<td><input name="@startwith" size="3" value="{{ request.form.getfirst('@startwith', '0') }}" /></td>
+<td><input class="form-control col-4" name="@startwith"" value="{{ request.form.getfirst('@startwith', '0') }}" /></td>
 </tr>
 
 <tr>
@@ -178,7 +178,7 @@
    &nbsp;
    <input type="hidden" name="@action" value="search">
   </td>
-  <td><input type="submit" value="Search" i18n:attributes="value"></td>
+  <td><input class="btn btn-primary" type="submit" value="Search" i18n:attributes="value"></td>
 </tr>
 
 <tr><td>&nbsp;</td>

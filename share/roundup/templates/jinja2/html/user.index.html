@@ -40,7 +40,7 @@
                 <input name="@csrf" type="hidden"
                        value="{{ utils.anti_csrf_nonce() }}">
                 <input type="hidden" name="@action" value="retire">
-                <input type="submit" value="{{ i18n.gettext('retire')|u }}" class='btn btn-small'>
+                <input type="submit" value="{{ i18n.gettext('retire')|u }}" class='btn btn-sm btn-danger'>
               </form>
             </td>
           {% endif %}

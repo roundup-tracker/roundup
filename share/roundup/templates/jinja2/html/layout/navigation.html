@@ -8,7 +8,7 @@
 {% endif %}
 
 {% if request.user.hasPermission('View', 'issue') %}
-  <ul class='nav nav-list'>
+  <ul class='nav flex-column'>
     <li class='nav-header'>
       <i class='icon-fire'></i>{{ i18n.gettext('Issues')|u }}
     </li>
@@ -18,7 +18,7 @@
       </li>
     {% endif %}
 
-    <li>
+    <li class="nav-item">
       <a href="{{ request.indexargs_url('issue', {
         '@sort': '-activity',
         '@group': 'priority',
@@ -30,7 +30,7 @@
         '@dispname': i18n.gettext('Show Unassigned')|u,
        }) }}">{{ i18n.gettext('Show Unassigned')|u }}</a>
     </li>
-    <li>
+    <li class="nav-item">
       <a href="{{ request.indexargs_url('issue', {
         '@sort': '-activity',
         '@group': 'priority',
@@ -46,10 +46,12 @@
     </li>
     <li>
       <form method="POST" class='form-inline' action="{{ request.base }}">
-        <input type="hidden" name="@type" value="issue">
-        <input type="hidden" name="@action" value="show">
-        <input class="input-mini" type="text" name="@number">
-        <input type="submit" class="btn" value="{{ i18n.gettext('Show issue')|u }}">
+        <div class="form-group">
+          <input type="hidden" name="@type" value="issue">
+          <input type="hidden" name="@action" value="show">
+          <input class="form-control input-sm col-2" type="text" name="@number">
+          <input type="submit" class="form-control col-auto" value="{{ i18n.gettext('Show issue')|u }}">
+        </div>
       </form>
     </li>
   </ul>
@@ -58,7 +60,7 @@
   <p class='text-error'>{{ i18n.gettext("You don't have permission to view issues.") }}</p>
 {% endif %}
 
-<ul class='nav nav-list'>
+<ul class='nav flex-column'>
   {% if request.user.hasPermission('Create', 'keyword')
         or request.user.hasPermission('Edit', 'keyword') %}
     <li class='nav-header'>
@@ -66,12 +68,12 @@
     </li>
   {% endif %}
   {% if request.user.hasPermission('Create', 'keyword') %}
-    <li>
+    <li class="nav-item">
       <a href="keyword?@template=item">{{ i18n.gettext('Create New')|u }}</a>
     </li>
   {% endif %}
   {% if request.user.hasPermission('Edit', 'keyword') %}
-    <li>
+    <li class="nav-item">
       <a href="keyword?@template=item">{{ i18n.gettext('Edit Existing')|u }}</a>
     </li>
   {% endif %}
@@ -82,7 +84,7 @@
 {% endif %}
 
 {% if request.user.hasPermission('View', 'user') %}
-  <ul class='nav nav-list'>
+  <ul class='nav flex-column'>
     <li class='nav-header'>
       <i class='icon-eye-open'></i>{{ i18n.gettext('Administration')|u }}
     </li>
@@ -110,30 +112,30 @@
 
 {% if  request.user.username == 'anonymous' %}
   <form method="POST" action='{{ request.base }}'>
-    <ul class='nav nav-list'>
+    <ul class='nav flex-column'>
       <li class='nav-header'>
         <i class='icon-user'></i>{{ i18n.gettext('Login')|u }}
       </li>
-      <li>
-        <input type='text' name="__login_name" placeholder='username'>
+      <li class="nav-item">
+        <input class="form-control" type='text' name="__login_name" placeholder='username'>
       </li>
-      <li>
-        <input type="password" name="__login_password" placeholder='password'>
+      <li class="nav-item">
+        <input class="form-control" type="password" name="__login_password" placeholder='password'>
       </li>
-      <li>
-        <label class='checkbox'>
+      <li class="nav-item">
+        <label class="form-control" class='checkbox'>
           <input type="checkbox" name="remember"> {{ i18n.gettext('Remember me?')|u }}
         </label>
       </li>
-      <li>
-        <input type="submit" value="{{ i18n.gettext('Login')|u }}" class='btn btn-inverse'>
+      <li class="nav-item">
+        <input class="form-control" type="submit" value="{{ i18n.gettext('Login')|u }}" class='btn btn-inverse'>
       </li>
       <li class='vspace-one'>
         {% if request.user.hasPermission('Register', 'user') %}
           <a href="user?@template=register">{{ i18n.gettext('Register')|u }}</a>
         {% endif %}
       </li>
-      <li>
+      <li class="nav-item">
         <a href="user?@template=forgotten">{{ i18n.gettext('Lost your login?')|u }}</a>
       </li>
     </ul>
@@ -142,7 +144,7 @@
   </form>
   <hr>
 {% else %}
-  <ul class='nav nav-list'>
+  <ul class='nav flex-column'>
     <li class='nav-header'>
       <i class='icon-user'></i>{{ i18n.gettext('Hello,')|u }}
       <span class='username'>{{ request.user.username.plain(escape=1) }}</span>
@@ -169,7 +171,7 @@
   <hr>
 {% endif %}
 
-<ul class='nav nav-list'>
+<ul class='nav flex-column'>
   <li class='nav-header'>
     <i class='icon-bookmark'></i>{{ i18n.gettext('Help')|u }}
   </li>

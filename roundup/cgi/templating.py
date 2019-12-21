@@ -795,8 +795,11 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
                (help_url, onclick, self.cgi_escape_attrs(**html_kwargs),
                 self._(label))
 
-    def submit(self, label=''"Submit New Entry", action="new"):
+    def submit(self, label=''"Submit New Entry", action="new", html_kwargs={}):
         """ Generate a submit button (and action hidden element)
+
+            "html_kwargs" specified additional html args for the
+            generated html <select>
 
         Generate nothing if we're not editable.
         """
@@ -805,7 +808,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
 
         return \
             self.input(type="submit", name="submit_button",
-                              value=self._(label)) + \
+                              value=self._(label), **html_kwargs) + \
             '\n' + \
             self.input(type="hidden", name="@csrf",
                               value=anti_csrf_nonce(self._client)) + \
@@ -940,14 +943,17 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         """Is this item retired?"""
         return self._klass.is_retired(self._nodeid)
 
-    def submit(self, label=''"Submit Changes", action="edit"):
+    def submit(self, label=''"Submit Changes", action="edit", html_kwargs={}):
         """Generate a submit button.
+
+            "html_kwargs" specified additional html args for the
+            generated html <select>
 
         Also sneak in the lastactivity and action hidden elements.
         """
         return \
             self.input(type="submit", name="submit_button",
-                       value=self._(label)) + \
+                       value=self._(label), **html_kwargs) + \
             '\n' + \
             self.input(type="hidden", name="@lastactivity",
                        value=self.activity.local(0)) + \
