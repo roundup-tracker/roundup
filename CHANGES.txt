@@ -38,7 +38,7 @@ Features:
   how to use interfaces.py.
 - issue2551075 Update jinja template to bootstrap 4. Updated to 4.1.3
   (current 4.4.1). The pull request has been around for a
-  while. (Patch: Paul Spooner; templates merged by Christof Meerwald;
+  while. (Patch: Paul Spooren; templates merged by Christof Meerwald;
   other merged by John Rouillard)
 
 Fixed:
