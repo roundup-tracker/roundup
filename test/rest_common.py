@@ -1194,6 +1194,47 @@ class TestCase():
             else:
                 self.assertEqual(self.dummy_client.response_code, 412)
 
+    def testBinaryFieldStorage(self):
+        ''' attempt to exercise all paths in the BinaryFieldStorage
+            class
+        '''
+
+        expected={ "data": {
+                      "link": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue/1", 
+                      "id": "1"
+                   }
+                }
+
+        body=b'{ "title": "Joe Doe has problems", \
+                 "nosy": [ "1", "3" ], \
+                 "assignedto": "2", \
+                 "abool": true, \
+                 "afloat": 2.3, \
+                 "anint": 567890 \
+        }'
+        env = { "CONTENT_TYPE": "application/json",
+                "CONTENT_LENGTH": len(body),
+                "REQUEST_METHOD": "POST"
+        }
+        headers={"accept": "application/json; version=1",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+        }
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch(env["REQUEST_METHOD"],
+                            "/rest/data/issue",
+                            form)
+        json_dict = json.loads(b2s(results))
+        self.assertEqual(json_dict,expected)
+
     def testDispatchPost(self):
         """
         run POST through rest dispatch(). This also tests
