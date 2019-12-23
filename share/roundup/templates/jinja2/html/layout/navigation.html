@@ -139,7 +139,7 @@
         <a href="user?@template=forgotten">{{ i18n.gettext('Lost your login?')|u }}</a>
       </li>
     </ul>
-    <input type="hidden" name="@action" value="{{ i18n.gettext('Login')|u }}">
+    <input type="hidden" name="@action" value="Login">
     <input type="hidden" name="__came_from" value='{{request.base}}{{request.env.PATH_INFO}}'>
   </form>
   <hr>

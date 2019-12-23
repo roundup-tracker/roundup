@@ -262,6 +262,22 @@ The jinja template has been upgraded to use bootstrap 4.1.3 (from
 2.2.2). You can diff/merge changes into your jinja template based
 tracker.
 
+Also search _generic.index.html, navigation.html and file.index.html
+in the html directory of your tracker. Look for::
+
+   <input type="hidden" name="@action"
+
+where the value is a jinja expression that calls i18n.gettext. Set the
+value to the argument of the gettext call. E.G. replace::
+
+    <input type="hidden" name="@action" value="{{ i18n.gettext('editCSV')|u }}">
+
+with::
+
+    <input type="hidden" name="@action" value="editCSV">
+
+The action keywords should not be translated.
+
 Migrating from 1.5.1 to 1.6.0
 =============================
 
