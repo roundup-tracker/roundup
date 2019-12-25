@@ -2479,7 +2479,7 @@ class MultilinkHTMLProperty(HTMLProperty):
                                                      **html_kwargs)]
         k = linkcl.labelprop(1)
 
-        if value:
+        if value:  # FIXME '- no selection -' mark for translation
             l.append('<option value="%s">- no selection -</option>'
                      % ','.join(['-' + v for v in value]))
 
