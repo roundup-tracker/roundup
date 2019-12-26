@@ -6,6 +6,7 @@
 
 from datetime import timedelta, datetime
 
+
 class RateLimit:  # pylint: disable=too-few-public-methods
     def __init__(self, count, period):
         self.count = count
@@ -26,7 +27,7 @@ class Gcra:
             return self.memory[key]
         else:
             return datetime.min
-        
+
     def set_tat(self, key, tat):
         self.memory[key] = tat
 
@@ -39,12 +40,11 @@ class Gcra:
         else:
             return datetime.min.isoformat()
 
-        
     def set_tat_as_string(self, key, tat):
         # Take value as string and unmarshall:
         #  YYYY-MM-DDTHH:MM:SS.mmmmmm
         # to datetime
-        self.memory[key] = datetime.strptime(tat,"%Y-%m-%dT%H:%M:%S.%f")
+        self.memory[key] = datetime.strptime(tat, "%Y-%m-%dT%H:%M:%S.%f")
 
     def update(self, key, limit, testonly=False):
         '''Determine if the item associated with the key should be
@@ -52,7 +52,7 @@ class Gcra:
         '''
         now = datetime.utcnow()
         tat = max(self.get_tat(key), now)
-        separation = (tat - now).total_seconds() 
+        separation = (tat - now).total_seconds()
         max_interval = limit.period.total_seconds() - limit.inverse
         if separation > max_interval:
             reject = True
@@ -90,23 +90,24 @@ class Gcra:
         # status of current limit as of now
         now = datetime.utcnow()
 
-        current_count = int((limit.period - (tat - now)).total_seconds()\
-                            /limit.inverse)
-        ret['X-RateLimit-Remaining'] = str(min(current_count,limit.count))
+        current_count = int((limit.period - (tat - now)).total_seconds() /
+                            limit.inverse)
+        ret['X-RateLimit-Remaining'] = str(min(current_count, limit.count))
 
         # tat_in_epochsec = (tat - datetime(1970, 1, 1)).total_seconds()
         seconds_to_tat = (tat - now).total_seconds()
         ret['X-RateLimit-Reset'] = str(max(seconds_to_tat, 0))
-        ret['X-RateLimit-Reset-date'] = "%s"%tat
-        ret['Now'] = str((now - datetime(1970,1,1)).total_seconds())
-        ret['Now-date'] = "%s"%now
+        ret['X-RateLimit-Reset-date'] = "%s" % tat
+        ret['Now'] = str((now - datetime(1970, 1, 1)).total_seconds())
+        ret['Now-date'] = "%s" % now
 
         if self.update(key, limit, testonly=True):
             # A new request would be rejected if it was processes.
             # The user has to wait until an item is dequeued.
             # One item is dequeued every limit.inverse seconds.
             ret['Retry-After'] = str(int(limit.inverse))
-            ret['Retry-After-Timestamp'] = "%s"%(now + timedelta(seconds=limit.inverse))
+            ret['Retry-After-Timestamp'] = "%s" % \
+                    (now + timedelta(seconds=limit.inverse))  # noqa: E127
         else:
             # if we are not rejected, the user can post another
             # attempt immediately.
