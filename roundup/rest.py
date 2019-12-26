@@ -37,8 +37,8 @@ from roundup import actions
 from roundup.i18n import _
 from roundup.anypy.strings import bs2b, b2s, u2s, is_us
 from roundup.rate_limit import RateLimit, Gcra
-from roundup.exceptions import *
-from roundup.cgi.exceptions import *
+from roundup.exceptions import Reject, UsageError
+from roundup.cgi.exceptions import NotFound, Unauthorised, PreconditionFailed
 
 import hmac
 from datetime import timedelta
@@ -50,16 +50,18 @@ except NameError:
     basestring = str
     unicode = str
 
+import roundup.anypy.random_ as random_
+
 import logging
 logger = logging.getLogger('roundup.rest')
 
-import roundup.anypy.random_ as random_
 if not random_.is_weak:
     logger.debug("Importing good random generator")
 else:
     logger.warning("**SystemRandom not available. Using poor random generator")
 
 chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+
 
 def _data_decorator(func):
     """Wrap the returned data into an object."""
@@ -91,17 +93,17 @@ def _data_decorator(func):
         except NotImplementedError:
             code = 402  # nothing to pay, just a mark for debugging purpose
             data = 'Method under development'
-        except:
+        except:  # noqa: E722
             exc, val, tb = sys.exc_info()
             code = 400
             ts = time.ctime()
-            if getattr (self.client.request, 'DEBUG_MODE', None):
+            if getattr(self.client.request, 'DEBUG_MODE', None):
                 data = val
             else:
                 data = '%s: An error occurred. Please check the server log' \
                        ' for more information.' % ts
             # out to the logfile
-            print ('EXCEPTION AT', ts)
+            print('EXCEPTION AT', ts)
             traceback.print_exc()
 
         # decorate it
@@ -120,8 +122,9 @@ def _data_decorator(func):
         return result
     return format_object
 
-def calculate_etag (node, key, classname="Missing", id="0",
-                    repr_format="json"):
+
+def calculate_etag(node, key, classname="Missing", id="0",
+                   repr_format="json"):
     '''given a hyperdb node generate a hashed representation of it to be
     used as an etag.
 
@@ -144,16 +147,17 @@ def calculate_etag (node, key, classname="Missing", id="0",
     classname and id are used for logging only.
     '''
 
-    items = node.items(protected=True) # include every item
-    etag = hmac.new(bs2b(key),bs2b(repr_format + 
-                                   repr(sorted(items))), md5).hexdigest()
+    items = node.items(protected=True)  # include every item
+    etag = hmac.new(bs2b(key), bs2b(repr_format +
+                                    repr(sorted(items))), md5).hexdigest()
     logger.debug("object=%s%s; tag=%s; repr=%s", classname, id,
                  etag, repr(node.items(protected=True)))
     # Quotes are part of ETag spec, normal headers don't have quotes
     return '"%s"' % etag
 
-def check_etag (node, key, etags, classname="Missing", id="0",
-                repr_format="json"):
+
+def check_etag(node, key, etags, classname="Missing", id="0",
+               repr_format="json"):
     '''Take a list of etags and compare to the etag for the given node.
 
     Iterate over all supplied etags,
@@ -162,7 +166,7 @@ def check_etag (node, key, etags, classname="Missing", id="0",
        If all etags are None, return False.
 
     '''
-    have_etag_match=False
+    have_etag_match = False
 
     node_etag = calculate_etag(node, key, classname, id,
                                repr_format=repr_format)
@@ -171,20 +175,22 @@ def check_etag (node, key, etags, classname="Missing", id="0",
         if etag is not None:
             if etag != node_etag:
                 return False
-            have_etag_match=True
+            have_etag_match = True
 
     if have_etag_match:
         return True
     else:
         return False
 
-def obtain_etags(headers,input):
+
+def obtain_etags(headers, input):
     '''Get ETags value from headers or payload data'''
     etags = []
     if '@etag' in input:
         etags.append(input['@etag'].value)
     etags.append(headers.get("If-Match", None))
     return etags
+
 
 def parse_accept_header(accept):
     """
@@ -227,10 +233,9 @@ def parse_accept_header(accept):
                     if len(rest):
                         # add the version as a media param
                         try:
-                            media_params.append(('version',
-                                                           rest))
+                            media_params.append(('version', rest))
                         except ValueError:
-                            pass # return no version value; use rest default
+                            pass  # return no version value; use rest default
                 # add the vendor code as a media param
                 media_params.append(('vendor', vnd))
                 # and re-write media_type to something like application/json so
@@ -303,7 +308,7 @@ class Routing(object):
         # indexed by method name
         def decorator(func):
             rule_route = cls.__route_map.get(pattern, (rule, {}))
-            rule_dict  = rule_route [1]
+            rule_dict = rule_route[1]
             func_obj = {
                 'func': func,
                 'vars': func_vars
@@ -357,8 +362,7 @@ class RestfulInstance(object):
     __default_accept_type = "json"
 
     __default_api_version = 1
-    __supported_api_versions = [ 1 ]
-
+    __supported_api_versions = [1]
 
     api_version = None
 
@@ -370,13 +374,13 @@ class RestfulInstance(object):
         # would include too many actions that do not make sense in the
         # REST-API context, so for now we only permit the retire and
         # restore actions.
-        self.actions = dict (retire = actions.Retire, restore = actions.Restore)
+        self.actions = dict(retire=actions.Retire, restore=actions.Restore)
 
         # note TRACKER_WEB ends in a /
         self.base_path = '%srest' % (self.db.config.TRACKER_WEB)
         self.data_path = self.base_path + '/data'
 
-        if dicttoxml: # add xml if supported
+        if dicttoxml:  # add xml if supported
             self.__accepted_content_type["application/xml"] = "xml"
 
     def props_from_args(self, cl, args, itemid=None, skip_protected=True):
@@ -398,9 +402,9 @@ class RestfulInstance(object):
 
         """
         unprotected_class_props = cl.properties.keys()
-        protected_class_props = [ p for p in 
-                                  list(cl.getprops(protected=True))
-                                  if p not in unprotected_class_props ]
+        protected_class_props = [p for p in
+                                 list(cl.getprops(protected=True))
+                                 if p not in unprotected_class_props]
         props = {}
         # props = dict.fromkeys(class_props, None)
 
@@ -430,8 +434,8 @@ class RestfulInstance(object):
                     continue
             elif key not in unprotected_class_props:
                 # report bad props as this is an error.
-                raise UsageError("Property %s not found in class %s"%(key,
-                                                                cl.classname))
+                raise UsageError("Property %s not found in class %s" % (key,
+                                        cl.classname))  # noqa: E128
             props[key] = self.prop_from_arg(cl, key, value, itemid)
 
         return props
@@ -453,7 +457,7 @@ class RestfulInstance(object):
         prop = None
         if isinstance(key, unicode):
             try:
-                x = key.encode('ascii')
+                key.encode('ascii')  # Check to see if it can be encoded
             except UnicodeEncodeError:
                 raise UsageError(
                     'argument %r is not a valid ascii keyword' % key
@@ -536,9 +540,9 @@ class RestfulInstance(object):
     def raise_if_no_etag(self, class_name, item_id, input, repr_format="json"):
         class_obj = self.db.getclass(class_name)
         if not check_etag(class_obj.getnode(item_id),
-                self.db.config.WEB_SECRET_KEY,
-                obtain_etags(self.client.request.headers, input),
-                class_name,
+                          self.db.config.WEB_SECRET_KEY,
+                          obtain_etags(self.client.request.headers, input),
+                          class_name,
                           item_id, repr_format=repr_format):
             raise PreconditionFailed(
                 "If-Match is missing or does not match."
@@ -550,14 +554,15 @@ class RestfulInstance(object):
         '''
         uid = self.db.getuid()
         class_name = node.cl.classname
-        if self.api_version == None:
-            version = self.__default_api_version
-        else:
-            version = self.api_version
 
         # version never gets used since we only
         # support version 1 at this time. Set it as
         # placeholder for later use.
+        if self.api_version is None:
+            version = self.__default_api_version  # noqa: F841
+        else:
+            version = self.api_version  # noqa: F841
+
         result = {}
         try:
             # pn = propname
@@ -568,39 +573,39 @@ class RestfulInstance(object):
                 ):
                     continue
                 v = getattr(node, pn)
-                if isinstance (prop, (hyperdb.Link, hyperdb.Multilink)):
-                    linkcls = self.db.getclass (prop.classname)
+                if isinstance(prop, (hyperdb.Link, hyperdb.Multilink)):
+                    linkcls = self.db.getclass(prop.classname)
                     cp = '%s/%s/' % (self.data_path, prop.classname)
                     if verbose and v:
                         if isinstance(v, type([])):
                             r = []
                             for id in v:
-                                d = dict(id = id, link = cp + id)
+                                d = dict(id=id, link=cp + id)
                                 if verbose > 1:
                                     label = linkcls.labelprop()
-                                    d [label] = linkcls.get(id, label)
+                                    d[label] = linkcls.get(id, label)
                                 r.append(d)
                             result[pn] = r
                         else:
-                            result[pn] = dict(id = v, link = cp + v)
+                            result[pn] = dict(id=v, link=cp + v)
                             if verbose > 1:
                                 label = linkcls.labelprop()
                                 result[pn][label] = linkcls.get(v, label)
                     else:
                         result[pn] = v
-                elif isinstance (prop, hyperdb.String) and pn == 'content':
+                elif isinstance(prop, hyperdb.String) and pn == 'content':
                     # Do not show the (possibly HUGE) content prop
                     # unless very verbose, we display the standard
                     # download link instead
                     if verbose < 3:
                         u = self.db.config.TRACKER_WEB
                         p = u + '%s%s/' % (class_name, node.id)
-                        result[pn] = dict(link = p)
+                        result[pn] = dict(link=p)
                     else:
                         result[pn] = v
                 elif isinstance(prop, hyperdb.Password):
-                    if v != None: # locked users like anonymous have None
-                        result[pn] = "[password hidden scheme %s]"%v.scheme
+                    if v is not None:  # locked users like anonymous have None
+                        result[pn] = "[password hidden scheme %s]" % v.scheme
                     else:
                         # Don't divulge it's a locked account. Choose most
                         # secure as default.
@@ -611,7 +616,6 @@ class RestfulInstance(object):
             raise UsageError("%s field not valid" % msg)
 
         return result
-
 
     @Routing.route("/data/<:class_name>", 'GET')
     @_data_decorator
@@ -644,7 +648,7 @@ class RestfulInstance(object):
 
         # Handle filtering and pagination
         filter_props = {}
-        exact_props  = {}
+        exact_props = {}
         page = {
             'size': None,
             'index': 1   # setting just size starts at page 1
@@ -660,25 +664,25 @@ class RestfulInstance(object):
                 value = int(value)
                 page[key] = value
             elif key == "@verbose":
-                verbose = int (value)
+                verbose = int(value)
             elif key == "@fields" or key == "@attrs":
                 f = value.split(",")
                 if len(f) == 1:
-                    f=value.split(":")
-                allprops=class_obj.getprops(protected=True)
+                    f = value.split(":")
+                allprops = class_obj.getprops(protected=True)
                 for i in f:
                     try:
                         display_props[i] = allprops[i]
-                    except KeyError as err:
+                    except KeyError:
                         raise UsageError("Failed to find property '%s' "
-                                         "for class %s."%(i, class_name))
+                                         "for class %s." % (i, class_name))
             elif key == "@sort":
                 f = value.split(",")
-                allprops=class_obj.getprops(protected=True)
-                for p in f :
+                allprops = class_obj.getprops(protected=True)
+                for p in f:
                     if not p:
                         raise UsageError("Empty property "
-                                         "for class %s."%(class_name))
+                                         "for class %s." % (class_name))
                     if p[0] in ('-', '+'):
                         pn = p[1:]
                         ss = p[0]
@@ -696,19 +700,19 @@ class RestfulInstance(object):
                 # ignore any unsupported/previously handled control key
                 # like @apiver
                 pass
-            else: # serve the filter purpose
+            else:  # serve the filter purpose
                 exact = False
-                if key.endswith (':') :
+                if key.endswith(':'):
                     exact = True
-                    key = key [:-1]
-                elif key.endswith ('~') :
-                    key = key [:-1]
+                    key = key[:-1]
+                elif key.endswith('~'):
+                    key = key[:-1]
                 p = key.split('.', 1)[0]
-                try: 
+                try:
                     prop = class_obj.getprops()[p]
                 except KeyError:
-                    raise UsageError("Field %s is not valid for %s class."%(
-                        p, class_name))
+                    raise UsageError("Field %s is not valid for %s class." %
+                                     (p, class_name))
                 # We drop properties without search permission silently
                 # This reflects the current behavior of other roundup
                 # interfaces
@@ -721,26 +725,26 @@ class RestfulInstance(object):
 
                 linkcls = class_obj
                 for p in key.split('.'):
-                    prop = linkcls.getprops(protected = True)[p]
-                    linkcls = getattr (prop, 'classname', None)
+                    prop = linkcls.getprops(protected=True)[p]
+                    linkcls = getattr(prop, 'classname', None)
                     if linkcls:
                         linkcls = self.db.getclass(linkcls)
 
-                if isinstance (prop, (hyperdb.Link, hyperdb.Multilink)):
+                if isinstance(prop, (hyperdb.Link, hyperdb.Multilink)):
                     if key in filter_props:
                         vals = filter_props[key]
                     else:
                         vals = []
                     for p in value.split(","):
                         dig = p and p.isdigit() or \
-                            (p[0] in ('-','+') and p[1:].isdigit())
+                            (p[0] in ('-', '+') and p[1:].isdigit())
                         if prop.try_id_parsing and dig:
                             vals.append(p)
                         else:
                             vals.append(linkcls.lookup(p))
                     filter_props[key] = vals
                 else:
-                    if not isinstance (prop, hyperdb.String):
+                    if not isinstance(prop, hyperdb.String):
                         exact = False
                     props = filter_props
                     if exact:
@@ -749,19 +753,19 @@ class RestfulInstance(object):
                         if isinstance(props[key], list):
                             props[key].append(value)
                         else:
-                            props[key] = [props[key],value]
+                            props[key] = [props[key], value]
                     else:
                         props[key] = value
-        l = [filter_props]
+        l = [filter_props]  # noqa: E741
         kw = {}
         if sort:
             l.append(sort)
         if exact_props:
-            kw ['exact_match_spec'] = exact_props
-        if page ['size'] is not None and page ['size'] > 0:
-            kw ['limit'] = page ['size']
-            if page ['index'] is not None and page ['index'] > 1:
-                kw ['offset'] = (page ['index'] - 1) * page ['size']
+            kw['exact_match_spec'] = exact_props
+        if page['size'] is not None and page['size'] > 0:
+            kw['limit'] = page['size']
+            if page['index'] is not None and page['index'] > 1:
+                kw['offset'] = (page['index'] - 1) * page['size']
         obj_list = class_obj.filter(None, *l, **kw)
 
         # Note: We don't sort explicitly in python. The filter implementation
@@ -771,18 +775,18 @@ class RestfulInstance(object):
         if verbose > 1:
             lp = class_obj.labelprop()
             # Label prop may be a protected property like activity
-            display_props[lp] = class_obj.getprops (protected = True)[lp]
+            display_props[lp] = class_obj.getprops(protected=True)[lp]
 
         # extract result from data
-        result={}
-        result['collection']=[]
+        result = {}
+        result['collection'] = []
         for item_id in obj_list:
             r = {}
             if self.db.security.hasPermission(
                 'View', uid, class_name, itemid=item_id, property='id'
             ):
                 r = {'id': item_id, 'link': class_path + item_id}
-            if display_props :
+            if display_props:
                 for p in display_props:
                     if self.db.security.hasPermission(
                         'View', uid, class_name, itemid=item_id, property=p
@@ -800,21 +804,21 @@ class RestfulInstance(object):
             for rel in ('next', 'prev', 'self'):
                 if rel == 'next':
                     # if current index includes all data, continue
-                    if page['size'] > result_len: continue
-                    index=page['index']+1
+                    if page['size'] > result_len: continue  # noqa: E701
+                    index = page['index']+1
                 if rel == 'prev':
-                    if page['index'] <= 1: continue
-                    index=page['index']-1
-                if rel == 'self': index=page['index']
+                    if page['index'] <= 1: continue  # noqa: E701
+                    index = page['index'] - 1
+                if rel == 'self': index = page['index']  # noqa: E701
 
                 result['@links'][rel] = []
                 result['@links'][rel].append({
                     'rel': rel,
-                    'uri': "%s/%s?@page_index=%s&"%(self.data_path,
-                                                   class_name,index) \
-                       + '&'.join([ "%s=%s"%(field.name,field.value) \
-                         for field in input.value \
-                           if field.name != "@page_index"]) })
+                    'uri': "%s/%s?@page_index=%s&" % (self.data_path,
+                                                      class_name, index) +
+                           '&'.join(["%s=%s" % (field.name, field.value)
+                                     for field in input.value
+                                     if field.name != "@page_index"])})
 
         result['@total_size'] = result_len
         self.client.setHeader("X-Count-Total", str(result_len))
@@ -855,7 +859,7 @@ class RestfulInstance(object):
             try:
                 k, v = item_id.split('=', 1)
                 if k != keyprop:
-                    raise UsageError ("Field %s is not key property"%k)
+                    raise UsageError("Field %s is not key property" % k)
             except ValueError:
                 v = item_id
             if not self.db.security.hasPermission(
@@ -877,8 +881,8 @@ class RestfulInstance(object):
         etag = calculate_etag(node, self.db.config.WEB_SECRET_KEY,
                               class_name, itemid, repr_format="json")
         props = None
-        protected=False
-        verbose=1
+        protected = False
+        verbose = 1
         for form_field in input.value:
             key = form_field.name
             value = form_field.value
@@ -886,22 +890,22 @@ class RestfulInstance(object):
                 if props is None:
                     props = {}
                 # support , or : separated elements
-                f=value.split(",")
+                f = value.split(",")
                 if len(f) == 1:
-                    f=value.split(":")
-                allprops=class_obj.getprops(protected=True)
+                    f = value.split(":")
+                allprops = class_obj.getprops(protected=True)
                 for i in f:
                     try:
                         props[i] = allprops[i]
-                    except KeyError as err:
-                        raise UsageError("Failed to find property '%s' for class %s."%(i, class_name))
+                    except KeyError:
+                        raise UsageError("Failed to find property '%s' for class %s." % (i, class_name))
             elif key == "@protected":
                 # allow client to request read only
                 # properties like creator, activity etc.
                 # used only if no @fields/@attrs
                 protected = value.lower() == "true"
             elif key == "@verbose":
-                verbose = int (value)
+                verbose = int(value)
 
         result = {}
         if props is None:
@@ -916,7 +920,7 @@ class RestfulInstance(object):
             'type': class_name,
             'link': '%s/%s/%s' % (self.data_path, class_name, item_id),
             'attributes': self.format_item(node, itemid, props=props,
-                                 verbose=verbose),
+                                           verbose=verbose),
             '@etag': etag
         }
 
@@ -994,29 +998,29 @@ class RestfulInstance(object):
 
     @Routing.route("/data/<:class_name>/@poe", 'POST')
     @_data_decorator
-    def post_once_exactly_collection(self, class_name, input):
-        otks=self.db.Otk
+    def get_post_once_exactly(self, class_name, input):
+        otks = self.db.Otk
         poe_key = ''.join([random_.choice(chars) for x in range(40)])
         while otks.exists(u2s(poe_key)):
             poe_key = ''.join([random_.choice(chars) for x in range(40)])
 
         try:
-            lifetime=int(input['lifetime'].value)
-        except KeyError as e:
-            lifetime=30 * 60 # 30 minutes
-        except ValueError as e:
-            raise UsageError("Value 'lifetime' must be an integer specify lifetime in seconds. Got %s."%input['lifetime'].value)
+            lifetime = int(input['lifetime'].value)
+        except KeyError:
+            lifetime = 30 * 60  # 30 minutes
+        except ValueError:
+            raise UsageError("Value 'lifetime' must be an integer specify lifetime in seconds. Got %s." % input['lifetime'].value)
 
         if lifetime > 3600 or lifetime < 1:
-            raise UsageError("Value 'lifetime' must be between 1 second and 1 hour (3600 seconds). Got %s."%input['lifetime'].value)
+            raise UsageError("Value 'lifetime' must be between 1 second and 1 hour (3600 seconds). Got %s." % input['lifetime'].value)
 
         try:
             # if generic tag exists, we don't care about the value
-            is_generic=input['generic']
+            is_generic = input['generic']
             # we generate a generic POE token
-            is_generic=True
-        except KeyError as e:
-            is_generic=False
+            is_generic = True
+        except KeyError:
+            is_generic = False
 
         # a POE must be used within lifetime (30 minutes default).
         # Default OTK lifetime is 1 week. So to make different
@@ -1025,20 +1029,21 @@ class RestfulInstance(object):
         ts = time.time() - (60 * 60 * 24 * 7) + lifetime
         if is_generic:
             otks.set(u2s(poe_key), uid=self.db.getuid(),
-                     __timestamp=ts )
+                     __timestamp=ts)
         else:
             otks.set(u2s(poe_key), uid=self.db.getuid(),
                      class_name=class_name,
-                     __timestamp=ts )
+                     __timestamp=ts)
         otks.commit()
 
-        return 200, { 'link': '%s/%s/@poe/%s'%(self.data_path, class_name, poe_key),
-                      'expires' : ts + (60 * 60 * 24 * 7) }
+        return 200, {'link': '%s/%s/@poe/%s' %
+                     (self.data_path, class_name, poe_key),
+                     'expires': ts + (60 * 60 * 24 * 7)}
 
     @Routing.route("/data/<:class_name>/@poe/<:post_token>", 'POST')
     @_data_decorator
     def post_once_exactly_collection(self, class_name, post_token, input):
-        otks=self.db.Otk
+        otks = self.db.Otk
 
         # remove expired keys so we don't use an expired key
         otks.clean()
@@ -1046,7 +1051,7 @@ class RestfulInstance(object):
         if not otks.exists(u2s(post_token)):
             # Don't log this failure. Would allow attackers to fill
             # logs.
-            raise UsageError("POE token '%s' not valid."%post_token)
+            raise UsageError("POE token '%s' not valid." % post_token)
 
         # find out what user owns the key
         user = otks.get(u2s(post_token), 'uid', default=None)
@@ -1063,16 +1068,16 @@ class RestfulInstance(object):
             # Tell the roundup admin that there is an issue
             # as the key got compromised.
             logger.warning(
-                'Post Once key owned by user%s was denied. Used by user%s',user, self.db.getuid()
+                'Post Once key owned by user%s was denied. Used by user%s', user, self.db.getuid()
             )
             # Should we indicate to user that the token is invalid
             # because they are not the user who owns the key? It could
             # be a logic bug in the application. But I assume that
             # the key has been stolen and we don't want to tip our hand.
-            raise UsageError("POE token '%s' not valid."%post_token)
+            raise UsageError("POE token '%s' not valid." % post_token)
 
-        if cn != class_name and cn != None:
-            raise UsageError("POE token '%s' not valid for %s, was generated for class %s"%(post_token, class_name, cn))
+        if cn != class_name and cn is not None:
+            raise UsageError("POE token '%s' not valid for %s, was generated for class %s" % (post_token, class_name, cn))
 
         # handle this as though they POSTed to /rest/data/class
         return self.post_collection_inner(class_name, input)
@@ -1299,7 +1304,7 @@ class RestfulInstance(object):
         """
         if class_name not in self.db.classes:
             raise NotFound('Class %s not found' % class_name)
-        class_obj = self.db.classes [class_name]
+        class_obj = self.db.classes[class_name]
         if not self.db.security.hasPermission(
             'Retire', self.db.getuid(), class_name, itemid=item_id
         ):
@@ -1308,7 +1313,7 @@ class RestfulInstance(object):
             )
 
         self.raise_if_no_etag(class_name, item_id, input)
-        class_obj.retire (item_id)
+        class_obj.retire(item_id)
         self.db.commit()
         result = {
             'status': 'ok'
@@ -1345,13 +1350,13 @@ class RestfulInstance(object):
         class_obj = self.db.getclass(class_name)
         if attr_name not in class_obj.getprops(protected=False):
             if attr_name in class_obj.getprops(protected=True):
-                raise AttributeError("Attribute '%s' can not be deleted " \
-                                 "for class %s."%(attr_name, class_name))
+                raise AttributeError("Attribute '%s' can not be deleted "
+                                     "for class %s." % (attr_name, class_name))
             else:
-                raise UsageError("Attribute '%s' not valid for class %s."%(
+                raise UsageError("Attribute '%s' not valid for class %s." % (
                     attr_name, class_name))
         if attr_name in class_obj.get_required_props():
-            raise UsageError("Attribute '%s' is required by class %s and can not be deleted."%(
+            raise UsageError("Attribute '%s' is required by class %s and can not be deleted." % (
                 attr_name, class_name))
         props = {}
         prop_obj = class_obj.get(item_id, attr_name)
@@ -1457,7 +1462,7 @@ class RestfulInstance(object):
                 if op == 'remove' and prop in required_props:
                     raise UsageError(
                         "Attribute '%s' is required by class %s "
-                        "and can not be removed."%(prop, class_name)
+                        "and can not be removed." % (prop, class_name)
                     )
 
                 props[prop] = self.patch_data(
@@ -1522,8 +1527,8 @@ class RestfulInstance(object):
         class_obj = self.db.getclass(class_name)
         if attr_name not in class_obj.getprops(protected=False):
             if attr_name in class_obj.getprops(protected=True):
-                raise AttributeError("Attribute '%s' can not be updated " \
-                                 "for class %s."%(attr_name, class_name))
+                raise AttributeError("Attribute '%s' can not be updated "
+                                     "for class %s." % (attr_name, class_name))
 
         self.raise_if_no_etag(class_name, item_id, input)
 
@@ -1621,8 +1626,8 @@ class RestfulInstance(object):
                 "OPTIONS, GET"
             )
         else:
-            raise NotFound('Attribute %s not valid for Class %s' %(
-                attr_name,class_name))
+            raise NotFound('Attribute %s not valid for Class %s' % (
+                attr_name, class_name))
         return 204, ""
 
     @Routing.route("/")
@@ -1632,13 +1637,12 @@ class RestfulInstance(object):
         result = {
             "default_version": self.__default_api_version,
             "supported_versions": self.__supported_api_versions,
-            "links": [ { "uri": self.base_path +"/summary",
-                        "rel": "summary"},
-                       { "uri": self.base_path,
-                         "rel": "self"},
-                       { "uri": self.base_path + "/data",
-                         "rel": "data"}
-                   ]
+            "links": [{"uri": self.base_path + "/summary",
+                       "rel": "summary"},
+                      {"uri": self.base_path,
+                       "rel": "self"},
+                      {"uri": self.base_path + "/data",
+                       "rel": "data"}]
         }
 
         return 200, result
@@ -1651,10 +1655,10 @@ class RestfulInstance(object):
            One entry for each class the user may view
         """
         result = {}
-        uid = self.db.getuid ()
-        for cls in sorted (self.db.classes) :
-            if self.db.security.hasPermission('View', uid, cls) :
-                result [cls] = dict(link = self.base_path + '/data/' + cls)
+        uid = self.db.getuid()
+        for cls in sorted(self.db.classes):
+            if self.db.security.hasPermission('View', uid, cls):
+                result[cls] = dict(link=self.base_path + '/data/' + cls)
         return 200, result
 
     @Routing.route("/summary")
@@ -1732,7 +1736,7 @@ class RestfulInstance(object):
         calls = self.db.config.WEB_API_CALLS_PER_INTERVAL
         interval = self.db.config.WEB_API_INTERVAL_IN_SEC
         if calls and interval:
-            return RateLimit(calls,timedelta(seconds=interval))
+            return RateLimit(calls, timedelta(seconds=interval))
         else:
             # disable rate limiting if either parameter is 0
             return None
@@ -1751,18 +1755,18 @@ class RestfulInstance(object):
         apiRateLimit = self.getRateLimit()
 
         if apiRateLimit:  # if None, disable rate limiting
-            gcra=Gcra()
+            gcra = Gcra()
             # unique key is an "ApiLimit-" prefix and the uid)
-            apiLimitKey = "ApiLimit-%s"%self.db.getuid()
-            otk=self.db.Otk
+            apiLimitKey = "ApiLimit-%s" % self.db.getuid()
+            otk = self.db.Otk
             try:
-                val=otk.getall(apiLimitKey)
+                val = otk.getall(apiLimitKey)
                 gcra.set_tat_as_string(apiLimitKey, val['tat'])
             except KeyError:
                 # ignore if tat not set, it's 1970-1-1 by default.
                 pass
             # see if rate limit exceeded and we need to reject the attempt
-            reject=gcra.update(apiLimitKey, apiRateLimit)
+            reject = gcra.update(apiLimitKey, apiRateLimit)
 
             # Calculate a timestamp that will make OTK expire the
             # unused entry 1 hour in the future
@@ -1771,21 +1775,21 @@ class RestfulInstance(object):
                     __timestamp=ts)
             otk.commit()
 
-            limitStatus=gcra.status(apiLimitKey, apiRateLimit)
+            limitStatus = gcra.status(apiLimitKey, apiRateLimit)
             if reject:
                 for header, value in limitStatus.items():
                     self.client.setHeader(header, value)
                     # User exceeded limits: tell humans how long to wait
                     # Headers above will do the right thing for api
                     # aware clients.
-                    msg=_("Api rate limits exceeded. Please wait: %s seconds.")%limitStatus['Retry-After']
+                    msg = _("Api rate limits exceeded. Please wait: %s seconds.") % limitStatus['Retry-After']
                     output = self.error_obj(429, msg, source="ApiRateLimiter")
             else:
-                for header,value in limitStatus.items():
+                for header, value in limitStatus.items():
                     # Retry-After will be 0 because
                     # user still has quota available.
                     # Don't put out the header.
-                    if header in ( 'Retry-After', ):
+                    if header in ('Retry-After',):
                         continue
                     self.client.setHeader(header, value)
 
@@ -1802,7 +1806,7 @@ class RestfulInstance(object):
             else:
                 output = self.error_obj(400,
                        "X-HTTP-Method-Override: %s must be used with "
-                       "POST method not %s."% (override, method.upper()))
+                       "POST method not %s." % (override, method.upper()))
                 logger.info(
                     'Ignoring X-HTTP-Method-Override using %s request on %s',
                     method.upper(), uri)
@@ -1839,10 +1843,10 @@ class RestfulInstance(object):
                     self.api_version = None
                 except (ValueError, TypeError):
                     # TypeError if int(None)
-                    msg=( "Unrecognized version: %s. "
-                          "See /rest without specifying version "
-                          "for supported versions."%(
-                              part[1]['version']))
+                    msg = ("Unrecognized version: %s. "
+                           "See /rest without specifying version "
+                           "for supported versions." % (
+                               part[1]['version']))
                     output = self.error_obj(400, msg)
 
         # get the request format for response
@@ -1852,10 +1856,10 @@ class RestfulInstance(object):
         ext_type = os.path.splitext(urlparse(uri).path)[1][1:]
         data_type = ext_type or accept_type or "invalid"
 
-        if ( ext_type ):
+        if (ext_type):
             # strip extension so uri make sense
             # .../issue.json -> .../issue
-            uri = uri[:-( len(ext_type) + 1 )]
+            uri = uri[:-(len(ext_type) + 1)]
 
         # add access-control-allow-* to support CORS
         self.client.setHeader("Access-Control-Allow-Origin", "*")
@@ -1876,8 +1880,7 @@ class RestfulInstance(object):
         # of the FieldStorge methods/props to allow a response.
         content_type_header = headers.get('Content-Type', None)
         # python2 is str type, python3 is bytes
-        if type(input.value) in ( str, bytes ) and content_type_header:
-            parsed_content_type_header = content_type_header
+        if type(input.value) in (str, bytes) and content_type_header:
             # the structure of a content-type header
             # is complex: mime-type; options(charset ...)
             # for now we just accept application/json.
@@ -1904,9 +1907,9 @@ class RestfulInstance(object):
             pretty_output = True
 
         # check for @apiver in query string
-        msg=( "Unrecognized version: %s. "
-              "See /rest without specifying version "
-              "for supported versions." )
+        msg = ("Unrecognized version: %s. "
+               "See /rest without specifying version "
+               "for supported versions.")
         try:
             if not self.api_version:
                 self.api_version = int(input['@apiver'].value)
@@ -1915,7 +1918,7 @@ class RestfulInstance(object):
         except (KeyError, TypeError):
             self.api_version = None
         except ValueError:
-            output = self.error_obj(400, msg%input['@apiver'].value)
+            output = self.error_obj(400, msg % input['@apiver'].value)
 
         # by this time the API version is set. Error if we don't
         # support it?
@@ -1926,13 +1929,13 @@ class RestfulInstance(object):
             #    Use default if not specified for now.
             self.api_version = self.__default_api_version
         elif self.api_version not in self.__supported_api_versions:
-            raise UsageError(msg%self.api_version)
+            raise UsageError(msg % self.api_version)
 
         # sadly del doesn't work on FieldStorage which can be the type of
         # input. So we have to ignore keys starting with @ at other
         # places in the code.
         # else:
-        #     del(input['@apiver'])  
+        #     del(input['@apiver'])
 
         # Call the appropriate method
         try:
@@ -1961,11 +1964,11 @@ class RestfulInstance(object):
                 # can handle
                 import numbers
                 import collections
-                for key,val in output['error'].items():
+                for key, val in output['error'].items():
                     if isinstance(val, numbers.Number) or type(val) in \
                        (str, unicode):
                         pass
-                    elif hasattr(val, 'isoformat'): # datetime
+                    elif hasattr(val, 'isoformat'):  # datetime
                         pass
                     elif type(val) == bool:
                         pass
@@ -1985,9 +1988,9 @@ class RestfulInstance(object):
             # error out before doing any work if we can't
             # display acceptable output.
             self.client.response_code = 406
-            output = ( "Requested content type '%s' is not available.\n"
-                       "Acceptable types: %s"%(data_type,
-                           ", ".join(sorted(self.__accepted_content_type.keys()))))
+            output = ("Requested content type '%s' is not available.\n"
+                      "Acceptable types: %s" % (data_type,
+                      ", ".join(sorted(self.__accepted_content_type.keys()))))
 
         # Make output json end in a newline to
         # separate from following text in logs etc..
@@ -2003,6 +2006,7 @@ class RoundupJSONEncoder(json.JSONEncoder):
         except TypeError:
             result = str(obj)
         return result
+
 
 class SimulateFieldStorageFromJson():
     '''
@@ -2029,25 +2033,26 @@ class SimulateFieldStorageFromJson():
     def __init__(self, json_string):
         ''' Parse the json string into an internal dict. '''
         def raise_error_on_constant(x):
-            raise ValueError("Unacceptable number: %s"%x)
+            raise ValueError("Unacceptable number: %s" % x)
         try:
             self.json_dict = json.loads(json_string,
-                                    parse_constant = raise_error_on_constant)
-            self.value = [ self.FsValue(index, self.json_dict[index]) for index in self.json_dict.keys() ]
-        except ValueError as e:
+                                    parse_constant=raise_error_on_constant)
+            self.value = [self.FsValue(index, self.json_dict[index])
+                          for index in self.json_dict.keys()]
+        except ValueError:
             self.json_dict = {}
             self.value = None
 
     class FsValue:
         '''Class that does nothing but response to a .value property '''
         def __init__(self, name, val):
-            self.name=u2s(name)
+            self.name = u2s(name)
             if is_us(val):
                 # handle most common type first
-                self.value=u2s(val)
-            elif type(val) == type([]):
-                # then lists of strings    
-                self.value = [ u2s(v) for v in val ]
+                self.value = u2s(val)
+            elif isinstance(val, type([])):
+                # then lists of strings
+                self.value = [u2s(v) for v in val]
             else:
                 # then stringify anything else (int, float)
                 self.value = str(val)
@@ -2060,4 +2065,3 @@ class SimulateFieldStorageFromJson():
     def __contains__(self, index):
         ''' implement: 'foo' in DICT '''
         return index in self.json_dict
-
