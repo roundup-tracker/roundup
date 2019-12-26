@@ -1,6 +1,8 @@
 
 from __future__ import print_function
 from roundup.anypy.strings import u2s, uchr
+
+
 class dehtml:
     def __init__(self, converter):
         if converter == "none":
@@ -11,6 +13,7 @@ class dehtml:
             if converter == "beautifulsoup":
                 # Not as well tested as dehtml.
                 from bs4 import BeautifulSoup
+
                 def html2text(html):
                     soup = BeautifulSoup(html)
 
@@ -22,51 +25,51 @@ class dehtml:
 
                 self.html2text = html2text
             else:
-                raise ImportError # use
+                raise ImportError
         except ImportError:
             # use the fallback below if beautiful soup is not installed.
             try:
                 # Python 3+.
                 from html.parser import HTMLParser
                 from html.entities import name2codepoint
-                pyver=3
+                pyver = 3
             except ImportError:
                 # Python 2.
                 from HTMLParser import HTMLParser
                 from htmlentitydefs import name2codepoint
-                pyver=2
+                pyver = 2
 
             class DumbHTMLParser(HTMLParser):
                 # class attribute
-                text=""
+                text = ""
 
                 # internal state variable
                 _skip_data = False
                 _last_empty = False
 
                 def handle_data(self, data):
-                    if self._skip_data: # skip data if in script or style block
+                    if self._skip_data:  # skip data in script or style block
                         return
 
-                    if ( data.strip() == ""):
+                    if (data.strip() == ""):
                         # reduce multiple blank lines to 1
-                        if ( self._last_empty ):
+                        if (self._last_empty):
                             return
                         else:
                             self._last_empty = True
                     else:
                         self._last_empty = False
 
-                    self.text=self.text + data
+                    self.text = self.text + data
 
                 def handle_starttag(self, tag, attrs):
-                    if (tag == "p" ):
-                        self.text= self.text + "\n"
-                    if (tag  in ("style", "script")):
+                    if (tag == "p"):
+                        self.text = self.text + "\n"
+                    if (tag in ("style", "script")):
                         self._skip_data = True
 
                 def handle_endtag(self, tag):
-                    if (tag  in ("style", "script")):
+                    if (tag in ("style", "script")):
                         self._skip_data = False
 
                 def handle_entityref(self, name):
@@ -74,10 +77,10 @@ class dehtml:
                         return
                     c = uchr(name2codepoint[name])
                     try:
-                        self.text= self.text + c
+                        self.text = self.text + c
                     except UnicodeEncodeError:
                         # print a space as a placeholder
-                        self.text= self.text + ' '
+                        self.text = self.text + ' '
 
             def html2text(html):
                 if pyver == 3:
@@ -90,8 +93,9 @@ class dehtml:
 
             self.html2text = html2text
 
+
 if "__main__" == __name__:
-    html='''
+    html = '''
 <body>
 <script>
 this must not be in output
@@ -152,12 +156,10 @@ have to install the win32all package separately (get it from
         if html2text:
             print(html2text(html))
     except NameError as e:
-        print("captured error %s"%e)
+        print("captured error %s" % e)
 
     html2text = dehtml("none").html2text
     if html2text:
         print("FAIL: Error, dehtml(none) is returning a function")
     else:
         print("PASS: dehtml(none) is returning None")
-
-
