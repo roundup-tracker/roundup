@@ -282,7 +282,7 @@ class FileStorage:
             try:
                 # Clean up, by performing the commit now.
                 os.rename(tempfile, filename)
-            except:
+            except OSError:
                 pass
             # If two Roundup clients both try to rename the file
             # at the same time, only one of them will succeed.

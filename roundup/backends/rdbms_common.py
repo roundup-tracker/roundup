@@ -80,7 +80,7 @@ def _num_cvt(num):
     num = str(num)
     try:
         return int(num)
-    except:
+    except ValueError:
         return float(num)
 
 def _bool_cvt(value):
@@ -273,7 +273,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.cursor.execute('select schema from schema')
         schema = self.cursor.fetchone()
         if schema:
-            self.database_schema = eval(schema[0])
+            # bandit - schema is trusted
+            self.database_schema = eval(schema[0])  # nosec
         else:
             self.database_schema = {}
 
@@ -672,7 +673,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             on _%s(__retired__, _%s)'''%(cn, cn, key)
         try:
             self.sql(sql)
-        except Exception:
+        except Exception:  # nosec
             # XXX catch e.g.:
             # _sqlite.DatabaseError: index _status_key_retired_idx already exists
             pass
@@ -3117,7 +3118,7 @@ class FileClass(hyperdb.FileClass, Class):
                 # calculation of the object.
                 return ('%s%s is not text, retrieve using '
                         'binary_content property. mdsum: %s')%(self.classname,
-                   nodeid, md5(self.db.getfile(self.classname, nodeid, None)).hexdigest())
+                   nodeid, md5(self.db.getfile(self.classname, nodeid, None)).hexdigest())  # nosec - bandit md5 use ok
         elif propname == 'binary_content':
             return self.db.getfile(self.classname, nodeid, None)
 

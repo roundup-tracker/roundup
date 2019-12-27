@@ -2217,7 +2217,7 @@ class FileClass(hyperdb.FileClass, Class):
                 # calculation of the object.
                 return ('%s%s is not text, retrieve using '
                         'binary_content property. mdsum: %s')%(self.classname,
-                   nodeid, md5(self.db.getfile(self.classname, nodeid, None)).hexdigest())
+                   nodeid, md5(self.db.getfile(self.classname, nodeid, None)).hexdigest())  # nosec - bandit md5 use ok
         elif propname == 'binary_content':
             return self.db.getfile(self.classname, nodeid, None)
 

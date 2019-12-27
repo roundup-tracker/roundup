@@ -65,7 +65,7 @@ def db_nuke(config):
         conn = MySQLdb.connect(**kwargs)
         try:
             conn.select_db(config.RDBMS_NAME)
-        except:
+        except MySQLdb.Error:
             # no, it doesn't exist
             pass
         else:
@@ -203,7 +203,8 @@ class Database(rdbms_common.Database):
         self.cursor.execute('select `schema` from `schema`')
         schema = self.cursor.fetchone()
         if schema:
-            self.database_schema = eval(schema[0])
+            # bandit - schema is trusted
+            self.database_schema = eval(schema[0])  # nosec
         else:
             self.database_schema = {}
 

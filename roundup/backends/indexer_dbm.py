@@ -62,7 +62,7 @@ class Indexer(IndexerBase):
         if os.path.exists(self.indexdb_path):
             shutil.rmtree(self.indexdb_path)
         os.makedirs(self.indexdb_path)
-        os.chmod(self.indexdb_path, 0o775)
+        os.chmod(self.indexdb_path, 0o775)  # nosec - allow group write
         open(os.path.join(self.indexdb_path, 'version'), 'w').write('1\n')
         self.reindex = 1
         self.changed = 1
