@@ -654,8 +654,6 @@ class EditCommon(Action):
                         # a visible (non-quiet) property.
                         pass
                 else:
-                    assert props
-
                     # make a new node
                     newid = self._createnode(cn, props)
                     if nodeid is None:
