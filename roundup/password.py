@@ -105,7 +105,7 @@ def ssha(password, salt):
     Based on code of Roberto Aguilar <roberto@baremetal.io>
     https://gist.github.com/rca/7217540
     '''
-    shaval = sha1(password)
+    shaval = sha1(password)  # nosec
     shaval.update( salt )
     ssha_digest = b64encode( shaval.digest() + salt ).strip()
     return ssha_digest
@@ -185,9 +185,9 @@ def encodePassword(plaintext, scheme, other=None, config=None):
             salt = random_.token_bytes(salt_len)
         s = ssha(s2b(plaintext), salt)
     elif scheme == 'SHA':
-        s = sha1(s2b(plaintext)).hexdigest()
+        s = sha1(s2b(plaintext)).hexdigest()  # nosec
     elif scheme == 'MD5':
-        s = md5(s2b(plaintext)).hexdigest()
+        s = md5(s2b(plaintext)).hexdigest()  # nosec
     elif scheme == 'crypt' and crypt is not None:
         if other is not None:
             salt = other
