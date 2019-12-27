@@ -1228,7 +1228,8 @@ Erase it? Y/N: """))
                 # for a safe upper bound of field length we add
                 # difference between CSV len and sum of all field lengths
                 d = sum ([len(x) for x in exp]) - lensum
-                assert (d > 0)
+                if not d > 0:
+                    raise AssertionError("Bad assertion d > 0")
                 for p in propnames:
                     ll = len(repr_export(node[p])) + d
                     if ll > max_len:
