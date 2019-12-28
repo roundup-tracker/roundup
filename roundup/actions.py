@@ -7,7 +7,7 @@
 
 from roundup.exceptions import Unauthorised
 from roundup import hyperdb
-from roundup.i18n import _
+
 
 class Action:
     def __init__(self, db, translator):
@@ -24,7 +24,6 @@ class Action:
         self.permission(*args)
         return self.handle(*args)
 
-
     def permission(self, *args):
         """Check whether the user has permission to execute this action.
 
@@ -32,11 +31,9 @@ class Action:
 
         pass
 
-
     def gettext(self, msgid):
         """Return the localized translation of msgid"""
         return self.translator.gettext(msgid)
-
 
     _ = gettext
 
@@ -47,11 +44,12 @@ class PermCheck(Action):
         classname, itemid = hyperdb.splitDesignator(designator)
         perm = self.db.security.hasPermission
 
-        if not perm('Retire', self.db.getuid(), classname=classname
-                   , itemid=itemid):
+        if not perm('Retire', self.db.getuid(), classname=classname,
+                    itemid=itemid):
             raise Unauthorised(self._('You do not have permission to retire '
                                       'or restore the %(classname)s class.')
-                                      %locals())
+                               % locals())
+
 
 class Retire(PermCheck):
 
@@ -61,7 +59,7 @@ class Retire(PermCheck):
 
         # make sure we don't try to retire admin or anonymous
         if (classname == 'user' and
-            self.db.user.get(itemid, 'username') in ('admin', 'anonymous')):
+               self.db.user.get(itemid, 'username') in ('admin', 'anonymous')):
             raise ValueError(self._(
                 'You may not retire the admin or anonymous user'))
 
@@ -79,4 +77,3 @@ class Restore(PermCheck):
         # do the restore
         self.db.getclass(classname).restore(itemid)
         self.db.commit()
-
