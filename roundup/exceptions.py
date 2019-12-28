@@ -3,11 +3,14 @@
 
 __docformat__ = 'restructuredtext'
 
+
 class LoginError(BaseException):
     pass
 
+
 class Unauthorised(BaseException):
     pass
+
 
 class Reject(BaseException):
     """An auditor may raise this exception when the current create or set
