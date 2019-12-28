@@ -8,11 +8,6 @@ __docformat__ = "restructuredtext"
 # where not expected by the Python code.  Thus, a version check is
 # used here instead of try/except.
 import sys
-if sys.version_info[0] > 2:
-    import configparser			# Python 3
-else:
-    import ConfigParser as configparser	# Python 2
-
 import getopt
 import imp
 import logging, logging.config
@@ -29,12 +24,19 @@ import binascii
 
 from roundup.backends import list_backends
 
+if sys.version_info[0] > 2:
+    import configparser			 # Python 3
+else:
+    import ConfigParser as configparser  # Python 2
+
 # XXX i don't think this module needs string translation, does it?
 
 ### Exceptions
 
+
 class ConfigurationError(BaseException):
     pass
+
 
 class NoConfigError(ConfigurationError):
 
@@ -47,6 +49,7 @@ class NoConfigError(ConfigurationError):
     def __str__(self):
         return "No valid configuration files found in directory %s" \
             % self.args[0]
+
 
 class InvalidOptionError(ConfigurationError, KeyError, AttributeError):
 
@@ -63,6 +66,7 @@ class InvalidOptionError(ConfigurationError, KeyError, AttributeError):
 
     def __str__(self):
         return "Unsupported configuration option: %s" % self.args[0]
+
 
 class OptionValueError(ConfigurationError, ValueError):
 
@@ -81,6 +85,7 @@ class OptionValueError(ConfigurationError, ValueError):
             _rv += "\n".join(("",) + _args[2:])
         return _rv
 
+
 class OptionUnsetError(ConfigurationError):
 
     """Raised when no Option value is available - neither set, nor default
@@ -92,6 +97,7 @@ class OptionUnsetError(ConfigurationError):
     def __str__(self):
         return "%s is not set and has no default" % self.args[0].name
 
+
 class UnsetDefaultValue:
 
     """Special object meaning that default value for Option is not specified"""
@@ -99,12 +105,15 @@ class UnsetDefaultValue:
     def __str__(self):
         return "NO DEFAULT"
 
+
 NODEFAULT = UnsetDefaultValue()
+
 
 def create_token(size=32):
     return b2s(binascii.b2a_base64(random_.token_bytes(size)).strip())
 
 ### Option classes
+
 
 class Option:
 
@@ -141,8 +150,7 @@ class Option:
     class_description = None
 
     def __init__(self, config, section, setting,
-        default=NODEFAULT, description=None, aliases=None
-    ):
+                 default=NODEFAULT, description=None, aliases=None):
         self.config = config
         self.section = section
         self.setting = setting.lower()
@@ -261,6 +269,7 @@ class Option:
                 self.set(getattr(config, _name))
                 break
 
+
 class BooleanOption(Option):
 
     """Boolean option: yes or no"""
@@ -274,7 +283,7 @@ class BooleanOption(Option):
             return "no"
 
     def str2value(self, value):
-        if type(value) == type(""):
+        if isinstance(value, type("")):
             _val = value.lower()
             if _val in ("yes", "true", "on", "1"):
                 _val = 1
@@ -285,6 +294,7 @@ class BooleanOption(Option):
         else:
             _val = value and 1 or 0
         return _val
+
 
 class WordListOption(Option):
 
@@ -297,6 +307,7 @@ class WordListOption(Option):
 
     def str2value(self, value):
         return value.split(',')
+
 
 class RunDetectorOption(Option):
 
@@ -311,6 +322,7 @@ class RunDetectorOption(Option):
         else:
             raise OptionValueError(self, value, self.class_description)
 
+
 class CsrfSettingOption(Option):
 
     """How should a csrf measure be enforced: required, yes, logfailure, no"""
@@ -323,6 +335,7 @@ class CsrfSettingOption(Option):
             return _val
         else:
             raise OptionValueError(self, value, self.class_description)
+
 
 class SameSiteSettingOption(Option):
 
@@ -337,10 +350,11 @@ or should it not be added (none)"""
             return _val.capitalize()
         else:
             raise OptionValueError(self, value, self.class_description)
-        
+
+
 class DatabaseBackend(Option):
     """handle exact text of backend and make sure it's available"""
-    class_description = "Available backends: %s"%", ".join(list_backends())
+    class_description = "Available backends: %s" % ", ".join(list_backends())
 
     def str2value(self, value):
         _val = value.lower()
@@ -349,9 +363,16 @@ class DatabaseBackend(Option):
         else:
             raise OptionValueError(self, value, self.class_description)
 
+
 class HtmlToTextOption(Option):
 
-    """What module should be used to convert emails with only text/html parts into text for display in roundup. Choose from beautifulsoup 4, dehtml - the internal code or none to disable html to text conversion. If beautifulsoup chosen but not available, dehtml will be used."""
+    """What module should be used to convert emails with only text/html
+    parts into text for display in roundup. Choose from beautifulsoup
+    4, dehtml - the internal code or none to disable html to text
+    conversion. If beautifulsoup chosen but not available, dehtml will
+    be used.
+
+    """
 
     class_description = "Allowed values: beautifulsoup, dehtml, none"
 
@@ -362,9 +383,11 @@ class HtmlToTextOption(Option):
         else:
             raise OptionValueError(self, value, self.class_description)
 
+
 class EmailBodyOption(Option):
 
-    """When to replace message body or strip quoting: always, never or for new items only"""
+    """When to replace message body or strip quoting: always, never
+    or for new items only"""
 
     class_description = "Allowed values: yes, no, new"
 
@@ -375,19 +398,21 @@ class EmailBodyOption(Option):
         else:
             raise OptionValueError(self, value, self.class_description)
 
+
 class IsolationOption(Option):
     """Database isolation levels"""
 
     allowed = ['read uncommitted', 'read committed', 'repeatable read',
-        'serializable']
-    class_description = "Allowed values: %s" % ', '.join ("'%s'" % a
-        for a in allowed)
+               'serializable']
+    class_description = "Allowed values: %s" % ', '.join("'%s'" % a
+                                                         for a in allowed)
 
     def str2value(self, value):
         _val = value.lower()
         if _val in self.allowed:
             return _val
         raise OptionValueError(self, value, self.class_description)
+
 
 class MailAddressOption(Option):
 
@@ -403,6 +428,7 @@ class MailAddressOption(Option):
         if "@" not in _val:
             _val = "@".join((_val, self.config["MAIL_DOMAIN"]))
         return _val
+
 
 class FilePathOption(Option):
 
@@ -421,6 +447,7 @@ class FilePathOption(Option):
             _val = os.path.join(self.config["HOME"], _val)
         return _val
 
+
 class MultiFilePathOption(Option):
 
     """List of space seperated File or directory path name
@@ -430,8 +457,8 @@ class MultiFilePathOption(Option):
 
     """
 
-    class_description = "The space separated paths may be either absolute or\n" \
-        "relative to the directory containing this config file."
+    class_description = "The space separated paths may be either absolute\n" \
+        "or relative to the directory containing this config file."
 
     def get(self):
         pathlist = []
@@ -446,6 +473,7 @@ class MultiFilePathOption(Option):
         else:
             return None
 
+
 class FloatNumberOption(Option):
 
     """Floating point numbers"""
@@ -455,7 +483,7 @@ class FloatNumberOption(Option):
             return float(value)
         except ValueError:
             raise OptionValueError(self, value,
-                "Floating point number required")
+                                   "Floating point number required")
 
     def _value2str(self, value):
         _val = str(value)
@@ -463,6 +491,7 @@ class FloatNumberOption(Option):
         if _val.endswith(".0"):
             _val = _val[:-2]
         return _val
+
 
 class IntegerNumberOption(Option):
 
@@ -473,6 +502,7 @@ class IntegerNumberOption(Option):
             return int(value)
         except ValueError:
             raise OptionValueError(self, value, "Integer number required")
+
 
 class IntegerNumberGeqZeroOption(Option):
 
@@ -486,9 +516,10 @@ class IntegerNumberGeqZeroOption(Option):
                       "Integer number greater than or equal to zero required")
             return v
         except OptionValueError:
-            raise # pass through subclass
+            raise  # pass through subclass
         except ValueError:
             raise OptionValueError(self, value, "Integer number required")
+
 
 class OctalNumberOption(Option):
 
@@ -498,25 +529,28 @@ class OctalNumberOption(Option):
         try:
             return int(value, 8)
         except ValueError:
-            raise OptionValueError(self, value, "Octal Integer number required")
+            raise OptionValueError(self, value,
+                                   "Octal Integer number required")
 
     def _value2str(self, value):
         return oct(value)
+
 
 class MandatoryOption(Option):
     """Option must not be empty"""
     def str2value(self, value):
         if not value:
-            raise OptionValueError(self,value,"Value must not be empty.")
+            raise OptionValueError(self, value, "Value must not be empty.")
         else:
             return value
+
 
 class WebUrlOption(Option):
     """URL MUST start with http/https scheme and end with '/'"""
 
     def str2value(self, value):
         if not value:
-            raise OptionValueError(self,value,"Value must not be empty.")
+            raise OptionValueError(self, value, "Value must not be empty.")
 
         error_msg = ''
         if not value.startswith(('http://', 'https://')):
@@ -526,9 +560,10 @@ class WebUrlOption(Option):
             error_msg += "Value must end with /."
 
         if error_msg:
-            raise OptionValueError(self,value,error_msg)
+            raise OptionValueError(self, value, error_msg)
         else:
             return value
+
 
 class NullableOption(Option):
 
@@ -545,12 +580,11 @@ class NullableOption(Option):
     NULL_STRINGS = ("",)
 
     def __init__(self, config, section, setting,
-        default=NODEFAULT, description=None, aliases=None,
-        null_strings=NULL_STRINGS
-    ):
+                 default=NODEFAULT, description=None, aliases=None,
+                 null_strings=NULL_STRINGS):
         self.null_strings = list(null_strings)
         Option.__init__(self, config, section, setting, default,
-            description, aliases)
+                        description, aliases)
 
     def str2value(self, value):
         if value in self.null_strings:
@@ -564,12 +598,14 @@ class NullableOption(Option):
         else:
             return value
 
+
 class NullableFilePathOption(NullableOption, FilePathOption):
 
     # .get() and class_description are from FilePathOption,
     get = FilePathOption.get
     class_description = FilePathOption.class_description
     # everything else taken from NullableOption (inheritance order)
+
 
 class TimezoneOption(Option):
 
@@ -595,7 +631,7 @@ class TimezoneOption(Option):
                     "Timezone name or numeric hour offset required")
         return value
 
-    
+
 class RegExpOption(Option):
 
     """Regular Expression option (value is Regular Expression Object)"""
@@ -605,12 +641,11 @@ class RegExpOption(Option):
     RE_TYPE = type(re.compile(""))
 
     def __init__(self, config, section, setting,
-        default=NODEFAULT, description=None, aliases=None,
-        flags=0,
-    ):
+                 default=NODEFAULT, description=None, aliases=None,
+                 flags=0):
         self.flags = flags
         Option.__init__(self, config, section, setting, default,
-            description, aliases)
+                        description, aliases)
 
     def _value2str(self, value):
         assert isinstance(value, self.RE_TYPE)
@@ -637,6 +672,8 @@ class RegExpOption(Option):
 # setting, default, [description, [aliases]]
 # Note: aliases should only exist in historical options for backwards
 # compatibility - new options should *not* have aliases!
+
+
 SETTINGS = (
     ("main", (
         (FilePathOption, "database", "db", "Database directory path."),
@@ -684,13 +721,13 @@ SETTINGS = (
             "This is a comma-separated string of role names"
             " (e.g. 'Admin,User')."),
         (Option, "obsolete_history_roles", "Admin",
-	    "On schema changes, properties or classes in the history may\n"
-	    "become obsolete.  Since normal access permissions do not apply\n"
-	    "(we don't know if a user should see such a property or class)\n"
-	    "a list of roles is specified here that are allowed to see\n"
-	    "these obsolete properties in the history. By default only the\n"
-	    "admin role may see these history entries, you can make them\n"
-	    "visible to all users by adding, e.g., the 'User' role here."),
+            "On schema changes, properties or classes in the history may\n"
+            "become obsolete.  Since normal access permissions do not apply\n"
+            "(we don't know if a user should see such a property or class)\n"
+            "a list of roles is specified here that are allowed to see\n"
+            "these obsolete properties in the history. By default only the\n"
+            "admin role may see these history entries, you can make them\n"
+            "visible to all users by adding, e.g., the 'User' role here."),
         (Option, "error_messages_to", "user",
             # XXX This description needs better wording,
             #   with explicit allowed values list.
@@ -771,8 +808,8 @@ SETTINGS = (
             "who updated the issue, but it could be useful in some\n"
             "unusual circumstances.\n"
             "If set to some other value, the value is used as the reply-to\n"
-            "address. It must be a valid RFC2822 address or people will not be\n"
-            "able to reply."),
+            "address. It must be a valid RFC2822 address or people will not\n"
+            "be able to reply."),
         (NullableOption, "language", "",
             "Default locale name for this tracker.\n"
             "If this option is not set, the language is determined\n"
@@ -808,7 +845,7 @@ SETTINGS = (
             "is available before sending confirmation email.\n"
             "Usually a username conflict is detected when\n"
             "confirming the registration. Disabled by default as\n"
-            "it can be used for guessing existing usernames.\n" ),
+            "it can be used for guessing existing usernames.\n"),
         (SameSiteSettingOption, 'samesite_cookie_setting', "Lax",
             """Set the mode of the SameSite cookie option for
 the session cookie. Choices are 'Lax' or
@@ -832,7 +869,7 @@ the tracker section. If this variable is set to 'no', the rest path has
 no special meaning and will yield an error message."""),
         (IntegerNumberGeqZeroOption, 'api_calls_per_interval', "0",
          "Limit API calls per api_interval_in_sec seconds to\n"
-         "this number.\n"         
+         "this number.\n"
          "Determines the burst rate and the rate that new api\n"
          "calls will be made available. If set to 360 and\n"
          "api_intervals_in_sec is set to 3600, the 361st call in\n"
@@ -968,8 +1005,8 @@ always passes, so setting it less than 1 is not recommended."""),
             "If less than 256 bits (32 characters) in length it will\n"
             "disable use of jwt. Changing this invalidates all jwts\n"
             "issued by the roundup instance requiring *all* users to\n"
-            "generate new jwts. This is experimental and disabled by default.\n"
-            "It must be persistent across application restarts.\n"),
+            "generate new jwts. This is experimental and disabled by\n"
+            "default. It must be persistent across application restarts.\n"),
     )),
     ("rdbms", (
         (DatabaseBackend, 'backend', NODEFAULT,
@@ -1097,7 +1134,8 @@ always passes, so setting it less than 1 is not recommended."""),
             "If this is false but add_authorinfo is true, only the name\n"
             "of the actor is added which protects the mail address of the\n"
             "actor from being exposed at mail archives, etc."),
-    ), "Outgoing email options.\nUsed for nosy messages and approval requests"),
+    ), "Outgoing email options.\n"
+     "Used for nosy messages and approval requests"),
     ("mailgw", (
         (EmailBodyOption, "keep_quoted_text", "yes",
             "Keep email citations when accepting messages.\n"
@@ -1267,6 +1305,7 @@ always passes, so setting it less than 1 is not recommended."""),
 
 ### Configuration classes
 
+
 class Config:
 
     """Base class for configuration objects.
@@ -1366,8 +1405,7 @@ class Config:
             self.options[_name] = option
 
     def update_option(self, name, klass,
-        default=NODEFAULT, description=None
-    ):
+                      default=NODEFAULT, description=None):
         """Override behaviour of early created option.
 
         Parameters:
@@ -1397,7 +1435,7 @@ class Config:
         value = option.value2str(current=1)
         # resurrect the option
         option = klass(self, option.section, option.setting,
-            default=default, description=description)
+                       default=default, description=description)
         # apply the value
         option.set(value)
         # incorporate new option
@@ -1413,8 +1451,7 @@ class Config:
     # Allows automatic creation of configuration files like this:
     #  roundup-server -p 8017 -u roundup --save-config
     def getopt(self, args, short_options="", long_options=(),
-        config_load_options=("C", "config"), **options
-    ):
+               config_load_options=("C", "config"), **options):
         """Apply options specified in command line arguments.
 
         Parameters:
@@ -1483,7 +1520,7 @@ class Config:
         # apply options
         extra_options = []
         for (opt, arg) in optlist:
-            if (opt in booleans): # and not arg
+            if (opt in booleans):  # and not arg
                 arg = "yes"
             try:
                 name = cfg_names[opt]
@@ -1594,7 +1631,7 @@ class Config:
         for section in self.sections:
             comment = self.section_descriptions.get(section, None)
             if comment:
-                _fp.write("\n# ".join([""] + comment.split("\n")) +"\n")
+                _fp.write("\n# ".join([""] + comment.split("\n")) + "\n")
             else:
                 # no section comment - just leave a blank line between sections
                 _fp.write("\n")
@@ -1643,9 +1680,8 @@ class Config:
 
         """
         return [self.options[(_section, _name)]
-            for _section in self.sections
-            for _name in self._get_section_options(_section)
-        ]
+                for _section in self.sections
+                for _name in self._get_section_options(_section)]
 
     def keys(self):
         """Return the list of "canonical" names of the options
@@ -1671,6 +1707,7 @@ class Config:
     def __getattr__(self, name):
         return self[name]
 
+
 class UserConfig(Config):
 
     """Configuration for user extensions.
@@ -1690,8 +1727,9 @@ class UserConfig(Config):
         for section in config.sections():
             for name in config.options(section):
                 if ((section, name) not in preset) \
-                and (name not in defaults):
+                   and (name not in defaults):
                     self.add_option(Option(self, section, name))
+
 
 class CoreConfig(Config):
 
