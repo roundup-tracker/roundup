@@ -35,22 +35,26 @@ from roundup.anypy.strings import eval_import
 
 logger = logging.getLogger('roundup.hyperdb')
 
+
 #
 # Types
 #
 class _Type(object):
     """A roundup property type."""
-    def __init__(self, required=False, default_value = None, quiet=False):
+    def __init__(self, required=False, default_value=None, quiet=False):
         self.required = required
         self.__default_value = default_value
         self.quiet = quiet
+
     def __repr__(self):
         ' more useful for dumps '
-        return '<%s.%s>'%(self.__class__.__module__, self.__class__.__name__)
+        return '<%s.%s>' % (self.__class__.__module__, self.__class__.__name__)
+
     def get_default_value(self):
-        """The default value when creating a new instance of this property.""" 
+        """The default value when creating a new instance of this property."""
         return self.__default_value
-    def sort_repr (self, cls, val, name):
+
+    def sort_repr(self, cls, val, name):
         """Representation used for sorting. This should be a python
         built-in type, otherwise sorting will take ages. Note that
         individual backends may chose to use something different for
@@ -58,11 +62,14 @@ class _Type(object):
         """
         return val
 
+
 class String(_Type):
     """An object designating a String property."""
-    def __init__(self, indexme='no', required=False, default_value = "", quiet=False):
+    def __init__(self, indexme='no', required=False, default_value="",
+                 quiet=False):
         super(String, self).__init__(required, default_value, quiet)
         self.indexme = indexme == 'yes'
+
     def from_raw(self, value, propname='', **kw):
         """fix the CRLF/CR -> LF stuff"""
         if propname == 'content':
@@ -70,16 +77,19 @@ class String(_Type):
             # type from the beginning?
             return value
         return fixNewlines(value)
-    def sort_repr (self, cls, val, name):
+
+    def sort_repr(self, cls, val, name):
         if not val:
             return val
         if name == 'id':
             return int(val)
         return val.lower()
 
+
 class Password(_Type):
     """An object designating a Password property."""
-    def __init__(self, scheme=None, required=False, default_value = None, quiet=False):
+    def __init__(self, scheme=None, required=False, default_value=None,
+                 quiet=False):
         super(Password, self).__init__(required, default_value, quiet)
         self.scheme = scheme
 
@@ -87,40 +97,50 @@ class Password(_Type):
         if not value:
             return None
         try:
-            return password.Password(encrypted=value, scheme=self.scheme, strict=True)
+            return password.Password(encrypted=value, scheme=self.scheme,
+                                     strict=True)
         except password.PasswordValueError as message:
-            raise HyperdbValueError(_('property %s: %s')%(kw['propname'], message))
+            raise HyperdbValueError(_('property %s: %s') %
+                                    (kw['propname'], message))
 
-    def sort_repr (self, cls, val, name):
+    def sort_repr(self, cls, val, name):
         if not val:
             return val
         return str(val)
 
+
 class Date(_Type):
     """An object designating a Date property."""
-    def __init__(self, offset=None, required=False, default_value = None, quiet=False):
-        super(Date, self).__init__(required = required,
-                                   default_value = default_value,
+    def __init__(self, offset=None, required=False, default_value=None,
+                 quiet=False):
+        super(Date, self).__init__(required=required,
+                                   default_value=default_value,
                                    quiet=quiet)
         self._offset = offset
+
     def offset(self, db):
         if self._offset is not None:
             return self._offset
         return db.getUserTimezone()
+
     def from_raw(self, value, db, **kw):
         try:
             value = date.Date(value, self.offset(db))
         except ValueError as message:
-            raise HyperdbValueError(_('property %s: %r is an invalid '\
-                'date (%s)')%(kw['propname'], value, message))
+            raise HyperdbValueError(_('property %s: %r is an invalid '
+                                      'date (%s)') % (kw['propname'],
+                                                      value, message))
         return value
+
     def range_from_raw(self, value, db):
         """return Range value from given raw value with offset correction"""
         return date.Range(value, date.Date, offset=self.offset(db))
-    def sort_repr (self, cls, val, name):
+
+    def sort_repr(self, cls, val, name):
         if not val:
             return val
         return str(val)
+
 
 class Interval(_Type):
     """An object designating an Interval property."""
@@ -128,20 +148,23 @@ class Interval(_Type):
         try:
             value = date.Interval(value)
         except ValueError as message:
-            raise HyperdbValueError(_('property %s: %r is an invalid '\
-                'date interval (%s)')%(kw['propname'], value, message))
+            raise HyperdbValueError(_('property %s: %r is an invalid '
+                                      'date interval (%s)') %
+                                    (kw['propname'], value, message))
         return value
-    def sort_repr (self, cls, val, name):
+
+    def sort_repr(self, cls, val, name):
         if not val:
             return val
         return val.as_seconds()
+
 
 class _Pointer(_Type):
     """An object designating a Pointer property that links or multilinks
     to a node in a specified class."""
     def __init__(self, classname, do_journal='yes', try_id_parsing='yes',
                  required=False, default_value=None,
-                 msg_header_property = None, quiet=False):
+                 msg_header_property=None, quiet=False):
         """ Default is to journal link and unlink events.
             When try_id_parsing is false, we don't allow IDs in input
             fields (the key of the Link or Multilink property must be
@@ -163,14 +186,16 @@ class _Pointer(_Type):
         super(_Pointer, self).__init__(required, default_value, quiet)
         self.classname = classname
         self.do_journal = do_journal == 'yes'
-        self.try_id_parsing      = try_id_parsing == 'yes'
+        self.try_id_parsing = try_id_parsing == 'yes'
         self.msg_header_property = msg_header_property
+
     def __repr__(self):
         """more useful for dumps. But beware: This is also used in schema
         storage in SQL backends!
         """
-        return '<%s.%s to "%s">'%(self.__class__.__module__,
-            self.__class__.__name__, self.classname)
+        return '<%s.%s to "%s">' % (self.__class__.__module__,
+                                    self.__class__.__name__, self.classname)
+
 
 class Link(_Pointer):
     """An object designating a Link property that links to a
@@ -184,13 +209,15 @@ class Link(_Pointer):
             else:
                 value = convertLinkValue(db, propname, self, value, None)
         return value
-    def sort_repr (self, cls, val, name):
+
+    def sort_repr(self, cls, val, name):
         if not val:
             return val
         op = cls.labelprop()
         if op == 'id':
             return int(cls.get(val, op))
         return cls.get(val, op)
+
 
 class Multilink(_Pointer):
     """An object designating a Multilink property that links
@@ -202,12 +229,13 @@ class Multilink(_Pointer):
                     'link' and 'unlink' events placed in their journal
     """
 
-    def __init__(self, classname, do_journal = 'yes', required = False, quiet=False, try_id_parsing='yes'):
+    def __init__(self, classname, do_journal='yes', required=False,
+                 quiet=False, try_id_parsing='yes'):
 
         super(Multilink, self).__init__(classname,
                                         do_journal,
-                                        required = required,
-                                        default_value = [], quiet=quiet,
+                                        required=required,
+                                        default_value=[], quiet=quiet,
                                         try_id_parsing=try_id_parsing)
 
     def from_raw(self, value, db, klass, propname, itemid, **kw):
@@ -282,13 +310,14 @@ class Multilink(_Pointer):
         value = [str(x) for x in value]
         return value
 
-    def sort_repr (self, cls, val, name):
+    def sort_repr(self, cls, val, name):
         if not val:
             return val
         op = cls.labelprop()
         if op == 'id':
             return [int(cls.get(v, op)) for v in val]
         return [cls.get(v, op) for v in val]
+
 
 class Boolean(_Type):
     """An object designating a boolean property"""
@@ -298,9 +327,10 @@ class Boolean(_Type):
         value = value.lower() in ('checked', 'yes', 'true', 'on', '1')
         return value
 
+
 class Number(_Type):
     """An object designating a numeric property"""
-    def __init__(self, use_double = False, **kw):
+    def __init__(self, use_double=False, **kw):
         """ The value use_double tells the database backend to use a
             floating-point format with more precision than the default.
             Usually implemented by type 'double precision' in the sql
@@ -310,14 +340,16 @@ class Number(_Type):
         """
         self.use_double = use_double
         super(Number, self).__init__(**kw)
+
     def from_raw(self, value, **kw):
         value = value.strip()
         try:
             value = float(value)
         except ValueError:
-            raise HyperdbValueError(_('property %s: %r is not a number')%(
-                kw['propname'], value))
+            raise HyperdbValueError(_('property %s: %r is not a number') %
+                                    (kw['propname'], value))
         return value
+
 
 class Integer(_Type):
     """An object designating an integer property"""
@@ -326,27 +358,33 @@ class Integer(_Type):
         try:
             value = int(value)
         except ValueError:
-            raise HyperdbValueError(_('property %s: %r is not an integer')%(
-                kw['propname'], value))
+            raise HyperdbValueError(_('property %s: %r is not an integer') %
+                                    (kw['propname'], value))
         return value
+
+
 #
 # Support for splitting designators
 #
 class DesignatorError(ValueError):
     pass
+
+
 def splitDesignator(designator, dre=re.compile(r'([^\d]+)(\d+)')):
     """ Take a foo123 and return ('foo', 123)
     """
     m = dre.match(designator)
     if m is None:
-        raise DesignatorError(_('"%s" not a node designator')%designator)
+        raise DesignatorError(_('"%s" not a node designator') % designator)
     return m.group(1), m.group(2)
+
 
 class Exact_Match(object):
     """ Used to encapsulate exact match semantics search values
     """
     def __init__(self, value):
         self.value = value
+
 
 class Proptree(object):
     """ Simple tree data structure for property lookup. Each node in
@@ -374,7 +412,7 @@ class Proptree(object):
         self.children = []
         self.sortattr = []
         self.propdict = {}
-        self.need_for = {'search' : True}
+        self.need_for = {'search': True}
         self.sort_direction = None
         self.sort_ids = None
         self.sort_ids_needed = False
@@ -383,7 +421,7 @@ class Proptree(object):
         self.tree_sort_done = False
         self.propclass = None
         self.orderby = []
-        self.sql_idx = None # index of retrieved column in sql result
+        self.sql_idx = None  # index of retrieved column in sql result
         if parent:
             self.root = parent.root
             self.depth = parent.depth + 1
@@ -418,8 +456,8 @@ class Proptree(object):
         if isinstance(propclass, (Link, Multilink)):
             cls = self.db.getclass(propclass.classname)
             props = cls.getprops()
-        child = self.__class__(self.db, cls, name, props, parent = self)
-        child.need_for = {need_for : True}
+        child = self.__class__(self.db, cls, name, props, parent=self)
+        child.need_for = {need_for: True}
         child.propclass = propclass
         self.children.append(child)
         self.propdict[name] = child
@@ -441,7 +479,7 @@ class Proptree(object):
         holds. Also remove sort_ids_needed recursively once having seen a
         Multilink that is used for sorting.
         """
-        if isinstance (self.propclass, Multilink) and 'sort' in self.need_for:
+        if isinstance(self.propclass, Multilink) and 'sort' in self.need_for:
             mlseen = True
         if mlseen:
             self.sort_ids_needed = False
@@ -471,7 +509,7 @@ class Proptree(object):
         for p in self.children:
             if 'search' in p.need_for:
                 if p.children:
-                    p.search(sort = False)
+                    p.search(sort=False)
                 if isinstance(p.val, type([])):
                     exact = []
                     subst = []
@@ -492,14 +530,15 @@ class Proptree(object):
                                     exact_match_spec=exact_match_spec)
         return self.val
 
-    def sort (self, ids=None):
+    def sort(self, ids=None):
         """ Sort ids by the order information stored in self. With
         optimisations: Some order attributes may be precomputed (by the
         backend) and some properties may already be sorted.
         """
         if ids is None:
             ids = self.val
-        if self.sortattr and [s for s in self.sortattr if not s.attr_sort_done]:
+        if self.sortattr and [s for s in self.sortattr
+                              if not s.attr_sort_done]:
             return self._searchsort(ids, True, True)
         return ids
 
@@ -518,13 +557,13 @@ class Proptree(object):
             for c in p:
                 yield c
 
-    def _get (self, ids):
+    def _get(self, ids):
         """Lookup given ids -- possibly a list of list. We recurse until
         we have a list of ids.
         """
         if not ids:
             return ids
-        if isinstance (ids[0], list):
+        if isinstance(ids[0], list):
             cids = [self._get(i) for i in ids]
         else:
             cids = [i and self.parent.cls.get(i, self.name) for i in ids]
@@ -553,11 +592,11 @@ class Proptree(object):
         so we do *not* use two sorted lists of messages, one sorted by
         author and one sorted by date for sorting issues.
         """
-        for pt in self.sortable_children(intermediate = True):
+        for pt in self.sortable_children(intermediate=True):
             # ids can be an empty list
             if pt.tree_sort_done or not ids:
                 continue
-            if pt.sort_ids: # cached or computed by backend
+            if pt.sort_ids:  # cached or computed by backend
                 cids = pt.sort_ids
             else:
                 cids = pt._get(ids)
@@ -570,7 +609,7 @@ class Proptree(object):
         if self.sortattr and dosort:
             ids = self._sort(ids)
         if not update:
-            for pt in self.sortable_children(intermediate = True):
+            for pt in self.sortable_children(intermediate=True):
                 pt.sort_ids = None
             for pt in self.sortattr:
                 pt.sort_result = None
@@ -636,19 +675,19 @@ class Proptree(object):
                 break
             if sortattr:
                 assert len(sortattr[0]) == len(sa.sort_result)
-            sortattr.append (sa.sort_result)
+            sortattr.append(sa.sort_result)
             if curdir != sa.sort_direction:
-                dir_idx.append (idx)
-                directions.append (sa.sort_direction)
+                dir_idx.append(idx)
+                directions.append(sa.sort_direction)
                 curdir = sa.sort_direction
             idx += 1
-        sortattr.append (val)
-        sortattr = zip (*sortattr)
+        sortattr.append(val)
+        sortattr = zip(*sortattr)
         for dir, i in reversed(list(zip(directions, dir_idx))):
             rev = dir == '-'
-            sortattr = sorted (sortattr,
-                               key = lambda x: NoneAndDictComparable(x[i:idx]),
-                               reverse = rev)
+            sortattr = sorted(sortattr,
+                              key=lambda x: NoneAndDictComparable(x[i:idx]),
+                              reverse=rev)
             idx = i
         return [x[-1] for x in sortattr]
 
@@ -658,7 +697,7 @@ class Proptree(object):
         """
         if not ids:
             return ids
-        if isinstance (ids[0], list):
+        if isinstance(ids[0], list):
             res = [self._sort_repr(sortrep, i) for i in ids]
         else:
             res = [sortrep(self.cls, i, self.name) for i in ids]
@@ -671,6 +710,7 @@ class Proptree(object):
         return '\n'.join(r)
     __str__ = __repr__
 
+
 #
 # the base Database class
 #
@@ -678,6 +718,8 @@ class DatabaseError(ValueError):
     """Error to be raised when there is some problem in the database code
     """
     pass
+
+
 class Database:
     """A database for storing records containing flexible data types.
 
@@ -866,6 +908,7 @@ All methods except __repr__ must be implemented by a concrete backend Database.
 
         """
 
+
 def iter_roles(roles):
     ''' handle the text processing of turning the roles list
         into something python can use more easily
@@ -895,8 +938,8 @@ class Class:
         """
         for name in 'creation activity creator actor'.split():
             if name in properties:
-                raise ValueError('"creation", "activity", "creator" and '\
-                    '"actor" are reserved')
+                raise ValueError('"creation", "activity", "creator" and '
+                                 '"actor" are reserved')
 
         self.classname = classname
         self.properties = properties
@@ -916,7 +959,7 @@ class Class:
     def __repr__(self):
         """Slightly more useful representation
         """
-        return '<hyperdb.Class "%s">'%self.classname
+        return '<hyperdb.Class "%s">' % self.classname
 
     # Editing nodes:
 
@@ -940,6 +983,7 @@ class Class:
         raise NotImplementedError
 
     _marker = []
+
     def get(self, nodeid, propname, default=_marker, cache=1):
         """Get the value of a property on an existing node of this class.
 
@@ -1061,7 +1105,7 @@ class Class:
         perm = self.db.security.hasPermission
         journal = []
 
-        uid=self.db.getuid() # id of the person requesting the history
+        uid = self.db.getuid()  # id of the person requesting the history
 
         # Roles of the user and the configured obsolete_history_roles
         hr = set(iter_roles(self.db.config.OBSOLETE_HISTORY_ROLES))
@@ -1075,12 +1119,12 @@ class Class:
             #   property is obsolete and not allow_obsolete
             id, evt_date, user, action, args = j
             if logger.isEnabledFor(logging.DEBUG):
-                j_repr = "%s"%(j,)
+                j_repr = "%s" % (j,)
             else:
-                j_repr=''
-            if args and type(args) == type({}):
+                j_repr = ''
+            if args and isinstance(args, type({})):
                 for key in list(args.keys()):
-                    if key not in self.properties :
+                    if key not in self.properties:
                         if enforceperm and not allow_obsolete:
                             del args[key]
                         continue
@@ -1090,16 +1134,17 @@ class Class:
                                      self.classname, key, j_repr)
                         del args[key]
                         continue
-                    if enforceperm and not ( perm("View",
-                                uid,
-                                self.classname,
-                                property=key ) or perm("Edit",
-                                uid,
-                                self.classname,
-                                property=key )):
+                    if enforceperm and not (perm("View",
+                                                 uid,
+                                                 self.classname,
+                                                 property=key) or
+                                            perm("Edit",
+                                                 uid,
+                                                 self.classname,
+                                                 property=key)):
                         logger.debug("skipping unaccessible property "
                                      "%s::%s seen by user%s in %s",
-                                self.classname, key, uid, j_repr)
+                                     self.classname, key, uid, j_repr)
                         del args[key]
                         continue
                 if not args:
@@ -1108,7 +1153,7 @@ class Class:
                                  self.classname, nodeid, j_repr)
                     continue
                 journal.append(j)
-            elif action in ['link', 'unlink' ] and type(args) == type(()):
+            elif action in ['link', 'unlink'] and isinstance(args, type(())):
                 # definitions:
                 # myself - object whose history is being filtered
                 # linkee - object/class whose property is changing to
@@ -1140,7 +1185,7 @@ class Class:
                         continue
                     # obsolete linked-to item
                     try:
-                        k = cls.get (linkid, key)
+                        cls.get(linkid, key)  # does linkid exist
                     except IndexError:
                         if not enforceperm or allow_obsolete:
                             journal.append(j)
@@ -1153,12 +1198,13 @@ class Class:
                         continue
                     # can user view the property in linkee class
                     if enforceperm and not (perm("View",
-                            uid,
-                            linkcl,
-                            property=key) or perm("Edit",
-                            uid,
-                            linkcl,
-                            property=key)):
+                                                 uid,
+                                                 linkcl,
+                                                 property=key) or
+                                            perm("Edit",
+                                                 uid,
+                                                 linkcl,
+                                                 property=key)):
                         logger.debug("skipping unaccessible property: "
                                      "%s with uid %s %sed %s%s",
                                      j_repr, uid, action,
@@ -1166,12 +1212,13 @@ class Class:
                         continue
                     # check access to linkee object
                     if enforceperm and not (perm("View",
-                            uid,
-                            cls.classname,
-                            itemid=linkid) or perm("Edit",
-                            uid,
-                            cls.classname,
-                            itemid=linkid)):
+                                                 uid,
+                                                 cls.classname,
+                                                 itemid=linkid) or
+                                            perm("Edit",
+                                                 uid,
+                                                 cls.classname,
+                                                 itemid=linkid)):
                         logger.debug("skipping unaccessible object: "
                                      "%s uid %s %sed %s%s",
                                      j_repr, uid, action,
@@ -1238,7 +1285,7 @@ class Class:
         if hasattr(self, '_labelprop'):
             return self._labelprop
         k = self.getkey()
-        if  k:
+        if k:
             return k
         props = self.getprops()
         if 'name' in props:
@@ -1295,8 +1342,8 @@ class Class:
         """
         raise NotImplementedError
 
-    def _filter(self, search_matches, filterspec, sort=(None,None),
-            group=(None,None), retired=False, exact_match_spec={}):
+    def _filter(self, search_matches, filterspec, sort=(None, None),
+                group=(None, None), retired=False, exact_match_spec={}):
         """For some backends this implements the non-transitive
         search, for more information see the filter method.
         """
@@ -1317,7 +1364,7 @@ class Class:
                 p = proptree
                 mlseen = False
                 for k in keys:
-                    if isinstance (p.propclass, Multilink):
+                    if isinstance(p.propclass, Multilink):
                         mlseen = True
                     isnull = v == '-1' or v is None
                     islist = isinstance(v, type([]))
@@ -1340,29 +1387,29 @@ class Class:
             p = proptree
             mlseen = False
             for k in keys:
-                if isinstance (p.propclass, Multilink):
+                if isinstance(p.propclass, Multilink):
                     mlseen = True
                 r = retr and not mlseen
                 p = p.append(k, need_for='sort', retr=r)
-                if isinstance (p.propclass, Multilink):
+                if isinstance(p.propclass, Multilink):
                     multilinks[p] = True
             if p.cls:
                 p = p.append(p.cls.orderprop(), need_for='sort')
-            if p.sort_direction: # if an orderprop is also specified explicitly
+            if p.sort_direction:  # if orderprop is also specified explicitly
                 continue
             p.sort_direction = s[0]
-            proptree.sortattr.append (p)
+            proptree.sortattr.append(p)
         for p in multilinks.keys():
             sattr = {}
             for c in p:
                 if c.sort_direction:
-                    sattr [c] = True
+                    sattr[c] = True
             for sa in proptree.sortattr:
                 if sa in sattr:
-                    p.sortattr.append (sa)
+                    p.sortattr.append(sa)
         return proptree
 
-    def get_transitive_prop(self, propname_path, default = None):
+    def get_transitive_prop(self, propname_path, default=None):
         """Expand a transitive property (individual property names
         separated by '.' into a new property at the end of the path. If
         one of the names does not refer to a valid property, we return
@@ -1395,7 +1442,7 @@ class Class:
                 if s[1] and s[1] not in seen:
                     sortattr.append((s[0] or '+', s[1]))
                     seen[s[1]] = True
-        if 'id' not in seen :
+        if 'id' not in seen:
             sortattr.append(('+', 'id'))
         return sortattr
 
@@ -1458,7 +1505,7 @@ class Class:
         an SQL backend will want to create a single SQL statement and
         override the filter method instead of implementing _filter.
         """
-        sortattr = self._sortattr(sort = sort, group = group)
+        sortattr = self._sortattr(sort=sort, group=group)
         proptree = self._proptree(filterspec, exact_match_spec, sortattr)
         proptree.search(search_matches, retired=retired)
         if offset is not None or limit is not None:
@@ -1470,7 +1517,6 @@ class Class:
             else:
                 return items[:limit]
         return proptree.sort()
-
 
     # non-optimized filter_iter, a backend may chose to implement a
     # better version that provides a real iterator that pre-fills the
@@ -1496,13 +1542,13 @@ class Class:
         """
         raise NotImplementedError
 
-    def get_required_props(self, propnames = []):
+    def get_required_props(self, propnames=[]):
         """Return a dict of property names mapping to property objects.
         All properties that have the "required" flag set will be
         returned in addition to all properties in the propnames
         parameter.
         """
-        props = self.getprops(protected = False)
+        props = self.getprops(protected=False)
         pdict = dict([(p, props[p]) for p in propnames])
         pdict.update([(k, v) for k, v in props.items() if v.required])
         return pdict
@@ -1524,13 +1570,13 @@ class Class:
     #
     # Detector interface
     #
-    def audit(self, event, detector, priority = 100):
+    def audit(self, event, detector, priority=100):
         """Register an auditor detector"""
         self.auditors[event].append((priority, detector.__name__, detector))
 
     def fireAuditors(self, event, nodeid, newvalues):
         """Fire all registered auditors"""
-        for prio, name, audit in self.auditors[event]:
+        for _prio, _name, audit in self.auditors[event]:
             try:
                 audit(self.db, self, nodeid, newvalues)
             except (EnvironmentError, ArithmeticError) as e:
@@ -1542,13 +1588,13 @@ class Class:
                 subject = "Error: %s" % exc_info[1]
                 raise DetectorError(subject, html, txt)
 
-    def react(self, event, detector, priority = 100):
+    def react(self, event, detector, priority=100):
         """Register a reactor detector"""
         self.reactors[event].append((priority, detector.__name__, detector))
 
     def fireReactors(self, event, nodeid, oldvalues):
         """Fire all registered reactors"""
-        for prio, name, react in self.reactors[event]:
+        for _prio, _name, react in self.reactors[event]:
             try:
                 react(self.db, self, nodeid, oldvalues)
             except (EnvironmentError, ArithmeticError) as e:
@@ -1581,9 +1627,8 @@ class Class:
         for l in entries:
             # first element in sorted list is the (numeric) id
             # in python2.4 and up we would use sorted with a key...
-            a.append ((int (l [0].strip ("'")), l))
-        a.sort ()
-
+            a.append((int(l[0].strip("'")), l))
+        a.sort()
 
         last = 0
         r = []
@@ -1639,7 +1684,7 @@ class Class:
            In standard schemas only a user has a roles property but
            this may be different in customized schemas.
         '''
-        roles = dict.fromkeys ([r.strip().lower() for r in roles])
+        roles = dict.fromkeys([r.strip().lower() for r in roles])
         for role in self.get_roles(nodeid):
             if role in roles:
                 return True
@@ -1650,6 +1695,7 @@ class HyperdbValueError(ValueError):
     """ Error converting a raw value into a Hyperdb value """
     pass
 
+
 def convertLinkValue(db, propname, prop, value, idre=re.compile(r'^\d+$')):
     """ Convert the link value (may be id or key value) to an id value. """
     linkcl = db.classes[prop.classname]
@@ -1657,13 +1703,14 @@ def convertLinkValue(db, propname, prop, value, idre=re.compile(r'^\d+$')):
         if linkcl.getkey():
             try:
                 value = linkcl.lookup(value)
-            except KeyError as message:
-                raise HyperdbValueError(_('property %s: %r is not a %s.')%(
+            except KeyError:
+                raise HyperdbValueError(_('property %s: %r is not a %s.') % (
                     propname, value, prop.classname))
         else:
-            raise HyperdbValueError(_('you may only enter ID values '\
-                'for property %s')%propname)
+            raise HyperdbValueError(_('you may only enter ID values '
+                                      'for property %s') % propname)
     return value
+
 
 def fixNewlines(text):
     """ Homogenise line endings.
@@ -1676,6 +1723,7 @@ def fixNewlines(text):
         text = text.replace('\r\n', '\n')
         return text.replace('\r', '\n')
     return text
+
 
 def rawToHyperdb(db, klass, itemid, propname, value, **kw):
     """ Convert the raw (user-input) value to a hyperdb-storable value. The
@@ -1691,10 +1739,10 @@ def rawToHyperdb(db, klass, itemid, propname, value, **kw):
     # ensure it's a valid property name
     propname = propname.strip()
     try:
-        proptype =  properties[propname]
+        proptype = properties[propname]
     except KeyError:
-        raise HyperdbValueError(_('%r is not a property of %s')%(propname,
-            klass.classname))
+        raise HyperdbValueError(_('%r is not a property of %s') % (
+            propname, klass.classname))
 
     # if we got a string, strip it now
     if isinstance(value, type('')):
@@ -1702,9 +1750,10 @@ def rawToHyperdb(db, klass, itemid, propname, value, **kw):
 
     # convert the input value to a real property value
     value = proptype.from_raw(value, db=db, klass=klass,
-        propname=propname, itemid=itemid, **kw)
+                              propname=propname, itemid=itemid, **kw)
 
     return value
+
 
 class FileClass:
     """ A class that requires the "content" property and stores it on
@@ -1768,7 +1817,8 @@ class FileClass:
             # other types. So if mime type of file is correct, we
             # call add_text on content.
             self.db.indexer.add_text((self.classname, nodeid, 'content'),
-                index_content, mime_type)
+                                     index_content, mime_type)
+
 
 class Node:
     """ A convenience wrapper for the given node
@@ -1776,25 +1826,31 @@ class Node:
     def __init__(self, cl, nodeid, cache=1):
         self.__dict__['cl'] = cl
         self.__dict__['nodeid'] = nodeid
+
     def keys(self, protected=1):
         return list(self.cl.getprops(protected=protected).keys())
+
     def values(self, protected=1):
         l = []
         for name in self.cl.getprops(protected=protected).keys():
             l.append(self.cl.get(self.nodeid, name))
         return l
+
     def items(self, protected=1):
         l = []
         for name in self.cl.getprops(protected=protected).keys():
             l.append((name, self.cl.get(self.nodeid, name)))
         return l
+
     def has_key(self, name):
         return name in self.cl.getprops()
+
     def get(self, name, default=None):
         if name in self:
             return self[name]
         else:
             return default
+
     def __getattr__(self, name):
         if name in self.__dict__:
             return self.__dict__[name]
@@ -1804,8 +1860,10 @@ class Node:
             # we trap this but re-raise it as AttributeError - all other
             # exceptions should pass through untrapped
             raise AttributeError(str(value))
+
     def __getitem__(self, name):
         return self.cl.get(self.nodeid, name)
+
     def __setattr__(self, name, value):
         try:
             return self.cl.set(self.nodeid, **{name: value})
@@ -1813,12 +1871,15 @@ class Node:
             # we trap this but re-raise it as AttributeError - all other
             # exceptions should pass through untrapped
             raise AttributeError(str(value))
+
     def __setitem__(self, name, value):
         self.cl.set(self.nodeid, **{name: value})
+
     def history(self, enforceperm=True, skipquiet=True):
         return self.cl.history(self.nodeid,
                                enforceperm=enforceperm,
-                               skipquiet=skipquiet )
+                               skipquiet=skipquiet)
+
     def retire(self):
         return self.cl.retire(self.nodeid)
 
