@@ -20,9 +20,8 @@
 """
 __docformat__ = 'restructuredtext'
 
-import re, os, smtplib, socket, time
+import time
 import base64, mimetypes
-import os.path
 import logging
 from email import encoders
 from email.parser import FeedParser
@@ -54,6 +53,7 @@ class Database:
     # b. if the journaltag disappears during a transaction, we don't barf
     #    (eg. the current user edits their username)
     journal_uid = None
+
     def getuid(self):
         """Return the id of the "user" node associated with the user
         that owns this connection to the hyperdatabase."""
@@ -132,7 +132,7 @@ class Database:
             # Try to make error message less cryptic to the user.
             if str(e) == 'node with key "%s" exists' % username:
                 raise ValueError(
-                    _("Username '%s' already exists."%username))
+                    _("Username '%s' already exists." % username))
             else:
                 raise
 
@@ -142,7 +142,6 @@ class Database:
         self.commit()
 
         return userid
-
 
     def log_debug(self, msg, *args, **kwargs):
         """Log a message with level DEBUG."""
@@ -172,25 +171,26 @@ class Database:
             We allow to register user-defined cache-clearing routines
             that are called by this routine.
         """
-        if getattr (self, 'cache_callbacks', None) :
+        if getattr(self, 'cache_callbacks', None):
             for method, param in self.cache_callbacks:
                 method(param)
 
-    def registerClearCacheCallback(self, method, param = None):
+    def registerClearCacheCallback(self, method, param=None):
         """ Register a callback method for clearing the cache.
             It is called with the given param as the only parameter.
             Even if the parameter is not specified, the method has to
             accept a single parameter.
         """
-        if not getattr (self, 'cache_callbacks', None) :
+        if not getattr(self, 'cache_callbacks', None):
             self.cache_callbacks = []
-        self.cache_callbacks.append ((method, param))
+        self.cache_callbacks.append((method, param))
 
 
 class DetectorError(RuntimeError):
     """ Raised by detectors that want to indicate that something's amiss
     """
     pass
+
 
 # deviation from spec - was called IssueClass
 class IssueClass:
@@ -238,9 +238,9 @@ class IssueClass:
         """
 
     def nosymessage(self, issueid, msgid, oldvalues, whichnosy='nosy',
-            from_address=None, cc=[], bcc=[], cc_emails = [],
-            bcc_emails = [], subject=None,
-            note_filter = None, add_headers={}):
+                    from_address=None, cc=[], bcc=[], cc_emails=[],
+                    bcc_emails=[], subject=None,
+                    note_filter=None, add_headers={}):
         """Send a message to the members of an issue's nosy list.
 
         The message is sent only to users on the nosy list who are not
@@ -300,8 +300,8 @@ class IssueClass:
             authid = None
             recipients = []
 
-        sendto = dict (plain = [], crypt = [])
-        bcc_sendto = dict (plain = [], crypt = [])
+        sendto = dict(plain=[], crypt=[])
+        bcc_sendto = dict(plain=[], crypt=[])
         seen_message = {}
         for recipient in recipients:
             seen_message[recipient] = 1
@@ -340,7 +340,7 @@ class IssueClass:
             (self.db.config.MESSAGES_TO_AUTHOR == 'yes' or
              (self.db.config.MESSAGES_TO_AUTHOR == 'new' and not oldvalues) or
              (self.db.config.MESSAGES_TO_AUTHOR == 'nosy' and authid in
-             self.get(issueid, whichnosy)))):
+              self.get(issueid, whichnosy)))):
             add_recipient(authid, sendto)
 
         if authid:
@@ -352,9 +352,9 @@ class IssueClass:
                 add_recipient(userid, sendto)
                 seen_message[userid] = 1
         if encrypt and not pgproles:
-            sendto['crypt'].extend (cc_emails)
+            sendto['crypt'].extend(cc_emails)
         else:
-            sendto['plain'].extend (cc_emails)
+            sendto['plain'].extend(cc_emails)
 
         # now deal with bcc people.
         for userid in bcc:
@@ -362,9 +362,9 @@ class IssueClass:
                 add_recipient(userid, bcc_sendto)
                 seen_message[userid] = 1
         if encrypt and not pgproles:
-            bcc_sendto['crypt'].extend (bcc_emails)
+            bcc_sendto['crypt'].extend(bcc_emails)
         else:
-            bcc_sendto['plain'].extend (bcc_emails)
+            bcc_sendto['plain'].extend(bcc_emails)
 
         if oldvalues:
             note = self.generateChangeNote(issueid, oldvalues)
@@ -387,8 +387,8 @@ class IssueClass:
                               subject, add_headers=add_headers)
         if sendto['crypt'] or bcc_sendto['crypt']:
             self.send_message(issueid, msgid, note, sendto['crypt'],
-                from_address, bcc_sendto['crypt'], subject, crypt=True,
-                add_headers=add_headers)
+                              from_address, bcc_sendto['crypt'], subject,
+                              crypt=True, add_headers=add_headers)
 
     # backwards compatibility - don't remove
     sendmessage = nosymessage
@@ -409,13 +409,13 @@ class IssueClass:
             if k is not None:
                 keys.append(k)
             else:
-                msg = _('No key for "%(adr)s" in keyring')%locals()
+                msg = _('No key for "%(adr)s" in keyring') % locals()
                 raise MessageSendError(msg)
             ctx.op_keylist_end()
         ctx.op_encrypt(keys, 1, plain, cipher)
-        cipher.seek(0,0)
+        cipher.seek(0, 0)
         msg = MIMEMultipart('encrypted', boundary=None, _subparts=None,
-            protocol="application/pgp-encrypted")
+                            protocol="application/pgp-encrypted")
         part = MIMEBase('application', 'pgp-encrypted')
         part.set_payload("Version: 1\r\n")
         msg.attach(part)
@@ -425,7 +425,8 @@ class IssueClass:
         return msg
 
     def send_message(self, issueid, msgid, note, sendto, from_address=None,
-            bcc_sendto=[], subject=None, crypt=False, add_headers={}):
+                     bcc_sendto=[], subject=None, crypt=False,
+                     add_headers={}):
         '''Actually send the nominated message from this issue to the sendto
            recipients, with the note appended. It's possible to add
            headers to the message with the add_headers variable.
@@ -445,7 +446,7 @@ class IssueClass:
         if not messageid:
             # this is an old message that didn't get a messageid, so
             # create one
-            messageid = "<%s.%s.%s%s@%s>"%(time.time(),
+            messageid = "<%s.%s.%s%s@%s>" % (time.time(),
                 b2s(base64.b32encode(random_.token_bytes(10))),
                 self.classname, issueid, self.db.config['MAIL_DOMAIN'])
             if msgid is not None:
@@ -453,7 +454,7 @@ class IssueClass:
 
         # compose title
         cn = self.classname
-        title = self.get(issueid, 'title') or '%s message copy'%cn
+        title = self.get(issueid, 'title') or '%s message copy' % cn
 
         # figure author information
         if msgid:
@@ -466,7 +467,7 @@ class IssueClass:
         authaddr = users.get(authid, 'address', '')
 
         if authaddr and self.db.config.MAIL_ADD_AUTHOREMAIL:
-            authaddr = " <%s>" % formataddr( ('',authaddr) )
+            authaddr = " <%s>" % formataddr(('', authaddr))
         elif authaddr:
             authaddr = ""
 
@@ -481,10 +482,10 @@ class IssueClass:
         if authid and self.db.config.MAIL_ADD_AUTHORINFO:
             if msgid and len(self.get(issueid, 'messages')) == 1:
                 m.append(_("New submission from %(authname)s%(authaddr)s:")
-                    % locals())
+                         % locals())
             elif msgid:
                 m.append(_("%(authname)s%(authaddr)s added the comment:")
-                    % locals())
+                         % locals())
             else:
                 m.append(_("Change by %(authname)s%(authaddr)s:") % locals())
             m.append('')
@@ -495,8 +496,8 @@ class IssueClass:
 
         # get the files for this message
         message_files = []
-        if msgid :
-            for fileid in messages.get(msgid, 'files') :
+        if msgid:
+            for fileid in messages.get(msgid, 'files'):
                 # check the attachment size
                 filesize = self.db.filesize('file', fileid, None)
                 if filesize <= self.db.config.NOSY_MAX_ATTACHMENT_SIZE:
@@ -506,7 +507,8 @@ class IssueClass:
                     link = "".join((base, files.classname, fileid))
                     filename = files.get(fileid, 'name')
                     m.append(_("File '%(filename)s' not attached - "
-                        "you can download it from %(link)s.") % locals())
+                               "you can download it from %(link)s.") %
+                             locals())
 
         # add the change note
         if note:
@@ -535,7 +537,7 @@ class IssueClass:
             from_tag = ' ' + from_tag
 
         if subject is None:
-            subject = '[%s%s] %s'%(cn, issueid, title)
+            subject = '[%s%s] %s' % (cn, issueid, title)
 
         author = (authname + from_tag, from_address)
 
@@ -548,7 +550,7 @@ class IssueClass:
         # tracker sender info
         tracker_name = s2u(self.db.config.TRACKER_NAME)
         tracker_name = nice_sender_header(tracker_name, from_address,
-            charset)
+                                          charset)
 
         # now send one or more messages
         # TODO: I believe we have to create a new message each time as we
@@ -561,13 +563,16 @@ class IssueClass:
 
             message = mailer.get_standard_message(multipart=message_files)
 
-            # set reply-to as requested by config option TRACKER_REPLYTO_ADDRESS
+            # set reply-to as requested by config option
+            # TRACKER_REPLYTO_ADDRESS
             replyto_config = self.db.config.TRACKER_REPLYTO_ADDRESS
             if replyto_config:
                 if replyto_config == "AUTHOR":
-                    # note that authaddr at this point is already surrounded by < >, so
-                    # get the original address from the db as nice_send_header adds < >
-                    replyto_addr = nice_sender_header(authname, users.get(authid, 'address', ''), charset)
+                    # note that authaddr at this point is already
+                    # surrounded by < >, so get the original address
+                    # from the db as nice_send_header adds < >
+                    replyto_addr = nice_sender_header(authname,
+                        users.get(authid, 'address', ''), charset)
                 else:
                     replyto_addr = replyto_config
             else:
@@ -610,7 +615,7 @@ class IssueClass:
                         continue
                 values = [cl.get(v, label) for v in values]
                 values = ', '.join(values)
-                header = "X-Roundup-%s-%s"%(self.classname, propname)
+                header = "X-Roundup-%s-%s" % (self.classname, propname)
                 try:
                     values.encode('ascii')
                     message[header] = values
@@ -619,7 +624,7 @@ class IssueClass:
 
             # Add header for main id number to make filtering
             # email easier than extracting from subject line.
-            header = "X-Roundup-%s-Id"%(self.classname)
+            header = "X-Roundup-%s-Id" % (self.classname)
             values = issueid
             try:
                 values.encode('ascii')
@@ -687,22 +692,22 @@ class IssueClass:
                         part.set_payload(content)
                         encoders.encode_base64(part)
                     cd = 'Content-Disposition'
-                    part[cd] = 'attachment;\n filename="%s"'%name
+                    part[cd] = 'attachment;\n filename="%s"' % name
                     message.attach(part)
 
             else:
                 message.set_payload(body, message.get_charset())
 
             if crypt:
-                send_msg = self.encrypt_to (message, sendto)
+                send_msg = self.encrypt_to(message, sendto)
             else:
                 send_msg = message
             mailer.set_message_attributes(send_msg, sendto, subject, author)
             if crypt:
-                send_msg ['Message-Id'] = message ['Message-Id']
-                send_msg ['Reply-To'] = message ['Reply-To']
-                if message.get ('In-Reply-To'):
-                    send_msg ['In-Reply-To'] = message ['In-Reply-To']
+                send_msg['Message-Id'] = message['Message-Id']
+                send_msg['Reply-To'] = message['Reply-To']
+                if message.get('In-Reply-To'):
+                    send_msg['In-Reply-To'] = message['In-Reply-To']
 
             if sendto:
                 mailer.smtp_send(sendto, send_msg.as_string())
@@ -711,11 +716,11 @@ class IssueClass:
                     # send individual bcc mails, otherwise receivers can
                     # deduce bcc recipients from keys in message
                     for bcc in bcc_sendto:
-                        send_msg = self.encrypt_to (message, [bcc])
-                        send_msg ['Message-Id'] = message ['Message-Id']
-                        send_msg ['Reply-To'] = message ['Reply-To']
-                        if message.get ('In-Reply-To'):
-                            send_msg ['In-Reply-To'] = message ['In-Reply-To']
+                        send_msg = self.encrypt_to(message, [bcc])
+                        send_msg['Message-Id'] = message['Message-Id']
+                        send_msg['Reply-To'] = message['Reply-To']
+                        if message.get('In-Reply-To'):
+                            send_msg['In-Reply-To'] = message['In-Reply-To']
                         mailer.smtp_send([bcc], send_msg.as_string())
                 elif bcc_sendto:
                     mailer.smtp_send(bcc_sendto, send_msg.as_string())
@@ -727,7 +732,7 @@ class IssueClass:
         # simplistic check to see if the url is valid,
         # then append a trailing slash if it is missing
         base = self.db.config.TRACKER_WEB
-        if (not isinstance(base , type('')) or
+        if (not isinstance(base, type('')) or
             not (base.startswith('http://') or base.startswith('https://'))):
             web = "Configuration Error: TRACKER_WEB isn't a " \
                 "fully-qualified URL"
@@ -738,11 +743,10 @@ class IssueClass:
 
         # ensure the email address is properly quoted
         email = formataddr((self.db.config.TRACKER_NAME,
-            self.db.config.TRACKER_EMAIL))
+                            self.db.config.TRACKER_EMAIL))
 
         line = '_' * max(len(web)+2, len(email))
-        return '\n%s\n%s\n<%s>\n%s'%(line, email, web, line)
-
+        return '\n%s\n%s\n<%s>\n%s' % (line, email, web, line)
 
     def generateCreateNote(self, issueid):
         """Generate a create note that lists initial property values
@@ -783,7 +787,7 @@ class IssueClass:
                 value = str(value)
                 if '\n' in value:
                     value = '\n'+self.indentChangeNoteValue(value)
-            m.append('%s: %s'%(propname, value))
+            m.append('%s: %s' % (propname, value))
         m.insert(0, '----------')
         m.insert(0, '')
         return '\n'.join(m)
@@ -792,8 +796,8 @@ class IssueClass:
         """Generate a change note that lists property changes
         """
         if not isinstance(oldvalues, type({})):
-            raise TypeError("'oldvalues' must be dict-like, not %s."%
-                type(oldvalues))
+            raise TypeError("'oldvalues' must be dict-like, not %s." %
+                            type(oldvalues))
 
         cn = self.classname
         cl = self.db.classes[cn]
@@ -802,7 +806,7 @@ class IssueClass:
 
         # determine what changed
         for key in oldvalues.keys():
-            if key in ['files','messages']:
+            if key in ['files', 'messages']:
                 continue
             if key in ('actor', 'activity', 'creator', 'creation'):
                 continue
@@ -816,12 +820,12 @@ class IssueClass:
             # this happens when property was added
             try:
                 old_value = oldvalues[key]
-                if type(new_value) is type([]):
+                if isinstance(new_value, type([])):
                     new_value.sort()
                     old_value.sort()
                 if new_value != old_value:
                     changed[key] = old_value
-            except:
+            except Exception:
                 changed[key] = new_value
 
         # list the changes
@@ -845,7 +849,7 @@ class IssueClass:
                         oldvalue = link.get(oldvalue, key)
                     else:
                         oldvalue = ''
-                change = '%s -> %s'%(oldvalue, value)
+                change = '%s -> %s' % (oldvalue, value)
             elif isinstance(prop, hyperdb.Multilink):
                 change = ''
                 if value is None: value = []
@@ -862,7 +866,7 @@ class IssueClass:
                         l.append(entry)
                 if l:
                     l.sort()
-                    change = '+%s'%(', '.join(l))
+                    change = '+%s' % (', '.join(l))
                     l = []
                 # check for removals
                 for entry in oldvalue:
@@ -873,15 +877,15 @@ class IssueClass:
                         l.append(entry)
                 if l:
                     l.sort()
-                    change += ' -%s'%(', '.join(l))
+                    change += ' -%s' % (', '.join(l))
             else:
-                change = '%s -> %s'%(oldvalue, value)
+                change = '%s -> %s' % (oldvalue, value)
                 if '\n' in change:
                     value = self.indentChangeNoteValue(str(value))
                     oldvalue = self.indentChangeNoteValue(str(oldvalue))
                     change = _('\nNow:\n%(new)s\nWas:\n%(old)s') % {
                         "new": value, "old": oldvalue}
-            m.append('%s: %s'%(propname, change))
+            m.append('%s: %s' % (propname, change))
         if m:
             m.insert(0, '----------')
             m.insert(0, '')
@@ -889,7 +893,7 @@ class IssueClass:
 
     def indentChangeNoteValue(self, text):
         lines = text.rstrip('\n').split('\n')
-        lines = [ '  '+line for line in lines ]
+        lines = ['  '+line for line in lines]
         return '\n'.join(lines)
 
 # vim: set filetype=python sts=4 sw=4 et si :
