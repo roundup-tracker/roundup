@@ -34,6 +34,7 @@ except ImportError:
 _bempty = b""
 _bjoin = _bempty.join
 
+
 def bchr(c):
     if bytes == str:
         # Python 2.
@@ -41,6 +42,7 @@ def bchr(c):
     else:
         # Python 3.
         return bytes((c,))
+
 
 def bord(c):
     if bytes == str:
@@ -50,11 +52,13 @@ def bord(c):
         # Python 3.  Elements of bytes are integers.
         return c
 
-#NOTE: PBKDF2 hash is using this variant of base64 to minimize encoding size,
+
+# NOTE: PBKDF2 hash is using this variant of base64 to minimize encoding size,
 #      and have charset that's compatible w/ unix crypt variants
 def h64encode(data):
     """encode using variant of base64"""
     return b2s(b64encode(data, b"./").strip(b"=\n"))
+
 
 def h64decode(data):
     """decode using variant of base64"""
@@ -69,12 +73,14 @@ def h64decode(data):
     else:
         return b64decode(data + b"=", b"./")
 
+
 try:
     from hashlib import pbkdf2_hmac
+
     def _pbkdf2(password, salt, rounds, keylen):
         return pbkdf2_hmac('sha1', password, salt, rounds, keylen)
 except ImportError:
-    #no hashlib.pbkdf2_hmac - make our own pbkdf2 function
+    # no hashlib.pbkdf2_hmac - make our own pbkdf2 function
     from struct import pack
     from hmac import HMAC
 
@@ -83,22 +89,23 @@ except ImportError:
         return _bjoin(bchr(bord(l) ^ bord(r)) for l, r in zip(left, right))
 
     def _pbkdf2(password, salt, rounds, keylen):
-        digest_size = 20 # sha1 generates 20-byte blocks
+        digest_size = 20  # sha1 generates 20-byte blocks
         total_blocks = int((keylen+digest_size-1)/digest_size)
         hmac_template = HMAC(password, None, sha1)
         out = _bempty
         for i in range(1, total_blocks+1):
             hmac = hmac_template.copy()
-            hmac.update(salt + pack(">L",i))
+            hmac.update(salt + pack(">L", i))
             block = tmp = hmac.digest()
-            for j in range(rounds-1):
+            for _j in range(rounds-1):
                 hmac = hmac_template.copy()
                 hmac.update(tmp)
                 tmp = hmac.digest()
-                #TODO: need to speed up this call
+                # TODO: need to speed up this call
                 block = xor_bytes(block, tmp)
             out += block
         return out[:keylen]
+
 
 def ssha(password, salt):
     ''' Make ssha digest from password and salt.
@@ -106,14 +113,16 @@ def ssha(password, salt):
     https://gist.github.com/rca/7217540
     '''
     shaval = sha1(password)  # nosec
-    shaval.update( salt )
-    ssha_digest = b64encode( shaval.digest() + salt ).strip()
+    shaval.update(salt)
+    ssha_digest = b64encode(shaval.digest() + salt).strip()
     return ssha_digest
+
 
 def pbkdf2(password, salt, rounds, keylen):
     """pkcs#5 password-based key derivation v2.0
 
-    :arg password: passphrase to use to generate key (if unicode, converted to utf-8)
+    :arg password: passphrase to use to generate key (if unicode,
+     converted to utf-8)
     :arg salt: salt bytes to use when generating key
     :param rounds: number of rounds to use to generate key
     :arg keylen: number of bytes to generate
@@ -125,7 +134,7 @@ def pbkdf2(password, salt, rounds, keylen):
     """
     password = s2b(us2s(password))
     if keylen > 40:
-        #NOTE: pbkdf2 allows up to (2**31-1)*20 bytes,
+        # NOTE: pbkdf2 allows up to (2**31-1)*20 bytes,
         # but m2crypto has issues on some platforms above 40,
         # and such sizes aren't needed for a password hash anyways...
         raise ValueError("key length too large")
@@ -133,9 +142,11 @@ def pbkdf2(password, salt, rounds, keylen):
         raise ValueError("rounds must be positive number")
     return _pbkdf2(password, salt, rounds, keylen)
 
+
 class PasswordValueError(ValueError):
     """ The password value is not valid """
     pass
+
 
 def pbkdf2_unpack(pbkdf2):
     """ unpack pbkdf2 encrypted password into parts,
@@ -145,7 +156,8 @@ def pbkdf2_unpack(pbkdf2):
     try:
         rounds, salt, digest = pbkdf2.split("$")
     except ValueError:
-        raise PasswordValueError("invalid PBKDF2 hash (wrong number of separators)")
+        raise PasswordValueError("invalid PBKDF2 hash (wrong number of "
+                                 "separators)")
     if rounds.startswith("0"):
         raise PasswordValueError("invalid PBKDF2 hash (zero-padded rounds)")
     try:
@@ -154,6 +166,7 @@ def pbkdf2_unpack(pbkdf2):
         raise PasswordValueError("invalid PBKDF2 hash (invalid rounds)")
     raw_salt = h64decode(salt)
     return rounds, salt, raw_salt, digest
+
 
 def encodePassword(plaintext, scheme, other=None, config=None):
     """Encrypt the plaintext password.
@@ -179,7 +192,7 @@ def encodePassword(plaintext, scheme, other=None, config=None):
             raw_other = b64decode(other)
             salt = raw_other[20:]
         else:
-            #new password
+            # new password
             # variable salt length
             salt_len = random_.randbelow(52-36) + 36
             salt = random_.token_bytes(salt_len)
@@ -198,8 +211,9 @@ def encodePassword(plaintext, scheme, other=None, config=None):
     elif scheme == 'plaintext':
         s = plaintext
     else:
-        raise PasswordValueError('Unknown encryption scheme %r'%scheme)
+        raise PasswordValueError('Unknown encryption scheme %r' % scheme)
     return s
+
 
 def generatePassword(length=12):
     chars = string.ascii_letters+string.digits
@@ -208,6 +222,7 @@ def generatePassword(length=12):
     digitidx = random_.randbelow(length)
     password[digitidx:digitidx] = [random_.choice(string.digits)]
     return ''.join(password)
+
 
 class JournalPassword:
     """ Password dummy instance intended for journal operation.
@@ -218,7 +233,7 @@ class JournalPassword:
     default_scheme = 'PBKDF2'        # new encryptions use this scheme
     pwre = re.compile(r'{(\w+)}(.+)')
 
-    def __init__ (self, encrypted=''):
+    def __init__(self, encrypted=''):
         if isinstance(encrypted, self.__class__):
             self.scheme = encrypted.scheme or self.default_scheme
         else:
@@ -249,10 +264,11 @@ class JournalPassword:
         if self.password is None:
             raise ValueError('Password not set')
         return self.password == encodePassword(other, self.scheme,
-            self.password or None)
+                                               self.password or None)
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
 
 class Password(JournalPassword):
     """The class encapsulates a Password property type value in the database.
@@ -276,17 +292,18 @@ class Password(JournalPassword):
     >>> 'not sekrit' != p
     1
     """
-    #TODO: code to migrate from old password schemes.
+    # TODO: code to migrate from old password schemes.
 
     deprecated_schemes = ["SHA", "MD5", "crypt", "plaintext"]
     known_schemes = ["PBKDF2", "SSHA"] + deprecated_schemes
 
-    def __init__(self, plaintext=None, scheme=None, encrypted=None, strict=False, config=None):
+    def __init__(self, plaintext=None, scheme=None, encrypted=None,
+                 strict=False, config=None):
         """Call setPassword if plaintext is not None."""
         if scheme is None:
             scheme = self.default_scheme
         if plaintext is not None:
-            self.setPassword (plaintext, scheme, config=config)
+            self.setPassword(plaintext, scheme, config=config)
         elif encrypted is not None:
             self.unpack(encrypted, scheme, strict=strict, config=config)
         else:
@@ -321,7 +338,8 @@ class Password(JournalPassword):
             # currently plaintext - encrypt
             self.setPassword(encrypted, scheme, config=config)
         if strict and self.scheme not in self.known_schemes:
-            raise PasswordValueError("Unknown encryption scheme: %r" % (self.scheme,))
+            raise PasswordValueError("Unknown encryption scheme: %r" %
+                                     (self.scheme,))
 
     def setPassword(self, plaintext, scheme=None, config=None):
         """Sets encrypts plaintext."""
@@ -335,7 +353,8 @@ class Password(JournalPassword):
         """Stringify the encrypted password for database storage."""
         if self.password is None:
             raise ValueError('Password not set')
-        return '{%s}%s'%(self.scheme, self.password)
+        return '{%s}%s' % (self.scheme, self.password)
+
 
 def test():
     # SHA
@@ -382,6 +401,7 @@ def test():
     assert p != 'not sekrit'
     assert 'sekrit' == p
     assert 'not sekrit' != p
+
 
 if __name__ == '__main__':
     test()
