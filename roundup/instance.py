@@ -47,6 +47,7 @@ from roundup import hyperdb, backends, actions
 from roundup.cgi import client, templating
 from roundup.cgi import actions as cgi_actions
 
+
 class Tracker:
     def __init__(self, tracker_home, optimize=0):
         """New-style tracker instance constructor
@@ -74,7 +75,7 @@ class Tracker:
 
         self.load_interfaces()
         self.templates = templating.get_loader(self.config["TEMPLATES"],
-            self.config["TEMPLATE_ENGINE"])
+                                               self.config["TEMPLATE_ENGINE"])
 
         rdbms_backend = self.config.RDBMS_BACKEND
 
@@ -178,8 +179,9 @@ update your config.ini
                         continue
                     linkto = prop.classname
                     if linkto not in classes:
-                        raise ValueError("property %s.%s links to non-existent class %s"
-                             % (classname, propname, linkto))
+                        raise ValueError("property %s.%s links to "
+                                         "non-existent class %s"
+                                         % (classname, propname, linkto))
 
             db.post_init()
             self.db_open = 1
@@ -192,7 +194,8 @@ update your config.ini
             self._execfile('interfaces.py', env)
         self.Client = env.get('Client', client.Client)
         self.MailGW = env.get('MailGW', mailgw.MailGW)
-        self.TemplatingUtils = env.get('TemplatingUtils', templating.TemplatingUtils)
+        self.TemplatingUtils = env.get('TemplatingUtils',
+                                       templating.TemplatingUtils)
 
     def get_extensions(self, dirname):
         """Load python extensions
@@ -221,8 +224,9 @@ update your config.ini
     def init(self, adminpw, tx_Source=None):
         db = self.open('admin')
         db.tx_Source = tx_Source
-        self._execfile('initial_data.py', {'db': db, 'adminpw': adminpw,
-            'admin_email': self.config['ADMIN_EMAIL']})
+        self._execfile('initial_data.py',
+                       {'db': db, 'adminpw': adminpw,
+                        'admin_email': self.config['ADMIN_EMAIL']})
         db.commit()
         db.close()
 
@@ -266,6 +270,7 @@ update your config.ini
     def registerUtil(self, name, function):
         self.templating_utils[name] = function
 
+
 class TrackerError(BaseException):
     pass
 
@@ -290,21 +295,21 @@ class OldStyleTrackers:
         import imp
         # sanity check existence of tracker home
         if not os.path.exists(tracker_home):
-            raise ValueError('no such directory: "%s"'%tracker_home)
+            raise ValueError('no such directory: "%s"' % tracker_home)
 
         # sanity check tracker home contents
         for reqd in 'config dbinit select_db interfaces'.split():
-            if not os.path.exists(os.path.join(tracker_home, '%s.py'%reqd)):
-                raise TrackerError('File "%s.py" missing from tracker '\
-                    'home "%s"'%(reqd, tracker_home))
+            if not os.path.exists(os.path.join(tracker_home, '%s.py' % reqd)):
+                raise TrackerError('File "%s.py" missing from tracker '
+                                   'home "%s"' % (reqd, tracker_home))
 
         if tracker_home in self.trackers:
             return imp.load_package(self.trackers[tracker_home],
-                tracker_home)
+                                    tracker_home)
         # register all available backend modules
         backends.list_backends()
         self.number = self.number + 1
-        modname = '_roundup_tracker_%s'%self.number
+        modname = '_roundup_tracker_%s' % self.number
         self.trackers[tracker_home] = modname
 
         # load the tracker
@@ -313,7 +318,8 @@ class OldStyleTrackers:
         # ensure the tracker has all the required bits
         for required in 'open init Client MailGW'.split():
             if not hasattr(tracker, required):
-                raise TrackerError('Required tracker attribute "%s" missing'%required)
+                raise TrackerError('Required tracker attribute "%s" missing' %
+                                   required)
 
         # load and apply the config
         tracker.config = configuration.CoreConfig(tracker_home)
@@ -326,7 +332,10 @@ class OldStyleTrackers:
 
         return tracker
 
+
 OldStyleTrackers = OldStyleTrackers()
+
+
 def open(tracker_home, optimize=0):
     if os.path.exists(os.path.join(tracker_home, 'dbinit.py')):
         # user should upgrade...
