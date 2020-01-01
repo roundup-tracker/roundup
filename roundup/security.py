@@ -9,6 +9,7 @@ from roundup import hyperdb, support
 import logging
 logger = logging.getLogger('roundup.security')
 
+
 class Permission:
     ''' Defines a Permission with the attributes
         - name
@@ -43,10 +44,10 @@ class Permission:
         with a True or False value.
     '''
 
-    limit_perm_to_props_only=False
+    limit_perm_to_props_only = False
 
     def __init__(self, name='', description='', klass=None,
-            properties=None, check=None, props_only=None):
+                 properties=None, check=None, props_only=None):
         from roundup.anypy import findargspec
         self.name = name
         self.description = description
@@ -71,11 +72,10 @@ class Permission:
         else:
             self.limit_perm_to_props_only = None
 
-
         if check is None:
             self.check_version = 0
         else:
-            args=findargspec.findargspec(check)
+            args = findargspec.findargspec(check)
             # args[2] is the keywords argument. Leave it as a subscript and
             # do not use named tuple reference as names change in python 3.
             # If there is a **parameter defined in the function spec, the
@@ -121,8 +121,8 @@ class Permission:
                 if not self.check(db, userid, itemid):
                     return 0
             elif self.check_version == 2:
-                if not self.check(db, userid, itemid, property=property, \
-                            permission=permission, classname=classname):
+                if not self.check(db, userid, itemid, property=property,
+                                  permission=permission, classname=classname):
                     return 0
 
         # we have a winner
@@ -149,9 +149,8 @@ class Permission:
 
         return 1
 
-
     def __repr__(self):
-        return '<Permission 0x%x %r,%r,%r,%r,%r>'%(id(self), self.name,
+        return '<Permission 0x%x %r,%r,%r,%r,%r>' % (id(self), self.name,
             self.klass, self.properties, self.check,
             self.limit_perm_to_props_only)
 
@@ -163,7 +162,7 @@ class Permission:
         if self.properties != other.properties: return False
         if self.check != other.check: return False
         if self.limit_perm_to_props_only != \
-             other.limit_perm_to_props_only: return False
+           other.limit_perm_to_props_only: return False
 
         # match
         return True
@@ -171,9 +170,10 @@ class Permission:
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    def __getitem__(self,index):
+    def __getitem__(self, index):
         return (self.name, self.klass, self.properties, self.check,
-         self.limit_perm_to_props_only)[index]
+                self.limit_perm_to_props_only)[index]
+
 
 class Role:
     ''' Defines a Role with the attributes
@@ -189,7 +189,8 @@ class Role:
         self.permissions = permissions
 
     def __repr__(self):
-        return '<Role 0x%x %r,%r>'%(id(self), self.name, self.permissions)
+        return '<Role 0x%x %r,%r>' % (id(self), self.name, self.permissions)
+
 
 class Security:
     def __init__(self, db):
@@ -212,7 +213,7 @@ class Security:
         # default permissions - Admin may do anything
         for p in 'create edit restore retire view'.split():
             p = self.addPermission(name=p.title(),
-                description="User may %s everything"%p)
+                                   description="User may %s everything" % p)
             self.addPermissionToRole('Admin', p)
 
         # initialise the permissions and roles needed for the UIs
@@ -222,20 +223,20 @@ class Security:
         mailgw.initialiseSecurity(self)
 
     def getPermission(self, permission, classname=None, properties=None,
-            check=None, props_only=None):
+                      check=None, props_only=None):
         ''' Find the Permission matching the name and for the class, if the
             classname is specified.
 
             Raise ValueError if there is no exact match.
         '''
         if permission not in self.permission:
-            raise ValueError('No permission "%s" defined'%permission)
+            raise ValueError('No permission "%s" defined' % permission)
 
         if classname:
             try:
                 self.db.getclass(classname)
             except KeyError:
-                raise ValueError('No class "%s" defined'%classname)
+                raise ValueError('No class "%s" defined' % classname)
 
         # look through all the permissions of the given name
         tester = Permission(permission, klass=classname, properties=properties,
@@ -244,11 +245,11 @@ class Security:
         for perm in self.permission[permission]:
             if perm == tester:
                 return perm
-        raise ValueError('No permission "%s" defined for "%s"'%(permission,
-            classname))
+        raise ValueError('No permission "%s" defined for "%s"' % (permission,
+                                                                  classname))
 
     def hasPermission(self, permission, userid, classname=None,
-            property=None, itemid=None):
+                      property=None, itemid=None):
         '''Look through all the Roles, and hence Permissions, and
            see if "permission" exists given the constraints of
            classname, property, itemid, and props_only.
@@ -286,7 +287,7 @@ class Security:
             for perm in self.role[rolename].permissions:
                 # permission match?
                 if perm.test(self.db, permission, classname, property,
-                        userid, itemid):
+                             userid, itemid):
                     return 1
         return 0
 
@@ -296,7 +297,7 @@ class Security:
         """
         perms = []
         # pre-compute permissions
-        for rn in rolenames :
+        for rn in rolenames:
             for perm in self.role[rn].permissions:
                 perms.append(perm)
         # Note: break from inner loop means "found"
@@ -363,7 +364,7 @@ class Security:
         '''
         roles = [r for r in self.db.user.get_roles(userid)
                  if r and (r in self.role)]
-        return self.roleHasSearchPermission (classname, property, *roles)
+        return self.roleHasSearchPermission(classname, property, *roles)
 
     def addPermission(self, **propspec):
         ''' Create a new Permission with the properties defined in
@@ -394,7 +395,7 @@ class Security:
         return Permission.limit_perm_to_props_only
 
     def addPermissionToRole(self, rolename, permission, classname=None,
-            properties=None, check=None, props_only=None):
+                            properties=None, check=None, props_only=None):
         ''' Add the permission to the role's permission list.
 
             'rolename' is the name of the role to add the permission to.
@@ -406,7 +407,7 @@ class Security:
         '''
         if not isinstance(permission, Permission):
             permission = self.getPermission(permission, classname,
-                properties, check, props_only)
+                                            properties, check, props_only)
         role = self.role[rolename.lower()]
         role.permissions.append(permission)
 
@@ -416,8 +417,8 @@ class Security:
     def filterFilterspec(self, userid, classname, filterspec):
         """ Return a filterspec that has all non-allowed properties removed.
         """
-        return dict ([(k, v) for k, v in filterspec.items()
-            if self.hasSearchPermission(userid,classname,k)])
+        return dict([(k, v) for k, v in filterspec.items()
+                     if self.hasSearchPermission(userid, classname, k)])
 
     def filterSortspec(self, userid, classname, sort):
         """ Return a sort- or group-list that has all non-allowed properties
@@ -426,6 +427,6 @@ class Security:
         if isinstance(sort, tuple) and sort[0] in '+-':
             sort = [sort]
         return [(d, p) for d, p in sort
-            if self.hasSearchPermission(userid,classname,p)]
+                if self.hasSearchPermission(userid, classname, p)]
 
 # vim: set filetype=python sts=4 sw=4 et si :
