@@ -1911,7 +1911,7 @@ class Client:
                 if sys.version_info[0] > 2:
                     raise exc_info[0](exc_info[1]).with_traceback(exc_info[2])
                 else:
-                    exec('raise exc_info[0], exc_info[1], exc_info[2]')
+                    exec('raise exc_info[0], exc_info[1], exc_info[2]')  # nosec
 
     # these are the actions that are available
     actions = (
