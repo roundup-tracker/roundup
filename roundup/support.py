@@ -5,7 +5,8 @@ places in Roundup code.
 from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
-import os, time, sys, re
+import os, time, sys
+
 
 class TruthDict:
     '''Returns True for valid keys, False for others.
@@ -22,9 +23,11 @@ class TruthDict:
         else:
             return True
 
+
 def ensureParentsExist(dest):
     if not os.path.exists(os.path.dirname(dest)):
         os.makedirs(os.path.dirname(dest))
+
 
 class PrioList:
     '''Manages a sorted list.
@@ -47,7 +50,7 @@ class PrioList:
 
     '''
     def __init__(self):
-        self.list   = []
+        self.list = []
         self.sorted = True
 
     def append(self, item):
@@ -59,6 +62,7 @@ class PrioList:
             self.list.sort()
             self.sorted = True
         return iter(self.list)
+
 
 class Progress:
     '''Progress display for console applications.
@@ -111,14 +115,14 @@ class Progress:
             M = M % 60
             S = eta % 60
             if self.total:
-                s = '%s %2d%% (ETA %02d:%02d:%02d)'%(self.info,
+                s = '%s %2d%% (ETA %02d:%02d:%02d)' % (self.info,
                     self.num * 100. / self.total, H, M, S)
             else:
-                s = '%s 0%% (ETA %02d:%02d:%02d)'%(self.info, H, M, S)
+                s = '%s 0%% (ETA %02d:%02d:%02d)' % (self.info, H, M, S)
         elif self.total:
-            s = '%s %2d%%'%(self.info, self.num * 100. / self.total)
+            s = '%s %2d%%' % (self.info, self.num * 100. / self.total)
         else:
-            s = '%s %d done'%(self.info, self.num)
+            s = '%s %d done' % (self.info, self.num)
         sys.stdout.write(s + ' '*(75-len(s)) + '\r')
         sys.stdout.flush()
 
