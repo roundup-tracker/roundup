@@ -9,11 +9,12 @@ from roundup import hyperdb
 from roundup.exceptions import Unauthorised, UsageError
 from roundup.date import Date, Range, Interval
 from roundup import actions
+from roundup.anypy.strings import us2s
+from traceback import format_exc
 from roundup.anypy import xmlrpc_
 SimpleXMLRPCDispatcher = xmlrpc_.server.SimpleXMLRPCDispatcher
 Binary = xmlrpc_.client.Binary
-from roundup.anypy.strings import us2s
-from traceback import format_exc
+
 
 def translate(value):
     """Translate value to becomes valid for XMLRPC transmission."""
@@ -38,10 +39,10 @@ def props_from_args(db, cl, args, itemid=None):
     for arg in args:
         if isinstance(arg, Binary):
             arg = arg.data
-        try :
+        try:
             key, value = arg.split('=', 1)
-        except ValueError :
-            raise UsageError('argument "%s" not propname=value'%arg)
+        except ValueError:
+            raise UsageError('argument "%s" not propname=value' % arg)
         key = us2s(key)
         value = us2s(value)
         if value:
@@ -59,6 +60,7 @@ def props_from_args(db, cl, args, itemid=None):
 
     return props
 
+
 class RoundupInstance:
     """The RoundupInstance provides the interface accessible through
     the Python XMLRPC mapping."""
@@ -73,7 +75,7 @@ class RoundupInstance:
         s = {}
         for c in self.db.classes:
             cls = self.db.classes[c]
-            props = [(n,repr(v)) for n,v in sorted(cls.properties.items())]
+            props = [(n, repr(v)) for n, v in sorted(cls.properties.items())]
             s[c] = props
         return s
 
@@ -84,7 +86,8 @@ class RoundupInstance:
         result = [cl.get(itemid, propname)
                   for itemid in cl.list()
                   if self.db.security.hasPermission('View', self.db.getuid(),
-                                                    classname, propname, itemid)
+                                                    classname, propname,
+                                                    itemid)
                   ]
         return result
 
@@ -93,9 +96,9 @@ class RoundupInstance:
         cl = self.db.getclass(classname)
         uid = self.db.getuid()
         security = self.db.security
-        filterspec = security.filterFilterspec (uid, classname, filterspec)
-        sort = security.filterSortspec (uid, classname, sort)
-        group = security.filterSortspec (uid, classname, group)
+        filterspec = security.filterFilterspec(uid, classname, filterspec)
+        sort = security.filterSortspec(uid, classname, sort)
+        group = security.filterSortspec(uid, classname, group)
         result = cl.filter(search_matches, filterspec, sort=sort, group=group)
         check = security.hasPermission
         x = [id for id in result if check('View', uid, classname, itemid=id)]
@@ -108,8 +111,8 @@ class RoundupInstance:
         search = self.db.security.hasSearchPermission
         access = self.db.security.hasPermission
         if (not search(uid, classname, prop)
-           and not access('View', uid, classname, prop)):
-           raise Unauthorised('Permission to lookup %s denied'%classname)
+            and not access('View', uid, classname, prop)):
+            raise Unauthorised('Permission to lookup %s denied' % classname)
         return cl.lookup(key)
 
     def display(self, designator, *properties):
@@ -120,15 +123,15 @@ class RoundupInstance:
         for p in props:
             if not self.db.security.hasPermission('View', self.db.getuid(),
                                                   classname, p, itemid):
-                raise Unauthorised('Permission to view %s of %s denied'%
+                raise Unauthorised('Permission to view %s of %s denied' %
                                    (p, designator))
             result = [(prop, cl.get(itemid, prop)) for prop in props]
         return dict(result)
 
     def create(self, classname, *args):
-        
-        if not self.db.security.hasPermission('Create', self.db.getuid(), classname):
-            raise Unauthorised('Permission to create %s denied'%classname)
+        if not self.db.security.hasPermission('Create', self.db.getuid(),
+                                              classname):
+            raise Unauthorised('Permission to create %s denied' % classname)
 
         cl = self.db.getclass(classname)
 
@@ -138,59 +141,61 @@ class RoundupInstance:
         # check for the key property
         key = cl.getkey()
         if key and key not in props:
-            raise UsageError('you must provide the "%s" property.'%key)
+            raise UsageError('you must provide the "%s" property.' % key)
 
         for key in props:
             if not self.db.security.hasPermission('Create', self.db.getuid(),
-                classname, property=key):
-                raise Unauthorised('Permission to create %s.%s denied'%(classname, key))
+                                                  classname, property=key):
+                raise Unauthorised('Permission to create %s.%s denied' %
+                                   (classname, key))
 
         # do the actual create
         try:
             result = cl.create(**props)
             self.db.commit()
         except (TypeError, IndexError, ValueError) as message:
-            # The exception we get may be a real error, log the traceback if we're debugging
+            # The exception we get may be a real error, log the traceback
+            # if we're debugging
             logger = logging.getLogger('roundup.xmlrpc')
             for l in format_exc().split('\n'):
                 logger.debug(l)
-            raise UsageError (message)
+            raise UsageError(message)
         return result
 
     def set(self, designator, *args):
 
         classname, itemid = hyperdb.splitDesignator(designator)
         cl = self.db.getclass(classname)
-        props = props_from_args(self.db, cl, args, itemid) # convert types
+        props = props_from_args(self.db, cl, args, itemid)  # convert types
         for p in props.keys():
             if not self.db.security.hasPermission('Edit', self.db.getuid(),
                                                   classname, p, itemid):
-                raise Unauthorised('Permission to edit %s of %s denied'%
+                raise Unauthorised('Permission to edit %s of %s denied' %
                                    (p, designator))
         try:
             result = cl.set(itemid, **props)
             self.db.commit()
         except (TypeError, IndexError, ValueError) as message:
-            # The exception we get may be a real error, log the traceback if we're debugging
+            # The exception we get may be a real error, log the
+            # traceback if we're debugging
             logger = logging.getLogger('roundup.xmlrpc')
             for l in format_exc().split('\n'):
                 logger.debug(l)
-            raise UsageError (message)
+            raise UsageError(message)
         return result
 
-
-    builtin_actions = dict (retire = actions.Retire, restore = actions.Restore)
+    builtin_actions = dict(retire=actions.Retire, restore=actions.Restore)
 
     def action(self, name, *args):
         """Execute a named action."""
-        
+
         if name in self.actions:
             action_type = self.actions[name]
         elif name in self.builtin_actions:
             action_type = self.builtin_actions[name]
         else:
             raise Exception('action "%s" is not supported %s'
-                           % (name, ','.join(self.actions.keys())))
+                            % (name, ','.join(self.actions.keys())))
         action = action_type(self.db, self.translator)
         return action.execute(*args)
 
@@ -204,7 +209,6 @@ class RoundupDispatcher(SimpleXMLRPCDispatcher):
         SimpleXMLRPCDispatcher.__init__(self, allow_none, encoding)
         self.register_instance(RoundupInstance(db, actions, translator))
         self.register_multicall_functions()
-                 
 
     def dispatch(self, input):
         return self._marshaled_dispatch(input)
@@ -214,4 +218,3 @@ class RoundupDispatcher(SimpleXMLRPCDispatcher):
         retn = SimpleXMLRPCDispatcher._dispatch(self, method, params)
         retn = translate(retn)
         return retn
-    
