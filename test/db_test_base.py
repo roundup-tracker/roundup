@@ -2562,22 +2562,24 @@ class DBTest(commonDBTest):
             # check security output
             soutput[:] = [] # empty for next round of output
             tool.do_security("Admin")
-            self.assertEqual(soutput, [ 'New Web users get the Role "User"\n',
-                                       'New Email users get the Role "User"\n',
-                                       'Role "admin":\n',
-                                       ' User may create everything (Create)\n',
-                                       ' User may edit everything (Edit)\n',
-                                       ' User may restore everything (Restore)\n',
-                                       ' User may retire everything (Retire)\n',
-                                       ' User may view everything (View)\n',
-                                       ' User may access the web interface (Web Access)\n',
-                                       ' User may access the rest interface (Rest Access)\n',
-                                       ' User may access the xmlrpc interface (Xmlrpc Access)\n',
-                                       ' User may manipulate user Roles through the web (Web Roles)\n',
-                                       ' User may use the email interface (Email Access)\n',
-                                       'Role "anonymous":\n', 'Role "user":\n',
-                                       ' User is allowed to access msg (View for "msg" only)\n',
-                                       ' Prevent users from seeing roles (View for "user": [\'username\', \'supervisor\', \'assignable\'] only)\n'])
+            expected =  [ 'New Web users get the Role "User"\n',
+                          'New Email users get the Role "User"\n',
+                          'Role "admin":\n',
+                          ' User may create everything (Create)\n',
+                          ' User may edit everything (Edit)\n',
+                          ' User may restore everything (Restore)\n',
+                          ' User may retire everything (Retire)\n',
+                          ' User may view everything (View)\n',
+                          ' User may access the web interface (Web Access)\n',
+                          ' User may access the rest interface (Rest Access)\n',
+                          ' User may access the xmlrpc interface (Xmlrpc Access)\n',
+                          ' User may manipulate user Roles through the web (Web Roles)\n',
+                          ' User may use the email interface (Email Access)\n',
+                          'Role "anonymous":\n', 'Role "user":\n',
+                          ' User is allowed to access msg (View for "msg" only)\n',
+                          ' Prevent users from seeing roles (View for "user": [\'username\', \'supervisor\', \'assignable\'] only)\n']
+
+            self.assertEqual(soutput, expected)
 
 
             self.nukeAndCreate()
