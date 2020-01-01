@@ -7,14 +7,15 @@
 # This module is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# 
+#
 
 """This module provides the tokeniser used by roundup-admin.
 """
 __docformat__ = 'restructuredtext'
 
+
 def token_split(s, whitespace=' \r\n\t', quotes='\'"',
-        escaped={'r':'\r', 'n':'\n', 't':'\t'}):
+                escaped={'r': '\r', 'n': '\n', 't': '\t'}):
     r'''Split the string up into tokens. An occurence of a ``'`` or ``"`` in
     the input will cause the splitter to ignore whitespace until a matching
     quote char is found. Embedded non-matching quote chars are also skipped.
@@ -49,7 +50,6 @@ def token_split(s, whitespace=' \r\n\t', quotes='\'"',
     state = NEWTOKEN
     oldstate = ''    # one-level state stack ;)
     length = len(s)
-    finish = 0
     token = ''
     while 1:
         # end of string, finish off the current token
