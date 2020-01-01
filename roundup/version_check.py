@@ -2,9 +2,10 @@
 
 # Roundup requires Python 2.7+ as mentioned in doc\installation.txt
 from __future__ import print_function
-VERSION_NEEDED = (2,7)
-
 import sys
+
+VERSION_NEEDED = (2, 7)
+
 if sys.version_info < VERSION_NEEDED:
     print("Content-Type: text/plain\n")
     print("Roundup requires Python %s.%s or newer." % VERSION_NEEDED)
