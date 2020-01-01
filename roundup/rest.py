@@ -1704,7 +1704,7 @@ class RestfulInstance(object):
                 'link': self.base_path + '/data/issue/' + issue_id,
                 'title': self.db.issue.get(issue_id, 'title')
             }
-            for x, ts, uid, action, data in self.db.issue.history(issue_id):
+            for _x, ts, _uid, action, data in self.db.issue.history(issue_id):
                 if ts < old:
                     continue
                 if action == 'create':
