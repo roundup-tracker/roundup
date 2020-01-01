@@ -23,9 +23,10 @@ __docformat__ = 'restructuredtext'
 import os, errno, email.parser
 
 
-from roundup import install_util, password
+from roundup import install_util
 from roundup.configuration import CoreConfig
 from roundup.i18n import _
+
 
 def copytree(src, dst, symlinks=0):
     """Recursively copy a directory tree using copyDigestedFile().
@@ -45,7 +46,7 @@ def copytree(src, dst, symlinks=0):
     try:
         os.mkdir(dst)
     except OSError as error:
-        if error.errno != errno.EEXIST: raise
+        if error.errno != errno.EEXIST: raise   # noqa
     for name in names:
         srcname = os.path.join(src, name)
         dstname = os.path.join(dst, name)
@@ -56,6 +57,7 @@ def copytree(src, dst, symlinks=0):
             copytree(srcname, dstname, symlinks)
         else:
             install_util.copyDigestedFile(srcname, dstname)
+
 
 def install(instance_home, template, settings={}):
     '''Install an instance using the named template and backend.
@@ -122,6 +124,7 @@ def listTemplates(dir):
             ret[ti['name']] = ti
     return ret
 
+
 def loadTemplateInfo(path):
     ''' Attempt to load a Roundup template from the indicated directory.
 
@@ -134,8 +137,8 @@ def loadTemplateInfo(path):
 
     if os.path.exists(os.path.join(path, 'config.py')):
         print(_("WARNING: directory '%s'\n"
-            "\tcontains old-style template - ignored"
-            ) % os.path.abspath(path))
+                "\tcontains old-style template - ignored")
+              % os.path.abspath(path))
         return None
 
     # load up the template's information
@@ -151,6 +154,7 @@ def loadTemplateInfo(path):
         f.close()
     return ti
 
+
 def writeHeader(name, value):
     ''' Write an rfc822-compatible header line, making it wrap reasonably
     '''
@@ -163,6 +167,7 @@ def writeHeader(name, value):
         out.append(' ' + word)
         n += len(out[-1])
     return ''.join(out) + '\n'
+
 
 def saveTemplateInfo(dir, info):
     ''' Save the template info (dict of values) to the TEMPLATE-INFO.txt
