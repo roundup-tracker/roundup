@@ -95,9 +95,8 @@ explanatory message given in the exception.
 from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
-import base64, re, os, smtplib, socket, binascii, io, functools
+import base64, re, os, io, functools
 import time, sys, logging
-import codecs
 import traceback
 import email
 import email.utils
@@ -108,7 +107,7 @@ from roundup.anypy.email_ import decode_header, message_from_bytes, \
 from roundup.anypy.my_input import my_input
 
 from roundup import configuration, hyperdb, date, password, exceptions
-from roundup.mailer import Mailer, MessageSendError
+from roundup.mailer import Mailer
 from roundup.i18n import _
 from roundup.hyperdb import iter_roles
 from roundup.anypy.strings import StringIO, b2s, u2s
@@ -121,29 +120,39 @@ except ImportError:
 
 SENDMAILDEBUG = os.environ.get('SENDMAILDEBUG', '')
 
+
 class MailGWError(ValueError):
     pass
 
+
 class MailUsageError(ValueError):
     pass
+
 
 class MailUsageHelp(BaseException):
     """ We need to send the help message to the user. """
     pass
 
+
 class Unauthorized(BaseException):
     """ Access denied """
     pass
 
+
 class IgnoreMessage(BaseException):
     """ A general class of message that we should ignore. """
     pass
+
+
 class IgnoreBulk(IgnoreMessage):
     """ This is email from a mailing list or from a vacation program. """
     pass
+
+
 class IgnoreLoop(IgnoreMessage):
     """ We've seen this message before... """
     pass
+
 
 def initialiseSecurity(security):
     ''' Create some Permissions and Roles on the security object
@@ -152,8 +161,9 @@ def initialiseSecurity(security):
         as a part of the Security object instantiation.
     '''
     p = security.addPermission(name="Email Access",
-        description="User may use the email interface")
+                               description="User may use the email interface")
     security.addPermissionToRole('Admin', p)
+
 
 def gpgh_key_getall(key, attr):
     ''' return list of given attribute for all uids in
@@ -161,6 +171,7 @@ def gpgh_key_getall(key, attr):
     '''
     for u in key.uids:
         yield getattr(u, attr)
+
 
 def check_pgp_sigs(sigs, gpgctx, author, may_be_unsigned=False):
     ''' Theoretically a PGP message can have several signatures. GPGME
@@ -180,23 +191,25 @@ def check_pgp_sigs(sigs, gpgctx, author, may_be_unsigned=False):
                 # try to narrow down the actual problem to give a more useful
                 # message in our bounce
                 if sig.summary & gpg.constants.sigsum.KEY_MISSING:
-                    raise MailUsageError( \
+                    raise MailUsageError(
                         _("Message signed with unknown key: %s") % sig.fpr)
                 elif sig.summary & gpg.constants.sigsum.KEY_EXPIRED:
-                    raise MailUsageError( \
+                    raise MailUsageError(
                         _("Message signed with an expired key: %s") % sig.fpr)
                 elif sig.summary & gpg.constants.sigsum.KEY_REVOKED:
-                    raise MailUsageError( \
+                    raise MailUsageError(
                         _("Message signed with a revoked key: %s") % sig.fpr)
                 else:
-                    raise MailUsageError( \
+                    raise MailUsageError(
                         _("Invalid PGP signature detected."))
 
     # we couldn't find a key belonging to the author of the email
     if sigs:
-        raise MailUsageError(_("Message signed with unknown key: %s") % sig.fpr)
+        raise MailUsageError(_("Message signed with unknown key: %s") %
+                             sig.fpr)
     elif not may_be_unsigned:
         raise MailUsageError(_("Unsigned Message"))
+
 
 class RoundupMessage(email.message.Message):
     def _decode_header(self, hdr):
@@ -253,7 +266,8 @@ class RoundupMessage(email.message.Message):
         if content is not None:
             charset = self.get_content_charset()
             if charset or self.get_content_maintype() == 'text':
-                content = u2s(content.decode(charset or 'iso8859-1', 'replace'))
+                content = u2s(content.decode(
+                    charset or 'iso8859-1', 'replace'))
 
         return content
 
@@ -320,28 +334,29 @@ class RoundupMessage(email.message.Message):
             html_part_found = False
             for part in self.get_payload():
                 new_content, new_attach, html_part = part.extract_content(
-                     content_type, not content and ig, unpack_rfc822,
+                    content_type, not content and ig, unpack_rfc822,
                     html2text)
 
                 # If we haven't found a text/plain part yet, take this one,
                 # otherwise make it an attachment.
                 if not content:
                     content = new_content
-                    cpart   = part
+                    cpart = part
                     if html_part:
                         html_part_found = True
                 elif new_content:
                     if html_part:
                         # attachment should be added elsewhere.
                         pass
-                    elif content_found or content_type != 'multipart/alternative':
+                    elif content_found or content_type != \
+                         'multipart/alternative':
                         attachments.append(part.text_as_attachment())
                     elif html_part_found:
                         # text/plain part found after html
                         # text/html already stored as attachment,
                         # so just use the text as the content.
                         content = new_content
-                        cpart   = part
+                        cpart = part
                     else:
                         # if we have found a text/plain in the current
                         # multipart/alternative and find another one, we
@@ -352,7 +367,7 @@ class RoundupMessage(email.message.Message):
                         # out)
                         attachments.append(cpart.text_as_attachment())
                         content = new_content
-                        cpart   = part
+                        cpart = part
 
                 attachments.extend(new_attach)
             if ig and content_type == 'multipart/alternative' and content:
@@ -481,6 +496,7 @@ class RoundupMessage(email.message.Message):
         result = context.op_verify_result()
         check_pgp_sigs(result.signatures, context, author)
 
+
 class parsedMessage:
 
     def __init__(self, mailgw, message):
@@ -491,7 +507,7 @@ class parsedMessage:
         self.subject = message.get_header('subject', '')
         self.has_prefix = False
         self.matches = dict.fromkeys(['refwd', 'quote', 'classname',
-                                 'nodeid', 'title', 'args', 'argswhole'])
+                                      'nodeid', 'title', 'args', 'argswhole'])
         self.keep_real_from = self.config['EMAIL_KEEP_REAL_FROM']
         if self.keep_real_from:
             self.from_list = message.get_address_list('from')
@@ -557,27 +573,31 @@ Emails to Roundup trackers must include a Subject: line!
 
         # Look for Re: et. al. Used later on for MAILGW_SUBJECT_CONTENT_MATCH
         re_re = r"(?P<refwd>%s)\s*" % self.config["MAILGW_REFWD_RE"].pattern
-        m = re.match(re_re, tmpsubject, re.IGNORECASE|re.VERBOSE|re.UNICODE)
+        m = re.match(re_re, tmpsubject,
+                     re.IGNORECASE | re.VERBOSE | re.UNICODE)
         if m:
             m = m.groupdict()
             if m['refwd']:
                 self.matches.update(m)
-                tmpsubject = tmpsubject[len(m['refwd']):] # Consume Re:
+                tmpsubject = tmpsubject[len(m['refwd']):]  # Consume Re:
 
         # Look for Leading "
         m = re.match(r'(?P<quote>\s*")', tmpsubject,
                      re.IGNORECASE)
         if m:
             self.matches.update(m.groupdict())
-            tmpsubject = tmpsubject[len(self.matches['quote']):] # Consume quote
+            # Consume quote
+            tmpsubject = tmpsubject[len(self.matches['quote']):]
 
         # Check if the subject includes a prefix
-        self.has_prefix = re.search(r'^%s(\w+)%s'%(delim_open,
-            delim_close), tmpsubject.strip())
+        self.has_prefix = re.search(r'^%s(\w+)%s' % (delim_open,
+                                                     delim_close),
+                                    tmpsubject.strip())
 
         # Match the classname if specified
-        class_re = r'%s(?P<classname>(%s))(?P<nodeid>\d+)?%s'%(delim_open,
-            "|".join(self.db.getclasses()), delim_close)
+        class_re = r'%s(?P<classname>(%s))(?P<nodeid>\d+)?%s' %  \
+                   (delim_open, "|".join(self.db.getclasses()),
+                    delim_close)
         # Note: re.search, not re.match as there might be garbage
         # (mailing list prefix, etc.) before the class identifier
         m = re.search(class_re, tmpsubject, re.IGNORECASE)
@@ -595,17 +615,17 @@ Emails to Roundup trackers must include a Subject: line!
         q = ''
         if self.matches['quote']:
             q = '"?'
-        args_re = r'(?P<argswhole>%s(?P<args>[^%s]*)%s)%s$'%(delim_open,
+        args_re = r'(?P<argswhole>%s(?P<args>[^%s]*)%s)%s$' % (delim_open,
             delim_close, delim_close, q)
-        m = re.search(args_re, tmpsubject.strip(), re.IGNORECASE|re.VERBOSE)
+        m = re.search(args_re, tmpsubject.strip(), re.IGNORECASE | re.VERBOSE)
         if m:
             self.matches.update(m.groupdict())
-            tmpsubject = tmpsubject [:m.start()]
+            tmpsubject = tmpsubject[:m.start()]
         else:
             self.matches['argswhole'] = self.matches['args'] = None
 
         # The title of the subject is the remaining tmpsubject.
-        self.matches ['title'] = tmpsubject.strip ()
+        self.matches['title'] = tmpsubject.strip()
 
         # strip off the quotes that dumb emailers put around the subject, like
         #      Re: "[issue1] bla blah"
@@ -705,7 +725,6 @@ Subject was: '%(subject)s'
         # get the class properties
         self.properties = self.cl.getprops()
 
-
     def get_nodeid(self):
         ''' Determine the nodeid from the message and return it if found
         '''
@@ -722,8 +741,7 @@ Subject was: '%(subject)s'
         if nodeid is None and inreplyto:
             l = self.db.getclass('msg').stringFind(messageid=inreplyto)
             if l:
-                nodeid = self.cl.filter(None, {'messages':l})[0]
-
+                nodeid = self.cl.filter(None, {'messages': l})[0]
 
         # but we do need either a title or a nodeid...
         if nodeid is None and not title:
@@ -828,7 +846,7 @@ Unknown address: %(from_address)s
                     ) % self.__dict__)
         else:
             if not self.db.security.hasPermission('Create', self.author,
-                    self.classname):
+                                                  self.classname):
                 raise Unauthorized(_(
                     'You are not permitted to create %(classname)s.'
                     ) % self.__dict__)
@@ -873,7 +891,8 @@ Unknown address: %(from_address)s
 
             # look up the recipient - create if necessary (and we're
             # allowed to)
-            recipient = uidFromAddress(self.db, recipient, create, **user_props)
+            recipient = uidFromAddress(self.db, recipient, create,
+                                       **user_props)
 
             # if all's well, add the recipient to the list
             if recipient:
@@ -906,7 +925,7 @@ Unknown address: %(from_address)s
                 title += ' ' + argswhole
             else:
                 errors, props = setPropArrayFromString(self, self.cl, args,
-                    self.nodeid)
+                                                       self.nodeid)
                 # handle any errors parsing the argument list
                 if errors:
                     if self.sfxmode == 'strict':
@@ -920,20 +939,20 @@ Subject was: "%(subject)s"
                     else:
                         title += ' ' + argswhole
 
-
         # set the issue title to the subject
         title = title.strip()
-        if (title and 'title' in self.properties and 'title' not in issue_props):
+        if (title and 'title' in self.properties and 'title'
+            not in issue_props):
             issue_props['title'] = title
         if (self.nodeid and 'title' in self.properties and not
                 self.config['MAILGW_SUBJECT_UPDATES_TITLE']):
-            issue_props['title'] = self.cl.get(self.nodeid,'title')
+            issue_props['title'] = self.cl.get(self.nodeid, 'title')
 
         # merge the command line props defined in issue_props into
         # the props dictionary because function(**props, **issue_props)
         # is a syntax error.
-        for prop in issue_props.keys() :
-            if prop not in props :
+        for prop in issue_props.keys():
+            if prop not in props:
                 props[prop] = issue_props[prop]
 
         self.props = props
@@ -961,7 +980,7 @@ Subject was: "%(subject)s"
             if self.config.PGP_HOMEDIR:
                 os.environ['GNUPGHOME'] = self.config.PGP_HOMEDIR
             if self.config.PGP_REQUIRE_INCOMING in ('encrypted', 'both') \
-                and pgp_role() and not self.message.pgp_encrypted():
+               and pgp_role() and not self.message.pgp_encrypted():
                 raise MailUsageError(_(
                     "This tracker has been configured to require all email "
                     "be PGP encrypted."))
@@ -982,7 +1001,7 @@ Subject was: "%(subject)s"
                 try:
                     # see if the message has a valid signature
                     message = self.message.decrypt(author_address,
-                                                   may_be_unsigned = False)
+                                                   may_be_unsigned=False)
                     # only set if MailUsageError is not raised
                     # indicating that we have a valid signature
                     self.db.tx_Source = "email-sig-openpgp"
@@ -992,7 +1011,7 @@ Subject was: "%(subject)s"
                     # need signatures.
                     if encr_only:
                         message = self.message.decrypt(author_address,
-                                               may_be_unsigned = encr_only)
+                                               may_be_unsigned=encr_only)
                     else:
                         # something failed with the message decryption/sig
                         # chain. Pass the error up.
@@ -1008,14 +1027,15 @@ encrypted."""))
         ''' get the attachments and first text part from the message
         '''
         from roundup.dehtml import dehtml
-        html2text=dehtml(self.config['MAILGW_CONVERT_HTMLTOTEXT']).html2text
+        html2text = dehtml(self.config['MAILGW_CONVERT_HTMLTOTEXT']).html2text
 
         ig = self.config.MAILGW_IGNORE_ALTERNATIVES
         self.message.instance = self.mailgw.instance
-        self.content, self.attachments, html_part = self.message.extract_content(
-            ignore_alternatives=ig,
-            unpack_rfc822=self.config.MAILGW_UNPACK_RFC822,
-            html2text=html2text )
+        self.content, self.attachments, html_part = \
+            self.message.extract_content(
+                ignore_alternatives=ig,
+                unpack_rfc822=self.config.MAILGW_UNPACK_RFC822,
+                html2text=html2text)
 
     def create_files(self):
         ''' Create a file for each attachment in the message
@@ -1028,14 +1048,14 @@ encrypted."""))
         if self.attachments:
             for (name, mime_type, data) in self.attachments:
                 if not self.db.security.hasPermission('Create', self.author,
-                    'file'):
+                                                      'file'):
                     raise Unauthorized(_(
                         'You are not permitted to create files.'))
                 if not name:
                     name = "unnamed"
                 try:
                     fileid = self.db.file.create(type=mime_type, name=name,
-                         content=data, **file_props)
+                                                 content=data, **file_props)
                 except exceptions.Reject:
                     pass
                 else:
@@ -1062,14 +1082,14 @@ encrypted."""))
         if 'messages' not in self.properties:
             return
         msg_props = self.mailgw.get_class_arguments('msg')
-        self.msg_props.update (msg_props)
+        self.msg_props.update(msg_props)
 
         # Get the message ids
         inreplyto = self.message.get_header('in-reply-to') or ''
         messageid = self.message.get_header('message-id')
         # generate a messageid if there isn't one
         if not messageid:
-            messageid = "<%s.%s.%s%s@%s>"%(time.time(),
+            messageid = "<%s.%s.%s%s@%s>" % (time.time(),
                 b2s(base64.b32encode(random_.token_bytes(10))),
                 self.classname, self.nodeid, self.config['MAIL_DOMAIN'])
 
@@ -1079,11 +1099,13 @@ Roundup requires the submission to be plain text. The message parser could
 not find a text/plain part to use.
 """))
         # parse the body of the message, stripping out bits as appropriate
-        summary, content = parseContent(self.content, config=self.config, is_new_issue = not bool(self.nodeid))
+        summary, content = parseContent(self.content, config=self.config,
+                                        is_new_issue=not bool(self.nodeid))
         content = content.strip()
 
         if content:
-            if not self.db.security.hasPermission('Create', self.author, 'msg'):
+            if not self.db.security.hasPermission('Create',
+                                                  self.author, 'msg'):
                 raise Unauthorized(_(
                     'You are not permitted to create messages.'))
 
@@ -1092,7 +1114,7 @@ not find a text/plain part to use.
                     recipients=self.recipients, date=date.Date('.'),
                     summary=summary, content=content,
                     messageid=messageid, inreplyto=inreplyto, **self.msg_props)
-            except exceptions.Reject as error:
+            except exceptions.Reject as error:  # noqa error is used
                 raise MailUsageError(_("""
 Mail message was rejected by a detector.
 %(error)s
@@ -1122,22 +1144,24 @@ Mail message was rejected by a detector.
                 # Check permissions for each property
                 for prop in self.props.keys():
                     if not self.db.security.hasPermission('Edit', self.author,
-                            classname, prop):
+                                                          classname, prop):
                         raise Unauthorized(_('You are not permitted to edit '
-                            'property %(prop)s of class %(classname)s.'
-                            ) % locals())
+                            'property %(prop)s of class %(classname)s.') %
+                                           locals())
                 self.cl.set(self.nodeid, **self.props)
             else:
                 # Check permissions for each property
                 for prop in self.props.keys():
-                    if not self.db.security.hasPermission('Create', self.author,
-                            classname, prop):
+                    if not self.db.security.hasPermission('Create',
+                                        self.author, classname, prop):
                         raise Unauthorized(_('You are not permitted to set '
-                            'property %(prop)s of class %(classname)s.'
-                            ) % locals())
+                            'property %(prop)s of class %(classname)s.') %
+                                           locals())
                 self.nodeid = self.cl.create(**self.props)
-        except (TypeError, IndexError, ValueError, exceptions.Reject) as message:
-            self.mailgw.logger.exception("Rejecting email due to node creation error:")
+        except (TypeError, IndexError,
+                ValueError, exceptions.Reject) as message:  # noqa: F841
+            self.mailgw.logger.exception(
+                     "Rejecting email due to node creation error:")
             raise MailUsageError(_("""
 There was a problem with the message you sent:
    %(message)s
@@ -1202,10 +1226,9 @@ There was a problem with the message you sent:
         ("create_msg", False),
     ]
 
-
-    def parse (self):
+    def parse(self):
         for methodname, flag in self.method_list:
-            method = getattr (self, methodname)
+            method = getattr(self, methodname)
             ret = method()
             if flag and ret:
                 return
@@ -1282,7 +1305,8 @@ class MailGW:
                 mbox = mailbox.mbox(filename, factory=mboxRoundupMessage,
                                     create=False)
                 mbox.lock()
-            except (mailbox.NoSuchMailboxError, mailbox.ExternalClashError) as e:
+            except (mailbox.NoSuchMailboxError,
+                    mailbox.ExternalClashError) as e:
                 if isinstance(e, mailbox.ExternalClashError):
                     mbox.close()
                 traceback.print_exc()
@@ -1301,8 +1325,7 @@ class MailGW:
 
         return 0
 
-    def do_imap(self, server, user='', password='', mailbox='', ssl=0,
-            cram=0):
+    def do_imap(self, server, user='', password='', mailbox='', ssl=0, cram=0):
         ''' Do an IMAP connection
         '''
         import getpass, imaplib, socket
@@ -1318,10 +1341,10 @@ class MailGW:
         # open a connection to the server and retrieve all messages
         try:
             if ssl:
-                self.logger.debug('Trying server %r with ssl'%server)
+                self.logger.debug('Trying server %r with ssl' % server)
                 server = imaplib.IMAP4_SSL(server)
             else:
-                self.logger.debug('Trying server %r without ssl'%server)
+                self.logger.debug('Trying server %r without ssl' % server)
                 server = imaplib.IMAP4(server)
         except (imaplib.IMAP4.error, socket.error, socket.sslerror):
             self.logger.exception('IMAP server error')
@@ -1333,7 +1356,7 @@ class MailGW:
             else:
                 server.login(user, password)
         except imaplib.IMAP4.error as e:
-            self.logger.exception('IMAP login failure')
+            self.logger.exception('IMAP login failure: %s' % e)
             return 1
 
         try:
@@ -1342,14 +1365,14 @@ class MailGW:
             else:
                 (typ, data) = server.select(mailbox=mailbox)
             if typ != 'OK':
-                self.logger.error('Failed to get mailbox %r: %s'%(mailbox,
-                    data))
+                self.logger.error('Failed to get mailbox %r: %s' % (mailbox,
+                                                                    data))
                 return 1
             try:
                 numMessages = int(data[0])
-            except ValueError as value:
-                self.logger.error('Invalid message count from mailbox %r'%
-                    data[0])
+            except ValueError:
+                self.logger.error('Invalid message count from mailbox %r' %
+                                  data[0])
                 return 1
             for i in range(1, numMessages+1):
                 (typ, data) = server.fetch(str(i), '(RFC822)')
@@ -1365,12 +1388,11 @@ class MailGW:
         finally:
             try:
                 server.expunge()
-            except:
+            except (imaplib.IMAP4.error, socket.error, socket.sslerror):
                 pass
             server.logout()
 
         return 0
-
 
     def do_apop(self, server, user='', password='', ssl=False):
         ''' Do authentication POP
@@ -1393,7 +1415,7 @@ class MailGW:
         # See, e.g.,
         # https://readlist.com/lists/python.org/python-list/69/346982.html
         # https://stackoverflow.com/questions/30976106/python-poplib-error-proto-line-too-+long?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
-        if 0 < getattr (poplib, '_MAXLINE', -1) < 100*1024:
+        if 0 < getattr(poplib, '_MAXLINE', -1) < 100*1024:
             poplib._MAXLINE = 100*1024
         try:
             if not user:
@@ -1439,7 +1461,8 @@ class MailGW:
     def main(self, fp):
         ''' fp - the file from which to read the Message.
         '''
-        return self.handle_Message(message_from_binary_file(fp, RoundupMessage))
+        return self.handle_Message(message_from_binary_file(fp,
+                                                            RoundupMessage))
 
     def handle_Message(self, message):
         """Handle an RFC822 Message
@@ -1468,7 +1491,7 @@ class MailGW:
 
         msg = 'Handling message'
         if message.get_header('message-id'):
-            msg += ' (Message-id=%r)'%message.get_header('message-id')
+            msg += ' (Message-id=%r)' % message.get_header('message-id')
         self.logger.info(msg)
 
         # try normal message-handling
@@ -1492,7 +1515,7 @@ class MailGW:
             m.append('\n\nMail Gateway Help\n=================')
             m.append(fulldoc)
             self.mailer.bounce_message(message, [sendto[0][1]], m,
-                subject="Mail Gateway Help")
+                                       subject="Mail Gateway Help")
         except MailUsageError as value:
             # bounce the message back to the sender with the usage message
             self.logger.debug("MailUsageError raised, bouncing.")
@@ -1519,13 +1542,13 @@ class MailGW:
             # this exception is thrown when email should be ignored
             msg = 'IgnoreMessage raised'
             if message.get_header('message-id'):
-                msg += ' (Message-id=%r)'%message.get_header('message-id')
+                msg += ' (Message-id=%r)' % message.get_header('message-id')
             self.logger.info(msg)
             return
-        except:
+        except Exception:
             msg = 'Exception handling message'
             if message.get_header('message-id'):
-                msg += ' (Message-id=%r)'%message.get_header('message-id')
+                msg += ' (Message-id=%r)' % message.get_header('message-id')
             self.logger.exception(msg)
 
             # bounce the message back to the sender with the error message
@@ -1541,7 +1564,8 @@ class MailGW:
 
             m.append('----------------')
             m.append(traceback.format_exc())
-            self.mailer.bounce_message(message, [self.instance.config.ADMIN_EMAIL], m)
+            self.mailer.bounce_message(message,
+                                       [self.instance.config.ADMIN_EMAIL], m)
 
     def handle_message(self, message):
         ''' message - a Message instance
@@ -1549,7 +1573,7 @@ class MailGW:
         Parse the message as per the module docstring.
         '''
         # get database handle for handling one email
-        self.db = self.instance.open ('admin')
+        self.db = self.instance.open('admin')
 
         self.db.tx_Source = "email"
 
@@ -1566,7 +1590,7 @@ class MailGW:
         that closes the database.
         '''
         self.parsed_message = self.parsed_message_class(self, message)
-        nodeid = self.parsed_message.parse ()
+        nodeid = self.parsed_message.parse()
 
         # commit the changes to the DB
         self.db.commit()
@@ -1593,11 +1617,11 @@ class MailGW:
         allprops = {}
 
         classname = classname or class_type
-        cls_lookup = { 'issue' : classname }
+        cls_lookup = {'issue': classname}
 
         # Allow other issue-type classes -- take the real classname from
         # previous parsing-steps of the message:
-        clsname = cls_lookup.get (class_type, class_type)
+        clsname = cls_lookup.get(class_type, class_type)
 
         # check if the clsname is valid
         try:
@@ -1621,14 +1645,14 @@ The mail gateway is not properly set up. Please contact
             # We do this by looping over the list of self.arguments looking for
             # a -C to match the class we want, then use the -S setting string.
             for option, propstring in self.arguments:
-                if option in ( '-C', '--class'):
+                if option in ('-C', '--class'):
                     current_type = propstring.strip()
 
                     if current_type != class_type:
                         current_type = None
 
                 elif current_type and option in ('-S', '--set'):
-                    cls = cls_lookup.get (current_type, current_type)
+                    cls = cls_lookup.get(current_type, current_type)
                     temp_cl = self.db.getclass(cls)
                     errors, props = setPropArrayFromString(self,
                         temp_cl, propstring.strip())
@@ -1655,15 +1679,15 @@ def setPropArrayFromString(self, cl, propString, nodeid=None):
         # extract the property name and value
         try:
             propname, value = prop.split('=')
-        except ValueError as message:
+        except ValueError:
             errors.append(_('not of form [arg=value,value,...;'
-                'arg=value,value,...]'))
+                            'arg=value,value,...]'))
             return (errors, props)
         # convert the value to a hyperdb-usable value
         propname = propname.strip()
         try:
             props[propname] = hyperdb.rawToHyperdb(self.db, cl, nodeid,
-                propname, value)
+                                                   propname, value)
         except hyperdb.HyperdbValueError as message:
             errors.append(str(message))
     return errors, props
@@ -1744,14 +1768,17 @@ def uidFromAddress(db, address, create=1, **user_props):
         try:
             return db.user.create(username=trying, address=address,
                 realname=realname, roles=db.config.NEW_EMAIL_USER_ROLES,
-                password=password.Password(password.generatePassword(), config=db.config),
+                password=password.Password(password.generatePassword(),
+                                           config=db.config),
                 **user_props)
         except exceptions.Reject:
             return 0
     else:
         return 0
 
-def parseContent(content, keep_citations=None, keep_body=None, config=None, is_new_issue=False):
+
+def parseContent(content, keep_citations=None, keep_body=None,
+                 config=None, is_new_issue=False):
     """Parse mail message; return message summary and stripped content
 
     The message body is divided into sections by blank lines.
@@ -1817,11 +1844,11 @@ def parseContent(content, keep_citations=None, keep_body=None, config=None, is_n
     summary = ''
     l = []
     # find last non-empty section for signature matching
-    last_nonempty = len(sections) -1
+    last_nonempty = len(sections) - 1
     while last_nonempty and not sections[last_nonempty]:
         last_nonempty -= 1
     for ns, section in enumerate(sections):
-        #section = section.strip()
+        # section = section.strip()
         if not section:
             continue
         lines = eol.split(section)
@@ -1845,7 +1872,7 @@ def parseContent(content, keep_citations=None, keep_body=None, config=None, is_n
                 continue
             # keep this section - it has reponse stuff in it
             if not keep_citations:
-                lines = lines[n+1:]
+                lines = lines[n + 1:]
             section = '\n'.join(lines)
 
         is_last = ns == last_nonempty
