@@ -47,7 +47,7 @@ def decode_header(header):
     # If it is a Header object, we can just return the encoded chunks.
     if hasattr(header, '_chunks'):
         return [(_charset._encode(string, str(charset)), str(charset))
-                    for string, charset in header._chunks]
+                for string, charset in header._chunks]
     # If no encoding, just return the header with no charset.
     if not ecre.search(header):
         return [(header, None)]
@@ -72,10 +72,9 @@ def decode_header(header):
                 words.append((encoded, encoding, charset))
     # Now loop over words and remove words that consist of whitespace
     # between two encoded strings.
-    import sys
     droplist = []
     for n, w in enumerate(words):
-        if n>1 and w[1] and words[n-2][1] and words[n-1][0].isspace():
+        if n > 1 and w[1] and words[n-2][1] and words[n-1][0].isspace():
             droplist.append(n-1)
     for d in reversed(droplist):
         del words[d]
@@ -92,7 +91,8 @@ def decode_header(header):
             word = quoprimime.header_decode(encoded_string)
             decoded_words.append((word, charset))
         elif encoding == 'b':
-            paderr = len(encoded_string) % 4   # Postel's law: add missing padding
+            # Postel's law: add missing padding
+            paderr = len(encoded_string) % 4
             if paderr:
                 encoded_string += '==='[:4 - paderr]
             try:
@@ -124,4 +124,3 @@ def decode_header(header):
             last_word += word
     collapsed.append((last_word, last_charset))
     return collapsed
-
