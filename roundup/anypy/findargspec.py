@@ -8,7 +8,7 @@ try:
     # Python 3+
     from inspect import getfullargspec as getargspec
     findargspec = getargspec
-except:
+except ImportError:
     # Python 2.5-2.7 modified from https://bugs.python.org/issue20828
     import inspect
 
@@ -17,7 +17,7 @@ except:
             inspectable = fn
         elif inspect.isclass(fn):
             inspectable = fn.__init__
-        elif hasattr(fn, '__call__'):
+        elif callable(fn):
             inspectable = fn.__call__
         else:
             inspectable = fn
