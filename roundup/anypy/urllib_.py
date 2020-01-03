@@ -4,7 +4,7 @@ try:
     from urllib.parse import quote, unquote, urlencode, urlparse, parse_qs, \
         urlunparse
     from urllib.request import urlopen
-except:
+except ImportError:
     # Python 2.5-2.7
     from urllib import quote, unquote, urlencode
     from urllib2 import urlopen
