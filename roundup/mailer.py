@@ -2,15 +2,14 @@
 """
 __docformat__ = 'restructuredtext'
 
-import time, quopri, os, socket, smtplib, re, sys, traceback, email, logging
+import time, os, socket, smtplib, sys, traceback, logging
 
 from roundup import __version__
 from roundup.date import get_timezone, Date
 
 from email import charset
-from email.utils import formatdate, formataddr, specialsre, escapesre
+from email.utils import formatdate, specialsre, escapesre
 from email.charset import Charset
-from email.message import Message
 from email.header import Header
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
@@ -18,7 +17,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.nonmultipart import MIMENonMultipart
 
 from roundup.anypy import email_
-from roundup.anypy.strings import b2s, s2b, s2u
+from roundup.anypy.strings import b2s, s2u
 
 try:
     import gpg, gpg.core
@@ -28,6 +27,7 @@ except ImportError:
 
 class MessageSendError(RuntimeError):
     pass
+
 
 def nice_sender_header(name, address, charset):
     # construct an address header so it's as human-readable as possible
@@ -42,11 +42,12 @@ def nice_sender_header(name, address, charset):
 
     # the important bits of formataddr()
     if specialsre.search(encname):
-        encname = '"%s"'%escapesre.sub(r'\\\g<0>', encname)
+        encname = '"%s"' % escapesre.sub(r'\\\g<0>', encname)
 
     # now format the header as a string - don't return a Header as anonymous
     # headers play poorly with Messages (eg. won't get wrapped properly)
-    return '%s <%s>'%(encname, address)
+    return '%s <%s>' % (encname, address)
+
 
 class Mailer:
     """Roundup-specific mail sending."""
@@ -127,7 +128,8 @@ class Mailer:
         if multipart:
             message = MIMEMultipart()
         else:
-            message = self.get_text_message(getattr(self.config, 'EMAIL_CHARSET', 'utf-8'))
+            message = self.get_text_message(getattr(self.config,
+                                                    'EMAIL_CHARSET', 'utf-8'))
 
         return message
 
@@ -169,7 +171,7 @@ class Mailer:
             to = None
         # see whether we should send to the dispatcher or not
         dispatcher_email = getattr(self.config, "DISPATCHER_EMAIL",
-            getattr(self.config, "ADMIN_EMAIL"))
+                                   getattr(self.config, "ADMIN_EMAIL"))
         error_messages_to = getattr(self.config, "ERROR_MESSAGES_TO", "user")
         if error_messages_to == "dispatcher":
             to = [dispatcher_email]
@@ -227,18 +229,19 @@ class Mailer:
         if crypt_to:
             try:
                 ctx.op_encrypt(keys, 1, plain, cipher)
-                cipher.seek(0,0)
-                message=MIMEMultipart('encrypted', boundary=None,
-                    _subparts=None, protocol="application/pgp-encrypted")
-                part=MIMEBase('application', 'pgp-encrypted')
+                cipher.seek(0, 0)
+                message = MIMEMultipart('encrypted', boundary=None,
+                                        _subparts=None,
+                                        protocol="application/pgp-encrypted")
+                part = MIMEBase('application', 'pgp-encrypted')
                 part.set_payload("Version: 1\r\n")
                 message.attach(part)
-                part=MIMEBase('application', 'octet-stream')
+                part = MIMEBase('application', 'octet-stream')
                 part.set_payload(cipher.read())
                 message.attach(part)
             except gpg.GPGMEError:
                 self.logger.debug("bounce_message: Cannot encrypt to %s",
-                                  str(crypto_to))
+                                  str(crypt_to))
                 crypt_to = None
         if crypt_to:
             self.set_message_attributes(message, crypt_to, subject)
@@ -253,7 +256,7 @@ class Mailer:
         '''Send a message to the admins with information about the latest
         traceback.
         '''
-        subject = '%s: %s'%(self.config.TRACKER_NAME, sys.exc_info()[1])
+        subject = '%s: %s' % (self.config.TRACKER_NAME, sys.exc_info()[1])
         to = [self.config.ADMIN_EMAIL]
         content = '\n'.join(traceback.format_exception(*sys.exc_info()))
         self.standard_message(to, subject, content)
@@ -274,7 +277,7 @@ class Mailer:
             # don't send - just write to a file, use unix from line so
             # that resulting file can be openened in a mailer
             fmt = '%a %b %m %H:%M:%S %Y'
-            unixfrm = 'From %s %s' % (sender, Date ('.').pretty (fmt))
+            unixfrm = 'From %s %s' % (sender, Date('.').pretty(fmt))
             open(self.debug, 'a').write('%s\nFROM: %s\nTO: %s\n%s\n\n' %
                                         (unixfrm, sender,
                                          ', '.join(to), message))
@@ -287,9 +290,10 @@ class Mailer:
                 smtp.sendmail(sender, to, message)
             except socket.error as value:
                 raise MessageSendError("Error: couldn't send email: "
-                                       "mailhost %s"%value)
+                                       "mailhost %s" % value)
             except smtplib.SMTPException as msg:
-                raise MessageSendError("Error: couldn't send email: %s"%msg)
+                raise MessageSendError("Error: couldn't send email: %s" % msg)
+
 
 class SMTPConnection(smtplib.SMTP):
     ''' Open an SMTP connection to the mailhost specified in the config
@@ -302,7 +306,7 @@ class SMTPConnection(smtplib.SMTP):
         if config["MAIL_TLS"]:
             self.ehlo()
             self.starttls(config["MAIL_TLS_KEYFILE"],
-                config["MAIL_TLS_CERTFILE"])
+                          config["MAIL_TLS_CERTFILE"])
 
         # ok, now do we also need to log in?
         mailuser = config["MAIL_USERNAME"]
