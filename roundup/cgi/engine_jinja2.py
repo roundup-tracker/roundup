@@ -42,6 +42,7 @@ import sys
 from roundup.cgi.templating import context, LoaderBase, TemplateBase
 from roundup.anypy.strings import s2u
 
+
 class Jinja2Loader(LoaderBase):
     def __init__(self, dir):
         self._env = jinja2.Environment(
@@ -78,6 +79,7 @@ class Jinja2Loader(LoaderBase):
     def precompile(self):
         pass
 
+
 class Jinja2ProxyPageTemplate(TemplateBase):
     def __init__(self, template):
         self._tpl = template
@@ -87,14 +89,15 @@ class Jinja2ProxyPageTemplate(TemplateBase):
         c = context(client, self, classname, request)
         c.update({'options': options})
         s = self._tpl.render(c)
-        return s if sys.version_info[0] > 2 else s.encode(client.STORAGE_CHARSET, )
+        return s if sys.version_info[0] > 2 else \
+            s.encode(client.STORAGE_CHARSET, )
 
     def __getitem__(self, name):
         # [ ] figure out what are these for
-        raise NotImplemented
+        raise NotImplementedError
         #return self._pt[name]
 
     def __getattr__(self, name):
         # [ ] figure out what are these for
-        raise NotImplemented
+        raise NotImplementedError
         #return getattr(self._pt, name)
