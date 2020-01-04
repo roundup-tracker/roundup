@@ -95,9 +95,9 @@ class Jinja2ProxyPageTemplate(TemplateBase):
     def __getitem__(self, name):
         # [ ] figure out what are these for
         raise NotImplementedError
-        #return self._pt[name]
+        # return self._pt[name]
 
     def __getattr__(self, name):
         # [ ] figure out what are these for
         raise NotImplementedError
-        #return getattr(self._pt, name)
+        # return getattr(self._pt, name)
