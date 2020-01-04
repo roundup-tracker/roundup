@@ -27,6 +27,7 @@ from mod_python import apache
 import roundup.instance
 from roundup.cgi import TranslationService
 
+
 class Headers(dict):
 
     """HTTP headers wrapper"""
@@ -35,6 +36,7 @@ class Headers(dict):
         """Initialize with `apache.table`"""
         super(Headers, self).__init__(headers)
         self.getheader = self.get
+
 
 class Request(object):
 
@@ -73,15 +75,15 @@ class Request(object):
         """NOOP. There aint no such thing as 'end_headers' in mod_python"""
         pass
 
- 
-    def sendfile(self, filename, offset = 0, len = -1):
+    def sendfile(self, filename, offset=0, len=-1):
         """Send 'filename' to the user."""
 
         return self._req.sendfile(filename, offset, len)
 
+
 __tracker_cache = {}
 """A cache of optimized tracker instances.
- 
+
 The keys are strings giving the directories containing the trackers.
 The values are tracker instances."""
 
@@ -118,7 +120,7 @@ def handler(req):
                 # The tracker may have been added while we were acquiring
                 # the lock.
                 if _home in __tracker_cache:
-                    _tracker = __tracker_cache[home]
+                    _tracker = __tracker_cache[_home]
                 else:
                     _tracker = roundup.instance.open(_home, optimize=1)
                     __tracker_cache[_home] = _tracker
