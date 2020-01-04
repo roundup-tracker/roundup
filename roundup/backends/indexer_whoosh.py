@@ -1,11 +1,12 @@
 ''' This implements the full-text indexer using Whoosh.
 '''
-import re, os
+import os
 
 from whoosh import fields, qparser, index, query, analysis
 
 from roundup.backends.indexer_common import Indexer as IndexerBase
 from roundup.anypy.strings import us2u
+
 
 class Indexer(IndexerBase):
     def __init__(self, db):
@@ -23,13 +24,13 @@ class Indexer(IndexerBase):
                 # StandardAnalyzer lowercases all words and configure it to
                 # block stopwords and words with lengths not between
                 # self.minlength and self.maxlength from indexer_common
-                stopfilter =  analysis.StandardAnalyzer( #stoplist=self.stopwords,
+                stopfilter = analysis.StandardAnalyzer(  #stoplist=self.stopwords,
                                                         minsize=self.minlength,
                                                         maxsize=self.maxlength)
                 os.mkdir(path)
                 schema = fields.Schema(identifier=fields.ID(stored=True,
                                                             unique=True),
-                                       content=fields.TEXT(analyzer=stopfilter))
+                                   content=fields.TEXT(analyzer=stopfilter))
                 index.create_in(path, schema)
             self.index = index.open_dir(path)
         return self.index
@@ -84,7 +85,7 @@ class Indexer(IndexerBase):
         # We use the identifier twice: once in the actual "text" being
         # indexed so we can search on it, and again as the "data" being
         # indexed so we know what we're matching when we get results
-        identifier = u"%s:%s:%s"%identifier
+        identifier = u"%s:%s:%s" % identifier
 
         # FIXME need to enhance this to handle the whoosh.store.LockError
         # that maybe raised if there is already another process with a lock.
@@ -111,19 +112,18 @@ class Indexer(IndexerBase):
         * more rules here
         '''
 
-        wordlist = [ word for word in wordlist
-                     if (self.minlength <= len(word) <= self.maxlength) and
-                        not self.is_stopword(word.upper()) ]
+        wordlist = [word for word in wordlist
+                    if (self.minlength <= len(word) <= self.maxlength) and
+                    not self.is_stopword(word.upper())]
 
         if not wordlist:
             return {}
 
         searcher = self._get_searcher()
-        q = query.And([ query.FuzzyTerm("content", word.lower())
-                        for word in wordlist ])
+        q = query.And([query.FuzzyTerm("content", word.lower())
+                        for word in wordlist])
 
         results = searcher.search(q, limit=None)
 
         return [tuple(result["identifier"].split(':'))
                 for result in results]
-
