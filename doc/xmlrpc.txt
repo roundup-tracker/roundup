@@ -50,10 +50,11 @@ stand alone roundup-xmlrpc-server
 Using roundup to access the xmlrpc interface is preferred. Roundup
 provides better control over who can use the interface.
 
-The Roundup XML-RPC standalone server must be started before remote clients can access the
-tracker via XML-RPC. ``roundup-xmlrpc-server`` is installed in the scripts
-directory alongside ``roundup-server`` and roundup-admin``. When invoked, the
-location of the tracker instance must be specified.
+The Roundup XML-RPC standalone server must be started before remote
+clients can access the tracker via XML-RPC. ``roundup-xmlrpc-server``
+is installed in the scripts directory alongside ``roundup-server`` and
+``roundup-admin``. When invoked, the location of the tracker instance
+must be specified.
 
 	roundup-xmlrpc-server -i ``/path/to/tracker``
 
@@ -62,17 +63,23 @@ The default port is ``8000``. An alternative port can be specified with the
 
 security consideration
 ----------------------
-Note that the current ``roundup-xmlrpc-server`` implementation does not
-support SSL. This means that usernames and passwords will be passed in
-cleartext unless the server is being proxied behind another server (such as
-Apache or lighttpd) that provide SSL.
+Both the standalone and embedded roundup XML endpoints used the
+default python XML parser. This parser is know to have security
+issues. For details see: https://pypi.python.org/pypi/defusedxml/.
+You may wish to use the rest interface which doesn't have the same
+issues. Patches with tests to roundup to use defusedxml are welcome.
 
+Note that the current ``roundup-xmlrpc-server`` implementation does
+not support SSL. This means that usernames and passwords will be
+passed in cleartext unless the server is being proxied behind another
+server (such as Apache or lighttpd) that provide SSL.
 
 Client API
 ----------
-The server currently implements four methods. Each method requires that the
-user provide a username and password in the HTTP authorization header in order
-to authenticate the request against the tracker.
+The server currently implements four methods. Each method requires
+that the user provide a username and password in the HTTP
+authorization header in order to authenticate the request against the
+tracker.
 
 ======= ====================================================================
 Command Description

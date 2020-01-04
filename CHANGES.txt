@@ -70,6 +70,7 @@ Fixed:
   is used. Fixed three places where the value of a hidden @action
   input field was translated. (Reported by Ludwig Reiter. John
   Rouillard)
+- Document security issues in xmlrpc interface in doc/xmlrpc.txt.
 
 2019-10-23 2.0.0 alpha 0
 
