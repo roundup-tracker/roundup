@@ -64,7 +64,7 @@ if os.name == 'nt':
 
     # --- the code is taken from pyserial project ---
     #
-    # detect size of ULONG_PTR 
+    # detect size of ULONG_PTR
     def is_64bit():
         return ctypes.sizeof(ctypes.c_ulong) != ctypes.sizeof(ctypes.c_void_p)
     if is_64bit():
@@ -102,7 +102,7 @@ if os.name == 'nt':
     UnlockFileEx = windll.kernel32.UnlockFileEx
     UnlockFileEx.restype = BOOL
     UnlockFileEx.argtypes = [HANDLE, DWORD, DWORD, DWORD, LPOVERLAPPED]
-            
+
 elif os.name == 'posix':
     import fcntl
     LOCK_SH = fcntl.LOCK_SH  # shared lock
@@ -116,7 +116,8 @@ if os.name == 'nt':
         """ Return True on success, False otherwise """
         hfile = msvcrt.get_osfhandle(file.fileno())
         overlapped = OVERLAPPED()
-        if LockFileEx(hfile, flags, 0, 0, 0xFFFF0000, ctypes.byref(overlapped)):
+        if LockFileEx(hfile, flags, 0, 0, 0xFFFF0000,
+                      ctypes.byref(overlapped)):
             return True
         else:
             return False
@@ -129,7 +130,7 @@ if os.name == 'nt':
         else:
             return False
 
-elif os.name =='posix':
+elif os.name == 'posix':
     def lock(file, flags):
         if fcntl.flock(file.fileno(), flags) == 0:
             return True
@@ -150,10 +151,9 @@ if __name__ == '__main__':
     lock(log, LOCK_EX)
 
     timestamp = strftime("%m/%d/%Y %H:%M:%S\n", localtime(time()))
-    log.write( timestamp )
+    log.write(timestamp)
 
     print("Wrote lines. Hit enter to release lock.")
     dummy = sys.stdin.readline()
 
     log.close()
-
