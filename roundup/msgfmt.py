@@ -53,7 +53,9 @@ else:
         return p.parsestr(s.encode('utf-8', 'ignore')).get_content_charset()
 
     from cStringIO import StringIO as BytesIO
-    FILE_TYPE = file
+    # file is a type defined only under python 2.
+    # Flake8 when run in py3 flags this.
+    FILE_TYPE = file  # noqa: 821  
 
 
 class PoSyntaxError(Exception):
