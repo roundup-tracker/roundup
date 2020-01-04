@@ -1,6 +1,7 @@
 try:
     from secrets import choice, randbelow, token_bytes
-    def seed(v = None):
+
+    def seed(v=None):
         pass
 
     is_weak = False
@@ -10,7 +11,7 @@ except ImportError:
 
     # prefer to use SystemRandom if it is available
     if hasattr(_random, 'SystemRandom'):
-        def seed(v = None):
+        def seed(v=None):
             pass
 
         _r = _random.SystemRandom()
@@ -18,7 +19,7 @@ except ImportError:
     else:
         # don't completely throw away the existing state, but add some
         # more random state to the existing state
-        def seed(v = None):
+        def seed(v=None):
             import os, time
             _r.seed((_r.getstate(),
                      v,
