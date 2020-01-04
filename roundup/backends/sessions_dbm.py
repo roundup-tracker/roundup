@@ -69,7 +69,7 @@ class BasicDatabase:
             else:
                 if default != self._marker:
                     return default
-                raise KeyError('No such %s "%s"'%(self.name, escape(infoid)))
+                raise KeyError('No such %s "%s"' % (self.name, escape(infoid)))
             return values.get(value, None)
         finally:
             db.close()
@@ -82,7 +82,7 @@ class BasicDatabase:
                 del d['__timestamp']
                 return d
             except KeyError:
-                raise KeyError('No such %s "%s"'%(self.name, escape(infoid)))
+                raise KeyError('No such %s "%s"' % (self.name, escape(infoid)))
         finally:
             db.close()
 
@@ -131,12 +131,12 @@ class BasicDatabase:
         # open the database with the correct module
         dbm = __import__(db_type)
 
-        retries_left=15
+        retries_left = 15
         while True:
             try:
                 handle = dbm.open(path, mode)
                 break
-            except OSError as e:
+            except OSError:
                 # Primarily we want to catch and retry:
                 #   [Errno 11] Resource temporarily unavailable retry
                 # FIXME: make this more specific
