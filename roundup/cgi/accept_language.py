@@ -31,9 +31,9 @@ import heapq
 # regexp for languange-range search
 nqlre = "([A-Za-z]+[-[A-Za-z]+]*)$"
 # regexp for languange-range search with quality value
-qlre  = r"([A-Za-z]+[-[A-Za-z]+]*);q=([\d\.]+)"
+qlre = r"([A-Za-z]+[-[A-Za-z]+]*);q=([\d\.]+)"
 # both
-lre   = re.compile(nqlre + "|" + qlre)
+lre = re.compile(nqlre + "|" + qlre)
 
 whitespace = ' \t\n\r\v\f'
 try:
@@ -42,6 +42,7 @@ try:
 except AttributeError:
     # Python 2.
     remove_ws = (None, whitespace)
+
 
 def parse(language_header):
     """parse(string_with_accept_header_content) -> languages list"""
@@ -71,7 +72,7 @@ def parse(language_header):
 
     # get the languages ordered by quality
     # and replace - by _
-    return [x[1].replace('-','_') for x in pq]
+    return [x[1].replace('-', '_') for x in pq]
 
 if __name__ == "__main__":
     import doctest
