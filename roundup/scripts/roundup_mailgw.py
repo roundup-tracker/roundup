@@ -42,11 +42,12 @@ import sys, os, re, getopt, socket, netrc
 from roundup import mailgw
 from roundup.i18n import _
 
+
 def usage(args, message=None):
     if message is not None:
         print(message)
     print(_(
-"""Usage: %(program)s [-v] [-c class] [[-C class] -S field=value]* [instance home] [mail source [specification]]
+        """Usage: %(program)s [-v] [-c class] [[-C class] -S field=value]* [instance home] [mail source [specification]]
 
 Options:
  -v: print version and exit
@@ -124,8 +125,9 @@ IMAPS_CRAM:
  This supports the same notation as IMAP.
     imaps_cram username:password@server [mailbox]
 
-""")%{'program': args[0]})
+""") % {'program': args[0]})
     return 1
+
 
 def main(argv):
     '''Handle the arguments to the program and initialise environment.
@@ -134,15 +136,15 @@ def main(argv):
     # arguments in the args array.
     try:
         optionsList, args = getopt.getopt(argv[1:], 'vc:C:S:', ['set=',
-            'class='])
+                                                                'class='])
     except getopt.GetoptError:
         # print help information and exit:
         usage(argv)
         sys.exit(2)
 
-    for (opt, arg) in optionsList:
+    for (opt, _arg) in optionsList:
         if opt == '-v':
-            print('%s (python %s)'%(roundup_version, sys.version.split()[0]))
+            print('%s (python %s)' % (roundup_version, sys.version.split()[0]))
             return
 
     # figure the instance home
@@ -168,7 +170,8 @@ def main(argv):
 
     # otherwise, figure what sort of mail source to handle
     if len(args) < 3:
-        return usage(argv, _('Error: not enough source specification information'))
+        return usage(argv, _(
+            'Error: not enough source specification information'))
     source, specification = args[1:3]
 
     # time out net connections after a minute if we can
@@ -202,8 +205,6 @@ def main(argv):
     # now invoke the mailgw handler depending on the server handler requested
     if source.startswith('pop'):
         ssl = source.endswith('s')
-        if ssl and sys.version_info<(2,4):
-            return usage(argv, _('Error: a later version of python is required'))
         return handler.do_pop(server, username, password, ssl)
     elif source == 'apop':
         return handler.do_apop(server, username, password)
@@ -217,13 +218,16 @@ def main(argv):
         if len(args) > 3:
             mailbox = args[3]
         return handler.do_imap(server, username, password, mailbox, ssl,
-            cram)
+                               cram)
 
     return usage(argv, _('Error: The source must be either "mailbox",'
-        ' "pop", "pops", "apop", "imap", "imaps" or "imaps_cram'))
+                         ' "pop", "pops", "apop", "imap", "imaps" or'
+                         ' "imaps_cram'))
+
 
 def run():
     sys.exit(main(sys.argv))
+
 
 # call main
 if __name__ == '__main__':
