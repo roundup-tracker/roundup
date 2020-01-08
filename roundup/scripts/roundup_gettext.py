@@ -28,10 +28,12 @@ from roundup.cgi.TAL import talgettext
 # i don't think this will ever need to be changed, but still...
 TEMPLATE_FILE = "messages.pot"
 
+
 def run():
     # return unless command line arguments contain single directory path
     if (len(sys.argv) != 2) or (sys.argv[1] in ("-h", "--help")):
-        print(_("Usage: %(program)s <tracker home>") % {"program": sys.argv[0]})
+        print(_("Usage: %(program)s <tracker home>") %
+              {"program": sys.argv[0]})
         return
     # collect file paths of html templates
     home = os.path.abspath(sys.argv[1])
@@ -40,8 +42,8 @@ def run():
         # glob is not used because i want to match file names
         # without case sensitivity, and that is easier done this way.
         htmlfiles = [filename for filename in os.listdir(htmldir)
-            if os.path.isfile(os.path.join(htmldir, filename))
-            and filename.lower().endswith(".html")]
+                     if os.path.isfile(os.path.join(htmldir, filename))
+                     and filename.lower().endswith(".html")]
     else:
         htmlfiles = []
     # return if no html files found
@@ -59,6 +61,7 @@ def run():
         + ["../html/" + filename for filename in htmlfiles]
     # run
     talgettext.main()
+
 
 if __name__ == "__main__":
     run()
