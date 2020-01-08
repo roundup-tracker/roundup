@@ -95,7 +95,7 @@ DEFAULT_PORT = 8080
 # "debug" means "none" + no tracker/template cache
 MULTIPROCESS_TYPES = ["debug", "none"]
 try:
-    import thread
+    import thread  # nosrc: F401
 except ImportError:
     pass
 else:
@@ -103,6 +103,7 @@ else:
 if hasattr(os, 'fork'):
     MULTIPROCESS_TYPES.append("fork")
 DEFAULT_MULTIPROCESS = MULTIPROCESS_TYPES[-1]
+
 
 def auto_ssl():
     print(_('WARNING: generating temporary SSL certificate'))
@@ -112,7 +113,7 @@ def auto_ssl():
     cert = OpenSSL.crypto.X509()
     cert.set_serial_number(random.randint(0, sys.maxsize))
     cert.gmtime_adj_notBefore(0)
-    cert.gmtime_adj_notAfter(60 * 60 * 24 * 365) # one year
+    cert.gmtime_adj_notAfter(60 * 60 * 24 * 365)  # one year
     cert.get_subject().CN = '*'
     cert.get_subject().O = 'Roundup Dummy Certificate'
     cert.get_issuer().CN = 'Roundup Dummy Certificate Authority'
@@ -124,6 +125,7 @@ def auto_ssl():
     ctx.use_certificate(cert)
 
     return ctx
+
 
 class SecureHTTPServer(http_.server.HTTPServer):
     def __init__(self, server_address, HandlerClass, ssl_pem=None):
@@ -176,6 +178,7 @@ class SecureHTTPServer(http_.server.HTTPServer):
                     which the HTTP handlers require """
                 def __init__(self, conn):
                     self.__conn = conn
+
                 def makefile(self, mode, bufsize):
                     fo = socket._fileobject(self.__conn, mode, bufsize)
                     return RetryingFile(fo)
@@ -185,6 +188,7 @@ class SecureHTTPServer(http_.server.HTTPServer):
 
             conn = ConnFixer(conn)
         return (conn, info)
+
 
 class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
     TRACKER_HOMES = {}
@@ -225,7 +229,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
         except client.NotFound:
             self.send_error(404, self.path)
         except client.Unauthorised as message:
-            self.send_error(403, '%s (%s)'%(self.path, message))
+            self.send_error(403, '%s (%s)' % (self.path, message))
         except:
             exc, val, tb = sys.exc_info()
             if hasattr(socket, 'timeout') and isinstance(val, socket.timeout):
@@ -252,12 +256,13 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
                     self.wfile.write(s2b(cgitb.breaker()))
                     ts = time.ctime()
                     self.wfile.write(s2b('''<p>%s: An error occurred. Please check
-                    the server log for more information.</p>'''%ts))
+                    the server log for more information.</p>''' % ts))
                     # out to the logfile
                     print('EXCEPTION AT', ts)
                     traceback.print_exc()
 
-    do_GET = do_POST = do_HEAD = do_PUT = do_DELETE = do_PATCH = do_OPTIONS = run_cgi
+    do_GET = do_POST = do_HEAD = do_PUT = do_DELETE = \
+                       do_PATCH = do_OPTIONS = run_cgi
 
     def index(self):
         ''' Print up an index of the available trackers
@@ -278,18 +283,18 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             template = open(self.CONFIG['TEMPLATE']).read()
             pt = PageTemplate()
             pt.write(template)
-            extra = { 'trackers': self.TRACKERS,
-                'nothing' : None,
-                'true' : 1,
-                'false' : 0,
-            }
+            extra = {'trackers': self.TRACKERS,
+                     'nothing': None,
+                     'true': 1,
+                     'false': 0,
+                    }
             w(s2b(pt.pt_render(extra_context=extra)))
         else:
             w(s2b(_('<html><head><title>Roundup trackers index</title></head>\n'
                     '<body><h1>Roundup trackers index</h1><ol>\n')))
             keys.sort()
             for tracker in keys:
-                w(s2b('<li><a href="%(tracker_url)s/index">%(tracker_name)s</a>\n'%{
+                w(s2b('<li><a href="%(tracker_url)s/index">%(tracker_name)s</a>\n' % {
                     'tracker_url': urllib_.quote(tracker),
                     'tracker_name': html_escape(tracker)}))
             w(b'</ol></body></html>')
@@ -311,7 +316,6 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
                 if os.access(favicon_filepath, os.R_OK):
                     favicon_fileobj = open(favicon_filepath, 'rb')
 
-
             if favicon_fileobj is None:
                 favicon_fileobj = io.BytesIO(favico)
 
@@ -319,8 +323,9 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             self.send_header('Content-Type', 'image/x-icon')
             self.end_headers()
 
-            # this bufsize is completely arbitrary, I picked 4K because it sounded good.
-            # if someone knows of a better buffer size, feel free to plug it in.
+            # this bufsize is completely arbitrary, I picked 4K because
+            # it sounded good. if someone knows of a better buffer size,
+            # feel free to plug it in.
             bufsize = 4 * 1024
             Processing = True
             while Processing:
@@ -356,9 +361,9 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             self.send_response(301)
             # redirect - XXX https??
             protocol = 'http'
-            url = '%s://%s%s/'%(protocol, self.headers['host'], rest)
+            url = '%s://%s%s/' % (protocol, self.headers['host'], rest)
             if query:
-               url += '?' + query
+                url += '?' + query
             self.send_header('Location', url)
             self.end_headers()
             self.wfile.write(b'Moved Permanently')
@@ -385,7 +390,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             content_type = self.headers.type
         else:
             # Python 2.
-             content_type = self.headers.typeheader
+            content_type = self.headers.typeheader
         if content_type:
             env['CONTENT_TYPE'] = content_type
         length = self.headers.get('content-length')
@@ -405,7 +410,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
         env['SERVER_NAME'] = self.server.server_name
         env['SERVER_PORT'] = str(self.server.server_port)
         try:
-            env['HTTP_HOST'] = self.headers ['host']
+            env['HTTP_HOST'] = self.headers['host']
         except KeyError:
             env['HTTP_HOST'] = ''
         # https://tools.ietf.org/html/draft-ietf-appsawg-http-forwarded-10
@@ -476,7 +481,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             logger.info("%s - - [%s] %s" %
                         (self.client_address[0],
                          self.log_date_time_string(),
-                         format%args))
+                         format % args))
         else:
             try:
                 http_.server.BaseHTTPRequestHandler.log_message(self,
@@ -491,9 +496,11 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             self.send_header(key, value)
         self.end_headers()
 
+
 def error():
     exc_type, exc_value = sys.exc_info()[:2]
     return _('Error: %s: %s' % (exc_type, exc_value))
+
 
 def setgid(group):
     if group is None:
@@ -518,8 +525,9 @@ def setgid(group):
         else:
             grp.getgrgid(gid)
     except KeyError:
-        raise ValueError(_("Group %(group)s doesn't exist")%locals())
+        raise ValueError(_("Group %(group)s doesn't exist") % locals())
     os.setgid(gid)
+
 
 def setuid(user):
     if not hasattr(os, 'getuid'):
@@ -547,8 +555,9 @@ def setuid(user):
         else:
             pwd.getpwuid(uid)
     except KeyError:
-        raise ValueError(_("User %(user)s doesn't exist")%locals())
+        raise ValueError(_("User %(user)s doesn't exist") % locals())
     os.setuid(uid)
+
 
 class TrackerHomeOption(configuration.FilePathOption):
 
@@ -558,6 +567,7 @@ class TrackerHomeOption(configuration.FilePathOption):
                 "name": self.setting,
                 "value": self.value2str(self._value),
             }
+
 
 class ServerConfig(configuration.Config):
 
@@ -659,8 +669,7 @@ class ServerConfig(configuration.Config):
                 self.add_option(TrackerHomeOption(self, "trackers", name))
 
     def getopt(self, args, short_options="", long_options=(),
-        config_load_options=("C", "config"), **options
-    ):
+               config_load_options=("C", "config"), **options):
         options.update(self.OPTIONS)
         return configuration.Config.getopt(self, args,
             short_options, long_options, config_load_options, **options)
@@ -693,7 +702,7 @@ class ServerConfig(configuration.Config):
             trackers = None
         else:
             trackers = dict([(name, roundup.instance.open(home, optimize=1))
-                for (name, home) in tracker_homes])
+                             for (name, home) in tracker_homes])
 
         # build customized request handler class
         class RequestHandler(RoundupRequestHandler):
@@ -730,18 +739,18 @@ class ServerConfig(configuration.Config):
         # obtain request server class
         if self["MULTIPROCESS"] not in MULTIPROCESS_TYPES:
             print(_("Multiprocess mode \"%s\" is not available, "
-                "switching to single-process") % self["MULTIPROCESS"])
+                    "switching to single-process") % self["MULTIPROCESS"])
             self["MULTIPROCESS"] = "none"
             server_class = base_server
         elif self["MULTIPROCESS"] == "fork":
             class ForkingServer(socketserver.ForkingMixIn,
-                base_server):
-                    pass
+                                base_server):
+                pass
             server_class = ForkingServer
         elif self["MULTIPROCESS"] == "thread":
             class ThreadingServer(socketserver.ThreadingMixIn,
-                base_server):
-                    pass
+                                  base_server):
+                pass
             server_class = ThreadingServer
         else:
             server_class = base_server
@@ -756,8 +765,8 @@ class ServerConfig(configuration.Config):
             httpd = server_class(*args, **kwargs)
         except socket.error as e:
             if e.args[0] == errno.EADDRINUSE:
-                raise socket.error(_("Unable to bind to port %s, port already in use.") \
-                    % self["PORT"])
+                raise socket.error(_("Unable to bind to port %s, "
+                                     "port already in use.") % self["PORT"])
             raise
         # change user and/or group
         setgid(self["GROUP"])
@@ -765,9 +774,10 @@ class ServerConfig(configuration.Config):
         # return the server
         return httpd
 
+
 try:
     import win32serviceutil
-except:
+except ImportError:
     RoundupService = None
 else:
 
@@ -792,7 +802,7 @@ else:
             (optlist, args) = config.getopt(sys.argv[1:])
             if not config["LOGFILE"]:
                 servicemanager.LogMsg(servicemanager.EVENTLOG_ERROR_TYPE,
-                    servicemanager.PYS_SERVICE_STOPPED,
+                                      servicemanager.PYS_SERVICE_STOPPED,
                     (self._svc_display_name_, "\r\nMissing logfile option"))
                 self.ReportServiceStatus(win32service.SERVICE_STOPPED)
                 return
@@ -801,13 +811,15 @@ else:
             self.running = 1
             self.ReportServiceStatus(win32service.SERVICE_RUNNING)
             servicemanager.LogMsg(servicemanager.EVENTLOG_INFORMATION_TYPE,
-                servicemanager.PYS_SERVICE_STARTED, (self._svc_display_name_,
-                    " at %s:%s" % (config["HOST"], config["PORT"])))
+                                  servicemanager.PYS_SERVICE_STARTED,
+                                  (self._svc_display_name_,
+                                   " at %s:%s" % (config["HOST"],
+                                                  config["PORT"])))
             while self.running:
                 self.server.handle_request()
             servicemanager.LogMsg(servicemanager.EVENTLOG_INFORMATION_TYPE,
-                servicemanager.PYS_SERVICE_STOPPED,
-                (self._svc_display_name_, ""))
+                                  servicemanager.PYS_SERVICE_STOPPED,
+                                  (self._svc_display_name_, ""))
             self.ReportServiceStatus(win32service.SERVICE_STOPPED)
 
         def SvcStop(self):
@@ -820,6 +832,7 @@ else:
             sock.connect(addr)
             sock.close()
             self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
+
 
 def usage(message=''):
     if RoundupService:
@@ -911,6 +924,7 @@ def writepidfile(pidfile):
         pidfile.write(str(pid))
         pidfile.close()
 
+
 def daemonize(pidfile):
     ''' Turn this process into a daemon.
         - make sure the sys.std(in|out|err) are completely cut off
@@ -945,7 +959,10 @@ def daemonize(pidfile):
     os.dup2(devnull, 1)
     os.dup2(devnull, 2)
 
+
 undefined = []
+
+
 def run(port=undefined, success_message=None):
     ''' Script entry point - handle args and figure out what to to.
     '''
@@ -954,7 +971,8 @@ def run(port=undefined, success_message=None):
     short_options = "hvSc"
     try:
         (optlist, args) = config.getopt(sys.argv[1:],
-            short_options, ("help", "version", "save-config",))
+                                        short_options,
+                                        ("help", "version", "save-config",))
     except (getopt.GetoptError, configuration.ConfigurationError) as e:
         usage(str(e))
         return
@@ -995,7 +1013,7 @@ ERROR: -c is not available because roundup couldn't import
         RoundupService._exe_args_ = " ".join(svc_args)
         # pass the control to serviceutil
         win32serviceutil.HandleCommandLine(RoundupService,
-            argv=sys.argv[:1] + args)
+                                           argv=sys.argv[:1] + args)
         return
 
     # add tracker names from command line.
@@ -1011,12 +1029,12 @@ ERROR: -c is not available because roundup couldn't import
 
     # handle remaining options
     if optlist:
-        for (opt, arg) in optlist:
+        for (opt, _arg) in optlist:
             if opt in ("-h", "--help"):
                 usage()
             elif opt in ("-v", "--version"):
                 print('%s (python %s)' % (roundup_version,
-                    sys.version.split()[0]))
+                                          sys.version.split()[0]))
             elif opt in ("-S", "--save-config"):
                 config.save()
                 print(_("Configuration saved to %s") % config.filepath)
@@ -1038,7 +1056,7 @@ ERROR: -c is not available because roundup couldn't import
     if config["PIDFILE"]:
         if not hasattr(os, 'fork'):
             print(_("Sorry, you can't run the server as a daemon"
-                " on this Operating System"))
+                    " on this Operating System"))
             sys.exit(0)
         else:
             if config['NODAEMON']:
@@ -1064,6 +1082,7 @@ ERROR: -c is not available because roundup couldn't import
         httpd.serve_forever()
     except KeyboardInterrupt:
         print('Keyboard Interrupt: exiting')
+
 
 if __name__ == '__main__':
     run()
