@@ -25,6 +25,7 @@ if (osp.exists(thisdir + '/__init__.py') and
 from roundup import admin, configuration, demo, instance
 from roundup.i18n import _
 from roundup.anypy.my_input import my_input
+from roundup import version_check
 
 def run():
     home = DEFAULT_HOME
@@ -51,14 +52,15 @@ def run():
         templates = admin.AdminTool().listTemplates().keys()
         template = my_input(
             _('Enter tracker template to use (one of (%s)) [%s]: ') %
-            (','.join(templates),template))
+            (','.join(templates), template))
         if not template:
             template = DEFAULT_TEMPLATE
         # install
         demo.install_demo(home, backend,
-            admin.AdminTool().listTemplates()[template]['path'])
+                          admin.AdminTool().listTemplates()[template]['path'])
     # run
     demo.run_demo(home)
+
 
 if __name__ == '__main__':
     run()
