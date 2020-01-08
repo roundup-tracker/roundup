@@ -51,16 +51,13 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
             return self.TRACKERS[name]
 
         if name not in self.TRACKER_HOMES:
-            raise Exception('No such tracker "%s"'%name)
+            raise Exception('No such tracker "%s"' % name)
         tracker_home = self.TRACKER_HOMES[name]
         tracker = roundup.instance.open(tracker_home)
         self.TRACKERS[name] = tracker
         return tracker
 
-
     def authenticate(self, tracker):
-
-        
         # Try to extract username and password from HTTP Authentication.
         username, password = None, None
         authorization = self.headers.get('authorization', ' ')
@@ -77,7 +74,7 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
         db = tracker.open('admin')
         try:
             userid = db.user.lookup(username)
-        except KeyError: # No such user
+        except KeyError:  # No such user
             db.close()
             raise Unauthorised('Invalid user')
         stored = db.user.get(userid, 'password')
@@ -87,7 +84,6 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
             raise Unauthorised('Invalid user')
         db.setCurrentUser(username)
         return db
-
 
     def do_POST(self):
         """Extract username and password from authorization header."""
@@ -103,7 +99,7 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
             self.server.register_instance(instance)
             SimpleXMLRPCRequestHandler.do_POST(self)
         except Unauthorised as message:
-            self.send_error(403, '%s (%s)'%(self.path, message))
+            self.send_error(403, '%s (%s)' % (self.path, message))
         except:
             if db:
                 db.close()
@@ -131,14 +127,15 @@ Options:
  -V                -- be verbose when importing
  -p, --port <port> -- port to listen on
 
-"""%sys.argv[0])
+""" % sys.argv[0])
+
 
 def run():
 
     try:
         opts, args = getopt.getopt(sys.argv[1:],
                                    'e:i:p:V', ['encoding=', 'port='])
-    except getopt.GetoptError as e:
+    except getopt.GetoptError:
         usage()
         return 1
 
@@ -169,9 +166,9 @@ def run():
 
         tracker_homes[name] = home
 
-    RequestHandler.TRACKER_HOMES=tracker_homes
+    RequestHandler.TRACKER_HOMES = tracker_homes
 
-    if sys.version_info[0:2] < (2,5):
+    if sys.version_info[0:2] < (2, 5):
         if encoding:
             print('encodings not supported with python < 2.5')
             sys.exit(-1)
@@ -187,6 +184,7 @@ def run():
         server.serve_forever()
     except KeyboardInterrupt:
         print('Keyboard Interrupt: exiting')
+
 
 if __name__ == '__main__':
     run()
