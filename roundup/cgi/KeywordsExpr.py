@@ -241,6 +241,7 @@ set_content();
 </script>
 '''
 
+
 def list_nodes(request):
     prop = request.form.getfirst("property")
     cls = request.client.db.getclass(prop)
@@ -255,15 +256,16 @@ def list_nodes(request):
     items.sort(key=lambda x: int(x[0]))
     return items
 
+
 def items_to_keywords(items):
     return ',\n    '.join(['["%s", "%s"]' % x for x in items])
-   
+
 
 def render_keywords_expression_editor(request):
     prop = request.form.getfirst("property")
 
     window_content = WINDOW_CONTENT % {
-        'prop'    : prop,
+        'prop': prop,
         'keywords': items_to_keywords(list_nodes(request)),
         'original': '',
         'nonce': request.client.client_nonce
