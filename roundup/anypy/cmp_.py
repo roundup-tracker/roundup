@@ -1,5 +1,6 @@
 try:
     None < 0
+
     def NoneAndDictComparable(v):
         return v
 except TypeError:
@@ -52,16 +53,22 @@ except TypeError:
 
         def __eq__(self, other):
             return self.__cmp__(other) == 0
+
         def __ne__(self, other):
             return self.__cmp__(other) != 0
+
         def __lt__(self, other):
             return self.__cmp__(other) < 0
+
         def __le__(self, other):
             return self.__cmp__(other) <= 0
+
         def __ge__(self, other):
             return self.__cmp__(other) >= 0
+
         def __gt__(self, other):
             return self.__cmp__(other) > 0
+
 
 def _test():
     Comp = NoneAndDictComparable
@@ -83,13 +90,14 @@ def _test():
     assert not Comp(1) < Comp(0)
     assert not Comp(0) > Comp(0)
 
-    assert Comp({ 0: None }) < Comp({ 0: 0 })
-    assert Comp({ 0: 0 }) < Comp({ 0: 1 })
+    assert Comp({0: None}) < Comp({0: 0})
+    assert Comp({0: 0}) < Comp({0: 1})
 
-    assert Comp({ 0: 0 }) == Comp({ 0: 0 })
-    assert Comp({ 0: 0 }) != Comp({ 0: 1 })
-    assert Comp({ 0: 0, 1: 1 }) > Comp({ 0: 1 })
-    assert Comp({ 0: 0, 1: 1 }) < Comp({ 0: 0, 2: 2 })
+    assert Comp({0: 0}) == Comp({0: 0})
+    assert Comp({0: 0}) != Comp({0: 1})
+    assert Comp({0: 0, 1: 1}) > Comp({0: 1})
+    assert Comp({0: 0, 1: 1}) < Comp({0: 0, 2: 2})
+
 
 if __name__ == '__main__':
     _test()
