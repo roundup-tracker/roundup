@@ -8,7 +8,7 @@ for the columns, but sqlite IGNORES these specifications.
 """
 __docformat__ = 'restructuredtext'
 
-import os, base64, marshal, shutil, time, logging
+import os, marshal, shutil, time, logging
 
 from roundup import hyperdb, date, password
 from roundup.backends import rdbms_common
@@ -22,19 +22,22 @@ try:
 except ImportError:
     try:
         from pysqlite2 import dbapi2 as sqlite
-        if sqlite.version_info < (2,1,0):
+        if sqlite.version_info < (2, 1, 0):
             raise ValueError('pysqlite2 minimum version is 2.1.0+ '
-                '- %s found'%sqlite.version)
+                             '- %s found' % sqlite.version)
         sqlite_version = 2
     except ImportError:
         import sqlite
         sqlite_version = 1
 
+
 def db_exists(config):
     return os.path.exists(os.path.join(config.DATABASE, 'db'))
 
+
 def db_nuke(config):
     shutil.rmtree(config.DATABASE)
+
 
 class Database(rdbms_common.Database):
     """Sqlite DB backend implementation
@@ -47,7 +50,7 @@ class Database(rdbms_common.Database):
     """
 
     # char to use for positional arguments
-    if sqlite_version in (2,3):
+    if sqlite_version in (2, 3):
         arg = '?'
     else:
         arg = '%s'
@@ -65,9 +68,9 @@ class Database(rdbms_common.Database):
     implements_double_precision = False
 
     hyperdb_to_sql_datatypes = {
-        hyperdb.String : 'VARCHAR(255)',
-        hyperdb.Date   : 'VARCHAR(30)',
-        hyperdb.Link   : 'INTEGER',
+        hyperdb.String    : 'VARCHAR(255)',
+        hyperdb.Date      : 'VARCHAR(30)',
+        hyperdb.Link      : 'INTEGER',
         hyperdb.Interval  : 'VARCHAR(255)',
         hyperdb.Password  : 'VARCHAR(255)',
         hyperdb.Boolean   : 'BOOLEAN',
@@ -75,9 +78,9 @@ class Database(rdbms_common.Database):
         hyperdb.Integer   : 'INTEGER',
     }
     hyperdb_to_sql_value = {
-        hyperdb.String : str,
-        hyperdb.Date   : lambda x: x.serialise(),
-        hyperdb.Link   : int,
+        hyperdb.String    : str,
+        hyperdb.Date      : lambda x: x.serialise(),
+        hyperdb.Link      : int,
         hyperdb.Interval  : str,
         hyperdb.Password  : str,
         hyperdb.Boolean   : int,
@@ -86,9 +89,9 @@ class Database(rdbms_common.Database):
         hyperdb.Multilink : lambda x: x,    # used in journal marshalling
     }
     sql_to_hyperdb_value = {
-        hyperdb.String : uany2s,
-        hyperdb.Date   : lambda x: date.Date(str(x)),
-        hyperdb.Link   : str, # XXX numeric ids
+        hyperdb.String    : uany2s,
+        hyperdb.Date      : lambda x: date.Date(str(x)),
+        hyperdb.Link      : str,  # XXX numeric ids
         hyperdb.Interval  : date.Interval,
         hyperdb.Password  : lambda x: password.Password(encrypted=x),
         hyperdb.Boolean   : int,
@@ -136,7 +139,7 @@ class Database(rdbms_common.Database):
             os.makedirs(self.config.DATABASE)
 
         db = os.path.join(self.config.DATABASE, 'db')
-        logging.getLogger('roundup.hyperdb').info('open database %r'%db)
+        logging.getLogger('roundup.hyperdb').info('open database %r' % db)
         # set timeout (30 second default is extraordinarily generous)
         # for handling locked database
         if sqlite_version == 1:
@@ -174,23 +177,25 @@ class Database(rdbms_common.Database):
 
     def create_version_2_tables(self):
         self.sql('create table otks (otk_key varchar, '
-            'otk_value varchar, otk_time integer)')
+                 'otk_value varchar, otk_time integer)')
         self.sql('create index otks_key_idx on otks(otk_key)')
         self.sql('create table sessions (session_key varchar, '
-            'session_time integer, session_value varchar)')
+                 'session_time integer, session_value varchar)')
         self.sql('create index sessions_key_idx on '
-                'sessions(session_key)')
+                 'sessions(session_key)')
 
         # full-text indexing store
         self.sql('CREATE TABLE __textids (_class varchar, '
-            '_itemid varchar, _prop varchar, _textid integer primary key) ')
+                 '_itemid varchar, _prop varchar, _textid'
+                 ' integer primary key) ')
         self.sql('CREATE TABLE __words (_word varchar, '
-            '_textid integer)')
+                 '_textid integer)')
         self.sql('CREATE INDEX words_word_ids ON __words(_word)')
         self.sql('CREATE INDEX words_by_id ON __words (_textid)')
         self.sql('CREATE UNIQUE INDEX __textids_by_props ON '
                  '__textids (_class, _itemid, _prop)')
-        sql = 'insert into ids (name, num) values (%s,%s)'%(self.arg, self.arg)
+        sql = 'insert into ids (name, num) values (%s,%s)' % (
+            self.arg, self.arg)
         self.sql(sql, ('__textids', 1))
 
     def add_new_columns_v2(self):
@@ -224,18 +229,19 @@ class Database(rdbms_common.Database):
             return 0
 
         logging.getLogger('roundup.hyperdb').info(
-            'update_class %s'%spec.classname)
+            'update_class %s' % spec.classname)
 
         # detect multilinks that have been removed, and drop their table
         old_has = {}
         for name, prop in old_spec[1]:
             old_has[name] = 1
-            if name in spec.properties or not isinstance(prop, hyperdb.Multilink):
+            if name in spec.properties or not \
+               isinstance(prop, hyperdb.Multilink):
                 continue
             # it's a multilink, and it's been removed - drop the old
             # table. First drop indexes.
             self.drop_multilink_table_indexes(spec.classname, name)
-            sql = 'drop table %s_%s'%(spec.classname, prop)
+            sql = 'drop table %s_%s' % (spec.classname, prop)
             self.sql(sql)
 
         # now figure how we populate the new table
@@ -244,28 +250,28 @@ class Database(rdbms_common.Database):
         else:
             fetch = ['_actor', '_activity', '_creation', '_creator']
         properties = spec.getprops()
-        for propname,x in new_spec[1]:
+        for propname, _x in new_spec[1]:
             prop = properties[propname]
             if isinstance(prop, hyperdb.Multilink):
                 if propname not in old_has:
                     # we need to create the new table
                     self.create_multilink_table(spec, propname)
                 elif force:
-                    tn = '%s_%s'%(spec.classname, propname)
+                    tn = '%s_%s' % (spec.classname, propname)
                     # grabe the current values
-                    sql = 'select linkid, nodeid from %s'%tn
+                    sql = 'select linkid, nodeid from %s' % tn
                     self.sql(sql)
                     rows = self.cursor.fetchall()
 
                     # drop the old table
                     self.drop_multilink_table_indexes(spec.classname, propname)
-                    sql = 'drop table %s'%tn
+                    sql = 'drop table %s' % tn
                     self.sql(sql)
 
                     # re-create and populate the new table
                     self.create_multilink_table(spec, propname)
                     sql = """insert into %s (linkid, nodeid) values
-                        (%s, %s)"""%(tn, self.arg, self.arg)
+                        (%s, %s)""" % (tn, self.arg, self.arg)
                     for linkid, nodeid in rows:
                         self.sql(sql, (int(linkid), int(nodeid)))
             elif propname in old_has:
@@ -277,7 +283,7 @@ class Database(rdbms_common.Database):
         fetch.append('__retired__')
         fetchcols = ','.join(fetch)
         cn = spec.classname
-        sql = 'select %s from _%s'%(fetchcols, cn)
+        sql = 'select %s from _%s' % (fetchcols, cn)
         self.sql(sql)
         olddata = self.cursor.fetchall()
 
@@ -285,14 +291,15 @@ class Database(rdbms_common.Database):
         self.drop_class_table_indexes(cn, old_spec[0])
 
         # drop the old table
-        self.sql('drop table _%s'%cn)
+        self.sql('drop table _%s' % cn)
 
         # create the new table
         self.create_class_table(spec)
 
         if olddata:
-            inscols = ['id', '_actor', '_activity', '_creation', '_creator', '__retired__']
-            for propname,x in new_spec[1]:
+            inscols = ['id', '_actor', '_activity', '_creation',
+                       '_creator', '__retired__']
+            for propname, _x in new_spec[1]:
                 prop = properties[propname]
                 if isinstance(prop, hyperdb.Multilink):
                     continue
@@ -307,7 +314,7 @@ class Database(rdbms_common.Database):
             # NULL values
             args = ','.join([self.arg for x in inscols])
             cols = ','.join(inscols)
-            sql = 'insert into _%s (%s) values (%s)'%(cn, cols, args)
+            sql = 'insert into _%s (%s) values (%s)' % (cn, cols, args)
             for entry in olddata:
                 d = []
                 retired_id = None
@@ -315,7 +322,7 @@ class Database(rdbms_common.Database):
                     # generate the new value for the Interval int column
                     if name.endswith('_int__'):
                         name = name[2:-6]
-                        if sqlite_version in (2,3):
+                        if sqlite_version in (2, 3):
                             try:
                                 v = hyperdb.Interval(entry[name]).as_seconds()
                             except IndexError:
@@ -324,7 +331,7 @@ class Database(rdbms_common.Database):
                             v = hyperdb.Interval(entry[name]).as_seconds()
                         else:
                             v = None
-                    elif sqlite_version in (2,3):
+                    elif sqlite_version in (2, 3):
                         try:
                             v = entry[name]
                         except IndexError:
@@ -335,7 +342,8 @@ class Database(rdbms_common.Database):
                         v = None
                     if name == 'id':
                         retired_id = v
-                    elif name == '__retired__' and retired_id and v not in ['0', 0]:
+                    elif name == '__retired__' and retired_id and \
+                         v not in ['0', 0]:
                         v = retired_id
                     d.append(v)
                 self.sql(sql, tuple(d))
@@ -363,7 +371,7 @@ class Database(rdbms_common.Database):
                 raise
 
     def __repr__(self):
-        return '<roundlite 0x%x>'%id(self)
+        return '<roundlite 0x%x>' % id(self)
 
     def sql_commit(self):
         """ Actually commit to the database.
@@ -379,7 +387,7 @@ class Database(rdbms_common.Database):
         self.cursor = self.conn.cursor()
 
     def sql_index_exists(self, table_name, index_name):
-        self.sql('pragma index_list(%s)'%table_name)
+        self.sql('pragma index_list(%s)' % table_name)
         for entry in self.cursor.fetchall():
             if entry[1] == index_name:
                 return 1
@@ -399,26 +407,26 @@ class Database(rdbms_common.Database):
         # on it's own even if we don't want it to end the transaction.
         # If we rewrite to use another sqlite library like apsw we
         # don't have to deal with this autocommit/autotransact foolishness.
-        self.conn.isolation_level = None;
+        self.conn.isolation_level = None
         # Manage the transaction locks manually.
-        self.sql("BEGIN IMMEDIATE");
+        self.sql("BEGIN IMMEDIATE")
 
         # get the next ID
-        sql = 'select num from ids where name=%s'%self.arg
+        sql = 'select num from ids where name=%s' % self.arg
         self.sql(sql, (classname, ))
         newid = int(self.cursor.fetchone()[0])
 
         # leave the next larger number as the next newid
-        sql = 'update ids set num=num+1 where name=%s'%self.arg
+        sql = 'update ids set num=num+1 where name=%s' % self.arg
         vals = (classname,)
         self.sql(sql, vals)
 
         # reset pysqlite's auto transact stuff to default since the
         # rest of the code expects it.
-        self.conn.isolation_level = '';
+        self.conn.isolation_level = ''
         # commit writing the data, clearing locks for other processes
         # and create a new cursor to the database.
-        self.sql_commit();
+        self.sql_commit()
 
         # return as string
         return str(newid)
@@ -428,7 +436,7 @@ class Database(rdbms_common.Database):
 
         We add one to make it behave like the sequences in postgres.
         """
-        sql = 'update ids set num=%s where name=%s'%(self.arg, self.arg)
+        sql = 'update ids set num=%s where name=%s' % (self.arg, self.arg)
         vals = (int(setid)+1, classname)
         self.sql(sql, vals)
 
@@ -440,18 +448,20 @@ class Database(rdbms_common.Database):
 
     def create_class(self, spec):
         rdbms_common.Database.create_class(self, spec)
-        sql = 'insert into ids (name, num) values (%s, %s)'%(self.arg, self.arg)
+        sql = 'insert into ids (name, num) values (%s, %s)' %(
+            self.arg, self.arg)
         vals = (spec.classname, 1)
         self.sql(sql, vals)
 
-    if sqlite_version in (2,3):
+    if sqlite_version in (2, 3):
         def load_journal(self, classname, cols, nodeid):
             """We need to turn the sqlite3.Row into a tuple so it can be
             unpacked"""
             l = rdbms_common.Database.load_journal(self,
-                classname, cols, nodeid)
+                                                   classname, cols, nodeid)
             cols = range(5)
             return [[row[col] for col in cols] for row in l]
+
 
 class sqliteClass:
     def filter(self, *args, **kw):
@@ -460,11 +470,14 @@ class sqliteClass:
         """
         return [f for f in rdbms_common.Class.filter(self, *args, **kw) if f]
 
+
 class Class(sqliteClass, rdbms_common.Class):
     pass
 
+
 class IssueClass(sqliteClass, rdbms_common.IssueClass):
     pass
+
 
 class FileClass(sqliteClass, rdbms_common.FileClass):
     pass
