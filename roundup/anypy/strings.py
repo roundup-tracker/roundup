@@ -5,13 +5,15 @@
 # requiring that type to be used.
 
 import sys
+import io
+
 _py3 = sys.version_info[0] > 2
 
-import io
 if _py3:
     StringIO = io.StringIO
 else:
     StringIO = io.BytesIO
+
 
 def b2s(b):
     """Convert a UTF-8 encoded bytes object to the internal string format."""
@@ -20,6 +22,7 @@ def b2s(b):
     else:
         return b
 
+
 def s2b(s):
     """Convert a string object to UTF-8 encoded bytes."""
     if _py3:
@@ -27,8 +30,10 @@ def s2b(s):
     else:
         return s
 
+
 def bs2b(s):
-    """Convert a string object or UTF-8 encoded bytes to UTF-8 encoded bytes."""
+    """Convert a string object or UTF-8 encoded bytes to UTF-8 encoded bytes.
+    """
     if _py3:
         if isinstance(s, bytes):
             return s
@@ -37,12 +42,14 @@ def bs2b(s):
     else:
         return s
 
+
 def s2u(s, errors='strict'):
     """Convert a string object to a Unicode string."""
     if _py3:
         return s
     else:
-        return unicode(s, 'utf-8', errors)
+        return unicode(s, 'utf-8', errors)  # noqa: 821
+
 
 def u2s(u):
     """Convert a Unicode string to the internal string format."""
@@ -51,25 +58,28 @@ def u2s(u):
     else:
         return u.encode('utf-8')
 
+
 def us2u(s, errors='strict'):
     """Convert a string or Unicode string to a Unicode string."""
     if _py3:
         return s
     else:
-        if isinstance(s, unicode):
+        if isinstance(s, unicode):    # noqa: 821
             return s
         else:
-            return unicode(s, 'utf-8', errors)
+            return unicode(s, 'utf-8', errors)    # noqa: 821
+
 
 def us2s(u):
     """Convert a string or Unicode string to the internal string format."""
     if _py3:
         return u
     else:
-        if isinstance(u, unicode):
+        if isinstance(u, unicode):    # noqa: 821
             return u.encode('utf-8')
         else:
             return u
+
 
 def uany2s(u):
     """Convert a Unicode string or other object to the internal string format.
@@ -78,24 +88,26 @@ def uany2s(u):
     if _py3:
         return str(u)
     else:
-        if isinstance(u, unicode):
+        if isinstance(u, unicode):    # noqa: 821
             return u.encode('utf-8')
         else:
             return str(u)
+
 
 def is_us(s):
     """Return whether an object is a string or Unicode string."""
     if _py3:
         return isinstance(s, str)
     else:
-        return isinstance(s, str) or isinstance(s, unicode)
+        return isinstance(s, str) or isinstance(s, unicode)  # noqa: 821
+
 
 def uchr(c):
     """Return the Unicode string containing the given character."""
     if _py3:
         return chr(c)
     else:
-        return unichr(c)
+        return unichr(c)  # noqa: 821
 
 # CSV files used for export and import represent strings in the style
 # used by repr in Python 2; this means that each byte of the UTF-8
@@ -108,6 +120,7 @@ def uchr(c):
 # representations are also used for journal storage in RDBMS
 # databases, so that the database can be compatible between Python 2
 # and Python 3.
+
 
 def repr_export(v):
     """Return a Python-2-style representation of a value for export to CSV."""
@@ -124,6 +137,7 @@ def repr_export(v):
             return repr(v)
     else:
         return repr(v)
+
 
 def eval_import(s):
     """Evaluate a Python-2-style value imported from a CSV file."""
