@@ -4,5 +4,5 @@ try:
     server.SimpleXMLRPCDispatcher
 except (ImportError, AttributeError):
     # Python 2.
-    import xmlrpclib as client
+    import xmlrpclib as client  # noqa: F401
     import SimpleXMLRPCServer as server
