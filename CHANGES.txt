@@ -71,6 +71,8 @@ Fixed:
   input field was translated. (Reported by Ludwig Reiter. John
   Rouillard)
 - Document security issues in xmlrpc interface in doc/xmlrpc.txt.
+- Fixed escaping and encoding issues in jinja2 template. (Report:
+  John Rouillard; Fix: Christof Meerwald)
 
 2019-10-23 2.0.0 alpha 0
 
