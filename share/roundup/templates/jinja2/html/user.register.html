@@ -13,7 +13,7 @@
   <form method="POST"
         name ="itemSynopsis"
         enctype ="multipart/form-data"
-        action ='{{  context.designator() }}'>
+        action ='{{ context.designator() }}'>
     <input type="hidden" name="opaqueregister"
            value="{{ utils.timestamp() }}" >
     <table>
@@ -45,7 +45,7 @@
         <tr>
           <th>{{ i18n.gettext('Roles <br>(comma separated)')|u }}</th>
           <td>
-            <input type='text' name='roles' value='{{ context.roles|u|e }}'>
+            <input type='text' name='roles' value='{{ context.roles.plain()|u|e }}'>
           </td>
         </tr>
       {% endif %}
@@ -76,7 +76,7 @@
       <tr>
         <th>{{ i18n.gettext('Alternate email address <br>One address per line')|u }}</th>
         <td>
-          {{ context.alternate_addresses.multiline()|u|e }}
+          {{ context.alternate_addresses.multiline()|u }}
         </td>
       </tr>
       <tr class='form-actions'>

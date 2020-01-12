@@ -28,7 +28,7 @@
     <form class="pb-5" method="POST"
           name ="itemSynopsis"
           enctype ="multipart/form-data"
-          action ='{{  context.designator() }}'>
+          action ='{{ context.designator() }}'>
       <table>
         <tr>
           <th>{{ i18n.gettext('Name')|u }}</th>
@@ -60,7 +60,7 @@
           <tr>
             <th>{{ i18n.gettext('Roles <br>(comma separated)')|u }}</th>
             <td>
-              <input class="form-control"  type='text' name='roles' value='{{ context.roles|u|e }}'>
+              <input class="form-control"  type='text' name='roles' value='{{ context.roles.plain()|u|e }}'>
             </td>
           </tr>
         {% endif %}
@@ -80,7 +80,7 @@
           <tr>
             <th>{{ i18n.gettext('Timezone')|u }}</th>
             <td>
-              <input class="form-control"  type='text' name='timezone' value='{{ context.timezone|u|e }}'>
+              <input class="form-control"  type='text' name='timezone' value='{{ context.timezone.plain()|u|e }}'>
             </td>
           </tr>
         {% endif %}

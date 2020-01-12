@@ -32,10 +32,10 @@
 
   {% if context.id %}
     <p>
-      Created on <b>{{ context.creation }}</b>
-      by <b>{{ context.creator }}</b>,
-      last changed <b>{{ context.activity }}</b>
-      by <b>{{ context.actor }}</b>.
+      Created on <b>{{ context.creation.plain()|u|e }}</b>
+      by <b>{{ context.creator.plain()|u|e }}</b>,
+      last changed <b>{{ context.activity.reldate()|u|e }}</b>
+      by <b>{{ context.actor.plain()|u|e }}</b>.
     </p>
   {% endif %}
 
@@ -51,7 +51,7 @@
           <a href='msg{{ msg.id }}'>msg{{msg.id}} (view)</a>
         </div>
         <div class='span4'>
-          Author: {{ msg.author }}, Date: {{ msg.date }}
+          Author: {{ msg.author.plain()|u|e }}, Date: {{ msg.date.plain()|u|e }}
         </div>
         <div class='pull-right'>
           {% if context.is_edit_ok %}

@@ -14,14 +14,14 @@
     <div class='row-fluid'>
       <dl class='span5 dl-horizontal'>
         <dt>{{ i18n.gettext('Author')|u }}</dt>
-        <dd>{{ msg.author|u|e }}</dd>
+        <dd>{{ msg.author.plain()|u|e }}</dd>
         <dt>{{ i18n.gettext('Date')|u }}</dt>
-        <dd>{{ msg.date }}</dd>
+        <dd>{{ msg.date.plain()|u|e }}</dd>
         <dt>{{ i18n.gettext('Message id')|u }}</dt>
         <dd>{{ msg.id }}</dd>
       </dl>
       <div class='span7'>
-        <pre>{{ msg.content|u }}</pre>
+        <pre>{{ msg.content.hyperlinked()|u }}</pre>
       </div>
     </div>
     <hr>

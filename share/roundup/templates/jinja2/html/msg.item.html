@@ -27,11 +27,11 @@
   {% if context.is_view_ok() %}
     <dl class='dl-horizontal'>
       <dt>{{ i18n.gettext('Author')|u }}</dt>
-      <dd>{{ context.author|u|e }} </dd>
+      <dd>{{ context.author.plain()|u|e }} </dd>
       <dt>{{ i18n.gettext('Recipients')|u }}</dt>
-      <dd>{{ context.recipients|u|e }}</dd>
+      <dd>{{ context.recipients.plain()|u|e }}</dd>
       <dt>{{ i18n.gettext('Date')|u }}</dt>
-      <dd>{{ context.date }}</dd>
+      <dd>{{ context.date.plain()|u|e }}</dd>
     </dl>
 
     <div class='row-fluid'>

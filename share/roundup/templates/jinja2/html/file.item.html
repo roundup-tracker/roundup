@@ -18,26 +18,26 @@
 
       <dl class='dl-horizontal'>
         <dt>{{ i18n.gettext('Name')|u }}</dt>
-        <dd>{{ context.name.field()|u|e }}</dd>
+        <dd>{{ context.name.field()|u }}</dd>
         <dt>{{ i18n.gettext('Content Type')|u }}</dt>
-        <dd>{{ context.type.field()|u|e }}</dd>
+        <dd>{{ context.type.field()|u }}</dd>
       </dl>
 
       <input type="hidden" name="@template" value="item">
       <input type="hidden" name="@required" value="name,type">
       {% if '@multilink' in request.form %}
         <input type="hidden" name="@multilink"
-          value='request.form.@multilink.value()'>
+          value='{{ request.form["@multilink"].value()|u|e }}'>
       {% endif %}
       <div class='form-actions'>
-        {{ context.submit() }}
+        {{ context.submit()|u }}
       </div>
     </form>
   {% endif %}
 
   {% if context.id and context.is_view_ok() %}
     <div class='row-fluid'>
-      <a href='file{{ context.id }}/{{ context.name|u|e }}'>{{ i18n.gettext('Download')|u }}</a>
+      <a href='file{{ context.id }}/{{ context.name.plain()|u|e }}'>{{ i18n.gettext('Download')|u }}</a>
     </div>
   {% endif %}
 

@@ -10,10 +10,10 @@
   {% for file in context.files %}
     <tr>
       <td>
-        <a href='{{ file.download_url() }}'>{{ file.name|u|e }}</a>
+        <a href='{{ file.download_url() }}'>{{ file.name.plain()|u|e }}</a>
       </td>
-      <td>{{ file.creator }}, {{ file.creation|u|e }}</td>
-      <td>{{ file.type|u|e }}</td>
+      <td>{{ file.creator.plain()|u|e }}, {{ file.creation.plain()|u|e }}</td>
+      <td>{{ file.type.plain()|u|e }}</td>
       {% if file.is_edit_ok %}
         <td>
           <a href='file{{ file.id }}'>{{ i18n.gettext('edit')|u }}</a>

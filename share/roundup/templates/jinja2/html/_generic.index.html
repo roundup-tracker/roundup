@@ -32,7 +32,7 @@
      removed item and you know its id then just put that id in the id column.
     ') }}</p>
     <form method="POST" action='{{ context.designator() }}'>
-      <textarea rows="15" style="width:90%" name="rows">{{ context.csv() }}</textarea>
+      <textarea rows="15" style="width:90%" name="rows">{{ context.csv()|u|e }}</textarea>
       <br>
       <input name="@csrf" type="hidden" value="{{ utils.anti_csrf_nonce() }}">
       <input type="hidden" name="@action" value="editCSV">

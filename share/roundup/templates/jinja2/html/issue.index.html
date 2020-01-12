@@ -53,10 +53,10 @@
            <td>{{ issue.id }}</td>
 		   {% endif %}
 		   {% if request.show.activity %}
-           <td>{{ issue.activity }}</td>
+           <td>{{ issue.activity.reldate()|u|e }}</td>
 		   {% endif %}
 		   {% if request.show.actor %}
-           <td>{{ issue.actor|u|e }}</td>
+           <td>{{ issue.actor.plain()|u|e }}</td>
 		   {% endif %}
 		   {% if request.show.keyword %}
            <td>{{ issue.keyword.plain()|u|e }}</td>
@@ -73,7 +73,7 @@
            <td>{{ issue.creator.plain()|u|e }}</td>
 		   {% endif %}
 		   {% if request.show.assignedto %}
-           <td>{{ issue.assignedto.plain() }}</td>
+           <td>{{ issue.assignedto.plain()|u|e }}</td>
 		   {% endif %}
           </tr>
         {% endfor %}
