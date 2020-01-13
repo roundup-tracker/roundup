@@ -40,6 +40,16 @@ Features:
   (current 4.4.1). The pull request has been around for a
   while. (Patch: Paul Spooren; templates merged by Christof Meerwald;
   other merged by John Rouillard)
+- Add config option 'http_auth_convert_realm_to_lowercase'
+  If usernames consist of a name and a domain/realm part of the form
+  user@realm and we're using REMOTE_USER for authentication (e.g. via
+  Kerberos), convert the realm part of the incoming REMOTE_USER to
+  lowercase before matching against the roundup username. This allows
+  roundup usernames to be lowercase (including the realm) and still
+  follow the Kerberos convention of using an uppercase realm. In
+  addition this is compatible with Active Directory which stores the
+  username with realm as UserPrincipalName in lowercase.
+
 
 Fixed:
 

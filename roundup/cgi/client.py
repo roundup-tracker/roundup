@@ -1001,10 +1001,14 @@ class Client:
 
         user = None
         # first up, try http authorization if enabled
-        if self.instance.config['WEB_HTTP_AUTH']:
+        cfg = self.instance.config
+        if cfg.WEB_HTTP_AUTH:
             if 'REMOTE_USER' in self.env:
                 # we have external auth (e.g. by Apache)
                 user = self.env['REMOTE_USER']
+                if cfg.WEB_HTTP_AUTH_CONVERT_REALM_TO_LOWERCASE and '@' in user:
+                    u, d = user.split ('@', 1)
+                    user = '@'.join ((u, d.lower()))
             elif self.env.get('HTTP_AUTHORIZATION', ''):
                 # try handling Basic Auth ourselves
                 auth = self.env['HTTP_AUTHORIZATION']

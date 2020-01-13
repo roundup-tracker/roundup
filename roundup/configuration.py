@@ -828,6 +828,17 @@ SETTINGS = (
             "variables supplied by your web server (in that order).\n"
             "Set this option to 'no' if you do not wish to use HTTP Basic\n"
             "Authentication in your web interface."),
+        (BooleanOption, 'http_auth_convert_realm_to_lowercase', "no",
+            "If usernames consist of a name and a domain/realm part of\n"
+            "the form user@realm and we're using REMOTE_USER for\n"
+            "authentication (e.g. via Kerberos), convert the realm part\n"
+            "of the incoming REMOTE_USER to lowercase before matching\n"
+            "against the roundup username. This allows roundup usernames\n"
+            "to be lowercase (including the realm) and still follow the\n"
+            "Kerberos convention of using an uppercase realm. In\n"
+            "addition this is compatible with Active Directory which\n"
+            "stores the username with realm as UserPrincipalName in\n"
+            "lowercase."),
         (IntegerNumberGeqZeroOption, 'login_attempts_min', "3",
             "Limit login attempts per user per minute to this number.\n"
             "By default the 4th login attempt in a minute will notify\n"
