@@ -1,11 +1,11 @@
 {% extends 'layout/page.html' %}
 
 {% block head_title %}
-  {{ i18n.gettext('Registration')|u }} - {{ config.TRACKER_NAME }}
+  {% trans %}Registration{% endtrans %} - {{ config.TRACKER_NAME }}
 {% endblock %}
 
 {% block page_header %}
-  {{ i18n.gettext('Registration')|u }} - {{ config.TRACKER_NAME }}
+  {% trans %}Registration{% endtrans %} - {{ config.TRACKER_NAME }}
 {% endblock %}
 
 {% block content %}
@@ -18,65 +18,65 @@
            value="{{ utils.timestamp() }}" >
     <table>
       <tr>
-        <th>{{ i18n.gettext('Name')|u }}</th>
+        <th>{% trans %}Name{% endtrans %}</th>
         <td>
           <input type='text' name="realname">
         </td>
       </tr>
       <tr>
-        <th>{{ i18n.gettext('Login Name')|u }}</th>
+        <th>{% trans %}Login Name{% endtrans %}</th>
         <td>
           <input type='text' name='username' required>
         </td>
       </tr>
       <tr>
-        <th>{{ i18n.gettext('Login Password')|u }}</th>
+        <th>{% trans %}Login Password{% endtrans %}</th>
         <td>
           <input type='password' name='password' required>
         </td>
       </tr>
       <tr>
-        <th>{{ i18n.gettext('Confirm Password')|u }}</th>
+        <th>{% trans %}Confirm Password{% endtrans %}</th>
         <td>
           <input type='password' name='@confirm@password'>
         </td>
       </tr>
       {% if request.user.hasPermission('Web Roles') %}
         <tr>
-          <th>{{ i18n.gettext('Roles <br>(comma separated)')|u }}</th>
+          <th>{% trans %}Roles <br>(comma separated){% endtrans %}</th>
           <td>
-            <input type='text' name='roles' value='{{ context.roles.plain()|u|e }}'>
+            <input type='text' name='roles' value='{{ context.roles.plain()|u }}'>
           </td>
         </tr>
       {% endif %}
       <tr>
-        <th>{{ i18n.gettext('Phone')|u }}</th>
+        <th>{% trans %}Phone{% endtrans %}</th>
         <td>
           <input type='text' name='phone'>
         </td>
       </tr>
       <tr>
-        <th>{{ i18n.gettext('Organisation')|u }}</th>
+        <th>{% trans %}Organisation{% endtrans %}</th>
         <td>
           <input type='text' name='organisation'>
         </td>
       </tr>
       <tr>
-        <th>{{ i18n.gettext('Timezone')|u }}</th>
+        <th>{% trans %}Timezone{% endtrans %}</th>
         <td>
           <input type='text' name='timezone'>
         </td>
       </tr>
       <tr>
-        <th>{{ i18n.gettext('Email')|u }}</th>
+        <th>{% trans %}Email{% endtrans %}</th>
         <td>
           <input type='text' name='address' required>
         </td>
       </tr>
       <tr>
-        <th>{{ i18n.gettext('Alternate email address <br>One address per line')|u }}</th>
+        <th>{% trans %}Alternate email address <br>One address per line{% endtrans %}</th>
         <td>
-          {{ context.alternate_addresses.multiline()|u }}
+          {{ context.alternate_addresses.multiline()|u|safe }}
         </td>
       </tr>
       <tr class='form-actions'>
@@ -85,7 +85,7 @@
         <input name="@csrf" type="hidden"
                value="{{ utils.anti_csrf_nonce() }}">
         <input type="hidden" name="@action" value="register">
-        <input type="submit" name="submit" value="{{ i18n.gettext('Register')|u }}">
+        <input type="submit" name="submit" value="{% trans %}Register{% endtrans %}">
         </td>
       </tr>
     </table>

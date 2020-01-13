@@ -3,18 +3,18 @@
 
 {% if request.user.hasPermission('View', 'query') %}
   <p>
-    <b>{{ i18n.gettext('Your Queries')|u }}</b> (<a href="query?@template=edit">{{ i18n.gettext('edit')|u }}</a>)
+    <b>{% trans %}Your Queries{% endtrans %}</b> (<a href="query?@template=edit">{% trans %}edit{% endtrans %}</a>)
   </p>
 {% endif %}
 
 {% if request.user.hasPermission('View', 'issue') %}
   <ul class='nav flex-column'>
     <li class='nav-header'>
-      <i class='icon-fire'></i>{{ i18n.gettext('Issues')|u }}
+      <i class='icon-fire'></i>{% trans %}Issues{% endtrans %}
     </li>
     {% if request.user.hasPermission('Create', 'issue') %}
       <li>
-        <a href="issue?@template=item">{{ i18n.gettext('Create New')|u }}</a>
+        <a href="issue?@template=item">{% trans %}Create New{% endtrans %}</a>
       </li>
     {% endif %}
 
@@ -28,7 +28,7 @@
         'status': status_notresolved,
         'assignedto': '-1',
         '@dispname': i18n.gettext('Show Unassigned')|u,
-       }) }}">{{ i18n.gettext('Show Unassigned')|u }}</a>
+       }) }}">{% trans %}Show Unassigned{% endtrans %}</a>
     </li>
     <li class="nav-item">
       <a href="{{ request.indexargs_url('issue', {
@@ -39,10 +39,10 @@
         '@search_text': '',
         'status': status_notresolved,
         '@dispname': i18n.gettext('Show All')|u,
-       }) }}">{{ i18n.gettext('Show All')|u }}</a>
+       }) }}">{% trans %}Show All{% endtrans %}</a>
     </li>
     <li>
-      <a href="issue?@template=search">{{ i18n.gettext('Search')|u }}</a>
+      <a href="issue?@template=search">{% trans %}Search{% endtrans %}</a>
     </li>
     <li>
       <form method="POST" class='form-inline' action="{{ request.base }}">
@@ -50,31 +50,31 @@
           <input type="hidden" name="@type" value="issue">
           <input type="hidden" name="@action" value="show">
           <input class="form-control input-sm col-2" type="text" name="@number">
-          <input type="submit" class="form-control col-auto" value="{{ i18n.gettext('Show issue')|u }}">
+          <input type="submit" class="form-control col-auto" value="{% trans %}Show issue{% endtrans %}">
         </div>
       </form>
     </li>
   </ul>
   <hr>
 {% else %}
-  <p class='text-error'>{{ i18n.gettext("You don't have permission to view issues.") }}</p>
+  <p class='text-error'>{% trans %}You don't have permission to view issues.{% endtrans %}</p>
 {% endif %}
 
 <ul class='nav flex-column'>
   {% if request.user.hasPermission('Create', 'keyword')
         or request.user.hasPermission('Edit', 'keyword') %}
     <li class='nav-header'>
-      <i class='icon-star'></i>{{ i18n.gettext('Keywords')|u }}
+      <i class='icon-star'></i>{% trans %}Keywords{% endtrans %}
     </li>
   {% endif %}
   {% if request.user.hasPermission('Create', 'keyword') %}
     <li class="nav-item">
-      <a href="keyword?@template=item">{{ i18n.gettext('Create New')|u }}</a>
+      <a href="keyword?@template=item">{% trans %}Create New{% endtrans %}</a>
     </li>
   {% endif %}
   {% if request.user.hasPermission('Edit', 'keyword') %}
     <li class="nav-item">
-      <a href="keyword?@template=item">{{ i18n.gettext('Edit Existing')|u }}</a>
+      <a href="keyword?@template=item">{% trans %}Edit Existing{% endtrans %}</a>
     </li>
   {% endif %}
 </ul>
@@ -86,24 +86,24 @@
 {% if request.user.hasPermission('View', 'user') %}
   <ul class='nav flex-column'>
     <li class='nav-header'>
-      <i class='icon-eye-open'></i>{{ i18n.gettext('Administration')|u }}
+      <i class='icon-eye-open'></i>{% trans %}Administration{% endtrans %}
     </li>
 
     {% if request.user.hasPermission('Edit', None) %}
       <li>
-        <a href="home?@template=classlist">{{ i18n.gettext('Class List')|u }}</a>
+        <a href="home?@template=classlist">{% trans %}Class List{% endtrans %}</a>
       </li>
     {% endif %}
 
     {% if request.user.hasPermission('View', 'user') or request.user.hasPermission('Edit', 'user') %}
       <li>
-        <a href="user">{{ i18n.gettext('User List')|u }}</a>
+        <a href="user">{% trans %}User List{% endtrans %}</a>
       </li>
     {% endif %}
 
     {% if request.user.hasPermission('Create', 'user') %}
       <li>
-        <a href="user?@template=item">{{ i18n.gettext('Add User')|u }}</a>
+        <a href="user?@template=item">{% trans %}Add User{% endtrans %}</a>
       </li>
     {% endif %}
   </ul>
@@ -114,7 +114,7 @@
   <form method="POST" action='{{ request.base }}'>
     <ul class='nav flex-column'>
       <li class='nav-header'>
-        <i class='icon-user'></i>{{ i18n.gettext('Login')|u }}
+        <i class='icon-user'></i>{% trans %}Login{% endtrans %}
       </li>
       <li class="nav-item">
         <input class="form-control" type='text' name="__login_name" placeholder='username'>
@@ -124,19 +124,19 @@
       </li>
       <li class="nav-item">
         <label class="form-control" class='checkbox'>
-          <input type="checkbox" name="remember"> {{ i18n.gettext('Remember me?')|u }}
+          <input type="checkbox" name="remember"> {% trans %}Remember me?{% endtrans %}
         </label>
       </li>
       <li class="nav-item">
-        <input class="form-control" type="submit" value="{{ i18n.gettext('Login')|u }}" class='btn btn-inverse'>
+        <input class="form-control" type="submit" value="{% trans %}Login{% endtrans %}" class='btn btn-inverse'>
       </li>
       <li class='vspace-one'>
         {% if request.user.hasPermission('Register', 'user') %}
-          <a href="user?@template=register">{{ i18n.gettext('Register')|u }}</a>
+          <a href="user?@template=register">{% trans %}Register{% endtrans %}</a>
         {% endif %}
       </li>
       <li class="nav-item">
-        <a href="user?@template=forgotten">{{ i18n.gettext('Lost your login?')|u }}</a>
+        <a href="user?@template=forgotten">{% trans %}Lost&nbsp;your&nbsp;login?{% endtrans %}</a>
       </li>
     </ul>
     <input type="hidden" name="@action" value="Login">
@@ -146,7 +146,7 @@
 {% else %}
   <ul class='nav flex-column'>
     <li class='nav-header'>
-      <i class='icon-user'></i>{{ i18n.gettext('Hello,')|u }}
+      <i class='icon-user'></i>{% trans %}Hello,{% endtrans %}
       <span class='username'>{{ request.user.username.plain(escape=1) }}</span>
     </li>
     <li>
@@ -159,13 +159,13 @@
         'status': status_notresolved,
         'assignedto': request.user.id,
         '@dispname': i18n.gettext('Your Issues')|u,
-      }) }}">{{ i18n.gettext('Your Issues')|u }}</a>
+      }) }}">{% trans %}Your Issues{% endtrans %}</a>
     </li>
     <li>
-      <a href="user{{ request.user.id }}">{{ i18n.gettext('Your Details')|u }}</a>
+      <a href="user{{ request.user.id }}">{% trans %}Your Details{% endtrans %}</a>
     </li>
     <li>
-      <a href="{{ request.indexargs_url('', {'@action':'logout'}) }}">{{ i18n.gettext('Logout')|u }}</a>
+      <a href="{{ request.indexargs_url('', {'@action':'logout'}) }}">{% trans %}Logout{% endtrans %}</a>
     </li>
   </ul>
   <hr>
@@ -173,7 +173,7 @@
 
 <ul class='nav flex-column'>
   <li class='nav-header'>
-    <i class='icon-bookmark'></i>{{ i18n.gettext('Help')|u }}
+    <i class='icon-bookmark'></i>{% trans %}Help{% endtrans %}
   </li>
   <li>
     <a href="http://www.roundup-tracker.org">Roundup docs</a>

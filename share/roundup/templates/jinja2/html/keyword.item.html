@@ -1,28 +1,28 @@
 {% extends 'layout/page.html' %}
 
 {% block head_title %}
-  {{ i18n.gettext('Keyword editing')|u }}
+  {% trans %}Keyword editing{% endtrans %}
 {% endblock %}
 
 {% block page_header %}
-  {{ i18n.gettext('Keyword editing')|u }}
+  {% trans %}Keyword editing{% endtrans %}
 {% endblock %}
 
 {% block content %}
 
   <h4>Existing Keywords</h4>
   <p class='text-warning'>
-   {{ i18n.gettext('To edit an existing keyword (for spelling or typing errors),
-   click on its entry above.') }}
+   {% trans %}To edit an existing keyword (for spelling or typing errors),
+   click on its entry above.{% endtrans %}
   </p>
 
   <ul class='nav nav-pills nav-stacked'>
     {% for keyword in db.keyword.list() %}
       <li>
-        <a href='keyword{{ keyword.id }}'>{{ keyword.name.plain()|u|e }}</a>
+        <a href='keyword{{ keyword.id }}'>{{ keyword.name.plain()|u }}</a>
       </li>
     {% else %}
-      <p class='text-mute'>{{ i18n.gettext('There are no keywords yet.  Be the first -')|u }}</p>
+      <p class='text-mute'>{% trans %}There are no keywords yet.  Be the first -{% endtrans %}</p>
     {% endfor %}
   </ul>
 
@@ -33,6 +33,6 @@
     <input name="@csrf" type="hidden"
            value="{{ utils.anti_csrf_nonce() }}">
     <input type="hidden" name="@action" value="new">
-    <input type='submit' class='btn btn-primary' value="{{ i18n.gettext('Create keyword')|u }}">
+    <input type='submit' class='btn btn-primary' value="{% trans %}Create keyword{% endtrans %}">
   </form>
 {% endblock %}

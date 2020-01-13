@@ -11,51 +11,51 @@
   <fieldset>
     <!-- title -->
     <div class='form-group row'>
-      <label class='col-3 col-form-label' for='title'>{{ i18n.gettext('Title')|u }}</label>
+      <label class='col-3 col-form-label' for='title'>{% trans %}Title{% endtrans %}</label>
       <div class='col-9'>
-        <input class="form-control" name='title' id='title' type='text' class='input-lg' value='{{ context.title.plain()|u|e }}' required>
+        <input class="form-control" name='title' id='title' type='text' class='input-lg' value='{{ context.title.plain()|u }}' required>
       </div>
     </div> <!-- form-group row -->
 
     <!-- priority & Status -->
     <div class='form-group row'>
-      <label class='col-3 col-form-label' for='priority'>{{ i18n.gettext('Priority')|u }}</label>
+      <label class='col-3 col-form-label' for='priority'>{% trans %}Priority{% endtrans %}</label>
       <div class='col-3'>
-        {{ context.priority.menu(html_kwargs={"class": "custom-select"})|u }}
+        {{ context.priority.menu(html_kwargs={"class": "custom-select"})|u|safe }}
       </div>
-      <label class='col-3 col-form-label' for='status'>{{ i18n.gettext('Status')|u }}</label>
+      <label class='col-3 col-form-label' for='status'>{% trans %}Status{% endtrans %}</label>
       <div class='col-3'>
-        {{ context.status.menu(html_kwargs={"class": "custom-select"})|u }}
+        {{ context.status.menu(html_kwargs={"class": "custom-select"})|u|safe }}
       </div>
     </div> <!-- form-group row -->
 
     <!-- Superseder & nosy list -->
     <div class='form-group row'>
-      <label class='col-3 col-form-label' for='superseder'>{{ i18n.gettext('Superseder')|u }}</label>
+      <label class='col-3 col-form-label' for='superseder'>{% trans %}Superseder{% endtrans %}</label>
       <div class='col-3'>
-        <input class="form-control" type='text' name='superseder' id='superseder' value='{{ context.superseder.plain()|u|e }}'>
+        <input class="form-control" type='text' name='superseder' id='superseder' value='{{ context.superseder.plain()|u }}'>
       </div>
-      <label class='col-3 col-form-label' for='nosylist'>{{ i18n.gettext('Nosy list')|u }}</label>
+      <label class='col-3 col-form-label' for='nosylist'>{% trans %}Nosy list{% endtrans %}</label>
       <div class='col-3'>
-        <input class="form-control" type='text' name='nosy' id='nosylist' value='{{ context.nosy.plain()|u|e }}'>
+        <input class="form-control" type='text' name='nosy' id='nosylist' value='{{ context.nosy.plain()|u }}'>
       </div>
     </div> <!-- form-group row -->
 
     <!-- Assigned to & keywords -->
     <div class='form-group row'>
-      <label class='col-3 col-form-label' for='assignedto'>{{ i18n.gettext('Assigned to')|u }}</label>
+      <label class='col-3 col-form-label' for='assignedto'>{% trans %}Assigned to{% endtrans %}</label>
       <div class='col-3'>
-        {{ context.assignedto.menu(html_kwargs={"class": "custom-select"})|u }}
+        {{ context.assignedto.menu(html_kwargs={"class": "custom-select"})|u|safe }}
       </div>
-      <label class='col-3 col-form-label' for='keyword'>{{ i18n.gettext('Keywords')|u }}</label>
+      <label class='col-3 col-form-label' for='keyword'>{% trans %}Keywords{% endtrans %}</label>
       <div class='col-3'>
-        <input class="form-control" type='text' name='keyword' id='keyword' value='{{ context.keyword.plain()|u|e }}'>
+        <input class="form-control" type='text' name='keyword' id='keyword' value='{{ context.keyword.plain()|u }}'>
       </div>
     </div> <!-- form-group row -->
 
     <!-- Note -->
     <div class='form-group row'>
-      <label class='col-3 col-form-label' for='change_note'>{{ i18n.gettext('Change note')|u }}</label>
+      <label class='col-3 col-form-label' for='change_note'>{% trans %}Change note{% endtrans %}</label>
       <div class='col-9'>
         <textarea class="form-control" name="@note" rows="5" class='input-lg' id='change_note'></textarea>
       </div>
@@ -63,16 +63,16 @@
 
     <!-- File upload -->
     <div class='form-group row'>
-      <label class='col-3 col-form-label' for='file_upload'>{{ i18n.gettext('File')|u }}</label>
+      <label class='col-3 col-form-label' for='file_upload'>{% trans %}File{% endtrans %}</label>
       <div class='col-3'>
         <input class="form-control-file" type="file" name="@file" id='file_upload'>
       </div>
     </div> <!-- form-group row -->
   </fieldset>
   <div class='form-actions'>
-    {{ context.submit(html_kwargs={"class": "btn btn-primary"}) }}
+    {{ context.submit(html_kwargs={"class": "btn btn-primary"})|u|safe }}
     {% if context.id %}
-      <a href='{{ context.copy_url() }}'>{{ i18n.gettext('Make a copy')|u }}</a>
+      <a href='{{ context.copy_url() }}'>{% trans %}Make a copy{% endtrans %}</a>
     {% endif %}
   </div>
   <input type="hidden" name="@template" value="item">

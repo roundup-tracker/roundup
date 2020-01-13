@@ -47,7 +47,8 @@ class Jinja2Loader(LoaderBase):
     def __init__(self, dir):
         self._env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(dir),
-            extensions=[]
+            extensions=['jinja2.ext.i18n'],
+            autoescape=True
         )
 
         # Adding a custom filter that can transform roundup's vars to unicode
@@ -87,7 +88,10 @@ class Jinja2ProxyPageTemplate(TemplateBase):
     def render(self, client, classname, request, **options):
         # [ ] limit the information passed to the minimal necessary set
         c = context(client, self, classname, request)
-        c.update({'options': options})
+
+        c.update({'options': options,
+                  'gettext': lambda s: s2u(client.gettext(s)),
+                  'ngettext': lambda s, p, n: s2u(client.ngettext(s, p, n))})
         s = self._tpl.render(c)
         return s if sys.version_info[0] > 2 else \
             s.encode(client.STORAGE_CHARSET, )

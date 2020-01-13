@@ -1,17 +1,17 @@
 {% extends 'layout/page.html' %}
 
 {% block head_title %}
-  {{ i18n.gettext('Registration in progress')|u }} - {{ config.TRACKER_NAME }}
+  {% trans %}Registration in progress{% endtrans %} - {{ config.TRACKER_NAME }}
 {% endblock %}
 
 {% block page_header %}
-  {{ i18n.gettext('Registration in progress...')|u }}
+  {% trans %}Registration in progress...{% endtrans %}
 {% endblock %}
 
 {% block content %}
   <p>
-    {{ i18n.gettext('You will shortly receive an email to confirm your
+    {% trans %}You will shortly receive an email to confirm your
     registration. To complete the registration process,
-    visit the link indicated in the email.') }}
+    visit the link indicated in the email.{% endtrans %}
   </p>
 {% endblock %}

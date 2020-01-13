@@ -1,11 +1,11 @@
 {% extends 'layout/page.html' %}
 
 {% block head_title %}
-  {{ i18n.gettext('File display')|u }}
+  {% trans %}File display{% endtrans %}
 {% endblock %}
 
 {% block page_header %}
-  {{ i18n.gettext('File display')|u }}
+  {% trans %}File display{% endtrans %}
 {% endblock %}
 
 {% block content %}
@@ -17,31 +17,31 @@
       enctype="multipart/form-data" action='{{ context.designator() }}'>
 
       <dl class='dl-horizontal'>
-        <dt>{{ i18n.gettext('Name')|u }}</dt>
-        <dd>{{ context.name.field()|u }}</dd>
-        <dt>{{ i18n.gettext('Content Type')|u }}</dt>
-        <dd>{{ context.type.field()|u }}</dd>
+        <dt>{% trans %}Name{% endtrans %}</dt>
+        <dd>{{ context.name.field()|u|safe }}</dd>
+        <dt>{% trans %}Content Type{% endtrans %}</dt>
+        <dd>{{ context.type.field()|u|safe }}</dd>
       </dl>
 
       <input type="hidden" name="@template" value="item">
       <input type="hidden" name="@required" value="name,type">
       {% if '@multilink' in request.form %}
         <input type="hidden" name="@multilink"
-          value='{{ request.form["@multilink"].value()|u|e }}'>
+          value='{{ request.form["@multilink"].value()|u }}'>
       {% endif %}
       <div class='form-actions'>
-        {{ context.submit()|u }}
+        {{ context.submit()|u|safe }}
       </div>
     </form>
   {% endif %}
 
   {% if context.id and context.is_view_ok() %}
     <div class='row-fluid'>
-      <a href='file{{ context.id }}/{{ context.name.plain()|u|e }}'>{{ i18n.gettext('Download')|u }}</a>
+      <a href='file{{ context.id }}/{{ context.name.plain()|u }}'>{% trans %}Download{% endtrans %}</a>
     </div>
   {% endif %}
 
   <div class='vspace-five'></div>
-  {{ context.history()|u }}
+  {{ context.history()|u|safe }}
 
 {% endblock %}

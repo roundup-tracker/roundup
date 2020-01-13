@@ -4,28 +4,28 @@
     {% if batch and batch.previous %}
       <li class="page-item">
         <a class="page-link" href="{{ request.indexargs_url(request.classname,
-                                   {'@startwith':batch.previous().first, '@pagesize':batch.previous().size}) }}">{{ i18n.gettext('Previous')|u }}</a>
+                                   {'@startwith':batch.previous().first, '@pagesize':batch.previous().size}) }}">{% trans %}Previous{% endtrans %}</a>
       </li>
     {% else %}
       <li class='page-item disabled'>
-        <a class="page-link" href="#">{{ i18n.gettext('Previous')|u }}</a>
+        <a class="page-link" href="#">{% trans %}Previous{% endtrans %}</a>
       </li>
     {% endif %}
       <li class="page-item disabled">
         <span class="page-link">
           {{ batch.start }}...{{ batch.start + batch.length -1 }}
-          {{ i18n.gettext('out of')|u }}
+          {% trans %}out of{% endtrans %}
           {{ batch.sequence_length }}
         </span>
       </li>
     {% if batch and batch.next() %}
       <li class="page-item">
         <a class="page-link" href="{{ request.indexargs_url(request.classname,
-                                   {'@startwith':batch.next().first, '@pagesize':batch.next().size}) }}">{{ i18n.gettext('Next')|u }}</a>
+                                   {'@startwith':batch.next().first, '@pagesize':batch.next().size}) }}">{% trans %}Next{% endtrans %}</a>
       </li>
     {% else %}
       <li class='page-item disabled'>
-        <a class="page-link" href="#">{{ i18n.gettext('Next')|u }}</a>
+        <a class="page-link" href="#">{% trans %}Next{% endtrans %}</a>
       </li>
     {% endif %}
   </ul>

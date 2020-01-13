@@ -26,7 +26,7 @@
 {%- endmacro %}
 {% macro option_value(option, id, name) -%}
   <option value="{{ id }}"
-		  {% if id == request.form.getvalue(option, '') %}selected{% endif %}	>{{ name|u|e }}</option>
+		  {% if id == request.form.getvalue(option, '') %}selected{% endif %}	>{{ name|u }}</option>
 {%- endmacro %}
 
 {% block head_title %}
@@ -45,14 +45,14 @@
 
 <tr>
  <th class="header">&nbsp;</th>
- <th class="header">{{ i18n.gettext('Filter on')|u }}</th>
- <th class="header">{{ i18n.gettext('Display')|u }}</th>
- <th class="header">{{ i18n.gettext('Sort on')|u }}</th>
- <th class="header">{{ i18n.gettext('Group on')|u }}</th>
+ <th class="header">{% trans %}Filter on{% endtrans %}</th>
+ <th class="header">{% trans %}Display{% endtrans %}</th>
+ <th class="header">{% trans %}Sort on{% endtrans %}</th>
+ <th class="header">{% trans %}Group on{% endtrans %}</th>
 </tr>
 
 <tr>
-  <th>{{ i18n.gettext('All text*:')|u }}</th>
+  <th>{% trans %}All text*:{% endtrans %}</th>
   <td>{{ input('@search_text') }}</td>
   <td>&nbsp;</td>
   <td>&nbsp;</td>
@@ -60,7 +60,7 @@
 </tr>
 
 <tr>
-  <th>{{ i18n.gettext('Title:')|u }}</th>
+  <th>{% trans %}Title:{% endtrans %}</th>
   <td>{{ input('title') }}</td>
   <td>{{ display_column('title') }}</td>
   <td>{{ sort_column('title') }}</td>
@@ -68,7 +68,7 @@
 </tr>
 
 <tr>
-  <th>{{ i18n.gettext('Keyword:')|u }}</th>
+  <th>{% trans %}Keyword:{% endtrans %}</th>
   <td><select class="custom-select" name="keyword" id="keyword">
 	  {{ option_value('keyword', '', 'don\'t care') }}
 	  {{ option_value('keyword', '-1', 'not selected') }}
@@ -83,7 +83,7 @@
 </tr>
 
 <tr>
-  <th>{{ i18n.gettext('ID:')|u }}</th>
+  <th>{% trans %}ID:{% endtrans %}</th>
   <td>{{ input('id') }}</td>
   <td>{{ display_column('id') }}</td>
   <td>{{ sort_column('id') }}</td>
@@ -91,7 +91,7 @@
 </tr>
 
 <tr>
-  <th>{{ i18n.gettext('Creation Date:')|u }}</th>
+  <th>{% trans %}Creation Date:{% endtrans %}</th>
   <td>{{ input('creation') }}</td>
   <td>{{ display_column('creation') }}</td>
   <td>{{ sort_column('creation') }}</td>
@@ -99,7 +99,7 @@
 </tr>
 
 <tr>
-  <th>{{ i18n.gettext('Activity:')|u }}</th>
+  <th>{% trans %}Activity:{% endtrans %}</th>
   <td>{{ input('activity') }}</td>
   <td>{{ display_column('activity') }}</td>
   <td>{{ sort_column('activity') }}</td>
@@ -107,7 +107,7 @@
 </tr>
 
 <tr>
-  <th>{{ i18n.gettext('Priority:')|u }}</th>
+  <th>{% trans %}Priority:{% endtrans %}</th>
   <td><select class="custom-select" name="priority" id="priority">
 	  {{ option_value('priority', '', 'don\'t care') }}
 	  {{ option_value('priority', '-1', 'not selected') }}
@@ -138,7 +138,7 @@
 </tr>
 
 <tr>
-  <th>{{ i18n.gettext('Assigned to:')|u }}</th>
+  <th>{% trans %}Assigned to:{% endtrans %}</th>
   <td>{{ input('submitter') }}</td>
   <td>{{ display_column('assignedto') }}</td>
   <td>{{ sort_column('assignedto') }}</td>
@@ -146,7 +146,7 @@
 </tr>
 
 <tr>
- <th>{{ i18n.gettext('No Sort or group:')|u }}</th>
+ <th>{% trans %}No Sort or group:{% endtrans %}</th>
  <td>&nbsp;</td>
  <td>&nbsp;</td>
  <td><input type="radio" name="@sort" value=""></td>
@@ -154,22 +154,22 @@
 </tr>
 
 <tr>
-<th>{{ i18n.gettext('Pagesize:')|u }}</th>
+<th>{% trans %}Pagesize:{% endtrans %}</th>
 <td><input class="form-control col-4" name="@pagesize" value="{{ request.form.getfirst('@pagesize', '50') }}" /></td>
 </tr>
 
 <tr>
-<th>{{ i18n.gettext('Start With:')|u }}</th>
+<th>{% trans %}Start With:{% endtrans %}</th>
 <td><input class="form-control col-4" name="@startwith"" value="{{ request.form.getfirst('@startwith', '0') }}" /></td>
 </tr>
 
 <tr>
-<th>{{ i18n.gettext('Sort Descending:')|u }}</th>
+<th>{% trans %}Sort Descending:{% endtrans %}</th>
 <td><input type="checkbox" name="@sortdir" {% if sort_desc %}checked{% endif %} /></td>
 </tr>
 
 <tr>
-<th>{{ i18n.gettext('Group Descending:')|u }}</th>
+<th>{% trans %}Group Descending:{% endtrans %}</th>
 <td><input type="checkbox" name="@groupdir" {% if group_desc %}checked{% endif %} /></td>
 </tr>
 
@@ -183,7 +183,7 @@
 
 <tr><td>&nbsp;</td>
  <td colspan="4" class="help">
-   {{ i18n.gettext('*: The "all text" field will look in message bodies and issue titles')|u }}
+   {% trans %}*: The "all text" field will look in message bodies and issue titles{% endtrans %}
  </td>
 </tr>
 </table>

@@ -1,11 +1,11 @@
 {% extends 'layout/page.html' %}
 
 {% block head_title %}
-  {{ i18n.gettext('Empty page')|u }}
+  {% trans %}Empty page{% endtrans %}
 {% endblock %}
 
 {% block page_content %}
   <p>
-    {{ i18n.gettext('Please specify your search parameters!')|u }}
+    {% trans %}Please specify your search parameters!{% endtrans %}
   </p>
 {% endblock %}

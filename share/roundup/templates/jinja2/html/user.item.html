@@ -2,21 +2,21 @@
 
 {% block head_title %}
   {% if context.id %}
-    {{ i18n.gettext('User')|u }} {{ context.id }} - {{ config.TRACKER_NAME }}
+    {% trans %}User{% endtrans %} {{ context.id }} - {{ config.TRACKER_NAME }}
   {% else %}
-    {{ i18n.gettext('New User')|u }} - {{ config.TRACKER_NAME }}
+    {% trans %}New User{% endtrans %} - {{ config.TRACKER_NAME }}
   {% endif %}
 {% endblock %}
 
 {% block page_header %}
   {% if not (context.id or context.is_edit_ok()) %}
-    {{ i18n.gettext('New User')|u }}
+    {% trans %}New User{% endtrans %}
   {% elif not context.id and context.is_edit_ok() %}
-    {{ i18n.gettext('New User Editing')|u }}
+    {% trans %}New User Editing{% endtrans %}
   {% elif context.id and not context.is_edit_ok() %}
-    {{ i18n.gettext('User')|u }}{{ context.id }}
+    {% trans %}User{% endtrans %}{{ context.id }}
   {% elif context.id and context.is_edit_ok() %}
-    {{ i18n.gettext('User')|u }}{{ context.id }} {{ i18n.gettext('editing')|u }}
+    {% trans %}User{% endtrans %}{{ context.id }} {% trans %}editing{% endtrans %}
   {% endif %}
 {% endblock %}
 
@@ -31,26 +31,26 @@
           action ='{{ context.designator() }}'>
       <table>
         <tr>
-          <th>{{ i18n.gettext('Name')|u }}</th>
+          <th>{% trans %}Name{% endtrans %}</th>
           <td>
-            <input class="form-control" type='text' name="realname" value='{{ context.realname.plain()|u|e }}'>
+            <input class="form-control" type='text' name="realname" value='{{ context.realname.plain()|u }}'>
           </td>
         </tr>
         <tr>
-          <th>{{ i18n.gettext('Login Name')|u }}</th>
+          <th>{% trans %}Login Name{% endtrans %}</th>
           <td>
-            <input class="form-control"  type='text' name='username' value='{{ context.username.plain()|u|e }}'>
+            <input class="form-control"  type='text' name='username' value='{{ context.username.plain()|u }}'>
           </td>
         </tr>
         {% if context.is_edit_ok() %}
           <tr>
-            <th>{{ i18n.gettext('Login Password')|u }}</th>
+            <th>{% trans %}Login Password{% endtrans %}</th>
             <td>
               <input class="form-control"  type='password' name='password'>
             </td>
           </tr>
           <tr>
-            <th>{{ i18n.gettext('Confirm Password')|u }}</th>
+            <th>{% trans %}Confirm Password{% endtrans %}</th>
             <td>
               <input class="form-control"  type='password' name='@confirm@password'>
             </td>
@@ -58,49 +58,49 @@
         {% endif %}
         {% if request.user.hasPermission('Web Roles') %}
           <tr>
-            <th>{{ i18n.gettext('Roles <br>(comma separated)')|u }}</th>
+            <th>{% trans %}Roles <br>(comma separated){% endtrans %}</th>
             <td>
-              <input class="form-control"  type='text' name='roles' value='{{ context.roles.plain()|u|e }}'>
+              <input class="form-control"  type='text' name='roles' value='{{ context.roles.plain()|u }}'>
             </td>
           </tr>
         {% endif %}
         <tr>
-          <th>{{ i18n.gettext('Phone')|u }}</th>
+          <th>{% trans %}Phone{% endtrans %}</th>
           <td>
-            <input class="form-control"  type='text' name='phone' value='{{ context.phone.plain()|u|e }}'>
+            <input class="form-control"  type='text' name='phone' value='{{ context.phone.plain()|u }}'>
           </td>
         </tr>
         <tr>
-          <th>{{ i18n.gettext('Organisation')|u }}</th>
+          <th>{% trans %}Organisation{% endtrans %}</th>
           <td>
-            <input class="form-control"  type='text' name='organisation' value='{{ context.organisation.plain()|u|e }}'>
+            <input class="form-control"  type='text' name='organisation' value='{{ context.organisation.plain()|u }}'>
           </td>
         </tr>
         {% if context.timezone %}
           <tr>
-            <th>{{ i18n.gettext('Timezone')|u }}</th>
+            <th>{% trans %}Timezone{% endtrans %}</th>
             <td>
-              <input class="form-control"  type='text' name='timezone' value='{{ context.timezone.plain()|u|e }}'>
+              <input class="form-control"  type='text' name='timezone' value='{{ context.timezone.plain()|u }}'>
             </td>
           </tr>
         {% endif %}
         <tr>
-          <th>{{ i18n.gettext('Email')|u }}</th>
+          <th>{% trans %}Email{% endtrans %}</th>
           <td>
-            <input class="form-control"  type='text' name='address' value='{{ context.address.plain()|u|e }}'>
+            <input class="form-control"  type='text' name='address' value='{{ context.address.plain()|u }}'>
           </td>
         </tr>
         <tr>
-          <th>{{ i18n.gettext('Alternate email address <br>One address per line')|u }}</th>
+          <th>{% trans %}Alternate email address <br>One address per line{% endtrans %}</th>
           <td>
-            {{ context.alternate_addresses.multiline(class="form-control")|u }}
+            {{ context.alternate_addresses.multiline(class="form-control")|u|safe }}
           </td>
         </tr>
         {% if context.is_edit_ok() %}
           <tr class='form-actions'>
             <td>
             <input type="hidden" name="@template" value="item">
-            {{ context.submit(html_kwargs={ "class": "btn btn-success" }) }}
+            {{ context.submit(html_kwargs={ "class": "btn btn-success" })|u|safe }}
             </td>
           </tr>
         {% endif %}
@@ -108,6 +108,6 @@
     </form>
   {% endif %}
 
-  {{ context.history()|u }}
+  {{ context.history()|u|safe }}
 
 {% endblock %}

@@ -1,11 +1,11 @@
 {% extends 'layout/page.html' %}
 
 {% block head_title %}
-  {{ i18n.gettext('List of issues')|u }}
+  {% trans %}List of issues{% endtrans %}
 {% endblock %}
 
 {% block page_header %}
-  {{ i18n.gettext('List of issues')|u }}
+  {% trans %}List of issues{% endtrans %}
 {% endblock %}
 
 {% block content %}
@@ -17,63 +17,63 @@
       <table class='table'>
         <tr class='info'>
 		  {% if request.show.priority %}
-          <td>{{ i18n.gettext('Priority')|u }}</td>
+          <td>{% trans %}Priority{% endtrans %}</td>
 		  {% endif %}
 		  {% if request.show.id %}
-          <td>{{ i18n.gettext('ID')|u }}</td>
+          <td>{% trans %}ID{% endtrans %}</td>
 		  {% endif %}
 		  {% if request.show.activity %}
-          <td>{{ i18n.gettext('Activity')|u }}</td>
+          <td>{% trans %}Activity{% endtrans %}</td>
 		  {% endif %}
 		  {% if request.show.actor %}
-          <td>{{ i18n.gettext('Actor')|u }}</td>
+          <td>{% trans %}Actor{% endtrans %}</td>
 		  {% endif %}
 		  {% if request.show.keyword %}
-          <td>{{ i18n.gettext('Keyword')|u }}</td>
+          <td>{% trans %}Keyword{% endtrans %}</td>
 		  {% endif %}
 		  {% if request.show.title %}
-          <td>{{ i18n.gettext('Title')|u }}</td>
+          <td>{% trans %}Title{% endtrans %}</td>
 		  {% endif %}
 		  {% if request.show.status %}
-          <td>{{ i18n.gettext('Status')|u }}</td>
+          <td>{% trans %}Status{% endtrans %}</td>
 		  {% endif %}
 		  {% if request.show.creator %}
-          <td>{{ i18n.gettext('Creator')|u }}</td>
+          <td>{% trans %}Creator{% endtrans %}</td>
 		  {% endif %}
 		  {% if request.show.assignedto %}
-          <td>{{ i18n.gettext('Assigned To')|u }}</td>
+          <td>{% trans %}Assigned To{% endtrans %}</td>
 		  {% endif %}
         </tr>
         {% for issue in request.batch() %}
           <tr>
 		   {% if request.show.priority %}
-           <td>{{ issue.priority.plain()|u|e }}</td>
+           <td>{{ issue.priority.plain()|u }}</td>
 		   {% endif %}
 		   {% if request.show.id %}
            <td>{{ issue.id }}</td>
 		   {% endif %}
 		   {% if request.show.activity %}
-           <td>{{ issue.activity.reldate()|u|e }}</td>
+           <td>{{ issue.activity.reldate()|u }}</td>
 		   {% endif %}
 		   {% if request.show.actor %}
-           <td>{{ issue.actor.plain()|u|e }}</td>
+           <td>{{ issue.actor.plain()|u }}</td>
 		   {% endif %}
 		   {% if request.show.keyword %}
-           <td>{{ issue.keyword.plain()|u|e }}</td>
+           <td>{{ issue.keyword.plain()|u }}</td>
 		   {% endif %}
 		   {% if request.show.title %}
            <td>
-            <a href='issue{{ issue.id }}'>{{ issue.title.plain(hyperlink=0)|u|e }}</a>
+            <a href='issue{{ issue.id }}'>{{ issue.title.plain(hyperlink=0)|u }}</a>
            </td>
 		   {% endif %}
 		   {% if request.show.status %}
-           <td>{{ issue.status.plain()|u|e }}</td>
+           <td>{{ issue.status.plain()|u }}</td>
 		   {% endif %}
 		   {% if request.show.creator %}
-           <td>{{ issue.creator.plain()|u|e }}</td>
+           <td>{{ issue.creator.plain()|u }}</td>
 		   {% endif %}
 		   {% if request.show.assignedto %}
-           <td>{{ issue.assignedto.plain()|u|e }}</td>
+           <td>{{ issue.assignedto.plain()|u }}</td>
 		   {% endif %}
           </tr>
         {% endfor %}
@@ -83,7 +83,7 @@
     <div class='pull-right'>
       <a class='btn btn-success'
           href="{{ request.indexargs_url('issue', {'@action':'export_csv'}) }}">
-        {{ i18n.gettext('Download as CSV')|u }}
+        {% trans %}Download as CSV{% endtrans %}
       </a>
     </div>
   </div>
@@ -91,7 +91,7 @@
   {% include 'layout/sort.html' %}
 
     {% else %}
-      <p class='text-error'>{{ i18n.gettext('There are no issues yet!')|u }}</p>
+      <p class='text-error'>{% trans %}There are no issues yet!{% endtrans %}</p>
     {% endif %}
 
   {% endif %}
