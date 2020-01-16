@@ -83,6 +83,8 @@ Fixed:
 - Document security issues in xmlrpc interface in doc/xmlrpc.txt.
 - Enable autoescape in the jinja2 template and use the i18n extension
   for translations. (Report: John Rouillard; Fix: Christof Meerwald)
+- Cleanup code by linting using flake8. (John Rouillard)
+- Cleanup code by security linting using bandit. (John Rouillard)
 
 2019-10-23 2.0.0 alpha 0
 
