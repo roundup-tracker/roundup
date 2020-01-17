@@ -443,7 +443,7 @@ def html4_cgi_escape_attrs(**attrs):
         <input required ..> not <input required="required" ...>
         The latter is xhtml. Recognize booleans by:
           value is None
-          value is the same as the atribute
+          value is the same as the attribute
         Code can use either method to indicate a pure boolean.
     '''
     return ' '.join(['%s="%s"'%(k,html_escape(str(v), True)) 
@@ -480,12 +480,11 @@ class HTMLInputMixin(object):
         html_version = 'html4'
         if hasattr(self._client.instance.config, 'HTML_VERSION'):
             html_version = self._client.instance.config.HTML_VERSION
-        if html_version == 'xhtml':
-            self.input = input_xhtml
-            self.cgi_escape_attrs=xhtml_cgi_escape_attrs
-        else:
-            self.input = input_html4
-            self.cgi_escape_attrs=html4_cgi_escape_attrs
+        # HTML-4 allows attributes like required=required, so for now
+        # revert the change that optimizes this and breaks rendering of
+        # non-boolean attributes (like name="name").
+        self.input = input_xhtml
+        self.cgi_escape_attrs=xhtml_cgi_escape_attrs
         # self._context is used for translations.
         # will be initialized by the first call to .gettext()
         self._context = None

@@ -85,6 +85,9 @@ Fixed:
   for translations. (Report: John Rouillard; Fix: Christof Meerwald)
 - Cleanup code by linting using flake8. (John Rouillard)
 - Cleanup code by security linting using bandit. (John Rouillard)
+- Revert (part of) the change that optimizes rendering of boolean
+  attributes in HTML-4. This breaks rendering of non-boolean attributes
+  (like name="name"). (Ralf Schlatterbeck)
 
 2019-10-23 2.0.0 alpha 0
 
@@ -198,12 +201,12 @@ Fixed:
 - issue2550992: avoid errors from invalid Authorization
   headers. (Joseph Myers)
 - issue2551022: support non-ASCII prefixes in instance config for
-  finding static files. (Cédric Krier)
+  finding static files. (C\E9dric Krier)
 - issue2551023: Fix CSRF headers for use with wsgi and cgi. The
   env variable array used - separators rather than _. Compare:
   HTTP_X-REQUESTED-WITH to HTTP_X_REQUESTED_WITH. The last is
   correct. Also fix roundup-server to produce the latter form. (Patch
-  by Cédric Krier, reviewed/applied John Rouillard.)
+  by C\E9dric Krier, reviewed/applied John Rouillard.)
 - issue2551035 - fix XSS issue in wsgi and cgi when handing url not
   found/404. Reported by hannob at
   https://github.com/python/bugs.python.org/issues/34, issue opened by
@@ -218,9 +221,9 @@ Fixed:
   when using the anydbm backend (John Rouillard)
 - issue2551041 - change permission check from "Create User" to "Register
   User" in page.html for the responsive and devel templates. (reporter
-  Cédric Krier, John Rouillard)
+  C\E9dric Krier, John Rouillard)
 - issue2550144 - fix use of undefined icing macro in devel
-  template. Replace with frame macro. (Cédric Krier)
+  template. Replace with frame macro. (C\E9dric Krier)
 - handle UnicodeDecodeError in file class when file contents are
   not text (e.g. jpg). (John Rouillard)
 - issue2551033: prevent reverse engineering hidden data by using etags
@@ -1082,7 +1085,7 @@ Features:
 Fixed:
 
 - issue2550765: Don't show links in calendar that will fail.
-  Found and fixed by Cédric Krier. (Bernhard)
+  Found and fixed by C\E9dric Krier. (Bernhard)
 - issue2550765: use <meta name="robots" content="noindex, nofollow"> in the
   _generic.calendar.html to prevent robots to follow all the links in the
   calendar. (Ezio Melotti)
@@ -1174,9 +1177,9 @@ Fixed:
 - issue2550728: remove buggy parentheses in TAL/DummyEngine.py.
   Reported and fixed by Ralf Hemmecke. (Bernhard)
 - issue2550715: IndexError when requesting non-existing file via http.
-  Reported and fixed by Cédric Krier. (Bernhard)
+  Reported and fixed by C\E9dric Krier. (Bernhard)
 - issue2550712: exportcsvaction errors poorly when given invalid columns.
-  Reported by Will Kahn-Greene, fixed by Cédric Krier. (Bernhard)
+  Reported by Will Kahn-Greene, fixed by C\E9dric Krier. (Bernhard)
 - issue2550695: 'No sort or group' settings not retained when editing queries.
   Reported and fixed by John Kristensen. Tested by Satchidanand Haridas.
   (Bernhard)
@@ -1278,7 +1281,7 @@ Fixed:
   need to use a BytesIO which gets the utf-8 string from the
   web-interface. Compatibility for old versions by using
   StringIO.StringIO for emulating a io.BytesIO also works.
-  Thanks to Cédric Krier for reporting. Closes issue2550713.
+  Thanks to C\E9dric Krier for reporting. Closes issue2550713.
   Added a regression test for EditCSVAction (Ralf)
 - Fix issue2550691 where a Unix From-Header was sometimes inserted in
   outgoing emails, thanks to Joseph Myers for the patch. (Ralf)
@@ -1422,7 +1425,7 @@ Fixed:
 
 - fixed reporting of source missing warnings
 - relevant tests made locale independent, issue2550660 (thanks
-  Benni Bärmann for reporting).
+  Benni B\E4rmann for reporting).
 - fix for incorrect except: syntax, issue2550661 (thanks Jakub Wilk)
 - No longer use the root logger, use a logger with prefix "roundup",
   see http://thread.gmane.org/gmane.comp.bug-tracking.roundup.devel/5356
@@ -1438,7 +1441,7 @@ Fixed:
   which roundup interprets as a Reject exception. Fixes issue2550667.
   Added regression tests for message/rfc822 attachments with and without
   configured unpacking (mailgw unpack_rfc822, see Features above)
-  Thanks to Benni Bärmann for reporting.
+  Thanks to Benni B\E4rmann for reporting.
 - Allow search_popup macro to work with all db classes, issue2550567
   (thanks John Kristensen)
 - lower memory footprint for (journal-) import
@@ -1556,7 +1559,7 @@ Fixes:
   fix mailgw to use Register permission, fixes issue2550599
 - Fix styling of calendar to make it more usable, fixes issue2550608
 - Fix typo in email section of user guide, fixes issue2550607
-- Fix WSGI response code (thanks Peter Pöml)
+- Fix WSGI response code (thanks Peter P\F6ml)
 - Fix linking of an existing item to a newly created item, e.g.
   edit action in web template is name="issue-1@link@msg" value="msg1"
   would trigger a traceback about an unbound variable.
@@ -1707,9 +1710,9 @@ Feature:
 - Admin copy of error email from mailgw includes traceback (thanks Ulrik
   Mikaelsson)
 - Messages created through the web are now given an in-reply-to header
-  when email out to nosy (thanks Martin v. Löwis)
+  when email out to nosy (thanks Martin v. L\F6wis)
 - Nosy messages now include more information about issues (all link
-  properties with a "name" attribute) (thanks Martin v. Löwis)
+  properties with a "name" attribute) (thanks Martin v. L\F6wis)
 
 Fixed:
 - Searching date range by supplying just a date as the filter spec
@@ -3384,7 +3387,7 @@ Feature:
    feature, and we hope to add support for it to the web gateway.
 
 Fixed:
--  Lots of bugs, thanks Roché and others on the devel mailing list!
+-  Lots of bugs, thanks Roch\E9 and others on the devel mailing list!
 -  login_action and newuser_action return values were being ignored
 -  Woohoo! Found that bloody re-login bug that was killing the mail
    gateway.
