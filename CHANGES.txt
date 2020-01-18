@@ -70,9 +70,12 @@ Fixed:
 - French translation gave errors with Python 3 because of ISO-8859-1
   character in .mo file header. (Joseph Myers)
 - Fix representation of boolean html attributes to be 'required'
-  rather than the xhtml form of 'required="required"'. Specifiy
-  attribute value same as attribute name or attribute value of None,
-  to output attribute as boolean. (John Rouillard)
+  rather than the xhtml form of 'required="required"'. Specify
+  (reverted attribute value same as attribute name or) attribute
+  value of None, to output attribute as boolean. (John Rouillard)
+  Reverted (part of) this change. It breaks rendering of non-boolean
+  attributes (like name="name"). So only value of None renders
+  attribute properly as boolean. (Ralf Schlatterbeck)
 - issue2551076 - in responsive template, default searches for bugs and
   tasks sets status=new default should be "don't care". (Report:
   Ludwig Reiter; Fix: John Rouillard)
@@ -85,9 +88,6 @@ Fixed:
   for translations. (Report: John Rouillard; Fix: Christof Meerwald)
 - Cleanup code by linting using flake8. (John Rouillard)
 - Cleanup code by security linting using bandit. (John Rouillard)
-- Revert (part of) the change that optimizes rendering of boolean
-  attributes in HTML-4. This breaks rendering of non-boolean attributes
-  (like name="name"). (Ralf Schlatterbeck)
 
 2019-10-23 2.0.0 alpha 0
 
