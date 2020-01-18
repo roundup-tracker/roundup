@@ -52,13 +52,12 @@ the same name.
 __docformat__ = 'restructuredtext'
 
 # standard python modules
-import sys, os, time, re, errno, weakref, copy, logging, datetime
+import os, time, re, weakref, copy, logging, datetime
 
 # roundup modules
 from roundup import hyperdb, date, password, roundupdb, security, support
 from roundup.hyperdb import String, Password, Date, Interval, Link, \
-    Multilink, DatabaseError, Boolean, Number, Integer, Node
-from roundup.backends import locking
+    Multilink, DatabaseError, Boolean, Number, Integer
 from roundup.i18n import _
 
 
@@ -76,6 +75,7 @@ from hashlib import md5
 # dummy value meaning "argument not passed"
 _marker = []
 
+
 def _num_cvt(num):
     num = str(num)
     try:
@@ -83,27 +83,29 @@ def _num_cvt(num):
     except ValueError:
         return float(num)
 
+
 def _bool_cvt(value):
     if value in ('TRUE', 'FALSE'):
         return {'TRUE': 1, 'FALSE': 0}[value]
     # assume it's a number returned from the db API
     return int(value)
 
+
 def date_to_hyperdb_value(d):
     """ convert date d to a roundup date """
-    if isinstance (d, datetime.datetime):
+    if isinstance(d, datetime.datetime):
         return date.Date(d)
-    return date.Date (str(d).replace(' ', '.'))
+    return date.Date(str(d).replace(' ', '.'))
 
 
 def connection_dict(config, dbnamestr=None):
     """ Used by Postgresql and MySQL to detemine the keyword args for
     opening the database connection."""
-    d = { }
+    d = {}
     if dbnamestr:
         d[dbnamestr] = config.RDBMS_NAME
     for name in ('host', 'port', 'password', 'user', 'read_default_group',
-            'read_default_file'):
+                 'read_default_file'):
         cvar = 'RDBMS_'+name.upper()
         if config[cvar] is not None:
             d[name] = config[cvar]
@@ -117,7 +119,7 @@ class IdListOptimizer:
     """
 
     def __init__(self):
-        self.ranges  = []
+        self.ranges = []
         self.singles = []
 
     def append(self, nid):
@@ -136,7 +138,7 @@ class IdListOptimizer:
         self.singles.append(nid)
 
     def where(self, field, placeholder):
-        ranges  = self.ranges
+        ranges = self.ranges
         singles = self.singles
 
         if not singles and not ranges: return "(1=0)", []
@@ -162,7 +164,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         - some functionality is specific to the actual SQL database, hence
           the sql_* methods that are NotImplemented
-        - we keep a cache of the latest N row fetches (where N is configurable).
+        - we keep a cache of the latest N row fetches (where N is
+          configurable).
     """
     def __init__(self, config, journaltag=None):
         """ Open the database and load the schema from it.
@@ -182,7 +185,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.cache_size = config.RDBMS_CACHE_SIZE
         self.clearCache()
         self.stats = {'cache_hits': 0, 'cache_misses': 0, 'get_items': 0,
-            'filtering': 0}
+                      'filtering': 0}
 
         # make sure the database directory exists
         if not os.path.isdir(self.config.DATABASE):
@@ -193,7 +196,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         # Uppercase to not collide with Class names
         self.Session = None
-        self.Otk     = None
+        self.Otk = None
 
         # open a connection to the database, creating the "conn" attribute
         self.open_connection()
@@ -224,7 +227,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def sql(self, sql, args=None, cursor=None):
         """ Execute the sql with the optional args.
         """
-        self.log_debug('SQL %r %r'%(sql, args))
+        self.log_debug('SQL %r %r' % (sql, args))
         if not cursor:
             cursor = self.cursor
         if args:
@@ -260,7 +263,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         v = v.replace('_', '\\_')
         return '%' + v + '%'
 
-
     def init_dbschema(self):
         self.database_schema = {
             'version': self.current_db_version,
@@ -283,7 +285,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """
         s = repr(self.database_schema)
         self.sql('delete from schema')
-        self.sql('insert into schema values (%s)'%self.arg, (s,))
+        self.sql('insert into schema values (%s)' % self.arg, (s,))
 
     def post_init(self):
         """ Called once the schema initialisation has finished.
@@ -309,7 +311,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 tables[classname] = spec.schema()
                 save = 1
 
-        for classname, spec in list(tables.items()):
+        for classname, _spec in list(tables.items()):
             if classname not in self.classes:
                 self.drop_class(classname, tables[classname])
                 del tables[classname]
@@ -330,6 +332,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     # of the backen database
     current_db_version = 5
     db_version_updated = False
+
     def upgrade_db(self):
         """ Update the SQL database to reflect changes in the backend code.
 
@@ -338,7 +341,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         version = self.database_schema.get('version', 1)
         if version > self.current_db_version:
             raise DatabaseError('attempting to run rev %d DATABASE with rev '
-                '%d CODE!'%(version, self.current_db_version))
+                                '%d CODE!' % (version,
+                                              self.current_db_version))
         if version == self.current_db_version:
             # nothing to do
             return 0
@@ -375,9 +379,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def fix_version_3_tables(self):
         # drop the shorter VARCHAR OTK column and add a new TEXT one
         for name in ('otk', 'session'):
-            self.sql('DELETE FROM %ss'%name)
-            self.sql('ALTER TABLE %ss DROP %s_value'%(name, name))
-            self.sql('ALTER TABLE %ss ADD %s_value TEXT'%(name, name))
+            self.sql('DELETE FROM %ss' % name)
+            self.sql('ALTER TABLE %ss DROP %s_value' % (name, name))
+            self.sql('ALTER TABLE %ss ADD %s_value TEXT' % (name, name))
 
     def fix_version_2_tables(self):
         # Default (used by sqlite): NOOP
@@ -387,10 +391,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # note this is an explicit call now
         c = self.cursor
         for cn, klass in self.classes.items():
-            c.execute('select id from _%s where __retired__<>0'%(cn,))
+            c.execute('select id from _%s where __retired__<>0' % (cn,))
             for (id,) in c.fetchall():
-                c.execute('update _%s set __retired__=%s where id=%s'%(cn,
-                    self.arg, self.arg), (id, id))
+                c.execute('update _%s set __retired__=%s where id=%s' % (cn,
+                                               self.arg, self.arg), (id, id))
 
             if klass.key:
                 self.add_class_key_required_unique_constraint(cn, klass.key)
@@ -401,17 +405,17 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         cols = ','.join('nodeid date tag action params'.split())
         for klass in self.classes.values():
             # slurp and drop
-            sql = 'select %s from %s__journal order by date'%(cols,
-                klass.classname)
+            sql = 'select %s from %s__journal order by date' % \
+                  (cols, klass.classname)
             c.execute(sql)
             contents = c.fetchall()
             self.drop_journal_table_indexes(klass.classname)
-            c.execute('drop table %s__journal'%klass.classname)
+            c.execute('drop table %s__journal' % klass.classname)
 
             # re-create and re-populate
             self.create_journal_table(klass)
             a = self.arg
-            sql = 'insert into %s__journal (%s) values (%s,%s,%s,%s,%s)'%(
+            sql = 'insert into %s__journal (%s) values (%s,%s,%s,%s,%s)' % (
                 klass.classname, cols, a, a, a, a, a)
             for row in contents:
                 # no data conversion needed
@@ -425,17 +429,17 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             # slurp and drop
             cols, mls = self.determine_columns(list(klass.properties.items()))
             scols = ','.join([i[0] for i in cols])
-            sql = 'select id,%s from _%s'%(scols, klass.classname)
+            sql = 'select id,%s from _%s' % (scols, klass.classname)
             c.execute(sql)
             contents = c.fetchall()
             self.drop_class_table_indexes(klass.classname, klass.getkey())
-            c.execute('drop table _%s'%klass.classname)
+            c.execute('drop table _%s' % klass.classname)
 
             # re-create and re-populate
             self.create_class_table(klass, create_sequence=0)
             a = ','.join([self.arg for i in range(len(cols)+1)])
-            sql = 'insert into _%s (id,%s) values (%s)'%(klass.classname,
-                scols, a)
+            sql = 'insert into _%s (id,%s) values (%s)' % (klass.classname,
+                                                           scols, a)
             for row in contents:
                 l = []
                 for entry in row:
@@ -448,7 +452,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def refresh_database(self):
         self.post_init()
 
-
     def reindex(self, classname=None, show_progress=False):
         if classname:
             classes = [self.getclass(classname)]
@@ -456,8 +459,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             classes = list(self.classes.values())
         for klass in classes:
             if show_progress:
-                for nodeid in support.Progress('Reindex %s'%klass.classname,
-                        klass.list()):
+                for nodeid in support.Progress('Reindex %s' % klass.classname,
+                                               klass.list()):
                     klass.index(nodeid)
             else:
                 for nodeid in klass.list():
@@ -469,9 +472,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     implements_double_precision = True
 
     hyperdb_to_sql_datatypes = {
-        hyperdb.String : 'TEXT',
-        hyperdb.Date   : 'TIMESTAMP',
-        hyperdb.Link   : 'INTEGER',
+        hyperdb.String    : 'TEXT',
+        hyperdb.Date      : 'TIMESTAMP',
+        hyperdb.Link      : 'INTEGER',
         hyperdb.Interval  : 'VARCHAR(255)',
         hyperdb.Password  : 'VARCHAR(255)',
         hyperdb.Boolean   : 'BOOLEAN',
@@ -479,21 +482,21 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         hyperdb.Integer   : 'INTEGER',
     }
 
-    def hyperdb_to_sql_datatype(self, propclass, prop = None):
+    def hyperdb_to_sql_datatype(self, propclass, prop=None):
 
         datatype = self.hyperdb_to_sql_datatypes.get(propclass)
         if self.implements_double_precision and prop and \
-          isinstance(prop, Number) and prop.use_double:
+           isinstance(prop, Number) and prop.use_double:
             datatype = 'DOUBLE PRECISION'
         if datatype:
             return datatype
-        
+
         for k, v in self.hyperdb_to_sql_datatypes.items():
             if issubclass(propclass, k):
                 return v
 
         raise ValueError('%r is not a hyperdb property class' % propclass)
-    
+
     def determine_columns(self, properties):
         """ Figure the column names and multilink properties from the spec
 
@@ -515,8 +518,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
             if isinstance(prop, type('')):
                 raise ValueError("string property spec!")
-                #and prop.find('Multilink') != -1:
-                #mls.append(col)
+                # and prop.find('Multilink') != -1:
+                # mls.append(col)
 
             datatype = self.hyperdb_to_sql_datatype(prop.__class__, prop)
             cols.append(('_'+col, datatype))
@@ -542,13 +545,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             return 0
 
         if not self.config.RDBMS_ALLOW_ALTER:
-            raise DatabaseError(_('ALTER operation disallowed: %r -> %r.'%(old_spec, new_spec)))
+            raise DatabaseError(_('ALTER operation disallowed: %r -> %r.'% (
+                old_spec, new_spec)))
 
         logger = logging.getLogger('roundup.hyperdb.backend')
-        logger.info('update_class %s'%spec.classname)
+        logger.info('update_class %s' % spec.classname)
 
-        logger.debug('old_spec %r'%(old_spec,))
-        logger.debug('new_spec %r'%(new_spec,))
+        logger.debug('old_spec %r' % (old_spec,))
+        logger.debug('new_spec %r' % (new_spec,))
 
         # detect key prop change for potential index change
         keyprop_changes = {}
@@ -570,7 +574,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 self.drop_multilink_table_indexes(spec.classname, name)
 
                 # now the multilink table itself
-                sql = 'drop table %s_%s'%(spec.classname, name)
+                sql = 'drop table %s_%s' % (spec.classname, name)
             else:
                 # if this is the key prop, drop the index first
                 if old_spec[0] == prop:
@@ -578,7 +582,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                     del keyprop_changes['remove']
 
                 # drop the column
-                sql = 'alter table _%s drop column _%s'%(spec.classname, name)
+                sql = 'alter table _%s drop column _%s' % (spec.classname,
+                                                           name)
 
             self.sql(sql)
 
@@ -586,7 +591,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # changed, we still need to remove the old index
         if 'remove' in keyprop_changes:
             self.drop_class_table_key_index(spec.classname,
-                keyprop_changes['remove'])
+                                            keyprop_changes['remove'])
 
         # add new columns
         for propname, prop in new_spec[1]:
@@ -598,13 +603,13 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             else:
                 # add the column
                 coltype = self.hyperdb_to_sql_datatype(prop.__class__, prop)
-                sql = 'alter table _%s add column _%s %s'%(
+                sql = 'alter table _%s add column _%s %s' % (
                     spec.classname, propname, coltype)
                 self.sql(sql)
 
                 # extra Interval column
                 if isinstance(prop, Interval):
-                    sql = 'alter table _%s add column __%s_int__ BIGINT'%(
+                    sql = 'alter table _%s add column __%s_int__ BIGINT' % (
                         spec.classname, propname)
                     self.sql(sql)
 
@@ -617,7 +622,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # changed, we still need to add the new index
         if 'add' in keyprop_changes:
             self.create_class_table_key_index(spec.classname,
-                keyprop_changes['add'])
+                                              keyprop_changes['add'])
 
         return 1
 
@@ -638,8 +643,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         cols, mls = self.determine_all_columns(spec)
 
         # create the base table
-        scols = ','.join(['%s %s'%x for x in cols])
-        sql = 'create table _%s (%s)'%(spec.classname, scols)
+        scols = ','.join(['%s %s' % x for x in cols])
+        sql = 'create table _%s (%s)' % (spec.classname, scols)
         self.sql(sql)
 
         self.create_class_table_indexes(spec)
@@ -650,41 +655,42 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """ create the class table for the given spec
         """
         # create __retired__ index
-        index_sql2 = 'create index _%s_retired_idx on _%s(__retired__)'%(
+        index_sql2 = 'create index _%s_retired_idx on _%s(__retired__)' % (
                         spec.classname, spec.classname)
         self.sql(index_sql2)
 
         # create index for key property
         if spec.key:
-            index_sql3 = 'create index _%s_%s_idx on _%s(_%s)'%(
+            index_sql3 = 'create index _%s_%s_idx on _%s(_%s)' % (
                         spec.classname, spec.key,
                         spec.classname, spec.key)
             self.sql(index_sql3)
 
             # and the unique index for key / retired(id)
             self.add_class_key_required_unique_constraint(spec.classname,
-                spec.key)
+                                                          spec.key)
 
         # TODO: create indexes on (selected?) Link property columns, as
         # they're more likely to be used for lookup
 
     def add_class_key_required_unique_constraint(self, cn, key):
         sql = '''create unique index _%s_key_retired_idx
-            on _%s(__retired__, _%s)'''%(cn, cn, key)
+            on _%s(__retired__, _%s)''' % (cn, cn, key)
         try:
             self.sql(sql)
         except Exception:  # nosec
             # XXX catch e.g.:
-            # _sqlite.DatabaseError: index _status_key_retired_idx already exists
+            # _sqlite.DatabaseError: index _status_key_retired_idx
+            #  already exists
             pass
 
     def drop_class_table_indexes(self, cn, key):
         # drop the old table indexes first
-        l = ['_%s_id_idx'%cn, '_%s_retired_idx'%cn]
+        l = ['_%s_id_idx' % cn, '_%s_retired_idx' % cn]
         if key:
-            l.append('_%s_%s_idx'%(cn, key))
+            l.append('_%s_%s_idx' % (cn, key))
 
-        table_name = '_%s'%cn
+        table_name = '_%s' % cn
         for index_name in l:
             if not self.sql_index_exists(table_name, index_name):
                 continue
@@ -694,18 +700,18 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def create_class_table_key_index(self, cn, key):
         """ create the class table for the given spec
         """
-        sql = 'create index _%s_%s_idx on _%s(_%s)'%(cn, key, cn, key)
+        sql = 'create index _%s_%s_idx on _%s(_%s)' % (cn, key, cn, key)
         self.sql(sql)
 
     def drop_class_table_key_index(self, cn, key):
-        table_name = '_%s'%cn
-        index_name = '_%s_%s_idx'%(cn, key)
+        table_name = '_%s' % cn
+        index_name = '_%s_%s_idx' % (cn, key)
         if self.sql_index_exists(table_name, index_name):
             sql = 'drop index '+index_name
             self.sql(sql)
 
         # and now the retired unique index too
-        index_name = '_%s_key_retired_idx'%cn
+        index_name = '_%s_key_retired_idx' % cn
         if self.sql_index_exists(table_name, index_name):
             sql = 'drop index '+index_name
             self.sql(sql)
@@ -715,24 +721,24 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             already-determined cols
         """
         # journal table
-        cols = ','.join(['%s varchar'%x
-            for x in 'nodeid date tag action params'.split()])
+        cols = ','.join(['%s varchar' % x
+                         for x in 'nodeid date tag action params'.split()])
         sql = """create table %s__journal (
             nodeid integer, date %s, tag varchar(255),
             action varchar(255), params text)""" % (spec.classname,
-            self.hyperdb_to_sql_datatype(hyperdb.Date))
+                                    self.hyperdb_to_sql_datatype(hyperdb.Date))
         self.sql(sql)
         self.create_journal_table_indexes(spec)
 
     def create_journal_table_indexes(self, spec):
         # index on nodeid
-        sql = 'create index %s_journ_idx on %s__journal(nodeid)'%(
+        sql = 'create index %s_journ_idx on %s__journal(nodeid)' % (
                         spec.classname, spec.classname)
         self.sql(sql)
 
     def drop_journal_table_indexes(self, classname):
-        index_name = '%s_journ_idx'%classname
-        if not self.sql_index_exists('%s__journal'%classname, index_name):
+        index_name = '%s_journ_idx' % classname
+        if not self.sql_index_exists('%s__journal' % classname, index_name):
             return
         index_sql = 'drop index '+index_name
         self.sql(index_sql)
@@ -742,32 +748,32 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             given by the spec
         """
         # create the table
-        sql = 'create table %s_%s (linkid INTEGER, nodeid INTEGER)'%(
+        sql = 'create table %s_%s (linkid INTEGER, nodeid INTEGER)' % (
             spec.classname, ml)
         self.sql(sql)
         self.create_multilink_table_indexes(spec, ml)
 
     def create_multilink_table_indexes(self, spec, ml):
         # create index on linkid
-        index_sql = 'create index %s_%s_l_idx on %s_%s(linkid)'%(
+        index_sql = 'create index %s_%s_l_idx on %s_%s(linkid)' % (
             spec.classname, ml, spec.classname, ml)
         self.sql(index_sql)
 
         # create index on nodeid
-        index_sql = 'create index %s_%s_n_idx on %s_%s(nodeid)'%(
+        index_sql = 'create index %s_%s_n_idx on %s_%s(nodeid)' % (
             spec.classname, ml, spec.classname, ml)
         self.sql(index_sql)
 
     def drop_multilink_table_indexes(self, classname, ml):
         l = [
-            '%s_%s_l_idx'%(classname, ml),
-            '%s_%s_n_idx'%(classname, ml)
-        ]
-        table_name = '%s_%s'%(classname, ml)
+            '%s_%s_l_idx' % (classname, ml),
+            '%s_%s_n_idx' % (classname, ml)
+            ]
+        table_name = '%s_%s' % (classname, ml)
         for index_name in l:
             if not self.sql_index_exists(table_name, index_name):
                 continue
-            index_sql = 'drop index %s'%index_name
+            index_sql = 'drop index %s' % index_name
             self.sql(index_sql)
 
     def create_class(self, spec):
@@ -775,7 +781,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """
 
         if not self.config.RDBMS_ALLOW_CREATE:
-            raise DatabaseError(_('CREATE operation disallowed: "%s".'%spec.classname))
+            raise DatabaseError(_('CREATE operation disallowed: "%s".' %
+                                  spec.classname))
 
         cols, mls = self.create_class_table(spec)
         self.create_journal_table(spec)
@@ -791,7 +798,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """
 
         if not self.config.RDBMS_ALLOW_DROP:
-            raise DatabaseError(_('DROP operation disallowed: "%s".'%cn))
+            raise DatabaseError(_('DROP operation disallowed: "%s".' % cn))
 
         properties = spec[1]
         # figure the multilinks
@@ -807,17 +814,17 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         # drop journal table and indexes
         self.drop_journal_table_indexes(cn)
-        sql = 'drop table %s__journal'%cn
+        sql = 'drop table %s__journal' % cn
         self.sql(sql)
 
         for ml in mls:
             # drop multilink table and indexes
             self.drop_multilink_table_indexes(cn, ml)
-            sql = 'drop table %s_%s'%(spec.classname, ml)
+            sql = 'drop table %s_%s' % (spec.classname, ml)
             self.sql(sql)
 
     def drop_class_table(self, cn):
-        sql = 'drop table _%s'%cn
+        sql = 'drop table _%s' % cn
         self.sql(sql)
 
     #
@@ -861,7 +868,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         try:
             return self.classes[classname]
         except KeyError:
-            raise KeyError('There is no class called "%s"'%classname)
+            raise KeyError('There is no class called "%s"' % classname)
 
     def clear(self):
         """Delete all database contents.
@@ -871,7 +878,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """
         logging.getLogger('roundup.hyperdb.backend').info('clear')
         for cn in self.classes:
-            sql = 'delete from _%s'%cn
+            sql = 'delete from _%s' % cn
             self.sql(sql)
 
     #
@@ -879,10 +886,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     #
 
     hyperdb_to_sql_value = {
-        hyperdb.String : str,
+        hyperdb.String    : str,
         # fractional seconds by default
-        hyperdb.Date   : lambda x: x.formal(sep=' ', sec='%06.3f'),
-        hyperdb.Link   : int,
+        hyperdb.Date      : lambda x: x.formal(sep=' ', sec='%06.3f'),
+        hyperdb.Link      : int,
         hyperdb.Interval  : str,
         hyperdb.Password  : str,
         hyperdb.Boolean   : lambda x: x and 'TRUE' or 'FALSE',
@@ -921,8 +928,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def addnode(self, classname, nodeid, node):
         """ Add the specified node to its class's db.
         """
-        self.log_debug('addnode %s%s %r'%(classname,
-            nodeid, node))
+        self.log_debug('addnode %s%s %r' % (classname,
+                                            nodeid, node))
 
         # determine the column definitions and multilink tables
         cl = self.classes[classname]
@@ -955,7 +962,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         # figure the values to insert
         vals = []
-        for col,dt in cols:
+        for col, _dt in cols:
             # this is somewhat dodgy....
             if col.endswith('_int__'):
                 # XXX eugh, this test suxxors
@@ -976,26 +983,25 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         vals = tuple(vals)
 
         # make sure the ordering is correct for column name -> column value
-        s = ','.join([self.arg for x in cols]) + ',%s'%self.arg
-        cols = ','.join([col for col,dt in cols]) + ',id'
+        s = ','.join([self.arg for x in cols]) + ',%s' % self.arg
+        cols = ','.join([col for col, dt in cols]) + ',id'
 
         # perform the inserts
-        sql = 'insert into _%s (%s) values (%s)'%(classname, cols, s)
+        sql = 'insert into _%s (%s) values (%s)' % (classname, cols, s)
         self.sql(sql, vals)
 
         # insert the multilink rows
         for col in mls:
-            t = '%s_%s'%(classname, col)
+            t = '%s_%s' % (classname, col)
             for entry in node[col]:
-                sql = 'insert into %s (linkid, nodeid) values (%s,%s)'%(t,
-                    self.arg, self.arg)
+                sql = 'insert into %s (linkid, nodeid) values (%s,%s)' % (
+                    t, self.arg, self.arg)
                 self.sql(sql, (entry, nodeid))
 
     def setnode(self, classname, nodeid, values, multilink_changes={}):
         """ Change the specified node.
         """
-        self.log_debug('setnode %s%s %r'
-            % (classname, nodeid, values))
+        self.log_debug('setnode %s%s %r' % (classname, nodeid, values))
 
         # clear this node out of the cache if it's in there
         key = (classname, nodeid)
@@ -1016,7 +1022,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 # Intervals store the seconds value too
                 cols.append(col)
                 # extra leading '_' added by code below
-                cols.append('_' +col + '_int__')
+                cols.append('_' + col + '_int__')
             else:
                 cols.append(col)
         cols.sort()
@@ -1049,11 +1055,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # if there's any updates to regular columns, do them
         if cols:
             # make sure the ordering is correct for column name -> column value
-            s = ','.join(['_%s=%s'%(x, self.arg) for x in cols])
+            s = ','.join(['_%s=%s' % (x, self.arg) for x in cols])
             cols = ','.join(cols)
 
             # perform the update
-            sql = 'update _%s set %s where id=%s'%(classname, s, self.arg)
+            sql = 'update _%s set %s where id=%s' % (classname, s, self.arg)
             self.sql(sql, vals)
 
         # we're probably coming from an import, not a change
@@ -1062,41 +1068,41 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 prop = props[name]
                 value = values[name]
 
-                t = '%s_%s'%(classname, name)
+                t = '%s_%s' % (classname, name)
 
                 # clear out previous values for this node
                 # XXX numeric ids
-                self.sql('delete from %s where nodeid=%s'%(t, self.arg),
-                        (nodeid,))
+                self.sql('delete from %s where nodeid=%s' % (t, self.arg),
+                         (nodeid,))
 
                 # insert the values for this node
                 for entry in values[name]:
-                    sql = 'insert into %s (linkid, nodeid) values (%s,%s)'%(t,
-                        self.arg, self.arg)
+                    sql = 'insert into %s (linkid, nodeid) values (%s,%s)' % (
+                        t, self.arg, self.arg)
                     # XXX numeric ids
                     self.sql(sql, (entry, nodeid))
 
         # we have multilink changes to apply
         for col, (add, remove) in multilink_changes.items():
-            tn = '%s_%s'%(classname, col)
+            tn = '%s_%s' % (classname, col)
             if add:
-                sql = 'insert into %s (nodeid, linkid) values (%s,%s)'%(tn,
+                sql = 'insert into %s (nodeid, linkid) values (%s,%s)' % (tn,
                     self.arg, self.arg)
                 for addid in add:
                     # XXX numeric ids
                     self.sql(sql, (int(nodeid), int(addid)))
             if remove:
                 s = ','.join([self.arg]*len(remove))
-                sql = 'delete from %s where nodeid=%s and linkid in (%s)'%(tn,
-                    self.arg, s)
+                sql = 'delete from %s where nodeid=%s and linkid in (%s)' % (
+                    tn, self.arg, s)
                 # XXX numeric ids
                 self.sql(sql, [int(nodeid)] + remove)
 
     sql_to_hyperdb_value = {
-        hyperdb.String : str,
-        hyperdb.Date   : date_to_hyperdb_value,
+        hyperdb.String    : str,
+        hyperdb.Date      : date_to_hyperdb_value,
 #        hyperdb.Link   : int,      # XXX numeric ids
-        hyperdb.Link   : str,
+        hyperdb.Link      : str,
         hyperdb.Interval  : date.Interval,
         hyperdb.Password  : lambda x: password.Password(encrypted=x),
         hyperdb.Boolean   : _bool_cvt,
@@ -1121,13 +1127,13 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """ evaluation of single Multilink (lazy eval may have skipped this)
         """
         if propname not in node:
-            sql = 'select linkid from %s_%s where nodeid=%s'%(classname,
-                propname, self.arg)
+            sql = 'select linkid from %s_%s where nodeid=%s' % (
+                classname, propname, self.arg)
             self.sql(sql, (nodeid,))
             # extract the first column from the result
             # XXX numeric ids
             items = [int(x[0]) for x in self.cursor.fetchall()]
-            items.sort ()
+            items.sort()
             node[propname] = [str(x) for x in items]
 
     def _materialize_multilinks(self, classname, nodeid, node, props=None):
@@ -1155,7 +1161,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 self.stats['cache_hits'] += 1
             # return the cached information
             if fetch_multilinks:
-                self._materialize_multilinks(classname, nodeid, self.cache[key])
+                self._materialize_multilinks(classname, nodeid,
+                                             self.cache[key])
             return self.cache[key]
 
         if __debug__:
@@ -1165,15 +1172,15 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # figure the columns we're fetching
         cl = self.classes[classname]
         cols, mls = self.determine_columns(list(cl.properties.items()))
-        scols = ','.join([col for col,dt in cols])
+        scols = ','.join([col for col, dt in cols])
 
         # perform the basic property fetch
-        sql = 'select %s from _%s where id=%s'%(scols, classname, self.arg)
+        sql = 'select %s from _%s where id=%s' % (scols, classname, self.arg)
         self.sql(sql, (nodeid,))
 
         values = self.sql_fetchone()
         if values is None:
-            raise IndexError('no such %s node %s'%(classname, nodeid))
+            raise IndexError('no such %s node %s' % (classname, nodeid))
 
         # make up the node
         node = {}
@@ -1205,12 +1212,12 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """Remove a node from the database. Called exclusively by the
            destroy() method on Class.
         """
-        logging.getLogger('roundup.hyperdb.backend').info('destroynode %s%s'%(
-            classname, nodeid))
+        message = 'destroynode %s%s' % (classname, nodeid)
+        logging.getLogger('roundup.hyperdb.backend').info(message)
 
         # make sure the node exists
         if not self.hasnode(classname, nodeid):
-            raise IndexError('%s has no node %s'%(classname, nodeid))
+            raise IndexError('%s has no node %s' % (classname, nodeid))
 
         # see if we have this node cached
         if (classname, nodeid) in self.cache:
@@ -1222,7 +1229,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 self.transactions.remove(entry)
 
         # now do the SQL
-        sql = 'delete from _%s where id=%s'%(classname, self.arg)
+        sql = 'delete from _%s where id=%s' % (classname, self.arg)
         self.sql(sql, (nodeid,))
 
         # remove from multilnks
@@ -1230,15 +1237,18 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         x, mls = self.determine_columns(list(cl.properties.items()))
         for col in mls:
             # get the link ids
-            sql = 'delete from %s_%s where nodeid=%s'%(classname, col, self.arg)
+            sql = 'delete from %s_%s where nodeid=%s' % (classname, col,
+                                                         self.arg)
             self.sql(sql, (nodeid,))
 
         # remove journal entries
-        sql = 'delete from %s__journal where nodeid=%s'%(classname, self.arg)
+        sql = 'delete from %s__journal where nodeid=%s' % (
+            classname, self.arg)
         self.sql(sql, (nodeid,))
 
         # cleanup any blob filestorage when we commit
-        self.transactions.append((FileStorage.destroy, (self, classname, nodeid)))
+        self.transactions.append((FileStorage.destroy, (self,
+                                                        classname, nodeid)))
 
     def hasnode(self, classname, nodeid):
         """ Determine if the database has a given node.
@@ -1258,19 +1268,19 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             # Return 1, not True, to match the type of the result of
             # the SQL operation below.
             return 1
-        sql = 'select count(*) from _%s where id=%s'%(classname, self.arg)
+        sql = 'select count(*) from _%s where id=%s' % (classname, self.arg)
         self.sql(sql, (nodeid,))
         return int(self.cursor.fetchone()[0])
 
     def countnodes(self, classname):
         """ Count the number of nodes that exist for a particular Class.
         """
-        sql = 'select count(*) from _%s'%classname
+        sql = 'select count(*) from _%s' % classname
         self.sql(sql)
         return self.cursor.fetchone()[0]
 
     def addjournal(self, classname, nodeid, action, params, creator=None,
-            creation=None):
+                   creation=None):
         """ Journal the Action
         'action' may be:
 
@@ -1297,8 +1307,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # create the journal entry
         cols = 'nodeid,date,tag,action,params'
 
-        self.log_debug('addjournal %s%s %r %s %s %r'%(classname,
-            nodeid, journaldate, journaltag, action, params))
+        self.log_debug('addjournal %s%s %r %s %s %r' % (
+            classname, nodeid, journaldate, journaltag, action, params))
 
         # make the journalled data marshallable
         if isinstance(params, type({})):
@@ -1310,20 +1320,20 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         journaldate = dc(journaldate)
 
         self.save_journal(classname, cols, nodeid, journaldate,
-            journaltag, action, params)
+                          journaltag, action, params)
 
     def setjournal(self, classname, nodeid, journal):
         """Set the journal to the "journal" list."""
         # clear out any existing entries
-        self.sql('delete from %s__journal where nodeid=%s'%(classname,
-            self.arg), (nodeid,))
+        self.sql('delete from %s__journal where nodeid=%s' % (
+            classname, self.arg), (nodeid,))
 
         # create the journal entry
         cols = 'nodeid,date,tag,action,params'
 
         dc = self.to_sql_value(hyperdb.Date)
         for nodeid, journaldate, journaltag, action, params in journal:
-            self.log_debug('addjournal %s%s %r %s %s %r'%(
+            self.log_debug('addjournal %s%s %r %s %s %r' % (
                 classname, nodeid, journaldate, journaltag, action,
                 params))
 
@@ -1333,7 +1343,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             params = repr_export(params)
 
             self.save_journal(classname, cols, nodeid, dc(journaldate),
-                journaltag, action, params)
+                              journaltag, action, params)
 
     def _journal_marshal(self, params, classname):
         """Convert the journal params values into safely repr'able and
@@ -1358,7 +1368,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """
         # make sure the node exists
         if not self.hasnode(classname, nodeid):
-            raise IndexError('%s has no node %s'%(classname, nodeid))
+            raise IndexError('%s has no node %s' % (classname, nodeid))
 
         cols = ','.join('nodeid date tag action params'.split())
         journal = self.load_journal(classname, cols, nodeid)
@@ -1391,14 +1401,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         return res
 
     def save_journal(self, classname, cols, nodeid, journaldate,
-            journaltag, action, params):
+                     journaltag, action, params):
         """ Save the journal entry to the database
         """
         entry = (nodeid, journaldate, journaltag, action, params)
 
         # do the insert
         a = self.arg
-        sql = 'insert into %s__journal (%s) values (%s,%s,%s,%s,%s)'%(
+        sql = 'insert into %s__journal (%s) values (%s,%s,%s,%s,%s)' % (
             classname, cols, a, a, a, a, a)
         self.sql(sql, entry)
 
@@ -1406,7 +1416,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """ Load the journal from the database
         """
         # now get the journal entries
-        sql = 'select %s from %s__journal where nodeid=%s order by date'%(
+        sql = 'select %s from %s__journal where nodeid=%s order by date' % (
             cols, classname, self.arg)
         self.sql(sql, (nodeid,))
         return self.cursor.fetchall()
@@ -1419,7 +1429,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # do the delete
         for classname in self.classes:
             sql = "delete from %s__journal where date<%s and "\
-                "action<>'create'"%(classname, self.arg)
+                "action<>'create'" % (classname, self.arg)
             self.sql(sql, (date_stamp,))
 
     def sql_commit(self):
@@ -1502,6 +1512,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             self.Otk.close()
             self.Otk = None
 
+
 #
 # The base Class class
 #
@@ -1524,7 +1535,7 @@ class Class(hyperdb.Class):
         """ A dumpable version of the schema that we can store in the
             database
         """
-        return (self.key, [(x, repr(y)) for x,y in self.properties.items()])
+        return (self.key, [(x, repr(y)) for x, y in self.properties.items()])
 
     def enableJournalling(self):
         """Turn journalling on for this class
@@ -1568,10 +1579,10 @@ class Class(hyperdb.Class):
         if self.db.journaltag is None:
             raise DatabaseError(_('Database open read-only'))
 
-        if ('creator' in propvalues or 'actor' in propvalues or 
-             'creation' in propvalues or 'activity' in propvalues):
+        if ('creator' in propvalues or 'actor' in propvalues or
+            'creation' in propvalues or 'activity' in propvalues):
             raise KeyError('"creator", "actor", "creation" and '
-                '"activity" are reserved')
+                           '"activity" are reserved')
 
         # new node's id
         newid = self.db.newid(self.classname)
@@ -1585,17 +1596,17 @@ class Class(hyperdb.Class):
                 except KeyError:
                     pass
                 else:
-                    raise ValueError('node with key "%s" exists'%value)
+                    raise ValueError('node with key "%s" exists' % value)
 
             # try to handle this property
             try:
                 prop = self.properties[key]
             except KeyError:
-                raise KeyError('"%s" has no property "%s"'%(self.classname,
-                    key))
+                raise KeyError('"%s" has no property "%s"' % (self.classname,
+                                                              key))
 
             if value is not None and isinstance(prop, Link):
-                if type(value) != type(''):
+                if not isinstance(value, type('')):
                     raise ValueError('link value must be String')
                 link_class = self.properties[key].classname
                 # if it isn't a number, it's a key
@@ -1603,11 +1614,11 @@ class Class(hyperdb.Class):
                     try:
                         value = self.db.classes[link_class].lookup(value)
                     except (TypeError, KeyError):
-                        raise IndexError('new property "%s": %s not a %s'%(
+                        raise IndexError('new property "%s": %s not a %s' % (
                             key, value, link_class))
                 elif not self.db.getclass(link_class).hasnode(value):
-                    raise IndexError('%s has no node %s'%(link_class,
-                        value))
+                    raise IndexError('%s has no node %s' % (link_class,
+                                                            value))
 
                 # save off the value
                 propvalues[key] = value
@@ -1615,26 +1626,29 @@ class Class(hyperdb.Class):
                 # register the link with the newly linked node
                 if self.do_journal and self.properties[key].do_journal:
                     self.db.addjournal(link_class, value, 'link',
-                        (self.classname, newid, key))
+                                       (self.classname, newid, key))
 
             elif isinstance(prop, Multilink):
                 if value is None:
                     value = []
-                if not hasattr(value, '__iter__') or type(value) == type(''):
-                    raise TypeError('new property "%s" not an iterable of ids'%key) 
+                if not hasattr(value, '__iter__') or \
+                   isinstance(value, type('')):
+                    raise TypeError('new property "%s" not an iterable of ids'
+                                    % key)
                 # clean up and validate the list of links
                 link_class = self.properties[key].classname
                 l = []
                 for entry in value:
-                    if type(entry) != type(''):
+                    if not isinstance(entry, type('')):
                         raise ValueError('"%s" multilink value (%r) '
-                            'must contain Strings'%(key, value))
+                                         'must contain Strings' % (
+                                             key, value))
                     # if it isn't a number, it's a key
                     if not num_re.match(entry):
                         try:
                             entry = self.db.classes[link_class].lookup(entry)
                         except (TypeError, KeyError):
-                            raise IndexError('new property "%s": %s not a %s'%(
+                            raise IndexError('new property "%s": %s not a %s' % (
                                 key, entry, self.properties[key].classname))
                     l.append(entry)
                 value = l
@@ -1643,12 +1657,12 @@ class Class(hyperdb.Class):
                 # handle additions
                 for nodeid in value:
                     if not self.db.getclass(link_class).hasnode(nodeid):
-                        raise IndexError('%s has no node %s'%(link_class,
-                            nodeid))
+                        raise IndexError('%s has no node %s' % (link_class,
+                                                                nodeid))
                     # register the link with the newly linked node
                     if self.do_journal and self.properties[key].do_journal:
                         self.db.addjournal(link_class, nodeid, 'link',
-                            (self.classname, newid, key))
+                                           (self.classname, newid, key))
 
             elif isinstance(prop, String):
                 if type(value) != type('') and type(value) != type(u''):
