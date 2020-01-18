@@ -40,6 +40,7 @@ from roundup import version_check
 from roundup.admin import AdminTool
 from roundup.i18n import _
 
+
 def run():
     # time out after a minute if we can
     import socket
@@ -47,6 +48,7 @@ def run():
         socket.setdefaulttimeout(60)
     tool = AdminTool()
     sys.exit(tool.main())
+
 
 if __name__ == '__main__':
     run()
