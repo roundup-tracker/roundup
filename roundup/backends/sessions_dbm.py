@@ -147,7 +147,7 @@ class BasicDatabase:
                 else:
                     # delay retry a bit
                     time.sleep(0.01)
-                    retries_left = retries_left -1
+                    retries_left = retries_left - 1
                     continue  # the while loop
         return handle
 
@@ -177,8 +177,10 @@ class BasicDatabase:
             if interval > week:
                 self.destroy(sessid)
 
+
 class Sessions(BasicDatabase):
     name = 'sessions'
+
 
 class OneTimeKeys(BasicDatabase):
     name = 'otks'
