@@ -2,11 +2,11 @@
 
 __docformat__ = 'restructuredtext'
 
-import os.path
 import chameleon
 
 from roundup.cgi.templating import context, TALLoaderBase
 from roundup.anypy.strings import s2u
+
 
 class Loader(TALLoaderBase):
     def __init__(self, dir):
@@ -16,6 +16,7 @@ class Loader(TALLoaderBase):
     def load(self, tplname):
         src, filename = self._find(tplname)
         return RoundupPageTemplate(self.loader.load(src))
+
 
 class RoundupPageTemplate(object):
     def __init__(self, pt):
@@ -27,7 +28,8 @@ class RoundupPageTemplate(object):
 
         def translate(msgid, domain=None, mapping=None, default=None):
             result = client.translator.translate(domain, msgid,
-                         mapping=mapping, default=default)
+                                                 mapping=mapping,
+                                                 default=default)
             return s2u(result)
 
         output = self._pt.render(None, translate, **c)
@@ -38,4 +40,3 @@ class RoundupPageTemplate(object):
 
     def __getattr__(self, name):
         return getattr(self._pt, name)
-
