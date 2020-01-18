@@ -305,7 +305,7 @@ class HTMLClassTestCase(TemplatingTestCase) :
         self.assertEqual(input, '<input required size="30" type="text">')
 
         input=input_html4(required="required", size=30)
-        self.assertEqual(input, '<input required size="30" type="text">')
+        self.assertEqual(input, '<input required="required" size="30" type="text">')
 
         attrs={"required": None, "class": "required", "size": 30}
         input=input_html4(**attrs)
@@ -313,7 +313,7 @@ class HTMLClassTestCase(TemplatingTestCase) :
 
         attrs={"disabled": "disabled", "class": "required", "size": 30}
         input=input_html4(**attrs)
-        self.assertEqual(input, '<input class="required" disabled size="30" type="text">')
+        self.assertEqual(input, '<input class="required" disabled="disabled" size="30" type="text">')
 
     def test_input_xhtml(self):
         # boolean attributes are attribute name="attribute name"
