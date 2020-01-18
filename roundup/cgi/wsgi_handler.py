@@ -5,7 +5,6 @@
 #
 
 import os
-import cgi
 import weakref
 
 from roundup.anypy.html import html_escape
@@ -19,6 +18,7 @@ from roundup.cgi.client import BinaryFieldStorage
 
 BaseHTTPRequestHandler = http_.server.BaseHTTPRequestHandler
 DEFAULT_ERROR_MESSAGE = http_.server.DEFAULT_ERROR_MESSAGE
+
 
 class Headers(object):
     """ Idea more or less stolen from the 'apache.py' in same directory.
@@ -36,22 +36,25 @@ class Headers(object):
             return n
         return 'HTTP_' + n
 
-    def get(self, name, default = None):
+    def get(self, name, default=None):
         return self.environ.get(self.mangle_name(name), default)
     getheader = get
+
 
 class Writer(object):
     '''Perform a start_response if need be when we start writing.'''
     def __init__(self, request):
-        self.request = request #weakref.ref(request)
+        self.request = request  #weakref.ref(request)
+
     def write(self, data):
         f = self.request.get_wfile()
         self.write = lambda data: f(bs2b(data))
         return self.write(data)
 
+
 class RequestDispatcher(object):
     def __init__(self, home, debug=False, timing=False, lang=None):
-        assert os.path.isdir(home), '%r is not a directory'%(home,)
+        assert os.path.isdir(home), '%r is not a directory' % (home,)
         self.home = home
         self.debug = debug
         self.timing = timing
@@ -71,7 +74,7 @@ class RequestDispatcher(object):
         request.__wfile = None
         request.headers = Headers(environ)
 
-        if environ ['REQUEST_METHOD'] == 'OPTIONS':
+        if environ['REQUEST_METHOD'] == 'OPTIONS':
             if environ["PATH_INFO"][:5] == "/rest":
                 # rest does support options
                 # This I hope will result in self.form=None
@@ -83,7 +86,7 @@ class RequestDispatcher(object):
                                         ('Connection', 'close')], code)
                 request.wfile.write(s2b(DEFAULT_ERROR_MESSAGE % locals()))
                 return []
-        
+
         tracker = roundup.instance.open(self.home, not self.debug)
 
         # need to strip the leading '/'
@@ -93,7 +96,7 @@ class RequestDispatcher(object):
 
         form = BinaryFieldStorage(fp=environ['wsgi.input'], environ=environ)
 
-        if environ ['REQUEST_METHOD'] in ("OPTIONS", "DELETE"):
+        if environ['REQUEST_METHOD'] in ("OPTIONS", "DELETE"):
             # these methods have no data. When we init tracker.Client
             # set form to None and request.rfile to None to get a
             # properly initialized empty form.
@@ -101,12 +104,13 @@ class RequestDispatcher(object):
             request.rfile = None
 
         client = tracker.Client(tracker, request, environ, form,
-            request.translator)
+                                request.translator)
         try:
             client.main()
         except roundup.cgi.client.NotFound:
             request.start_response([('Content-Type', 'text/html')], 404)
-            request.wfile.write(s2b('Not found: %s'%html_escape(client.path)))
+            request.wfile.write(s2b('Not found: %s' % 
+                                    html_escape(client.path)))
 
         # all body data has been written using wfile
         return []
@@ -114,11 +118,10 @@ class RequestDispatcher(object):
     def start_response(self, headers, response_code):
         """Set HTTP response code"""
         message, explain = BaseHTTPRequestHandler.responses[response_code]
-        self.__wfile = self.__start_response('%d %s'%(response_code,
-            message), headers)
+        self.__wfile = self.__start_response('%d %s' % (response_code,
+                                                        message), headers)
 
     def get_wfile(self):
         if self.__wfile is None:
             raise ValueError('start_response() not called')
         return self.__wfile
-
