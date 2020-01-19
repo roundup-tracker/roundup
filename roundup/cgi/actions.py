@@ -14,17 +14,18 @@ import roundup.anypy.random_ as random_
 
 from roundup.anypy.html import html_escape
 
-import time
 from datetime import timedelta
 
 # Also add action to client.py::Client.actions property
-__all__ = ['Action', 'ShowAction', 'RetireAction', 'RestoreAction', 'SearchAction',
+__all__ = ['Action', 'ShowAction', 'RetireAction', 'RestoreAction',
+           'SearchAction',
            'EditCSVAction', 'EditItemAction', 'PassResetAction',
            'ConfRegoAction', 'RegisterAction', 'LoginAction', 'LogoutAction',
            'NewItemAction', 'ExportCSVAction', 'ExportCSVWithIdAction']
 
 # used by a couple of routines
 chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+
 
 class Action:
     def __init__(self, client):
@@ -38,7 +39,8 @@ class Action:
         self.base = client.base
         self.user = client.user
         self.context = templating.context(client)
-        self.loginLimit = RateLimit(client.db.config.WEB_LOGIN_ATTEMPTS_MIN, timedelta(seconds=60))
+        self.loginLimit = RateLimit(client.db.config.WEB_LOGIN_ATTEMPTS_MIN,
+                                    timedelta(seconds=60))
 
     def handle(self):
         """Action handler procedure"""
@@ -96,30 +98,35 @@ class Action:
         else:
             raise ValueError(self._("Base url not set. Check configuration."))
 
-        info={ 'url': url,
-               'base_url': self.base,
-               'base_scheme': parsed_base_url_tuple.scheme,
-               'base_netloc': parsed_base_url_tuple.netloc,
-               'base_path': parsed_base_url_tuple.path,
-               'url_scheme': parsed_url_tuple.scheme,
-               'url_netloc': parsed_url_tuple.netloc,
-               'url_path': parsed_url_tuple.path,
-               'url_params': parsed_url_tuple.params,
-               'url_query': parsed_url_tuple.query,
-               'url_fragment': parsed_url_tuple.fragment }
+        info = {'url': url,
+                'base_url': self.base,
+                'base_scheme': parsed_base_url_tuple.scheme,
+                'base_netloc': parsed_base_url_tuple.netloc,
+                'base_path': parsed_base_url_tuple.path,
+                'url_scheme': parsed_url_tuple.scheme,
+                'url_netloc': parsed_url_tuple.netloc,
+                'url_path': parsed_url_tuple.path,
+                'url_params': parsed_url_tuple.params,
+                'url_query': parsed_url_tuple.query,
+                'url_fragment': parsed_url_tuple.fragment}
 
         if parsed_base_url_tuple.scheme == "https":
             if parsed_url_tuple.scheme != "https":
-                raise ValueError(self._("Base url %(base_url)s requires https. Redirect url %(url)s uses http.")%info)
+                raise ValueError(self._("Base url %(base_url)s requires https."
+                                        " Redirect url %(url)s uses http.") %
+                                 info)
         else:
             if parsed_url_tuple.scheme not in ('http', 'https'):
-                raise ValueError(self._("Unrecognized scheme in %(url)s")%info)
+                raise ValueError(self._("Unrecognized scheme in %(url)s") %
+                                 info)
 
         if parsed_url_tuple.netloc != parsed_base_url_tuple.netloc:
-            raise ValueError(self._("Net location in %(url)s does not match base: %(base_netloc)s")%info)
+            raise ValueError(self._("Net location in %(url)s does not match "
+                                    "base: %(base_netloc)s") % info)
 
         if parsed_url_tuple.path.find(parsed_base_url_tuple.path) != 0:
-            raise ValueError(self._("Base path %(base_path)s is not a prefix for url %(url)s")%info)
+            raise ValueError(self._("Base path %(base_path)s is not a "
+                                    "prefix for url %(url)s") % info)
 
         # I am not sure if this has to be language sensitive.
         # Do ranges depend on the LANG of the user??
@@ -132,21 +139,23 @@ class Action:
         allowed_pattern = re.compile(r'''^[A-Za-z0-9@:/?._~%!$&'()*+,;=-]*$''')
 
         if not allowed_pattern.match(parsed_url_tuple.path):
-           raise ValueError(self._("Path component (%(url_path)s) in %(url)s is not properly escaped")%info)
+           raise ValueError(self._("Path component (%(url_path)s) in %(url)s "
+                                   "is not properly escaped") % info)
 
         if not allowed_pattern.match(parsed_url_tuple.params):
-           raise ValueError(self._("Params component (%(url_params)s) in %(url)s is not properly escaped")%info)
+           raise ValueError(self._("Params component (%(url_params)s) in %(url)s is not properly escaped") % info)
 
         if not allowed_pattern.match(parsed_url_tuple.query):
-            raise ValueError(self._("Query component (%(url_query)s) in %(url)s is not properly escaped")%info)
+            raise ValueError(self._("Query component (%(url_query)s) in %(url)s is not properly escaped") % info)
 
         if not allowed_pattern.match(parsed_url_tuple.fragment):
-            raise ValueError(self._("Fragment component (%(url_fragment)s) in %(url)s is not properly escaped")%info)
+            raise ValueError(self._("Fragment component (%(url_fragment)s) in %(url)s is not properly escaped") % info)
 
         return(urllib_.urlunparse(parsed_url_tuple))
 
     name = ''
     permissionType = None
+
     def permission(self):
         """Check whether the user has permission to execute this action.
 
@@ -163,15 +172,18 @@ class Action:
             info = {'action': self.name, 'classname': self.classname}
             raise exceptions.Unauthorised(self._(
                 'You do not have permission to '
-                '%(action)s the %(classname)s class.')%info)
+                '%(action)s the %(classname)s class.') % info)
 
     _marker = []
-    def hasPermission(self, permission, classname=_marker, itemid=None, property=None):
+
+    def hasPermission(self, permission, classname=_marker, itemid=None,
+                      property=None):
         """Check whether the user has 'permission' on the current class."""
         if classname is self._marker:
             classname = self.client.classname
         return self.db.security.hasPermission(permission, self.client.userid,
-            classname=classname, itemid=itemid, property=property)
+                                              classname=classname,
+                                              itemid=itemid, property=property)
 
     def gettext(self, msgid):
         """Return the localized translation of msgid"""
@@ -179,10 +191,11 @@ class Action:
 
     _ = gettext
 
+
 class ShowAction(Action):
 
-    typere=re.compile('[@:]type')
-    numre=re.compile('[@:]number')
+    typere = re.compile('[@:]type')
+    numre = re.compile('[@:]number')
 
     def handle(self):
         """Show a node of a particular class/id."""
@@ -201,9 +214,10 @@ class ShowAction(Action):
         except ValueError:
             d = {'input': n, 'classname': t}
             raise exceptions.SeriousError(self._(
-                '"%(input)s" is not an ID (%(classname)s ID required)')%d)
-        url = '%s%s%s'%(self.base, t, n)
+                '"%(input)s" is not an ID (%(classname)s ID required)') % d)
+        url = '%s%s%s' % (self.base, t, n)
         raise exceptions.Redirect(url)
+
 
 class RetireAction(Action):
     name = 'retire'
@@ -239,7 +253,7 @@ class RetireAction(Action):
         self.db.commit()
 
         self.client.add_ok_message(
-            self._('%(classname)s %(itemid)s has been retired')%{
+            self._('%(classname)s %(itemid)s has been retired') % {
                 'classname': self.classname.capitalize(), 'itemid': itemid})
 
 
@@ -261,7 +275,7 @@ class RestoreAction(Action):
 
         # check permission
         if not self.hasPermission('Restore', classname=self.classname,
-                itemid=itemid):
+                                  itemid=itemid):
             raise exceptions.Unauthorised(self._(
                 'You do not have permission to restore %(class)s'
             ) % {'class': self.classname})
@@ -271,7 +285,7 @@ class RestoreAction(Action):
         self.db.commit()
 
         self.client.add_ok_message(
-            self._('%(classname)s %(itemid)s has been restored')%{
+            self._('%(classname)s %(itemid)s has been restored') % {
                 'classname': self.classname.capitalize(), 'itemid': itemid})
 
 
@@ -322,7 +336,7 @@ class SearchAction(Action):
                         raise exceptions.Unauthorised(self._(
                             "You do not have permission to store queries"))
                     qid = self.db.query.create(name=queryname,
-                        klass=self.classname, url=url)
+                                               klass=self.classname, url=url)
             else:
                 uid = self.db.getuid()
 
@@ -341,19 +355,21 @@ class SearchAction(Action):
                         if queryname != self.db.query.get(qid, 'name'):
                             continue
                         # whoops we found a duplicate; report error and return
-                        message=_("You already own a query named '%s'. Please choose another name.")%(queryname)
+                        message = _("You already own a query named '%s'. "
+                                    "Please choose another name.") % \
+                                    (queryname)
                         self.client.add_error_message(message)
                         return
 
                 # edit the new way, query name not a key any more
                 # see if we match an existing private query
                 qids = self.db.query.filter(None, {'name': old_queryname,
-                        'private_for': uid})
+                                                   'private_for': uid})
                 if not qids:
                     # ok, so there's not a private query for the current user
                     # - see if there's one created by them
                     qids = self.db.query.filter(None, {'name': old_queryname,
-                        'creator': uid})
+                                                       'creator': uid})
 
                 if qids and old_queryname:
                     # edit query - make sure we get an exact match on the name
@@ -364,14 +380,15 @@ class SearchAction(Action):
                             raise exceptions.Unauthorised(self._(
                             "You do not have permission to edit queries"))
                         self.db.query.set(qid, klass=self.classname,
-                            url=url, name=queryname)
+                                          url=url, name=queryname)
                 else:
                     # create a query
                     if not self.hasPermission('Create', 'query'):
                         raise exceptions.Unauthorised(self._(
                             "You do not have permission to store queries"))
                     qid = self.db.query.create(name=queryname,
-                        klass=self.classname, url=url, private_for=uid)
+                                               klass=self.classname, url=url,
+                                               private_for=uid)
 
             # and add it to the user's query multilink
             queries = self.db.user.get(self.userid, 'queries')
@@ -390,7 +407,6 @@ class SearchAction(Action):
                     "@dispname", queryname
                 )
             )
-
 
     def fakeFilterVars(self):
         """Add a faked :filter form variable for each filtering prop."""
@@ -422,16 +438,18 @@ class SearchAction(Action):
                     try:
                         float(self.form[key].value)
                     except ValueError:
-                        raise exceptions.FormError("Invalid number: "+self.form[key].value)
+                        raise exceptions.FormError(_("Invalid number: ") +
+                                                   self.form[key].value)
                 elif isinstance(prop, hyperdb.Integer):
                     try:
-                        val=self.form[key].value
-                        if ( str(int(val)) == val ):
+                        val = self.form[key].value
+                        if (str(int(val)) == val):
                             pass
                         else:
                             raise ValueError
                     except ValueError:
-                        raise exceptions.FormError("Invalid integer: "+val)
+                        raise exceptions.FormError(_("Invalid integer: ") +
+                                                   val)
 
             self.form.value.append(cgi.MiniFieldStorage('@filter', key))
 
@@ -447,7 +465,7 @@ class SearchAction(Action):
         """
         template = self.getFromForm('template')
         if template and template != 'index':
-            return req.indexargs_url('', {'@template' : template})[1:]
+            return req.indexargs_url('', {'@template': template})[1:]
         return req.indexargs_url('', {})[1:]
 
     def getFromForm(self, name):
@@ -458,6 +476,7 @@ class SearchAction(Action):
 
     def getQueryName(self):
         return self.getFromForm('queryname')
+
 
 class EditCSVAction(Action):
     name = 'edit'
@@ -519,7 +538,8 @@ class EditCSVAction(Action):
             # confirm correct weight
             if len(props_without_id) != len(values):
                 self.client.add_error_message(
-                    self._('Not enough values on line %(line)s')%{'line':line})
+                    self._('Not enough values on line %(line)s') % \
+                    {'line':line})
                 return
 
             # extract the new values
@@ -527,7 +547,7 @@ class EditCSVAction(Action):
             for name, value in zip(props_without_id, values):
                 # check permission to edit this property on this item
                 if exists and not self.hasPermission('Edit', itemid=itemid,
-                        classname=self.classname, property=name):
+                                     classname=self.classname, property=name):
                     raise exceptions.Unauthorised(self._(
                         'You do not have permission to edit %(class)s'
                     ) % {'class': self.classname})
@@ -575,7 +595,7 @@ class EditCSVAction(Action):
             if itemid not in found:
                 # check permission to retire this item
                 if not self.hasPermission('Retire', itemid=itemid,
-                        classname=self.classname):
+                                          classname=self.classname):
                     raise exceptions.Unauthorised(self._(
                         'You do not have permission to retire %(class)s'
                     ) % {'class': self.classname})
@@ -585,6 +605,7 @@ class EditCSVAction(Action):
         self.db.commit()
 
         self.client.add_ok_message(self._('Items edited OK'))
+
 
 class EditCommon(Action):
     '''Utility methods for editing.'''
@@ -597,7 +618,7 @@ class EditCommon(Action):
         deps = {}
         links = {}
         for cn, nodeid, propname, vlist in all_links:
-            numeric_id = int (nodeid or 0)
+            numeric_id = int(nodeid or 0)
             if not (numeric_id > 0 or (cn, nodeid) in all_props):
                 # link item to link to doesn't (and won't) exist
                 continue
@@ -644,13 +665,13 @@ class EditCommon(Action):
                         info = ', '.join(map(self._, props))
                         m.append(
                             self._('%(class)s %(id)s %(properties)s edited ok')
-                            % {'class':cn, 'id':nodeid, 'properties':info})
+                            % {'class': cn, 'id': nodeid, 'properties': info})
                     else:
                         # this used to produce a message like:
                         #    issue34 - nothing changed
                         # which is confusing if only quiet properties
                         # changed for the class/id. So don't report
-                        # anything is the user didn't explicitly change
+                        # anything if the user didn't explicitly change
                         # a visible (non-quiet) property.
                         pass
                 else:
@@ -662,7 +683,7 @@ class EditCommon(Action):
 
                     # and some nice feedback for the user
                     m.append(self._('%(class)s %(id)s created')
-                        % {'class':cn, 'id':newid})
+                             % {'class': cn, 'id': newid})
 
             # fill in new ids in links
             if needed in links:
@@ -720,6 +741,7 @@ class EditCommon(Action):
                 and self.db.user.get(self.nodeid, 'username') != 'anonymous')
 
     _cn_marker = []
+
     def editItemPermission(self, props, classname=_cn_marker, itemid=None):
         """Determine whether the user has permission to edit this item."""
         if itemid is None:
@@ -730,7 +752,7 @@ class EditCommon(Action):
         # being changed.
         for p in props:
             if not self.hasPermission('Edit', itemid=itemid,
-                    classname=classname, property=p):
+                                      classname=classname, property=p):
                 return 0
         # Since the user has permission to edit all of the properties,
         # the edit is OK.
@@ -743,9 +765,9 @@ class EditCommon(Action):
         property checks are made.
         """
 
-        if not classname :
+        if not classname:
             classname = self.client.classname
-        
+
         if not self.hasPermission('Create', classname=classname):
             return 0
 
@@ -756,6 +778,7 @@ class EditCommon(Action):
                                       property=key):
                 return 0
         return 1
+
 
 class EditItemAction(EditCommon):
     def lastUserActivity(self):
@@ -788,8 +811,8 @@ class EditItemAction(EditCommon):
     def handleCollision(self, props):
         message = self._('Edit Error: someone else has edited this %s (%s). '
             'View <a target="_blank" href="%s%s">their changes</a> '
-            'in a new window.')%(self.classname, ', '.join(props),
-            self.classname, self.nodeid)
+            'in a new window.') % (self.classname, ', '.join(props),
+                                   self.classname, self.nodeid)
         self.client.add_error_message(message, escape=False)
         return
 
@@ -831,12 +854,13 @@ class EditItemAction(EditCommon):
         # we will want to include index-page args in this URL too
         if self.nodeid is not None:
             url += self.nodeid
-        url += '?@ok_message=%s&@template=%s'%(urllib_.quote(message),
-            urllib_.quote(self.template))
+        url += '?@ok_message=%s&@template=%s' % (urllib_.quote(message),
+                                                 urllib_.quote(self.template))
         if self.nodeid is None:
             req = templating.HTMLRequest(self.client)
             url += '&' + req.indexargs_url('', {})[1:]
         raise exceptions.Redirect(url)
+
 
 class NewItemAction(EditCommon):
     def handle(self):
@@ -854,7 +878,7 @@ class NewItemAction(EditCommon):
             props, links = self.client.parsePropsFromForm(create=1)
         except (ValueError, KeyError) as message:
             self.client.add_error_message(self._('Error: %s')
-                % str(message))
+                                          % str(message))
             return
 
         # handle the props - edit or create
@@ -873,7 +897,7 @@ class NewItemAction(EditCommon):
 
         # Allow an option to stay on the page to create new things
         if '__redirect_to' in self.form:
-            raise exceptions.Redirect('%s&@ok_message=%s'%(
+            raise exceptions.Redirect('%s&@ok_message=%s' % (
                 self.examine_url(self.form['__redirect_to'].value),
                 urllib_.quote(messages)))
 
@@ -881,6 +905,7 @@ class NewItemAction(EditCommon):
         raise exceptions.Redirect('%s%s%s?@ok_message=%s&@template=%s' % (
             self.base, self.classname, self.nodeid, urllib_.quote(messages),
             urllib_.quote(self.template)))
+
 
 class PassResetAction(Action):
     def handle(self):
@@ -898,8 +923,8 @@ class PassResetAction(Action):
             if uid is None:
                 self.client.add_error_message(
                     self._("Invalid One Time Key!\n"
-                        "(a Mozilla bug may cause this message "
-                        "to show up erroneously, please check your email)"))
+                           "(a Mozilla bug may cause this message "
+                           "to show up erroneously, please check your email)"))
                 return
 
             # pull the additional email address if exist
@@ -918,12 +943,13 @@ class PassResetAction(Action):
             # XXX we need to make the "default" page be able to display errors!
             try:
                 # set the password
-                cl.set(uid, password=password.Password(newpw, config=self.db.config))
+                cl.set(uid, password=password.Password(newpw,
+                                                       config=self.db.config))
                 # clear the props from the otk database
                 otks.destroy(otk)
                 otks.commit()
                 # commit the password change
-                self.db.commit ()
+                self.db.commit()
             except (ValueError, KeyError) as message:
                 self.client.add_error_message(str(message))
                 return
@@ -937,12 +963,12 @@ class PassResetAction(Action):
 
             # send the email
             tracker_name = self.db.config.TRACKER_NAME
-            subject = 'Password reset for %s'%tracker_name
+            subject = 'Password reset for %s' % tracker_name
             body = '''
 The password has been reset for username "%(name)s".
 
 Your password is now: %(password)s
-'''%{'name': name, 'password': newpw}
+''' % {'name': name, 'password': newpw}
             if not self.client.standard_message([address], subject, body):
                 return
 
@@ -981,7 +1007,7 @@ Your password is now: %(password)s
 
         # send the email
         tracker_name = self.db.config.TRACKER_NAME
-        subject = 'Confirm reset of password for %s'%tracker_name
+        subject = 'Confirm reset of password for %s' % tracker_name
         body = '''
 Someone, perhaps you, has requested that the password be changed for your
 username, "%(name)s". If you wish to proceed with the change, please follow
@@ -990,7 +1016,7 @@ the link below:
   %(url)suser?@template=forgotten&@action=passrst&otk=%(otk)s
 
 You should then receive another email with the new password.
-'''%{'name': name, 'tracker': tracker_name, 'url': self.base, 'otk': otk}
+''' % {'name': name, 'tracker': tracker_name, 'url': self.base, 'otk': otk}
         if not self.client.standard_message([address], subject, body):
             return
 
@@ -998,6 +1024,7 @@ You should then receive another email with the new password.
             self.client.add_ok_message(self._('Email sent to primary notification address for %s.') % name)
         else:
             self.client.add_ok_message(self._('Email sent to %s.') % address)
+
 
 class RegoCommon(Action):
     def finishRego(self):
@@ -1012,8 +1039,8 @@ class RegoCommon(Action):
 
         # nice message
         message = self._('You are now registered, welcome!')
-        url = '%suser%s?@ok_message=%s'%(self.base, self.userid,
-            urllib_.quote(message))
+        url = '%suser%s?@ok_message=%s' % (self.base, self.userid,
+                                           urllib_.quote(message))
 
         # redirect to the user's page (but not 302, as some email clients seem
         # to want to reload the page, or something)
@@ -1021,8 +1048,9 @@ class RegoCommon(Action):
             <body><p><a href="%s">%s</a></p>
             <script nonce="%s" type="text/javascript">
             window.setTimeout('window.location = "%s"', 1000);
-            </script>'''%(message, url, message,
+            </script>''' % (message, url, message,
                           self.client.client_nonce, url)
+
 
 class ConfRegoAction(RegoCommon):
     def handle(self):
@@ -1034,6 +1062,7 @@ class ConfRegoAction(RegoCommon):
             self.client.add_error_message(str(message))
             return
         return self.finishRego()
+
 
 class RegisterAction(RegoCommon, EditCommon, Timestamped):
     name = 'register'
@@ -1057,13 +1086,13 @@ class RegisterAction(RegoCommon, EditCommon, Timestamped):
 
         if delaytime > 0:
             self.timecheck('opaqueregister', delaytime)
-        
+
         # parse the props from the form
         try:
             props, links = self.client.parsePropsFromForm(create=1)
         except (ValueError, KeyError) as message:
             self.client.add_error_message(self._('Error: %s')
-                % str(message))
+                                          % str(message))
             return
 
         # skip the confirmation step?
@@ -1081,7 +1110,7 @@ class RegisterAction(RegoCommon, EditCommon, Timestamped):
 
             # fix up the initial roles
             self.db.user.set(self.nodeid,
-                roles=self.db.config['NEW_WEB_USER_ROLES'])
+                             roles=self.db.config['NEW_WEB_USER_ROLES'])
 
             # commit now that all the tricky stuff is done
             self.db.commit()
@@ -1099,11 +1128,11 @@ class RegisterAction(RegoCommon, EditCommon, Timestamped):
                 user_found = self.db.user.lookup(user_props['username'])
                 # if user is found reject the request.
                 raise Reject(
-                    _("Username '%s' is already used.")%user_props['username'])
+                    _("Username '%s' is already used.") % user_props['username'])
             except KeyError:
                 # user not found this is what we want.
                 pass
-                
+
         for propname, proptype in self.db.user.getprops().items():
             value = user_props.get(propname, None)
             if value is None:
@@ -1124,8 +1153,8 @@ class RegisterAction(RegoCommon, EditCommon, Timestamped):
         tracker_name = self.db.config.TRACKER_NAME
         tracker_email = self.db.config.TRACKER_EMAIL
         if self.db.config['EMAIL_REGISTRATION_CONFIRMATION']:
-            subject = 'Complete your registration to %s -- key %s'%(tracker_name,
-                                                                  otk)
+            subject = 'Complete your registration to %s -- key %s' % (
+                tracker_name, otk)
             body = """To complete your registration of the user "%(name)s" with
 %(tracker)s, please do one of the following:
 
@@ -1137,25 +1166,26 @@ reply's additional "Re:" is ok),
 %(url)s?@action=confrego&otk=%(otk)s
 
 """ % {'name': user_props['username'], 'tracker': tracker_name,
-        'url': self.base, 'otk': otk, 'tracker_email': tracker_email}
+       'url': self.base, 'otk': otk, 'tracker_email': tracker_email}
         else:
-            subject = 'Complete your registration to %s'%(tracker_name)
+            subject = 'Complete your registration to %s' % (tracker_name)
             body = """To complete your registration of the user "%(name)s" with
 %(tracker)s, please visit the following URL:
 
 %(url)s?@action=confrego&otk=%(otk)s
 
 """ % {'name': user_props['username'], 'tracker': tracker_name,
-        'url': self.base, 'otk': otk}
+       'url': self.base, 'otk': otk}
         if not self.client.standard_message([user_props['address']], subject,
-                body, (tracker_name, tracker_email)):
+                                            body,
+                                            (tracker_name, tracker_email)):
             return
 
         # commit changes to the database
         self.db.commit()
 
         # redirect to the "you're almost there" page
-        raise exceptions.Redirect('%suser?@template=rego_progress'%self.base)
+        raise exceptions.Redirect('%suser?@template=rego_progress' % self.base)
 
     def newItemPermission(self, props, classname=None):
         """Just check the "Register" permission.
@@ -1167,6 +1197,7 @@ reply's additional "Re:" is ok),
 
         # technically already checked, but here for clarity
         return self.hasPermission('Register', classname=classname)
+
 
 class LogoutAction(Action):
     def handle(self):
@@ -1191,6 +1222,7 @@ class LogoutAction(Action):
         # As above choose the home page since everybody can
         # see that.
         raise exceptions.Redirect(self.base)
+
 
 class LoginAction(Action):
     def handle(self):
@@ -1232,7 +1264,7 @@ class LoginAction(Action):
             redirect_url_tuple = urllib_.urlparse(clean_url)
             # now I have a tuple form for the __came_from url
             try:
-                query=urllib_.parse_qs(redirect_url_tuple.query)
+                query = urllib_.parse_qs(redirect_url_tuple.query)
                 if "@error_message" in query:
                     del query["@error_message"]
                 if "@ok_message" in query:
@@ -1247,44 +1279,44 @@ class LoginAction(Action):
                 query = {}
                 pass
 
-            redirect_url = urllib_.urlunparse( (redirect_url_tuple.scheme,
-                                                redirect_url_tuple.netloc,
-                                                redirect_url_tuple.path,
-                                                redirect_url_tuple.params,
-                                                urllib_.urlencode(list(sorted(query.items())), doseq=True),
-                                                redirect_url_tuple.fragment)
-                                           )
+            redirect_url = urllib_.urlunparse((redirect_url_tuple.scheme,
+                                               redirect_url_tuple.netloc,
+                                               redirect_url_tuple.path,
+                                               redirect_url_tuple.params,
+                                               urllib_.urlencode(list(sorted(query.items())), doseq=True),
+                                               redirect_url_tuple.fragment)
+            )
 
         try:
             # Implement rate limiting of logins by login name.
             # Use prefix to prevent key collisions maybe??
             # set client.db.config.WEB_LOGIN_ATTEMPTS_MIN to 0
             #  to disable
-            if self.client.db.config.WEB_LOGIN_ATTEMPTS_MIN: # if 0 - off
-                rlkey="LOGIN-" + self.client.user
-                limit=self.loginLimit
-                gcra=Gcra()
-                otk=self.client.db.Otk
+            if self.client.db.config.WEB_LOGIN_ATTEMPTS_MIN:  # if 0 - off
+                rlkey = "LOGIN-" + self.client.user
+                limit = self.loginLimit
+                gcra = Gcra()
+                otk = self.client.db.Otk
                 try:
-                    val=otk.getall(rlkey)
+                    val = otk.getall(rlkey)
                     gcra.set_tat_as_string(rlkey, val['tat'])
                 except KeyError:
                     # ignore if tat not set, it's 1970-1-1 by default.
                     pass
                 # see if rate limit exceeded and we need to reject the attempt
-                reject=gcra.update(rlkey, limit)
+                reject = gcra.update(rlkey, limit)
 
                 # Calculate a timestamp that will make OTK expire the
                 # unused entry 1 hour in the future
                 ts = time.time() - (60 * 60 * 24 * 7) + 3600
                 otk.set(rlkey, tat=gcra.get_tat_as_string(rlkey),
-                                       __timestamp=ts)
+                        __timestamp=ts)
                 otk.commit()
 
                 if reject:
                     # User exceeded limits: find out how long to wait
-                    status=gcra.status(rlkey, limit)
-                    raise Reject(_("Logins occurring too fast. Please wait: %s seconds.")%status['Retry-After'])
+                    status = gcra.status(rlkey, limit)
+                    raise Reject(_("Logins occurring too fast. Please wait: %s seconds.") % status['Retry-After'])
 
             self.verifyLogin(self.client.user, password)
         except exceptions.LoginError as err:
@@ -1295,13 +1327,13 @@ class LoginAction(Action):
             if '__came_from' in self.form:
                 # set a new error
                 query['@error_message'] = err.args
-                redirect_url = urllib_.urlunparse( (redirect_url_tuple.scheme,
-                                                    redirect_url_tuple.netloc,
-                                                    redirect_url_tuple.path,
-                                                    redirect_url_tuple.params,
-                                                    urllib_.urlencode(list(sorted(query.items())), doseq=True),
-                                                    redirect_url_tuple.fragment )
-                                               )
+                redirect_url = urllib_.urlunparse((redirect_url_tuple.scheme,
+                                                   redirect_url_tuple.netloc,
+                                                   redirect_url_tuple.path,
+                                                   redirect_url_tuple.params,
+                                                   urllib_.urlencode(list(sorted(query.items())), doseq=True),
+                                                   redirect_url_tuple.fragment )
+                )
                 raise exceptions.Redirect(redirect_url)
             # if no __came_from, send back to base url with error
             return
@@ -1351,6 +1383,7 @@ class LoginAction(Action):
             return 1
         return 0
 
+
 class ExportCSVAction(Action):
     name = 'export'
     permissionType = 'View'
@@ -1376,7 +1409,8 @@ class ExportCSVAction(Action):
                 self.client.response_code = 400
                 raise exceptions.NotFound(
                     self._('Column "%(column)s" not found in %(class)s')
-                    % {'column': html_escape(cname), 'class': request.classname})
+                    % {'column': html_escape(cname),
+                       'class': request.classname})
 
         # full-text search
         if request.search_text:
@@ -1399,7 +1433,8 @@ class ExportCSVAction(Action):
         wfile = self.client.request.wfile
         if self.client.charset != self.client.STORAGE_CHARSET:
             wfile = codecs.EncodedFile(wfile,
-                self.client.STORAGE_CHARSET, self.client.charset, 'replace')
+                                       self.client.STORAGE_CHARSET,
+                                       self.client.charset, 'replace')
 
         writer = csv.writer(wfile)
 
@@ -1409,18 +1444,20 @@ class ExportCSVAction(Action):
             def fct(arg):
                 return "[hidden]"
             return fct
+
         def repr_link(cls, col):
             """Generate a function which returns the string representation of
             a link depending on `cls` and `col`."""
             def fct(arg):
-                if arg == None:
+                if arg is None:
                     return ""
                 else:
                     return str(cls.get(arg, col))
             return fct
+
         def repr_list(cls, col):
             def fct(arg):
-                if arg == None:
+                if arg is None:
                     return ""
                 elif type(arg) is list:
                     seq = [str(cls.get(val, col)) for val in arg]
@@ -1429,9 +1466,10 @@ class ExportCSVAction(Action):
                     seq.sort()
                     return self.list_sep.join(seq)
             return fct
+
         def repr_date():
             def fct(arg):
-                if arg == None:
+                if arg is None:
                     return ""
                 else:
                     if (arg.local(self.db.getUserTimezone()).pretty('%H:%M') ==
@@ -1441,16 +1479,17 @@ class ExportCSVAction(Action):
                         fmt = '%Y-%m-%d %H:%M'
                 return arg.local(self.db.getUserTimezone()).pretty(fmt)
             return fct
+
         def repr_val():
             def fct(arg):
-                if arg == None:
+                if arg is None:
                     return ""
                 else:
                     return str(arg)
             return fct
 
         props = klass.getprops()
-        
+
         # Determine translation map.
         ncols = []
         represent = {}
@@ -1496,13 +1535,15 @@ class ExportCSVAction(Action):
                 # check permission for this property on this item
                 # TODO: Permission filter doesn't work for the 'user' class
                 if not self.hasPermission(self.permissionType, itemid=itemid,
-                        classname=request.classname, property=name):
+                                          classname=request.classname,
+                                          property=name):
                     repr_function = repr_no_right(request.classname, name)
                 else:
                     repr_function = represent[name]
                 row.append(repr_function(klass.get(itemid, name)))
             self.client._socket_op(writer.writerow, row)
         return '\n'
+
 
 class ExportCSVWithIdAction(Action):
     ''' A variation of ExportCSVAction that returns ID number rather than
@@ -1531,7 +1572,8 @@ class ExportCSVWithIdAction(Action):
                 self.client.response_code = 400
                 raise exceptions.NotFound(
                     self._('Column "%(column)s" not found in %(class)s')
-                    % {'column': html_escape(cname), 'class': request.classname})
+                    % {'column': html_escape(cname),
+                       'class': request.classname})
 
         # full-text search
         if request.search_text:
@@ -1554,7 +1596,8 @@ class ExportCSVWithIdAction(Action):
         wfile = self.client.request.wfile
         if self.client.charset != self.client.STORAGE_CHARSET:
             wfile = codecs.EncodedFile(wfile,
-                self.client.STORAGE_CHARSET, self.client.charset, 'replace')
+                                       self.client.STORAGE_CHARSET,
+                                       self.client.charset, 'replace')
 
         writer = csv.writer(wfile)
         self.client._socket_op(writer.writerow, columns)
@@ -1566,13 +1609,14 @@ class ExportCSVWithIdAction(Action):
             # is included that can't be accessed? Enabling this
             # check will just skip the row for the inaccessible item.
             # This makes it act more like the web interface.
-            #if not self.hasPermission(self.permissionType, itemid=itemid,
+            # if not self.hasPermission(self.permissionType, itemid=itemid,
             #                          classname=request.classname):
             #    continue
             for name in columns:
                 # check permission to view this property on this item
                 if not self.hasPermission(self.permissionType, itemid=itemid,
-                        classname=request.classname, property=name):
+                                          classname=request.classname,
+                                          property=name):
                     # FIXME: is this correct, or should we just
                     # emit a '[hidden]' string. Note that this may
                     # allow an attacker to figure out hidden schema
@@ -1595,13 +1639,14 @@ class ExportCSVWithIdAction(Action):
 
         return '\n'
 
+
 class Bridge(BaseAction):
     """Make roundup.actions.Action executable via CGI request.
 
-    Using this allows users to write actions executable from multiple frontends.
-    CGI Form content is translated into a dictionary, which then is passed as
-    argument to 'handle()'. XMLRPC requests have to pass this dictionary
-    directly.
+    Using this allows users to write actions executable from multiple
+    frontends. CGI Form content is translated into a dictionary, which
+    then is passed as argument to 'handle()'. XMLRPC requests have to
+    pass this dictionary directly.
     """
 
     def __init__(self, *args):
