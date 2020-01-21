@@ -35,7 +35,6 @@ the dynamic portion of a message really means.
 """
 __docformat__ = 'restructuredtext'
 
-import errno
 import gettext as gettext_module
 import os
 
@@ -65,6 +64,7 @@ DOMAIN = "roundup"
 RoundupNullTranslations = gettext_module.NullTranslations
 RoundupTranslations = gettext_module.GNUTranslations
 
+
 def find_locales(language=None):
     """Return normalized list of locale names to try for given language
 
@@ -92,6 +92,7 @@ def find_locales(language=None):
             if nelang not in nelangs:
                 nelangs.append(nelang)
     return nelangs
+
 
 def get_mofile(languages, localedir, domain=None):
     """Return the first of .mo files found in localedir for languages
@@ -146,10 +147,10 @@ def get_mofile(languages, localedir, domain=None):
         return mofile
     return None
 
+
 def get_translation(language=None, tracker_home=None,
-    translation_class=RoundupTranslations,
-    null_translation_class=RoundupNullTranslations
-):
+                    translation_class=RoundupTranslations,
+                    null_translation_class=RoundupNullTranslations):
     """Return Translation object for given language and domain
 
     Argument 'language' may be a single language code or a list of codes.
@@ -199,6 +200,7 @@ def get_translation(language=None, tracker_home=None,
     if translator is None:
         translator = null_translation_class()
     return translator
+
 
 # static translations object
 translation = get_translation()
