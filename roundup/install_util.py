@@ -31,6 +31,7 @@ slast_file_types = [".css"]
 
 digested_file_types = sgml_file_types + hash_file_types + slast_file_types
 
+
 def extractFingerprint(lines):
     # get fingerprint from last line
     if lines[-1].startswith(b"#SHA: "):
@@ -47,6 +48,7 @@ def extractFingerprint(lines):
         fingerprint = fingerprint.replace(b'*/', b'')
         return fingerprint.strip()
     return None
+
 
 def checkDigest(filename):
     """Read file, check for valid fingerprint, return TRUE if ok"""
@@ -93,11 +95,13 @@ class DigestFile:
         file, ext = os.path.splitext(self.filename)
 
         if ext in sgml_file_types:
-            self.file.write(s2b("<!-- SHA: %s -->\n" % (self.digest.hexdigest(),)))
+            self.file.write(s2b("<!-- SHA: %s -->\n" %
+                                (self.digest.hexdigest(),)))
         elif ext in hash_file_types:
             self.file.write(s2b("#SHA: %s\n" % (self.digest.hexdigest(),)))
         elif ext in slast_file_types:
-            self.file.write(s2b("/* SHA: %s */\n" % (self.digest.hexdigest(),)))
+            self.file.write(s2b("/* SHA: %s */\n" %
+                                (self.digest.hexdigest(),)))
 
         self.file.close()
 
