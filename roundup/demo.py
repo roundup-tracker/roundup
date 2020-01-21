@@ -22,6 +22,7 @@ from roundup.scripts import roundup_server
 # Path where demo instance files will be stored
 TRACKER_HOME = os.path.abspath('demo')
 
+
 def install_demo(home, backend, template):
     """Install a demo tracker
 
@@ -35,7 +36,7 @@ def install_demo(home, backend, template):
 
     """
 
-    from roundup import init, instance, password, backends
+    from roundup import init, instance, password
 
     # set up the config for this tracker
     config = configuration.CoreConfig()
@@ -78,7 +79,7 @@ def install_demo(home, backend, template):
     # pick a fairly odd, random port
     port = 8917
     while 1:
-        print('Trying to set up web server on port %d ...'%port,)
+        print('Trying to set up web server on port %d ...' % port,)
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
@@ -92,7 +93,7 @@ def install_demo(home, backend, template):
             s.close()
             print('already in use.')
             port += 100
-    config['TRACKER_WEB'] = 'http://%s:%s/demo/'%(hostname, port)
+    config['TRACKER_WEB'] = 'http://%s:%s/demo/' % (hostname, port)
 
     # write the config
     config['INSTANT_REGISTRATION'] = 1
@@ -110,7 +111,8 @@ def install_demo(home, backend, template):
 
     # add the "demo" user
     db = tracker.open('admin')
-    # FIXME: Move tracker-specific demo initialization into the tracker templates.
+    # FIXME: Move tracker-specific demo initialization into the tracker
+    # templates.
     if template == 'minimal':
         db.user.create(username='demo', password=password.Password('demo'),
                        roles='User')
@@ -119,6 +121,7 @@ def install_demo(home, backend, template):
                        realname='Demo User', roles='User')
     db.commit()
     db.close()
+
 
 def run_demo(home):
     """Run the demo tracker instance from its ``home`` directory"""
@@ -148,7 +151,7 @@ then restart demo. If you want to change backend types, you must use "nuke".
     roundup_server.run(success_message=success_message)
 
 
-def usage(msg = ''):
+def usage(msg=''):
     if msg:
         print(msg)
     print("""\
@@ -179,7 +182,7 @@ def main():
     except getopt.GetoptError as e:
         usage(str(e))
         return 1
-    for opt, arg in opts:
+    for opt, _arg in opts:
         if opt == '-h':
             usage()
             return 0
