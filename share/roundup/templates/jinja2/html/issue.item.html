@@ -46,14 +46,14 @@
   {% if context.messages %}
     <h4>Messages</h4>
     {% for msg in context.messages.reverse() %}
-      <div class='row-fluid'>
-        <div class='span2'>
+      <div class="row row-cols-1 row-cols-lg-3">
+        <div class="col col-lg-auto">
           <a href='msg{{ msg.id }}'>msg{{msg.id}} (view)</a>
         </div>
-        <div class='span4'>
+        <div class="col col-lg-auto">
           Author: {{ msg.author.plain()|u }}, Date: {{ msg.date.plain()|u }}
         </div>
-        <div class='pull-right'>
+        <div class="col col-lg-auto">
           {% if context.is_edit_ok %}
             <form method="POST" action='issue{{ context.id }}' class='form-inline'>
               <input type="hidden" name="@remove@messages" value='{{ msg.id }}'>
@@ -65,7 +65,7 @@
           {% endif %}
         </div>
       </div>
-      <div class='row-fluid'>
+      <div>
         <pre>{{ msg.content.hyperlinked()|u|safe }}</pre>
       </div>
     {% endfor %}

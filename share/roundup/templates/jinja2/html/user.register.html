@@ -85,7 +85,7 @@
         <input name="@csrf" type="hidden"
                value="{{ utils.anti_csrf_nonce() }}">
         <input type="hidden" name="@action" value="register">
-        <input type="submit" name="submit" value="{% trans %}Register{% endtrans %}">
+        <input class="btn btn-primary" type="submit" name="submit" value="{% trans %}Register{% endtrans %}">
         </td>
       </tr>
     </table>

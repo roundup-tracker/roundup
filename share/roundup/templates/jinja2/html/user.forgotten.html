@@ -15,7 +15,7 @@
   </p>
 
   <form method="POST" action='{{ context.designator() }}'>
-    <div class='row-fluid'>
+    <div>
       <label>{% trans %}Email Address{% endtrans %}:</label>
       <input type='text' name="address">
       <input name="@csrf" type="hidden"
@@ -25,7 +25,7 @@
       <input type="submit" value="{% trans %}Password reset{% endtrans %}" class='btn btn-primary'>
     </div>
 
-    <div class='row-fluid vspace-two'> 
+    <div class="vspace-two">
       <p>{% trans %}Or, if you know your username, then enter it below{% endtrans %}.</p>
       <label>{% trans %}Username{% endtrans %}:</label>
       <input type='text' name="username">
@@ -33,7 +33,7 @@
     </div>
   </form>
 
-  <div class='row-fluid vspace-two'>
+  <div class="vspace-two">
     <p>
       {% trans %}A confirmation email will be sent to you -
       please follow the instructions within it to complete the reset process.{% endtrans %}

@@ -49,8 +49,8 @@
         <div class="form-group">
           <input type="hidden" name="@type" value="issue">
           <input type="hidden" name="@action" value="show">
-          <input class="form-control input-sm col-2" type="text" name="@number">
-          <input type="submit" class="form-control col-auto" value="{% trans %}Show issue{% endtrans %}">
+          <input class="form-control form-control-sm col-2" type="text" name="@number">
+          <input class="form-control form-control-sm btn btn-outline-secondary" type="submit" value="{% trans %}Show issue{% endtrans %}">
         </div>
       </form>
     </li>
@@ -117,18 +117,18 @@
         <i class='icon-user'></i>{% trans %}Login{% endtrans %}
       </li>
       <li class="nav-item">
-        <input class="form-control" type='text' name="__login_name" placeholder='username'>
+        <input class="form-control form-control-sm" type='text' name="__login_name" placeholder='username'>
       </li>
       <li class="nav-item">
-        <input class="form-control" type="password" name="__login_password" placeholder='password'>
+        <input class="form-control form-control-sm" type="password" name="__login_password" placeholder='password'>
       </li>
       <li class="nav-item">
-        <label class="form-control" class='checkbox'>
+        <label class="form-control form-control-sm" class='checkbox'>
           <input type="checkbox" name="remember"> {% trans %}Remember me?{% endtrans %}
         </label>
       </li>
       <li class="nav-item">
-        <input class="form-control" type="submit" value="{% trans %}Login{% endtrans %}" class='btn btn-inverse'>
+        <input class="btn btn-secondary form-control-sm" type="submit" value="{% trans %}Login{% endtrans %}">
       </li>
       <li class='vspace-one'>
         {% if request.user.hasPermission('Register', 'user') %}

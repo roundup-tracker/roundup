@@ -79,16 +79,14 @@
         {% endfor %}
       </table>
       {% include 'layout/pagination.html' %}
-  <div class='row-fluid'>
-    <div class='pull-right'>
-      <a class='btn btn-success'
-          href="{{ request.indexargs_url('issue', {'@action':'export_csv'}) }}">
-        {% trans %}Download as CSV{% endtrans %}
-      </a>
-    </div>
-  </div>
+      <div>
+        <a class='btn btn-secondary'
+           href="{{ request.indexargs_url('issue', {'@action':'export_csv'}) }}">
+          {% trans %}Download as CSV{% endtrans %}
+        </a>
+      </div>
 
-  {% include 'layout/sort.html' %}
+      {% include 'layout/sort.html' %}
 
     {% else %}
       <p class='text-error'>{% trans %}There are no issues yet!{% endtrans %}</p>

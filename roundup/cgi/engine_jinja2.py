@@ -22,8 +22,6 @@ minimal set (to avoid Roundup state changes from template).
     [ ] copy TEMPLATES-INFO.txt to INFO.txt
       [ ] implement VERSION file in environment for auto
           upgrade
-[ ] figure out what to do with autoescaping - it is disabled
-    by default in Jinja2
 
 [ ] precompile() is a stub
 

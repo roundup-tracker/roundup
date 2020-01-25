@@ -11,17 +11,23 @@
 {% block content %}
 
   {% for msg in context.list() %}
-    <div class='row-fluid'>
-      <dl class='span5 dl-horizontal'>
-        <dt>{% trans %}Author{% endtrans %}</dt>
-        <dd>{{ msg.author.plain()|u }}</dd>
-        <dt>{% trans %}Date{% endtrans %}</dt>
-        <dd>{{ msg.date.plain()|u }}</dd>
-        <dt>{% trans %}Message id{% endtrans %}</dt>
-        <dd>{{ msg.id }}</dd>
+    <div>
+      <dl class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
+        <div class="col row">
+          <dt class="col col-auto">{% trans %}Author{% endtrans %}</dt>
+          <dd class="col col-auto">{{ msg.author.plain()|u }}</dd>
+        </div>
+        <div class="col row">
+          <dt class="col col-auto">{% trans %}Date{% endtrans %}</dt>
+          <dd class="col col-auto">{{ msg.date.plain()|u }}</dd>
+        </div>
+        <div class="col row">
+          <dt class="col col-auto">{% trans %}Message id{% endtrans %}</dt>
+          <dd class="col col-auto">{{ msg.id }}</dd>
+        </div>
       </dl>
-      <div class='span7'>
-        <pre>{{ msg.content.hyperlinked()|u }}</pre>
+      <div>
+        <pre>{{ msg.content.hyperlinked()|u|safe }}</pre>
       </div>
     </div>
     <hr>

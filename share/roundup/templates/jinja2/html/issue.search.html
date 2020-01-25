@@ -62,8 +62,8 @@
 <tr>
   <th>{% trans %}Title:{% endtrans %}</th>
   <td>{{ input('title') }}</td>
-  <td>{{ display_column('title') }}</td>
-  <td>{{ sort_column('title') }}</td>
+  <td class="text-center">{{ display_column('title') }}</td>
+  <td class="text-center">{{ sort_column('title') }}</td>
   <td>&nbsp;</td>
 </tr>
 
@@ -77,32 +77,32 @@
 	  {{ option_value('keyword', keyword.id, keyword.name.plain()) }}
 	  {% endfor %}
 	  </select></td>
-  <td>{{ display_column('id') }}</td>
-  <td>{{ sort_column('id') }}</td>
+  <td class="text-center">{{ display_column('id') }}</td>
+  <td class="text-center">{{ sort_column('id') }}</td>
   <td>&nbsp;</td>
 </tr>
 
 <tr>
   <th>{% trans %}ID:{% endtrans %}</th>
   <td>{{ input('id') }}</td>
-  <td>{{ display_column('id') }}</td>
-  <td>{{ sort_column('id') }}</td>
+  <td class="text-center">{{ display_column('id') }}</td>
+  <td class="text-center">{{ sort_column('id') }}</td>
   <td>&nbsp;</td>
 </tr>
 
 <tr>
   <th>{% trans %}Creation Date:{% endtrans %}</th>
   <td>{{ input('creation') }}</td>
-  <td>{{ display_column('creation') }}</td>
-  <td>{{ sort_column('creation') }}</td>
-  <td>{{ group_column('creation') }}</td>
+  <td class="text-center">{{ display_column('creation') }}</td>
+  <td class="text-center">{{ sort_column('creation') }}</td>
+  <td class="text-center">{{ group_column('creation') }}</td>
 </tr>
 
 <tr>
   <th>{% trans %}Activity:{% endtrans %}</th>
   <td>{{ input('activity') }}</td>
-  <td>{{ display_column('activity') }}</td>
-  <td>{{ sort_column('activity') }}</td>
+  <td class="text-center">{{ display_column('activity') }}</td>
+  <td class="text-center">{{ sort_column('activity') }}</td>
   <td>&nbsp;</td>
 </tr>
 
@@ -116,9 +116,9 @@
 	  {{ option_value('priority', priority.id, priority.name.plain()) }}
 	  {% endfor %}
 	  </select></td>
-  <td>{{ display_column('priority') }}</td>
-  <td>{{ sort_column('priority') }}</td>
-  <td>{{ group_column('priority') }}</td>
+  <td class="text-center">{{ display_column('priority') }}</td>
+  <td class="text-center">{{ sort_column('priority') }}</td>
+  <td class="text-center">{{ group_column('priority') }}</td>
 </tr>
 
 <tr>
@@ -132,25 +132,25 @@
 	  {{ option_value('status', status.id, status.name.plain()) }}
 	  {% endfor %}
 	  </select></td>
-  <td>{{ display_column('status') }}</td>
-  <td>{{ sort_column('status') }}</td>
-  <td>{{ group_column('status') }}</td>
+  <td class="text-center">{{ display_column('status') }}</td>
+  <td class="text-center">{{ sort_column('status') }}</td>
+  <td class="text-center">{{ group_column('status') }}</td>
 </tr>
 
 <tr>
   <th>{% trans %}Assigned to:{% endtrans %}</th>
   <td>{{ input('submitter') }}</td>
-  <td>{{ display_column('assignedto') }}</td>
-  <td>{{ sort_column('assignedto') }}</td>
-  <td>{{ group_column('assignedto') }}</td>
+  <td class="text-center">{{ display_column('assignedto') }}</td>
+  <td class="text-center">{{ sort_column('assignedto') }}</td>
+  <td class="text-center">{{ group_column('assignedto') }}</td>
 </tr>
 
 <tr>
  <th>{% trans %}No Sort or group:{% endtrans %}</th>
  <td>&nbsp;</td>
  <td>&nbsp;</td>
- <td><input type="radio" name="@sort" value=""></td>
- <td><input type="radio" name="@group" value=""></td>
+ <td class="text-center"><input type="radio" name="@sort" value=""></td>
+ <td class="text-center"><input type="radio" name="@group" value=""></td>
 </tr>
 
 <tr>
@@ -160,7 +160,7 @@
 
 <tr>
 <th>{% trans %}Start With:{% endtrans %}</th>
-<td><input class="form-control col-4" name="@startwith"" value="{{ request.form.getfirst('@startwith', '0') }}" /></td>
+<td><input class="form-control col-4" name="@startwith" value="{{ request.form.getfirst('@startwith', '0') }}" /></td>
 </tr>
 
 <tr>

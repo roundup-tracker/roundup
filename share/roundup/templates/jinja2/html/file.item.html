@@ -16,11 +16,15 @@
     <form method="POST"
       enctype="multipart/form-data" action='{{ context.designator() }}'>
 
-      <dl class='dl-horizontal'>
-        <dt>{% trans %}Name{% endtrans %}</dt>
-        <dd>{{ context.name.field()|u|safe }}</dd>
-        <dt>{% trans %}Content Type{% endtrans %}</dt>
-        <dd>{{ context.type.field()|u|safe }}</dd>
+      <dl class="row row-cols-1 row-cols-md-2">
+        <div class="col row">
+          <dt class="col col-auto">{% trans %}Name{% endtrans %}</dt>
+          <dd class="col col-auto">{{ context.name.field()|u|safe }}</dd>
+        </div>
+        <div class="col row">
+          <dt class="col col-auto">{% trans %}Content Type{% endtrans %}</dt>
+          <dd class="col col-auto">{{ context.type.field()|u|safe }}</dd>
+        </div>
       </dl>
 
       <input type="hidden" name="@template" value="item">
@@ -36,7 +40,7 @@
   {% endif %}
 
   {% if context.id and context.is_view_ok() %}
-    <div class='row-fluid'>
+    <div>
       <a href='file{{ context.id }}/{{ context.name.plain()|u }}'>{% trans %}Download{% endtrans %}</a>
     </div>
   {% endif %}

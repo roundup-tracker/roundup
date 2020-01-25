@@ -1,16 +1,34 @@
-<dl class='dl-horizontal'>
-  <dt>{% trans %}Title{% endtrans %}</dt>
-  <dd>{{ context.title.plain()|u }}</dd>
-  <dt>{% trans %}Priority{% endtrans %}</dt>
-  <dd>{{ context.priority.plain()|u }}</dd>
-  <dt>{% trans %}Status{% endtrans %}</dt>
-  <dd>{{ context.status.plain()|u }}</dd>
-  <dt>{% trans %}Superseder{% endtrans %}</dt>
-  <dd>{{ context.superseder.plain()|u }}</dd>
-  <dt>{% trans %}Nosy list{% endtrans %}</dt>
-  <dd>{{ context.nosy.plain()|u }}</dd>
-  <dt>{% trans %}Assigned to{% endtrans %}</dt>
-  <dd>{{ context.assignedto.plain()|u }}</dd>
-  <dt>{% trans %}Keywords{% endtrans %}</dt>
-  <dd>{{ context.keyword.plain()|u }}</dd>
+{% set dt_class_full = 'col col-4 col-md-3 col-lg-2' -%}
+{% set dd_class_full = 'col col-8 col-md-9 col-lg-10' -%}
+{% set dt_class_half = 'col col-4 col-md-3 col-lg-4' -%}
+{% set dd_class_half = 'col col-8 col-md-9 col-lg-8' -%}
+<dl class="row row-cols-1 row-cols-lg-2">
+  <div class="col col-lg-12 row">
+    <dt class="{{ dt_class_full }}">{% trans %}Title{% endtrans %}</dt>
+    <dd class="{{ dd_class_full }}">{{ context.title.plain()|u }}</dd>
+  </div>
+  <div class="col row">
+    <dt class="{{ dt_class_half }}">{% trans %}Priority{% endtrans %}</dt>
+    <dd class="{{ dd_class_half }}">{{ context.priority.plain()|u }}</dd>
+  </div>
+  <div class="col row">
+    <dt class="{{ dt_class_half }}">{% trans %}Status{% endtrans %}</dt>
+    <dd class="{{ dd_class_half }}">{{ context.status.plain()|u }}</dd>
+  </div>
+  <div class="col col-lg-12 row">
+    <dt class="{{ dt_class_full }}">{% trans %}Superseder{% endtrans %}</dt>
+    <dd class="{{ dd_class_full }}">{{ context.superseder.plain()|u }}</dd>
+  </div>
+  <div class="col col-lg-12 row">
+    <dt class="{{ dt_class_full }}">{% trans %}Nosy list{% endtrans %}</dt>
+    <dd class="{{ dd_class_full }}">{{ context.nosy.plain()|u }}</dd>
+  </div>
+  <div class="col row">
+    <dt class="{{ dt_class_half }}">{% trans %}Assigned to{% endtrans %}</dt>
+    <dd class="{{ dd_class_half }}">{{ context.assignedto.plain()|u }}</dd>
+  </div>
+  <div class="col row">
+    <dt class="{{ dt_class_half }}">{% trans %}Keywords{% endtrans %}</dt>
+    <dd class="{{ dd_class_half }}">{{ context.keyword.plain()|u }}</dd>
+  </div>
 </dl>

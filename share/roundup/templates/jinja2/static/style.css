@@ -45,3 +45,7 @@ footer {
 .navigation {
   border-right: 1px solid #ddd;
 }
+
+.table-condensed td, .table-condensed th {
+  padding:.3rem;
+}

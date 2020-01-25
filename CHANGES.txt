@@ -36,10 +36,10 @@ Features:
   admin to control caching for css, js and other static files. See
   customizing.html. The use is documented in the section describing
   how to use interfaces.py.
-- issue2551075 Update jinja template to bootstrap 4. Updated to 4.1.3
-  (current 4.4.1). The pull request has been around for a
-  while. (Patch: Paul Spooren; templates merged by Christof Meerwald;
-  other merged by John Rouillard)
+- issue2551071 Update jinja template to bootstrap 4. Updated to 4.4.1.
+  The pull request has been around for a while. (Patch: Paul Spooren;
+  templates merged and additional changes by Christof Meerwald; other
+  merged by John Rouillard)
 - Add config option 'http_auth_convert_realm_to_lowercase'
   If usernames consist of a name and a domain/realm part of the form
   user@realm and we're using REMOTE_USER for authentication (e.g. via

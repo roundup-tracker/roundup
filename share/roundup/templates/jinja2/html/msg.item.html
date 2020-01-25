@@ -25,16 +25,21 @@
   {% include 'layout/permission.html' %}
 
   {% if context.is_view_ok() %}
-    <dl class='dl-horizontal'>
-      <dt>{% trans %}Author{% endtrans %}</dt>
-      <dd>{{ context.author.plain()|u }} </dd>
-      <dt>{% trans %}Recipients{% endtrans %}</dt>
-      <dd>{{ context.recipients.plain()|u }}</dd>
-      <dt>{% trans %}Date{% endtrans %}</dt>
-      <dd>{{ context.date.plain()|u }}</dd>
+    <dl class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
+      <div class="col row">
+        <dt class="col col-auto">{% trans %}Author{% endtrans %}</dt>
+        <dd class="col col-auto">{{ context.author.plain()|u }}</dd>
+      </div>
+      <div class="col row">
+        <dt class="col col-auto">{% trans %}Date{% endtrans %}</dt>
+        <dd class="col col-auto">{{ context.date.plain()|u }}</dd>
+      </div>
+      <div class="col row">
+        <dt class="col col-auto">{% trans %}Message id{% endtrans %}</dt>
+        <dd class="col col-auto">{{ context.id }}</dd>
+      </div>
     </dl>
-
-    <div class='row-fluid'>
+    <div>
       <h4>Content</h4>
       <pre>{{ context.content.hyperlinked()|u|safe }}</pre>
     </div>

@@ -1,5 +1,5 @@
-{% set status_notresolved = '-1,1,2,3,4,5,6,7'
-%}<!doctype html>
+{% set status_notresolved = '-1,1,2,3,4,5,6,7' -%}
+<!doctype html>
 <html>
   <head>
     <meta charset="utf-8">
@@ -8,7 +8,8 @@
     <meta name="viewport" content="width=device-width">
     <title>{% block head_title %}{% endblock %}</title>
     <link rel="stylesheet" type="text/css" href="@@file/bootstrap.min.css">
-    {% block extracss %} {% endblock %}
+    <link rel="stylesheet" type="text/css" href="@@file/style.css">
+    {%- block extracss %} {% endblock %}
   </head>
   <body>
     {% block navbar %}
@@ -26,34 +27,34 @@
 
           <div class='col-10'>
             <div class='pb-2 mt-4 mb-2 border-bottom'>
-              <h3> {% block page_header %} {% endblock %} </h3>
-                {% if options.error_message %}
-                  <div class='alert alert-danger alert-dismissible fade show'>
-                    <ul class="mb-0">
-                      {% for message in options.error_message %}
-                        <li>{{ message }}</li>
-                      {% endfor %}
-                    </ul>
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-                  </div>
-                {% endif %}
-                {% if options.ok_message %}
-                  <div class='alert alert-success alert-dismissible fade show'>
-                    <ul class="mb-0">
-                      {% for message in options.ok_message %}
-                        <li>{{ message }}</li>
-                      {% endfor %}
-                    </ul>
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-                  </div>
-                {% endif %}
-              </div>
-            {% block content %}
-            {% endblock %}
+              <h3>{% block page_header %} {% endblock %}</h3>
+              {% if options.error_message %}
+                <div class='alert alert-danger alert-dismissible fade show'>
+                  <ul class="mb-0">
+                    {% for message in options.error_message %}
+                      <li>{{ message|safe }}</li>
+                    {% endfor %}
+                  </ul>
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+              {% endif %}
+              {% if options.ok_message %}
+                <div class='alert alert-success alert-dismissible fade show'>
+                  <ul class="mb-0">
+                    {% for message in options.ok_message %}
+                      <li>{{ message|safe }}</li>
+                    {% endfor %}
+                  </ul>
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+              {% endif %}
+            </div>
+
+            {% block content %} {% endblock %}
           </div>
         </div>
       </div>
