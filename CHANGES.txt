@@ -88,6 +88,8 @@ Fixed:
   for translations. (Report: John Rouillard; Fix: Christof Meerwald)
 - Cleanup code by linting using flake8. (John Rouillard)
 - Cleanup code by security linting using bandit. (John Rouillard)
+- issue2550912 - fixed missing query string in __came_from for jinja2
+  template. (Christof Meerwald)
 
 2019-10-23 2.0.0 alpha 0
 

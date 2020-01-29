@@ -140,7 +140,7 @@
       </li>
     </ul>
     <input type="hidden" name="@action" value="Login">
-    <input type="hidden" name="__came_from" value='{{request.base}}{{request.env.PATH_INFO}}'>
+    <input type="hidden" name="__came_from" value="{{ request.base }}{{ request.env.PATH_INFO }}{% if request.env.QUERY_STRING %}?{{ request.env.QUERY_STRING }}{% endif %}">
   </form>
   <hr>
 {% else %}
