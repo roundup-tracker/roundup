@@ -16,20 +16,31 @@ h1 {
   line-height: 24px;
 }
 
-.navbar {
-  margin: 20px 0;
+.navbar-light {
+  border-radius: 4px;
+  border: 1px solid #d4d4d4;
+  background-image: linear-gradient(to bottom,#ffffff,#e8e8e8);
+  background-repeat: repeat-x;
+  margin: 20px 15px;
+  padding: .3rem 1rem;
 }
 
-.navbar form {
+.navbar-light form {
   margin: 8px;
 }
 
-.navbar .btn {
+.navbar-light .btn {
   margin-top: 0;
 }
 
-.navbar .brand {
-  color: #B31B1B;
+tr.info {
+  background-color: #d9edf7;
+}
+
+pre {
+  background-color: #f0f0f0;
+  border: 1pt solid gray;
+  padding: 6pt;
 }
 
 footer {

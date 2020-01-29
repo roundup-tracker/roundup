@@ -2,7 +2,7 @@
 {% set dd_class_full = 'col col-8 col-md-9 col-lg-10' -%}
 {% set dt_class_half = 'col col-4 col-md-3 col-lg-4' -%}
 {% set dd_class_half = 'col col-8 col-md-9 col-lg-8' -%}
-<dl class="row row-cols-1 row-cols-lg-2">
+<dl class="row row-cols-1 row-cols-lg-2 no-gutters">
   <div class="col col-lg-12 row">
     <dt class="{{ dt_class_full }}">{% trans %}Title{% endtrans %}</dt>
     <dd class="{{ dd_class_full }}">{{ context.title.plain()|u }}</dd>
@@ -15,10 +15,12 @@
     <dt class="{{ dt_class_half }}">{% trans %}Status{% endtrans %}</dt>
     <dd class="{{ dd_class_half }}">{{ context.status.plain()|u }}</dd>
   </div>
+  {% if context.superseder %}
   <div class="col col-lg-12 row">
     <dt class="{{ dt_class_full }}">{% trans %}Superseder{% endtrans %}</dt>
     <dd class="{{ dd_class_full }}">{{ context.superseder.plain()|u }}</dd>
   </div>
+  {% endif %}
   <div class="col col-lg-12 row">
     <dt class="{{ dt_class_full }}">{% trans %}Nosy list{% endtrans %}</dt>
     <dd class="{{ dd_class_full }}">{{ context.nosy.plain()|u }}</dd>

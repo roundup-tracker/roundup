@@ -27,8 +27,8 @@
         '@search_text': '',
         'status': status_notresolved,
         'assignedto': '-1',
-        '@dispname': i18n.gettext('Show Unassigned')|u,
-       }) }}">{% trans %}Show Unassigned{% endtrans %}</a>
+        '@dispname': i18n.gettext('Show Unassigned'),
+       })|u|safe }}">{% trans %}Show Unassigned{% endtrans %}</a>
     </li>
     <li class="nav-item">
       <a href="{{ request.indexargs_url('issue', {
@@ -38,8 +38,8 @@
         '@columns': columns_showall,
         '@search_text': '',
         'status': status_notresolved,
-        '@dispname': i18n.gettext('Show All')|u,
-       }) }}">{% trans %}Show All{% endtrans %}</a>
+        '@dispname': i18n.gettext('Show All'),
+       })|u|safe }}">{% trans %}Show All{% endtrans %}</a>
     </li>
     <li>
       <a href="issue?@template=search">{% trans %}Search{% endtrans %}</a>
@@ -50,7 +50,7 @@
           <input type="hidden" name="@type" value="issue">
           <input type="hidden" name="@action" value="show">
           <input class="form-control form-control-sm col-2" type="text" name="@number">
-          <input class="form-control form-control-sm btn btn-outline-secondary" type="submit" value="{% trans %}Show issue{% endtrans %}">
+          <input class="btn btn-sm btn-outline-secondary" type="submit" value="{% trans %}Show issue{% endtrans %}">
         </div>
       </form>
     </li>
@@ -110,7 +110,7 @@
   <hr>
 {% endif %}
 
-{% if  request.user.username == 'anonymous' %}
+{% if request.user.username == 'anonymous' %}
   <form method="POST" action='{{ request.base }}'>
     <ul class='nav flex-column'>
       <li class='nav-header'>
@@ -128,7 +128,7 @@
         </label>
       </li>
       <li class="nav-item">
-        <input class="btn btn-secondary form-control-sm" type="submit" value="{% trans %}Login{% endtrans %}">
+        <input class="btn btn-sm btn-secondary" type="submit" value="{% trans %}Login{% endtrans %}">
       </li>
       <li class='vspace-one'>
         {% if request.user.hasPermission('Register', 'user') %}

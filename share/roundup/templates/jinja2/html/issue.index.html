@@ -13,7 +13,8 @@
   {% include 'layout/permission.html' %}
 
   {% if context.is_view_ok() %}
-    {% if request.batch() %}
+    {% set batch = request.batch() %}
+    {% if batch %}
       <table class='table'>
         <tr class='info'>
 		  {% if request.show.priority %}
@@ -44,7 +45,7 @@
           <td>{% trans %}Assigned To{% endtrans %}</td>
 		  {% endif %}
         </tr>
-        {% for issue in request.batch() %}
+        {% for issue in batch %}
           <tr>
 		   {% if request.show.priority %}
            <td>{{ issue.priority.plain()|u }}</td>
@@ -79,8 +80,8 @@
         {% endfor %}
       </table>
       {% include 'layout/pagination.html' %}
-      <div>
-        <a class='btn btn-secondary'
+      <div class="d-flex justify-content-end">
+        <a class='btn btn-sm btn-secondary'
            href="{{ request.indexargs_url('issue', {'@action':'export_csv'}) }}">
           {% trans %}Download as CSV{% endtrans %}
         </a>

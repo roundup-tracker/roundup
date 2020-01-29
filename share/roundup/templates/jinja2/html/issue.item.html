@@ -54,13 +54,13 @@
           Author: {{ msg.author.plain()|u }}, Date: {{ msg.date.plain()|u }}
         </div>
         <div class="col col-lg-auto">
-          {% if context.is_edit_ok %}
+          {% if context.is_edit_ok() %}
             <form method="POST" action='issue{{ context.id }}' class='form-inline'>
               <input type="hidden" name="@remove@messages" value='{{ msg.id }}'>
               <input name="@csrf" type="hidden"
                      value="{{ utils.anti_csrf_nonce() }}">
               <input type="hidden" name="@action" value="edit">
-              <input type="submit" value="remove">
+              <input class="btn btn-danger btn-sm" type="submit" value="{% trans %}Remove{% endtrans %}">
             </form>
           {% endif %}
         </div>

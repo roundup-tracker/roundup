@@ -1,14 +1,14 @@
 <div class="navbar navbar-light bg-light">
   <a href="/" class='navbar-brand'>
-    <i class='icon-home'></i> {% trans %}Roundup Demo Tracker{% endtrans %}
+    <i class='icon-home'></i> {{ config.TRACKER_NAME|u }}
   </a>
-  <form name="searchform" method="get" action="issue" class='form-inline  my-2 my-lg-0 navbar-search pull-right'>
+  <form name="searchform" method="get" action="issue" class='form-inline my-2 my-lg-0 navbar-search'>
     <input type="hidden" name="@columns" value="{{ bug_columns_showall }}"/>
     <input type="hidden" name="@sort" value="-activity">
     <input type="hidden" name="@group" value="priority">
     <input type="hidden" name="@filter" value="status">
     <input type="hidden" name="status" value="{{ bug_status_notclosed }}"/>
-    <input class="form-control mr-sm-2 input-medium search-query" id="search-text" type="search" name="@search_text">
-    <input class="form-control my-2 my-sm-0" type="submit" value="{% trans %}search in open bugs{% endtrans %}" name="submit" class='btn'>
+    <input class="form-control form-control-sm mr-sm-2 search-query" id="search-text" type="search" name="@search_text">
+    <input class="btn btn-sm btn-outline-success my-2 my-sm-0" type="submit" value="{% trans %}Search{% endtrans %}" name="submit">
   </form>
-</div> <!-- navbar -->
+</div>

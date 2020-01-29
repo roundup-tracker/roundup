@@ -19,14 +19,14 @@
     {% block page_content %}
       <div class='container-fluid'>
         <div class='row'>
-          <div class='col-2 navigation'>
+          <div class='col-3 col-lg-2 navigation'>
             {% block leftnav %}
               {% include 'layout/navigation.html' %}
             {% endblock %}
           </div>
 
-          <div class='col-10'>
-            <div class='pb-2 mt-4 mb-2 border-bottom'>
+          <div class='col-9 col-lg-10'>
+            <div class='pb-2 mb-2 border-bottom'>
               <h3>{% block page_header %} {% endblock %}</h3>
               {% if options.error_message %}
                 <div class='alert alert-danger alert-dismissible fade show'>
