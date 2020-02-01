@@ -4,7 +4,7 @@
       <label class="col-form-label" for="{{ id }}">{{ i18n.gettext(text)|u|safe }}</label>
     </dt>
     <dd class="col col-8 col-md-9 col-lg-10">
-      <input class="input form-control" name="{{ name }}" id="{{ id }}" type="text" value="{{ context[name].plain()|u }}" {%- if required %}required="required"{% endif %} />
+      <input class="form-control" name="{{ name }}" id="{{ id }}" type="text" value="{{ context[name].plain()|u }}" {%- if required %}required="required"{% endif %} />
     </dd>
   </div>
 {% endmacro -%}
@@ -14,7 +14,7 @@
       <label class="col-form-label" for="{{ id }}">{{ i18n.gettext(text)|u|safe }}</label>
       </dt>
     <dd class="col col-8 col-md-9 col-lg-8">
-      <input class="input form-control" name="{{ name }}" id="{{ id }}" type="text" value="{{ context[name].plain()|u }}" {%- if required %}required="required"{% endif %} />
+      <input class="form-control" name="{{ name }}" id="{{ id }}" type="text" value="{{ context[name].plain()|u }}" {%- if required %}required="required"{% endif %} />
     </dd>
   </div>
 {% endmacro -%}
@@ -24,7 +24,7 @@
       <label class="col-form-label" for="{{ id }}">{{ i18n.gettext(text)|u|safe }}</label>
     </dt>
     <dd class="col col-8 col-md-9 col-lg-8">
-      <input class="input form-control" name="{{ name }}" id="{{ id }}" type="file" {%- if required %}required="required"{% endif %} />
+      <input class="form-control" name="{{ name }}" id="{{ id }}" type="file" {%- if required %}required="required"{% endif %} />
     </dd>
   </div>
 {% endmacro -%}
@@ -45,7 +45,7 @@
       <label class="col-form-label" for="{{ name }}">{{ i18n.gettext(text)|u|safe }}</label>
     </dt>
     <dd class="col col-8 col-md-9 col-lg-10">
-      <textarea class="input form-control" name="{{ name }}" id="{{ name }}" rows="5"></textarea>
+      <textarea class="form-control" name="{{ name }}" id="{{ name }}" rows="5">{% if name in request.form %}{{ request.form[name].value|u }}{% endif %}</textarea>
     </dd>
   </div>
 {% endmacro -%}

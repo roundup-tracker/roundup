@@ -158,8 +158,8 @@
         '@search_text': '',
         'status': status_notresolved,
         'assignedto': request.user.id,
-        '@dispname': i18n.gettext('Your Issues')|u,
-      }) }}">{% trans %}Your Issues{% endtrans %}</a>
+        '@dispname': i18n.gettext('Your Issues'),
+      })|u }}">{% trans %}Your Issues{% endtrans %}</a>
     </li>
     <li>
       <a href="user{{ request.user.id }}">{% trans %}Your Details{% endtrans %}</a>
