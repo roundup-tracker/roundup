@@ -1,75 +1,28 @@
+{% import 'layout/edit.tmpl' as edit with context %}
 <form method="POST"
-      {% if context.id %}
-        action='issue{{ context.id }}'
-      {% else %}
-        action='issue'
-      {% endif %}
+      {% if context.id -%}
+        action="issue{{ context.id }}"
+      {% else -%}
+        action="issue"
+      {% endif -%}
       name="itemSynopsis"
       enctype="multipart/form-data"
       class="col-xl-6" 
   >
   <fieldset>
-    <!-- title -->
-    <div class='form-group row'>
-      <label class='col-3 col-form-label' for='title'>{% trans %}Title{% endtrans %}</label>
-      <div class='col-9'>
-        <input class="form-control" name='title' id='title' type='text' class='input-lg' value='{{ context.title.plain()|u }}' required>
-      </div>
-    </div> <!-- form-group row -->
-
-    <!-- priority & Status -->
-    <div class='form-group row'>
-      <label class='col-3 col-form-label' for='priority'>{% trans %}Priority{% endtrans %}</label>
-      <div class='col-3'>
-        {{ context.priority.menu(html_kwargs={"class": "custom-select"})|u|safe }}
-      </div>
-      <label class='col-3 col-form-label' for='status'>{% trans %}Status{% endtrans %}</label>
-      <div class='col-3'>
-        {{ context.status.menu(html_kwargs={"class": "custom-select"})|u|safe }}
-      </div>
-    </div> <!-- form-group row -->
-
-    <!-- Superseder & nosy list -->
-    <div class='form-group row'>
-      <label class='col-3 col-form-label' for='superseder'>{% trans %}Superseder{% endtrans %}</label>
-      <div class='col-3'>
-        <input class="form-control" type='text' name='superseder' id='superseder' value='{{ context.superseder.plain()|u }}'>
-      </div>
-      <label class='col-3 col-form-label' for='nosylist'>{% trans %}Nosy list{% endtrans %}</label>
-      <div class='col-3'>
-        <input class="form-control" type='text' name='nosy' id='nosylist' value='{{ context.nosy.plain()|u }}'>
-      </div>
-    </div> <!-- form-group row -->
-
-    <!-- Assigned to & keywords -->
-    <div class='form-group row'>
-      <label class='col-3 col-form-label' for='assignedto'>{% trans %}Assigned to{% endtrans %}</label>
-      <div class='col-3'>
-        {{ context.assignedto.menu(html_kwargs={"class": "custom-select"})|u|safe }}
-      </div>
-      <label class='col-3 col-form-label' for='keyword'>{% trans %}Keywords{% endtrans %}</label>
-      <div class='col-3'>
-        <input class="form-control" type='text' name='keyword' id='keyword' value='{{ context.keyword.plain()|u }}'>
-      </div>
-    </div> <!-- form-group row -->
-
-    <!-- Note -->
-    <div class='form-group row'>
-      <label class='col-3 col-form-label' for='change_note'>{% trans %}Change note{% endtrans %}</label>
-      <div class='col-9'>
-        <textarea class="form-control" name="@note" rows="5" class='input-lg' id='change_note'></textarea>
-      </div>
-    </div> <!-- form-group row -->
-
-    <!-- File upload -->
-    <div class='form-group row'>
-      <label class='col-3 col-form-label' for='file_upload'>{% trans %}File{% endtrans %}</label>
-      <div class='col-3'>
-        <input class="form-control-file" type="file" name="@file" id='file_upload'>
-      </div>
-    </div> <!-- form-group row -->
+    <dl class="row row-cols-1 row-cols-lg-2 no-gutters">
+      {{ edit.input_text_large('Title', 'title', 'title', required=True) }}
+      {{ edit.input_option('Priority', 'priority', required=True) }}
+      {{ edit.input_option('Status', 'status') }}
+      {{ edit.input_text_small('Superseder', 'superseder', 'superseder') }}
+      {{ edit.input_text_small('Nosy list', 'nosylist', 'nosy') }}
+      {{ edit.input_option('Assigned to', 'assignedto') }}
+      {{ edit.input_text_small('Keywords', 'keyword', 'keyword') }}
+      {{ edit.input_textarea('Change note', 'change_note', '@note') }}
+      {{ edit.input_file('File', 'file_upload', '@file') }}
+    </dl>
   </fieldset>
-  <div class='form-actions'>
+  <div class="form-actions">
     {{ context.submit(html_kwargs={"class": "btn btn-primary"})|u|safe }}
     {% if context.id %}
       <a href='{{ context.copy_url() }}'>{% trans %}Make a copy{% endtrans %}</a>

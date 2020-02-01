@@ -14,9 +14,9 @@
   {% elif not context.id and context.is_edit_ok() %}
     {% trans %}New User Editing{% endtrans %}
   {% elif context.id and not context.is_edit_ok() %}
-    {% trans %}User{% endtrans %}{{ context.id }}
+    {% trans %}User{% endtrans %} {{ context.id }}
   {% elif context.id and context.is_edit_ok() %}
-    {% trans %}User{% endtrans %}{{ context.id }} {% trans %}editing{% endtrans %}
+    {% trans %}User{% endtrans %} {{ context.id }} {% trans %}editing{% endtrans %}
   {% endif %}
 {% endblock %}
 
@@ -26,9 +26,9 @@
 
   {% if context.is_view_ok() %}
     <form class="pb-5" method="POST"
-          name ="itemSynopsis"
-          enctype ="multipart/form-data"
-          action ='{{ context.designator() }}'>
+          name="itemSynopsis"
+          enctype="multipart/form-data"
+          action="{{ context.designator() }}">
       <table>
         <tr>
           <th>{% trans %}Name{% endtrans %}</th>
@@ -39,20 +39,20 @@
         <tr>
           <th>{% trans %}Login Name{% endtrans %}</th>
           <td>
-            <input class="form-control"  type='text' name='username' value='{{ context.username.plain()|u }}'>
+            <input class="form-control" type='text' name='username' value='{{ context.username.plain()|u }}'>
           </td>
         </tr>
         {% if context.is_edit_ok() %}
           <tr>
             <th>{% trans %}Login Password{% endtrans %}</th>
             <td>
-              <input class="form-control"  type='password' name='password'>
+              <input class="form-control" type='password' name='password'>
             </td>
           </tr>
           <tr>
             <th>{% trans %}Confirm Password{% endtrans %}</th>
             <td>
-              <input class="form-control"  type='password' name='@confirm@password'>
+              <input class="form-control" type='password' name='@confirm@password'>
             </td>
           </tr>
         {% endif %}
@@ -60,7 +60,7 @@
           <tr>
             <th>{% trans %}Roles <br>(comma separated){% endtrans %}</th>
             <td>
-              <input class="form-control"  type='text' name='roles' value='{{ context.roles.plain()|u }}'>
+              <input class="form-control" type='text' name='roles' value='{{ context.roles.plain()|u }}'>
             </td>
           </tr>
         {% endif %}
@@ -97,10 +97,10 @@
           </td>
         </tr>
         {% if context.is_edit_ok() %}
-          <tr class='form-actions'>
+          <tr class="form-actions">
             <td>
             <input type="hidden" name="@template" value="item">
-            {{ context.submit(html_kwargs={ "class": "btn btn-success" })|u|safe }}
+            {{ context.submit(html_kwargs={ 'class': 'btn btn-success' })|u|safe }}
             </td>
           </tr>
         {% endif %}

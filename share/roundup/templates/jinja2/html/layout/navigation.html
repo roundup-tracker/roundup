@@ -28,7 +28,7 @@
         'status': status_notresolved,
         'assignedto': '-1',
         '@dispname': i18n.gettext('Show Unassigned'),
-       })|u|safe }}">{% trans %}Show Unassigned{% endtrans %}</a>
+       })|u }}">{% trans %}Show Unassigned{% endtrans %}</a>
     </li>
     <li class="nav-item">
       <a href="{{ request.indexargs_url('issue', {
@@ -39,7 +39,7 @@
         '@search_text': '',
         'status': status_notresolved,
         '@dispname': i18n.gettext('Show All'),
-       })|u|safe }}">{% trans %}Show All{% endtrans %}</a>
+       })|u }}">{% trans %}Show All{% endtrans %}</a>
     </li>
     <li>
       <a href="issue?@template=search">{% trans %}Search{% endtrans %}</a>

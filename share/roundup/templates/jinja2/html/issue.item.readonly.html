@@ -1,36 +1,14 @@
-{% set dt_class_full = 'col col-4 col-md-3 col-lg-2' -%}
-{% set dd_class_full = 'col col-8 col-md-9 col-lg-10' -%}
-{% set dt_class_half = 'col col-4 col-md-3 col-lg-4' -%}
-{% set dd_class_half = 'col col-8 col-md-9 col-lg-8' -%}
+{% import 'layout/view.tmpl' as view with context -%}
 <dl class="row row-cols-1 row-cols-lg-2 no-gutters">
-  <div class="col col-lg-12 row">
-    <dt class="{{ dt_class_full }}">{% trans %}Title{% endtrans %}</dt>
-    <dd class="{{ dd_class_full }}">{{ context.title.plain()|u }}</dd>
-  </div>
-  <div class="col row">
-    <dt class="{{ dt_class_half }}">{% trans %}Priority{% endtrans %}</dt>
-    <dd class="{{ dd_class_half }}">{{ context.priority.plain()|u }}</dd>
-  </div>
-  <div class="col row">
-    <dt class="{{ dt_class_half }}">{% trans %}Status{% endtrans %}</dt>
-    <dd class="{{ dd_class_half }}">{{ context.status.plain()|u }}</dd>
-  </div>
+  {{ view.field_large('Title', 'title') }}
+  {{ view.field_small('Priority', 'priority') }}
+  {{ view.field_small('Status', 'status') }}
   {% if context.superseder %}
-  <div class="col col-lg-12 row">
-    <dt class="{{ dt_class_full }}">{% trans %}Superseder{% endtrans %}</dt>
-    <dd class="{{ dd_class_full }}">{{ context.superseder.plain()|u }}</dd>
-  </div>
+  {{ view.field_large('Superseder', 'superseder') }}
   {% endif %}
-  <div class="col col-lg-12 row">
-    <dt class="{{ dt_class_full }}">{% trans %}Nosy list{% endtrans %}</dt>
-    <dd class="{{ dd_class_full }}">{{ context.nosy.plain()|u }}</dd>
-  </div>
-  <div class="col row">
-    <dt class="{{ dt_class_half }}">{% trans %}Assigned to{% endtrans %}</dt>
-    <dd class="{{ dd_class_half }}">{{ context.assignedto.plain()|u }}</dd>
-  </div>
-  <div class="col row">
-    <dt class="{{ dt_class_half }}">{% trans %}Keywords{% endtrans %}</dt>
-    <dd class="{{ dd_class_half }}">{{ context.keyword.plain()|u }}</dd>
-  </div>
+  {% if context.nosy %}
+  {{ view.field_large('Nosy list', 'nosy') }}
+  {% endif %}
+  {{ view.field_small('Assigned to', 'assignedto') }}
+  {{ view.field_large('Keywords', 'keyword') }}
 </dl>

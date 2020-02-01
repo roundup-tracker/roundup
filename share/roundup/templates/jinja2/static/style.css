@@ -60,3 +60,13 @@ footer {
 .table-condensed td, .table-condensed th {
   padding:.3rem;
 }
+
+input:required {
+  border-width: 1.5px;
+  border-color: #6e747a;
+}
+
+select:required {
+  border-width: 1.5px;
+  border-color: #6e747a;
+}

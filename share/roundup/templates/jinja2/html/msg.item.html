@@ -14,9 +14,9 @@
   {% elif not context.id and context.is_edit_ok() %}
     {% trans %}New Message Editing{% endtrans %}
   {% elif context.id and not context.is_edit_ok() %}
-    {% trans %}Message{% endtrans %}{{ context.id }}
+    {% trans %}Message{% endtrans %} {{ context.id }}
   {% elif context.id and context.is_edit_ok() %}
-    {% trans %}Message{% endtrans %}{{ context.id }} {% trans %}editing{% endtrans %}
+    {% trans %}Message{% endtrans %} {{ context.id }} {% trans %}editing{% endtrans %}
   {% endif %}
 {% endblock %}
 
