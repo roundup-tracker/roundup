@@ -4,9 +4,21 @@
     <dd class="col col-8 col-md-9 col-lg-10">{{ context[name].plain()|u }}</dd>
   </div>
 {% endmacro -%}
+{% macro field_large_value(text, value) %}
+  <div class="col col-lg-12 row">
+    <dt class="col col-4 col-md-3 col-lg-2">{{ i18n.gettext(text)|u|safe }}</dt>
+    <dd class="col col-8 col-md-9 col-lg-10">{{ value|u|safe }}</dd>
+  </div>
+{% endmacro -%}
 {% macro field_small(text, name) %}
   <div class="col row mr-1">
     <dt class="col col-4 col-md-3 col-lg-4">{{ i18n.gettext(text)|u|safe }}</dt>
     <dd class="col col-8 col-md-9 col-lg-8">{{ context[name].plain()|u }}</dd>
+  </div>
+{% endmacro -%}
+{% macro field_small_value(text, value) %}
+  <div class="col row mr-1">
+    <dt class="col col-4 col-md-3 col-lg-4">{{ i18n.gettext(text)|u|safe }}</dt>
+    <dd class="col col-8 col-md-9 col-lg-8">{{ value|u|safe }}</dd>
   </div>
 {% endmacro -%}

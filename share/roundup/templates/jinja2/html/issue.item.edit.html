@@ -11,15 +11,15 @@
   >
   <fieldset>
     <dl class="row row-cols-1 row-cols-lg-2 no-gutters">
-      {{ edit.input_text_large('Title', 'title', 'title', required=True) }}
-      {{ edit.input_option('Priority', 'priority', required=True) }}
-      {{ edit.input_option('Status', 'status') }}
-      {{ edit.input_text_small('Superseder', 'superseder', 'superseder') }}
-      {{ edit.input_text_small('Nosy list', 'nosylist', 'nosy') }}
-      {{ edit.input_option('Assigned to', 'assignedto') }}
-      {{ edit.input_text_small('Keywords', 'keyword', 'keyword') }}
-      {{ edit.input_textarea('Change note', 'change_note', '@note') }}
-      {{ edit.input_file('File', 'file_upload', '@file') }}
+      {{ edit.field_large('Title', 'title', 'title', required=True) }}
+      {{ edit.option('Priority', 'priority', required=True) }}
+      {{ edit.option('Status', 'status') }}
+      {{ edit.field_small('Superseder', 'superseder', 'superseder') }}
+      {{ edit.field_small('Nosy list', 'nosylist', 'nosy') }}
+      {{ edit.option('Assigned to', 'assignedto') }}
+      {{ edit.field_small('Keywords', 'keyword', 'keyword') }}
+      {{ edit.textarea('Change note', 'change_note', '@note') }}
+      {{ edit.file('File', 'file_upload', '@file') }}
     </dl>
   </fieldset>
   <div class="form-actions">

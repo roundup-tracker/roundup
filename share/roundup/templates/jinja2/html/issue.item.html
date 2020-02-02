@@ -46,14 +46,17 @@
   {% if context.messages %}
     <h4>Messages</h4>
     {% for msg in context.messages.reverse() %}
-      <div class="row row-cols-1 row-cols-lg-3">
-        <div class="col col-lg-auto">
+      <div class="row row-cols-1 row-cols-md-4">
+        <div class="col col-md-auto">
           <a href='msg{{ msg.id }}'>msg{{msg.id}} (view)</a>
         </div>
-        <div class="col col-lg-auto">
-          Author: {{ msg.author.plain()|u }}, Date: {{ msg.date.plain()|u }}
+        <div class="col col-md-auto">
+          Author: {{ msg.author.plain()|u }}
         </div>
-        <div class="col col-lg-auto">
+        <div class="col col-md-auto">
+          Date: {{ msg.date.plain()|u }}
+        </div>
+        <div class="col col-md-auto">
           {% if context.is_edit_ok() %}
             <form method="POST" action='issue{{ context.id }}' class='form-inline'>
               <input type="hidden" name="@remove@messages" value='{{ msg.id }}'>

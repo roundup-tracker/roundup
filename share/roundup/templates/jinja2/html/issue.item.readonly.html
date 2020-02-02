@@ -3,9 +3,9 @@
   {{ view.field_large('Title', 'title') }}
   {{ view.field_small('Priority', 'priority') }}
   {{ view.field_small('Status', 'status') }}
-  {% if context.superseder %}
-  {{ view.field_large('Superseder', 'superseder') }}
-  {% endif %}
+  {% for s in context.superseder %}
+  {{ view.field_large_value('Superseder' if loop.first else '', '%s (<a href="%s%s">%s %s</a>)' % (s.title.plain(escape=1), s._classname, s.id, s._classname, s.id)) }}
+  {% endfor %}
   {% if context.nosy %}
   {{ view.field_large('Nosy list', 'nosy') }}
   {% endif %}
