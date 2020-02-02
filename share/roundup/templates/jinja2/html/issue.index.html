@@ -52,7 +52,7 @@
               <tr>
                 <th class="text-center" colspan="{{ request.columns|length }}">
                   {%- for g in group -%}
-                  {%- if issue[g] %} {{ issue[g]|u }} {% else %} (no {{ g }} set) {% endif -%}
+                  {%- if issue[g] %} {% if g == 'id' %}{{ issue[g] }}{% else %}{{ issue[g].plain()|u }}{% endif %} {% else %} (no {{ g }} set) {% endif -%}
                   {%- endfor -%}
                 </th>
               </tr>
