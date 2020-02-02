@@ -4,6 +4,10 @@
 {% if request.user.hasPermission('View', 'query') %}
   <p>
     <b>{% trans %}Your Queries{% endtrans %}</b> (<a href="query?@template=edit">{% trans %}edit{% endtrans %}</a>)
+    {% for qs in request.user.queries %}
+    <br />
+    <a href="{{ qs.klass.plain() }}?{{ qs.url.plain() }}&amp;@dispname={{ qs.name.url_quote()|u }}">{{ qs.name.plain()|u }}</a>
+    {% endfor %}
   </p>
 {% endif %}
 

@@ -10,7 +10,7 @@
 
 {% macro input(name, type='text') -%}
   <input class="form-control" type="{{ type }}" name="{{ name }}"
-		 value="{{ request.form.getvalue(name, '')|e }}" />
+		 value="{{ request.form.getvalue(name, '') }}" />
 {%- endmacro %}
 {% macro display_column(name) -%}
   <input type="checkbox" name="@columns"
@@ -173,18 +173,35 @@
 <td><input type="checkbox" name="@groupdir" {% if group_desc %}checked{% endif %} /></td>
 </tr>
 
+{% if request.user.hasPermission('Edit', 'query') %}
+<tr>
+  <th>{% trans %}Query name**:{% endtrans %}</th>
+  {% set value = request.form.getvalue('@queryname', '') %}
+  <td>
+    <input name="@queryname" value="{{ value }}" />
+    <input type="hidden" name="@old-queryname" value="{{ value }}" />
+    <input type="hidden" name="@template" value="index|search" />
+  </td>
+</tr>
+{% endif %}
+
 <tr>
   <td>
    &nbsp;
    <input type="hidden" name="@action" value="search">
   </td>
-  <td><input class="btn btn-primary" type="submit" value="Search" i18n:attributes="value"></td>
+  <td><input class="btn btn-primary" type="submit" value="{% trans %}Search{% endtrans %}"></td>
 </tr>
 
-<tr><td>&nbsp;</td>
- <td colspan="4" class="help">
-   {% trans %}*: The "all text" field will look in message bodies and issue titles{% endtrans %}
- </td>
+<tr>
+  <td>&nbsp;</td>
+  <td colspan="4" class="help">
+    {% trans %}*: The "all text" field will look in message bodies and issue titles{% endtrans %}
+    {% if request.user.hasPermission('Edit', 'query') %}
+    <br>
+    {% trans %}**: If you supply a name, the query will be saved off and available as a link in the sidebar{% endtrans %}
+    {% endif %}
+  </td>
 </tr>
 </table>
 </form>

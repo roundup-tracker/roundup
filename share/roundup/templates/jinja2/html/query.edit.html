@@ -1,0 +1,206 @@
+{% extends "layout/page.html" -%}
+
+{% block head_title %}
+  {% trans %}"Your Queries" Editing{% endtrans %} - {{ config.TRACKER_NAME }}
+{% endblock -%}
+
+{% block page_header %}
+  {% if not context.is_edit_ok() %}
+    {% trans %}You are not allowed to edit queries.{% endtrans %}
+  {% else %}
+    {% trans %}"Your Queries" Editing{% endtrans %}
+  {% endif %}
+{% endblock -%}
+
+{% block extrajs %}
+<script nonce="{{ request.client.client_nonce }}"
+    language="javascript">
+// This allows us to make the delete button an immediate action.
+// The post_to_url function comes from:
+//    http://stackoverflow.com/questions/133925/javascript-post-request-like-a-form-submit
+function retire(qid, csrf) {
+    post_to_url('query'+qid, {'@action': 'retire', '@template':'edit',
+                '@csrf': csrf});
+}
+
+function restore(qid, csrf) {
+    post_to_url('query'+qid, {'@action': 'restore', '@template': 'edit',
+                '@csrf': csrf});
+}
+function post_to_url(path, params, method) {
+    method = method || "post"; // Set method to post by default if not specified.
+
+    var form = document.createElement("form");
+    form.setAttribute("method", method);
+    form.setAttribute("action", path);
+
+    for(var key in params) {
+        if(params.hasOwnProperty(key)) {
+            var hiddenField = document.createElement("input");
+            hiddenField.setAttribute("type", "hidden");
+            hiddenField.setAttribute("name", key);
+            hiddenField.setAttribute("value", params[key]);
+
+            form.appendChild(hiddenField);
+         }
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
+{% endblock -%}
+
+{% macro include_query(query) %}
+<td>
+  {% if query.id not in request.user.queries %}
+  <select name="user{{ request.user.id }}@add@queries">
+    <option value="">{% trans %}leave out{% endtrans %}</option>
+    <option value="{{ query.id }}">{% trans %}include{% endtrans %}</option>
+  </select>
+  {% else %}
+  <select name="user{{ request.user.id }}@remove@queries">
+    <option value="">{% trans %}leave in{% endtrans %}</option>
+    <option value="{{ query.id }}">{% trans %}remove{% endtrans %}</option>
+  </select>
+  {% endif %}
+</td>
+{% endmacro %}
+
+{% block content %}
+  {% include 'layout/permission.html' %}
+
+  {% if context.is_edit_ok() %}
+<form method="POST" onSubmit="return submit_once()" action="query"
+      enctype="multipart/form-data">
+
+<table class="list" width="100%">
+{% set uid = request.user.id -%}
+{% set mine = request.user.queries -%}
+
+<tr>
+  <th>{% trans %}Query{% endtrans %}</th>
+  <th>{% trans %}Include in "Your Queries"{% endtrans %}</th>
+  <th>{% trans %}Edit{% endtrans %}</th>
+  <th>{% trans %}Private to you?{% endtrans %}</th>
+  <th>{% trans %}delete/restore<br> (javascript<br>required){% endtrans %}</th>
+</tr>
+<tr>
+  <td colspan="5"><b>{% trans %}Queries I created{% endtrans %}</b></td>
+</tr>
+
+{% set queries = db.query.filter(filterspec={'creator': uid}) %}
+{% for query in queries %}
+<tr>
+  <td>
+    <a href="{{ query.klass.plain()|u }}?{{ query.url.plain()|u }}">{{ query.name.plain() }}</a>
+  </td>
+
+  {{ include_query(query) }}
+
+  <td>
+    <a href="query{{ query.id }}">{% trans %}edit{% endtrans %}</a>
+  </td>
+
+  <td>
+    <select name="query{{ query.id }}@private_for">
+      <option {% if query.private_for == uid %}selected{% endif %}
+              value="{{ uid }}">{% trans %}yes{% endtrans %}</option>
+      <option {% if not query.private_for %}selected{% endif %}
+              value="-1">{% trans %}no{% endtrans %}</option>
+    </select>
+  </td>
+
+  <td>
+    <input class="btn btn-sm btn-danger" type="button"
+           value="{% trans %}Delete{% endtrans %}"
+           onClick="retire('{{ query.id }}','{{ utils.anti_csrf_nonce() }}')">
+  </td>
+</tr>
+{% endfor %}
+<tr>
+ <td colspan="4"><b>{% trans %}Queries others created{% endtrans %}</b></td>
+ <td colspan="4"><b>{% trans %}Owner{% endtrans %}</b></td>
+</tr>
+
+{% set queries = db.query.filter(filterspec={'private_for': None}) %}
+{% for query in queries %}
+<tr>
+  {% if query.creator != uid %}
+  <td>
+    <a href="{{ query.klass.plain()|u }}?{{ query.url.plain()|u }}">{{ query.name.plain() }}</a>
+  </td>
+
+  {{ include_query(query) }}
+
+  {% if not query.is_edit_ok() %}
+  <td colspan="2">{% trans %}[not yours to edit]{% endtrans %}</td>
+  {% else %}
+  <td colspan="2"><a href="query{{ query.id }}">{% trans %}edit{% endtrans %}</a></td>
+  {% endif %}
+  <td colspan="2">{{ query.creator.plain()|u }}</td>
+  {% endif %}
+</tr>
+{% endfor %}
+
+<tr>
+ <td colspan="5"><b>{% trans %}Active retired/private queries{% endtrans %}</b></td>
+</tr>
+{% for query in request.user.queries %}
+<tr>
+  {% if query.is_retired() %}
+  <td>
+    <a href="{{ query.klass.plain()|u }}?{{ query.url.plain()|u }}">{{ query.name.plain() }}</a>
+  </td>
+
+  {% if query.creator != uid %}
+  {{ include_query(query) }}
+  {% endif %}
+
+  <td colspan="{% if query.creator == uid %}3{% else %}2{% endif %}">{% trans %}[query is retired]{% endtrans %}</td>
+  {% if query.creator == uid %}
+  <td>
+    <input class="btn btn-sm btn-success" type="button"
+           value="{% trans %}Restore{% endtrans %}"
+           onClick="restore('{{ query.id }}','{{ utils.anti_csrf_nonce() }}')" />
+  </td>
+  {% else %}
+  <td>{{ query.creator.plain()|u }}</td>
+  {% endif %}
+  {% endif %}
+</tr>
+<tr>
+  {% if query.private_for and query.creator != uid %}
+  <td>
+    <a href="{{ query.klass.plain()|u }}?{{ query.url.plain()|u }}">{{ query.name.plain() }}</a>
+  </td>
+
+  {{ include_query(query) }}
+
+  <td colspan="2">{% trans %}[query is private]{% endtrans %}</td>
+  {% if query.creator == uid %}
+  <td>
+    <input type="button" value="{% trans %}Restore{% endtrans %}"
+           onClick="restore('{{ query.id }}','{{ utils.anti_csrf_nonce() }}')" />
+  </td>
+  {% endif %}
+  <td>{{ query.creator.plain()|u }}</td>
+  {% endif %}
+</tr>
+{% endfor %}
+<tr>
+  <td colspan="5">
+    <input type="hidden" name="@action" value="edit" />
+    <input type="hidden" name="@template" value="edit" />
+    <input name="@csrf" type="hidden" value="{{ utils.anti_csrf_nonce() }}" />
+    <input class="btn btn-primary" type="submit"
+           value="{% trans %}Save Selection{% endtrans %}" />
+  </td>
+</tr>
+
+</table>
+
+</form>
+</td>
+{% endif %}
+{% endblock %}

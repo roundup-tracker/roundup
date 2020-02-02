@@ -1,0 +1,20 @@
+{% if context.is_view_ok() %}
+{{ context.renderQueryForm()|u|safe }}
+{% else %}
+{% extends "layout/page.html" -%}
+
+{% block head_title %}
+  {% trans %}You can not view query{% endtrans %} - {{ config.TRACKER_NAME }}
+{% endblock -%}
+
+{% block page_header %}
+  {% trans %}You can not view query.{% endtrans %}
+{% endblock -%}
+
+{% block content %}
+  <td class="content">
+    You are not allowed to view {{ context._classname }}
+    with id {{ context.id }}
+  </td>
+{% endblock %}
+{% endif %}
