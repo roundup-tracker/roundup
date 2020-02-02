@@ -46,6 +46,18 @@
 		  {% endif %}
         </tr>
         {% for issue in batch %}
+          {% if request.group|length %}
+            {% set group = [request.group[0][1], request.group[1][1]] if request.group|length >= 2 else [request.group[0][1]] %}
+            {% if batch.propchanged(*group) %}
+              <tr>
+                <th class="text-center" colspan="{{ request.columns|length }}">
+                  {%- for g in group -%}
+                  {%- if issue[g] %} {{ issue[g]|u }} {% else %} (no {{ g }} set) {% endif -%}
+                  {%- endfor -%}
+                </th>
+              </tr>
+            {% endif %}
+          {% endif %}
           <tr>
 		   {% if request.show.priority %}
            <td>{{ issue.priority.plain()|u }}</td>

@@ -1,22 +1,24 @@
 <hr>
-<form method="GET" action='{{ request.classname }}'>
-  <div class='form-group row'>
+<form method="GET" action="{{ request.classname }}">
+  <div class="form-group row">
     <div class="col-2 text-right">
       {% trans %}Sort on{% endtrans %}
     </div>
     <fieldset class="form-group">
       {% for i in range(2) %}
+	    {% set key = request.sort[i] if request.sort|length > i else (None, None) %}
         <div class="row">
-          <div class='col-auto'>
-            <select class="custom-select" name='@sort{{i}}'>
+          <div class="col-auto">
+            <select class="custom-select" name="@sort{{i}}">
+              <option value="">{% trans %}- nothing -{% endtrans %}</option>
               {% for prop in context.properties() %}
-                <option value='{{ prop._name }}'>{{ prop._name }}</option>
+                <option value="{{ prop._name }}" {% if prop._name == key[1] %}selected{% endif %}>{{ prop._name }}</option>
               {% endfor %}
             </select>
           </div>
           <div class="col-auto">
             <div class="custom-control custom-checkbox my-1 mr-sm-2">
-              <input type="checkbox" class="custom-control-input" name='@sortdir{{i}}' id='@sortdir{{i}}'>
+              <input type="checkbox" class="custom-control-input" name="@sortdir{{ i }}" id="@sortdir{{ i }}" {% if key[0] == '-' %}checked{% endif %}>
               <label class="custom-control-label" for="@sortdir{{i}}">Descending</label>
             </div>
           </div>
@@ -24,23 +26,25 @@
       {% endfor %}
     </fieldset>
   </div>
-  <div class='form-group row'>
+  <div class="form-group row">
     <div class="col-2 text-right">
       {% trans %}Group on{% endtrans %}
     </div>
     <fieldset class="form-group">
       {% for i in range(2) %}
+	    {% set key = request.group[i] if request.group|length > i else (None, None) %}
         <div class="row">
-          <div class='col-auto'>
-            <select class="custom-select" name='@group{{i}}'>
+          <div class="col-auto">
+            <select class="custom-select" name="@group{{i}}">
+              <option value="">{% trans %}- nothing -{% endtrans %}</option>
               {%- for prop in context.properties() %}
-                <option value='{{ prop._name }}'>{{ prop._name }}</option>
+                <option value="{{ prop._name }}" {% if prop._name == key[1] %}selected{% endif %}>{{ prop._name }}</option>
               {%- endfor %}
             </select>
           </div>
           <div class="col-auto">
             <div class="custom-control custom-checkbox my-1 mr-sm-2">
-              <input type="checkbox" class="custom-control-input" name='@groupdir{{i}}' id='@groupdir{{i}}'>
+              <input type="checkbox" class="custom-control-input" name="@groupdir{{ i }}" id="@groupdir{{ i }}" {% if key[0] == '-' %}checked{% endif %}>
               <label class="custom-control-label" for="@groupdir{{i}}">Descending</label>
             </div>
           </div>
@@ -48,8 +52,8 @@
       {% endfor %}
     </fieldset>
   </div>
-  <div class='form-actions'>
-    <input type='submit' value='{% trans %}Redisplay{% endtrans %}' class='btn btn-primary'>
+  <div class="form-actions">
+    <input class="btn btn-primary" type="submit" value="{% trans %}Redisplay{% endtrans %}">
     {{ request.indexargs_form(sort=0, group=0)|u|safe }}
   </div>
 </form>
