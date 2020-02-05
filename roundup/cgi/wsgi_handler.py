@@ -7,6 +7,8 @@
 import os
 import weakref
 
+from contextlib import contextmanager
+
 from roundup.anypy.html import html_escape
 
 import roundup.instance
@@ -89,28 +91,29 @@ class RequestDispatcher(object):
 
         tracker = roundup.instance.open(self.home, not self.debug)
 
-        # need to strip the leading '/'
-        environ["PATH_INFO"] = environ["PATH_INFO"][1:]
-        if request.timing:
-            environ["CGI_SHOW_TIMING"] = request.timing
+        with self.get_tracker() as tracker:
+            # need to strip the leading '/'
+            environ["PATH_INFO"] = environ["PATH_INFO"][1:]
+            if request.timing:
+                environ["CGI_SHOW_TIMING"] = request.timing
 
-        form = BinaryFieldStorage(fp=environ['wsgi.input'], environ=environ)
+            form = BinaryFieldStorage(fp=environ['wsgi.input'], environ=environ)
 
-        if environ['REQUEST_METHOD'] in ("OPTIONS", "DELETE"):
-            # these methods have no data. When we init tracker.Client
-            # set form to None and request.rfile to None to get a
-            # properly initialized empty form.
-            form = None
-            request.rfile = None
+            if environ['REQUEST_METHOD'] in ("OPTIONS", "DELETE"):
+                # these methods have no data. When we init tracker.Client
+                # set form to None and request.rfile to None to get a
+                # properly initialized empty form.
+                form = None
+                request.rfile = None
 
-        client = tracker.Client(tracker, request, environ, form,
-                                request.translator)
-        try:
-            client.main()
-        except roundup.cgi.client.NotFound:
-            request.start_response([('Content-Type', 'text/html')], 404)
-            request.wfile.write(s2b('Not found: %s' % 
-                                    html_escape(client.path)))
+            client = tracker.Client(tracker, request, environ, form,
+                                    request.translator)
+            try:
+                client.main()
+            except roundup.cgi.client.NotFound:
+                request.start_response([('Content-Type', 'text/html')], 404)
+                request.wfile.write(s2b('Not found: %s' % 
+                                        html_escape(client.path)))
 
         # all body data has been written using wfile
         return []
@@ -125,3 +128,8 @@ class RequestDispatcher(object):
         if self.__wfile is None:
             raise ValueError('start_response() not called')
         return self.__wfile
+
+    @contextmanager
+    def get_tracker(self):
+        # get a new instance for each request
+        yield roundup.instance.open(self.home, not self.debug)
