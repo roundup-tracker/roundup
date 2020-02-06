@@ -185,16 +185,10 @@ class Session:
     def _gen_sid(self):
         """ generate a unique session key """
         while 1:
-            s = b2s(binascii.b2a_base64(random_.token_bytes(32)).strip())
+            s = b2s(binascii.b2a_base64(random_.token_bytes(32)).strip()).rstrip('=')
             if not self.session_db.exists(s):
                 break
 
-        # clean up the base64
-        if s[-1] == '=':
-            if s[-2] == '=':
-                s = s[:-2]
-            else:
-                s = s[:-1]
         return s
 
     def clean_up(self):
