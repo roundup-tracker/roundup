@@ -95,7 +95,7 @@ DEFAULT_PORT = 8080
 # "debug" means "none" + no tracker/template cache
 MULTIPROCESS_TYPES = ["debug", "none"]
 try:
-    import thread  # nosrc: F401
+    import threading  # nosrc: F401
 except ImportError:
     pass
 else:
