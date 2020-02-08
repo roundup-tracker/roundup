@@ -54,6 +54,25 @@ class Writer(object):
         return self.write(data)
 
 
+class RequestHandler(object):
+    def __init__(self, environ, start_response):
+        self.__start_response = start_response
+        self.__wfile = None
+        self.headers = Headers(environ)
+        self.rfile, self.wfile = None, Writer(self)
+
+    def start_response(self, headers, response_code):
+        """Set HTTP response code"""
+        message, explain = BaseHTTPRequestHandler.responses[response_code]
+        self.__wfile = self.__start_response('%d %s' % (response_code,
+                                                        message), headers)
+
+    def get_wfile(self):
+        if self.__wfile is None:
+            raise ValueError('start_response() not called')
+        return self.__wfile
+
+
 class RequestDispatcher(object):
     def __init__(self, home, debug=False, timing=False, lang=None):
         assert os.path.isdir(home), '%r is not a directory' % (home,)
@@ -68,13 +87,7 @@ class RequestDispatcher(object):
 
     def __call__(self, environ, start_response):
         """Initialize with `apache.Request` object"""
-        self.environ = environ
-        request = RequestDispatcher(self.home, self.debug, self.timing)
-        request.__start_response = start_response
-
-        request.wfile = Writer(request)
-        request.__wfile = None
-        request.headers = Headers(environ)
+        request = RequestHandler(environ, start_response)
 
         if environ['REQUEST_METHOD'] == 'OPTIONS':
             if environ["PATH_INFO"][:5] == "/rest":
@@ -89,25 +102,22 @@ class RequestDispatcher(object):
                 request.wfile.write(s2b(DEFAULT_ERROR_MESSAGE % locals()))
                 return []
 
-        tracker = roundup.instance.open(self.home, not self.debug)
+        # need to strip the leading '/'
+        environ["PATH_INFO"] = environ["PATH_INFO"][1:]
+        if self.timing:
+            environ["CGI_SHOW_TIMING"] = self.timing
 
-        with self.get_tracker() as tracker:
-            # need to strip the leading '/'
-            environ["PATH_INFO"] = environ["PATH_INFO"][1:]
-            if request.timing:
-                environ["CGI_SHOW_TIMING"] = request.timing
-
+        if environ['REQUEST_METHOD'] in ("OPTIONS", "DELETE"):
+            # these methods have no data. When we init tracker.Client
+            # set form to None to get a properly initialized empty
+            # form.
+            form = None
+        else:
             form = BinaryFieldStorage(fp=environ['wsgi.input'], environ=environ)
 
-            if environ['REQUEST_METHOD'] in ("OPTIONS", "DELETE"):
-                # these methods have no data. When we init tracker.Client
-                # set form to None and request.rfile to None to get a
-                # properly initialized empty form.
-                form = None
-                request.rfile = None
-
+        with self.get_tracker() as tracker:
             client = tracker.Client(tracker, request, environ, form,
-                                    request.translator)
+                                    self.translator)
             try:
                 client.main()
             except roundup.cgi.client.NotFound:
@@ -117,17 +127,6 @@ class RequestDispatcher(object):
 
         # all body data has been written using wfile
         return []
-
-    def start_response(self, headers, response_code):
-        """Set HTTP response code"""
-        message, explain = BaseHTTPRequestHandler.responses[response_code]
-        self.__wfile = self.__start_response('%d %s' % (response_code,
-                                                        message), headers)
-
-    def get_wfile(self):
-        if self.__wfile is None:
-            raise ValueError('start_response() not called')
-        return self.__wfile
 
     @contextmanager
     def get_tracker(self):
