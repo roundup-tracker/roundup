@@ -9,7 +9,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 from __future__ import print_function
-import unittest, os, shutil, errno, sys, difflib, cgi, re
+import unittest, os, shutil, errno, sys, difflib, cgi, re, io
 
 import pytest
 
@@ -20,7 +20,7 @@ from roundup.cgi.templating import HTMLItem, HTMLRequest, NoTemplate
 from roundup.cgi.templating import HTMLProperty, _HTMLItem, anti_csrf_nonce
 from roundup.cgi.form_parser import FormParser
 from roundup import init, instance, password, hyperdb, date
-from roundup.anypy.strings import StringIO, u2s, b2s
+from roundup.anypy.strings import u2s, b2s, s2b
 
 from time import sleep
 
@@ -1787,36 +1787,86 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         self.db.issue.create(title='foo1', status='2', assignedto='4', nosy=['3',demo_id])
         self.db.issue.create(title='bar2', status='1', assignedto='3', keyword=[key_id1,key_id2])
         self.db.issue.create(title='baz32', status='4')
-        output = StringIO()
+        output = io.BytesIO()
         cl.request = MockNull()
         cl.request.wfile = output
         # call export version that outputs names
         actions.ExportCSVAction(cl).handle()
         #print(output.getvalue())
-        should_be=('id,title,status,keyword,assignedto,nosy\r\n'
-                   '1,foo1,deferred,,"Contrary, Mary","Bork, Chef;Contrary, Mary;demo"\r\n'
-                   '2,bar2,unread,keyword1;keyword2,"Bork, Chef","Bork, Chef"\r\n'
-                   '3,baz32,need-eg,,,\r\n')
+        should_be=(s2b('id,title,status,keyword,assignedto,nosy\r\n'
+                       '1,foo1,deferred,,"Contrary, Mary","Bork, Chef;Contrary, Mary;demo"\r\n'
+                       '2,bar2,unread,keyword1;keyword2,"Bork, Chef","Bork, Chef"\r\n'
+                       '3,baz32,need-eg,,,\r\n'))
         #print(should_be)
         #print(output.getvalue())
         self.assertEqual(output.getvalue(), should_be)
-        output = StringIO()
+        output = io.BytesIO()
         cl.request = MockNull()
         cl.request.wfile = output
         # call export version that outputs id numbers
         actions.ExportCSVWithIdAction(cl).handle()
         print(output.getvalue())
-        self.assertEqual('id,title,status,keyword,assignedto,nosy\r\n'
-                          "1,foo1,2,[],4,\"['3', '4', '5']\"\r\n"
-                          "2,bar2,1,\"['1', '2']\",3,['3']\r\n"
-                          '3,baz32,4,[],None,[]\r\n',
+        self.assertEqual(s2b('id,title,status,keyword,assignedto,nosy\r\n'
+                             "1,foo1,2,[],4,\"['3', '4', '5']\"\r\n"
+                             "2,bar2,1,\"['1', '2']\",3,['3']\r\n"
+                             '3,baz32,4,[],None,[]\r\n'),
             output.getvalue())
+
+    def testCSVExportCharset(self):
+        cl = self._make_client(
+            {'@columns': 'id,title,status,keyword,assignedto,nosy'},
+            nodeid=None, userid='1')
+        cl.classname = 'issue'
+
+        demo_id=self.db.user.create(username='demo', address='demo@test.test',
+            roles='User', realname='demo')
+        self.db.issue.create(title=b2s(b'foo1\xc3\xa4'), status='2', assignedto='4', nosy=['3',demo_id])
+
+        output = io.BytesIO()
+        cl.request = MockNull()
+        cl.request.wfile = output
+        # call export version that outputs names
+        actions.ExportCSVAction(cl).handle()
+        should_be=(b'id,title,status,keyword,assignedto,nosy\r\n'
+                   b'1,foo1\xc3\xa4,deferred,,"Contrary, Mary","Bork, Chef;Contrary, Mary;demo"\r\n')
+        self.assertEqual(output.getvalue(), should_be)
+
+        output = io.BytesIO()
+        cl.request = MockNull()
+        cl.request.wfile = output
+        # call export version that outputs id numbers
+        actions.ExportCSVWithIdAction(cl).handle()
+        print(output.getvalue())
+        self.assertEqual(b'id,title,status,keyword,assignedto,nosy\r\n'
+                         b"1,foo1\xc3\xa4,2,[],4,\"['3', '4', '5']\"\r\n",
+                         output.getvalue())
+
+        # again with ISO-8859-1 client charset
+        cl.charset = 'iso8859-1'
+        output = io.BytesIO()
+        cl.request = MockNull()
+        cl.request.wfile = output
+        # call export version that outputs names
+        actions.ExportCSVAction(cl).handle()
+        should_be=(b'id,title,status,keyword,assignedto,nosy\r\n'
+                   b'1,foo1\xe4,deferred,,"Contrary, Mary","Bork, Chef;Contrary, Mary;demo"\r\n')
+        self.assertEqual(output.getvalue(), should_be)
+
+        output = io.BytesIO()
+        cl.request = MockNull()
+        cl.request.wfile = output
+        # call export version that outputs id numbers
+        actions.ExportCSVWithIdAction(cl).handle()
+        print(output.getvalue())
+        self.assertEqual(b'id,title,status,keyword,assignedto,nosy\r\n'
+                         b"1,foo1\xe4,2,[],4,\"['3', '4', '5']\"\r\n",
+                         output.getvalue())
 
     def testCSVExportBadColumnName(self):
         cl = self._make_client({'@columns': 'falseid,name'}, nodeid=None,
             userid='1')
         cl.classname = 'status'
-        output = StringIO()
+        output = io.BytesIO()
         cl.request = MockNull()
         cl.request.wfile = output
         self.assertRaises(exceptions.NotFound,
@@ -1826,7 +1876,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         cl = self._make_client({'@columns': 'id,email,password'}, nodeid=None,
             userid='2')
         cl.classname = 'user'
-        output = StringIO()
+        output = io.BytesIO()
         cl.request = MockNull()
         cl.request.wfile = output
         # used to be self.assertRaises(exceptions.Unauthorised,
@@ -1845,7 +1895,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         cl = self._make_client({'@columns': 'id,username,address,password'},
                                nodeid=None, userid=demo_id)
         cl.classname = 'user'
-        output = StringIO()
+        output = io.BytesIO()
         cl.request = MockNull()
         cl.request.wfile = output
         # used to be self.assertRaises(exceptions.Unauthorised,
@@ -1853,32 +1903,32 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
 
         actions.ExportCSVAction(cl).handle()
         #print(output.getvalue())
-        self.assertEqual('id,username,address,password\r\n'
-                          '1,admin,[hidden],[hidden]\r\n'
-                          '2,anonymous,[hidden],[hidden]\r\n'
-                          '3,Chef,[hidden],[hidden]\r\n'
-                          '4,mary,[hidden],[hidden]\r\n'
-                          '5,demo,demo@test.test,%s\r\n'%(passwd),
+        self.assertEqual(s2b('id,username,address,password\r\n'
+                             '1,admin,[hidden],[hidden]\r\n'
+                             '2,anonymous,[hidden],[hidden]\r\n'
+                             '3,Chef,[hidden],[hidden]\r\n'
+                             '4,mary,[hidden],[hidden]\r\n'
+                             '5,demo,demo@test.test,%s\r\n'%(passwd)),
             output.getvalue())
 
     def testCSVExportWithId(self):
         cl = self._make_client({'@columns': 'id,name'}, nodeid=None,
             userid='1')
         cl.classname = 'status'
-        output = StringIO()
+        output = io.BytesIO()
         cl.request = MockNull()
         cl.request.wfile = output
         actions.ExportCSVWithIdAction(cl).handle()
-        self.assertEqual('id,name\r\n1,unread\r\n2,deferred\r\n3,chatting\r\n'
+        self.assertEqual(s2b('id,name\r\n1,unread\r\n2,deferred\r\n3,chatting\r\n'
             '4,need-eg\r\n5,in-progress\r\n6,testing\r\n7,done-cbb\r\n'
-            '8,resolved\r\n',
+            '8,resolved\r\n'),
             output.getvalue())
 
     def testCSVExportWithIdBadColumnName(self):
         cl = self._make_client({'@columns': 'falseid,name'}, nodeid=None,
             userid='1')
         cl.classname = 'status'
-        output = StringIO()
+        output = io.BytesIO()
         cl.request = MockNull()
         cl.request.wfile = output
         self.assertRaises(exceptions.NotFound,
@@ -1888,7 +1938,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         cl = self._make_client({'@columns': 'id,email,password'}, nodeid=None,
             userid='2')
         cl.classname = 'user'
-        output = StringIO()
+        output = io.BytesIO()
         cl.request = MockNull()
         cl.request.wfile = output
         # used to be self.assertRaises(exceptions.Unauthorised,
@@ -1903,7 +1953,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         cl = self._make_client({'@columns': 'id,address,password'}, nodeid=None,
             userid='2')
         cl.classname = 'user'
-        output = StringIO()
+        output = io.BytesIO()
         cl.request = MockNull()
         cl.request.wfile = output
         # used to be self.assertRaises(exceptions.Unauthorised,

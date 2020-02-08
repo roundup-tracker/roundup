@@ -14,7 +14,7 @@ from roundup.anypy.html import html_escape
 import roundup.instance
 from roundup.cgi import TranslationService
 from roundup.anypy import http_
-from roundup.anypy.strings import s2b, bs2b
+from roundup.anypy.strings import s2b
 
 from roundup.cgi.client import BinaryFieldStorage
 
@@ -50,7 +50,7 @@ class Writer(object):
 
     def write(self, data):
         f = self.request.get_wfile()
-        self.write = lambda data: f(bs2b(data))
+        self.write = f
         return self.write(data)
 
 

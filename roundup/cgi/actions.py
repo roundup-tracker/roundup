@@ -1,4 +1,4 @@
-import re, cgi, time, csv, codecs
+import re, cgi, time, csv, codecs, sys
 
 from roundup import hyperdb, token, date, password
 from roundup.actions import Action as BaseAction
@@ -1431,7 +1431,9 @@ class ExportCSVAction(Action):
             return 'dummy'
 
         wfile = self.client.request.wfile
-        if self.client.charset != self.client.STORAGE_CHARSET:
+        if sys.version_info[0] > 2:
+            wfile = codecs.getwriter(self.client.charset)(wfile, 'replace')
+        elif self.client.charset != self.client.STORAGE_CHARSET:
             wfile = codecs.EncodedFile(wfile,
                                        self.client.STORAGE_CHARSET,
                                        self.client.charset, 'replace')
@@ -1594,7 +1596,9 @@ class ExportCSVWithIdAction(Action):
             return 'dummy'
 
         wfile = self.client.request.wfile
-        if self.client.charset != self.client.STORAGE_CHARSET:
+        if sys.version_info[0] > 2:
+            wfile = codecs.getwriter(self.client.charset)(wfile, 'replace')
+        elif self.client.charset != self.client.STORAGE_CHARSET:
             wfile = codecs.EncodedFile(wfile,
                                        self.client.STORAGE_CHARSET,
                                        self.client.charset, 'replace')
