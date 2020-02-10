@@ -49,7 +49,10 @@ Features:
   follow the Kerberos convention of using an uppercase realm. In
   addition this is compatible with Active Directory which stores the
   username with realm as UserPrincipalName in lowercase.
-
+- Cleaned up the WSGI interface implementation by separating the
+  request handler from the request displatcher. Also allow
+  customisation of tracker instance creation via an overridable
+  "get_tracker" context manager.
 
 Fixed:
 
@@ -90,6 +93,8 @@ Fixed:
 - Cleanup code by security linting using bandit. (John Rouillard)
 - issue2550912 - fixed missing query string in __came_from for jinja2
   template. (Christof Meerwald)
+- issue2551019 - handle character set conversions for CSV export
+  action in Python 3. (Christof Meerwald)
 
 2019-10-23 2.0.0 alpha 0
 
