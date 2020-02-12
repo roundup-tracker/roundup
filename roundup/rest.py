@@ -697,7 +697,7 @@ class RestfulInstance(object):
                     ):
                         sort.append((ss, pn))
                     else :
-                        raise (Unauthorised (
+                        raise (Unauthorised(
                             'User does not have search permission on "%s.%s"'
                             % (class_name, pn)))
             elif key.startswith("@"):
@@ -725,7 +725,7 @@ class RestfulInstance(object):
                 if not self.db.security.hasSearchPermission(
                     uid, class_name, key
                 ):
-                    raise (Unauthorised (
+                    raise (Unauthorised(
                         'User does not have search permission on "%s.%s"'
                         % (class_name, key)))
 
@@ -793,12 +793,9 @@ class RestfulInstance(object):
             ):
                 r = {'id': item_id, 'link': class_path + item_id}
             if display_props:
-                for p in display_props:
-                    if self.db.security.hasPermission(
-                        'View', uid, class_name, itemid=item_id, property=p
-                    ):
-                        r.update(self.format_item(class_obj.getnode(item_id),
-                            item_id, props=display_props, verbose=verbose))
+                # format_item does the permission checks
+                r.update(self.format_item(class_obj.getnode(item_id),
+                    item_id, props=display_props, verbose=verbose))
             if r:
                 result['collection'].append(r)
 
