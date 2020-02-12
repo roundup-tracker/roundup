@@ -696,6 +696,10 @@ class RestfulInstance(object):
                         uid, class_name, pn
                     ):
                         sort.append((ss, pn))
+                    else :
+                        raise (Unauthorised (
+                            'User does not have search permission on "%s.%s"'
+                            % (class_name, pn)))
             elif key.startswith("@"):
                 # ignore any unsupported/previously handled control key
                 # like @apiver
@@ -721,7 +725,9 @@ class RestfulInstance(object):
                 if not self.db.security.hasSearchPermission(
                     uid, class_name, key
                 ):
-                    continue
+                    raise (Unauthorised (
+                        'User does not have search permission on "%s.%s"'
+                        % (class_name, key)))
 
                 linkcls = class_obj
                 for p in key.split('.'):
