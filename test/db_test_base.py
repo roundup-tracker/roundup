@@ -3417,7 +3417,7 @@ class SpecialAction(actions.EditItemAction):
         cl = self.db.getclass(self.classname)
         cl.set(self.nodeid, status='2')
         cl.set(self.nodeid, title="Just a test")
-        assert(0, "not reached")
+        assert 0, "not reached"
         self.db.commit()
 
 def reject_title(db, cl, nodeid, newvalues):
