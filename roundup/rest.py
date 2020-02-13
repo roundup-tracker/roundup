@@ -696,7 +696,7 @@ class RestfulInstance(object):
                         uid, class_name, pn
                     ):
                         sort.append((ss, pn))
-                    else :
+                    else:
                         raise (Unauthorised (
                             'User does not have search permission on "%s.%s"'
                             % (class_name, pn)))
