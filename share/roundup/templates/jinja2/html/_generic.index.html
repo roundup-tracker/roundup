@@ -36,7 +36,7 @@
       <br>
       <input name="@csrf" type="hidden" value="{{ utils.anti_csrf_nonce() }}">
       <input type="hidden" name="@action" value="editCSV">
-      <input type="submit" value="{% trans %}Edit Items{% endtrans %}">
+      <input class="btn btn-success" type="submit" value="{% trans %}Edit Items{% endtrans %}">
     </form>
   {% endif %}
 
