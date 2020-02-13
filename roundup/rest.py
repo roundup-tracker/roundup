@@ -470,6 +470,45 @@ class RestfulInstance(object):
 
         return prop
 
+    def transitive_props (self, class_name, props):
+        """Construct a list of transitive properties from the given
+        argument, and return it after permission check. Raises
+        Unauthorised if no permission. Permission is checked by checking
+        search-permission on the path (delimited by '.') excluding the
+        last component and then checking View permission on the last
+        component. We do not allow to traverse multilinks -- the last
+        item of an expansion *may* be a multilink but in the middle of a
+        transitive prop.
+        """
+        checked_props = []
+        uid = self.db.getuid()
+        for p in props:
+            pn = p
+            cn = class_name
+            if '.' in p:
+                path, lc = p.rsplit('.', 1)
+                if not self.db.security.hasSearchPermission(uid, class_name, p):
+                    raise (Unauthorised
+                        ('User does not have permission on "%s.%s"'
+                        % (class_name, p)))
+                prev = prop = None
+                # This shouldn't raise any errors, otherwise the search
+                # permission check above would have failed
+                for pn in path.split('.'):
+                    cls = self.db.getclass(cn)
+                    prop = cls.getprops(protected=True)[pn]
+                    if isinstance(prop, hyperdb.Multilink):
+                        raise UsageError(
+                            'Multilink Traversal not allowed: %s' % p)
+                    cn = prop.classname
+                cls = self.db.getclass(cn)
+            # Now we have the classname in cn and the prop name in pn.
+            if not self.db.security.hasPermission('View', uid, cn, pn):
+                raise(Unauthorised
+                    ('User does not have permission on "%s.%s"' % (cn, pn)))
+            checked_props.append (p)
+        return checked_props
+
     def error_obj(self, status, msg, source=None):
         """Return an error object"""
         self.client.response_code = status
@@ -567,12 +606,24 @@ class RestfulInstance(object):
         try:
             # pn = propname
             for pn in sorted(props):
-                prop = props[pn]
-                if not self.db.security.hasPermission(
-                        'View', uid, class_name, pn, item_id
-                ):
+                ok = False
+                id = item_id
+                nd = node
+                cn = class_name
+                for p in pn.split('.'):
+                    if not self.db.security.hasPermission(
+                            'View', uid, cn, p, id
+                    ):
+                        break
+                    cl = self.db.getclass(cn)
+                    nd = cl.getnode(id)
+                    id = v = getattr(nd, p)
+                    prop = cl.getprops(protected=True)[p]
+                    cn = getattr(prop, 'classname', None)
+                else:
+                    ok = True
+                if not ok:
                     continue
-                v = getattr(node, pn)
                 if isinstance(prop, (hyperdb.Link, hyperdb.Multilink)):
                     linkcls = self.db.getclass(prop.classname)
                     cp = '%s/%s/' % (self.data_path, prop.classname)
@@ -654,7 +705,7 @@ class RestfulInstance(object):
             'index': 1   # setting just size starts at page 1
         }
         verbose = 1
-        display_props = {}
+        display_props = set()
         sort = []
         for form_field in input.value:
             key = form_field.name
@@ -670,12 +721,7 @@ class RestfulInstance(object):
                 if len(f) == 1:
                     f = value.split(":")
                 allprops = class_obj.getprops(protected=True)
-                for i in f:
-                    try:
-                        display_props[i] = allprops[i]
-                    except KeyError:
-                        raise UsageError("Failed to find property '%s' "
-                                         "for class %s." % (i, class_name))
+                display_props.update(self.transitive_props(class_name, f))
             elif key == "@sort":
                 f = value.split(",")
                 allprops = class_obj.getprops(protected=True)
@@ -780,8 +826,7 @@ class RestfulInstance(object):
         # add verbose elements. 2 and above get identifying label.
         if verbose > 1:
             lp = class_obj.labelprop()
-            # Label prop may be a protected property like activity
-            display_props[lp] = class_obj.getprops(protected=True)[lp]
+            display_props.add(lp)
 
         # extract result from data
         result = {}
@@ -891,17 +936,13 @@ class RestfulInstance(object):
             value = form_field.value
             if key == "@fields" or key == "@attrs":
                 if props is None:
-                    props = {}
+                    props = set()
                 # support , or : separated elements
                 f = value.split(",")
                 if len(f) == 1:
                     f = value.split(":")
                 allprops = class_obj.getprops(protected=True)
-                for i in f:
-                    try:
-                        props[i] = allprops[i]
-                    except KeyError:
-                        raise UsageError("Failed to find property '%s' for class %s." % (i, class_name))
+                props.update(self.transitive_props(class_name, f))
             elif key == "@protected":
                 # allow client to request read only
                 # properties like creator, activity etc.
@@ -912,11 +953,11 @@ class RestfulInstance(object):
 
         result = {}
         if props is None:
-            props = class_obj.getprops(protected=protected)
+            props = set(class_obj.getprops(protected=protected))
         else:
             if verbose > 1:
                 lp = class_obj.labelprop()
-                props[lp] = class_obj.properties[lp]
+                props.add(lp)
 
         result = {
             'id': itemid,

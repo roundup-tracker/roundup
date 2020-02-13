@@ -53,6 +53,11 @@ Features:
   request handler from the request displatcher. Also allow
   customisation of tracker instance creation via an overridable
   "get_tracker" context manager.
+- Allow transitive properties in @fields in REST API. These transitive
+  properties may not cross Multilinks, e.g., when querying 'issue' the
+  property 'messages.author' is not allowed (because 'messages' is a
+  multilink). A multilink at the end (e.g. messages in the example) is
+  fine.
 
 Fixed:
 

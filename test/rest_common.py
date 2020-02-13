@@ -1,3 +1,4 @@
+import pytest
 import unittest
 import os
 import shutil
@@ -665,6 +666,28 @@ class TestCase():
 
         results = self.server.get_collection('issue', form)
         self.assertDictEqual(expected, results)
+
+    def testTransitiveField(self):
+        """ Test a transitive property in @fields """
+        base_path = self.db.config['TRACKER_WEB'] + 'rest/data/'
+        # create sample data
+        self.create_stati()
+        self.db.issue.create(
+            title='foo4',
+            status=self.db.status.lookup('closed'),
+            priority=self.db.priority.lookup('critical')
+        )
+        # Retrieve all issue @fields=status.name
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@fields', 'status.name')
+        ]
+        results = self.server.get_collection('issue', form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+
+        exp = [
+            {'link': base_path + 'issue/1', 'id': '1', 'status.name': 'closed'}]
+        self.assertEqual(results['data']['collection'], exp)
 
     def testFilter(self):
         """

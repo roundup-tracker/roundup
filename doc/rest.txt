@@ -508,21 +508,25 @@ In addition collections support the ``@fields`` parameter which is a
 colon or comma separated list of fields to embed in the response. For
 example ``https://.../rest/data/issue?@verbose=2`` is the same as:
 ``https://.../rest/data/issue?@fields=title`` since the label property
-for an issue is its title. You can use both ``@verbose`` and
+for an issue is its title.
+The @fields option supports transitive properties, e.g.
+``status.name``. The transitive property may not include multilinks in
+the path except for the last component. So ``messages.author`` is not
+allowed because ``messages`` is a multilink while ``messages`` alone
+would be allowed.  You can use both ``@verbose`` and
 ``@fields`` to get additional info. For example
 ``https://.../rest/data/issue?@verbose=2&@fields=status`` returns::
+
 
   {
       "data": {
 	  "collection": [
 	      {
-		  "link":
-      "https://.../rest/data/issue/1",
+		  "link": "https://.../rest/data/issue/1",
 		  "title": "Welcome to the tracker START HERE",
 		  "id": "1",
 		  "status": {
-		      "link":
-      "https://.../rest/data/status/1",
+		      "link": "https://.../rest/data/status/1",
 		      "id": "1",
 		      "name": "new"
 		  }
@@ -841,7 +845,8 @@ By default all (visible to the current user) attributes/properties are
 returned. You can limit this by using the ``@fields`` query parameter
 similar to how it is used in collections. This way you can only return
 the fields you are interested in reducing network load as well as
-memory and parsing time on the client side. By default protected
+memory and parsing time on the client side. Or you can add additional
+transitive properties.  By default protected
 properties (read only in the database) are not listed. This
 makes it easier to submit the attributes from a
 ``@verbose=0`` query using PUT. To include protected properties
