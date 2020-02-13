@@ -24,7 +24,7 @@
       <label class="col-form-label" for="{{ id }}">{{ i18n.gettext(text)|u|safe }}</label>
     </dt>
     <dd class="col col-8 col-md-9 col-lg-8">
-      <input class="form-control" name="{{ name }}" id="{{ id }}" type="file" {%- if required %}required="required"{% endif %} />
+      <input class="form-control btn btn-sm btn-outline-secondary" name="{{ name }}" id="{{ id }}" type="file" {%- if required %}required="required"{% endif %} />
     </dd>
   </div>
 {% endmacro -%}

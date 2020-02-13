@@ -25,7 +25,7 @@
   <div class="form-actions">
     {{ context.submit(html_kwargs={"class": "btn btn-primary"})|u|safe }}
     {% if context.id %}
-      <a href='{{ context.copy_url() }}'>{% trans %}Make a copy{% endtrans %}</a>
+      <a class="btn btn-outline-primary" href="{{ context.copy_url() }}">{% trans %}Make a copy{% endtrans %}</a>
     {% endif %}
   </div>
   <input type="hidden" name="@template" value="item">
