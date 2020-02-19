@@ -5,6 +5,13 @@ from cgi import FieldStorage, MiniFieldStorage
 from roundup.cgi.templating import *
 from .test_actions import MockNull, true
 
+try:
+    from docutils.core import publish_parts as ReStructuredText
+except ImportError:
+    ReStructuredText = None
+
+from roundup.anypy.strings import u2s, s2u
+
 class MockDatabase(MockNull):
     def getclass(self, name):
         return self.classes[name]
@@ -209,6 +216,13 @@ class HTMLClassTestCase(TemplatingTestCase) :
         self.assertEqual(p.plain(escape=1, hyperlink=1), 'A string &lt;b&gt; with <a href="mailto:rouilj@example.com">rouilj@example.com</a> embedded &amp;lt; html&lt;/b&gt;')
 
         self.assertEqual(p.hyperlinked(), 'A string &lt;b&gt; with <a href="mailto:rouilj@example.com">rouilj@example.com</a> embedded &amp;lt; html&lt;/b&gt;')
+
+    def test_string_rst(self):
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string with cmeerw@example.com *embedded* \u00df'))
+        if ReStructuredText:
+            self.assertEqual(p.rst(), u2s(u'<div class="document">\n<p>A string with <a class="reference external" href="mailto:cmeerw&#64;example.com">cmeerw&#64;example.com</a> <em>embedded</em> \u00df</p>\n</div>\n'))
+        else:
+            self.assertEqual(p.rst(), u2s(u'A string with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> *embedded* \u00df'))
 
     def test_string_field(self):
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', 'A string <b> with rouilj@example.com embedded &lt; html</b>')

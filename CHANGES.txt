@@ -103,6 +103,7 @@ Fixed:
 - issue2551051: Return a 403 on non-existing or non-searchable
   transitive properties when queried via REST-API (same behavior for
   sorting and searching).
+- Fixed ReStructuredText encoding with Python 3.
 
 2019-10-23 2.0.0 alpha 0
 

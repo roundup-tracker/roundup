@@ -1599,8 +1599,7 @@ class StringHTMLProperty(HTMLProperty):
         s = self.plain(escape=0, hyperlink=0)
         if hyperlink:
             s = self.hyper_re.sub(self._hyper_repl_rst, s)
-        return ReStructuredText(s, writer_name="html")["html_body"].encode("utf-8",
-            "replace")
+        return u2s(ReStructuredText(s, writer_name="html")["html_body"])
 
     def field(self, **kwargs):
         """ Render the property as a field in HTML.
