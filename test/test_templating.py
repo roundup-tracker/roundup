@@ -5,10 +5,29 @@ from cgi import FieldStorage, MiniFieldStorage
 from roundup.cgi.templating import *
 from .test_actions import MockNull, true
 
+
+import pytest
+from .pytest_patcher import mark_class
+
 try:
     from docutils.core import publish_parts as ReStructuredText
+    skip_rst = lambda func, *args, **kwargs: func
 except ImportError:
     ReStructuredText = None
+    skip_rst = mark_class(pytest.mark.skip(
+        reason='ReStructuredText not available'))
+
+try:
+    from StructuredText.StructuredText import HTML as StructuredText
+    skip_stext = lambda func, *args, **kwargs: func
+except ImportError:
+    try: # older version
+        import StructuredText
+        skip_stext = lambda func, *args, **kwargs: func
+    except ImportError:
+        StructuredText = None
+        skip_stext = mark_class(pytest.mark.skip(
+                reason='StructuredText not available'))
 
 from roundup.anypy.strings import u2s, s2u
 
@@ -217,12 +236,21 @@ class HTMLClassTestCase(TemplatingTestCase) :
 
         self.assertEqual(p.hyperlinked(), 'A string &lt;b&gt; with <a href="mailto:rouilj@example.com">rouilj@example.com</a> embedded &amp;lt; html&lt;/b&gt;')
 
+    @skip_rst
     def test_string_rst(self):
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string with cmeerw@example.com *embedded* \u00df'))
         if ReStructuredText:
             self.assertEqual(p.rst(), u2s(u'<div class="document">\n<p>A string with <a class="reference external" href="mailto:cmeerw&#64;example.com">cmeerw&#64;example.com</a> <em>embedded</em> \u00df</p>\n</div>\n'))
         else:
             self.assertEqual(p.rst(), u2s(u'A string with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> *embedded* \u00df'))
+
+    @skip_stext
+    def test_string_stext(self):
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string with cmeerw@example.com *embedded* \u00df'))
+        if StructuredText:
+            self.assertEqual(p.stext(), u2s(u'<p>A string with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> <em>embedded</em> \u00df</p>\n'))
+        else:
+            self.assertEqual(p.stext(), u2s(u'A string with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> *embedded* \u00df'))
 
     def test_string_field(self):
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', 'A string <b> with rouilj@example.com embedded &lt; html</b>')
