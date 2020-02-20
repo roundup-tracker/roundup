@@ -116,6 +116,14 @@ pyjwt
   To use jwt tokens for login (experimental), install pyjwt. If you
   don't have it installed, jwt tokens are not supported.
 
+docutils
+  To use ReStructuredText rendering you need to have the docutils
+  package installed.
+
+markdown or markdown2
+  To use markdown rendering you need to either have the markdown or
+  markdown2 package installed.
+
 Windows Service
   You can run Roundup as a Windows service if pywin32_ is installed.
   Otherwise it must be started manually.
@@ -128,6 +136,9 @@ Windows Service
 .. _gpg: https://www.gnupg.org/software/gpgme/index.html
 .. _pywin32: https://pypi.org/project/pywin32/
 .. _jinja2: http://jinja.pocoo.org/
+.. _docutils: https://docutils.sourceforge.io/
+.. _markdown: https://python-markdown.github.io/
+.. _markdown2: https://github.com/trentm/python-markdown2
 
 
 Getting Roundup

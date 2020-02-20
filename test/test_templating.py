@@ -29,6 +29,17 @@ except ImportError:
         skip_stext = mark_class(pytest.mark.skip(
                 reason='StructuredText not available'))
 
+try:
+    skip_markdown = lambda func, *args, **kwargs: func
+    from markdown2 import markdown
+except ImportError:
+    try:
+        from markdown import markdown
+    except ImportError:
+        markdown = None
+        skip_markdown = mark_class(pytest.mark.skip(
+                reason='markdown not available'))
+
 from roundup.anypy.strings import u2s, s2u
 
 class MockDatabase(MockNull):
@@ -236,7 +247,21 @@ class HTMLClassTestCase(TemplatingTestCase) :
 
         self.assertEqual(p.hyperlinked(), 'A string &lt;b&gt; with <a href="mailto:rouilj@example.com">rouilj@example.com</a> embedded &amp;lt; html&lt;/b&gt;')
 
+    @skip_markdown
+    def test_string_markdown_installed(self):
+        pass # just so we have a record of a skipped test
+
+    def test_string_markdown(self):
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string http://localhost with cmeerw@example.com *embedded* \u00df'))
+        if markdown:
+            self.assertEqual(p.markdown().strip(), u2s(u'<p>A string <a href="http://localhost">http://localhost</a> with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> <em>embedded</em> \u00df</p>'))
+        else:
+            self.assertEqual(p.markdown(), u2s(u'A string <a href="http://localhost" rel="nofollow noopener">http://localhost</a> with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> *embedded* \u00df'))
+
     @skip_rst
+    def test_string_rst_installed(self):
+        pass # just so we have a record of a skipped test
+
     def test_string_rst(self):
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string with cmeerw@example.com *embedded* \u00df'))
         if ReStructuredText:
@@ -245,6 +270,9 @@ class HTMLClassTestCase(TemplatingTestCase) :
             self.assertEqual(p.rst(), u2s(u'A string with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> *embedded* \u00df'))
 
     @skip_stext
+    def test_string_stext_installed(self):
+        pass # just so we have a record of a skipped test
+
     def test_string_stext(self):
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string with cmeerw@example.com *embedded* \u00df'))
         if StructuredText:

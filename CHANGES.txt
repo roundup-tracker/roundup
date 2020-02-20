@@ -58,6 +58,8 @@ Features:
   property 'messages.author' is not allowed (because 'messages' is a
   multilink). A multilink at the end (e.g. messages in the example) is
   fine.
+- Added markdown rendering using either markdown or markdown2.
+  (Christof Meerwald)
 
 Fixed:
 

@@ -54,6 +54,13 @@ try:
 except ImportError:
     ReStructuredText = None
 try:
+    from markdown2 import markdown
+except ImportError:
+    try:
+        from markdown import markdown
+    except ImportError:
+        markdown = None
+try:
     from itertools import zip_longest
 except ImportError:
     from itertools import izip_longest as zip_longest
@@ -1514,6 +1521,19 @@ class StringHTMLProperty(HTMLProperty):
             # just return the matched text
             return match.group(0)
 
+    def _hyper_repl_markdown(self, match):
+        if match.group('url'):
+            s = match.group('url')
+            return '[%s](%s)'%(s, s)
+        elif match.group('email'):
+            s = match.group('email')
+            return '[%s](mailto:%s)'%(s, s)
+        elif len(match.group('id')) < 10:
+            return self._hyper_repl_item(match,'[%(item)s](%(cls)s%(id)s)')
+        else:
+            # just return the matched text
+            return match.group(0)
+
     def url_quote(self):
         """ Return the string in plain format but escaped for use in a url """
         return urllib_.quote(self.plain())
@@ -1600,6 +1620,21 @@ class StringHTMLProperty(HTMLProperty):
         if hyperlink:
             s = self.hyper_re.sub(self._hyper_repl_rst, s)
         return u2s(ReStructuredText(s, writer_name="html")["html_body"])
+
+    def markdown(self, hyperlink=1):
+        """ Render the value of the property as markdown.
+
+            This requires markdown2 or markdown to be installed separately.
+        """
+        if not self.is_view_ok():
+            return self._('[hidden]')
+
+        if not markdown:
+            return self.plain(escape=0, hyperlink=hyperlink)
+        s = self.plain(escape=0, hyperlink=0)
+        if hyperlink:
+            s = self.hyper_re.sub(self._hyper_repl_markdown, s)
+        return u2s(markdown(s2u(s)))
 
     def field(self, **kwargs):
         """ Render the property as a field in HTML.
