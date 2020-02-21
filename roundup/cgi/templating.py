@@ -1455,7 +1455,10 @@ class StringHTMLProperty(HTMLProperty):
     )''', re.X | re.I)
     protocol_re = re.compile('^(ht|f)tp(s?)://', re.I)
 
-
+    # disable rst directives that have security implications
+    rst_defaults = {'file_insertion_enabled': 0,
+                    'raw_enabled': 0,
+                    '_disable_config': 1}
 
     def _hyper_repl(self, match):
         if match.group('url'):
@@ -1619,7 +1622,8 @@ class StringHTMLProperty(HTMLProperty):
         s = self.plain(escape=0, hyperlink=0)
         if hyperlink:
             s = self.hyper_re.sub(self._hyper_repl_rst, s)
-        return u2s(ReStructuredText(s, writer_name="html")["html_body"])
+        return u2s(ReStructuredText(s, writer_name="html",
+                       settings_overrides=self.rst_defaults)["html_body"])
 
     def markdown(self, hyperlink=1):
         """ Render the value of the property as markdown.

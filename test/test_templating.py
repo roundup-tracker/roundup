@@ -264,8 +264,41 @@ class HTMLClassTestCase(TemplatingTestCase) :
 
     def test_string_rst(self):
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string with cmeerw@example.com *embedded* \u00df'))
+
+        # test case to make sure include directive is disabled
+        q = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'\n\n.. include:: XyZrMt.html\n\n<badtag>\n\n'))
+        q_result=u'''<div class="document">
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">&lt;string&gt;</tt>, line 3)</p>
+<p>&quot;include&quot; directive disabled.</p>
+<pre class="literal-block">
+.. include:: XyZrMt.html
+
+</pre>
+</div>
+<p>&lt;badtag&gt;</p>
+</div>
+'''
+
+        # test case to make sure raw directive is disabled
+        r =  StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'\n\n.. raw:: html\n\n   <badtag>\n\n'))
+        r_result='''<div class="document">
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">&lt;string&gt;</tt>, line 3)</p>
+<p>&quot;raw&quot; directive disabled.</p>
+<pre class="literal-block">
+.. raw:: html
+
+   &lt;badtag&gt;
+
+</pre>
+</div>
+</div>
+'''
         if ReStructuredText:
             self.assertEqual(p.rst(), u2s(u'<div class="document">\n<p>A string with <a class="reference external" href="mailto:cmeerw&#64;example.com">cmeerw&#64;example.com</a> <em>embedded</em> \u00df</p>\n</div>\n'))
+            self.assertEqual(q.rst(), u2s(q_result))
+            self.assertEqual(r.rst(), u2s(r_result))
         else:
             self.assertEqual(p.rst(), u2s(u'A string with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> *embedded* \u00df'))
 
