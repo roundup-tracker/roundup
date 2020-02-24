@@ -120,9 +120,9 @@ docutils
   To use ReStructuredText rendering you need to have the docutils
   package installed.
 
-markdown or markdown2
-  To use markdown rendering you need to either have the markdown or
-  markdown2 package installed.
+markdown, markdown2 or mistune
+  To use markdown rendering you need to have the markdown, markdown2
+  or mistune package installed.
 
 Windows Service
   You can run Roundup as a Windows service if pywin32_ is installed.
@@ -139,6 +139,7 @@ Windows Service
 .. _docutils: https://docutils.sourceforge.io/
 .. _markdown: https://python-markdown.github.io/
 .. _markdown2: https://github.com/trentm/python-markdown2
+.. _mistune: https://github.com/lepture/mistune
 
 
 Getting Roundup

@@ -9,36 +9,36 @@ from .test_actions import MockNull, true
 import pytest
 from .pytest_patcher import mark_class
 
-try:
-    from docutils.core import publish_parts as ReStructuredText
+if ReStructuredText:
     skip_rst = lambda func, *args, **kwargs: func
-except ImportError:
-    ReStructuredText = None
+else:
     skip_rst = mark_class(pytest.mark.skip(
         reason='ReStructuredText not available'))
 
-try:
-    from StructuredText.StructuredText import HTML as StructuredText
+if StructuredText:
     skip_stext = lambda func, *args, **kwargs: func
-except ImportError:
-    try: # older version
-        import StructuredText
-        skip_stext = lambda func, *args, **kwargs: func
-    except ImportError:
-        StructuredText = None
-        skip_stext = mark_class(pytest.mark.skip(
-                reason='StructuredText not available'))
+else:
+    skip_stext = mark_class(pytest.mark.skip(
+        reason='StructuredText not available'))
 
-try:
+import roundup.cgi.templating
+if roundup.cgi.templating._import_mistune():
+    skip_mistune = lambda func, *args, **kwargs: func
+else:
+    skip_mistune = mark_class(pytest.mark.skip(
+        reason='mistune not available'))
+
+if roundup.cgi.templating._import_markdown2():
+    skip_markdown2 = lambda func, *args, **kwargs: func
+else:
+    skip_markdown2 = mark_class(pytest.mark.skip(
+        reason='markdown2 not available'))
+
+if roundup.cgi.templating._import_markdown():
     skip_markdown = lambda func, *args, **kwargs: func
-    from markdown2 import markdown
-except ImportError:
-    try:
-        from markdown import markdown
-    except ImportError:
-        markdown = None
-        skip_markdown = mark_class(pytest.mark.skip(
-                reason='markdown not available'))
+else:
+    skip_markdown = mark_class(pytest.mark.skip(
+        reason='markdown not available'))
 
 from roundup.anypy.strings import u2s, s2u
 
@@ -247,21 +247,7 @@ class HTMLClassTestCase(TemplatingTestCase) :
 
         self.assertEqual(p.hyperlinked(), 'A string &lt;b&gt; with <a href="mailto:rouilj@example.com">rouilj@example.com</a> embedded &amp;lt; html&lt;/b&gt;')
 
-    @skip_markdown
-    def test_string_markdown_installed(self):
-        pass # just so we have a record of a skipped test
-
-    def test_string_markdown(self):
-        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string http://localhost with cmeerw@example.com *embedded* \u00df'))
-        if markdown:
-            self.assertEqual(p.markdown().strip(), u2s(u'<p>A string <a href="http://localhost">http://localhost</a> with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> <em>embedded</em> \u00df</p>'))
-        else:
-            self.assertEqual(p.markdown(), u2s(u'A string <a href="http://localhost" rel="nofollow noopener">http://localhost</a> with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> *embedded* \u00df'))
-
     @skip_rst
-    def test_string_rst_installed(self):
-        pass # just so we have a record of a skipped test
-
     def test_string_rst(self):
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string with cmeerw@example.com *embedded* \u00df'))
 
@@ -295,23 +281,14 @@ class HTMLClassTestCase(TemplatingTestCase) :
 </div>
 </div>
 '''
-        if ReStructuredText:
-            self.assertEqual(p.rst(), u2s(u'<div class="document">\n<p>A string with <a class="reference external" href="mailto:cmeerw&#64;example.com">cmeerw&#64;example.com</a> <em>embedded</em> \u00df</p>\n</div>\n'))
-            self.assertEqual(q.rst(), u2s(q_result))
-            self.assertEqual(r.rst(), u2s(r_result))
-        else:
-            self.assertEqual(p.rst(), u2s(u'A string with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> *embedded* \u00df'))
+        self.assertEqual(p.rst(), u2s(u'<div class="document">\n<p>A string with <a class="reference external" href="mailto:cmeerw&#64;example.com">cmeerw&#64;example.com</a> <em>embedded</em> \u00df</p>\n</div>\n'))
+        self.assertEqual(q.rst(), u2s(q_result))
+        self.assertEqual(r.rst(), u2s(r_result))
 
     @skip_stext
-    def test_string_stext_installed(self):
-        pass # just so we have a record of a skipped test
-
     def test_string_stext(self):
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string with cmeerw@example.com *embedded* \u00df'))
-        if StructuredText:
-            self.assertEqual(p.stext(), u2s(u'<p>A string with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> <em>embedded</em> \u00df</p>\n'))
-        else:
-            self.assertEqual(p.stext(), u2s(u'A string with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> *embedded* \u00df'))
+        self.assertEqual(p.stext(), u2s(u'<p>A string with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> <em>embedded</em> \u00df</p>\n'))
 
     def test_string_field(self):
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', 'A string <b> with rouilj@example.com embedded &lt; html</b>')
@@ -435,6 +412,105 @@ class HTMLClassTestCase(TemplatingTestCase) :
         attrs={"disabled": "disabled", "class": "required", "size": 30}
         input=input_xhtml(**attrs)
         self.assertEqual(input, '<input class="required" disabled="disabled" size="30" type="text"/>')
+
+# common markdown test cases
+class MarkdownTests:
+    def test_string_markdown(self):
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string http://localhost with cmeerw@example.com <br> *embedded* \u00df'))
+        self.assertEqual(p.markdown().strip(), u2s(u'<p>A string <a href="http://localhost">http://localhost</a> with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> &lt;br&gt; <em>embedded</em> \u00df</p>'))
+
+    def test_string_markdown_code_block(self):
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'embedded code block\n\n```\nline 1\nline 2\n```\n\nnew paragraph'))
+        self.assertEqual(p.markdown().strip().replace('\n\n', '\n'), u2s(u'<p>embedded code block</p>\n<pre><code>line 1\nline 2\n</code></pre>\n<p>new paragraph</p>'))
+
+@skip_mistune
+class MistuneTestCase(TemplatingTestCase, MarkdownTests) :
+    def setUp(self):
+        TemplatingTestCase.setUp(self)
+
+        from roundup.cgi import templating
+        self.__markdown = templating.markdown
+        templating.markdown = templating._import_mistune()
+
+    def tearDown(self):
+        from roundup.cgi import templating
+        templating.markdown = self.__markdown
+
+@skip_markdown2
+class Markdown2TestCase(TemplatingTestCase, MarkdownTests) :
+    def setUp(self):
+        TemplatingTestCase.setUp(self)
+
+        from roundup.cgi import templating
+        self.__markdown = templating.markdown
+        templating.markdown = templating._import_markdown2()
+
+    def tearDown(self):
+        from roundup.cgi import templating
+        templating.markdown = self.__markdown
+
+@skip_markdown
+class MarkdownTestCase(TemplatingTestCase, MarkdownTests) :
+    def setUp(self):
+        TemplatingTestCase.setUp(self)
+
+        from roundup.cgi import templating
+        self.__markdown = templating.markdown
+        templating.markdown = templating._import_markdown()
+
+    def tearDown(self):
+        from roundup.cgi import templating
+        templating.markdown = self.__markdown
+
+
+class NoMarkdownTestCase(TemplatingTestCase) :
+    def setUp(self):
+        TemplatingTestCase.setUp(self)
+
+        from roundup.cgi import templating
+        self.__markdown = templating.markdown
+        templating.markdown = None
+
+    def tearDown(self):
+        from roundup.cgi import templating
+        templating.markdown = self.__markdown
+
+    def test_string_markdown(self):
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string http://localhost with cmeerw@example.com <br> *embedded* \u00df'))
+        self.assertEqual(p.markdown(), u2s(u'A string <a href="http://localhost" rel="nofollow noopener">http://localhost</a> with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> &lt;br&gt; *embedded* \u00df'))
+
+class NoRstTestCase(TemplatingTestCase) :
+    def setUp(self):
+        TemplatingTestCase.setUp(self)
+
+        from roundup.cgi import templating
+        self.__ReStructuredText = templating.ReStructuredText
+        templating.ReStructuredText = None
+
+    def tearDown(self):
+        from roundup.cgi import templating
+        templating.ReStructuredText = self.__ReStructuredText
+
+    def test_string_rst(self):
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string with cmeerw@example.com *embedded* \u00df'))
+        self.assertEqual(p.rst(), u2s(u'A string with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> *embedded* \u00df'))
+
+class NoStextTestCase(TemplatingTestCase) :
+    def setUp(self):
+        TemplatingTestCase.setUp(self)
+
+        from roundup.cgi import templating
+        self.__StructuredText = templating.StructuredText
+        templating.StructuredText = None
+
+    def tearDown(self):
+        from roundup.cgi import templating
+        templating.StructuredText = self.__StructuredText
+
+    def test_string_stext(self):
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string with cmeerw@example.com *embedded* \u00df'))
+        self.assertEqual(p.stext(), u2s(u'A string with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> *embedded* \u00df'))
+
 
 r'''
 class HTMLPermissions:

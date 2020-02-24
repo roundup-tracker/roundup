@@ -54,16 +54,49 @@ try:
 except ImportError:
     ReStructuredText = None
 try:
-    from markdown2 import markdown
-except ImportError:
-    try:
-        from markdown import markdown
-    except ImportError:
-        markdown = None
-try:
     from itertools import zip_longest
 except ImportError:
     from itertools import izip_longest as zip_longest
+
+def _import_markdown2():
+    try:
+        import markdown2, re
+        class Markdown(markdown2.Markdown):
+            # don't restrict protocols in links
+            _safe_protocols = re.compile('', re.IGNORECASE)
+
+        markdown = lambda s: Markdown(safe_mode='escape', extras={ 'fenced-code-blocks' : True }).convert(s)
+    except ImportError:
+        markdown = None
+
+    return markdown
+
+def _import_markdown():
+    try:
+        from markdown import markdown as markdown_impl
+        from markdown.extensions import Extension as MarkdownExtension
+
+        # make sure any HTML tags get escaped
+        class EscapeHtml(MarkdownExtension):
+            def extendMarkdown(self, md):
+                md.preprocessors.deregister('html_block')
+                md.inlinePatterns.deregister('html')
+
+        markdown = lambda s: markdown_impl(s, extensions=[EscapeHtml(), 'fenced_code'])
+    except ImportError:
+        markdown = None
+
+    return markdown
+
+def _import_mistune():
+    try:
+        from mistune import markdown
+    except ImportError:
+        markdown = None
+
+    return markdown
+
+markdown = _import_markdown2() or _import_markdown() or _import_mistune()
 
 # bring in the templating support
 from roundup.cgi import TranslationService, ZTUtils
