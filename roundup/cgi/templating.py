@@ -78,7 +78,7 @@ def _import_markdown():
 
         # make sure any HTML tags get escaped
         class EscapeHtml(MarkdownExtension):
-            def extendMarkdown(self, md):
+            def extendMarkdown(self, md, md_globals=None):
                 md.preprocessors.deregister('html_block')
                 md.inlinePatterns.deregister('html')
 
