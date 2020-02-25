@@ -79,8 +79,14 @@ def _import_markdown():
         # make sure any HTML tags get escaped
         class EscapeHtml(MarkdownExtension):
             def extendMarkdown(self, md, md_globals=None):
-                md.preprocessors.deregister('html_block')
-                md.inlinePatterns.deregister('html')
+                if hasattr(md.preprocessors, 'deregister'):
+                    md.preprocessors.deregister('html_block')
+                else:
+                    del md.preprocessors['html_block']
+                if hasattr(md.inlinePatterns, 'deregister'):
+                    md.inlinePatterns.deregister('html')
+                else:
+                    del md.inlinePatterns['html']
 
         markdown = lambda s: markdown_impl(s, extensions=[EscapeHtml(), 'fenced_code'])
     except ImportError:
