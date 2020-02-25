@@ -95,7 +95,7 @@ install:
   - pip install pytest-cov codecov
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install docutils; fi
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install mistune; fi
-  - if [[ $TRAVIS_PYTHON_VERSION == "3.[5-9]"* ]]; then pip install Markdown; fi
+  - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* && $TRAVIS_PYTHON_VERSION != "2."* ]]; then pip install Markdown; fi
   - pip install markdown2
 
 before_script:
