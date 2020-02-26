@@ -281,9 +281,14 @@ class HTMLClassTestCase(TemplatingTestCase) :
 </div>
 </div>
 '''
+	# test case to make sure javascript url's aren't turned into links
+        s = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'<badtag>\njavascript:badcode'))
+        s_result = '<div class="document">\n<p>&lt;badtag&gt;\njavascript:badcode</p>\n</div>\n'
+
         self.assertEqual(p.rst(), u2s(u'<div class="document">\n<p>A string with <a class="reference external" href="mailto:cmeerw&#64;example.com">cmeerw&#64;example.com</a> <em>embedded</em> \u00df</p>\n</div>\n'))
         self.assertEqual(q.rst(), u2s(q_result))
         self.assertEqual(r.rst(), u2s(r_result))
+        self.assertEqual(s.rst(), u2s(s_result))
 
     @skip_stext
     def test_string_stext(self):

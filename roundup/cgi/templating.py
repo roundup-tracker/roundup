@@ -1499,6 +1499,12 @@ class StringHTMLProperty(HTMLProperty):
                     'raw_enabled': 0,
                     '_disable_config': 1}
 
+    # List of schemes that are not rendered as links in rst. 
+    # Could also be used to disable links for other processors:
+    # e.g. stext or markdown. If we can figure out how to do it.
+    disable_schemes = [ 'javascript' ]
+    valid_schemes = { }
+
     def _hyper_repl(self, match):
         if match.group('url'):
             return self._hyper_repl_url(match, '<a href="%s" rel="nofollow noopener">%s</a>%s')
@@ -1661,6 +1667,27 @@ class StringHTMLProperty(HTMLProperty):
         s = self.plain(escape=0, hyperlink=0)
         if hyperlink:
             s = self.hyper_re.sub(self._hyper_repl_rst, s)
+
+        # disable javascript and possibly other url schemes from working
+        from docutils.utils.urischemes import schemes
+        for sch in self.disable_schemes:
+            # I catch KeyError but reraise if scheme didn't exist.
+            # Safer to fail if a disabled scheme isn't found. It may
+            # be a typo that keeps a bad scheme enabled. But this
+            # function can be called multiple times. On the first call
+            # the key will be deleted. On the second call the schemes
+            # variable isn't re-initialized so the key is missing
+            # causing a KeyError. So see if we removed it (and entered
+            # it into valid_schemes). If we didn't raise KeyError.
+            try:
+                del(schemes[sch])
+                self.valid_schemes[sch] = True
+            except KeyError:
+                if sch in self.valid_schemes:
+                    pass
+                else:
+                    raise
+                
         return u2s(ReStructuredText(s, writer_name="html",
                        settings_overrides=self.rst_defaults)["html_body"])
 
