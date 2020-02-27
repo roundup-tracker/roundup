@@ -421,8 +421,32 @@ class HTMLClassTestCase(TemplatingTestCase) :
 # common markdown test cases
 class MarkdownTests:
     def test_string_markdown(self):
-        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string http://localhost with cmeerw@example.com <br> *embedded* \u00df'))
-        self.assertEqual(p.markdown().strip(), u2s(u'<p>A string <a href="http://localhost">http://localhost</a> with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> &lt;br&gt; <em>embedded</em> \u00df</p>'))
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string with <br> *embedded* \u00df'))
+        self.assertEqual(p.markdown().strip(), u2s(u'<p>A string with &lt;br&gt; <em>embedded</em> \u00df</p>'))
+
+    def test_string_markdown_link(self):
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A link <http://localhost>'))
+        self.assertEqual(p.markdown().strip(), u2s(u'<p>A link <a href="http://localhost">http://localhost</a></p>'))
+
+    def test_string_markdown_link(self):
+        # markdown2 and markdown 
+        try:
+            import html
+            html_unescape = html.unescape
+        except AttributeError:
+            from HTMLParser import HTMLParser
+            html_unescape = HTMLParser().unescape
+
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A link <cmeerw@example.com>'))
+        self.assertEqual(html_unescape(p.markdown().strip()), u2s(u'<p>A link <a href="mailto:cmeerw@example.com">cmeerw@example.com</a></p>'))
+
+    def test_string_markdown_javascript_link(self):
+        # make sure we don't get a "javascript:" link
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'<javascript:alert(1)>'))
+        self.assertTrue(p.markdown().find('href="javascript:') == -1)
+
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'[link](javascript:alert(1))'))
+        self.assertTrue(p.markdown().find('href="javascript:') == -1)
 
     def test_string_markdown_code_block(self):
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'embedded code block\n\n```\nline 1\nline 2\n```\n\nnew paragraph'))

@@ -19,6 +19,8 @@ todo = """
 
 __docformat__ = 'restructuredtext'
 
+# List of schemes that are not rendered as links in rst and markdown.
+_disable_url_schemes = [ 'javascript' ]
 
 import base64, cgi, re, os.path, mimetypes, csv, string
 import calendar
@@ -62,8 +64,8 @@ def _import_markdown2():
     try:
         import markdown2, re
         class Markdown(markdown2.Markdown):
-            # don't restrict protocols in links
-            _safe_protocols = re.compile('', re.IGNORECASE)
+            # don't allow disabled protocols in links
+            _safe_protocols = re.compile('(?!' + ':|'.join([re.escape(s) for s in _disable_url_schemes]) + ':)', re.IGNORECASE)
 
         markdown = lambda s: Markdown(safe_mode='escape', extras={ 'fenced-code-blocks' : True }).convert(s)
     except ImportError:
@@ -75,9 +77,19 @@ def _import_markdown():
     try:
         from markdown import markdown as markdown_impl
         from markdown.extensions import Extension as MarkdownExtension
+        from markdown.treeprocessors import Treeprocessor
 
-        # make sure any HTML tags get escaped
-        class EscapeHtml(MarkdownExtension):
+        class RestrictLinksProcessor(Treeprocessor):
+            def run(self, root):
+                for el in root.iter('a'):
+                    if 'href' in el.attrib:
+                        url = el.attrib['href'].lstrip(' \r\n\t\x1a\0').lower()
+                        for s in _disable_url_schemes:
+                            if url.startswith(s + ':'):
+                                el.attrib['href'] = '#'
+
+        # make sure any HTML tags get escaped and some links restricted
+        class SafeHtml(MarkdownExtension):
             def extendMarkdown(self, md, md_globals=None):
                 if hasattr(md.preprocessors, 'deregister'):
                     md.preprocessors.deregister('html_block')
@@ -88,7 +100,12 @@ def _import_markdown():
                 else:
                     del md.inlinePatterns['html']
 
-        markdown = lambda s: markdown_impl(s, extensions=[EscapeHtml(), 'fenced_code'])
+                if hasattr(md.preprocessors, 'register'):
+                    md.treeprocessors.register(RestrictLinksProcessor(), 'restrict_links', 0)
+                else:
+                    md.treeprocessors['restrict_links'] = RestrictLinksProcessor()
+
+        markdown = lambda s: markdown_impl(s, extensions=[SafeHtml(), 'fenced_code'])
     except ImportError:
         markdown = None
 
@@ -96,7 +113,9 @@ def _import_markdown():
 
 def _import_mistune():
     try:
-        from mistune import markdown
+        import mistune
+        mistune._scheme_blacklist = [ s + ':' for s in _disable_url_schemes ]
+        markdown = mistune.markdown
     except ImportError:
         markdown = None
 
@@ -1499,10 +1518,6 @@ class StringHTMLProperty(HTMLProperty):
                     'raw_enabled': 0,
                     '_disable_config': 1}
 
-    # List of schemes that are not rendered as links in rst. 
-    # Could also be used to disable links for other processors:
-    # e.g. stext or markdown. If we can figure out how to do it.
-    disable_schemes = [ 'javascript' ]
     valid_schemes = { }
 
     def _hyper_repl(self, match):
@@ -1570,13 +1585,7 @@ class StringHTMLProperty(HTMLProperty):
             return match.group(0)
 
     def _hyper_repl_markdown(self, match):
-        if match.group('url'):
-            s = match.group('url')
-            return '[%s](%s)'%(s, s)
-        elif match.group('email'):
-            s = match.group('email')
-            return '[%s](mailto:%s)'%(s, s)
-        elif len(match.group('id')) < 10:
+        if match.group('id') and len(match.group('id')) < 10:
             return self._hyper_repl_item(match,'[%(item)s](%(cls)s%(id)s)')
         else:
             # just return the matched text
@@ -1670,7 +1679,7 @@ class StringHTMLProperty(HTMLProperty):
 
         # disable javascript and possibly other url schemes from working
         from docutils.utils.urischemes import schemes
-        for sch in self.disable_schemes:
+        for sch in _disable_url_schemes:
             # I catch KeyError but reraise if scheme didn't exist.
             # Safer to fail if a disabled scheme isn't found. It may
             # be a typo that keeps a bad scheme enabled. But this
