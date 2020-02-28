@@ -204,13 +204,19 @@ status_notresolved string:-1,1,2,4;
  <tal:block metal:define-slot="content">Page content goes here</tal:block>
 </div> <!-- content -->
 <div class="footer">
-<div class="credits">
-   <a href="http://www.upfrontsystems.co.za/" title="issue tracker hosting provided by Upfront Systems, South Africa">hosting by Upfront Systems</a>
-  </div> <!-- credits -->
+-<div id="credits">
+ <p>
+   Hosted on <a href="https://m.do.co/c/783434964889" title="Hosted on DigitalOcean">DigitalOcean</a>,
+   <br>
+   Supported by <a href="https://python.org/psf-landing/" title="The Python Software Foundation">The Python Software Foundation</a>,
+   <br>
+  Powered by <a href="http://roundup.sourceforge.net" title="Powered by the Roundup Issue Tracker">Roundup</a>
+ </p>
 <!-- Created: Wed Jan 14 11:55:38 EST 2009 -->
 <!-- hhmts start -->
-Last modified: Tue Feb  3 22:02:04 EST 2009
+Last modified: Fri Feb 28 22:02:04 EST 2020
 <!-- hhmts end -->
+</div> <!-- credits -->
 </div> <!-- footer -->
 
 <pre tal:condition="request/form/deissue | nothing" tal:content="request">

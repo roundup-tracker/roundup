@@ -168,3 +168,11 @@ table.history td {
 table.classhelp td {
   vertical-align: top;
 }
+
+.required:before {
+    content: "*";
+    color: red;
+    font-weight: bold;
+}
+
+/* SHA: 01691a9346b3bc6a29a505a2dfa389ee3edc950f */
