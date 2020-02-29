@@ -473,12 +473,10 @@ class RestfulInstance(object):
     def transitive_props (self, class_name, props):
         """Construct a list of transitive properties from the given
         argument, and return it after permission check. Raises
-        Unauthorised if no permission. Permission is checked by checking
-        search-permission on the path (delimited by '.') excluding the
-        last component and then checking View permission on the last
-        component. We do not allow to traverse multilinks -- the last
-        item of an expansion *may* be a multilink but in the middle of a
-        transitive prop.
+        Unauthorised if no permission. Permission is checked by
+        checking View permission on each component. We do not allow to
+        traverse multilinks -- the last item of an expansion *may* be a
+        multilink but in the middle of a transitive prop.
         """
         checked_props = []
         uid = self.db.getuid()
@@ -486,26 +484,29 @@ class RestfulInstance(object):
             pn = p
             cn = class_name
             if '.' in p:
-                path, lc = p.rsplit('.', 1)
-                if not self.db.security.hasSearchPermission(uid, class_name, p):
-                    raise (Unauthorised
-                        ('User does not have permission on "%s.%s"'
-                        % (class_name, p)))
-                prev = prop = None
-                # This shouldn't raise any errors, otherwise the search
-                # permission check above would have failed
-                for pn in path.split('.'):
+                prop = None
+                for pn in p.split('.'):
+                    # Tried to dereference a non-Link property
+                    if cn is None:
+                        raise AttributeError("Unknown: %s" % p)
                     cls = self.db.getclass(cn)
-                    prop = cls.getprops(protected=True)[pn]
+                    # This raises a KeyError for unknown prop:
+                    try:
+                        prop = cls.getprops(protected=True)[pn]
+                    except KeyError:
+                        raise AttributeError("Unknown: %s" % p)
                     if isinstance(prop, hyperdb.Multilink):
                         raise UsageError(
                             'Multilink Traversal not allowed: %s' % p)
-                    cn = prop.classname
-                cls = self.db.getclass(cn)
-            # Now we have the classname in cn and the prop name in pn.
-            if not self.db.security.hasPermission('View', uid, cn, pn):
-                raise(Unauthorised
-                    ('User does not have permission on "%s.%s"' % (cn, pn)))
+                    # Now we have the classname in cn and the prop name in pn.
+                    if not self.db.security.hasPermission('View', uid, cn, pn):
+                        raise(Unauthorised
+                            ('User does not have permission on "%s.%s"'
+                            % (cn, pn)))
+                    try:
+                        cn = prop.classname
+                    except AttributeError:
+                        cn = None
             checked_props.append (p)
         return checked_props
 

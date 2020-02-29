@@ -2,6 +2,8 @@
 from __future__ import print_function
 from roundup.anypy.strings import u2s, uchr
 
+import sys
+_pyver = sys.version_info[0]
 
 class dehtml:
     def __init__(self, converter):
@@ -32,12 +34,10 @@ class dehtml:
                 # Python 3+.
                 from html.parser import HTMLParser
                 from html.entities import name2codepoint
-                pyver = 3
             except ImportError:
                 # Python 2.
                 from HTMLParser import HTMLParser
                 from htmlentitydefs import name2codepoint
-                pyver = 2
 
             class DumbHTMLParser(HTMLParser):
                 # class attribute
@@ -83,7 +83,7 @@ class dehtml:
                         self.text = self.text + ' '
 
             def html2text(html):
-                if pyver == 3:
+                if _pyver == 3:
                     parser = DumbHTMLParser(convert_charrefs=True)
                 else:
                     parser = DumbHTMLParser()

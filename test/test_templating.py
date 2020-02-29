@@ -429,11 +429,10 @@ class MarkdownTests:
         self.assertEqual(p.markdown().strip(), u2s(u'<p>A link <a href="http://localhost">http://localhost</a></p>'))
 
     def test_string_markdown_link(self):
-        # markdown2 and markdown 
+        # markdown2 and markdown escape the email address
         try:
-            import html
-            html_unescape = html.unescape
-        except AttributeError:
+            from html import unescape as html_unescape
+        except ImportError:
             from HTMLParser import HTMLParser
             html_unescape = HTMLParser().unescape
 
