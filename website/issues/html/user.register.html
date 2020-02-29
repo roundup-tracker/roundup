@@ -44,11 +44,11 @@ get a password for your account.</p>
    <input name="roles" tal:attributes="value db/config/NEW_WEB_USER_ROLES">
   </td>
  </tr>
- <tr>
+ <tr tal:condition="python:False">
   <th i18n:translate="">Phone</th>
   <td tal:content="structure context/phone/field">phone</td>
  </tr>
- <tr>
+ <tr tal:condition="python:False">
   <th i18n:translate="">Organisation</th>
   <td tal:content="structure context/organisation/field">organisation</td>
  </tr>
