@@ -1764,8 +1764,14 @@ class Class(hyperdb.Class):
                             l.append((STRING, k, re.compile(x, re.I)))
                 elif isinstance(propclass, hyperdb.Date):
                     try:
-                        date_rng = propclass.range_from_raw(v, self.db)
-                        l.append((DATE, k, date_rng))
+                        ranges = []
+                        for d in v.split(','):
+                            if d == '-':
+                                ranges.append(None)
+                                continue
+                            date_rng = propclass.range_from_raw(d, self.db)
+                            ranges.append(date_rng)
+                        l.append((DATE, k, ranges))
                     except ValueError:
                         # If range creation fails - ignore that search parameter
                         pass
@@ -1862,7 +1868,22 @@ class Class(hyperdb.Class):
                         else:
                             # RE search
                             match = v.search(nv)
-                    elif t == DATE or t == INTERVAL:
+                    elif t == DATE:
+                        for x in v:
+                            if x is None or nv is None:
+                                if nv is None and x is None:
+                                    match = 1
+                                    break
+                                continue
+                            elif x.to_value:
+                                if x.from_value <= nv <= x.to_value:
+                                    match = 1
+                                    break
+                            else:
+                                if x.from_value <= nv:
+                                    match = 1
+                                    break
+                    elif t == INTERVAL:
                         if nv is None:
                             match = v is None
                         else:

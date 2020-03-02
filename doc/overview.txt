@@ -544,7 +544,9 @@ Each type of property has its own appropriate filtering widget:
 - *string* properties appear as text fields supporting
   case-insensitive substring match
 - *date* properties appear as a text field which accepts a date
-  range with start, end or both
+  range with start, end or both. Multiple date ranges can be specified
+  separated by a comma. An empty date can be searched for by specifying
+  '-' instead of a date range
 - *link* properties appear as a group of selectable options
   (the filter selects the *union* of the sets of items
   associated with the active options)

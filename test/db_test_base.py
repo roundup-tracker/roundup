@@ -1883,6 +1883,18 @@ class DBTest(commonDBTest):
                 r = filt(None, dict(deadline='2001-%02d'%month))
                 assert len(r) == month, 'month %d != length %d'%(month, len(r))
 
+    def testFilteringDateRangeMulti(self):
+        ae, filter, filter_iter = self.filteringSetup()
+        self.db.issue.create(title='no deadline')
+        self.db.commit()
+        for filt in filter, filter_iter:
+            r = filt (None, dict(deadline='-'))
+            self.assertEqual(r, ['5'])
+            r = filt (None, dict(deadline=';2003-02-01,2004;'))
+            self.assertEqual(r, ['2', '4'])
+            r = filt (None, dict(deadline='-,;2003-02-01,2004;'))
+            self.assertEqual(r, ['2', '4', '5'])
+
     def testFilteringRangeInterval(self):
         ae, filter, filter_iter = self.filteringSetup()
         for filt in filter, filter_iter:

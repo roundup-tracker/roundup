@@ -2609,14 +2609,24 @@ class Class(hyperdb.Class):
                     args = args + [dc(date.Date(x)) for x in v]
                 else:
                     try:
-                        # Try to filter on range of dates
-                        date_rng = propclass.range_from_raw(v, self.db)
-                        if date_rng.from_value:
-                            where.append('_%s._%s >= %s'%(pln, k, a))
-                            args.append(dc(date_rng.from_value))
-                        if date_rng.to_value:
-                            where.append('_%s._%s <= %s'%(pln, k, a))
-                            args.append(dc(date_rng.to_value))
+                        wh = []
+                        ar = []
+                        for d in v.split(','):
+                            w1 = []
+                            if d == '-':
+                                wh.append('_%s._%s is NULL'%(pln, k))
+                                continue
+                            # Try to filter on range of dates
+                            date_rng = propclass.range_from_raw(d, self.db)
+                            if date_rng.from_value:
+                                w1.append('_%s._%s >= %s'%(pln, k, a))
+                                ar.append(dc(date_rng.from_value))
+                            if date_rng.to_value:
+                                w1.append('_%s._%s <= %s'%(pln, k, a))
+                                ar.append(dc(date_rng.to_value))
+                            wh.append (' and '.join (w1))
+                        where.append ('(' + ' or '.join (wh) + ')')
+                        args.extend (ar)
                     except ValueError:
                         # If range creation fails - ignore that search parameter
                         pass

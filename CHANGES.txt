@@ -60,6 +60,8 @@ Features:
   fine.
 - Added markdown rendering using either markdown or markdown2.
   (Christof Meerwald)
+- Allow filtering by multiple date ranges or empty date. Date ranges are
+  separated by comma, an empty date is represented by '-'
 
 Fixed:
 
