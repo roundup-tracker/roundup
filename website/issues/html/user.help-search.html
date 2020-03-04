@@ -45,11 +45,6 @@ qs python:'&'.join([a for a in qs.split('&') if not a.startswith('@template=')])
   <td metal:use-macro="search_input"><input type=text></td>
 </tr>
 
-<tr tal:define="name string:phone; label string:Phone number">
-  <th metal:use-macro="th_label">Phone</th>
-  <td metal:use-macro="search_input"><input type=text></td>
-</tr>
-
 <tr tal:define="name string:roles;
                 onchange string:this.form.submit();
                 label string:Roles:"
@@ -68,7 +63,7 @@ qs python:'&'.join([a for a in qs.split('&') if not a.startswith('@template=')])
     <input type="hidden" name="@action" value="search">
     <input type="submit" value="Search" i18n:attributes="value">
     <input type="reset">
-    <input type="hidden" value="username,realname,phone,organisation,roles" name="properties">
+    <input type="hidden" value="username,realname,organisation,roles" name="properties">
     <input type="text" name="@pagesize" id="sp-pagesize" value="25" size="2">
     <label for="sp-pagesize" i18n:translate="">Pagesize</label>
   </td>

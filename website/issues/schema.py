@@ -80,7 +80,6 @@ user = Class(db, "user",
              password=Password(),
              address=String(),
              realname=String(),
-             phone=String(),
              organisation=String(),
              alternate_addresses=String(),
              queries=Multilink('query'),
@@ -261,7 +260,7 @@ db.security.addPermissionToRole('Coordinator', 'SB: May Classify')
 
 # Allow Users and Developers to view most user properties.
 p =  db.security.addPermission(name='View', klass='user',
-   properties=('id', 'username', 'address', 'realname', 'phone',
+   properties=('id', 'username', 'address', 'realname',
          'organisation', 'alternate_addresses', 'timezone'))
 db.security.addPermissionToRole('User', p)
 db.security.addPermissionToRole('Developer', p)
@@ -289,7 +288,7 @@ p = db.security.addPermission(name='Edit', klass='user', check=own_record,
     description="User is allowed to edit their own user details",
     properties=('username', 'password',
                 'address', 'realname',
-                'phone', 'organisation',
+                'organisation',
                 'alternate_addresses',
                 'queries',
                 'timezone')) # Note: 'roles' excluded - users should not be able to edit their own roles. 
