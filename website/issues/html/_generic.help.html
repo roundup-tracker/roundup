@@ -4,7 +4,7 @@
       <link rel="stylesheet" type="text/css" href="@@file/style.css" />
       <meta http-equiv="Content-Type"
        tal:attributes="content string:text/html;; charset=${request/client/charset}" />
-      <tal:block tal:condition="python:request.form.has_key('property')">
+      <tal:block tal:condition="python:'property' in request.form">
       <tal:block tal:define="property request/form/property/value">
       <title i18n:translate=""><tal:x i18n:name="property"
        tal:content="property" i18n:translate="" /> help - <span i18n:name="tracker"
@@ -27,7 +27,7 @@
 <div id="content-body">
 <div id="content">
 <div id="breadcrumb">Python Issue Tracker: Help - <tal:block tal:content="context/classname">item</tal:block></div>
-<tal:block tal:condition="python:request.form.has_key('property')">
+<tal:block tal:condition="python:'property' in request.form">
  <form name="frm_help" action="#"
        tal:define="batch request/batch;
                    props python:request.form['properties'].value.split(',')">
@@ -104,7 +104,7 @@
 
  </form>
  </tal:block>
- <tal:block tal:condition="python:not request.form.has_key('property')">
+ <tal:block tal:condition="python:'property' not in request.form">
  <tal:block tal:define="batch request/batch;
                         props python:request.form['properties'].value.split(',')">
      <table width="100%">

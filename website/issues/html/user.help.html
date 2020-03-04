@@ -8,7 +8,7 @@ field request/form/property/value">
       <link rel="stylesheet" type="text/css" href="@@file/style.css" />
       <meta http-equiv="Content-Type"
        tal:attributes="content string:text/html;; charset=${request/client/charset}" />
-      <tal:block tal:condition="python:request.form.has_key('property')">
+      <tal:block tal:condition="python:'property' in request.form">
       <title><tal:x i18n:translate=""><tal:x i18n:name="property"
        tal:content="property" i18n:translate="" /> help - <span i18n:name="tracker"
 	       tal:replace="config/TRACKER_NAME" /></tal:x></title>
