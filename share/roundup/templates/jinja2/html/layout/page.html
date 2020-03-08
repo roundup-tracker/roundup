@@ -1,4 +1,6 @@
 {% set status_notresolved = '-1,1,2,3,4,5,6,7' -%}
+{% set columns = 'id,activity,title,creator,status' -%}
+{% set columns_showall = 'id,activity,title,creator,assignedto,status' -%}
 <!doctype html>
 <html>
   <head>
@@ -29,7 +31,7 @@
             <div class='pb-2 mb-2 border-bottom'>
               <h3>{% block page_header %} {% endblock %}</h3>
               {% if options.error_message %}
-                <div class='alert alert-danger alert-dismissible fade show'>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
                   <ul class="mb-0">
                     {% for message in options.error_message %}
                       <li>{{ message|safe }}</li>
@@ -41,7 +43,7 @@
                 </div>
               {% endif %}
               {% if options.ok_message %}
-                <div class='alert alert-success alert-dismissible fade show'>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
                   <ul class="mb-0">
                     {% for message in options.ok_message %}
                       <li>{{ message|safe }}</li>
