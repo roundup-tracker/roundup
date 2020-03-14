@@ -27,7 +27,13 @@
         </div>
       </dl>
       <div>
-        <pre>{{ msg.content.hyperlinked()|u|safe }}</pre>
+      {% if msg.type == 'text/markdown' %}
+        <div class="msg">{{ msg.content.markdown()|u|safe }}</div>
+      {% elif msg.type == 'text/x-rst' %}
+        <div class="msg">{{ msg.content.rst()|u|safe }}</div>
+      {% else %}
+        <pre class="msg">{{ msg.content.hyperlinked()|u|safe }}</pre>
+      {% endif %}
       </div>
     </div>
     <hr>

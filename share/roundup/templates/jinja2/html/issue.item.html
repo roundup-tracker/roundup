@@ -18,8 +18,38 @@
   {% endif %}
 {% endblock %}
 
-{% block content %}
+{% block extracss %}
+  {% if context.is_edit_ok() %}
+    <link rel="stylesheet" type="text/css" href="@@file/simplemde.min.css">
+  {% endif %}
+{% endblock %}
 
+{% block extrajs %}
+  {% if context.is_edit_ok() %}
+    <script src='@@file/simplemde.min.js'></script>
+    <script type="text/javascript">
+    (function () {
+      var node = $('#change_note')[0];
+      var initSimpleMde = function () {
+        node.parentNode.appendChild($('<input/>', { type: 'hidden', name: 'msg-1@type', value: 'text/markdown'})[0]);
+        var simplemde = new SimpleMDE({ element: node, status: false, styleSelectedText: false });
+        simplemde.render();
+      };
+      {% if context.id %}
+      if (node.value) {
+        initSimpleMde();
+      } else {
+        node.addEventListener('focus', initSimpleMde);
+      }
+      {% else %}
+      initSimpleMde();
+      {% endif %}
+    }) ();
+    </script>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
   {% include 'layout/permission.html' %}
 
   {% if context.is_view_ok() %}
@@ -69,7 +99,13 @@
         </div>
       </div>
       <div>
-        <pre>{{ msg.content.hyperlinked()|u|safe }}</pre>
+      {% if msg.type == 'text/markdown' %}
+        <div class="msg">{{ msg.content.markdown()|u|safe }}</div>
+      {% elif msg.type == 'text/x-rst' %}
+        <div class="msg">{{ msg.content.rst()|u|safe }}</div>
+      {% else %}
+        <pre class="msg">{{ msg.content.hyperlinked()|u|safe }}</pre>
+      {% endif %}
       </div>
     {% endfor %}
   {% endif %}
@@ -77,5 +113,4 @@
   <div class='vspace-five'></div>
 
   {{ context.history()|u|safe }}
-
 {% endblock %}

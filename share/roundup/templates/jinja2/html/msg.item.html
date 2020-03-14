@@ -41,7 +41,13 @@
     </dl>
     <div>
       <h4>Content</h4>
-      <pre>{{ context.content.hyperlinked()|u|safe }}</pre>
+      {% if context.type == 'text/markdown' %}
+        <div class="msg">{{ context.content.markdown()|u|safe }}</div>
+      {% elif context.type == 'text/x-rst' %}
+        <div class="msg">{{ context.content.rst()|u|safe }}</div>
+      {% else %}
+        <pre class="msg">{{ context.content.hyperlinked()|u|safe }}</pre>
+      {% endif %}
     </div>
   {% endif %}
 

@@ -58,8 +58,8 @@ Features:
   property 'messages.author' is not allowed (because 'messages' is a
   multilink). A multilink at the end (e.g. messages in the example) is
   fine.
-- Added markdown rendering using either markdown or markdown2.
-  (Christof Meerwald)
+- Added markdown rendering using markdown, markdown2 or mistune; use
+  SimpleMDE markdown editor in jinja2 template (Christof Meerwald)
 - Allow filtering by multiple date ranges or empty date. Date ranges are
   separated by comma, an empty date is represented by '-'
 
