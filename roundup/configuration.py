@@ -29,7 +29,7 @@ if sys.version_info[0] > 2:
 else:
     import ConfigParser as configparser  # Python 2
 
-from exceptions import RoundupException
+from roundup.exceptions import RoundupException
 
 # XXX i don't think this module needs string translation, does it?
 
