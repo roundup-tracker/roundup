@@ -4,15 +4,20 @@
 __docformat__ = 'restructuredtext'
 
 
-class LoginError(BaseException):
+class RoundupException(Exception):
+    pass
+
+class LoginError(RoundupException):
     pass
 
 
-class Unauthorised(BaseException):
+class Unauthorised(RoundupException):
     pass
 
+class RejectBase(RoundupException):
+    pass
 
-class Reject(BaseException):
+class Reject(RejectBase):
     """An auditor may raise this exception when the current create or set
     operation should be stopped.
 

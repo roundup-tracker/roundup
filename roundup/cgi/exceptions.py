@@ -7,8 +7,12 @@ from roundup.exceptions import LoginError, Unauthorised  # noqa: F401
 
 from roundup.anypy.html import html_escape
 
+from roundup.exceptions import RoundupException
 
-class HTTPException(BaseException):
+class RoundupCGIException(RoundupException):
+    pass
+
+class HTTPException(RoundupCGIException):
     pass
 
 
@@ -28,7 +32,7 @@ class PreconditionFailed(HTTPException):
     pass
 
 
-class DetectorError(BaseException):
+class DetectorError(RoundupException):
     """Raised when a detector throws an exception.
 Contains details of the exception."""
     def __init__(self, subject, html, txt):
@@ -51,15 +55,15 @@ class FormError(ValueError):
     pass
 
 
-class SendFile(BaseException):
+class SendFile(RoundupException):
     """Send a file from the database."""
 
 
-class SendStaticFile(BaseException):
+class SendStaticFile(RoundupException):
     """Send a static file from the instance html directory."""
 
 
-class SeriousError(BaseException):
+class SeriousError(RoundupException):
     """Raised when we can't reasonably display an error message on a
     templated page.
 

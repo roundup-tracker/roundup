@@ -118,6 +118,8 @@ try:
 except ImportError:
     gpg = None
 
+from exceptions import RoundupException
+
 SENDMAILDEBUG = os.environ.get('SENDMAILDEBUG', '')
 
 
@@ -129,17 +131,17 @@ class MailUsageError(ValueError):
     pass
 
 
-class MailUsageHelp(BaseException):
+class MailUsageHelp(RoundupException):
     """ We need to send the help message to the user. """
     pass
 
 
-class Unauthorized(BaseException):
+class Unauthorized(RoundupException):
     """ Access denied """
     pass
 
 
-class IgnoreMessage(BaseException):
+class IgnoreMessage(RoundupException):
     """ A general class of message that we should ignore. """
     pass
 

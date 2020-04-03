@@ -46,6 +46,7 @@ from roundup import configuration, mailgw
 from roundup import hyperdb, backends, actions
 from roundup.cgi import client, templating
 from roundup.cgi import actions as cgi_actions
+from roundup.exceptions import RoundupException
 
 
 class Tracker:
@@ -271,7 +272,7 @@ update your config.ini
         self.templating_utils[name] = function
 
 
-class TrackerError(BaseException):
+class TrackerError(RoundupException):
     pass
 
 

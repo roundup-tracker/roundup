@@ -62,6 +62,10 @@ Features:
   (Christof Meerwald)
 - Allow filtering by multiple date ranges or empty date. Date ranges are
   separated by comma, an empty date is represented by '-'
+- issue2551083 - Replace BaseException and Exception as base classes
+  with new RoundupException (inheriting from Exception) for most
+  roundup exceptions. (John Rouillard and Ralf Schlatterbeck on
+  request from Robert Klonner.)
 
 Fixed:
 
