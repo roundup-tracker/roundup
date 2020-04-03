@@ -118,7 +118,7 @@ try:
 except ImportError:
     gpg = None
 
-from exceptions import RoundupException
+from roundup.exceptions import RoundupException
 
 SENDMAILDEBUG = os.environ.get('SENDMAILDEBUG', '')
 
