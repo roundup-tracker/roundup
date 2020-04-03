@@ -1,13 +1,12 @@
-{% if not (context.is_view_ok() or request.user.hasRole('Anonymous')) %}
-  <p class='alert alert-block alert-error fade in'> 
-    {% trans %}You are not allowed to view this page.{% endtrans %}
-    <button type='button' class='close' data-dismiss='alert'>X</button>
-  </p>
-{% endif %}
-
-{% if not context.is_view_ok() and request.user.hasRole('Anonymous') %}
-  <p class='alert alert-block alert-error fade in'> 
-    {% trans %}Please login with your username and password.{% endtrans %}
-    <button type='button' class='close' data-dismiss='alert'>X</button>
-  </p>
+{% if not context.is_view_ok() %}
+<div class="alert alert-warning alert-dismissible fade show" role="alert"> 
+  {% if request.user.hasRole('Anonymous') %}
+  {% trans %}Please login with your username and password.{% endtrans %}
+  {% else %}
+  {% trans %}You are not allowed to view this page.{% endtrans %}
+  {% endif %}
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
 {% endif %}

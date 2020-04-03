@@ -37,12 +37,6 @@ tr.info {
   background-color: #d9edf7;
 }
 
-pre {
-  background-color: #f0f0f0;
-  border: 1pt solid gray;
-  padding: 6pt;
-}
-
 footer {
   font-size: 1.2em;
 }
@@ -59,6 +53,34 @@ footer {
 
 .table-condensed td, .table-condensed th {
   padding:.3rem;
+}
+
+.msg {
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  border: 1px solid #d4d4d4;
+  padding: 6px;
+}
+
+blockquote {
+  display: block;
+  background: #e8e8e8;
+  white-space: pre-line;
+  border-radius: 4px;
+  border: 1px solid #d4d4d4;
+  margin: 0 1rem;
+  padding: 0 .2rem;
+}
+
+code {
+  background: #e8e8e8;
+  white-space: pre;
+  border-radius: 4px;
+  border: 1px solid #d4d4d4;
+}
+
+pre > code {
+  display: block;
 }
 
 input:required {

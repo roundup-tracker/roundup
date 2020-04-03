@@ -1,6 +1,3 @@
-{% set columns = 'id,activity,title,creator,status' %}
-{% set columns_showall = 'id,activity,title,creator,assignedto,status' %}
-
 {% if request.user.hasPermission('View', 'query') %}
   <p>
     <b>{% trans %}Your Queries{% endtrans %}</b> (<a href="query?@template=edit">{% trans %}edit{% endtrans %}</a>)
@@ -35,15 +32,7 @@
        })|u }}">{% trans %}Show Unassigned{% endtrans %}</a>
     </li>
     <li class="nav-item">
-      <a href="{{ request.indexargs_url('issue', {
-        '@sort': '-activity',
-        '@group': 'priority',
-        '@filter': 'status',
-        '@columns': columns_showall,
-        '@search_text': '',
-        'status': status_notresolved,
-        '@dispname': i18n.gettext('Show All'),
-       })|u }}">{% trans %}Show All{% endtrans %}</a>
+      <a href="{{ request.base }}?@dispname={{ i18n.gettext('Show All')|u|urlencode }}">{% trans %}Show All{% endtrans %}</a>
     </li>
     <li>
       <a href="issue?@template=search">{% trans %}Search{% endtrans %}</a>
