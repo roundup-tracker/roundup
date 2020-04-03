@@ -60,6 +60,8 @@ try:
 except ImportError:
     from itertools import izip_longest as zip_longest
 
+from roundup.exceptions import RoundupException
+
 def _import_markdown2():
     try:
         import markdown2, re
