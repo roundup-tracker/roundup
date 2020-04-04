@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roundup 1.3.3\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2019-10-23 13:45-0400\n"
+"POT-Creation-Date: 2020-04-04 11:24-0400\n"
 "PO-Revision-Date: 2013-10-31 12:19+0100\n"
 "Last-Translator: kilo aka Gabor Kmetyko <kg_kilo@freemail.hu>\n"
 "Language-Team: Hungarian\n"
@@ -19,13 +19,13 @@ msgstr ""
 "Plural-Forms:  nplurals=1; plural=0;\n"
 "X-Generator: KBabel 1.11.4\n"
 
-#: ../roundup/actions.py:52
+#: ../roundup/actions.py:49
 #, fuzzy, python-format
 msgid ""
 "You do not have permission to retire or restore the %(classname)s class."
 msgstr "Nincs jogosultsága %(action)s műveletre a(z) %(classname)s osztályon."
 
-#: ../roundup/actions.py:66 ../roundup/cgi/actions.py:227
+#: ../roundup/actions.py:64 ../roundup/cgi/actions.py:242
 msgid "You may not retire the admin or anonymous user"
 msgstr "Az admin és anonymous felhasználókat nem lehet visszavonultatni"
 
@@ -50,14 +50,15 @@ msgid ""
 msgstr "Probléma: %(message)s\n"
 
 #: ../roundup/admin.py:120
-#, python-format
+#, fuzzy, python-format
 msgid ""
 "%(message)sUsage: roundup-admin [options] [<command> <arguments>]\n"
 "\n"
 "Options:\n"
 " -i instance home  -- specify the issue tracker \"home directory\" to "
 "administer\n"
-" -u                -- the user[:password] to use for commands\n"
+" -u                -- the user[:password] to use for commands (default "
+"admin)\n"
 " -d                -- print full designators not just class id numbers\n"
 " -c                -- when outputting lists of data, comma-separate them.\n"
 "                      Same as '-S \",\"'.\n"
@@ -252,9 +253,9 @@ msgstr ""
 #: ../roundup/admin.py:673 ../roundup/admin.py:730 ../roundup/admin.py:788
 #: ../roundup/admin.py:813 ../roundup/admin.py:840 ../roundup/admin.py:913
 #: ../roundup/admin.py:980 ../roundup/admin.py:1059 ../roundup/admin.py:1120
-#: ../roundup/admin.py:1147 ../roundup/admin.py:1179 ../roundup/admin.py:1292
-#: ../roundup/admin.py:1373 ../roundup/admin.py:378:510:1059 :1120:1147
-#: :1179:1292:1373 :584:673 :730:788 :813:840 :913:980
+#: ../roundup/admin.py:1147 ../roundup/admin.py:1179 ../roundup/admin.py:1293
+#: ../roundup/admin.py:1374 ../roundup/admin.py:378:510:1059 :1120:1147
+#: :1179:1293:1374 :584:673 :730:788 :813:840 :913:980
 msgid "Not enough arguments supplied"
 msgstr "Nincs megadva elég argumentum"
 
@@ -697,7 +698,7 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1257
+#: ../roundup/admin.py:1258
 msgid ""
 "Usage: exporttables [[-]class[,class]] export_dir\n"
 "        Export the database to colon-separated-value files, excluding the\n"
@@ -714,7 +715,7 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1272
+#: ../roundup/admin.py:1273
 msgid ""
 "Usage: import import_dir\n"
 "        Import a database from the directory containing CSV files,\n"
@@ -737,7 +738,7 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1355
+#: ../roundup/admin.py:1356
 msgid ""
 "Usage: pack period | date\n"
 "\n"
@@ -759,11 +760,11 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1383
+#: ../roundup/admin.py:1384
 msgid "Invalid format"
 msgstr "Hibás formátum"
 
-#: ../roundup/admin.py:1394
+#: ../roundup/admin.py:1395
 msgid ""
 "Usage: reindex [classname|designator]*\n"
 "        Re-generate a tracker's search indexes.\n"
@@ -773,12 +774,12 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1408
+#: ../roundup/admin.py:1409
 #, python-format
 msgid "no such item \"%(designator)s\""
 msgstr "nincs ilyen elem: \"%(designator)s\""
 
-#: ../roundup/admin.py:1418
+#: ../roundup/admin.py:1419
 msgid ""
 "Usage: security [Role name]\n"
 "        Display the Permissions available to one or all Roles.\n"
@@ -788,47 +789,47 @@ msgstr ""
 "        Megjeleníti a megadott vagy az összes szerepkör jogosultságait.\n"
 "        "
 
-#: ../roundup/admin.py:1426
+#: ../roundup/admin.py:1427
 #, fuzzy, python-format
 msgid "No such Role \"%(role)s\"\n"
 msgstr "Nincs ilyen szerepkör: \"%(role)s\""
 
-#: ../roundup/admin.py:1432
+#: ../roundup/admin.py:1433
 #, fuzzy, python-format
 msgid "New Web users get the Roles \"%(role)s\"\n"
 msgstr "Új web felhasználók ezeket a szerepköröket kapják: \"%(role)s\""
 
-#: ../roundup/admin.py:1434
+#: ../roundup/admin.py:1435
 #, fuzzy, python-format
 msgid "New Web users get the Role \"%(role)s\"\n"
 msgstr "Új web felhasználók ezt a szerepkört kapják \"%(role)s\""
 
-#: ../roundup/admin.py:1437
+#: ../roundup/admin.py:1438
 #, fuzzy, python-format
 msgid "New Email users get the Roles \"%(role)s\"\n"
 msgstr "Új e-mail felhasználók ezeket a szerepköröket kapják: \"%(role)s\""
 
-#: ../roundup/admin.py:1439
+#: ../roundup/admin.py:1440
 #, fuzzy, python-format
 msgid "New Email users get the Role \"%(role)s\"\n"
 msgstr "Új e-mail felhasználók ezt a szerepkört kapják: \"%(role)s\""
 
-#: ../roundup/admin.py:1442
+#: ../roundup/admin.py:1443
 #, fuzzy, python-format
 msgid "Role \"%(name)s\":\n"
 msgstr "\"%(name)s\" szerepkör:"
 
-#: ../roundup/admin.py:1447
+#: ../roundup/admin.py:1448
 #, fuzzy
 msgid " %(description)s (%(name)s for \"%(klass)s\""
 msgstr " %(description)s (%(name)s)"
 
-#: ../roundup/admin.py:1447
+#: ../roundup/admin.py:1448
 #, python-format
 msgid " %(description)s (%(name)s for \"%(klass)s\": %(properties)s only)\n"
 msgstr ""
 
-#: ../roundup/admin.py:1459
+#: ../roundup/admin.py:1460
 #, python-format
 msgid ""
 "\n"
@@ -836,22 +837,22 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../roundup/admin.py:1461
+#: ../roundup/admin.py:1462
 #, fuzzy
 msgid " %(description)s (%(name)s for \"%(klass)s\" "
 msgstr " %(description)s (%(name)s)"
 
-#: ../roundup/admin.py:1461
+#: ../roundup/admin.py:1462
 #, fuzzy, python-format
 msgid " %(description)s (%(name)s for \"%(klass)s\" only)\n"
 msgstr " %(description)s (%(name)s)"
 
-#: ../roundup/admin.py:1464
+#: ../roundup/admin.py:1465
 #, fuzzy, python-format
 msgid " %(description)s (%(name)s)\n"
 msgstr " %(description)s (%(name)s)"
 
-#: ../roundup/admin.py:1469
+#: ../roundup/admin.py:1470
 msgid ""
 "Usage: migrate\n"
 "        Update a tracker's database to be compatible with the Roundup\n"
@@ -875,46 +876,46 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1488
+#: ../roundup/admin.py:1489
 #, fuzzy
 msgid "Tracker updated"
 msgstr "Hibakövető"
 
-#: ../roundup/admin.py:1491
+#: ../roundup/admin.py:1492
 msgid "No migration action required"
 msgstr ""
 
-#: ../roundup/admin.py:1517
+#: ../roundup/admin.py:1518
 #, python-format
 msgid "Unknown command \"%(command)s\" (\"help commands\" for a list)"
 msgstr ""
 "\"%(command)s\": ismeretlen parancs (\"help commands\" parancsok "
 "listázásához)"
 
-#: ../roundup/admin.py:1523
+#: ../roundup/admin.py:1524
 #, python-format
 msgid "Multiple commands match \"%(command)s\": %(list)s"
 msgstr ""
 "Több parancs is illeszkedik a megadott \"%(command)s\" parancsra: %(list)s"
 
-#: ../roundup/admin.py:1531
+#: ../roundup/admin.py:1532
 msgid "Enter tracker home: "
 msgstr "Adja meg a hibakövető könyvtárát: "
 
 # ../roundup/admin.py:1335 :1341 :1361
-#: ../roundup/admin.py:1540 ../roundup/admin.py:1546 ../roundup/admin.py:1572
-#: ../roundup/admin.py:1540:1546:1572
+#: ../roundup/admin.py:1541 ../roundup/admin.py:1547 ../roundup/admin.py:1573
+#: ../roundup/admin.py:1541:1547:1573
 #, python-format
 msgid "Error: %(message)s"
 msgstr "Hiba: %(message)s"
 
-#: ../roundup/admin.py:1554 ../roundup/admin.py:1558
-#: ../roundup/admin.py:1554:1558
+#: ../roundup/admin.py:1555 ../roundup/admin.py:1559
+#: ../roundup/admin.py:1555:1559
 #, python-format
 msgid "Error: Couldn't open tracker: %(message)s"
 msgstr "Hiba: Hibakövető megnyitása sikertelen: %(message)s"
 
-#: ../roundup/admin.py:1585
+#: ../roundup/admin.py:1586
 #, python-format
 msgid ""
 "Roundup %s ready for input.\n"
@@ -923,19 +924,19 @@ msgstr ""
 "A Roundup %s fogadókész.\n"
 "Segítségért gépeljen \"help\"-et."
 
-#: ../roundup/admin.py:1590
+#: ../roundup/admin.py:1591
 msgid "Note: command history and editing not available"
 msgstr "Megjegyzés: a parancsok története és szerkesztése nem elérhető"
 
-#: ../roundup/admin.py:1594
+#: ../roundup/admin.py:1595
 msgid "roundup> "
 msgstr "roundup> "
 
-#: ../roundup/admin.py:1596
+#: ../roundup/admin.py:1597
 msgid "exit..."
 msgstr "kilépés..."
 
-#: ../roundup/admin.py:1609
+#: ../roundup/admin.py:1610
 msgid "There are unsaved changes. Commit them (y/N)? "
 msgstr "Vannak nem mentett változtatások. Elmenti őket (y/N)? "
 
@@ -960,200 +961,211 @@ msgstr ""
 #: ../roundup/backends/back_anydbm.py:1427
 #: ../roundup/backends/back_anydbm.py:1445
 #: ../roundup/backends/back_anydbm.py:1491
-#: ../roundup/backends/back_anydbm.py:2069
+#: ../roundup/backends/back_anydbm.py:2090
 #: ../roundup/backends/back_anydbm.py:898:911
-#: ../roundup/backends/rdbms_common.py:1568
-#: ../roundup/backends/rdbms_common.py:1802
-#: ../roundup/backends/rdbms_common.py:2037
-#: ../roundup/backends/rdbms_common.py:2057
-#: ../roundup/backends/rdbms_common.py:2110
-#: ../roundup/backends/rdbms_common.py:2938
-#: ../roundup/backends/rdbms_common.py:1568:1802 :1171:1201 :1427:1445:1491
-#: :2037:2057:2069 :2110:2938
+#: ../roundup/backends/rdbms_common.py:1581
+#: ../roundup/backends/rdbms_common.py:1818
+#: ../roundup/backends/rdbms_common.py:2053
+#: ../roundup/backends/rdbms_common.py:2073
+#: ../roundup/backends/rdbms_common.py:2126
+#: ../roundup/backends/rdbms_common.py:2964
+#: ../roundup/backends/rdbms_common.py:1581:1818 :1171:1201 :1427:1445:1491
+#: :2053:2073:2090 :2126:2964
 msgid "Database open read-only"
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:544
+#: ../roundup/backends/rdbms_common.py:549
 #, python-format
-msgid "ALTER operation disallowed: %r -> %r."
+msgid "ALTER operation disallowed: %(old)r -> %(new)r."
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:777
+#: ../roundup/backends/rdbms_common.py:785
 #, python-format
 msgid "CREATE operation disallowed: \"%s\"."
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:793
+#: ../roundup/backends/rdbms_common.py:802
 #, python-format
 msgid "DROP operation disallowed: \"%s\"."
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:1703
+#: ../roundup/backends/rdbms_common.py:1719
 msgid "create"
 msgstr "létrehozás"
 
-#: ../roundup/backends/rdbms_common.py:1872
+#: ../roundup/backends/rdbms_common.py:1888
 msgid "unlink"
 msgstr "törlés"
 
-#: ../roundup/backends/rdbms_common.py:1876
+#: ../roundup/backends/rdbms_common.py:1892
 msgid "link"
 msgstr "kapcsolás"
 
-#: ../roundup/backends/rdbms_common.py:2018
+#: ../roundup/backends/rdbms_common.py:2034
 msgid "set"
 msgstr "beállítás"
 
-#: ../roundup/backends/rdbms_common.py:2047
+#: ../roundup/backends/rdbms_common.py:2063
 msgid "retired"
 msgstr "visszavonult"
 
-#: ../roundup/backends/rdbms_common.py:2077
+#: ../roundup/backends/rdbms_common.py:2093
 msgid "restored"
 msgstr "visszaállított"
 
-#: ../roundup/cgi/actions.py:96
+#: ../roundup/cgi/actions.py:99
 msgid "Base url not set. Check configuration."
 msgstr ""
 
-#: ../roundup/cgi/actions.py:112
+#: ../roundup/cgi/actions.py:115
 #, python-format
 msgid "Base url %(base_url)s requires https. Redirect url %(url)s uses http."
 msgstr ""
 
-#: ../roundup/cgi/actions.py:115
+#: ../roundup/cgi/actions.py:120
 #, fuzzy, python-format
 msgid "Unrecognized scheme in %(url)s"
 msgstr "Ismeretlen karakterkészlet: %r"
 
-#: ../roundup/cgi/actions.py:118
+#: ../roundup/cgi/actions.py:124
 #, python-format
 msgid "Net location in %(url)s does not match base: %(base_netloc)s"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:121
+#: ../roundup/cgi/actions.py:128
 #, python-format
 msgid "Base path %(base_path)s is not a prefix for url %(url)s"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:134
+#: ../roundup/cgi/actions.py:142
 #, python-format
 msgid "Path component (%(url_path)s) in %(url)s is not properly escaped"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:137
+#: ../roundup/cgi/actions.py:146
 #, python-format
 msgid "Params component (%(url_params)s) in %(url)s is not properly escaped"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:140
+#: ../roundup/cgi/actions.py:149
 #, python-format
 msgid "Query component (%(url_query)s) in %(url)s is not properly escaped"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:143
+#: ../roundup/cgi/actions.py:152
 #, python-format
 msgid ""
 "Fragment component (%(url_fragment)s) in %(url)s is not properly escaped"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:164
+#: ../roundup/cgi/actions.py:174
 #, python-format
 msgid "You do not have permission to %(action)s the %(classname)s class."
 msgstr "Nincs jogosultsága %(action)s műveletre a(z) %(classname)s osztályon."
 
-#: ../roundup/cgi/actions.py:195
+#: ../roundup/cgi/actions.py:209
 msgid "No type specified"
 msgstr "Típus nincs megadva"
 
-#: ../roundup/cgi/actions.py:197
+#: ../roundup/cgi/actions.py:211
 msgid "No ID entered"
 msgstr "Azonosító nincs megadva"
 
-#: ../roundup/cgi/actions.py:203
+#: ../roundup/cgi/actions.py:217
 #, python-format
 msgid "\"%(input)s\" is not an ID (%(classname)s ID required)"
 msgstr "\"%(input)s\" nem azonosító (%(classname)s azonosító szükséges)"
 
-#: ../roundup/cgi/actions.py:215 ../roundup/cgi/actions.py:253
-#: ../roundup/cgi/actions.py:474 ../roundup/cgi/actions.py:805
-#: ../roundup/cgi/actions.py:851 ../roundup/cgi/actions.py:1051
-#: ../roundup/cgi/actions.py:1184 ../roundup/cgi/actions.py:215:253:1184
-#: :474:805 :851:1051
+#: ../roundup/cgi/actions.py:230 ../roundup/cgi/actions.py:268
+#: ../roundup/cgi/actions.py:494 ../roundup/cgi/actions.py:827
+#: ../roundup/cgi/actions.py:874 ../roundup/cgi/actions.py:1079
+#: ../roundup/cgi/actions.py:1236 ../roundup/cgi/actions.py:230:268:1236
+#: :494:827 :874:1079
 #, fuzzy
 msgid "Invalid request"
 msgstr "Hibás formátum"
 
-#: ../roundup/cgi/actions.py:233 ../roundup/cgi/actions.py:579
-#: ../roundup/cgi/actions.py:233:579
+#: ../roundup/cgi/actions.py:248 ../roundup/cgi/actions.py:600
+#: ../roundup/cgi/actions.py:248:600
 #, fuzzy, python-format
 msgid "You do not have permission to retire %(class)s"
 msgstr "Nincs jogosultsága létrehozni %(class)s-t"
 
-#: ../roundup/cgi/actions.py:241
+#: ../roundup/cgi/actions.py:256
 #, python-format
 msgid "%(classname)s %(itemid)s has been retired"
 msgstr "%(classname)s %(itemid)s visszavonásra került"
 
-#: ../roundup/cgi/actions.py:265
+#: ../roundup/cgi/actions.py:280
 #, fuzzy, python-format
 msgid "You do not have permission to restore %(class)s"
 msgstr "Nincs jogosultsága létrehozni %(class)s-t"
 
-#: ../roundup/cgi/actions.py:273
+#: ../roundup/cgi/actions.py:288
 #, fuzzy, python-format
 msgid "%(classname)s %(itemid)s has been restored"
 msgstr "%(classname)s %(itemid)s visszavonásra került"
 
 # ../roundup/cgi/actions.py:174 :202
-#: ../roundup/cgi/actions.py:316 ../roundup/cgi/actions.py:364
-#: ../roundup/cgi/actions.py:316:364
+#: ../roundup/cgi/actions.py:331 ../roundup/cgi/actions.py:381
+#: ../roundup/cgi/actions.py:331:381
 msgid "You do not have permission to edit queries"
 msgstr "Nincs jogosultsága a lekérdezések szerkesztéséhez"
 
 # ../roundup/cgi/actions.py:180 :209
-#: ../roundup/cgi/actions.py:322 ../roundup/cgi/actions.py:371
-#: ../roundup/cgi/actions.py:322:371
+#: ../roundup/cgi/actions.py:337 ../roundup/cgi/actions.py:388
+#: ../roundup/cgi/actions.py:337:388
 msgid "You do not have permission to store queries"
 msgstr "Nincs jogosultsága a lekérdezések tárolásához"
 
-#: ../roundup/cgi/actions.py:343
+#: ../roundup/cgi/actions.py:358
 #, python-format
 msgid "You already own a query named '%s'. Please choose another name."
 msgstr ""
 
-#: ../roundup/cgi/actions.py:508 ../roundup/cgi/actions.py:711
-#: ../roundup/cgi/actions.py:508:711
+#: ../roundup/cgi/actions.py:441
+#, fuzzy
+msgid "Invalid number: "
+msgstr "Hibás formátum"
+
+# ../roundup/cgi/actions.py:930 :934
+#: ../roundup/cgi/actions.py:451
+#, fuzzy
+msgid "Invalid integer: "
+msgstr "Hibás bejelentkezés"
+
+#: ../roundup/cgi/actions.py:528 ../roundup/cgi/actions.py:731
+#: ../roundup/cgi/actions.py:528:731
 #, python-format
 msgid "You do not have permission to create %(class)s"
 msgstr "Nincs jogosultsága létrehozni %(class)s-t"
 
-#: ../roundup/cgi/actions.py:521
+#: ../roundup/cgi/actions.py:541
 #, python-format
 msgid "Not enough values on line %(line)s"
 msgstr "Nincs elég érték a(z) %(line)s soron"
 
-#: ../roundup/cgi/actions.py:531 ../roundup/cgi/actions.py:699
-#: ../roundup/cgi/actions.py:531:699
+#: ../roundup/cgi/actions.py:552 ../roundup/cgi/actions.py:719
+#: ../roundup/cgi/actions.py:552:719
 #, python-format
 msgid "You do not have permission to edit %(class)s"
 msgstr "Nincs jogosultsága szerkeszteni %(class)s-t"
 
-#: ../roundup/cgi/actions.py:586
+#: ../roundup/cgi/actions.py:607
 msgid "Items edited OK"
 msgstr "Az elemek sikeresen szerkesztve"
 
-#: ../roundup/cgi/actions.py:645
+#: ../roundup/cgi/actions.py:667
 #, python-format
 msgid "%(class)s %(id)s %(properties)s edited ok"
 msgstr "%(class)s %(id)s %(properties)s sikeresen szerkesztve"
 
-#: ../roundup/cgi/actions.py:665
+#: ../roundup/cgi/actions.py:685
 #, python-format
 msgid "%(class)s %(id)s created"
 msgstr "%(class)s %(id)s létrehozva"
 
-#: ../roundup/cgi/actions.py:790
+#: ../roundup/cgi/actions.py:812
 #, fuzzy, python-format
 msgid ""
 "Edit Error: someone else has edited this %s (%s). View <a target=\"_blank\" "
@@ -1162,91 +1174,96 @@ msgstr ""
 "Szerkesztési hiba: valaki már szerkesztette %s (%s). Nézze meg a <a target="
 "\"new\" href=\"%s%s\">változtatásait</a> egy új ablakban."
 
-#: ../roundup/cgi/actions.py:822
+#: ../roundup/cgi/actions.py:844
 #, python-format
 msgid "Edit Error: %s"
 msgstr "Szerkesztési hiba: %s"
 
 # ../roundup/cgi/actions.py:596 :607 :778 :797
-#: ../roundup/cgi/actions.py:857 ../roundup/cgi/actions.py:868
-#: ../roundup/cgi/actions.py:1057 ../roundup/cgi/actions.py:1070
-#: ../roundup/cgi/actions.py:857:868 :1057:1070
+#: ../roundup/cgi/actions.py:880 ../roundup/cgi/actions.py:891
+#: ../roundup/cgi/actions.py:1094 ../roundup/cgi/actions.py:1107
+#: ../roundup/cgi/actions.py:880:891 :1094:1107
 #, python-format
 msgid "Error: %s"
 msgstr "Hiba: %s"
 
-#: ../roundup/cgi/actions.py:901
+#: ../roundup/cgi/actions.py:925
 msgid ""
 "Invalid One Time Key!\n"
 "(a Mozilla bug may cause this message to show up erroneously, please check "
 "your email)"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:951
+#: ../roundup/cgi/actions.py:976
 #, python-format
 msgid "Password reset and email sent to %s"
 msgstr "A jelszó törlésre került és e-mailt küldtünk %s-nek"
 
-#: ../roundup/cgi/actions.py:960
+#: ../roundup/cgi/actions.py:985
 msgid "Unknown username"
 msgstr "Ismeretlen felhasználónév"
 
-#: ../roundup/cgi/actions.py:968
+#: ../roundup/cgi/actions.py:993
 msgid "Unknown email address"
 msgstr "Ismeretlen e-mail cím"
 
-#: ../roundup/cgi/actions.py:973
+#: ../roundup/cgi/actions.py:998
 msgid "You need to specify a username or address"
 msgstr "Meg kell adni egy felhasználónevet vagy címet"
 
-#: ../roundup/cgi/actions.py:999
+#: ../roundup/cgi/actions.py:1024
 #, python-format
 msgid "Email sent to primary notification address for %s."
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1001
+#: ../roundup/cgi/actions.py:1026
 #, fuzzy, python-format
 msgid "Email sent to %s."
 msgstr "E-mail elküldve %s-nek"
 
-#: ../roundup/cgi/actions.py:1015
+#: ../roundup/cgi/actions.py:1041
 msgid "You are now registered, welcome!"
 msgstr "Regisztrálás sikeres, isten hozott!"
 
-#: ../roundup/cgi/actions.py:1146
+#: ../roundup/cgi/actions.py:1131
+#, python-format
+msgid "Username '%s' is already used."
+msgstr ""
+
+#: ../roundup/cgi/actions.py:1196
 msgid "It is not permitted to supply roles at registration."
 msgstr "Regisztráláskor nem adhatók meg szerepkörök."
 
-#: ../roundup/cgi/actions.py:1159
+#: ../roundup/cgi/actions.py:1210
 msgid "You are logged out"
 msgstr "Kijelentkezett"
 
-#: ../roundup/cgi/actions.py:1188
+#: ../roundup/cgi/actions.py:1240
 msgid "Username required"
 msgstr "A felhasználónév szükséges"
 
-#: ../roundup/cgi/actions.py:1267
+#: ../roundup/cgi/actions.py:1319
 #, python-format
 msgid "Logins occurring too fast. Please wait: %s seconds."
 msgstr ""
 
 # ../roundup/cgi/actions.py:930 :934
-#: ../roundup/cgi/actions.py:1306 ../roundup/cgi/actions.py:1310
-#: ../roundup/cgi/actions.py:1306:1310
+#: ../roundup/cgi/actions.py:1358 ../roundup/cgi/actions.py:1362
+#: ../roundup/cgi/actions.py:1358:1362
 msgid "Invalid login"
 msgstr "Hibás bejelentkezés"
 
-#: ../roundup/cgi/actions.py:1316
+#: ../roundup/cgi/actions.py:1368
 msgid "You do not have permission to login"
 msgstr "Nincs jogosultsága bejelentkezni"
 
-#: ../roundup/cgi/actions.py:1358 ../roundup/cgi/actions.py:1513
-#: ../roundup/cgi/actions.py:1358:1513
+#: ../roundup/cgi/actions.py:1411 ../roundup/cgi/actions.py:1576
+#: ../roundup/cgi/actions.py:1411:1576
 #, python-format
 msgid "Column \"%(column)s\" not found in %(class)s"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1564
+#: ../roundup/cgi/actions.py:1632
 #, fuzzy, python-format
 msgid "You do not have permission to view %(class)s"
 msgstr "Nincs jogosultsága szerkeszteni %(class)s-t"
@@ -1344,11 +1361,11 @@ msgstr ""
 "A hibakövető karbantartói értesítést kaptak a problémáról.</p>\n"
 "</body></html>"
 
-#: ../roundup/cgi/client.py:798
+#: ../roundup/cgi/client.py:794
 msgid "Form Error: "
 msgstr "Űrlap hiba: "
 
-#: ../roundup/cgi/client.py:888
+#: ../roundup/cgi/client.py:884
 #, python-format
 msgid "Unrecognized charset: %r"
 msgstr "Ismeretlen karakterkészlet: %r"
@@ -1487,12 +1504,12 @@ msgstr ""
 msgid "You are not allowed to view this file."
 msgstr "Nem nézheti meg ezt a fájlt."
 
-#: ../roundup/cgi/client.py:1865
+#: ../roundup/cgi/client.py:1876
 #, python-format
 msgid "%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n"
 msgstr "%(starttag)sEltelt idő: %(seconds)fs%(endtag)s\n"
 
-#: ../roundup/cgi/client.py:1869
+#: ../roundup/cgi/client.py:1880
 #, python-format
 msgid ""
 "%(starttag)sCache hits: %(cache_hits)d, misses %(cache_misses)d. Loading "
@@ -1501,17 +1518,17 @@ msgstr ""
 "%(starttag)sCache találatok: %(cache_hits)d, tévedés %(cache_misses)d. "
 "Elemek betöltése: %(get_items)f mp. Szűrés: %(filtering)f mp.%(endtag)s\n"
 
-#: ../roundup/cgi/form_parser.py:289
+#: ../roundup/cgi/form_parser.py:290
 #, fuzzy, python-format
 msgid "link \"%(key)s\" value \"%(entry)s\" not a designator"
 msgstr "A(z) \"%(value)s\" értékű \"%(key)s\" csatolás nem teljes név"
 
-#: ../roundup/cgi/form_parser.py:307
+#: ../roundup/cgi/form_parser.py:308
 #, python-format
 msgid "%(class)s %(property)s is not a link or multilink property"
 msgstr "A(y) %(class)s %(property)s nem link vagy multilink típusú tulajdonság"
 
-#: ../roundup/cgi/form_parser.py:319
+#: ../roundup/cgi/form_parser.py:320
 #, fuzzy, python-format
 msgid ""
 "The form action claims to require property \"%(property)s\" which doesn't "
@@ -1520,7 +1537,7 @@ msgstr ""
 "%(action)s műveletet kíván a \"%(property)s\" tulajdonságon végezni, de az "
 "nem létezik"
 
-#: ../roundup/cgi/form_parser.py:341
+#: ../roundup/cgi/form_parser.py:342
 #, python-format
 msgid ""
 "You have submitted a %(action)s action for the property \"%(property)s\" "
@@ -1530,28 +1547,28 @@ msgstr ""
 "nem létezik"
 
 # ../roundup/cgi/form_parser.py:331 :357
-#: ../roundup/cgi/form_parser.py:366 ../roundup/cgi/form_parser.py:394
-#: ../roundup/cgi/form_parser.py:366:394
+#: ../roundup/cgi/form_parser.py:367 ../roundup/cgi/form_parser.py:395
+#: ../roundup/cgi/form_parser.py:367:395
 #, python-format
 msgid "You have submitted more than one value for the %s property"
 msgstr "Egynél több értéket adott meg a(z) %s tulajdonsághoz"
 
 # ../roundup/cgi/form_parser.py:354 :360
-#: ../roundup/cgi/form_parser.py:391 ../roundup/cgi/form_parser.py:397
-#: ../roundup/cgi/form_parser.py:391:397
+#: ../roundup/cgi/form_parser.py:392 ../roundup/cgi/form_parser.py:398
+#: ../roundup/cgi/form_parser.py:392:398
 msgid "Password and confirmation text do not match"
 msgstr "A jelszó és a megerősítés nem egyezik"
 
-#: ../roundup/cgi/form_parser.py:415
+#: ../roundup/cgi/form_parser.py:416
 msgid "Not a file attachment"
 msgstr ""
 
-#: ../roundup/cgi/form_parser.py:458
+#: ../roundup/cgi/form_parser.py:460
 #, python-format
 msgid "property \"%(propname)s\": \"%(value)s\" not currently in list"
 msgstr "\"%(propname)s\" tulajdonság: \"%(value)s\" jelenleg nincs a listában"
 
-#: ../roundup/cgi/form_parser.py:578
+#: ../roundup/cgi/form_parser.py:582
 #, python-format
 msgid "Required %(class)s property %(property)s not supplied"
 msgid_plural "Required %(class)s properties %(property)s not supplied"
@@ -1559,73 +1576,73 @@ msgstr[0] "Nincs megadva a(z) %(class)s kötelező %(property)s tulajdonsága"
 msgstr[1] ""
 "Nincsenek megadva a(z) %(class)s kötelező %(property)s tulajdonságai"
 
-#: ../roundup/cgi/templating.py:115
+#: ../roundup/cgi/templating.py:184
 #, python-format
 msgid "You are not allowed to %(action)s items of class %(class)s"
 msgstr ""
 "Nincs jogosultsága a(z) %(class)s osztály elemein %(action)s műveletet "
 "végrehajtani"
 
-#: ../roundup/cgi/templating.py:699
+#: ../roundup/cgi/templating.py:791
 msgid "(list)"
 msgstr "(lista)"
 
-#: ../roundup/cgi/templating.py:771
+#: ../roundup/cgi/templating.py:863
 msgid "Submit New Entry"
 msgstr "Létrehozás"
 
 # ../roundup/cgi/templating.py:710 :829 :1236 :1257 :1304 :1327 :1361 :1400
 # :1453 :1470 :1549 :1569 :1587 :1619 :1629 :1683 :1875
-#: ../roundup/cgi/templating.py:790 ../roundup/cgi/templating.py:948
-#: ../roundup/cgi/templating.py:1502 ../roundup/cgi/templating.py:1531
-#: ../roundup/cgi/templating.py:1551 ../roundup/cgi/templating.py:1564
-#: ../roundup/cgi/templating.py:1614 ../roundup/cgi/templating.py:1637
-#: ../roundup/cgi/templating.py:1644 ../roundup/cgi/templating.py:1680
-#: ../roundup/cgi/templating.py:1717 ../roundup/cgi/templating.py:1750
-#: ../roundup/cgi/templating.py:1839 ../roundup/cgi/templating.py:1860
-#: ../roundup/cgi/templating.py:1950 ../roundup/cgi/templating.py:1970
-#: ../roundup/cgi/templating.py:1988 ../roundup/cgi/templating.py:2020
-#: ../roundup/cgi/templating.py:2030 ../roundup/cgi/templating.py:2094
-#: ../roundup/cgi/templating.py:2341 ../roundup/cgi/templating.py:790:948
-#: :1502:1531 :1551:1564 :1614:1637 :1644:1680 :1717:1750 :1839:1860 :1950:1970
-#: :1988:2020 :2030:2094:2341
+#: ../roundup/cgi/templating.py:885 ../roundup/cgi/templating.py:1046
+#: ../roundup/cgi/templating.py:1612 ../roundup/cgi/templating.py:1641
+#: ../roundup/cgi/templating.py:1661 ../roundup/cgi/templating.py:1674
+#: ../roundup/cgi/templating.py:1711 ../roundup/cgi/templating.py:1760
+#: ../roundup/cgi/templating.py:1783 ../roundup/cgi/templating.py:1790
+#: ../roundup/cgi/templating.py:1826 ../roundup/cgi/templating.py:1863
+#: ../roundup/cgi/templating.py:1896 ../roundup/cgi/templating.py:1985
+#: ../roundup/cgi/templating.py:2006 ../roundup/cgi/templating.py:2096
+#: ../roundup/cgi/templating.py:2116 ../roundup/cgi/templating.py:2134
+#: ../roundup/cgi/templating.py:2166 ../roundup/cgi/templating.py:2176
+#: ../roundup/cgi/templating.py:2240 ../roundup/cgi/templating.py:2487
+#: ../roundup/cgi/templating.py:885:1046 :1612:1641 :1661:1674 :1711:1760
+#: :1783:1790 :1826:1863 :1896:1985 :2006:2096 :2116:2134 :2166:2176 :2240:2487
 msgid "[hidden]"
 msgstr "[rejtett]"
 
-#: ../roundup/cgi/templating.py:791
+#: ../roundup/cgi/templating.py:886
 msgid "New node - no history"
 msgstr "Új bejegyzés - nincs történet"
 
-#: ../roundup/cgi/templating.py:916
+#: ../roundup/cgi/templating.py:1011
 msgid "Submit Changes"
 msgstr "Változások mentése"
 
-#: ../roundup/cgi/templating.py:985
+#: ../roundup/cgi/templating.py:1083
 msgid "<em>The indicated property no longer exists</em>"
 msgstr "<em>A jelzett tulajdonság már nem létezik</em>"
 
-#: ../roundup/cgi/templating.py:986
+#: ../roundup/cgi/templating.py:1084
 #, python-format
 msgid "<em>%s: %s</em>\n"
 msgstr "<em>%s: %s</em>\n"
 
-#: ../roundup/cgi/templating.py:1021
+#: ../roundup/cgi/templating.py:1119
 #, python-format
 msgid "The linked class %(classname)s no longer exists"
 msgstr "A csatolt %(classname)s osztály már nem létezik"
 
 # ../roundup/cgi/templating.py:940 :964
-#: ../roundup/cgi/templating.py:1059 ../roundup/cgi/templating.py:1085
-#: ../roundup/cgi/templating.py:1059:1085
+#: ../roundup/cgi/templating.py:1157 ../roundup/cgi/templating.py:1183
+#: ../roundup/cgi/templating.py:1157:1183
 msgid "<strike>The linked node no longer exists</strike>"
 msgstr "<strike>A csatolt bejegyzés már nem létezik</strike>"
 
-#: ../roundup/cgi/templating.py:1146
+#: ../roundup/cgi/templating.py:1244
 #, python-format
 msgid "%s: (no value)"
 msgstr "%s: (nincs érték)"
 
-#: ../roundup/cgi/templating.py:1162
+#: ../roundup/cgi/templating.py:1260
 #, fuzzy, python-format
 msgid ""
 "<strong><em>This event %s is not handled by the history display!</em></"
@@ -1633,48 +1650,48 @@ msgid ""
 msgstr ""
 "<strong><em>Az előzmények képernyő nem kezeli ezt az eseményt!</em></strong>"
 
-#: ../roundup/cgi/templating.py:1175
+#: ../roundup/cgi/templating.py:1273
 msgid "<tr><td colspan=4><strong>Note:</strong></td></tr>"
 msgstr "<tr><td colspan=4><strong>Megjegyzés:</strong></td></tr>"
 
-#: ../roundup/cgi/templating.py:1184
+#: ../roundup/cgi/templating.py:1282
 msgid "History"
 msgstr "Előzmények"
 
-#: ../roundup/cgi/templating.py:1186
+#: ../roundup/cgi/templating.py:1284
 msgid "<th>Date</th>"
 msgstr "<th>Dátum</th>"
 
-#: ../roundup/cgi/templating.py:1187
+#: ../roundup/cgi/templating.py:1285
 msgid "<th>User</th>"
 msgstr "<th>Szerző</th>"
 
-#: ../roundup/cgi/templating.py:1188
+#: ../roundup/cgi/templating.py:1286
 msgid "<th>Action</th>"
 msgstr "<th>Művelet</th>"
 
-#: ../roundup/cgi/templating.py:1189
+#: ../roundup/cgi/templating.py:1287
 msgid "<th>Args</th>"
 msgstr "<th>Tulajdonságok</th>"
 
-#: ../roundup/cgi/templating.py:1237
+#: ../roundup/cgi/templating.py:1335
 #, python-format
 msgid "Copy of %(class)s %(id)s"
 msgstr "A(z) %(class)s %(id)s másolata"
 
 # ../roundup/cgi/templating.py:1006 :1404 :1425 :1431
-#: ../roundup/cgi/templating.py:1754 ../roundup/cgi/templating.py:1787
-#: ../roundup/cgi/templating.py:1128:1754:1787
+#: ../roundup/cgi/templating.py:1900 ../roundup/cgi/templating.py:1933
+#: ../roundup/cgi/templating.py:1226:1900:1933
 msgid "No"
 msgstr "Nem"
 
 # ../roundup/cgi/templating.py:1006 :1404 :1423 :1428
-#: ../roundup/cgi/templating.py:1754 ../roundup/cgi/templating.py:1782
-#: ../roundup/cgi/templating.py:1128:1754:1782
+#: ../roundup/cgi/templating.py:1900 ../roundup/cgi/templating.py:1928
+#: ../roundup/cgi/templating.py:1226:1900:1928
 msgid "Yes"
 msgstr "Igen"
 
-#: ../roundup/cgi/templating.py:1908
+#: ../roundup/cgi/templating.py:2054
 msgid ""
 "default value for DateHTMLProperty must be either DateHTMLProperty or string "
 "date representation."
@@ -1682,20 +1699,33 @@ msgstr ""
 "a DateHTMLProperty alapértéke DateHTMLProperty vagy szöveges dátumleírás "
 "típusú kell legyen."
 
-#: ../roundup/cgi/templating.py:2074
+#: ../roundup/cgi/templating.py:2220
 #, python-format
 msgid "Attempt to look up %(attr)s on a missing value"
 msgstr "Kísérlet %(attr)s keresésére egy hiányzó értéken"
 
-#: ../roundup/cgi/templating.py:2085
+#: ../roundup/cgi/templating.py:2231
 #, fuzzy, python-format
 msgid "Attempt to look up %(item)s on a missing value"
 msgstr "Kísérlet %(attr)s keresésére egy hiányzó értéken"
 
-#: ../roundup/cgi/templating.py:2188
+#: ../roundup/cgi/templating.py:2334
 #, python-format
 msgid "<option %svalue=\"-1\">- no selection -</option>"
 msgstr "<option %svalue=\"-1\">- nincs kiválasztás -</option>"
+
+#: ../roundup/cgi/timestamp.py:19
+msgid "Form is corrupted."
+msgstr ""
+
+#: ../roundup/cgi/timestamp.py:28
+#, python-format
+msgid "Form is corrupted, missing: %s."
+msgstr ""
+
+#: ../roundup/cgi/timestamp.py:30
+msgid "Responding to form too quickly."
+msgstr ""
 
 #: ../roundup/date.py:384
 #, fuzzy, python-format
@@ -1831,59 +1861,59 @@ msgstr "%s"
 msgid "in %s"
 msgstr "%s-ban"
 
-#: ../roundup/hyperdb.py:92
+#: ../roundup/hyperdb.py:103
 #, fuzzy, python-format
 msgid "property %s: %s"
 msgstr "Hiba: %s: %s"
 
-#: ../roundup/hyperdb.py:114
+#: ../roundup/hyperdb.py:130
 #, python-format
 msgid "property %s: %r is an invalid date (%s)"
 msgstr ""
 
-#: ../roundup/hyperdb.py:131
+#: ../roundup/hyperdb.py:151
 #, python-format
 msgid "property %s: %r is an invalid date interval (%s)"
 msgstr ""
 
-#: ../roundup/hyperdb.py:318
+#: ../roundup/hyperdb.py:349
 #, python-format
 msgid "property %s: %r is not a number"
 msgstr ""
 
-#: ../roundup/hyperdb.py:329
+#: ../roundup/hyperdb.py:361
 #, fuzzy, python-format
 msgid "property %s: %r is not an integer"
 msgstr "\"%(propname)s\" tulajdonság: \"%(value)s\" jelenleg nincs a listában"
 
-#: ../roundup/hyperdb.py:342
+#: ../roundup/hyperdb.py:378
 #, python-format
 msgid "\"%s\" not a node designator"
 msgstr ""
 
 # ../roundup/hyperdb.py:949:957
-#: ../roundup/hyperdb.py:1211 ../roundup/hyperdb.py:1219
-#: ../roundup/hyperdb.py:1211:1219
+#: ../roundup/hyperdb.py:1258 ../roundup/hyperdb.py:1266
+#: ../roundup/hyperdb.py:1258:1266
 #, python-format
 msgid "Not a property name: %s"
 msgstr ""
 
-#: ../roundup/hyperdb.py:1661
+#: ../roundup/hyperdb.py:1707
 #, python-format
 msgid "property %s: %r is not a %s."
 msgstr ""
 
-#: ../roundup/hyperdb.py:1664
+#: ../roundup/hyperdb.py:1710
 #, python-format
 msgid "you may only enter ID values for property %s"
 msgstr ""
 
-#: ../roundup/hyperdb.py:1696
+#: ../roundup/hyperdb.py:1744
 #, python-format
 msgid "%r is not a property of %s"
 msgstr ""
 
-#: ../roundup/init.py:136
+#: ../roundup/init.py:139
 #, python-format
 msgid ""
 "WARNING: directory '%s'\n"
@@ -1893,44 +1923,44 @@ msgstr ""
 "\trégi típusú sablont tartalmaz - ignorálva"
 
 # ../roundup/mailgw.py:199:211
-#: ../roundup/mailgw.py:184 ../roundup/mailgw.py:197
-#: ../roundup/mailgw.py:184:197
+#: ../roundup/mailgw.py:197 ../roundup/mailgw.py:210
+#: ../roundup/mailgw.py:197:210
 #, python-format
 msgid "Message signed with unknown key: %s"
 msgstr ""
 
-#: ../roundup/mailgw.py:187
+#: ../roundup/mailgw.py:200
 #, python-format
 msgid "Message signed with an expired key: %s"
 msgstr ""
 
-#: ../roundup/mailgw.py:190
+#: ../roundup/mailgw.py:203
 #, python-format
 msgid "Message signed with a revoked key: %s"
 msgstr ""
 
-#: ../roundup/mailgw.py:193
+#: ../roundup/mailgw.py:206
 msgid "Invalid PGP signature detected."
 msgstr ""
 
-#: ../roundup/mailgw.py:199
+#: ../roundup/mailgw.py:213
 #, fuzzy
 msgid "Unsigned Message"
 msgstr "Új üzenet"
 
-#: ../roundup/mailgw.py:429
+#: ../roundup/mailgw.py:446
 msgid "Unknown multipart/encrypted version."
 msgstr ""
 
-#: ../roundup/mailgw.py:438
+#: ../roundup/mailgw.py:455
 msgid "Unable to decrypt your message."
 msgstr ""
 
-#: ../roundup/mailgw.py:465
+#: ../roundup/mailgw.py:482
 msgid "No PGP signature found in message."
 msgstr ""
 
-#: ../roundup/mailgw.py:537
+#: ../roundup/mailgw.py:555
 msgid ""
 "\n"
 "Emails to Roundup trackers must include a Subject: line!\n"
@@ -1939,7 +1969,7 @@ msgstr ""
 "A Roundup hibakövetőkhöz küldött e-maileknek tartalmazniuk kell egy Subject: "
 "sort!\n"
 
-#: ../roundup/mailgw.py:646
+#: ../roundup/mailgw.py:668
 #, python-format
 msgid ""
 "\n"
@@ -1956,7 +1986,7 @@ msgid ""
 "Subject was: '%(subject)s'\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:684
+#: ../roundup/mailgw.py:706
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -1973,7 +2003,7 @@ msgstr ""
 "Az érvényes osztálynevek: %(validname)s\n"
 "A tárgy ez volt: \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:692
+#: ../roundup/mailgw.py:714
 #, python-format
 msgid ""
 "\n"
@@ -1990,7 +2020,7 @@ msgid ""
 "Subject was: '%(subject)s'\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:730
+#: ../roundup/mailgw.py:750
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -2008,7 +2038,7 @@ msgstr ""
 "\n"
 "A tárgy ez volt: \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:763
+#: ../roundup/mailgw.py:783
 #, python-format
 msgid ""
 "\n"
@@ -2023,7 +2053,7 @@ msgstr ""
 "\n"
 "A tárgy ez volt: \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:808
+#: ../roundup/mailgw.py:828
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -2036,21 +2066,21 @@ msgstr ""
 "\n"
 "Ismeretlen cím: %(from_address)s\n"
 
-#: ../roundup/mailgw.py:816
+#: ../roundup/mailgw.py:836
 msgid "You are not permitted to access this tracker."
 msgstr "Ehhez a hibakövetőhöz hozzáférése nem engedélyezett."
 
-#: ../roundup/mailgw.py:827
+#: ../roundup/mailgw.py:847
 #, python-format
 msgid "You are not permitted to edit %(classname)s."
 msgstr "Nincs jogosultsága %(classname)s szerkesztéséhez."
 
-#: ../roundup/mailgw.py:833
+#: ../roundup/mailgw.py:853
 #, python-format
 msgid "You are not permitted to create %(classname)s."
 msgstr "Nincs jogosultsága %(classname)s létrehozásához."
 
-#: ../roundup/mailgw.py:914
+#: ../roundup/mailgw.py:935
 #, python-format
 msgid ""
 "\n"
@@ -2065,27 +2095,27 @@ msgstr ""
 "\n"
 "A tárgy ez volt: \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:966
+#: ../roundup/mailgw.py:987
 msgid "This tracker has been configured to require all email be PGP encrypted."
 msgstr ""
 
-#: ../roundup/mailgw.py:1003
+#: ../roundup/mailgw.py:1024
 msgid ""
 "\n"
 "This tracker has been configured to require all email be PGP signed or\n"
 "encrypted."
 msgstr ""
 
-#: ../roundup/mailgw.py:1033
+#: ../roundup/mailgw.py:1055
 msgid "You are not permitted to create files."
 msgstr "Nincs jogosultsága fájlok létrehozására."
 
-#: ../roundup/mailgw.py:1047
+#: ../roundup/mailgw.py:1069
 #, python-format
 msgid "You are not permitted to add files to %(classname)s."
 msgstr "Nincs jogosultsága fájlok hozzáadására %(classname)s-hez."
 
-#: ../roundup/mailgw.py:1077
+#: ../roundup/mailgw.py:1099
 msgid ""
 "\n"
 "Roundup requires the submission to be plain text. The message parser could\n"
@@ -2095,11 +2125,11 @@ msgstr ""
 "A Roundup egyszerű szövegként tudja fogadni a kérelmet. Az üzenet értelmező\n"
 "nem talált használható, egyszerű szöveg formátumú részt.\n"
 
-#: ../roundup/mailgw.py:1088
+#: ../roundup/mailgw.py:1112
 msgid "You are not permitted to create messages."
 msgstr "Nincs jogosultsága üzenetek létrehozására."
 
-#: ../roundup/mailgw.py:1096
+#: ../roundup/mailgw.py:1120
 #, python-format
 msgid ""
 "\n"
@@ -2110,24 +2140,24 @@ msgstr ""
 "A mail üzenetet a felderítő visszutasította.\n"
 "%(error)s\n"
 
-#: ../roundup/mailgw.py:1104
+#: ../roundup/mailgw.py:1128
 #, python-format
 msgid "You are not permitted to add messages to %(classname)s."
 msgstr "Nincs jogosultsága üzenet hozzáadására %(classname)s-hez."
 
-#: ../roundup/mailgw.py:1126
+#: ../roundup/mailgw.py:1150
 #, python-format
 msgid "You are not permitted to edit property %(prop)s of class %(classname)s."
 msgstr ""
 "Nincs jogosultsága %(classname)s osztály %(prop)s tulajdonságát szerkeszteni."
 
-#: ../roundup/mailgw.py:1135
+#: ../roundup/mailgw.py:1159
 #, fuzzy, python-format
 msgid "You are not permitted to set property %(prop)s of class %(classname)s."
 msgstr ""
 "Nincs jogosultsága %(classname)s osztály %(prop)s tulajdonságát szerkeszteni."
 
-#: ../roundup/mailgw.py:1141
+#: ../roundup/mailgw.py:1167
 #, python-format
 msgid ""
 "\n"
@@ -2138,7 +2168,7 @@ msgstr ""
 "Probléma volt az Ön által küldött üzenettel:\n"
 "   %(message)s\n"
 
-#: ../roundup/mailgw.py:1607
+#: ../roundup/mailgw.py:1633
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -2151,7 +2181,7 @@ msgstr ""
 "%(mailadmin)s-nal és javíttassa ki a hibásan megadott osztályt:\n"
 "  %(current_class)s\n"
 
-#: ../roundup/mailgw.py:1638
+#: ../roundup/mailgw.py:1664
 #, python-format
 msgid ""
 "\n"
@@ -2164,96 +2194,101 @@ msgstr ""
 "%(mailadmin)s-nal és javíttassa ki a hibás tulajdonságokat:\n"
 "  %(errors)s\n"
 
-#: ../roundup/mailgw.py:1659
+#: ../roundup/mailgw.py:1685
 msgid "not of form [arg=value,value,...;arg=value,value,...]"
 msgstr "nem [arg=érték,érték,...;arg=érték,érték,...] formátumú"
 
-#: ../roundup/rest.py:1781
+#: ../roundup/rest.py:1830
 #, python-format
 msgid "Api rate limits exceeded. Please wait: %s seconds."
 msgstr ""
 
-#: ../roundup/roundupdb.py:203
+#: ../roundup/roundupdb.py:135
+#, python-format
+msgid "Username '%s' already exists."
+msgstr ""
+
+#: ../roundup/roundupdb.py:219
 msgid "files"
 msgstr "fájlok"
 
-#: ../roundup/roundupdb.py:203
+#: ../roundup/roundupdb.py:219
 msgid "messages"
 msgstr "üzenetek"
 
-#: ../roundup/roundupdb.py:203
+#: ../roundup/roundupdb.py:219
 msgid "nosy"
 msgstr "kíváncsi"
 
-#: ../roundup/roundupdb.py:203
+#: ../roundup/roundupdb.py:219
 msgid "superseder"
 msgstr "helyettes"
 
-#: ../roundup/roundupdb.py:203
+#: ../roundup/roundupdb.py:219
 msgid "title"
 msgstr "cím"
 
-#: ../roundup/roundupdb.py:204
+#: ../roundup/roundupdb.py:220
 msgid "assignedto"
 msgstr "kiosztva"
 
-#: ../roundup/roundupdb.py:204
+#: ../roundup/roundupdb.py:220
 #, fuzzy
 msgid "keyword"
 msgstr "Téma"
 
-#: ../roundup/roundupdb.py:204
+#: ../roundup/roundupdb.py:220
 msgid "priority"
 msgstr "prioritás"
 
-#: ../roundup/roundupdb.py:204
+#: ../roundup/roundupdb.py:220
 msgid "status"
 msgstr "állapot"
 
-#: ../roundup/roundupdb.py:207
+#: ../roundup/roundupdb.py:223
 msgid "activity"
 msgstr "művelet"
 
 #. following properties are common for all hyperdb classes
 #. they are listed here to keep things in one place
-#: ../roundup/roundupdb.py:207
+#: ../roundup/roundupdb.py:223
 msgid "actor"
 msgstr "végezte"
 
-#: ../roundup/roundupdb.py:207
+#: ../roundup/roundupdb.py:223
 msgid "creation"
 msgstr "létrehozás"
 
-#: ../roundup/roundupdb.py:207
+#: ../roundup/roundupdb.py:223
 msgid "creator"
 msgstr "létrehozó"
 
-#: ../roundup/roundupdb.py:391
+#: ../roundup/roundupdb.py:412
 #, python-format
 msgid "No key for \"%(adr)s\" in keyring"
 msgstr ""
 
-#: ../roundup/roundupdb.py:461
+#: ../roundup/roundupdb.py:484
 #, python-format
 msgid "New submission from %(authname)s%(authaddr)s:"
 msgstr "Új beadvány %(authname)s%(authaddr)s részéről:"
 
-#: ../roundup/roundupdb.py:464
+#: ../roundup/roundupdb.py:487
 #, python-format
 msgid "%(authname)s%(authaddr)s added the comment:"
 msgstr "%(authname)s%(authaddr)s ezt a megjegyzést írta:"
 
-#: ../roundup/roundupdb.py:467
+#: ../roundup/roundupdb.py:490
 #, fuzzy, python-format
 msgid "Change by %(authname)s%(authaddr)s:"
 msgstr "Új beadvány %(authname)s%(authaddr)s részéről:"
 
-#: ../roundup/roundupdb.py:486
+#: ../roundup/roundupdb.py:509
 #, python-format
 msgid "File '%(filename)s' not attached - you can download it from %(link)s."
 msgstr ""
 
-#: ../roundup/roundupdb.py:852
+#: ../roundup/roundupdb.py:886
 #, python-format
 msgid ""
 "\n"
@@ -2263,27 +2298,27 @@ msgid ""
 "%(old)s"
 msgstr ""
 
-#: ../roundup/scripts/roundup_demo.py:48
+#: ../roundup/scripts/roundup_demo.py:49
 #, python-format
 msgid "Enter directory path to create demo tracker [%s]: "
 msgstr "Adja meg az elérési utat a bemutató tracker [%s] létrehozásához: "
 
-#: ../roundup/scripts/roundup_demo.py:53
+#: ../roundup/scripts/roundup_demo.py:54
 #, python-format
 msgid "Enter tracker template to use (one of (%s)) [%s]: "
 msgstr ""
 
-#: ../roundup/scripts/roundup_gettext.py:34
+#: ../roundup/scripts/roundup_gettext.py:35
 #, python-format
 msgid "Usage: %(program)s <tracker home>"
 msgstr "Használat: %(program)s <tracker elérési út>"
 
-#: ../roundup/scripts/roundup_gettext.py:49
+#: ../roundup/scripts/roundup_gettext.py:51
 #, python-format
 msgid "No tracker templates found in directory %s"
 msgstr "Nem található tracker sablon a(z) %s könyvtárban"
 
-#: ../roundup/scripts/roundup_mailgw.py:49
+#: ../roundup/scripts/roundup_mailgw.py:50
 #, python-format
 msgid ""
 "Usage: %(program)s [-v] [-c class] [[-C class] -S field=value]* [instance "
@@ -2369,20 +2404,16 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../roundup/scripts/roundup_mailgw.py:171
+#: ../roundup/scripts/roundup_mailgw.py:174
 msgid "Error: not enough source specification information"
 msgstr "Hiba: nincs elég forrás specifikációs információ"
 
-#: ../roundup/scripts/roundup_mailgw.py:200
+#: ../roundup/scripts/roundup_mailgw.py:203
 #, fuzzy, python-format
 msgid "Error: %s specification not valid"
 msgstr "Hiba: a pop specifikáció nem érvényes"
 
-#: ../roundup/scripts/roundup_mailgw.py:206
-msgid "Error: a later version of python is required"
-msgstr ""
-
-#: ../roundup/scripts/roundup_mailgw.py:222
+#: ../roundup/scripts/roundup_mailgw.py:223
 #, fuzzy
 msgid ""
 "Error: The source must be either \"mailbox\", \"pop\", \"pops\", \"apop\", "
@@ -2391,11 +2422,11 @@ msgstr ""
 "Hiba: A forrás a következők egyike kell legyen: \"mailbox\", \"pop\", \"apop"
 "\", \"imap\" vagy \"imaps\""
 
-#: ../roundup/scripts/roundup_server.py:108
+#: ../roundup/scripts/roundup_server.py:109
 msgid "WARNING: generating temporary SSL certificate"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:288
+#: ../roundup/scripts/roundup_server.py:293
 msgid ""
 "<html><head><title>Roundup trackers index</title></head>\n"
 "<body><h1>Roundup trackers index</h1><ol>\n"
@@ -2403,52 +2434,52 @@ msgstr ""
 "<html><head><title>Roundup hibakövetők listája</title></head>\n"
 "<body><h1>Roundup hibakövetők listája</h1><ol>\n"
 
-#: ../roundup/scripts/roundup_server.py:496
-#, python-format
-msgid "Error: %s: %s"
-msgstr "Hiba: %s: %s"
+#: ../roundup/scripts/roundup_server.py:502
+#, fuzzy, python-format
+msgid "Error: %(type)s: %(value)s"
+msgstr "%(key)s: %(value)s"
 
-#: ../roundup/scripts/roundup_server.py:506
+#: ../roundup/scripts/roundup_server.py:514
 msgid "WARNING: ignoring \"-g\" argument, not root"
 msgstr "FIGYELEM: \"-g\" opció figyelmen kívül hagyásra került, nem root"
 
-#: ../roundup/scripts/roundup_server.py:512
+#: ../roundup/scripts/roundup_server.py:520
 msgid "Can't change groups - no grp module"
 msgstr "Nem lehet csoportot váltani - nincs meg a grp modul"
 
-#: ../roundup/scripts/roundup_server.py:521
+#: ../roundup/scripts/roundup_server.py:529
 #, python-format
 msgid "Group %(group)s doesn't exist"
 msgstr "%(group)s csoport nem létezik"
 
-#: ../roundup/scripts/roundup_server.py:532
+#: ../roundup/scripts/roundup_server.py:541
 msgid "Can't run as root!"
 msgstr "Nem futhat root-ként!"
 
-#: ../roundup/scripts/roundup_server.py:535
+#: ../roundup/scripts/roundup_server.py:544
 msgid "WARNING: ignoring \"-u\" argument, not root"
 msgstr "FIGYELEM: \"-u\" opció figyelmen kívül hagyásra került, nem root"
 
-#: ../roundup/scripts/roundup_server.py:541
+#: ../roundup/scripts/roundup_server.py:550
 msgid "Can't change users - no pwd module"
 msgstr "Felhasználóváltás nem sikerült - nincs pwd modul"
 
-#: ../roundup/scripts/roundup_server.py:550
+#: ../roundup/scripts/roundup_server.py:559
 #, python-format
 msgid "User %(user)s doesn't exist"
 msgstr "A(z) %(user)s felhasználó nem létezik"
 
-#: ../roundup/scripts/roundup_server.py:732
+#: ../roundup/scripts/roundup_server.py:742
 #, python-format
 msgid "Multiprocess mode \"%s\" is not available, switching to single-process"
 msgstr "\"%s\" többszálú mód nem érhető el, áttérés egyszálú módra"
 
-#: ../roundup/scripts/roundup_server.py:759
+#: ../roundup/scripts/roundup_server.py:769
 #, python-format
 msgid "Unable to bind to port %s, port already in use."
 msgstr "Nem sikerült a(z) %s portra csatlakozni, a port már használatban van."
 
-#: ../roundup/scripts/roundup_server.py:827
+#: ../roundup/scripts/roundup_server.py:841
 msgid ""
 " -c <Command>  Windows Service options.\n"
 "               If you want to run the server as a Windows Service, you\n"
@@ -2458,7 +2489,7 @@ msgid ""
 "               specifics."
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:834
+#: ../roundup/scripts/roundup_server.py:848
 msgid ""
 " -u <UID>      runs the Roundup web server as this UID\n"
 " -g <GID>      runs the Roundup web server as this GID\n"
@@ -2467,7 +2498,7 @@ msgid ""
 "               specified if -d is used."
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:841
+#: ../roundup/scripts/roundup_server.py:855
 #, python-format
 msgid ""
 "%(message)sUsage: roundup-server [options] [name=tracker home]*\n"
@@ -2529,21 +2560,21 @@ msgid ""
 "   any url-unsafe characters like spaces, as these confuse IE.\n"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:999
+#: ../roundup/scripts/roundup_server.py:1027
 msgid "Instances must be name=home"
 msgstr "A példányoknak név=home formában kell lenniük"
 
-#: ../roundup/scripts/roundup_server.py:1013
+#: ../roundup/scripts/roundup_server.py:1041
 #, python-format
 msgid "Configuration saved to %s"
 msgstr "Beállítások elmentve ide: %s"
 
-#: ../roundup/scripts/roundup_server.py:1031
+#: ../roundup/scripts/roundup_server.py:1059
 msgid "Sorry, you can't run the server as a daemon on this Operating System"
 msgstr ""
 "Elnézést, ezen az operációs rendszeren a szerver nem indítható démonként"
 
-#: ../roundup/scripts/roundup_server.py:1051
+#: ../roundup/scripts/roundup_server.py:1079
 #, python-format
 msgid "Roundup server started on %(HOST)s:%(PORT)s"
 msgstr "Roundup server elindítva a(z) %(HOST)s:%(PORT)s gépen"
@@ -2733,7 +2764,7 @@ msgid "File display"
 msgstr "Fájl megjelenítés"
 
 #: ../share/roundup/templates/classic/html/file.item.html:23
-#: ../share/roundup/templates/classic/html/user.register.html:17
+#: ../share/roundup/templates/classic/html/user.register.html:19
 msgid "Name"
 msgstr "Név"
 
@@ -2886,7 +2917,7 @@ msgstr "Másolat készítése"
 
 #: ../share/roundup/templates/classic/html/issue.item.html:114
 #: ../share/roundup/templates/classic/html/user.item.html:153
-#: ../share/roundup/templates/classic/html/user.register.html:72
+#: ../share/roundup/templates/classic/html/user.register.html:74
 #: ../share/roundup/templates/minimal/html/user.item.html:103
 msgid ""
 "<table class=\"form\"> <tr> <td>Note:&nbsp;</td> <th class=\"required"
@@ -3238,9 +3269,9 @@ msgid "Remember me?"
 msgstr "Emlékezzen?"
 
 #: ../share/roundup/templates/classic/html/page.html:147
-#: ../share/roundup/templates/classic/html/user.register.html:66
+#: ../share/roundup/templates/classic/html/user.register.html:68
 #: ../share/roundup/templates/minimal/html/page.html:147
-#: ../share/roundup/templates/minimal/html/user.register.html:63
+#: ../share/roundup/templates/minimal/html/user.register.html:65
 msgid "Register"
 msgstr "Regisztráció"
 
@@ -3481,7 +3512,7 @@ msgid "Real name"
 msgstr "Valódi név"
 
 #: ../share/roundup/templates/classic/html/user.index.html:21
-#: ../share/roundup/templates/classic/html/user.register.html:45
+#: ../share/roundup/templates/classic/html/user.register.html:47
 msgid "Organisation"
 msgstr "Szervezet"
 
@@ -3533,9 +3564,9 @@ msgid "User${id} Editing"
 msgstr "${id}. felhasználó szerkesztése"
 
 #: ../share/roundup/templates/classic/html/user.item.html:80
-#: ../share/roundup/templates/classic/html/user.register.html:33
+#: ../share/roundup/templates/classic/html/user.register.html:35
 #: ../share/roundup/templates/minimal/html/user.item.html:75
-#: ../share/roundup/templates/minimal/html/user.register.html:41
+#: ../share/roundup/templates/minimal/html/user.register.html:43
 msgid "Roles"
 msgstr "Szerepkörök"
 
@@ -3550,8 +3581,8 @@ msgid "(the default is ${zone})"
 msgstr "(${zone} az alapértelmezett)"
 
 #: ../share/roundup/templates/classic/html/user.item.html:130
-#: ../share/roundup/templates/classic/html/user.register.html:53
-#: ../share/roundup/templates/minimal/html/user.register.html:53
+#: ../share/roundup/templates/classic/html/user.register.html:55
+#: ../share/roundup/templates/minimal/html/user.register.html:55
 msgid "Alternate E-mail addresses<br>One address per line"
 msgstr "Alternatív e-mail címek <br>soronként egy cím"
 
@@ -3562,27 +3593,27 @@ msgstr "Alternatív e-mail címek <br>soronként egy cím"
 msgid "Registering with ${tracker}"
 msgstr "Regisztrálás a következőnél: ${tracker}"
 
-#: ../share/roundup/templates/classic/html/user.register.html:21
-#: ../share/roundup/templates/minimal/html/user.register.html:29
+#: ../share/roundup/templates/classic/html/user.register.html:23
+#: ../share/roundup/templates/minimal/html/user.register.html:31
 msgid "Login Name"
 msgstr "Bejelentkezési név"
 
-#: ../share/roundup/templates/classic/html/user.register.html:25
-#: ../share/roundup/templates/minimal/html/user.register.html:33
+#: ../share/roundup/templates/classic/html/user.register.html:27
+#: ../share/roundup/templates/minimal/html/user.register.html:35
 msgid "Login Password"
 msgstr "Bejelentkezési jelszó"
 
-#: ../share/roundup/templates/classic/html/user.register.html:29
-#: ../share/roundup/templates/minimal/html/user.register.html:37
+#: ../share/roundup/templates/classic/html/user.register.html:31
+#: ../share/roundup/templates/minimal/html/user.register.html:39
 msgid "Confirm Password"
 msgstr "Jelszó megerősítése"
 
-#: ../share/roundup/templates/classic/html/user.register.html:41
+#: ../share/roundup/templates/classic/html/user.register.html:43
 msgid "Phone"
 msgstr "Telefon"
 
-#: ../share/roundup/templates/classic/html/user.register.html:49
-#: ../share/roundup/templates/minimal/html/user.register.html:49
+#: ../share/roundup/templates/classic/html/user.register.html:51
+#: ../share/roundup/templates/minimal/html/user.register.html:51
 msgid "E-mail address"
 msgstr "E-mail címek"
 
@@ -3698,6 +3729,9 @@ msgstr "Kérem válasszon a bal oldali menüből."
 #: ../share/roundup/templates/minimal/html/home.html:19
 msgid "Please log in or register."
 msgstr "Jelentkezzen be vagy regisztráljon."
+
+#~ msgid "Error: %s: %s"
+#~ msgstr "Hiba: %s: %s"
 
 #~ msgid "WARNING: invalid date tuple %r"
 #~ msgstr "FIGYELEM: hibás dátum tuple %r"
