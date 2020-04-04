@@ -260,15 +260,15 @@ Jinja template changes
 
 Auto escaping has been enabled in the jinja template engine, this
 means it is no longer necessary to manually escape dynamic strings
-with "|e", but strings that should not be escaped need to be marked
-with "|safe" (e.g. "{{ context.history()|u|safe }}"). Also, the i18n
+with "\|e", but strings that should not be escaped need to be marked
+with "\|safe" (e.g. "{{ context.history()|u|safe }}"). Also, the i18n
 extension has been enabled and the template has been updated to use
 the extension for translatable text instead of explicit "i18n.gettext"
 calls:
 
    {% trans %}List of issues{% endtrans %}
 
-instead of
+instead of:
 
    {{ i18n.gettext('List of issues')|u }}
 
