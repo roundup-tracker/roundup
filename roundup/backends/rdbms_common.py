@@ -545,8 +545,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             return 0
 
         if not self.config.RDBMS_ALLOW_ALTER:
-            raise DatabaseError(_('ALTER operation disallowed: %r -> %r.'% (
-                old_spec, new_spec)))
+            raise DatabaseError(_(
+                'ALTER operation disallowed: %(old)r -> %(new)r.'% {
+                    'old': old_spec, 'new': new_spec}))
 
         logger = logging.getLogger('roundup.hyperdb.backend')
         logger.info('update_class %s' % spec.classname)

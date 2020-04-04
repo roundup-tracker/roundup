@@ -499,7 +499,8 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
 
 def error():
     exc_type, exc_value = sys.exc_info()[:2]
-    return _('Error: %s: %s' % (exc_type, exc_value))
+    return _('Error: %(type)s: %(value)s' % {'type': exc_type,
+                                             'value': exc_value})
 
 
 def setgid(group):
