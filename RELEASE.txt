@@ -51,9 +51,12 @@ Roundup release checklist:
       hg status --rev 1.6.0:tip | sed -ne 's/^A //p' | while read i ; \
       do echo $i; grep "$i" MANIFEST; done | uniq -c
 
-    Anything with a count of 1 is not in the nanifest.
-    If they are not, edit MANIFEST.in to include them. For format docs see
+    Anything with a count of 1 is not in the manifest.
+    If they are missing files that should be in the manifest,
+    edit MANIFEST.in to include them. For format docs see
     http://docs.python.org/2/distutils/sourcedist.html#manifest-template
+    (Notes files for the website and issue tracker shouldn't be in the
+    manifest.)
 11. python setup.py sdist
     (if you find sdist a little verbose, add "--quiet" to the end of the
      command)

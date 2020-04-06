@@ -1,4 +1,4 @@
-I'm proud to release version 2.0.0alpha0 of the Roundup issue tracker
+I'm proud to release version 2.0.0beta0 of the Roundup issue tracker
 which has been possible due to the help of several contributors. This
 release contains some major changes, so make sure to read
 `docs/upgrading.txt
@@ -8,11 +8,11 @@ features and many bug fixes.
 
 You can download it with:
 
-   pip download roundup==2.0.0alpha0
+   pip download roundup==2.0.0beta0
 
 then unpack and test/install the tarball.
 
-Among the notable improvements are:
+Among the notable improvements from the 1.6.1 release are:
 
    Roundup is multilingual and will run under either Python 3 or
    Python 2. If you want to use Python 3, you *must read* the Python 3
@@ -32,10 +32,16 @@ Among the notable improvements are:
    Use of mod_python is deprecated. Apache mod_wsgi documentation
    has been updated along with gunicorn and uwsgi and is the
    preferred mechanism.
-	
+
+   jinja templates updated to bootstrap 4.4.1. Templates use
+   autoescape and translation library. Support for messages
+   written in markdown added. SimpleMDE used as markdown editor to
+   provide preview features. Thanks to Christof Meerwald.
+   
 The file CHANGES.txt has a detailed list of feature additions and bug
-fixes. The most recent changes from there are at the end of this
-announcement.  Also see the information in doc/upgrading.txt.
+fixes for each release. The most recent changes from there are at the
+end of this announcement.  Also see the information in
+doc/upgrading.txt.
 
 How You Can Help
 ================
@@ -130,184 +136,99 @@ Recent Changes
 
 Features:
 
-- issue2550901: add search page to jinja2 template (Christof Meerwald)
-- issue2550982: use PBKDF2 in Python's hashlib, if available (Python
-  2.7.8+), to improve performance over bundled pure Python
-  version. Note that acceleration via m2crypto is no longer supported
-  (Christof Meerwald)
-- issue2550989: PGP encryption is now done using the gpg module
-  instead of pyme. (Christof Meerwald)
-- issue2550987: Use updated MySQL client module that supports Python
-  3. (Christof Meerwald)
-- issue2550967: the jinja2 loader has been extended to look for .xml
-  files as well as .html files similar to the TAL loader. (Christof
-  Meerwald)
-- Support for Python 3 (3.4 and later).  See doc/upgrading.txt for
-  details of what is required to move an existing tracker from Python
-  2 to Python 3 (Joseph Myers, Christof Meerwald)
-- Merge the Google Summer of Code Project of 2015, the implementation of
-  a REST-API for Roundup. This was implemented by Chau Nguyen under the
-  supervision of Ezio Melotti. Some additions were made, most notably we
-  never destroy an object in the database but retire them with the
-  DELETE method. We also don't allow to DELETE a whole class. Python3
-  support was also fixed and we have cherry-picked two patches from the
-  bugs.python.org branch in the files affected by the REST-API changes.
-- Patch to client.py and roundup-server needed by REST-API
-  code. Support OPTIONS verb and prevent hangs when processing a verb
-  other than GET that doesn't have a payload. E.G. DELETE, PATCH or
-  OPTIONS. Verbs like PUT and POST usually have payloads, so this
-  patch doesn't touch processing of these methods. (John Rouillard)
-- Patches to new rest code:
-   - Generated links in responses should use the base url specified
-     in config.ini.
-   - allow user (e.g. in browser) to override response type/Accept
-     header using extension in url. E.G. .../issues.json. This fixes
-     the existing code so it works.
-   - fix SECURITY issue. Retrieving the item of a class
-     (e.g. /rest/data/user/2) would display properties the user wasn't
-     allowed to access. Note that unlike the web interface,  passwords
-     and roles for users are still retreivable if the user has access
-     rights to the properties.
-   - ETags are sent by GET operations and required for DELETE, PUT and
-     PATCH operations. ETag can be supplied by HTTP header or in the
-     payload by adding the field @etag to the form with the value of
-     the etag.
-   - If dict2xml.py is installed, the rest interface can produce an XML
-     format response if the accept header is set to text/xml.
-     (See: https://pypi.org/project/dict2xml/)
-   - When retrieving collection move list of collection elements to
-     collection property. Add @links property with self, next and prev
-     links (where needed). Add @total_size with size of entire
-     collection (unpaginated). Pagination index starts at 1 not 0.
-   - accept content-type application/json payload for PUT, PATCH, POST
-     requests in addition to application/x-www-form-urlencoded.
-     (John Rouillard)
-- issue2550833: the export_csv web action now returns labels/names
-  rather than id's. Replace calls to export_csv with the export_csv_id
-  action to return the same data as the old export_csv action. (Tom
-  Ekberg (tekberg), Andreas (anrounham14) edited/applied and tests
-  created by John Rouillard)
-- issue2551018: Add new note_filter parameter to nosymessage. The
-  function supplied by this parameter can rewrite the body of the
-  nosymessage before it gets sent. See issue:
-  https://issues.roundup-tracker.org/issue2551018 for example
-  nosyreaction and generated email. (Tom Ekberg (tekberg))
-- issue2550949: Rate limit password guesses/login attempts.  Rate
-  limit mechanism added for web page logins. Default is 3 login
-  attempts/minute for a user. After which one login attempt every 20
-  seconds can be done. (John Rouillard)
-- issue2551043: Add X-Roundup-issue-id email header. Add a new header
-  to make it easier to filter notification emails without having to
-  parse the subject line. (John Rouillard)
-- The database filter method now can also do an exact string search.
-- The database filter method now has limit and offset parameters that
-  map to the corresponding parameters of SQL.
-- issue2551061: Add rudimentary experimental support for JSON Web
-  Tokens (jwt) to allow delegation of limited access rights to third
-  parties. See doc/rest.txt for details and intent. (John Rouillard)
-- issue2551058: Add new permissions: 'Rest Access' and 'Xmlrpc Access'
-  to allow per-user access control to rest and xmlrpc interfaces using
-  roles. (John Rouillard)
-- issue2551059: added new values for tx_Source to indicate when /rest
-  or /xmlrpc endpoint is being used rather than the normal web
-  endpoints. (John Rouillard)
-- issue2551062: roundup-admin security now validates all properties in
-  permissions. It reports invalid properties. (John Rouillard)
-- issue2551065: Reorder html entities generated by submit button so that
-  styles can be applied. Thanks to Garth Jensen for the patch against
-  release 1.6 that was ported to upcoming 2.0 release (Ralf
-  Schlatterbeck).
+- Allow to pass additional headers to nosymessage, nice if a message
+  needs to be marked as urgent or similar, e.g., Outlook uses an
+  "Importance" header, when set to "high" it highlights the message.
+  (Ralf Schlatterbeck)
+- issue2550926 - Original author adding a second message shouldn't set
+  status to 'chatting'. See upgrading.txt for details. (John Rouillard)
+- issue2550919 - Anti-bot signup using 4 second delay. New config.ini
+  param [web] registration_delay must be set to 0 if template
+  user.register.html is not modified.  See upgrading.txt for details.
+- Reimplement -u <login>[:<password>]. This opens the database as the
+  user and applies expected permissions. It also creates history
+  entries for the user. Note that the password is unused, no mention
+  of it is in the spec that I can find, so not sure what it was
+  supposed to be used for as the CLI has full access to the files so a
+  password check is not useful. An edge case is when the login has a :
+  in it. In this case it may not work as expected. So don't do that.
+- Implement Cache-Control headers for static files. Allows tracker
+  admin to control caching for css, js and other static files. See
+  customizing.html. The use is documented in the section describing
+  how to use interfaces.py.
+- issue2551071 Update jinja template to bootstrap 4. Updated to 4.4.1.
+  The pull request has been around for a while. (Patch: Paul Spooren;
+  templates merged and additional changes by Christof Meerwald; other
+  merged by John Rouillard)
+- Add config option 'http_auth_convert_realm_to_lowercase'
+  If usernames consist of a name and a domain/realm part of the form
+  user@realm and we're using REMOTE_USER for authentication (e.g. via
+  Kerberos), convert the realm part of the incoming REMOTE_USER to
+  lowercase before matching against the roundup username. This allows
+  roundup usernames to be lowercase (including the realm) and still
+  follow the Kerberos convention of using an uppercase realm. In
+  addition this is compatible with Active Directory which stores the
+  username with realm as UserPrincipalName in lowercase.
+- Cleaned up the WSGI interface implementation by separating the
+  request handler from the request displatcher. Also allow
+  customisation of tracker instance creation via an overridable
+  "get_tracker" context manager.
+- Allow transitive properties in @fields in REST API. These transitive
+  properties may not cross Multilinks, e.g., when querying 'issue' the
+  property 'messages.author' is not allowed (because 'messages' is a
+  multilink). A multilink at the end (e.g. messages in the example) is
+  fine.
+- Added markdown rendering using markdown, markdown2 or mistune; use
+  SimpleMDE markdown editor in jinja2 template (Christof Meerwald)
+- Allow filtering by multiple date ranges or empty date. Date ranges are
+  separated by comma, an empty date is represented by '-'
+- issue2551083 - Replace BaseException and Exception as base classes
+  with new RoundupException (inheriting from Exception) for most
+  roundup exceptions. (John Rouillard and Ralf Schlatterbeck on
+  request from Robert Klonner.)
 
 Fixed:
 
-- issue2550811: work around Unicode encoding issues in jinja2 template
-  by explicitly converting data to Unicode; also fixed pagination and
-  selecting columns to display in the issues list (Christof Meerwald)
-- issue2550988: fixed fallback to pseudo random number generator in
-  case SystemRandom isn't available, prefer use of secrets module if
-  available (Python 3.6+) (Christof Meerwald)
-- issue2550993: fixed edit CSV action to update restored items to the
-  new value instead of restoring with the previous value (Christof
-  Meerwald)
-- issue2550994: avoid breakage caused by use of backports of Python 3
-  configparser module to Python 2. (Joseph Myers)
-- Make non-existent items in history not cause a traceback (Ralf
-  Schlatterbeck)
-- issue2550722: avoid errors from selecting "no selection" on
-  multilink. (Joseph Myers)
-- issue2550992: avoid errors from invalid Authorization
-  headers. (Joseph Myers)
-- issue2551022: support non-ASCII prefixes in instance config for
-  finding static files. (Cedric Krier)
-- issue2551023: Fix CSRF headers for use with wsgi and cgi. The
-  env variable array used - separators rather than _. Compare:
-  HTTP_X-REQUESTED-WITH to HTTP_X_REQUESTED_WITH. The last is
-  correct. Also fix roundup-server to produce the latter form. (Patch
-  by Cedric Krier, reviewed/applied John Rouillard.)
-- issue2551035 - fix XSS issue in wsgi and cgi when handing url not
-  found/404. Reported by hannob at
-  https://github.com/python/bugs.python.org/issues/34, issue opened by
-  JulienPalard.
-- issue2551026: template variable not defined even though it is.
-  Fix issue where variables defined in TAL expression are not
-  available in the scope of the definition. (Tom Ekberg (tekberg))
-- Make all links created with rel=nofollow include noopener. Deals
-  with possible hijack of original page due to malicious link target.
-  https://mathiasbynens.github.io/rel-noopener/ (John Rouillard)
-- Fix bug where some protected properties were not identified as such
-  when using the anydbm backend (John Rouillard)
-- issue2551041 - change permission check from "Create User" to "Register
-  User" in page.html for the responsive and devel templates. (reporter
-  Cedric Krier, John Rouillard)
-- issue2550144 - fix use of undefined icing macro in devel
-  template. Replace with frame macro. (Cedric Krier)
-- handle UnicodeDecodeError in file class when file contents are
-  not text (e.g. jpg). (John Rouillard)
-- issue2551033: prevent reverse engineering hidden data by using etags
-  as an oracle to identify when the right data has been
-  guessed. (Joseph Myers, John Rouillard)
-- issue2551029: Jinja2 template install error. Update configuration
-  code to make sure valid backend database is set. Remove config.ini
-  from templates to make sure that roundup-admin install writes a new
-  default config.ini based on configuration.py.
-- issue2551040: New release of psycopg2 drops support for psycopg1 -
-  need to rewrite. Now uses psycopg2 throughout. (John Rouillard)
-- issue2551009: Flint not supported error during reindex. Upgrading
-  doc updates to discuss this when reindexing. (Reported by Gabi,
-  Change by John Rouillard)
-- issue2551030: Roundup fails to start if pytz to access Olson
-  timezone database not installed. (John Rouillard)
-- issue2551029: Jinja2 template install error. Handle issue with
-  template's config.ini not getting updated. Provide an alternate
-  file: config_ini.ini for required config settings that are merged
-  into the default values producing an up to date config.ini on
-  install.
-- issue2551008: fix incorrect encoding handling in mailgw.py
-  (Ezio Melotti, John Rouillard)
-- issue2551053: the routing dictionary in rest.py used compiled regular
-  expressions as dictionary keys. This worked most of the time because
-  the regex lib uses a cache but resulted in duplicate keys in the
-  dictionary in some cases where a single key should have been used.
-  Thanks to Robert Klonner for discovering the problem, debugging the
-  root cause and providing a first proposed fix.
-- Make searching with a multiselect work for Link/Multilink properties
-  that may contain numeric *key* values. For these a menu would render
-  options with IDs and later look up the IDs as *key* of the
-  Link/Multilink. Now numeric IDs take precedence -- like they already
-  do in the menu method of Link and Multilink.
-- issue2551013: Reversed sorting in hyperdb property wrapper object's
-  sorted() method. Patch by David Sowder, application and doc change
-  by John Rouillard.
-- issue2550821 - patches for depricated mod_python apache.py interface
-  (John Rouillard)
-- issue2551005 - deprecation of mod_python (John Rouillard)
-- issue2551066: IMAP mail handling wasn't working and produced a
-  traceback.
-- issue2550925 if deployed as CGI and client sends an http PROXY
-  header, the tainted HTTP_PROXY environment variable is created. It
-  can affect calls using requests package or curl. A roundup admin
-  would have to write detectors/extensions that use these mechanisms.
-  Not exploitable in default config. (John Rouillard)
-- Add config option to keep/delete previous logging config. Needed to
-  make gunicorn --access-logfile work as it uses python logfile module
-  too.
+- issue2550996 - Give better error message when running with -c
+  (install as windows service) and pywin32 is not importable. Could use
+  better testing on a windows box. (John Rouillard)
+- issue2550921 - Can create login name with , in it. Confuses nosy
+  list editing. Also can embed html tags. Updated userauditor.py
+  to prevent this. See updating.txt. (John Rouillard)
+- issue1344046 - Search for "All text" can't find some Unicode words
+  (John Rouillard, Ezio Melotti)
+- issue1195739 - search in russian does not work (John Rouillard, Ezio
+  Melotti)
+- issue2550920 - Registration with confirmation detects duplcate name
+  when using validation. Added option to allow detection of duplicate
+  username when the user tries to register. Previously user was
+  rejected when confirming registration. (John Rouillard)
+- French translation gave errors with Python 3 because of ISO-8859-1
+  character in .mo file header. (Joseph Myers)
+- Fix representation of boolean html attributes to be 'required'
+  rather than the xhtml form of 'required="required"'. Specify
+  (reverted attribute value same as attribute name or) attribute
+  value of None, to output attribute as boolean. (John Rouillard)
+  Reverted (part of) this change. It breaks rendering of non-boolean
+  attributes (like name="name"). So only value of None renders
+  attribute properly as boolean. (Ralf Schlatterbeck)
+- issue2551076 - in responsive template, default searches for bugs and
+  tasks sets status=new default should be "don't care". (Report:
+  Ludwig Reiter; Fix: John Rouillard)
+- issue2551077 - In "jinja2" template: cannot login if German language
+  is used. Fixed three places where the value of a hidden @action
+  input field was translated. (Reported by Ludwig Reiter. John
+  Rouillard)
+- Document security issues in xmlrpc interface in doc/xmlrpc.txt.
+- Enable autoescape in the jinja2 template and use the i18n extension
+  for translations. (Report: John Rouillard; Fix: Christof Meerwald)
+- Cleanup code by linting using flake8. (John Rouillard)
+- Cleanup code by security linting using bandit. (John Rouillard)
+- issue2550912 - fixed missing query string in __came_from for jinja2
+  template. (Christof Meerwald)
+- issue2551019 - handle character set conversions for CSV export
+  action in Python 3. (Christof Meerwald)
+- issue2551051: Return a 403 on non-existing or non-searchable
+  transitive properties when queried via REST-API (same behavior for
+  sorting and searching).
+- Fixed ReStructuredText encoding with Python 3.
