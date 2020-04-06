@@ -10,8 +10,8 @@ command-line, web and e-mail interfaces.  It is based on the winning
 design from Ka-Ping Yee in the Software Carpentry "Track" design
 competition.
 
-The current experimental version is `2.0.0beta1
-<https://pypi.org/project/roundup/2.0.0beta1/>`_ which has `its own
+The current experimental version is `2.0.0beta0
+<https://pypi.org/project/roundup/2.0.0beta0/>`_ which has `its own
 set of docs`_. Read the :doc:`announcement for the new features
 <docs/announcement>`. These features include:
 
