@@ -17,6 +17,8 @@ Fixed:
 
 - encoding for SSHA encoded passwords with Python 3 (Christof
   Meerwald)
+- exception in logout action when there is no session (Christof
+  Meerwald)
 
 2020-04-05 2.0.0 beta 0
 

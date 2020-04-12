@@ -198,8 +198,9 @@ class Session:
     def destroy(self):
         self.client.add_cookie(self.cookie_name, None)
         self._data = {}
-        self.session_db.destroy(self._sid)
-        self.session_db.commit()
+        if self._sid:
+            self.session_db.destroy(self._sid)
+            self.session_db.commit()
 
     def get(self, name, default=None):
         return self._data.get(name, default)
