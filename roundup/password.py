@@ -114,7 +114,7 @@ def ssha(password, salt):
     '''
     shaval = sha1(password)  # nosec
     shaval.update(salt)
-    ssha_digest = b64encode(shaval.digest() + salt).strip()
+    ssha_digest = b2s(b64encode(shaval.digest() + salt).strip())
     return ssha_digest
 
 
@@ -359,6 +359,8 @@ class Password(JournalPassword):
 def test():
     # SHA
     p = Password('sekrit')
+    assert Password(encrypted=str(p)) == 'sekrit'
+    assert 'sekrit' == Password(encrypted=str(p))
     assert p == 'sekrit'
     assert p != 'not sekrit'
     assert 'sekrit' == p
@@ -366,6 +368,8 @@ def test():
 
     # MD5
     p = Password('sekrit', 'MD5')
+    assert Password(encrypted=str(p)) == 'sekrit'
+    assert 'sekrit' == Password(encrypted=str(p))
     assert p == 'sekrit'
     assert p != 'not sekrit'
     assert 'sekrit' == p
@@ -374,6 +378,8 @@ def test():
     # crypt
     if crypt:  # not available on Windows
         p = Password('sekrit', 'crypt')
+        assert Password(encrypted=str(p)) == 'sekrit'
+        assert 'sekrit' == Password(encrypted=str(p))
         assert p == 'sekrit'
         assert p != 'not sekrit'
         assert 'sekrit' == p
@@ -381,6 +387,8 @@ def test():
 
     # SSHA
     p = Password('sekrit', 'SSHA')
+    assert Password(encrypted=str(p)) == 'sekrit'
+    assert 'sekrit' == Password(encrypted=str(p))
     assert p == 'sekrit'
     assert p != 'not sekrit'
     assert 'sekrit' == p
@@ -397,6 +405,8 @@ def test():
 
     # PBKDF2 - high level integration
     p = Password('sekrit', 'PBKDF2')
+    assert Password(encrypted=str(p)) == 'sekrit'
+    assert 'sekrit' == Password(encrypted=str(p))
     assert p == 'sekrit'
     assert p != 'not sekrit'
     assert 'sekrit' == p
