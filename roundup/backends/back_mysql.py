@@ -605,12 +605,12 @@ class MysqlClass:
         # TODO: AFAIK its version dependent for MySQL
         return False
 
-    def _subselect(self, classname, multilink_table):
+    def _subselect(self, classname, multilink_table, nodeid_name):
         ''' "I can't believe it's not a toy RDBMS"
            see, even toy RDBMSes like gadfly and sqlite can do sub-selects...
         '''
-        self.db.sql('select nodeid from %s'%multilink_table)
-        s = ','.join([x[0] for x in self.db.sql_fetchall()])
+        self.db.sql('select %s from %s'%(nodeid_name, multilink_table))
+        s = ','.join([str(x[0]) for x in self.db.sql_fetchall()])
         return '_%s.id not in (%s)'%(classname, s)
 
     def create_inner(self, **propvalues):

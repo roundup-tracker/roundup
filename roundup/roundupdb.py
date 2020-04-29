@@ -46,7 +46,7 @@ except ImportError:
     gpg = None
 
 
-class Database:
+class Database(object):
 
     # remember the journal uid for the current journaltag so that:
     # a. we don't have to look it up every time we need it, and

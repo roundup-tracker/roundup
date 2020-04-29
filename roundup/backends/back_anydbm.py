@@ -200,6 +200,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def post_init(self):
         """Called once the schema initialisation has finished.
         """
+        super(Database, self).post_init()
         # reindex the db if necessary
         if self.indexer.should_reindex():
             self.reindex()
@@ -915,6 +916,12 @@ class Class(hyperdb.Class):
              'creation' in propvalues or 'activity' in propvalues):
             raise KeyError('"creator", "actor", "creation" and '
                 '"activity" are reserved')
+
+        for p in propvalues:
+            prop = self.properties[p]
+            if prop.computed:
+                raise KeyError('"%s" is a computed property'%p)
+
         # new node's id
         newid = self.db.newid(self.classname)
 
@@ -1196,6 +1203,11 @@ class Class(hyperdb.Class):
 
         if 'id' in propvalues:
             raise KeyError('"id" is reserved')
+
+        for p in propvalues:
+            prop = self.properties[p]
+            if prop.computed:
+                raise KeyError('"%s" is a computed property'%p)
 
         if self.db.journaltag is None:
             raise hyperdb.DatabaseError(_('Database open read-only'))
@@ -1556,6 +1568,8 @@ class Class(hyperdb.Class):
 
             db.issue.find(messages='1')
             db.issue.find(messages={'1':1,'3':1}, files={'7':1})
+            db.issue.find(messages=('1','3'), files=('7',))
+            db.issue.find(messages=['1','3'], files=['7'])
         """
         for propname, itemids in propspec.items():
             # check the prop is OK
@@ -1574,7 +1588,10 @@ class Class(hyperdb.Class):
                     continue
                 for propname, itemids in propspec.items():
                     if type(itemids) is not type({}):
-                        itemids = {itemids:1}
+                        if itemids is None or isinstance(itemids, type("")):
+                            itemids = {itemids:1}
+                        else:
+                            itemids = dict.fromkeys(itemids)
 
                     # special case if the item doesn't have this property
                     if propname not in item:
@@ -1744,12 +1761,17 @@ class Class(hyperdb.Class):
                         u.append(entry)
                     l.append((LINK, k, u))
                 elif isinstance(propclass, hyperdb.Multilink):
-                    # the value -1 is a special "not set" sentinel
-                    if v in ('-1', ['-1']):
-                        v = []
-                    elif type(v) is not type([]):
-                        v = [v]
-                    l.append((MULTILINK, k, v))
+                    # If it's a reverse multilink, we've already
+                    # computed the ids of our own class.
+                    if propclass.rev_property:
+                        l.append((OTHER, 'id', v))
+                    else:
+                        # the value -1 is a special "not set" sentinel
+                        if v in ('-1', ['-1']):
+                            v = []
+                        elif type(v) is not type([]):
+                            v = [v]
+                        l.append((MULTILINK, k, v))
                 elif isinstance(propclass, hyperdb.String) and k != 'id':
                     if type(v) is not type([]):
                         v = [v]

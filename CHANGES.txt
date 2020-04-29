@@ -74,6 +74,13 @@ Features:
   with new RoundupException (inheriting from Exception) for most
   roundup exceptions. (John Rouillard and Ralf Schlatterbeck on
   request from Robert Klonner.)
+- When defining Link or Multilink properties in the schema, it's now
+  possible to add a parameter rev_multilink that accepts a property name
+  to be inserted into the linked-to class. So this creates a reverse
+  Multilink property in the linked-to class. This Multilink is read-only
+  (cannot be updated) but can be used in filter -- and thus in normal
+  index templates as well as in the REST and XMLRPC APIs. (Ralf
+  Schlatterbeck)
 
 Fixed:
 

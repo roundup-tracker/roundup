@@ -45,6 +45,9 @@ class _Type(object):
         self.required = required
         self.__default_value = default_value
         self.quiet = quiet
+        # We do not allow updates if self.computed is True
+        # For now only Multilinks (using the rev_multilink) can be computed
+        self.computed = False
 
     def __repr__(self):
         ' more useful for dumps '
@@ -53,6 +56,14 @@ class _Type(object):
     def get_default_value(self):
         """The default value when creating a new instance of this property."""
         return self.__default_value
+
+    def register (self, cls, propname):
+        """Register myself to the class of which we are a property
+           the given propname is the name we have in our class.
+        """
+        assert not getattr(self, 'cls', None)
+        self.name = propname
+        self.cls  = cls
 
     def sort_repr(self, cls, val, name):
         """Representation used for sorting. This should be a python
@@ -164,7 +175,7 @@ class _Pointer(_Type):
     to a node in a specified class."""
     def __init__(self, classname, do_journal='yes', try_id_parsing='yes',
                  required=False, default_value=None,
-                 msg_header_property=None, quiet=False):
+                 msg_header_property=None, quiet=False, rev_multilink=None):
         """ Default is to journal link and unlink events.
             When try_id_parsing is false, we don't allow IDs in input
             fields (the key of the Link or Multilink property must be
@@ -182,12 +193,17 @@ class _Pointer(_Type):
             'msg_header_property="username"' for the assigned_to
             property will generated message headers of the form:
             'X-Roundup-issue-assigned_to: joe_user'.
+            The rev_multilink is used to inject a reverse multilink into
+            the Class linked by a Link or Multilink property. Note that
+            the result is always a Multilink. The name given with
+            rev_multilink is the name in the class where it is injected.
         """
         super(_Pointer, self).__init__(required, default_value, quiet)
         self.classname = classname
         self.do_journal = do_journal == 'yes'
         self.try_id_parsing = try_id_parsing == 'yes'
         self.msg_header_property = msg_header_property
+        self.rev_multilink = rev_multilink
 
     def __repr__(self):
         """more useful for dumps. But beware: This is also used in schema
@@ -227,16 +243,62 @@ class Multilink(_Pointer):
 
        "do_journal" indicates whether the linked-to nodes should have
                     'link' and 'unlink' events placed in their journal
+       "rev_property" is used when injecting reverse multilinks. By
+                    default (for a normal multilink) the table name is
+                    <name_of_linking_class>_<name_of_link_property>
+                    e.g. for the messages multilink in issue in the
+                    classic schema it would be "issue_messages". The
+                    multilink table in that case has two columns, the
+                    nodeid contains the ID of the linking class while
+                    the linkid contains the ID of the linked-to class.
+                    When injecting backlinks, for a backlink resulting
+                    from a Link or Multilink the table_name,
+                    linkid_name, and nodeid_name must be explicitly
+                    specified. So when specifying a rev_multilink
+                    property for the messages attribute in the example
+                    above, we would get 'issue_messages' for the
+                    table_name, 'nodeid' for the linkid_name and
+                    'linkid' for the nodeid_name (note the reversal).
+                    For a rev_multilink resulting, e.g. from the
+                    standard 'status' Link in the Class 'issue' in the
+                    classic template we would set table_name to '_issue'
+                    (table names in the database get a leading
+                    underscore), the nodeid_name to 'status' and the
+                    linkid_name to 'id'. With these settings we can use
+                    the standard query engine (with minor modifications
+                    for the computed names) to resolve reverse
+                    multilinks.
     """
 
     def __init__(self, classname, do_journal='yes', required=False,
-                 quiet=False, try_id_parsing='yes'):
+                 quiet=False, try_id_parsing='yes', rev_multilink=None,
+                 rev_property=None):
 
         super(Multilink, self).__init__(classname,
                                         do_journal,
                                         required=required,
                                         default_value=[], quiet=quiet,
-                                        try_id_parsing=try_id_parsing)
+                                        try_id_parsing=try_id_parsing,
+                                        rev_multilink=rev_multilink)
+        self.rev_property  = rev_property
+        self.rev_classname = None
+        self.rev_propname  = None
+        self.table_name    = None # computed in 'register' below
+        self.linkid_name   = 'linkid'
+        self.nodeid_name   = 'nodeid'
+        if self.rev_property:
+            # Do not allow updates if this is a reverse multilink
+            self.computed = True
+            self.rev_classname = rev_property.cls.classname
+            self.rev_propname  = rev_property.name
+            if isinstance(self.rev_property, Link):
+                self.table_name  = '_' + self.rev_classname
+                self.linkid_name = 'id'
+                self.nodeid_name = '_' + self.rev_propname
+            else:
+                self.table_name  = self.rev_classname + '_' + self.rev_propname
+                self.linkid_name = 'nodeid'
+                self.nodeid_name = 'linkid'
 
     def from_raw(self, value, db, klass, propname, itemid, **kw):
         if not value:
@@ -309,6 +371,11 @@ class Multilink(_Pointer):
         value.sort()
         value = [str(x) for x in value]
         return value
+
+    def register(self, cls, propname):
+        super(Multilink, self).register(cls, propname)
+        if self.table_name is None:
+            self.table_name = self.cls.classname + '_' + self.name
 
     def sort_repr(self, cls, val, name):
         if not val:
@@ -510,7 +577,28 @@ class Proptree(object):
             if 'search' in p.need_for:
                 if p.children:
                     p.search(sort=False)
-                if isinstance(p.val, type([])):
+                if getattr(p.propclass,'rev_property',None):
+                    pn = p.propclass.rev_property.name
+                    cl = p.propclass.rev_property.cls
+                    if not isinstance(p.val, type([])):
+                        p.val = [p.val]
+                    if p.val == ['-1'] :
+                        s1 = set(self.cls.getnodeids(retired=False))
+                        s2 = set()
+                        for id in cl.getnodeids(retired=False):
+                            node = cl.getnode(id)
+                            if node[pn]:
+                                if isinstance(node [pn], type([])):
+                                    s2.update(node [pn])
+                                else:
+                                    s2.add(node [pn])
+                        items = s1.difference(s2)
+                    elif isinstance(p.propclass.rev_property, Link):
+                        items = set(cl.get(x, pn) for x in p.val)
+                    else:
+                        items = set().union(*(cl.get(x, pn) for x in p.val))
+                    filterspec[p.name] = list(sorted(items))
+                elif isinstance(p.val, type([])):
                     exact = []
                     subst = []
                     for v in p.val:
@@ -720,7 +808,7 @@ class DatabaseError(ValueError):
     pass
 
 
-class Database:
+class Database(object):
     """A database for storing records containing flexible data types.
 
 This class defines a hyperdatabase storage layer, which the Classes use to
@@ -772,9 +860,27 @@ All methods except __repr__ must be implemented by a concrete backend Database.
     def post_init(self):
         """Called once the schema initialisation has finished.
            If 'refresh' is true, we want to rebuild the backend
-           structures.
+           structures. Note that post_init can be called multiple times,
+           at least during regression testing.
         """
-        raise NotImplementedError
+        done = getattr(self, 'post_init_done', None)
+        for cn in self.getclasses():
+            cl = self.getclass(cn)
+            for p in cl.properties:
+                prop = cl.properties[p]
+                if not isinstance (prop, (Link, Multilink)):
+                    continue
+                if prop.rev_multilink:
+                    linkcls = self.getclass(prop.classname)
+                    if prop.rev_multilink in linkcls.properties:
+                        if not done:
+                            raise ValueError(
+                                "%s already a property of class %s"%
+                                (prop.rev_multilink, linkcls.classname))
+                    else:
+                        linkcls.properties[prop.rev_multilink] = Multilink(
+                            cl.classname, rev_property=prop)
+        self.post_init_done = True
 
     def refresh_database(self):
         """Called to indicate that the backend should rebuild all tables
@@ -943,6 +1049,9 @@ class Class:
 
         self.classname = classname
         self.properties = properties
+        # Make the class and property name known to the property
+        for p in properties:
+            properties[p].register(self, p)
         self.db = weakref.proxy(db)       # use a weak ref to avoid circularity
         self.key = ''
 

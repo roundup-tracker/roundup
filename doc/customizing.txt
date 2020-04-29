@@ -716,6 +716,14 @@ behaviour:
     (like, e.g., product codes). For these roundup needs to match the
     numeric name and should never match an ID. In this case you can set
     ``try_id_parsing='no'``.
+  - The ``rev_multilink`` option takes a property name to be inserted
+    into the linked-to class. This property is a Multilink property that
+    links back to the current class. The new Multilink is read-only (it
+    is automagically modified if the Link or Multilink property defining
+    it is modified). The new property can be used in normal searches
+    using the "filter" method of the Class. This means it can be used
+    like other Multilink properties when searching (in an index
+    template) or via the REST- and XMLRPC-APIs.
   - The ``msg_header_property`` is used by the mail gateway when sending
     out messages. When a link or multilink property of an issue changes,
     roundup creates email headers of the form::

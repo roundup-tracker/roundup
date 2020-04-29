@@ -108,13 +108,14 @@ def setupSchema(db, create, module):
     file_nidx = module.FileClass(db, "file_nidx", content=String(indexme='no'))
 
     # initialize quiet mode a second way without using Multilink("user", quiet=True)
-    mynosy = Multilink("user")
+    mynosy = Multilink("user", rev_multilink='nosy_issues')
     mynosy.quiet = True
     issue = module.IssueClass(db, "issue", title=String(indexme="yes"),
         status=Link("status"), nosy=mynosy, deadline=Date(quiet=True),
         foo=Interval(quiet=True, default_value=date.Interval('-1w')),
-        files=Multilink("file"), assignedto=Link('user', quiet=True),
-        priority=Link('priority'), spam=Multilink('msg'), feedback=Link('msg'))
+        files=Multilink("file"), assignedto=Link('user', quiet=True,
+        rev_multilink='issues'), priority=Link('priority'),
+        spam=Multilink('msg'), feedback=Link('msg'))
     stuff = module.Class(db, "stuff", stuff=String())
     session = module.Class(db, 'session', title=String())
     msg = module.FileClass(db, "msg", date=Date(),
@@ -1065,12 +1066,12 @@ class DBTest(commonDBTest):
         result=self.db.user.history(new_user, skipquiet=False)
         '''
         [('3', <Date 2017-04-14.02:12:20.922>, '1', 'create', {}),
-         ('3', <Date 2017-04-14.02:12:20.922>, '1', 'set', 
-           {'username': 'pete', 'assignable': False, 
+         ('3', <Date 2017-04-14.02:12:20.922>, '1', 'set',
+           {'username': 'pete', 'assignable': False,
             'supervisor': None, 'realname': None, 'rating': None,
             'age': 10, 'password': None})]
         '''
-        expected = {'username': 'pete', 'assignable': False, 
+        expected = {'username': 'pete', 'assignable': False,
             'supervisor': None, 'realname': None, 'rating': None,
             'age': 10, 'password': None}
 
@@ -1206,10 +1207,10 @@ class DBTest(commonDBTest):
                 {'username': 'pete', 'assignable': False,
                  'supervisor': None, 'realname': None,
                   'rating': None, 'age': 10, 'password': None}),
-          ('3', <Date 2017-04-15.02:06:11.482>, '1', 'link', 
+          ('3', <Date 2017-04-15.02:06:11.482>, '1', 'link',
                 ('issue', '1', 'nosy')),
           ('3', <Date 2017-04-15.02:06:11.482>, '1', 'unlink',
-                ('issue', '1', 'nosy')), 
+                ('issue', '1', 'nosy')),
           ('3', <Date 2017-04-15.02:06:11.482>, '1', 'set',
              {'roles': None})]
         '''
@@ -1241,13 +1242,13 @@ class DBTest(commonDBTest):
         result.sort()
         ''' result should look like
         [('3', <Date 2017-04-15.01:43:26.911>, '1', 'create', {}),
-        ('3', <Date 2017-04-15.01:43:26.911>, '1', 'set', 
-            {'username': 'pete', 'assignable': False, 
+        ('3', <Date 2017-04-15.01:43:26.911>, '1', 'set',
+            {'username': 'pete', 'assignable': False,
               'supervisor': None, 'age': 10})]
         '''
         # analyze last item
         (id, tx_date, user, action, args) = result[-1]
-        expected= {'username': 'pete', 'assignable': False, 
+        expected= {'username': 'pete', 'assignable': False,
                    'supervisor': None}
 
         self.assertEqual('3', id)
@@ -1582,6 +1583,12 @@ class DBTest(commonDBTest):
         l = self.db.issue.find(status={'1':1, '3':1})
         l.sort()
         self.assertEqual(l, [one, three, four])
+        l = self.db.issue.find(status=('1', '3'))
+        l.sort()
+        self.assertEqual(l, [one, three, four])
+        l = self.db.issue.find(status=['1', '3'])
+        l.sort()
+        self.assertEqual(l, [one, three, four])
         l = self.db.issue.find(assignedto={None:1, '1':1})
         l.sort()
         self.assertEqual(l, [one, three, four])
@@ -1810,6 +1817,25 @@ class DBTest(commonDBTest):
             ae(filt(None, {a: ['-1', None]}, ('+','id'), grp), ['3','4'])
             ae(filt(None, {a: ['1', None]}, ('+','id'), grp), ['1', '3','4'])
 
+    def testFilteringRevLink(self):
+        ae, filter, filter_iter = self.filteringSetupTransitiveSearch('user')
+        # We have
+        # issue assignedto
+        # 1:    6
+        # 2:    6
+        # 3:    7
+        # 4:    8
+        # 5:    9
+        # 6:    10
+        # 7:    10
+        # 8:    10
+        for filt in filter, filter_iter:
+            ae(filt(None, {'issues': ['3', '4']}), ['7', '8'])
+            ae(filt(None, {'issues': ['1', '4', '8']}), ['6', '8', '10'])
+            ae(filt(None, {'issues.title': ['ts2']}), ['6'])
+            ae(filt(None, {'issues': ['-1']}), ['1', '2', '3', '4', '5'])
+            ae(filt(None, {'issues': '-1'}), ['1', '2', '3', '4', '5'])
+
     def testFilteringLinkSortSearchMultilink(self):
         ae, filter, filter_iter = self.filteringSetup()
         a = 'assignedto'
@@ -1840,6 +1866,27 @@ class DBTest(commonDBTest):
             ae(filt(None, {'nosy': '-1'}, ('+','id'), (None,None)), ['1', '2'])
             ae(filt(None, {'nosy': ['1','2']}, ('+', 'status'),
                 ('-', 'deadline')), ['4', '3'])
+
+    def testFilteringRevMultilink(self):
+        ae, filter, filter_iter = self.filteringSetupTransitiveSearch('user')
+        ni = 'nosy_issues'
+        self.db.issue.set('6', nosy=['3', '4', '5'])
+        self.db.issue.set('7', nosy=['5'])
+        # After this setup we have the following values for nosy:
+        # issue   nosy
+        # 1:      4
+        # 2:      5
+        # 3:
+        # 4:
+        # 5:
+        # 6:      3, 4, 5
+        # 7:      5
+        # 8:
+        for filt in filter, filter_iter:
+            ae(filt(None, {ni: ['1', '2']}), ['4', '5'])
+            ae(filt(None, {ni: ['6','7']}), ['3', '4', '5'])
+            ae(filt(None, {ni: ['-1']}), ['1', '2', '6', '7', '8', '9', '10'])
+            ae(filt(None, {ni: '-1'}), ['1', '2', '6', '7', '8', '9', '10'])
 
     def testFilteringMany(self):
         ae, filter, filter_iter = self.filteringSetup()
@@ -2517,7 +2564,7 @@ class DBTest(commonDBTest):
             self.assertRaises(UsageError, tool.props_from_args, "fullname") # invalid propname
 
             self.assertEqual(tool.props_from_args("="), {'': None}) # not sure this desired, I'd expect UsageError
-            
+
             props = tool.props_from_args(["fullname=robert", "friends=+rouilj,+other", "key="])
             self.assertEqual(props, {'fullname': 'robert', 'friends': '+rouilj,+other', 'key': None})
 
@@ -2527,7 +2574,7 @@ class DBTest(commonDBTest):
             # This writes to stdout, need to figure out how to redirect to a variable.
             # classhandle = tool.get_class("user") # valid class
             # FIXME there should be some test here
- 
+
             issue_class_spec = tool.do_specification(["issue"])
             self.assertEqual(sorted (soutput),
                              ['assignedto: <roundup.hyperdb.Link to "user">\n',
@@ -3265,7 +3312,7 @@ class HTMLItemTest(ClassicInitBase):
     # end class Request
 
     def setUp(self):
-        super(HTMLItemTest, self).setUp()    
+        super(HTMLItemTest, self).setUp()
         self.tracker = tracker = setupTracker(self.dirname, self.backend)
         db = self.db = tracker.open('admin')
         req = self.Request()

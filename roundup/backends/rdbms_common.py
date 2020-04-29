@@ -293,6 +293,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             We should now confirm that the schema defined by our "classes"
             attribute actually matches the schema in the database.
         """
+        super(Database, self).post_init()
 
         # upgrade the database for column type changes, new internal
         # tables, etc.
@@ -512,6 +513,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         mls = []
         # add the multilinks separately
         for col, prop in properties:
+            # Computed props are not in the db
+            if prop.computed:
+                continue
+
             if isinstance(prop, Multilink):
                 mls.append(col)
                 continue
@@ -1128,8 +1133,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """ evaluation of single Multilink (lazy eval may have skipped this)
         """
         if propname not in node:
-            sql = 'select linkid from %s_%s where nodeid=%s' % (
-                classname, propname, self.arg)
+            prop = self.getclass(classname).properties[propname]
+            tn  = prop.table_name
+            lid = prop.linkid_name
+            nid = prop.nodeid_name
+            sql = 'select %s from %s where %s=%s' % (lid, tn, nid, self.arg)
             self.sql(sql, (nodeid,))
             # extract the first column from the result
             # XXX numeric ids
@@ -1536,7 +1544,8 @@ class Class(hyperdb.Class):
         """ A dumpable version of the schema that we can store in the
             database
         """
-        return (self.key, [(x, repr(y)) for x, y in self.properties.items()])
+        return (self.key,
+          [(x, repr(y)) for x, y in self.properties.items() if not y.computed])
 
     def enableJournalling(self):
         """Turn journalling on for this class
@@ -1584,6 +1593,11 @@ class Class(hyperdb.Class):
             'creation' in propvalues or 'activity' in propvalues):
             raise KeyError('"creator", "actor", "creation" and '
                            '"activity" are reserved')
+
+        for p in propvalues:
+            prop = self.properties[p]
+            if prop.computed:
+                raise KeyError('"%s" is a computed property'%p)
 
         # new node's id
         newid = self.db.newid(self.classname)
@@ -1813,6 +1827,11 @@ class Class(hyperdb.Class):
 
         if 'id' in propvalues:
             raise KeyError('"id" is reserved')
+
+        for p in propvalues:
+            prop = self.properties[p]
+            if prop.computed:
+                raise KeyError('"%s" is a computed property'%p)
 
         if self.db.journaltag is None:
             raise DatabaseError(_('Database open read-only'))
@@ -2312,13 +2331,13 @@ class Class(hyperdb.Class):
         ids = [str(x[0]) for x in self.db.cursor.fetchall()]
         return ids
 
-    def _subselect(self, classname, multilink_table):
+    def _subselect(self, classname, multilink_table, nodeid_name):
         """Create a subselect. This is factored out because some
            databases (hmm only one, so far) doesn't support subselects
            look for "I can't believe it's not a toy RDBMS" in the mysql
            backend.
         """
-        return '_%s.id not in (select nodeid from %s)'%(classname,
+        return '_%s.id not in (select %s from %s)'%(classname, nodeid_name,
             multilink_table)
 
     # Some DBs order NULL values last. Set this variable in the backend
@@ -2379,7 +2398,8 @@ class Class(hyperdb.Class):
         # we have ids of the classname table
         return ids.where("_%s.id" % classname, self.db.arg)
 
-    def _filter_multilink_expression(self, classname, multilink_table, v):
+    def _filter_multilink_expression(self, classname, multilink_table,
+        linkid_name, nodeid_name, v):
         """ Filters out elements of the classname table that do not
             match the given expression.
             Returns tuple of 'WHERE' introns for the overall filter.
@@ -2397,9 +2417,8 @@ class Class(hyperdb.Class):
                     classname, multilink_table, expr)
 
             atom = \
-                "%s IN(SELECT linkid FROM %s WHERE nodeid=a.id)" % (
-                self.db.arg,
-                multilink_table)
+                "%s IN(SELECT %s FROM %s WHERE %s=a.id)" % (
+                self.db.arg, linkid_name, multilink_table, nodeid_name)
 
             intron = \
                 "_%(classname)s.id in (SELECT id " \
@@ -2414,8 +2433,8 @@ class Class(hyperdb.Class):
             return intron, values
         except:
             # original behavior
-            where = "%s.linkid in (%s)" % (
-                multilink_table, ','.join([self.db.arg] * len(v)))
+            where = "%s.%s in (%s)" % (
+                multilink_table, linkid_name, ','.join([self.db.arg] * len(v)))
             return where, v, True # True to indicate original
 
     def _filter_sql (self, search_matches, filterspec, srt=[], grp=[], retr=0,
@@ -2479,34 +2498,36 @@ class Class(hyperdb.Class):
             if isinstance(propclass, Multilink):
                 if 'search' in p.need_for:
                     mlfilt = 1
-                    tn = '%s_%s'%(pcn, k)
+                    tn = propclass.table_name
+                    nid = propclass.nodeid_name
+                    lid = propclass.linkid_name
                     if v in ('-1', ['-1'], []):
                         # only match rows that have count(linkid)=0 in the
                         # corresponding multilink table)
-                        where.append(self._subselect(pcn, tn))
+                        where.append(self._subselect(pcn, tn, nid))
                     else:
                         frum.append(tn)
                         gen_join = True
 
                         if p.has_values and isinstance(v, type([])):
                             result = self._filter_multilink_expression(pln,
-                                tn, v)
+                                tn, lid, nid, v)
                             # XXX: We dont need an id join if we used the filter
                             gen_join = len(result) == 3
 
                         if gen_join:
-                            where.append('_%s.id=%s.nodeid'%(pln,tn))
+                            where.append('_%s.id=%s.%s'%(pln, tn, nid))
 
                         if p.children:
                             frum.append('_%s as _%s' % (cn, ln))
-                            where.append('%s.linkid=_%s.id'%(tn, ln))
+                            where.append('%s.%s=_%s.id'%(tn, lid, ln))
 
                         if p.has_values:
                             if isinstance(v, type([])):
                                 where.append(result[0])
                                 args += result[1]
                             else:
-                                where.append('%s.linkid=%s'%(tn, a))
+                                where.append('%s.%s=%s'%(tn, lid, a))
                                 args.append(v)
                 if 'sort' in p.need_for:
                     assert not p.attr_sort_done and not p.sort_ids_needed

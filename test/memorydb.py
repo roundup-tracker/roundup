@@ -243,7 +243,7 @@ class Database(back_anydbm.Database):
         return len(self.getfile(classname, nodeid, property))
 
     def post_init(self):
-        pass
+        super(Database, self).post_init()
 
     def refresh_database(self):
         pass

@@ -34,7 +34,7 @@ def files_in_dir(dir):
             num_files = num_files + files_in_dir(full_filename)
     return num_files
 
-class FileStorage:
+class FileStorage(object):
     """Store files in some directory structure
 
     Some databases do not permit the storage of arbitrary data (i.e.,
