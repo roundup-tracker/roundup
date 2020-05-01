@@ -34,6 +34,8 @@ Features:
   (cannot be updated) but can be used in filter -- and thus in normal
   index templates as well as in the REST and XMLRPC APIs. (Ralf
   Schlatterbeck)
+- Add a 'is_restore_ok' method similar to 'is_retire_ok' for use in
+  templates.
 
 2020-04-05 2.0.0 beta 0
 

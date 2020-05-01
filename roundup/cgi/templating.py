@@ -622,6 +622,13 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         return perm('Web Access', self._client.userid) and perm('Retire',
             self._client.userid, self._classname)
 
+    def is_restore_ok(self):
+        """ Is the user allowed to restore retired items of the current class?
+        """
+        perm = self._db.security.hasPermission
+        return perm('Web Access', self._client.userid) and perm('Restore',
+            self._client.userid, self._classname)
+
     def is_view_ok(self):
         """ Is the user allowed to View the current class?
         """
@@ -933,6 +940,13 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         """
         perm = self._db.security.hasPermission
         return perm('Web Access', self._client.userid) and perm('Retire',
+            self._client.userid, self._classname, itemid=self._nodeid)
+
+    def is_restore_ok(self):
+        """ Is the user allowed to restore this item?
+        """
+        perm = self._db.security.hasPermission
+        return perm('Web Access', self._client.userid) and perm('Restore',
             self._client.userid, self._classname, itemid=self._nodeid)
 
     def is_view_ok(self):
