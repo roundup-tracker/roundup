@@ -1047,6 +1047,12 @@ always passes, so setting it less than 1 is not recommended."""),
         (NullableOption, 'read_default_group', 'roundup',
             "Name of the group to use in the MySQL defaults file (.my.cnf).\n"
             "Only used in MySQL connections."),
+        (Option, 'mysql_charset', 'utf8',
+            "Charset to use for mysql connection,\n"
+            "use 'default' for the mysql default, no charset option\n"
+            "is used when creating the connection in that case.\n"
+            "Otherwise any permissible mysql charset is allowed here.\n"
+            "Only used in MySQL connections."),
         (IntegerNumberGeqZeroOption, 'sqlite_timeout', '30',
             "Number of seconds to wait when the SQLite database is locked\n"
             "Default: use a 30 second timeout (extraordinarily generous)\n"

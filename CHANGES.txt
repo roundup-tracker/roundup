@@ -19,11 +19,6 @@ Fixed:
   Meerwald)
 - exception in logout action when there is no session (Christof
   Meerwald)
-- Supply charset argument for connection creation for mysql, even for
-  python2: The parameter was conditional on python version > 2 but seems to
-  work fine with python2.7. According to the MySQLdb API docs, the
-  charset argument is supported with MySQL 4.1 which was released in
-  2004. (Ralf Schlatterbeck)
 
 Features:
 
@@ -36,6 +31,13 @@ Features:
   Schlatterbeck)
 - Add a 'is_restore_ok' method similar to 'is_retire_ok' for use in
   templates.
+- Allow to configure the mysql charset when opening a connection to the
+  database. The parameter was conditional on python version > 2 but
+  seems to work fine with python2.7. According to the MySQLdb API docs,
+  the charset argument is supported with MySQL 4.1 which was released in
+  2004. There are some legacy reasons why one would want to not pass a
+  charset argument or pass an argument different from the default of
+  'utf8'. (Ralf Schlatterbeck)
 
 2020-04-05 2.0.0 beta 0
 

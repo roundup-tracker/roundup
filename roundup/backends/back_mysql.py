@@ -54,10 +54,9 @@ def connection_dict(config, dbnamestr=None):
         del d['password']
     if 'port' in d:
         d['port'] = int(d['port'])
-    # This was conditional on python version > 2 but seems to work fine
-    # with python2.7. According to the MySQLdb API docs, the charset
-    # argument is supported with MySQL 4.1 which was released in 2004.
-    d['charset'] = 'utf8'
+    charset = config.RDBMS_MYSQL_CHARSET
+    if charset != 'default':
+        d['charset'] = charset
     return d
 
 def db_nuke(config):
