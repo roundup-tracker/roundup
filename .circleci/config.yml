@@ -2,6 +2,57 @@ version: 2
 jobs:
   ubuntu:
     docker:
+      - image: circleci/buildpack-deps:20.04
+
+      - image: circleci/postgres:12-alpine-ram
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: circle_test
+
+      - image: circleci/mysql:8.0-ram
+        environment:
+          MYSQL_ALLOW_EMPTY_PASSWORD=true
+          MYSQL_ROOT_HOST=%
+
+    resource_class: small
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      - run:
+          name: install packages
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y libgpgme-dev default-mysql-client-core postgresql-client python3-docutils python3-gpg python3-jwt python3-markdown python3-mistune python3-mysqldb python3-pip python3-psycopg2 python3-pytest python3-pytest-cov python3-tz python3-venv python3-whoosh python3-xapian swig
+
+      - run:
+          name: setup databases
+          command: |
+            psql -d postgresql://postgres@localhost/circle_test -c "CREATE ROLE rounduptest WITH CREATEDB LOGIN PASSWORD 'rounduptest';"
+            mysql -h 127.0.0.1 -u root -e "CREATE USER 'rounduptest'@'127.0.0.1' IDENTIFIED BY 'rounduptest'; GRANT ALL ON rounduptest.* TO 'rounduptest'@'127.0.0.1';"
+            # patch host to 127.0.0.1 to force TCP connection to MySQL
+            sed -i -e 's/\(config[.]RDBMS_HOST =\) "localhost"/\1 "127.0.0.1"/' test/db_test_base.py
+
+      - run:
+          name: run tests
+          command: |
+            py.test-3 -v test/ --cov=roundup
+          environment:
+            MYSQL_HOST: 127.0.0.1
+
+      - run:
+          name: run coverage
+          command: |
+            python3-coverage html -i
+
+      - store_artifacts:
+          path: htmlcov
+          destination: roundup-ubuntu
+
+  ubuntu-old:
+    docker:
       - image: circleci/buildpack-deps:18.04
 
       - image: circleci/postgres:10-alpine-ram
@@ -34,9 +85,6 @@ jobs:
             mysql -h 127.0.0.1 -u root -e "GRANT ALL ON rounduptest.* TO rounduptest@'127.0.0.1' IDENTIFIED BY \"rounduptest\";"
             # patch host to 127.0.0.1 to force TCP connection to MySQL
             sed -i -e 's/\(config[.]RDBMS_HOST =\) "localhost"/\1 "127.0.0.1"/' test/db_test_base.py
-            # HACK: workaround mysql bug: http://bugs.mysql.com/bug.php?id=74901
-            #   needed for test_mysql.mysqlDBTest.testFilteringSpecialChars
-            sed -i -e 's/CREATE DATABASE \%s/CREATE DATABASE \%s COLLATE utf8_general_ci/' roundup/backends/back_mysql.py
 
       - run:
           name: run tests
@@ -52,7 +100,7 @@ jobs:
 
       - store_artifacts:
           path: htmlcov
-          destination: roundup-ubuntu
+          destination: roundup-ubuntu-old
 
   debian:
     docker:
@@ -88,9 +136,6 @@ jobs:
             mysql -h 127.0.0.1 -u root -e "GRANT ALL ON rounduptest.* TO rounduptest@'127.0.0.1' IDENTIFIED BY \"rounduptest\";"
             # patch host to 127.0.0.1 to force TCP connection to MySQL
             sed -i -e 's/\(config[.]RDBMS_HOST =\) "localhost"/\1 "127.0.0.1"/' test/db_test_base.py
-            # HACK: workaround mysql bug: http://bugs.mysql.com/bug.php?id=74901
-            #   needed for test_mysql.mysqlDBTest.testFilteringSpecialChars
-            sed -i -e 's/CREATE DATABASE \%s/CREATE DATABASE \%s COLLATE utf8_general_ci/' roundup/backends/back_mysql.py
 
       - run:
           name: run tests
@@ -113,4 +158,5 @@ workflows:
   test_all:
     jobs:
       - ubuntu
+      - ubuntu-old
       - debian
