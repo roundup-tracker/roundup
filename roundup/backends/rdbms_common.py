@@ -2252,21 +2252,29 @@ class Class(hyperdb.Class):
 
         # now multilinks
         for prop, values in propspec.items():
-            if not isinstance(props[prop], hyperdb.Multilink):
+            p = props[prop]
+            if not isinstance(p, hyperdb.Multilink):
                 continue
             if not values:
                 continue
             allvalues += (0, )
+            tn = p.table_name
+            ln = p.linkid_name
+            nn = p.nodeid_name
+            cn = '_' + self.classname
+            ret = ''
+            if p.rev_property and isinstance(p.rev_property, Link):
+                ret = 'and %s.__retired__=%s ' % (tn, a)
+                allvalues += (0, )
             if type(values) is type(''):
                 allvalues += (values,)
                 s = a
             else:
                 allvalues += tuple(values)
                 s = ','.join([a]*len(values))
-            tn = '%s_%s'%(self.classname, prop)
-            sql.append("""select id from _%s, %s where  __retired__=%s
-                  and id = %s.nodeid and %s.linkid in (%s)"""%(self.classname,
-                  tn, a, tn, tn, s))
+            sql.append("""select %s.id from %s, %s where  %s.__retired__=%s
+                  %sand %s.id = %s.%s and %s.%s in (%s)"""%(cn, cn, tn, cn,
+                  a, ret, cn, tn, nn, tn, ln, s))
 
         if not sql:
             return []

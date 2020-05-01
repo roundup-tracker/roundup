@@ -1581,6 +1581,7 @@ class Class(hyperdb.Class):
         # ok, now do the find
         cldb = self.db.getclassdb(self.classname)
         l = []
+        rev_multilinks = []
         try:
             for id in self.getnodeids(db=cldb):
                 item = self.db.getnode(self.classname, id, db=cldb)
@@ -1607,6 +1608,9 @@ class Class(hyperdb.Class):
                         l.append(id)
                         break
                     elif isinstance(prop, hyperdb.Multilink):
+                        if prop.rev_property:
+                            rev_multilinks.append ((prop, itemids))
+                            continue
                         hit = 0
                         for v in value:
                             if v in itemids:
@@ -1615,6 +1619,15 @@ class Class(hyperdb.Class):
                                 break
                         if hit:
                             break
+            for prop, itemids in rev_multilinks:
+                rprop = prop.rev_property
+                fun = l.append
+                if isinstance (rprop, hyperdb.Multilink):
+                    fun = l.extend
+                for id in itemids:
+                    fun(rprop.cls.get(id, rprop.name))
+            if rev_multilinks:
+                l = list(sorted(set(l)))
         finally:
             cldb.close()
         return l

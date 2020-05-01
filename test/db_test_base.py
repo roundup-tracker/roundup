@@ -1564,6 +1564,33 @@ class DBTest(commonDBTest):
         got.sort()
         self.assertEqual(got, [one, three])
 
+    def testFindRevLinkMultilink(self):
+        ae, filter, filter_iter = self.filteringSetupTransitiveSearch('user')
+        ni = 'nosy_issues'
+        self.db.issue.set('6', nosy=['3', '4', '5'])
+        self.db.issue.set('7', nosy=['5'])
+        # After this setup we have the following values for nosy:
+        # issue  assignedto  nosy
+        # 1:      6          4
+        # 2:      6          5
+        # 3:      7
+        # 4:      8
+        # 5:      9
+        # 6:      10         3, 4, 5
+        # 7:      10         5
+        # 8:      10
+        # assignedto links back from 'issues'
+        # nosy links back from 'nosy_issues'
+        self.assertEqual(self.db.user.find(issues={'1':1}), ['6'])
+        self.assertEqual(self.db.user.find(issues={'8':1}), ['10'])
+        self.assertEqual(self.db.user.find(issues={'2':1, '5':1}), ['6', '9'])
+        self.assertEqual(self.db.user.find(nosy_issues={'8':1}), [])
+        self.assertEqual(self.db.user.find(nosy_issues={'6':1}),
+            ['3', '4', '5'])
+        self.assertEqual(self.db.user.find(nosy_issues={'3':1, '5':1}), [])
+        self.assertEqual(self.db.user.find(nosy_issues={'2':1, '6':1, '7':1}),
+            ['3', '4', '5'])
+
     def testFindLinkFail(self):
         self._find_test_setup()
         self.assertEqual(self.db.issue.find(status='4'), [])
