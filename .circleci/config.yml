@@ -25,7 +25,7 @@ jobs:
           name: install packages
           command: |
             sudo apt-get update
-            sudo apt-get install -y libgpgme-dev default-mysql-client-core postgresql-client python3-docutils python3-gpg python3-jwt python3-markdown python3-mistune python3-mysqldb python3-pip python3-psycopg2 python3-pytest python3-pytest-cov python3-tz python3-venv python3-whoosh python3-xapian swig
+            sudo apt-get install -y libgpgme-dev default-mysql-client-core postgresql-client python3-docutils python3-gpg python3-jwt python3-markdown python3-markdown2 python3-mistune python3-mysqldb python3-pip python3-psycopg2 python3-pytest python3-pytest-cov python3-tz python3-venv python3-whoosh python3-xapian swig
 
       - run:
           name: setup databases
