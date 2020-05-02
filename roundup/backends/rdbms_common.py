@@ -2263,18 +2263,23 @@ class Class(hyperdb.Class):
             nn = p.nodeid_name
             cn = '_' + self.classname
             ret = ''
-            if p.rev_property and isinstance(p.rev_property, Link):
-                ret = 'and %s.__retired__=%s ' % (tn, a)
-                allvalues += (0, )
+            dis = ''
+            ord = ''
+            if p.rev_property:
+                if isinstance(p.rev_property, Link):
+                    ret = 'and %s.__retired__=%s ' % (tn, a)
+                    allvalues += (0, )
+                dis = 'distinct '
+                ord = ' order by %s.id' % cn
             if type(values) is type(''):
                 allvalues += (values,)
                 s = a
             else:
                 allvalues += tuple(values)
                 s = ','.join([a]*len(values))
-            sql.append("""select %s.id from %s, %s where  %s.__retired__=%s
-                  %sand %s.id = %s.%s and %s.%s in (%s)"""%(cn, cn, tn, cn,
-                  a, ret, cn, tn, nn, tn, ln, s))
+            sql.append("""select %s%s.id from %s, %s where  %s.__retired__=%s
+                  %sand %s.id = %s.%s and %s.%s in (%s)%s"""%(dis, cn, cn,
+                  tn, cn, a, ret, cn, tn, nn, tn, ln, s, ord))
 
         if not sql:
             return []
