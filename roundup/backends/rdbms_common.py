@@ -60,7 +60,6 @@ from roundup.hyperdb import String, Password, Date, Interval, Link, \
     Multilink, DatabaseError, Boolean, Number, Integer
 from roundup.i18n import _
 
-
 # support
 from roundup.backends.blobfiles import FileStorage
 from roundup.backends.indexer_common import get_indexer
@@ -1105,7 +1104,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 self.sql(sql, [int(nodeid)] + remove)
 
     sql_to_hyperdb_value = {
-        hyperdb.String    : str,
+        hyperdb.String    : us2s,
         hyperdb.Date      : date_to_hyperdb_value,
 #        hyperdb.Link   : int,      # XXX numeric ids
         hyperdb.Link      : str,
