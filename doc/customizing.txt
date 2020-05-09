@@ -745,7 +745,7 @@ behaviour:
        issue = IssueClass(db, "issue",
                  ...
 		 part_of = Link("issue"),
-		 components = Multilink("issue")
+		 components = Multilink("issue"),
 		 ... )
 
     Then wrote a detector to update the components property on the
