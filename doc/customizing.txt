@@ -719,11 +719,56 @@ behaviour:
   - The ``rev_multilink`` option takes a property name to be inserted
     into the linked-to class. This property is a Multilink property that
     links back to the current class. The new Multilink is read-only (it
-    is automagically modified if the Link or Multilink property defining
+    is automatically modified if the Link or Multilink property defining
     it is modified). The new property can be used in normal searches
     using the "filter" method of the Class. This means it can be used
     like other Multilink properties when searching (in an index
     template) or via the REST- and XMLRPC-APIs.
+
+    As a example, suppose you want to group multiple issues into a
+    super issue. Each issue can be part of only one super issue. It is
+    inefficient to find all of the issues that are part of the
+    super issue by searching through all issues in the system looking
+    at the part_of link property. To make this more efficient, you
+    can declare an issue's part_of property as::
+
+       issue = IssueClass(db, "issue",
+                 ...
+		 part_of = Link("issue", rev_multilink="components"),
+		 ... )
+
+    This automatically creates the ``components`` multilink on the issue
+    class. The ``components`` multilink is never explicitly declared in
+    the issue class, but it has the same effect as though you had
+    declared the class as::
+
+       issue = IssueClass(db, "issue",
+                 ...
+		 part_of = Link("issue"),
+		 components = Multilink("issue")
+		 ... )
+
+    Then wrote a detector to update the components property on the
+    corresponding issue. Writing this detector can be tricky. There is
+    one other difference, you can not explicitly set/modify the
+    ``components`` multilink.
+
+    The effect of setting ``part_of = 3456`` on issue1234
+    automatically adds "1234" to the ``components`` property on
+    issue3456. You can search the ``components`` multilink just like a
+    regular multilink, but you can't explicitly assign to it.
+
+    You can also link between different classes. So you can modify
+    the issue definition to include::
+
+       issue = IssueClass(db, "issue",
+                 ...
+		 assigned_to = Link("user", rev_multilink="responsibleFor"),
+		 ... )
+   
+    This makes it easy to list all issues that the user is responsible
+    for (aka assigned_to).
+
   - The ``msg_header_property`` is used by the mail gateway when sending
     out messages. When a link or multilink property of an issue changes,
     roundup creates email headers of the form::
