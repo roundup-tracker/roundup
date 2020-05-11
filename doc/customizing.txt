@@ -46,7 +46,9 @@ initial_data.py     Holds any data to be entered into the database when the
                     tracker is initialised.
 db/                 Holds the tracker's database                             
 db/files/           Holds the tracker's upload files and messages            
-db/backend_name     Names the database back-end for the tracker            
+db/backend_name     Names the database back-end for the tracker (obsolete).
+                    Current way uses the ``backend`` setting in the rdbms
+		    section of config.ini.
 detectors/          Auditors and reactors for this tracker                   
 extensions/         Additional actions and `templating utilities`_
 html/               Web interface templates, images and style sheets         
@@ -65,6 +67,8 @@ schema`_.  Some configuration is also performed using permissions - see the
 `security / access controls`_ section. For example, to allow users to
 automatically register through the email interface, you must grant the
 "Anonymous" Role the "Email Access" Permission.
+
+.. index:: configuration; sections
 
 The following is taken from the `Python Library Reference`__ (July 18, 2018)
 section "ConfigParser -- Configuration file parser":
@@ -90,8 +94,12 @@ section "ConfigParser -- Configuration file parser":
 
 __ https://docs.python.org/2/library/configparser.html
 
-Example configuration settings are below.
+Example configuration settings are below. This is a partial
+list. Documentation on all the settings is included in the
+``config.ini`` file.
  
+.. index:: configuration; sections main
+
 Section **main**
  database -- ``db``
   Database directory path. The path may be either absolute or relative
@@ -195,6 +203,8 @@ Section **tracker**
   language is determined by the environment variable LANGUAGE, LC_ALL,
   LC_MESSAGES, or LANG, in that order of preference.
 
+.. index:: configuration; sections web
+
 Section **web**
  allow_html_file -- ``no``
   Setting this option enables Roundup to serve uploaded HTML
@@ -222,7 +232,12 @@ Section **web**
   tracker admin."),
 
 Section **rdbms**
- Settings in this section are used by Postgresql and MySQL backends only
+ Settings in this section are used to set the backend and configure
+ addition settings needed by RDBMs like SQLite, Postgresql and
+ MySQL backends.
+
+ backend -- set to value by init
+  The database backend such as anydbm, sqlite, mysql or postgres.
 
  name -- ``roundup``
   Name of the database to use.
@@ -247,6 +262,14 @@ Section **rdbms**
  read_default_group -- ``roundup``
   Name of the group to use in the MySQL defaults file. Only used in
   MySQL connections.
+
+ sqlite_timeout -- ``30``
+  Number of seconds to wait when the SQLite database is locked.
+  Used only for SQLite.
+
+ cache_size -- `100`
+  Size of the node cache (in elements) used to keep most recently used
+  data in memory.
 
 Section **logging**
  config -- default *blank*
@@ -470,8 +493,7 @@ existing settings using the ``roundup-admin updateconfig`` command.
 
 Configuration variables may be referred to in lower or upper case. In code,
 variables not in the "main" section are referred to using their section and
-name, so "domain" in the section "mail" becomes MAIL_DOMAIN. The
-configuration variables available are:
+name, so "domain" in the section "mail" becomes MAIL_DOMAIN.
 
 Extending the configuration file
 --------------------------------
@@ -501,6 +523,7 @@ applied to the extension config files, so if you instead have::
 
 then the above ``db.config.detectors['QA_RECIPIENTS']`` will still work.
 
+.. index:: schema
 
 Tracker Schema
 ==============
@@ -514,22 +537,19 @@ A tracker schema defines what data is stored in the tracker's database.
 Schemas are defined using Python code in the ``schema.py`` module of your
 tracker.
 
-The ``schema.py`` module
-------------------------
+The ``schema.py`` and ``initial_data.py`` modules
+-------------------------------------------------
 
-The ``schema.py`` module contains two functions:
+The schema.py module is used to define what your tracker looks like
+on the inside, the schema of the tracker. It defines the Classes
+and properties on each class. It also defines the security for
+those Classes. The next few sections describe how schemas work
+and what you can do with them.
 
-**open**
-  This function defines what your tracker looks like on the inside, the
-  **schema** of the tracker. It defines the **Classes** and **properties**
-  on each class. It also defines the **security** for those Classes. The
-  next few sections describe how schemas work and what you can do with
-  them.
-**init**
-  This function is responsible for setting up the initial state of your
-  tracker. It's called exactly once - by the ``roundup-admin initialise``
-  command.  See the start of the section on `database content`_ for more
-  info about how this works.
+The initial_data.py module sets up the initial state of your
+tracker. It’s called exactly once - by the ``roundup-admin initialise``
+command. See the start of the section on database content for more
+info about how this works.
 
 
 The "classic" schema
@@ -656,21 +676,32 @@ Properties
 
 A Class is comprised of one or more properties of the following types:
 
-* String properties are for storing arbitrary-length strings.
-* Password properties are for storing encoded arbitrary-length strings.
-  The default encoding is defined on the ``roundup.password.Password``
-  class.
-* Date properties store date-and-time stamps. Their values are Timestamp
-  objects.
-* Integer properties store integer values. (Number can store real/float values.)
-* Number properties store numeric values. There is an option to use
-  double-precision floating point numbers.
-* Boolean properties store on/off, yes/no, true/false values.
-* A Link property refers to a single other item selected from a
-  specified class. The class is part of the property; the value is an
-  integer, the id of the chosen item.
-* A Multilink property refers to possibly many items in a specified
-  class. The value is a list of integers.
+  String
+       properties are for storing arbitrary-length strings.
+  Password
+       properties are for storing encoded arbitrary-length strings.
+       The default encoding is defined on the ``roundup.password.Password``
+       class.
+  Date
+       properties store date-and-time stamps. Their values are Timestamp
+       objects.
+  Interval
+       properties store time periods rather than absolute dates. For
+       example 2 hours.
+  Integer
+       properties store integer values. (Number can store real/float values.)
+  Number
+       properties store numeric values. There is an option to use
+       double-precision floating point numbers.
+  Boolean
+       properties store on/off, yes/no, true/false values.
+  Link
+       properties refers to a single other item selected from a
+       specified class. The class is part of the property; the value is an
+       integer, the id of the chosen item.
+  Multilink
+       properties refer to possibly many items in a specified
+       class. The value is a list of integers.
 
 Properties can have additional attributes to change the default
 behaviour:
@@ -723,7 +754,7 @@ behaviour:
     it is modified). The new property can be used in normal searches
     using the "filter" method of the Class. This means it can be used
     like other Multilink properties when searching (in an index
-    template) or via the REST- and XMLRPC-APIs.
+    template) or via the REST and XMLRPC APIs.
 
     As a example, suppose you want to group multiple issues into a
     super issue. Each issue can be part of only one super issue. It is
@@ -964,8 +995,11 @@ property, or sorting will result in random ordering.
 Examples of adding to your schema
 ---------------------------------
 
-The Roundup wiki has examples of how schemas can be customised to add
-new functionality.
+The `Roundup wiki`_ has examples of
+how schemas can be customised to add new functionality.
+
+.. _Roundup wiki:
+   https://wiki.roundup-tracker.org/
 
 
 Detectors - adding behaviour to your tracker
@@ -1292,7 +1326,7 @@ Example: Modifying the mail gateway
 -----------------------------------
 
 One site receives email on a main gateway. The virtual alias delivery
-table on the postfix server is configured with:
+table on the postfix server is configured with::
 
    test-issues@example.com  roundup-test@roundup-vm.example.com
    test-support@example.com roundup-test+support-a@roundup-vm.example.com
@@ -1475,6 +1509,11 @@ also define:
 *Web Roles*
   Controls user access to editing the "roles" property of the "user" class.
   TODO: deprecate in favour of a property-based control.
+*Rest Access* and *Xmlrpc Access*
+  These control access to the Rest and Xmlrpc endpoints. The Admin and User
+  roles have these by default in the classic tracker. See the
+  `directions in the rest interface documentation`_ and the
+  `xmlrpc interface documentation`_.
 
 These are hooked into the default Roles:
 
@@ -1512,6 +1551,8 @@ Put together, these settings appear in the tracker's ``schema.py`` file::
     # Give the regular users access to the web and email interface
     db.security.addPermissionToRole('User', 'Web Access')
     db.security.addPermissionToRole('User', 'Email Access')
+    db.security.addPermissionToRole('User', 'Rest Access')
+    db.security.addPermissionToRole('User', 'Xmlrpc Access')
 
     # Assign the access and edit Permissions for issue, file and message
     # to regular users now
@@ -5788,4 +5829,6 @@ rather than requiring a web server restart.
 .. _`design documentation`: design.html
 .. _`developer's guide`: developers.html
 .. _`rest interface documentation`: rest.html#programming-the-rest-api
+.. _`directions in the rest interface documentation`: rest.html#enabling-the-rest-api
+.. _`xmlrpc interface documentation`: xmlrpc.html#through-roundup
 .. _`zxcvbn`: https://github.com/dwolfhub/zxcvbn-python

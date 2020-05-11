@@ -33,3 +33,8 @@ Contents
 
 See: https://wiki.roundup-tracker.org/ReleaseErrata for fixes to
 documentation.
+
+Indices
+=======
+ 
+* :ref:`genindex`
