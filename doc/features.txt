@@ -4,7 +4,7 @@ Roundup Features
 
 Roundup is a simple-to-use and -install issue-tracking system with
 web, e-mail and command-line interfaces. It is based on the winning design
-from Ka-Ping Yee in the Software Carpentry "Track" design competition.
+from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
 
 *simple to install*
  - installation (including web interface) takes about 30 minutes

@@ -68,7 +68,9 @@ schema`_.  Some configuration is also performed using permissions - see the
 automatically register through the email interface, you must grant the
 "Anonymous" Role the "Email Access" Permission.
 
-.. index:: configuration; sections
+.. index::
+   single: config.ini; sections
+   see: configuration; config.ini
 
 The following is taken from the `Python Library Reference`__ (July 18, 2018)
 section "ConfigParser -- Configuration file parser":
@@ -236,6 +238,16 @@ Section **rdbms**
  addition settings needed by RDBMs like SQLite, Postgresql and
  MySQL backends.
 
+ .. index::
+    single: postgres; select backend in config.ini 
+    single: mysql; select backend in config.ini
+    single: sqlite; select backend in config.ini
+    single: anydbm; select backend in config.ini
+    see: database; postgres
+    see: database; mysql
+    see: database; sqlite
+    see: database; anydbm
+
  backend -- set to value by init
   The database backend such as anydbm, sqlite, mysql or postgres.
 
@@ -262,6 +274,9 @@ Section **rdbms**
  read_default_group -- ``roundup``
   Name of the group to use in the MySQL defaults file. Only used in
   MySQL connections.
+
+ .. index::
+    single: sqlite; lock timeout
 
  sqlite_timeout -- ``30``
   Number of seconds to wait when the SQLite database is locked.
@@ -487,6 +502,11 @@ Section **nosy**
   download page for the file.
 
 
+.. index:: single: roundup-admin; config.ini update
+           single: roundup-admin; config.ini create
+           single: config.ini; create
+           single: config.ini; update
+
 You may generate a new default config file using the ``roundup-admin
 genconfig`` command. You can generate a new config file merging in
 existing settings using the ``roundup-admin updateconfig`` command.
@@ -523,7 +543,7 @@ applied to the extension config files, so if you instead have::
 
 then the above ``db.config.detectors['QA_RECIPIENTS']`` will still work.
 
-.. index:: schema
+.. index:: ! schema
 
 Tracker Schema
 ==============
@@ -995,12 +1015,15 @@ property, or sorting will result in random ordering.
 Examples of adding to your schema
 ---------------------------------
 
-The `Roundup wiki`_ has examples of
-how schemas can be customised to add new functionality.
+Some examples are in the :ref:`CustomExamples` section below.
+
+Also the `Roundup wiki`_ has additional examples of how schemas can be
+customised to add new functionality.
 
 .. _Roundup wiki:
    https://wiki.roundup-tracker.org/
 
+.. index:: !detectors
 
 Detectors - adding behaviour to your tracker
 ============================================
@@ -1016,6 +1039,8 @@ modules that sit in your tracker's ``detectors`` directory. You will
 have some installed by default - have a look. You can write new
 detectors or modify the existing ones. The existing detectors installed
 for you are:
+
+.. index:: detectors; installed
 
 **nosyreaction.py**
   This provides the automatic nosy list maintenance and email sending.
@@ -1044,6 +1069,8 @@ interface for detectors.
 
 __ design.html
 
+
+.. index:: detectors; writing api
 
 Detector API
 ------------
@@ -1082,6 +1109,7 @@ values of properties that were changed.
 For a ``retire()`` or ``restore()`` operation, ``itemid`` is the id of
 the retired or restored item and ``olddata`` is None.
 
+.. index:: detectors; additional
 
 Additional Detectors Ready For Use
 ----------------------------------
@@ -1611,6 +1639,9 @@ Put together, these settings appear in the tracker's ``schema.py`` file::
     #for cl in 'issue', 'file', 'msg':
     #   db.security.addPermissionToRole('Anonymous', 'Create', cl)
     #   db.security.addPermissionToRole('Anonymous', 'Edit', cl)
+
+.. index::
+   single: roundup-admin; class permissions
 
 You can use ``roundup-admin security`` to verify the permissions
 defined in the schema. It also verifies that properties specified in
@@ -3755,6 +3786,7 @@ should be changed to include actual character set name::
 
 The charset is also sent in the http header.
 
+.. _CustomExamples:
 
 Examples
 ========
@@ -3782,6 +3814,8 @@ You add new fields by editing the ``schema.py`` file in you tracker's home.
 Schema changes are automatically applied to the database on the next
 tracker access (note that roundup-server would need to be restarted as it
 caches the schema).
+
+.. index:: schema; example changes
 
 1. Modify the ``schema.py``::
 
@@ -4281,6 +4315,8 @@ be able to give a summary of the total time spent on a particular issue.
    If users are also able to *edit* timelog entries, then also include::
 
     db.security.addPermissionToRole('User', 'Edit', 'timelog')
+
+.. index:: schema; example changes
 
 2. Link to the new class from your issue class (again, in
    ``schema.py``)::

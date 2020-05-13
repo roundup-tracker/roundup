@@ -84,6 +84,18 @@
       <script type="text/javascript" src="http://www.ohloh.net/p/488/widgets/project_users_logo.js"></script>
     </div>
     <div class="content">
+	<div id="subnav">
+        {%- if prev %}
+           <a title="{{ prev.title|striptags }}" href="{{ prev.link|e }}">
+	     Prev</a>
+        {%- endif %}
+	{%- if next %}
+           <a title="{{ next.title|striptags }}" href="{{ next.link|e }}">
+	     Next</a>
+	{%- endif %}
+        <a title="{{ _('Index') }}" href="{{ pathto('genindex') }}">
+	  Index</a>
+	</div>
        {% block body %} {% endblock %}
     </div>
 {%- block footer %}

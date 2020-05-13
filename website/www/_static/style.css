@@ -21,6 +21,7 @@ body > .content
   margin: 0;
 }
 body > .header > #searchbox { position: absolute; right: 1em; top: 1em;}
+body > .content > #subnav    { position: absolute; right: 1.5em; top: 5em;}
 
 /* style */
 

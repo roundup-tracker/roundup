@@ -331,6 +331,7 @@ installation. That is, it has the configuration files, defines a user database
 and the basic HTML interface to that. It's a completely clean slate for you to
 create your tracker on.
 
+.. index:: database; choosing your backend
 
 Choosing Your Backend
 ---------------------
@@ -396,6 +397,7 @@ You may need to give the web server user permission to access the tracker home
 - see the `UNIX environment steps`_ for information. You may also need to
 configure your system in some way - see `platform-specific notes`_.
 
+.. index:: pair: web interface; cgi
 
 Web Server cgi-bin
 ~~~~~~~~~~~~~~~~~~
@@ -489,6 +491,7 @@ Now loading the (sub-)domain in a browser should load the tracker web
 interface. If you get a "500" error then enable the "cgitb" lines in the
 stub to get some debugging information.
 
+.. index:: pair: web interface; stand alone server
 
 Stand-alone Web Server
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -508,6 +511,8 @@ To make the server run in the background, use the "-d" option, specifying the
 name of a file to write the server process id (pid) to.
 
 
+.. index:: pair: web interface; Zope
+
 Zope Product - ZRoundup
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -517,6 +522,9 @@ code tree lib/python/Products.
 
 When you next (re)start up Zope, you will be able to add a ZRoundup object
 that interfaces to your new tracker.
+
+.. index:: ! triple: web interface; apache; mod_wsgi
+   ! single:  wsgi; apache
 
 Apache HTTP Server with mod_wsgi
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -676,6 +684,8 @@ To run as a background process
 2. Then, run ``sudo /etc/mod_wsgi-express-80/apachectl start``
 3. To stop, run ``sudo /etc/mod_wsgi-express-80/apachectl stop``
 
+.. index:: triple: web interface; apache; mod_python (depricated)
+
 Apache HTTP Server with mod_python
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -812,6 +822,9 @@ serving with SSL.
 WSGI Variations
 ~~~~~~~~~~~~~~~
 
+.. index:: triple: web interface; apache; mod_wsgi
+   single: wsgi; apache
+
 Apache Alternate
 ^^^^^^^^^^^^^^^^
 
@@ -914,6 +927,9 @@ One last change is needed. In the tracker's config.ini change the db
 parameter in the [main] section to be /home/roundup-foo/db. This will
 put the files and messages in the db directory for the user.
 
+.. index:: pair: web interface; gunicorn
+   single: wsgi; gunicorn
+
 Gunicorn Installation
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -942,6 +958,9 @@ Assuming the proxy forwards /tracker, run gunicorn as::
 
 this runs roundup at port 8917 on the loopback interface. You should
 configure the reverse proxy to talk to 127.0.0.1 at port 8917.
+
+.. index:: pair: web interface; uWSGI
+   single: wsgi; uWSGI
 
 uWSGI Installation
 ^^^^^^^^^^^^^^^^^^

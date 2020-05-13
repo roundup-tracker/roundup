@@ -289,6 +289,8 @@ reinstall the older version of the sofware using the same install command::
     python setup.py install
 
 
+.. index:: database; convert from one database backend to another
+
 Migrating Backends
 ------------------
 
@@ -338,6 +340,8 @@ moved using the above steps) then you'll need to:
    machine, and
 6. start the tracker web and email frontends on the new machine.
 
+.. index::
+   pair: roundup; migrate from other bugtracker software
 
 Migrating From Other Software
 -----------------------------
@@ -363,6 +367,8 @@ directory containing files with the following format:
   where ``<designator>`` is the item's ``<classname><id>`` combination.
   The ``<N>`` value is ``int(<id> / 1000)``.
 
+
+.. index:: pair: roundup-admin; managing users
 
 Adding A User From The Command-Line
 -----------------------------------

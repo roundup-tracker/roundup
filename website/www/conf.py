@@ -67,11 +67,11 @@ release = '2.0.0beta0'
 #today_fmt = '%B %d, %Y'
 
 # List of documents that shouldn't be included in the build.
-#unused_docs = []
-
-# List of directories, relative to source directory, that shouldn't be searched
-# for source files.
-exclude_trees = ['.build']
+exclude_patterns = ['docs/index.txt',
+                    'docs/whatsnew-0.7.txt',
+                    'docs/whatsnew-0.8.txt',
+                    'docs/security.txt',
+                    '_tmp']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -137,7 +137,7 @@ html_collapse_toctree = True
 # template names.
 #html_additional_pages = {}
 
-html_add_permalinks = False
+html_add_permalinks = ''
 
 # If false, no module index is generated.
 #html_use_modindex = True

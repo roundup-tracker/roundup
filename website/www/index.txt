@@ -17,6 +17,7 @@ set of docs`_. Read the :doc:`announcement for the new features
 
    * Python 2 and Python 3 support
    * a new REST interface
+   * updates to jinja2 templates including security improvements
 
 The current stable version of Roundup is 1.6.1 which has quite a
 comprehensive :doc:`feature set <docs/features>`.  For more

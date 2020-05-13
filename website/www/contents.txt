@@ -15,13 +15,11 @@ Contents:
    docs
    Issues <https://issues.roundup-tracker.org>
    contact
-   Wiki <http://wiki.roundup-tracker.org>
+   Wiki <https://wiki.roundup-tracker.org>
    code
 
-Indices and tables
-==================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. toctree::
+   :hidden:
 
+   docs/announcement

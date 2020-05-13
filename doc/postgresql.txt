@@ -1,3 +1,5 @@
+.. index:: postgres; debugging notes
+
 ==========================
 PostgreSQL/psycopg Backend
 ==========================

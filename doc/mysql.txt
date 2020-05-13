@@ -1,3 +1,5 @@
+.. index:: mysql; debugging notes
+
 =============
 MySQL Backend
 =============
