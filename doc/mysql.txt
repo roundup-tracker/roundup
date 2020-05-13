@@ -1,4 +1,4 @@
-.. index:: mysql; debugging notes
+.. index:: mysql; deployment notes
 
 =============
 MySQL Backend

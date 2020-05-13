@@ -1,3 +1,6 @@
+.. index:: triple: api; xml; remote procedure call
+   pair: api; xmlrpc
+
 =========================
 XML-RPC access to Roundup
 =========================

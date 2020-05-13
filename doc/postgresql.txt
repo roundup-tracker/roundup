@@ -1,4 +1,4 @@
-.. index:: postgres; debugging notes
+.. index:: postgres; deployment notes
 
 ==========================
 PostgreSQL/psycopg Backend
