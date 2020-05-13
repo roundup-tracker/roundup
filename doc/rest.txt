@@ -1689,7 +1689,7 @@ So what we need is a way for this third party service to impersonate
 you and have access to create a roundup timelog entry (see
 `<customizing.html#adding-a-time-log-to-your-issues>`__ ). Then add it
 to the associated issue. This should happen without sharing passwords
-and without the third party service to see the issue (except the
+and without allowing the third party service to see the issue (except the
 ``times`` property), user, or other information in the tracker.
 
 Enter the use of a JSON web token. Roundup has rudimentary ability to
