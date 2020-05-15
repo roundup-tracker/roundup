@@ -1,3 +1,5 @@
+.. index:: Upgrading
+
 ======================================
 Upgrading to newer versions of Roundup
 ======================================
@@ -19,6 +21,8 @@ Contents:
 
 .. contents::
    :local:
+
+.. index:: Upgrading; 1.6.x to 2.0.0
 
 Migrating from 1.6.X to 2.0.0
 =============================
@@ -291,6 +295,8 @@ with::
     <input type="hidden" name="@action" value="editCSV">
 
 The action keywords should not be translated.
+
+.. index:: Upgrading; 1.5.1 to 1.6.0
 
 Migrating from 1.5.1 to 1.6.0
 =============================

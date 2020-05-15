@@ -38,6 +38,9 @@ Features:
   2004. There are some legacy reasons why one would want to not pass a
   charset argument or pass an argument different from the default of
   'utf8'. (Ralf Schlatterbeck)
+- Index created for documentation. Links created for website docs and
+  released docs. Needs more refinement, but it exists at least.
+  (John Rouillard)
 
 2020-04-05 2.0.0 beta 0
 

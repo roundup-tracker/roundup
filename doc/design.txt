@@ -911,6 +911,11 @@ addition of a convenience function like Choice for setting up the
         return hyperdb.Link(name)
 
 
+.. index:: schema; detectors design
+   single: detectors; design of
+   single: pair: detectors; auditors
+   single: pair: detectors; reactors
+
 Detector Interface
 ------------------
 
@@ -935,6 +940,13 @@ If none of the auditors raises an exception, the database proceeds to
 carry out the operation.  After it's done, it then calls all of the
 *reactors* that have been registered for the operation.
 
+
+.. index:: detectors; interface specification
+   single: detectors; register
+   single: auditors; class registration method
+   single: reactors; class registration method
+   pair: class methods; audit
+   pair: class methods; react
 
 Detector Interface Specification
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

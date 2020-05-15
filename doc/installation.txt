@@ -1,3 +1,5 @@
+.. index:: Installation
+
 ==================
 Installing Roundup
 ==================

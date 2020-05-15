@@ -37,6 +37,14 @@ Trackers in a Nutshell
 
 Trackers have the following structure:
 
+.. index::
+   single: tracker; structure db directory
+   single: tracker; structure detectors directory
+   single: tracker; structure extensions directory
+   single: tracker; structure html directory
+   single: tracker; structure html directory
+   single: tracker; structure lib directory
+
 =================== ========================================================
 Tracker File        Description
 =================== ========================================================
@@ -55,6 +63,9 @@ html/               Web interface templates, images and style sheets
 lib/                optional common imports for detectors and extensions
 =================== ======================================================== 
 
+
+.. index:: config.ini
+.. index:: configuration; see config.ini 
 
 Tracker Configuration
 =====================
@@ -100,7 +111,7 @@ Example configuration settings are below. This is a partial
 list. Documentation on all the settings is included in the
 ``config.ini`` file.
  
-.. index:: configuration; sections main
+.. index:: config.ini; sections main
 
 Section **main**
  database -- ``db``
@@ -186,6 +197,8 @@ Section **main**
   get the error 'Error: field larger than field limit' during
   import.
 
+.. index:: config.ini; sections tracker
+
 Section **tracker**
  name -- ``Roundup issue tracker``
   A descriptive name for your roundup instance.
@@ -205,7 +218,7 @@ Section **tracker**
   language is determined by the environment variable LANGUAGE, LC_ALL,
   LC_MESSAGES, or LANG, in that order of preference.
 
-.. index:: configuration; sections web
+.. index:: config.ini; sections web
 
 Section **web**
  allow_html_file -- ``no``
@@ -232,6 +245,9 @@ Section **web**
   Setting this option makes Roundup display error tracebacks
   in the user's browser rather than emailing them to the
   tracker admin."),
+
+.. index:: config.ini; sections rdbms
+   single: config.ini; database settings
 
 Section **rdbms**
  Settings in this section are used to set the backend and configure
@@ -286,6 +302,9 @@ Section **rdbms**
   Size of the node cache (in elements) used to keep most recently used
   data in memory.
 
+.. index:: config.ini; sections logging
+   see: logging; config.ini, sections logging
+
 Section **logging**
  config -- default *blank*
   Path to configuration file for standard Python logging module. If this
@@ -303,6 +322,8 @@ Section **logging**
   Minimal severity level of messages written to log file. If above 'config'
   option is set, this option has no effect.
   Allowed values: ``DEBUG``, ``INFO``, ``WARNING``, ``ERROR``
+
+.. index:: config.ini; sections mail
 
 Section **mail**
  Outgoing email options. Used for nosy messages, password reset and
@@ -368,6 +389,10 @@ Section **mail**
   top of all messages.  If this is false but add_authorinfo is true,
   only the name of the actor is added which protects the mail address
   of the actor from being exposed at mail archives, etc.
+
+.. index:: config.ini; sections mailgw
+   single: mailgw; config
+   see: mail gateway; mailgw
 
 Section **mailgw**
  Roundup Mail Gateway options
@@ -449,6 +474,8 @@ Section **mailgw**
   parts of the multipart/alternative are ignored. The default
   is to keep all parts and attach them to the issue.
 
+.. index:: config.ini; sections php
+
 Section **pgp**
  OpenPGP mail processing options
 
@@ -462,6 +489,9 @@ Section **pgp**
  homedir -- default *blank*
   Location of PGP directory. Defaults to $HOME/.gnupg if not
   specified.
+
+
+.. index:: config.ini; sections nosy
 
 Section **nosy**
  Nosy messages sending
@@ -514,6 +544,9 @@ existing settings using the ``roundup-admin updateconfig`` command.
 Configuration variables may be referred to in lower or upper case. In code,
 variables not in the "main" section are referred to using their section and
 name, so "domain" in the section "mail" becomes MAIL_DOMAIN.
+
+.. index:: pair: configuration; extensions
+   pair: configuration; detectors
 
 Extending the configuration file
 --------------------------------
@@ -571,6 +604,7 @@ tracker. It’s called exactly once - by the ``roundup-admin initialise``
 command. See the start of the section on database content for more
 info about how this works.
 
+.. index:: schema; classic - description of
 
 The "classic" schema
 --------------------
@@ -606,6 +640,7 @@ specifying (default) labelling and ordering of classes.)::
         priority=Link("priority"))
     issue.setkey('title')
 
+.. index:: schema; allowed changes
 
 What you can't do to the schema
 -------------------------------
@@ -691,6 +726,8 @@ called items. They have a special immutable property called ``'id'``. We
 sometimes refer to this as the *itemid*.
 
 
+.. index:: schema; property types
+
 Properties
 ~~~~~~~~~~
 
@@ -726,6 +763,10 @@ A Class is comprised of one or more properties of the following types:
 Properties can have additional attributes to change the default
 behaviour:
 
+.. index:: triple: schema; property attributes; required
+   triple: schema; property attributes; default_value
+   triple: schema; property attributes; quiet
+
 * All properties support the following attributes:
 
    - ``required``: see `design documentation`_. Adds the property to
@@ -747,26 +788,39 @@ behaviour:
     number of times an issue was reopened or reassigned etc.) should
     not be displayed to the user as they can be confusing.
 
+.. index:: triple: schema; property attributes; indexme
+
 * String properties can have an ``indexme`` attribute that defines if the
   property should be part of the full text index. The default is 'no' but this
   can be set to 'yes' to allow a property's contents to be in the full
   text index.
+
+.. index:: triple: schema; property attributes; use_double
+
 * Number properties can have a ``use_double`` attribute that, when set
   to ``True``, will use double precision floating point in the database.
 * Link and Multilink properties can have several attributes:
-  
+
+  .. index:: triple: schema; property attributes; do_journal  
+
   - ``do_journal``: By default, every change of a link property is
     recorded in the item being linked to (or being unlinked). A typical
     use-case for setting ``do_journal='no'`` would be to turn off
     journalling of nosy list, message author and message recipient link
     and unlink events to prevent the journal from clogged with these
     events.
+
+  .. index:: triple: schema; property attributes; try_id_parsing
+
   - ``try_id_parsing`` is turned on by default. If entering a number
     into a Link or Multilink field, roundup interprets this number as an
     ID of the item to link to. Sometimes items can have numeric names
     (like, e.g., product codes). For these roundup needs to match the
     numeric name and should never match an ID. In this case you can set
     ``try_id_parsing='no'``.
+
+  .. index:: triple: schema; property attributes; rev_multilink
+
   - The ``rev_multilink`` option takes a property name to be inserted
     into the linked-to class. This property is a Multilink property that
     links back to the current class. The new Multilink is read-only (it
@@ -819,6 +873,8 @@ behaviour:
    
     This makes it easy to list all issues that the user is responsible
     for (aka assigned_to).
+
+  .. index:: triple: schema; property attributes; msg_header_property
 
   - The ``msg_header_property`` is used by the mail gateway when sending
     out messages. When a link or multilink property of an issue changes,
@@ -883,6 +939,11 @@ behaviour:
     If this property is set to the empty string "", it will prevent
     the header from being generated on outgoing mail.
 
+.. index:: triple: schema; class property; creator
+   triple: schema; class property; creation
+   triple: schema; class property; actor
+   triple: schema; class property; activity
+
 All Classes automatically have a number of properties by default:
 
 *creator*
@@ -895,6 +956,9 @@ All Classes automatically have a number of properties by default:
   Date the item was last modified.
 
 
+.. index:: triple: schema; class property; content
+   triple: schema; class property; type
+
 FileClass
 ~~~~~~~~~
 
@@ -906,6 +970,10 @@ stored in the files sub-directory of the ``'db'`` directory in your
 tracker. FileClasses also have a "type" attribute to store the MIME
 type of the file.
 
+.. index:: triple: schema; class property; messages
+   triple: schema; class property; files
+   triple: schema; class property; nosy
+   triple: schema; class property; superseder
 
 IssueClass
 ~~~~~~~~~~
@@ -929,6 +997,7 @@ property on the item was last edited (equivalently, these are the dates
 on the first and last records in the item's journal). The "creator"
 property holds a link to the user that created the issue.
 
+.. index: triple: schema; class method; setkey
 
 setkey(property)
 ~~~~~~~~~~~~~~~~
@@ -947,6 +1016,8 @@ or::
      roundup-admin set issue23 assignedto=richard
 
 Note, the same thing can be done in the web and e-mail interfaces. 
+
+.. index: triple: schema; class method; setlabelprop
 
 setlabelprop(property)
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -969,6 +1040,8 @@ the id property for a class. If the property can not be viewed by a
 user, looping over items in the class (e.g. messages attached to an
 issue) will not work.
 
+.. index: triple: schema; class method; setorderprop
+
 setorderprop(property)
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -985,12 +1058,15 @@ for the order property:
 So in most cases you can get away without specifying setorderprop
 explicitly.
 
+.. index: triple: schema; class method; create
+
 create(information)
 ~~~~~~~~~~~~~~~~~~~
 
 Create an item in the database. This is generally used to create items
 in the "definitional" classes like "priority" and "status".
 
+.. index: schema; item ordering
 
 A note about ordering
 ~~~~~~~~~~~~~~~~~~~~~
@@ -1075,6 +1151,11 @@ __ design.html
 Detector API
 ------------
 
+.. index:: pair: detectors; auditors
+   single: auditors; function signature
+   single: auditors; defining
+   single: auditors; arguments
+
 Auditors are called with the arguments::
 
     audit(db, cl, itemid, newdata)
@@ -1091,6 +1172,11 @@ For a ``set()`` operation, newdata contains only the names and values of
 properties that are about to be changed.
 
 For a ``retire()`` or ``restore()`` operation, newdata is None.
+
+.. index:: pair: detectors; reactor
+   single: reactors; function signature
+   single: reactors; defining
+   single: reactors; arguments
 
 Reactors are called with the arguments::
 
@@ -1144,6 +1230,9 @@ to use one, copy it to the ``'detectors'`` of your tracker instance:
   information, see the detector code - it has a length explanation.
 
 
+.. index:: auditors; rules for use
+   single: reactors; rules for use
+
 Auditor or Reactor?
 -------------------
 
@@ -1194,6 +1283,9 @@ messages which only consist of a change note (ie. the message id parameter
 is not required - this is referred to as a "System Message" because it
 comes from "the system" and not a user).
 
+
+.. index:: extensions
+.. index:: extensions; add python functions to tracker
 
 Extensions - adding capabilities to your tracker
 ================================================
@@ -1267,8 +1359,11 @@ path in the tracker's `config.ini`. In the example above:
 
 Note that a file name match overrides the mime type settings.
 
+
 Example: Implement password complexity checking
 -----------------------------------------------
+
+.. index:: tracker; lib directory (example)
 
 This example uses the zxcvbn_ module that you can place in the zxcvbn
 subdirectory of your tracker's lib directory.
@@ -4769,6 +4864,9 @@ So you could reimplement this as something like::
 Changes to Tracker Behaviour
 ----------------------------
 
+.. index:: single: auditors; how to register (example)
+   single: reactors; how to register (example)
+
 Preventing SPAM
 ~~~~~~~~~~~~~~~
 
@@ -5294,7 +5392,8 @@ Scalability
     many users this will be a serious performance bottleneck.
     A way out would be to link from the keywords to the users who
     selected these keywords as nosy keywords. This will eliminate the
-    loop over all users.
+    loop over all users. See the ``rev_multilink`` attribute to make
+    this easier.
 
 Restricting updates that arrive by email
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
