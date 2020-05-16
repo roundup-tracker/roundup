@@ -27,6 +27,8 @@ Contents:
 Migrating from 1.6.X to 2.0.0
 =============================
 
+.. index:: roundup-admin; updateconfig subcommand
+
 Upgrade tracker's config.ini file
 --------------------------------------
 Once you have installed the new roundup, use::
@@ -1511,6 +1513,8 @@ the same spec except the key column name needs a size. So an index on
 
 Migrating from 1.4.x to 1.4.2
 =============================
+
+.. index:: roundup-admin; migrate subcommand
 
 You should run the "roundup-admin migrate" command for your tracker once
 you've installed the latest codebase.

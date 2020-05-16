@@ -1004,6 +1004,8 @@ property holds a link to the user that created the issue.
 setkey(property)
 ~~~~~~~~~~~~~~~~
 
+.. index:: roundup-admin; setting assignedto on an issue
+
 Select a String property of the class to be the key property. The key
 property must be unique, and allows references to the items in the class
 by the content of the key property. That is, we can refer to users by
@@ -1738,7 +1740,7 @@ Put together, these settings appear in the tracker's ``schema.py`` file::
     #   db.security.addPermissionToRole('Anonymous', 'Edit', cl)
 
 .. index::
-   single: roundup-admin; class permissions
+   single: roundup-admin; view class permissions
 
 You can use ``roundup-admin security`` to verify the permissions
 defined in the schema. It also verifies that properties specified in
@@ -4031,9 +4033,10 @@ is fiddling around so you can actually use the new category.
 Populating the new category class
 :::::::::::::::::::::::::::::::::
 
-If you haven't initialised the database with the ``roundup-admin``
-"initialise" command, then you can add the following to the tracker
-``initial_data.py`` under the comment::
+If you haven't initialised the database with the
+"``roundup-admin initialise``" command, then you
+can add the following to the tracker ``initial_data.py``
+under the comment::
 
     # add any additional database creation steps here - but only if you
     # haven't initialised the database with the admin "initialise" command
@@ -4044,6 +4047,8 @@ Add::
      category.create(name="scipy")
      category.create(name="chaco")
      category.create(name="weave")
+
+.. index:: roundup-admin; create entries in class
 
 If the database has already been initalised, then you need to use the
 ``roundup-admin`` tool::

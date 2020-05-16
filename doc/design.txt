@@ -1089,6 +1089,8 @@ interesting can simply be written in Python using the Roundup database
 module.)
 
 
+.. index:: roundup-admin; command line specification
+
 Command Interface Specification
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1132,6 +1134,8 @@ roundup-admin find
 commands, they are printed one per line (default) or joined by commas
 (with the -list) option.
 
+
+.. index:: roundup-admin; usage in scripts
 
 Usage Example
 ~~~~~~~~~~~~~

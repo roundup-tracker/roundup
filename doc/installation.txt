@@ -67,6 +67,8 @@ An RDBMS
   used if available. One of these is recommended if you are anticipating a
   large user base (see `choosing your backend`_ below).
 
+.. index:: roundup-admin:: reindex subcommand
+
 Xapian full-text indexer
   The Xapian_ full-text indexer is also supported and will be used by
   default if it is available. This is strongly recommended if you are
@@ -237,6 +239,8 @@ Configuring your first tracker
       environment variable or specify the full path to
       the command in the next step.
 
+   .. index:: roundup-admin; install subcommand
+
    c. Install a new tracker with the command ``roundup-admin install``.
       You will be asked a series of questions.  Descriptions of the provided
       templates can be found in `choosing your template`_ below.  Descriptions
@@ -276,6 +280,8 @@ Configuring your first tracker
       changes. You may change any of the configuration after
       you've initialised the tracker - it's just better to have valid values
       for this stuff now.
+
+   .. index:: roundup-admin; initialise subcommand
 
    d. Initialise the tracker database with ``roundup-admin initialise``.
       You will need to supply an admin password at this step. You will be
@@ -377,7 +383,7 @@ other backends at any time using the instructions in the `administration
 guide`_.
 
 Regardless of which backend you choose, Roundup will attempt to initialise
-a new database for you when you run the roundup-admin "initialise" command.
+a new database for you when you run the "``roundup-admin initialise``" command.
 In the case of MySQL and PostgreSQL you will need to have the appropriate
 privileges to create databases.
 

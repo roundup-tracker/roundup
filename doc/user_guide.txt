@@ -663,6 +663,11 @@ IMAPS_CRAM:
 
     imaps_cram username:password@server [mailbox]
 
+.. index:: ! roundup-admin
+   single: roundup-admin; usage
+   single: roundup-admin; data formats
+   pair: roundup-admin; designator
+
 Command Line Tool
 =================
 
@@ -779,6 +784,8 @@ and feed it to roundup-admin on standard input. E.G.
   cat init_tracker | roundup-admin -i tracker_dir
 
 (for more details see https://issues.roundup-tracker.org/issue2550789.)
+
+.. index:: ! roundup-admin; usage in scripts
 
 Using with the shell
 --------------------
