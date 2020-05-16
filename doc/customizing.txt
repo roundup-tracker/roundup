@@ -668,7 +668,7 @@ Your schema may be changed at any time before or after the tracker has been
 initialised (or used). You may:
 
 **Add new properties to classes, or add whole new classes**
-  This is painless and easy to do - there are generally no repurcussions
+  This is painless and easy to do - there are generally no repercussions
   from adding new information to a tracker's schema.
 
 **Remove properties**
@@ -707,11 +707,13 @@ In the tracker above, we've defined 7 classes of information:
       Initially empty, this is where the issue information is stored.
 
 We define the "priority" and "status" classes to allow two things:
-reduction in the amount of information stored on the issue and more
-powerful, accurate searching of issues by priority and status. By only
-requiring a link on the issue (which is stored as a single number) we
-reduce the chance that someone mis-types a priority or status - or
-simply makes a new one up.
+
+  1. reduction in the amount of information stored on the issue
+  2. more powerful, accurate searching of issues by priority and status
+
+By only requiring a link on the issue (which is stored as a single
+number) we reduce the chance that someone mis-types a priority or
+status - or simply makes a new one up.
 
 
 Class and Items
