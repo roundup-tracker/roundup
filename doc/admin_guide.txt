@@ -451,7 +451,7 @@ Using roundup-admin
 ===================
 
 Part of the installation includes a man page for roundup-admin.  Ypu
-should be able to ead it using ``man roundup-admin``. As shown above,
+should be able to read it using ``man roundup-admin``. As shown above,
 it is a generic tool for manipulating the underlying database for you
 tracker.
 
@@ -462,14 +462,14 @@ Examples above show how to use it to:
    * creating a new user fom the command line
    * list/find users in the tracker
 
-A brief summary is::
+A brief (incomplete) summary is::
 
     roundup-admin help
     roundup-admin -i <tracker_dir> get [-list] designator[, designator,...] propname
     roundup-admin -i <tracker_dir> set designator[, designator,...] propname=value ...
     roundup-admin -i <tracker_dir> find [-list] classname propname=value ...
 
-See ``roundup-admin help commands`` for a complete list of commands.
+Run ``roundup-admin help commands`` for a complete list of subcommands.
 
 .. _`customisation documentation`: customizing.html
 .. _`upgrading documentation`: upgrading.html
