@@ -606,11 +606,24 @@ class MysqlClass:
         # TODO: AFAIK its version dependent for MySQL
         return False
 
-    def _subselect(self, classname, multilink_table, nodeid_name):
+    def _subselect(self, proptree):
         ''' "I can't believe it's not a toy RDBMS"
            see, even toy RDBMSes like gadfly and sqlite can do sub-selects...
         '''
-        self.db.sql('select %s from %s'%(nodeid_name, multilink_table))
+        classname       = proptree.parent.classname
+        multilink_table = proptree.propclass.table_name
+        nodeid_name     = proptree.propclass.nodeid_name
+        linkid_name     = proptree.propclass.linkid_name
+
+        w = ''
+        if proptree.need_retired:
+            w = ' where %s.__retired__=0'%(multilink_table)
+        if proptree.need_child_retired:
+            tn1 = multilink_table
+            tn2 = '_' + proptree.classname
+            w = ', %s where %s.%s=%s.id and %s.__retired__=0'%(tn2, tn1,
+                linkid_name, tn2, tn2)
+        self.db.sql('select %s from %s%s'%(nodeid_name, multilink_table, w))
         s = ','.join([str(x[0]) for x in self.db.sql_fetchall()])
         return '_%s.id not in (%s)'%(classname, s)
 

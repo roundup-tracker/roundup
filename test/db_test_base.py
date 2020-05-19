@@ -1862,6 +1862,27 @@ class DBTest(commonDBTest):
             ae(filt(None, {'issues.title': ['ts2']}), ['6'])
             ae(filt(None, {'issues': ['-1']}), ['1', '2', '3', '4', '5'])
             ae(filt(None, {'issues': '-1'}), ['1', '2', '3', '4', '5'])
+        def ls(x):
+            return list(sorted(x))
+        self.assertEqual(ls(self.db.user.get('6', 'issues')), ['1', '2'])
+        self.assertEqual(ls(self.db.user.get('7', 'issues')), ['3'])
+        self.assertEqual(ls(self.db.user.get('10', 'issues')), ['6', '7', '8'])
+        n = self.db.user.getnode('6')
+        self.assertEqual(ls(n.issues), ['1', '2'])
+        # Now retire some linked-to issues and retry
+        self.db.issue.retire('6')
+        self.db.issue.retire('2')
+        self.db.issue.retire('3')
+        self.db.commit()
+        for filt in filter, filter_iter:
+            ae(filt(None, {'issues': ['3', '4']}), ['8'])
+            ae(filt(None, {'issues': ['1', '4', '8']}), ['6', '8', '10'])
+            ae(filt(None, {'issues.title': ['ts2']}), [])
+            ae(filt(None, {'issues': ['-1']}), ['1', '2', '3', '4', '5', '7'])
+            ae(filt(None, {'issues': '-1'}), ['1', '2', '3', '4', '5', '7'])
+        self.assertEqual(ls(self.db.user.get('6', 'issues')), ['1'])
+        self.assertEqual(ls(self.db.user.get('7', 'issues')), [])
+        self.assertEqual(ls(self.db.user.get('10', 'issues')), ['7', '8'])
 
     def testFilteringLinkSortSearchMultilink(self):
         ae, filter, filter_iter = self.filteringSetup()
@@ -1912,8 +1933,29 @@ class DBTest(commonDBTest):
         for filt in filter, filter_iter:
             ae(filt(None, {ni: ['1', '2']}), ['4', '5'])
             ae(filt(None, {ni: ['6','7']}), ['3', '4', '5'])
+            ae(filt(None, {'nosy_issues.title': ['ts2']}), ['5'])
             ae(filt(None, {ni: ['-1']}), ['1', '2', '6', '7', '8', '9', '10'])
             ae(filt(None, {ni: '-1'}), ['1', '2', '6', '7', '8', '9', '10'])
+        def ls(x):
+            return list(sorted(x))
+        self.assertEqual(ls(self.db.user.get('4', ni)), ['1', '6'])
+        self.assertEqual(ls(self.db.user.get('5', ni)), ['2', '6', '7'])
+        n = self.db.user.getnode('4')
+        self.assertEqual(ls(n.nosy_issues), ['1', '6'])
+        # Now retire some linked-to issues and retry
+        self.db.issue.retire('2')
+        self.db.issue.retire('6')
+        self.db.commit()
+        for filt in filter, filter_iter:
+            ae(filt(None, {ni: ['1', '2']}), ['4'])
+            ae(filt(None, {ni: ['6','7']}), ['5'])
+            ae(filt(None, {'nosy_issues.title': ['ts2']}), [])
+            ae(filt(None, {ni: ['-1']}),
+                ['1', '2', '3', '6', '7', '8', '9', '10'])
+            ae(filt(None, {ni: '-1'}),
+                ['1', '2', '3', '6', '7', '8', '9', '10'])
+        self.assertEqual(ls(self.db.user.get('4', ni)), ['1'])
+        self.assertEqual(ls(self.db.user.get('5', ni)), ['7'])
 
     def testFilteringMany(self):
         ae, filter, filter_iter = self.filteringSetup()

@@ -1138,6 +1138,11 @@ class Class(hyperdb.Class):
         # get the property (raises KeyErorr if invalid)
         prop = self.properties[propname]
 
+        if isinstance(prop, hyperdb.Multilink) and prop.computed:
+            cls = self.db.getclass(prop.rev_classname)
+            ids = cls.find(**{prop.rev_propname: nodeid})
+            return ids
+
         if propname not in d:
             if default is _marker:
                 if isinstance(prop, hyperdb.Multilink):

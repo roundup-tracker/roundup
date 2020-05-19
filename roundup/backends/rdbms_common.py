@@ -1136,7 +1136,18 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             tn  = prop.table_name
             lid = prop.linkid_name
             nid = prop.nodeid_name
-            sql = 'select %s from %s where %s=%s' % (lid, tn, nid, self.arg)
+            w   = ''
+            joi = ''
+            if prop.computed:
+                if isinstance(prop.rev_property, Link):
+                    w = ' and %s.__retired__=0'%tn
+                else:
+                    tn2 = '_' + prop.classname
+                    joi = ', %s' % tn2
+                    w = ' and %s.%s=%s.id and %s.__retired__=0'%(tn, lid,
+                        tn2, tn2)
+            sql = 'select %s from %s%s where %s=%s%s' %(lid, tn, joi, nid,
+                self.arg, w)
             self.sql(sql, (nodeid,))
             # extract the first column from the result
             # XXX numeric ids
@@ -2343,14 +2354,26 @@ class Class(hyperdb.Class):
         ids = [str(x[0]) for x in self.db.cursor.fetchall()]
         return ids
 
-    def _subselect(self, classname, multilink_table, nodeid_name):
+    def _subselect(self, proptree):
         """Create a subselect. This is factored out because some
            databases (hmm only one, so far) doesn't support subselects
            look for "I can't believe it's not a toy RDBMS" in the mysql
            backend.
         """
-        return '_%s.id not in (select %s from %s)'%(classname, nodeid_name,
-            multilink_table)
+        multilink_table = proptree.propclass.table_name
+        nodeid_name     = proptree.propclass.nodeid_name
+        linkid_name     = proptree.propclass.linkid_name
+        w = ''
+        if proptree.need_retired:
+            w = ' where %s.__retired__=0'%(multilink_table)
+        if proptree.need_child_retired:
+            tn1 = multilink_table
+            tn2 = '_' + proptree.classname
+            w = ', %s where %s.%s=%s.id and %s.__retired__=0'%(tn2,
+                tn1, linkid_name, tn2, tn2)
+        classname = proptree.parent.classname
+        return '_%s.id not in (select %s from %s%s)'%(classname, nodeid_name,
+            multilink_table, w)
 
     # Some DBs order NULL values last. Set this variable in the backend
     # for prepending an order by clause for each attribute that causes
@@ -2516,7 +2539,7 @@ class Class(hyperdb.Class):
                     if v in ('-1', ['-1'], []):
                         # only match rows that have count(linkid)=0 in the
                         # corresponding multilink table)
-                        where.append(self._subselect(pcn, tn, nid))
+                        where.append(self._subselect(p))
                     else:
                         frum.append(tn)
                         gen_join = True
@@ -2530,9 +2553,11 @@ class Class(hyperdb.Class):
                         if gen_join:
                             where.append('_%s.id=%s.%s'%(pln, tn, nid))
 
-                        if p.children:
+                        if p.children or p.need_child_retired:
                             frum.append('_%s as _%s' % (cn, ln))
                             where.append('%s.%s=_%s.id'%(tn, lid, ln))
+                            if p.need_child_retired:
+                                where.append('_%s.__retired__=0'%(ln))
 
                         if p.has_values:
                             if isinstance(v, type([])):
@@ -2541,6 +2566,9 @@ class Class(hyperdb.Class):
                             else:
                                 where.append('%s.%s=%s'%(tn, lid, a))
                                 args.append(v)
+                        # Don't match retired nodes if rev_multilink
+                        if p.need_retired:
+                            where.append('%s.__retired__=0'%(tn))
                 if 'sort' in p.need_for:
                     assert not p.attr_sort_done and not p.sort_ids_needed
             elif k == 'id':

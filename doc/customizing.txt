@@ -864,6 +864,11 @@ behaviour:
     automatically adds "1234" to the ``components`` property on
     issue3456. You can search the ``components`` multilink just like a
     regular multilink, but you can't explicitly assign to it.
+    Another difference of reverse multilinks to normal multilinks
+    is that when a linked node is retired, the node vanishes from the
+    multilink, e.g. in the example above, if an issue with ``part_of``
+    set to another issue is retired this issue vanishes from the
+    ``components`` multilink of the other issue.
 
     You can also link between different classes. So you can modify
     the issue definition to include::

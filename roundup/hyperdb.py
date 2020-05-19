@@ -489,6 +489,8 @@ class Proptree(object):
         self.propclass = None
         self.orderby = []
         self.sql_idx = None  # index of retrieved column in sql result
+        self.need_retired = False
+        self.need_child_retired = False
         if parent:
             self.root = parent.root
             self.depth = parent.depth + 1
@@ -526,6 +528,11 @@ class Proptree(object):
         child = self.__class__(self.db, cls, name, props, parent=self)
         child.need_for = {need_for: True}
         child.propclass = propclass
+        if isinstance(propclass, Multilink) and self.props[name].computed:
+            if isinstance(self.props[name].rev_property, Link):
+                child.need_retired = True
+            else:
+                child.need_child_retired = True
         self.children.append(child)
         self.propdict[name] = child
         if retr and isinstance(child.propclass, Link):
@@ -594,9 +601,11 @@ class Proptree(object):
                                     s2.add(node [pn])
                         items = s1.difference(s2)
                     elif isinstance(p.propclass.rev_property, Link):
-                        items = set(cl.get(x, pn) for x in p.val)
+                        items = set(cl.get(x, pn) for x in p.val
+                            if not cl.is_retired(x))
                     else:
-                        items = set().union(*(cl.get(x, pn) for x in p.val))
+                        items = set().union(*(cl.get(x, pn) for x in p.val
+                            if not cl.is_retired(x)))
                     filterspec[p.name] = list(sorted(items))
                 elif isinstance(p.val, type([])):
                     exact = []
