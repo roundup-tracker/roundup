@@ -743,9 +743,13 @@ Erase it? Y/N: """))
             if ',' in value:
                 values = value.split(',')
             else:
-                values = value
+                values = [ value ]
 
-            props[propname] = values
+            props[propname] = []
+            for value in values:
+                val = hyperdb.rawToHyperdb(self.db, cl, None,
+                                             propname, value)
+                props[propname].append(val)
 
         # now do the filter
         try:

@@ -47,7 +47,13 @@ class AdminTest(object):
 
     def install_init(self, type="classic",
                      settings="mail_domain=example.com," +
-                     "mail_host=localhost," + "tracker_web=http://test/" ):
+                     "mail_host=localhost," +
+                     "tracker_web=http://test/," +
+                     "rdbms_name=rounduptest," +
+                     "rdbms_user=rounduptest," +
+                     "rdbms_password=rounduptest," +
+                     "rdbms_template=template0"
+    ):
         ''' install tracker with settings for required config.ini settings.
         '''
 
@@ -113,7 +119,7 @@ class AdminTest(object):
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys, json
+        import sys
 
         self.admin=AdminTool()
         self.install_init()
@@ -177,6 +183,120 @@ class AdminTest(object):
         print(out)
         # out can be "['2', '1']" or "['1', '2']"
         # so eval to real list so Equal can do a list compare
+        self.assertEqual(sorted(eval(out)), ['1', '2'])
+
+    def testFilter(self):
+        ''' Note the tests will fail if you run this under pdb.
+            the context managers capture the pdb prompts and this screws
+            up the stdout strings with (pdb) prefixed to the line.
+        '''
+        import sys
+
+        self.admin=AdminTool()
+        self.install_init()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', '_test_admin', 'create', 'issue',
+                      'title="foo bar"', 'assignedto=admin' ]
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, '1')
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', '_test_admin', 'create', 'issue',
+                      'title="bar foo bar"', 'assignedto=anonymous' ]
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, '2')
+
+        
+        # Reopen the db closed by previous filter call
+        # test string - one results, one value, substring
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', '_test_admin', 'filter', 'user',
+                      'username=admin']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, "['1']")
+
+        # Reopen the db closed by previous filter call
+        # test string - two results, two values, substring
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            ''' a,n should return all entries that have an a and n
+                so admin or anonymous
+            '''
+            sys.argv=['main', '-i', '_test_admin', 'filter', 'user',
+                      'username=a,n']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        # out can be "['2', '1']" or "['1', '2']"
+        # so eval to real list so Equal can do a list compare
+        self.assertEqual(sorted(eval(out)), ['1', '2'])
+
+        # Reopen the db closed by previous filter call
+        # test string - one result, two values, substring
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            ''' a,y should return all entries that have an a and y
+                so anonymous
+            '''
+            sys.argv=['main', '-i', '_test_admin', 'filter', 'user',
+                      'username=a,y']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, "['2']")
+
+        # Reopen the db closed by previous filter call
+        # test string - no results
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            ''' will return empty set as admin!=anonymous
+            '''
+            sys.argv=['main', '-i', '_test_admin', 'filter', 'user',
+                      'username=admin,anonymous']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, "[]")
+
+        # Reopen the db closed by previous filter call
+        # test link using ids
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', '_test_admin', 'filter', 'issue',
+                      'assignedto=1,2']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(sorted(eval(out)), ['1', '2'])
+
+        # Reopen the db closed by previous filter call
+        # test link using names
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            ''' will return empty set as admin!=anonymous
+            '''
+            sys.argv=['main', '-i', '_test_admin', 'filter', 'issue',
+                      'assignedto=admin,anonymous']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
         self.assertEqual(sorted(eval(out)), ['1', '2'])
 
     def testSpecification(self):
