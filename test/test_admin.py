@@ -13,6 +13,8 @@ from . import db_test_base
 from .test_mysql import skip_mysql
 from .test_postgresql import skip_postgresql
 
+#from roundup import instance
+
 # https://stackoverflow.com/questions/4219717/how-to-assert-output-with-nosetest-unittest-in-python
 # lightly modified
 from contextlib import contextmanager
@@ -58,6 +60,7 @@ class AdminTest(object):
         '''
 
         admin=AdminTool()
+        admin.force = True  # force it to nuke existing tracker
 
         # Run under context manager to suppress output of help text.
         with captured_output() as (out, err):
@@ -66,11 +69,19 @@ class AdminTest(object):
             ret = admin.main()
         self.assertEqual(ret, 0)
 
+        # nuke any existing database (mysql/postgreql)
+        # possible method in case admin.force doesn't work
+        #tracker = instance.open(self.dirname)
+        #if tracker.exists():
+        #    tracker.nuke()
+
         # initialize tracker with initial_data.py. Put password
         # on cli so I don't have to respond to prompting.
         sys.argv=['main', '-i', '_test_admin', 'initialise', 'admin']
+        admin.force = True  # force it to nuke existing database
         ret = admin.main()
         self.assertEqual(ret, 0)
+
 
     def testInit(self):
         import sys
@@ -309,27 +320,28 @@ class AdminTest(object):
         self.install_init()
         self.admin=AdminTool()
 
+        self.maxDiff = 0
         import inspect
         
-        spec='''username: <roundup.hyperdb.String> (key property)
-              alternate_addresses: <roundup.hyperdb.String>
-              realname: <roundup.hyperdb.String>
-              roles: <roundup.hyperdb.String>
-              organisation: <roundup.hyperdb.String>
-              queries: <roundup.hyperdb.Multilink to "query">
-              phone: <roundup.hyperdb.String>
-              address: <roundup.hyperdb.String>
-              timezone: <roundup.hyperdb.String>
-              password: <roundup.hyperdb.Password>'''
-
-        spec = inspect.cleandoc(spec)
+        spec= [ 'username: <roundup.hyperdb.String> (key property)',
+                'alternate_addresses: <roundup.hyperdb.String>',
+                'realname: <roundup.hyperdb.String>',
+                'roles: <roundup.hyperdb.String>',
+                'organisation: <roundup.hyperdb.String>',
+                'queries: <roundup.hyperdb.Multilink to "query">',
+                'phone: <roundup.hyperdb.String>',
+                'address: <roundup.hyperdb.String>',
+                'timezone: <roundup.hyperdb.String>',
+                'password: <roundup.hyperdb.Password>',
+            ]
+            
         with captured_output() as (out, err):
             sys.argv=['main', '-i', '_test_admin', 'specification', 'user']
             ret = self.admin.main()
 
-        out = out.getvalue().strip()
-        print(out)
-        self.assertEqual(out, spec)
+        outlist = out.getvalue().strip().split("\n")
+        print(outlist)
+        self.assertEqual(sorted(outlist), sorted(spec))
 
 
 class anydbmAdminTest(AdminTest, unittest.TestCase):
