@@ -25,7 +25,7 @@ __docformat__ = 'restructuredtext'
 
 import csv, getopt, getpass, os, re, shutil, sys, operator
 
-from roundup import date, hyperdb, roundupdb, init, password, token
+from roundup import date, hyperdb, init, password, token
 from roundup import __version__ as roundup_version
 import roundup.instance
 from roundup.configuration import CoreConfig, NoConfigError, UserConfig
@@ -39,12 +39,14 @@ try:
 except ImportError:
     from collections import UserDict
 
+
 class CommandDict(UserDict):
     """Simple dictionary that lets us do lookups using partial keys.
 
     Original code submitted by Engelbert Gruber.
     """
     _marker = []
+
     def get(self, key, default=_marker):
         if key in self.data:
             return [(key, self.data[key])]
@@ -56,6 +58,7 @@ class CommandDict(UserDict):
         if not l and default is self._marker:
             raise KeyError(key)
         return l
+
 
 class AdminTool:
     """ A collection of methods used in maintaining Roundup trackers.
@@ -89,7 +92,7 @@ class AdminTool:
         try:
             return self.db.getclass(classname)
         except KeyError:
-            raise UsageError(_('no such class "%(classname)s"')%locals())
+            raise UsageError(_('no such class "%(classname)s"') % locals())
 
     def props_from_args(self, args):
         """ Produce a dictionary of prop: value from the args list.
@@ -99,12 +102,12 @@ class AdminTool:
         props = {}
         for arg in args:
             if arg.find('=') == -1:
-                raise UsageError(_('argument "%(arg)s" not propname=value'
-                    )%locals())
+                raise UsageError(_('argument "%(arg)s" not propname=value') %
+                                 locals())
             l = arg.split('=')
             if len(l) < 2:
-                raise UsageError(_('argument "%(arg)s" not propname=value'
-                    )%locals())
+                raise UsageError(_('argument "%(arg)s" not propname=value') %
+                                 locals())
             key, value = l[0], '='.join(l[1:])
             if value:
                 props[key] = value
@@ -116,8 +119,8 @@ class AdminTool:
         """ Display a simple usage message.
         """
         if message:
-            message = _('Problem: %(message)s\n\n')%locals()
-        sys.stdout.write( _("""%(message)sUsage: roundup-admin [options] [<command> <arguments>]
+            message = _('Problem: %(message)s\n\n')% locals()
+        sys.stdout.write(_("""%(message)sUsage: roundup-admin [options] [<command> <arguments>]
 
 Options:
  -i instance home  -- specify the issue tracker "home directory" to administer
@@ -138,13 +141,13 @@ Help:
  roundup-admin help                       -- this help
  roundup-admin help <command>             -- command-specific help
  roundup-admin help all                   -- all available help
-""")%locals())
+""") % locals())
         self.help_commands()
 
     def help_commands(self):
         """List the commands available with their help summary.
         """
-        sys.stdout.write( _('Commands: '))
+        sys.stdout.write(_('Commands: '))
         commands = ['']
         for command in self.commands.values():
             h = _(command.__doc__).split('\n')[0]
@@ -159,7 +162,7 @@ matches only one command, e.g. l == li == lis == list."""))
         """ Produce an HTML command list.
         """
         commands = sorted(iter(self.commands.values()),
-            key=operator.attrgetter('__name__'))
+                          key=operator.attrgetter('__name__'))
         for command in commands:
             h = _(command.__doc__).split('\n')
             name = command.__name__[3:]
@@ -241,11 +244,11 @@ Date format examples:
 Command help:
 """))
         for name, command in list(self.commands.items()):
-            print(_('%s:')%name)
+            print(_('%s:') % name)
             print('   ', _(command.__doc__))
 
     def do_help(self, args, nl_re=re.compile('[\r\n]'),
-            indent_re=re.compile(r'^(\s+)\S+')):
+                indent_re=re.compile(r'^(\s+)\S+')):
         ''"""Usage: help topic
         Give help about topic.
 
@@ -254,11 +257,10 @@ Command help:
         initopts  -- init command options
         all       -- all available help
         """
-        if len(args)>0:
+        if len(args) > 0:
             topic = args[0]
         else:
             topic = 'help'
-
 
         # try help_ methods
         if topic in self.help:
@@ -269,11 +271,11 @@ Command help:
         try:
             l = self.commands.get(topic)
         except KeyError:
-            print(_('Sorry, no help for "%(topic)s"')%locals())
+            print(_('Sorry, no help for "%(topic)s"') % locals())
             return 1
 
-        # display the help for each match, removing the docsring indent
-        for name, help in l:
+        # display the help for each match, removing the docstring indent
+        for _name, help in l:
             lines = nl_re.split(_(help.__doc__))
             print(lines[0])
             indent = indent_re.match(lines[1])
@@ -317,7 +319,7 @@ Command help:
         for N in 2, 4, 5, 6:
             path = __file__
             # move up N elements in the path
-            for i in range(N):
+            for _i in range(N):
                 path = os.path.dirname(path)
             tdir = os.path.join(path, 'share', 'roundup', 'templates')
             if os.path.isdir(tdir):
@@ -328,7 +330,7 @@ Command help:
         # directory, so this module will be in .../roundup-*/roundup/admin.py
         # and we're interested in the .../roundup-*/ part.
         path = __file__
-        for i in range(2):
+        for _i in range(2):
             path = os.path.dirname(path)
         tdir = os.path.join(path, 'templates')
         if os.path.isdir(tdir):
@@ -382,7 +384,7 @@ Command help:
         parent = os.path.split(tracker_home)[0]
         if not os.path.exists(parent):
             raise UsageError(_('Instance home parent directory "%(parent)s"'
-                ' does not exist')%locals())
+                               ' does not exist') % locals())
 
         config_ini_file = os.path.join(tracker_home, CoreConfig.INI_FILE)
         # check for both old- and new-style configs
@@ -423,7 +425,7 @@ Erase it? Y/N: """) % locals())
         if len(args) > 3:
             try:
                 defns = dict([item.split("=") for item in args[3].split(",")])
-            except:
+            except Exception:
                 print(_('Error in configuration settings: "%s"') % args[3])
                 raise
         else:
@@ -434,10 +436,10 @@ Erase it? Y/N: """) % locals())
         # load config_ini.ini from template if it exists.
         # it sets parameters like template_engine that are
         # template specific.
-        template_config=UserConfig(templates[template]['path'] +
+        template_config = UserConfig(templates[template]['path'] +
                                    "/config_ini.ini")
         for k in template_config.keys():
-            if k == 'HOME': # ignore home. It is a default param.
+            if k == 'HOME':  # ignore home. It is a default param.
                 continue
             defns[k] = template_config[k]
 
@@ -544,11 +546,11 @@ Erase it? Y/N: """) % locals())
 
         # make sure the tracker home is installed
         if not os.path.exists(tracker_home):
-            raise UsageError(_('Instance home does not exist')%locals())
+            raise UsageError(_('Instance home does not exist') % locals())
         try:
             tracker = roundup.instance.open(tracker_home)
         except roundup.instance.TrackerError:
-            raise UsageError(_('Instance has not been installed')%locals())
+            raise UsageError(_('Instance has not been installed') % locals())
 
         # is there already a database?
         if tracker.exists():
@@ -565,10 +567,9 @@ Erase it? Y/N: """))
 
         # GO
         tracker.init(password.Password(adminpw, config=tracker.config),
-                     tx_Source = 'cli')
+                     tx_Source='cli')
 
         return 0
-
 
     def do_get(self, args):
         ''"""Usage: get property designator[,designator]*
@@ -595,7 +596,7 @@ Erase it? Y/N: """))
             # get the class
             cl = self.get_class(classname)
             try:
-                id=[]
+                id = []
                 if self.separator:
                     if self.print_designator:
                         # see if property is a link or multilink for
@@ -613,10 +614,10 @@ Erase it? Y/N: """))
                         properties = cl.getprops()
                         property = properties[propname]
                         if not (isinstance(property, hyperdb.Multilink) or
-                          isinstance(property, hyperdb.Link)):
+                                isinstance(property, hyperdb.Link)):
                             raise UsageError(_('property %s is not of type'
                                 ' Multilink or Link so -d flag does not '
-                                'apply.')%propname)
+                                'apply.') % propname)
                         propclassname = self.db.getclass(property.classname).classname
                         id = cl.get(nodeid, propname)
                         for i in id:
@@ -630,10 +631,10 @@ Erase it? Y/N: """))
                         properties = cl.getprops()
                         property = properties[propname]
                         if not (isinstance(property, hyperdb.Multilink) or
-                          isinstance(property, hyperdb.Link)):
+                                isinstance(property, hyperdb.Link)):
                             raise UsageError(_('property %s is not of type'
                                 ' Multilink or Link so -d flag does not '
-                                'apply.')%propname)
+                                'apply.') % propname)
                         propclassname = self.db.getclass(property.classname).classname
                         id = cl.get(nodeid, propname)
                         for i in id:
@@ -642,15 +643,14 @@ Erase it? Y/N: """))
                         print(cl.get(nodeid, propname))
             except IndexError:
                 raise UsageError(_('no such %(classname)s node '
-                    '"%(nodeid)s"')%locals())
+                                   '"%(nodeid)s"') % locals())
             except KeyError:
                 raise UsageError(_('no such %(classname)s property '
-                    '"%(propname)s"')%locals())
+                                   '"%(propname)s"') % locals())
         if self.separator:
             print(self.separator.join(l))
 
         return 0
-
 
     def do_set(self, args):
         ''"""Usage: set items property=value property=value ...
@@ -667,7 +667,7 @@ Erase it? Y/N: """))
         is un-set. If the property is a multilink, you specify the linked
         ids for the multilink as comma-separated numbers (ie "1,2,3").
         """
-        import copy # needed for copying props list
+        import copy  # needed for copying props list
 
         if len(args) < 2:
             raise UsageError(_('Not enough arguments supplied'))
@@ -689,11 +689,11 @@ Erase it? Y/N: """))
                 raise UsageError(message)
 
         # get the props from the args
-        propset = self.props_from_args(args[1:]) # parse the cli once
+        propset = self.props_from_args(args[1:])  # parse the cli once
 
         # now do the set for all the nodes
         for classname, itemid in designators:
-            props = copy.copy(propset) # make a new copy for every designator
+            props = copy.copy(propset)  # make a new copy for every designator
             cl = self.get_class(classname)
 
             for key, value in list(props.items()):
@@ -705,7 +705,7 @@ Erase it? Y/N: """))
                     # This  new value is used for all the rest of the
                     # designators if not reinitalized.
                     props[key] = hyperdb.rawToHyperdb(self.db, cl, itemid,
-                        key, value)
+                                                      key, value)
                 except hyperdb.HyperdbValueError as message:
                     raise UsageError(message)
 
@@ -762,18 +762,17 @@ Erase it? Y/N: """))
                     id = cl.filter(None, **props)
                     for i in id:
                         designator.append(classname + i)
-                    print(self.separator.join(designator), file=sys.stdout)
+                    print(self.separator.join(designator))
                 else:
-                    print(self.separator.join(cl.find(**props)),
-                          file=sys.stdout)
+                    print(self.separator.join(cl.find(**props)))
             else:
                 if self.print_designator:
                     id = cl.filter(None, **props)
                     for i in id:
                         designator.append(classname + i)
-                    print(designator,file=sys.stdout)
+                    print(designator)
                 else:
-                    print(cl.filter(None, **props), file=sys.stdout)
+                    print(cl.filter(None, **props))
         except KeyError:
             raise UsageError(_('%(classname)s has no property '
                                '"%(propname)s"') % locals())
@@ -806,7 +805,8 @@ Erase it? Y/N: """))
                 values = [value]
             d = props[propname] = {}
             for value in values:
-                value = hyperdb.rawToHyperdb(self.db, cl, None, propname, value)
+                value = hyperdb.rawToHyperdb(self.db, cl, None,
+                                             propname, value)
                 if isinstance(value, list):
                     for entry in value:
                         d[entry] = 1
@@ -836,7 +836,7 @@ Erase it? Y/N: """))
                     print(cl.find(**props))
         except KeyError:
             raise UsageError(_('%(classname)s has no property '
-                '"%(propname)s"')%locals())
+                               '"%(propname)s"') % locals())
         except (ValueError, TypeError) as message:
             raise UsageError(message)
         return 0
@@ -858,9 +858,10 @@ Erase it? Y/N: """))
         for key in cl.properties:
             value = cl.properties[key]
             if keyprop == key:
-                sys.stdout.write( _('%(key)s: %(value)s (key property)\n')%locals() )
+                sys.stdout.write(_('%(key)s: %(value)s (key property)\n') %
+                                 locals())
             else:
-                sys.stdout.write( _('%(key)s: %(value)s\n')%locals() )
+                sys.stdout.write(_('%(key)s: %(value)s\n') % locals())
 
     def do_display(self, args):
         ''"""Usage: display designator[,designator]*
@@ -889,7 +890,7 @@ Erase it? Y/N: """))
             keys = sorted(cl.properties)
             for key in keys:
                 value = cl.get(nodeid, key)
-                print(_('%(key)s: %(value)s')%locals())
+                print(_('%(key)s: %(value)s') % locals())
 
     def do_create(self, args):
         ''"""Usage: create classname property=value ...
@@ -910,25 +911,27 @@ Erase it? Y/N: """))
 
         # now do a create
         props = {}
-        properties = cl.getprops(protected = 0)
+        properties = cl.getprops(protected=0)
         if len(args) == 1:
             # ask for the properties
             for key in properties:
                 if key == 'id': continue
                 value = properties[key]
                 name = value.__class__.__name__
-                if isinstance(value , hyperdb.Password):
+                if isinstance(value, hyperdb.Password):
                     again = None
                     while value != again:
-                        value = getpass.getpass(_('%(propname)s (Password): ')%{
-                            'propname': key.capitalize()})
-                        again = getpass.getpass(_('   %(propname)s (Again): ')%{
-                            'propname': key.capitalize()})
+                        value = getpass.getpass(_('%(propname)s (Password): ')
+                                                %
+                                                {'propname': key.capitalize()})
+                        again = getpass.getpass(_('   %(propname)s (Again): ')
+                                                %
+                                                {'propname': key.capitalize()})
                         if value != again: print(_('Sorry, try again...'))
                     if value:
                         props[key] = value
                 else:
-                    value = my_input(_('%(propname)s (%(proptype)s): ')%{
+                    value = my_input(_('%(propname)s (%(proptype)s): ') % {
                         'propname': key.capitalize(), 'proptype': name})
                     if value:
                         props[key] = value
@@ -947,7 +950,7 @@ Erase it? Y/N: """))
         propname = cl.getkey()
         if propname and propname not in props:
             raise UsageError(_('you must provide the "%(propname)s" '
-                'property.')%locals())
+                'property.') % locals())
 
         # do the actual create
         try:
@@ -975,7 +978,7 @@ Erase it? Y/N: """))
         if len(args) < 1:
             raise UsageError(_('Not enough arguments supplied'))
         classname = args[0]
-        
+
         # get the class
         cl = self.get_class(classname)
 
@@ -988,13 +991,13 @@ Erase it? Y/N: """))
         if self.separator:
             if len(args) == 2:
                 # create a list of propnames since user specified propname
-                proplist=[]
+                proplist = []
                 for nodeid in cl.list():
                     try:
                         proplist.append(cl.get(nodeid, propname))
                     except KeyError:
                         raise UsageError(_('%(classname)s has no property '
-                            '"%(propname)s"')%locals())
+                                           '"%(propname)s"') % locals())
                 print(self.separator.join(proplist))
             else:
                 # create a list of index id's since user didn't specify
@@ -1006,8 +1009,8 @@ Erase it? Y/N: """))
                     value = cl.get(nodeid, propname)
                 except KeyError:
                     raise UsageError(_('%(classname)s has no property '
-                        '"%(propname)s"')%locals())
-                print(_('%(nodeid)4s: %(value)s')%locals())
+                                       '"%(propname)s"') % locals())
+                print(_('%(nodeid)4s: %(value)s') % locals())
         return 0
 
     def do_table(self, args):
@@ -1056,12 +1059,12 @@ Erase it? Y/N: """))
                         propname, width = spec.split(':')
                     except (ValueError, TypeError):
                         raise UsageError(_('"%(spec)s" not '
-                            'name:width')%locals())
+                                           'name:width') % locals())
                 else:
                     propname = spec
                 if propname not in all_props:
                     raise UsageError(_('%(classname)s has no property '
-                        '"%(propname)s"')%locals())
+                                       '"%(propname)s"') % locals())
         else:
             prop_names = cl.getprops()
 
@@ -1075,16 +1078,17 @@ Erase it? Y/N: """))
                 else:
                     props.append((name, int(width)))
             else:
-               # this is going to be slow
-               maxlen = len(spec)
-               for nodeid in cl.list():
-                   curlen = len(str(cl.get(nodeid, spec)))
-                   if curlen > maxlen:
-                       maxlen = curlen
-               props.append((spec, maxlen))
+                # this is going to be slow
+                maxlen = len(spec)
+                for nodeid in cl.list():
+                    curlen = len(str(cl.get(nodeid, spec)))
+                    if curlen > maxlen:
+                        maxlen = curlen
+                    props.append((spec, maxlen))
 
         # now display the heading
-        print(' '.join([name.capitalize().ljust(width) for name,width in props]))
+        print(' '.join([name.capitalize().ljust(width)
+                        for name, width in props]))
 
         # and the table data
         for nodeid in cl.list():
@@ -1100,8 +1104,8 @@ Erase it? Y/N: """))
                         value = ''
                 else:
                     value = str(nodeid)
-                f = '%%-%ds'%width
-                l.append(f%value[:width])
+                f = '%%-%ds' % width
+                l.append(f % value[:width])
             print(' '.join(l))
         return 0
 
@@ -1135,10 +1139,10 @@ Erase it? Y/N: """))
             print(self.db.getclass(classname).history(nodeid,
                                                       skipquiet=skipquiet))
         except KeyError:
-            raise UsageError(_('no such class "%(classname)s"')%locals())
+            raise UsageError(_('no such class "%(classname)s"') % locals())
         except IndexError:
             raise UsageError(_('no such %(classname)s node '
-                '"%(nodeid)s"')%locals())
+                               '"%(nodeid)s"') % locals())
         return 0
 
     def do_commit(self, args):
@@ -1190,10 +1194,10 @@ Erase it? Y/N: """))
             try:
                 self.db.getclass(classname).retire(nodeid)
             except KeyError:
-                raise UsageError(_('no such class "%(classname)s"')%locals())
+                raise UsageError(_('no such class "%(classname)s"') % locals())
             except IndexError:
                 raise UsageError(_('no such %(classname)s node '
-                    '"%(nodeid)s"')%locals())
+                                   '"%(nodeid)s"') % locals())
         self.db_uncommitted = True
         return 0
 
@@ -1217,10 +1221,10 @@ Erase it? Y/N: """))
             try:
                 self.db.getclass(classname).restore(nodeid)
             except KeyError:
-                raise UsageError(_('no such class "%(classname)s"')%locals())
+                raise UsageError(_('no such class "%(classname)s"') % locals())
             except IndexError:
                 raise UsageError(_('no such %(classname)s node '
-                    '"%(nodeid)s"')%locals())
+                                   '" % (nodeid)s"')%locals())
         self.db_uncommitted = True
         return 0
 
@@ -1246,8 +1250,8 @@ Erase it? Y/N: """))
         # get the list of classes to export
         if len(args) == 2:
             if args[0].startswith('-'):
-                classes = [ c for c in self.db.classes
-                            if not c in args[0][1:].split(',') ]
+                classes = [c for c in self.db.classes
+                            if c not in args[0][1:].split(',')]
             else:
                 classes = args[0].split(',')
         else:
@@ -1268,7 +1272,7 @@ Erase it? Y/N: """))
             cl = self.get_class(classname)
 
             if not export_files and hasattr(cl, 'export_files'):
-                sys.stdout.write('Exporting %s WITHOUT the files\r\n'%
+                sys.stdout.write('Exporting %s WITHOUT the files\r\n' %
                     classname)
 
             f = open(os.path.join(dir, classname+'.csv'), 'w')
@@ -1283,14 +1287,15 @@ Erase it? Y/N: """))
             # all nodes for this class
             for nodeid in cl.getnodeids():
                 if self.verbose:
-                    sys.stdout.write('\rExporting %s - %s'%(classname, nodeid))
+                    sys.stdout.write('\rExporting %s - %s' % 
+                                     (classname, nodeid))
                     sys.stdout.flush()
                 node = cl.getnode(nodeid)
                 exp = cl.export_list(propnames, nodeid)
-                lensum = sum ([len (repr_export(node[p])) for p in propnames])
+                lensum = sum([len(repr_export(node[p])) for p in propnames])
                 # for a safe upper bound of field length we add
                 # difference between CSV len and sum of all field lengths
-                d = sum ([len(x) for x in exp]) - lensum
+                d = sum([len(x) for x in exp]) - lensum
                 if not d > 0:
                     raise AssertionError("Bad assertion d > 0")
                 for p in propnames:
@@ -1314,7 +1319,8 @@ Erase it? Y/N: """))
                 journals.writerow(row)
             jf.close()
         if max_len > self.db.config.CSV_FIELD_SIZE:
-            print("Warning: config csv_field_size should be at least %s"%max_len, file=sys.stderr)
+            print("Warning: config csv_field_size should be at least %s" %
+                  max_len, file=sys.stderr)
         return 0
 
     def do_exporttables(self, args):
@@ -1354,9 +1360,8 @@ Erase it? Y/N: """))
         """
         if len(args) < 1:
             raise UsageError(_('Not enough arguments supplied'))
-        from roundup import hyperdb
 
-        if hasattr (csv, 'field_size_limit'):
+        if hasattr(csv, 'field_size_limit'):
             csv.field_size_limit(self.db.config.CSV_FIELD_SIZE)
 
         # directory to import from
@@ -1386,7 +1391,7 @@ Erase it? Y/N: """))
                     continue
 
                 if self.verbose:
-                    sys.stdout.write('\rImporting %s - %s'%(classname, n))
+                    sys.stdout.write('\rImporting %s - %s' % (classname, n))
                     sys.stdout.flush()
 
                 # do the import and figure the current highest nodeid
@@ -1447,7 +1452,7 @@ Erase it? Y/N: """))
             raise ValueError(_('Invalid format'))
         m = m.groupdict()
         if m['period']:
-            pack_before = date.Date(". - %s"%value)
+            pack_before = date.Date(". - %s" % value)
         elif m['date']:
             pack_before = date.Date(value)
         self.db.pack(pack_before)
@@ -1469,7 +1474,7 @@ Erase it? Y/N: """))
                     try:
                         cl.index(m.group(2))
                     except IndexError:
-                        raise UsageError(_('no such item "%(designator)s"')%{
+                        raise UsageError(_('no such item "%(designator)s"') % {
                             'designator': arg})
                 else:
                     cl = self.get_class(arg)
@@ -1487,31 +1492,33 @@ Erase it? Y/N: """))
             try:
                 roles = [(args[0], self.db.security.role[args[0]])]
             except KeyError:
-                sys.stdout.write( _('No such Role "%(role)s"\n')%locals() )
+                sys.stdout.write(_('No such Role "%(role)s"\n') % locals())
                 return 1
         else:
             roles = list(self.db.security.role.items())
             role = self.db.config.NEW_WEB_USER_ROLES
             if ',' in role:
-                sys.stdout.write( _('New Web users get the Roles "%(role)s"\n')%locals() )
+                sys.stdout.write(_('New Web users get the Roles "%(role)s"\n')
+                                 % locals())
             else:
-                sys.stdout.write( _('New Web users get the Role "%(role)s"\n')%locals() )
+                sys.stdout.write(_('New Web users get the Role "%(role)s"\n')
+                                 % locals())
             role = self.db.config.NEW_EMAIL_USER_ROLES
             if ',' in role:
-                sys.stdout.write( _('New Email users get the Roles "%(role)s"\n')%locals() )
+                sys.stdout.write(_('New Email users get the Roles "%(role)s"\n') % locals())
             else:
-                sys.stdout.write( _('New Email users get the Role "%(role)s"\n')%locals() )
+                sys.stdout.write(_('New Email users get the Role "%(role)s"\n') % locals())
         roles.sort()
-        for rolename, role in roles:
-            sys.stdout.write( _('Role "%(name)s":\n')%role.__dict__ )
+        for _rolename, role in roles:
+            sys.stdout.write(_('Role "%(name)s":\n') % role.__dict__)
             for permission in role.permissions:
                 d = permission.__dict__
                 if permission.klass:
                     if permission.properties:
-                        sys.stdout.write( _(' %(description)s (%(name)s for "%(klass)s"' +
-                          ': %(properties)s only)\n')%d )
+                        sys.stdout.write(_(' %(description)s (%(name)s for "%(klass)s"' +
+                          ': %(properties)s only)\n') % d)
                         # verify that properties exist; report bad props
-                        bad_props=[]
+                        bad_props = []
                         cl = self.db.getclass(permission.klass)
                         class_props = cl.getprops(protected=True)
                         for p in permission.properties:
@@ -1520,14 +1527,13 @@ Erase it? Y/N: """))
                             else:
                                 bad_props.append(p)
                         if bad_props:
-                            sys.stdout.write( _('\n  **Invalid properties for %(class)s: %(props)s\n\n') % { "class": permission.klass, "props": bad_props })
+                            sys.stdout.write(_('\n  **Invalid properties for %(class)s: %(props)s\n\n') % {"class": permission.klass, "props": bad_props})
                     else:
-                        sys.stdout.write( _(' %(description)s (%(name)s for "%(klass)s" ' +
-                            'only)\n')%d )
+                        sys.stdout.write(_(' %(description)s (%(name)s for '
+                                           '"%(klass)s" only)\n') % d)
                 else:
-                    sys.stdout.write( _(' %(description)s (%(name)s)\n')%d )
+                    sys.stdout.write(_(' %(description)s (%(name)s)\n') % d)
         return 0
-
 
     def do_migrate(self, args):
         ''"""Usage: migrate
@@ -1535,7 +1541,7 @@ Erase it? Y/N: """))
         codebase.
 
         You should run the "migrate" command for your tracker once you've
-        installed the latest codebase. 
+        installed the latest codebase.
 
         Do this before you use the web, command-line or mail interface and
         before any users access the tracker.
@@ -1562,7 +1568,7 @@ Erase it? Y/N: """))
 
         # handle help now
         if command == 'help':
-            if len(args)>1:
+            if len(args) > 1:
                 self.do_help(args[1:])
                 return 0
             self.do_help(['help'])
@@ -1579,13 +1585,14 @@ Erase it? Y/N: """))
         except KeyError:
             # not a valid command
             print(_('Unknown command "%(command)s" ("help commands" for a '
-                'list)')%locals())
+                'list)') % locals())
             return 1
 
         # check for multiple matches
         if len(functions) > 1:
-            print(_('Multiple commands match "%(command)s": %(list)s')%{'command':
-                command, 'list': ', '.join([i[0] for i in functions])})
+            print(_('Multiple commands match "%(command)s": %(list)s') % \
+                  {'command': command,
+                   'list': ', '.join([i[0] for i in functions])})
             return 1
         command, function = functions[0]
 
@@ -1600,26 +1607,26 @@ Erase it? Y/N: """))
         if command == 'initialise':
             try:
                 return self.do_initialise(self.tracker_home, args)
-            except UsageError as message:
-                print(_('Error: %(message)s')%locals())
+            except UsageError as message:  # noqa: F841
+                print(_('Error: %(message)s') % locals())
                 return 1
         elif command == 'install':
             try:
                 return self.do_install(self.tracker_home, args)
-            except UsageError as message:
-                print(_('Error: %(message)s')%locals())
+            except UsageError as message:  # noqa: F841
+                print(_('Error: %(message)s') % locals())
                 return 1
 
         # get the tracker
         try:
             tracker = roundup.instance.open(self.tracker_home)
-        except ValueError as message:
+        except ValueError as message:  # noqa: F841
             self.tracker_home = ''
-            print(_("Error: Couldn't open tracker: %(message)s")%locals())
+            print(_("Error: Couldn't open tracker: %(message)s") % locals())
             return 1
-        except NoConfigError as message:
+        except NoConfigError as message:  # noqa: F841
             self.tracker_home = ''
-            print(_("Error: Couldn't open tracker: %(message)s")%locals())
+            print(_("Error: Couldn't open tracker: %(message)s") % locals())
             return 1
 
         # only open the database once!
@@ -1632,12 +1639,12 @@ Erase it? Y/N: """))
         ret = 0
         try:
             ret = function(args[1:])
-        except UsageError as message:
-            print(_('Error: %(message)s')%locals())
+        except UsageError as message:  # noqa: F841
+            print(_('Error: %(message)s') % locals())
             print()
             print(function.__doc__)
             ret = 1
-        except:
+        except Exception:
             import traceback
             traceback.print_exc()
             ret = 1
@@ -1647,9 +1654,9 @@ Erase it? Y/N: """))
         """Run in an interactive mode
         """
         print(_('Roundup %s ready for input.\nType "help" for help.'
-            % roundup_version))
+                % roundup_version))
         try:
-            import readline
+            import readline  # noqa: F401
         except ImportError:
             print(_('Note: command history and editing not available'))
 
@@ -1663,7 +1670,7 @@ Erase it? Y/N: """))
             try:
                 args = token.token_split(command)
             except ValueError:
-                continue	# Ignore invalid quoted token
+                continue        # Ignore invalid quoted token
             if not args: continue
             if args[0] in ('quit', 'exit'): break
             self.run_command(args)
@@ -1699,24 +1706,25 @@ Erase it? Y/N: """))
                 self.usage()
                 return 0
             elif opt == '-v':
-                print('%s (python %s)'%(roundup_version, sys.version.split()[0]))
+                print('%s (python %s)' % (roundup_version,
+                                          sys.version.split()[0]))
                 return 0
             elif opt == '-V':
                 self.verbose = 1
             elif opt == '-i':
                 self.tracker_home = arg
             elif opt == '-c':
-                if self.separator != None:
+                if self.separator is not None:
                     self.usage('Only one of -c, -S and -s may be specified')
                     return 1
                 self.separator = ','
             elif opt == '-S':
-                if self.separator != None:
+                if self.separator is not None:
                     self.usage('Only one of -c, -S and -s may be specified')
                     return 1
                 self.separator = arg
             elif opt == '-s':
-                if self.separator != None:
+                if self.separator is not None:
                     self.usage('Only one of -c, -S and -s may be specified')
                     return 1
                 self.separator = ' '
@@ -1741,6 +1749,7 @@ Erase it? Y/N: """))
         finally:
             if self.db:
                 self.db.close()
+
 
 if __name__ == '__main__':
     tool = AdminTool()
