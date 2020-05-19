@@ -83,6 +83,85 @@ class AdminTest(object):
         self.assertEqual(ret, 0)
 
 
+    def testGet(self):
+        ''' Note the tests will fail if you run this under pdb.
+            the context managers capture the pdb prompts and this screws
+            up the stdout strings with (pdb) prefixed to the line.
+        '''
+        import sys
+
+        self.install_init()
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', '_test_admin', 'create', 'issue',
+                      'title="foo bar"', 'assignedto=admin' ]
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, '1')
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', '_test_admin', 'create', 'issue',
+                      'title="bar foo bar"', 'assignedto=anonymous',
+                      'superseder=1']
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 0)
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, '2')
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', '_test_admin', 'get', 'assignedto',
+                      'issue2' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 0)
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(out, '2')
+        self.assertEqual(len(err), 0)
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', '_test_admin', 'get', 'superseder',
+                      'issue2' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 0)
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(out, "['1']")
+        self.assertEqual(len(err), 0)
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', '_test_admin', 'get', 'title', 'issue1']
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 0)
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(out, '"foo bar"')  ## why is capture inserting "??
+        self.assertEqual(len(err), 0)
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', '_test_admin', 'get', 'tile', 'issue1']
+            ret = self.admin.main()
+
+        expected_err = 'Error: no such issue property "tile"'
+
+        self.assertEqual(ret, 1)
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(out.index(expected_err), 0)
+        self.assertEqual(len(err), 0)
+
     def testInit(self):
         import sys
         self.admin=AdminTool()
@@ -310,6 +389,58 @@ class AdminTest(object):
         print(out)
         self.assertEqual(sorted(eval(out)), ['1', '2'])
 
+    def testSet(self):
+        ''' Note the tests will fail if you run this under pdb.
+            the context managers capture the pdb prompts and this screws
+            up the stdout strings with (pdb) prefixed to the line.
+        '''
+        import sys
+
+        self.install_init()
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', '_test_admin', 'create', 'issue',
+                      'title="foo bar"', 'assignedto=admin' ]
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, '1')
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', '_test_admin', 'create', 'issue',
+                      'title="bar foo bar"', 'assignedto=anonymous' ]
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, '2')
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', '_test_admin', 'set', 'issue2', 'title="new title"']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(len(out), 0)
+        self.assertEqual(len(err), 0)
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', '_test_admin', 'set', 'issue2', 'tile="new title"']
+            ret = self.admin.main()
+
+        expected_err = "Error: 'tile' is not a property of issue"
+
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(out.index(expected_err), 0)
+        self.assertEqual(len(err), 0)
+
+
     def testSpecification(self):
         ''' Note the tests will fail if you run this under pdb.
             the context managers capture the pdb prompts and this screws
@@ -320,9 +451,6 @@ class AdminTest(object):
         self.install_init()
         self.admin=AdminTool()
 
-        self.maxDiff = 0
-        import inspect
-        
         spec= [ 'username: <roundup.hyperdb.String> (key property)',
                 'alternate_addresses: <roundup.hyperdb.String>',
                 'realname: <roundup.hyperdb.String>',
