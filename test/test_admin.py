@@ -13,6 +13,24 @@ from . import db_test_base
 from .test_mysql import skip_mysql
 from .test_postgresql import skip_postgresql
 
+# https://stackoverflow.com/questions/4219717/how-to-assert-output-with-nosetest-unittest-in-python
+# lightly modified
+from contextlib import contextmanager
+_py3 = sys.version_info[0] > 2
+if _py3:
+    from io import StringIO # py3
+else:
+    from StringIO import StringIO # py2
+
+@contextmanager
+def captured_output():
+    new_out, new_err = StringIO(), StringIO()
+    old_out, old_err = sys.stdout, sys.stderr
+    try:
+        sys.stdout, sys.stderr = new_out, new_err
+        yield sys.stdout, sys.stderr
+    finally:
+        sys.stdout, sys.stderr = old_out, old_err
 
 class AdminTest(object):
 
@@ -26,6 +44,27 @@ class AdminTest(object):
             shutil.rmtree(self.dirname)
         except OSError as error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
+
+    def install_init(self, type="classic",
+                     settings="mail_domain=example.com," +
+                     "mail_host=localhost," + "tracker_web=http://test/" ):
+        ''' install tracker with settings for required config.ini settings.
+        '''
+
+        admin=AdminTool()
+
+        # Run under context manager to suppress output of help text.
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', '_test_admin', 'install',
+                      type, self.backend, settings ]
+            ret = admin.main()
+        self.assertEqual(ret, 0)
+
+        # initialize tracker with initial_data.py. Put password
+        # on cli so I don't have to respond to prompting.
+        sys.argv=['main', '-i', '_test_admin', 'initialise', 'admin']
+        ret = admin.main()
+        self.assertEqual(ret, 0)
 
     def testInit(self):
         import sys
@@ -68,7 +107,109 @@ class AdminTest(object):
         self.assertTrue(os.path.isfile(self.dirname + "/schema.py"))
         config=CoreConfig(self.dirname)
         self.assertEqual(config['MAIL_DEBUG'], self.dirname + "/SendMail.LOG")
+
+    def testFind(self):
+        ''' Note the tests will fail if you run this under pdb.
+            the context managers capture the pdb prompts and this screws
+            up the stdout strings with (pdb) prefixed to the line.
+        '''
+        import sys, json
+
+        self.admin=AdminTool()
+        self.install_init()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', '_test_admin', 'create', 'issue',
+                      'title="foo bar"', 'assignedto=admin' ]
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, '1')
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', '_test_admin', 'create', 'issue',
+                      'title="bar foo bar"', 'assignedto=anonymous' ]
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, '2')
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', '_test_admin', 'find', 'issue',
+                      'assignedto=1']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, "['1']")
+
+        # Reopen the db closed by previous filter call
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            ''' 1,2 should return all entries that have assignedto
+                either admin or anonymous
+            '''
+            sys.argv=['main', '-i', '_test_admin', 'find', 'issue',
+                      'assignedto=1,2']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        # out can be "['2', '1']" or "['1', '2']"
+        # so eval to real list so Equal can do a list compare
+        self.assertEqual(sorted(eval(out)), ['1', '2'])
+
+        # Reopen the db closed by previous filter call
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            ''' 1,2 should return all entries that have assignedto
+                either admin or anonymous
+            '''
+            sys.argv=['main', '-i', '_test_admin', 'find', 'issue',
+                      'assignedto=admin,anonymous']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        # out can be "['2', '1']" or "['1', '2']"
+        # so eval to real list so Equal can do a list compare
+        self.assertEqual(sorted(eval(out)), ['1', '2'])
+
+    def testSpecification(self):
+        ''' Note the tests will fail if you run this under pdb.
+            the context managers capture the pdb prompts and this screws
+            up the stdout strings with (pdb) prefixed to the line.
+        '''
+        import sys
+
+        self.install_init()
+        self.admin=AdminTool()
+
+        import inspect
         
+        spec='''username: <roundup.hyperdb.String> (key property)
+              alternate_addresses: <roundup.hyperdb.String>
+              realname: <roundup.hyperdb.String>
+              roles: <roundup.hyperdb.String>
+              organisation: <roundup.hyperdb.String>
+              queries: <roundup.hyperdb.Multilink to "query">
+              phone: <roundup.hyperdb.String>
+              address: <roundup.hyperdb.String>
+              timezone: <roundup.hyperdb.String>
+              password: <roundup.hyperdb.Password>'''
+
+        spec = inspect.cleandoc(spec)
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', '_test_admin', 'specification', 'user']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, spec)
 
 
 class anydbmAdminTest(AdminTest, unittest.TestCase):

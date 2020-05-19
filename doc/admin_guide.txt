@@ -386,13 +386,14 @@ you can just display another user::
 
 (or if you know their username, and it happens to be "richard")::
 
-    roundup-admin find username=richard
+    roundup-admin filter user username=richard
 
-then using the user id you get from one of the above commands, you may
-display the user's details::
+then using the user id (e.g. 5) you get from one of the above
+commands, you may display the user's details::
 
-    roundup-admin display <userid>
+    roundup-admin display <designator>
 
+where designator is ``user5``.
 
 Running the Servers
 ===================

@@ -718,6 +718,65 @@ Erase it? Y/N: """))
         self.db_uncommitted = True
         return 0
 
+    def do_filter(self, args):
+        ''"""Usage: filter classname propname=value ...
+        Find the nodes of the given class with a given property value.
+
+        Find the nodes of the given class with a given property value.
+        Multiple values can be specified by separating them with commas.
+        If property is a string, all values must match. I.E. it's an
+        'and' operation. If the property is a link/multilink any value
+        matches. I.E. an 'or' operation.
+        """
+        if len(args) < 1:
+            raise UsageError(_('Not enough arguments supplied'))
+        classname = args[0]
+        # get the class
+        cl = self.get_class(classname)
+
+        # handle the propname=value argument
+        props = self.props_from_args(args[1:])
+
+        # convert the user-input value to a value used for filter
+        # multiple , separated values become a list
+        for propname, value in props.items():
+            if ',' in value:
+                values = value.split(',')
+            else:
+                values = value
+
+            props[propname] = values
+
+        # now do the filter
+        try:
+            id = []
+            designator = []
+            props = { "filterspec": props }
+
+            if self.separator:
+                if self.print_designator:
+                    id = cl.filter(None, **props)
+                    for i in id:
+                        designator.append(classname + i)
+                    print(self.separator.join(designator), file=sys.stdout)
+                else:
+                    print(self.separator.join(cl.find(**props)),
+                          file=sys.stdout)
+            else:
+                if self.print_designator:
+                    id = cl.filter(None, **props)
+                    for i in id:
+                        designator.append(classname + i)
+                    print(designator,file=sys.stdout)
+                else:
+                    print(cl.filter(None, **props), file=sys.stdout)
+        except KeyError:
+            raise UsageError(_('%(classname)s has no property '
+                               '"%(propname)s"') % locals())
+        except (ValueError, TypeError) as message:
+            raise UsageError(message)
+        return 0
+
     def do_find(self, args):
         ''"""Usage: find classname propname=value ...
         Find the nodes of the given class with a given link property value.

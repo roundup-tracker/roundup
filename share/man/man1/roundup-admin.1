@@ -89,6 +89,13 @@ Export the database to colon-separated-value files, excluding the
 files below $TRACKER_HOME/db/files/ (which can be archived separately).
 To include the files, use the export command.
 .TP
+\fBfilter\fP \fIclassname propname=value ...\fP
+Find the nodes of the given class with a given property value.
+Multiple values can be specified by separating them with commas.
+If property is a string, all values must match. I.E. it's an
+'and' operation. If the property is a link/multilink any value
+matches. I.E. an 'or' operation.
+.TP
 \fBfind\fP \fIclassname propname=value ...\fP
 Find the nodes of the given class with a given link property value.
 .TP
