@@ -1076,8 +1076,12 @@ class Class:
 
     def __repr__(self):
         """Slightly more useful representation
+           Note that an error message can be raised at a point
+           where self.classname isn't known yet if the error
+           occurs during schema parsing.
         """
-        return '<hyperdb.Class "%s">' % self.classname
+        cn = getattr (self, 'classname', 'Unknown')
+        return '<hyperdb.Class "%s">' % cn
 
     # Editing nodes:
 
