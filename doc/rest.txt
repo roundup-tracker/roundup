@@ -129,6 +129,32 @@ Also if the user has exceeded the rate limit, this header is added:
 
    **Retry-After**: The number of second to wait until 1 api call will succeed.
 
+If the client has requested a deprecated API endpoint, the header:
+
+   **Sunset**: an http date after which the end point will not be available.
+
+will be returned. It should be used as a hint that the REST endpoint
+will be going away. See https://tools.ietf.org/html/rfc8594 for
+details on this header and the sunset link type.
+
+Versioning
+==========
+
+Currently there is only one version of the API. Versions are simple
+integers. The current version is ``1``. Version selection is
+implemented in the server using one of three methods:
+
+   1. Explicit version param in accept header:
+      ``application/json; version=1``
+
+   2. Version suffix in vendor accept header:
+      ``application/vnd.json.test-v1+json``
+
+   3. Adding version specifier in query string: ``@apiver=1``
+
+If an explicit version is not provided, the server default is used.
+The server default is reported by querying the ``/rest/`` endpoint as
+described above.
 
 General Guidelines
 ==================
