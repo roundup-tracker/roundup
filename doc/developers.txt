@@ -230,7 +230,7 @@ Command Line Interfaces
 Scripts and routines run from the command line use "static" language
 defined by environment variables recognized by ``gettext`` module
 from Python library (``LANGUAGE``, ``LC_ALL``, ``LC_MESSAGES``, and
-``LANG``).  Primarilly, these are ``roundup-admin`` script and
+``LANG``).  Primarily, these are ``roundup-admin`` script and
 ``admin.py`` module, but also help texts and startup error messages
 in other scripts and their supporting modules.
 
