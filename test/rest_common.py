@@ -35,7 +35,7 @@ from roundup import password, hyperdb
 from roundup.rest import RestfulInstance, calculate_etag
 from roundup.backends import list_backends
 from roundup.cgi import client
-from roundup.anypy.strings import b2s, s2b
+from roundup.anypy.strings import b2s, s2b, us2u
 import random
 
 from roundup.backends.sessions_dbm import OneTimeKeys
@@ -1318,6 +1318,107 @@ class TestCase():
                           ['assignedto']['link'],
            "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/user/2")
 
+
+    def testStatsGen(self):
+        # check stats being returned by put and get ops
+        # using dispatch which parses the @stats query param
+
+        # find correct py2/py3 list comparison ignoring order
+        try:
+            list_test = self.assertCountEqual  # py3
+        except AttributeError:
+            list_test = self.assertItemsEqual  # py2.7+
+
+        # get stats
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@stats', 'True'),
+        ]
+        results = self.server.dispatch('GET',
+                 "/rest/data/user/1/realname",
+                                 form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        json_dict = json.loads(b2s(results))
+
+        # check that @stats are defined
+        self.assertTrue( '@stats' in json_dict['data'] )
+        # check that the keys are present
+        # not validating values as that changes
+        valid_fields= [ us2u('elapsed'),
+                        us2u('cache_hits'),
+                        us2u('cache_misses'),
+                        us2u('get_items'),
+                        us2u('filtering') ]
+        list_test(valid_fields,json_dict['data']['@stats'].keys())
+
+        # Make sure false value works to suppress @stats
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@stats', 'False'),
+        ]
+        results = self.server.dispatch('GET',
+                 "/rest/data/user/1/realname",
+                                 form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        json_dict = json.loads(b2s(results))
+        print(results)
+        # check that @stats are not defined
+        self.assertTrue( '@stats' not in json_dict['data'] )
+
+        # Make sure non-true value works to suppress @stats
+        # false will always work
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@stats', 'random'),
+        ]
+        results = self.server.dispatch('GET',
+                 "/rest/data/user/1/realname",
+                                 form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        json_dict = json.loads(b2s(results))
+        print(results)
+        # check that @stats are not defined
+        self.assertTrue( '@stats' not in json_dict['data'] )
+
+        # if @stats is not defined there should be no stats
+        results = self.server.dispatch('GET',
+                 "/rest/data/user/1/realname",
+                                 self.empty_form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        json_dict = json.loads(b2s(results))
+
+        # check that @stats are not defined
+        self.assertTrue( '@stats' not in json_dict['data'] )
+
+
+
+        # change admin's realname via a normal web form
+        # This generates a FieldStorage that looks like:
+        #  FieldStorage(None, None, [])
+        # use etag from header
+        #
+        # Also use GET on the uri via the dispatch to retrieve
+        # the results from the db.
+        etag = calculate_etag(self.db.user.getnode('1'),
+                              self.db.config['WEB_SECRET_KEY'])
+        headers={"if-match": etag,
+                 "accept": "application/vnd.json.test-v1+json",
+        }
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('data', 'Joe Doe'),
+            cgi.MiniFieldStorage('@apiver', '1'),
+            cgi.MiniFieldStorage('@stats', 'true'),
+        ]
+        self.headers = headers
+        self.server.client.request.headers.get = self.get_header
+        self.db.setCurrentUser('admin') # must be admin to change user
+        results = self.server.dispatch('PUT',
+                            "/rest/data/user/1/realname",
+                            form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        json_dict = json.loads(b2s(results))
+        list_test(valid_fields,json_dict['data']['@stats'].keys())
 
     def testDispatch(self):
         """

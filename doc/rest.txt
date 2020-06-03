@@ -137,6 +137,33 @@ will be returned. It should be used as a hint that the REST endpoint
 will be going away. See https://tools.ietf.org/html/rfc8594 for
 details on this header and the sunset link type.
 
+Hyperdb Stats
+=============
+
+Adding ``@stats=true`` as a GET query parameter or POST data item will
+augment the response with an ``@stats`` dictionary. Any value other
+than ``true`` (any case) will disable the ``@stats`` dictionary. When
+stats are enabled the response includes an ``@stats`` member and looks
+like::
+
+  { "data": {
+      ...
+      "@stats": {
+            "cache_hits": 3,
+            "cache_misses": 1,
+            "get_items": 0.0009722709655761719,
+            "filtering": 0,
+            "elapsed": 0.04731464385986328
+      }
+    }
+  }
+
+These are the same values returned in the html interface by setting
+the ``CGI_SHOW_TIMING`` environment variable. By default performance
+stats are not shown. The fields are subject to change. An
+understanding of the code is recommended if you are going to use this
+info.
+
 Versioning
 ==========
 

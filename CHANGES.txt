@@ -43,7 +43,9 @@ Features:
   (John Rouillard)
 - New filter command defined in roundup-admin. (Partial fix for
   issue724648.) (John Rouillard)
-
+- New parameter @stats for REST interface that provides the same
+  performance stats as the web interface's CGI_SHOW_TIMING env
+  variable. (John Rouillard)
 
 2020-04-05 2.0.0 beta 0
 

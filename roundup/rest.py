@@ -116,6 +116,9 @@ def _data_decorator(func):
                 }
             }
         else:
+            if hasattr(self.db, 'stats') and self.report_stats:
+                self.db.stats['elapsed'] = time.time()-self.start
+                data['@stats'] = self.db.stats
             result = {
                 'data': data
             }
@@ -370,6 +373,11 @@ class RestfulInstance(object):
         self.client = client
         self.db = db
         self.translator = client.translator
+        # record start time for statistics reporting
+        self.start = time.time()
+        # disable stat reporting by default enable with @stats=True
+        # query param
+        self.report_stats = False
         # This used to be initialized from client.instance.actions which
         # would include too many actions that do not make sense in the
         # REST-API context, so for now we only permit the retire and
@@ -1950,6 +1958,14 @@ class RestfulInstance(object):
         # In case the FieldStorage could not parse the result
         except (KeyError, TypeError):
             pretty_output = True
+
+        # check for runtime statistics
+        try:
+            self.report_stats = input['@stats'].value.lower() == "true"
+        # Can also return a TypeError ("not indexable")
+        # In case the FieldStorage could not parse the result
+        except (KeyError, TypeError):
+            report_stats = False
 
         # check for @apiver in query string
         msg = ("Unrecognized version: %s. "
