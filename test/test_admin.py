@@ -275,6 +275,81 @@ class AdminTest(object):
         # so eval to real list so Equal can do a list compare
         self.assertEqual(sorted(eval(out)), ['1', '2'])
 
+    def testCliParse(self):
+        ''' Note the tests will fail if you run this under pdb.
+            the context managers capture the pdb prompts and this screws
+            up the stdout strings with (pdb) prefixed to the line.
+        '''
+        import sys
+
+        self.admin=AdminTool()
+        self.install_init()
+
+        # test partial command lookup fin -> calls find
+
+        with captured_output() as (out, err):
+            ''' assignedto is not a valid property=value, so
+                report error.
+            '''
+            sys.argv=['main', '-i', '_test_admin', 'fin', 'issue',
+                      'assignedto=1']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        expected="[ '1' ]"
+        self.assertTrue(expected, out)
+
+        # Reopen the db closed by previous call
+        self.admin=AdminTool()
+        # test multiple matches
+        with captured_output() as (out, err):
+            ''' assignedto is not a valid property=value, so
+                report error.
+            '''
+            sys.argv=['main', '-i', '_test_admin', 'f', 'issue',
+                      'assignedto']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        expected='Multiple commands match "f": filter, find'
+        self.assertEqual(expected, out)
+
+        # Reopen the db closed by previous call
+        self.admin=AdminTool()
+        # test broken command lookup xyzzy is not a valid command
+        with captured_output() as (out, err):
+            ''' assignedto is not a valid property=value, so
+                report error.
+            '''
+            sys.argv=['main', '-i', '_test_admin', 'xyzzy', 'issue',
+                      'assignedto']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        expected=('Unknown command "xyzzy" '
+                  '("help commands" for a list)')
+        self.assertEqual(expected, out)
+
+
+        # Reopen the db closed by previous call
+        self.admin=AdminTool()
+        # test for keyword=value check
+        with captured_output() as (out, err):
+            ''' assignedto is not a valid property=value, so
+                report error.
+            '''
+            sys.argv=['main', '-i', '_test_admin', 'find', 'issue',
+                      'assignedto']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        expected='Error: argument "assignedto" not propname=value'
+        self.assertTrue(expected in out)
+
     def testFilter(self):
         ''' Note the tests will fail if you run this under pdb.
             the context managers capture the pdb prompts and this screws
