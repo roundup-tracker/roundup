@@ -275,6 +275,51 @@ class AdminTest(object):
         # so eval to real list so Equal can do a list compare
         self.assertEqual(sorted(eval(out)), ['1', '2'])
 
+    def testGenconfigUpdate(self):
+        ''' Note the tests will fail if you run this under pdb.
+            the context managers capture the pdb prompts and this screws
+            up the stdout strings with (pdb) prefixed to the line.
+        '''
+        import sys
+
+        self.admin=AdminTool()
+        self.install_init()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', '_test_admin', 'genconfig']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        expected = "Not enough arguments supplied"
+        self.assertTrue(expected in out)
+
+        # Reopen the db closed by previous call
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', '_test_admin', 'genconfig', "foo"]
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        # FIXME get better successful test later.
+        expected = ""
+        self.assertTrue(expected in out)
+
+        # Reopen the db closed by previous call
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', '_test_admin', 'update', "foo2"]
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        # FIXME get better successful test later.
+        expected = ""
+        self.assertTrue(expected in out)
+
     def testCliParse(self):
         ''' Note the tests will fail if you run this under pdb.
             the context managers capture the pdb prompts and this screws
@@ -332,7 +377,6 @@ class AdminTest(object):
         expected=('Unknown command "xyzzy" '
                   '("help commands" for a list)')
         self.assertEqual(expected, out)
-
 
         # Reopen the db closed by previous call
         self.admin=AdminTool()
