@@ -34,6 +34,18 @@ def captured_output():
     finally:
         sys.stdout, sys.stderr = old_out, old_err
 
+def normalize_file(filename, skiplines = [ None ]):
+# https://stackoverflow.com/questions/4710067/using-python-for-deleting-a-specific-line-in-a-file
+
+    with open(filename, "r+") as f:
+        d = f.readlines()
+        f.seek(0)
+        for i in d:
+            for skip in skiplines:
+                if skip not in i:
+                    f.write(i)
+        f.truncate()
+
 class AdminTest(object):
 
     backend = None
@@ -64,7 +76,7 @@ class AdminTest(object):
 
         # Run under context manager to suppress output of help text.
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', '_test_admin', 'install',
+            sys.argv=['main', '-i', self.dirname, 'install',
                       type, self.backend, settings ]
             ret = admin.main()
         self.assertEqual(ret, 0)
@@ -77,7 +89,7 @@ class AdminTest(object):
 
         # initialize tracker with initial_data.py. Put password
         # on cli so I don't have to respond to prompting.
-        sys.argv=['main', '-i', '_test_admin', 'initialise', 'admin']
+        sys.argv=['main', '-i', self.dirname, 'initialise', 'admin']
         admin.force = True  # force it to nuke existing database
         ret = admin.main()
         self.assertEqual(ret, 0)
@@ -94,7 +106,7 @@ class AdminTest(object):
         self.admin=AdminTool()
 
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', '_test_admin', 'create', 'issue',
+            sys.argv=['main', '-i', self.dirname, 'create', 'issue',
                       'title="foo bar"', 'assignedto=admin' ]
             ret = self.admin.main()
 
@@ -104,7 +116,7 @@ class AdminTest(object):
 
         self.admin=AdminTool()
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', '_test_admin', 'create', 'issue',
+            sys.argv=['main', '-i', self.dirname, 'create', 'issue',
                       'title="bar foo bar"', 'assignedto=anonymous',
                       'superseder=1']
             ret = self.admin.main()
@@ -116,7 +128,7 @@ class AdminTest(object):
 
         self.admin=AdminTool()
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', '_test_admin', 'get', 'assignedto',
+            sys.argv=['main', '-i', self.dirname, 'get', 'assignedto',
                       'issue2' ]
             ret = self.admin.main()
 
@@ -128,7 +140,7 @@ class AdminTest(object):
 
         self.admin=AdminTool()
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', '_test_admin', 'get', 'superseder',
+            sys.argv=['main', '-i', self.dirname, 'get', 'superseder',
                       'issue2' ]
             ret = self.admin.main()
 
@@ -140,7 +152,7 @@ class AdminTest(object):
 
         self.admin=AdminTool()
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', '_test_admin', 'get', 'title', 'issue1']
+            sys.argv=['main', '-i', self.dirname, 'get', 'title', 'issue1']
             ret = self.admin.main()
 
         self.assertEqual(ret, 0)
@@ -151,7 +163,7 @@ class AdminTest(object):
 
         self.admin=AdminTool()
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', '_test_admin', 'get', 'tile', 'issue1']
+            sys.argv=['main', '-i', self.dirname, 'get', 'tile', 'issue1']
             ret = self.admin.main()
 
         expected_err = 'Error: no such issue property "tile"'
@@ -165,7 +177,7 @@ class AdminTest(object):
     def testInit(self):
         import sys
         self.admin=AdminTool()
-        sys.argv=['main', '-i', '_test_admin', 'install', 'classic', self.backend]
+        sys.argv=['main', '-i', self.dirname, 'install', 'classic', self.backend]
         ret = self.admin.main()
         print(ret)
         self.assertTrue(ret == 0)
@@ -176,7 +188,7 @@ class AdminTest(object):
         import sys
         from roundup.configuration import CoreConfig
         self.admin=AdminTool()
-        sys.argv=['main', '-i', '_test_admin', 'install', 'classic', self.backend]
+        sys.argv=['main', '-i', self.dirname, 'install', 'classic', self.backend]
         # create a config_ini.ini file in classic template
         templates=self.admin.listTemplates()
         config_ini_content = "[mail]\n# comment\ndebug = SendMail.LOG\n"
@@ -215,7 +227,7 @@ class AdminTest(object):
         self.install_init()
 
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', '_test_admin', 'create', 'issue',
+            sys.argv=['main', '-i', self.dirname, 'create', 'issue',
                       'title="foo bar"', 'assignedto=admin' ]
             ret = self.admin.main()
 
@@ -225,7 +237,7 @@ class AdminTest(object):
 
         self.admin=AdminTool()
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', '_test_admin', 'create', 'issue',
+            sys.argv=['main', '-i', self.dirname, 'create', 'issue',
                       'title="bar foo bar"', 'assignedto=anonymous' ]
             ret = self.admin.main()
 
@@ -235,7 +247,7 @@ class AdminTest(object):
 
         self.admin=AdminTool()
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', '_test_admin', 'find', 'issue',
+            sys.argv=['main', '-i', self.dirname, 'find', 'issue',
                       'assignedto=1']
             ret = self.admin.main()
 
@@ -249,7 +261,7 @@ class AdminTest(object):
             ''' 1,2 should return all entries that have assignedto
                 either admin or anonymous
             '''
-            sys.argv=['main', '-i', '_test_admin', 'find', 'issue',
+            sys.argv=['main', '-i', self.dirname, 'find', 'issue',
                       'assignedto=1,2']
             ret = self.admin.main()
 
@@ -265,7 +277,7 @@ class AdminTest(object):
             ''' 1,2 should return all entries that have assignedto
                 either admin or anonymous
             '''
-            sys.argv=['main', '-i', '_test_admin', 'find', 'issue',
+            sys.argv=['main', '-i', self.dirname, 'find', 'issue',
                       'assignedto=admin,anonymous']
             ret = self.admin.main()
 
@@ -280,13 +292,13 @@ class AdminTest(object):
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
+        import sys, filecmp
 
         self.admin=AdminTool()
         self.install_init()
 
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', '_test_admin', 'genconfig']
+            sys.argv=['main', '-i', self.dirname, 'genconfig']
             ret = self.admin.main()
 
         out = out.getvalue().strip()
@@ -298,7 +310,8 @@ class AdminTest(object):
         self.admin=AdminTool()
 
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', '_test_admin', 'genconfig', "foo"]
+            sys.argv=['main', '-i', self.dirname, 'genconfig',
+                      self.dirname + "/config2.ini"]
             ret = self.admin.main()
 
         out = out.getvalue().strip()
@@ -306,12 +319,19 @@ class AdminTest(object):
         # FIXME get better successful test later.
         expected = ""
         self.assertTrue(expected in out)
+        self.assertTrue(os.path.isfile(self.dirname + "/config2.ini"))
+        # Files aren't the same. Lines need to be removed.
+        # like user, web, backend etc. Genconfig generates a file
+        # to be customized.
+        #self.assertTrue(filecmp.cmp(self.dirname + "/config2.ini",
+        #                            self.dirname + "/config.ini"))
 
         # Reopen the db closed by previous call
         self.admin=AdminTool()
 
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', '_test_admin', 'update', "foo2"]
+            sys.argv=['main', '-i', self.dirname, 'update',
+                      self.dirname + "/foo2.ini"]
             ret = self.admin.main()
 
         out = out.getvalue().strip()
@@ -319,6 +339,18 @@ class AdminTest(object):
         # FIXME get better successful test later.
         expected = ""
         self.assertTrue(expected in out)
+        self.assertTrue(os.path.isfile(self.dirname + "/foo2.ini"))
+
+        # Autogenerated date header is different. Remove it
+        # so filecmp passes.
+        normalize_file(self.dirname + "/foo2.ini",
+                       [ '# Autogenerated at' ])
+        normalize_file(self.dirname + "/config.ini",
+                       [ '# Autogenerated at' ])
+
+        self.assertTrue(filecmp.cmp(self.dirname + "/config.ini",
+                                    self.dirname + "/foo2.ini"))
+
 
     def testCliParse(self):
         ''' Note the tests will fail if you run this under pdb.
@@ -336,7 +368,7 @@ class AdminTest(object):
             ''' assignedto is not a valid property=value, so
                 report error.
             '''
-            sys.argv=['main', '-i', '_test_admin', 'fin', 'issue',
+            sys.argv=['main', '-i', self.dirname, 'fin', 'issue',
                       'assignedto=1']
             ret = self.admin.main()
 
@@ -352,7 +384,7 @@ class AdminTest(object):
             ''' assignedto is not a valid property=value, so
                 report error.
             '''
-            sys.argv=['main', '-i', '_test_admin', 'f', 'issue',
+            sys.argv=['main', '-i', self.dirname, 'f', 'issue',
                       'assignedto']
             ret = self.admin.main()
 
@@ -368,7 +400,7 @@ class AdminTest(object):
             ''' assignedto is not a valid property=value, so
                 report error.
             '''
-            sys.argv=['main', '-i', '_test_admin', 'xyzzy', 'issue',
+            sys.argv=['main', '-i', self.dirname, 'xyzzy', 'issue',
                       'assignedto']
             ret = self.admin.main()
 
@@ -385,7 +417,7 @@ class AdminTest(object):
             ''' assignedto is not a valid property=value, so
                 report error.
             '''
-            sys.argv=['main', '-i', '_test_admin', 'find', 'issue',
+            sys.argv=['main', '-i', self.dirname, 'find', 'issue',
                       'assignedto']
             ret = self.admin.main()
 
@@ -405,7 +437,7 @@ class AdminTest(object):
         self.install_init()
 
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', '_test_admin', 'create', 'issue',
+            sys.argv=['main', '-i', self.dirname, 'create', 'issue',
                       'title="foo bar"', 'assignedto=admin' ]
             ret = self.admin.main()
 
@@ -415,7 +447,7 @@ class AdminTest(object):
 
         self.admin=AdminTool()
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', '_test_admin', 'create', 'issue',
+            sys.argv=['main', '-i', self.dirname, 'create', 'issue',
                       'title="bar foo bar"', 'assignedto=anonymous' ]
             ret = self.admin.main()
 
@@ -428,7 +460,7 @@ class AdminTest(object):
         # test string - one results, one value, substring
         self.admin=AdminTool()
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', '_test_admin', 'filter', 'user',
+            sys.argv=['main', '-i', self.dirname, 'filter', 'user',
                       'username=admin']
             ret = self.admin.main()
 
@@ -443,7 +475,7 @@ class AdminTest(object):
             ''' a,n should return all entries that have an a and n
                 so admin or anonymous
             '''
-            sys.argv=['main', '-i', '_test_admin', 'filter', 'user',
+            sys.argv=['main', '-i', self.dirname, 'filter', 'user',
                       'username=a,n']
             ret = self.admin.main()
 
@@ -460,7 +492,7 @@ class AdminTest(object):
             ''' a,y should return all entries that have an a and y
                 so anonymous
             '''
-            sys.argv=['main', '-i', '_test_admin', 'filter', 'user',
+            sys.argv=['main', '-i', self.dirname, 'filter', 'user',
                       'username=a,y']
             ret = self.admin.main()
 
@@ -474,7 +506,7 @@ class AdminTest(object):
         with captured_output() as (out, err):
             ''' will return empty set as admin!=anonymous
             '''
-            sys.argv=['main', '-i', '_test_admin', 'filter', 'user',
+            sys.argv=['main', '-i', self.dirname, 'filter', 'user',
                       'username=admin,anonymous']
             ret = self.admin.main()
 
@@ -486,7 +518,7 @@ class AdminTest(object):
         # test link using ids
         self.admin=AdminTool()
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', '_test_admin', 'filter', 'issue',
+            sys.argv=['main', '-i', self.dirname, 'filter', 'issue',
                       'assignedto=1,2']
             ret = self.admin.main()
 
@@ -500,7 +532,7 @@ class AdminTest(object):
         with captured_output() as (out, err):
             ''' will return empty set as admin!=anonymous
             '''
-            sys.argv=['main', '-i', '_test_admin', 'filter', 'issue',
+            sys.argv=['main', '-i', self.dirname, 'filter', 'issue',
                       'assignedto=admin,anonymous']
             ret = self.admin.main()
 
@@ -519,7 +551,7 @@ class AdminTest(object):
         self.admin=AdminTool()
 
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', '_test_admin', 'create', 'issue',
+            sys.argv=['main', '-i', self.dirname, 'create', 'issue',
                       'title="foo bar"', 'assignedto=admin' ]
             ret = self.admin.main()
 
@@ -529,7 +561,7 @@ class AdminTest(object):
 
         self.admin=AdminTool()
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', '_test_admin', 'create', 'issue',
+            sys.argv=['main', '-i', self.dirname, 'create', 'issue',
                       'title="bar foo bar"', 'assignedto=anonymous' ]
             ret = self.admin.main()
 
@@ -539,7 +571,7 @@ class AdminTest(object):
 
         self.admin=AdminTool()
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', '_test_admin', 'set', 'issue2', 'title="new title"']
+            sys.argv=['main', '-i', self.dirname, 'set', 'issue2', 'title="new title"']
             ret = self.admin.main()
 
         out = out.getvalue().strip()
@@ -549,7 +581,7 @@ class AdminTest(object):
 
         self.admin=AdminTool()
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', '_test_admin', 'set', 'issue2', 'tile="new title"']
+            sys.argv=['main', '-i', self.dirname, 'set', 'issue2', 'tile="new title"']
             ret = self.admin.main()
 
         expected_err = "Error: 'tile' is not a property of issue"
@@ -583,7 +615,7 @@ class AdminTest(object):
             ]
             
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', '_test_admin', 'specification', 'user']
+            sys.argv=['main', '-i', self.dirname, 'specification', 'user']
             ret = self.admin.main()
 
         outlist = out.getvalue().strip().split("\n")
