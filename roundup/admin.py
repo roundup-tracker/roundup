@@ -101,10 +101,8 @@ class AdminTool:
         """
         props = {}
         for arg in args:
-            if arg.find('=') == -1:
-                raise UsageError(_('argument "%(arg)s" not propname=value') %
-                                 locals())
             l = arg.split('=')
+            # if = not in string, will return one element
             if len(l) < 2:
                 raise UsageError(_('argument "%(arg)s" not propname=value') %
                                  locals())
@@ -1485,7 +1483,8 @@ Erase it? Y/N: """))
 
     def do_security(self, args):
         ''"""Usage: security [Role name]
-        Display the Permissions available to one or all Roles.
+
+             Display the Permissions available to one or all Roles.
         """
         if len(args) == 1:
             role = args[0]
