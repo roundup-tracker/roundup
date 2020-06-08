@@ -1438,7 +1438,7 @@ class ExportCSVAction(Action):
                                        self.client.STORAGE_CHARSET,
                                        self.client.charset, 'replace')
 
-        writer = csv.writer(wfile)
+        writer = csv.writer(wfile, quoting=csv.QUOTE_NONNUMERIC)
 
         # handle different types of columns.
         def repr_no_right(cls, col):
@@ -1603,7 +1603,7 @@ class ExportCSVWithIdAction(Action):
                                        self.client.STORAGE_CHARSET,
                                        self.client.charset, 'replace')
 
-        writer = csv.writer(wfile)
+        writer = csv.writer(wfile, quoting=csv.QUOTE_NONNUMERIC)
         self.client._socket_op(writer.writerow, columns)
 
         # and search

@@ -160,6 +160,37 @@ or::
 
     if db.tx_Source in ['web', 'rest', 'xmlrpc', 'email-sig-openpgp', 'cli' ]:
 
+
+CSV export changes
+------------------
+
+The original Roundup CSV export function for indexes reported id
+numbers for links. The wiki had a version that resolved the id's to
+names, so it would report ``open`` rather than ``2`` or
+``user2;user3`` rather than ``[2,3]``.
+
+Many people added the enhanced version to their extensions directory.
+
+The enhanced version was made the default in roundup 2.0.  If you want
+to use the old version (that returns id's), you can replace references
+to ``export_csv`` with ``export_csv_id`` in templates.
+
+Both core csv export functions have been changed to force quoting of
+all exported fields. To incorporate this change in any CSV export
+extension you may have added, change references in your code from::
+
+    writer = csv.writer(wfile)
+
+to::
+
+    writer = csv.writer(wfile, quoting=csv.QUOTE_NONNUMERIC)
+
+this forces all (non-numeric) fields to be quoted and empty quotes to
+be added for missing parameters.
+
+This turns exported values that may look like formulas into strings so
+some versions of Excel won't try to interpret them as a formula.
+
 Update userauditor.py to restrict usernames
 -------------------------------------------
 

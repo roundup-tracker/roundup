@@ -19,6 +19,12 @@ Fixed:
   Meerwald)
 - exception in logout action when there is no session (Christof
   Meerwald)
+- quote all non-numeric data in csv export functions. Report that a
+  title like '=a2+b3' could be interpreted as a function in Excel and
+  executed. csv.writer now includes quoting=csv.QUOTE_NONNUMERIC to
+  generate quoted values for all fields. This makes the string
+  starting with = be interpreted as a string and not a formula. (John
+  Rouillard as reported in the decomissioned bpo meta tracker IIRC.)
 
 Features:
 

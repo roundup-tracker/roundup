@@ -1792,25 +1792,25 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         cl.request.wfile = output
         # call export version that outputs names
         actions.ExportCSVAction(cl).handle()
-        #print(output.getvalue())
-        should_be=(s2b('id,title,status,keyword,assignedto,nosy\r\n'
-                       '1,foo1,deferred,,"Contrary, Mary","Bork, Chef;Contrary, Mary;demo"\r\n'
-                       '2,bar2,unread,keyword1;keyword2,"Bork, Chef","Bork, Chef"\r\n'
-                       '3,baz32,need-eg,,,\r\n'))
+        should_be=(s2b('"id","title","status","keyword","assignedto","nosy"\r\n'
+                       '"1","foo1","deferred","","Contrary, Mary","Bork, Chef;Contrary, Mary;demo"\r\n'
+                       '"2","bar2","unread","keyword1;keyword2","Bork, Chef","Bork, Chef"\r\n'
+                       '"3","baz32","need-eg","","",""\r\n'))
         #print(should_be)
-        #print(output.getvalue())
+        print(output.getvalue())
         self.assertEqual(output.getvalue(), should_be)
         output = io.BytesIO()
         cl.request = MockNull()
         cl.request.wfile = output
         # call export version that outputs id numbers
         actions.ExportCSVWithIdAction(cl).handle()
+        should_be = s2b('"id","title","status","keyword","assignedto","nosy"\r\n'
+                        "\"1\",\"foo1\",\"2\",\"[]\",\"4\",\"['3', '4', '5']\"\r\n"
+                        "\"2\",\"bar2\",\"1\",\"['1', '2']\",\"3\",\"['3']\"\r\n"
+                        '\"3\","baz32",\"4\","[]","None","[]"\r\n')
+        #print(should_be)
         print(output.getvalue())
-        self.assertEqual(s2b('id,title,status,keyword,assignedto,nosy\r\n'
-                             "1,foo1,2,[],4,\"['3', '4', '5']\"\r\n"
-                             "2,bar2,1,\"['1', '2']\",3,['3']\r\n"
-                             '3,baz32,4,[],None,[]\r\n'),
-            output.getvalue())
+        self.assertEqual(output.getvalue(), should_be)
 
     def testCSVExportCharset(self):
         cl = self._make_client(
@@ -1827,8 +1827,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         cl.request.wfile = output
         # call export version that outputs names
         actions.ExportCSVAction(cl).handle()
-        should_be=(b'id,title,status,keyword,assignedto,nosy\r\n'
-                   b'1,foo1\xc3\xa4,deferred,,"Contrary, Mary","Bork, Chef;Contrary, Mary;demo"\r\n')
+        should_be=(b'"id","title","status","keyword","assignedto","nosy"\r\n'
+                   b'"1","foo1\xc3\xa4","deferred","","Contrary, Mary","Bork, Chef;Contrary, Mary;demo"\r\n')
         self.assertEqual(output.getvalue(), should_be)
 
         output = io.BytesIO()
@@ -1837,8 +1837,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         # call export version that outputs id numbers
         actions.ExportCSVWithIdAction(cl).handle()
         print(output.getvalue())
-        self.assertEqual(b'id,title,status,keyword,assignedto,nosy\r\n'
-                         b"1,foo1\xc3\xa4,2,[],4,\"['3', '4', '5']\"\r\n",
+        self.assertEqual(b'"id","title","status","keyword","assignedto","nosy"\r\n'
+                         b"\"1\",\"foo1\xc3\xa4\",\"2\",\"[]\",\"4\",\"['3', '4', '5']\"\r\n",
                          output.getvalue())
 
         # again with ISO-8859-1 client charset
@@ -1848,8 +1848,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         cl.request.wfile = output
         # call export version that outputs names
         actions.ExportCSVAction(cl).handle()
-        should_be=(b'id,title,status,keyword,assignedto,nosy\r\n'
-                   b'1,foo1\xe4,deferred,,"Contrary, Mary","Bork, Chef;Contrary, Mary;demo"\r\n')
+        should_be=(b'"id","title","status","keyword","assignedto","nosy"\r\n'
+                   b'"1","foo1\xe4","deferred","","Contrary, Mary","Bork, Chef;Contrary, Mary;demo"\r\n')
         self.assertEqual(output.getvalue(), should_be)
 
         output = io.BytesIO()
@@ -1858,8 +1858,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         # call export version that outputs id numbers
         actions.ExportCSVWithIdAction(cl).handle()
         print(output.getvalue())
-        self.assertEqual(b'id,title,status,keyword,assignedto,nosy\r\n'
-                         b"1,foo1\xe4,2,[],4,\"['3', '4', '5']\"\r\n",
+        self.assertEqual(b'"id","title","status","keyword","assignedto","nosy"\r\n'
+                         b"\"1\",\"foo1\xe4\",\"2\",\"[]\",\"4\",\"['3', '4', '5']\"\r\n",
                          output.getvalue())
 
     def testCSVExportBadColumnName(self):
@@ -1903,12 +1903,12 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
 
         actions.ExportCSVAction(cl).handle()
         #print(output.getvalue())
-        self.assertEqual(s2b('id,username,address,password\r\n'
-                             '1,admin,[hidden],[hidden]\r\n'
-                             '2,anonymous,[hidden],[hidden]\r\n'
-                             '3,Chef,[hidden],[hidden]\r\n'
-                             '4,mary,[hidden],[hidden]\r\n'
-                             '5,demo,demo@test.test,%s\r\n'%(passwd)),
+        self.assertEqual(s2b('"id","username","address","password"\r\n'
+                             '"1","admin","[hidden]","[hidden]"\r\n'
+                             '"2","anonymous","[hidden]","[hidden]"\r\n'
+                             '"3","Chef","[hidden]","[hidden]"\r\n'
+                             '"4","mary","[hidden]","[hidden]"\r\n'
+                             '"5","demo","demo@test.test","%s"\r\n'%(passwd)),
             output.getvalue())
 
     def testCSVExportWithId(self):
@@ -1919,9 +1919,9 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         cl.request = MockNull()
         cl.request.wfile = output
         actions.ExportCSVWithIdAction(cl).handle()
-        self.assertEqual(s2b('id,name\r\n1,unread\r\n2,deferred\r\n3,chatting\r\n'
-            '4,need-eg\r\n5,in-progress\r\n6,testing\r\n7,done-cbb\r\n'
-            '8,resolved\r\n'),
+        self.assertEqual(s2b('"id","name"\r\n"1","unread"\r\n"2","deferred"\r\n"3","chatting"\r\n'
+            '"4","need-eg"\r\n"5","in-progress"\r\n"6","testing"\r\n"7","done-cbb"\r\n'
+            '"8","resolved"\r\n'),
             output.getvalue())
 
     def testCSVExportWithIdBadColumnName(self):
