@@ -503,8 +503,8 @@ Erase it? Y/N: """) % locals())
 
     def do_genconfig(self, args, update=False):
         ''"""Usage: genconfig <filename>
-        Generate a new tracker config file (ini style) with default values
-        in <filename>.
+        Generate a new tracker config file (ini style) with default
+        values in <filename>.
         """
         if len(args) < 1:
             raise UsageError(_('Not enough arguments supplied'))
@@ -863,13 +863,14 @@ Erase it? Y/N: """))
 
     def do_display(self, args):
         ''"""Usage: display designator[,designator]*
+
         Show the property values for the given node(s).
 
         A designator is a classname and a nodeid concatenated,
         eg. bug1, user10, ...
 
-        This lists the properties and their associated values for the given
-        node.
+        This lists the properties and their associated values
+        for the given node.
         """
         if len(args) < 1:
             raise UsageError(_('Not enough arguments supplied'))
@@ -1536,22 +1537,24 @@ Erase it? Y/N: """))
 
     def do_migrate(self, args):
         ''"""Usage: migrate
+
         Update a tracker's database to be compatible with the Roundup
         codebase.
 
-        You should run the "migrate" command for your tracker once you've
-        installed the latest codebase.
+        You should run the "migrate" command for your tracker once
+        you've installed the latest codebase.
 
-        Do this before you use the web, command-line or mail interface and
-        before any users access the tracker.
+        Do this before you use the web, command-line or mail interface
+        and before any users access the tracker.
 
-        This command will respond with either "Tracker updated" (if you've
-        not previously run it on an RDBMS backend) or "No migration action
-        required" (if you have run it, or have used another interface to the
-        tracker, or possibly because you are using anydbm).
+        This command will respond with either "Tracker updated" (if
+        you've not previously run it on an RDBMS backend) or "No
+        migration action required" (if you have run it, or have used
+        another interface to the tracker, or possibly because you are
+        using anydbm).
 
-        It's safe to run this even if it's not required, so just get into
-        the habit.
+        It's safe to run this even if it's not required, so just get
+        into the habit.
         """
         if getattr(self.db, 'db_version_updated'):
             print(_('Tracker updated'))
