@@ -22,7 +22,6 @@ __docformat__ = 'restructuredtext'
 
 import calendar
 import datetime
-import time
 import re
 
 try:
@@ -90,6 +89,7 @@ else:
 
     UTC = _UTC()
 
+
 # integral hours offsets were available in Roundup versions prior to 1.1.3
 # and still are supported as a fallback if pytz module is not installed
 class SimpleTimezone(datetime.tzinfo):
@@ -124,8 +124,10 @@ class SimpleTimezone(datetime.tzinfo):
     def localize(self, dt, is_dst=False):
         return dt.replace(tzinfo=self)
 
+
 # simple timezones with fixed offset
 _tzoffsets = dict(GMT=0, UCT=0, EST=5, MST=7, HST=10)
+
 
 def get_timezone(tz):
     # if tz is None, return None (will result in naive datetimes)
@@ -152,6 +154,7 @@ def get_timezone(tz):
     else:
         raise KeyError(tz)
 
+
 def _utc_to_local(y,m,d,H,M,S,tz):
     TZ = get_timezone(tz)
     S = min(S, 59.999)
@@ -161,24 +164,28 @@ def _utc_to_local(y,m,d,H,M,S,tz):
     S = S + frac
     return (y,m,d,H,M,S)
 
+
 def _local_to_utc(y,m,d,H,M,S,tz):
     TZ = get_timezone(tz)
     dt = datetime.datetime(y,m,d,H,M,int(S))
     y,m,d,H,M,S = TZ.localize(dt).utctimetuple()[:6]
     return (y,m,d,H,M,S)
 
+
 def test_ini(t):
     """ Monkey-patch to make doctest think it's always time t:
     """
-    u = Date.now 
-    d = datetime.datetime.strptime (t, '%Y-%m-%d.%H:%M:%S.%f')
-    Date.now = lambda x : d
+    u = Date.now
+    d = datetime.datetime.strptime(t, '%Y-%m-%d.%H:%M:%S.%f')
+    Date.now = lambda x: d
     return u
+
 
 def test_fin(u):
     """ Undo monkey patch above
     """
     Date.now = u
+
 
 class Date:
     '''
@@ -312,7 +319,7 @@ class Date:
     '''
 
     def __init__(self, spec='.', offset=0, add_granularity=False,
-            translator=i18n):
+                 translator=i18n):
         """Construct a date given a specification and a time zone offset.
 
         'spec'
@@ -339,7 +346,7 @@ class Date:
             self.second += spec.microsecond/1000000.
             return
 
-        if type(spec) == type(''):
+        if isinstance(spec, type('')):
             self.set(spec, offset=offset, add_granularity=add_granularity)
             return
         elif hasattr(spec, 'tuple'):
@@ -356,7 +363,7 @@ class Date:
             self.second = self.second + frac
             # making sure we match the precision of serialise()
             self.second = min(self.second, 59.999)
-        except:
+        except Exception:
             raise ValueError('Unknown spec %r' % (spec,))
 
     def now(self):
@@ -401,7 +408,7 @@ class Date:
                     elif gran == 'H':
                         add_granularity = Interval('01:00')
                     else:
-                        add_granularity = Interval('+1%s'%gran)
+                        add_granularity = Interval('+1%s' % gran)
                     break
             else:
                 raise ValueError(self._('Could not determine granularity'))
@@ -458,13 +465,13 @@ class Date:
             except ValueError:
                 raise ValueError(self._('%r not a date / time spec '
                     '"yyyy-mm-dd", "mm-dd", "HH:MM", "HH:MM:SS" or '
-                    '"yyyy-mm-dd.HH:MM:SS.SSS"')%(spec,))
+                    '"yyyy-mm-dd.HH:MM:SS.SSS"') % (spec,))
 
         if info.get('tz', None):
-            tz     = info ['tz'].strip ()
-            sign   = [-1,1][tz[0] == '-']
-            minute = int (tz[3:], 10)
-            hour   = int (tz[1:3], 10)
+            tz = info['tz'].strip()
+            sign = [-1, 1][tz[0] == '-']
+            minute = int(tz[3:], 10)
+            hour = int(tz[1:3], 10)
             self.applyInterval(Interval((0, 0, 0, hour, minute, 0), sign=sign))
 
         # adjust by added granularity
@@ -506,20 +513,21 @@ class Date:
             if month == 2 and calendar.isleap(year): return 29
             else: return calendar.mdays[month]
 
-        while month < 1 or month > 12 or day < 1 or day > get_mdays(year,month):
+        while month < 1 or month > 12 or day < 1 or \
+              day > get_mdays(year, month):
             # now to day under/over
             if day < 1:
                 # When going backwards, decrement month, then increment days
                 month -= 1
-                day += get_mdays(year,month)
-            elif day > get_mdays(year,month):
+                day += get_mdays(year, month)
+            elif day > get_mdays(year, month):
                 # When going forwards, decrement days, then increment month
-                day -= get_mdays(year,month)
+                day -= get_mdays(year, month)
                 month += 1
 
             # possibly fix up the month so we're within range
             while month < 1 or month > 12:
-                if month < 1: year -= 1; month += 12 ; day += 31
+                if month < 1: year -= 1; month += 12; day += 31
                 if month > 12: year += 1; month -= 12
 
         return (year, month, day, hour, minute, second, 0, 0, 0)
@@ -561,9 +569,9 @@ class Date:
         # Returning intervals larger than a day is almost
         # impossible - months, years, weeks, are all so imprecise.
         a = calendar.timegm((self.year, self.month, self.day, self.hour,
-            self.minute, self.second, 0, 0, 0))
+                             self.minute, self.second, 0, 0, 0))
         b = calendar.timegm((other.year, other.month, other.day,
-            other.hour, other.minute, other.second, 0, 0, 0))
+                             other.hour, other.minute, other.second, 0, 0, 0))
         # intervals work in whole seconds
         diff = int(a - b)
         if diff > 0:
@@ -571,12 +579,12 @@ class Date:
         else:
             sign = -1
             diff = -diff
-        S = diff%60
-        M = (diff//60)%60
-        H = (diff//(60*60))%24
+        S = diff % 60
+        M = (diff//60) % 60
+        H = (diff//(60*60)) % 24
         d = diff//(24*60*60)
         return Interval((0, 0, d, H, M, S), sign=sign,
-            translator=self.translator)
+                        translator=self.translator)
 
     def __cmp__(self, other, int_seconds=0):
         """Compare this date to another date."""
@@ -595,14 +603,19 @@ class Date:
 
     def __lt__(self, other):
         return self.__cmp__(other) < 0
+
     def __le__(self, other):
         return self.__cmp__(other) <= 0
+
     def __eq__(self, other):
         return self.__cmp__(other) == 0
+
     def __ne__(self, other):
         return self.__cmp__(other) != 0
+
     def __gt__(self, other):
         return self.__cmp__(other) > 0
+
     def __ge__(self, other):
         return self.__cmp__(other) >= 0
 
@@ -611,9 +624,9 @@ class Date:
         return self.formal()
 
     def formal(self, sep='.', sec='%02d'):
-        f = '%%04d-%%02d-%%02d%s%%02d:%%02d:%s'%(sep, sec)
-        return f%(self.year, self.month, self.day, self.hour, self.minute,
-            self.second)
+        f = '%%04d-%%02d-%%02d%s%%02d:%%02d:%s' % (sep, sec)
+        return f % (self.year, self.month, self.day, self.hour, self.minute,
+                    self.second)
 
     def isoformat(self):
         ''' Represent the date/time in isoformat standard
@@ -621,9 +634,9 @@ class Date:
             Originally needed for xml output support using
             dicttoxml in the rest interface.
         '''
-        f = '%%04d-%%02d-%%02d%s%%02d:%%02d:%s'%("T", "%02.6d")
-        return f%(self.year, self.month, self.day, self.hour, self.minute,
-            self.second)
+        f = '%%04d-%%02d-%%02d%s%%02d:%%02d:%s' % ("T", "%02.6d")
+        return f % (self.year, self.month, self.day, self.hour, self.minute,
+                    self.second)
 
     def pretty(self, format='%d %B %Y'):
         ''' print up the date date using a pretty format...
@@ -633,7 +646,7 @@ class Date:
         '''
         dt = datetime.datetime(self.year, self.month, self.day, self.hour,
             self.minute, int(self.second),
-            int ((self.second - int (self.second)) * 1000000.))
+            int((self.second - int(self.second)) * 1000000.))
         str = dt.strftime(format)
 
         # handle zero day by removing it
@@ -642,15 +655,15 @@ class Date:
         return str
 
     def __repr__(self):
-        return '<Date %s>'%self.formal(sec='%06.3f')
+        return '<Date %s>' % self.formal(sec='%06.3f')
 
     def local(self, offset):
         """ Return this date as yyyy-mm-dd.hh:mm:ss in a local time zone.
             The offset is a pytz tz offset if pytz is installed.
         """
-        y, m, d, H, M, S = _utc_to_local(self.year, self.month, self.day,
-                self.hour, self.minute, self.second, offset)
-        return Date((y, m, d, H, M, S, 0, 0, 0), translator=self.translator)
+        y,m,d,H,M,S = _utc_to_local(self.year, self.month, self.day,
+                   self.hour, self.minute, self.second, offset)
+        return Date((y,m,d,H,M,S,0,0,0), translator=self.translator)
 
     def __deepcopy__(self, memo):
         return Date((self.year, self.month, self.day, self.hour,
@@ -658,7 +671,7 @@ class Date:
 
     def get_tuple(self):
         return (self.year, self.month, self.day, self.hour, self.minute,
-            self.second, 0, 0, 0)
+                self.second, 0, 0, 0)
 
     def serialise(self):
         """ Return serialised string for self's datetime.
@@ -668,14 +681,14 @@ class Date:
         to 60.000.
 
         """
-        return '%04d%02d%02d%02d%02d%06.3f'%(self.year, self.month,
+        return '%04d%02d%02d%02d%02d%06.3f' % (self.year, self.month,
             self.day, self.hour, self.minute, self.second)
 
     def timestamp(self):
         ''' return a UNIX timestamp for this date '''
         frac = self.second - int(self.second)
         ts = calendar.timegm((self.year, self.month, self.day, self.hour,
-            self.minute, self.second, 0, 0, 0))
+                              self.minute, self.second, 0, 0, 0))
         # we lose the fractional part
         return ts + frac
 
@@ -698,9 +711,10 @@ class Date:
         1902-2038.
         """
         usec = int((ts - int(ts)) * 1000000.)
-        delta = datetime.timedelta(seconds = int(ts), microseconds = usec)
+        delta = datetime.timedelta(seconds=int(ts), microseconds=usec)
         return cls(datetime.datetime(1970, 1, 1) + delta)
     fromtimestamp = classmethod(fromtimestamp)
+
 
 class Interval:
     '''
@@ -764,8 +778,7 @@ class Interval:
     TODO: more examples, showing the order of addition operation
     '''
     def __init__(self, spec, sign=1, allowdate=1, add_granularity=False,
-        translator=i18n
-    ):
+                 translator=i18n):
         """Construct an interval given a specification."""
         self.setTranslator(translator)
         try:
@@ -777,7 +790,8 @@ class Interval:
         if isinstance(spec, arith_types):
             self.from_seconds(spec)
         elif is_us(spec):
-            self.set(spec, allowdate=allowdate, add_granularity=add_granularity)
+            self.set(spec, allowdate=allowdate,
+                     add_granularity=add_granularity)
         elif isinstance(spec, Interval):
             (self.sign, self.year, self.month, self.day, self.hour,
                 self.minute, self.second) = spec.get_tuple()
@@ -832,12 +846,12 @@ class Interval:
         if add_granularity:
             for gran in 'SMHdwmy':
                 if info[gran] is not None:
-                    info[gran] = int(info[gran]) + (info['s']=='-' and -1 or 1)
+                    info[gran] = int(info[gran]) + (info['s'] == '-' and -1 or 1)
                     break
 
         valid = 0
-        for group, attr in {'y':'year', 'm':'month', 'w':'week', 'd':'day',
-                'H':'hour', 'M':'minute', 'S':'second'}.items():
+        for group, attr in {'y': 'year', 'm': 'month', 'w': 'week', 'd': 'day',
+                'H': 'hour', 'M': 'minute', 'S': 'second'}.items():
             if info.get(group, None) is not None:
                 valid = 1
                 setattr(self, attr, int(info[group]))
@@ -852,7 +866,7 @@ class Interval:
             self.day = self.day + self.week*7
 
         if info['s'] is not None:
-            self.sign = {'+':1, '-':-1}[info['s']]
+            self.sign = {'+': 1, '-': -1}[info['s']]
 
         # use a date spec if one is given
         if allowdate and info['D'] is not None:
@@ -916,15 +930,15 @@ class Interval:
     def __str__(self):
         """Return this interval as a string."""
         l = []
-        if self.year: l.append('%sy'%self.year)
-        if self.month: l.append('%sm'%self.month)
-        if self.day: l.append('%sd'%self.day)
+        if self.year: l.append('%sy' % self.year)
+        if self.month: l.append('%sm' % self.month)
+        if self.day: l.append('%sd' % self.day)
         if self.second:
-            l.append('%d:%02d:%02d'%(self.hour, self.minute, self.second))
+            l.append('%d:%02d:%02d' % (self.hour, self.minute, self.second))
         elif self.hour or self.minute:
-            l.append('%d:%02d'%(self.hour, self.minute))
+            l.append('%d:%02d' % (self.hour, self.minute))
         if l:
-            l.insert(0, {1:'+', -1:'-'}[self.sign])
+            l.insert(0, {1: '+', -1: '-'}[self.sign])
         else:
             l.append('00:00')
         return ' '.join(l)
@@ -939,12 +953,12 @@ class Interval:
             asgn = a[0]
             b = other.get_tuple()
             bsgn = b[0]
-            i = [asgn*x + bsgn*y for x,y in zip(a[1:],b[1:])]
+            i = [asgn*x + bsgn*y for x, y in zip(a[1:], b[1:])]
             i.insert(0, 1)
             i = fixTimeOverflow(i)
             return Interval(i, translator=self.translator)
         # nope, no idea what to do with this other...
-        raise TypeError("Can't add %r"%other)
+        raise TypeError("Can't add %r" % other)
 
     def __sub__(self, other):
         if isinstance(other, Date):
@@ -952,19 +966,19 @@ class Interval:
             interval = Interval(self.get_tuple())
             interval.sign *= -1
             return Date(other.addInterval(interval),
-                translator=self.translator)
+                        translator=self.translator)
         elif isinstance(other, Interval):
             # add the other Interval to this one
             a = self.get_tuple()
             asgn = a[0]
             b = other.get_tuple()
             bsgn = b[0]
-            i = [asgn*x - bsgn*y for x,y in zip(a[1:],b[1:])]
+            i = [asgn*x - bsgn*y for x, y in zip(a[1:], b[1:])]
             i.insert(0, 1)
             i = fixTimeOverflow(i)
             return Interval(i, translator=self.translator)
         # nope, no idea what to do with this other...
-        raise TypeError("Can't add %r"%other)
+        raise TypeError("Can't add %r" % other)
 
     def __truediv__(self, other):
         """ Divide this interval by an int value.
@@ -978,7 +992,7 @@ class Interval:
             raise ValueError("Can only divide Intervals by numbers")
 
         y, m, d, H, M, S = (self.year, self.month, self.day,
-            self.hour, self.minute, self.second)
+                            self.hour, self.minute, self.second)
         if y or m:
             if d or H or M or S:
                 raise ValueError("Can't divide Interval with date and time")
@@ -987,11 +1001,11 @@ class Interval:
 
             months = int(months/other)
 
-            sign = months<0 and -1 or 1
-            m = months%12
+            sign = months < 0 and -1 or 1
+            m = months % 12
             y = months // 12
             return Interval((sign, y, m, 0, 0, 0, 0),
-                translator=self.translator)
+                            translator=self.translator)
 
         else:
             # handle a day/time division
@@ -1000,21 +1014,21 @@ class Interval:
 
             seconds = int(seconds/other)
 
-            sign = seconds<0 and -1 or 1
+            sign = seconds < 0 and -1 or 1
             seconds *= sign
-            S = seconds%60
+            S = seconds % 60
             seconds //= 60
-            M = seconds%60
+            M = seconds % 60
             seconds //= 60
-            H = seconds%24
+            H = seconds % 24
             d = seconds // 24
             return Interval((sign, 0, 0, d, H, M, S),
-                translator=self.translator)
+                            translator=self.translator)
     # Python 2 compatibility:
     __div__ = __truediv__
 
     def __repr__(self):
-        return '<Interval %s>'%self.__str__()
+        return '<Interval %s>' % self.__str__()
 
     def pretty(self):
         ''' print up the date date using one of these nice formats..
@@ -1022,19 +1036,19 @@ class Interval:
         _quarters = self.minute // 15
         if self.year:
             s = self.ngettext("%(number)s year", "%(number)s years",
-                self.year) % {'number': self.year}
+                              self.year) % {'number': self.year}
         elif self.month or self.day > 28:
             _months = max(1, int(((self.month * 30) + self.day) / 30))
             s = self.ngettext("%(number)s month", "%(number)s months",
-                _months) % {'number': _months}
+                              _months) % {'number': _months}
         elif self.day > 7:
             _weeks = int(self.day / 7)
             s = self.ngettext("%(number)s week", "%(number)s weeks",
-                _weeks) % {'number': _weeks}
+                              _weeks) % {'number': _weeks}
         elif self.day > 1:
             # Note: singular form is not used
             s = self.ngettext('%(number)s day', '%(number)s days',
-                self.day) % {'number': self.day}
+                              self.day) % {'number': self.day}
         elif self.day == 1 or self.hour > 12:
             if self.sign > 0:
                 return self._('tomorrow')
@@ -1043,7 +1057,7 @@ class Interval:
         elif self.hour > 1:
             # Note: singular form is not used
             s = self.ngettext('%(number)s hour', '%(number)s hours',
-                self.hour) % {'number': self.hour}
+                              self.hour) % {'number': self.hour}
         elif self.hour == 1:
             if self.minute < 15:
                 s = self._('an hour')
@@ -1051,7 +1065,8 @@ class Interval:
                 s = self._('1 1/2 hours')
             else:
                 s = self.ngettext('1 %(number)s/4 hours',
-                    '1 %(number)s/4 hours', _quarters)%{'number': _quarters}
+                                  '1 %(number)s/4 hours',
+                                  _quarters) % {'number': _quarters}
         elif self.minute < 1:
             if self.sign > 0:
                 return self._('in a moment')
@@ -1063,12 +1078,12 @@ class Interval:
         elif self.minute < 15:
             # Note: used in expressions "in 2 minutes" or "2 minutes ago"
             s = self.ngettext('%(number)s minute', '%(number)s minutes',
-                self.minute) % {'number': self.minute}
+                              self.minute) % {'number': self.minute}
         elif _quarters == 2:
             s = self._('1/2 an hour')
         else:
             s = self.ngettext('%(number)s/4 hour', '%(number)s/4 hours',
-                _quarters) % {'number': _quarters}
+                              _quarters) % {'number': _quarters}
         # XXX this is internationally broken
         if self.sign < 0:
             s = self._('%s ago') % s
@@ -1078,20 +1093,20 @@ class Interval:
 
     def get_tuple(self):
         return (self.sign, self.year, self.month, self.day, self.hour,
-            self.minute, self.second)
+                self.minute, self.second)
 
     def serialise(self):
         sign = self.sign > 0 and '+' or '-'
-        return '%s%04d%02d%02d%02d%02d%02d'%(sign, self.year, self.month,
+        return '%s%04d%02d%02d%02d%02d%02d' % (sign, self.year, self.month,
             self.day, self.hour, self.minute, self.second)
 
     def isoformat(self):
         '''Represent interval as an ISO 8061 duration (absolute value)
-        
+
            Originally needed for xml output support using
            dicttoxml in the rest interface.
         '''
-        return 'P%04dY%02dM%02dDT%02dH%02dM%02dS'%(self.year, self.month,
+        return 'P%04dY%02dM%02dDT%02dH%02dM%02dS' % (self.year, self.month,
             self.day, self.hour, self.minute, self.second)
 
     def as_seconds(self):
@@ -1158,22 +1173,23 @@ def fixTimeOverflow(time):
     sign, y, m, d, H, M, S = time
     seconds = sign * (S + M*60 + H*60*60 + d*60*60*24)
     if seconds:
-        sign = seconds<0 and -1 or 1
+        sign = seconds < 0 and -1 or 1
         seconds *= sign
-        S = seconds%60
+        S = seconds % 60
         seconds //= 60
-        M = seconds%60
+        M = seconds % 60
         seconds //= 60
-        H = seconds%24
+        H = seconds % 24
         d = seconds // 24
     else:
         months = y*12 + m
-        sign = months<0 and -1 or 1
+        sign = months < 0 and -1 or 1
         months *= sign
-        m = months%12
+        m = months % 12
         y = months//12
 
     return (sign, y, m, d, H, M, S)
+
 
 class Range:
     """Represents range between two values
@@ -1267,7 +1283,7 @@ class Range:
         else:
             # Native english
             m = re.search(re_range, spec.strip(), re.IGNORECASE)
-            if not m :
+            if not m:
                 m = re.search(re_range_no_to, spec.strip(), re.IGNORECASE)
         if m:
             self.from_value, self.to_value = m.groups()
@@ -1288,6 +1304,7 @@ class Range:
     def __repr__(self):
         return "<Range %s>" % self.__str__()
 
+
 def test_range():
     rspecs = ("from 2-12 to 4-2", "from 18:00 TO +2m", "12:00;", "tO +3d",
         "2002-11-10; 2002-12-12", "; 20:00 +1d", '2002-10-12')
@@ -1301,22 +1318,24 @@ def test_range():
         print(repr(Range(rspec, Interval)))
         print()
 
+
 def test():
     intervals = ("  3w  1  d  2:00", " + 2d", "3w")
     for interval in intervals:
-        print('>>> Interval("%s")'%interval)
+        print('>>> Interval("%s")' % interval)
         print(repr(Interval(interval)))
 
     dates = (".", "2000-06-25.19:34:02", ". + 2d", "1997-04-17", "01-25",
-        "08-13.22:13", "14:25", '2002-12')
+             "08-13.22:13", "14:25", '2002-12')
     for date in dates:
-        print('>>> Date("%s")'%date)
+        print('>>> Date("%s")' % date)
         print(repr(Date(date)))
 
     sums = ((". + 2d", "3w"), (".", "  3w  1  d  2:00"))
     for date, interval in sums:
-        print('>>> Date("%s") + Interval("%s")'%(date, interval))
+        print('>>> Date("%s") + Interval("%s")' % (date, interval))
         print(repr(Date(date) + Interval(interval)))
+
 
 if __name__ == '__main__':
     test()
