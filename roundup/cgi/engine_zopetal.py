@@ -15,6 +15,7 @@ from roundup.cgi.TAL import TALInterpreter
 
 GlobalTranslationService.setGlobalTranslationService(translationService)
 
+
 class Loader(TALLoaderBase):
     templates = {}
 
@@ -62,6 +63,7 @@ class Loader(TALLoaderBase):
         self.templates[src] = pt
         return pt
 
+
 class RoundupPageTemplate(PageTemplate.PageTemplate):
     """A Roundup-specific PageTemplate.
 
@@ -79,7 +81,8 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
         __traceback_supplement__ = (PageTemplate.PageTemplateTracebackSupplement, self)
 
         if self._v_errors:
-            raise PageTemplate.PTRuntimeError('Page Template %s has errors.'%self.id)
+            raise PageTemplate.PTRuntimeError('Page Template %s has errors.' %
+                                              self.id)
 
         # figure the context
         c = context(client, self, classname, request)
@@ -88,6 +91,6 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
         # and go
         output = StringIO()
         TALInterpreter.TALInterpreter(self._v_program, self.macros,
-            getEngine().getContext(c), output, tal=1, strictinsert=0)()
+                                      getEngine().getContext(c), output,
+                                      tal=1, strictinsert=0)()
         return output.getvalue()
-
