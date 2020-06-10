@@ -833,7 +833,7 @@ the "generic" field to the post payload::
 
   curl -u demo:demo -s -X POST -H "Referer: https://.../demo/" \
       -H "X-requested-with: rest" \
-      --data 'lifetime=100&generic=1' \
+      --data 'lifetime=900&generic=1' \
       https://.../demo/rest/data/issue/@poe
 
 This will return a link under: ``https://.../demo/rest/data/issue/@poe``::
