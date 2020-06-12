@@ -88,8 +88,22 @@ class RetireActionTestCase(ActionTestCase):
         self.client._ok_message = []
         RetireAction(self.client).handle()
         self.assertTrue(len(self.client._ok_message) == 1)
+        self.assertTrue(not self.client.nodeid == None)
+
+        self.client.template = 'index'
+        self.client._ok_message = []
+        RetireAction(self.client).handle()
+        self.assertTrue(len(self.client._ok_message) == 1)
+        self.assertTrue(self.client.nodeid == None)
+
+        self.client.env={}
+        self.client.env['REQUEST_METHOD'] = 'GET'
+        self.client._ok_message = []
+        self.assertRaises(Reject, RetireAction(self.client).execute)
+
 
     def testNoPermission(self):
+        self.client.classname='user'
         self.assertRaises(Unauthorised, RetireAction(self.client).execute)
 
     def testDontRetireAdminOrAnonymous(self):
@@ -113,6 +127,18 @@ class RestoreActionTestCase(ActionTestCase):
         self.client._ok_message = []
         RestoreAction(self.client).handle()
         self.assertTrue(len(self.client._ok_message) == 1)
+        self.assertTrue(not self.client.nodeid == None)
+
+        self.client.template = 'index'
+        self.client._ok_message = []
+        RestoreAction(self.client).handle()
+        self.assertTrue(len(self.client._ok_message) == 1)
+        self.assertTrue(self.client.nodeid == None)
+
+        self.client.env={}
+        self.client.env['REQUEST_METHOD'] = 'GET'
+        self.client._ok_message = []
+        self.assertRaises(Reject, RestoreAction(self.client).execute)
 
     def testNoPermission(self):
         self.assertRaises(Unauthorised, RestoreAction(self.client).execute)
