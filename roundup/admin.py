@@ -101,12 +101,12 @@ class AdminTool:
         """
         props = {}
         for arg in args:
-            l = arg.split('=')
+            l = arg.split('=', 1)
             # if = not in string, will return one element
             if len(l) < 2:
                 raise UsageError(_('argument "%(arg)s" not propname=value') %
                                  locals())
-            key, value = l[0], '='.join(l[1:])
+            key, value = l
             if value:
                 props[key] = value
             else:

@@ -25,6 +25,9 @@ Fixed:
   generate quoted values for all fields. This makes the string
   starting with = be interpreted as a string and not a formula. (John
   Rouillard as reported in the decomissioned bpo meta tracker IIRC.)
+- issue2551084 - Fix inefficiency in roundup-admin. Streamline code and
+  bring in line with 2.7 and newer python functionality. (Patch by Tom
+  Ekberg (tekberg); John Rouillard)
 
 Features:
 
