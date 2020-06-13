@@ -1199,7 +1199,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         values = self.sql_fetchone()
         if values is None:
-            raise IndexError('no such %s node %s' % (classname, nodeid))
+            raise IndexError('no such %s %s' % (classname, nodeid))
 
         # make up the node
         node = {}
