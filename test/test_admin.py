@@ -174,6 +174,19 @@ class AdminTest(object):
         self.assertEqual(out.index(expected_err), 0)
         self.assertEqual(len(err), 0)
 
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'get', 'title', 'issue']
+            ret = self.admin.main()
+
+        expected_err = 'Error: "issue" not a node designator'
+
+        self.assertEqual(ret, 1)
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(out.index(expected_err), 0)
+        self.assertEqual(len(err), 0)
+
     def testInit(self):
         import sys
         self.admin=AdminTool()
@@ -540,6 +553,30 @@ class AdminTest(object):
         print(out)
         self.assertEqual(sorted(eval(out)), ['1', '2'])
 
+    def disabletestHelpInitopts(self):
+
+        ''' Note the tests will fail if you run this under pdb.
+            the context managers capture the pdb prompts and this screws
+            up the stdout strings with (pdb) prefixed to the line.
+        '''
+        import sys
+
+        self.install_init()
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'help', 'initopts']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        expected = [
+        'Templates: minimal, jinja2, classic, responsive, devel',
+        'Back ends: anydbm, sqlite'
+        ]
+        print(out)
+        self.assertTrue(expected[0] in out)
+        self.assertTrue("Back ends:" in out)
+
     def testSet(self):
         ''' Note the tests will fail if you run this under pdb.
             the context managers capture the pdb prompts and this screws
@@ -581,7 +618,8 @@ class AdminTest(object):
 
         self.admin=AdminTool()
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', self.dirname, 'set', 'issue2', 'tile="new title"']
+            sys.argv=['main', '-i', self.dirname, 'set', 'issue2',
+                      'tile="new title"']
             ret = self.admin.main()
 
         expected_err = "Error: 'tile' is not a property of issue"
@@ -591,6 +629,133 @@ class AdminTest(object):
         self.assertEqual(out.index(expected_err), 0)
         self.assertEqual(len(err), 0)
 
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'set', 'issue2']
+            ret = self.admin.main()
+
+        expected_err = "Error: Not enough arguments supplied"
+
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(out.index(expected_err), 0)
+        self.assertEqual(len(err), 0)
+
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'set',
+                      'issue2,issue1,issue', "status=1" ]
+            ret = self.admin.main()
+
+        expected_err = 'Error: "issue" not a node designator'
+
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(out.index(expected_err), 0)
+        self.assertEqual(len(err), 0)
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'set',
+                      'issue2,issue1,user2', "status=1" ]
+            ret = self.admin.main()
+
+        expected_err = "Error: 'status' is not a property of user"
+
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        print(out)
+        print(expected_err)
+        print(err)
+        self.assertEqual(out.index(expected_err), 0)
+        self.assertEqual(len(err), 0)
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'set',
+                      'issue2,issue1,issue1000', "status=1" ]
+            ret = self.admin.main()
+
+        expected_err = 'Error: no such issue 1000'
+
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(out.index(expected_err), 0)
+        self.assertEqual(len(err), 0)
+
+    def testSetOnClass(self):
+        ''' Note the tests will fail if you run this under pdb.
+            the context managers capture the pdb prompts and this screws
+            up the stdout strings with (pdb) prefixed to the line.
+        '''
+        import sys
+
+        self.install_init()
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'create', 'issue',
+                      'title="foo bar"', 'assignedto=admin' ]
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, '1')
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'create', 'issue',
+                      'title="bar foo bar"', 'assignedto=anonymous' ]
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, '2')
+
+        # Run this test in a separate test.
+        # It can cause a database timeout/resource
+        # unavailable error for anydbm when run with other tests.
+        # Not sure why.
+        # Set assignedto=2 for all issues
+        ## verify that issue 1 and 2 are assigned to user1 and user2
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'table', 'issue',
+            'assignedto']
+            ret = self.admin.main()
+
+        expected = "Assignedto\n1         \n2"
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(out, expected)
+        self.assertEqual(len(err), 0)
+        self.admin=AdminTool()
+        # do the set
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'set', 'issue',
+            'assignedto=2']
+            ret = self.admin.main()
+
+        expected_err = ""
+
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(len(out), 0)
+        self.assertEqual(len(err), 0)
+
+        ## verify that issue 1 and 2 are assigned to user2 and user2
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'table', 'issue',
+            'assignedto']
+            ret = self.admin.main()
+
+        expected = "Assignedto\n2         \n2"
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(out, expected)
+        self.assertEqual(len(err), 0)
 
     def testSpecification(self):
         ''' Note the tests will fail if you run this under pdb.
@@ -621,6 +786,124 @@ class AdminTest(object):
         outlist = out.getvalue().strip().split("\n")
         print(outlist)
         self.assertEqual(sorted(outlist), sorted(spec))
+
+    def testTable(self):
+        ''' Note the tests will fail if you run this under pdb.
+            the context managers capture the pdb prompts and this screws
+            up the stdout strings with (pdb) prefixed to the line.
+        '''
+        import sys
+
+        self.install_init()
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'table' ]
+            ret = self.admin.main()
+
+        expected = 'Error: Not enough arguments supplied'
+
+        out = out.getvalue().strip()
+        print(out)
+        print(expected)
+        self.assertTrue(expected in out)
+        ####
+
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'table', 
+                      'id,realname,username' ]
+            ret = self.admin.main()
+
+        expected = 'Error: no such class "id,realname,username"'
+
+        out = out.getvalue().strip()
+        print(out)
+        print(expected)
+        self.assertTrue(expected in out)
+
+        ####
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'table', 'user',
+                      'id,realname,username:4:3' ]
+            ret = self.admin.main()
+        expected = 'Error: "username:4:3" not name:width'
+
+        out = out.getvalue().strip()
+        print(out)
+        print(expected)
+        self.assertTrue(expected in out)
+ 
+        ####
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'table', 'user',
+                      'id,realname,title:4' ]
+            ret = self.admin.main()
+        expected = 'Error: user has no property "title"'
+
+        out = out.getvalue().strip()
+        print(out)
+        print(expected)
+        self.assertTrue(expected in out)
+ 
+        ####
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'table', 'user',
+                      'id,realname,username:' ]
+            ret = self.admin.main()
+
+        # note whitespace matters. trailing spaces on lines 1 and 2
+        expected = """Id Realname Username
+1  None     admin   
+2  None     anonymou"""
+
+        out = out.getvalue().strip()
+        print(out)
+        print(expected)
+        self.assertEqual(out, expected)
+
+        ####
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'table', 'user',
+                      'id,realname,username' ]
+            ret = self.admin.main()
+
+        # note whitespace matters. trailing spaces on lines 1 and 2
+        expected = """Id Realname Username 
+1  None     admin    
+2  None     anonymous"""
+
+        out = out.getvalue().strip()
+        print(out)
+        print(expected)
+        self.assertEqual(out, expected)
+
+        ####
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'table', 'user',
+                      'id:4,realname:2,username:3' ]
+            ret = self.admin.main()
+
+        # note whitespace matters. trailing spaces on lines 1 and 2
+        expected = """Id   Realname Username
+1    No adm
+2    No ano"""
+
+        out = out.getvalue().strip()
+        print(out)
+        print(expected)
+        self.assertEqual(out, expected)
 
 
 class anydbmAdminTest(AdminTest, unittest.TestCase):
