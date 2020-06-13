@@ -660,10 +660,13 @@ Erase it? Y/N: """))
         A designator is a classname and a nodeid concatenated,
         eg. bug1, user10, ...
 
-        This command sets the properties to the values for all designators
-        given. If the value is missing (ie. "property=") then the property
-        is un-set. If the property is a multilink, you specify the linked
-        ids for the multilink as comma-separated numbers (ie "1,2,3").
+        This command sets the properties to the values for all
+        designators given. If a class is used, the property will be
+        set for all items in the class. If the value is missing
+        (ie. "property=") then the property is un-set. If the property
+        is a multilink, you specify the linked ids for the multilink
+        as comma-separated numbers (ie "1,2,3").
+
         """
         import copy  # needed for copying props list
 
@@ -711,7 +714,6 @@ Erase it? Y/N: """))
             try:
                 cl.set(itemid, **props)
             except (TypeError, IndexError, ValueError) as message:
-                import traceback; traceback.print_exc()
                 raise UsageError(message)
         self.db_uncommitted = True
         return 0
@@ -1073,9 +1075,15 @@ Erase it? Y/N: """))
             if ':' in spec:
                 name, width = spec.split(':')
                 if width == '':
-                    props.append((name, len(spec)))
+                    # spec includes trailing :, use label/name width 
+                    props.append((name, len(name)))
                 else:
-                    props.append((name, int(width)))
+                    try:
+                        props.append((name, int(width)))
+                    except ValueError:
+                        raise UsageError(_('"%(spec)s" does not have an '
+                                           'integer width: "%(width)s"') %
+                                         locals())
             else:
                 # this is going to be slow
                 maxlen = len(spec)
@@ -1083,7 +1091,7 @@ Erase it? Y/N: """))
                     curlen = len(str(cl.get(nodeid, spec)))
                     if curlen > maxlen:
                         maxlen = curlen
-                    props.append((spec, maxlen))
+                props.append((spec, maxlen))
 
         # now display the heading
         print(' '.join([name.capitalize().ljust(width)
