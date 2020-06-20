@@ -7,13 +7,14 @@
 from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
-import sys, os, keyword, linecache, tokenize, inspect, cgi
+import sys, os, keyword, linecache, tokenize, inspect
 import pydoc, traceback
 
 from roundup.anypy.html import html_escape
 
-from roundup.cgi import templating, TranslationService
+from roundup.cgi import TranslationService
 from roundup.anypy.strings import s2b
+
 
 def get_translator(i18n=None):
     """Return message translation function (gettext)
@@ -30,31 +31,34 @@ def get_translator(i18n=None):
     """
     try:
         return i18n.gettext
-    except:
+    except AttributeError:
         return TranslationService.get_translation().gettext
+
 
 def breaker():
     return ('<body bgcolor="white">' +
             '<font color="white" size="-5"> > </font> ' +
             '</table>' * 5)
 
+
 def niceDict(indent, dict):
     l = []
     for k in sorted(dict):
         v = dict[k]
-        l.append('<tr><td><strong>%s</strong></td><td>%s</td></tr>'%(k,
+        l.append('<tr><td><strong>%s</strong></td><td>%s</td></tr>' % (k,
             html_escape(repr(v))))
     return '\n'.join(l)
+
 
 def pt_html(context=5, i18n=None):
     _ = get_translator(i18n)
     esc = html_escape
     exc_info = [esc(str(value)) for value in sys.exc_info()[:2]]
     l = [_('<h1>Templating Error</h1>\n'
-            '<p><b>%(exc_type)s</b>: %(exc_value)s</p>\n'
-            '<p class="help">Debugging information follows</p>'
-         ) % {'exc_type': exc_info[0], 'exc_value': exc_info[1]},
-         '<ol>',]
+           '<p><b>%(exc_type)s</b>: %(exc_value)s</p>\n'
+           '<p class="help">Debugging information follows</p>'
+           ) % {'exc_type': exc_info[0], 'exc_value': exc_info[1]},
+         '<ol>', ]
     from roundup.cgi.PageTemplates.Expressions import TraversalError
     t = inspect.trace(context)
     t.reverse()
@@ -66,11 +70,11 @@ def pt_html(context=5, i18n=None):
                 s = []
                 for name, info in ti.path:
                     s.append(_('<li>"%(name)s" (%(info)s)</li>')
-                        % {'name': name, 'info': esc(repr(info))})
+                             % {'name': name, 'info': esc(repr(info))})
                 s = '\n'.join(s)
                 l.append(_('<li>Looking for "%(name)s", '
-                    'current path:<ol>%(path)s</ol></li>'
-                ) % {'name': ti.name, 'path': s})
+                           'current path:<ol>%(path)s</ol></li>'
+                          ) % {'name': ti.name, 'path': s})
             else:
                 l.append(_('<li>In %s</li>') % esc(str(ti)))
         if '__traceback_supplement__' in locals:
@@ -82,7 +86,7 @@ def pt_html(context=5, i18n=None):
                 if context._v_errors:
                     s = s + '<br>' + '<br>'.join(
                         [esc(x) for x in context._v_errors])
-                l.append('<li>%s</li>'%s)
+                l.append('<li>%s</li>' % s)
             elif len(ts) == 3:
                 supp, context, info = ts
                 l.append(_('''
@@ -110,6 +114,7 @@ def pt_html(context=5, i18n=None):
     l.append('<p>&nbsp;</p>')
     return '\n'.join(l)
 
+
 def html(context=5, i18n=None):
     _ = get_translator(i18n)
     etype, evalue = sys.exc_info()[0], sys.exc_info()[1]
@@ -122,16 +127,16 @@ def html(context=5, i18n=None):
         '#ffffff', '#777777', pyver)
 
     head = head + (_('<p>A problem occurred while running a Python script. '
-                   'Here is the sequence of function calls leading up to '
-                   'the error, with the most recent (innermost) call first. '
-                   'The exception attributes are:'))
+                     'Here is the sequence of function calls leading up to '
+                     'the error, with the most recent (innermost) call first. '
+                     'The exception attributes are:'))
 
     indent = '<tt><small>%s</small>&nbsp;</tt>' % ('&nbsp;' * 5)
     traceback = []
     for frame, file, lnum, func, lines, index in inspect.trace(context):
         if file is None:
             link = _("&lt;file is None - probably inside <tt>eval</tt> "
-                "or <tt>exec</tt>&gt;")
+                     "or <tt>exec</tt>&gt;")
         else:
             file = os.path.abspath(file)
             link = '<a href="file:%s">%s</a>' % (file, pydoc.html.escape(file))
@@ -139,9 +144,10 @@ def html(context=5, i18n=None):
         if func == '?':
             call = ''
         else:
-            call = _('in <strong>%s</strong>') % func + inspect.formatargvalues(
-                    args, varargs, varkw, locals,
-                    formatvalue=lambda value: '=' + pydoc.html.repr(value))
+            call = _('in <strong>%s</strong>') % \
+                   func + inspect.formatargvalues(
+                       args, varargs, varkw, locals,
+                       formatvalue=lambda value: '=' + pydoc.html.repr(value))
 
         level = '''
 <table width="100%%" bgcolor="#dddddd" cellspacing=0 cellpadding=2 border=0>
@@ -153,11 +159,13 @@ def html(context=5, i18n=None):
 
         # do a file inspection
         names = []
+
         def tokeneater(type, token, start, end, line, names=names):
             if type == tokenize.NAME and token not in keyword.kwlist:
                 if token not in names:
                     names.append(token)
             if type == tokenize.NEWLINE: raise IndexError
+
         def linereader(file=file, lnum=[lnum]):
             line = s2b(linecache.getline(file, lnum[0]))
             lnum[0] = lnum[0] + 1
@@ -192,11 +200,11 @@ def html(context=5, i18n=None):
                 else:
                     value = _('<em>undefined</em>')
                 name = '<em>global</em> <strong>%s</strong>' % name
-            lvals.append('%s&nbsp;= %s'%(name, value))
+            lvals.append('%s&nbsp;= %s' % (name, value))
         if lvals:
             lvals = ', '.join(lvals)
             lvals = indent + '<small><font color="#909090">%s'\
-                '</font></small><br>'%lvals
+                '</font></small><br>' % lvals
         else:
             lvals = ''
 
@@ -225,6 +233,7 @@ def html(context=5, i18n=None):
         attribs.append('<br>%s%s&nbsp;= %s' % (indent, name, value))
 
     return head + ' '.join(attribs) + ' '.join(traceback) + '<p>&nbsp;</p>'
+
 
 def handler():
     print(breaker())
