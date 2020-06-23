@@ -1364,7 +1364,7 @@ allows the request to pass the CSRF protection mechanism. You may need
 to add an Origin header if this check is enabled in your tracker's
 config.ini (look for csrf_enforce_header_origin).
 
-A similar curl based retire example is to use:
+A similar curl based retire example is to use::
 
        curl -s -u admin:admin \
         -H "Referer: https://tracker.example.com/demo/" \
