@@ -50,9 +50,12 @@ you can merge this into your ``config.ini``.  If you are
 installing a new tracker with ``roundup-admin ... install`` the
 ``secret_key`` value is automatically set to some random value.
 
-If ``secret_key`` is not set, the etag value returned by a REST
-call will be change on every call even though the item has not
-changed.
+If ``secret_key`` is not set, the etag value returned by a REST call
+will changed on every call even though the item has not changed. This
+means users will be unable to submit changes using the rest
+interface. (Note, if you run roundup in a persistent mode: server,
+wsgi, mod_python, the etag will change on every restart if not
+explicitly set.)
 
 .. _upgrading directions: upgrading.html
 
