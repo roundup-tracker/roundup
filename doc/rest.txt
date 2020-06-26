@@ -84,7 +84,7 @@ first second and then get one call back every second. With
 ``api_calls_per_interval = 60`` and ``api_interval_in_sec = 3600`` (1
 hour) they can use all 60 calls in the first second and they get one
 additional call every 10 seconds. ``api_calls_per_interval`` is the
-burst rate that you are willing to allow within `api_interval_in_sec``
+burst rate that you are willing to allow within ``api_interval_in_sec``
 seconds. The average rate of use is the ratio of
 ``api_calls_per_interval/api_interval_in_sec``. So you can have many
 values that permit one call per second on average: 1/1, 60/60,
@@ -134,7 +134,9 @@ Also if the user has exceeded the rate limit, this header is added:
 
 If the client has requested a deprecated API endpoint, the header:
 
-   **Sunset**: an http date after which the end point will not be available.
+   **Sunset**: an http date after which the end point will not be
+   available. This is not returned by current code, but can be used
+   when `Programming the REST API`_.
 
 will be returned. It should be used as a hint that the REST endpoint
 will be going away. See https://tools.ietf.org/html/rfc8594 for
