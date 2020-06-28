@@ -136,11 +136,10 @@ If the client has requested a deprecated API endpoint, the header:
 
    **Sunset**: an http date after which the end point will not be
    available. This is not returned by current code, but can be used
-   when `Programming the REST API`_.
-
-will be returned. It should be used as a hint that the REST endpoint
-will be going away. See https://tools.ietf.org/html/rfc8594 for
-details on this header and the sunset link type.
+   when `Programming the REST API`_. It should be used as a hint that
+   the REST endpoint will be going away. See
+   https://tools.ietf.org/html/rfc8594 for details on this header and
+   the sunset link type.
 
 Hyperdb Stats
 =============
@@ -235,9 +234,11 @@ well as a ``collections`` list of objects::
 available meta data is described in the documentation for the
 collections endpoint. 
 
-The ``link`` fields implement HATEOS by supplying a url for the
+The ``link`` fields implement `HATEOS`_ by supplying a url for the
 resource represented by that object. The "link" parameter with the
 value of a url is a special case of the @links parameter.
+
+.. _HATEOS: https://en.wikipedia.org/wiki/HATEOAS
 
 In the @links object, each relationship is a list of full link json
 objects.  These include rel (relationship) and uri properties. In the
