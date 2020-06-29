@@ -997,7 +997,14 @@ class Client:
         user = None
         # first up, try http authorization if enabled
         cfg = self.instance.config
-        if cfg.WEB_HTTP_AUTH:
+        if cfg.WEB_COOKIE_TAKES_PRECEDENCE:
+            user = self.session_api.get('user')
+            if user:
+                # update session lifetime datestamp
+                self.session_api.update()
+                if 'REMOTE_USER' in self.env:
+                    del self.env['REMOTE_USER']
+        if not user and cfg.WEB_HTTP_AUTH:
             if 'REMOTE_USER' in self.env:
                 # we have external auth (e.g. by Apache)
                 user = self.env['REMOTE_USER']

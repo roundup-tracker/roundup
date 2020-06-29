@@ -731,11 +731,10 @@ SETTINGS = (
             "admin role may see these history entries, you can make them\n"
             "visible to all users by adding, e.g., the 'User' role here."),
         (Option, "error_messages_to", "user",
-            # XXX This description needs better wording,
-            #   with explicit allowed values list.
-            "Send error message emails to the dispatcher, user, or both?\n"
-            "The dispatcher is configured using the DISPATCHER_EMAIL"
-            " setting."),
+            'Send error message emails to the "dispatcher", "user", '
+            'or "both" (these are the allowed values)?\n'
+            'The dispatcher is configured using the DISPATCHER_EMAIL'
+            ' setting.'),
         (Option, "html_version", "html4",
             "HTML version to generate. The templates are html4 by default.\n"
             "If you wish to make them xhtml, then you'll need to change this\n"
@@ -841,6 +840,16 @@ SETTINGS = (
             "addition this is compatible with Active Directory which\n"
             "stores the username with realm as UserPrincipalName in\n"
             "lowercase."),
+        (BooleanOption, 'cookie_takes_precedence', "no",
+            "If the http_auth option is in effect (see above)\n"
+            "we're accepting a REMOTE_USER variable resulting from\n"
+            "an authentication mechanism implemented in the web-server,\n"
+            "e.g., Kerberos login or similar. To override the mechanism\n"
+            "provided by the web-server (e.g. for enabling sub-login as\n"
+            "another user) we tell roundup that the cookie takes\n"
+            "precedence over a REMOTE_USER or HTTP_AUTHORIZATION\n"
+            "variable. So if both, a cookie and a REMOTE_USER is\n"
+            "present, the cookie wins.\n"),
         (IntegerNumberGeqZeroOption, 'login_attempts_min', "3",
             "Limit login attempts per user per minute to this number.\n"
             "By default the 4th login attempt in a minute will notify\n"

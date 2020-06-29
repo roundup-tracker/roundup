@@ -57,6 +57,12 @@ Features:
   variable. (John Rouillard)
 - New roundup-admin command importtables allows importing just the
   database dump created by exporttables. (John Rouillard)
+- New config-option 'cookie_takes_precedence' in the [web] section. This
+  allows sub-logins (e.g. without a password given a specific role) even
+  when a non-cookie login mechanism (like Kerberos) is in use. With that
+  mechanism e.g., a Kerberos ticket will not take precedence over an
+  existing cookie. This might become the default in the future and the
+  new option might go away.
 
 2020-04-05 2.0.0 beta 0
 
