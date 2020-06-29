@@ -29,8 +29,97 @@ Migrating from 1.6.X to 2.0.0
 
 .. index:: roundup-admin; updateconfig subcommand
 
+
+Python 2 MYSQL users MUST READ
+------------------------------
+
+To fix issues with encoding of data and text searching, roundup now
+explicitly sets the database connection character set. Roundup prior
+to 2.0 used the default character set which was not always utf-8. All
+roundup data is manipulated in utf-8. This mismatch causes issues with
+searches and result in corrupted data in the database if it was not
+properly represented across the charset conversions.
+
+This issue exists when running roundup under python 2. Note that there
+are more changes required for running roundup 2.0 if you choose to use
+python3. See `Python 3 support`_.
+
+In an upgraded ``config.ini`` (see next section) the ``[rdbms]``
+section has a key ``mysql_charset`` set by default to ``utf-8``.
+
+It should be possible to change utf-8 to any mysql charset. So if you
+know what charset is enabled (e.g. via a setting in ~roundup/.my.cnf,
+or the default charset for the database) you can set it in
+``config.ini`` and not need to covert the database. However the
+underlying issues with misconverted data and bad searches will still
+exist if they did before.
+
+None of the roundup developers run mysql, so the exact steps to take
+during the upgrade were tested with test and not production databases.
+
+**Before doing anything else:**
+
+   Backup the mysql database using mysql dump or other mysql
+   supported tool.
+
+   Backup roundup using your current backup tool and take the roundup
+   instance offline.
+
+Then the following steps (similar to the conversion in needed for
+Python 3) should work:
+
+1. Export the tracker database
+   using your **current** 1.6 instance::
+
+     roundup-admin -i <trackerdir> exporttables <export_dir>
+
+   replacing tracker_dir and export_dir as appropriate.
+
+2. Import the exported database using the **new** 2.0 roundup::
+
+     roundup-admin -i <trackerdir> importtables <export_dir>
+
+   replacing tracker_dir and export_dir as appropriate.
+
+The imported data should overwrite the original data. Note it is
+critically important that the ``exporttables`` be done with the *old
+tracker* and the ``importtables`` be done with the *new tracker*. An
+import/export cycle between roundup 1.6.0 and roundup 2.0 has been
+done successfully. So the export format for 1.6 and 2.0 should be
+compatible.
+
+Note that ``importtables`` is new in roundup-2.0, so you will not be
+able to import the result of ``exporttables`` using any 1.x version of
+roundup.
+
+Following the same sequence as above using ``export`` and ``import``
+should also work, but it will export all the files and messages. This
+will take longer but may be worth trying if the ``exporttables`` and
+``importtables`` method fails for some reason.
+
+Another way that should be faster, but is untested is to use mysql
+dump to dump the database.
+https://makandracards.com/makandra/595-dumping-and-importing-from-to-mysql-in-an-utf-8-safe-way
+recommends::
+
+   Note that when your MySQL server is not set to UTF-8 you need to do
+   mysqldump --default-character-set=latin1 (!) to get a correctly
+   encoded dump. In that case you will also need to remove the SET
+   NAMES='latin1' comment at the top of the dump, so the target machine
+   won't change its UTF-8 charset when sourcing.
+
+Then import the dump. Removing ``SET NAMES`` should allow the import
+to use UTF-8.
+
+Please report success or issues with this conversion to the
+roundup-users AT lists.sourceforge.net mailing list.
+
+As people report successful or unsuccessful conversions, we will update
+the errata page at: https://wiki.roundup-tracker.org/ReleaseErrata.
+
 Upgrade tracker's config.ini file
---------------------------------------
+---------------------------------
+
 Once you have installed the new roundup, use::
 
   roundup-admin -i /path/to/tracker updateconfig newconfig.ini
