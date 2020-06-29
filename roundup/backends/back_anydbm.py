@@ -340,8 +340,16 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         try:
             dbm = __import__(db_type)
         except ImportError:
-            raise hyperdb.DatabaseError(_("Couldn't open database - the "
-                "required module '%s' is not available")%db_type)
+            if db_type == 'gdbm':
+                try:
+                    dbm = __import__('dbm.gnu')
+                except ImportError:
+                    raise hyperdb.DatabaseError(_(
+                        "Couldn't open database - the required module '%s' "
+                        "(as dbm.gnu) is not available")%db_type)
+            else:
+                raise hyperdb.DatabaseError(_("Couldn't open database - the "
+                             "required module '%s' is not available")%db_type)
         if __debug__:
             logging.getLogger('roundup.hyperdb.backend').debug(
                 "opendb %r.open(%r, %r)"%(db_type, path, mode))
