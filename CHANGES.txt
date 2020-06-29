@@ -65,6 +65,11 @@ Features:
   mechanism e.g., a Kerberos ticket will not take precedence over an
   existing cookie. This might become the default in the future and the
   new option might go away.
+- Add data attributes to classhelp templating code. This provides
+  a method to allow classhelp to work if there is a
+  Content-Security-Policy implemented by the roundup admin that uses
+  the client_nonce. See:
+  https://wiki.roundup-tracker.org/AddingContentSecurityPolicy for details.
 
 2020-04-05 2.0.0 beta 0
 

@@ -863,8 +863,9 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
                    group, sort, pagesize, filter)
         onclick = "javascript:help_window('%s', '%s', '%s');return false;" % \
                   (help_url, width, height)
-        return '<a class="classhelp" href="%s" onclick="%s" %s>%s</a>' % \
-               (help_url, onclick, self.cgi_escape_attrs(**html_kwargs),
+        return '<a class="classhelp" data-helpurl="%s" data-width="%s" data-height="%s" href="%s" onclick="%s" %s>%s</a>' % \
+               (help_url, width, height,
+                help_url, onclick, self.cgi_escape_attrs(**html_kwargs),
                 self._(label))
 
     def submit(self, label=''"Submit New Entry", action="new", html_kwargs={}):
@@ -2160,9 +2161,16 @@ class DateHTMLProperty(HTMLProperty):
             date = "&date=%s"%self._value
         else :
             date = ""
-        return ('<a class="classhelp" href="javascript:help_window('
+
+        data_attr = {
+            "data-calurl": '%s?@template=calendar&amp;property=%s&amp;form=%s%s' % (self._classname, self._name, form, date),
+            "data-width": width,
+            "data-height": height
+        }
+        
+        return ('<a class="classhelp" %s href="javascript:help_window('
             "'%s?@template=calendar&amp;property=%s&amp;form=%s%s', %d, %d)"
-            '">%s</a>'%(self._classname, self._name, form, date, width,
+            '">%s</a>'%(self.cgi_escape_attrs(**data_attr),self._classname, self._name, form, date, width,
             height, label))
 
 class IntervalHTMLProperty(HTMLProperty):
