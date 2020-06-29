@@ -55,6 +55,8 @@ Features:
 - New parameter @stats for REST interface that provides the same
   performance stats as the web interface's CGI_SHOW_TIMING env
   variable. (John Rouillard)
+- New roundup-admin command importtables allows importing just the
+  database dump created by exporttables. (John Rouillard)
 
 2020-04-05 2.0.0 beta 0
 

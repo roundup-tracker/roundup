@@ -1345,7 +1345,7 @@ Erase it? Y/N: """))
         """
         return self.do_export(args, export_files=False)
 
-    def do_import(self, args):
+    def do_import(self, args, import_files=True):
         ''"""Usage: import import_dir
         Import a database from the directory containing CSV files,
         two per class to import.
@@ -1403,7 +1403,7 @@ Erase it? Y/N: """))
 
                 # do the import and figure the current highest nodeid
                 nodeid = cl.import_list(file_props, r)
-                if hasattr(cl, 'import_files'):
+                if hasattr(cl, 'import_files') and import_files:
                     cl.import_files(dir, nodeid)
                 maxid = max(maxid, int(nodeid))
 
@@ -1426,6 +1426,13 @@ Erase it? Y/N: """))
 
         self.db_uncommitted = True
         return 0
+
+    def do_importtables(self, args):
+        ''"""Usage: importtables export_dir
+
+        This imports the database tables exported using exporttables.
+        """
+        return self.do_import(args, import_files=False)
 
     def do_pack(self, args):
         ''"""Usage: pack period | date
