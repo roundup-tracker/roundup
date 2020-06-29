@@ -28,6 +28,8 @@ Fixed:
 - issue2551084 - Fix inefficiency in roundup-admin. Streamline code and
   bring in line with 2.7 and newer python functionality. (Patch by Tom
   Ekberg (tekberg); John Rouillard)
+- provide fallback for import gdbm under python3. If gdbm import
+  fails, try import of dbm.gnu. (John Rouillard)
 
 Features:
 
