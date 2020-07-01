@@ -128,6 +128,17 @@ The new nodes are added to the existing database - if you want to
 create a new database using the imported data, then create a new
 database (or, tediously, retire all the old data). See also export.
 .TP
+\fBimporttables\fP \fIimport_dir\fP
+Import a database from the directory containing CSV files,
+two per class to import.
+
+The imported nodes will have the same nodeid as defined in the
+import file, thus replacing any existing content.
+
+This only imports database tables. It does not import files/message
+content.  It is used to import data exported by exporttables. See also
+exporttables.
+.TP
 \fBinitialise\fP \fI[adminpw]\fP
 Initialise a new Roundup tracker.
 
