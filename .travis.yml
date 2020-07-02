@@ -1,3 +1,5 @@
+os: linux
+
 language: python
 
 cache: pip
@@ -23,12 +25,9 @@ branches:
 dist:
  - xenial
 
-matrix:
+jobs:
     allow_failures:  # nightly not ready for prime time yet.
-      - 3.8
-      - nightly
-
-sudo: false
+      - python: nightly
 
 addons:
   apt:
