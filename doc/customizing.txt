@@ -1363,7 +1363,7 @@ path in the tracker's `config.ini`. In the example above:
   * a css file (e.g. @@file/style.css) will be cached for an hour
   * javascript files (e.g. @@file/libraries/jquery.js) will be cached
     for 30 seconds
-  * a file named rss.xml will be cached for 5 minutes
+  * a file named rss.xml will be cached for 15 minutes
   * a file named local.js will be cached for 2 hours
 
 Note that a file name match overrides the mime type settings.
