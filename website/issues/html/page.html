@@ -7,7 +7,8 @@
 <link rel="stylesheet" type="text/css" href="@@file/style.css" />
 <meta http-equiv="Content-Type"
  tal:attributes="content string:text/html;; charset=${request/client/charset}" />
-<script tal:replace="structure request/base_javascript">
+<script tal:attributes="nonce request/client/client_nonce"
+	tal:replace="structure request/base_javascript">
 </script>
 <metal:x define-slot="more-javascript" />
 
@@ -362,7 +363,9 @@ current user is allowed to edit.
 
 See user.item.html in the classic template for examples.
 -->
-<script metal:define-macro="user_utils" type="text/javascript" src="@@file/user_utils.js"></script>
+<script metal:define-macro="user_utils" type="text/javascript"
+	src="@@file/user_utils.js"
+	tal:attributes="nonce request/client/client_nonce"></script>
 
 <!-- src: value will be re-used for other input fields -->
 <input metal:define-macro="user_src_input"

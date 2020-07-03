@@ -13,6 +13,7 @@ field request/form/property/value">
        tal:content="property" i18n:translate="" /> help - <span i18n:name="tracker"
 	       tal:replace="config/TRACKER_NAME" /></tal:x></title>
       <script language="Javascript" type="text/javascript"
+	      tal:attributes="nonce request/client/client_nonce"
 	      tal:condition=false
           tal:content="structure string:<!--
           // this is the name of the field in the original form that we're working on
@@ -21,7 +22,8 @@ field request/form/property/value">
           //-->">
       </script>
       <script src="@@file/help_controls.js"
-     tal:condition=false type="text/javascript"><!--
+	      tal:attributes="nonce request/client/client_nonce"
+	      tal:condition=false type="text/javascript"><!--
       //--></script>
       </tal:block>
   </head>
