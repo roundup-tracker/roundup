@@ -1455,4 +1455,4 @@ from installation and scripts.
 .. _Psycopg: http://initd.org/psycopg/
 .. _pysqlite: https://pysqlite.org/
 .. _`adding MySQL users`:
-    https://dev.mysql.com/doc/refman/8.0/en/adding-users.html
+    https://dev.mysql.com/doc/refman/8.0/en/creating-accounts.html
