@@ -73,7 +73,7 @@ http://web.archive.org/web/20140618231150/http://sourceforge.net/apps/trac/sourc
     vim logbuch.txt
 
 If you get a "not trusting" error the problem is that the .hg files in
-use are not owned by you and hg won;t use them. Add this to your
+use are not owned by you and hg won't use them. Add this to your
 ~/.hgrc file (create file if needed)
 
 [trusted]
