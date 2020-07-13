@@ -10,19 +10,17 @@ command-line, web and e-mail interfaces.  It is based on the winning
 design from Ka-Ping Yee in the Software Carpentry "Track" design
 competition.
 
-The current experimental version is `2.0.0beta0
-<https://pypi.org/project/roundup/2.0.0beta0/>`_ which has `its own
-set of docs`_. Read the :doc:`announcement for the new features
-<docs/announcement>`. These features include:
+The current stable version of Roundup is 2.0.0 which has quite a
+comprehensive :doc:`feature set <docs/features>` compared to the last
+stable release (v1.6.1). These features include:
 
    * Python 2 and Python 3 support
    * a new REST interface
    * updates to jinja2 templates including security improvements
 
-The current stable version of Roundup is 1.6.1 which has quite a
-comprehensive :doc:`feature set <docs/features>`.  For more
-information see the :doc:`design overview <docs/design>`, and all the
-other :doc:`documentation <docs>`. Roundup has been deployed for:
+For more information see the :doc:`design overview <docs/design>`, and
+all the other :doc:`documentation <docs>`. Roundup has been deployed
+for:
 
     * bug tracking and TODO list management (the classic installation)
     * customer help desk support (with a wizard for the phone answerers, linking to networking, 

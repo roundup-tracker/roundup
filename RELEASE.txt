@@ -37,13 +37,14 @@ Roundup release checklist:
     Check that metadata is valid and long descriptions is proper reST:
       python setup.py check --restructuredtext --metadata --strict
 6.  Clean out all *.orig, *.rej, .#* files from the source.
+6a. Rebuild .mo translation files in distribution - cd locale; make
 7.  Remove previous build files
       python setup.py clean --all
-    Rebuild
+      rm -rf build/share  # deletes locale .mo files
+    Rebuild and install .mo files
       python setup.py build  (sdist generation will fail if this isn't done)
 8.  Rebuild documentation in "share/doc/roundup/html"
       python setup.py build_doc
-8a. Rebuild .mo translation files in distribution - cd locale; make
 9.  python setup.py sdist --manifest-only
 10. Check the MANIFEST to make sure that any new files are included.
       (use hg status --rev <last release or tag>:tip to list changed
@@ -54,7 +55,7 @@ Roundup release checklist:
       do echo $i; grep "$i" MANIFEST; done | uniq -c
 
     Anything with a count of 1 is not in the manifest.
-    If they are missing files that should be in the manifest,
+    If there are missing files that should be in the manifest,
     edit MANIFEST.in to include them. For format docs see
     http://docs.python.org/2/distutils/sourcedist.html#manifest-template
     (Notes files for the website and issue tracker shouldn't be in the

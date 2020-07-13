@@ -1,14 +1,17 @@
-I'm proud to release version 2.0.0beta0 of the Roundup issue tracker
+I'm proud to release version 2.0.0 of the Roundup issue tracker
 which has been possible due to the help of several contributors. This
 release contains some major changes, so make sure to read
 `docs/upgrading.txt
-<http://www.roundup-tracker.org/dev-docs/upgrading.html>`_ to bring
-your tracker up to date. The changes, as usual, include some new
-features and many bug fixes.
+<http://www.roundup-tracker.org/docs/upgrading.html>`_ to bring
+your tracker up to date.
+
+There are special directions for those using mysql backend.
+
+The changes, as usual, include some new features and many bug fixes.
 
 You can download it with:
 
-   pip download roundup==2.0.0beta0
+   pip download roundup
 
 then unpack and test/install the tarball.
 
@@ -37,35 +40,13 @@ Among the notable improvements from the 1.6.1 release are:
    autoescape and translation library. Support for messages
    written in markdown added. SimpleMDE used as markdown editor to
    provide preview features. Thanks to Christof Meerwald.
-   
+
+   Fixes to mysql indexing may require a database dump/restore.
+
 The file CHANGES.txt has a detailed list of feature additions and bug
 fixes for each release. The most recent changes from there are at the
 end of this announcement.  Also see the information in
 doc/upgrading.txt.
-
-How You Can Help
-================
-
-We are looking for one or two front end developers to kick the tires
-on the rest interface. The rest interface is available by running
-demo.py as described below. If you are interested in helping please
-contact "rouilj+rit at ieee.org".
-
-The Zope deployment mode has not had any testing under Python 3. We
-are looking for community involvement to help get this deployment
-mode validated. It may also have issues under Python 2. If you are
-interested in helping with this please see:
-https://issues.roundup-tracker.org/issue2141835
-
-Email input using POP and IMAP modes need testing under Python 3
-and Python 2.
-
-We have new documentation for deploying with apache and mod_wsgi. It
-needs testing and enhancement.
-
-There are other documentation issues at:
-
-    https://issues.roundup-tracker.org/issue?@columns=title,id,activity,status&components=7&status=-1,1,2&@template=index&@action=search
 
 If you find bugs, please report them to issues AT roundup-tracker.org
 or create an account at https://issues.roundup-tracker.org and open a
