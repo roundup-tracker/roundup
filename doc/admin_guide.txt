@@ -300,7 +300,7 @@ Migrating Backends
    your tracker to disk. (If you are running on windows see
    `issue1441336 <https://issues.roundup-tracker.org/issue1441336>`_
    on how to use the command line rather than interactive mode to
-   exprt data.)
+   export data.)
 3. Copy the tracker home to a new directory.
 4. Delete the "db" directory from the new directory.
 5. Set the value of the ``backend`` key under the ``[database]``
