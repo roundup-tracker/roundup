@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.8.3\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2020-04-04 11:24-0400\n"
+"POT-Creation-Date: 2020-07-12 23:40-0400\n"
 "PO-Revision-Date: 2013-10-31 12:23+0100\n"
 "Last-Translator: Fred Lin <gasolin@gmail>\n"
 "Language-Team: Chinese Traditional <gasolin@gmail.com>\n"
@@ -30,19 +30,19 @@ msgid "You may not retire the admin or anonymous user"
 msgstr "你不能刪除管理員或匿名用戶"
 
 # ../roundup/admin.py:84 :943 :992 :1014
-#: ../roundup/admin.py:92 ../roundup/admin.py:1075 ../roundup/admin.py:1130
-#: ../roundup/admin.py:1157 ../roundup/admin.py:92:1075 :1130:1157
+#: ../roundup/admin.py:95 ../roundup/admin.py:1149 ../roundup/admin.py:1204
+#: ../roundup/admin.py:1231 ../roundup/admin.py:95:1149 :1204:1231
 #, python-format
 msgid "no such class \"%(classname)s\""
 msgstr "無此類別 \"%(classname)s\""
 
 # ../roundup/admin.py:94 :98
-#: ../roundup/admin.py:102 ../roundup/admin.py:106 ../roundup/admin.py:102:106
+#: ../roundup/admin.py:107
 #, python-format
 msgid "argument \"%(arg)s\" not propname=value"
 msgstr "參數 \"%(arg)s\" 不是 propname=value 的形式"
 
-#: ../roundup/admin.py:119
+#: ../roundup/admin.py:120
 #, python-format
 msgid ""
 "Problem: %(message)s\n"
@@ -51,7 +51,7 @@ msgstr ""
 "問題: %(message)s\n"
 "\n"
 
-#: ../roundup/admin.py:120
+#: ../roundup/admin.py:121
 #, fuzzy, python-format
 msgid ""
 "%(message)sUsage: roundup-admin [options] [<command> <arguments>]\n"
@@ -98,12 +98,12 @@ msgstr ""
 " roundup-admin help <command>             -- 命令詳解說明\n"
 " roundup-admin help all                   -- 所有可用的說明\n"
 
-#: ../roundup/admin.py:147
+#: ../roundup/admin.py:148
 #, fuzzy
 msgid "Commands: "
 msgstr "命令："
 
-#: ../roundup/admin.py:154
+#: ../roundup/admin.py:155
 msgid ""
 "Commands may be abbreviated as long as the abbreviation\n"
 "matches only one command, e.g. l == li == lis == list."
@@ -111,7 +111,7 @@ msgstr ""
 "命令可以被縮寫，只要縮寫只有一個命令可以匹配上，\n"
 "如：l == li == lis == list."
 
-#: ../roundup/admin.py:181
+#: ../roundup/admin.py:182
 msgid ""
 "\n"
 "All commands (except help) require a tracker specifier. This is just\n"
@@ -233,12 +233,12 @@ msgstr ""
 "\n"
 "使用說明：\n"
 
-#: ../roundup/admin.py:244
+#: ../roundup/admin.py:245
 #, python-format
 msgid "%s:"
 msgstr ""
 
-#: ../roundup/admin.py:249
+#: ../roundup/admin.py:250
 msgid ""
 "Usage: help topic\n"
 "        Give help about topic.\n"
@@ -315,13 +315,14 @@ msgstr ""
 
 # ../roundup/admin.py:359 :494 :573 :623 :676 :697 :725 :796 :863 :934 :982
 # :1004 :1031 :1093 :1159
-#: ../roundup/admin.py:378 ../roundup/admin.py:510 ../roundup/admin.py:584
-#: ../roundup/admin.py:673 ../roundup/admin.py:730 ../roundup/admin.py:788
-#: ../roundup/admin.py:813 ../roundup/admin.py:840 ../roundup/admin.py:913
-#: ../roundup/admin.py:980 ../roundup/admin.py:1059 ../roundup/admin.py:1120
-#: ../roundup/admin.py:1147 ../roundup/admin.py:1179 ../roundup/admin.py:1293
-#: ../roundup/admin.py:1374 ../roundup/admin.py:378:510:1059 :1120:1147
-#: :1179:1293:1374 :584:673 :730:788 :813:840 :913:980
+#: ../roundup/admin.py:378 ../roundup/admin.py:510 ../roundup/admin.py:583
+#: ../roundup/admin.py:674 ../roundup/admin.py:732 ../roundup/admin.py:792
+#: ../roundup/admin.py:851 ../roundup/admin.py:878 ../roundup/admin.py:905
+#: ../roundup/admin.py:980 ../roundup/admin.py:1047 ../roundup/admin.py:1133
+#: ../roundup/admin.py:1194 ../roundup/admin.py:1221 ../roundup/admin.py:1253
+#: ../roundup/admin.py:1369 ../roundup/admin.py:1456
+#: ../roundup/admin.py:378:510 :1047 :1133:1194 :1221:1253 :1369:1456 :583:674
+#: :732:792 :851:878 :905:980
 msgid "Not enough arguments supplied"
 msgstr "未提供足夠的參數"
 
@@ -399,8 +400,8 @@ msgstr ""
 #: ../roundup/admin.py:505
 msgid ""
 "Usage: genconfig <filename>\n"
-"        Generate a new tracker config file (ini style) with default values\n"
-"        in <filename>.\n"
+"        Generate a new tracker config file (ini style) with default\n"
+"        values in <filename>.\n"
 "        "
 msgstr ""
 
@@ -458,7 +459,7 @@ msgstr ""
 "如果你重新初始化它，所有的數據將會丟失！\n"
 "刪除它嗎？Y/N: "
 
-#: ../roundup/admin.py:574
+#: ../roundup/admin.py:573
 #, fuzzy
 msgid ""
 "Usage: get property designator[,designator]*\n"
@@ -478,24 +479,24 @@ msgstr ""
 "        "
 
 # ../roundup/admin.py:527 :542
-#: ../roundup/admin.py:617 ../roundup/admin.py:634 ../roundup/admin.py:617:634
+#: ../roundup/admin.py:616 ../roundup/admin.py:633 ../roundup/admin.py:616:633
 #, python-format
 msgid "property %s is not of type Multilink or Link so -d flag does not apply."
 msgstr "屬性 %s 不是 Multilink 或 Link 類型，所以 -d 標誌不能應用。"
 
 # ../roundup/admin.py:550 :945 :994 :1016
-#: ../roundup/admin.py:644 ../roundup/admin.py:1077 ../roundup/admin.py:1132
-#: ../roundup/admin.py:1159 ../roundup/admin.py:644:1077 :1132:1159
+#: ../roundup/admin.py:643 ../roundup/admin.py:1151 ../roundup/admin.py:1206
+#: ../roundup/admin.py:643:1151:1206
 #, python-format
 msgid "no such %(classname)s node \"%(nodeid)s\""
 msgstr "沒有這樣的 %(classname)s 結點 \"%(nodeid)s\""
 
-#: ../roundup/admin.py:647
+#: ../roundup/admin.py:646
 #, python-format
 msgid "no such %(classname)s property \"%(propname)s\""
 msgstr "沒有這樣的 %(classname)s 屬性 \"%(propname)s\""
 
-#: ../roundup/admin.py:656
+#: ../roundup/admin.py:654
 #, fuzzy
 msgid ""
 "Usage: set items property=value property=value ...\n"
@@ -507,11 +508,13 @@ msgid ""
 "        A designator is a classname and a nodeid concatenated,\n"
 "        eg. bug1, user10, ...\n"
 "\n"
-"        This command sets the properties to the values for all designators\n"
-"        given. If the value is missing (ie. \"property=\") then the "
-"property\n"
-"        is un-set. If the property is a multilink, you specify the linked\n"
-"        ids for the multilink as comma-separated numbers (ie \"1,2,3\").\n"
+"        This command sets the properties to the values for all\n"
+"        designators given. If a class is used, the property will be\n"
+"        set for all items in the class. If the value is missing\n"
+"        (ie. \"property=\") then the property is un-set. If the property\n"
+"        is a multilink, you specify the linked ids for the multilink\n"
+"        as comma-separated numbers (ie \"1,2,3\").\n"
+"\n"
 "        "
 msgstr ""
 "用法：set items property=value property=value ...\n"
@@ -527,6 +530,35 @@ msgstr ""
 "        "
 
 #: ../roundup/admin.py:722
+#, fuzzy
+msgid ""
+"Usage: filter classname propname=value ...\n"
+"        Find the nodes of the given class with a given property value.\n"
+"\n"
+"        Find the nodes of the given class with a given property value.\n"
+"        Multiple values can be specified by separating them with commas.\n"
+"        If property is a string, all values must match. I.E. it's an\n"
+"        'and' operation. If the property is a link/multilink any value\n"
+"        matches. I.E. an 'or' operation.\n"
+"        "
+msgstr ""
+"用法：find classname propname=value ...\n"
+"        根據給定的 link 屬性值來查找給定類型的結點。\n"
+"\n"
+"        根據給定的 link 屬性值來查找給定類型的結點。這個值或者是鏈接結點的結"
+"點ID，\n"
+"        或者是結點的鍵值。\n"
+"        "
+
+# ../roundup/admin.py:663 :816 :828 :882
+#: ../roundup/admin.py:777 ../roundup/admin.py:838 ../roundup/admin.py:1000
+#: ../roundup/admin.py:1012 ../roundup/admin.py:1067
+#: ../roundup/admin.py:777:838 :1000:1012:1067
+#, python-format
+msgid "%(classname)s has no property \"%(propname)s\""
+msgstr "%(classname)s 沒有 \"%(propname)s\" 屬性"
+
+#: ../roundup/admin.py:784
 msgid ""
 "Usage: find classname propname=value ...\n"
 "        Find the nodes of the given class with a given link property value.\n"
@@ -544,14 +576,7 @@ msgstr ""
 "        或者是結點的鍵值。\n"
 "        "
 
-# ../roundup/admin.py:663 :816 :828 :882
-#: ../roundup/admin.py:775 ../roundup/admin.py:933 ../roundup/admin.py:945
-#: ../roundup/admin.py:1000 ../roundup/admin.py:775:933 :945:1000
-#, python-format
-msgid "%(classname)s has no property \"%(propname)s\""
-msgstr "%(classname)s 沒有 \"%(propname)s\" 屬性"
-
-#: ../roundup/admin.py:782
+#: ../roundup/admin.py:845
 msgid ""
 "Usage: specification classname\n"
 "        Show the properties for a classname.\n"
@@ -565,27 +590,28 @@ msgstr ""
 "        會列出給定類型的屬性。\n"
 "        "
 
-#: ../roundup/admin.py:798
+#: ../roundup/admin.py:861
 #, fuzzy, python-format
 msgid "%(key)s: %(value)s (key property)\n"
 msgstr "%(key)s: %(value)s (關鍵屬性)"
 
-#: ../roundup/admin.py:800
+#: ../roundup/admin.py:864
 #, fuzzy, python-format
 msgid "%(key)s: %(value)s\n"
 msgstr "%(key)s: %(value)s (關鍵屬性)"
 
-#: ../roundup/admin.py:803
+#: ../roundup/admin.py:867
 #, fuzzy
 msgid ""
 "Usage: display designator[,designator]*\n"
+"\n"
 "        Show the property values for the given node(s).\n"
 "\n"
 "        A designator is a classname and a nodeid concatenated,\n"
 "        eg. bug1, user10, ...\n"
 "\n"
-"        This lists the properties and their associated values for the given\n"
-"        node.\n"
+"        This lists the properties and their associated values\n"
+"        for the given node.\n"
 "        "
 msgstr ""
 "用法：display designator[,designator]*\n"
@@ -594,12 +620,12 @@ msgstr ""
 "        將顯示給出結點的屬性和相應的值。\n"
 "        "
 
-#: ../roundup/admin.py:829
+#: ../roundup/admin.py:894
 #, python-format
 msgid "%(key)s: %(value)s"
 msgstr ""
 
-#: ../roundup/admin.py:832
+#: ../roundup/admin.py:897
 msgid ""
 "Usage: create classname property=value ...\n"
 "        Create a new entry of a given class.\n"
@@ -617,31 +643,31 @@ msgstr ""
 "name=value 參數。\n"
 "        "
 
-#: ../roundup/admin.py:860
+#: ../roundup/admin.py:925
 #, python-format
 msgid "%(propname)s (Password): "
 msgstr "%(propname)s (口令)："
 
-#: ../roundup/admin.py:862
+#: ../roundup/admin.py:928
 #, python-format
 msgid "   %(propname)s (Again): "
 msgstr "   %(propname)s (再次)："
 
-#: ../roundup/admin.py:864
+#: ../roundup/admin.py:931
 msgid "Sorry, try again..."
 msgstr "抱歉，再試一次..."
 
-#: ../roundup/admin.py:868
+#: ../roundup/admin.py:935
 #, python-format
 msgid "%(propname)s (%(proptype)s): "
 msgstr ""
 
-#: ../roundup/admin.py:886
+#: ../roundup/admin.py:953
 #, python-format
 msgid "you must provide the \"%(propname)s\" property."
 msgstr "你必須提供 \"%(propname)s\" 屬性。"
 
-#: ../roundup/admin.py:898
+#: ../roundup/admin.py:965
 msgid ""
 "Usage: list classname [property]\n"
 "        List the instances of a class.\n"
@@ -667,16 +693,16 @@ msgstr ""
 "        定了屬性，對每個類型實例會列印出這個屬性。\n"
 "        "
 
-#: ../roundup/admin.py:911
+#: ../roundup/admin.py:978
 msgid "Too many arguments supplied"
 msgstr "提供了太多的參數了"
 
-#: ../roundup/admin.py:947
+#: ../roundup/admin.py:1014
 #, python-format
 msgid "%(nodeid)4s: %(value)s"
 msgstr ""
 
-#: ../roundup/admin.py:951
+#: ../roundup/admin.py:1018
 msgid ""
 "Usage: table classname [property[,property]*]\n"
 "        List the instances of a class in tabular form.\n"
@@ -734,12 +760,17 @@ msgstr ""
 "        將生成4個字符寬的 \"Name\" 列。\n"
 "        "
 
-#: ../roundup/admin.py:995
+#: ../roundup/admin.py:1062
 #, python-format
 msgid "\"%(spec)s\" not name:width"
 msgstr "\"%(spec)s\" 不是 名字:寬度"
 
-#: ../roundup/admin.py:1046
+#: ../roundup/admin.py:1084
+#, python-format
+msgid "\"%(spec)s\" does not have an integer width: \"%(width)s\""
+msgstr ""
+
+#: ../roundup/admin.py:1120
 msgid ""
 "Usage: history designator [skipquiet]\n"
 "        Show the history entries of a designator.\n"
@@ -754,7 +785,7 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1082
+#: ../roundup/admin.py:1156
 msgid ""
 "Usage: commit\n"
 "        Commit changes made to the database during an interactive session.\n"
@@ -775,7 +806,7 @@ msgstr ""
 "        在命令行中的 One-off 命令如果成功會被自動提交。\n"
 "        "
 
-#: ../roundup/admin.py:1097
+#: ../roundup/admin.py:1171
 msgid ""
 "Usage: rollback\n"
 "        Undo all changes that are pending commit to the database.\n"
@@ -794,7 +825,7 @@ msgstr ""
 "        產生變化。\n"
 "        "
 
-#: ../roundup/admin.py:1110
+#: ../roundup/admin.py:1184
 #, fuzzy
 msgid ""
 "Usage: retire designator[,designator]*\n"
@@ -814,7 +845,7 @@ msgstr ""
 "        它的鍵值可以被重用。\n"
 "        "
 
-#: ../roundup/admin.py:1138
+#: ../roundup/admin.py:1212
 #, fuzzy
 msgid ""
 "Usage: restore designator[,designator]*\n"
@@ -832,8 +863,14 @@ msgstr ""
 "        給定的結點將對用戶來說再次生效。\n"
 "        "
 
+# ../roundup/admin.py:550 :945 :994 :1016
+#: ../roundup/admin.py:1233
+#, fuzzy
+msgid "no such %(classname)s node \" % (nodeid)s\""
+msgstr "沒有這樣的 %(classname)s 結點 \"%(nodeid)s\""
+
 #. grab the directory to export to
-#: ../roundup/admin.py:1165
+#: ../roundup/admin.py:1239
 #, fuzzy
 msgid ""
 "Usage: export [[-]class[,class]] export_dir\n"
@@ -858,7 +895,7 @@ msgstr ""
 "        放在指定的目標目錄中。\n"
 "        "
 
-#: ../roundup/admin.py:1258
+#: ../roundup/admin.py:1334
 #, fuzzy
 msgid ""
 "Usage: exporttables [[-]class[,class]] export_dir\n"
@@ -884,7 +921,7 @@ msgstr ""
 "        放在指定的目標目錄中。\n"
 "        "
 
-#: ../roundup/admin.py:1273
+#: ../roundup/admin.py:1349
 msgid ""
 "Usage: import import_dir\n"
 "        Import a database from the directory containing CSV files,\n"
@@ -924,7 +961,15 @@ msgstr ""
 "        舊數據。)\n"
 "        "
 
-#: ../roundup/admin.py:1356
+#: ../roundup/admin.py:1431
+msgid ""
+"Usage: importtables export_dir\n"
+"\n"
+"        This imports the database tables exported using exporttables.\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:1438
 msgid ""
 "Usage: pack period | date\n"
 "\n"
@@ -962,11 +1007,11 @@ msgstr ""
 "\n"
 "        "
 
-#: ../roundup/admin.py:1384
+#: ../roundup/admin.py:1466
 msgid "Invalid format"
 msgstr "無效的格式"
 
-#: ../roundup/admin.py:1395
+#: ../roundup/admin.py:1477
 msgid ""
 "Usage: reindex [classname|designator]*\n"
 "        Re-generate a tracker's search indexes.\n"
@@ -981,62 +1026,64 @@ msgstr ""
 "        重新生成 tracker 的搜索索引，它將自動進行。\n"
 "        "
 
-#: ../roundup/admin.py:1409
+#: ../roundup/admin.py:1491
 #, python-format
 msgid "no such item \"%(designator)s\""
 msgstr "沒有這樣的條目 \"%(designator)s\""
 
-#: ../roundup/admin.py:1419
+#: ../roundup/admin.py:1501
+#, fuzzy
 msgid ""
 "Usage: security [Role name]\n"
-"        Display the Permissions available to one or all Roles.\n"
+"\n"
+"             Display the Permissions available to one or all Roles.\n"
 "        "
 msgstr ""
 "用法：security [角色名]\n"
 "        顯示一個或多個角色的權限。\n"
 "        "
 
-#: ../roundup/admin.py:1427
+#: ../roundup/admin.py:1510
 #, fuzzy, python-format
 msgid "No such Role \"%(role)s\"\n"
 msgstr "沒有這樣的角色 \"%(role)s\""
 
-#: ../roundup/admin.py:1433
+#: ../roundup/admin.py:1516
 #, fuzzy, python-format
 msgid "New Web users get the Roles \"%(role)s\"\n"
 msgstr "新Web用戶得到角色 \"%(role)s\""
 
-#: ../roundup/admin.py:1435
+#: ../roundup/admin.py:1519
 #, fuzzy, python-format
 msgid "New Web users get the Role \"%(role)s\"\n"
 msgstr "新Web用戶得到角色 \"%(role)s\""
 
-#: ../roundup/admin.py:1438
+#: ../roundup/admin.py:1523
 #, fuzzy, python-format
 msgid "New Email users get the Roles \"%(role)s\"\n"
 msgstr "新郵件用戶得到角色 \"%(role)s\""
 
-#: ../roundup/admin.py:1440
+#: ../roundup/admin.py:1525
 #, fuzzy, python-format
 msgid "New Email users get the Role \"%(role)s\"\n"
 msgstr "新郵件用戶得到角色 \"%(role)s\""
 
-#: ../roundup/admin.py:1443
+#: ../roundup/admin.py:1528
 #, fuzzy, python-format
 msgid "Role \"%(name)s\":\n"
 msgstr "角色 \"%(name)s\"："
 
-#: ../roundup/admin.py:1448
+#: ../roundup/admin.py:1533
 #, fuzzy
 msgid " %(description)s (%(name)s for \"%(klass)s\""
 msgstr " %(description)s (%(name)s 僅用於 \"%(klass)s\")"
 
-#: ../roundup/admin.py:1448
+#: ../roundup/admin.py:1533
 #, fuzzy, python-format
 msgid " %(description)s (%(name)s for \"%(klass)s\": %(properties)s only)\n"
 msgstr " %(description)s (%(name)s 僅用於 \"%(klass)s\")"
 
-#: ../roundup/admin.py:1460
+#: ../roundup/admin.py:1545
 #, python-format
 msgid ""
 "\n"
@@ -1044,82 +1091,77 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../roundup/admin.py:1462
-#, fuzzy
-msgid " %(description)s (%(name)s for \"%(klass)s\" "
-msgstr " %(description)s (%(name)s 僅用於 \"%(klass)s\")"
-
-#: ../roundup/admin.py:1462
+#: ../roundup/admin.py:1547
 #, fuzzy, python-format
 msgid " %(description)s (%(name)s for \"%(klass)s\" only)\n"
 msgstr " %(description)s (%(name)s 僅用於 \"%(klass)s\")"
 
-#: ../roundup/admin.py:1465
+#: ../roundup/admin.py:1550
 #, fuzzy, python-format
 msgid " %(description)s (%(name)s)\n"
 msgstr " %(description)s (%(name)s 僅用於 \"%(klass)s\")"
 
-#: ../roundup/admin.py:1470
+#: ../roundup/admin.py:1554
 msgid ""
 "Usage: migrate\n"
+"\n"
 "        Update a tracker's database to be compatible with the Roundup\n"
 "        codebase.\n"
 "\n"
-"        You should run the \"migrate\" command for your tracker once you've\n"
-"        installed the latest codebase. \n"
+"        You should run the \"migrate\" command for your tracker once\n"
+"        you've installed the latest codebase.\n"
 "\n"
-"        Do this before you use the web, command-line or mail interface and\n"
-"        before any users access the tracker.\n"
+"        Do this before you use the web, command-line or mail interface\n"
+"        and before any users access the tracker.\n"
 "\n"
-"        This command will respond with either \"Tracker updated\" (if "
-"you've\n"
-"        not previously run it on an RDBMS backend) or \"No migration action\n"
-"        required\" (if you have run it, or have used another interface to "
-"the\n"
-"        tracker, or possibly because you are using anydbm).\n"
+"        This command will respond with either \"Tracker updated\" (if\n"
+"        you've not previously run it on an RDBMS backend) or \"No\n"
+"        migration action required\" (if you have run it, or have used\n"
+"        another interface to the tracker, or possibly because you are\n"
+"        using anydbm).\n"
 "\n"
-"        It's safe to run this even if it's not required, so just get into\n"
-"        the habit.\n"
+"        It's safe to run this even if it's not required, so just get\n"
+"        into the habit.\n"
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1489
+#: ../roundup/admin.py:1575
 #, fuzzy
 msgid "Tracker updated"
 msgstr "Tracker根目錄"
 
-#: ../roundup/admin.py:1492
+#: ../roundup/admin.py:1578
 msgid "No migration action required"
 msgstr ""
 
-#: ../roundup/admin.py:1518
+#: ../roundup/admin.py:1604
 #, python-format
 msgid "Unknown command \"%(command)s\" (\"help commands\" for a list)"
 msgstr "未知命令 \"%(command)s\" (\"help commands\" 查看命令列表)"
 
-#: ../roundup/admin.py:1524
+#: ../roundup/admin.py:1610
 #, python-format
 msgid "Multiple commands match \"%(command)s\": %(list)s"
 msgstr "多命令匹配 \"%(command)s\": %(list)s"
 
-#: ../roundup/admin.py:1532
+#: ../roundup/admin.py:1619
 msgid "Enter tracker home: "
 msgstr "輸入tracker起始目錄："
 
 # ../roundup/admin.py:1279 :1285 :1305
-#: ../roundup/admin.py:1541 ../roundup/admin.py:1547 ../roundup/admin.py:1573
-#: ../roundup/admin.py:1541:1547:1573
+#: ../roundup/admin.py:1628 ../roundup/admin.py:1634 ../roundup/admin.py:1660
+#: ../roundup/admin.py:1628:1634:1660
 #, python-format
 msgid "Error: %(message)s"
 msgstr "錯誤：%(message)s"
 
-#: ../roundup/admin.py:1555 ../roundup/admin.py:1559
-#: ../roundup/admin.py:1555:1559
+#: ../roundup/admin.py:1642 ../roundup/admin.py:1646
+#: ../roundup/admin.py:1642:1646
 #, python-format
 msgid "Error: Couldn't open tracker: %(message)s"
 msgstr "錯誤：不能打開tracker：%(message)s"
 
-#: ../roundup/admin.py:1586
+#: ../roundup/admin.py:1673
 #, python-format
 msgid ""
 "Roundup %s ready for input.\n"
@@ -1128,88 +1170,95 @@ msgstr ""
 "Roundup %s 輸入就緒。\n"
 "敲入 \"help\" 獲得說明。"
 
-#: ../roundup/admin.py:1591
+#: ../roundup/admin.py:1678
 msgid "Note: command history and editing not available"
 msgstr "注意：命令歷史和編輯無效"
 
-#: ../roundup/admin.py:1595
+#: ../roundup/admin.py:1682
 msgid "roundup> "
 msgstr ""
 
-#: ../roundup/admin.py:1597
+#: ../roundup/admin.py:1684
 msgid "exit..."
 msgstr "退出..."
 
-#: ../roundup/admin.py:1610
+#: ../roundup/admin.py:1697
 msgid "There are unsaved changes. Commit them (y/N)? "
 msgstr "存在未被保存的改動。提交嗎(y/N)？"
 
-#: ../roundup/backends/back_anydbm.py:313
+#: ../roundup/backends/back_anydbm.py:314
 #: ../roundup/backends/sessions_dbm.py:55
 msgid "Couldn't identify database type"
 msgstr ""
 
-#: ../roundup/backends/back_anydbm.py:342
+#: ../roundup/backends/back_anydbm.py:348
+#, python-format
+msgid ""
+"Couldn't open database - the required module '%s' (as dbm.gnu) is not "
+"available"
+msgstr ""
+
+#: ../roundup/backends/back_anydbm.py:351
 #, python-format
 msgid "Couldn't open database - the required module '%s' is not available"
 msgstr ""
 
-#: ../roundup/backends/back_anydbm.py:898
-#: ../roundup/backends/back_anydbm.py:911
-#: ../roundup/backends/back_anydbm.py:1171
-#: ../roundup/backends/back_anydbm.py:1201
-#: ../roundup/backends/back_anydbm.py:1427
-#: ../roundup/backends/back_anydbm.py:1445
-#: ../roundup/backends/back_anydbm.py:1491
-#: ../roundup/backends/back_anydbm.py:2090
-#: ../roundup/backends/back_anydbm.py:898:911
-#: ../roundup/backends/rdbms_common.py:1581
-#: ../roundup/backends/rdbms_common.py:1818
-#: ../roundup/backends/rdbms_common.py:2053
-#: ../roundup/backends/rdbms_common.py:2073
-#: ../roundup/backends/rdbms_common.py:2126
-#: ../roundup/backends/rdbms_common.py:2964
-#: ../roundup/backends/rdbms_common.py:1581:1818 :1171:1201 :1427:1445:1491
-#: :2053:2073:2090 :2126:2964
+#: ../roundup/backends/back_anydbm.py:907
+#: ../roundup/backends/back_anydbm.py:920
+#: ../roundup/backends/back_anydbm.py:1191
+#: ../roundup/backends/back_anydbm.py:1226
+#: ../roundup/backends/back_anydbm.py:1452
+#: ../roundup/backends/back_anydbm.py:1470
+#: ../roundup/backends/back_anydbm.py:1516
+#: ../roundup/backends/back_anydbm.py:2138
+#: ../roundup/backends/back_anydbm.py:907:920
+#: ../roundup/backends/rdbms_common.py:1600
+#: ../roundup/backends/rdbms_common.py:1847
+#: ../roundup/backends/rdbms_common.py:2082
+#: ../roundup/backends/rdbms_common.py:2102
+#: ../roundup/backends/rdbms_common.py:2155
+#: ../roundup/backends/rdbms_common.py:3025
+#: ../roundup/backends/rdbms_common.py:1600:1847 :1191:1226 :1452:1470:1516
+#: :2082:2102:2138 :2155:3025
 msgid "Database open read-only"
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:549
+#: ../roundup/backends/rdbms_common.py:553
 #, python-format
 msgid "ALTER operation disallowed: %(old)r -> %(new)r."
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:785
+#: ../roundup/backends/rdbms_common.py:789
 #, python-format
 msgid "CREATE operation disallowed: \"%s\"."
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:802
+#: ../roundup/backends/rdbms_common.py:806
 #, python-format
 msgid "DROP operation disallowed: \"%s\"."
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:1719
+#: ../roundup/backends/rdbms_common.py:1743
 msgid "create"
 msgstr "建立"
 
-#: ../roundup/backends/rdbms_common.py:1888
+#: ../roundup/backends/rdbms_common.py:1917
 msgid "unlink"
 msgstr "解除"
 
-#: ../roundup/backends/rdbms_common.py:1892
+#: ../roundup/backends/rdbms_common.py:1921
 msgid "link"
 msgstr "鏈接"
 
-#: ../roundup/backends/rdbms_common.py:2034
+#: ../roundup/backends/rdbms_common.py:2063
 msgid "set"
 msgstr "設置"
 
-#: ../roundup/backends/rdbms_common.py:2063
+#: ../roundup/backends/rdbms_common.py:2092
 msgid "retired"
 msgstr "收回"
 
-#: ../roundup/backends/rdbms_common.py:2093
+#: ../roundup/backends/rdbms_common.py:2122
 msgid "restored"
 msgstr "恢復"
 
@@ -1466,7 +1515,7 @@ msgstr ""
 msgid "You do not have permission to view %(class)s"
 msgstr "你沒有權限來編輯 %(class)s"
 
-#: ../roundup/cgi/cgitb.py:53
+#: ../roundup/cgi/cgitb.py:57
 #, python-format
 msgid ""
 "<h1>Templating Error</h1>\n"
@@ -1477,27 +1526,27 @@ msgstr ""
 "<p><b>%(exc_type)s</b>: %(exc_value)s</p>\n"
 "<p class=\"help\">調試信息為</p>"
 
-#: ../roundup/cgi/cgitb.py:68
+#: ../roundup/cgi/cgitb.py:72
 #, python-format
 msgid "<li>\"%(name)s\" (%(info)s)</li>"
 msgstr ""
 
-#: ../roundup/cgi/cgitb.py:71
+#: ../roundup/cgi/cgitb.py:75
 #, python-format
 msgid "<li>Looking for \"%(name)s\", current path:<ol>%(path)s</ol></li>"
 msgstr "<li>查找 \"%(name)s\", 當前路徑：<ol>%(path)s</ol></li>"
 
-#: ../roundup/cgi/cgitb.py:75
+#: ../roundup/cgi/cgitb.py:79
 #, python-format
 msgid "<li>In %s</li>"
 msgstr "<li>在 %s</li>"
 
-#: ../roundup/cgi/cgitb.py:80
+#: ../roundup/cgi/cgitb.py:84
 #, python-format
 msgid "A problem occurred in your template \"%s\"."
 msgstr "在你的模板 \"%s\" 中發生一個問題。"
 
-#: ../roundup/cgi/cgitb.py:88
+#: ../roundup/cgi/cgitb.py:92
 #, python-format
 msgid ""
 "\n"
@@ -1516,16 +1565,16 @@ msgstr ""
 " %(locals)s\n"
 "</table></li>\n"
 
-#: ../roundup/cgi/cgitb.py:107
+#: ../roundup/cgi/cgitb.py:111
 msgid "Full traceback:"
 msgstr "完整跟蹤信息："
 
-#: ../roundup/cgi/cgitb.py:120
+#: ../roundup/cgi/cgitb.py:125
 #, python-format
 msgid "<font size=+1><strong>%(exc_type)s</strong>: %(exc_value)s</font>"
 msgstr ""
 
-#: ../roundup/cgi/cgitb.py:124
+#: ../roundup/cgi/cgitb.py:129
 msgid ""
 "<p>A problem occurred while running a Python script. Here is the sequence of "
 "function calls leading up to the error, with the most recent (innermost) "
@@ -1534,18 +1583,18 @@ msgstr ""
 "<p>在運行 Python 腳本時發生了一個錯誤。這是導致出錯的一系列的函數調用，最近的"
 "(最裡層的)調用在前。異常屬性是："
 
-#: ../roundup/cgi/cgitb.py:133
+#: ../roundup/cgi/cgitb.py:138
 msgid "&lt;file is None - probably inside <tt>eval</tt> or <tt>exec</tt>&gt;"
 msgstr "&lt;文件為 None - 可能在 <tt>eval</tt> 或者 <tt>exec</tt>&gt;"
 
-#: ../roundup/cgi/cgitb.py:142
+#: ../roundup/cgi/cgitb.py:147
 #, python-format
 msgid "in <strong>%s</strong>"
 msgstr "在 <strong>%s</strong>"
 
 # ../roundup/cgi/cgitb.py:172 :178
-#: ../roundup/cgi/cgitb.py:187 ../roundup/cgi/cgitb.py:193
-#: ../roundup/cgi/cgitb.py:187:193
+#: ../roundup/cgi/cgitb.py:195 ../roundup/cgi/cgitb.py:201
+#: ../roundup/cgi/cgitb.py:195:201
 msgid "<em>undefined</em>"
 msgstr "<em>未定義</em>"
 
@@ -1558,155 +1607,155 @@ msgid ""
 "</body></html>"
 msgstr ""
 
-#: ../roundup/cgi/client.py:794
+#: ../roundup/cgi/client.py:795
 msgid "Form Error: "
 msgstr "表格錯誤："
 
-#: ../roundup/cgi/client.py:884
+#: ../roundup/cgi/client.py:885
 #, python-format
 msgid "Unrecognized charset: %r"
 msgstr "無法識別的字符集：%r"
 
-#: ../roundup/cgi/client.py:1132
+#: ../roundup/cgi/client.py:1140
 msgid "Anonymous users are not allowed to use the web interface"
 msgstr "匿名用戶不允許使用web界面"
 
-#: ../roundup/cgi/client.py:1205
+#: ../roundup/cgi/client.py:1213
 msgid "Referer header not available."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1209
+#: ../roundup/cgi/client.py:1217
 #, python-format
 msgid "csrf key used with wrong method from: %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1237
+#: ../roundup/cgi/client.py:1245
 #, python-format
 msgid "csrf header %s required but missing for user%s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1238
+#: ../roundup/cgi/client.py:1246
 #, python-format
 msgid "Missing header: %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1248 ../roundup/cgi/client.py:1251
-#: ../roundup/cgi/client.py:1248:1251
+#: ../roundup/cgi/client.py:1256 ../roundup/cgi/client.py:1259
+#: ../roundup/cgi/client.py:1256:1259
 #, python-format
 msgid "csrf Referer header check failed for user%s. Value=%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1249
+#: ../roundup/cgi/client.py:1257
 #, python-format
 msgid "Invalid Referer %s, %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1264 ../roundup/cgi/client.py:1267
-#: ../roundup/cgi/client.py:1264:1267
+#: ../roundup/cgi/client.py:1272 ../roundup/cgi/client.py:1275
+#: ../roundup/cgi/client.py:1272:1275
 #, python-format
 msgid "csrf Origin header check failed for user%s. Value=%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1265
+#: ../roundup/cgi/client.py:1273
 #, fuzzy, python-format
 msgid "Invalid Origin %s"
 msgstr "無效登錄"
 
-#: ../roundup/cgi/client.py:1279 ../roundup/cgi/client.py:1282
-#: ../roundup/cgi/client.py:1279:1282
+#: ../roundup/cgi/client.py:1287 ../roundup/cgi/client.py:1290
+#: ../roundup/cgi/client.py:1287:1290
 #, python-format
 msgid "csrf X-FORWARDED-HOST header check failed for user%s. Value=%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1280
+#: ../roundup/cgi/client.py:1288
 #, python-format
 msgid "Invalid X-FORWARDED-HOST %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1299 ../roundup/cgi/client.py:1302
-#: ../roundup/cgi/client.py:1299:1302
+#: ../roundup/cgi/client.py:1307 ../roundup/cgi/client.py:1310
+#: ../roundup/cgi/client.py:1307:1310
 #, python-format
 msgid "csrf HOST header check failed for user%s. Value=%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1300
+#: ../roundup/cgi/client.py:1308
 #, python-format
 msgid "Invalid HOST %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1308
+#: ../roundup/cgi/client.py:1316
 msgid "Csrf: unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1309
+#: ../roundup/cgi/client.py:1317
 msgid "Unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1322
+#: ../roundup/cgi/client.py:1330
 #, python-format
 msgid "csrf X-REQUESTED-WITH xmlrpc required header check failed for user%s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1323
+#: ../roundup/cgi/client.py:1331
 msgid "Required Header Missing"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1360
+#: ../roundup/cgi/client.py:1368
 #, python-format
 msgid "Required csrf field missing for user%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1361 ../roundup/cgi/client.py:1413
-#: ../roundup/cgi/client.py:1423 ../roundup/cgi/client.py:1361:1413:1423
+#: ../roundup/cgi/client.py:1369 ../roundup/cgi/client.py:1421
+#: ../roundup/cgi/client.py:1431 ../roundup/cgi/client.py:1369:1421:1431
 msgid ""
 "We can't validate your session (csrf failure). Re-enter any unsaved data and "
 "try again."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1364
+#: ../roundup/cgi/client.py:1372
 #, python-format
 msgid "csrf field not supplied by user%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1411
+#: ../roundup/cgi/client.py:1419
 #, python-format
 msgid ""
 "Csrf mismatch user: current user %s != stored user %s, current session, "
 "stored session: %s,%s for key %s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1416
+#: ../roundup/cgi/client.py:1424
 #, python-format
 msgid ""
 "logged only: Csrf mismatch user: current user %s != stored user %s, current "
 "session, stored session: %s,%s for key %s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1421
+#: ../roundup/cgi/client.py:1429
 #, python-format
 msgid ""
 "Csrf mismatch user: current session %s != stored session %s, current user/"
 "stored user is: %s for key %s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1426
+#: ../roundup/cgi/client.py:1434
 #, python-format
 msgid ""
 "logged only: Csrf mismatch user: current session %s != stored session %s, "
 "current user/stored user is: %s for key %s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1598
+#: ../roundup/cgi/client.py:1606
 #, fuzzy
 msgid "You are not allowed to view this file."
 msgstr "你不允許查看此頁"
 
-#: ../roundup/cgi/client.py:1876
+#: ../roundup/cgi/client.py:1884
 #, python-format
 msgid "%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1880
+#: ../roundup/cgi/client.py:1888
 #, python-format
 msgid ""
 "%(starttag)sCache hits: %(cache_hits)d, misses %(cache_misses)d. Loading "
@@ -1770,126 +1819,126 @@ msgstr[0] "要求的 %(class)s 屬性 %(property)s 沒有被提供"
 msgid "You are not allowed to %(action)s items of class %(class)s"
 msgstr "你不允許 %(action)s 類別 %(class)s 的項目"
 
-#: ../roundup/cgi/templating.py:791
+#: ../roundup/cgi/templating.py:798
 msgid "(list)"
 msgstr "(列表)"
 
-#: ../roundup/cgi/templating.py:863
+#: ../roundup/cgi/templating.py:871
 msgid "Submit New Entry"
 msgstr "提交新的項"
 
-#: ../roundup/cgi/templating.py:885 ../roundup/cgi/templating.py:1046
-#: ../roundup/cgi/templating.py:1612 ../roundup/cgi/templating.py:1641
-#: ../roundup/cgi/templating.py:1661 ../roundup/cgi/templating.py:1674
-#: ../roundup/cgi/templating.py:1711 ../roundup/cgi/templating.py:1760
-#: ../roundup/cgi/templating.py:1783 ../roundup/cgi/templating.py:1790
-#: ../roundup/cgi/templating.py:1826 ../roundup/cgi/templating.py:1863
-#: ../roundup/cgi/templating.py:1896 ../roundup/cgi/templating.py:1985
-#: ../roundup/cgi/templating.py:2006 ../roundup/cgi/templating.py:2096
-#: ../roundup/cgi/templating.py:2116 ../roundup/cgi/templating.py:2134
-#: ../roundup/cgi/templating.py:2166 ../roundup/cgi/templating.py:2176
-#: ../roundup/cgi/templating.py:2240 ../roundup/cgi/templating.py:2487
-#: ../roundup/cgi/templating.py:885:1046 :1612:1641 :1661:1674 :1711:1760
-#: :1783:1790 :1826:1863 :1896:1985 :2006:2096 :2116:2134 :2166:2176 :2240:2487
+#: ../roundup/cgi/templating.py:893 ../roundup/cgi/templating.py:1061
+#: ../roundup/cgi/templating.py:1627 ../roundup/cgi/templating.py:1656
+#: ../roundup/cgi/templating.py:1676 ../roundup/cgi/templating.py:1689
+#: ../roundup/cgi/templating.py:1726 ../roundup/cgi/templating.py:1775
+#: ../roundup/cgi/templating.py:1798 ../roundup/cgi/templating.py:1805
+#: ../roundup/cgi/templating.py:1841 ../roundup/cgi/templating.py:1878
+#: ../roundup/cgi/templating.py:1911 ../roundup/cgi/templating.py:2000
+#: ../roundup/cgi/templating.py:2021 ../roundup/cgi/templating.py:2111
+#: ../roundup/cgi/templating.py:2131 ../roundup/cgi/templating.py:2149
+#: ../roundup/cgi/templating.py:2188 ../roundup/cgi/templating.py:2198
+#: ../roundup/cgi/templating.py:2262 ../roundup/cgi/templating.py:2509
+#: ../roundup/cgi/templating.py:893:1061 :1627:1656 :1676:1689 :1726:1775
+#: :1798:1805 :1841:1878 :1911:2000 :2021:2111 :2131:2149 :2188:2198 :2262:2509
 msgid "[hidden]"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:886
+#: ../roundup/cgi/templating.py:894
 msgid "New node - no history"
 msgstr "新記錄 - 無歷史"
 
-#: ../roundup/cgi/templating.py:1011
+#: ../roundup/cgi/templating.py:1026
 msgid "Submit Changes"
 msgstr "提交變動"
 
-#: ../roundup/cgi/templating.py:1083
+#: ../roundup/cgi/templating.py:1098
 msgid "<em>The indicated property no longer exists</em>"
 msgstr "<em>指示的屬性不再存在</em>"
 
-#: ../roundup/cgi/templating.py:1084
+#: ../roundup/cgi/templating.py:1099
 #, python-format
 msgid "<em>%s: %s</em>\n"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1119
+#: ../roundup/cgi/templating.py:1134
 #, python-format
 msgid "The linked class %(classname)s no longer exists"
 msgstr "鏈接的類別 %(classname)s 不再存在"
 
 # ../roundup/cgi/templating.py:872 :893
-#: ../roundup/cgi/templating.py:1157 ../roundup/cgi/templating.py:1183
-#: ../roundup/cgi/templating.py:1157:1183
+#: ../roundup/cgi/templating.py:1172 ../roundup/cgi/templating.py:1198
+#: ../roundup/cgi/templating.py:1172:1198
 msgid "<strike>The linked node no longer exists</strike>"
 msgstr "<strike>鏈接的結點不再存在</strike>"
 
-#: ../roundup/cgi/templating.py:1244
+#: ../roundup/cgi/templating.py:1259
 #, python-format
 msgid "%s: (no value)"
 msgstr "%s: (無值)"
 
-#: ../roundup/cgi/templating.py:1260
+#: ../roundup/cgi/templating.py:1275
 #, fuzzy, python-format
 msgid ""
 "<strong><em>This event %s is not handled by the history display!</em></"
 "strong>"
 msgstr "<strong><em>這個事件不能被歷史顯示所處理！</em></strong>"
 
-#: ../roundup/cgi/templating.py:1273
+#: ../roundup/cgi/templating.py:1288
 msgid "<tr><td colspan=4><strong>Note:</strong></td></tr>"
 msgstr "<tr><td colspan=4><strong>注意：</strong></td></tr>"
 
-#: ../roundup/cgi/templating.py:1282
+#: ../roundup/cgi/templating.py:1297
 msgid "History"
 msgstr "歷史"
 
-#: ../roundup/cgi/templating.py:1284
+#: ../roundup/cgi/templating.py:1299
 msgid "<th>Date</th>"
 msgstr "<th>日期</th>"
 
-#: ../roundup/cgi/templating.py:1285
+#: ../roundup/cgi/templating.py:1300
 msgid "<th>User</th>"
 msgstr "<th>用戶</th>"
 
-#: ../roundup/cgi/templating.py:1286
+#: ../roundup/cgi/templating.py:1301
 msgid "<th>Action</th>"
 msgstr "<th>動作</th>"
 
-#: ../roundup/cgi/templating.py:1287
+#: ../roundup/cgi/templating.py:1302
 msgid "<th>Args</th>"
 msgstr "<th>參數</th>"
 
-#: ../roundup/cgi/templating.py:1335
+#: ../roundup/cgi/templating.py:1350
 #, fuzzy, python-format
 msgid "Copy of %(class)s %(id)s"
 msgstr "%(class)s %(id)s 被建立"
 
-#: ../roundup/cgi/templating.py:1900 ../roundup/cgi/templating.py:1933
-#: ../roundup/cgi/templating.py:1226:1900:1933
+#: ../roundup/cgi/templating.py:1915 ../roundup/cgi/templating.py:1948
+#: ../roundup/cgi/templating.py:1241:1915:1948
 msgid "No"
 msgstr "否"
 
-#: ../roundup/cgi/templating.py:1900 ../roundup/cgi/templating.py:1928
-#: ../roundup/cgi/templating.py:1226:1900:1928
+#: ../roundup/cgi/templating.py:1915 ../roundup/cgi/templating.py:1943
+#: ../roundup/cgi/templating.py:1241:1915:1943
 msgid "Yes"
 msgstr "是"
 
-#: ../roundup/cgi/templating.py:2054
+#: ../roundup/cgi/templating.py:2069
 msgid ""
 "default value for DateHTMLProperty must be either DateHTMLProperty or string "
 "date representation."
 msgstr "DateHTMLProperty 的預設值或者是 DateHTMLProperty 或字符串的日期表示。"
 
-#: ../roundup/cgi/templating.py:2220
+#: ../roundup/cgi/templating.py:2242
 #, python-format
 msgid "Attempt to look up %(attr)s on a missing value"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:2231
+#: ../roundup/cgi/templating.py:2253
 #, python-format
 msgid "Attempt to look up %(item)s on a missing value"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:2334
+#: ../roundup/cgi/templating.py:2356
 #, python-format
 msgid "<option %svalue=\"-1\">- no selection -</option>"
 msgstr "<option %svalue=\"-1\">- 未選擇 -</option>"
@@ -1907,173 +1956,173 @@ msgstr ""
 msgid "Responding to form too quickly."
 msgstr ""
 
-#: ../roundup/date.py:384
+#: ../roundup/date.py:391
 #, python-format
 msgid ""
 "Not a date spec: %r (\"yyyy-mm-dd\", \"mm-dd\", \"HH:MM\", \"HH:MM:SS\" or "
 "\"yyyy-mm-dd.HH:MM:SS.SSS\")"
 msgstr ""
 
-#: ../roundup/date.py:407
+#: ../roundup/date.py:414
 msgid "Could not determine granularity"
 msgstr ""
 
-#: ../roundup/date.py:459
+#: ../roundup/date.py:466
 #, python-format
 msgid ""
 "%r not a date / time spec \"yyyy-mm-dd\", \"mm-dd\", \"HH:MM\", \"HH:MM:SS\" "
 "or \"yyyy-mm-dd.HH:MM:SS.SSS\""
 msgstr ""
 
-#: ../roundup/date.py:824
+#: ../roundup/date.py:838
 #, fuzzy, python-format
 msgid ""
 "Not an interval spec: \"%s\" ([+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS] [date "
 "spec])"
 msgstr "不是時間間隔規範：[+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS] [日期規範]"
 
-#: ../roundup/date.py:847
+#: ../roundup/date.py:861
 #, fuzzy, python-format
 msgid "Not an interval spec: \"%s\" ([+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS])"
 msgstr "不是時間間隔規範：[+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS]"
 
-#: ../roundup/date.py:1024
+#: ../roundup/date.py:1038
 #, fuzzy, python-format
 msgid "%(number)s year"
 msgid_plural "%(number)s years"
 msgstr[0] "%(number)s年"
 
-#: ../roundup/date.py:1028
+#: ../roundup/date.py:1042
 #, fuzzy, python-format
 msgid "%(number)s month"
 msgid_plural "%(number)s months"
 msgstr[0] "%(number)s月"
 
-#: ../roundup/date.py:1032
+#: ../roundup/date.py:1046
 #, fuzzy, python-format
 msgid "%(number)s week"
 msgid_plural "%(number)s weeks"
 msgstr[0] "%(number)s周"
 
-#: ../roundup/date.py:1036
+#: ../roundup/date.py:1050
 #, fuzzy, python-format
 msgid "%(number)s day"
 msgid_plural "%(number)s days"
 msgstr[0] "%(number)s天"
 
-#: ../roundup/date.py:1040
+#: ../roundup/date.py:1054
 msgid "tomorrow"
 msgstr "明天"
 
-#: ../roundup/date.py:1042
+#: ../roundup/date.py:1056
 msgid "yesterday"
 msgstr "昨天"
 
-#: ../roundup/date.py:1045
+#: ../roundup/date.py:1059
 #, fuzzy, python-format
 msgid "%(number)s hour"
 msgid_plural "%(number)s hours"
 msgstr[0] "%(number)s小時"
 
-#: ../roundup/date.py:1049
+#: ../roundup/date.py:1063
 msgid "an hour"
 msgstr "1小時"
 
-#: ../roundup/date.py:1051
+#: ../roundup/date.py:1065
 msgid "1 1/2 hours"
 msgstr "1個半小時"
 
-#: ../roundup/date.py:1053
+#: ../roundup/date.py:1067
 #, fuzzy, python-format
 msgid "1 %(number)s/4 hours"
 msgid_plural "1 %(number)s/4 hours"
 msgstr[0] "1 %(number)s/4 小時"
 
-#: ../roundup/date.py:1057
+#: ../roundup/date.py:1072
 msgid "in a moment"
 msgstr "一會兒"
 
-#: ../roundup/date.py:1059
+#: ../roundup/date.py:1074
 msgid "just now"
 msgstr "剛才"
 
-#: ../roundup/date.py:1062
+#: ../roundup/date.py:1077
 msgid "1 minute"
 msgstr "1分鐘"
 
-#: ../roundup/date.py:1065
+#: ../roundup/date.py:1080
 #, fuzzy, python-format
 msgid "%(number)s minute"
 msgid_plural "%(number)s minutes"
 msgstr[0] "%(number)s分鐘"
 
-#: ../roundup/date.py:1068
+#: ../roundup/date.py:1083
 msgid "1/2 an hour"
 msgstr "半小時"
 
-#: ../roundup/date.py:1070
+#: ../roundup/date.py:1085
 #, fuzzy, python-format
 msgid "%(number)s/4 hour"
 msgid_plural "%(number)s/4 hours"
 msgstr[0] "%(number)s/4 小時"
 
-#: ../roundup/date.py:1074
+#: ../roundup/date.py:1089
 #, python-format
 msgid "%s ago"
 msgstr "%s 之前"
 
-#: ../roundup/date.py:1076
+#: ../roundup/date.py:1091
 #, python-format
 msgid "in %s"
 msgstr "在 %s"
 
-#: ../roundup/hyperdb.py:103
+#: ../roundup/hyperdb.py:114
 #, fuzzy, python-format
 msgid "property %s: %s"
 msgstr "錯誤：%s: %s"
 
-#: ../roundup/hyperdb.py:130
+#: ../roundup/hyperdb.py:141
 #, python-format
 msgid "property %s: %r is an invalid date (%s)"
 msgstr ""
 
-#: ../roundup/hyperdb.py:151
+#: ../roundup/hyperdb.py:162
 #, python-format
 msgid "property %s: %r is an invalid date interval (%s)"
 msgstr ""
 
-#: ../roundup/hyperdb.py:349
+#: ../roundup/hyperdb.py:416
 #, python-format
 msgid "property %s: %r is not a number"
 msgstr ""
 
-#: ../roundup/hyperdb.py:361
+#: ../roundup/hyperdb.py:428
 #, python-format
 msgid "property %s: %r is not an integer"
 msgstr ""
 
-#: ../roundup/hyperdb.py:378
+#: ../roundup/hyperdb.py:445
 #, python-format
 msgid "\"%s\" not a node designator"
 msgstr ""
 
-#: ../roundup/hyperdb.py:1258 ../roundup/hyperdb.py:1266
-#: ../roundup/hyperdb.py:1258:1266
+#: ../roundup/hyperdb.py:1380 ../roundup/hyperdb.py:1388
+#: ../roundup/hyperdb.py:1380:1388
 #, fuzzy, python-format
 msgid "Not a property name: %s"
 msgstr "不是日期格式：%s"
 
-#: ../roundup/hyperdb.py:1707
+#: ../roundup/hyperdb.py:1829
 #, python-format
 msgid "property %s: %r is not a %s."
 msgstr ""
 
-#: ../roundup/hyperdb.py:1710
+#: ../roundup/hyperdb.py:1832
 #, python-format
 msgid "you may only enter ID values for property %s"
 msgstr ""
 
-#: ../roundup/hyperdb.py:1744
+#: ../roundup/hyperdb.py:1866
 #, python-format
 msgid "%r is not a property of %s"
 msgstr ""
@@ -2314,7 +2363,7 @@ msgstr ""
 msgid "not of form [arg=value,value,...;arg=value,value,...]"
 msgstr ""
 
-#: ../roundup/rest.py:1830
+#: ../roundup/rest.py:1838
 #, python-format
 msgid "Api rate limits exceeded. Please wait: %s seconds."
 msgstr ""
@@ -3936,6 +3985,10 @@ msgstr "請在左側的菜單選項中選擇一項"
 #: ../share/roundup/templates/minimal/html/home.html:19
 msgid "Please log in or register."
 msgstr "請登錄或註冊。"
+
+#, fuzzy
+#~ msgid " %(description)s (%(name)s for \"%(klass)s\" "
+#~ msgstr " %(description)s (%(name)s 僅用於 \"%(klass)s\")"
 
 #~ msgid "Error: %s: %s"
 #~ msgstr "錯誤：%s: %s"
