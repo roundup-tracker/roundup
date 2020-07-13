@@ -11,7 +11,9 @@ Roundup release checklist:
     Messages" in doc/developers.txt.  This is best done some time in
     advance of the release to allow for translators to update their
     translations. Merge into .po files by running 'make *.po'
-    in the locale directory.
+    in the locale directory. Run:
+       make template
+       make *.po
 2.  Run unit tests! They should pass successfully. "./run_tests.py"
 3.  Update version
       CHANGES.txt
