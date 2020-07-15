@@ -875,7 +875,9 @@ All methods except __repr__ must be implemented by a concrete backend Database.
         done = getattr(self, 'post_init_done', None)
         for cn in self.getclasses():
             cl = self.getclass(cn)
-            for p in cl.properties:
+            # This will change properties if a back-multilink happens to
+            # have the same class, so we need to iterate over .keys()
+            for p in cl.properties.keys():
                 prop = cl.properties[p]
                 if not isinstance (prop, (Link, Multilink)):
                     continue
