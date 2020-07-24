@@ -35,7 +35,7 @@ status_notresolved string:-1,1,2,4;
        <input type="hidden" name="@group" value="priority" />
        <input type="hidden" name="@filter" value="status"/>
        <input type="hidden" name="status" tal:attributes="value status_notresolved"/>
-       <input class="input-text" id="search-text" name="@search_text" size="10" />
+       <input class="input-text" aria-label="type in search term" id="search-text" name="@search_text" size="10" />
 <input type="submit" id="submit" value="search in open issues" name="submit"
        class="input-button"/>
       </div>
@@ -86,6 +86,7 @@ status_notresolved string:-1,1,2,4;
              <input type="submit" class="form-small" value="Show issue:"
                     i18n:attributes="value"/>
              <input class="form-small" size="4"
+		    aria-label="Type in issue number"
                     type="text" name="@number"/>
              <input type="hidden" name="@type" value="issue"/>
              <input type="hidden" name="@action" value="show"/>
@@ -101,9 +102,11 @@ status_notresolved string:-1,1,2,4;
      <form method="post" tal:attributes="action request/base">
        <ul>
       <li>
-       <tal:span i18n:translate="">Login</tal:span><br/>
-       <input size="10" name="__login_name"/><br/>
-       <input size="10" type="password" name="__login_password"/><br/>
+       <label for="__login" i18n:translate="">Login</login><br/>
+       <input size="10" id="__login" name="__login_name"/><br/>
+       <input size="10" type="password"
+	      aria-label="Password field for login"
+	      name="__login_password"/><br/>
        <input type="hidden" name="@action" value="Login"/>
        <input type="checkbox" name="remember" id="remember"/>
        <label for="remember" i18n:translate="">Remember me?</label><br/>
