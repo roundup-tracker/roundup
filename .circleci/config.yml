@@ -31,21 +31,22 @@ jobs:
           name: setup databases
           command: |
             psql -d postgresql://postgres@localhost/circle_test -c "CREATE ROLE rounduptest WITH CREATEDB LOGIN PASSWORD 'rounduptest';"
-            mysql -h 127.0.0.1 -u root -e "CREATE USER 'rounduptest'@'127.0.0.1' IDENTIFIED BY 'rounduptest'; GRANT ALL ON rounduptest.* TO 'rounduptest'@'127.0.0.1';"
-            # patch host to 127.0.0.1 to force TCP connection to MySQL
-            sed -i -e 's/\(config[.]RDBMS_HOST =\) "localhost"/\1 "127.0.0.1"/' test/db_test_base.py
+            echo -e "[client]\nprotocol=tcp\n" >~/.my.cnf
+            mysql --print-defaults
+            mysql -u root -e "CREATE USER 'rounduptest'@'127.0.0.1' IDENTIFIED BY 'rounduptest'; GRANT ALL ON rounduptest.* TO 'rounduptest'@'127.0.0.1';"
 
       - run:
           name: run tests
           command: |
-            py.test-3 -v test/ --cov=roundup
-          environment:
-            MYSQL_HOST: 127.0.0.1
+            py.test-3 -v test/ --cov=roundup --junitxml test-results/ubuntu.xml
 
       - run:
           name: run coverage
           command: |
             python3-coverage html -i
+
+      - store_test_results:
+          path: test-results
 
       - store_artifacts:
           path: htmlcov
@@ -82,21 +83,22 @@ jobs:
           name: setup databases
           command: |
             psql -d postgresql://postgres@localhost/circle_test -c "CREATE ROLE rounduptest WITH CREATEDB LOGIN PASSWORD 'rounduptest';"
-            mysql -h 127.0.0.1 -u root -e "GRANT ALL ON rounduptest.* TO rounduptest@'127.0.0.1' IDENTIFIED BY \"rounduptest\";"
-            # patch host to 127.0.0.1 to force TCP connection to MySQL
-            sed -i -e 's/\(config[.]RDBMS_HOST =\) "localhost"/\1 "127.0.0.1"/' test/db_test_base.py
+            echo -e "[client]\nprotocol=tcp\n" >~/.my.cnf
+            mysql --print-defaults
+            mysql -u root -e "CREATE USER 'rounduptest'@'127.0.0.1' IDENTIFIED BY 'rounduptest'; GRANT ALL ON rounduptest.* TO 'rounduptest'@'127.0.0.1';"
 
       - run:
           name: run tests
           command: |
-            py.test-3 -v test/ --cov=roundup
-          environment:
-            MYSQL_HOST: 127.0.0.1
+            py.test-3 -v test/ --cov=roundup --junitxml test-results/ubuntu-old.xml
 
       - run:
           name: run coverage
           command: |
             python3-coverage html -i
+
+      - store_test_results:
+          path: test-results
 
       - store_artifacts:
           path: htmlcov
@@ -133,21 +135,25 @@ jobs:
           name: setup databases
           command: |
             psql -d postgresql://postgres@localhost/circle_test -c "CREATE ROLE rounduptest WITH CREATEDB LOGIN PASSWORD 'rounduptest';"
-            mysql -h 127.0.0.1 -u root -e "GRANT ALL ON rounduptest.* TO rounduptest@'127.0.0.1' IDENTIFIED BY \"rounduptest\";"
+            echo -e "[client]\nprotocol=tcp\nhost=127.0.0.1\n" >~/.my.cnf
+            mysql --print-defaults
+            mysql -u root -e "CREATE USER 'rounduptest'@'127.0.0.1' IDENTIFIED BY 'rounduptest'; GRANT ALL ON rounduptest.* TO 'rounduptest'@'127.0.0.1';"
             # patch host to 127.0.0.1 to force TCP connection to MySQL
             sed -i -e 's/\(config[.]RDBMS_HOST =\) "localhost"/\1 "127.0.0.1"/' test/db_test_base.py
+            sed -i -e 's/rdbms_name=\([^,]\+\),/rdbms_host=127.0.0.1,rdbms_name=\1,/' test/test_admin.py
 
       - run:
           name: run tests
           command: |
-            py.test-3 -v test/ --cov=roundup
-          environment:
-            MYSQL_HOST: 127.0.0.1
+            py.test-3 -v test/ --cov=roundup --junitxml test-results/debian.xml
 
       - run:
           name: run coverage
           command: |
             python3-coverage html -i
+
+      - store_test_results:
+          path: test-results
 
       - store_artifacts:
           path: htmlcov

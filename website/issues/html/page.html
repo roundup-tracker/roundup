@@ -12,6 +12,9 @@
 </script>
 <metal:x define-slot="more-javascript" />
 
+<link rel="alternate" type="application/rss+xml"
+  tal:attributes="href string:${request/base}@@file/rss.xml"
+  title="Publicly available tracker feed.">
 </head>
 <body
 tal:define="
