@@ -301,7 +301,7 @@ class Database(back_anydbm.Database):
     def addclass(self, cl):
         cn = cl.classname
         if cn in self.classes:
-            raise ValueError(_('Class "%s" already defined.'%cn))
+            raise ValueError('Class "%s" already defined.'%cn)
         self.classes[cn] = cl
         if cn not in self.items:
             self.items[cn] = cldb()
