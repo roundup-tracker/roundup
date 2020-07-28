@@ -2983,7 +2983,7 @@ class SchemaTest(MyTestCase):
         self.db.post_init()
 
     def test_splitDesignator(self):
-        from roundup.hyperdb import splitDesignator
+        from roundup.hyperdb import splitDesignator, DesignatorError
 
         valid_test_cases = [('zip2py44', ('zip2py', '44')),
                               ('zippy2', ('zippy', '2')),
@@ -3001,7 +3001,7 @@ class SchemaTest(MyTestCase):
 
         for designator in invalid_test_cases:
             print("Testing %s"%designator)
-            with self.assertRaises(ValueError) as ctx:
+            with self.assertRaises(DesignatorError) as ctx:
                 splitDesignator(designator)
             error = '"%s" not a node designator' % designator
             self.assertEqual(str(ctx.exception), error)
