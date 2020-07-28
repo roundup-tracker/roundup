@@ -107,14 +107,14 @@ class UserAuditorTest(unittest.TestCase):
         ValueError: Username/Login Name must consist only of the letters a-z (any case), digits 0-9 and the symbols: @._-!+%
         '''
 
-        for name in [ "ky'le", "ky<br>le" ]:
+        for name in [ "ky'le", "ky<br>le", "ky,le" ]:
             with self.assertRaises(ValueError) as ctx:
                 self.db.user.create(username=name,
                                     address='kyle@example.com',
                                     realname='Kyle Broflovski', roles='User')
-                self.assertEqual(str(ctx.exception), "Username/Login Name must "
+            self.assertEqual(str(ctx.exception), "Username/Login Name must "
                                  "consist only of the letters a-z (any case), "
-                                 "digits 0-9 and the symbols: @._-!%")
+                                 "digits 0-9 and the symbols: @._-!+%")
 
         self.db.user.create(username='rouilj-1+mya_ddr@users.example.com',
             address='kyle1@example.com',
