@@ -3003,7 +3003,7 @@ class SchemaTest(MyTestCase):
             print("Testing %s"%designator)
             with self.assertRaises(ValueError) as ctx:
                 splitDesignator(designator)
-            error = 'DesignatorError: "%s" not a node designator' % designator
+            error = '"%s" not a node designator' % designator
             self.assertEqual(str(ctx.exception), error)
 
 
