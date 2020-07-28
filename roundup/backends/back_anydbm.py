@@ -250,7 +250,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def addclass(self, cl):
         cn = cl.classname
         if cn in self.classes:
-            raise ValueError(cn)
+            raise ValueError(_('Class "%s" already defined.'%cn))
         self.classes[cn] = cl
 
         # add default Edit and View permissions

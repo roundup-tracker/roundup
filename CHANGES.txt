@@ -16,6 +16,10 @@ XXXX-XX-XX 2.0.1
 Fixed:
 - Reverse multilink to *the same class* would trigger a traceback about
   a modified dictionary on iteration (Ralf Schlatterbeck)
+- issue2551086 - Valid class names not documented. Should follow
+  [A-z][A-z0-9_]+[A-z_]. This was never documented or enforced, but
+  we get obscure errors if the rules are not followed. (Tom
+  Ekberg tests by John Rouilard)
 
 2020-07-13 2.0.0
 

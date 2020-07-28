@@ -437,7 +437,8 @@ class DesignatorError(ValueError):
     pass
 
 
-def splitDesignator(designator, dre=re.compile(r'([^\d]+)(\d+)')):
+def splitDesignator(designator,
+                    dre=re.compile(r'^([A-Za-z](?:[A-Za-z_0-9]*[A-Za-z_]+)?)(\d+)$')):
     """ Take a foo123 and return ('foo', 123)
     """
     m = dre.match(designator)
@@ -1046,17 +1047,29 @@ class Class:
         concrete backend Class.
     """
 
+    class_re = r'^([A-Za-z](?:[A-Za-z_0-9]*[A-Za-z_]+)?)$'
+
     def __init__(self, db, classname, **properties):
         """Create a new class with a given name and property specification.
 
         'classname' must not collide with the name of an existing class,
-        or a ValueError is raised.  The keyword arguments in 'properties'
-        must map names to property objects, or a TypeError is raised.
+        or a ValueError is raised. 'classname' must start with an
+        alphabetic letter. It must end with an alphabetic letter or '_'.
+        Internal characters can be alphanumeric or '_'. ValueError is
+        raised if the classname is not correct.
+        The keyword arguments in 'properties' must map names to property
+        objects, or a TypeError is raised.
         """
         for name in 'creation activity creator actor'.split():
             if name in properties:
                 raise ValueError('"creation", "activity", "creator" and '
                                  '"actor" are reserved')
+
+        if not re.match(self.class_re, classname):
+            raise ValueError('Class name %s is not valid. It must start '
+                             'with a letter, end with a letter or "_", and '
+                             'only have alphanumerics and "_" in the '
+                             'middle.' % (classname,))
 
         self.classname = classname
         self.properties = properties

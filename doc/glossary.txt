@@ -5,6 +5,9 @@ Roundup Glossary
 
 class
    a definition of the properties and behaviour of a set of items
+classname
+   the name of a class. It must start with a letter, end with a letter
+   or "_", and only have alphanumerics and "_" in the middle.
 db (or hyperdb)
    a collection of items
 designator

@@ -379,9 +379,13 @@ Here is the interface provided by the hyperdatabase::
             specification.
 
             'classname' must not collide with the name of an existing
-            class, or a ValueError is raised.  The keyword arguments in
-            'properties' must map names to property objects, or a
-            TypeError is raised.
+            class, or a ValueError is raised.  'classname' must start
+            with an alphabetic letter. It must end with an
+            alphabetic letter or '_'. Internal characters can
+            be alphanumeric or '_'. ValueError is raised if the
+            classname is not correct.
+            The keyword arguments in 'properties' must map names to
+            property objects, or a TypeError is raised.
 
             A proxied reference to the database is available as the
             'db' attribute on instances. For example, in
@@ -1741,6 +1745,7 @@ Changes to this document
 - New Templating
 - Access Controls
 - Added "actor" property
+- 'classname' format specified in class Class.
 
 .. _customisation: customizing.html
 

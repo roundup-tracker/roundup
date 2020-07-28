@@ -2982,14 +2982,65 @@ class SchemaTest(MyTestCase):
         b.setkey("name")
         self.db.post_init()
 
+    def test_splitDesignator(self):
+        from roundup.hyperdb import splitDesignator
+
+        valid_test_cases = [('zip2py44', ('zip2py', '44')),
+                              ('zippy2', ('zippy', '2')),
+                              ('a9', ('a', '9')),
+                              ('a1234', ('a', '1234')),
+                              ('a_1234', ('a_', '1234')),
+        ]
+
+        invalid_test_cases = ['_zip2py44','1zippy44',
+                              'zippy244a' ]
+
+        for designator in valid_test_cases:
+            print("Testing %s"%designator[0])
+            self.assertEqual(splitDesignator(designator[0]), designator[1])
+
+        for designator in invalid_test_cases:
+            print("Testing %s"%designator)
+            with self.assertRaises(ValueError) as ctx:
+                splitDesignator(designator)
+            error = 'DesignatorError: "%s" not a node designator' % designator
+            self.assertEqual(str(ctx.exception), error)
+
+
     def test_addNewClass(self):
         self.init_a()
 
-        self.assertRaises(ValueError, self.module.Class, self.db, "a",
-            name=String())
+        with self.assertRaises(ValueError) as ctx:
+            self.module.Class(self.db, "a", name=String())
+        error = 'Class "a" already defined.'
+        self.assertEqual(str(ctx.exception), error)
 
         aid = self.db.a.create(name='apple')
         self.db.commit(); self.db.close()
+
+        # Test permutations of valid/invalid classnames
+        self.init_a()
+
+        for classname in [ "1badclassname", "badclassname1",
+                           "_badclassname", "_", "5" ]:
+            print("testing %s\n" % classname)
+            with self.assertRaises(ValueError) as ctx:
+                self.module.Class(self.db, classname, name=String())
+
+            error = ('Class name %s is not valid. It must start '
+                     'with a letter, end with a letter or "_", and '
+                     'only have alphanumerics and "_" in the middle.' % (classname,))
+            self.assertEqual(str(ctx.exception), error)
+
+        for classname in [ 'cla2ss', 'c_lass', 'CL_2ass', 'Z',
+                            'class2_' ]:
+            print("testing %s\n" % classname)
+            c = self.module.Class(self.db, classname, name=String())
+            self.assertEqual(str(c), '<hyperdb.Class "%s">' % classname)
+
+        # don't pollute the db with junk valid cases
+        # self.db.commit(); close to discard all changes in this block.
+        self.db.close()
 
         # add a new class to the schema and check creation of new items
         # (and existence of old ones)
