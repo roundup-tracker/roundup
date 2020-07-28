@@ -2985,6 +2985,8 @@ class SchemaTest(MyTestCase):
     def test_splitDesignator(self):
         from roundup.hyperdb import splitDesignator, DesignatorError
 
+        self.open_database() # allow setup/shutdown to work to postgres/mysql
+
         valid_test_cases = [('zip2py44', ('zip2py', '44')),
                               ('zippy2', ('zippy', '2')),
                               ('a9', ('a', '9')),
