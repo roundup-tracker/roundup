@@ -1,0 +1,26 @@
+<!-- dollarId: issue.index,v 1.2 2001/07/29 04:07:37 richard Exp dollar-->
+
+<tal:block metal:use-macro="templates/page/macros/icing">
+
+<title metal:fill-slot="head_title" i18n:translate="" >
+ About this Tracker
+</title>
+<tal:block metal:fill-slot="body_title" i18n:translate="">
+  About this Tracker
+</tal:block>
+
+<div class="content" metal:fill-slot="content">
+
+ <span tal:condition="not:python:request.user.hasRole('Admin')"
+	tal:omit-tag="python:1" i18n:translate="">
+    Please login with your username and password to find out about
+    this tracker.
+  </span>
+
+  <div tal:condition="python:request.user.hasRole('Admin')"
+       tal:omit-tag="python:1" i18n:translate="">
+    <div tal:replace="structure python:utils.AboutPage(db)"></div>
+  </div>
+</div>
+
+</tal:block>
