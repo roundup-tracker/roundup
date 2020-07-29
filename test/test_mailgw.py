@@ -3590,6 +3590,37 @@ Subject: Re: [issue] Testing...
 Hi, I'm on holidays, and this is a dumb auto-responder.
 ''')
 
+    def testItsAutoSubmittedStupid(self):
+        self.assertRaises(IgnoreBulk, self._handle_mail,
+            '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+Auto-Submitted: Auto-Generated
+To: issue_tracker@your.tracker.email.domain.example
+Cc: richard@test.test
+Message-Id: <dummy_test_message_id>
+Subject: Re: [issue] Testing...
+
+Hi, I'm on holidays, and this is a dumb auto-responder.
+''')
+
+    def testItsHumanSubmitted(self):
+        ''' keep trailing spaces on Auto-submitted header
+        '''
+        self.db.keyword.create(name='Foo')
+        self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: richard <richard@test.test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Auto-submitted:   No  
+Subject: [keyword1] Testing... [name=Bar]
+
+''')
+        self.assertEqual(self.db.keyword.get('1', 'name'), 'Bar')
+
+
     def testAutoReplyEmailsAreIgnored(self):
         self.assertRaises(IgnoreBulk, self._handle_mail,
             '''Content-Type: text/plain;

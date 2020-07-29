@@ -535,10 +535,18 @@ class parsedMessage:
         ''' Check to see if message can be safely ignored:
             detect loops and
             Precedence: Bulk, or Microsoft Outlook autoreplies
+            Auto-Submitted not equal to no, so auto-generated,
+            auto-replied and auto-notified are dropped. rstrip
+            auto-submitted value because trailing comment/whitespace
+            is allowed per RFC3834. Note that we only handle whitespace.
+            Lowercase the value as references say No and no as possible
+            values.
         '''
         if self.message.get_header('x-roundup-loop', ''):
             raise IgnoreLoop
         if (self.message.get_header('precedence', '') == 'bulk'
+                or self.message.get_header('auto-submitted', 'no').rstrip().lower() \
+                         != 'no'
                 or self.subject.lower().find("autoreply") > 0):
             raise IgnoreBulk
 

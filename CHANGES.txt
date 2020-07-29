@@ -20,6 +20,9 @@ Fixed:
   [A-z][A-z0-9_]+[A-z_]. This was never documented or enforced, but
   we get obscure errors if the rules are not followed. (Tom
   Ekberg tests by John Rouilard)
+- issue2550564 - Roundup sets "Precedence: bulk" on all outgoing mail,
+  which seems wrong. Handle Auto-Submitted header on *inbound* email
+  like we do precedence bulk. This is part of this issue.
 
 2020-07-13 2.0.0
 
