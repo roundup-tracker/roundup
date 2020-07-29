@@ -22,6 +22,24 @@ Contents:
 .. contents::
    :local:
 
+.. index:: Upgrading; 1.6.x to 2.x.x
+
+Migrating from 2.0.0 to 2.x.x
+=============================
+
+Classname Format Enforced
+=========================
+
+Check schema.py and look at all Class(), IssueClass(), FileClass()
+calls. The second argument is the classname. All classnames must:
+
+   * start with an alphabetic character
+   * consist of alphanumerics and '_'
+   * not end with a digit
+
+this was not enforced before. Using non-standard classnames could lead
+to other issues.
+
 .. index:: Upgrading; 1.6.x to 2.0.0
 
 Migrating from 1.6.X to 2.0.0
