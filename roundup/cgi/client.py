@@ -367,7 +367,7 @@ class Client:
         # should cookies be secure?
         self.secure = self.base.startswith ('https')
 
-        # check the tracker_we setting
+        # check the tracker_web setting
         if not self.base.endswith('/'):
             self.base = self.base + '/'
 
