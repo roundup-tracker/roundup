@@ -649,14 +649,14 @@ class AdminTest(object):
         self.admin=AdminTool()
         with captured_output() as (out, err):
             sys.argv=['main', '-i', self.dirname, '-S', ':',
-                      'filter', 'issue',
+                      '-d', 'filter', 'issue',
                       'assignedto.username=A']
             ret = self.admin.main()
 
         out = out.getvalue().strip()
         print("me: " + out)
         print(err.getvalue().strip())
-        self.assertEqual(out, "1:2")
+        self.assertEqual(out, "issue1:issue2")
 
 
     def disabletestHelpInitopts(self):
