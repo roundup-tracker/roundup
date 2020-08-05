@@ -23,6 +23,17 @@ Fixed:
 - issue2550564 - Roundup sets "Precedence: bulk" on all outgoing mail,
   which seems wrong. Handle Auto-Submitted header on *inbound* email
   like we do precedence bulk. This is part of this issue.
+- roundup-admin filter calls find() not filter when using -s -c -S
+  (John Rouillard)
+
+Features:
+- issue2550522 - Add 'filter' command to command-line
+  interface. Filter command was actually added in 2.0.0, but this
+  issue requested transitive searching. So that:
+    roundup-admin -i . filter issue assignedto.username=Admin
+  will work. This also fixes a bug. If assignedto.username had no
+  matches, all issues would be returned.  This is also fixed.
+  (John Rouillard)
 
 2020-07-13 2.0.0
 

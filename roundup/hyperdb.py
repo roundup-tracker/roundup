@@ -620,6 +620,8 @@ class Proptree(object):
                         exact_match_spec[p.name] = exact
                     if subst:
                         filterspec[p.name] = subst
+                    elif not exact: # don't set if we have exact criteria
+                        filterspec[p.name] =[ '-1' ] # no match was found
                 else:
                     assert not isinstance(p.val, Exact_Match)
                     filterspec[p.name] = p.val

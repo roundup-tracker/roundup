@@ -746,9 +746,33 @@ Erase it? Y/N: """))
                 values = [ value ]
 
             props[propname] = []
+            # start handling transitive props
+            # given filter issue assignedto.roles=Admin
+            # start at issue
+            curclass = cl
+            lastprop = propname # handle case 'issue assignedto=admin'
+            if '.' in propname:
+                # start splitting transitive prop into components
+                # we end when we have no more links
+                for pn in propname.split('.'):
+                    try:
+                        lastprop=pn # get current component
+                        # get classname for this link
+                        try:
+                            curclassname = curclass.getprops()[pn].classname
+                        except KeyError:
+                            raise UsageError(_("Class %(curclassname)s has "
+                            "no property %(pn)s in %(propname)s." % locals()))
+                        # get class object
+                        curclass = self.get_class(curclassname)
+                    except AttributeError:
+                        # curclass.getprops()[pn].classname raises this
+                        # when we are at a non link/multilink property
+                        pass
+
             for value in values:
-                val = hyperdb.rawToHyperdb(self.db, cl, None,
-                                             propname, value)
+                val = hyperdb.rawToHyperdb(self.db, curclass, None,
+                                           lastprop, value)
                 props[propname].append(val)
 
         # now do the filter
@@ -764,7 +788,7 @@ Erase it? Y/N: """))
                         designator.append(classname + i)
                     print(self.separator.join(designator))
                 else:
-                    print(self.separator.join(cl.find(**props)))
+                    print(self.separator.join(cl.filter(None, **props)))
             else:
                 if self.print_designator:
                     id = cl.filter(None, **props)

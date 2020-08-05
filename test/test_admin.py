@@ -553,6 +553,112 @@ class AdminTest(object):
         print(out)
         self.assertEqual(sorted(eval(out)), ['1', '2'])
 
+        # Reopen the db closed by previous filter call
+        # 
+        # case: transitive property valid match
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'filter', 'issue',
+                      'assignedto.roles=Anonymous']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, "['2']")
+
+        # Reopen the db closed by previous filter call
+        #         self.admin=AdminTool()
+        # case: transitive propery invalid prop
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            ''' assignedto is not a valid property=value, so
+                report error.
+            '''
+            sys.argv=['main', '-i', self.dirname, 'filter', 'issue',
+                      'assignedto.badprop=Admin']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        expected='Error: Class user has no property badprop in assignedto.badprop.'
+        print(out[0:len(expected)])
+        self.assertEqual(expected, out[0:len(expected)])
+
+        # Reopen the db closed by previous filter call
+        # 
+        # case: transitive property invalid match
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname,
+                      'filter', 'issue',
+                      'assignedto.username=NoNAme']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print("me: " + out)
+        print(err.getvalue().strip())
+        self.assertEqual(out, "[]")
+
+        # Reopen the db closed by previous filter call
+        # 
+        # case: transitive property invalid match
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-c',
+                      'filter', 'issue',
+                      'assignedto.username=NoNAme']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print("me: " + out)
+        print(err.getvalue().strip())
+        self.assertEqual(out, "")
+
+        # Reopen the db closed by previous filter call
+        # 
+        # case: transitive property invalid match
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-c',
+                      'filter', 'issue',
+                      'assignedto.username=A']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print("me: " + out)
+        print(err.getvalue().strip())
+        self.assertEqual(out, "1,2")
+
+        # Reopen the db closed by previous filter call
+        # 
+        # case: transitive property invalid match
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-s',
+                      'filter', 'issue',
+                      'assignedto.username=A']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print("me: " + out)
+        print(err.getvalue().strip())
+        self.assertEqual(out, "1 2")
+
+        # Reopen the db closed by previous filter call
+        # 
+        # case: transitive property invalid match
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-S', ':',
+                      'filter', 'issue',
+                      'assignedto.username=A']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print("me: " + out)
+        print(err.getvalue().strip())
+        self.assertEqual(out, "1:2")
+
+
     def disabletestHelpInitopts(self):
 
         ''' Note the tests will fail if you run this under pdb.
