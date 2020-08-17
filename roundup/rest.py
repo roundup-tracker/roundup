@@ -627,6 +627,12 @@ class RestfulInstance(object):
                     cl = self.db.getclass(cn)
                     nd = cl.getnode(id)
                     id = v = getattr(nd, p)
+                    # Handle transitive properties where something on
+                    # the road is None (empty Link property)
+                    if id is None :
+                        prop = None
+                        ok = True
+                        break
                     prop = cl.getprops(protected=True)[p]
                     cn = getattr(prop, 'classname', None)
                 else:
