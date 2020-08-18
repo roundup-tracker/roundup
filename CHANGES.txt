@@ -25,6 +25,11 @@ Fixed:
   like we do precedence bulk. This is part of this issue.
 - roundup-admin filter calls find() not filter when using -s -c -S
   (John Rouillard)
+- When requesting transitive properties via '@fields' in the REST-API,
+  an empty link in the transitive property (e.g. author.username when
+  requesting message properties) would result in a 404 error. Now we're
+  returning a JSON 'null' value. for an empty link (e.g. empty author in
+  the example).
 
 Features:
 - issue2550522 - Add 'filter' command to command-line
