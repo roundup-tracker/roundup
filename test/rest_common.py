@@ -215,6 +215,7 @@ class TestCase():
         self.db.issue.addprop(afloat=hyperdb.Number())
         self.db.issue.addprop(abool=hyperdb.Boolean())
         self.db.issue.addprop(requireme=hyperdb.String(required=True))
+        self.db.user.addprop(issue=hyperdb.Link('issue'))
         self.db.msg.addprop(tx_Source=hyperdb.String())
 
         self.db.post_init()
@@ -359,6 +360,7 @@ class TestCase():
                     'collection': [
                       { 'id': '2',
                         'link': base_path + 'issue/2',
+                        'assignedto.issue': None,
                         'status':
                           { 'id': '10',
                             'link': base_path + 'status/10'
@@ -366,6 +368,7 @@ class TestCase():
                       },
                       { 'id': '1',
                         'link': base_path + 'issue/1',
+                        'assignedto.issue': None,
                         'status':
                           { 'id': '9',
                             'link': base_path + 'status/9'
@@ -376,7 +379,7 @@ class TestCase():
         form = cgi.FieldStorage()
         form.list = [
             cgi.MiniFieldStorage('status.name', 'o'),
-            cgi.MiniFieldStorage('@fields', 'status'),
+            cgi.MiniFieldStorage('@fields', 'status,assignedto.issue'),
             cgi.MiniFieldStorage('@sort', 'status.name'),
         ]
         results = self.server.get_collection('issue', form)
@@ -1139,14 +1142,14 @@ class TestCase():
             items = node.items(protected=True) # include every item
             print(repr(sorted(items)))
             print(etag)
-            self.assertEqual(etag, '"0433784660a141e8262835171e70fd2f"')
+            self.assertEqual(etag, '"07c3a7f214d394cf46220e294a5a53c8"')
 
             # modify key and verify we have a different etag
             etag = calculate_etag(node, self.db.config['WEB_SECRET_KEY'] + "a")
             items = node.items(protected=True) # include every item
             print(repr(sorted(items)))
             print(etag)
-            self.assertNotEqual(etag, '"0433784660a141e8262835171e70fd2f"')
+            self.assertNotEqual(etag, '"07c3a7f214d394cf46220e294a5a53c8"')
 
             # change data and verify we have a different etag
             node.username="Paul"
@@ -1154,7 +1157,7 @@ class TestCase():
             items = node.items(protected=True) # include every item
             print(repr(sorted(items)))
             print(etag)
-            self.assertEqual(etag, '"8abeacd284d58655c620d60389e29d4d"')
+            self.assertEqual(etag, '"d655801d3a6d51e32891531b06ccecfa"')
         finally:
             date.Date = originalDate
         
