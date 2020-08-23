@@ -37,6 +37,8 @@ from roundup.mailer import Mailer
 # open the instance
 if len(sys.argv) != 2:
     print('You need to specify an instance home dir')
+    sys.exit()
+
 instance_home = sys.argv[1]
 instance = instance.open(instance_home)
 db = instance.open('admin')
@@ -69,7 +71,7 @@ def listKey(x):
 
 # loop through all the users
 for user_id in db.user.list():
-    # make sure we care aboue this user
+    # make sure we care about this user
     name = db.user.get(user_id, 'realname')
     if name is None:
         name = db.user.get(user_id, 'username')
