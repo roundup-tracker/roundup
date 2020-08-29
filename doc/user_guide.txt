@@ -267,9 +267,21 @@ you where you are, a sidebar which contains useful navigation tools and a
 body which usually displays either a list of items or a single item from
 the tracker.
 
-You may either register or log in. Registration takes you to:
+You may register, reset your password or log in. Registration takes
+you to:
 
 .. image:: images/registration.png
+
+Clicking on the "Lost your login?" link allows you to reset your
+password. Resetting your password takes you to:
+
+.. image:: images/reset.png
+
+You can enter your username to get a reset email sent to your primary
+E-mail address. Otherwise you can enter your primary E-mail address or
+an Alternate E-mail address to get a reset email sent to that address.
+The reset email includes a verification link that can be used to
+complete the password reset.
 
 Once you're logged in, the sidebar changes to:
 
