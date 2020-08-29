@@ -39,7 +39,10 @@ Features:
   will work. This also fixes a bug. If assignedto.username had no
   matches, all issues would be returned.  This is also fixed.
   (John Rouillard)
-
+- issue2550716 - Email address displayed after password reset request.
+  This fix actually made it into 1.6 release. However this release
+  documents how password reset works in user_guide.txt. (John Rouillard)
+ 
 2020-07-13 2.0.0
 
 Fixed:
