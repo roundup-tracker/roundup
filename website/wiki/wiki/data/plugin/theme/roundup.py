@@ -28,13 +28,13 @@ class Theme(ThemeBase):
         html = [
             u'<div class="menu">',
             u'  <ul>',
-            u'    <li><a href="http://www.roundup-tracker.org">Home</a></li>',
+            u'    <li><a href="https://www.roundup-tracker.org">Home</a></li>',
             u'    <li><a href="https://pypi.python.org/pypi/roundup">Download</a></li>',
-            u'    <li><a href="http://www.roundup-tracker.org/docs.html">Docs</a></li>',
+            u'    <li><a href="https://www.roundup-tracker.org/docs.html">Docs</a></li>',
             u'    <li><a href="https://issues.roundup-tracker.org">Issues</a></li>',
-            u'    <li><a href="http://www.roundup-tracker.org/contact.html">Contact</a></li>',
+            u'    <li><a href="https://www.roundup-tracker.org/contact.html">Contact</a></li>',
             self.wiki_links(d),
-            u'    <li><a href="http://www.roundup-tracker.org/code.html">Code</a></li>',
+            u'    <li><a href="https://www.roundup-tracker.org/code.html">Code</a></li>',
             u'  </ul>',
             u'</div>',
             ]
