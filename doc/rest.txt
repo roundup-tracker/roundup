@@ -832,7 +832,7 @@ Once the @poe link is used and creates an issue, it becomes invalid
 and can't be used again.  Posting to it after the issue, or other
 object, is created, results in a 400 error [#poe_retry]_.
 
-Note that POE links are by restricted to the class that was used to
+Note that POE links are restricted to the class that was used to
 get the link. So you can only create an issue using the link returned
 from ``rest/data/issue/@poe``. You can create a generic POE link by adding
 the "generic" field to the post payload::
