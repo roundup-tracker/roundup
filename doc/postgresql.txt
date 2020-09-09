@@ -17,7 +17,7 @@ additionally install:
 
 2. The psycopg python interface to PostgreSQL:
 
-     http://initd.org/psycopg/
+     https://www.psycopg.org/
 
 
 Running the PostgreSQL unit tests
