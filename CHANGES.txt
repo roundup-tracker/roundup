@@ -30,6 +30,10 @@ Fixed:
   requesting message properties) would result in a 404 error. Now we're
   returning a JSON 'null' value. for an empty link (e.g. empty author in
   the example).
+- sphinxcontrib.cheeseshop is unmaintained and using old http
+  url. Attempts to override cheeseshop_url failed. Replace call to
+  cheeseshop in docs with raw html and remove references to
+  cheeseshop.  (John Rouillard)
 
 Features:
 - issue2550522 - Add 'filter' command to command-line

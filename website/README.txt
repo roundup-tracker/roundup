@@ -91,8 +91,8 @@ to free resources:
 updating www.roundup-tracker.org
 ---------------------------------
 Site update requires rebuilding HTML files. For that
-you `sphinx` and `sphinxcontrib-cheeseshop` are required/
-Hopefully, they are already installed into virtualenv, so
+`sphinx` is required/
+Hopefully, it is already installed into virtualenv, so
 the whole procedure looks like so:
 
     # activate the virtualenv

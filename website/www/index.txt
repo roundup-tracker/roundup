@@ -1,9 +1,10 @@
 Roundup Issue Tracker
 =====================
 
-.. pypi-release:: roundup
-   :prefix: Download
-   :class: note
+.. raw:: html
+
+   <div class="release_info note">Download:
+   <a href="https://pypi.org/project/roundup/">latest</a></div>
 
 Roundup is a simple-to-use and -install issue-tracking system with
 command-line, web and e-mail interfaces.  It is based on the winning
