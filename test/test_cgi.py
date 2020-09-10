@@ -1162,7 +1162,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         # Should return explanation because content type is text/plain
         # and not text/xml
         cl.handle_xmlrpc()
-        self.assertEqual(out[0], b"This is the endpoint of Roundup <a href='http://www.roundup-tracker.org/docs/xmlrpc.html'>XML-RPC interface</a>.")
+        self.assertEqual(out[0], b"This is the endpoint of Roundup <a href='https://www.roundup-tracker.org/docs/xmlrpc.html'>XML-RPC interface</a>.")
         del(out[0])
 
         # Should return admin user indicating auth works and

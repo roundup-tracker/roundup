@@ -183,7 +183,7 @@ class PermissionTest(MyTestCase, unittest.TestCase):
             return (itemid == '1')
 
         # also create a check as a callable of a class
-        #   http://issues.roundup-tracker.org/issue2550952
+        #   https://issues.roundup-tracker.org/issue2550952
         class CheckClass(object):
             def __call__(self, db,userid,itemid, **other):
                 prop = other['property']
