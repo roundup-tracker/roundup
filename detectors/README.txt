@@ -10,7 +10,7 @@ work out of the box. If you find them out of date and have patches to
 make them work against newer versions of roundup, please open an issue
 at:
 
-   http://issues.roundup-tracker.org
+   https://issues.roundup-tracker.org
 
 The current inventory is:
 

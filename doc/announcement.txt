@@ -2,7 +2,7 @@ I'm proud to release version 2.0.0 of the Roundup issue tracker
 which has been possible due to the help of several contributors. This
 release contains some major changes, so make sure to read
 `docs/upgrading.txt
-<http://www.roundup-tracker.org/docs/upgrading.html>`_ to bring
+<https://www.roundup-tracker.org/docs/upgrading.html>`_ to bring
 your tracker up to date.
 
 There are special directions for those using mysql backend.
@@ -73,7 +73,7 @@ To give Roundup a try, just download (see below), unpack and run::
 Release info and download page:
      https://pypi.org/project/roundup
 Source and documentation is available at the website:
-     http://roundup-tracker.org/
+     https://roundup-tracker.org/
 Mailing lists - the place to ask questions:
      https://sourceforge.net/p/roundup/mailman/
 

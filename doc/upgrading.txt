@@ -490,7 +490,7 @@ E.G. If your class does a setlabelprop("foo") you must include "foo"
 in the properties list even if the class has name or title properties.
 
 See:
-http://www.roundup-tracker.org/docs/customizing.html#setlabelprop-property
+https://www.roundup-tracker.org/docs/customizing.html#setlabelprop-property
 for further details on the labelprop.
 
 If you don't do this, you will find that multilinks (and possibly
@@ -2723,7 +2723,7 @@ and modify it according to your local schema changes.
 
 If you need help with the new templating system, please ask questions on the
 roundup-users mailing list (available through the roundup web page on
-sourceforge, http://www.roundup-tracker.org/.
+sourceforge, https://www.roundup-tracker.org/.
 
 
 0.5.0 Detectors

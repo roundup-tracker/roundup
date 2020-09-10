@@ -97,7 +97,7 @@ Most small changes can be submitted as patches through the
 Source Repository Access
 ------------------------
 
-See http://www.roundup-tracker.org/code.html.
+See https://www.roundup-tracker.org/code.html.
 For all other questions ask on the development mailinglist.
 
 

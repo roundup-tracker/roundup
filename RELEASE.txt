@@ -89,9 +89,9 @@ Roundup release checklist:
      announce@fossies.org
 16. Refresh website.
       website/README.txt
-      http://www.roundup-tracker.org/ should state that the stable
+      https://www.roundup-tracker.org/ should state that the stable
       version is the one that you released.
-      http://www.roundup-tracker.org/docs.html should also match the
+      https://www.roundup-tracker.org/docs.html should also match the
       released version (or at least the major non pre-release
       1.x/2.x version).
 

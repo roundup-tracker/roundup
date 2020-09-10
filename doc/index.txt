@@ -2,7 +2,7 @@
 Roundup: an Issue-Tracking System for Knowledge Workers
 =======================================================
 
-For how to contact the community see http://www.roundup-tracker.org .
+For how to contact the community see https://www.roundup-tracker.org .
 
 Contents
 ========

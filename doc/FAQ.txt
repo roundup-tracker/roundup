@@ -170,7 +170,7 @@ I want to link version identifiers from my messages to svn/mercurial/git
 
 See: the LinkFormatingExample at:
 
-http://www.roundup-tracker.org/cgi-bin/moin.cgi/LinkFormattingExample?highlight=%28local%5C_replace%29
+https://wiki.roundup-tracker.org/LinkFormattingExample?highlight=%28local%5C_replace%29
 
 There are examples in the devel and responsive templates. Search for
 LocalReplace to find the extension file and the change that has to be
