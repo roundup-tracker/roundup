@@ -45,4 +45,4 @@ Roundup was originally released as version 0.1.1 in late August, 2001. The first
 
 .. _`download`: https://pypi.org/project/roundup/
 .. _`change note`: https://sourceforge.net/p/roundup/code/ci/tip/tree/CHANGES.txt
-.. _`its own set of docs`: http://www.roundup-tracker.org/dev-docs/docs.html
+.. _`its own set of docs`: https://www.roundup-tracker.org/dev-docs/docs.html

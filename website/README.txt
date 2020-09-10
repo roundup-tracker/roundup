@@ -1,6 +1,6 @@
 Roundup has three web sites:
 
- * http://www.roundup-tracker.org/
+ * https://www.roundup-tracker.org/
  * https://wiki.roundup-tracker.org/
  * https://issues.roundup-tracker.org/
 
@@ -121,11 +121,11 @@ instead update:
 
   ${project_home}/htdocs/dev-docs/
 
-and the URL will be: http://www.roundup-tracker.org/dev-docs/docs.html
+and the URL will be: https://www.roundup-tracker.org/dev-docs/docs.html
 
 Note there appears to be a cache somewhere in the path, so you may
 need to use:
 
-  http://www.roundup-tracker.org/dev-docs/docs.html?foo=1
+  https://www.roundup-tracker.org/dev-docs/docs.html?foo=1
 
 to cache bust.
