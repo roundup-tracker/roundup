@@ -11,7 +11,11 @@ classname
 db (or hyperdb)
    a collection of items
 designator
-   a combined class + itemid reference to any item in the hyperdb
+   a combined class + itemid reference to any item in the
+   hyperdb. E.g. issue26. Note that form values can include
+   something that looks like a designator composed of a classname, a
+   dash '-', and a number. E.g. file-1. These
+   are used to create new instances of a class via the web interface.
 itemid
    a numeric reference to a particular item of one class
 item
