@@ -53,6 +53,7 @@ before_install:
   - echo $TRAVIS_PYTHON_VERSION
   - if [[ $TRAVIS_PYTHON_VERSION == "2."* ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python; fi
   - if [[ $TRAVIS_PYTHON_VERSION == "3."* ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3; fi
   - make && make install
 
   - PATH=$VIRTUAL_ENV/bin:$PATH
