@@ -10,7 +10,7 @@ python:
   - 3.6
   - 3.7
   - 3.8
-  - 3.9
+  - 3.9-dev
   - nightly
 
 #I would like to build and test the maint-1.6 and trunk/default
@@ -50,6 +50,7 @@ before_install:
   - curl -s -O https://oligarchy.co.uk/xapian/$XAPIAN_VER/xapian-bindings-$XAPIAN_VER.tar.xz
   - tar -Jxvf xapian-bindings-$XAPIAN_VER.tar.xz
   - cd xapian-bindings-$XAPIAN_VER/
+  - echo $TRAVIS_PYTHON_VERSION
   - if [[ $TRAVIS_PYTHON_VERSION == "2."* ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python; fi
   - if [[ $TRAVIS_PYTHON_VERSION == "3."* ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3; fi
   - make && make install
