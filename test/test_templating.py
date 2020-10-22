@@ -447,6 +447,18 @@ class MarkdownTests:
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'[link](javascript:alert(1))'))
         self.assertTrue(p.markdown().find('href="javascript:') == -1)
 
+
+    def test_string_markdown_forced_line_break(self):
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'This is a set of text  \n:that should have a break  \n:at newlines. Each  \n:colon should be the start of an html line'))
+        # sigh different backends render this differently:
+        #  of text <br />
+        #  of text<br>
+        # etc.
+        # Rather than using a different result for each
+        # renderer, look for '<br' and require three of them.
+        m = p.markdown()
+        self.assertEqual(3, m.count('<br'))
+
     def test_string_markdown_code_block(self):
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'embedded code block\n\n```\nline 1\nline 2\n```\n\nnew paragraph'))
         self.assertEqual(p.markdown().strip().replace('\n\n', '\n'), u2s(u'<p>embedded code block</p>\n<pre><code>line 1\nline 2\n</code></pre>\n<p>new paragraph</p>'))
