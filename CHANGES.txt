@@ -36,6 +36,9 @@ Fixed:
   cheeseshop.  (John Rouillard)
 - issue2551093 - return plain text if markdown formatter throws exception
   (reported by Cedric Krier, fix by John Rouillard)
+- issue2551094 - make simplemde handle line breaks the same as the
+  backend markdown formmatters. (report: Cedric Krier, patch: Christof
+  Meerwald) 
 
 Features:
 - issue2550522 - Add 'filter' command to command-line

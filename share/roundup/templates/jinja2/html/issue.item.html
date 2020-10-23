@@ -32,7 +32,7 @@
       var node = $('#change_note')[0];
       var initSimpleMde = function () {
         node.parentNode.appendChild($('<input/>', { type: 'hidden', name: 'msg-1@type', value: 'text/markdown'})[0]);
-        var simplemde = new SimpleMDE({ element: node, status: false, styleSelectedText: false });
+        var simplemde = new SimpleMDE({ element: node, status: false, styleSelectedText: false, renderingConfig: {singleLineBreaks: false}});
         simplemde.render();
       };
       {% if context.id %}
