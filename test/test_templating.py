@@ -460,8 +460,23 @@ class MarkdownTests:
         self.assertEqual(3, m.count('<br'))
 
     def test_string_markdown_code_block(self):
-        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'embedded code block\n\n```\nline 1\nline 2\n```\n\nnew paragraph'))
-        self.assertEqual(p.markdown().strip().replace('\n\n', '\n'), u2s(u'<p>embedded code block</p>\n<pre><code>line 1\nline 2\n</code></pre>\n<p>new paragraph</p>'))
+        ''' also verify that embedded html is escaped '''
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'embedded code block <pre>\n\n```\nline 1\nline 2\n```\n\nnew </pre> paragraph'))
+        self.assertEqual(p.markdown().strip().replace('\n\n', '\n'), u2s(u'<p>embedded code block &lt;pre&gt;</p>\n<pre><code>line 1\nline 2\n</code></pre>\n<p>new &lt;/pre&gt; paragraph</p>'))
+
+    def test_string_markdown_code_block_attribute(self):
+        ''' also verify that embedded html is escaped '''
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'embedded code block <pre>\n\n``` python\nline 1\nline 2\n```\n\nnew </pre> paragraph'))
+        m = p.markdown().strip()
+        print(m)
+        if type(self) == MistuneTestCase:
+            self.assertEqual(m.replace('\n\n','\n'), '<p>embedded code block &lt;pre&gt;</p>\n<pre><code class="lang-python">line 1\nline 2\n</code></pre>\n<p>new &lt;/pre&gt; paragraph</p>')
+        elif type(self) == MarkdownTestCase:
+            self.assertEqual(m.replace('\n\n','\n'), '<p>embedded code block &lt;pre&gt;</p>\n<pre><code class="language-python">line 1\nline 2\n</code></pre>\n<p>new &lt;/pre&gt; paragraph</p>')
+        else: # markdown2 doesn't handle attributes with code blocks
+              # so processing it returns original text
+            self.assertEqual(m.replace('\n\n', '\n'), u2s(u'embedded code block &lt;pre&gt;\n``` python\nline 1\nline 2\n```\nnew &lt;/pre&gt; paragraph'))
+
 
 @skip_mistune
 class MistuneTestCase(TemplatingTestCase, MarkdownTests) :

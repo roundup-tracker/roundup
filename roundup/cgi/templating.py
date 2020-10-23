@@ -1730,7 +1730,11 @@ class StringHTMLProperty(HTMLProperty):
         s = self.plain(escape=0, hyperlink=0)
         if hyperlink:
             s = self.hyper_re.sub(self._hyper_repl_markdown, s)
-        return u2s(markdown(s2u(s)))
+        try:
+            s = u2s(markdown(s2u(s)))
+        except Exception:  # when markdown formatting fails return markup
+            return self.plain(escape=0, hyperlink=hyperlink)
+        return s
 
     def field(self, **kwargs):
         """ Render the property as a field in HTML.

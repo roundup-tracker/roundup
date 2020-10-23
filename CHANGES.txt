@@ -34,6 +34,8 @@ Fixed:
   url. Attempts to override cheeseshop_url failed. Replace call to
   cheeseshop in docs with raw html and remove references to
   cheeseshop.  (John Rouillard)
+- issue2551093 - return plain text if markdown formatter throws exception
+  (reported by Cedric Krier, fix by John Rouillard)
 
 Features:
 - issue2550522 - Add 'filter' command to command-line
