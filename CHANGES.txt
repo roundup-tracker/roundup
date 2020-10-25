@@ -51,7 +51,10 @@ Features:
 - issue2550716 - Email address displayed after password reset request.
   This fix actually made it into 1.6 release. However this release
   documents how password reset works in user_guide.txt. (John Rouillard)
- 
+- issue2551094 - add new markdown config.ini setting to allow embedded
+  newlines to cause a linebreak same as GitHub Flavored Markdown.
+  (Patch: Cedric Krier; Doc change/checkin John Rouillard)
+
 2020-07-13 2.0.0
 
 Fixed:

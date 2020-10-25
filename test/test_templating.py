@@ -74,7 +74,7 @@ class TemplatingTestCase(unittest.TestCase):
         # add client props for testing anti_csrf_nonce
         self.client.session_api = MockNull(_sid="1234567890")
         self.client.db.getuid = lambda : 10
-        self.client.db.config = {'WEB_CSRF_TOKEN_LIFETIME': 10 }
+        self.client.db.config = {'WEB_CSRF_TOKEN_LIFETIME': 10, 'MARKDOWN_BREAK_ON_NEWLINE': False }
 
 class HTMLDatabaseTestCase(TemplatingTestCase):
     def test_HTMLDatabase___getitem__(self):
@@ -476,6 +476,16 @@ class MarkdownTests:
         else: # markdown2 doesn't handle attributes with code blocks
               # so processing it returns original text
             self.assertEqual(m.replace('\n\n', '\n'), u2s(u'embedded code block &lt;pre&gt;\n``` python\nline 1\nline 2\n```\nnew &lt;/pre&gt; paragraph'))
+
+    def test_break_on_newline(self):
+        self.client.db.config['MARKDOWN_BREAK_ON_NEWLINE'] = True
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string with\nline break\ntwice.'))
+        m = p.markdown()
+        self.assertEqual(2, m.count('<br'))
+        self.client.db.config['MARKDOWN_BREAK_ON_NEWLINE'] = False
+
+        m = p.markdown()
+        self.assertEqual(0, m.count('<br'))
 
 
 @skip_mistune

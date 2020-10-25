@@ -69,7 +69,13 @@ def _import_markdown2():
             # don't allow disabled protocols in links
             _safe_protocols = re.compile('(?!' + ':|'.join([re.escape(s) for s in _disable_url_schemes]) + ':)', re.IGNORECASE)
 
-        markdown = lambda s: Markdown(safe_mode='escape', extras={ 'fenced-code-blocks' : True }).convert(s)
+        def _extras(config):
+            extras = { 'fenced-code-blocks' : True }
+            if config['MARKDOWN_BREAK_ON_NEWLINE']:
+                extras['break-on-newline'] = True
+            return extras
+
+        markdown = lambda s, c: Markdown(safe_mode='escape', extras=_extras(c)).convert(s)
     except ImportError:
         markdown = None
 
@@ -107,7 +113,13 @@ def _import_markdown():
                 else:
                     md.treeprocessors['restrict_links'] = RestrictLinksProcessor()
 
-        markdown = lambda s: markdown_impl(s, extensions=[SafeHtml(), 'fenced_code'])
+        def _extensions(config):
+            extensions = [SafeHtml(), 'fenced_code']
+            if config['MARKDOWN_BREAK_ON_NEWLINE']:
+                extensions.append('nl2br')
+            return extensions
+
+        markdown = lambda s, c: markdown_impl(s, extensions=_extensions(c))
     except ImportError:
         markdown = None
 
@@ -117,7 +129,14 @@ def _import_mistune():
     try:
         import mistune
         mistune._scheme_blacklist = [ s + ':' for s in _disable_url_schemes ]
-        markdown = mistune.markdown
+
+        def _options(config):
+            options = {}
+            if config['MARKDOWN_BREAK_ON_NEWLINE']:
+                options['hard_wrap'] = True
+            return options
+
+        markdown = lambda s, c: mistune.markdown(s, **_options(c))
     except ImportError:
         markdown = None
 
@@ -1731,7 +1750,7 @@ class StringHTMLProperty(HTMLProperty):
         if hyperlink:
             s = self.hyper_re.sub(self._hyper_repl_markdown, s)
         try:
-            s = u2s(markdown(s2u(s)))
+            s = u2s(markdown(s2u(s), self._db.config))
         except Exception:  # when markdown formatting fails return markup
             return self.plain(escape=0, hyperlink=hyperlink)
         return s

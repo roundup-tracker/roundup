@@ -1329,6 +1329,12 @@ always passes, so setting it less than 1 is not recommended."""),
             "won't be attached to nosy mails. They will be replaced by\n"
             "a link to the tracker's download page for the file.")
     ), "Nosy messages sending"),
+    ("markdown", (
+        (BooleanOption, "break_on_newline", "no",
+            "If yes/true, render single new line characters in markdown\n"
+            "text with <br>. Set true if you want GitHub Flavored Markdown\n"
+            "(GFM) handling of embedded newlines."),
+    ), "Markdown rendering options."),
 )
 
 ### Configuration classes
