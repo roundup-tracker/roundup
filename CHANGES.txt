@@ -39,6 +39,9 @@ Fixed:
 - issue2551094 - make simplemde handle line breaks the same as the
   backend markdown formmatters. (report: Cedric Krier, patch: Christof
   Meerwald) 
+- issue2551092 - fix crash bug by aligning
+  roundup.anypy.email_.decode_header with stdlib email.header and
+  convert string to bytes for python 3. (Cedrick Krier)
 
 Features:
 - issue2550522 - Add 'filter' command to command-line

@@ -108,8 +108,8 @@ def decode_header(header):
     collapsed = []
     last_word = last_charset = None
     for word, charset in decoded_words:
-        if isinstance(word, str):
-            pass
+        if isinstance(word, str) and bytes != str:
+            word = bytes(word, 'raw-unicode-escape')
         if last_word is None:
             last_word = word
             last_charset = charset
