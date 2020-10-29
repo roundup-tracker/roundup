@@ -70,7 +70,7 @@ def _import_markdown2():
             _safe_protocols = re.compile('(?!' + ':|'.join([re.escape(s) for s in _disable_url_schemes]) + ':)', re.IGNORECASE)
 
         def _extras(config):
-            extras = { 'fenced-code-blocks' : True }
+            extras = { 'fenced-code-blocks' : {} }
             if config['MARKDOWN_BREAK_ON_NEWLINE']:
                 extras['break-on-newline'] = True
             return extras

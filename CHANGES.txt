@@ -37,11 +37,14 @@ Fixed:
 - issue2551093 - return plain text if markdown formatter throws exception
   (reported by Cedric Krier, fix by John Rouillard)
 - issue2551094 - make simplemde handle line breaks the same as the
-  backend markdown formmatters. (report: Cedric Krier, patch: Christof
+  backend markdown formatters. (report: Cedric Krier, patch: Christof
   Meerwald) 
 - issue2551092 - fix crash bug by aligning
   roundup.anypy.email_.decode_header with stdlib email.header and
-  convert string to bytes for python 3. (Cedrick Krier)
+  convert string to bytes for python 3.
+- issue2551097 - fix underlying bug in use of fenced codeblocks with
+  markdown2. Fix for issue2551093 to prevent exception trigger.
+  (patch: Cedric Krier)
 
 Features:
 - issue2550522 - Add 'filter' command to command-line

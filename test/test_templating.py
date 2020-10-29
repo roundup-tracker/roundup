@@ -473,11 +473,17 @@ class MarkdownTests:
             self.assertEqual(m.replace('\n\n','\n'), '<p>embedded code block &lt;pre&gt;</p>\n<pre><code class="lang-python">line 1\nline 2\n</code></pre>\n<p>new &lt;/pre&gt; paragraph</p>')
         elif type(self) == MarkdownTestCase:
             self.assertEqual(m.replace('\n\n','\n'), '<p>embedded code block &lt;pre&gt;</p>\n<pre><code class="language-python">line 1\nline 2\n</code></pre>\n<p>new &lt;/pre&gt; paragraph</p>')
-        else: # markdown2 doesn't handle attributes with code blocks
-              # so processing it returns original text
-            self.assertEqual(m.replace('\n\n', '\n'), u2s(u'embedded code block &lt;pre&gt;\n``` python\nline 1\nline 2\n```\nnew &lt;/pre&gt; paragraph'))
+        else:
+            self.assertEqual(m.replace('\n\n', '\n'), '<p>embedded code block &lt;pre&gt;</p>\n<div class="codehilite"><pre><span></span><code><span class="n">line</span> <span class="mi">1</span>\n<span class="n">line</span> <span class="mi">2</span>\n</code></pre></div>\n<p>new &lt;/pre&gt; paragraph</p>')
 
-    def test_break_on_newline(self):
+    def test_markdown_return_text_on_exception(self):
+        ''' string is invalid markdown. missing end of fenced code block '''
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'embedded code block <pre>\n\n``` python\nline 1\nline 2\n\n\nnew </pre> paragraph'))
+        m = p.markdown().strip()
+        print(m)
+        self.assertEqual(m.replace('\n\n','\n'), '<p>embedded code block &lt;pre&gt;</p>\n<p>``` python\nline 1\nline 2</p>\n<p>new &lt;/pre&gt; paragraph</p>')
+
+    def test_markdown_break_on_newline(self):
         self.client.db.config['MARKDOWN_BREAK_ON_NEWLINE'] = True
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string with\nline break\ntwice.'))
         m = p.markdown()
