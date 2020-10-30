@@ -493,6 +493,33 @@ class MarkdownTests:
         m = p.markdown()
         self.assertEqual(0, m.count('<br'))
 
+    def test_markdown_hyperlinked_url(self):
+        # classic markdown does not emit a \n at end of rendered string
+        # so rstrip \n.
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'http://example.com/'))
+        m = p.markdown(hyperlink=1)
+        self.assertEqual(m.rstrip('\n'), '<p><a href="http://example.com/">http://example.com/</a></p>')
+
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'<http://example.com/>'))
+        m = p.markdown(hyperlink=1)
+        self.assertEqual(m.rstrip('\n'), '<p><a href="http://example.com/">http://example.com/</a></p>')
+
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'![](http://example.com/)'))
+        m = p.markdown(hyperlink=1)
+        self.assertIn(m, [
+                '<p><img src="http://example.com/" alt=""/></p>\n',
+                '<p><img src="http://example.com/" alt="" /></p>\n',
+                '<p><img src="http://example.com/" alt=""></p>\n',
+                '<p><img alt="" src="http://example.com/" /></p>', # markdown
+                ])
+
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'An URL http://example.com/ with text'))
+        m = p.markdown(hyperlink=1)
+        self.assertEqual(m.rstrip('\n'), '<p>An URL <a href="http://example.com/">http://example.com/</a> with text</p>')
+
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'An URL https://example.com/path with text'))
+        m = p.markdown(hyperlink=1)
+        self.assertEqual(m.rstrip('\n'), '<p>An URL <a href="https://example.com/path">https://example.com/path</a> with text</p>')
 
 @skip_mistune
 class MistuneTestCase(TemplatingTestCase, MarkdownTests) :

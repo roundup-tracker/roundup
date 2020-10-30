@@ -1621,6 +1621,23 @@ class StringHTMLProperty(HTMLProperty):
             return match.group(0)
 
     def _hyper_repl_markdown(self, match):
+        for group in ['url', 'email']:
+            if match.group(group):
+                start = match.start(group) - 1
+                end = match.end(group)
+                if start >= 0:
+                    prefix = match.string[start]
+                    if end < len(match.string):
+                        suffix = match.string[end]
+                        if (prefix, suffix) in {
+                                ('<', '>'),
+                                ('(', ')'),
+                                }:
+                            continue
+                    if prefix == '(' and match.string[end - 1] == ')':
+                        continue
+                s = match.group(group)
+                return '<%s>' % s
         if match.group('id') and len(match.group('id')) < 10:
             return self._hyper_repl_item(match,'[%(item)s](%(cls)s%(id)s)')
         else:

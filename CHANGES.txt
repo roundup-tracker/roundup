@@ -41,7 +41,7 @@ Fixed:
   Meerwald) 
 - issue2551092 - fix crash bug by aligning
   roundup.anypy.email_.decode_header with stdlib email.header and
-  convert string to bytes for python 3.
+  convert string to bytes for python 3. (Cedric Krier)
 - issue2551097 - fix underlying bug in use of fenced codeblocks with
   markdown2. Fix for issue2551093 to prevent exception trigger.
   (patch: Cedric Krier)
@@ -60,6 +60,9 @@ Features:
 - issue2551094 - add new markdown config.ini setting to allow embedded
   newlines to cause a linebreak same as GitHub Flavored Markdown.
   (Patch: Cedric Krier; Doc change/checkin John Rouillard)
+- issue2551096 - enable markdown autolink for email and bare url's.
+  Modify raw markdown adding appropriate link markers on the fly.
+  (Cedric Krier)
 
 2020-07-13 2.0.0
 
