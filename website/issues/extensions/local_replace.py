@@ -11,7 +11,7 @@ substitutions = [ (re.compile(r'debian:\#(?P<id>\d+)'),
                    r"\g<prews><a href='issue\g<id>'>issue\g<ws>\g<id></a>" ),
                   # matching the typical number:hash format of hg's own output
                   # and then use use hash instead of the number
-                  (re.compile(r'(?P<prews>(^|\s+))(?P<revstr>(rev|hg|changeset:   ))(?P<revnumber>\d+):(?P<refhash>[0-9a-fA-F]{12,40})(?P<post>\W+|$)'),
+                  (re.compile(r'(?P<prews>(^|\s+))(?P<revstr>(rev\s*|hg\s*|changeset:   ))(?P<revnumber>\d+):(?P<refhash>[0-9a-fA-F]{12,40})(?P<post>\W+|$)'),
                       r'\g<prews><a href="' + hg_url_base + '\g<refhash>">\g<revstr>\g<revnumber>:\g<refhash></a>\g<post>'),
                   # matching hg revison number or hash
                   (re.compile(r'(?P<prews>(^|\s+))(?P<revstr>(revision|rev|r)\s?)(?P<revision>([1-9][0-9]*)|[0-9a-fA-F]{4,40})(?P<post>\W+|$)'),
@@ -29,11 +29,14 @@ def local_replace(message):
 def init(instance):
     instance.registerUtil('localReplace', local_replace)
 
-def quicktest(msgstr, should_replace = True):
+def quicktest(msgstr, should_replace = True, substr = True):
     testcount['run'] += 1
     replacedstr = local_replace(msgstr)
 
     if not (not replacedstr == msgstr ) == should_replace:
+        print("(fail)", end=' ')
+        testcount['failed'] += 1
+    elif substr and (msgstr not in replacedstr):
         print("(fail)", end=' ')
         testcount['failed'] += 1
 
@@ -45,11 +48,11 @@ def quicktest(msgstr, should_replace = True):
 if "__main__" == __name__:
     testcount = {'run':0 , 'failed': 0}
     print("Replacement examples:")
-    quicktest(" debian:#222")
-    quicktest(" #555")
+    quicktest(" debian:#222", substr=False)
+    quicktest(" #555", substr=False)
     quicktest("issue333")
-    quicktest(" revision 222")
-    quicktest(" r 222")
+    quicktest(" revision 222", substr=False)
+    quicktest(" r 222", substr=False)
     quicktest(" wordthatendswithr 222", False)
     quicktest(" references", False)
     quicktest(" too many spaces r  222", False)
@@ -58,12 +61,14 @@ if "__main__" == __name__:
     quicktest("rev 012", False) # too short for a hg hash
     quicktest("rev 0123")
     quicktest("re140eb")
-    quicktest(" r7140eb")
-    quicktest(" rev7140eb ")
+    quicktest(" r7140eb", substr=False)
+    quicktest(" rev7140eb ", substr=False)
     quicktest("rev7140eb")
-    quicktest("rev7140eb,")
+    quicktest("rev7140eb,", substr=False)
     quicktest("rev4891:ad3d628e73f2")
     quicktest("hg4891:ad3d628e73f2")
     quicktest("changeset:   4542:46239c21a1eb")
+    quicktest("rev 4542:46239c21a1eb")
+    quicktest("rev    4542:46239c21a1eb") # many spaces
     print()
     print(testcount)
