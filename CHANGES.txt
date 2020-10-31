@@ -45,6 +45,8 @@ Fixed:
 - issue2551097 - fix underlying bug in use of fenced codeblocks with
   markdown2. Fix for issue2551093 to prevent exception trigger.
   (patch: Cedric Krier)
+- issue2551099 - disable processing of data url's in markdown. Display
+  as plain text. (John Rouillard)
 
 Features:
 - issue2550522 - Add 'filter' command to command-line

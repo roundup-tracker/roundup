@@ -281,9 +281,10 @@ class HTMLClassTestCase(TemplatingTestCase) :
 </div>
 </div>
 '''
-	# test case to make sure javascript url's aren't turned into links
-        s = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'<badtag>\njavascript:badcode'))
-        s_result = '<div class="document">\n<p>&lt;badtag&gt;\njavascript:badcode</p>\n</div>\n'
+	# test case to make sure javascript and data url's aren't turned
+        # into links
+        s = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'<badtag>\njavascript:badcode data:text/plain;base64,SGVsbG8sIFdvcmxkIQ=='))
+        s_result = '<div class="document">\n<p>&lt;badtag&gt;\njavascript:badcode data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==</p>\n</div>\n'
 
         self.assertEqual(p.rst(), u2s(u'<div class="document">\n<p>A string with <a class="reference external" href="mailto:cmeerw&#64;example.com">cmeerw&#64;example.com</a> <em>embedded</em> \u00df</p>\n</div>\n'))
         self.assertEqual(q.rst(), u2s(q_result))
@@ -488,6 +489,16 @@ class MarkdownTests:
 
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'[link](javascript:alert(1))'))
         self.assertTrue(p.markdown().find('href="javascript:') == -1)
+
+    def test_string_markdown_data_link(self):
+        # make sure we don't get a "data:" link
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'<data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==>'))
+        print(p.markdown())
+        self.assertTrue(p.markdown().find('href="data:') == -1)
+
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'[data link](data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==)'))
+        print(p.markdown())
+        self.assertTrue(p.markdown().find('href="data:') == -1)
 
 
     def test_string_markdown_forced_line_break(self):

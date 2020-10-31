@@ -20,7 +20,7 @@ todo = """
 __docformat__ = 'restructuredtext'
 
 # List of schemes that are not rendered as links in rst and markdown.
-_disable_url_schemes = [ 'javascript' ]
+_disable_url_schemes = [ 'javascript', 'data' ]
 
 import base64, cgi, re, os.path, mimetypes, csv, string
 import calendar
