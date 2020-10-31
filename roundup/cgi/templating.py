@@ -70,7 +70,7 @@ def _import_markdown2():
             _safe_protocols = re.compile('(?!' + ':|'.join([re.escape(s) for s in _disable_url_schemes]) + ':)', re.IGNORECASE)
 
         def _extras(config):
-            extras = { 'fenced-code-blocks' : {} }
+            extras = { 'fenced-code-blocks' : {}, 'nofollow': None }
             if config['MARKDOWN_BREAK_ON_NEWLINE']:
                 extras['break-on-newline'] = True
             return extras
@@ -96,7 +96,21 @@ def _import_markdown():
                             if url.startswith(s + ':'):
                                 el.attrib['href'] = '#'
 
+        class LinkRendererWithRel(Treeprocessor):
+            ''' Rendering class that sets the rel="nofollow noreferer"
+                for links. '''
+            rel_value = "nofollow noopener"
+
+            def run(self, root):
+                for el in root.iter('a'):
+                    if 'href' in el.attrib:
+                        url = el.get('href').lstrip(' \r\n\t\x1a\0').lower()
+                        if not url.startswith('http'):  # only add rel for absolute http url's
+                            continue
+                        el.set('rel', self.rel_value)
+
         # make sure any HTML tags get escaped and some links restricted
+        # and rel="nofollow noopener" are added to links
         class SafeHtml(MarkdownExtension):
             def extendMarkdown(self, md, md_globals=None):
                 if hasattr(md.preprocessors, 'deregister'):
@@ -112,7 +126,11 @@ def _import_markdown():
                     md.treeprocessors.register(RestrictLinksProcessor(), 'restrict_links', 0)
                 else:
                     md.treeprocessors['restrict_links'] = RestrictLinksProcessor()
-
+                if hasattr(md.preprocessors, 'register'):
+                    md.treeprocessors.register(LinkRendererWithRel(), 'add_link_rel', 0)
+                else:
+                    md.treeprocessors['add_link_rel'] = LinkRendererWithRel()
+                
         def _extensions(config):
             extensions = [SafeHtml(), 'fenced_code']
             if config['MARKDOWN_BREAK_ON_NEWLINE']:
@@ -128,10 +146,44 @@ def _import_markdown():
 def _import_mistune():
     try:
         import mistune
+        from mistune import Renderer, escape_link, escape
+
         mistune._scheme_blacklist = [ s + ':' for s in _disable_url_schemes ]
 
+        class LinkRendererWithRel(Renderer):
+            ''' Rendering class that sets the rel="nofollow noreferer"
+                for links. '''
+
+            rel_value = "nofollow noopener"
+
+            def autolink(self, link, is_email=False):
+                ''' handle <url or email> style explicit links '''
+                text = link = escape_link(link)
+                if is_email:
+                    link = 'mailto:%s' % link
+                    return '<a href="%(href)s">%(text)s</a>' % { 'href': link, 'text': text }
+                return '<a href="%(href)s" rel="%(rel)s">%(href)s</a>' % {
+                    'rel': self.rel_value, 'href': escape_link(link)}
+
+            def link(self, link, title, content):
+                ''' handle [text](url "title") style links and Reference
+                    links '''
+
+                values = {
+                    'content': escape(content),
+                    'href': escape_link(link),
+                    'rel': self.rel_value,
+                    'title': escape(title) if title else '', 
+                }
+
+                if title:
+                    return '<a href="%(href)s" rel="%(rel)s" ' \
+                            'title="%(title)s">%(content)s</a>' % values
+
+                return '<a href="%(href)s" rel="%(rel)s">%(content)s</a>' % values
+
         def _options(config):
-            options = {}
+            options = {'renderer': LinkRendererWithRel(escape = True)}
             if config['MARKDOWN_BREAK_ON_NEWLINE']:
                 options['hard_wrap'] = True
             return options

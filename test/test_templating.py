@@ -420,6 +420,45 @@ class HTMLClassTestCase(TemplatingTestCase) :
 
 # common markdown test cases
 class MarkdownTests:
+    def mangleMarkdown2(self, s):
+        ''' markdown2's rel=nofollow support on 'a' tags isn't programmable.
+            So we are using it's builtin nofollow support. Mangle the string
+            so that it matches the test case.
+
+                turn: <a rel="nofollow" href="foo"> into
+                      <a href="foo" rel="nofollow noopener">
+
+            Also if it is a mailto url, we don't expect rel="nofollow",
+            so delete it.
+
+                turn: <a rel="nofollow" href="mailto:foo"> into
+                      <a href="mailto:foo">
+
+            Also when a title is present it is put in a different place
+            from markdown, so fix it to normalize.
+
+                turn:
+
+                <a rel="nofollow" href="http://example.com/" title="a title">
+                into
+                <a href="http://example.com/" rel="nofollow noopener" title="a title">
+        '''
+        if type(self) == Markdown2TestCase and s.find('a rel="nofollow"') != -1:
+            if s.find('href="mailto:') == -1:
+                # not a mailto url
+                if 'rel="nofollow"' in s:
+                    if 'title="' in s:
+                        s = s.replace(' rel="nofollow" ', ' ').replace(' title=', ' rel="nofollow noopener" title=')
+                    else:
+                        s = s.replace(' rel="nofollow" ', ' ').replace('">', '" rel="nofollow noopener">')
+
+                return s
+            else:
+                # a mailto url
+                return s.replace(' rel="nofollow" ', ' ')
+        return s
+
+
     def test_string_markdown(self):
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string with <br> *embedded* \u00df'))
         self.assertEqual(p.markdown().strip(), u2s(u'<p>A string with &lt;br&gt; <em>embedded</em> \u00df</p>'))
@@ -437,7 +476,10 @@ class MarkdownTests:
             html_unescape = HTMLParser().unescape
 
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A link <cmeerw@example.com>'))
-        self.assertEqual(html_unescape(p.markdown().strip()), u2s(u'<p>A link <a href="mailto:cmeerw@example.com">cmeerw@example.com</a></p>'))
+        m = html_unescape(p.markdown().strip())
+        m = self.mangleMarkdown2(m)
+
+        self.assertEqual(m, u2s(u'<p>A link <a href="mailto:cmeerw@example.com">cmeerw@example.com</a></p>'))
 
     def test_string_markdown_javascript_link(self):
         # make sure we don't get a "javascript:" link
@@ -457,6 +499,7 @@ class MarkdownTests:
         # Rather than using a different result for each
         # renderer, look for '<br' and require three of them.
         m = p.markdown()
+        print(m)
         self.assertEqual(3, m.count('<br'))
 
     def test_string_markdown_code_block(self):
@@ -498,14 +541,23 @@ class MarkdownTests:
         # so rstrip \n.
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'http://example.com/'))
         m = p.markdown(hyperlink=1)
-        self.assertEqual(m.rstrip('\n'), '<p><a href="http://example.com/">http://example.com/</a></p>')
+        m = self.mangleMarkdown2(m)
+        print(m)
+        self.assertEqual(m.rstrip('\n'), '<p><a href="http://example.com/" rel="nofollow noopener">http://example.com/</a></p>')
 
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'<http://example.com/>'))
         m = p.markdown(hyperlink=1)
-        self.assertEqual(m.rstrip('\n'), '<p><a href="http://example.com/">http://example.com/</a></p>')
+        m = self.mangleMarkdown2(m)
+        self.assertEqual(m.rstrip('\n'), '<p><a href="http://example.com/" rel="nofollow noopener">http://example.com/</a></p>')
+
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'[label](http://example.com/ "a title")'))
+        m = p.markdown(hyperlink=1)
+        m = self.mangleMarkdown2(m)
+        self.assertEqual(m.rstrip('\n'), '<p><a href="http://example.com/" rel="nofollow noopener" title="a title">label</a></p>')
 
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'![](http://example.com/)'))
         m = p.markdown(hyperlink=1)
+        m = self.mangleMarkdown2(m)
         self.assertIn(m, [
                 '<p><img src="http://example.com/" alt=""/></p>\n',
                 '<p><img src="http://example.com/" alt="" /></p>\n',
@@ -515,11 +567,13 @@ class MarkdownTests:
 
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'An URL http://example.com/ with text'))
         m = p.markdown(hyperlink=1)
-        self.assertEqual(m.rstrip('\n'), '<p>An URL <a href="http://example.com/">http://example.com/</a> with text</p>')
+        m = self.mangleMarkdown2(m)
+        self.assertEqual(m.rstrip('\n'), '<p>An URL <a href="http://example.com/" rel="nofollow noopener">http://example.com/</a> with text</p>')
 
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'An URL https://example.com/path with text'))
         m = p.markdown(hyperlink=1)
-        self.assertEqual(m.rstrip('\n'), '<p>An URL <a href="https://example.com/path">https://example.com/path</a> with text</p>')
+        m = self.mangleMarkdown2(m)
+        self.assertEqual(m.rstrip('\n'), '<p>An URL <a href="https://example.com/path" rel="nofollow noopener">https://example.com/path</a> with text</p>')
 
 @skip_mistune
 class MistuneTestCase(TemplatingTestCase, MarkdownTests) :
