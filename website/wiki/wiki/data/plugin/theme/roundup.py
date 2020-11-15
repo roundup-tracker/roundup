@@ -80,6 +80,9 @@ class Theme(ThemeBase):
         _ = self.request.getText
 
         html = [
+            # Pre header custom html
+            self.emit_custom_html(self.cfg.page_header1),
+
             u'<div class="header">',
             self.logo(),
             self.searchform(d),
