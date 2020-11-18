@@ -2349,7 +2349,7 @@ None of the above (ie. just a simple form value)
 
     For Date(), Interval(), Boolean(), Integer() and Number()
     properties, the form value is converted to the
-    appropriate
+    appropriate value.
 
 Any of the form variables may be prefixed with a classname or
 designator.
