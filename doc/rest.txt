@@ -429,7 +429,7 @@ searching keyword class not issue class) will return matches for
 In all cases the field ``@total_size`` is reported which is the total
 number of items available if you were to retrieve all of them.
 
-Other data types: Date, Interval Integer, Number need examples and may
+Other data types: Date, Interval, Integer, Number need examples and may
 need work to allow range searches. Full text search (e.g. over the
 body of a msg) is a work in progress.
 
