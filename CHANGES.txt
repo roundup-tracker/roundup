@@ -47,6 +47,8 @@ Fixed:
   (patch: Cedric Krier)
 - issue2551099 - disable processing of data url's in markdown. Display
   as plain text. (John Rouillard)
+- issue2551100 - old jquery has security issues, upgrade it and fix
+  user.help.html
 
 Features:
 - issue2550522 - Add 'filter' command to command-line

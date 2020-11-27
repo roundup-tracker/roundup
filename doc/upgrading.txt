@@ -28,7 +28,7 @@ Migrating from 2.0.0 to 2.x.x
 =============================
 
 Classname Format Enforced
-=========================
+-------------------------
 
 Check schema.py and look at all Class(), IssueClass(), FileClass()
 calls. The second argument is the classname. All classnames must:
@@ -39,6 +39,20 @@ calls. The second argument is the classname. All classnames must:
 
 this was not enforced before. Using non-standard classnames could lead
 to other issues.
+
+jQuery updated with updates to user.help.html
+---------------------------------------------
+
+The devel and responsive templates shipped with an old version of
+jQuery with some security issues. It has been updated to the current
+version: 3.5.1. If your tracker is based on one of these templates
+(see the ``TEMPLATE-INFO.txt`` file in your tracker), remove the old
+``html/jquery.js`` file from your tracker and copy the new
+``jquery-3.5.1.js`` file from the template directory to your tracker's
+``html`` directory. Also copy in the new ``user.help.html`` file. It now
+references the new ``jquery-3.5.1.js`` file and also fixes a bug that
+prevented applying the change from the helper to the field on the main
+form.
 
 .. index:: Upgrading; 1.6.x to 2.0.0
 
