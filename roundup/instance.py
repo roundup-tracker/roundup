@@ -132,6 +132,7 @@ update your config.ini
             'Multilink': hyperdb.Multilink,
             'Interval': hyperdb.Interval,
             'Boolean': hyperdb.Boolean,
+            'Computed': hyperdb.Computed,
             'Number': hyperdb.Number,
             'Integer': hyperdb.Integer,
             'db': backend.Database(self.config, name)

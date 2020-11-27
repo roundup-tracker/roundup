@@ -57,7 +57,7 @@ import os, time, re, weakref, copy, logging, datetime
 # roundup modules
 from roundup import hyperdb, date, password, roundupdb, security, support
 from roundup.hyperdb import String, Password, Date, Interval, Link, \
-    Multilink, DatabaseError, Boolean, Number, Integer
+    Multilink, DatabaseError, Boolean, Computed, Number, Integer
 from roundup.i18n import _
 
 # support
@@ -1779,6 +1779,9 @@ class Class(hyperdb.Class):
 
         # get the property (raises KeyError if invalid)
         prop = self.properties[propname]
+
+        if isinstance(prop, Computed):
+            return prop.function(prop, nodeid, self.db)
 
         # lazy evaluation of Multilink
         if propname not in d and isinstance(prop, Multilink):

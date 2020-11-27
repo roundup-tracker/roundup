@@ -73,6 +73,71 @@ class _Type(object):
         """
         return val
 
+class Computed(object):
+    """A roundup computed property type. Not inherited from _Type
+       as the value is never changed. It is defined by running a
+       method.
+
+       This property has some restrictions. It is read only and can
+       not be set. It can not (currently) be searched or used for
+       sorting or grouping.
+    """
+
+    def __init__(self, function, default_value=None, cachefor=None):
+        """ function: a callable method on this class.
+            default_value: default value to be returned by the method
+            cachefor: an interval property used to determine how long to
+                      cache the value from the function. Not yet
+                       implemented.
+        """
+        self.function = function
+        self.__default_value = default_value
+        self.computed = True
+
+        # alert the user that cachefor is not valid yet.
+        if cachefor is not None:
+            raise NotImplementedError
+
+    def __repr__(self):
+        ' more useful for dumps '
+        return '<%s.%s computed %s>' % (self.__class__.__module__,
+                                        self.__class__.__name__,
+                                        self.function.__name__)
+
+    def get_default_value(self):
+        """The default value when creating a new instance of this property."""
+        return self.__default_value
+
+    def register (self, cls, propname):
+        """Register myself to the class of which we are a property
+           the given propname is the name we have in our class.
+        """
+        assert not getattr(self, 'cls', None)
+        self.name = propname
+        self.cls  = cls
+
+    def sort_repr(self, cls, val, name):
+        """Representation used for sorting. This should be a python
+        built-in type, otherwise sorting will take ages. Note that
+        individual backends may chose to use something different for
+        sorting as long as the outcome is the same.
+        """
+        return val
+
+    def message_count(self, nodeid, db):
+        """Example method that counts the number of messages for an issue.
+
+           Adding a property to the IssueClass like:
+
+                msgcount = Computed(Computed.message_count)
+
+           allows querying for the msgcount property to get a count of
+           the number of messages on the issue. Note that you can not
+           currently search, sort or group using a computed property
+           like msgcount.
+        """
+
+        return len(db.issue.get(nodeid, 'messages'))
 
 class String(_Type):
     """An object designating a String property."""

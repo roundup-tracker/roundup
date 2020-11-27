@@ -1882,6 +1882,33 @@ class StringHTMLProperty(HTMLProperty):
             value = html_escape(value)
         return value
 
+class ComputedHTMLProperty(HTMLProperty):
+    def plain(self, escape=0):
+        """ Render a "plain" representation of the property
+        """
+        if not self.is_view_ok():
+            return self._('[hidden]')
+
+        if self._value is None:
+            return ''
+        try:
+            if isinstance(self._value, str):
+                value = self._value
+            else:
+                value = str(self._value)
+
+        except AttributeError:
+            value = self._('[hidden]')
+        if escape:
+            value = html_escape(value)
+        return value
+
+    def field(self):
+        """ Computed properties are not editable so
+            just display the value via plain().
+        """
+        return self.plain(escape=1)
+
 class PasswordHTMLProperty(HTMLProperty):
     def plain(self, escape=0):
         """ Render a "plain" representation of the property
@@ -2768,6 +2795,7 @@ propclasses = [
     (hyperdb.Boolean, BooleanHTMLProperty),
     (hyperdb.Date, DateHTMLProperty),
     (hyperdb.Interval, IntervalHTMLProperty),
+    (hyperdb.Computed, ComputedHTMLProperty),
     (hyperdb.Password, PasswordHTMLProperty),
     (hyperdb.Link, LinkHTMLProperty),
     (hyperdb.Multilink, MultilinkHTMLProperty),

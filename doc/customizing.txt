@@ -741,6 +741,20 @@ A Class is comprised of one or more properties of the following types:
        properties are for storing encoded arbitrary-length strings.
        The default encoding is defined on the ``roundup.password.Password``
        class.
+  Computed
+       properties invoke a python function. The return value of the
+       function is the value of the property. Unlike other properties,
+       the property is read only and can not be changed. Use cases:
+       ask a remote interface for a value (e.g. retrieve user's office
+       location from ldap, query state of a related ticket from
+       another roundup instance). It can be used to compute a value
+       (e.g. count the number of messages for an issue). The type
+       returned by the function is the type of the value. (Note it is
+       coerced to a string when displayed in the html interface.) At
+       this time it's a partial implementation. It can be
+       displayed/queried only. It can not be searched or used for
+       sorting or grouping as it does not exist in the back end
+       database.
   Date
        properties store date-and-time stamps. Their values are Timestamp
        objects.
@@ -4045,6 +4059,72 @@ caches the schema).
     
     columns string:id,activity,due_date,title,creator,status;
     columns_showall string:id,activity,due_date,title,creator,assignedto,status;
+
+Adding a new Computed field to the schema
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Computed properties are a bit different from other properties. They do
+not actually change the database. Computed fields are not contained in
+the database and can not be searched or used for sorting or
+grouping. (Patches to add this capability are welcome.)
+
+In this example we will add a count of the number of files attached to
+the issue. This could be done using an auditor (see below) to update
+an integer field called ``filecount``. But we will implement this in a
+different way.
+
+We have two changes to make:
+
+1. add a new python method to the hyperdb.Computed class. It will
+   count the number of files attached to the issue. This method will
+   be added in the (possibly new) interfaces.py file in the top level
+   of the tracker directory.  (See interfaces.py above for more
+   information.)
+2. add a new ``filecount`` property to the issue class calling the
+   new function.
+
+A Computed method receives three arguments when called:
+
+  1. the computed object (self)
+  2. the id of the item in the class
+  3. the database object
+
+To add the method to the Computed class, modify the trackers
+interfaces.py adding::
+
+    import roundup.hyperdb as hyperdb
+    def filecount(self, nodeid, db):
+        return len(db.issue.get(nodeid, 'files'))
+    setattr(hyperdb.Computed, 'filecount', filecount)
+
+Then add::
+
+   filecount = Computed(Computed.filecount),
+
+to the existing IssueClass call.
+
+Now you can retrieve the value of the ``filecount`` property and it 
+will be computed on the fly from the existing list of attached files.
+
+This example was done with the IssueClass, but you could add a
+Computed property to any class. E.G.::
+
+     user = Class(db, "user",
+                username=String(),
+                password=Password(),
+                address=String(),
+                realname=String(),
+                phone=String(),
+                office=Computed(Computed.getOfficeFromLdap), # new prop
+                organisation=String(),
+                alternate_addresses=String(),
+                queries=Multilink('query'),
+                roles=String(),
+                timezone=String())
+
+where the method ``getOfficeFromLdap`` queries the local ldap server to
+get the current office location information. The method will be called
+with the Computed instance, the user id and the database object.
 
 Adding a new constrained field to the classic schema
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
