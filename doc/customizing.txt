@@ -977,6 +977,79 @@ stored in the files sub-directory of the ``'db'`` directory in your
 tracker. FileClasses also have a "type" attribute to store the MIME
 type of the file.
 
+Roundup by default considers the contents of the file immutable. This
+is to assist in maintaining an accurate record of correspondence.  The
+distributed tracker templates do not enforce this. So if you have
+access to the roundup tracker directory, you can edit the files (make
+sure to preserve mode, owner and group) to remove information (e.g. if
+somebody includes a password or you need to redact proprietary
+information). Obviously the journal for the message/file will not
+report that the file has changed.
+
+Best practice is to remove offending material and leave a
+placeholder. E.G. replace a password with the text::
+
+    [password has been deleted 2020-12-02 --myname]
+
+If you need to delete an entire file, replace the file contents with::
+
+    [file contents deleted due to spam 202-10-21 --myname]
+
+rather than deleting the file. If you actually delete the file roundup
+will report an error to the user and email the administrator. If you
+empty the file, a user downloading the file using the direct URL
+(e.g. ``tracker/msg22``) may be confused and think something is broken
+when they receive an empty file. Retiring a file/msg does not prevent
+access to the file using the direct URL. Retiring an item only removes
+it when requesting a list of all items in the class. If you are
+replacing the contents, you probably want to change the content type
+of the file. E.G. from ``image/jpeg`` to ``text/plain``. You can do
+this easily through the web interface, or using the ``roundup-admin``
+command line interface.
+
+You can also change the contents of a file or message using the REST
+interface to change the file contents. Note that this will NOT result
+in an entry in the journal, so again it allows a silent change. To do
+this you need to make two rest requests. An example using curl is::
+
+     $ curl -u demo:demo -s
+            -H "X-requested-with: rest" \
+            -H "Referer:  https://tracker.example.com/demo/" \
+            -X GET \
+            https://tracker.example.com/demo/rest/data/file/30/content
+     {
+        "data": {
+            "id": "30",
+            "type": "<class 'str'>",
+            "link": "https://tracker.example.com/demo/rest/data/file/30/conten
+  t",
+            "data": "hello3",
+            "@etag": "\"3f2f8063dbce5b6bd43567e6f4f3c671\""
+        }
+     }
+
+using the etag, overwrite the content with::
+
+    $ curl -u demo:demo -s
+          -H "X-requested-with: rest" \
+          -H "Referer:  https://tracker.example.com/demo/" \
+          -H 'If-Match: "3f2f8063dbce5b6bd43567e6f4f3c671"' \
+          -X PUT \
+          -F "data=@hello" \
+          https://tracker.example.com/demo/rest/data/file/30/content
+
+where ``hello`` is a file on local disk.
+
+You can enforce immutability in your tracker by adding an auditor (see
+detectors_) for the file/msg class that rejects changes to the content
+property. The auditor could also add a journal entry so that a change
+via the roundup mechanism is reported.  Using a mixin (see:
+https://wiki.roundup-tracker.org/MixinClassFileClass) to augment the
+file class allows for other possibilities including signing the file, or
+recording a checksum in the database and validating the file contents
+at the time it gets read. This allows detection of changes done on the
+filesystem outside of the roundup mechanism.
+
 .. index:: triple: schema; class property; messages
    triple: schema; class property; files
    triple: schema; class property; nosy
