@@ -1008,9 +1008,9 @@ this easily through the web interface, or using the ``roundup-admin``
 command line interface.
 
 You can also change the contents of a file or message using the REST
-interface to change the file contents. Note that this will NOT result
-in an entry in the journal, so again it allows a silent change. To do
-this you need to make two rest requests. An example using curl is::
+interface. Note that this will NOT result in an entry in the journal,
+so again it allows a silent change. To do this you need to make two
+rest requests. An example using curl is::
 
      $ curl -u demo:demo -s
             -H "X-requested-with: rest" \
