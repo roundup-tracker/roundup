@@ -64,7 +64,7 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
         scheme, challenge = authorization.split(' ', 1)
 
         if scheme.lower() == 'basic':
-            decoded = base64.decodestring(challenge)
+            decoded = base64.b64decode(challenge)
             if ':' in decoded:
                 username, password = decoded.split(':')
             else:
