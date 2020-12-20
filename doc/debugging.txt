@@ -7,7 +7,7 @@ of ways, depending on what it is you're testing:
 1. If you're testing the database unit tests, then set the environment
    variable ``LOGGING_LEVEL=DEBUG``. This may be done like so:
 
-    LOGGING_LEVEL=DEBUG python run_tests.py
+    LOGGING_LEVEL=DEBUG python -m pytest test/
 
    This variable replaces the older HYPERDBDEBUG environment var.
 

@@ -52,6 +52,9 @@ Fixed:
 - replace deprecated base64.decodestring with base64.b64decode in
   roundup_server.py and roundup_xlmrpc_server.py (reported by
   lmsteffan in irc)
+- removed run_tests.py. Newer pytest doesn't support generating
+  stand alone testing bundles. Python 3.9 generates errors running
+  the current run_tests.py.
 
 Features:
 - issue2550522 - Add 'filter' command to command-line
