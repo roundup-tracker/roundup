@@ -55,6 +55,7 @@ Fixed:
 - removed run_tests.py. Newer pytest doesn't support generating
   stand alone testing bundles. Python 3.9 generates errors running
   the current run_tests.py.
+- issue2551104 - fix issue with markdown autolink next to punctuation (ced)
 
 Features:
 - issue2550522 - Add 'filter' command to command-line

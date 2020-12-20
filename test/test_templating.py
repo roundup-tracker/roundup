@@ -566,6 +566,11 @@ class MarkdownTests:
         m = self.mangleMarkdown2(m)
         self.assertEqual(m.rstrip('\n'), '<p><a href="http://example.com/" rel="nofollow noopener" title="a title">label</a></p>')
 
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'[label](http://example.com/).'))
+        m = p.markdown(hyperlink=1)
+        m = self.mangleMarkdown2(m)
+        self.assertEqual(m.rstrip('\n'), '<p><a href="http://example.com/" rel="nofollow noopener">label</a>.</p>')
+
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'![](http://example.com/)'))
         m = p.markdown(hyperlink=1)
         m = self.mangleMarkdown2(m)
