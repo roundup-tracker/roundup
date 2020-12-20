@@ -16,7 +16,7 @@
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 from __future__ import print_function
-import unittest, os, shutil, errno, imp, sys, time, pprint, os.path
+import unittest, os, shutil, errno, sys, time, pprint, os.path
 
 try:
     from base64 import encodebytes as base64_encode  # python3 only

@@ -54,8 +54,12 @@ Fixed:
   lmsteffan in irc)
 - removed run_tests.py. Newer pytest doesn't support generating
   stand alone testing bundles. Python 3.9 generates errors running
-  the current run_tests.py.
+  the current run_tests.py.  (reported by lmsteffan in irc)
 - issue2551104 - fix issue with markdown autolink next to punctuation (ced)
+- removed support for old style trackers that use dbinit.py and
+  config.py. Also remove all uses of depricated imp module. (John Rouillard)
+- removed support for setting database type using
+  <database>/backend_name. (John Rouillard)
 
 Features:
 - issue2550522 - Add 'filter' command to command-line
