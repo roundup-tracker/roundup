@@ -60,6 +60,9 @@ Fixed:
   config.py. Also remove all uses of depricated imp module. (John Rouillard)
 - removed support for setting database type using
   <database>/backend_name. (John Rouillard)
+- fixed some issues when generating translations. Use mappings and
+  named format parameters so translators can move substituted tokens
+  in tranlsations.
 
 Features:
 - issue2550522 - Add 'filter' command to command-line
