@@ -809,10 +809,12 @@ class EditItemAction(EditCommon):
             return []
 
     def handleCollision(self, props):
-        message = self._('Edit Error: someone else has edited this %s (%s). '
-            'View <a target="_blank" href="%s%s">their changes</a> '
-            'in a new window.') % (self.classname, ', '.join(props),
-                                   self.classname, self.nodeid)
+        message = self._(
+            'Edit Error: someone else has edited this %(klass)s (%(props)s). '
+            'View <a target="_blank" href="%(klass)s%(id)s">their changes</a> '
+            'in a new window.') % { "klass": self.classname,
+                                    "props": ', '.join(props),
+                                    "id": self.nodeid}
         self.client.add_error_message(message, escape=False)
         return
 
