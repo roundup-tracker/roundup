@@ -1,5 +1,5 @@
 from __future__ import print_function
-import unittest
+import unittest, copy
 from cgi import FieldStorage, MiniFieldStorage
 
 from roundup import hyperdb
@@ -242,8 +242,19 @@ class CollisionDetectionTestCase(ActionTestCase):
     def testLastUserActivity(self):
         self.assertEqual(self.action.lastUserActivity(), None)
 
+        # copy corm value. Once we apend to it we can't delete
+        # anything so save a copy for the second test case.
+        base_form = copy.copy(self.client.form.value)
+
+        # test @ special variable form
         self.client.form.value.append(
             MiniFieldStorage('@lastactivity', str(self.now)))
+        self.assertEqual(self.action.lastUserActivity(), self.now)
+
+        # test : special variable form
+        self.client.form.value = base_form
+        self.client.form.value.append(
+            MiniFieldStorage(':lastactivity', str(self.now)))
         self.assertEqual(self.action.lastUserActivity(), self.now)
 
     def testLastNodeActivity(self):
