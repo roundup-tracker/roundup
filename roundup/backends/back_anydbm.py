@@ -1146,7 +1146,7 @@ class Class(hyperdb.Class):
         # get the property (raises KeyErorr if invalid)
         prop = self.properties[propname]
 
-        if isinstance(prop, Computed):
+        if isinstance(prop, hyperdb.Computed):
             return prop.function(prop, nodeid, self.db)
 
         if isinstance(prop, hyperdb.Multilink) and prop.computed:
