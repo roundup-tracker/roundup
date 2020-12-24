@@ -111,10 +111,11 @@ def writeRss(db, cl, nodeid, olddata):
         filename = FILENAME % db.config.__dict__
 
         # return if issue is private
-        if ( db.issue.get(nodeid, 'private') ):
-                if __debug__:
-                        logger.debug("rss: Private issue. not generating rss")
-                return
+        # enable when private property is added
+        ##if ( db.issue.get(nodeid, 'private') ):
+        ##        if __debug__:
+        ##                logger.debug("rss: Private issue. not generating rss")
+        ##        return
 
         if __debug__:
                 logger.debug("rss: generating rss for issue %s", nodeid)
@@ -228,4 +229,4 @@ def writeRss(db, cl, nodeid, olddata):
 def init(db):
         db.issue.react('create', writeRss)
         db.issue.react('set', writeRss)
-#SHA: f4c0ccb5d0d9a6ef7829696333b33bc0619b0167
+#SHA: c4f916a13d533ff0c49386fc4f1f9f254adeb744
