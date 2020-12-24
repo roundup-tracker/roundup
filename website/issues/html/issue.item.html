@@ -41,7 +41,7 @@
 <fieldset><legend>classification</legend>
 <table class="form">
 <tr>
- <th class="required" i18n:translate="">Title:</th>
+ <th class="required"><label for="title" i18n:translate="">Title:</label></th>
  <td colspan="3" tal:condition="context/title/is_edit_ok"
      tal:content="structure python:context.title.field(size=60)">title</td>
  <td colspan="3" tal:condition="not:context/title/is_edit_ok">
@@ -81,13 +81,12 @@
    <span tal:replace="structure python:db.status.classhelp('id,name,description',label='Status')" />:
  </th>
  <td tal:content="structure context/status/menu">status</td>
- <th i18n:translate="">Resolution:</th>
+ <th><label for="resolution" i18n:translate="">Resolution:</label></th>
  <td tal:content="structure context/resolution/menu">resolution</td>
 </tr>
 
 <tr tal:condition="context/id">
- <th>
-  <tal:block i18n:translate="">Dependencies</tal:block>:
+ <th> <label for="dependencies" i18n:translate="">Dependencies</label>
   <span tal:condition="context/dependencies/is_edit_ok"
         tal:replace="structure python:db.issue.classhelp('id,title', filter='status=0,1', property='dependencies')" />
  </th>
@@ -97,8 +96,8 @@
    <br/>View: <a tal:attributes="href string:issue${d/id}" tal:content="d/id"></a>
   </span>
  </td>
- <th i18n:translate="">
-  <tal:block i18n:translate="">Superseder</tal:block>:
+ <th>
+  <tal:block><label for="superseder" i18n:translate="">Superseder</label></tal:block>:
   <span tal:condition="context/superseder/is_edit_ok"
         tal:replace="structure python:db.issue.classhelp('id,title', filter='status=0,1', property='superseder')" />
  </th>
@@ -116,7 +115,7 @@
  </td>
  </tr>
  <tr>
- <th><tal:block i18n:translate="">Assigned To</tal:block>:</th>
+ <th><label for="assignee" i18n:translate="">Assigned To</label>:</th>
  <td tal:condition="context/status/is_edit_ok">
   <select name="assignee">
    <option value="-1">nobody</option>
@@ -130,7 +129,7 @@
  <td tal:condition="not:context/assignee/is_edit_ok">
   <span tal:replace="structure context/assignee/plain" />
  </td>
- <th><tal:block i18n:translate="">Nosy List</tal:block>:
+ <th><label for="nosy" i18n:translate="">Nosy List</label>:
   <span tal:condition="context/nosy/is_edit_ok"
         tal:replace="structure python:db.user.classhelp('username,realname,address', property='nosy')" />
  </th>
@@ -149,7 +148,7 @@
 
 </tr>
 <tr tal:condition="context/is_edit_ok">
- <th><tal:block i18n:translate="">Comment</tal:block>:</th>
+ <th><label for="@note" i18n:translate="">Comment</label>:</th>
  <td colspan="3">
   <textarea tal:content="request/form/@note/value | default"
             name="@note" wrap="hard" rows="10" cols="72"></textarea>
@@ -157,14 +156,14 @@
 </tr>
 
 <tr tal:condition="context/is_edit_ok">
- <th><tal:block i18n:translate="">File</tal:block>:</th>
+ <th><label for="file-1@content" i18n:translate="">File</label>:</th>
  <td colspan=3>
    <input type="hidden" name="@link@files" value="file-1">
    <input type="file" name="file-1@content" size="40">
  </td>
 </tr>
 <tr tal:condition="context/is_edit_ok">
- <th><tal:block i18n:translate="">File Description</tal:block>:</th>
+ <th><label for="file-1@description" i18n:translate="">File Description</label>:</th>
  <td colspan=3><input type="edit" name="file-1@description" size="40"></td>
 </tr>
 </table>
