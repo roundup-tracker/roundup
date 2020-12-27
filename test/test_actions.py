@@ -239,20 +239,18 @@ class CollisionDetectionTestCase(ActionTestCase):
         # round off for testing
         self.now.second = int(self.now.second)
 
-    def testLastUserActivity(self):
+    def testLastUserActivityAt(self):
         self.assertEqual(self.action.lastUserActivity(), None)
-
-        # copy corm value. Once we apend to it we can't delete
-        # anything so save a copy for the second test case.
-        base_form = copy.copy(self.client.form.value)
 
         # test @ special variable form
         self.client.form.value.append(
             MiniFieldStorage('@lastactivity', str(self.now)))
         self.assertEqual(self.action.lastUserActivity(), self.now)
 
+    def testLastUserActivityColon(self):
+        self.assertEqual(self.action.lastUserActivity(), None)
+
         # test : special variable form
-        self.client.form.value = base_form
         self.client.form.value.append(
             MiniFieldStorage(':lastactivity', str(self.now)))
         self.assertEqual(self.action.lastUserActivity(), self.now)
