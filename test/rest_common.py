@@ -1321,6 +1321,204 @@ class TestCase():
                           ['assignedto']['link'],
            "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/user/2")
 
+    def testDispatchBadContent(self):
+        """
+        runthrough rest dispatch() with bad content_type patterns.
+        """
+
+        # simulate: /rest/data/issue
+        body=b'{ "title": "Joe Doe has problems", \
+                 "nosy": [ "1", "3" ], \
+                 "assignedto": "2", \
+                 "abool": true, \
+                 "afloat": 2.3, \
+                 "anint": 567890 \
+        }'
+        env = { "CONTENT_TYPE": "application/jzot",
+                "CONTENT_LENGTH": len(body),
+                "REQUEST_METHOD": "POST"
+        }
+
+        headers={"accept": "application/json; version=1",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+        }
+
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch(env["REQUEST_METHOD"],
+                            "/rest/data/issue",
+                            form)
+
+        print(results)
+        self.assertEqual(self.server.client.response_code, 415)
+        json_dict = json.loads(b2s(results))
+        self.assertEqual(json_dict['error']['msg'],
+                         "Unable to process input of type application/jzot")
+
+        # Test GET as well. I am not sure if this should pass or not.
+        # Arguably GET doesn't use any form/json input but....
+        results = self.server.dispatch('GET',
+                            "/rest/data/issue",
+                            form)
+        print(results)
+        self.assertEqual(self.server.client.response_code, 415)
+
+
+
+    def testDispatchBadAccept(self):
+        # simulate: /rest/data/issue expect failure unknown accept settings
+        body=b'{ "title": "Joe Doe has problems", \
+                 "nosy": [ "1", "3" ], \
+                 "assignedto": "2", \
+                 "abool": true, \
+                 "afloat": 2.3, \
+                 "anint": 567890 \
+        }'
+        env = { "CONTENT_TYPE": "application/json",
+                "CONTENT_LENGTH": len(body),
+                "REQUEST_METHOD": "POST"
+        }
+
+        headers={"accept": "application/zot; version=1; q=0.5",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+        }
+
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch(env["REQUEST_METHOD"],
+                            "/rest/data/issue",
+                            form)
+
+        print(results)
+        self.assertEqual(self.server.client.response_code, 406)
+        self.assertIn(b"Requested content type 'application/zot; version=1; q=0.5' is not available.\nAcceptable types: */*, application/json,", results)
+
+        # simulate: /rest/data/issue works, multiple acceptable output, one
+        # is valid
+        env = { "CONTENT_TYPE": "application/json",
+                "CONTENT_LENGTH": len(body),
+                "REQUEST_METHOD": "POST"
+        }
+
+        headers={"accept": "application/zot; version=1; q=0.75, "
+                           "application/json; version=1; q=0.5",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+        }
+
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch(env["REQUEST_METHOD"],
+                            "/rest/data/issue",
+                            form)
+
+        print(results)
+        self.assertEqual(self.server.client.response_code, 201)
+        json_dict = json.loads(b2s(results))
+        # ERROR this should be 1. What's happening is that the code
+        # for handling 406 error code runs through everything and creates
+        # the item. Then it throws a 406 after the work is done when it
+        # realizes it can't respond as requested. So the 406 post above
+        # creates issue 1 and this one creates issue 2.
+        self.assertEqual(json_dict['data']['id'], "2")
+
+
+        # test 3 accept is empty. This triggers */* so passes
+        headers={"accept": "",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+        }
+
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch(env["REQUEST_METHOD"],
+                            "/rest/data/issue",
+                            form)
+
+        print(results)
+        self.assertEqual(self.server.client.response_code, 201)
+        json_dict = json.loads(b2s(results))
+        # This is one more than above. Will need to be fixed
+        # When error above is fixed.
+        self.assertEqual(json_dict['data']['id'], "3")
+
+        # test 4 accept is random junk.
+        headers={"accept": "Xyzzy I am not a mime, type;",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+        }
+
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch(env["REQUEST_METHOD"],
+                            "/rest/data/issue",
+                            form)
+
+        print(results)
+        self.assertEqual(self.server.client.response_code, 406)
+        json_dict = json.loads(b2s(results))
+        self.assertIn('Unable to parse Accept Header. Invalid media type: Xyzzy I am not a mime. Acceptable types: */* application/json', json_dict['error']['msg'])
+
+        # test 5 accept mimetype is ok, param is not
+        headers={"accept": "*/*; foo",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+        }
+
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch(env["REQUEST_METHOD"],
+                            "/rest/data/issue",
+                            form)
+
+        print(results)
+        self.assertEqual(self.server.client.response_code, 406)
+        json_dict = json.loads(b2s(results))
+        self.assertIn('Unable to parse Accept Header. Invalid param: foo. Acceptable types: */* application/json', json_dict['error']['msg'])
 
     def testStatsGen(self):
         # check stats being returned by put and get ops

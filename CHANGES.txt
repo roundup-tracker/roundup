@@ -63,6 +63,9 @@ Fixed:
 - fixed some issues when generating translations. Use mappings and
   named format parameters so translators can move substituted tokens
   in tranlsations.
+- in rest interface, fix uncaught exceptions when parsing invalid
+  Content-Type and Accept headers. Document response formats more
+  fully in doc/rest.txt.
 
 Features:
 - issue2550522 - Add 'filter' command to command-line
