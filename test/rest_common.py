@@ -1407,7 +1407,7 @@ class TestCase():
 
         print(results)
         self.assertEqual(self.server.client.response_code, 406)
-        self.assertIn(b"Requested content type 'application/zot; version=1; q=0.5' is not available.\nAcceptable types: */*, application/json,", results)
+        self.assertIn(b"Requested content type 'application/zot; version=1; q=0.5' is not available.\nAcceptable types: */*, application/json", results)
 
         # simulate: /rest/data/issue works, multiple acceptable output, one
         # is valid
