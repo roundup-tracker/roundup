@@ -3277,6 +3277,29 @@ class TestCase():
         # verify the result
         self.assertTrue(not self.db.issue.is_retired(issue_id))
 
+    def testPatchBadAction(self):
+        """
+        Test Patch Action 'Unknown'
+        """
+        # create a new issue with userid 1 and 2 in the nosy list
+        issue_id = self.db.issue.create(title='foo')
+
+        # execute action retire
+        form = cgi.FieldStorage()
+        etag = calculate_etag(self.db.issue.getnode(issue_id),
+                              self.db.config['WEB_SECRET_KEY'])
+        form.list = [
+            cgi.MiniFieldStorage('@op', 'action'),
+            cgi.MiniFieldStorage('@action_name', 'unknown'),
+            cgi.MiniFieldStorage('@etag', etag)
+        ]
+        results = self.server.patch_element('issue', issue_id, form)
+        self.assertEqual(self.dummy_client.response_code, 400)
+        # verify the result, note order of allowed elements changes
+        # for python2/3 so just check prefix.
+        self.assertIn('action "unknown" is not supported, allowed: ',
+                       results['error']['msg'].args[0])
+
     def testPatchRemove(self):
         """
         Test Patch Action 'Remove' only some element from a list
