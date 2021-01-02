@@ -68,6 +68,8 @@ class TestCase():
     url_pfx = 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/'
 
     def setUp(self):
+        from packaging import version
+
         self.dirname = '_test_rest'
         # set up and open a tracker
         # Set optimize=True as code under test (Client.main()::determine_user)
@@ -162,50 +164,58 @@ class TestCase():
                      'iat': now_ts,
                      'exp': plus1min_ts,
             }
+
+            # in version 2.0.0 and newer jwt.encode returns string
+            # not bytestring. So we have to skip b2s conversion
             
+            if version.parse(jwt.__version__) >= version.parse('2.0.0'):
+                tostr = lambda x: x
+            else:
+                tostr = b2s
+
             self.jwt = {}
             self.claim = {}
             # generate invalid claim with expired timestamp
             self.claim['expired'] = copy(claim)
             self.claim['expired']['exp'] = expired_ts
-            self.jwt['expired'] = b2s(jwt.encode(self.claim['expired'], secret,
+            self.jwt['expired'] = tostr(jwt.encode(self.claim['expired'], secret,
                                              algorithm='HS256'))
          
             # generate valid claim with user role
             self.claim['user'] = copy(claim)
             self.claim['user']['exp'] = plus1min_ts
-            self.jwt['user'] = b2s(jwt.encode(self.claim['user'], secret,
+            self.jwt['user'] = tostr(jwt.encode(self.claim['user'], secret,
                                           algorithm='HS256'))
             # generate invalid claim bad issuer
             self.claim['badiss'] = copy(claim)
             self.claim['badiss']['iss'] = "http://someissuer/bugs"
-            self.jwt['badiss'] = b2s(jwt.encode(self.claim['badiss'], secret,
+            self.jwt['badiss'] = tostr(jwt.encode(self.claim['badiss'], secret,
                                           algorithm='HS256'))
             # generate invalid claim bad aud(ience)
             self.claim['badaud'] = copy(claim)
             self.claim['badaud']['aud'] = "http://someaudience/bugs"
-            self.jwt['badaud'] = b2s(jwt.encode(self.claim['badaud'], secret,
+            self.jwt['badaud'] = tostr(jwt.encode(self.claim['badaud'], secret,
                                           algorithm='HS256'))            
             # generate invalid claim bad sub(ject)
             self.claim['badsub'] = copy(claim)
             self.claim['badsub']['sub'] = str("99")
-            self.jwt['badsub'] = b2s(jwt.encode(self.claim['badsub'], secret,
+            self.jwt['badsub'] = tostr(jwt.encode(self.claim['badsub'], secret,
                                           algorithm='HS256'))            
             # generate invalid claim bad roles
             self.claim['badroles'] = copy(claim)
             self.claim['badroles']['roles'] = [ "badrole1", "badrole2" ]
-            self.jwt['badroles'] = b2s(jwt.encode(self.claim['badroles'], secret,
+            self.jwt['badroles'] = tostr(jwt.encode(self.claim['badroles'], secret,
                                           algorithm='HS256'))            
             # generate valid claim with limited user:email role
             self.claim['user:email'] = copy(claim)
             self.claim['user:email']['roles'] = [ "user:email" ]
-            self.jwt['user:email'] = b2s(jwt.encode(self.claim['user:email'], secret,
+            self.jwt['user:email'] = tostr(jwt.encode(self.claim['user:email'], secret,
                                           algorithm='HS256'))
 
             # generate valid claim with limited user:emailnorest role
             self.claim['user:emailnorest'] = copy(claim)
             self.claim['user:emailnorest']['roles'] = [ "user:emailnorest" ]
-            self.jwt['user:emailnorest'] = b2s(jwt.encode(self.claim['user:emailnorest'], secret,
+            self.jwt['user:emailnorest'] = tostr(jwt.encode(self.claim['user:emailnorest'], secret,
                                           algorithm='HS256'))
 
         self.db.tx_Source = 'web'
