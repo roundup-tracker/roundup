@@ -2242,6 +2242,23 @@ class TestCase():
                          "application/xml")
         '''
 
+        # TEST #8
+        # invalid api version
+        # application/json is selected with invalid version
+        self.server.client.request.headers.get=self.get_header
+        headers={"accept": "application/json; version=99"
+        }
+        self.headers=headers
+        with self.assertRaises(UsageError) as ctx:
+            results = self.server.dispatch('GET',
+                                           "/rest/data/status/1",
+                                           self.empty_form)
+        print(results)
+        self.assertEqual(self.server.client.response_code, 200)
+        self.assertEqual(ctx.exception.args[0],
+                         "Unrecognized version: 99. See /rest without "
+                         "specifying version for supported versions.")
+
     def testMethodOverride(self):
         # TEST #1
         # Use GET, PUT, PATCH to tunnel DELETE expect error
