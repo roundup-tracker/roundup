@@ -1331,6 +1331,33 @@ class TestCase():
                           ['assignedto']['link'],
            "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/user/2")
 
+
+    def testDispatchDelete(self):
+        """
+        run Delete through rest dispatch().
+        """
+
+        # TEST #0
+        # Delete class raises unauthorized error
+        # simulate: /rest/data/issue
+        env = { "REQUEST_METHOD": "DELETE"
+        }
+        headers={"accept": "application/json; version=1",
+        }
+        self.headers=headers
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch(env["REQUEST_METHOD"],
+                            "/rest/data/issue",
+                            self.empty_form)
+
+        print(results)
+        self.assertEqual(self.server.client.response_code, 403)
+        json_dict = json.loads(b2s(results))
+
+        self.assertEqual(json_dict['error']['msg'],
+                         "Deletion of a whole class disabled")
+
+
     def testDispatchBadContent(self):
         """
         runthrough rest dispatch() with bad content_type patterns.
@@ -2743,12 +2770,15 @@ class TestCase():
         # File content is only shown with verbose=3
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('@verbose', '3')
+            cgi.MiniFieldStorage('@verbose', '3'),
+            cgi.MiniFieldStorage('@protected', 'true')
         ]
         results = self.server.get_element('file', fileid, form)
         results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['attributes']['content'], 'hello\r\nthere')
+        self.assertIn('creator', results['attributes']) # added by @protected
+        self.assertEqual(results['attributes']['creator']['username'], "joe")
 
     def testAuthDeniedPut(self):
         """
