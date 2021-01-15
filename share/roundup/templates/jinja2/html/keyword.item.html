@@ -11,28 +11,32 @@
 {% block content %}
 
   <h4>Existing Keywords</h4>
+  <ul class='nav nav-pills nav-stacked'>
+    {% for keyword in db.keyword.list() %}
+      <li class='nav-item'>
+        <a class='nav-link {{ 'active' if context.id == keyword.id else '' }}' href='keyword{{ keyword.id }}'>{{ keyword.name.plain()|u }}</a>
+      </li>
+    {% else %}
+      <p class='text-mute'>{% trans %}There are no keywords yet.  Be the first -{% endtrans %}</p>
+    {% endfor %}
+    {% if context.id %}
+    <li class='nav-item'>
+      <a class='nav-link close' href='keyword?@template=item' aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </a>
+    </li>
+    {% endif %}
+  </ul>
   <p class='text-warning'>
    {% trans %}To edit an existing keyword (for spelling or typing errors),
    click on its entry above.{% endtrans %}
   </p>
 
-  <ul class='nav nav-pills nav-stacked'>
-    {% for keyword in db.keyword.list() %}
-      <li>
-        <a href='keyword{{ keyword.id }}'>{{ keyword.name.plain()|u }}</a>
-      </li>
-    {% else %}
-      <p class='text-mute'>{% trans %}There are no keywords yet.  Be the first -{% endtrans %}</p>
-    {% endfor %}
-  </ul>
 
   <form class='form-inline' method="POST" action='{{ context.designator() }}'>
-    <input type='text' class='input-xlarge' name='name'>
+    <input type='text' class='input-xlarge' name='name' value='{{ context.name if context.id else '' }}'>
     <input type="hidden" name="@required" value="name">
     <input type="hidden" name="@template" value="item">
-    <input name="@csrf" type="hidden"
-           value="{{ utils.anti_csrf_nonce() }}">
-    <input type="hidden" name="@action" value="new">
-    <input type='submit' class='btn btn-primary' value="{% trans %}Create keyword{% endtrans %}">
+    {{ context.submit(html_kwargs={ 'class': 'btn btn-primary' })|u|safe }}
   </form>
 {% endblock %}
