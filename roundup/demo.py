@@ -39,7 +39,10 @@ def install_demo(home, backend, template):
     from roundup import init, instance, password
 
     # set up the config for this tracker
-    config = configuration.CoreConfig()
+    template_cfg = configuration.UserConfig(template + "/config_ini.ini")
+    config = configuration.CoreConfig(settings={
+        i.name: i.get() for i in template_cfg.items()
+    })
     config['TRACKER_HOME'] = home
     config['MAIL_DOMAIN'] = 'localhost'
     config['DATABASE'] = 'db'
