@@ -50,7 +50,7 @@ try:
     reload
 except NameError:
     # Python 3.
-    from imp import reload
+    from importlib import reload
 
 try:
     from OpenSSL import SSL
