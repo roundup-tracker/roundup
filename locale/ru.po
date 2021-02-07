@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roundup 1.3.2\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2020-07-12 23:40-0400\n"
+"POT-Creation-Date: 2020-12-20 22:53-0500\n"
 "PO-Revision-Date: 2013-10-31 12:21+0100\n"
 "Last-Translator: alexander smishlajev <alex@tycobka.lv>\n"
 "Language-Team: Russian\n"
@@ -29,8 +29,8 @@ msgstr "У вас нет разрешения %(action)s для класса %(classname)s."
 msgid "You may not retire the admin or anonymous user"
 msgstr "Нельзя удалять пользователей admin и anonymous."
 
-#: ../roundup/admin.py:95 ../roundup/admin.py:1149 ../roundup/admin.py:1204
-#: ../roundup/admin.py:1231 ../roundup/admin.py:95:1149 :1204:1231
+#: ../roundup/admin.py:95 ../roundup/admin.py:1173 ../roundup/admin.py:1228
+#: ../roundup/admin.py:1255 ../roundup/admin.py:95:1173 :1228:1255
 #, python-format
 msgid "no such class \"%(classname)s\""
 msgstr "Класс \"%(classname)s\" не существует"
@@ -339,13 +339,13 @@ msgstr ""
 "        "
 
 #: ../roundup/admin.py:378 ../roundup/admin.py:510 ../roundup/admin.py:583
-#: ../roundup/admin.py:674 ../roundup/admin.py:732 ../roundup/admin.py:792
-#: ../roundup/admin.py:851 ../roundup/admin.py:878 ../roundup/admin.py:905
-#: ../roundup/admin.py:980 ../roundup/admin.py:1047 ../roundup/admin.py:1133
-#: ../roundup/admin.py:1194 ../roundup/admin.py:1221 ../roundup/admin.py:1253
-#: ../roundup/admin.py:1369 ../roundup/admin.py:1456
-#: ../roundup/admin.py:378:510 :1047 :1133:1194 :1221:1253 :1369:1456 :583:674
-#: :732:792 :851:878 :905:980
+#: ../roundup/admin.py:674 ../roundup/admin.py:732 ../roundup/admin.py:816
+#: ../roundup/admin.py:875 ../roundup/admin.py:902 ../roundup/admin.py:929
+#: ../roundup/admin.py:1004 ../roundup/admin.py:1071 ../roundup/admin.py:1157
+#: ../roundup/admin.py:1218 ../roundup/admin.py:1245 ../roundup/admin.py:1277
+#: ../roundup/admin.py:1393 ../roundup/admin.py:1480
+#: ../roundup/admin.py:378:510 :1071 :1157:1218 :1245:1277 :1393:1480 :583:674
+#: :732:816 :875:902 :929:1004
 msgid "Not enough arguments supplied"
 msgstr "Недостаточно аргументов"
 
@@ -525,8 +525,8 @@ msgid "property %s is not of type Multilink or Link so -d flag does not apply."
 msgstr ""
 "Ключ '-d' неприменим, потому что тип атрибута %s - не Link и не Multilink"
 
-#: ../roundup/admin.py:643 ../roundup/admin.py:1151 ../roundup/admin.py:1206
-#: ../roundup/admin.py:643:1151:1206
+#: ../roundup/admin.py:643 ../roundup/admin.py:1175 ../roundup/admin.py:1230
+#: ../roundup/admin.py:643:1175:1230
 #, python-format
 msgid "no such %(classname)s node \"%(nodeid)s\""
 msgstr "В классе %(classname)s нет объекта \"%(nodeid)s\""
@@ -592,14 +592,19 @@ msgstr ""
 "        который ссылается атрибут, или ключом этого объекта.\n"
 "        "
 
-#: ../roundup/admin.py:777 ../roundup/admin.py:838 ../roundup/admin.py:1000
-#: ../roundup/admin.py:1012 ../roundup/admin.py:1067
-#: ../roundup/admin.py:777:838 :1000:1012:1067
+#: ../roundup/admin.py:764
+#, fuzzy, python-format
+msgid "Class %(curclassname)s has no property %(pn)s in %(propname)s."
+msgstr "Класс %(classname)s не имеет атрибута \"%(propname)s\""
+
+#: ../roundup/admin.py:801 ../roundup/admin.py:862 ../roundup/admin.py:1024
+#: ../roundup/admin.py:1036 ../roundup/admin.py:1091
+#: ../roundup/admin.py:801:862 :1024:1036:1091
 #, python-format
 msgid "%(classname)s has no property \"%(propname)s\""
 msgstr "Класс %(classname)s не имеет атрибута \"%(propname)s\""
 
-#: ../roundup/admin.py:784
+#: ../roundup/admin.py:808
 msgid ""
 "Usage: find classname propname=value ...\n"
 "        Find the nodes of the given class with a given link property value.\n"
@@ -617,7 +622,7 @@ msgstr ""
 "        который ссылается атрибут, или ключом этого объекта.\n"
 "        "
 
-#: ../roundup/admin.py:845
+#: ../roundup/admin.py:869
 msgid ""
 "Usage: specification classname\n"
 "        Show the properties for a classname.\n"
@@ -631,17 +636,17 @@ msgstr ""
 "        Выдает список атрибутов указанного класса.\n"
 "        "
 
-#: ../roundup/admin.py:861
+#: ../roundup/admin.py:885
 #, fuzzy, python-format
 msgid "%(key)s: %(value)s (key property)\n"
 msgstr "%(key)s: %(value)s (ключевой атрибут)"
 
-#: ../roundup/admin.py:864
+#: ../roundup/admin.py:888
 #, fuzzy, python-format
 msgid "%(key)s: %(value)s\n"
 msgstr "%(key)s: %(value)s (ключевой атрибут)"
 
-#: ../roundup/admin.py:867
+#: ../roundup/admin.py:891
 #, fuzzy
 msgid ""
 "Usage: display designator[,designator]*\n"
@@ -662,12 +667,12 @@ msgstr ""
 "        заданных описателями.\n"
 "        "
 
-#: ../roundup/admin.py:894
+#: ../roundup/admin.py:918
 #, python-format
 msgid "%(key)s: %(value)s"
 msgstr ""
 
-#: ../roundup/admin.py:897
+#: ../roundup/admin.py:921
 msgid ""
 "Usage: create classname property=value ...\n"
 "        Create a new entry of a given class.\n"
@@ -685,31 +690,31 @@ msgstr ""
 "        этого объекта указанными значениями.\n"
 "        "
 
-#: ../roundup/admin.py:925
+#: ../roundup/admin.py:949
 #, python-format
 msgid "%(propname)s (Password): "
 msgstr " %(propname)s (пароль): "
 
-#: ../roundup/admin.py:928
+#: ../roundup/admin.py:952
 #, python-format
 msgid "   %(propname)s (Again): "
 msgstr "%(propname)s (еще раз): "
 
-#: ../roundup/admin.py:931
+#: ../roundup/admin.py:955
 msgid "Sorry, try again..."
 msgstr "Пароли не совпали.  Попробуйте еще раз."
 
-#: ../roundup/admin.py:935
+#: ../roundup/admin.py:959
 #, python-format
 msgid "%(propname)s (%(proptype)s): "
 msgstr ""
 
-#: ../roundup/admin.py:953
+#: ../roundup/admin.py:977
 #, python-format
 msgid "you must provide the \"%(propname)s\" property."
 msgstr "Атрибут \"%(propname)s\" должен быть заполнен."
 
-#: ../roundup/admin.py:965
+#: ../roundup/admin.py:989
 msgid ""
 "Usage: list classname [property]\n"
 "        List the instances of a class.\n"
@@ -738,16 +743,16 @@ msgstr ""
 "        выдает список значений этого атрибута.\n"
 "        "
 
-#: ../roundup/admin.py:978
+#: ../roundup/admin.py:1002
 msgid "Too many arguments supplied"
 msgstr "Подано слишком много параметров"
 
-#: ../roundup/admin.py:1014
+#: ../roundup/admin.py:1038
 #, python-format
 msgid "%(nodeid)4s: %(value)s"
 msgstr ""
 
-#: ../roundup/admin.py:1018
+#: ../roundup/admin.py:1042
 msgid ""
 "Usage: table classname [property[,property]*]\n"
 "        List the instances of a class in tabular form.\n"
@@ -807,17 +812,17 @@ msgstr ""
 "        обрезает значения столбца \"Name\" до четырех символов.\n"
 "        "
 
-#: ../roundup/admin.py:1062
+#: ../roundup/admin.py:1086
 #, python-format
 msgid "\"%(spec)s\" not name:width"
 msgstr "Значение \"%(spec)s\" должно быть задано как имя:ширина"
 
-#: ../roundup/admin.py:1084
+#: ../roundup/admin.py:1108
 #, python-format
 msgid "\"%(spec)s\" does not have an integer width: \"%(width)s\""
 msgstr ""
 
-#: ../roundup/admin.py:1120
+#: ../roundup/admin.py:1144
 msgid ""
 "Usage: history designator [skipquiet]\n"
 "        Show the history entries of a designator.\n"
@@ -832,7 +837,7 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1156
+#: ../roundup/admin.py:1180
 msgid ""
 "Usage: commit\n"
 "        Commit changes made to the database during an interactive session.\n"
@@ -856,7 +861,7 @@ msgstr ""
 "        автоматически, если при выполнении команды не произошло ошибки.\n"
 "        "
 
-#: ../roundup/admin.py:1171
+#: ../roundup/admin.py:1195
 msgid ""
 "Usage: rollback\n"
 "        Undo all changes that are pending commit to the database.\n"
@@ -877,7 +882,7 @@ msgstr ""
 "        было в момент последней записи.\n"
 "        "
 
-#: ../roundup/admin.py:1184
+#: ../roundup/admin.py:1208
 #, fuzzy
 msgid ""
 "Usage: retire designator[,designator]*\n"
@@ -899,7 +904,7 @@ msgstr ""
 "        использованы в других объектах.\n"
 "        "
 
-#: ../roundup/admin.py:1212
+#: ../roundup/admin.py:1236
 #, fuzzy
 msgid ""
 "Usage: restore designator[,designator]*\n"
@@ -918,13 +923,13 @@ msgstr ""
 "        можно пользоваться снова.\n"
 "        "
 
-#: ../roundup/admin.py:1233
+#: ../roundup/admin.py:1257
 #, fuzzy
 msgid "no such %(classname)s node \" % (nodeid)s\""
 msgstr "В классе %(classname)s нет объекта \"%(nodeid)s\""
 
 #. grab the directory to export to
-#: ../roundup/admin.py:1239
+#: ../roundup/admin.py:1263
 msgid ""
 "Usage: export [[-]class[,class]] export_dir\n"
 "        Export the database to colon-separated-value files.\n"
@@ -961,7 +966,7 @@ msgstr ""
 "        exporttables.\n"
 "        "
 
-#: ../roundup/admin.py:1334
+#: ../roundup/admin.py:1358
 msgid ""
 "Usage: exporttables [[-]class[,class]] export_dir\n"
 "        Export the database to colon-separated-value files, excluding the\n"
@@ -999,7 +1004,7 @@ msgstr ""
 "        полностью, используйте команду export.\n"
 "        "
 
-#: ../roundup/admin.py:1349
+#: ../roundup/admin.py:1373
 msgid ""
 "Usage: import import_dir\n"
 "        Import a database from the directory containing CSV files,\n"
@@ -1043,7 +1048,7 @@ msgstr ""
 "        из существующей базы все объекты).\n"
 "        "
 
-#: ../roundup/admin.py:1431
+#: ../roundup/admin.py:1455
 msgid ""
 "Usage: importtables export_dir\n"
 "\n"
@@ -1051,7 +1056,7 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1438
+#: ../roundup/admin.py:1462
 msgid ""
 "Usage: pack period | date\n"
 "\n"
@@ -1091,11 +1096,11 @@ msgstr ""
 "\n"
 "        "
 
-#: ../roundup/admin.py:1466
+#: ../roundup/admin.py:1490
 msgid "Invalid format"
 msgstr "Неправильный формат"
 
-#: ../roundup/admin.py:1477
+#: ../roundup/admin.py:1501
 msgid ""
 "Usage: reindex [classname|designator]*\n"
 "        Re-generate a tracker's search indexes.\n"
@@ -1111,12 +1116,12 @@ msgstr ""
 "        данных.  Обычно построение индексов происходит автоматически.\n"
 "        "
 
-#: ../roundup/admin.py:1491
+#: ../roundup/admin.py:1515
 #, python-format
 msgid "no such item \"%(designator)s\""
 msgstr "объект \"%(designator)s\" не существует"
 
-#: ../roundup/admin.py:1501
+#: ../roundup/admin.py:1525
 #, fuzzy
 msgid ""
 "Usage: security [Role name]\n"
@@ -1129,49 +1134,49 @@ msgstr ""
 "        ролям.\n"
 "        "
 
-#: ../roundup/admin.py:1510
+#: ../roundup/admin.py:1534
 #, fuzzy, python-format
 msgid "No such Role \"%(role)s\"\n"
 msgstr "Роль \"%(role)s\" не существует"
 
-#: ../roundup/admin.py:1516
+#: ../roundup/admin.py:1540
 #, fuzzy, python-format
 msgid "New Web users get the Roles \"%(role)s\"\n"
 msgstr "Новые пользователи web получают роли \"%(role)s\""
 
-#: ../roundup/admin.py:1519
+#: ../roundup/admin.py:1543
 #, fuzzy, python-format
 msgid "New Web users get the Role \"%(role)s\"\n"
 msgstr "Новые пользователи web получают роль \"%(role)s\""
 
-#: ../roundup/admin.py:1523
+#: ../roundup/admin.py:1547
 #, fuzzy, python-format
 msgid "New Email users get the Roles \"%(role)s\"\n"
 msgstr "Новые пользователи email получают роли \"%(role)s\""
 
-#: ../roundup/admin.py:1525
+#: ../roundup/admin.py:1549
 #, fuzzy, python-format
 msgid "New Email users get the Role \"%(role)s\"\n"
 msgstr "Новые пользователи email получают роль \"%(role)s\""
 
-#: ../roundup/admin.py:1528
+#: ../roundup/admin.py:1552
 #, fuzzy, python-format
 msgid "Role \"%(name)s\":\n"
 msgstr "Роль \"%(name)s\":"
 
-#: ../roundup/admin.py:1533
+#: ../roundup/admin.py:1557
 #, fuzzy
 msgid " %(description)s (%(name)s for \"%(klass)s\""
 msgstr " %(description)s (%(name)s только для класса \"%(klass)s\")"
 
-#: ../roundup/admin.py:1533
+#: ../roundup/admin.py:1557
 #, fuzzy, python-format
 msgid " %(description)s (%(name)s for \"%(klass)s\": %(properties)s only)\n"
 msgstr ""
 " %(description)s (%(name)s для класса \"%(klass)s\": только свойства "
 "%(properties)s)"
 
-#: ../roundup/admin.py:1545
+#: ../roundup/admin.py:1569
 #, python-format
 msgid ""
 "\n"
@@ -1179,17 +1184,17 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../roundup/admin.py:1547
+#: ../roundup/admin.py:1571
 #, fuzzy, python-format
 msgid " %(description)s (%(name)s for \"%(klass)s\" only)\n"
 msgstr " %(description)s (%(name)s только для класса \"%(klass)s\")"
 
-#: ../roundup/admin.py:1550
+#: ../roundup/admin.py:1574
 #, fuzzy, python-format
 msgid " %(description)s (%(name)s)\n"
 msgstr " %(description)s (%(name)s только для класса \"%(klass)s\")"
 
-#: ../roundup/admin.py:1554
+#: ../roundup/admin.py:1578
 msgid ""
 "Usage: migrate\n"
 "\n"
@@ -1213,43 +1218,43 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1575
+#: ../roundup/admin.py:1599
 #, fuzzy
 msgid "Tracker updated"
 msgstr "Центр управления заданиями"
 
-#: ../roundup/admin.py:1578
+#: ../roundup/admin.py:1602
 msgid "No migration action required"
 msgstr ""
 
-#: ../roundup/admin.py:1604
+#: ../roundup/admin.py:1628
 #, python-format
 msgid "Unknown command \"%(command)s\" (\"help commands\" for a list)"
 msgstr ""
 "Команда \"%(command)s\" неизвестна. (\"help commands\" выдает список команд)"
 
-#: ../roundup/admin.py:1610
+#: ../roundup/admin.py:1634
 #, python-format
 msgid "Multiple commands match \"%(command)s\": %(list)s"
 msgstr "\"%(command)s\" соответствует нескольким командам: %(list)s"
 
-#: ../roundup/admin.py:1619
+#: ../roundup/admin.py:1643
 msgid "Enter tracker home: "
 msgstr "Домашний каталог трекера: "
 
-#: ../roundup/admin.py:1628 ../roundup/admin.py:1634 ../roundup/admin.py:1660
-#: ../roundup/admin.py:1628:1634:1660
+#: ../roundup/admin.py:1652 ../roundup/admin.py:1658 ../roundup/admin.py:1684
+#: ../roundup/admin.py:1652:1658:1684
 #, python-format
 msgid "Error: %(message)s"
 msgstr "Ошибка: %(message)s"
 
-#: ../roundup/admin.py:1642 ../roundup/admin.py:1646
-#: ../roundup/admin.py:1642:1646
+#: ../roundup/admin.py:1666 ../roundup/admin.py:1670
+#: ../roundup/admin.py:1666:1670
 #, python-format
 msgid "Error: Couldn't open tracker: %(message)s"
 msgstr "Ошибка: Трекер не открывается: %(message)s"
 
-#: ../roundup/admin.py:1673
+#: ../roundup/admin.py:1697
 #, python-format
 msgid ""
 "Roundup %s ready for input.\n"
@@ -1258,21 +1263,27 @@ msgstr ""
 "Roundup %s к вашим услугам.\n"
 "Введите \"help\" для справки."
 
-#: ../roundup/admin.py:1678
+#: ../roundup/admin.py:1702
 msgid "Note: command history and editing not available"
 msgstr "Примечание: работает редактор и история команд"
 
-#: ../roundup/admin.py:1682
+#: ../roundup/admin.py:1706
 msgid "roundup> "
 msgstr ""
 
-#: ../roundup/admin.py:1684
+#: ../roundup/admin.py:1708
 msgid "exit..."
 msgstr "приходите к нам еще..."
 
-#: ../roundup/admin.py:1697
+#: ../roundup/admin.py:1721
 msgid "There are unsaved changes. Commit them (y/N)? "
 msgstr "Ой, тут несохраненные изменения. Записать в базу данных (y/N)? "
+
+#: ../roundup/backends/back_anydbm.py:253
+#: ../roundup/backends/rdbms_common.py:850
+#, python-format
+msgid "Class \"%s\" already defined."
+msgstr ""
 
 #: ../roundup/backends/back_anydbm.py:314
 #: ../roundup/backends/sessions_dbm.py:55
@@ -1416,10 +1427,10 @@ msgstr ""
 "%(classname)s)"
 
 #: ../roundup/cgi/actions.py:230 ../roundup/cgi/actions.py:268
-#: ../roundup/cgi/actions.py:494 ../roundup/cgi/actions.py:827
-#: ../roundup/cgi/actions.py:874 ../roundup/cgi/actions.py:1079
-#: ../roundup/cgi/actions.py:1236 ../roundup/cgi/actions.py:230:268:1236
-#: :494:827 :874:1079
+#: ../roundup/cgi/actions.py:494 ../roundup/cgi/actions.py:829
+#: ../roundup/cgi/actions.py:876 ../roundup/cgi/actions.py:1081
+#: ../roundup/cgi/actions.py:1238 ../roundup/cgi/actions.py:230:268:1238
+#: :494:829 :876:1081
 #, fuzzy
 msgid "Invalid request"
 msgstr "Неправильный формат"
@@ -1501,28 +1512,28 @@ msgstr "Изменены атрибуты %(properties)s объекта %(class)s %(id)s"
 msgid "%(class)s %(id)s created"
 msgstr "%(class)s %(id)s создан"
 
-#: ../roundup/cgi/actions.py:812
+#: ../roundup/cgi/actions.py:813
 #, fuzzy, python-format
 msgid ""
-"Edit Error: someone else has edited this %s (%s). View <a target=\"_blank\" "
-"href=\"%s%s\">their changes</a> in a new window."
+"Edit Error: someone else has edited this %(klass)s (%(props)s). View <a "
+"target=\"_blank\" href=\"%(klass)s%(id)s\">their changes</a> in a new window."
 msgstr ""
-"Ошибка редактирования: %s (%s) изменил другой пользователь. <a target=\"new"
-"\" href=\"%s%s\">Просмотреть эти изменения</a> в другом окне."
+"Ошибка редактирования: %(klass)s (%(props)s) изменил другой пользователь. <a target=\"new"
+"\" href=\"%(klass)s%(id)s\">Просмотреть эти изменения</a> в другом окне."
 
-#: ../roundup/cgi/actions.py:844
+#: ../roundup/cgi/actions.py:846
 #, python-format
 msgid "Edit Error: %s"
 msgstr "Ошибка редактирования: %s"
 
-#: ../roundup/cgi/actions.py:880 ../roundup/cgi/actions.py:891
-#: ../roundup/cgi/actions.py:1094 ../roundup/cgi/actions.py:1107
-#: ../roundup/cgi/actions.py:880:891 :1094:1107
+#: ../roundup/cgi/actions.py:882 ../roundup/cgi/actions.py:893
+#: ../roundup/cgi/actions.py:1096 ../roundup/cgi/actions.py:1109
+#: ../roundup/cgi/actions.py:882:893 :1096:1109
 #, python-format
 msgid "Error: %s"
 msgstr "Ошибка: %s"
 
-#: ../roundup/cgi/actions.py:925
+#: ../roundup/cgi/actions.py:927
 msgid ""
 "Invalid One Time Key!\n"
 "(a Mozilla bug may cause this message to show up erroneously, please check "
@@ -1532,75 +1543,75 @@ msgstr ""
 "(Из-за ошибки в браузере Mozilla это сообщение может быть неверным. "
 "Проверьте вашу почту, пожалуйста.)"
 
-#: ../roundup/cgi/actions.py:976
+#: ../roundup/cgi/actions.py:978
 #, python-format
 msgid "Password reset and email sent to %s"
 msgstr "Пароль сброшен.  По адресу %s отправлено письмо."
 
-#: ../roundup/cgi/actions.py:985
+#: ../roundup/cgi/actions.py:987
 msgid "Unknown username"
 msgstr "Неизвестное имя пользователя"
 
-#: ../roundup/cgi/actions.py:993
+#: ../roundup/cgi/actions.py:995
 msgid "Unknown email address"
 msgstr "Неизвестный адрес email"
 
-#: ../roundup/cgi/actions.py:998
+#: ../roundup/cgi/actions.py:1000
 msgid "You need to specify a username or address"
 msgstr "Вы должны указать имя пользователя или адрес email"
 
-#: ../roundup/cgi/actions.py:1024
+#: ../roundup/cgi/actions.py:1026
 #, python-format
 msgid "Email sent to primary notification address for %s."
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1026
+#: ../roundup/cgi/actions.py:1028
 #, fuzzy, python-format
 msgid "Email sent to %s."
 msgstr "Письмо отправлено на %s"
 
-#: ../roundup/cgi/actions.py:1041
+#: ../roundup/cgi/actions.py:1043
 msgid "You are now registered, welcome!"
 msgstr "Вы зарегистрированы.  Добро пожаловать!"
 
-#: ../roundup/cgi/actions.py:1131
+#: ../roundup/cgi/actions.py:1133
 #, python-format
 msgid "Username '%s' is already used."
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1196
+#: ../roundup/cgi/actions.py:1198
 msgid "It is not permitted to supply roles at registration."
 msgstr "Нельзя указывать роли при регистрации"
 
-#: ../roundup/cgi/actions.py:1210
+#: ../roundup/cgi/actions.py:1212
 msgid "You are logged out"
 msgstr "Сеанс работы завершен"
 
-#: ../roundup/cgi/actions.py:1240
+#: ../roundup/cgi/actions.py:1242
 msgid "Username required"
 msgstr "Не указано имя пользователя"
 
-#: ../roundup/cgi/actions.py:1319
+#: ../roundup/cgi/actions.py:1321
 #, python-format
 msgid "Logins occurring too fast. Please wait: %s seconds."
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1358 ../roundup/cgi/actions.py:1362
-#: ../roundup/cgi/actions.py:1358:1362
+#: ../roundup/cgi/actions.py:1360 ../roundup/cgi/actions.py:1364
+#: ../roundup/cgi/actions.py:1360:1364
 msgid "Invalid login"
 msgstr "Неправильный пароль или имя пользователя."
 
-#: ../roundup/cgi/actions.py:1368
+#: ../roundup/cgi/actions.py:1370
 msgid "You do not have permission to login"
 msgstr "У вас нет разрешения на работу с системой"
 
-#: ../roundup/cgi/actions.py:1411 ../roundup/cgi/actions.py:1576
-#: ../roundup/cgi/actions.py:1411:1576
+#: ../roundup/cgi/actions.py:1413 ../roundup/cgi/actions.py:1578
+#: ../roundup/cgi/actions.py:1413:1578
 #, python-format
 msgid "Column \"%(column)s\" not found in %(class)s"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1632
+#: ../roundup/cgi/actions.py:1634
 #, fuzzy, python-format
 msgid "You do not have permission to view %(class)s"
 msgstr "У вас нет разрешения редактировать %(class)s"
@@ -1920,117 +1931,117 @@ msgstr[0] "Обязательный атрибут %(property)s класса %(class)s не заполнен"
 msgstr[1] "Обязательные атрибуты %(property)s класса %(class)s не заполнены"
 msgstr[2] "Обязательные атрибуты %(property)s класса %(class)s не заполнены"
 
-#: ../roundup/cgi/templating.py:184
+#: ../roundup/cgi/templating.py:255
 #, python-format
 msgid "You are not allowed to %(action)s items of class %(class)s"
 msgstr "У вас нет разрешения %(action)s для класса %(class)s"
 
-#: ../roundup/cgi/templating.py:798
+#: ../roundup/cgi/templating.py:869
 msgid "(list)"
 msgstr "(список)"
 
-#: ../roundup/cgi/templating.py:871
+#: ../roundup/cgi/templating.py:942
 msgid "Submit New Entry"
 msgstr "Добавить"
 
 # ../roundup/cgi/templating.py:673 :792 :1166 :1187 :1231 :1253 :1287 :1326
 # :1377 :1394 :1470 :1490 :1503 :1520 :1530 :1580 :1755
-#: ../roundup/cgi/templating.py:893 ../roundup/cgi/templating.py:1061
-#: ../roundup/cgi/templating.py:1627 ../roundup/cgi/templating.py:1656
-#: ../roundup/cgi/templating.py:1676 ../roundup/cgi/templating.py:1689
-#: ../roundup/cgi/templating.py:1726 ../roundup/cgi/templating.py:1775
-#: ../roundup/cgi/templating.py:1798 ../roundup/cgi/templating.py:1805
-#: ../roundup/cgi/templating.py:1841 ../roundup/cgi/templating.py:1878
-#: ../roundup/cgi/templating.py:1911 ../roundup/cgi/templating.py:2000
-#: ../roundup/cgi/templating.py:2021 ../roundup/cgi/templating.py:2111
-#: ../roundup/cgi/templating.py:2131 ../roundup/cgi/templating.py:2149
-#: ../roundup/cgi/templating.py:2188 ../roundup/cgi/templating.py:2198
-#: ../roundup/cgi/templating.py:2262 ../roundup/cgi/templating.py:2509
-#: ../roundup/cgi/templating.py:893:1061 :1627:1656 :1676:1689 :1726:1775
-#: :1798:1805 :1841:1878 :1911:2000 :2021:2111 :2131:2149 :2188:2198 :2262:2509
+#: ../roundup/cgi/templating.py:964 ../roundup/cgi/templating.py:1132
+#: ../roundup/cgi/templating.py:1715 ../roundup/cgi/templating.py:1744
+#: ../roundup/cgi/templating.py:1764 ../roundup/cgi/templating.py:1777
+#: ../roundup/cgi/templating.py:1814 ../roundup/cgi/templating.py:1867
+#: ../roundup/cgi/templating.py:1890 ../roundup/cgi/templating.py:1897
+#: ../roundup/cgi/templating.py:1933 ../roundup/cgi/templating.py:1970
+#: ../roundup/cgi/templating.py:2003 ../roundup/cgi/templating.py:2092
+#: ../roundup/cgi/templating.py:2113 ../roundup/cgi/templating.py:2203
+#: ../roundup/cgi/templating.py:2223 ../roundup/cgi/templating.py:2241
+#: ../roundup/cgi/templating.py:2280 ../roundup/cgi/templating.py:2290
+#: ../roundup/cgi/templating.py:2354 ../roundup/cgi/templating.py:2601
+#: ../roundup/cgi/templating.py:964:1132 :1715:1744 :1764:1777 :1814:1867
+#: :1890:1897 :1933:1970 :2003:2092 :2113:2203 :2223:2241 :2280:2290 :2354:2601
 msgid "[hidden]"
 msgstr "[недоступно]"
 
-#: ../roundup/cgi/templating.py:894
+#: ../roundup/cgi/templating.py:965
 msgid "New node - no history"
 msgstr "Новая карточка - нет истории"
 
-#: ../roundup/cgi/templating.py:1026
+#: ../roundup/cgi/templating.py:1097
 msgid "Submit Changes"
 msgstr "Изменить"
 
-#: ../roundup/cgi/templating.py:1098
+#: ../roundup/cgi/templating.py:1169
 msgid "<em>The indicated property no longer exists</em>"
 msgstr "<em>Указанный атрибут уже не существует.</em>"
 
-#: ../roundup/cgi/templating.py:1099
+#: ../roundup/cgi/templating.py:1170
 #, python-format
 msgid "<em>%s: %s</em>\n"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1134
+#: ../roundup/cgi/templating.py:1205
 #, python-format
 msgid "The linked class %(classname)s no longer exists"
 msgstr "Связянный класс %(classname)s уже не существует"
 
 # :823
-#: ../roundup/cgi/templating.py:1172 ../roundup/cgi/templating.py:1198
-#: ../roundup/cgi/templating.py:1172:1198
+#: ../roundup/cgi/templating.py:1243 ../roundup/cgi/templating.py:1269
+#: ../roundup/cgi/templating.py:1243:1269
 msgid "<strike>The linked node no longer exists</strike>"
 msgstr "<strike>Связанный объект уже не существует</strike>"
 
-#: ../roundup/cgi/templating.py:1259
+#: ../roundup/cgi/templating.py:1330
 #, python-format
 msgid "%s: (no value)"
 msgstr "%s: (нет значения)"
 
-#: ../roundup/cgi/templating.py:1275
+#: ../roundup/cgi/templating.py:1346
 #, fuzzy, python-format
 msgid ""
 "<strong><em>This event %s is not handled by the history display!</em></"
 "strong>"
 msgstr "<strong><em>Неизвестный тип события!</em></strong>"
 
-#: ../roundup/cgi/templating.py:1288
+#: ../roundup/cgi/templating.py:1359
 msgid "<tr><td colspan=4><strong>Note:</strong></td></tr>"
 msgstr "<tr><td colspan=4><strong>Примечание:</strong></td></tr>"
 
-#: ../roundup/cgi/templating.py:1297
+#: ../roundup/cgi/templating.py:1368
 msgid "History"
 msgstr "История"
 
-#: ../roundup/cgi/templating.py:1299
+#: ../roundup/cgi/templating.py:1370
 msgid "<th>Date</th>"
 msgstr "<th>Дата</th>"
 
-#: ../roundup/cgi/templating.py:1300
+#: ../roundup/cgi/templating.py:1371
 msgid "<th>User</th>"
 msgstr "<th>Пользователь</th>"
 
-#: ../roundup/cgi/templating.py:1301
+#: ../roundup/cgi/templating.py:1372
 msgid "<th>Action</th>"
 msgstr "<th>Действие</th>"
 
-#: ../roundup/cgi/templating.py:1302
+#: ../roundup/cgi/templating.py:1373
 msgid "<th>Args</th>"
 msgstr "<th>Параметры</th>"
 
-#: ../roundup/cgi/templating.py:1350
+#: ../roundup/cgi/templating.py:1421
 #, python-format
 msgid "Copy of %(class)s %(id)s"
 msgstr "Копия: %(class)s %(id)s"
 
-#: ../roundup/cgi/templating.py:1915 ../roundup/cgi/templating.py:1948
-#: ../roundup/cgi/templating.py:1241:1915:1948
+#: ../roundup/cgi/templating.py:2007 ../roundup/cgi/templating.py:2040
+#: ../roundup/cgi/templating.py:1312:2007:2040
 msgid "No"
 msgstr "Нет"
 
-#: ../roundup/cgi/templating.py:1915 ../roundup/cgi/templating.py:1943
-#: ../roundup/cgi/templating.py:1241:1915:1943
+#: ../roundup/cgi/templating.py:2007 ../roundup/cgi/templating.py:2035
+#: ../roundup/cgi/templating.py:1312:2007:2035
 msgid "Yes"
 msgstr "Да"
 
-#: ../roundup/cgi/templating.py:2069
+#: ../roundup/cgi/templating.py:2161
 msgid ""
 "default value for DateHTMLProperty must be either DateHTMLProperty or string "
 "date representation."
@@ -2038,17 +2049,17 @@ msgstr ""
 "значение по умолчанию для DateHTMLProperty должно быть объектом "
 "DateHTMLProperty или строковым представлением даты."
 
-#: ../roundup/cgi/templating.py:2242
+#: ../roundup/cgi/templating.py:2334
 #, python-format
 msgid "Attempt to look up %(attr)s on a missing value"
 msgstr "Попытка получить атрибут \"%(attr)s\" несуществующего объекта"
 
-#: ../roundup/cgi/templating.py:2253
+#: ../roundup/cgi/templating.py:2345
 #, fuzzy, python-format
 msgid "Attempt to look up %(item)s on a missing value"
 msgstr "Попытка получить атрибут \"%(attr)s\" несуществующего объекта"
 
-#: ../roundup/cgi/templating.py:2356
+#: ../roundup/cgi/templating.py:2448
 #, python-format
 msgid "<option %svalue=\"-1\">- no selection -</option>"
 msgstr "<option %svalue=\"-1\">- не указано -</option>"
@@ -2235,28 +2246,28 @@ msgstr ""
 msgid "property %s: %r is not an integer"
 msgstr ""
 
-#: ../roundup/hyperdb.py:445
+#: ../roundup/hyperdb.py:446
 #, python-format
 msgid "\"%s\" not a node designator"
 msgstr ""
 
-#: ../roundup/hyperdb.py:1380 ../roundup/hyperdb.py:1388
-#: ../roundup/hyperdb.py:1380:1388
+#: ../roundup/hyperdb.py:1397 ../roundup/hyperdb.py:1405
+#: ../roundup/hyperdb.py:1397:1405
 #, python-format
 msgid "Not a property name: %s"
 msgstr ""
 
-#: ../roundup/hyperdb.py:1829
+#: ../roundup/hyperdb.py:1846
 #, python-format
 msgid "property %s: %r is not a %s."
 msgstr ""
 
-#: ../roundup/hyperdb.py:1832
+#: ../roundup/hyperdb.py:1849
 #, python-format
 msgid "you may only enter ID values for property %s"
 msgstr ""
 
-#: ../roundup/hyperdb.py:1866
+#: ../roundup/hyperdb.py:1883
 #, python-format
 msgid "%r is not a property of %s"
 msgstr ""
@@ -2307,7 +2318,7 @@ msgstr ""
 msgid "No PGP signature found in message."
 msgstr ""
 
-#: ../roundup/mailgw.py:555
+#: ../roundup/mailgw.py:563
 msgid ""
 "\n"
 "Emails to Roundup trackers must include a Subject: line!\n"
@@ -2315,7 +2326,7 @@ msgstr ""
 "\n"
 "В письмах для трекера Roundup должна быть указана тема сообщения (Subject).\n"
 
-#: ../roundup/mailgw.py:668
+#: ../roundup/mailgw.py:676
 #, python-format
 msgid ""
 "\n"
@@ -2344,7 +2355,7 @@ msgstr ""
 "        1234, которая уже существует в трекере.\n"
 "Тема вашего письма: \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:706
+#: ../roundup/mailgw.py:714
 #, python-format
 msgid ""
 "\n"
@@ -2361,7 +2372,7 @@ msgstr ""
 "Имена существующих классов: %(validname)s\n"
 "Тема вашего письма: \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:714
+#: ../roundup/mailgw.py:722
 #, python-format
 msgid ""
 "\n"
@@ -2391,7 +2402,7 @@ msgstr ""
 "\n"
 "Тема вашего письма: \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:750
+#: ../roundup/mailgw.py:758
 #, python-format
 msgid ""
 "\n"
@@ -2410,7 +2421,7 @@ msgstr ""
 "\n"
 "Тема вашего письма: \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:783
+#: ../roundup/mailgw.py:791
 #, python-format
 msgid ""
 "\n"
@@ -2425,7 +2436,7 @@ msgstr ""
 "\n"
 "Тема вашего письма: \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:828
+#: ../roundup/mailgw.py:836
 #, python-format
 msgid ""
 "\n"
@@ -2439,21 +2450,21 @@ msgstr ""
 "\n"
 "Неизвестный адрес: %(from_address)s\n"
 
-#: ../roundup/mailgw.py:836
+#: ../roundup/mailgw.py:844
 msgid "You are not permitted to access this tracker."
 msgstr "У вас нет разрешения на доступ к этому трекеру."
 
-#: ../roundup/mailgw.py:847
+#: ../roundup/mailgw.py:855
 #, python-format
 msgid "You are not permitted to edit %(classname)s."
 msgstr "У вас нет разрешения редактировать %(classname)s"
 
-#: ../roundup/mailgw.py:853
+#: ../roundup/mailgw.py:861
 #, python-format
 msgid "You are not permitted to create %(classname)s."
 msgstr "У вас нет разрешения создавать объекты %(classname)s"
 
-#: ../roundup/mailgw.py:935
+#: ../roundup/mailgw.py:943
 #, python-format
 msgid ""
 "\n"
@@ -2468,27 +2479,27 @@ msgstr ""
 "\n"
 "Тема письма: \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:987
+#: ../roundup/mailgw.py:995
 msgid "This tracker has been configured to require all email be PGP encrypted."
 msgstr ""
 
-#: ../roundup/mailgw.py:1024
+#: ../roundup/mailgw.py:1032
 msgid ""
 "\n"
 "This tracker has been configured to require all email be PGP signed or\n"
 "encrypted."
 msgstr ""
 
-#: ../roundup/mailgw.py:1055
+#: ../roundup/mailgw.py:1063
 msgid "You are not permitted to create files."
 msgstr "У вас нет разрешения на создание файлов."
 
-#: ../roundup/mailgw.py:1069
+#: ../roundup/mailgw.py:1077
 #, python-format
 msgid "You are not permitted to add files to %(classname)s."
 msgstr "У вас нет разрешения добавлять файлы для класса %(classname)s."
 
-#: ../roundup/mailgw.py:1099
+#: ../roundup/mailgw.py:1107
 msgid ""
 "\n"
 "Roundup requires the submission to be plain text. The message parser could\n"
@@ -2498,11 +2509,11 @@ msgstr ""
 "Сообщения для Roundup должны быть в текстовом формате.\n"
 "В вашем сообщении не найдена часть формата text/plain.\n"
 
-#: ../roundup/mailgw.py:1112
+#: ../roundup/mailgw.py:1120
 msgid "You are not permitted to create messages."
 msgstr "У вас нет разрешения на создание сообщений"
 
-#: ../roundup/mailgw.py:1120
+#: ../roundup/mailgw.py:1128
 #, python-format
 msgid ""
 "\n"
@@ -2513,22 +2524,22 @@ msgstr ""
 "Сообщение отброшено детектором.\n"
 "%(error)s\n"
 
-#: ../roundup/mailgw.py:1128
+#: ../roundup/mailgw.py:1136
 #, python-format
 msgid "You are not permitted to add messages to %(classname)s."
 msgstr "У вас нет разрешения добавлять сообщения для класса %(classname)s."
 
-#: ../roundup/mailgw.py:1150
+#: ../roundup/mailgw.py:1158
 #, python-format
 msgid "You are not permitted to edit property %(prop)s of class %(classname)s."
 msgstr "У вас нет разрешения изменять атрибут %(prop)s класса %(classname)s"
 
-#: ../roundup/mailgw.py:1159
+#: ../roundup/mailgw.py:1167
 #, fuzzy, python-format
 msgid "You are not permitted to set property %(prop)s of class %(classname)s."
 msgstr "У вас нет разрешения изменять атрибут %(prop)s класса %(classname)s"
 
-#: ../roundup/mailgw.py:1167
+#: ../roundup/mailgw.py:1175
 #, python-format
 msgid ""
 "\n"
@@ -2539,7 +2550,7 @@ msgstr ""
 "При обработке вашего сообщения произошла ошибка:\n"
 "   %(message)s\n"
 
-#: ../roundup/mailgw.py:1633
+#: ../roundup/mailgw.py:1641
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -2553,7 +2564,7 @@ msgstr ""
 "о неправильно описанном классе:\n"
 "  %(current_class)s\n"
 
-#: ../roundup/mailgw.py:1664
+#: ../roundup/mailgw.py:1672
 #, python-format
 msgid ""
 "\n"
@@ -2567,13 +2578,13 @@ msgstr ""
 "о неправильно описанных атрибутах:\n"
 "  %(errors)s\n"
 
-#: ../roundup/mailgw.py:1685
+#: ../roundup/mailgw.py:1693
 msgid "not of form [arg=value,value,...;arg=value,value,...]"
 msgstr ""
 "аргументы должны быть в формате [имя=значение,значение,...;имя=значение,"
 "значение,...]"
 
-#: ../roundup/rest.py:1838
+#: ../roundup/rest.py:1844
 #, python-format
 msgid "Api rate limits exceeded. Please wait: %s seconds."
 msgstr ""

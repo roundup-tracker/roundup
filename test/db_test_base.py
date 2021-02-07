@@ -16,7 +16,7 @@
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 from __future__ import print_function
-import unittest, os, shutil, errno, imp, sys, time, pprint, os.path
+import unittest, os, shutil, errno, sys, time, pprint, os.path
 
 try:
     from base64 import encodebytes as base64_encode  # python3 only
@@ -1044,7 +1044,7 @@ class DBTest(commonDBTest):
         #print l
         ## change 'roundup.hyperdb' to the logging name you want to capture.
         ## print l just prints the output. Run using:
-        ## ./run_tests.py --capture=no -k testQuietJournal test/test_anydbm.py
+        ## python -m pytest --capture=no -k testQuietJournal test/test_anydbm.py
 
         # FIXME There should be a test via
         # template.py::_HTMLItem::history() and verify the output.

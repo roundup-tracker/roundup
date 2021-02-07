@@ -187,6 +187,36 @@ If an explicit version is not provided, the server default is used.
 The server default is reported by querying the ``/rest/`` endpoint as
 described above.
 
+Input Formats
+=============
+
+Content-Type is allowed to be ``application/json`` or
+``application/x-www-form-urlencoded``. Any other value returns error
+code 415.
+
+Response Formats
+================
+
+The default response format is json.
+
+If you add the ``dicttoxml.py`` module you can request XML formatted
+data using the header ``Accept: application/xml`` in your
+request. Both output formats are similar in structure.
+
+The rest interface accepts the http accept header and can include
+``q`` values to specify the preferred mechanism. This is the preferred
+way to specify alternate acceptable response formats.
+
+To make testing from the browser easier, you can also append the
+extension `.json` or `.xml` to the path component of the url. This
+will force json or xml (if supported) output. If you use an extension
+it takes priority over any accept headers.
+
+The rest interface returns status 406 if you use an unrecognized
+extension.  You will also get a 406 status if none of the entries in
+the accept header are available or if the accept header is invalid.
+
+
 General Guidelines
 ==================
 
@@ -200,12 +230,8 @@ The exact details of returned data is determined by the value of the
 ``@verbose`` query parameter.  The various supported values and their
 effects are described in the following sections.
 
-The default return format is JSON. If you add the ``dicttoxml.py``
-module you can request XML formatted data using the header ``Accept:
-application/xml`` in your request. Both output formats are similar in
-structure.
-
-All output is wrapped in an envelope called ``data``.
+All output is wrapped in an envelope called ``data``. The output
+format is described in `Response Formats`_ above.
 
 When using collection endpoints (think list of issues, users ...), the
 ``data`` envelope contains metadata (e.g. total number of items) as
@@ -1900,6 +1926,8 @@ only been tested with python3)::
             secret = self.db.config.WEB_JWT_SECRET
             myjwt = jwt.encode(claim, secret, algorithm='HS256')
 
+	    # if jwt.__version__ >= 2.0.0 jwt.encode() returns string
+	    # not byte. So do not use b2s() with newer versions of pyjwt.
             result = {"jwt": b2s(myjwt),
                      }
 

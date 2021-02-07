@@ -262,9 +262,15 @@ Software Upgrade
 Always make a backup of your tracker before upgrading software. Steps you may
 take:
 
-1. Ensure that the unit tests run on your system::
+1. Install pytest and ensure that the unit tests run on your system
+   (using your preferred python version)::
 
-    python run_tests.py
+    pip2 install pytest
+    python2 -m pytest test/
+
+
+    pip3 install pytest
+    python3 -m pytest test/
 
 2. If you're using an RDBMS backend, make a backup of its contents now.
 3. Make a backup of the tracker home itself.

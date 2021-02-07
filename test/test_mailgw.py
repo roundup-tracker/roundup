@@ -13,7 +13,7 @@
 
 import email
 from . import gpgmelib
-import unittest, tempfile, os, shutil, errno, imp, sys, difflib, time, io
+import unittest, tempfile, os, shutil, errno, sys, difflib, time, io
 
 import pytest
 

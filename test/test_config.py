@@ -112,12 +112,22 @@ class ConfigTest(unittest.TestCase):
                     config._get_option('TIMEZONE').set("UTC"))
             self.assertEqual(None,
                     config._get_option('TIMEZONE').set("America/New_York"))
+            self.assertEqual(None,
+                    config._get_option('TIMEZONE').set("EST"))
+            self.assertRaises(configuration.OptionValueError,
+                    config._get_option('TIMEZONE').set, "Zool/Zot")
 
         except ImportError:
-            self.assertRaises(configuration.OptionValueError,
-                    config._get_option('TIMEZONE').set, "UTC")
+            # UTC is a known offset of 0 coded into roundup.date
+            # so it works even without pytz.
+            self.assertEqual(None,
+                    config._get_option('TIMEZONE').set("UTC"))
+            # same with EST known timeone offset of 5
+            self.assertEqual(None,
+                    config._get_option('TIMEZONE').set("EST"))
             self.assertRaises(configuration.OptionValueError,
                     config._get_option('TIMEZONE').set, "America/New_York")
+
 
     def testWebSecretKey(self):
         config = configuration.CoreConfig()

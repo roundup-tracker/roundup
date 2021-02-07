@@ -49,6 +49,23 @@ Fixed:
   as plain text. (John Rouillard)
 - issue2551100 - old jquery has security issues, upgrade it and fix
   user.help.html
+- replace deprecated base64.decodestring with base64.b64decode in
+  roundup_server.py and roundup_xlmrpc_server.py (reported by
+  lmsteffan in irc)
+- removed run_tests.py. Newer pytest doesn't support generating
+  stand alone testing bundles. Python 3.9 generates errors running
+  the current run_tests.py.  (reported by lmsteffan in irc)
+- issue2551104 - fix issue with markdown autolink next to punctuation (ced)
+- removed support for old style trackers that use dbinit.py and
+  config.py. Also remove all uses of depricated imp module. (John Rouillard)
+- removed support for setting database type using
+  <database>/backend_name. (John Rouillard)
+- fixed some issues when generating translations. Use mappings and
+  named format parameters so translators can move substituted tokens
+  in tranlsations.
+- in rest interface, fix uncaught exceptions when parsing invalid
+  Content-Type and Accept headers. Document response formats more
+  fully in doc/rest.txt.
 
 Features:
 - issue2550522 - Add 'filter' command to command-line
@@ -73,7 +90,7 @@ Features:
   available. (John Rouillard)
 - Added explanation for modifying Fileclass content files to
   customizing.txt. Result of mailing list question. (John Rouillard)
-- issue2551109 - improve keyword editing in jinja2 template.
+- issue2551109 - Improve keyword editing in jinja2 template. (Cedric Krier)
 
 2020-07-13 2.0.0
 

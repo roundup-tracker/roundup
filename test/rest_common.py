@@ -68,6 +68,8 @@ class TestCase():
     url_pfx = 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/'
 
     def setUp(self):
+        from packaging import version
+
         self.dirname = '_test_rest'
         # set up and open a tracker
         # Set optimize=True as code under test (Client.main()::determine_user)
@@ -162,50 +164,58 @@ class TestCase():
                      'iat': now_ts,
                      'exp': plus1min_ts,
             }
+
+            # in version 2.0.0 and newer jwt.encode returns string
+            # not bytestring. So we have to skip b2s conversion
             
+            if version.parse(jwt.__version__) >= version.parse('2.0.0'):
+                tostr = lambda x: x
+            else:
+                tostr = b2s
+
             self.jwt = {}
             self.claim = {}
             # generate invalid claim with expired timestamp
             self.claim['expired'] = copy(claim)
             self.claim['expired']['exp'] = expired_ts
-            self.jwt['expired'] = b2s(jwt.encode(self.claim['expired'], secret,
+            self.jwt['expired'] = tostr(jwt.encode(self.claim['expired'], secret,
                                              algorithm='HS256'))
          
             # generate valid claim with user role
             self.claim['user'] = copy(claim)
             self.claim['user']['exp'] = plus1min_ts
-            self.jwt['user'] = b2s(jwt.encode(self.claim['user'], secret,
+            self.jwt['user'] = tostr(jwt.encode(self.claim['user'], secret,
                                           algorithm='HS256'))
             # generate invalid claim bad issuer
             self.claim['badiss'] = copy(claim)
             self.claim['badiss']['iss'] = "http://someissuer/bugs"
-            self.jwt['badiss'] = b2s(jwt.encode(self.claim['badiss'], secret,
+            self.jwt['badiss'] = tostr(jwt.encode(self.claim['badiss'], secret,
                                           algorithm='HS256'))
             # generate invalid claim bad aud(ience)
             self.claim['badaud'] = copy(claim)
             self.claim['badaud']['aud'] = "http://someaudience/bugs"
-            self.jwt['badaud'] = b2s(jwt.encode(self.claim['badaud'], secret,
+            self.jwt['badaud'] = tostr(jwt.encode(self.claim['badaud'], secret,
                                           algorithm='HS256'))            
             # generate invalid claim bad sub(ject)
             self.claim['badsub'] = copy(claim)
             self.claim['badsub']['sub'] = str("99")
-            self.jwt['badsub'] = b2s(jwt.encode(self.claim['badsub'], secret,
+            self.jwt['badsub'] = tostr(jwt.encode(self.claim['badsub'], secret,
                                           algorithm='HS256'))            
             # generate invalid claim bad roles
             self.claim['badroles'] = copy(claim)
             self.claim['badroles']['roles'] = [ "badrole1", "badrole2" ]
-            self.jwt['badroles'] = b2s(jwt.encode(self.claim['badroles'], secret,
+            self.jwt['badroles'] = tostr(jwt.encode(self.claim['badroles'], secret,
                                           algorithm='HS256'))            
             # generate valid claim with limited user:email role
             self.claim['user:email'] = copy(claim)
             self.claim['user:email']['roles'] = [ "user:email" ]
-            self.jwt['user:email'] = b2s(jwt.encode(self.claim['user:email'], secret,
+            self.jwt['user:email'] = tostr(jwt.encode(self.claim['user:email'], secret,
                                           algorithm='HS256'))
 
             # generate valid claim with limited user:emailnorest role
             self.claim['user:emailnorest'] = copy(claim)
             self.claim['user:emailnorest']['roles'] = [ "user:emailnorest" ]
-            self.jwt['user:emailnorest'] = b2s(jwt.encode(self.claim['user:emailnorest'], secret,
+            self.jwt['user:emailnorest'] = tostr(jwt.encode(self.claim['user:emailnorest'], secret,
                                           algorithm='HS256'))
 
         self.db.tx_Source = 'web'
@@ -1322,6 +1332,231 @@ class TestCase():
            "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/user/2")
 
 
+    def testDispatchDelete(self):
+        """
+        run Delete through rest dispatch().
+        """
+
+        # TEST #0
+        # Delete class raises unauthorized error
+        # simulate: /rest/data/issue
+        env = { "REQUEST_METHOD": "DELETE"
+        }
+        headers={"accept": "application/json; version=1",
+        }
+        self.headers=headers
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch(env["REQUEST_METHOD"],
+                            "/rest/data/issue",
+                            self.empty_form)
+
+        print(results)
+        self.assertEqual(self.server.client.response_code, 403)
+        json_dict = json.loads(b2s(results))
+
+        self.assertEqual(json_dict['error']['msg'],
+                         "Deletion of a whole class disabled")
+
+
+    def testDispatchBadContent(self):
+        """
+        runthrough rest dispatch() with bad content_type patterns.
+        """
+
+        # simulate: /rest/data/issue
+        body=b'{ "title": "Joe Doe has problems", \
+                 "nosy": [ "1", "3" ], \
+                 "assignedto": "2", \
+                 "abool": true, \
+                 "afloat": 2.3, \
+                 "anint": 567890 \
+        }'
+        env = { "CONTENT_TYPE": "application/jzot",
+                "CONTENT_LENGTH": len(body),
+                "REQUEST_METHOD": "POST"
+        }
+
+        headers={"accept": "application/json; version=1",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+        }
+
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch(env["REQUEST_METHOD"],
+                            "/rest/data/issue",
+                            form)
+
+        print(results)
+        self.assertEqual(self.server.client.response_code, 415)
+        json_dict = json.loads(b2s(results))
+        self.assertEqual(json_dict['error']['msg'],
+                         "Unable to process input of type application/jzot")
+
+        # Test GET as well. I am not sure if this should pass or not.
+        # Arguably GET doesn't use any form/json input but....
+        results = self.server.dispatch('GET',
+                            "/rest/data/issue",
+                            form)
+        print(results)
+        self.assertEqual(self.server.client.response_code, 415)
+
+
+
+    def testDispatchBadAccept(self):
+        # simulate: /rest/data/issue expect failure unknown accept settings
+        body=b'{ "title": "Joe Doe has problems", \
+                 "nosy": [ "1", "3" ], \
+                 "assignedto": "2", \
+                 "abool": true, \
+                 "afloat": 2.3, \
+                 "anint": 567890 \
+        }'
+        env = { "CONTENT_TYPE": "application/json",
+                "CONTENT_LENGTH": len(body),
+                "REQUEST_METHOD": "POST"
+        }
+
+        headers={"accept": "application/zot; version=1; q=0.5",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+        }
+
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch(env["REQUEST_METHOD"],
+                            "/rest/data/issue",
+                            form)
+
+        print(results)
+        self.assertEqual(self.server.client.response_code, 406)
+        self.assertIn(b"Requested content type 'application/zot; version=1; q=0.5' is not available.\nAcceptable types: */*, application/json", results)
+
+        # simulate: /rest/data/issue works, multiple acceptable output, one
+        # is valid
+        env = { "CONTENT_TYPE": "application/json",
+                "CONTENT_LENGTH": len(body),
+                "REQUEST_METHOD": "POST"
+        }
+
+        headers={"accept": "application/zot; version=1; q=0.75, "
+                           "application/json; version=1; q=0.5",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+        }
+
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch(env["REQUEST_METHOD"],
+                            "/rest/data/issue",
+                            form)
+
+        print(results)
+        self.assertEqual(self.server.client.response_code, 201)
+        json_dict = json.loads(b2s(results))
+        # ERROR this should be 1. What's happening is that the code
+        # for handling 406 error code runs through everything and creates
+        # the item. Then it throws a 406 after the work is done when it
+        # realizes it can't respond as requested. So the 406 post above
+        # creates issue 1 and this one creates issue 2.
+        self.assertEqual(json_dict['data']['id'], "2")
+
+
+        # test 3 accept is empty. This triggers */* so passes
+        headers={"accept": "",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+        }
+
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch(env["REQUEST_METHOD"],
+                            "/rest/data/issue",
+                            form)
+
+        print(results)
+        self.assertEqual(self.server.client.response_code, 201)
+        json_dict = json.loads(b2s(results))
+        # This is one more than above. Will need to be fixed
+        # When error above is fixed.
+        self.assertEqual(json_dict['data']['id'], "3")
+
+        # test 4 accept is random junk.
+        headers={"accept": "Xyzzy I am not a mime, type;",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+        }
+
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch(env["REQUEST_METHOD"],
+                            "/rest/data/issue",
+                            form)
+
+        print(results)
+        self.assertEqual(self.server.client.response_code, 406)
+        json_dict = json.loads(b2s(results))
+        self.assertIn('Unable to parse Accept Header. Invalid media type: Xyzzy I am not a mime. Acceptable types: */* application/json', json_dict['error']['msg'])
+
+        # test 5 accept mimetype is ok, param is not
+        headers={"accept": "*/*; foo",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+        }
+
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch(env["REQUEST_METHOD"],
+                            "/rest/data/issue",
+                            form)
+
+        print(results)
+        self.assertEqual(self.server.client.response_code, 406)
+        json_dict = json.loads(b2s(results))
+        self.assertIn('Unable to parse Accept Header. Invalid param: foo. Acceptable types: */* application/json', json_dict['error']['msg'])
+
     def testStatsGen(self):
         # check stats being returned by put and get ops
         # using dispatch which parses the @stats query param
@@ -2034,6 +2269,23 @@ class TestCase():
                          "application/xml")
         '''
 
+        # TEST #8
+        # invalid api version
+        # application/json is selected with invalid version
+        self.server.client.request.headers.get=self.get_header
+        headers={"accept": "application/json; version=99"
+        }
+        self.headers=headers
+        with self.assertRaises(UsageError) as ctx:
+            results = self.server.dispatch('GET',
+                                           "/rest/data/status/1",
+                                           self.empty_form)
+        print(results)
+        self.assertEqual(self.server.client.response_code, 200)
+        self.assertEqual(ctx.exception.args[0],
+                         "Unrecognized version: 99. See /rest without "
+                         "specifying version for supported versions.")
+
     def testMethodOverride(self):
         # TEST #1
         # Use GET, PUT, PATCH to tunnel DELETE expect error
@@ -2518,12 +2770,15 @@ class TestCase():
         # File content is only shown with verbose=3
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('@verbose', '3')
+            cgi.MiniFieldStorage('@verbose', '3'),
+            cgi.MiniFieldStorage('@protected', 'true')
         ]
         results = self.server.get_element('file', fileid, form)
         results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['attributes']['content'], 'hello\r\nthere')
+        self.assertIn('creator', results['attributes']) # added by @protected
+        self.assertEqual(results['attributes']['creator']['username'], "joe")
 
     def testAuthDeniedPut(self):
         """
@@ -3021,6 +3276,29 @@ class TestCase():
 
         # verify the result
         self.assertTrue(not self.db.issue.is_retired(issue_id))
+
+    def testPatchBadAction(self):
+        """
+        Test Patch Action 'Unknown'
+        """
+        # create a new issue with userid 1 and 2 in the nosy list
+        issue_id = self.db.issue.create(title='foo')
+
+        # execute action retire
+        form = cgi.FieldStorage()
+        etag = calculate_etag(self.db.issue.getnode(issue_id),
+                              self.db.config['WEB_SECRET_KEY'])
+        form.list = [
+            cgi.MiniFieldStorage('@op', 'action'),
+            cgi.MiniFieldStorage('@action_name', 'unknown'),
+            cgi.MiniFieldStorage('@etag', etag)
+        ]
+        results = self.server.patch_element('issue', issue_id, form)
+        self.assertEqual(self.dummy_client.response_code, 400)
+        # verify the result, note order of allowed elements changes
+        # for python2/3 so just check prefix.
+        self.assertIn('action "unknown" is not supported, allowed: ',
+                       results['error']['msg'].args[0])
 
     def testPatchRemove(self):
         """

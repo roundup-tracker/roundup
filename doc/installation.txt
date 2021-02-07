@@ -1408,9 +1408,11 @@ Problems? Testing your Python...
 ================================
 
 .. note::
-   The ``run_tests.py`` script is packaged in Roundup's source distribution
-   - users of the Windows installer, other binary distributions or
-   pre-installed Roundup will need to download the source to use it.
+   The ``run_tests.py`` script is not packaged in Roundup's source
+   distribution anymore. You should install pytest using your
+   distributions package manger or using pip/pip2/pip3 to install
+   pytest for your python version. See the `administration guide`_
+   for details.
 
    Remember to have a database user 'rounduptest' prepared (with
    password 'rounduptest'). This user
@@ -1419,16 +1421,9 @@ Problems? Testing your Python...
    for PostgreSQL you want to call the ``createuser`` command with the
    ``-d`` option to allow database creation.
 
-Once you've unpacked roundup's source, run ``python run_tests.py`` in the
-source directory and make sure there are no errors. If there are errors,
-please let us know!
-
-If the above fails, you may be using the wrong version of python. Try
-``python2 run_tests.py`` or ``python2.7 run_tests.py``.
-If that works, you will need to substitute ``python2`` or ``python2.7``
-for ``python`` in all further commands you use in relation to Roundup --
-from installation and scripts.
-
+Once you've unpacked roundup's source, if you have pytest installed,
+run ``python -m pytest /test`` in the source directory and make sure
+there are no errors. If there are errors, please let us know!
 
 .. _`table of contents`: index.html
 .. _`user guide`: user_guide.html

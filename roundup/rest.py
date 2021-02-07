@@ -223,7 +223,10 @@ def parse_accept_header(accept):
         media_params = []
         # convert vendor-specific content types into something useful (see
         # docstring)
-        typ, subtyp = media_type.split('/')
+        try:
+            typ, subtyp = media_type.split('/')
+        except ValueError:
+            raise UsageError("Invalid media type: %s"%media_type)
         # check for a + in the sub-type
         if '+' in subtyp:
             # if it exists, determine if the subtype is a vendor-specific type
@@ -246,7 +249,10 @@ def parse_accept_header(accept):
                 media_type = '{}/{}'.format(typ, extra)
         q = 1.0
         for part in parts:
-            (key, value) = part.lstrip().split("=", 1)
+            try:
+                (key, value) = part.lstrip().split("=", 1)
+            except ValueError:
+                raise UsageError("Invalid param: %s"%part.lstrip())
             key = key.strip()
             value = value.strip()
             if key == "q":
@@ -1873,7 +1879,15 @@ class RestfulInstance(object):
         # parse Accept header and get the content type
         # Acceptable types ordered with preferred one first
         # in list.
-        accept_header = parse_accept_header(headers.get('Accept'))
+        try:
+            accept_header = parse_accept_header(headers.get('Accept'))
+        except UsageError as e:
+            output = self.error_obj(406, _("Unable to parse Accept Header. %(error)s. "
+                      "Acceptable types: %(acceptable_types)s") % {
+                          'error': e.args[0],
+                          'acceptable_types': " ".join(sorted(self.__accepted_content_type.keys()))})
+            accept_header = []
+
         if not accept_header:
             accept_type = self.__default_accept_type
         else:
@@ -1913,7 +1927,12 @@ class RestfulInstance(object):
         #            header (Accept: application/json, application/xml)
         #            default (application/json)
         ext_type = os.path.splitext(urlparse(uri).path)[1][1:]
-        data_type = ext_type or accept_type or "invalid"
+
+        # headers.get('Accept') is never empty if called here.
+        # accept_type will be set to json if there is no Accept header
+        # accept_type wil be empty only if there is an Accept header
+        # with invalid values.
+        data_type = ext_type or accept_type or headers.get('Accept') or "invalid"
 
         if (ext_type):
             # strip extension so uri make sense
@@ -1956,6 +1975,10 @@ class RestfulInstance(object):
                     input = SimulateFieldStorageFromJson(b2s(input.value))
                 except ValueError as msg:
                     output = self.error_obj(400, msg)
+            else:
+                    output = self.error_obj(415,
+                                "Unable to process input of type %s" %
+                                            content_type_header)
 
         # check for pretty print
         try:

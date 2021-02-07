@@ -7,7 +7,7 @@ recursive-include test *.py *.txt
 recursive-include doc *.html *.png *.txt *.css *.example
 recursive-include detectors *.py README.txt
 global-exclude *.pyc *.pyo .DS_Store *.orig *.rej *~ \#*
-include run_tests.py demo.py *.txt
+include demo.py *.txt
 include doc/conf.py doc/roundup-favicon.ico
 exclude doc/security.txt
 include locale/*.po locale/*.mo locale/roundup.pot

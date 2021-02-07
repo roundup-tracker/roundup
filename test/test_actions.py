@@ -1,5 +1,5 @@
 from __future__ import print_function
-import unittest
+import unittest, copy
 from cgi import FieldStorage, MiniFieldStorage
 
 from roundup import hyperdb
@@ -29,8 +29,8 @@ class ActionTestCase(unittest.TestCase):
         self.client.db.config.WEB_LOGIN_ATTEMPTS_MIN = 20
         self.client._ok_message = []
         self.client._error_message = []
-        self.client.add_error_message = lambda x : add_message(
-            self.client._error_message, x)
+        self.client.add_error_message = lambda x, escape=True: add_message(
+            self.client._error_message, x, escape=escape)
         self.client.add_ok_message = lambda x : add_message(
             self.client._ok_message, x)
         self.client.form = self.form
@@ -239,11 +239,20 @@ class CollisionDetectionTestCase(ActionTestCase):
         # round off for testing
         self.now.second = int(self.now.second)
 
-    def testLastUserActivity(self):
+    def testLastUserActivityAt(self):
         self.assertEqual(self.action.lastUserActivity(), None)
 
+        # test @ special variable form
         self.client.form.value.append(
             MiniFieldStorage('@lastactivity', str(self.now)))
+        self.assertEqual(self.action.lastUserActivity(), self.now)
+
+    def testLastUserActivityColon(self):
+        self.assertEqual(self.action.lastUserActivity(), None)
+
+        # test : special variable form
+        self.client.form.value.append(
+            MiniFieldStorage(':lastactivity', str(self.now)))
         self.assertEqual(self.action.lastUserActivity(), self.now)
 
     def testLastNodeActivity(self):
@@ -262,9 +271,16 @@ class CollisionDetectionTestCase(ActionTestCase):
         # fake up an actual change
         self.action.classname = 'test'
         self.action.nodeid = '1'
-        self.client.parsePropsFromForm = lambda: ({('test','1'):{1:1}}, [])
-        self.assertTrue(self.action.detectCollision(self.now,
-            self.now + Interval("1d")))
+        self.client.parsePropsFromForm = lambda: (
+            {('test','1'):{"prop1":"1"}}, [])
+        props = self.action.detectCollision(self.now,
+                                            self.now + Interval("1d"))
+        self.assertTrue(props)
+        self.action.handleCollision(props)
+        self.assertEqual(self.client._error_message[0],
+                         'Edit Error: someone else has edited this test '
+                         '(prop1). View <a target="_blank" href="test1">their '
+                         'changes</a> in a new window.')
         self.assertFalse(self.action.detectCollision(self.now,
             self.now - Interval("1d")))
         self.assertFalse(self.action.detectCollision(None, self.now))

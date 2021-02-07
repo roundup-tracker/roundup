@@ -1686,7 +1686,7 @@ class StringHTMLProperty(HTMLProperty):
                                 ('(', ')'),
                                 }:
                             continue
-                    if prefix == '(' and match.string[end - 1] == ')':
+                    if prefix == '(' and ')' in match.group(group):
                         continue
                 s = match.group(group)
                 return '<%s>' % s

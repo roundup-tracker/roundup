@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
-import unittest, os, shutil, time, imp
+import unittest, os, shutil, time
 
 import pytest
 from roundup.hyperdb import DatabaseError

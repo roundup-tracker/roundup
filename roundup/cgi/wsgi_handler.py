@@ -84,6 +84,9 @@ class RequestDispatcher(object):
                 tracker_home=home)
         else:
             self.translator = None
+        # trigger pre-loading of imports and templates
+        with self.get_tracker():
+            pass
 
     def __call__(self, environ, start_response):
         """Initialize with `apache.Request` object"""

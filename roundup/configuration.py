@@ -9,7 +9,6 @@ __docformat__ = "restructuredtext"
 # used here instead of try/except.
 import sys
 import getopt
-import imp
 import logging, logging.config
 import os
 import re
@@ -263,13 +262,6 @@ class Option:
         """Load value from ConfigParser object"""
         if config.has_option(self.section, self.setting):
             self.set(config.get(self.section, self.setting))
-
-    def load_pyconfig(self, config):
-        """Load value from old-style config (python module)"""
-        for _name in self.aliases:
-            if hasattr(config, _name):
-                self.set(getattr(config, _name))
-                break
 
 
 class BooleanOption(Option):
@@ -1850,7 +1842,7 @@ class CoreConfig(Config):
         if os.path.isfile(os.path.join(home_dir, self.INI_FILE)):
             self.load_ini(home_dir)
         else:
-            self.load_pyconfig(home_dir)
+            raise NoConfigError(home_dir)
         self.init_logging()
         self.ext = UserConfig(os.path.join(home_dir, "extensions"))
         self.detectors = UserConfig(os.path.join(home_dir, "detectors"))
@@ -1861,34 +1853,6 @@ class CoreConfig(Config):
         if defaults:
             config_defaults.update(defaults)
         Config.load_ini(self, home_dir, config_defaults)
-
-    def load_pyconfig(self, home_dir):
-        """Set options from config.py file in given home_dir directory"""
-        # try to locate and import the module
-        _mod_fp = None
-        try:
-            try:
-                _module = imp.find_module(self.PYCONFIG, [home_dir])
-                _mod_fp = _module[0]
-                _config = imp.load_module(self.PYCONFIG, *_module)
-            except ImportError:
-                raise NoConfigError(home_dir)
-        finally:
-            if _mod_fp is not None:
-                _mod_fp.close()
-        # module loaded ok.  set the options, starting from HOME
-        self.reset()
-        self.HOME = home_dir
-        for _option in self.items():
-            _option.load_pyconfig(_config)
-        # backward compatibility:
-        # SMTP login parameters were specified as a tuple in old style configs
-        # convert them to new plain string options
-        _mailuser = getattr(_config, "MAILUSER", ())
-        if len(_mailuser) > 0:
-            self.MAIL_USERNAME = _mailuser[0]
-        if len(_mailuser) > 1:
-            self.MAIL_PASSWORD = _mailuser[1]
 
     # in this config, HOME is also known as TRACKER_HOME
     def __getitem__(self, name):

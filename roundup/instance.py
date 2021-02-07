@@ -83,23 +83,13 @@ class Tracker:
         # TODO: Remove in v1.7
         # Provide some backwards compatability for existing Roundup instances
         # that still define the backend type in 'db/backend_name' and warn the
-        # users they need to update their config.ini
+        # users they need to update their config.ini. Note that a missing
+        # rdbms backend causes the config to throw an error, so this may
+        # not be possible.
         if rdbms_backend == '':
-            filename = os.path.join(self.config.DATABASE, 'backend_name')
-            msg = """\n
-The 'backend_name' file is no longer used to configure the database backend
-used for the tracker.  Please read 'doc/upgrading.txt' to find out how to
-update your config.ini
-"""
-            try:
-                with open(filename) as backend_file:
-                    rdbms_backend = backend_file.readline().strip()
-
-                with warnings.catch_warnings():
-                    warnings.simplefilter("once", DeprecationWarning)
-                    warnings.warn(msg, DeprecationWarning, stacklevel=2)
-            except IOError:
-                pass
+            raise TrackerError("database backend not found in config.ini.\n"
+                   "Old style `backend_name` in db directory not supported\n"
+                   "See doc/upgrading.txt for required steps.")
 
         self.backend = backends.get_backend(rdbms_backend)
 
@@ -277,71 +267,11 @@ class TrackerError(RoundupException):
     pass
 
 
-class OldStyleTrackers:
-    def __init__(self):
-        self.number = 0
-        self.trackers = {}
-
-    def open(self, tracker_home, optimize=0):
-        """Open the tracker.
-
-        Parameters:
-            tracker_home:
-                tracker home directory
-            optimize:
-                if set, precompile html templates
-
-        Raise ValueError if the tracker home doesn't exist.
-
-        """
-        import imp
-        # sanity check existence of tracker home
-        if not os.path.exists(tracker_home):
-            raise ValueError('no such directory: "%s"' % tracker_home)
-
-        # sanity check tracker home contents
-        for reqd in 'config dbinit select_db interfaces'.split():
-            if not os.path.exists(os.path.join(tracker_home, '%s.py' % reqd)):
-                raise TrackerError('File "%s.py" missing from tracker '
-                                   'home "%s"' % (reqd, tracker_home))
-
-        if tracker_home in self.trackers:
-            return imp.load_package(self.trackers[tracker_home],
-                                    tracker_home)
-        # register all available backend modules
-        backends.list_backends()
-        self.number = self.number + 1
-        modname = '_roundup_tracker_%s' % self.number
-        self.trackers[tracker_home] = modname
-
-        # load the tracker
-        tracker = imp.load_package(modname, tracker_home)
-
-        # ensure the tracker has all the required bits
-        for required in 'open init Client MailGW'.split():
-            if not hasattr(tracker, required):
-                raise TrackerError('Required tracker attribute "%s" missing' %
-                                   required)
-
-        # load and apply the config
-        tracker.config = configuration.CoreConfig(tracker_home)
-        tracker.dbinit.config = tracker.config
-
-        tracker.optimize = optimize
-        tracker.templates = templating.get_loader(tracker.config["TEMPLATES"])
-        if optimize:
-            tracker.templates.precompile()
-
-        return tracker
-
-
-OldStyleTrackers = OldStyleTrackers()
-
-
 def open(tracker_home, optimize=0):
     if os.path.exists(os.path.join(tracker_home, 'dbinit.py')):
         # user should upgrade...
-        return OldStyleTrackers.open(tracker_home, optimize=optimize)
+        raise TrackerError("Old style trackers using dbinit.py "
+                           "are not supported after release 2.0")
 
     return Tracker(tracker_home, optimize=optimize)
 

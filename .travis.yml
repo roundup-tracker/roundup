@@ -117,7 +117,7 @@ before_script:
 script:
   - PATH=$VIRTUAL_ENV/bin:$PATH
   - export LD_LIBRARY_PATH=$VIRTUAL_ENV/lib:$LD_LIBRARY_PATH
-  - py.test -v test/ --cov=roundup
+  - py.test -v --maxfail=20 test/ --cov=roundup
   
 
 after_success:

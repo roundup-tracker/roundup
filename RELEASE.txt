@@ -14,7 +14,11 @@ Roundup release checklist:
     in the locale directory. Run:
        make template
        make *.po
-2.  Run unit tests! They should pass successfully. "./run_tests.py"
+2.  Run unit tests! They should pass successfully. Install pytest
+    using pip2/pip3 for python2 and python3. Then invoke pytest
+    using both python versions from the top of the roundup tree:
+        python3 -m pytest test/
+        python2 -m pytest test/
 3.  Update version
       CHANGES.txt
       roundup/__init__.py
@@ -46,6 +50,7 @@ Roundup release checklist:
 8.  Rebuild documentation in "share/doc/roundup/html"
       python setup.py build_doc
 9.  python setup.py sdist --manifest-only
+    (ignore the 'warning: no previously-included ...' lines)
 10. Check the MANIFEST to make sure that any new files are included.
       (use hg status --rev <last release or tag>:tip to list changed
       added and removed files. Last release e.g. 1.5.1 where tip was
@@ -65,7 +70,8 @@ Roundup release checklist:
      command)
 12. Unpack the new tarball created in dist/roundup-<version>.tar.gz
     file in /tmp then
-      a) run_tests.py
+      a) run tests using installed pytest run under python2 and
+         python3. (python2 -m pytest test/; python3 -m pytest test/)
       b) demo.py
     with all available Python versions.
 13. Assuming all is well tag the release in the version-control
