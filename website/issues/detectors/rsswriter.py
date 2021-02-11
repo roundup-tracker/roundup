@@ -176,8 +176,7 @@ def writeRss(db, cl, nodeid, olddata):
                 addEl(item, 'description', desc.replace('&','&amp;').replace('<','&lt;').replace('\n', '<br>\n'))
                 addEl(item, 'pubDate', date)
                 addEl(item, 'author',
-                        '%s (%s)' % (
-                                db.user.get(userid, 'address'),
+                        '%s' % (
                                 db.user.get(userid, 'username')
                         )
                 )
