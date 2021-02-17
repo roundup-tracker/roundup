@@ -84,9 +84,7 @@ class RequestDispatcher(object):
                 tracker_home=home)
         else:
             self.translator = None
-        # trigger pre-loading of imports and templates
-        with self.get_tracker():
-            pass
+        self.preload()
 
     def __call__(self, environ, start_response):
         """Initialize with `apache.Request` object"""
@@ -130,6 +128,11 @@ class RequestDispatcher(object):
 
         # all body data has been written using wfile
         return []
+
+    def preload(self):
+        """ Trigger pre-loading of imports and templates """
+        with self.get_tracker():
+            pass
 
     @contextmanager
     def get_tracker(self):
