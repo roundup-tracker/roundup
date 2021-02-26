@@ -2706,7 +2706,7 @@ Additionally, you may include tags such as <tal:block>, which are
 removed from output. Its content is kept, but the tag itself is not (so
 don't go using any "tal:attributes" commands on it). This is useful for
 making arbitrary blocks of HTML conditional or repeatable (very handy
-for repeating multiple table rows, which would othewise require an
+for repeating multiple table rows, which would otherwise require an
 illegal tag placement to effect the repeat).
 
 
@@ -5761,7 +5761,7 @@ Editing multiple items in an index view
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To edit the status of all items in the item index view, edit the
-``issue.item.html``:
+``issue.index.html``:
 
 1. add a form around the listing table (separate from the existing
    index-page form), so at the top it reads::
