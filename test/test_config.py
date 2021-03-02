@@ -41,6 +41,10 @@ config.TRACKER_WEB = "http://tracker.example/cgi-bin/roundup.cgi/bugs/"
 config.init_logging()
 config.options['FOO'] = "value"
 
+# for TrackerConfig test class
+from roundup import instance
+from . import db_test_base
+
 class ConfigTest(unittest.TestCase):
 
     def test_badConfigKeyword(self):
@@ -237,3 +241,46 @@ class ConfigTest(unittest.TestCase):
 
        self.assertAlmostEqual(config['WEB_LOGIN_ATTEMPTS_MIN'], 3.1415926,
                               places=6)
+
+
+class TrackerConfig(unittest.TestCase):
+    """ Arguably this should be tested in test_instance since it is triggered
+        by instance.open. But it raises an error in the configuration module
+        with a missing required param in config.ini."""
+
+    backend = 'anydbm'
+
+    def setUp(self):
+        self.dirname = '_test_instance'
+        # set up and open a tracker
+        self.instance = db_test_base.setupTracker(self.dirname, self.backend)
+
+        # open the database
+        self.db = self.instance.open('admin')
+
+        self.db.commit()
+        self.db.close()
+
+    def tearDown(self):
+        if self.db:
+            self.db.close()
+        try:
+            shutil.rmtree(self.dirname)
+        except OSError as error:
+            if error.errno not in (errno.ENOENT, errno.ESRCH): raise
+
+
+    def testNoDBInConfig(self):
+        # comment out the backend key in config.ini
+        import fileinput
+        for line in fileinput.input(os.path.join(self.dirname, "config.ini"),
+                                    inplace=True):
+          if line.startswith("backend = "):
+            continue
+          print(line)
+
+        # this should fail as backend isn't defined.
+        self.assertRaises(configuration.OptionUnsetError, instance.open,
+                          self.dirname)
+
+
