@@ -1146,14 +1146,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                     joi = ', %s' % tn2
                     w = ' and %s.%s=%s.id and %s.__retired__=0'%(tn, lid,
                         tn2, tn2)
+            cursor = self.sql_new_cursor(name='_materialize_multilink')
             sql = 'select %s from %s%s where %s=%s%s' %(lid, tn, joi, nid,
                 self.arg, w)
-            self.sql(sql, (nodeid,))
-            # extract the first column from the result
-            # XXX numeric ids
-            items = [int(x[0]) for x in self.cursor.fetchall()]
-            items.sort()
-            node[propname] = [str(x) for x in items]
+            self.sql(sql, (nodeid,), cursor)
+            # Reduce this to only the first row (the ID), this can save a
+            # lot of space for large query results (not using fetchall)
+            node[propname] = [str(x) for x in sorted(int(r[0]) for r in cursor)]
+            cursor.close()
 
     def _materialize_multilinks(self, classname, nodeid, node, props=None):
         """ get all Multilinks of a node (lazy eval may have skipped this)
@@ -1460,6 +1460,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         # open a new cursor for subsequent work
         self.cursor = self.conn.cursor()
+
+    def sql_new_cursor(self, conn=None, *args, **kw):
+        """ Create new cursor, this may need additional parameters for
+            performance optimization for different backends.
+        """
+        if conn is None:
+            conn = self.conn
+        return conn.cursor()
 
     def commit(self):
         """ Commit the current transactions.
@@ -2854,18 +2862,26 @@ class Class(hyperdb.Class):
             return []
         proptree, sql, args = sq
 
-        self.db.sql(sql, args)
-        l = self.db.sql_fetchall()
+        cursor = self.db.sql_new_cursor(name='filter')
+        self.db.sql(sql, args, cursor)
+        # Reduce this to only the first row (the ID), this can save a
+        # lot of space for large query results (not using fetchall)
+        # We cannot do this if sorting by multilink
+        if proptree.tree_sort_done:
+            l = [str(row[0]) for row in cursor]
+        else:
+            l = cursor.fetchall()
+        cursor.close()
 
+        # Multilink sorting
         # Compute values needed for sorting in proptree.sort
-        for p in proptree:
-            if hasattr(p, 'auxcol'):
-                p.sort_ids = [row[p.auxcol] for row in l]
-                p.sort_result = p._sort_repr (p.propclass.sort_repr, p.sort_ids)
-        # return the IDs (the first column)
-        # XXX numeric ids
-        l = [str(row[0]) for row in l]
-        l = proptree.sort (l)
+        if not proptree.tree_sort_done:
+            for p in proptree:
+                if hasattr(p, 'auxcol'):
+                    p.sort_ids = [row[p.auxcol] for row in l]
+                    p.sort_result = p._sort_repr \
+                        (p.propclass.sort_repr, p.sort_ids)
+            l = proptree.sort ([str(row[0]) for row in l])
 
         if __debug__:
             self.db.stats['filtering'] += (time.time() - start_t)
@@ -2890,7 +2906,7 @@ class Class(hyperdb.Class):
         if sq is None:
             return
         proptree, sql, args = sq
-        cursor = self.db.conn.cursor()
+        cursor = self.db.sql_new_cursor(name='filter_iter')
         self.db.sql(sql, args, cursor)
         classes = {}
         for p in proptree:
@@ -2922,6 +2938,7 @@ class Class(hyperdb.Class):
                     node[propname] = value
                 self.db._cache_save(key, node)
             yield str(row[0])
+        cursor.close()
 
     def filter_sql(self, sql):
         """Return a list of the ids of the items in this class that match

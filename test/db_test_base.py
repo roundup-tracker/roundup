@@ -177,10 +177,20 @@ class commonDBTest(MyTestCase):
 
     def iterSetup(self, classname='issue'):
         cls = getattr(self.db, classname)
-        def filt_iter(*args, **kw):
+        def filt_iter_list(*args, **kw):
             """ for checking equivalence of filter and filter_iter """
             return list(cls.filter_iter(*args, **kw))
-        return self.assertEqual, cls.filter, filt_iter
+        def filter_test_iterator():
+            """ yield all filter variants with config settings changed
+                appropriately
+            """
+            self.db.config.RDBMS_SERVERSIDE_CURSOR = False
+            yield (cls.filter)
+            yield (filt_iter_list)
+            self.db.config.RDBMS_SERVERSIDE_CURSOR = True
+            yield (cls.filter)
+            yield (filt_iter_list)
+        return self.assertEqual, filter_test_iterator
 
     def filteringSetupTransitiveSearch(self, classname='issue'):
         u_m = {}
@@ -493,10 +503,10 @@ class DBTest(commonDBTest):
 
     def testDateSort(self):
         d1 = date.Date('.')
-        ae, filter, filter_iter = self.filteringSetup()
+        ae, iiter = self.filteringSetup()
         nid = self.db.issue.create(title="nodeadline", status='1')
         self.db.commit()
-        for filt in filter, filter_iter:
+        for filt in iiter():
             ae(filt(None, {}, ('+','deadline')), ['5', '2', '1', '3', '4'])
             ae(filt(None, {}, ('+','id'), ('+', 'deadline')),
                 ['5', '2', '1', '3', '4'])
@@ -505,7 +515,7 @@ class DBTest(commonDBTest):
 
     def testDateSortMultilink(self):
         d1 = date.Date('.')
-        ae, filter, filter_iter = self.filteringSetup()
+        ae, iiter = self.filteringSetup()
         nid = self.db.issue.create(title="nodeadline", status='1')
         self.db.commit()
         ae(sorted(self.db.issue.get('1','nosy')), [])
@@ -518,12 +528,15 @@ class DBTest(commonDBTest):
         ae(self.db.user.get('3','username'), 'bleep')
         # filter_iter currently doesn't work for Multilink sort
         # so testing only filter
-        ae(filter(None, {}, ('+', 'id'), ('+','nosy')),
-            ['1', '2', '5', '4', '3'])
-        ae(filter(None, {}, ('+','deadline'), ('+', 'nosy')),
-            ['5', '2', '1', '4', '3'])
-        ae(filter(None, {}, ('+','nosy'), ('+', 'deadline')),
-            ['5', '2', '1', '3', '4'])
+        for f in iiter():
+            if f.__name__ != 'filter':
+                continue
+            ae(f(None, {}, ('+', 'id'), ('+','nosy')),
+                ['1', '2', '5', '4', '3'])
+            ae(f(None, {}, ('+','deadline'), ('+', 'nosy')),
+                ['5', '2', '1', '4', '3'])
+            ae(f(None, {}, ('+','nosy'), ('+', 'deadline')),
+                ['5', '2', '1', '3', '4'])
 
     # Interval
     def testIntervalChange(self):
@@ -1565,7 +1578,7 @@ class DBTest(commonDBTest):
         self.assertEqual(got, [one, three])
 
     def testFindRevLinkMultilink(self):
-        ae, filter, filter_iter = self.filteringSetupTransitiveSearch('user')
+        ae, dummy = self.filteringSetupTransitiveSearch('user')
         ni = 'nosy_issues'
         self.db.issue.set('6', nosy=['3', '4', '5'])
         self.db.issue.set('7', nosy=['5'])
@@ -1708,16 +1721,16 @@ class DBTest(commonDBTest):
         return self.iterSetup(classname)
 
     def testFilteringID(self):
-        ae, filter, filter_iter = self.filteringSetup()
-        for filt in filter, filter_iter:
+        ae, iiter = self.filteringSetup()
+        for filt in iiter():
             ae(filt(None, {'id': '1'}, ('+','id'), (None,None)), ['1'])
             ae(filt(None, {'id': '2'}, ('+','id'), (None,None)), ['2'])
             ae(filt(None, {'id': '100'}, ('+','id'), (None,None)), [])
 
     def testFilteringBoolean(self):
-        ae, filter, filter_iter = self.filteringSetup('user')
+        ae, iiter = self.filteringSetup('user')
         a = 'assignable'
-        for filt in filter, filter_iter:
+        for filt in iiter():
             ae(filt(None, {a: '1'}, ('+','id'), (None,None)), ['3','4'])
             ae(filt(None, {a: '0'}, ('+','id'), (None,None)), ['5'])
             ae(filt(None, {a: ['1']}, ('+','id'), (None,None)), ['3','4'])
@@ -1743,8 +1756,8 @@ class DBTest(commonDBTest):
                 ['3','4','5'])
 
     def testFilteringNumber(self):
-        ae, filter, filter_iter = self.filteringSetup('user')
-        for filt in filter, filter_iter:
+        ae, iiter = self.filteringSetup('user')
+        for filt in iiter():
             ae(filt(None, {'age': '1'}, ('+','id'), (None,None)), ['3'])
             ae(filt(None, {'age': '1.5'}, ('+','id'), (None,None)), ['4'])
             ae(filt(None, {'age': '2'}, ('+','id'), (None,None)), ['5'])
@@ -1754,8 +1767,8 @@ class DBTest(commonDBTest):
             ae(filt(None, {'age': [1,2]}, ('+','id'), (None,None)), ['3','5'])
 
     def testFilteringString(self):
-        ae, filter, filter_iter = self.filteringSetup()
-        for filt in filter, filter_iter:
+        ae, iiter = self.filteringSetup()
+        for filt in iiter():
             ae(filt(None, {'title': ['one']}, ('+','id'), (None,None)), ['1'])
             ae(filt(None, {'title': ['issue one']}, ('+','id'), (None,None)),
                 ['1'])
@@ -1771,8 +1784,8 @@ class DBTest(commonDBTest):
         Similar to testFilteringString except the search parameters
         have different capitalization.
         """
-        ae, filter, filter_iter = self.filteringSetup()
-        for filt in filter, filter_iter:
+        ae, iiter = self.filteringSetup()
+        for filt in iiter():
             ae(filt(None, {'title': ['One']}, ('+','id'), (None,None)), ['1'])
             ae(filt(None, {'title': ['Issue One']}, ('+','id'), (None,None)),
                 ['1'])
@@ -1784,12 +1797,12 @@ class DBTest(commonDBTest):
                 [])
 
     def testFilteringStringExactMatch(self):
-        ae, filter, filter_iter = self.filteringSetup()
+        ae, iiter = self.filteringSetup()
         # Change title of issue2 to 'issue' so we can test substring
         # search vs exact search
         self.db.issue.set('2', title='issue')
         #self.db.commit()
-        for filt in filter, filter_iter:
+        for filt in iiter():
             ae(filt(None, {}, exact_match_spec =
                {'title': ['one']}), [])
             ae(filt(None, {}, exact_match_spec =
@@ -1820,23 +1833,23 @@ class DBTest(commonDBTest):
         """ Special characters in SQL search are '%' and '_', some used
             to lead to a traceback.
         """
-        ae, filter, filter_iter = self.filteringSetup()
+        ae, iiter = self.filteringSetup()
         self.db.issue.set('1', title="With % symbol")
         self.db.issue.set('2', title="With _ symbol")
         self.db.issue.set('3', title="With \\ symbol")
         self.db.issue.set('4', title="With ' symbol")
         d = dict (status = '1')
-        for filt in filter, filter_iter:
+        for filt in iiter():
             ae(filt(None, dict(title='%'), ('+','id'), (None,None)), ['1'])
             ae(filt(None, dict(title='_'), ('+','id'), (None,None)), ['2'])
             ae(filt(None, dict(title='\\'), ('+','id'), (None,None)), ['3'])
             ae(filt(None, dict(title="'"), ('+','id'), (None,None)), ['4'])
 
     def testFilteringLink(self):
-        ae, filter, filter_iter = self.filteringSetup()
+        ae, iiter = self.filteringSetup()
         a = 'assignedto'
         grp = (None, None)
-        for filt in filter, filter_iter:
+        for filt in iiter():
             ae(filt(None, {'status': '1'}, ('+','id'), grp), ['2','3'])
             ae(filt(None, {a: '-1'}, ('+','id'), grp), ['3','4'])
             ae(filt(None, {a: None}, ('+','id'), grp), ['3','4'])
@@ -1845,7 +1858,7 @@ class DBTest(commonDBTest):
             ae(filt(None, {a: ['1', None]}, ('+','id'), grp), ['1', '3','4'])
 
     def testFilteringRevLink(self):
-        ae, filter, filter_iter = self.filteringSetupTransitiveSearch('user')
+        ae, iiter = self.filteringSetupTransitiveSearch('user')
         # We have
         # issue assignedto
         # 1:    6
@@ -1856,7 +1869,7 @@ class DBTest(commonDBTest):
         # 6:    10
         # 7:    10
         # 8:    10
-        for filt in filter, filter_iter:
+        for filt in iiter():
             ae(filt(None, {'issues': ['3', '4']}), ['7', '8'])
             ae(filt(None, {'issues': ['1', '4', '8']}), ['6', '8', '10'])
             ae(filt(None, {'issues.title': ['ts2']}), ['6'])
@@ -1874,7 +1887,7 @@ class DBTest(commonDBTest):
         self.db.issue.retire('2')
         self.db.issue.retire('3')
         self.db.commit()
-        for filt in filter, filter_iter:
+        for filt in iiter():
             ae(filt(None, {'issues': ['3', '4']}), ['8'])
             ae(filt(None, {'issues': ['1', '4', '8']}), ['6', '8', '10'])
             ae(filt(None, {'issues.title': ['ts2']}), [])
@@ -1885,10 +1898,10 @@ class DBTest(commonDBTest):
         self.assertEqual(ls(self.db.user.get('10', 'issues')), ['7', '8'])
 
     def testFilteringLinkSortSearchMultilink(self):
-        ae, filter, filter_iter = self.filteringSetup()
+        ae, iiter = self.filteringSetup()
         a = 'assignedto'
         grp = (None, None)
-        for filt in filter, filter_iter:
+        for filt in iiter():
             ae(filt(None, {'status.mls': '1'}, ('+','status')), ['2','3'])
             ae(filt(None, {'status.mls': '2'}, ('+','status')), ['2','3'])
 
@@ -1897,26 +1910,26 @@ class DBTest(commonDBTest):
         See roundup Bug 1541128: apparently grouping by something and
         searching a Multilink failed with MySQL 5.0
         """
-        ae, filter, filter_iter = self.filteringSetup()
-        for f in filter, filter_iter:
+        ae, iiter = self.filteringSetup()
+        for f in iiter():
             ae(f(None, {'files': '1'}, ('-','activity'), ('+','status')), ['4'])
 
     def testFilteringRetired(self):
-        ae, filter, filter_iter = self.filteringSetup()
+        ae, iiter = self.filteringSetup()
         self.db.issue.retire('2')
-        for f in filter, filter_iter:
+        for f in iiter():
             ae(f(None, {'status': '1'}, ('+','id'), (None,None)), ['3'])
 
     def testFilteringMultilink(self):
-        ae, filter, filter_iter = self.filteringSetup()
-        for filt in filter, filter_iter:
+        ae, iiter = self.filteringSetup()
+        for filt in iiter():
             ae(filt(None, {'nosy': '3'}, ('+','id'), (None,None)), ['4'])
             ae(filt(None, {'nosy': '-1'}, ('+','id'), (None,None)), ['1', '2'])
             ae(filt(None, {'nosy': ['1','2']}, ('+', 'status'),
                 ('-', 'deadline')), ['4', '3'])
 
     def testFilteringRevMultilink(self):
-        ae, filter, filter_iter = self.filteringSetupTransitiveSearch('user')
+        ae, iiter = self.filteringSetupTransitiveSearch('user')
         ni = 'nosy_issues'
         self.db.issue.set('6', nosy=['3', '4', '5'])
         self.db.issue.set('7', nosy=['5'])
@@ -1930,7 +1943,7 @@ class DBTest(commonDBTest):
         # 6:      3, 4, 5
         # 7:      5
         # 8:
-        for filt in filter, filter_iter:
+        for filt in iiter():
             ae(filt(None, {ni: ['1', '2']}), ['4', '5'])
             ae(filt(None, {ni: ['6','7']}), ['3', '4', '5'])
             ae(filt(None, {'nosy_issues.title': ['ts2']}), ['5'])
@@ -1946,7 +1959,7 @@ class DBTest(commonDBTest):
         self.db.issue.retire('2')
         self.db.issue.retire('6')
         self.db.commit()
-        for filt in filter, filter_iter:
+        for filt in iiter():
             ae(filt(None, {ni: ['1', '2']}), ['4'])
             ae(filt(None, {ni: ['6','7']}), ['5'])
             ae(filt(None, {'nosy_issues.title': ['ts2']}), [])
@@ -1958,28 +1971,28 @@ class DBTest(commonDBTest):
         self.assertEqual(ls(self.db.user.get('5', ni)), ['7'])
 
     def testFilteringMany(self):
-        ae, filter, filter_iter = self.filteringSetup()
-        for f in filter, filter_iter:
+        ae, iiter = self.filteringSetup()
+        for f in iiter():
             ae(f(None, {'nosy': '2', 'status': '1'}, ('+','id'), (None,None)),
                 ['3'])
 
     def testFilteringRangeBasic(self):
-        ae, filter, filter_iter = self.filteringSetup()
+        ae, iiter = self.filteringSetup()
         d = 'deadline'
-        for f in filter, filter_iter:
+        for f in iiter():
             ae(f(None, {d: 'from 2003-02-10 to 2003-02-23'}), ['1','3'])
             ae(f(None, {d: '2003-02-10; 2003-02-23'}), ['1','3'])
             ae(f(None, {d: '; 2003-02-16'}), ['2'])
 
     def testFilteringRangeTwoSyntaxes(self):
-        ae, filter, filter_iter = self.filteringSetup()
-        for filt in filter, filter_iter:
+        ae, iiter = self.filteringSetup()
+        for filt in iiter():
             ae(filt(None, {'deadline': 'from 2003-02-16'}), ['1', '3', '4'])
             ae(filt(None, {'deadline': '2003-02-16;'}), ['1', '3', '4'])
 
     def testFilteringRangeYearMonthDay(self):
-        ae, filter, filter_iter = self.filteringSetup()
-        for filt in filter, filter_iter:
+        ae, iiter = self.filteringSetup()
+        for filt in iiter():
             ae(filt(None, {'deadline': '2002'}), [])
             ae(filt(None, {'deadline': '2003'}), ['1', '2', '3'])
             ae(filt(None, {'deadline': '2004'}), ['4'])
@@ -1987,7 +2000,7 @@ class DBTest(commonDBTest):
             ae(filt(None, {'deadline': '2003-02-17'}), [])
 
     def testFilteringRangeMonths(self):
-        ae, filter, filter_iter = self.filteringSetup()
+        ae, iiter = self.filteringSetup()
         for month in range(1, 13):
             for n in range(1, month+1):
                 i = self.db.issue.create(title='%d.%d'%(month, n),
@@ -1995,15 +2008,15 @@ class DBTest(commonDBTest):
         self.db.commit()
 
         for month in range(1, 13):
-            for filt in filter, filter_iter:
+            for filt in iiter():
                 r = filt(None, dict(deadline='2001-%02d'%month))
                 assert len(r) == month, 'month %d != length %d'%(month, len(r))
 
     def testFilteringDateRangeMulti(self):
-        ae, filter, filter_iter = self.filteringSetup()
+        ae, iiter = self.filteringSetup()
         self.db.issue.create(title='no deadline')
         self.db.commit()
-        for filt in filter, filter_iter:
+        for filt in iiter():
             r = filt (None, dict(deadline='-'))
             self.assertEqual(r, ['5'])
             r = filt (None, dict(deadline=';2003-02-01,2004;'))
@@ -2012,15 +2025,15 @@ class DBTest(commonDBTest):
             self.assertEqual(r, ['2', '4', '5'])
 
     def testFilteringRangeInterval(self):
-        ae, filter, filter_iter = self.filteringSetup()
-        for filt in filter, filter_iter:
+        ae, iiter = self.filteringSetup()
+        for filt in iiter():
             ae(filt(None, {'foo': 'from 0:50 to 2:00'}), ['1'])
             ae(filt(None, {'foo': 'from 0:50 to 1d 2:00'}), ['1', '2'])
             ae(filt(None, {'foo': 'from 5:50'}), ['2'])
             ae(filt(None, {'foo': 'to 0:05'}), [])
 
     def testFilteringRangeGeekInterval(self):
-        ae, filter, filter_iter = self.filteringSetup()
+        ae, iiter = self.filteringSetup()
         # Note: When querying, create date one minute later than the
         # timespan later queried to avoid race conditions where the
         # creation of the deadline is more than a second ago when
@@ -2033,7 +2046,7 @@ class DBTest(commonDBTest):
                 { 'deadline': date.Date('. -8d') + date.Interval ('00:01')},
                 ):
             self.db.issue.create(**issue)
-        for filt in filter, filter_iter:
+        for filt in iiter():
             ae(filt(None, {'deadline': '-2d;'}), ['5', '6'])
             ae(filt(None, {'deadline': '-1d;'}), ['6'])
             ae(filt(None, {'deadline': '-1w;'}), ['5', '6'])
@@ -2046,8 +2059,8 @@ class DBTest(commonDBTest):
         # 2: '1d'
         # 3: None
         # 4: '0:10'
-        ae, filter, filter_iter = self.filteringSetup()
-        for filt in filter, filter_iter:
+        ae, iiter = self.filteringSetup()
+        for filt in iiter():
             # ascending should sort None, 1:10, 1d
             ae(filt(None, {}, ('+','foo'), (None,None)), ['3', '4', '1', '2'])
             # descending should sort 1d, 1:10, None
@@ -2058,8 +2071,8 @@ class DBTest(commonDBTest):
         # 2: 'issue two'
         # 3: 'issue three'
         # 4: 'non four'
-        ae, filter, filter_iter = self.filteringSetup()
-        for filt in filter, filter_iter:
+        ae, iiter = self.filteringSetup()
+        for filt in iiter():
             ae(filt(None, {}, ('+','title')), ['1', '3', '2', '4'])
             ae(filt(None, {}, ('-','title')), ['4', '2', '3', '1'])
         # Test string case: For now allow both, w/wo case matching.
@@ -2068,7 +2081,7 @@ class DBTest(commonDBTest):
         # 3: 'Issue three'
         # 4: 'non four'
         self.db.issue.set('3', title='Issue three')
-        for filt in filter, filter_iter:
+        for filt in iiter():
             ae(filt(None, {}, ('+','title')), ['1', '3', '2', '4'])
             ae(filt(None, {}, ('-','title')), ['4', '2', '3', '1'])
         # Obscure bug in anydbm backend trying to convert to number
@@ -2078,7 +2091,7 @@ class DBTest(commonDBTest):
         # 4: 'non four'
         self.db.issue.set('1', title='1st issue')
         self.db.issue.set('2', title='2')
-        for filt in filter, filter_iter:
+        for filt in iiter():
             ae(filt(None, {}, ('+','title')), ['1', '2', '3', '4'])
             ae(filt(None, {}, ('-','title')), ['4', '3', '2', '1'])
 
@@ -2092,9 +2105,12 @@ class DBTest(commonDBTest):
         # multilink!
         # Note that we don't test filter_iter here, Multilink sort-order
         # isn't defined for that.
-        ae, filt, dummy = self.filteringSetup()
-        ae(filt(None, {}, ('+','nosy'), (None,None)), ['1', '2', '4', '3'])
-        ae(filt(None, {}, ('-','nosy'), (None,None)), ['4', '3', '1', '2'])
+        ae, iiter = self.filteringSetup()
+        for filt in iiter():
+            if filt.__name__ != 'filter':
+                continue
+            ae(filt(None, {}, ('+','nosy'), (None,None)), ['1', '2', '4', '3'])
+            ae(filt(None, {}, ('-','nosy'), (None,None)), ['4', '3', '1', '2'])
 
     def testFilteringMultilinkSortGroup(self):
         # 1: status: 2 "in-progress" nosy: []
@@ -2103,23 +2119,34 @@ class DBTest(commonDBTest):
         # 4: status: 3 "testing"     nosy: ['admin','bleep','fred']
         # Note that we don't test filter_iter here, Multilink sort-order
         # isn't defined for that.
-        ae, filt, dummy = self.filteringSetup()
-        ae(filt(None, {}, ('+','nosy'), ('+','status')), ['1', '4', '2', '3'])
-        ae(filt(None, {}, ('-','nosy'), ('+','status')), ['1', '4', '3', '2'])
-        ae(filt(None, {}, ('+','nosy'), ('-','status')), ['2', '3', '4', '1'])
-        ae(filt(None, {}, ('-','nosy'), ('-','status')), ['3', '2', '4', '1'])
-        ae(filt(None, {}, ('+','status'), ('+','nosy')), ['1', '2', '4', '3'])
-        ae(filt(None, {}, ('-','status'), ('+','nosy')), ['2', '1', '4', '3'])
-        ae(filt(None, {}, ('+','status'), ('-','nosy')), ['4', '3', '1', '2'])
-        ae(filt(None, {}, ('-','status'), ('-','nosy')), ['4', '3', '2', '1'])
+        ae, iiter = self.filteringSetup()
+        for filt in iiter():
+            if filt.__name__ != 'filter':
+                continue
+            ae(filt(None, {}, ('+','nosy'), ('+','status')),
+                ['1', '4', '2', '3'])
+            ae(filt(None, {}, ('-','nosy'), ('+','status')),
+                ['1', '4', '3', '2'])
+            ae(filt(None, {}, ('+','nosy'), ('-','status')),
+                ['2', '3', '4', '1'])
+            ae(filt(None, {}, ('-','nosy'), ('-','status')),
+                ['3', '2', '4', '1'])
+            ae(filt(None, {}, ('+','status'), ('+','nosy')),
+                ['1', '2', '4', '3'])
+            ae(filt(None, {}, ('-','status'), ('+','nosy')),
+                ['2', '1', '4', '3'])
+            ae(filt(None, {}, ('+','status'), ('-','nosy')),
+                ['4', '3', '1', '2'])
+            ae(filt(None, {}, ('-','status'), ('-','nosy')),
+                ['4', '3', '2', '1'])
 
     def testFilteringLinkSortGroup(self):
         # 1: status: 2 -> 'i', priority: 3 -> 1
         # 2: status: 1 -> 'u', priority: 3 -> 1
         # 3: status: 1 -> 'u', priority: 2 -> 3
         # 4: status: 3 -> 't', priority: 2 -> 3
-        ae, filter, filter_iter = self.filteringSetup()
-        for filt in filter, filter_iter:
+        ae, iiter = self.filteringSetup()
+        for filt in iiter():
             ae(filt(None, {}, ('+','status'), ('+','priority')),
                 ['1', '2', '4', '3'])
             ae(filt(None, {'priority':'2'}, ('+','status'), ('+','priority')),
@@ -2136,8 +2163,8 @@ class DBTest(commonDBTest):
         # '2': '2003-01-01.00:00'
         # '3': '2003-02-18'
         # '4': '2004-03-08'
-        ae, filter, filter_iter = self.filteringSetup()
-        for f in filter, filter_iter:
+        ae, iiter = self.filteringSetup()
+        for f in iiter():
             # ascending
             ae(f(None, {}, ('+','deadline'), (None,None)), ['2', '1', '3', '4'])
             # descending
@@ -2148,9 +2175,9 @@ class DBTest(commonDBTest):
         # '2': '2003-01-01.00:00'  3 => 1
         # '3': '2003-02-18'        2 => 3
         # '4': '2004-03-08'        1 => 2
-        ae, filter, filter_iter = self.filteringSetup()
+        ae, iiter = self.filteringSetup()
 
-        for filt in filter, filter_iter:
+        for filt in iiter():
             # ascending
             ae(filt(None, {}, ('+','deadline'), ('+','priority')),
                 ['2', '1', '3', '4'])
@@ -2163,8 +2190,8 @@ class DBTest(commonDBTest):
                 ['4', '3', '1', '2'])
 
     def testFilteringTransitiveLinkUser(self):
-        ae, filter, filter_iter = self.filteringSetupTransitiveSearch('user')
-        for f in filter, filter_iter:
+        ae, iiter = self.filteringSetupTransitiveSearch('user')
+        for f in iiter():
             ae(f(None, {'supervisor.username': 'ceo'}, ('+','username')),
                 ['4', '5'])
             ae(f(None, {'supervisor.supervisor.username': 'ceo'},
@@ -2184,8 +2211,8 @@ class DBTest(commonDBTest):
                 ('+','username')), ['6', '7'])
 
     def testFilteringTransitiveLinkUserLimit(self):
-        ae, filter, filter_iter = self.filteringSetupTransitiveSearch('user')
-        for f in filter, filter_iter:
+        ae, iiter = self.filteringSetupTransitiveSearch('user')
+        for f in iiter():
             ae(f(None, {'supervisor.username': 'ceo'}, ('+','username'),
                  limit=1), ['4'])
             ae(f(None, {'supervisor.supervisor.username': 'ceo'},
@@ -2203,15 +2230,15 @@ class DBTest(commonDBTest):
                 ('+','username'), limit=1, offset=5), [])
 
     def testFilteringTransitiveLinkSort(self):
-        ae, filter, filter_iter = self.filteringSetupTransitiveSearch()
-        ae, ufilter, ufilter_iter = self.iterSetup('user')
+        ae, iiter = self.filteringSetupTransitiveSearch()
+        ae, uiter = self.iterSetup('user')
         # Need to make ceo his own (and first two users') supervisor,
         # otherwise we will depend on sorting order of NULL values.
         # Leave that to a separate test.
         self.db.user.set('1', supervisor = '3')
         self.db.user.set('2', supervisor = '3')
         self.db.user.set('3', supervisor = '3')
-        for ufilt in ufilter, ufilter_iter:
+        for ufilt in uiter():
             ae(ufilt(None, {'supervisor':'3'}, []), ['1', '2', '3', '4', '5'])
             ae(ufilt(None, {}, [('+','supervisor.supervisor.supervisor'),
                 ('+','supervisor.supervisor'), ('+','supervisor'),
@@ -2221,7 +2248,7 @@ class DBTest(commonDBTest):
                 ('-','supervisor.supervisor'), ('-','supervisor'),
                 ('+','username')]),
                 ['8', '9', '10', '6', '7', '1', '3', '2', '4', '5'])
-        for f in filter, filter_iter:
+        for f in iiter():
             ae(f(None, {}, [('+','assignedto.supervisor.supervisor.supervisor'),
                 ('+','assignedto.supervisor.supervisor'),
                 ('+','assignedto.supervisor'), ('+','assignedto')]),
@@ -2257,9 +2284,9 @@ class DBTest(commonDBTest):
 
     def testFilteringTransitiveLinkSortNull(self):
         """Check sorting of NULL values"""
-        ae, filter, filter_iter = self.filteringSetupTransitiveSearch()
-        ae, ufilter, ufilter_iter = self.iterSetup('user')
-        for ufilt in ufilter, ufilter_iter:
+        ae, iiter = self.filteringSetupTransitiveSearch()
+        ae, uiter = self.iterSetup('user')
+        for ufilt in uiter():
             ae(ufilt(None, {}, [('+','supervisor.supervisor.supervisor'),
                 ('+','supervisor.supervisor'), ('+','supervisor'),
                 ('+','username')]),
@@ -2268,7 +2295,7 @@ class DBTest(commonDBTest):
                 ('-','supervisor.supervisor'), ('-','supervisor'),
                 ('+','username')]),
                 ['8', '9', '10', '6', '7', '4', '5', '1', '3', '2'])
-        for f in filter, filter_iter:
+        for f in iiter():
             ae(f(None, {}, [('+','assignedto.supervisor.supervisor.supervisor'),
                 ('+','assignedto.supervisor.supervisor'),
                 ('+','assignedto.supervisor'), ('+','assignedto')]),
@@ -2279,8 +2306,8 @@ class DBTest(commonDBTest):
                 ['4', '5', '6', '7', '8', '1', '2', '3'])
 
     def testFilteringTransitiveLinkIssue(self):
-        ae, filter, filter_iter = self.filteringSetupTransitiveSearch()
-        for filt in filter, filter_iter:
+        ae, iiter = self.filteringSetupTransitiveSearch()
+        for filt in iiter():
             ae(filt(None, {'assignedto.supervisor.username': 'grouplead1'},
                 ('+','id')), ['1', '2', '3'])
             ae(filt(None, {'assignedto.supervisor.username': 'grouplead2'},
@@ -2295,8 +2322,8 @@ class DBTest(commonDBTest):
                 ('+','id')), ['1', '3', '5', '7'])
 
     def testFilteringTransitiveMultilink(self):
-        ae, filter, filter_iter = self.filteringSetupTransitiveSearch()
-        for filt in filter, filter_iter:
+        ae, iiter = self.filteringSetupTransitiveSearch()
+        for filt in iiter():
             ae(filt(None, {'messages.author.username': 'grouplead1'},
                 ('+','id')), [])
             ae(filt(None, {'messages.author': '6'},
@@ -2332,85 +2359,97 @@ class DBTest(commonDBTest):
     def testFilteringTransitiveMultilinkSort(self):
         # Note that we don't test filter_iter here, Multilink sort-order
         # isn't defined for that.
-        ae, filt, dummy = self.filteringSetupTransitiveSearch()
-        ae(filt(None, {}, [('+','messages.author')]),
-            ['1', '2', '3', '4', '5', '8', '6', '7'])
-        ae(filt(None, {}, [('-','messages.author')]),
-            ['8', '6', '7', '5', '4', '3', '1', '2'])
-        ae(filt(None, {}, [('+','messages.date')]),
-            ['6', '7', '8', '5', '4', '3', '1', '2'])
-        ae(filt(None, {}, [('-','messages.date')]),
-            ['1', '2', '3', '4', '8', '5', '6', '7'])
-        ae(filt(None, {}, [('+','messages.author'),('+','messages.date')]),
-            ['1', '2', '3', '4', '5', '8', '6', '7'])
-        ae(filt(None, {}, [('-','messages.author'),('+','messages.date')]),
-            ['8', '6', '7', '5', '4', '3', '1', '2'])
-        ae(filt(None, {}, [('+','messages.author'),('-','messages.date')]),
-            ['1', '2', '3', '4', '5', '8', '6', '7'])
-        ae(filt(None, {}, [('-','messages.author'),('-','messages.date')]),
-            ['8', '6', '7', '5', '4', '3', '1', '2'])
-        ae(filt(None, {}, [('+','messages.author'),('+','assignedto')]),
-            ['1', '2', '3', '4', '5', '8', '6', '7'])
-        ae(filt(None, {}, [('+','messages.author'),
-            ('-','assignedto.supervisor'),('-','assignedto')]),
-            ['1', '2', '3', '4', '5', '8', '6', '7'])
-        ae(filt(None, {},
-            [('+','messages.author.supervisor.supervisor.supervisor'),
-            ('+','messages.author.supervisor.supervisor'),
-            ('+','messages.author.supervisor'), ('+','messages.author')]),
-            ['1', '2', '3', '4', '5', '6', '7', '8'])
+        ae, iiter = self.filteringSetupTransitiveSearch()
+        for filt in iiter():
+            if filt.__name__ != 'filter':
+                continue
+            ae(filt(None, {}, [('+','messages.author')]),
+                ['1', '2', '3', '4', '5', '8', '6', '7'])
+            ae(filt(None, {}, [('-','messages.author')]),
+                ['8', '6', '7', '5', '4', '3', '1', '2'])
+            ae(filt(None, {}, [('+','messages.date')]),
+                ['6', '7', '8', '5', '4', '3', '1', '2'])
+            ae(filt(None, {}, [('-','messages.date')]),
+                ['1', '2', '3', '4', '8', '5', '6', '7'])
+            ae(filt(None, {}, [('+','messages.author'),('+','messages.date')]),
+                ['1', '2', '3', '4', '5', '8', '6', '7'])
+            ae(filt(None, {}, [('-','messages.author'),('+','messages.date')]),
+                ['8', '6', '7', '5', '4', '3', '1', '2'])
+            ae(filt(None, {}, [('+','messages.author'),('-','messages.date')]),
+                ['1', '2', '3', '4', '5', '8', '6', '7'])
+            ae(filt(None, {}, [('-','messages.author'),('-','messages.date')]),
+                ['8', '6', '7', '5', '4', '3', '1', '2'])
+            ae(filt(None, {}, [('+','messages.author'),('+','assignedto')]),
+                ['1', '2', '3', '4', '5', '8', '6', '7'])
+            ae(filt(None, {}, [('+','messages.author'),
+                ('-','assignedto.supervisor'),('-','assignedto')]),
+                ['1', '2', '3', '4', '5', '8', '6', '7'])
+            ae(filt(None, {},
+                [('+','messages.author.supervisor.supervisor.supervisor'),
+                ('+','messages.author.supervisor.supervisor'),
+                ('+','messages.author.supervisor'), ('+','messages.author')]),
+                ['1', '2', '3', '4', '5', '6', '7', '8'])
         self.db.user.setorderprop('age')
         self.db.msg.setorderprop('date')
-        ae(filt(None, {}, [('+','messages'), ('+','messages.author')]),
-            ['6', '7', '8', '5', '4', '3', '1', '2'])
-        ae(filt(None, {}, [('+','messages.author'), ('+','messages')]),
-            ['6', '7', '8', '5', '4', '3', '1', '2'])
+        for filt in iiter():
+            if filt.__name__ != 'filter':
+                continue
+            ae(filt(None, {}, [('+','messages'), ('+','messages.author')]),
+                ['6', '7', '8', '5', '4', '3', '1', '2'])
+            ae(filt(None, {}, [('+','messages.author'), ('+','messages')]),
+                ['6', '7', '8', '5', '4', '3', '1', '2'])
         self.db.msg.setorderprop('author')
-        # Orderprop is a Link/Multilink:
-        # messages are sorted by orderprop().labelprop(), i.e. by
-        # author.username, *not* by author.orderprop() (author.age)!
-        ae(filt(None, {}, [('+','messages')]),
-            ['1', '2', '3', '4', '5', '8', '6', '7'])
-        ae(filt(None, {}, [('+','messages.author'), ('+','messages')]),
-            ['6', '7', '8', '5', '4', '3', '1', '2'])
-        # The following will sort by
-        # author.supervisor.username and then by
-        # author.username
-        # I've resited the tempation to implement recursive orderprop
-        # here: There could even be loops if several classes specify a
-        # Link or Multilink as the orderprop...
-        # msg: 4: worker1 (id  5) : grouplead1 (id 4) ceo (id 3)
-        # msg: 5: worker2 (id  7) : grouplead1 (id 4) ceo (id 3)
-        # msg: 6: worker3 (id  8) : grouplead2 (id 5) ceo (id 3)
-        # msg: 7: worker4 (id  9) : grouplead2 (id 5) ceo (id 3)
-        # msg: 8: worker5 (id 10) : grouplead2 (id 5) ceo (id 3)
-        # issue 1: messages 4   sortkey:[[grouplead1], [worker1], 1]
-        # issue 2: messages 4   sortkey:[[grouplead1], [worker1], 2]
-        # issue 3: messages 5   sortkey:[[grouplead1], [worker2], 3]
-        # issue 4: messages 6   sortkey:[[grouplead2], [worker3], 4]
-        # issue 5: messages 7   sortkey:[[grouplead2], [worker4], 5]
-        # issue 6: messages 8   sortkey:[[grouplead2], [worker5], 6]
-        # issue 7: messages 8   sortkey:[[grouplead2], [worker5], 7]
-        # issue 8: messages 7,8 sortkey:[[grouplead2, grouplead2], ...]
+        for filt in iiter():
+            if filt.__name__ != 'filter':
+                continue
+            # Orderprop is a Link/Multilink:
+            # messages are sorted by orderprop().labelprop(), i.e. by
+            # author.username, *not* by author.orderprop() (author.age)!
+            ae(filt(None, {}, [('+','messages')]),
+                ['1', '2', '3', '4', '5', '8', '6', '7'])
+            ae(filt(None, {}, [('+','messages.author'), ('+','messages')]),
+                ['6', '7', '8', '5', '4', '3', '1', '2'])
+            # The following will sort by
+            # author.supervisor.username and then by
+            # author.username
+            # I've resited the tempation to implement recursive orderprop
+            # here: There could even be loops if several classes specify a
+            # Link or Multilink as the orderprop...
+            # msg: 4: worker1 (id  5) : grouplead1 (id 4) ceo (id 3)
+            # msg: 5: worker2 (id  7) : grouplead1 (id 4) ceo (id 3)
+            # msg: 6: worker3 (id  8) : grouplead2 (id 5) ceo (id 3)
+            # msg: 7: worker4 (id  9) : grouplead2 (id 5) ceo (id 3)
+            # msg: 8: worker5 (id 10) : grouplead2 (id 5) ceo (id 3)
+            # issue 1: messages 4   sortkey:[[grouplead1], [worker1], 1]
+            # issue 2: messages 4   sortkey:[[grouplead1], [worker1], 2]
+            # issue 3: messages 5   sortkey:[[grouplead1], [worker2], 3]
+            # issue 4: messages 6   sortkey:[[grouplead2], [worker3], 4]
+            # issue 5: messages 7   sortkey:[[grouplead2], [worker4], 5]
+            # issue 6: messages 8   sortkey:[[grouplead2], [worker5], 6]
+            # issue 7: messages 8   sortkey:[[grouplead2], [worker5], 7]
+            # issue 8: messages 7,8 sortkey:[[grouplead2, grouplead2], ...]
         self.db.user.setorderprop('supervisor')
-        ae(filt(None, {}, [('+','messages.author'), ('-','messages')]),
-            ['3', '1', '2', '6', '7', '5', '4', '8'])
+        for filt in iiter():
+            if filt.__name__ != 'filter':
+                continue
+            ae(filt(None, {}, [('+','messages.author'), ('-','messages')]),
+                ['3', '1', '2', '6', '7', '5', '4', '8'])
 
     def testFilteringSortId(self):
-        ae, filter, filter_iter = self.filteringSetupTransitiveSearch('user')
-        for filt in filter, filter_iter:
+        ae, iiter = self.filteringSetupTransitiveSearch('user')
+        for filt in iiter():
             ae(filt(None, {}, ('+','id')),
                 ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'])
 
     def testFilteringRetiredString(self):
-        ae, filter, filter_iter = self.filteringSetup()
+        ae, iiter = self.filteringSetup()
         self.db.issue.retire('1')
         self.db.commit()
         r = { None: (['1'], ['1'], ['1'], ['1', '2', '3'], [])
             , True: (['1'], ['1'], ['1'], ['1'], [])
             , False: ([], [], [], ['2', '3'], [])
             }
-        for filt in filter, filter_iter:
+        for filt in iiter():
             for retire in True, False, None:
                 ae(filt(None, {'title': ['one']}, ('+','id'),
                    retired=retire), r[retire][0])
@@ -2438,7 +2477,7 @@ class DBTest(commonDBTest):
 
     def testImportExport(self):
         # use the filtering setup to create a bunch of items
-        ae, dummy1, dummy2 = self.filteringSetup()
+        ae, dummy = self.filteringSetup()
         # Get some stuff into the journal for testing import/export of
         # journal data:
         self.db.user.set('4', password = password.Password('xyzzy'))
@@ -2551,7 +2590,7 @@ class DBTest(commonDBTest):
         import roundup.admin
         import csv
         # use the filtering setup to create a bunch of items
-        ae, dummy1, dummy2 = self.filteringSetup()
+        ae, dummy = self.filteringSetup()
         # create large field
         self.db.priority.create(name = 'X' * 500)
         self.db.config.CSV_FIELD_SIZE = 400
@@ -2603,7 +2642,7 @@ class DBTest(commonDBTest):
         import roundup.admin
 
         # use the filtering setup to create a bunch of items
-        ae, dummy1, dummy2 = self.filteringSetup()
+        ae, dummy = self.filteringSetup()
         # create large field
         self.db.priority.create(name = 'X' * 500)
         self.db.config.CSV_FIELD_SIZE = 400
@@ -3228,8 +3267,8 @@ class RDBMSTest:
 
 class FilterCacheTest(commonDBTest):
     def testFilteringTransitiveLinkCache(self):
-        ae, filter, filter_iter = self.filteringSetupTransitiveSearch()
-        ae, ufilter, ufilter_iter = self.iterSetup('user')
+        ae, dummy = self.filteringSetupTransitiveSearch()
+        ae, dummy = self.iterSetup('user')
         # Need to make ceo his own (and first two users') supervisor
         self.db.user.set('1', supervisor = '3')
         self.db.user.set('2', supervisor = '3')

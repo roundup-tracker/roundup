@@ -719,8 +719,8 @@ class AdminTest(object):
 
         out = out.getvalue().strip()
         err = err.getvalue().strip()
-        self.assertEqual(len(out), 0)
-        self.assertEqual(len(err), 0)
+        self.assertEqual(out, '')
+        self.assertEqual(err, '')
 
         self.admin=AdminTool()
         with captured_output() as (out, err):
@@ -847,8 +847,8 @@ class AdminTest(object):
 
         out = out.getvalue().strip()
         err = err.getvalue().strip()
-        self.assertEqual(len(out), 0)
-        self.assertEqual(len(err), 0)
+        self.assertEqual(out, '')
+        self.assertEqual(err, '')
 
         ## verify that issue 1 and 2 are assigned to user2 and user2
         self.admin=AdminTool()

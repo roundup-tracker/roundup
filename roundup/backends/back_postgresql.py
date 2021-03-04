@@ -47,7 +47,7 @@ def connection_dict(config, dbnamestr=None):
 def db_create(config):
     """Clear all database contents and drop database itself"""
     command = "CREATE DATABASE \"%s\" WITH ENCODING='UNICODE'"%config.RDBMS_NAME
-    if config.RDBMS_TEMPLATE :
+    if config.RDBMS_TEMPLATE:
         command = command + " TEMPLATE=%s" % config.RDBMS_TEMPLATE
     logging.getLogger('roundup.hyperdb').info(command)
     db_command(config, command)
@@ -99,13 +99,13 @@ def pg_command(cursor, command):
         cursor.execute(command)
     except psycopg2.DatabaseError as err:
         response = str(err).split('\n')[0]
-        if "FATAL" not in response :
+        if "FATAL" not in response:
             msgs = (
                 'is being accessed by other users',
                 'could not serialize access due to concurrent update',
             )
-            for msg in msgs :
-                if msg in response :
+            for msg in msgs:
+                if msg in response:
                     time.sleep(0.1)
                     return 0
         raise RuntimeError (response)
@@ -166,6 +166,18 @@ class Database(rdbms_common.Database):
             conn.set_isolation_level(lvl)
 
         return (conn, cursor)
+
+    def sql_new_cursor(self, name='default', conn=None, *args, **kw):
+        """ Create new cursor, this may need additional parameters for
+            performance optimization for different backends.
+        """
+        use_name = self.config.RDBMS_SERVERSIDE_CURSOR
+        kw = {}
+        if use_name:
+            kw['name'] = name
+        if conn is None:
+            conn = self.conn
+        return conn.cursor(*args, **kw)
 
     def open_connection(self):
         if not db_exists(self.config):

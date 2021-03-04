@@ -1082,6 +1082,10 @@ always passes, so setting it less than 1 is not recommended."""),
             "Database isolation level, currently supported for\n"
             "PostgreSQL and mysql. See, e.g.,\n"
             "http://www.postgresql.org/docs/9.1/static/transaction-iso.html"),
+        (BooleanOption, "serverside_cursor", "yes",
+            "Set the database cursor for filter queries to serverside\n"
+            "cursor, this avoids caching large amounts of data in the\n"
+            "client. This option only applies for the postgresql backend."),
     ), "Settings in this section (except for backend) are used"
         " by RDBMS backends only."
     ),

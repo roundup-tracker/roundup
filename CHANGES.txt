@@ -66,6 +66,10 @@ Fixed:
 - in rest interface, fix uncaught exceptions when parsing invalid
   Content-Type and Accept headers. Document response formats more
   fully in doc/rest.txt.
+- in filter, filter_iter and _materialize_multilinks, use named cursor
+  with postgresql. This turns of client-side cursor handling and avoids
+  *large* roundup process (or wsgi process) in case of large results.
+  Fixes issue2551114.
 
 Features:
 - issue2550522 - Add 'filter' command to command-line
