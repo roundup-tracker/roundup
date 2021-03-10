@@ -2196,7 +2196,10 @@ of:
 
 **edit**
  Perform an edit of an item in the database. There are some `special form
- variables`_ you may use.
+ variables`_ you may use. Also you can set the ``__redirect_to`` form
+ variable to the URL that should be displayed after the edit is succesfully
+ completed. If you wanted to edit a sequence of issues, users etc. this
+ could be used to display the next item in the sequence to the user. 
 
 **new**
  Add a new item to the database. You may use the same `special form
