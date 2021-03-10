@@ -1048,7 +1048,7 @@ always passes, so setting it less than 1 is not recommended."""),
         (NullableOption, 'read_default_group', 'roundup',
             "Name of the group to use in the MySQL defaults file (.my.cnf).\n"
             "Only used in MySQL connections."),
-        (Option, 'mysql_charset', 'utf8',
+        (Option, 'mysql_charset', 'utf8mb4',
             "Charset to use for mysql connection,\n"
             "use 'default' for the mysql default, no charset option\n"
             "is used when creating the connection in that case.\n"

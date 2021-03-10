@@ -77,10 +77,10 @@ are more changes required for running roundup 2.0 if you choose to use
 python3. See `Python 3 support`_.
 
 In an upgraded ``config.ini`` (see next section) the ``[rdbms]``
-section has a key ``mysql_charset`` set by default to ``utf-8``.
+section has a key ``mysql_charset`` set by default to ``utf8mb4``.
 
-It should be possible to change utf-8 to any mysql charset. So if you
-know what charset is enabled (e.g. via a setting in ~roundup/.my.cnf,
+It should be possible to change ``utf8mb4`` to any mysql charset. So
+if you know what charset is enabled (e.g. via a setting in ~roundup/.my.cnf,
 or the default charset for the database) you can set it in
 ``config.ini`` and not need to covert the database. However the
 underlying issues with misconverted data and bad searches will still
