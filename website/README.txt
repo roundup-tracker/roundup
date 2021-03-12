@@ -20,21 +20,16 @@ Wiki isn't hosted on sourceforge anymore. See:
 
 for details on Implementing wiki move to Waldmann-EDV.
 
-Bern Reiter will be adding new docs on how to update files (if
-possible). Old directions are:
+Contact Thomas Waldmann. Web site: https://www.waldmann-edv.de/
+email: info AT waldmann-edv DOT de.
 
-=============
+The sites theme is under wiki/wiki/data/plugin/theme/roundup.py.  Last
+updated by emailing Thomas 2/2021. Images/icons and css under
+wiki/_static.
 
-copy new files over to new directories:
-
-    cd ${project_home}/src/roundup/website/wiki
-    cp -r -p static/roundup ${project_home}/htdocs/_wiki/
-    cp -p wiki/data/plugin/theme/roundup.py ${project_home}/persistent/wiki/data/plugin/theme/
-    cd -
-
-If you need to adjust wiki configuration, it is here:
-
-    vim persistent/wiki/wikiconfig.py
+Backups are assumed to be done by Waldmann-edv. There does not appear
+to be a way to get access to the underlying filesystem via ssh or to
+do a backup/tarball via with web.
 
 ==============
 
