@@ -70,6 +70,8 @@ Fixed:
   with postgresql. This turns of client-side cursor handling and avoids
   *large* roundup process (or wsgi process) in case of large results.
   Fixes issue2551114.
+- issue2551108 - fix handling of designator links when formatted
+  as markdown links. (Reported by Cedric Krier; John Rouillard)
 
 Features:
 - issue2550522 - Add 'filter' command to command-line

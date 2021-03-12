@@ -1691,6 +1691,23 @@ class StringHTMLProperty(HTMLProperty):
                 s = match.group(group)
                 return '<%s>' % s
         if match.group('id') and len(match.group('id')) < 10:
+            # Pass through markdown style links:
+            #     [issue1](https://....)
+            #     [issue1](issue1)
+            # as 'issue1'. Don't convert issue1 into a link.
+            # https://issues.roundup-tracker.org/issue2551108
+            start = match.start('item') - 1
+            end = match.end('item')
+            if start >= 0:
+                prefix = match.string[start]
+                if end < len(match.string):
+                    suffix = match.string[end]
+                    if (prefix, suffix) in {('[', ']')}:
+                        if match.string[end+1] == '(': # find following (
+                            return match.group(0)
+                    if (prefix, suffix) in {('(',')')}:
+                        if match.string[start-1] == ']':
+                            return match.group(0)
             return self._hyper_repl_item(match,'[%(item)s](%(cls)s%(id)s)')
         else:
             # just return the matched text

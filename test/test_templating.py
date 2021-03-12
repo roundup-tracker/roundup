@@ -44,6 +44,9 @@ from roundup.anypy.strings import u2s, s2u
 
 class MockDatabase(MockNull):
     def getclass(self, name):
+        # Class returned must have hasnode(id) method that returns true
+        # otherwise designators like 'issue1' can't be hyperlinked.
+        self.classes[name].hasnode = lambda id: True
         return self.classes[name]
 
     # setup for csrf testing of otks database api
@@ -467,6 +470,34 @@ class MarkdownTests:
     def test_string_markdown_link(self):
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A link <http://localhost>'))
         self.assertEqual(p.markdown().strip(), u2s(u'<p>A link <a href="http://localhost">http://localhost</a></p>'))
+
+    def test_string_markdown_link_item(self):
+        """ The link formats for the different markdown engines changes.
+            Order of attributes, value for rel (noopener, nofollow etc)
+            is different. So most tests check for a substring that indicates
+            success rather than the entire returned string.
+        """
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'An issue1 link'))
+        self.assertIn( u2s(u'href="issue1"'), p.markdown().strip())
+        # just verify that plain linking is working
+        self.assertIn( u2s(u'href="issue1"'), p.plain(hyperlink=1))
+
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'An [issue1](issue1) link'))
+        self.assertIn( u2s(u'href="issue1"'), p.markdown().strip())
+        # just verify that plain linking is working
+        self.assertIn( u2s(u'href="issue1"'), p.plain(hyperlink=1))
+
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'An [issue1](https://example.com/issue1) link'))
+        self.assertIn( u2s(u'href="https://example.com/issue1"'), p.markdown().strip())
+
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'An [issue1] (https://example.com/issue1) link'))
+        self.assertIn( u2s(u'href="issue1"'), p.markdown().strip())
+        if type(self) == MistuneTestCase:
+            # mistune makes the https url into a real link
+            self.assertIn( u2s(u'href="https://example.com/issue1"'), p.markdown().strip())
+        else:
+            # the other two engines leave the parenthesized url as is.
+            self.assertIn( u2s(u' (https://example.com/issue1) link'), p.markdown().strip())
 
     def test_string_markdown_link(self):
         # markdown2 and markdown escape the email address
