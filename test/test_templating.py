@@ -44,6 +44,9 @@ from roundup.anypy.strings import u2s, s2u
 
 class MockDatabase(MockNull):
     def getclass(self, name):
+        # limit class names
+        if name not in [ 'issue', 'user' ]:
+            raise KeyError('There is no class called "%s"' % name)
         # Class returned must have hasnode(id) method that returns true
         # otherwise designators like 'issue1' can't be hyperlinked.
         self.classes[name].hasnode = lambda id: True
