@@ -49,7 +49,7 @@ class MockDatabase(MockNull):
             raise KeyError('There is no class called "%s"' % name)
         # Class returned must have hasnode(id) method that returns true
         # otherwise designators like 'issue1' can't be hyperlinked.
-        self.classes[name].hasnode = lambda id: True
+        self.classes[name].hasnode = lambda id: True if int(id) < 10 else False
         return self.classes[name]
 
     # setup for csrf testing of otks database api
@@ -252,6 +252,26 @@ class HTMLClassTestCase(TemplatingTestCase) :
         self.assertEqual(p.plain(escape=1, hyperlink=1), 'A string &lt;b&gt; with <a href="mailto:rouilj@example.com">rouilj@example.com</a> embedded &amp;lt; html&lt;/b&gt;')
 
         self.assertEqual(p.hyperlinked(), 'A string &lt;b&gt; with <a href="mailto:rouilj@example.com">rouilj@example.com</a> embedded &amp;lt; html&lt;/b&gt;')
+        # check designators
+        for designator in [ "issue1", "issue 1" ]:
+            p = StringHTMLProperty(self.client, 'test', '1', None, 'test', designator)
+            self.assertEqual(p.hyperlinked(),
+                             '<a href="issue1">%s</a>'%designator)
+
+        # issue 100 > 10 which is a magic number for the mocked hasnode
+        # If id number is greater than 10 hasnode reports it does not have
+        # the node.
+        for designator in ['issue100', 'issue 100']:
+            p = StringHTMLProperty(self.client, 'test', '1', None, 'test',
+                                   designator)
+            self.assertEqual(p.hyperlinked(), designator)
+
+        # zoom class does not exist
+        for designator in ['zoom1', 'zoom100', 'zoom 1']:
+            p = StringHTMLProperty(self.client, 'test', '1', None, 'test',
+                                   designator)
+            self.assertEqual(p.hyperlinked(), designator)
+
 
     @skip_rst
     def test_string_rst(self):
