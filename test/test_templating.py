@@ -243,6 +243,25 @@ class HTMLClassTestCase(TemplatingTestCase) :
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', 'rouilj@foo.example.com')
         self.assertEqual(p.email(), 'rouilj at foo example ...')
 
+    def test_string_wrapped(self):
+        test_string = ('A long string that needs to be wrapped to'
+                       ' 80 characters and no more. Put in a link issue1.'
+                       ' Put in <html> to be escaped. Put in a'
+                       ' https://example.com/link as well. Let us see if'
+                       ' it will wrap properly.' )
+        test_result = ('A long string that needs to be wrapped to 80'
+                       ' characters and no more. Put in a\n'
+                       'link <a href="issue1">issue1</a>. Put in'
+                       ' &lt;html&gt; to be escaped. Put in a <a'
+                       ' href="https://example.com/link"'
+                       ' rel="nofollow noopener">'
+                       'https://example.com/link</a> as\n'
+                       'well. Let us see if it will wrap properly.')
+
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test',
+                               test_string)
+        self.assertEqual(p.wrapped(), test_result)
+
     def test_string_plain_or_hyperlinked(self):
         ''' test that email obscures the email '''
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', 'A string <b> with rouilj@example.com embedded &lt; html</b>')
@@ -312,10 +331,20 @@ class HTMLClassTestCase(TemplatingTestCase) :
         s = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'<badtag>\njavascript:badcode data:text/plain;base64,SGVsbG8sIFdvcmxkIQ=='))
         s_result = '<div class="document">\n<p>&lt;badtag&gt;\njavascript:badcode data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==</p>\n</div>\n'
 
+        # test url recognition
+        t = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'link is https://example.com/link for testing.'))
+        t_result = '<div class="document">\n<p>link is <a class="reference external" href="https://example.com/link">https://example.com/link</a> for testing.</p>\n</div>\n'
+
+        # test text that doesn't need to be processed
+        u = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'Just a plain old string here. Nothig to process.'))
+        u_result = '<div class="document">\n<p>Just a plain old string here. Nothig to process.</p>\n</div>\n'
+
         self.assertEqual(p.rst(), u2s(u'<div class="document">\n<p>A string with <a class="reference external" href="mailto:cmeerw&#64;example.com">cmeerw&#64;example.com</a> <em>embedded</em> \u00df</p>\n</div>\n'))
         self.assertEqual(q.rst(), u2s(q_result))
         self.assertEqual(r.rst(), u2s(r_result))
         self.assertEqual(s.rst(), u2s(s_result))
+        self.assertEqual(t.rst(), u2s(t_result))
+        self.assertEqual(u.rst(), u2s(u_result))
 
     @skip_stext
     def test_string_stext(self):
