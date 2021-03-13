@@ -225,7 +225,7 @@ db.security.addPermissionToRole('User', p)
 p = db.security.addPermission(name='Edit', klass='issue',
                               properties=('title', 'type',
                                           'components', 'versions',
-                                          'severity',
+                                          'severity', 'status',
                                           'messages', 'files', 'nosy'),
                               description='User can report and discuss issues')
 db.security.addPermissionToRole('User', p)
