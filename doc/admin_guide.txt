@@ -411,6 +411,9 @@ On Unix systems, use the scripts/server-ctl script to control the
 roundup-server server. Copy it somewhere and edit the variables at the top
 to reflect your specific installation.
 
+If you use systemd look at scripts/systemd.gunicorn. It is configured
+for a wsgi deployment using gunicorn, but may be a good starting
+point for your setup.
 
 Windows
 -------

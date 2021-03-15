@@ -1,0 +1,16 @@
+[Unit]
+Description=Roundup Server - roundup
+
+[Service]
+User=roundup
+WorkingDirectory=/path/to/roundup/trackers/roundup
+SyslogIdentifier=roundup-server-roundup
+ExecStart=/path/to/gunicorn -b unix:///var/run/roundup/roundup.sock wsgi -w 4 --preload --max-requests 128 --max-requests-jitter 32 --timeout 60 --graceful-timeout 60 --access-logfile - --error-logfile
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStop = /bin/kill -s TERM $MAINPID
+KillMode=mixed
+Restart=on-failure
+RestartSec=15s
+
+[Install]
+WantedBy=multi-user.target
