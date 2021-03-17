@@ -397,6 +397,23 @@ class RoundupMessage(email.message.Message):
                 return part.as_attachment()
         return None
 
+    def get_filename(self):
+        """ Note: The get_filename of the Message class returns just the
+            encoded header as transmitted via email. We make an attempt
+            here to decode the information returned and return the real
+            filename here.
+        """
+        # This should really use super() but doesn't work with python2
+        # because it seems that email.message.Message isn't a new-style
+        # class in python2
+        fn = email.message.Message.get_filename(self)
+        if not fn :
+            return fn
+        h = []
+        for x, t in decode_header(fn):
+            h.append(x.decode(t) if t else x)
+        return ''.join(h)
+
     def as_attachment(self):
         """Return this message as an attachment."""
         filename = self.get_filename()

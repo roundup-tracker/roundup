@@ -72,6 +72,7 @@ Fixed:
   Fixes issue2551114.
 - issue2551108 - fix handling of designator links when formatted
   as markdown links. (Reported by Cedric Krier; John Rouillard)
+- Fix filename created from mail attachments, fixes issue2551118
 
 Features:
 - issue2550522 - Add 'filter' command to command-line
