@@ -29,11 +29,13 @@
    <th tal:condition="request/show/activity" i18n:translate="">Activity</th>
    <th tal:condition="request/show/actor" i18n:translate="">Actor</th>
    <th tal:condition="request/show/title" i18n:translate="">Title</th>
-   <th tal:condition="request/show/components"  i18n:translate="">Components</th>
+   <th tal:condition="request/show/components" i18n:translate="">Components</th>
    <th tal:condition="request/show/versions" i18n:translate="">Versions</th>
-   <th tal:condition="request/show/status"    i18n:translate="">Status</th>
+   <th tal:condition="request/show/status" i18n:translate="">Status</th>
+   <th tal:condition="request/show/priority" i18n:translate="">Priority</th>
    <th tal:condition="request/show/resolution" i18n:translate="">Resolution</th>
    <th tal:condition="request/show/creator" i18n:translate="">Creator</th>
+   <th tal:condition="request/show/nosy"  i18n:translate="">Nosy</th>
    <th tal:condition="request/show/assignee" i18n:translate="">Assigned&nbsp;To</th>
    <th tal:condition="request/show/keywords" i18n:translate="">Keywords</th>
    <th tal:condition="request/show/dependencies" i18n:translate="">Depends On</th>
@@ -69,10 +71,14 @@
        tal:content="python:i.versions.plain() or default">&nbsp;</td>
    <td tal:condition="request/show/status"
        tal:content="python:i.status.plain() or default">&nbsp;</td>
+   <td tal:condition="request/show/priority"
+       tal:content="python:i.priority.plain() or default">&nbsp;</td>
    <td tal:condition="request/show/resolution"
        tal:content="python:i.resolution.plain() or default">&nbsp;</td>
    <td tal:condition="request/show/creator"
        tal:content="python:i.creator.plain() or default">&nbsp;</td>
+   <td tal:condition="request/show/nosy"
+       tal:content="python:i.nosy.plain() or default">&nbsp;</td>
    <td tal:condition="request/show/assignee"
        tal:content="python:i.assignee.plain() or default">&nbsp;</td>
    <td tal:condition="request/show/keywords"
