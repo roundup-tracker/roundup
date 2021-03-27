@@ -1162,7 +1162,10 @@ class Class(hyperdb.Class):
 
         # return a dupe of the list so code doesn't get confused
         if isinstance(prop, hyperdb.Multilink):
-            return d[propname][:]
+            ids = d[propname][:]
+            print(ids)
+            ids.sort(key=lambda x: int(x))
+            return ids
 
         return d[propname]
 

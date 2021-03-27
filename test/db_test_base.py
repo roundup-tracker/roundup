@@ -441,14 +441,14 @@ class DBTest(commonDBTest):
 
 
 # XXX one day, maybe...
-#    def testMultilinkOrdering(self):
-#        for i in range(10):
-#            self.db.user.create(username='foo%s'%i)
-#        i = self.db.issue.create(title="spam", nosy=['5','3','12','4'])
-#        self.db.commit()
-#        l = self.db.issue.get(i, "nosy")
-#        # all backends should return the Multilink numeric-id-sorted
-#        self.assertEqual(l, ['3', '4', '5', '12'])
+    def testMultilinkOrdering(self):
+        for i in range(10):
+            self.db.user.create(username='foo%s'%i)
+        i = self.db.issue.create(title="spam", nosy=['5','3','12','4'])
+        self.db.commit()
+        l = self.db.issue.get(i, "nosy")
+        # all backends should return the Multilink numeric-id-sorted
+        self.assertEqual(l, ['3', '4', '5', '12'])
 
     # Date
     def testDateChange(self):
