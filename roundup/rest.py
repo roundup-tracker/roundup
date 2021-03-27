@@ -1064,6 +1064,8 @@ class RestfulInstance(object):
     @Routing.route("/data/<:class_name>/@poe", 'POST')
     @_data_decorator
     def get_post_once_exactly(self, class_name, input):
+        """Get the Post Once Exactly token to create a new instance of class
+           See https://tools.ietf.org/html/draft-nottingham-http-poe-00"""
         otks = self.db.Otk
         poe_key = ''.join([random_.choice(chars) for x in range(40)])
         while otks.exists(u2s(poe_key)):
@@ -1108,6 +1110,7 @@ class RestfulInstance(object):
     @Routing.route("/data/<:class_name>/@poe/<:post_token>", 'POST')
     @_data_decorator
     def post_once_exactly_collection(self, class_name, post_token, input):
+        """Post exactly one to the resource named by class_name"""
         otks = self.db.Otk
 
         # remove expired keys so we don't use an expired key
