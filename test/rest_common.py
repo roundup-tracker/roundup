@@ -2973,7 +2973,6 @@ class TestCase():
         results = self.server.get_element('issue', issue_id, self.terse_form)
         results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
-        self.assertEqual(len(results['attributes']['nosy']), 2)
         self.assertListEqual(results['attributes']['nosy'], ['1', '2'])
 
         etag = calculate_etag(self.db.issue.getnode(issue_id),
@@ -2991,8 +2990,8 @@ class TestCase():
         results = self.server.get_element('issue', issue_id, self.terse_form)
         results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
-        self.assertEqual(len(results['attributes']['nosy']), 3)
         self.assertListEqual(results['attributes']['nosy'], ['1', '2', '3'])
+
 
         # patch with no new_val/data
         etag = calculate_etag(self.db.issue.getnode(issue_id),
@@ -3010,7 +3009,6 @@ class TestCase():
         results = self.server.get_element('issue', issue_id, self.terse_form)
         results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
-        self.assertEqual(len(results['attributes']['nosy']), 3)
         self.assertListEqual(results['attributes']['nosy'], ['1', '2', '3'])
 
         # patch invalid property
@@ -3057,7 +3055,6 @@ class TestCase():
         results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['attributes']['status'], '1')
-        self.assertEqual(len(results['attributes']['nosy']), 1)
         self.assertListEqual(results['attributes']['nosy'], ['1'])
 
         # replace userid 2 to the nosy list and status = 3
@@ -3077,7 +3074,6 @@ class TestCase():
         results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['attributes']['status'], '3')
-        self.assertEqual(len(results['attributes']['nosy']), 1)
         self.assertListEqual(results['attributes']['nosy'], ['2'])
 
         # replace status = 2 using status attribute
