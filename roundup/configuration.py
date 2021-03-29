@@ -746,6 +746,12 @@ SETTINGS = (
             "If no indexer is supplied, the first available indexer\n"
             "will be used in the following order:\n"
             "Possible values: xapian, whoosh, native (internal)."),
+        (Option, "indexer_language", "english",
+            "Used to determine what language should be used by the\n"
+            "indexer above. Currently only affects Xapian indexer. It\n"
+            "sets the language for the stemmer.\n"
+            "Possible values: must be a valid language for the indexer,\n"
+            "see indexer documentation for details."),
         (WordListOption, "indexer_stopwords", "",
             "Additional stop-words for the full-text indexer specific to\n"
             "your tracker. See the indexer source for the default list of\n"

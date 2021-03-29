@@ -6,6 +6,7 @@ import xapian
 
 from roundup.backends.indexer_common import Indexer as IndexerBase
 from roundup.anypy.strings import b2s, s2b
+from roundup.i18n import _
 
 # TODO: we need to delete documents when a property is *reindexed*
 
@@ -20,6 +21,18 @@ class Indexer(IndexerBase):
         self.db_path = db.config.DATABASE
         self.reindex = 0
         self.transaction_active = False
+
+        # self.language defined in IndexerBase.__init__
+        # validate it here
+        try:
+            xapian.Stem(self.language)
+        except xapian.InvalidArgumentError:
+            raise ValueError(
+                _("Invalid indexer_language %(lang)s for xapian indexer\n"
+                  "Valid languages: %(valid)s") % {
+                      "lang": self.language,
+                      "valid": b2s(xapian.Stem.get_available_languages()) }
+            )
 
     def _get_database(self):
         index = os.path.join(self.db_path, 'text-index')
@@ -80,8 +93,7 @@ class Indexer(IndexerBase):
             #database.begin_transaction()
             #self.transaction_active = True
 
-        # TODO: allow configuration of other languages
-        stemmer = xapian.Stem("english")
+        stemmer = xapian.Stem(self.language)
 
         # We use the identifier twice: once in the actual "text" being
         # indexed so we can search on it, and again as the "data" being
@@ -115,7 +127,7 @@ class Indexer(IndexerBase):
         database = self._get_database()
 
         enquire = xapian.Enquire(database)
-        stemmer = xapian.Stem("english")
+        stemmer = xapian.Stem(self.language)
         terms = []
         for term in [word.upper() for word in wordlist
                           if self.minlength <= len(word) <= self.maxlength]:
