@@ -1772,8 +1772,7 @@ class CoreConfig(Config):
     """Roundup instance configuration.
 
     Core config has a predefined layout (see the SETTINGS structure),
-    supports loading of old-style pythonic configurations and holds
-    three additional attributes:
+    two additional attributes:
         detectors:
             user-defined configuration for detectors
         ext:
@@ -1781,8 +1780,6 @@ class CoreConfig(Config):
 
     """
 
-    # module name for old style configuration
-    PYCONFIG = "config"
     # user configs
     ext = None
     detectors = None
