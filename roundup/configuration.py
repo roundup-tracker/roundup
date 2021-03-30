@@ -724,7 +724,7 @@ SETTINGS = (
             "visible to all users by adding, e.g., the 'User' role here."),
         (Option, "error_messages_to", "user",
             'Send error message emails to the "dispatcher", "user", '
-            'or "both" (these are the allowed values)?\n'
+            'or "both" (these are the three allowed values).\n'
             'The dispatcher is configured using the DISPATCHER_EMAIL'
             ' setting.'),
         (Option, "html_version", "html4",
