@@ -1881,13 +1881,8 @@ class CoreConfig(Config):
                     languages = textwrap.fill(_("Valid languages: ") +
                                               lang_avail, 75,
                                               subsequent_indent="   ")
-                    raise ValueError(
-                        _("Invalid indexer_language '%(lang)s' in config.ini for xapian indexer\n\n"
-                          "%(valid)s") % {
-                              "lang": lang,
-                              "valid": languages
-                          }
-                    )
+                    raise OptionValueError( options["INDEXER_LANGUAGE"],
+                                            lang, languages)
 
     def load(self, home_dir):
         """Load configuration from path designated by home_dir argument"""

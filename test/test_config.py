@@ -188,6 +188,10 @@ class ConfigTest(unittest.TestCase):
             config.save() # creates .bak file
             self.assertTrue(os.access("config.ini", os.F_OK))
             self.assertTrue(os.access("config.bak", os.F_OK))
+            config.save() # trigger delete of old .bak file
+            # FIXME: this should test to see if a new .bak
+            # was created. For now verify .bak still exists
+            self.assertTrue(os.access("config.bak", os.F_OK))
 
             self.assertFalse(os.access("foo.bar", os.F_OK))
             self.assertFalse(os.access("foo.bak", os.F_OK))
@@ -242,6 +246,59 @@ class ConfigTest(unittest.TestCase):
 
        self.assertAlmostEqual(config['WEB_LOGIN_ATTEMPTS_MIN'], 3.1415926,
                               places=6)
+
+       # test removal of .0 on floats that are integers
+       self.assertEqual(None,
+                config._get_option('WEB_LOGIN_ATTEMPTS_MIN').set("3.0"))
+
+       self.assertEqual("3", 
+            config._get_option('WEB_LOGIN_ATTEMPTS_MIN')._value2str(3.00))
+
+
+    def testOptionAsString(self):
+
+       config = configuration.CoreConfig()
+
+       config._get_option('WEB_LOGIN_ATTEMPTS_MIN').set("2552")
+
+       v = config._get_option('WEB_LOGIN_ATTEMPTS_MIN').__str__()
+       print(v)
+       self.assertIn("55", v)
+
+       v = config._get_option('WEB_LOGIN_ATTEMPTS_MIN').__repr__()
+       print(v)
+       self.assertIn("55", v)
+
+    def testBooleanOption(self):
+
+        config = configuration.CoreConfig()
+
+        with self.assertRaises(configuration.OptionValueError) as cm:
+            config._get_option('INSTANT_REGISTRATION').set("3")
+
+        # test multiple boolean representations
+        for b in [ "yes", "1", "true", "TRUE", "tRue", "on",
+                        "oN", 1, True ]:
+            self.assertEqual(None,
+                 config._get_option('INSTANT_REGISTRATION').set(b))
+            self.assertEqual(1,
+                 config._get_option('INSTANT_REGISTRATION').get())
+
+            for b in ["no", "0", "false", "FALSE", "fAlse", "off",
+                        "oFf", 0, False]:
+                self.assertEqual(None,
+                     config._get_option('INSTANT_REGISTRATION').set(b))
+            self.assertEqual(0,
+                 config._get_option('INSTANT_REGISTRATION').get())
+
+    def testOctalNumberOption(self):
+
+        config = configuration.CoreConfig()
+
+        with self.assertRaises(configuration.OptionValueError) as cm:
+            config._get_option('UMASK').set("xyzzy")
+
+        print(type(config._get_option('UMASK')))
 
 
 class TrackerConfig(unittest.TestCase):
@@ -309,8 +366,11 @@ class TrackerConfig(unittest.TestCase):
         self.munge_configini(mods=[ ("backend = ", None) ])
 
         # this should fail as backend isn't defined.
-        self.assertRaises(configuration.OptionUnsetError, instance.open,
-                          self.dirname)
+        with self.assertRaises(configuration.OptionUnsetError) as cm:
+            instance.open(self.dirname)
+
+        self.assertEqual("RDBMS_BACKEND is not set"
+                      " and has no default", cm.exception.__str__())
 
     def testInvalidIndexerLanguage_w_empty(self):
         """ make sure we have a reasonable error message if
@@ -323,19 +383,17 @@ class TrackerConfig(unittest.TestCase):
             ("indexer_language = ", "NO_LANG") ])
 
         config = configuration.CoreConfig()
-        
-        # Note this should raise OptionValueError, but
-        # the test fot this error occurs too late to have
-        # a valid option still available. So raise ValueError.
-        with self.assertRaises(ValueError) as cm:
+
+        with self.assertRaises(configuration.OptionValueError) as cm:
             config.load(self.dirname)
 
         print(cm.exception)
-        self.assertIn("ValueError", repr(cm.exception))
+        # test repr. The type is right since it passed assertRaises.
+        self.assertIn("OptionValueError", repr(cm.exception))
         # look for failing language
-        self.assertIn("NO_LANG", cm.exception.args[0])
+        self.assertIn("NO_LANG", cm.exception.args[1])
         # look for supported language
-        self.assertIn("english", cm.exception.args[0])
+        self.assertIn("english", cm.exception.args[2])
 
     def testInvalidIndexerLanguage_xapian_missing(self):
         """Using default path for indexers, make import of xapian
@@ -390,7 +448,7 @@ class TrackerConfig(unittest.TestCase):
         self.munge_configini(mods=[ ("indexer = ", "xapian"),
             ("indexer_language = ", "NO_LANG") ])
 
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(configuration.OptionValueError) as cm:
             config.load(self.dirname)
         # don't test exception content. Done in
         # testInvalidIndexerLanguage_w_empty
@@ -437,6 +495,27 @@ class TrackerConfig(unittest.TestCase):
         print(cm.exception)
         self.assertEqual(cm.exception.args[0], self.dirname)
 
+    def testCopyConfig(self):
+
+        self.munge_configini(mods=[ ("html_version = ", "xhtml") ])
+
+        config = configuration.CoreConfig()
+
+        # verify config is initalized to defaults
+        self.assertEqual(config['HTML_VERSION'], 'html4')
+
+        # load config
+        config.load(self.dirname)
+
+        # loaded new option
+        self.assertEqual(config['HTML_VERSION'], 'xhtml')
+
+        # copy config
+        config_copy = config.copy()
+
+        # this should work
+        self.assertEqual(config_copy['HTML_VERSION'], 'xhtml')
+
     def testInvalidIndexerValue(self):
         """ Mistype native indexer. Verify exception is
             generated.
@@ -453,5 +532,12 @@ class TrackerConfig(unittest.TestCase):
         # look for failing value
         self.assertEqual("nati", cm.exception.args[1])
         # look for supported values
-        self.assertIn("whoosh", cm.exception.args[2])
+        self.assertIn("'whoosh'", cm.exception.args[2])
+
+        # verify that args show up in string representaton
+        string_rep = cm.exception.__str__()
+        print(string_rep)
+        self.assertIn("nati", string_rep)
+        self.assertIn("'whoosh'", string_rep)
+
 
