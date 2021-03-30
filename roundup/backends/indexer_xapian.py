@@ -22,18 +22,6 @@ class Indexer(IndexerBase):
         self.reindex = 0
         self.transaction_active = False
 
-        # self.language defined in IndexerBase.__init__
-        # validate it here
-        try:
-            xapian.Stem(self.language)
-        except xapian.InvalidArgumentError:
-            raise ValueError(
-                _("Invalid indexer_language %(lang)s for xapian indexer\n"
-                  "Valid languages: %(valid)s") % {
-                      "lang": self.language,
-                      "valid": b2s(xapian.Stem.get_available_languages()) }
-            )
-
     def _get_database(self):
         index = os.path.join(self.db_path, 'text-index')
         for n in range(10):

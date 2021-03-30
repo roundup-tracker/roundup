@@ -20,6 +20,7 @@ import roundup.date
 from roundup.anypy.strings import b2s
 import roundup.anypy.random_ as random_
 import binascii
+from roundup.i18n import _
 
 from roundup.backends import list_backends
 
@@ -1844,12 +1845,49 @@ class CoreConfig(Config):
         logger.handlers = [hdlr]
         logger.setLevel(self["LOGGING_LEVEL"] or "ERROR")
 
+    def validator(self, options):
+        """ Validate options once all options are loaded.
+
+            Used to validate settings when options are dependent
+            on each other. E.G. indexer_language can only be
+            validated if xapian indexer is used.
+        """
+        if options['INDEXER']._value in ("", "xapian"):
+            try:
+                import xapian
+            except ImportError:
+                # indexer is probably '' and xapian isn't present
+                # so just return at end of method
+                pass
+            else:
+                try:
+                    lang = options["INDEXER_LANGUAGE"]._value
+                    xapian.Stem(lang)
+                except xapian.InvalidArgumentError:
+                    import textwrap
+                    lang_avail = b2s(xapian.Stem.get_available_languages())
+                    languages = textwrap.fill(_("Valid languages: ") +
+                                              lang_avail, 75,
+                                              subsequent_indent="   ")
+                    raise ValueError(
+                        _("Invalid indexer_language '%(lang)s' in config.ini for xapian indexer\n\n"
+                          "%(valid)s") % {
+                              "lang": lang,
+                              "valid": languages
+                          }
+                    )
+
     def load(self, home_dir):
         """Load configuration from path designated by home_dir argument"""
         if os.path.isfile(os.path.join(home_dir, self.INI_FILE)):
             self.load_ini(home_dir)
         else:
             raise NoConfigError(home_dir)
+
+        # validator does inter-setting validation checks.
+        # when there are dependencies between options.
+        self.validator(self.options)
+
         self.init_logging()
         self.ext = UserConfig(os.path.join(home_dir, "extensions"))
         self.detectors = UserConfig(os.path.join(home_dir, "detectors"))

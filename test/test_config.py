@@ -284,3 +284,53 @@ class TrackerConfig(unittest.TestCase):
                           self.dirname)
 
 
+    def testInvalidIndexer_language(self):
+        """ make sure we have a reasonable error message if
+            invalid language is specified """
+
+        # change the indexer_language value to an invalid value.
+        import fileinput
+        for line in fileinput.input(os.path.join(self.dirname, "config.ini"),
+                                    inplace=True):
+          if line.startswith("indexer_language = "):
+              print("indexer_language = NO_LANG")
+              continue
+          print(line[:-1]) # remove trailing \n
+
+        config = configuration.CoreConfig()
+        
+        # Note this should raise OptionValueError, but
+        # the test fot this error occurs too late to have
+        # a valid option still available. So raise ValueError.
+        with self.assertRaises(ValueError) as cm:
+            config.load(self.dirname)
+
+        print(cm.exception)
+        self.assertIn("ValueError", repr(cm.exception))
+        # look for failing language
+        self.assertIn("NO_LANG", cm.exception.args[0])
+        # look for supported language
+        self.assertIn("english", cm.exception.args[0])
+
+    def testLoadConfig(self):
+        """ run load to validate config """
+
+        config = configuration.CoreConfig()
+        
+        config.load(self.dirname)
+
+        with self.assertRaises(configuration.InvalidOptionError) as cm:
+            c = config['indexer_language']
+        print(cm.exception)
+        self.assertIn("indexer_language", repr(cm.exception))
+
+        self.assertEqual(config['HTML_VERSION'], 'html4')
+        self.assertEqual(config[('main', 'html_version')], 'html4')
+
+        self.assertEqual(config['WEB_COOKIE_TAKES_PRECEDENCE'], 0)
+        self.assertEqual(config[('web','cookie_takes_precedence')], 0)
+        
+
+
+
+

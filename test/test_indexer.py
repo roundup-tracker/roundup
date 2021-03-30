@@ -195,26 +195,6 @@ class XapianIndexerTest(IndexerTest):
         self.dex = Indexer(db)
     def tearDown(self):
         shutil.rmtree('test-index')
-    def test_invalid_language(self):
-        """ make sure we have a reasonable error message if
-            invalid language is specified """
-        l = db.config[('main', 'indexer_language')]
-        db.config[('main', 'indexer_language')] = "NO_LANG"
-        from roundup.backends.indexer_xapian import Indexer
-        with self.assertRaises(ValueError) as cm:
-            Indexer(db)
-        # note if Indexer(db) doesn't return ValueError
-        # all Xapian tests after this point will fail.
-        # because a valid langage will not be set.
-        # reset the valid language.
-        db.config[('main', 'indexer_language')] =  l
-
-        print(cm)
-        self.assertIn("ValueError", repr(cm.exception))
-        # look for failing language
-        self.assertIn("NO_LANG", cm.exception.args[0])
-        # look for supported language
-        self.assertIn("english", cm.exception.args[0])
 
 class RDBMSIndexerTest(object):
     def setUp(self):
