@@ -11,3 +11,4 @@ ignore:
    - "roundup/cgi/apache.py"  # mod_python is deprecated
    - "roundup/install_util.py" # another build utlity
    - "roundup/dist"           # more build utils
+   - "roundup/test"           # code used for testing
