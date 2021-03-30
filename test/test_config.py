@@ -420,6 +420,23 @@ class TrackerConfig(unittest.TestCase):
         self.assertEqual(config[('web','cookie_takes_precedence')], 0)
 
 
+    def testLoadConfigNoConfig(self):
+        """ run load on a directory missing config.ini """
+
+        c = os.path.join(self.dirname, configuration.Config.INI_FILE)
+        if os.path.exists(c):
+            os.remove(c)
+        else:
+            self.assertFalse("setup failed missing config.ini")
+
+        config = configuration.CoreConfig()
+        
+        with self.assertRaises(configuration.NoConfigError) as cm:
+            config.load(self.dirname)
+
+        print(cm.exception)
+        self.assertEqual(cm.exception.args[0], self.dirname)
+
     def testInvalidIndexerValue(self):
         """ Mistype native indexer. Verify exception is
             generated.
