@@ -3,7 +3,7 @@ import unittest, os, shutil, time
 from roundup import hyperdb
 
 from .db_test_base import DBTest, ROTest, SchemaTest, config, setupSchema
-from . import memorydb
+from roundup.test import memorydb
 
 class memorydbOpener:
     module = memorydb

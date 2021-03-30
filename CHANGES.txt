@@ -101,6 +101,8 @@ Features:
 - issue2551117 - Add example systemd config
 - Allow admin to configure language used for stemming in xapian
   indexer. (John Rouillard request by Nagy Gabor)
+- Move memorydb from test to roundup/test to allow regression-testing in
+  tracker instances without copying code.
 
 
 2020-07-13 2.0.0
