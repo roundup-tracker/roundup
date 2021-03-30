@@ -102,8 +102,11 @@ Features:
 - Allow admin to configure language used for stemming in xapian
   indexer. (John Rouillard request by Nagy Gabor)
 - Move memorydb from test to roundup/test to allow regression-testing in
-  tracker instances without copying code.
-
+  tracker instances without copying code. Also move the test-detectors in
+  tx_Source_detector.py to roundup/test for two reasons: It's used in the
+  memorydb convenience functions and it may be useful in other tests. Make
+  the prefix a paramter of the convenience functions to be usable in other
+  tests.
 
 2020-07-13 2.0.0
 

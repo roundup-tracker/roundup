@@ -15,6 +15,7 @@ from roundup.xmlrpc import RoundupInstance, RoundupDispatcher
 from roundup.backends import list_backends
 from roundup.hyperdb import String
 from roundup.cgi import TranslationService
+from roundup.test.tx_Source_detector import init as tx_Source_init
 
 from . import db_test_base
 from .test_mysql import skip_mysql
@@ -51,13 +52,7 @@ class XmlrpcTest(object):
 
         self.db.post_init()
 
-        thisdir = os.path.dirname(__file__)
-        vars = {}
-        exec(compile(open(os.path.join(thisdir,
-                                       "tx_Source_detector.py")).read(),
-                     os.path.join(thisdir, "tx_Source_detector.py"), 'exec'),
-             vars)
-        vars['init'](self.db)
+        tx_Source_init(self.db)
 
         self.server = RoundupInstance(self.db, self.instance.actions, None)
 

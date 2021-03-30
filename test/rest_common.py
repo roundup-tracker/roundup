@@ -7,6 +7,7 @@ import cgi
 
 from time import sleep
 from datetime import datetime, timedelta
+from roundup.test.tx_Source_detector import init as tx_Source_init
 
 try:
     from datetime import timezone
@@ -230,12 +231,7 @@ class TestCase():
 
         self.db.post_init()
 
-        thisdir = os.path.dirname(__file__)
-        vars = {}
-        with open(os.path.join(thisdir, "tx_Source_detector.py")) as f:
-            code = compile(f.read(), "tx_Source_detector.py", "exec")
-            exec(code, vars)
-        vars['init'](self.db)
+        tx_Source_init(self.db)
 
         env = {
             'PATH_INFO': 'http://localhost/rounduptest/rest/',

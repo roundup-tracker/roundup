@@ -21,6 +21,7 @@ from roundup.cgi.templating import HTMLProperty, _HTMLItem, anti_csrf_nonce
 from roundup.cgi.form_parser import FormParser
 from roundup import init, instance, password, hyperdb, date
 from roundup.anypy.strings import u2s, b2s, s2b
+from roundup.test.tx_Source_detector import init as tx_Source_init
 
 from time import sleep
 
@@ -83,13 +84,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
     def setUp(self):
         FormTestParent.setUp(self)
 
-        vars = {}
-        thisdir = os.path.dirname(__file__)
-        exec(compile(open(os.path.join(thisdir,
-                                       "tx_Source_detector.py")).read(),
-                     os.path.join(thisdir, "tx_Source_detector.py"), 'exec'),
-             vars)
-        vars['init'](self.db)
+        tx_Source_init(self.db)
 
         test = self.instance.backend.Class(self.db, "test",
             string=hyperdb.String(), number=hyperdb.Number(),

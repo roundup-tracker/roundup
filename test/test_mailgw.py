@@ -41,7 +41,7 @@ from roundup.mailgw import MailGW, Unauthorized, uidFromAddress, \
 from roundup import init, instance, password, __version__
 
 #import db_test_base
-from . import memorydb
+from roundup.test import memorydb
 from .cmp_helper import StringFragmentCmpHelper
 
 def expectedFailure(method):
