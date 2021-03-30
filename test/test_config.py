@@ -381,7 +381,7 @@ class TrackerConfig(unittest.TestCase):
         self.assertEqual(config['INDEXER_LANGUAGE'], 'NO_LANG')
 
     def testInvalidIndexerLanguage_w_xapian(self):
-        """ Use explicit xapian indexer. VAerify exception is
+        """ Use explicit xapian indexer. Verify exception is
             generated.
         """
 
@@ -418,3 +418,23 @@ class TrackerConfig(unittest.TestCase):
         # uppercase name passes as does tuple index for setting in web
         self.assertEqual(config['WEB_COOKIE_TAKES_PRECEDENCE'], 0)
         self.assertEqual(config[('web','cookie_takes_precedence')], 0)
+
+
+    def testInvalidIndexerValue(self):
+        """ Mistype native indexer. Verify exception is
+            generated.
+        """
+
+        print("Testing indexer nati")
+
+        self.munge_configini(mods=[ ("indexer = ", "nati") ])
+
+        with self.assertRaises(configuration.OptionValueError) as cm:
+            config.load(self.dirname)
+
+        self.assertIn("OptionValueError", repr(cm.exception))
+        # look for failing value
+        self.assertEqual("nati", cm.exception.args[1])
+        # look for supported values
+        self.assertIn("whoosh", cm.exception.args[2])
+

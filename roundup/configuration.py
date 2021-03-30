@@ -408,6 +408,18 @@ class IsolationOption(Option):
             return _val
         raise OptionValueError(self, value, self.class_description)
 
+class IndexerOption(Option):
+    """Valid options for indexer"""
+
+    allowed = ['', 'xapian', 'whoosh', 'native']
+    class_description = "Allowed values: %s" % ', '.join("'%s'" % a
+                                                         for a in allowed)
+
+    def str2value(self, value):
+        _val = value.lower()
+        if _val in self.allowed:
+            return _val
+        raise OptionValueError(self, value, self.class_description)
 
 class MailAddressOption(Option):
 
@@ -742,7 +754,7 @@ SETTINGS = (
             "email?"),
         (BooleanOption, "email_registration_confirmation", "yes",
             "Offer registration confirmation by email or only through the web?"),
-        (Option, "indexer", "",
+        (IndexerOption, "indexer", "",
             "Force Roundup to use a particular text indexer.\n"
             "If no indexer is supplied, the first available indexer\n"
             "will be used in the following order:\n"
