@@ -17,6 +17,7 @@
 
 import unittest
 import logging
+import fileinput
 
 import os, shutil, errno
 
@@ -244,9 +245,6 @@ class ConfigTest(unittest.TestCase):
 
 
 class TrackerConfig(unittest.TestCase):
-    """ Arguably this should be tested in test_instance since it is triggered
-        by instance.open. But it raises an error in the configuration module
-        with a missing required param in config.ini."""
 
     backend = 'anydbm'
 
@@ -269,33 +267,60 @@ class TrackerConfig(unittest.TestCase):
         except OSError as error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
 
+    def munge_configini(self, mods = None):
+        """ modify config.ini to meet testing requirements
 
-    def testNoDBInConfig(self):
-        # comment out the backend key in config.ini
-        import fileinput
+            mods is a list of tuples:
+               [ ( "a = ", "b" ), ("c = ", None) ]
+            Match line with first tuple element e.g. "a = ". Note specify
+            trailing "=" and space to delimit keyword and properly format
+            replacement line. If first tuple element matches, the line is
+            replaced with the concatenation of the first and second elements.
+            If second element is None ("" doesn't work), the line will be
+            deleted.
+
+            Note the key/first element of tuple must be unique in config.ini.
+            It is possible to have duplicates in different sections. This
+            method doesn't handle that. TBD option third element of tuple
+            defining section if needed.
+        """
+
+        if mods is None:
+            return
+
         for line in fileinput.input(os.path.join(self.dirname, "config.ini"),
                                     inplace=True):
-          if line.startswith("backend = "):
-            continue
-          print(line)
+            for match, value in mods:
+                if line.startswith(match):
+                    if value is not None:
+                        print(match + value)
+                    break
+            else:
+                print(line[:-1]) # remove trailing \n
+
+    def testNoDBInConfig(self):
+        """Arguably this should be tested in test_instance since it is
+           triggered by instance.open. But it raises an error in the
+           configuration module with a missing required param in
+           config.ini.
+        """
+
+        # remove the backend key in config.ini
+        self.munge_configini(mods=[ ("backend = ", None) ])
 
         # this should fail as backend isn't defined.
         self.assertRaises(configuration.OptionUnsetError, instance.open,
                           self.dirname)
 
-
-    def testInvalidIndexer_language(self):
+    def testInvalidIndexerLanguage_w_empty(self):
         """ make sure we have a reasonable error message if
-            invalid language is specified """
+            invalid indexer language is specified. This uses
+            default search path for indexers.
+        """
 
-        # change the indexer_language value to an invalid value.
-        import fileinput
-        for line in fileinput.input(os.path.join(self.dirname, "config.ini"),
-                                    inplace=True):
-          if line.startswith("indexer_language = "):
-              print("indexer_language = NO_LANG")
-              continue
-          print(line[:-1]) # remove trailing \n
+        # SETUP: set indexer_language value to an invalid value.
+        self.munge_configini(mods=[ ("indexer = ", ""),
+            ("indexer_language = ", "NO_LANG") ])
 
         config = configuration.CoreConfig()
         
@@ -312,6 +337,66 @@ class TrackerConfig(unittest.TestCase):
         # look for supported language
         self.assertIn("english", cm.exception.args[0])
 
+    def testInvalidIndexerLanguage_xapian_missing(self):
+        """Using default path for indexers, make import of xapian
+           fail and prevent exception from happening even though
+           the indexer_language would be invalid for xapian.
+        """
+
+        print("Testing xapian not loadable")
+
+        # SETUP: same as testInvalidIndexerLanguage_w_empty
+        self.munge_configini(mods=[ ("indexer = ", ""),
+            ("indexer_language = ", "NO_LANG") ])
+
+        import sys
+        # Set module to Non to prevent xapian from loading
+        sys.modules['xapian'] = None
+        config.load(self.dirname)
+
+        # need to delete both to make python2 not error finding _xapian
+        del(sys.modules['xapian'])
+        del(sys.modules['xapian._xapian'])
+
+        self.assertEqual(config['INDEXER_LANGUAGE'], 'NO_LANG')
+
+        # do a reset here to test reset rather than wasting cycles
+        # to do setup in a different test
+        config.reset()
+        self.assertEqual(config['INDEXER_LANGUAGE'], 'english')
+
+    def testInvalidIndexerLanguage_w_native(self):
+        """indexer_language is invalid but indexer is not "" or xapian
+           Config load should succeed without exception.
+        """
+
+        print("Testing indexer = native")
+
+        self.munge_configini(mods = [ ("indexer = ", "native"),
+            ("indexer_language = ", "NO_LANG") ])
+
+        config.load(self.dirname)
+
+        self.assertEqual(config['HTML_VERSION'], 'html4')
+        self.assertEqual(config['INDEXER_LANGUAGE'], 'NO_LANG')
+
+    def testInvalidIndexerLanguage_w_xapian(self):
+        """ Use explicit xapian indexer. VAerify exception is
+            generated.
+        """
+
+        print("Testing explicit xapian")
+
+        self.munge_configini(mods=[ ("indexer = ", "xapian"),
+            ("indexer_language = ", "NO_LANG") ])
+
+        with self.assertRaises(ValueError) as cm:
+            config.load(self.dirname)
+        # don't test exception content. Done in
+        # testInvalidIndexerLanguage_w_empty
+        # if exception not generated assertRaises
+        # will generate failure.
+
     def testLoadConfig(self):
         """ run load to validate config """
 
@@ -319,18 +404,17 @@ class TrackerConfig(unittest.TestCase):
         
         config.load(self.dirname)
 
+        # test various ways of accessing config data
         with self.assertRaises(configuration.InvalidOptionError) as cm:
+            # using lower case name fails
             c = config['indexer_language']
         print(cm.exception)
         self.assertIn("indexer_language", repr(cm.exception))
 
+        # uppercase name passes as does tuple index for setting in main
         self.assertEqual(config['HTML_VERSION'], 'html4')
         self.assertEqual(config[('main', 'html_version')], 'html4')
 
+        # uppercase name passes as does tuple index for setting in web
         self.assertEqual(config['WEB_COOKIE_TAKES_PRECEDENCE'], 0)
         self.assertEqual(config[('web','cookie_takes_precedence')], 0)
-        
-
-
-
-
