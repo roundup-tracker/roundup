@@ -45,7 +45,7 @@ from roundup.anypy.strings import b2s, s2b, u2s
 from roundup.anypy.cmp_ import NoneAndDictComparable
 from roundup.anypy.email_ import message_from_bytes
 
-from .mocknull import MockNull
+from roundup.test.mocknull import MockNull
 
 config = configuration.CoreConfig()
 config.DATABASE = "db"
@@ -1379,15 +1379,13 @@ class DBTest(commonDBTest):
             self.assertEqual(result [4][4], jp3)
         self.db.close()
         # Verify that normal user doesn't see obsolete props/classes
-        # Backend memorydb cannot re-open db for different user
-        if self.db.dbtype != 'memorydb':
-            self.open_database('mary')
-            setupSchema(self.db, 0, self.module)
-            # allow mary to see issue fields like title
-            self.db.security.addPermissionToRole('User', 'View', 'issue')
-            result=self.db.issue.history(id)
-            self.assertEqual(len(result), 2)
-            self.assertEqual(result [1][4], jp0)
+        self.open_database('mary')
+        setupSchema(self.db, 0, self.module)
+        # allow mary to see issue fields like title
+        self.db.security.addPermissionToRole('User', 'View', 'issue')
+        result=self.db.issue.history(id)
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result [1][4], jp0)
 
     def testJournalPreCommit(self):
         id = self.db.user.create(username="mary")

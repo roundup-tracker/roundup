@@ -13,7 +13,7 @@ from roundup.anypy.cmp_ import NoneAndDictComparable
 from time import sleep
 from datetime import datetime
 
-from .mocknull import MockNull
+from roundup.test.mocknull import MockNull
 
 def true(*args, **kwargs):
     return 1
