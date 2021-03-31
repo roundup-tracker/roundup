@@ -27,12 +27,17 @@ from roundup import configuration
 try:
     import xapian
     skip_xapian = lambda func, *args, **kwargs: func
+    from .pytest_patcher import mark_class
+    include_no_xapian = mark_class(pytest.mark.skip(
+        "Skipping missing Xapian indexer tests: 'xapian' is installed"))
 except ImportError:
     # FIX: workaround for a bug in pytest.mark.skip():
     #   https://github.com/pytest-dev/pytest/issues/568
     from .pytest_patcher import mark_class
     skip_xapian = mark_class(pytest.mark.skip(
         "Skipping Xapian indexer tests: 'xapian' not installed"))
+    include_no_xapian = lambda func, *args, **kwargs: func
+    
 
 config = configuration.CoreConfig()
 config.DATABASE = "db"
@@ -405,6 +410,25 @@ class TrackerConfig(unittest.TestCase):
         self.assertIn("NO_LANG", cm.exception.args[1])
         # look for supported language
         self.assertIn("english", cm.exception.args[2])
+
+    @include_no_xapian
+    def testInvalidIndexerLanguage_w_empty_no_xapian(self):
+        """ Test case for empty indexer if xapian really isn't installed
+
+            This should behave like testInvalidIndexerLanguage_xapian_missing
+            but without all the sys.modules mangling.
+        """
+        print("Testing when xapian is not installed")
+
+        # SETUP: set indexer_language value to an invalid value.
+        self.munge_configini(mods=[ ("indexer = ", ""),
+            ("indexer_language = ", "NO_LANG") ])
+
+        config = configuration.CoreConfig()
+
+        config.load(self.dirname)
+
+        self.assertEqual(config['INDEXER_LANGUAGE'], 'NO_LANG')
 
     def testInvalidIndexerLanguage_xapian_missing(self):
         """Using default path for indexers, make import of xapian
