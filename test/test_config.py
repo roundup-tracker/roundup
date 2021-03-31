@@ -24,6 +24,16 @@ import os, shutil, errno
 import pytest
 from roundup import configuration
 
+try:
+    import xapian
+    skip_xapian = lambda func, *args, **kwargs: func
+except ImportError:
+    # FIX: workaround for a bug in pytest.mark.skip():
+    #   https://github.com/pytest-dev/pytest/issues/568
+    from .pytest_patcher import mark_class
+    skip_xapian = mark_class(pytest.mark.skip(
+        "Skipping Xapian indexer tests: 'xapian' not installed"))
+
 config = configuration.CoreConfig()
 config.DATABASE = "db"
 config.RDBMS_NAME = "rounduptest"
@@ -372,6 +382,7 @@ class TrackerConfig(unittest.TestCase):
         self.assertEqual("RDBMS_BACKEND is not set"
                       " and has no default", cm.exception.__str__())
 
+    @skip_xapian
     def testInvalidIndexerLanguage_w_empty(self):
         """ make sure we have a reasonable error message if
             invalid indexer language is specified. This uses
@@ -414,7 +425,8 @@ class TrackerConfig(unittest.TestCase):
 
         # need to delete both to make python2 not error finding _xapian
         del(sys.modules['xapian'])
-        del(sys.modules['xapian._xapian'])
+        if xapian._xapian in sys.modules:
+            del(sys.modules['xapian._xapian'])
 
         self.assertEqual(config['INDEXER_LANGUAGE'], 'NO_LANG')
 
@@ -438,6 +450,7 @@ class TrackerConfig(unittest.TestCase):
         self.assertEqual(config['HTML_VERSION'], 'html4')
         self.assertEqual(config['INDEXER_LANGUAGE'], 'NO_LANG')
 
+    @skip_xapian
     def testInvalidIndexerLanguage_w_xapian(self):
         """ Use explicit xapian indexer. Verify exception is
             generated.
