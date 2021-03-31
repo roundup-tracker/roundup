@@ -3,7 +3,7 @@ Code
 
 Project history is maintained in `CHANGES.txt <https://sourceforge.net/p/roundup/code/ci/tip/tree/CHANGES.txt>`_
 file in code repository of Roundup, which can also be viewed online
-through SourceForge `web interface <https://sourceforge.net/p/roundup/code/>`_.
+through SourceForge `web interface <https://sourceforge.net/p/roundup/code/ci/default/tree/>`_.
 
 Get sources
 -----------

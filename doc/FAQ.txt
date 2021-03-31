@@ -126,10 +126,13 @@ This is based upon the template markup language in Zope called, oddly
 enough, "Zope Page Templates". There's documentation in the Roundup
 customisation_ documentation. For more information have a look at:
 
-   http://docs.zope.org/zope2/zope2book/
+   https://zope.readthedocs.io/en/latest/zopebook/ZPT.html
 
-specifically chapter 10 "Using Zope Page Templates" and chapter 14 "Advanced
-Page Templates".
+specifically the chapter (10) on "Using Zope Page Templates" and the
+chapter (13) on "Advanced Page Templates". (Note the link above is for
+a newer version of Zope, so some of the info may not apply to version
+2 of Zope which is used in roundup. The version 2 docs appear to not
+be available anymore.)
 
 
 But I just want a select/option list for ....

@@ -197,6 +197,12 @@ latex_documents = [
 #latex_use_modindex = True
 
 
-linkcheck_ignore = [r'https?://.*localhost:\d+/',
-                    r'http://www.zope.com/Marks'  # reference in license 
-                   ]
+linkcheck_ignore = [
+    r'https?://.*localhost:\d+/',
+    r'http://www.zope.com/Marks',        # reference in license
+    r'http://www.ekit.com/',             # reference in license
+    r'http://www.bizarsoftware.com.au/', # reference in license,
+    r'http://11.11.11.101',              # dummy example url
+    r'https://.../rest/.*',              # dummy example url
+    r'http://myroundup.com/roundup.*',   # dummy example url
+]

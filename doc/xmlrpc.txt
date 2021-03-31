@@ -68,7 +68,7 @@ security consideration
 ----------------------
 Both the standalone and embedded roundup XML endpoints used the
 default python XML parser. This parser is know to have security
-issues. For details see: https://pypi.python.org/pypi/defusedxml/.
+issues. For details see: https://pypi.org/project/defusedxml/.
 You may wish to use the rest interface which doesn't have the same
 issues. Patches with tests to roundup to use defusedxml are welcome.
 
