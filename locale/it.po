@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: roundup cvs\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2020-12-20 22:53-0500\n"
+"POT-Creation-Date: 2021-03-30 20:49-0400\n"
 "PO-Revision-Date: 2013-10-31 12:20+0100\n"
 "Last-Translator: Marco Ghidinelli <marco.ghidinelli@ing.unibs.it>\n"
 "Language-Team: italian <it@li.org>\n"
@@ -923,21 +923,21 @@ msgstr ""
 
 #: ../roundup/backends/back_anydbm.py:907
 #: ../roundup/backends/back_anydbm.py:920
-#: ../roundup/backends/back_anydbm.py:1191
-#: ../roundup/backends/back_anydbm.py:1226
-#: ../roundup/backends/back_anydbm.py:1452
-#: ../roundup/backends/back_anydbm.py:1470
-#: ../roundup/backends/back_anydbm.py:1516
-#: ../roundup/backends/back_anydbm.py:2138
+#: ../roundup/backends/back_anydbm.py:1193
+#: ../roundup/backends/back_anydbm.py:1228
+#: ../roundup/backends/back_anydbm.py:1454
+#: ../roundup/backends/back_anydbm.py:1472
+#: ../roundup/backends/back_anydbm.py:1518
+#: ../roundup/backends/back_anydbm.py:2140
 #: ../roundup/backends/back_anydbm.py:907:920
-#: ../roundup/backends/rdbms_common.py:1600
-#: ../roundup/backends/rdbms_common.py:1847
-#: ../roundup/backends/rdbms_common.py:2082
-#: ../roundup/backends/rdbms_common.py:2102
-#: ../roundup/backends/rdbms_common.py:2155
-#: ../roundup/backends/rdbms_common.py:3025
-#: ../roundup/backends/rdbms_common.py:1600:1847 :1191:1226 :1452:1470:1516
-#: :2082:2102:2138 :2155:3025
+#: ../roundup/backends/rdbms_common.py:1608
+#: ../roundup/backends/rdbms_common.py:1855
+#: ../roundup/backends/rdbms_common.py:2090
+#: ../roundup/backends/rdbms_common.py:2110
+#: ../roundup/backends/rdbms_common.py:2163
+#: ../roundup/backends/rdbms_common.py:3042
+#: ../roundup/backends/rdbms_common.py:1608:1855 :1193:1228 :1454:1472:1518
+#: :2090:2110:2140 :2163:3042
 msgid "Database open read-only"
 msgstr ""
 
@@ -956,27 +956,27 @@ msgstr ""
 msgid "DROP operation disallowed: \"%s\"."
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:1743
+#: ../roundup/backends/rdbms_common.py:1751
 msgid "create"
 msgstr "crea"
 
-#: ../roundup/backends/rdbms_common.py:1917
+#: ../roundup/backends/rdbms_common.py:1925
 msgid "unlink"
 msgstr "collega"
 
-#: ../roundup/backends/rdbms_common.py:1921
+#: ../roundup/backends/rdbms_common.py:1929
 msgid "link"
 msgstr "scollega"
 
-#: ../roundup/backends/rdbms_common.py:2063
+#: ../roundup/backends/rdbms_common.py:2071
 msgid "set"
 msgstr "assegna"
 
-#: ../roundup/backends/rdbms_common.py:2092
+#: ../roundup/backends/rdbms_common.py:2100
 msgid "retired"
 msgstr "ritira"
 
-#: ../roundup/backends/rdbms_common.py:2122
+#: ../roundup/backends/rdbms_common.py:2130
 msgid "restored"
 msgstr "ripristina"
 
@@ -1138,8 +1138,9 @@ msgid ""
 "Edit Error: someone else has edited this %(klass)s (%(props)s). View <a "
 "target=\"_blank\" href=\"%(klass)s%(id)s\">their changes</a> in a new window."
 msgstr ""
-"Errore di Modifica: qualcun'altro ha modificato questo %(klass)s (%(props)s). Visualizza "
-"<a target=\"new\" href=\"%(klass)s%(id)s\">le sue modifiche</a> in una nuova finestra."
+"Errore di Modifica: qualcun'altro ha modificato questo %(klass)s "
+"(%(props)s). Visualizza <a target=\"new\" href=\"%(klass)s%(id)s\">le sue "
+"modifiche</a> in una nuova finestra."
 
 #: ../roundup/cgi/actions.py:846
 #, python-format
@@ -1569,18 +1570,18 @@ msgstr "Crea Nuovo"
 # ../roundup/cgi/templating.py:728:862 :1269:1298 :1318:1364 :1387:1423
 # :1460:1513 :1530:1614 :1634:1652 :1684:1694 :1746:1935
 #: ../roundup/cgi/templating.py:964 ../roundup/cgi/templating.py:1132
-#: ../roundup/cgi/templating.py:1715 ../roundup/cgi/templating.py:1744
-#: ../roundup/cgi/templating.py:1764 ../roundup/cgi/templating.py:1777
-#: ../roundup/cgi/templating.py:1814 ../roundup/cgi/templating.py:1867
-#: ../roundup/cgi/templating.py:1890 ../roundup/cgi/templating.py:1897
-#: ../roundup/cgi/templating.py:1933 ../roundup/cgi/templating.py:1970
-#: ../roundup/cgi/templating.py:2003 ../roundup/cgi/templating.py:2092
-#: ../roundup/cgi/templating.py:2113 ../roundup/cgi/templating.py:2203
-#: ../roundup/cgi/templating.py:2223 ../roundup/cgi/templating.py:2241
-#: ../roundup/cgi/templating.py:2280 ../roundup/cgi/templating.py:2290
-#: ../roundup/cgi/templating.py:2354 ../roundup/cgi/templating.py:2601
-#: ../roundup/cgi/templating.py:964:1132 :1715:1744 :1764:1777 :1814:1867
-#: :1890:1897 :1933:1970 :2003:2092 :2113:2203 :2223:2241 :2280:2290 :2354:2601
+#: ../roundup/cgi/templating.py:1732 ../roundup/cgi/templating.py:1761
+#: ../roundup/cgi/templating.py:1781 ../roundup/cgi/templating.py:1794
+#: ../roundup/cgi/templating.py:1831 ../roundup/cgi/templating.py:1884
+#: ../roundup/cgi/templating.py:1907 ../roundup/cgi/templating.py:1914
+#: ../roundup/cgi/templating.py:1950 ../roundup/cgi/templating.py:1987
+#: ../roundup/cgi/templating.py:2020 ../roundup/cgi/templating.py:2109
+#: ../roundup/cgi/templating.py:2130 ../roundup/cgi/templating.py:2220
+#: ../roundup/cgi/templating.py:2240 ../roundup/cgi/templating.py:2258
+#: ../roundup/cgi/templating.py:2297 ../roundup/cgi/templating.py:2307
+#: ../roundup/cgi/templating.py:2371 ../roundup/cgi/templating.py:2618
+#: ../roundup/cgi/templating.py:964:1132 :1732:1761 :1781:1794 :1831:1884
+#: :1907:1914 :1950:1987 :2020:2109 :2130:2220 :2240:2258 :2297:2307 :2371:2618
 msgid "[hidden]"
 msgstr "[nascosto]"
 
@@ -1657,19 +1658,19 @@ msgstr "Copia di %(class)s %(id)s"
 
 # ../roundup/cgi/templating.py:1491 ../roundup/cgi/templating.py:1039:1464
 # :1485:1491
-#: ../roundup/cgi/templating.py:2007 ../roundup/cgi/templating.py:2040
-#: ../roundup/cgi/templating.py:1312:2007:2040
+#: ../roundup/cgi/templating.py:2024 ../roundup/cgi/templating.py:2057
+#: ../roundup/cgi/templating.py:1312:2024:2057
 msgid "No"
 msgstr "No"
 
 # ../roundup/cgi/templating.py:1488 ../roundup/cgi/templating.py:1039:1464
 # :1483:1488
-#: ../roundup/cgi/templating.py:2007 ../roundup/cgi/templating.py:2035
-#: ../roundup/cgi/templating.py:1312:2007:2035
+#: ../roundup/cgi/templating.py:2024 ../roundup/cgi/templating.py:2052
+#: ../roundup/cgi/templating.py:1312:2024:2052
 msgid "Yes"
 msgstr "Sì"
 
-#: ../roundup/cgi/templating.py:2161
+#: ../roundup/cgi/templating.py:2178
 msgid ""
 "default value for DateHTMLProperty must be either DateHTMLProperty or string "
 "date representation."
@@ -1677,17 +1678,17 @@ msgstr ""
 "Il valore predefinito per DateHTMLProperty deve essere  DateHTMLProperty "
 "oppure una stringa rappresentante una data."
 
-#: ../roundup/cgi/templating.py:2334
+#: ../roundup/cgi/templating.py:2351
 #, python-format
 msgid "Attempt to look up %(attr)s on a missing value"
 msgstr "Tentativo di visualizzare %(attr)s con un valore mancante"
 
-#: ../roundup/cgi/templating.py:2345
+#: ../roundup/cgi/templating.py:2362
 #, fuzzy, python-format
 msgid "Attempt to look up %(item)s on a missing value"
 msgstr "Tentativo di visualizzare %(attr)s con un valore mancante"
 
-#: ../roundup/cgi/templating.py:2448
+#: ../roundup/cgi/templating.py:2465
 #, python-format
 msgid "<option %svalue=\"-1\">- no selection -</option>"
 msgstr "<option %svalue=\"-1\">- nessuna selezione -</option>"
@@ -1704,6 +1705,12 @@ msgstr ""
 #: ../roundup/cgi/timestamp.py:30
 msgid "Responding to form too quickly."
 msgstr ""
+
+# ../roundup/cgi/actions.py:931:935
+#: ../roundup/configuration.py:1881
+#, fuzzy
+msgid "Valid languages: "
+msgstr "Login invalida"
 
 #: ../roundup/date.py:391
 #, fuzzy, python-format
@@ -1924,19 +1931,19 @@ msgstr ""
 msgid "Unsigned Message"
 msgstr "Nuovo Messagggio"
 
-#: ../roundup/mailgw.py:446
+#: ../roundup/mailgw.py:463
 msgid "Unknown multipart/encrypted version."
 msgstr ""
 
-#: ../roundup/mailgw.py:455
+#: ../roundup/mailgw.py:472
 msgid "Unable to decrypt your message."
 msgstr ""
 
-#: ../roundup/mailgw.py:482
+#: ../roundup/mailgw.py:499
 msgid "No PGP signature found in message."
 msgstr ""
 
-#: ../roundup/mailgw.py:563
+#: ../roundup/mailgw.py:580
 msgid ""
 "\n"
 "Emails to Roundup trackers must include a Subject: line!\n"
@@ -1944,7 +1951,7 @@ msgstr ""
 "\n"
 "Le Email al tracker Roundup devono includere il campo Oggetto: \n"
 
-#: ../roundup/mailgw.py:676
+#: ../roundup/mailgw.py:693
 #, python-format
 msgid ""
 "\n"
@@ -1971,7 +1978,7 @@ msgstr ""
 "\n"
 "Il campo \"Subject: \" (Oggetto) era: '%(subject)s'\n"
 
-#: ../roundup/mailgw.py:714
+#: ../roundup/mailgw.py:731
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -1988,7 +1995,7 @@ msgstr ""
 "Classi valide sono: %(validname)s\n"
 "Il campo Subject: conteneva il valore \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:722
+#: ../roundup/mailgw.py:739
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -2015,7 +2022,7 @@ msgstr ""
 "\n"
 "Il campo \"Subject: \" (Oggetto) era: '%(subject)s'\n"
 
-#: ../roundup/mailgw.py:758
+#: ../roundup/mailgw.py:775
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -2032,7 +2039,7 @@ msgstr ""
 "Subject precedente intatto.\n"
 "Il campo Subject: conteneva il valore \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:791
+#: ../roundup/mailgw.py:808
 #, python-format
 msgid ""
 "\n"
@@ -2047,7 +2054,7 @@ msgstr ""
 "\n"
 "Il campo Subject: conteneva il valore \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:836
+#: ../roundup/mailgw.py:853
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -2060,21 +2067,21 @@ msgstr ""
 "\n"
 "Indirizzo sconosciuto: %(from_address)s\n"
 
-#: ../roundup/mailgw.py:844
+#: ../roundup/mailgw.py:861
 msgid "You are not permitted to access this tracker."
 msgstr "Non si dispone di permessi sufficienti per accedere a questo tracker"
 
-#: ../roundup/mailgw.py:855
+#: ../roundup/mailgw.py:872
 #, python-format
 msgid "You are not permitted to edit %(classname)s."
 msgstr "Non si dispone dei permessi sufficienti per modificare %(classname)s"
 
-#: ../roundup/mailgw.py:861
+#: ../roundup/mailgw.py:878
 #, python-format
 msgid "You are not permitted to create %(classname)s."
 msgstr "Non si dispone dei permessi sufficienti per creare %(classname)s"
 
-#: ../roundup/mailgw.py:943
+#: ../roundup/mailgw.py:960
 #, python-format
 msgid ""
 "\n"
@@ -2089,28 +2096,28 @@ msgstr ""
 "\n"
 "Il Subject era: \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:995
+#: ../roundup/mailgw.py:1012
 msgid "This tracker has been configured to require all email be PGP encrypted."
 msgstr ""
 
-#: ../roundup/mailgw.py:1032
+#: ../roundup/mailgw.py:1049
 msgid ""
 "\n"
 "This tracker has been configured to require all email be PGP signed or\n"
 "encrypted."
 msgstr ""
 
-#: ../roundup/mailgw.py:1063
+#: ../roundup/mailgw.py:1080
 msgid "You are not permitted to create files."
 msgstr "Non si dispone dei permessi necessari a creare file."
 
-#: ../roundup/mailgw.py:1077
+#: ../roundup/mailgw.py:1094
 #, python-format
 msgid "You are not permitted to add files to %(classname)s."
 msgstr ""
 "Non si dispone dei permessi necessari per aggiungere file a %(classname)s"
 
-#: ../roundup/mailgw.py:1107
+#: ../roundup/mailgw.py:1124
 msgid ""
 "\n"
 "Roundup requires the submission to be plain text. The message parser could\n"
@@ -2120,11 +2127,11 @@ msgstr ""
 "Roundup richiede che i valori immessi siano in formato testo. Il parser dei "
 "messaggi non ha trovato alcuna parte text/plain da utilizzare.\n"
 
-#: ../roundup/mailgw.py:1120
+#: ../roundup/mailgw.py:1137
 msgid "You are not permitted to create messages."
 msgstr "Non si disponde dei permessi necessari per creare messaggi."
 
-#: ../roundup/mailgw.py:1128
+#: ../roundup/mailgw.py:1145
 #, python-format
 msgid ""
 "\n"
@@ -2135,26 +2142,26 @@ msgstr ""
 "La Mail è stata rifiutata da un detector.\n"
 "%(error)s\n"
 
-#: ../roundup/mailgw.py:1136
+#: ../roundup/mailgw.py:1153
 #, python-format
 msgid "You are not permitted to add messages to %(classname)s."
 msgstr "Non si dispone dei permessi per aggiungere messaggi a %(classname)s"
 
-#: ../roundup/mailgw.py:1158
+#: ../roundup/mailgw.py:1175
 #, python-format
 msgid "You are not permitted to edit property %(prop)s of class %(classname)s."
 msgstr ""
 "Non si dispone dei permessi necessari per modificare la proprietà %(prop)s "
 "della classe %(classname)s"
 
-#: ../roundup/mailgw.py:1167
+#: ../roundup/mailgw.py:1184
 #, fuzzy, python-format
 msgid "You are not permitted to set property %(prop)s of class %(classname)s."
 msgstr ""
 "Non si dispone dei permessi necessari per modificare la proprietà %(prop)s "
 "della classe %(classname)s"
 
-#: ../roundup/mailgw.py:1175
+#: ../roundup/mailgw.py:1192
 #, python-format
 msgid ""
 "\n"
@@ -2165,7 +2172,7 @@ msgstr ""
 "Si è verificato un problema con il messaggio che hai inviato:\n"
 "   %(message)s\n"
 
-#: ../roundup/mailgw.py:1641
+#: ../roundup/mailgw.py:1658
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -2178,7 +2185,7 @@ msgstr ""
 "%(mailadmin)s e segnala che la classe specificata come:\n"
 "  %(current_class)s è scorretta.\n"
 
-#: ../roundup/mailgw.py:1672
+#: ../roundup/mailgw.py:1689
 #, python-format
 msgid ""
 "\n"
@@ -2191,13 +2198,20 @@ msgstr ""
 "%(mailadmin)s e segnala che la proprietà scorretta:\n"
 "  %(errors)s\n"
 
-#: ../roundup/mailgw.py:1693
+#: ../roundup/mailgw.py:1710
 msgid "not of form [arg=value,value,...;arg=value,value,...]"
 msgstr "Non nel formato [arg=valore,valore,...;arg=valore,valore,...]"
 
-#: ../roundup/rest.py:1844
+#: ../roundup/rest.py:1853
 #, python-format
 msgid "Api rate limits exceeded. Please wait: %s seconds."
+msgstr ""
+
+#: ../roundup/rest.py:1888
+#, python-format
+msgid ""
+"Unable to parse Accept Header. %(error)s. Acceptable types: "
+"%(acceptable_types)s"
 msgstr ""
 
 #: ../roundup/roundupdb.py:135

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2020-12-20 22:53-0500\n"
+"POT-Creation-Date: 2021-03-30 20:49-0400\n"
 "PO-Revision-Date: 2013-10-31 12:21+0100\n"
 "Last-Translator: Christian Aastorp <christian.aastorp@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1289,21 +1289,21 @@ msgstr ""
 
 #: ../roundup/backends/back_anydbm.py:907
 #: ../roundup/backends/back_anydbm.py:920
-#: ../roundup/backends/back_anydbm.py:1191
-#: ../roundup/backends/back_anydbm.py:1226
-#: ../roundup/backends/back_anydbm.py:1452
-#: ../roundup/backends/back_anydbm.py:1470
-#: ../roundup/backends/back_anydbm.py:1516
-#: ../roundup/backends/back_anydbm.py:2138
+#: ../roundup/backends/back_anydbm.py:1193
+#: ../roundup/backends/back_anydbm.py:1228
+#: ../roundup/backends/back_anydbm.py:1454
+#: ../roundup/backends/back_anydbm.py:1472
+#: ../roundup/backends/back_anydbm.py:1518
+#: ../roundup/backends/back_anydbm.py:2140
 #: ../roundup/backends/back_anydbm.py:907:920
-#: ../roundup/backends/rdbms_common.py:1600
-#: ../roundup/backends/rdbms_common.py:1847
-#: ../roundup/backends/rdbms_common.py:2082
-#: ../roundup/backends/rdbms_common.py:2102
-#: ../roundup/backends/rdbms_common.py:2155
-#: ../roundup/backends/rdbms_common.py:3025
-#: ../roundup/backends/rdbms_common.py:1600:1847 :1191:1226 :1452:1470:1516
-#: :2082:2102:2138 :2155:3025
+#: ../roundup/backends/rdbms_common.py:1608
+#: ../roundup/backends/rdbms_common.py:1855
+#: ../roundup/backends/rdbms_common.py:2090
+#: ../roundup/backends/rdbms_common.py:2110
+#: ../roundup/backends/rdbms_common.py:2163
+#: ../roundup/backends/rdbms_common.py:3042
+#: ../roundup/backends/rdbms_common.py:1608:1855 :1193:1228 :1454:1472:1518
+#: :2090:2110:2140 :2163:3042
 msgid "Database open read-only"
 msgstr "Databsen åpnet bare for lesing"
 
@@ -1322,27 +1322,27 @@ msgstr ""
 msgid "DROP operation disallowed: \"%s\"."
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:1743
+#: ../roundup/backends/rdbms_common.py:1751
 msgid "create"
 msgstr "lag"
 
-#: ../roundup/backends/rdbms_common.py:1917
+#: ../roundup/backends/rdbms_common.py:1925
 msgid "unlink"
 msgstr "fjern lenke"
 
-#: ../roundup/backends/rdbms_common.py:1921
+#: ../roundup/backends/rdbms_common.py:1929
 msgid "link"
 msgstr "lenke"
 
-#: ../roundup/backends/rdbms_common.py:2063
+#: ../roundup/backends/rdbms_common.py:2071
 msgid "set"
 msgstr "oppdater"
 
-#: ../roundup/backends/rdbms_common.py:2092
+#: ../roundup/backends/rdbms_common.py:2100
 msgid "retired"
 msgstr "glemt"
 
-#: ../roundup/backends/rdbms_common.py:2122
+#: ../roundup/backends/rdbms_common.py:2130
 msgid "restored"
 msgstr "brakt tilbake"
 
@@ -1500,8 +1500,9 @@ msgid ""
 "Edit Error: someone else has edited this %(klass)s (%(props)s). View <a "
 "target=\"_blank\" href=\"%(klass)s%(id)s\">their changes</a> in a new window."
 msgstr ""
-"Feil under redigering: noen andre har redigert dette %(klass)s (%(props)s). Se <a target="
-"\"new\" href=\"%(klass)s%(id)s\">deres endringer </a> i et nytt vindu."
+"Feil under redigering: noen andre har redigert dette %(klass)s (%(props)s). "
+"Se <a target=\"new\" href=\"%(klass)s%(id)s\">deres endringer </a> i et nytt "
+"vindu."
 
 #: ../roundup/cgi/actions.py:846
 #, python-format
@@ -1915,18 +1916,18 @@ msgid "Submit New Entry"
 msgstr "Legg til ny oppføring"
 
 #: ../roundup/cgi/templating.py:964 ../roundup/cgi/templating.py:1132
-#: ../roundup/cgi/templating.py:1715 ../roundup/cgi/templating.py:1744
-#: ../roundup/cgi/templating.py:1764 ../roundup/cgi/templating.py:1777
-#: ../roundup/cgi/templating.py:1814 ../roundup/cgi/templating.py:1867
-#: ../roundup/cgi/templating.py:1890 ../roundup/cgi/templating.py:1897
-#: ../roundup/cgi/templating.py:1933 ../roundup/cgi/templating.py:1970
-#: ../roundup/cgi/templating.py:2003 ../roundup/cgi/templating.py:2092
-#: ../roundup/cgi/templating.py:2113 ../roundup/cgi/templating.py:2203
-#: ../roundup/cgi/templating.py:2223 ../roundup/cgi/templating.py:2241
-#: ../roundup/cgi/templating.py:2280 ../roundup/cgi/templating.py:2290
-#: ../roundup/cgi/templating.py:2354 ../roundup/cgi/templating.py:2601
-#: ../roundup/cgi/templating.py:964:1132 :1715:1744 :1764:1777 :1814:1867
-#: :1890:1897 :1933:1970 :2003:2092 :2113:2203 :2223:2241 :2280:2290 :2354:2601
+#: ../roundup/cgi/templating.py:1732 ../roundup/cgi/templating.py:1761
+#: ../roundup/cgi/templating.py:1781 ../roundup/cgi/templating.py:1794
+#: ../roundup/cgi/templating.py:1831 ../roundup/cgi/templating.py:1884
+#: ../roundup/cgi/templating.py:1907 ../roundup/cgi/templating.py:1914
+#: ../roundup/cgi/templating.py:1950 ../roundup/cgi/templating.py:1987
+#: ../roundup/cgi/templating.py:2020 ../roundup/cgi/templating.py:2109
+#: ../roundup/cgi/templating.py:2130 ../roundup/cgi/templating.py:2220
+#: ../roundup/cgi/templating.py:2240 ../roundup/cgi/templating.py:2258
+#: ../roundup/cgi/templating.py:2297 ../roundup/cgi/templating.py:2307
+#: ../roundup/cgi/templating.py:2371 ../roundup/cgi/templating.py:2618
+#: ../roundup/cgi/templating.py:964:1132 :1732:1761 :1781:1794 :1831:1884
+#: :1907:1914 :1950:1987 :2020:2109 :2130:2220 :2240:2258 :2297:2307 :2371:2618
 msgid "[hidden]"
 msgstr "[skjult]"
 
@@ -2000,17 +2001,17 @@ msgstr "<th>Argumenter</th>"
 msgid "Copy of %(class)s %(id)s"
 msgstr "Kopi av %(class)s %(id)s"
 
-#: ../roundup/cgi/templating.py:2007 ../roundup/cgi/templating.py:2040
-#: ../roundup/cgi/templating.py:1312:2007:2040
+#: ../roundup/cgi/templating.py:2024 ../roundup/cgi/templating.py:2057
+#: ../roundup/cgi/templating.py:1312:2024:2057
 msgid "No"
 msgstr "Nei"
 
-#: ../roundup/cgi/templating.py:2007 ../roundup/cgi/templating.py:2035
-#: ../roundup/cgi/templating.py:1312:2007:2035
+#: ../roundup/cgi/templating.py:2024 ../roundup/cgi/templating.py:2052
+#: ../roundup/cgi/templating.py:1312:2024:2052
 msgid "Yes"
 msgstr "Ja"
 
-#: ../roundup/cgi/templating.py:2161
+#: ../roundup/cgi/templating.py:2178
 msgid ""
 "default value for DateHTMLProperty must be either DateHTMLProperty or string "
 "date representation."
@@ -2018,17 +2019,17 @@ msgstr ""
 "standard verdi for DateHTMLProperty må være enten DateHTMLProperty eller en "
 "streng represantasjon av tidspunkt."
 
-#: ../roundup/cgi/templating.py:2334
+#: ../roundup/cgi/templating.py:2351
 #, python-format
 msgid "Attempt to look up %(attr)s on a missing value"
 msgstr "Forsøk på å slå opp  %(attr)s på manglende verdi"
 
-#: ../roundup/cgi/templating.py:2345
+#: ../roundup/cgi/templating.py:2362
 #, fuzzy, python-format
 msgid "Attempt to look up %(item)s on a missing value"
 msgstr "Forsøk på å slå opp  %(attr)s på manglende verdi"
 
-#: ../roundup/cgi/templating.py:2448
+#: ../roundup/cgi/templating.py:2465
 #, python-format
 msgid "<option %svalue=\"-1\">- no selection -</option>"
 msgstr "<option %svalue=\"-1\">- intet valg -</option>"
@@ -2045,6 +2046,11 @@ msgstr ""
 #: ../roundup/cgi/timestamp.py:30
 msgid "Responding to form too quickly."
 msgstr ""
+
+#: ../roundup/configuration.py:1881
+#, fuzzy
+msgid "Valid languages: "
+msgstr "Ugyldig forespørsel"
 
 #: ../roundup/date.py:391
 #, fuzzy, python-format
@@ -2264,19 +2270,19 @@ msgstr "Ugyldig PGP-signatur oppdaget."
 msgid "Unsigned Message"
 msgstr "Ny melding"
 
-#: ../roundup/mailgw.py:446
+#: ../roundup/mailgw.py:463
 msgid "Unknown multipart/encrypted version."
 msgstr "Ukjent flerdeler(multipart)/koded versjon."
 
-#: ../roundup/mailgw.py:455
+#: ../roundup/mailgw.py:472
 msgid "Unable to decrypt your message."
 msgstr "Ikke i stand til å dekryptere meldingne din."
 
-#: ../roundup/mailgw.py:482
+#: ../roundup/mailgw.py:499
 msgid "No PGP signature found in message."
 msgstr "Ingen PGP signatur funnet i melding."
 
-#: ../roundup/mailgw.py:563
+#: ../roundup/mailgw.py:580
 msgid ""
 "\n"
 "Emails to Roundup trackers must include a Subject: line!\n"
@@ -2284,7 +2290,7 @@ msgstr ""
 "\n"
 "Epost til Roundup sporer må inneholde en verdi for Subjekt: linjen\n"
 
-#: ../roundup/mailgw.py:676
+#: ../roundup/mailgw.py:693
 #, python-format
 msgid ""
 "\n"
@@ -2314,7 +2320,7 @@ msgstr ""
 "\n"
 "Subjekt var: '%(subject)s'\n"
 
-#: ../roundup/mailgw.py:714
+#: ../roundup/mailgw.py:731
 #, python-format
 msgid ""
 "\n"
@@ -2331,7 +2337,7 @@ msgstr ""
 "Gyldige klassenavn er: %(validname)s\n"
 "Subjekt var: \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:722
+#: ../roundup/mailgw.py:739
 #, python-format
 msgid ""
 "\n"
@@ -2358,7 +2364,7 @@ msgstr ""
 "\n"
 "Subjekt var: '%(subject)s'\n"
 
-#: ../roundup/mailgw.py:758
+#: ../roundup/mailgw.py:775
 #, python-format
 msgid ""
 "\n"
@@ -2377,7 +2383,7 @@ msgstr ""
 "\n"
 "Subjekt var: \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:791
+#: ../roundup/mailgw.py:808
 #, python-format
 msgid ""
 "\n"
@@ -2392,7 +2398,7 @@ msgstr ""
 "\n"
 "Subjekt var: \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:836
+#: ../roundup/mailgw.py:853
 #, python-format
 msgid ""
 "\n"
@@ -2405,21 +2411,21 @@ msgstr ""
 "\n"
 "Ukjent adresse: %(from_address)s\n"
 
-#: ../roundup/mailgw.py:844
+#: ../roundup/mailgw.py:861
 msgid "You are not permitted to access this tracker."
 msgstr "Du har ikke adgang til denne sporeren."
 
-#: ../roundup/mailgw.py:855
+#: ../roundup/mailgw.py:872
 #, python-format
 msgid "You are not permitted to edit %(classname)s."
 msgstr "Du har ikke tillatelse til å endre %(classname)s."
 
-#: ../roundup/mailgw.py:861
+#: ../roundup/mailgw.py:878
 #, python-format
 msgid "You are not permitted to create %(classname)s."
 msgstr "Du har ikke tillatelse til å opprette %(classname)s."
 
-#: ../roundup/mailgw.py:943
+#: ../roundup/mailgw.py:960
 #, python-format
 msgid ""
 "\n"
@@ -2435,7 +2441,7 @@ msgstr ""
 "\n"
 "Subjekt var: \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:995
+#: ../roundup/mailgw.py:1012
 #, fuzzy
 msgid "This tracker has been configured to require all email be PGP encrypted."
 msgstr ""
@@ -2443,7 +2449,7 @@ msgstr ""
 "Denne sporeren er satt til å kreve at all epost entern er signert med PGP, \n"
 "eller kryptert."
 
-#: ../roundup/mailgw.py:1032
+#: ../roundup/mailgw.py:1049
 msgid ""
 "\n"
 "This tracker has been configured to require all email be PGP signed or\n"
@@ -2453,16 +2459,16 @@ msgstr ""
 "Denne sporeren er satt til å kreve at all epost entern er signert med PGP, \n"
 "eller kryptert."
 
-#: ../roundup/mailgw.py:1063
+#: ../roundup/mailgw.py:1080
 msgid "You are not permitted to create files."
 msgstr "Du har ikke lov å lage en filer."
 
-#: ../roundup/mailgw.py:1077
+#: ../roundup/mailgw.py:1094
 #, python-format
 msgid "You are not permitted to add files to %(classname)s."
 msgstr "Du har ikke tillatelse til å legge filer til %(classname)s."
 
-#: ../roundup/mailgw.py:1107
+#: ../roundup/mailgw.py:1124
 msgid ""
 "\n"
 "Roundup requires the submission to be plain text. The message parser could\n"
@@ -2473,11 +2479,11 @@ msgstr ""
 "finne ren tekst\n"
 "å behandle.\n"
 
-#: ../roundup/mailgw.py:1120
+#: ../roundup/mailgw.py:1137
 msgid "You are not permitted to create messages."
 msgstr "Du har ikke lov å lage en meldinger."
 
-#: ../roundup/mailgw.py:1128
+#: ../roundup/mailgw.py:1145
 #, python-format
 msgid ""
 "\n"
@@ -2488,26 +2494,26 @@ msgstr ""
 "Epost ble returnert av en detektor.\n"
 "%(error)s\n"
 
-#: ../roundup/mailgw.py:1136
+#: ../roundup/mailgw.py:1153
 #, python-format
 msgid "You are not permitted to add messages to %(classname)s."
 msgstr "Du har ikke tillatelse til å legge meldinger til  %(classname)s."
 
-#: ../roundup/mailgw.py:1158
+#: ../roundup/mailgw.py:1175
 #, python-format
 msgid "You are not permitted to edit property %(prop)s of class %(classname)s."
 msgstr ""
 "Du har ikke tillatelse til å redigere egenskapen %(prop)s til klassen "
 "%(classname)s."
 
-#: ../roundup/mailgw.py:1167
+#: ../roundup/mailgw.py:1184
 #, fuzzy, python-format
 msgid "You are not permitted to set property %(prop)s of class %(classname)s."
 msgstr ""
 "Du har ikke tillatelse til å redigere egenskapen %(prop)s til klassen "
 "%(classname)s."
 
-#: ../roundup/mailgw.py:1175
+#: ../roundup/mailgw.py:1192
 #, python-format
 msgid ""
 "\n"
@@ -2518,7 +2524,7 @@ msgstr ""
 "Det var et problem med meldingen du sendte:\n"
 "   %(message)s\n"
 
-#: ../roundup/mailgw.py:1641
+#: ../roundup/mailgw.py:1658
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -2531,7 +2537,7 @@ msgstr ""
 "og få problemet løst. Referansen er til feil klasse: \n"
 "  %(current_class)s\n"
 
-#: ../roundup/mailgw.py:1672
+#: ../roundup/mailgw.py:1689
 #, python-format
 msgid ""
 "\n"
@@ -2544,13 +2550,20 @@ msgstr ""
 "og få problemet løst. Referansen er til feil egenskaper:\n"
 "  %(errors)s\n"
 
-#: ../roundup/mailgw.py:1693
+#: ../roundup/mailgw.py:1710
 msgid "not of form [arg=value,value,...;arg=value,value,...]"
 msgstr "ikke på formen [arg=value,value,...;arg=value,value,...]"
 
-#: ../roundup/rest.py:1844
+#: ../roundup/rest.py:1853
 #, python-format
 msgid "Api rate limits exceeded. Please wait: %s seconds."
+msgstr ""
+
+#: ../roundup/rest.py:1888
+#, python-format
+msgid ""
+"Unable to parse Accept Header. %(error)s. Acceptable types: "
+"%(acceptable_types)s"
 msgstr ""
 
 #: ../roundup/roundupdb.py:135
