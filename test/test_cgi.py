@@ -28,7 +28,7 @@ from time import sleep
 # For testing very simple rendering
 from roundup.cgi.engine_zopetal import RoundupPageTemplate
 
-from .mocknull import MockNull
+from roundup.test.mocknull import MockNull
 
 from . import db_test_base
 from .db_test_base import FormTestParent, setupTracker, FileUpload

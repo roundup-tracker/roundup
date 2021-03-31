@@ -44,7 +44,7 @@ from roundup.anypy.dbm_ import anydbm, whichdb
 
 from .db_test_base import setupTracker
 
-from .mocknull import MockNull
+from roundup.test.mocknull import MockNull
 
 from io import BytesIO
 import json

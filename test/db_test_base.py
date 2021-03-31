@@ -45,7 +45,7 @@ from roundup.anypy.strings import b2s, s2b, u2s
 from roundup.anypy.cmp_ import NoneAndDictComparable
 from roundup.anypy.email_ import message_from_bytes
 
-from .mocknull import MockNull
+from roundup.test.mocknull import MockNull
 
 config = configuration.CoreConfig()
 config.DATABASE = "db"
