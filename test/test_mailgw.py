@@ -223,6 +223,7 @@ class MailgwTestAbstractBase(DiffHelper):
         if os.path.exists(SENDMAILDEBUG):
             os.remove(SENDMAILDEBUG)
         self.db.close()
+        memorydb.db_nuke('')
 
     def _allowAnonymousSubmit(self):
         p = [

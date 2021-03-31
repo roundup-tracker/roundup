@@ -38,6 +38,9 @@ def new_config(debug=False, prefix=default_prefix):
     return config
 
 def create(journaltag, create=True, debug=False, prefix=default_prefix):
+    # "Nuke" in-memory db
+    db_nuke('')
+
     db = Database(new_config(debug), journaltag)
 
     # load standard schema
@@ -214,12 +217,12 @@ class Database(back_anydbm.Database):
 
     dbtype = "memorydb"
 
+    # Make it a little more persistent across re-open
+    memdb = {}
+
     def __init__(self, config, journaltag=None):
         self.config, self.journaltag = config, journaltag
         self.classes = {}
-        self.items = {}
-        self.ids = {}
-        self.journals = {}
         self.files = {}
         self.tx_files = {}
         self.security = security.Security(self)
@@ -236,6 +239,10 @@ class Database(back_anydbm.Database):
         self.destroyednodes = {}# keep track of the destroyed nodes by class
         self.transactions = []
         self.tx_Source = None
+        # persistence across re-open
+        self.items = self.__class__.memdb.get('items', {})
+        self.ids = self.__class__.memdb.get('ids', {})
+        self.journals = self.__class__.memdb.get('journals', {})
 
     def filename(self, classname, nodeid, property=None, create=0):
         shutil.copyfile(__file__, __file__+'.dummy')
@@ -290,6 +297,10 @@ class Database(back_anydbm.Database):
         # kill the schema too
         self.classes = {}
         # just keep the .items
+        # persistence across re-open
+        self.__class__.memdb['items'] = self.items
+        self.__class__.memdb['ids'] = self.ids
+        self.__class__.memdb['journals'] = self.journals
 
     #
     # Classes
@@ -471,5 +482,14 @@ class IssueClass(Class, roundupdb.IssueClass):
         if 'superseder' not in properties:
             properties['superseder'] = hyperdb.Multilink(classname)
         Class.__init__(self, db, classname, **properties)
+
+# Methods to check for existence and nuke the db
+# We don't support multiple named databases
+
+def db_exists(name):
+    return bool(Database.memdb)
+
+def db_nuke(name):
+    Database.memdb = {}
 
 # vim: set et sts=4 sw=4 :
