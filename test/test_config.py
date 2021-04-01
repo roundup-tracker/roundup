@@ -449,7 +449,7 @@ class TrackerConfig(unittest.TestCase):
 
         # need to delete both to make python2 not error finding _xapian
         del(sys.modules['xapian'])
-        if xapian._xapian in sys.modules:
+        if 'xapian._xapian' in sys.modules:
             del(sys.modules['xapian._xapian'])
 
         self.assertEqual(config['INDEXER_LANGUAGE'], 'NO_LANG')
