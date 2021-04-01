@@ -133,7 +133,7 @@ Windows Service
   Otherwise it must be started manually.
 
 .. _Xapian: https://xapian.org/
-.. _Whoosh: https://bitbucket.org/mchaput/whoosh/wiki/Home
+.. _Whoosh: https://whoosh.readthedocs.org/en/latest
 .. _pytz: https://pypi.org/project/pytz/
 .. _Olson tz database: https://www.iana.org/time-zones
 .. _pyopenssl: http://pyopenssl.sourceforge.net
