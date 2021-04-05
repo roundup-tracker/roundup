@@ -35,7 +35,7 @@ This is usually included near where other permissions like "Web Access"
 or "Email Access" are assigned.
 
 You could also create a new role "rest" and assign the "Rest Access"
-permission to that role and then just add the "rest" permissions to
+permission to that role and then just add the "rest" role to
 those users who should have access.
 
 The REST api is reached via the ``/rest/`` endpoint of the tracker
