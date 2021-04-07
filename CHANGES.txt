@@ -73,6 +73,9 @@ Fixed:
 - issue2551108 - fix handling of designator links when formatted
   as markdown links. (Reported by Cedric Krier; John Rouillard)
 - Fix filename created from mail attachments, fixes issue2551118
+- Call verifyPassword even if user does not exist. Address timing
+  attack to discover valid account names. Useful where anonymous user
+  is not allowed access. (John Rouillard)
 
 Features:
 - issue2550522 - Add 'filter' command to command-line

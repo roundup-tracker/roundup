@@ -1357,6 +1357,11 @@ class LoginAction(Action):
         try:
             self.client.userid = self.db.user.lookup(username)
         except KeyError:
+            # Perform password check against anonymous user.
+            # Prevents guessing of valid usernames by detecting
+            # delay caused by checking password only on valid
+            # users.
+            _discard = self.verifyPassword("2", password)
             raise exceptions.LoginError(self._('Invalid login'))
 
         # verify the password
