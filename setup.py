@@ -67,6 +67,7 @@ def main():
         'roundup.cgi.ZTUtils',
         'roundup.backends',
         'roundup.scripts',
+        'roundup.test',
     ]
 
     # build list of scripts from their implementation modules
