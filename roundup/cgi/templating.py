@@ -2244,12 +2244,16 @@ class DateHTMLProperty(HTMLProperty):
         else:
             offset = self._offset
 
-        if not self._value:
-            return ''
-        elif format is not self._marker:
-            return self._value.local(offset).pretty(format)
-        else:
-            return self._value.local(offset).pretty()
+        try:
+            if not self._value:
+                return ''
+            elif format is not self._marker:
+                return self._value.local(offset).pretty(format)
+            else:
+                return self._value.local(offset).pretty()
+        except AttributeError:
+            # not a date value, e.g. from unsaved form data
+            return str(self._value)
 
     def local(self, offset):
         """ Return the date/time as a local (timezone offset) date/time.

@@ -474,6 +474,46 @@ class HTMLClassTestCase(TemplatingTestCase) :
         input=input_xhtml(**attrs)
         self.assertEqual(input, '<input class="required" disabled="disabled" size="30" type="text"/>')
 
+
+class HTMLPropertyTestClass(unittest.TestCase):
+    def setUp(self):
+        self.form = FieldStorage()
+        self.client = MockNull()
+        self.client.db = db = MockDatabase()
+        db.security.hasPermission = lambda *args, **kw: True
+        self.client.form = self.form
+
+        self.client._props = MockNull()
+        # add client props for testing anti_csrf_nonce
+        self.client.session_api = MockNull(_sid="1234567890")
+        self.client.db.getuid = lambda : 10
+
+class DateHTMLPropertyTestCase(HTMLPropertyTestClass):
+
+    def test_DateHTMLWithText(self):
+        """Test methods when DateHTMLProperty._value is a string
+           rather than a hyperdb.Date()
+        """
+        test_datestring = "2021-01-01 11:22:10"
+        test_date = hyperdb.Date("2")
+
+        self.form.list.append(MiniFieldStorage("test1@test", test_datestring))
+        self.client._props=test_date
+
+        self.client.db.classes = dict \
+            ( test = MockNull(getprops = lambda : test_date)
+            )
+
+        # client, classname, nodeid, prop, name, value,
+        #    anonymous=0, offset=None
+        d = DateHTMLProperty(self.client, 'test', '1', self.client._props,
+                             'test', '')
+        self.assertIs(type(d._value), str)
+        self.assertEqual(d.pretty(), "2021-01-01 11:22:10")
+        self.assertEqual(d.plain(), "2021-01-01 11:22:10")
+        input = """<input name="test1@test" size="30" type="text" value="2021-01-01 11:22:10"><a class="classhelp" data-calurl="test?@template=calendar&amp;amp;property=test&amp;amp;form=itemSynopsis&amp;date=2021-01-01 11:22:10" data-height="200" data-width="300" href="javascript:help_window('test?@template=calendar&amp;property=test&amp;form=itemSynopsis&date=2021-01-01 11:22:10', 300, 200)">(cal)</a>"""
+        self.assertEqual(d.field(), input)
+
 # common markdown test cases
 class MarkdownTests:
     def mangleMarkdown2(self, s):

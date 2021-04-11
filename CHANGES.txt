@@ -76,6 +76,10 @@ Fixed:
 - Call verifyPassword even if user does not exist. Address timing
   attack to discover valid account names. Useful where anonymous user
   is not allowed access. (John Rouillard)
+- issue2551126 - AttributeError: 'str' object has no attribute
+  'local'. Fix traceback caused by DateHTMLProperty.pretty() called
+  on a string value due to error in some other field. (Reported by
+  reda, fix: John Rouillard)
 
 Features:
 - issue2550522 - Add 'filter' command to command-line
