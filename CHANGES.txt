@@ -80,6 +80,11 @@ Fixed:
   'local'. Fix traceback caused by DateHTMLProperty.pretty() called
   on a string value due to error in some other field. (Reported by
   reda, fix: John Rouillard)
+- issue2550899 - Migrate setup.py to setuptools; fixes:
+  issue2550866 'pip install --editable .' fails; et al.
+  this now requires that setuptools be installed. (Patch by John
+  Kristensen (jerrykan); additional doc changes (upgrade.txt,
+  RELEASE.txt) John Rouillard)
 
 Features:
 - issue2550522 - Add 'filter' command to command-line

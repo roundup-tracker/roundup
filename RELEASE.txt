@@ -47,53 +47,90 @@ Roundup release checklist:
       rm -rf build/share  # deletes locale .mo files
     Rebuild and install .mo files
       python setup.py build  (sdist generation will fail if this isn't done)
-8.  Rebuild documentation in "share/doc/roundup/html"
+8.  Check documentation:
+    python setup.py check --restructuredtext --metadata --strict
+    Rebuild documentation in "share/doc/roundup/html"
       python setup.py build_doc
-9.  python setup.py sdist --manifest-only
-    (ignore the 'warning: no previously-included ...' lines)
-10. Check the MANIFEST to make sure that any new files are included.
-      (use hg status --rev <last release or tag>:tip to list changed
-      added and removed files. Last release e.g. 1.5.1 where tip was
-      what would become 1.6) E.G.
+9.  python setup.py sdist
+    (if you find sdist a little verbose, add "--quiet" to the end of the
+     command)
+9a. 2021/04/17 skip this for now. Need to make sure that whl installs
+    execuable scripts properly and update these directions to test.
+
+       python2 setup.py bdist_wheel; python3 setup.py bdist_wheel
+
+    to create binary distributions in wheel format. (egg format is
+    deprecated.)
+10. Check the roundup.egg-info/SOURCES.txt to make sure that any new files are
+    included.  (use hg status --rev <last release or tag>:tip to list changed
+    added and removed files. Last release e.g. 1.5.1 where tip was what would
+    become 1.6) E.G.
       
       hg status --rev 1.6.0:tip | sed -ne 's/^A //p' | while read i ; \
-      do echo $i; grep "$i" MANIFEST; done | uniq -c
+      do echo $i; grep "$i" roundup.egg-info/SOURCES.txt; done | uniq -c
 
     Anything with a count of 1 is not in the manifest.
     If there are missing files that should be in the manifest,
     edit MANIFEST.in to include them. For format docs see
-    http://docs.python.org/2/distutils/sourcedist.html#manifest-template
-    (Notes files for the website and issue tracker shouldn't be in the
-    manifest.)
-11. python setup.py sdist
-    (if you find sdist a little verbose, add "--quiet" to the end of the
-     command)
-12. Unpack the new tarball created in dist/roundup-<version>.tar.gz
+    https://packaging.python.org/guides/using-manifest-in/#using-manifest-in
+    (Note: files under website/ shouldn't be in the manifest.)
+11. Unpack the new tarball created in dist/roundup-<version>.tar.gz
     file in /tmp then
       a) run tests using installed pytest run under python2 and
          python3. (python2 -m pytest test/; python3 -m pytest test/)
       b) demo.py
     with all available Python versions.
-13. Assuming all is well tag the release in the version-control
+11a. (TBD how to test wheel binary distribution before uploading.)
+12. Assuming all is well tag the release in the version-control
     system.
       a) hg tag 1.6.0  # use right version. Should create/commit a changeset
       b) hg push       # update main repo
       c) hg sum        # verify that the tag shows up
-14. Upload source distribution to PyPI - requires you sign up for a
+13. Upload source distribution to PyPI - requires you sign up for a
     pypi account and be added as a maintainer to roundup. Ask existing
-    maintainer for access.
+    maintainer for access. You can do this two ways:
+
       python setup.py sdist upload --repository pypi --sign
-    It should appear on http://pypi.python.org/pypi/roundup in no
-    time. If you are using python older than 2.7.13 you need a
-    .pypirc shown below. URL has changed. If using 2.7.13 or newer,
-    you can remove the "--repository pypi" option.
-15. Send doc/announcement.txt to python-announce@python.org and
+
+    which rebuilds the source distribution tarball and uploads it.
+    This means that you have uploaded something tha is not tested. It
+    should be the same as the tarball you tested but....
+
+    Another way to do this is to use twine (pip install twine).
+    You need to sign the tarball. This can be done with:
+
+      gpg --detach-sign --armor <filename>.tgz
+
+    you should be prompted to use the roundup release key. If not you
+    can add  --local=roundup-devel@lists.sourceforge.net.
+    This will create a file by the name <filename>.tgz.asc. Then
+    use twine to upload *both* the asc and distibution tarball
+    at the same time. E.G.:x
+
+       twine upload --repository pypi <filename>.tar.gz <filename>.tar.gz.asc
+
+    (If you upload the .asc file separately from the distibution file
+    it gets a different path and is not able to be located in the pypi
+    interface. The asc file is downloaded using the tarball path and
+    add `asc'.)
+
+    The distribution file should appear on
+    https://pypi.python.org/pypi/roundup in no time. If you are using
+    python older than 2.7.13 you need a .pypirc shown below since the
+    URL has changed. If using 2.7.13 or newer, you can remove the
+    "--repository pypi" option and use 'setup.py sdist upload...'.
+
+    You can also use twine to upload the .whl (wheel) format
+    distributions (if created). Follow the directions for generating
+    the gpg asc files and upload the .whl distribution and .whl.asc
+    signature files together.
+14. Send doc/announcement.txt to python-announce@python.org and
     roundup-users@lists.sourceforge.net and
     roundup-devel@lists.sourceforge.net
-15b. Update entry on https://freshcode.club/projects/roundup-tracker
-15c. Update entries for fossies by emailing announcement to
+14b. Update entry on https://freshcode.club/projects/roundup-tracker
+14c. Update entries for fossies by emailing announcement to
      announce@fossies.org
-16. Refresh website.
+15. Refresh website.
       website/README.txt
       https://www.roundup-tracker.org/ should state that the stable
       version is the one that you released.
@@ -113,7 +150,6 @@ So, those commands in a nice, cut'n'pasteable form::
  cd locale
  make
  cd ..
- python setup.py sdist --manifest-only
  python setup.py sdist --quiet
  ## python setup.py bdist_rpm
  # not required for pypi.org since 2017 -> python setup.py register

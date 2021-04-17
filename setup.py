@@ -21,19 +21,11 @@
 
 from __future__ import print_function
 from roundup.dist.command.build_doc import build_doc
-from roundup.dist.command.build_scripts import build_scripts
 from roundup.dist.command.build import build, list_message_files
 from roundup.dist.command.bdist_rpm import bdist_rpm
 from roundup.dist.command.install_lib import install_lib
 
-# FIXME: setuptools breaks the --manifest-only option to setup.py and
-# doesn't seem to generate a MANIFEST file. Since I'm not familiar with
-# the way setuptools handles the files to include I'm commenting this
-# for now -- Ralf Schlatterbeck
-#try:
-#    from setuptools import setup
-#except ImportError:
-from distutils.core import setup
+from setuptools import setup
 
 import sys, os
 from glob import glob
@@ -48,13 +40,15 @@ def include(d, e):
 
     return (d, [f for f in glob('%s/%s'%(d, e)) if os.path.isfile(f)])
 
-def scriptname(path):
+
+def mapscript(path):
     """ Helper for building a list of script names from a list of
         module files.
     """
-    script = os.path.splitext(os.path.basename(path))[0]
-    script = script.replace('_', '-')
-    return script
+    module = os.path.splitext(os.path.basename(path))[0]
+    script = module.replace('_', '-')
+    return '%s = roundup.scripts.%s:run' % (script, module)
+
 
 def main():
     # template munching
@@ -71,7 +65,7 @@ def main():
     ]
 
     # build list of scripts from their implementation modules
-    scripts = [scriptname(f) for f in glob('roundup/scripts/[!_]*.py')]
+    scripts = [mapscript(f) for f in glob('roundup/scripts/[!_]*.py')]
 
     data_files = [
         ('share/roundup/cgi-bin', ['frontends/roundup.cgi']),
@@ -161,13 +155,14 @@ def main():
 
           # Override certain command classes with our own ones
           cmdclass= {'build_doc': build_doc,
-                     'build_scripts': build_scripts,
                      'build': build,
                      'bdist_rpm': bdist_rpm,
                      'install_lib': install_lib,
                      },
           packages=packages,
-          scripts=scripts,
+          entry_points={
+              'console_scripts': scripts
+          },
           data_files=data_files)
 
 if __name__ == '__main__':

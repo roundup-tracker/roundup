@@ -27,6 +27,15 @@ Contents:
 Migrating from 2.0.0 to 2.x.x
 =============================
 
+Setuptools is now required to install
+-------------------------------------
+
+Roundup install now uses setuptools rather than distutils. You must
+install setuptools.  Use the version packgaged by your OS vendor.  If
+your OS vendor doesn't supply setuptools use ``pip install
+setuptools``. (You may need pip3 rather than pip if using python3.)
+
+
 Classname Format Enforced
 -------------------------
 
