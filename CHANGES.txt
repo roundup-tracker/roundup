@@ -85,6 +85,9 @@ Fixed:
   this now requires that setuptools be installed. (Patch by John
   Kristensen (jerrykan); additional doc changes (upgrade.txt,
   RELEASE.txt) John Rouillard)
+- issue2551128 - Impossible to validate a user with unknown timezone
+  Raise KeyError when an unrecognized timezones is passed to
+  pytz. (patch Cedric Krier, test John Rouillard)
 
 Features:
 - issue2550522 - Add 'filter' command to command-line

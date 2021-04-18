@@ -146,8 +146,12 @@ def get_timezone(tz):
             return SimpleTimezone(utcoffset)
     # tz is a timezone name
     if pytz:
-        return pytz.timezone(tz)
-    elif tz == "UTC":
+        try:
+            return pytz.timezone(tz)
+        except pytz.exceptions.UnknownTimeZoneError:
+            pass
+
+    if tz == "UTC":
         return UTC
     elif tz in _tzoffsets:
         return SimpleTimezone(_tzoffsets[tz], tz)
