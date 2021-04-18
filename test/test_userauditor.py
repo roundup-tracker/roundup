@@ -35,12 +35,7 @@ class UserAuditorTest(unittest.TestCase):
     def testBadTimezonesPyTZ(self):
         userid = self.db.user.lookup('kyle')
 
-        try:
-            from pytz import UnknownTimeZoneError
-        except:
-            UnknownTimeZoneError = ValueError
-
-        self.assertRaises(UnknownTimeZoneError, self.db.user.set, userid,
+        self.assertRaises(KeyError, self.db.user.set, userid,
                           timezone='MiddleOf/Nowhere')
 
     def testGoodTimezones(self):
