@@ -88,6 +88,10 @@ Fixed:
 - issue2551128 - Impossible to validate a user with unknown timezone
   Raise KeyError when an unrecognized timezones is passed to
   pytz. (patch Cedric Krier, test John Rouillard)
+- issue2551129 - Template not found return 500
+  Handle traceback caused when requested @template is not found.
+  Return 400 error in this condition. (patch Cedric Krier,
+  additional change and test John Rouillard)
 
 Features:
 - issue2550522 - Add 'filter' command to command-line

@@ -746,6 +746,17 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
             'name': 'foo.txt', 'type': 'text/plain'}},
             [('issue', None, 'files', [('file', '-1')])]))
 
+    def testErrorForBadTemplate(self):
+         form = {}
+         cl = self.setupClient(form, 'issue', '1', template="broken",
+                 env_addon = {'HTTP_REFERER': 'http://whoami.com/path/'})
+         out = []
+
+         out = cl.renderContext()
+
+         self.assertEqual(out, '<strong>No template file exists for templating "issue" with template "broken" (neither "issue.broken" nor "_generic.broken")</strong>')
+         self.assertEqual(cl.response_code, 400)
+
     def testFormValuePreserveOnError(self):
         page_template = """
         <html>

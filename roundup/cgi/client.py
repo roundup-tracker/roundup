@@ -1863,14 +1863,14 @@ class Client:
     def renderContext(self):
         """ Return a PageTemplate for the named page
         """
-        tplname = self.selectTemplate(self.classname, self.template)
-
-        # catch errors so we can handle PT rendering errors more nicely
-        args = {
-            'ok_message': self._ok_message,
-            'error_message': self._error_message
-        }
         try:
+            tplname = self.selectTemplate(self.classname, self.template)
+
+            # catch errors so we can handle PT rendering errors more nicely
+            args = {
+                'ok_message': self._ok_message,
+                'error_message': self._error_message
+            }
             pt = self.instance.templates.load(tplname)
             # let the template render figure stuff out
             result = pt.render(self, None, None, **args)
@@ -1894,6 +1894,7 @@ class Client:
                 result = result.replace('</body>', s)
             return result
         except templating.NoTemplate as message:
+            self.response_code = 400 
             return '<strong>%s</strong>'%html_escape(str(message))
         except templating.Unauthorised as message:
             raise Unauthorised(html_escape(str(message)))
