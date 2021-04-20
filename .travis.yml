@@ -92,7 +92,7 @@ install:
   - if [[ $TRAVIS_PYTHON_VERSION == "3.4"* ]]; then  pip install mysqlclient==1.3.14; fi
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install mysqlclient; fi
   - pip install psycopg2
-  - pip install gpg pytz whoosh pyjwt
+  - pip install gpg pytz whoosh pyjwt requests
   - pip install pytest-cov codecov
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install docutils; fi
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install mistune; fi
