@@ -163,7 +163,7 @@ class SimpleTest(LiveServerTestCase):
         # content-length etc. from f.headers.
         self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
 
-    def test_rest_endpoint_element_options(self):
+    def test_rest_endpoint_attribute_options(self):
         # use basic auth for rest endpoint
         f = requests.options(self.url_base() + '/rest/data/user/1/username',
                              auth=('admin', 'sekrit'),
@@ -183,5 +183,29 @@ class SimpleTest(LiveServerTestCase):
         # content-length etc. from f.headers.
         self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
 
+        ## test a read only property.
+
+        f = requests.options(self.url_base() + '/rest/data/user/1/creator',
+                             auth=('admin', 'sekrit'),
+                             headers = {'content-type': ""})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 204)
+        expected1 = dict(expected)
+        expected1['Allow'] = 'OPTIONS, GET'
+
+        # use dict comprehension to remove fields like date,
+        # content-length etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected1)
+
+        ## test a property that doesn't exist
+        f = requests.options(self.url_base() + '/rest/data/user/1/zot',
+                             auth=('admin', 'sekrit'),
+                             headers = {'content-type': ""})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 404)
 
 
