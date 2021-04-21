@@ -190,7 +190,10 @@ described above.
 Input Formats
 =============
 
-Content-Type is allowed to be ``application/json`` or
+For a GET or OPTIONS request, the Content-Type header should
+not be sent.
+
+Otherwise Content-Type is allowed to be ``application/json`` or
 ``application/x-www-form-urlencoded``. Any other value returns error
 code 415.
 

@@ -1715,6 +1715,21 @@ class RestfulInstance(object):
 
         return 200, result
 
+    @Routing.route("/", 'OPTIONS')
+    @_data_decorator
+    def options_describe(self, input):
+        """OPTION return the HTTP Header for the root
+
+        Returns:
+            int: http status code 204 (No content)
+            body (string): an empty string
+        """
+        self.client.setHeader(
+            "Allow",
+            "OPTIONS, GET"
+        )
+        return 204, ""
+
     @Routing.route("/data")
     @_data_decorator
     def data(self, input):
@@ -1728,6 +1743,21 @@ class RestfulInstance(object):
             if self.db.security.hasPermission('View', uid, cls):
                 result[cls] = dict(link=self.base_path + '/data/' + cls)
         return 200, result
+
+    @Routing.route("/data", 'OPTIONS')
+    @_data_decorator
+    def options_data(self, input):
+        """OPTION return the HTTP Header for the /data element
+
+        Returns:
+            int: http status code 204 (No content)
+            body (string): an empty string
+        """
+        self.client.setHeader(
+            "Allow",
+            "OPTIONS, GET"
+        )
+        return 204, ""
 
     @Routing.route("/summary")
     @_data_decorator
