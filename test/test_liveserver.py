@@ -70,10 +70,8 @@ class SimpleTest(LiveServerTestCase):
         self.assertTrue(b'Creator' in f.content)
 
 
-    def disable_test_http_options(self):
+    def test_http_options(self):
         """ options returns an unimplemented error for this case."""
-        '''note this currently triggers an assertion failure in the
-           python wsgi handler, so disable while investigating'''
         
         # do not send content-type header for options
         f = requests.options(self.url_base() + '/',
