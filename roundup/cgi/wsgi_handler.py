@@ -98,8 +98,8 @@ class RequestDispatcher(object):
             else:
                 code = 501
                 message, explain = BaseHTTPRequestHandler.responses[code]
-                request.start_response([('Content-Type', 'text/html'),
-                                        ('Connection', 'close')], code)
+                request.start_response([('Content-Type', 'text/html')],
+                                       code)
                 request.wfile.write(s2b(DEFAULT_ERROR_MESSAGE % locals()))
                 return []
 
