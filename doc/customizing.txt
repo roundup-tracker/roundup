@@ -897,8 +897,7 @@ behaviour:
 
     when the class for attached files is defined as::
 
-       file = FileClass(db, "file",
-                name=String())
+       file = FileClass(db, "file", name=String())
 
     ``MySpecialFile.doc`` is the name for the file object.
 
