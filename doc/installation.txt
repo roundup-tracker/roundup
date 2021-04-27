@@ -950,8 +950,8 @@ uses a front end web server like nginx, hiawatha, apache configured as
 a reverse proxy. See your web server's documentation on how to set it
 up as a reverse proxy.
 
-The file wsgi.py should be in the current directory with the
-contents::
+The file wsgi.py (obtained from ``frontends/wsgi.py``) should be in
+the current directory with the contents::
 
   # if roundup is not installed on the default PYTHONPATH
   # set it here with:
