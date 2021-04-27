@@ -117,34 +117,21 @@ jinja2
   to have the jinja2_ template engine installed.
 
 pyjwt
-  To use jwt tokens for login (experimental), install pyjwt. If you
-  don't have it installed, jwt tokens are not supported.
+  To use jwt tokens for login (experimental), install `pyjwt`_
+  (v1.7.1, v2.0.1 tested). If you don't have it installed, jwt
+  tokens are not supported.
 
 docutils
-  To use ReStructuredText rendering you need to have the docutils
+  To use ReStructuredText rendering you need to have the `docutils`_
   package installed.
 
 markdown, markdown2 or mistune
-  To use markdown rendering you need to have the markdown, markdown2
-  or mistune package installed.
+  To use markdown rendering you need to have the markdown_, markdown2_
+  or mistune_ (v0.8.4 tested) package installed.
 
 Windows Service
   You can run Roundup as a Windows service if pywin32_ is installed.
   Otherwise it must be started manually.
-
-.. _Xapian: https://xapian.org/
-.. _Whoosh: https://whoosh.readthedocs.org/en/latest
-.. _pytz: https://pypi.org/project/pytz/
-.. _Olson tz database: https://www.iana.org/time-zones
-.. _pyopenssl: http://pyopenssl.sourceforge.net
-.. _gpg: https://www.gnupg.org/software/gpgme/index.html
-.. _pywin32: https://pypi.org/project/pywin32/
-.. _jinja2: https://palletsprojects.com/p/jinja/
-.. _docutils: https://docutils.sourceforge.io/
-.. _markdown: https://python-markdown.github.io/
-.. _markdown2: https://github.com/trentm/python-markdown2
-.. _mistune: https://github.com/lepture/mistune
-
 
 Getting Roundup
 ===============
@@ -1446,12 +1433,27 @@ there are no errors. If there are errors, please let us know!
 
 .. _External hyperlink targets:
 
-.. _apache: http://httpd.apache.org/
-.. _flup: https://pypi.org/project/flup/
-.. _mod_python: http://modpython.org/
-.. _mod_wsgi: https://pypi.org/project/mod-wsgi/
-.. _MySQLdb: https://pypi.org/project/mysqlclient/
-.. _Psycopg: https://www.psycopg.org/
-.. _pysqlite: https://pysqlite.org/
+
+
 .. _`adding MySQL users`:
     https://dev.mysql.com/doc/refman/8.0/en/creating-accounts.html
+.. _apache: https://httpd.apache.org/
+.. _docutils: https://pypi.org/project/docutils/
+.. _flup: https://pypi.org/project/flup/
+.. _gpg: https://www.gnupg.org/software/gpgme/index.html
+.. _jinja2: https://palletsprojects.com/p/jinja/
+.. _markdown: https://python-markdown.github.io/
+.. _markdown2: https://github.com/trentm/python-markdown2
+.. _mistune: https://pypi.org/project/mistune/
+.. _mod_python: https://github.com/grisha/mod_python
+.. _mod_wsgi: https://pypi.org/project/mod-wsgi/
+.. _MySQLdb: https://pypi.org/project/mysqlclient/
+.. _Olson tz database: https://www.iana.org/time-zones
+.. _Psycopg: https://www.psycopg.org/
+.. _pyjwt: https://pypi.org/project/PyJWT/
+.. _pyopenssl: http://pyopenssl.sourceforge.net
+.. _pysqlite: https://pysqlite.org/
+.. _pytz: https://pypi.org/project/pytz/
+.. _pywin32: https://pypi.org/project/pywin32/
+.. _Whoosh: https://whoosh.readthedocs.org/en/latest
+.. _Xapian: https://xapian.org/
