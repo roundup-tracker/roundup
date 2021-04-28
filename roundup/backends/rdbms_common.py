@@ -571,7 +571,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         old_has = {}
         for name, prop in old_spec[1]:
             old_has[name] = 1
-            if name in spec.properties:
+            if name in spec.properties and not spec.properties[name].computed:
                 continue
 
             if prop.find('Multilink to') != -1:
