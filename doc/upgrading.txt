@@ -22,7 +22,7 @@ Contents:
 .. contents::
    :local:
 
-.. index:: Upgrading; 1.6.x to 2.x.x
+.. index:: Upgrading; 2.0.0 to 2.1.0
 
 Migrating from 2.0.0 to 2.x.x
 =============================
@@ -62,6 +62,16 @@ version: 3.5.1. If your tracker is based on one of these templates
 references the new ``jquery-3.5.1.js`` file and also fixes a bug that
 prevented applying the change from the helper to the field on the main
 form.
+
+Roundup-admin security stops on incorrect properties
+----------------------------------------------------
+
+The ``roundup-admin ... security`` command used to continue
+running through the rest of the security roles after reporting a
+property error. Now it stops after reporting the incorrect property.
+
+If run non-interactively, it exits with status 1. It can now be
+used in a startup script to detect permission errors.
 
 .. index:: Upgrading; 1.6.x to 2.0.0
 

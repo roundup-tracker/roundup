@@ -92,6 +92,9 @@ Fixed:
   Handle traceback caused when requested @template is not found.
   Return 400 error in this condition. (patch Cedric Krier,
   additional change and test John Rouillard)
+- issue2551062: roundup-admin security now exits status 1 when
+  it finds an invalid property. It no longer tries to print the rest
+  of the security properties. (John Rouillard)
 
 Features:
 - issue2550522 - Add 'filter' command to command-line

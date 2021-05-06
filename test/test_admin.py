@@ -683,6 +683,157 @@ class AdminTest(object):
         self.assertTrue(expected[0] in out)
         self.assertTrue("Back ends:" in out)
 
+    def testSecurity(self):
+        ''' Note the tests will fail if you run this under pdb.
+            the context managers capture the pdb prompts and this screws
+            up the stdout strings with (pdb) prefixed to the line.
+        '''
+        import sys
+
+        self.install_init()
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'security' ]
+            ret = self.admin.main()
+
+        result = """New Web users get the Role "User"
+New Email users get the Role "User"
+Role "admin":
+ User may create everything (Create)
+ User may edit everything (Edit)
+ User may restore everything (Restore)
+ User may retire everything (Retire)
+ User may view everything (View)
+ User may access the web interface (Web Access)
+ User may access the rest interface (Rest Access)
+ User may access the xmlrpc interface (Xmlrpc Access)
+ User may manipulate user Roles through the web (Web Roles)
+ User may use the email interface (Email Access)
+Role "anonymous":
+ User may access the web interface (Web Access)
+ User is allowed to register new user (Register for "user" only)
+ User is allowed to access issue (View for "issue" only)
+ User is allowed to access file (View for "file" only)
+ User is allowed to access msg (View for "msg" only)
+ User is allowed to access keyword (View for "keyword" only)
+ User is allowed to access priority (View for "priority" only)
+ User is allowed to access status (View for "status" only)
+  (Search for "user" only)
+Role "user":
+ User may access the web interface (Web Access)
+ User may use the email interface (Email Access)
+ User may access the rest interface (Rest Access)
+ User may access the xmlrpc interface (Xmlrpc Access)
+ User is allowed to access issue (View for "issue" only)
+ User is allowed to edit issue (Edit for "issue" only)
+ User is allowed to create issue (Create for "issue" only)
+ User is allowed to access file (View for "file" only)
+ User is allowed to edit file (Edit for "file" only)
+ User is allowed to create file (Create for "file" only)
+ User is allowed to access msg (View for "msg" only)
+ User is allowed to edit msg (Edit for "msg" only)
+ User is allowed to create msg (Create for "msg" only)
+ User is allowed to access keyword (View for "keyword" only)
+ User is allowed to edit keyword (Edit for "keyword" only)
+ User is allowed to create keyword (Create for "keyword" only)
+ User is allowed to access priority (View for "priority" only)
+ User is allowed to access status (View for "status" only)
+  (View for "user": ('id', 'organisation', 'phone', 'realname', 'timezone', 'username') only)
+ User is allowed to view their own user details (View for "user" only)
+ User is allowed to edit their own user details (Edit for "user": ('username', 'password', 'address', 'realname', 'phone', 'organisation', 'alternate_addresses', 'queries', 'timezone') only)
+ User is allowed to view their own and public queries (View for "query" only)
+  (Search for "query" only)
+ User is allowed to edit their queries (Edit for "query" only)
+ User is allowed to retire their queries (Retire for "query" only)
+ User is allowed to restore their queries (Restore for "query" only)
+ User is allowed to create queries (Create for "query" only)
+"""
+        print(out.getvalue())
+
+        self.assertEqual(result, out.getvalue())
+        self.assertEqual(ret, 0)
+
+    def testSecurityInvalidAttribute(self):
+        ''' Test with an invalid attribute.
+            Note the tests will fail if you run this under pdb.
+            the context managers capture the pdb prompts and this screws
+            up the stdout strings with (pdb) prefixed to the line.
+        '''
+        import sys
+
+        self.maxDiff = None # we want full diff
+
+        self.install_init()
+
+        # edit in an invalid attribute/property
+        with open(self.dirname + "/schema.py", "r+") as f:
+            d = f.readlines()
+            f.seek(0)
+            for i in d:
+                if "organisation" in i:
+                    i = i.replace("'id', 'organisation'","'id', 'organization'")
+                f.write(i)
+            f.truncate()
+
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'security' ]
+            ret = self.admin.main()
+
+        result = """New Web users get the Role "User"
+New Email users get the Role "User"
+Role "admin":
+ User may create everything (Create)
+ User may edit everything (Edit)
+ User may restore everything (Restore)
+ User may retire everything (Retire)
+ User may view everything (View)
+ User may access the web interface (Web Access)
+ User may access the rest interface (Rest Access)
+ User may access the xmlrpc interface (Xmlrpc Access)
+ User may manipulate user Roles through the web (Web Roles)
+ User may use the email interface (Email Access)
+Role "anonymous":
+ User may access the web interface (Web Access)
+ User is allowed to register new user (Register for "user" only)
+ User is allowed to access issue (View for "issue" only)
+ User is allowed to access file (View for "file" only)
+ User is allowed to access msg (View for "msg" only)
+ User is allowed to access keyword (View for "keyword" only)
+ User is allowed to access priority (View for "priority" only)
+ User is allowed to access status (View for "status" only)
+  (Search for "user" only)
+Role "user":
+ User may access the web interface (Web Access)
+ User may use the email interface (Email Access)
+ User may access the rest interface (Rest Access)
+ User may access the xmlrpc interface (Xmlrpc Access)
+ User is allowed to access issue (View for "issue" only)
+ User is allowed to edit issue (Edit for "issue" only)
+ User is allowed to create issue (Create for "issue" only)
+ User is allowed to access file (View for "file" only)
+ User is allowed to edit file (Edit for "file" only)
+ User is allowed to create file (Create for "file" only)
+ User is allowed to access msg (View for "msg" only)
+ User is allowed to edit msg (Edit for "msg" only)
+ User is allowed to create msg (Create for "msg" only)
+ User is allowed to access keyword (View for "keyword" only)
+ User is allowed to edit keyword (Edit for "keyword" only)
+ User is allowed to create keyword (Create for "keyword" only)
+ User is allowed to access priority (View for "priority" only)
+ User is allowed to access status (View for "status" only)
+  (View for "user": ('id', 'organization', 'phone', 'realname', 'timezone', 'username') only)
+
+  **Invalid properties for user: ['organization']
+
+"""
+        print(out.getvalue())
+
+        self.assertEqual(result, out.getvalue())
+        self.assertEqual(ret, 1)
+
     def testSet(self):
         ''' Note the tests will fail if you run this under pdb.
             the context managers capture the pdb prompts and this screws

@@ -1567,6 +1567,7 @@ Erase it? Y/N: """))
                                 bad_props.append(p)
                         if bad_props:
                             sys.stdout.write(_('\n  **Invalid properties for %(class)s: %(props)s\n\n') % {"class": permission.klass, "props": bad_props})
+                            return 1
                     else:
                         sys.stdout.write(_(' %(description)s (%(name)s for '
                                            '"%(klass)s" only)\n') % d)
