@@ -2027,6 +2027,38 @@ class DBTest(commonDBTest):
         self.assertEqual(ls(self.db.user.get('4', ni)), ['1'])
         self.assertEqual(ls(self.db.user.get('5', ni)), ['7'])
 
+    # Currently only works for sqlite and postgresql
+    @pytest.mark.xfail
+    def testFilteringRevMultilinkExpression(self):
+        ae, iiter = self.filteringSetupTransitiveSearch('user')
+        ni = 'nosy_issues'
+        self.db.issue.set('6', nosy=['3', '4', '5'])
+        self.db.issue.set('7', nosy=['5'])
+        # After this setup we have the following values for nosy:
+        # issue   nosy
+        # 1:      4
+        # 2:      5
+        # 3:
+        # 4:
+        # 5:
+        # 6:      3, 4, 5
+        # 7:      5
+        # 8:
+        # Retire users '9' and '10' to reduce list
+        self.db.user.retire ('9')
+        self.db.user.retire ('10')
+        for filt in iiter():
+            # '1' or '2'
+            ae(filt(None, {ni: ['1', '2', '-4']}), ['4', '5'])
+            # '6' or '7'
+            ae(filt(None, {ni: ['6', '7', '-4']}), ['3', '4', '5'])
+            # '6' and '7'
+            ae(filt(None, {ni: ['6', '7', '-3']}), ['5'])
+            # '6' and not '1'
+            ae(filt(None, {ni: ['6', '1', '-2', '-3']}), ['3', '5'])
+            # '2' or empty (implicit or)
+            ae(filt(None, {ni: ['-1', '2']}), ['1', '2', '5', '6', '7', '8'])
+
     def testFilteringMany(self):
         ae, iiter = self.filteringSetup()
         for f in iiter():
