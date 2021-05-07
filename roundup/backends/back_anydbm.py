@@ -122,12 +122,17 @@ class Expression:
     def __init__(self, v):
         try:
             opcodes = [int(x) for x in v]
-            if min(opcodes) >= -1: raise ValueError()
+            if min(opcodes) >= -1:
+                raise ValueError()
 
             compiled = compile_expression(opcodes)
             self.evaluate = lambda x: compiled.evaluate([int(y) for y in x])
         except:
-            self.evaluate = lambda x: bool(set(x) & set(v))
+            if '-1' in v:
+                v = [x for x in v if int(x) > 0]
+                self.evaluate = lambda x: bool(set(x) & set(v)) or not x
+            else:
+                self.evaluate = lambda x: bool(set(x) & set(v))
 
 #
 # Now the database
@@ -1908,7 +1913,8 @@ class Class(hyperdb.Class):
                             # otherwise, make sure this node has each of the
                             # required values
                             expr = Expression(v)
-                            if expr.evaluate(nv): match = 1
+                            if expr.evaluate(nv):
+                                match = 1
                     elif t == STRING:
                         if nv is None:
                             nv = ''

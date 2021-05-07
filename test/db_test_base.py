@@ -1977,12 +1977,12 @@ class DBTest(commonDBTest):
         for filt in iiter():
             ae(filt(None, {kw: ['-1']}),
                ['1'])
-            # These do not work with any of the backends currently
+            # '3' or empty (without explicit 'or')
+            ae(filt(None, {kw: ['3', '-1']}),
+               ['1', '2', '3'])
+            # This does not work with any of the backends currently:
             # '3' or empty (with explicit 'or')
             #ae(filt(None, {kw: ['3', '-1', '-4']}),
-            #   ['1', '2', '3'])
-            # '3' or empty (without explicit 'or')
-            #ae(filt(None, {kw: ['3', '-1']}),
             #   ['1', '2', '3'])
 
     def testFilteringRevMultilink(self):

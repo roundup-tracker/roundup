@@ -1558,6 +1558,17 @@ class Class(hyperdb.Class):
     # We define the default here, can be changed in derivative class
     case_sensitive_equal = '='
 
+    # Some DBs order NULL values last. Set this variable in the backend
+    # for prepending an order by clause for each attribute that causes
+    # correct sort order for NULLs. Examples:
+    # order_by_null_values = '(%s is not NULL)'
+    # order_by_null_values = 'notnull(%s)'
+    # The format parameter is replaced with the attribute.
+    order_by_null_values = None
+
+    # Assuming DBs can do subselects, overwrite if they cannot.
+    supports_subselects = True
+
     def schema(self):
         """ A dumpable version of the schema that we can store in the
             database
@@ -2383,19 +2394,6 @@ class Class(hyperdb.Class):
         return '_%s.id not in (select %s from %s%s)'%(classname, nodeid_name,
             multilink_table, w)
 
-    # Some DBs order NULL values last. Set this variable in the backend
-    # for prepending an order by clause for each attribute that causes
-    # correct sort order for NULLs. Examples:
-    # order_by_null_values = '(%s is not NULL)'
-    # order_by_null_values = 'notnull(%s)'
-    # The format parameter is replaced with the attribute.
-    order_by_null_values = None
-
-    def supports_subselects(self): 
-        '''Assuming DBs can do subselects, overwrite if they cannot.
-	'''
-        return True
-
     def _filter_multilink_expression_fallback(
         self, classname, multilink_table, expr):
         '''This is a fallback for database that do not support
@@ -2441,19 +2439,24 @@ class Class(hyperdb.Class):
         # we have ids of the classname table
         return ids.where("_%s.id" % classname, self.db.arg)
 
-    def _filter_multilink_expression(self, classname, multilink_table,
-        linkid_name, nodeid_name, v):
+    def _filter_multilink_expression(self, proptree, v):
         """ Filters out elements of the classname table that do not
             match the given expression.
             Returns tuple of 'WHERE' introns for the overall filter.
         """
+        classname = proptree.parent.uniqname
+        multilink_table = proptree.propclass.table_name
+        nid = proptree.propclass.nodeid_name
+        lid = proptree.propclass.linkid_name
+
         try:
             opcodes = [int(x) for x in v]
-            if min(opcodes) >= -1: raise ValueError()
+            if min(opcodes) >= -1:
+                raise ValueError()
 
             expr = compile_expression(opcodes)
 
-            if not self.supports_subselects():
+            if not self.supports_subselects:
                 # We heavily rely on subselects. If there is
                 # no decent support fall back to slower variant.
                 return self._filter_multilink_expression_fallback(
@@ -2461,7 +2464,7 @@ class Class(hyperdb.Class):
 
             atom = \
                 "%s IN(SELECT %s FROM %s WHERE %s=a.id)" % (
-                self.db.arg, linkid_name, multilink_table, nodeid_name)
+                self.db.arg, lid, multilink_table, nid)
 
             intron = \
                 "_%(classname)s.id in (SELECT id " \
@@ -2475,10 +2478,20 @@ class Class(hyperdb.Class):
 
             return intron, values
         except:
-            # original behavior
-            where = "%s.%s in (%s)" % (
-                multilink_table, linkid_name, ','.join([self.db.arg] * len(v)))
-            return where, v, True # True to indicate original
+            # fallback behavior when expression parsing above fails
+            orclause = ''
+            if '-1' in v :
+                v = [x for x in v if int (x) > 0]
+                orclause = self._subselect(proptree)
+            where = []
+            where.append("%s.%s in (%s)" % (multilink_table, lid,
+                ','.join([self.db.arg] * len(v))))
+            where.append('_%s.id=%s.%s'%(classname, multilink_table, nid))
+            where = ' and '.join (where)
+            if orclause :
+                where = '((' + ' or '.join ((where + ')', orclause)) + ')'
+
+            return where, v
 
     def _filter_sql (self, search_matches, filterspec, srt=[], grp=[], retr=0,
                      retired=False, exact_match_spec={}, limit=None,
@@ -2550,16 +2563,6 @@ class Class(hyperdb.Class):
                         where.append(self._subselect(p))
                     else:
                         frum.append(tn)
-                        gen_join = True
-
-                        if p.has_values and isinstance(v, type([])):
-                            result = self._filter_multilink_expression(pln,
-                                tn, lid, nid, v)
-                            # XXX: We dont need an id join if we used the filter
-                            gen_join = len(result) == 3
-
-                        if gen_join:
-                            where.append('_%s.id=%s.%s'%(pln, tn, nid))
 
                         if p.children or p.need_child_retired:
                             frum.append('_%s as _%s' % (cn, ln))
@@ -2567,10 +2570,15 @@ class Class(hyperdb.Class):
                             if p.need_child_retired:
                                 where.append('_%s.__retired__=0'%(ln))
 
+                        if not p.has_values or not isinstance(v, type([])):
+                            where.append('_%s.id=%s.%s'%(pln, tn, nid))
                         if p.has_values:
                             if isinstance(v, type([])):
-                                where.append(result[0])
-                                args += result[1]
+                                # The where-clause above is conditionally
+                                # created in _filter_multilink_expression
+                                w, arg = self._filter_multilink_expression(p, v)
+                                where.append(w)
+                                args += arg
                             else:
                                 where.append('%s.%s=%s'%(tn, lid, a))
                                 args.append(v)
