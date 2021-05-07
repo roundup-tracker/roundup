@@ -1929,8 +1929,6 @@ class DBTest(commonDBTest):
             ae(filt(None, {'nosy': ['1','2']}, ('+', 'status'),
                 ('-', 'deadline')), ['4', '3'])
 
-    # Currently fails on the very first test for mysql
-    @pytest.mark.xfail
     def testFilteringMultilinkExpression(self):
         ae, iiter = self.filteringSetup()
         kw1 = self.db.keyword.create(name='Key1')

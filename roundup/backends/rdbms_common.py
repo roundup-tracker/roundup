@@ -2433,7 +2433,7 @@ class Class(hyperdb.Class):
                     if is_valid(kws): append(last_id)
                     last_id, kws = nid, []
             if kw is not None:
-                kws.append(kw)
+                kws.append(int(kw))
 
         if last_id is not None and is_valid(kws): 
             append(last_id)
