@@ -93,6 +93,8 @@ def setupTracker(dirname, backend="anydbm", optimize=False):
 def setupSchema(db, create, module):
     mls = module.Class(db, "mls", name=String())
     mls.setkey("name")
+    keyword = module.Class(db, "keyword", name=String())
+    keyword.setkey("name")
     status = module.Class(db, "status", name=String(), mls=Multilink("mls"))
     status.setkey("name")
     priority = module.Class(db, "priority", name=String(), order=String())
@@ -115,7 +117,8 @@ def setupSchema(db, create, module):
         foo=Interval(quiet=True, default_value=date.Interval('-1w')),
         files=Multilink("file"), assignedto=Link('user', quiet=True,
         rev_multilink='issues'), priority=Link('priority'),
-        spam=Multilink('msg'), feedback=Link('msg'))
+        spam=Multilink('msg'), feedback=Link('msg'),
+        keywords=Multilink('keyword'))
     stuff = module.Class(db, "stuff", stuff=String())
     session = module.Class(db, 'session', title=String())
     msg = module.FileClass(db, "msg", date=Date(),
@@ -1539,8 +1542,8 @@ class DBTest(commonDBTest):
         # import an issue
         title = 'Bzzt'
         nodeid = self.db.issue.import_list(['title', 'messages', 'files',
-            'spam', 'nosy', 'superseder'], [repr(title), '[]', '[]',
-            '[]', '[]', '[]'])
+            'spam', 'nosy', 'superseder', 'keywords'], [repr(title), '[]',
+            '[]', '[]', '[]', '[]', '[]'])
         self.db.commit()
 
         # Content of title attribute is indexed
@@ -1925,6 +1928,64 @@ class DBTest(commonDBTest):
             ae(filt(None, {'nosy': '-1'}, ('+','id'), (None,None)), ['1', '2'])
             ae(filt(None, {'nosy': ['1','2']}, ('+', 'status'),
                 ('-', 'deadline')), ['4', '3'])
+
+    # Currently fails on the very first test for mysql
+    @pytest.mark.xfail
+    def testFilteringMultilinkExpression(self):
+        ae, iiter = self.filteringSetup()
+        kw1 = self.db.keyword.create(name='Key1')
+        kw2 = self.db.keyword.create(name='Key2')
+        kw3 = self.db.keyword.create(name='Key3')
+        kw4 = self.db.keyword.create(name='Key4')
+        self.db.issue.set('1', keywords=[kw1, kw2])
+        self.db.issue.set('2', keywords=[kw1, kw3])
+        self.db.issue.set('3', keywords=[kw2, kw3, kw4])
+        self.db.issue.set('4', keywords=[kw1, kw2, kw4])
+        self.db.commit()
+        kw = 'keywords'
+        for filt in iiter():
+            # '1' and '2'
+            ae(filt(None, {kw: ['1', '2', '-3']}),
+               ['1', '4'])
+            # ('2' and '4') and '1'
+            ae(filt(None, {kw: ['1', '2', '4', '-3', '-3']}),
+               ['4'])
+            # not '4' and '3'
+            ae(filt(None, {kw: ['3', '4', '-2', '-3']}),
+               ['2'])
+            # (not '4' and '3') and '2'
+            ae(filt(None, {kw: ['2', '3', '4', '-2', '-3', '-3']}),
+               [])
+            # '1' or '2' without explicit 'or'
+            ae(filt(None, {kw: ['1', '2']}),
+               ['1', '2', '3', '4'])
+            # '1' or '2' with explicit 'or'
+            ae(filt(None, {kw: ['1', '2', '-4']}),
+               ['1', '2', '3', '4'])
+            # '3' or '4' without explicit 'or'
+            ae(filt(None, {kw: ['3', '4']}),
+               ['2', '3', '4'])
+            # '3' or '4' with explicit 'or'
+            ae(filt(None, {kw: ['3', '4', '-4']}),
+               ['2', '3', '4'])
+            # ('3' and '4') or ('1' and '2')
+            ae(filt(None, {kw: ['3', '4', '-3', '1', '2', '-3', '-4']}),
+               ['1', '3', '4'])
+            # '2' and empty
+            ae(filt(None, {kw: ['2', '-1', '-3']}),
+               [])
+        self.db.issue.set('1', keywords=[])
+        self.db.commit()
+        for filt in iiter():
+            ae(filt(None, {kw: ['-1']}),
+               ['1'])
+            # These do not work with any of the backends currently
+            # '3' or empty (with explicit 'or')
+            #ae(filt(None, {kw: ['3', '-1', '-4']}),
+            #   ['1', '2', '3'])
+            # '3' or empty (without explicit 'or')
+            #ae(filt(None, {kw: ['3', '-1']}),
+            #   ['1', '2', '3'])
 
     def testFilteringRevMultilink(self):
         ae, iiter = self.filteringSetupTransitiveSearch('user')
@@ -2683,18 +2744,19 @@ class DBTest(commonDBTest):
 
             issue_class_spec = tool.do_specification(["issue"])
             self.assertEqual(sorted (soutput),
-                             ['assignedto: <roundup.hyperdb.Link to "user">\n',
-                              'deadline: <roundup.hyperdb.Date>\n',
-                              'feedback: <roundup.hyperdb.Link to "msg">\n',
-                              'files: <roundup.hyperdb.Multilink to "file">\n',
-                              'foo: <roundup.hyperdb.Interval>\n',
-                              'messages: <roundup.hyperdb.Multilink to "msg">\n',
-                              'nosy: <roundup.hyperdb.Multilink to "user">\n',
-                              'priority: <roundup.hyperdb.Link to "priority">\n',
-                              'spam: <roundup.hyperdb.Multilink to "msg">\n',
-                              'status: <roundup.hyperdb.Link to "status">\n',
-                              'superseder: <roundup.hyperdb.Multilink to "issue">\n',
-                              'title: <roundup.hyperdb.String>\n'])
+                     ['assignedto: <roundup.hyperdb.Link to "user">\n',
+                      'deadline: <roundup.hyperdb.Date>\n',
+                      'feedback: <roundup.hyperdb.Link to "msg">\n',
+                      'files: <roundup.hyperdb.Multilink to "file">\n',
+                      'foo: <roundup.hyperdb.Interval>\n',
+                      'keywords: <roundup.hyperdb.Multilink to "keyword">\n',
+                      'messages: <roundup.hyperdb.Multilink to "msg">\n',
+                      'nosy: <roundup.hyperdb.Multilink to "user">\n',
+                      'priority: <roundup.hyperdb.Link to "priority">\n',
+                      'spam: <roundup.hyperdb.Multilink to "msg">\n',
+                      'status: <roundup.hyperdb.Link to "status">\n',
+                      'superseder: <roundup.hyperdb.Multilink to "issue">\n',
+                      'title: <roundup.hyperdb.String>\n'])
 
             #userclassprop=tool.do_list(["mls"])
             #tool.print_designator = False
@@ -2793,8 +2855,9 @@ class DBTest(commonDBTest):
         props = self.db.issue.getprops()
         keys = sorted(props.keys())
         self.assertEqual(keys, ['activity', 'actor', 'assignedto', 'creation',
-            'creator', 'deadline', 'feedback', 'files', 'fixer', 'foo', 'id', 'messages',
-            'nosy', 'priority', 'spam', 'status', 'superseder', 'title'])
+            'creator', 'deadline', 'feedback', 'files', 'fixer', 'foo',
+            'id', 'keywords', 'messages', 'nosy', 'priority', 'spam',
+            'status', 'superseder', 'title'])
         self.assertEqual(self.db.issue.get('1', "fixer"), None)
 
     def testRemoveProperty(self):
@@ -2806,8 +2869,9 @@ class DBTest(commonDBTest):
         props = self.db.issue.getprops()
         keys = sorted(props.keys())
         self.assertEqual(keys, ['activity', 'actor', 'assignedto', 'creation',
-            'creator', 'deadline', 'feedback', 'files', 'foo', 'id', 'messages',
-            'nosy', 'priority', 'spam', 'status', 'superseder'])
+            'creator', 'deadline', 'feedback', 'files', 'foo', 'id',
+            'keywords', 'messages', 'nosy', 'priority', 'spam', 'status',
+            'superseder'])
         self.assertEqual(self.db.issue.list(), ['1'])
 
     def testAddRemoveProperty(self):
@@ -2821,7 +2885,8 @@ class DBTest(commonDBTest):
         keys = sorted(props.keys())
         self.assertEqual(keys, ['activity', 'actor', 'assignedto', 'creation',
             'creator', 'deadline', 'feedback', 'files', 'fixer', 'foo', 'id',
-            'messages', 'nosy', 'priority', 'spam', 'status', 'superseder'])
+            'keywords', 'messages', 'nosy', 'priority', 'spam', 'status',
+            'superseder'])
         self.assertEqual(self.db.issue.list(), ['1'])
 
     def testNosyMail(self) :
