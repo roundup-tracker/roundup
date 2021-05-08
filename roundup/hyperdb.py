@@ -617,10 +617,10 @@ class Proptree(object):
                         # expression on them
                         expr = Expression(nval)
                         by_id = {}
-                        for id in cl.getnodeids(retired=False):
+                        for id in self.cls.getnodeids(retired=False):
                             by_id[id] = set()
                         items = set()
-                        for id in self.cls.getnodeids(retired=False):
+                        for id in cl.getnodeids(retired=False):
                             node = cl.getnode(id)
                             if node[pn]:
                                 v = node[pn]
@@ -628,7 +628,7 @@ class Proptree(object):
                                     v = [v]
                                 for x in v:
                                     if x not in by_id:
-                                        by_id[x] = set()
+                                        continue
                                     by_id[x].add(id)
                         for k in by_id:
                             if expr.evaluate(by_id[k]):

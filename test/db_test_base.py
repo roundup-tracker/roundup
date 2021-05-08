@@ -1898,6 +1898,70 @@ class DBTest(commonDBTest):
         self.assertEqual(ls(self.db.user.get('7', 'issues')), [])
         self.assertEqual(ls(self.db.user.get('10', 'issues')), ['7', '8'])
 
+    def testFilteringRevLinkExpression(self):
+        ae, iiter = self.filteringSetupTransitiveSearch('user')
+        # We have
+        # issue assignedto
+        # 1:    6
+        # 2:    6
+        # 3:    7
+        # 4:    8
+        # 5:    9
+        # 6:    10
+        # 7:    10
+        # 8:    10
+        for filt in iiter():
+            # Explicit 'or'
+            ae(filt(None, {'issues': ['3', '4', '-4']}), ['7', '8'])
+            # Implicit or with '-1'
+            ae(filt(None, {'issues': ['3', '4', '-1']}),
+                ['1', '2', '3', '4', '5', '7', '8'])
+            # Explicit or with '-1': 3 or 4 or empty
+            ae(filt(None, {'issues': ['3', '4', '-4', '-1', '-4']}),
+                ['1', '2', '3', '4', '5', '7', '8'])
+            # '3' and empty
+            ae(filt(None, {'issues': ['3', '-1', '-3']}), [])
+            # '6' and '7' and '8'
+            ae(filt(None, {'issues': ['6', '7', '-3', '8', '-3']}), ['10'])
+            # '6' and '7' or '1' and '2'
+            ae(filt(None, {'issues': ['6', '7', '-3', '1', '2', '-3', '-4']}),
+                ['6', '10'])
+            # '1' or '4'
+            ae(filt(None, {'issues': ['1', '4', '-4']}), ['6', '8'])
+
+        # Now retire some linked-to issues and retry
+        self.db.issue.retire('6')
+        self.db.issue.retire('2')
+        self.db.issue.retire('3')
+        self.db.commit()
+        # We have now
+        # issue assignedto
+        # 1:    6
+        # 4:    8
+        # 5:    9
+        # 7:    10
+        # 8:    10
+        for filt in iiter():
+            # Explicit 'or'
+            ae(filt(None, {'issues': ['3', '4', '-4']}), ['8'])
+            # Implicit or with '-1'
+            ae(filt(None, {'issues': ['3', '4', '-1']}),
+                ['1', '2', '3', '4', '5', '7', '8'])
+            # Explicit or with '-1': 3 or 4 or empty
+            ae(filt(None, {'issues': ['3', '4', '-4', '-1', '-4']}),
+                ['1', '2', '3', '4', '5', '7', '8'])
+            # '3' and empty
+            ae(filt(None, {'issues': ['3', '-1', '-3']}), [])
+            # '6' and '7' and '8'
+            ae(filt(None, {'issues': ['6', '7', '-3', '8', '-3']}), [])
+            # '7' and '8'
+            ae(filt(None, {'issues': ['7', '8', '-3']}), ['10'])
+            # '6' and '7' or '1' and '2'
+            ae(filt(None, {'issues': ['6', '7', '-3', '1', '2', '-3', '-4']}),
+                [])
+            # '1' or '4'
+            ae(filt(None, {'issues': ['1', '4', '-4']}), ['6', '8'])
+
     def testFilteringLinkSortSearchMultilink(self):
         ae, iiter = self.filteringSetup()
         a = 'assignedto'
@@ -2054,10 +2118,12 @@ class DBTest(commonDBTest):
         # 7:      5
         # 8:
         # Retire users '9' and '10' to reduce list
-        self.db.user.retire ('9')
-        self.db.user.retire ('10')
-        self.db.commit ()
+        self.db.user.retire('9')
+        self.db.user.retire('10')
+        self.db.commit()
         for filt in iiter():
+            # not empty
+            ae(filt(None, {ni: ['-1', '-2']}), ['3', '4', '5'])
             # '1' or '2'
             ae(filt(None, {ni: ['1', '2', '-4']}), ['4', '5'])
             # '6' or '7'
@@ -2081,6 +2147,49 @@ class DBTest(commonDBTest):
             # ('4' and empty) or ('2' or empty)
             ae(filt(None, {ni: ['4', '-1', '-3', '2', '-1', '-4', '-4']}),
                ['1', '2', '5', '6', '7', '8'])
+        # Retire issues 2, 6 and retry
+        self.db.issue.retire('2')
+        self.db.issue.retire('6')
+        self.db.commit()
+        # After this setup we have the following values for nosy:
+        # issue   nosy
+        # 1:      4
+        # 3:
+        # 4:
+        # 5:
+        # 7:      5
+        # 8:
+        for filt in iiter():
+            # not empty
+            ae(filt(None, {ni: ['-1', '-2']}), ['4', '5'])
+            # '1' or '2' (implicit)
+            ae(filt(None, {ni: ['1', '2']}), ['4'])
+            # '1' or '2'
+            ae(filt(None, {ni: ['1', '2', '-4']}), ['4'])
+            # '6' or '7'
+            ae(filt(None, {ni: ['6', '7', '-4']}), ['5'])
+            # '6' and '7'
+            ae(filt(None, {ni: ['6', '7', '-3']}), [])
+            # '6' and not '1'
+            ae(filt(None, {ni: ['6', '1', '-2', '-3']}), [])
+            # not '1'
+            ae(filt(None, {ni: ['1', '-2']}),
+               ['1', '2', '3', '5', '6', '7', '8'])
+            # '2' or empty (implicit or)
+            ae(filt(None, {ni: ['-1', '2']}), ['1', '2', '3', '6', '7', '8'])
+            # '2' or empty (explicit or)
+            ae(filt(None, {ni: ['-1', '2', '-4']}),
+               ['1', '2', '3', '6', '7', '8'])
+            # empty or '2' (explicit or)
+            ae(filt(None, {ni: ['2', '-1', '-4']}),
+               ['1', '2', '3', '6', '7', '8'])
+            # '2' and empty (should always return empty list)
+            ae(filt(None, {ni: ['-1', '2', '-3']}), [])
+            # empty and '2' (should always return empty list)
+            ae(filt(None, {ni: ['2', '-1', '-3']}), [])
+            # ('4' and empty) or ('2' or empty)
+            ae(filt(None, {ni: ['4', '-1', '-3', '2', '-1', '-4', '-4']}),
+               ['1', '2', '3', '6', '7', '8'])
 
     def testFilteringMany(self):
         ae, iiter = self.filteringSetup()

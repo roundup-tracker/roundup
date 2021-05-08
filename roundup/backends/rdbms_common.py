@@ -2419,11 +2419,20 @@ class Class(hyperdb.Class):
         # would be nice but this tricky: Think about the cases
         # where the multilink table does not have join values
         # needed in evaluation.
+        w = j = ''
+        s = 'm.%s' % lid
+        if proptree.need_retired:
+            w = ' and m.__retired__=0'
+        elif proptree.need_child_retired:
+            tn2 = '_' + proptree.classname
+            j = ' LEFT OUTER JOIN %s ON %s.id = m.%s' % (tn2, tn2, lid)
+            w = ' and %s.__retired__=0'%(tn2)
+            s = '%s.id' % tn2
 
-        stmnt = "SELECT c.id, m.%s FROM _%s c " \
-                "LEFT OUTER JOIN %s m " \
-                "ON c.id = m.%s ORDER BY c.id" % (
-                    lid, classname, multilink_table, nid)
+        stmnt = "SELECT c.id, %s FROM _%s as c " \
+                "LEFT OUTER JOIN %s as m " \
+                "ON c.id = m.%s%s%s ORDER BY c.id" % (
+                    s, classname, multilink_table, nid, j, w)
         self.db.sql(stmnt)
 
         # collect all multilink items for a class item
@@ -2467,9 +2476,18 @@ class Class(hyperdb.Class):
                 return self._filter_multilink_expression_fallback(
                     proptree, expr)
 
+            w = j = ''
+            if proptree.need_retired:
+                w = ' and %s.__retired__=0'%(multilink_table)
+            elif proptree.need_child_retired:
+                tn1 = multilink_table
+                tn2 = '_' + proptree.classname
+                j = ', %s' % tn2
+                w = ' and %s.%s=%s.id and %s.__retired__=0'%(tn1, lid, tn2, tn2)
+
             atom = \
-                "%s IN(SELECT %s FROM %s WHERE %s=a.id)" % (
-                self.db.arg, lid, multilink_table, nid)
+                "%s IN(SELECT %s FROM %s%s WHERE %s=a.id%s)" % (
+                self.db.arg, lid, multilink_table, j, nid, w)
             atom_nil = self._subselect(proptree, 'a')
 
             lambda_atom = lambda n: atom if n.x >= 0 else atom_nil
