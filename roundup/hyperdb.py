@@ -28,6 +28,7 @@ import logging
 # roundup modules
 from . import date, password
 from .support import ensureParentsExist, PrioList
+from roundup.mlink_expr import Expression
 from roundup.i18n import _
 from roundup.cgi.exceptions import DetectorError
 from roundup.anypy.cmp_ import NoneAndDictComparable
@@ -590,24 +591,50 @@ class Proptree(object):
                     cl = p.propclass.rev_property.cls
                     if not isinstance(p.val, type([])):
                         p.val = [p.val]
-                    if p.val == ['-1'] :
-                        s1 = set(self.cls.getnodeids(retired=False))
-                        s2 = set()
+                    nval = [int(i) for i in p.val]
+                    pval = [str(i) for i in nval if i >= 0]
+                    items = set()
+                    if not nval or min(nval) >= -1:
+                        if -1 in nval:
+                            s1 = set(self.cls.getnodeids(retired=False))
+                            s2 = set()
+                            for id in cl.getnodeids(retired=False):
+                                node = cl.getnode(id)
+                                if node[pn]:
+                                    if isinstance(node[pn], type([])):
+                                        s2.update(node[pn])
+                                    else:
+                                        s2.add(node[pn])
+                            items |= s1.difference(s2)
+                        if isinstance(p.propclass.rev_property, Link):
+                            items |= set(cl.get(x, pn) for x in pval
+                                if not cl.is_retired(x))
+                        else:
+                            items |= set().union(*(cl.get(x, pn) for x in pval
+                                if not cl.is_retired(x)))
+                    else:
+                        # Expression: materialize rev multilinks and run
+                        # expression on them
+                        expr = Expression(nval)
+                        by_id = {}
                         for id in cl.getnodeids(retired=False):
+                            by_id[id] = set()
+                        items = set()
+                        for id in self.cls.getnodeids(retired=False):
                             node = cl.getnode(id)
                             if node[pn]:
-                                if isinstance(node [pn], type([])):
-                                    s2.update(node [pn])
-                                else:
-                                    s2.add(node [pn])
-                        items = s1.difference(s2)
-                    elif isinstance(p.propclass.rev_property, Link):
-                        items = set(cl.get(x, pn) for x in p.val
-                            if not cl.is_retired(x))
-                    else:
-                        items = set().union(*(cl.get(x, pn) for x in p.val
-                            if not cl.is_retired(x)))
-                    filterspec[p.name] = list(sorted(items))
+                                v = node[pn]
+                                if not isinstance(v, type([])):
+                                    v = [v]
+                                for x in v:
+                                    if x not in by_id:
+                                        by_id[x] = set()
+                                    by_id[x].add(id)
+                        for k in by_id:
+                            if expr.evaluate(by_id[k]):
+                                items.add(k)
+
+                    filterspec[p.name] = list(sorted(items, key=int))
                 elif isinstance(p.val, type([])):
                     exact = []
                     subst = []

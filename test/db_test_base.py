@@ -2038,8 +2038,6 @@ class DBTest(commonDBTest):
         self.assertEqual(ls(self.db.user.get('4', ni)), ['1'])
         self.assertEqual(ls(self.db.user.get('5', ni)), ['7'])
 
-    # Currently only works for sql databases
-    @pytest.mark.xfail
     def testFilteringRevMultilinkExpression(self):
         ae, iiter = self.filteringSetupTransitiveSearch('user')
         ni = 'nosy_issues'

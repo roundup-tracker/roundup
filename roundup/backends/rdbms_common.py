@@ -66,7 +66,7 @@ from roundup.backends.indexer_common import get_indexer
 from roundup.backends.sessions_rdbms import Sessions, OneTimeKeys
 from roundup.date import Range
 
-from roundup.backends.back_anydbm import compile_expression
+from roundup.mlink_expr import compile_expression
 from roundup.anypy.strings import b2s, bs2b, us2s, repr_export, eval_import
 
 from hashlib import md5
