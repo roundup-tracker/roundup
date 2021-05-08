@@ -1058,8 +1058,11 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
 
         # get the value, handling missing values
         value = None
-        if int(self._nodeid) > 0:
-            value = self._klass.get(self._nodeid, items[0], None)
+        try:
+            if int(self._nodeid) > 0:
+                value = self._klass.get(self._nodeid, items[0], None)
+        except ValueError:
+            value = self._nodeid
         if value is None:
             if isinstance(prop, hyperdb.Multilink):
                 value = []
