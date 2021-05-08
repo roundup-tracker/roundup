@@ -2396,10 +2396,13 @@ class Class(hyperdb.Class):
         return '%s.id not in (select %s from %s%s)'%(parentname, nodeid_name,
             multilink_table, w)
 
-    def _filter_multilink_expression_fallback(
-        self, classname, multilink_table, expr):
+    def _filter_multilink_expression_fallback(self, proptree, expr):
         '''This is a fallback for database that do not support
            subselects.'''
+        classname = proptree.parent.uniqname
+        multilink_table = proptree.propclass.table_name
+        nid = proptree.propclass.nodeid_name
+        lid = proptree.propclass.linkid_name
 
         is_valid = expr.evaluate
 
@@ -2417,21 +2420,21 @@ class Class(hyperdb.Class):
         # where the multilink table does not have join values
         # needed in evaluation.
 
-        stmnt = "SELECT c.id, m.linkid FROM _%s c " \
+        stmnt = "SELECT c.id, m.%s FROM _%s c " \
                 "LEFT OUTER JOIN %s m " \
-                "ON c.id = m.nodeid ORDER BY c.id" % (
-                    classname, multilink_table)
+                "ON c.id = m.%s ORDER BY c.id" % (
+                    lid, classname, multilink_table, nid)
         self.db.sql(stmnt)
 
         # collect all multilink items for a class item
-        for nid, kw in self.db.sql_fetchiter():
-            if nid != last_id:
+        for nodeid, kw in self.db.sql_fetchiter():
+            if nodeid != last_id:
                 if last_id is None:
-                    last_id = nid
+                    last_id = nodeid
                 else:
                     # we have all multilink items -> evaluate!
                     if is_valid(kws): append(last_id)
-                    last_id, kws = nid, []
+                    last_id, kws = nodeid, []
             if kw is not None:
                 kws.append(int(kw))
 
@@ -2462,7 +2465,7 @@ class Class(hyperdb.Class):
                 # We heavily rely on subselects. If there is
                 # no decent support fall back to slower variant.
                 return self._filter_multilink_expression_fallback(
-                    classname, multilink_table, expr)
+                    proptree, expr)
 
             atom = \
                 "%s IN(SELECT %s FROM %s WHERE %s=a.id)" % (
