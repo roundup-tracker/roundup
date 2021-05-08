@@ -1980,10 +1980,21 @@ class DBTest(commonDBTest):
             # '3' or empty (without explicit 'or')
             ae(filt(None, {kw: ['3', '-1']}),
                ['1', '2', '3'])
-            # This does not work with any of the backends currently:
             # '3' or empty (with explicit 'or')
-            #ae(filt(None, {kw: ['3', '-1', '-4']}),
-            #   ['1', '2', '3'])
+            ae(filt(None, {kw: ['3', '-1', '-4']}),
+               ['1', '2', '3'])
+            # empty or '3' (with explicit 'or')
+            ae(filt(None, {kw: ['-1', '3', '-4']}),
+               ['1', '2', '3'])
+            # '3' and empty (should always return empty list)
+            ae(filt(None, {kw: ['3', '-1', '-3']}),
+               [])
+            # empty and '3' (should always return empty list)
+            ae(filt(None, {kw: ['3', '-1', '-3']}),
+               [])
+            # ('4' and empty) or ('3' or empty)
+            ae(filt(None, {kw: ['4', '-1', '-3', '3', '-1', '-4', '-4']}),
+               ['1', '2', '3'])
 
     def testFilteringRevMultilink(self):
         ae, iiter = self.filteringSetupTransitiveSearch('user')
@@ -2047,6 +2058,7 @@ class DBTest(commonDBTest):
         # Retire users '9' and '10' to reduce list
         self.db.user.retire ('9')
         self.db.user.retire ('10')
+        self.db.commit ()
         for filt in iiter():
             # '1' or '2'
             ae(filt(None, {ni: ['1', '2', '-4']}), ['4', '5'])
@@ -2058,6 +2070,19 @@ class DBTest(commonDBTest):
             ae(filt(None, {ni: ['6', '1', '-2', '-3']}), ['3', '5'])
             # '2' or empty (implicit or)
             ae(filt(None, {ni: ['-1', '2']}), ['1', '2', '5', '6', '7', '8'])
+            # '2' or empty (explicit or)
+            ae(filt(None, {ni: ['-1', '2', '-4']}),
+               ['1', '2', '5', '6', '7', '8'])
+            # empty or '2' (explicit or)
+            ae(filt(None, {ni: ['2', '-1', '-4']}),
+               ['1', '2', '5', '6', '7', '8'])
+            # '2' and empty (should always return empty list)
+            ae(filt(None, {ni: ['-1', '2', '-3']}), [])
+            # empty and '2' (should always return empty list)
+            ae(filt(None, {ni: ['2', '-1', '-3']}), [])
+            # ('4' and empty) or ('2' or empty)
+            ae(filt(None, {ni: ['4', '-1', '-3', '2', '-1', '-4', '-4']}),
+               ['1', '2', '5', '6', '7', '8'])
 
     def testFilteringMany(self):
         ae, iiter = self.filteringSetup()

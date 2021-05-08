@@ -2373,7 +2373,7 @@ class Class(hyperdb.Class):
         ids = [str(x[0]) for x in self.db.cursor.fetchall()]
         return ids
 
-    def _subselect(self, proptree):
+    def _subselect(self, proptree, parentname=None):
         """Create a subselect. This is factored out because some
            databases (hmm only one, so far) doesn't support subselects
            look for "I can't believe it's not a toy RDBMS" in the mysql
@@ -2382,6 +2382,9 @@ class Class(hyperdb.Class):
         multilink_table = proptree.propclass.table_name
         nodeid_name     = proptree.propclass.nodeid_name
         linkid_name     = proptree.propclass.linkid_name
+        if parentname is None:
+            parentname = '_' + proptree.parent.classname
+
         w = ''
         if proptree.need_retired:
             w = ' where %s.__retired__=0'%(multilink_table)
@@ -2390,8 +2393,7 @@ class Class(hyperdb.Class):
             tn2 = '_' + proptree.classname
             w = ', %s where %s.%s=%s.id and %s.__retired__=0'%(tn2,
                 tn1, linkid_name, tn2, tn2)
-        classname = proptree.parent.classname
-        return '_%s.id not in (select %s from %s%s)'%(classname, nodeid_name,
+        return '%s.id not in (select %s from %s%s)'%(parentname, nodeid_name,
             multilink_table, w)
 
     def _filter_multilink_expression_fallback(
@@ -2465,15 +2467,20 @@ class Class(hyperdb.Class):
             atom = \
                 "%s IN(SELECT %s FROM %s WHERE %s=a.id)" % (
                 self.db.arg, lid, multilink_table, nid)
+            atom_nil = self._subselect(proptree, 'a')
+
+            lambda_atom = lambda n: atom if n.x >= 0 else atom_nil
 
             intron = \
                 "_%(classname)s.id in (SELECT id " \
                 "FROM _%(classname)s AS a WHERE %(condition)s) " % {
                     'classname' : classname,
-                    'condition' : expr.generate(lambda n: atom) }
+                    'condition' : expr.generate(lambda_atom) }
 
             values = []
-            def collect_values(n): values.append(n.x)
+            def collect_values(n):
+                if n.x >= 0:
+                    values.append(n.x)
             expr.visit(collect_values)
 
             return intron, values

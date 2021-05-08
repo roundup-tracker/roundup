@@ -77,6 +77,14 @@ class Equals(Unary):
     def visit(self, visitor):
         visitor(self)
 
+class Empty(Unary):
+
+    def evaluate(self, v):
+        return not v
+
+    def visit(self, visitor):
+        visitor(self)
+
 class Not(Unary):
 
     def evaluate(self, v):
@@ -110,7 +118,8 @@ def compile_expression(opcodes):
     stack = []
     push, pop = stack.append, stack.pop
     for opcode in opcodes:
-        if   opcode == -2: push(Not(pop()))
+        if   opcode == -1: push(Empty(opcode))
+        elif opcode == -2: push(Not(pop()))
         elif opcode == -3: push(And(pop(), pop()))
         elif opcode == -4: push(Or(pop(), pop()))
         else:              push(Equals(opcode))
