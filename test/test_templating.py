@@ -45,7 +45,7 @@ from roundup.anypy.strings import u2s, s2u
 class MockDatabase(MockNull):
     def getclass(self, name):
         # limit class names
-        if name not in [ 'issue', 'user' ]:
+        if name not in [ 'issue', 'user', 'status' ]:
             raise KeyError('There is no class called "%s"' % name)
         # Class returned must have hasnode(id) method that returns true
         # otherwise designators like 'issue1' can't be hyperlinked.
@@ -144,15 +144,60 @@ class HTMLClassTestCase(TemplatingTestCase) :
         def lookup(key) :
             self.assertEqual(key, key.strip())
             return "Status%s"%key
-        self.form.list.append(MiniFieldStorage("status", "1"))
-        self.form.list.append(MiniFieldStorage("status", "2"))
+        self.form.list.append(MiniFieldStorage("issue@status", "1"))
+        self.form.list.append(MiniFieldStorage("issue@status", "2"))
         status = hyperdb.Link("status")
         self.client.db.classes = dict \
             ( issue = MockNull(getprops = lambda : dict(status = status))
             , status  = MockNull(get = lambda id, name : id, lookup = lookup)
             )
+        self.client.form = self.form
         cls = HTMLClass(self.client, "issue")
-        cls["status"]
+
+        s = cls["status"]
+        self.assertEqual(s._value, '1')
+
+    def test_link_default(self):
+        """Make sure default value for link is returned
+           if new item and no value in form."""
+        def lookup(key) :
+            self.assertEqual(key, key.strip())
+            return "Status%s"%key
+        status = hyperdb.Link("status")
+        # set default_value
+        status.__dict__['_Type__default_value'] = "4"
+
+        self.client.db.classes = dict \
+            ( issue = MockNull(getprops = lambda : dict(status = status))
+            , status  = MockNull(get = lambda id, name : id, lookup = lookup, get_default_value = lambda: 4)
+            )
+        self.client.form = self.form
+
+        cls = HTMLClass(self.client, "issue")
+        s = cls["status"]
+        self.assertEqual(s._value, '4')
+
+    def test_link_with_value_and_default(self):
+        """Make sure default value is not used if there
+           is a value in the form."""
+        def lookup(key) :
+            self.assertEqual(key, key.strip())
+            return "Status%s"%key
+        self.form.list.append(MiniFieldStorage("issue@status", "2"))
+        self.form.list.append(MiniFieldStorage("issue@status", "1"))
+        status = hyperdb.Link("status")
+        # set default_value
+        status.__dict__['_Type__default_value'] = "4"
+
+        self.client.db.classes = dict \
+            ( issue = MockNull(getprops = lambda : dict(status = status))
+            , status  = MockNull(get = lambda id, name : id, lookup = lookup, get_default_value = lambda: 4)
+            )
+        self.client.form = self.form
+
+        cls = HTMLClass(self.client, "issue")
+        s = cls["status"]
+        self.assertEqual(s._value, '2')
 
     def test_multilink(self):
         """`lookup` of an item will fail if leading or trailing whitespace

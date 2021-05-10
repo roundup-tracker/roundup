@@ -733,9 +733,8 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         for klass, htmlklass in propclasses:
             if not isinstance(prop, klass):
                 continue
-            value = prop.get_default_value()
             return htmlklass(self._client, self._classname, None, prop, item,
-                value, self._anonymous)
+                None, self._anonymous)
 
         # no good
         raise KeyError(item)
@@ -1515,6 +1514,10 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
             else:
                 value = form.getfirst(self._formname).strip() or None
             self._value = value
+
+        # if self._value is None see if we have a default value
+        if self._value is None:
+            self._value = prop.get_default_value()
 
         HTMLInputMixin.__init__(self)
 
@@ -2507,7 +2510,14 @@ class LinkHTMLProperty(HTMLProperty):
 
         for optionid in options:
             # get the option value, and if it's None use an empty string
-            option = linkcl.get(optionid, k) or ''
+            try:
+                option = linkcl.get(optionid, k) or ''
+            except IndexError:
+                # optionid does not exist. E.G.
+                #   IndexError: no such queue z
+                # can be set using ?queue=z in URL for
+                # a new issue
+                continue
 
             # figure if this option is selected
             s = ''
