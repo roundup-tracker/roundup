@@ -93,7 +93,7 @@ def setupTracker(dirname, backend="anydbm", optimize=False):
 def setupSchema(db, create, module):
     mls = module.Class(db, "mls", name=String())
     mls.setkey("name")
-    keyword = module.Class(db, "keyword", name=String())
+    keyword = module.Class(db, "keyword", name=String(), order=Number())
     keyword.setkey("name")
     status = module.Class(db, "status", name=String(), mls=Multilink("mls"))
     status.setkey("name")
@@ -118,7 +118,7 @@ def setupSchema(db, create, module):
         files=Multilink("file"), assignedto=Link('user', quiet=True,
         rev_multilink='issues'), priority=Link('priority'),
         spam=Multilink('msg'), feedback=Link('msg'),
-        keywords=Multilink('keyword'))
+        keywords=Multilink('keyword'), keywords2=Multilink('keyword'))
     stuff = module.Class(db, "stuff", stuff=String())
     session = module.Class(db, 'session', title=String())
     msg = module.FileClass(db, "msg", date=Date(),
@@ -1542,8 +1542,8 @@ class DBTest(commonDBTest):
         # import an issue
         title = 'Bzzt'
         nodeid = self.db.issue.import_list(['title', 'messages', 'files',
-            'spam', 'nosy', 'superseder', 'keywords'], [repr(title), '[]',
-            '[]', '[]', '[]', '[]', '[]'])
+            'spam', 'nosy', 'superseder', 'keywords', 'keywords2'],
+            [repr(title), '[]', '[]', '[]', '[]', '[]', '[]', '[]'])
         self.db.commit()
 
         # Content of title attribute is indexed
@@ -2060,6 +2060,37 @@ class DBTest(commonDBTest):
             ae(filt(None, {kw: ['4', '-1', '-3', '3', '-1', '-4', '-4']}),
                ['1', '2', '3'])
 
+    def testFilteringTwoMultilinksExpression(self):
+        ae, iiter = self.filteringSetup()
+        kw1 = self.db.keyword.create(name='Key1', order=10)
+        kw2 = self.db.keyword.create(name='Key2', order=20)
+        kw3 = self.db.keyword.create(name='Key3', order=30)
+        kw4 = self.db.keyword.create(name='Key4', order=40)
+        self.db.issue.set('1', keywords=[kw1, kw2])
+        self.db.issue.set('2', keywords=[kw1, kw3])
+        self.db.issue.set('3', keywords=[kw2, kw3, kw4])
+        self.db.issue.set('4', keywords=[])
+        self.db.issue.set('1', keywords2=[kw3, kw4])
+        self.db.issue.set('2', keywords2=[kw2, kw3])
+        self.db.issue.set('3', keywords2=[kw1, kw3, kw4])
+        self.db.issue.set('4', keywords2=[])
+        self.db.commit()
+        kw = 'keywords'
+        kw2 = 'keywords2'
+        for filt in iiter():
+            # kw: '1' and '3' kw2: '2' and '3'
+            ae(filt(None, {kw: ['1', '3', '-3'], kw2: ['2', '3', '-3']}), ['2'])
+            # kw: empty kw2: empty
+            ae(filt(None, {kw: ['-1'], kw2: ['-1']}), ['4'])
+            # kw: empty kw2: empty
+            ae(filt(None, {kw: [], kw2: []}), ['4'])
+            # look for both keyword name and order
+            ae(filt(None, {'keywords.name': 'y4', 'keywords.order': 40}), ['3'])
+            # look for both keyword and order non-matching
+            ae(filt(None, {kw: '3', 'keywords.order': 40}), [])
+            # look for both keyword and order non-matching with kw and kw2
+            ae(filt(None, {kw: '3', 'keywords2.order': 40}), ['3'])
+
     def testFilteringRevMultilink(self):
         ae, iiter = self.filteringSetupTransitiveSearch('user')
         ni = 'nosy_issues'
@@ -2101,6 +2132,35 @@ class DBTest(commonDBTest):
                 ['1', '2', '3', '6', '7', '8', '9', '10'])
         self.assertEqual(ls(self.db.user.get('4', ni)), ['1'])
         self.assertEqual(ls(self.db.user.get('5', ni)), ['7'])
+
+    def testFilteringRevMultilinkQ2(self):
+        ae, iiter = self.filteringSetupTransitiveSearch('user')
+        ni = 'nosy_issues'
+        nis = 'nosy_issues.status'
+        self.db.issue.set('6', nosy=['3', '4', '5'])
+        self.db.issue.set('7', nosy=['5'])
+        self.db.commit()
+        # After this setup we have the following values for nosy:
+        # The issues '1', '3', '5', '7' have status '2'
+        # issue   nosy
+        # 1:      4
+        # 2:      5
+        # 3:
+        # 4:
+        # 5:
+        # 6:      3, 4, 5
+        # 7:      5
+        # 8:
+        for filt in iiter():
+            # status of issue is '2'
+            ae(filt(None, {nis: ['2']}),
+               ['4', '5'])
+            # Issue non-empty and status of issue is '2'
+            ae(filt(None, {nis: ['2'], ni:['-1', '-2']}),
+               ['4', '5'])
+            # empty and status '2'
+            # This is the test-case for issue2551119
+            ae(filt(None, {nis: ['2'], ni:['-1']}), [])
 
     def testFilteringRevMultilinkExpression(self):
         ae, iiter = self.filteringSetupTransitiveSearch('user')
@@ -2911,6 +2971,7 @@ class DBTest(commonDBTest):
                       'feedback: <roundup.hyperdb.Link to "msg">\n',
                       'files: <roundup.hyperdb.Multilink to "file">\n',
                       'foo: <roundup.hyperdb.Interval>\n',
+                      'keywords2: <roundup.hyperdb.Multilink to "keyword">\n',
                       'keywords: <roundup.hyperdb.Multilink to "keyword">\n',
                       'messages: <roundup.hyperdb.Multilink to "msg">\n',
                       'nosy: <roundup.hyperdb.Multilink to "user">\n',
@@ -3018,8 +3079,8 @@ class DBTest(commonDBTest):
         keys = sorted(props.keys())
         self.assertEqual(keys, ['activity', 'actor', 'assignedto', 'creation',
             'creator', 'deadline', 'feedback', 'files', 'fixer', 'foo',
-            'id', 'keywords', 'messages', 'nosy', 'priority', 'spam',
-            'status', 'superseder', 'title'])
+            'id', 'keywords', 'keywords2', 'messages', 'nosy', 'priority',
+            'spam', 'status', 'superseder', 'title'])
         self.assertEqual(self.db.issue.get('1', "fixer"), None)
 
     def testRemoveProperty(self):
@@ -3032,8 +3093,8 @@ class DBTest(commonDBTest):
         keys = sorted(props.keys())
         self.assertEqual(keys, ['activity', 'actor', 'assignedto', 'creation',
             'creator', 'deadline', 'feedback', 'files', 'foo', 'id',
-            'keywords', 'messages', 'nosy', 'priority', 'spam', 'status',
-            'superseder'])
+            'keywords', 'keywords2', 'messages', 'nosy', 'priority', 'spam',
+            'status', 'superseder'])
         self.assertEqual(self.db.issue.list(), ['1'])
 
     def testAddRemoveProperty(self):
@@ -3047,8 +3108,8 @@ class DBTest(commonDBTest):
         keys = sorted(props.keys())
         self.assertEqual(keys, ['activity', 'actor', 'assignedto', 'creation',
             'creator', 'deadline', 'feedback', 'files', 'fixer', 'foo', 'id',
-            'keywords', 'messages', 'nosy', 'priority', 'spam', 'status',
-            'superseder'])
+            'keywords', 'keywords2', 'messages', 'nosy', 'priority', 'spam',
+            'status', 'superseder'])
         self.assertEqual(self.db.issue.list(), ['1'])
 
     def testNosyMail(self) :

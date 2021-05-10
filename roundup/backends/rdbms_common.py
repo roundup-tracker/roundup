@@ -2585,21 +2585,23 @@ class Class(hyperdb.Class):
                     tn = propclass.table_name
                     nid = propclass.nodeid_name
                     lid = propclass.linkid_name
+                    frum.append(tn)
+                    if p.children or p.need_child_retired:
+                        frum.append('_%s as _%s' % (cn, ln))
+                        where.append('%s.%s=_%s.id'%(tn, lid, ln))
+                        if p.need_child_retired:
+                            where.append('_%s.__retired__=0'%(ln))
+                    # Note: need the where-clause if p has
+                    # children that compute additional restrictions
+                    if  (not p.has_values
+                         or (not isinstance(v, type([])) and v != '-1')
+                         or p.children):
+                        where.append('_%s.id=%s.%s'%(pln, tn, nid))
                     if v in ('-1', ['-1'], []):
                         # only match rows that have count(linkid)=0 in the
                         # corresponding multilink table)
                         where.append(self._subselect(p))
                     else:
-                        frum.append(tn)
-
-                        if p.children or p.need_child_retired:
-                            frum.append('_%s as _%s' % (cn, ln))
-                            where.append('%s.%s=_%s.id'%(tn, lid, ln))
-                            if p.need_child_retired:
-                                where.append('_%s.__retired__=0'%(ln))
-
-                        if not p.has_values or not isinstance(v, type([])):
-                            where.append('_%s.id=%s.%s'%(pln, tn, nid))
                         if p.has_values:
                             if isinstance(v, type([])):
                                 # The where-clause above is conditionally

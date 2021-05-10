@@ -465,7 +465,7 @@ class Proptree(object):
 
     The Proptree is also used for transitively searching attributes for
     backends that do not support transitive search (e.g. anydbm). The
-    _val attribute with set_val is used for this.
+    val attribute with set_val is used for this.
     """
 
     def __init__(self, db, cls, name, props, parent=None, retr=False):
@@ -473,8 +473,9 @@ class Proptree(object):
         self.name = name
         self.props = props
         self.parent = parent
-        self._val = None
+        self.val = None
         self.has_values = False
+        self.has_result = False
         self.cls = cls
         self.classname = None
         self.uniqname = None
@@ -634,6 +635,11 @@ class Proptree(object):
                             if expr.evaluate(by_id[k]):
                                 items.add(k)
 
+                    # The subquery has found nothing. So it doesn't make
+                    # sense to search further.
+                    if not items:
+                        self.set_val([], force=True)
+                        return self.val
                     filterspec[p.name] = list(sorted(items, key=int))
                 elif isinstance(p.val, type([])):
                     exact = []
@@ -648,13 +654,19 @@ class Proptree(object):
                     if subst:
                         filterspec[p.name] = subst
                     elif not exact: # don't set if we have exact criteria
-                        filterspec[p.name] =[ '-1' ] # no match was found
+                        if p.has_result:
+                            # A subquery already has found nothing. So
+                            # it doesn't make sense to search further.
+                            self.set_val([], force=True)
+                            return self.val
+                        else:
+                            filterspec[p.name] = ['-1'] # no match was found
                 else:
                     assert not isinstance(p.val, Exact_Match)
                     filterspec[p.name] = p.val
-        self.val = self.cls._filter(search_matches, filterspec, sort and self,
-                                    retired=retired,
-                                    exact_match_spec=exact_match_spec)
+        self.set_val(self.cls._filter(search_matches, filterspec, sort and self,
+                                      retired=retired,
+                                      exact_match_spec=exact_match_spec))
         return self.val
 
     def sort(self, ids=None):
@@ -742,8 +754,9 @@ class Proptree(object):
                 pt.sort_result = None
         return ids
 
-    def _set_val(self, val):
-        """ Check if self._val is already defined. If yes, we compute the
+    def set_val(self, val, force=False, result=True):
+        """ Check if self.val is already defined (it is not None and
+            has_values is True). If yes, we compute the
             intersection of the old and the new value(s)
             Note: If self is a Leaf node we need to compute a
             union: Normally we intersect (logical and) different
@@ -753,24 +766,55 @@ class Proptree(object):
             generated search will ensure a logical and of all tests for
             equality/substring search.
         """
+        if force:
+            assert val == []
+            assert result
+            self.val = val
+            self.has_values = True
+            self.has_result = True
+            return
         if self.has_values:
-            v = self._val
-            if not isinstance(self._val, type([])):
-                v = [self._val]
+            v = self.val
+            if not isinstance(self.val, type([])):
+                v = [self.val]
             vals = set(v)
             if not isinstance(val, type([])):
                 val = [val]
+        if self.has_result:
+            assert result
             # if cls is None we're a leaf
             if self.cls:
                 vals.intersection_update(val)
             else:
                 vals.update(val)
-            self._val = [v for v in vals]
+            self.val = list(vals)
         else:
-            self._val = val
+            # If a subquery found nothing we don't care if there is an
+            # expression
+            if not self.has_values or not val:
+                self.val = val
+                if result:
+                    self.has_result = True
+            else:
+                if not result:
+                    assert not self.cls
+                    vals.update(val)
+                    self.val = list(vals)
+                else:
+                    assert self.cls
+                    is_expression = min(int(i) for i in self.val) < -1
+                    if is_expression:
+                        # Tag on the ORed values with an AND
+                        l = val
+                        for i in range(len(val)-1):
+                            l.append('-4')
+                        l.append('-3')
+                        self.val = self.val + l
+                    else:
+                        vals.intersection_update(val)
+                        self.val = list(vals)
+                    self.has_result = True
         self.has_values = True
-
-    val = property(lambda self: self._val, _set_val)
 
     def _sort(self, val):
         """Finally sort by the given sortattr.sort_result. Note that we
@@ -1542,11 +1586,11 @@ class Class:
                         vv = []
                         for x in v:
                             vv.append(Exact_Match(x))
-                        p.val = vv
+                        p.set_val(vv, result=False)
                     else:
-                        p.val = [Exact_Match(v)]
+                        p.set_val([Exact_Match(v)], result=False)
                 else:
-                    p.val = v
+                    p.set_val(v, result=False)
         multilinks = {}
         for s in sortattr:
             keys = s[1].split('.')
