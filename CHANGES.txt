@@ -135,7 +135,9 @@ Features:
   tests.
 - pytest suite now starts the server under wsgi and loads the home
   page. This test is skipped if the requests module is not installed.
- 
+- extract translatable strings from devel and responsive templates. Merge
+  translations from https://sourceforge.net/p/roundup/code/merge-requests/3/
+  (John Rouillard. DE translations by Tobias Herp.)
 
 2020-07-13 2.0.0
 
