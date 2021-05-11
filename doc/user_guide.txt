@@ -513,10 +513,15 @@ via e-mail like this.
 E-Mail Message Content
 ----------------------
 
-Roundup only associates plain text (MIME type ``text/plain``) as
-messages for items. Any other parts of a message are associated as
-downloadable files. If no plain text part is found, the message is
-rejected.
+By default Roundup only associates plain text (MIME type
+``text/plain``) as messages for items. Any other parts of a message
+are associated as downloadable files. If no plain text part is found,
+the message is rejected. The tracker can be configured to enable
+``convert_htmltotext``. If this is enabled, an email with an HTML
+message (MIME type ``text/html``) and no ``text/plain`` part will be
+accepted. The first HTML part will be converted to text and used as
+the message for the item. Subsequent parts will be treated as
+attachments.
 
 To do this, incoming messages are examined for multiple parts:
 
