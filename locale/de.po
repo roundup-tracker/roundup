@@ -5001,7 +5001,7 @@ msgstr "Aufgabenliste"
 #: ../share/roundup/templates/responsive/html/bug.index.html:26
 #: ../share/roundup/templates/responsive/html/bug.item.html:84
 msgid "Severity"
-msgstr ""
+msgstr "Schwere"
 
 #: ../share/roundup/templates/devel/html/bug.index.html:32
 #: ../share/roundup/templates/devel/html/task.index.html:32
@@ -5010,14 +5010,14 @@ msgstr ""
 #: ../share/roundup/templates/responsive/html/task.index.html:31
 #: ../share/roundup/templates/responsive/html/task.item.html:49
 msgid "Components"
-msgstr ""
+msgstr "Komponenten"
 
 #: ../share/roundup/templates/devel/html/bug.index.html:33
 #: ../share/roundup/templates/devel/html/task.index.html:33
 #: ../share/roundup/templates/responsive/html/bug.index.html:32
 #: ../share/roundup/templates/responsive/html/bug.item.html:113
 msgid "Versions"
-msgstr ""
+msgstr "Versionen"
 
 #: ../share/roundup/templates/devel/html/bug.index.html:35
 #: ../share/roundup/templates/devel/html/task.index.html:35
@@ -5028,7 +5028,7 @@ msgstr ""
 #: ../share/roundup/templates/responsive/html/task.item.html:106
 #: ../share/roundup/templates/responsive/html/task.item.html:146
 msgid "Resolution"
-msgstr ""
+msgstr "Auflösung"
 
 #: ../share/roundup/templates/devel/html/bug.index.html:39
 #: ../share/roundup/templates/devel/html/task.index.html:39
@@ -5081,11 +5081,11 @@ msgstr ""
 
 #: ../share/roundup/templates/devel/html/bug.item.html:72
 msgid "<span>Components</span>:"
-msgstr ""
+msgstr "<span>Komponenten</span>:"
 
 #: ../share/roundup/templates/devel/html/bug.item.html:78
 msgid "<span>Versions</span>:"
-msgstr ""
+msgstr "<span>Versionen</span>:"
 
 #: ../share/roundup/templates/devel/html/bug.item.html:91
 msgid "<span>Status</span>:"
@@ -5203,43 +5203,41 @@ msgstr "Aufgaben suchen"
 #: ../share/roundup/templates/responsive/html/task.search.html:94
 #, fuzzy
 msgid "Last actor:"
-msgstr "Akteur"
+msgstr "Zuletzt geändert von:"
 
 #: ../share/roundup/templates/devel/html/bug.search.html:105
 #: ../share/roundup/templates/devel/html/task.search.html:105
 #: ../share/roundup/templates/responsive/html/bug.search.html:105
 #: ../share/roundup/templates/responsive/html/task.search.html:105
-#, fuzzy
 msgid "Nosy list member:"
-msgstr "Interessenten"
+msgstr "Interessent:"
 
 #: ../share/roundup/templates/devel/html/bug.search.html:115
 #: ../share/roundup/templates/devel/html/task.search.html:115
 #: ../share/roundup/templates/responsive/html/bug.search.html:115
 #: ../share/roundup/templates/responsive/html/task.search.html:115
-#, fuzzy
 msgid "Type:"
-msgstr "Typ"
+msgstr "Typ:"
 
 #: ../share/roundup/templates/devel/html/bug.search.html:128
 #: ../share/roundup/templates/devel/html/task.search.html:128
 #: ../share/roundup/templates/responsive/html/bug.search.html:128
 #: ../share/roundup/templates/responsive/html/task.search.html:128
 msgid "Components:"
-msgstr ""
+msgstr "Komponenten:"
 
 #: ../share/roundup/templates/devel/html/bug.search.html:141
 #: ../share/roundup/templates/devel/html/task.search.html:141
 #: ../share/roundup/templates/responsive/html/bug.search.html:141
 msgid "Versions:"
-msgstr ""
+msgstr "Versionen:"
 
 #: ../share/roundup/templates/devel/html/bug.search.html:167
 #: ../share/roundup/templates/devel/html/task.search.html:167
 #: ../share/roundup/templates/responsive/html/bug.search.html:167
 #: ../share/roundup/templates/responsive/html/task.search.html:141
 msgid "Depends on:"
-msgstr ""
+msgstr "Abhängig von:"
 
 #: ../share/roundup/templates/devel/html/bug.search.html:196
 #: ../share/roundup/templates/devel/html/task.search.html:196
@@ -5266,10 +5264,10 @@ msgstr ""
 
 #: ../share/roundup/templates/devel/html/bug.search.html:297
 #: ../share/roundup/templates/responsive/html/bug.search.html:297
-#, fuzzy
 msgid "*: The \"all text\" field will look in message bodies and bug titles"
 msgstr ""
-"*: Das Feld \"Volltext\" durchsucht Titel von Aufgaben und Kommentartexte"
+"*: Der Volltext-Suchbegriff wird gesucht in den Überschriften und"
+" in den Texten"
 
 #: ../share/roundup/templates/devel/html/help.html:11
 #: ../share/roundup/templates/responsive/html/help.html:14
@@ -5349,7 +5347,7 @@ msgstr ""
 #: ../share/roundup/templates/devel/html/page.html:45
 #: ../share/roundup/templates/responsive/html/page.html:61
 msgid "Bugs"
-msgstr ""
+msgstr "Fehler"
 
 #: ../share/roundup/templates/devel/html/page.html:51
 #: ../share/roundup/templates/devel/html/page.html:99
@@ -5357,19 +5355,18 @@ msgstr ""
 #: ../share/roundup/templates/responsive/html/page.html:67
 #: ../share/roundup/templates/responsive/html/page.html:116
 #: ../share/roundup/templates/responsive/html/page.html:164
-#, fuzzy
 msgid "Show Open"
-msgstr "Aufgabe anzeigen:"
+msgstr "Offene anzeigen"
 
 #: ../share/roundup/templates/devel/html/page.html:83
 #, fuzzy
 msgid "Show bug:"
-msgstr "Aufgabe anzeigen:"
+msgstr "Fehler anzeigen:"
 
 #: ../share/roundup/templates/devel/html/page.html:93
 #: ../share/roundup/templates/responsive/html/page.html:111
 msgid "Tasks"
-msgstr ""
+msgstr "Aufgaben"
 
 #: ../share/roundup/templates/devel/html/page.html:130
 #, fuzzy
@@ -5590,7 +5587,7 @@ msgstr ""
 
 #: ../share/roundup/templates/responsive/html/bug.item.html:50
 msgid "Version"
-msgstr ""
+msgstr "Version"
 
 #: ../share/roundup/templates/responsive/html/bug.item.html:100
 #: ../share/roundup/templates/responsive/html/task.item.html:89
@@ -5615,14 +5612,12 @@ msgid "<span class=\"badge badge-inverse\">Comment</span> &nbsp;"
 msgstr ""
 
 #: ../share/roundup/templates/responsive/html/page.html:100
-#, fuzzy
 msgid "Show bug"
-msgstr "Aufgabe anzeigen:"
+msgstr "Fehler anzeigen"
 
 #: ../share/roundup/templates/responsive/html/page.html:148
-#, fuzzy
 msgid "Show task"
-msgstr "Aufgabe anzeigen:"
+msgstr "Aufgabe anzeigen"
 
 #: ../share/roundup/templates/responsive/html/page.html:181
 #, fuzzy
