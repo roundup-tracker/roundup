@@ -1701,6 +1701,25 @@ class Class:
         make sense to specify multiple values because those cannot all
         be matched exactly.
 
+        For Link and Multilink properties the special ID value '-1'
+        matches empty Link or Multilink fields. For Multilinks a postfix
+        expression syntax using negative ID numbers (as strings) as
+        operators is supported. Each non-negative number (or '-1') is
+        pushed on an operand stack. A negative number pops the required
+        number of arguments from the stack, applies the operator, and
+        pushes the result. The following operators are supported:
+        - -2 stands for 'NOT' and takes one argument
+        - -3 stands for 'AND' and takes two arguments
+        - -4 stands for 'OR' and takes two arguments
+        Note that this special handling of ID arguments is applied only
+        when a negative number smaller than -1 is encountered as an ID
+        in the filter call. Otherwise the implicit OR default applies.
+        Examples of using Multilink expressions would be
+        - '1', '2', '-4', '3', '4', '-4', '-3'
+          would search for IDs (1 or 2) and (3 or 4)
+        - '-1' '-2' would search for all non-empty Multilinks
+
+
         The propname in filterspec and prop in a sort/group spec may be
         transitive, i.e., it may contain properties of the form
         link.link.link.name, e.g. you can search for all issues where a
