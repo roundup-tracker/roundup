@@ -42,7 +42,9 @@ template:
 
 	${RUN_PYTHON} ../roundup/cgi/TAL/talgettext.py -u $(TEMPLATE) \
 	  ../share/roundup/templates/classic/html/*.html \
-	  ../share/roundup/templates/minimal/html/*.html
+	  ../share/roundup/templates/devel/html/*.html \
+	  ../share/roundup/templates/minimal/html/*.html \
+	  ../share/roundup/templates/responsive/html/*.html
 	${XGETTEXT} -j -w 80 -F \
 	  --msgid-bugs-address=roundup-devel@lists.sourceforge.net \
 	  --copyright-holder="See Roundup README.txt" \
