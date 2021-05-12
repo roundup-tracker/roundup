@@ -1852,7 +1852,9 @@ class DBTest(commonDBTest):
         grp = (None, None)
         for filt in iiter():
             ae(filt(None, {'status': '1'}, ('+','id'), grp), ['2','3'])
+            ae(filt(None, {'status': [], 'status.name': 'unread'}), [])
             ae(filt(None, {a: '-1'}, ('+','id'), grp), ['3','4'])
+            ae(filt(None, {a: []}, ('+','id'), grp), ['3','4'])
             ae(filt(None, {a: None}, ('+','id'), grp), ['3','4'])
             ae(filt(None, {a: [None]}, ('+','id'), grp), ['3','4'])
             ae(filt(None, {a: ['-1', None]}, ('+','id'), grp), ['3','4'])

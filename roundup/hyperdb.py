@@ -802,7 +802,8 @@ class Proptree(object):
                     self.val = list(vals)
                 else:
                     assert self.cls
-                    is_expression = min(int(i) for i in self.val) < -1
+                    is_expression = \
+                        self.val and min(int(i) for i in self.val) < -1
                     if is_expression:
                         # Tag on the ORed values with an AND
                         l = val
