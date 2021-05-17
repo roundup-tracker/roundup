@@ -3658,14 +3658,14 @@ class FilterCacheTest(commonDBTest):
             ('+','username')]):
             result.append(id)
             nodeid = id
-            for x in range(4):
-                assert(('user', nodeid) in self.db.cache)
-                n = self.db.user.getnode(nodeid)
-                for k, v in user_result[nodeid].items():
-                    ae((k, n[k]), (k, v))
-                for k in 'creation', 'activity':
-                    assert(n[k])
-                nodeid = n.supervisor
+            # Note in the recent implementation we do not recursively
+            # cache results in filter_iter
+            assert(('user', nodeid) in self.db.cache)
+            n = self.db.user.getnode(nodeid)
+            for k, v in user_result[nodeid].items():
+                ae((k, n[k]), (k, v))
+            for k in 'creation', 'activity':
+                assert(n[k])
             self.db.clearCache()
         ae (result, ['8', '9', '10', '6', '7', '1', '3', '2', '4', '5'])
 
@@ -3683,14 +3683,13 @@ class FilterCacheTest(commonDBTest):
             for k in 'creation', 'activity':
                 assert(n[k])
             nodeid = n.assignedto
-            for x in range(4):
-                assert(('user', nodeid) in self.db.cache)
-                n = self.db.user.getnode(nodeid)
-                for k, v in user_result[nodeid].items():
-                    ae((k, n[k]), (k, v))
-                for k in 'creation', 'activity':
-                    assert(n[k])
-                nodeid = n.supervisor
+            # Note in the recent implementation we do not recursively
+            # cache results in filter_iter
+            n = self.db.user.getnode(nodeid)
+            for k, v in user_result[nodeid].items():
+                ae((k, n[k]), (k, v))
+            for k in 'creation', 'activity':
+                assert(n[k])
             self.db.clearCache()
         ae (result, ['4', '5', '6', '7', '8', '1', '2', '3'])
 

@@ -2545,7 +2545,7 @@ class Class(hyperdb.Class):
         a = self.db.arg
 
         # figure the WHERE clause from the filterspec
-        mlfilt = 0      # are we joining with Multilink tables?
+        use_distinct = False  # Do we need a distinct clause?
         sortattr = self._sortattr (group = grp, sort = srt)
         proptree = self._proptree(filterspec, exact_match_spec, sortattr, retr)
         mlseen = 0
@@ -2581,7 +2581,8 @@ class Class(hyperdb.Class):
                 rc = oc = ac = '_%s._%s'%(pln, k)
             if isinstance(propclass, Multilink):
                 if 'search' in p.need_for:
-                    mlfilt = 1
+                    # if we joining with Multilink tables we need distinct
+                    use_distinct = True
                     tn = propclass.table_name
                     nid = propclass.nodeid_name
                     lid = propclass.linkid_name
@@ -2672,7 +2673,9 @@ class Class(hyperdb.Class):
                     if p.children:
                         if 'sort' not in p.need_for:
                             frum.append('_%s as _%s' % (cn, ln))
-                        where.append('_%s._%s=_%s.id'%(pln, k, ln))
+                        c = [x for x in p.children if 'search' in x.need_for]
+                        if c:
+                            where.append('_%s._%s=_%s.id'%(pln, k, ln))
                     if p.has_values:
                         if isinstance(v, type([])):
                             d = {}
@@ -2835,9 +2838,8 @@ class Class(hyperdb.Class):
             where = ' where ' + (' and '.join(where))
         else:
             where = ''
-        if mlfilt:
-            # we're joining tables on the id, so we will get dupes if we
-            # don't distinct()
+        if use_distinct:
+            # Avoid dupes
             cols[0] = 'distinct(_%s.id)'%icn
 
         order = []

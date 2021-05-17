@@ -519,8 +519,9 @@ class Proptree(object):
         if name in self.propdict:
             pt = self.propdict[name]
             pt.need_for[need_for] = True
-            if retr and isinstance(pt.propclass, Link):
-                pt.append_retr_props()
+            # For now we do not recursively retrieve Link properties
+            #if retr and isinstance(pt.propclass, Link):
+            #    pt.append_retr_props()
             return pt
         propclass = self.props[name]
         cls = None
@@ -538,8 +539,9 @@ class Proptree(object):
                 child.need_child_retired = True
         self.children.append(child)
         self.propdict[name] = child
-        if retr and isinstance(child.propclass, Link):
-            child.append_retr_props()
+        # For now we do not recursively retrieve Link properties
+        #if retr and isinstance(child.propclass, Link):
+        #    child.append_retr_props()
         return child
 
     def append_retr_props(self):
@@ -1566,8 +1568,7 @@ class Class:
         """Build a tree of all transitive properties in the given
         exact_match_spec/filterspec.
         If we retrieve (retr is True) linked items we don't follow
-        across multilinks. We also don't follow if the searched value
-        can contain NULL values.
+        across multilinks or links.
         """
         proptree = Proptree(self.db, self, '', self.getprops(), retr=retr)
         for exact, spec in enumerate((filterspec, exact_match_spec)):
