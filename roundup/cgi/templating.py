@@ -2612,10 +2612,32 @@ class MultilinkHTMLProperty(HTMLProperty):
         l.reverse()
         return self.viewableGenerator(l)
 
-    def sorted(self, property, reverse=False):
-        """ Return this multilink sorted by the given property """
+    def sorted(self, property, reverse=False, NoneFirst=False):
+        """ Return this multilink sorted by the given property 
+
+            Set Nonefirst to True to sort None/unset property
+            before a property with a valid value.
+            
+        """
+
+        # use 2 if NoneFirst is False to sort None last
+        # 0 to sort to sort None first
+        # 1 is used to sort the integer values.
+        NoneCode = (2,0)[NoneFirst]
+        def keyfunc(v):
+            # Return tuples made of (group order (int), base python
+            # type) to sort function.
+            # Do not return v[property] as that returns an HTMLProperty
+            # type/subtype that throws an exception when sorting
+            # python type (int. str ...) against None.
+            val = v[property]._value
+            if val:
+                return (1, val)  # val should be base python type
+            elif val is None:
+                return (NoneCode, None)
+
         value = list(self.__iter__())
-        value.sort(key=lambda a:a[property], reverse=reverse)
+        value.sort(key=keyfunc, reverse=reverse)
         return value
 
     def __contains__(self, value):

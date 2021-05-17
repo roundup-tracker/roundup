@@ -98,7 +98,11 @@ Fixed:
 - issue2551078 - Fix traceback caused when putting two id's into a
   Link html field. A ValueError is raised. Handle exception and return
   value. hyperdb.py now reports 'you may only enter ID values for
-  property ...' to the user.
+  property ...' to the user. (John Rouillard)
+- issue2551120 - The sorted method of MultilinkHTMLProperty crashes,
+  if the given property is unset for an element of the list. Crash
+  fixed. New feature NoneFirst added to method to make unset values
+  sort at start or end of sorted list. (John Rouillard)
 
 Features:
 - issue2550522 - Add 'filter' command to command-line

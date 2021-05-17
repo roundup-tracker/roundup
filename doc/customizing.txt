@@ -3292,7 +3292,17 @@ sorted      only on Multilink properties - produce a list of the linked
                python:context.files.sorted('creation', reverse=True)
 
             Will list the files by upload date in reverse order from
-            the prior example.
+            the prior example. If the property can be unset, you can
+            use the ``NoneFirst`` parameter to sort the None/Unset
+            values at the front or the end of the list. For example::
+            
+                python:context.files.sorted('creation', NoneFirst=True)
+            
+            will sort files by creation date with files missing a
+            creation date at the start of the list. The default for
+            ``NoneFirst`` is False so these files will sort at the end
+            by default. (Note creation date is never unset, but you
+            get the idea.) 
 reverse     only on Multilink properties - produce a list of the linked
             items in reverse order
 isset       returns True if the property has been set to a value
