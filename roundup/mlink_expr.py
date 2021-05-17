@@ -87,16 +87,23 @@ def compile_expression(opcodes):
 
 class Expression:
 
-    def __init__(self, v):
+    def __init__(self, v, is_link=False):
         try:
             opcodes = [int(x) for x in v]
             if min(opcodes) >= -1:
                 raise ValueError()
 
             compiled = compile_expression(opcodes)
-            self.evaluate = lambda x: compiled.evaluate([int(y) for y in x])
+            if is_link:
+                self.evaluate = lambda x: compiled.evaluate(
+                    x and [int(x)] or [])
+            else:
+                self.evaluate = lambda x: compiled.evaluate([int(y) for y in x])
         except:
-            if '-1' in v:
+            if is_link:
+                v = [None if x == '-1' else x for x in v]
+                self.evaluate = lambda x: x in v
+            elif '-1' in v:
                 v = [x for x in v if int(x) > 0]
                 self.evaluate = lambda x: bool(set(x) & set(v)) or not x
             else:

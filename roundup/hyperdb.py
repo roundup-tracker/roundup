@@ -585,7 +585,8 @@ class Proptree(object):
         exact_match_spec = {}
         for p in self.children:
             if 'search' in p.need_for:
-                if p.children:
+                x = [c for c in p.children if 'search' in c.need_for]
+                if x:
                     p.search(sort=False)
                 if getattr(p.propclass,'rev_property',None):
                     pn = p.propclass.rev_property.name
@@ -2122,4 +2123,3 @@ def Choice(name, db, *options):
         cl.create(name=options[i], order=i)
     return Link(name)
 
-# vim: set filetype=python sts=4 sw=4 et si :

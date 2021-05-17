@@ -1701,13 +1701,7 @@ class Class(hyperdb.Class):
                 if isinstance(propclass, hyperdb.Link):
                     if type(v) is not type([]):
                         v = [v]
-                    u = []
-                    for entry in v:
-                        # the value -1 is a special "not set" sentinel
-                        if entry == '-1':
-                            entry = None
-                        u.append(entry)
-                    l.append((LINK, k, u))
+                    l.append((LINK, k, v))
                 elif isinstance(propclass, hyperdb.Multilink):
                     # If it's a reverse multilink, we've already
                     # computed the ids of our own class.
@@ -1814,7 +1808,9 @@ class Class(hyperdb.Class):
                     if t == LINK:
                         # link - if this node's property doesn't appear in the
                         # filterspec's nodeid list, skip it
-                        match = nv in v
+                        expr = Expression(v, is_link=True)
+                        if expr.evaluate(nv):
+                            match = 1
                     elif t == MULTILINK:
                         # multilink - if any of the nodeids required by the
                         # filterspec aren't in this node's property, then skip

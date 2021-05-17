@@ -1854,12 +1854,35 @@ class DBTest(commonDBTest):
             ae(filt(None, {'status': '1'}, ('+','id'), grp), ['2','3'])
             ae(filt(None, {'status': [], 'status.name': 'unread'}), [])
             ae(filt(None, {a: '-1'}, ('+','id'), grp), ['3','4'])
-            # Currently works only for non-sql backends:
-            #ae(filt(None, {a: []}, ('+','id'), grp), ['3','4'])
             ae(filt(None, {a: None}, ('+','id'), grp), ['3','4'])
             ae(filt(None, {a: [None]}, ('+','id'), grp), ['3','4'])
             ae(filt(None, {a: ['-1', None]}, ('+','id'), grp), ['3','4'])
             ae(filt(None, {a: ['1', None]}, ('+','id'), grp), ['1', '3','4'])
+
+    @pytest.mark.xfail
+    def testFilteringLinkExpression(self):
+        ae, iiter = self.filteringSetup()
+        a = 'assignedto'
+        for filt in iiter():
+            ae(filt(None, {}, ('+',a)), ['3','4','1','2'])
+            ae(filt(None, {a: '1'}, ('+',a)), ['1'])
+            ae(filt(None, {a: '2'}, ('+',a)), ['2'])
+            ae(filt(None, {a: '-1'}, ('+','status')), ['4','3'])
+            ae(filt(None, {a: []}, ('+','id')), ['3','4'])
+            ae(filt(None, {a: ['-1']}, ('+',a)), ['3','4'])
+            ae(filt(None, {a: []}, ('+',a)), ['3','4'])
+            ae(filt(None, {a: '-1'}, ('+',a)), ['3','4'])
+            ae(filt(None, {a: ['1','-1']}), ['1','3','4'])
+            ae(filt(None, {a: ['1','-1']}, ('+',a)), ['3','4','1'])
+            ae(filt(None, {a: ['2','-1']}, ('+',a)), ['3','4','2'])
+            ae(filt(None, {a: ['1','-2']}), ['2','3','4'])
+            ae(filt(None, {a: ['1','-2']}, ('+',a)), ['3','4','2'])
+            ae(filt(None, {a: ['-1','-2']}, ('+',a)), ['1','2'])
+            ae(filt(None, {a: ['1','2','-3']}, ('+',a)), [])
+            ae(filt(None, {a: ['1','2','-4']}, ('+',a)), ['1','2'])
+            ae(filt(None, {a: ['1','-2','2','-2','-3']}, ('+',a)), ['3','4'])
+            ae(filt(None, {a: ['1','-2','2','-2','-4']}, ('+',a)),
+                ['3','4','1','2'])
 
     def testFilteringRevLink(self):
         ae, iiter = self.filteringSetupTransitiveSearch('user')
