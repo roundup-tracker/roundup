@@ -2453,6 +2453,53 @@ class Class(hyperdb.Class):
         # we have ids of the classname table
         return ids.where("_%s.id" % classname, self.db.arg)
 
+    def _filter_link_expression(self, proptree, v):
+        """ Filter elements in the table that match the given expression
+        """
+        pln = proptree.parent.uniqname
+        prp = proptree.name
+        try:
+            opcodes = [int(x) for x in v]
+            if min(opcodes) >= -1:
+                raise ValueError()
+            expr = compile_expression(opcodes)
+            # NULL doesn't compare to NULL in SQL
+            # So not (x = '1') will *not* include NULL values for x
+            # That's why we need that and clause:
+            atom = "_%s._%s = %s and _%s._%s is not NULL" % (
+                pln, prp, self.db.arg, pln, prp)
+            atom_nil = "_%s._%s is NULL" % (pln, prp)
+            lambda_atom = lambda n: atom if n.x >= 0 else atom_nil
+            values = []
+            w = expr.generate(lambda_atom)
+            def collect_values(n):
+                if n.x >= 0:
+                    values.append(n.x)
+            expr.visit(collect_values)
+            return w, values
+        except:
+            pass
+        # Fallback to original code
+        args = []
+        where = None
+        d = {}
+        for entry in v:
+            if entry == '-1':
+                entry = None
+            d[entry] = entry
+        l = []
+        if None in d or not d:
+            if None in d: del d[None]
+            l.append('_%s._%s is NULL'%(pln, prp))
+        if d:
+            v = list(d)
+            s = ','.join([self.db.arg for x in v])
+            l.append('(_%s._%s in (%s))'%(pln, prp, s))
+            args = v
+        if l:
+            where = '(' + ' or '.join(l) +')'
+        return where, args
+
     def _filter_multilink_expression(self, proptree, v):
         """ Filters out elements of the classname table that do not
             match the given expression.
@@ -2678,22 +2725,10 @@ class Class(hyperdb.Class):
                             where.append('_%s._%s=_%s.id'%(pln, k, ln))
                     if p.has_values:
                         if isinstance(v, type([])):
-                            d = {}
-                            for entry in v:
-                                if entry == '-1':
-                                    entry = None
-                                d[entry] = entry
-                            l = []
-                            if None in d or not d:
-                                if None in d: del d[None]
-                                l.append('_%s._%s is NULL'%(pln, k))
-                            if d:
-                                v = list(d)
-                                s = ','.join([a for x in v])
-                                l.append('(_%s._%s in (%s))'%(pln, k, s))
-                                args = args + v
-                            if l:
-                                where.append('(' + ' or '.join(l) +')')
+                            w, arg = self._filter_link_expression(p, v)
+                            if w:
+                                where.append(w)
+                                args += arg
                         else:
                             if v in ('-1', None):
                                 v = None

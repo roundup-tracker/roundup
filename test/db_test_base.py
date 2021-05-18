@@ -1859,7 +1859,6 @@ class DBTest(commonDBTest):
             ae(filt(None, {a: ['-1', None]}, ('+','id'), grp), ['3','4'])
             ae(filt(None, {a: ['1', None]}, ('+','id'), grp), ['1', '3','4'])
 
-    @pytest.mark.xfail
     def testFilteringLinkExpression(self):
         ae, iiter = self.filteringSetup()
         a = 'assignedto'
