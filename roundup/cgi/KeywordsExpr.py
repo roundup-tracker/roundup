@@ -1,7 +1,7 @@
 # This module is free software, you may redistribute it
 # and/or modify under the same terms as Python.
 
-WINDOW_CONTENT = r'''\
+WINDOW_CONTENT = r'''
 <h3>Keyword Expression Editor:</h3>
 <hr/>
 <div id="content"></div>
@@ -220,16 +220,39 @@ function create() {
     return out;
 }
 
-function main_content() {
+function main_display() {
+    var out = '';
+    out += '<span id="display_%(prop)s">' + parse(current).infix() + '<\/span>';
+    return out;
+}
+
+function main_input() {
     var out = '';
     out += '<input type="hidden" name="%(prop)s" value="' + current + '"\/>';
-    out += parse(current).infix();
     return out;
 }
 
 function modify_main() {
-    main = window.opener.document.getElementById("keywords_%(prop)s");
-    main.innerHTML = main_content();
+    /* if display form of expression exists, overwrite */
+    display = window.opener.document.getElementById('display_%(prop)s');
+    if ( display ) {
+      display.outerHTML = main_display();
+    }
+
+    /* overwrite select if present, otherwise overwrite the hidden input */
+    input = window.opener.document.querySelector('select[name="%(prop)s"]');
+    if (! input) {
+       input = window.opener.document.querySelector('input[name="%(prop)s"]');
+    }
+
+    /* if display exists, only update hidden input. If display doesn't
+       exist, inject both hidden input and display. */
+    if ( display ) {
+       content = main_input();
+    } else {
+       content = main_input() + main_display();
+    }
+    input.outerHTML = content;
 }
 
 function set_content() {

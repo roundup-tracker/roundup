@@ -103,6 +103,9 @@ Fixed:
   if the given property is unset for an element of the list. Crash
   fixed. New feature NoneFirst added to method to make unset values
   sort at start or end of sorted list. (John Rouillard)
+- issue2550648 - keyword boolean search. Issue has multiple problems.
+  Fix issue where saving the keyword boolean search would remove the
+  link to open the editor.
 
 Features:
 - issue2550522 - Add 'filter' command to command-line
