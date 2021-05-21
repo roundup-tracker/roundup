@@ -73,6 +73,33 @@ property error. Now it stops after reporting the incorrect property.
 If run non-interactively, it exits with status 1. It can now be
 used in a startup script to detect permission errors.
 
+Futureproof devel and responsive timezone selection extension
+-------------------------------------------------------------
+
+The devel and responsive (derived from devel) templates use a select
+control to list all available timezones when pytz is used. It
+sanitizes the data using cgi.escape. Cgi.escape is deprecated and
+removed in newer pythons. Change your ``extensions/timezone.py``
+file by applying the following patch manually::
+
+
+    -import cgi
+    +try:
+    +    from html import escape
+    +except ImportError:
+    +    from cgi import escape
+
+     try:
+	 import pytz
+    @@ -25,7 +28,7 @@
+		 s = ' '
+		 if zone == value:
+		     s = 'selected=selected '
+    -            z = cgi.escape(zone)
+    +            z = escape(zone)
+
+See https://issues.roundup-tracker.org/issue2551136 for more details.
+
 .. index:: Upgrading; 1.6.x to 2.0.0
 
 Migrating from 1.6.X to 2.0.0

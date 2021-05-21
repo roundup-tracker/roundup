@@ -106,6 +106,10 @@ Fixed:
 - issue2550648 - keyword boolean search. Issue has multiple problems.
   Fix issue where saving the keyword boolean search would remove the
   link to open the editor.
+- issue2551136 - timezone extention crash on Python 3.8. cgi.escape
+  is used in some template to provide a select box of timezones. It
+  uses cgi.escape that is depricated and removed from 3.8 and newer.
+  Use html.escape with fallback to cgi.escape. (Cedric Krier)
 
 Features:
 - issue2550522 - Add 'filter' command to command-line
