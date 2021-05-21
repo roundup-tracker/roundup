@@ -2995,14 +2995,17 @@ filter      lists of items from this class, filtered and sorted. Two
             A negative number pops the required number of arguments from
             the stack, applies the operator, and pushes the result. The
             following operators are supported:
+
 	    - '-2' stands for 'NOT' and takes one argument
 	    - '-3' stands for 'AND' and takes two arguments
 	    - '-4' stands for 'OR' and takes two arguments
+
 	    Note that this special handling of ID arguments is applied only
 	    when a negative number smaller than -1 is encountered as an ID
 	    in the filter call. Otherwise the implicit OR default
             applies.
 	    Examples of using Multilink expressions would be
+
 	    - '1', '2', '-4', '3', '4', '-4', '-3'
 	      would search for IDs (1 or 2) and (3 or 4)
 	    - '-1' '-2' would search for all non-empty Multilinks
