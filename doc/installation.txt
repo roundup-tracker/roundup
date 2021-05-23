@@ -1451,7 +1451,7 @@ there are no errors. If there are errors, please let us know!
 .. _Olson tz database: https://www.iana.org/time-zones
 .. _Psycopg: https://www.psycopg.org/
 .. _pyjwt: https://pypi.org/project/PyJWT/
-.. _pyopenssl: http://pyopenssl.sourceforge.net
+.. _pyopenssl: https://pypi.org/project/pyOpenSSL/
 .. _pysqlite: https://pysqlite.org/
 .. _pytz: https://pypi.org/project/pytz/
 .. _pywin32: https://pypi.org/project/pywin32/
