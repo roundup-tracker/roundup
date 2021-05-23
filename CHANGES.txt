@@ -110,6 +110,12 @@ Fixed:
   is used in some template to provide a select box of timezones. It
   uses cgi.escape that is depricated and removed from 3.8 and newer.
   Use html.escape with fallback to cgi.escape. (Cedric Krier)
+- roundup-server can act as an SSL server. Usually SSL is provided by
+  a front-end server like nginx, hiawtha, apache. The SSL parameters
+  have been upgraded to TLS 1.1. Cert is RSA 2048 bytes with SHA512
+  signature. Without these upgrades, ssl mode won't start. Note this
+  exposes other issue with roundup-server operating as an SSL
+  endpoint. See issue2551138 and issue2551137.
 
 Features:
 - issue2550522 - Add 'filter' command to command-line
