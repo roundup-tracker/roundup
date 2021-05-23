@@ -116,6 +116,9 @@ Fixed:
   signature. Without these upgrades, ssl mode won't start. Note this
   exposes other issue with roundup-server operating as an SSL
   endpoint. See issue2551138 and issue2551137.
+- issue2551122 - sorted method of MultilinkHTMLProperty does a string
+  sort even if the property is an integer. Fixed so that the orderprop
+  for the linked class is used. (John Rouillard, reported by Nagy Gabor)
 
 Features:
 - issue2550522 - Add 'filter' command to command-line

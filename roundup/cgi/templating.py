@@ -2624,19 +2624,31 @@ class MultilinkHTMLProperty(HTMLProperty):
         # 0 to sort to sort None first
         # 1 is used to sort the integer values.
         NoneCode = (2,0)[NoneFirst]
+
+        value = list(self.__iter__())
+
+        # determine orderprop for property.
+        if value: 
+            orderprop = value[0]._db.getclass(property).orderprop()
+        else: # return empty list, nothing to sort.
+            return value
+
         def keyfunc(v):
             # Return tuples made of (group order (int), base python
             # type) to sort function.
             # Do not return v[property] as that returns an HTMLProperty
             # type/subtype that throws an exception when sorting
             # python type (int. str ...) against None.
-            val = v[property]._value
-            if val:
-                return (1, val)  # val should be base python type
-            elif val is None:
+            prop = v[property]
+            if not prop._value:
                 return (NoneCode, None)
 
-        value = list(self.__iter__())
+            val = prop[orderprop]._value
+
+            if val is None: # verify orderprop is set to a value
+                return (NoneCode, None)
+            return (1, val)  # val should be base python type
+
         value.sort(key=keyfunc, reverse=reverse)
         return value
 
