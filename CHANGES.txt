@@ -119,6 +119,9 @@ Fixed:
 - issue2551122 - sorted method of MultilinkHTMLProperty does a string
   sort even if the property is an integer. Fixed so that the orderprop
   for the linked class is used. (John Rouillard, reported by Nagy Gabor)
+- issue2550964 - History can (temporarily) show incorrect value when a
+  change is rejected. Fix history function to always use the database
+  values and ignore the current setting in the form.
 
 Features:
 - issue2550522 - Add 'filter' command to command-line

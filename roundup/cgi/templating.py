@@ -1133,6 +1133,12 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         if not self.is_view_ok():
             return self._('[hidden]')
 
+        # history should only use database values not current
+        # form values. Disable form_wins for the body of the
+        # function. Reset it to original value on return.
+        orig_form_wins = self._client.form_wins
+        self._client.form_wins = False
+                
         # get the journal, sort and reverse
         history = self._klass.history(self._nodeid, skipquiet=(not showall))
         history.sort(key=lambda a: a[:3])
@@ -1375,6 +1381,9 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
              self._('<th>Args</th>'),
             '</tr>']
         l.append('</table>')
+
+        self._client.form_wins = orig_form_wins
+        
         return '\n'.join(l)
 
     def renderQueryForm(self):
