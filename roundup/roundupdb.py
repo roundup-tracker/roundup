@@ -425,8 +425,8 @@ class IssueClass:
         return msg
 
     def send_message(self, issueid, msgid, note, sendto, from_address=None,
-                     bcc_sendto=[], authid=None, subject=None, crypt=False,
-                     add_headers={}):
+                     bcc_sendto=[], subject=None, crypt=False,
+                     add_headers={}, authid=None):
         '''Actually send the nominated message from this issue to the sendto
            recipients, with the note appended. It's possible to add
            headers to the message with the add_headers variable.
