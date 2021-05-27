@@ -425,7 +425,7 @@ class IssueClass:
         return msg
 
     def send_message(self, issueid, msgid, note, sendto, from_address=None,
-                     bcc_sendto=[], subject=None, crypt=False,
+                     bcc_sendto=[], authid=None, subject=None, crypt=False,
                      add_headers={}):
         '''Actually send the nominated message from this issue to the sendto
            recipients, with the note appended. It's possible to add
@@ -457,7 +457,9 @@ class IssueClass:
         title = self.get(issueid, 'title') or '%s message copy' % cn
 
         # figure author information
-        if msgid:
+        if authid:
+            pass
+        elif msgid:
             authid = messages.get(msgid, 'author')
         else:
             authid = self.db.getuid()
