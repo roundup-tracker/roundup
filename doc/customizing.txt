@@ -3498,6 +3498,7 @@ html_quote      quote some text as safe in HTML (ie. <, >, ...)
 html_calendar   renders an HTML calendar used by the
                 ``_generic.calendar.html`` template (itself invoked by
                 the popupCalendar DateHTMLProperty method
+anti_csrf_nonce returns the random noncue generated for this session
 =============== ========================================================
 
 
