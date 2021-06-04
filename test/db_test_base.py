@@ -1578,6 +1578,12 @@ class DBTest(commonDBTest):
         got.sort()
         self.assertEqual(got, [one, three])
 
+    def testFindProtectedLink(self):
+        one, two, three, four = self._find_test_setup()
+        got = self.db.issue.find(creator='1')
+        got.sort()
+        self.assertEqual(got, [one, two, three, four])
+
     def testFindRevLinkMultilink(self):
         ae, dummy = self.filteringSetupTransitiveSearch('user')
         ni = 'nosy_issues'

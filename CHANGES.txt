@@ -122,6 +122,9 @@ Fixed:
 - issue2550964 - History can (temporarily) show incorrect value when a
   change is rejected. Fix history function to always use the database
   values and ignore the current setting in the form.
+- Fix find() with anydbm. Using protected properties raised KeyError.
+  Add shortcut fast return. Both changes come from rdbms_common.py's
+  find(). (John Rouillard)
 
 Features:
 - issue2550522 - Add 'filter' command to command-line

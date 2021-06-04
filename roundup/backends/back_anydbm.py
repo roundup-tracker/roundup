@@ -1506,9 +1506,15 @@ class Class(hyperdb.Class):
             db.issue.find(messages=('1','3'), files=('7',))
             db.issue.find(messages=['1','3'], files=['7'])
         """
+        # shortcut
+        if not propspec:
+            return []
+
+        # validate the args
+        props = self.getprops()
         for propname, itemids in propspec.items():
             # check the prop is OK
-            prop = self.properties[propname]
+            prop = props[propname]
             if not isinstance(prop, hyperdb.Link) and not isinstance(prop, hyperdb.Multilink):
                 raise TypeError("'%s' not a Link/Multilink "
                     "property"%propname)
@@ -1537,7 +1543,7 @@ class Class(hyperdb.Class):
                         continue
 
                     # grab the property definition and its value on this item
-                    prop = self.properties[propname]
+                    prop = props[propname]
                     value = item[propname]
                     if isinstance(prop, hyperdb.Link) and value in itemids:
                         l.append(id)
