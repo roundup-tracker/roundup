@@ -125,6 +125,8 @@ Fixed:
 - Fix find() with anydbm. Using protected properties raised KeyError.
   Add shortcut fast return. Both changes come from rdbms_common.py's
   find(). (John Rouillard)
+- Fix traceback caused by calling history() with arguments in a
+  non-item context.
 
 Features:
 - issue2550522 - Add 'filter' command to command-line

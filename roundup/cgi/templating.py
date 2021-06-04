@@ -958,7 +958,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
             '\n' + \
             self.input(type="hidden", name="@action", value=action)
 
-    def history(self):
+    def history(self, **args):
         if not self.is_view_ok():
             return self._('[hidden]')
         return self._('New node - no history')
