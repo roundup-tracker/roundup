@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2021-05-10 21:18-0400\n"
+"POT-Creation-Date: 2021-06-04 22:57-0400\n"
 "PO-Revision-Date: 2013-10-31 12:21+0100\n"
 "Last-Translator: Christian Aastorp <christian.aastorp@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1262,18 +1262,18 @@ msgstr "exit..."
 msgid "There are unsaved changes. Commit them (y/N)? "
 msgstr "Det er ikkelagrede endringer. Lagre dem (y/N)? "
 
-#: ../roundup/backends/back_anydbm.py:173 ../roundup/backends/back_lmdb.py:251
+#: ../roundup/backends/back_anydbm.py:173
 #: ../roundup/backends/rdbms_common.py:850
 #, python-format
 msgid "Class \"%s\" already defined."
 msgstr ""
 
-#: ../roundup/backends/back_anydbm.py:234 ../roundup/backends/back_lmdb.py:312
+#: ../roundup/backends/back_anydbm.py:234
 #: ../roundup/backends/sessions_dbm.py:55
 msgid "Couldn't identify database type"
 msgstr "Kunne ikke identifisere databsetypen"
 
-#: ../roundup/backends/back_anydbm.py:268 ../roundup/backends/back_lmdb.py:346
+#: ../roundup/backends/back_anydbm.py:268
 #, fuzzy, python-format
 msgid ""
 "Couldn't open database - the required module '%s' (as dbm.gnu) is not "
@@ -1281,7 +1281,7 @@ msgid ""
 msgstr ""
 "Kunne ikke åpne databasen - den påkrevde modulen '%s' er ikke tilgjengelig"
 
-#: ../roundup/backends/back_anydbm.py:271 ../roundup/backends/back_lmdb.py:349
+#: ../roundup/backends/back_anydbm.py:271
 #, python-format
 msgid "Couldn't open database - the required module '%s' is not available"
 msgstr ""
@@ -1294,21 +1294,16 @@ msgstr ""
 #: ../roundup/backends/back_anydbm.py:1374
 #: ../roundup/backends/back_anydbm.py:1392
 #: ../roundup/backends/back_anydbm.py:1438
-#: ../roundup/backends/back_anydbm.py:2061
+#: ../roundup/backends/back_anydbm.py:2063
 #: ../roundup/backends/back_anydbm.py:827:840
-#: ../roundup/backends/back_lmdb.py:905 ../roundup/backends/back_lmdb.py:918
-#: ../roundup/backends/back_lmdb.py:1191 ../roundup/backends/back_lmdb.py:1226
-#: ../roundup/backends/back_lmdb.py:1452 ../roundup/backends/back_lmdb.py:1470
-#: ../roundup/backends/back_lmdb.py:1516 ../roundup/backends/back_lmdb.py:2138
-#: ../roundup/backends/back_lmdb.py:905:918
 #: ../roundup/backends/rdbms_common.py:1619
 #: ../roundup/backends/rdbms_common.py:1866
 #: ../roundup/backends/rdbms_common.py:2101
 #: ../roundup/backends/rdbms_common.py:2121
 #: ../roundup/backends/rdbms_common.py:2174
-#: ../roundup/backends/rdbms_common.py:3080
-#: ../roundup/backends/rdbms_common.py:1619:1866 :1113:1148 :1191:1226
-#: :1374:1392:1438 :1452:1470 :1516:2138:2061 :2101:2121:2174 :3080
+#: ../roundup/backends/rdbms_common.py:3117
+#: ../roundup/backends/rdbms_common.py:1619:1866 :1113:1148 :1374:1392:1438
+#: :2063 :2101:2121 :2174:3117
 msgid "Database open read-only"
 msgstr "Databsen åpnet bare for lesing"
 
@@ -1921,18 +1916,18 @@ msgid "Submit New Entry"
 msgstr "Legg til ny oppføring"
 
 #: ../roundup/cgi/templating.py:963 ../roundup/cgi/templating.py:1134
-#: ../roundup/cgi/templating.py:1738 ../roundup/cgi/templating.py:1767
-#: ../roundup/cgi/templating.py:1787 ../roundup/cgi/templating.py:1800
-#: ../roundup/cgi/templating.py:1837 ../roundup/cgi/templating.py:1890
-#: ../roundup/cgi/templating.py:1913 ../roundup/cgi/templating.py:1920
-#: ../roundup/cgi/templating.py:1956 ../roundup/cgi/templating.py:1993
-#: ../roundup/cgi/templating.py:2026 ../roundup/cgi/templating.py:2115
-#: ../roundup/cgi/templating.py:2136 ../roundup/cgi/templating.py:2226
-#: ../roundup/cgi/templating.py:2246 ../roundup/cgi/templating.py:2268
-#: ../roundup/cgi/templating.py:2307 ../roundup/cgi/templating.py:2317
-#: ../roundup/cgi/templating.py:2381 ../roundup/cgi/templating.py:2635
-#: ../roundup/cgi/templating.py:963:1134 :1738:1767 :1787:1800 :1837:1890
-#: :1913:1920 :1956:1993 :2026:2115 :2136:2226 :2246:2268 :2307:2317 :2381:2635
+#: ../roundup/cgi/templating.py:1747 ../roundup/cgi/templating.py:1776
+#: ../roundup/cgi/templating.py:1796 ../roundup/cgi/templating.py:1809
+#: ../roundup/cgi/templating.py:1846 ../roundup/cgi/templating.py:1899
+#: ../roundup/cgi/templating.py:1922 ../roundup/cgi/templating.py:1929
+#: ../roundup/cgi/templating.py:1965 ../roundup/cgi/templating.py:2002
+#: ../roundup/cgi/templating.py:2035 ../roundup/cgi/templating.py:2124
+#: ../roundup/cgi/templating.py:2145 ../roundup/cgi/templating.py:2235
+#: ../roundup/cgi/templating.py:2255 ../roundup/cgi/templating.py:2277
+#: ../roundup/cgi/templating.py:2316 ../roundup/cgi/templating.py:2326
+#: ../roundup/cgi/templating.py:2390 ../roundup/cgi/templating.py:2678
+#: ../roundup/cgi/templating.py:963:1134 :1747:1776 :1796:1809 :1846:1899
+#: :1922:1929 :1965:2002 :2035:2124 :2145:2235 :2255:2277 :2316:2326 :2390:2678
 msgid "[hidden]"
 msgstr "[skjult]"
 
@@ -1944,31 +1939,31 @@ msgstr "Ny node - ingen historie"
 msgid "Submit Changes"
 msgstr "Lagre endringer"
 
-#: ../roundup/cgi/templating.py:1171
+#: ../roundup/cgi/templating.py:1177
 msgid "<em>The indicated property no longer exists</em>"
 msgstr "<em>Valgt egenskap finnes ikke lenger</em>"
 
-#: ../roundup/cgi/templating.py:1172
+#: ../roundup/cgi/templating.py:1178
 #, python-format
 msgid "<em>%s: %s</em>\n"
 msgstr "<em>%s: %s</em>\n"
 
-#: ../roundup/cgi/templating.py:1207
+#: ../roundup/cgi/templating.py:1213
 #, python-format
 msgid "The linked class %(classname)s no longer exists"
 msgstr "Den lenkede klassen %(classname)s finnes ikke lenger"
 
-#: ../roundup/cgi/templating.py:1245 ../roundup/cgi/templating.py:1271
-#: ../roundup/cgi/templating.py:1245:1271
+#: ../roundup/cgi/templating.py:1251 ../roundup/cgi/templating.py:1277
+#: ../roundup/cgi/templating.py:1251:1277
 msgid "<strike>The linked node no longer exists</strike>"
 msgstr "<strike>Den lenkede noden finnes ikke lenger</strike>"
 
-#: ../roundup/cgi/templating.py:1332
+#: ../roundup/cgi/templating.py:1338
 #, python-format
 msgid "%s: (no value)"
 msgstr "%s: (ingen verdi)"
 
-#: ../roundup/cgi/templating.py:1348
+#: ../roundup/cgi/templating.py:1354
 #, fuzzy, python-format
 msgid ""
 "<strong><em>This event %s is not handled by the history display!</em></"
@@ -1977,46 +1972,46 @@ msgstr ""
 "<strong><em>Denne hendelsen håndteres ikke av historievisningen!</em></"
 "strong>"
 
-#: ../roundup/cgi/templating.py:1361
+#: ../roundup/cgi/templating.py:1367
 msgid "<tr><td colspan=4><strong>Note:</strong></td></tr>"
 msgstr "<tr><td colspan=4><strong>Noter:</strong></td></tr>"
 
-#: ../roundup/cgi/templating.py:1370
+#: ../roundup/cgi/templating.py:1376
 msgid "History"
 msgstr "Historie"
 
-#: ../roundup/cgi/templating.py:1372
+#: ../roundup/cgi/templating.py:1378
 msgid "<th>Date</th>"
 msgstr "<th>Dato</th>"
 
-#: ../roundup/cgi/templating.py:1373
+#: ../roundup/cgi/templating.py:1379
 msgid "<th>User</th>"
 msgstr "<th>Bruker</th>"
 
-#: ../roundup/cgi/templating.py:1374
+#: ../roundup/cgi/templating.py:1380
 msgid "<th>Action</th>"
 msgstr "<th>Aksjon</th>"
 
-#: ../roundup/cgi/templating.py:1375
+#: ../roundup/cgi/templating.py:1381
 msgid "<th>Args</th>"
 msgstr "<th>Argumenter</th>"
 
-#: ../roundup/cgi/templating.py:1423
+#: ../roundup/cgi/templating.py:1432
 #, python-format
 msgid "Copy of %(class)s %(id)s"
 msgstr "Kopi av %(class)s %(id)s"
 
-#: ../roundup/cgi/templating.py:2030 ../roundup/cgi/templating.py:2063
-#: ../roundup/cgi/templating.py:1314:2030:2063
+#: ../roundup/cgi/templating.py:2039 ../roundup/cgi/templating.py:2072
+#: ../roundup/cgi/templating.py:1320:2039:2072
 msgid "No"
 msgstr "Nei"
 
-#: ../roundup/cgi/templating.py:2030 ../roundup/cgi/templating.py:2058
-#: ../roundup/cgi/templating.py:1314:2030:2058
+#: ../roundup/cgi/templating.py:2039 ../roundup/cgi/templating.py:2067
+#: ../roundup/cgi/templating.py:1320:2039:2067
 msgid "Yes"
 msgstr "Ja"
 
-#: ../roundup/cgi/templating.py:2184
+#: ../roundup/cgi/templating.py:2193
 msgid ""
 "default value for DateHTMLProperty must be either DateHTMLProperty or string "
 "date representation."
@@ -2024,17 +2019,17 @@ msgstr ""
 "standard verdi for DateHTMLProperty må være enten DateHTMLProperty eller en "
 "streng represantasjon av tidspunkt."
 
-#: ../roundup/cgi/templating.py:2361
+#: ../roundup/cgi/templating.py:2370
 #, python-format
 msgid "Attempt to look up %(attr)s on a missing value"
 msgstr "Forsøk på å slå opp  %(attr)s på manglende verdi"
 
-#: ../roundup/cgi/templating.py:2372
+#: ../roundup/cgi/templating.py:2381
 #, fuzzy, python-format
 msgid "Attempt to look up %(item)s on a missing value"
 msgstr "Forsøk på å slå opp  %(attr)s på manglende verdi"
 
-#: ../roundup/cgi/templating.py:2475
+#: ../roundup/cgi/templating.py:2484
 #, python-format
 msgid "<option %svalue=\"-1\">- no selection -</option>"
 msgstr "<option %svalue=\"-1\">- intet valg -</option>"
@@ -2220,23 +2215,23 @@ msgstr "egenskap %s: %r er ikke et nummer"
 msgid "\"%s\" not a node designator"
 msgstr "\"%s\" ikke en node-benevnelse"
 
-#: ../roundup/hyperdb.py:1468 ../roundup/hyperdb.py:1476
-#: ../roundup/hyperdb.py:1468:1476
+#: ../roundup/hyperdb.py:1472 ../roundup/hyperdb.py:1480
+#: ../roundup/hyperdb.py:1472:1480
 #, python-format
 msgid "Not a property name: %s"
 msgstr "Ikke et navn på egenskap: %s"
 
-#: ../roundup/hyperdb.py:1917
+#: ../roundup/hyperdb.py:1939
 #, python-format
 msgid "property %s: %r is not a %s."
 msgstr "egenskap %s: %r er ikke en %s."
 
-#: ../roundup/hyperdb.py:1920
+#: ../roundup/hyperdb.py:1942
 #, python-format
 msgid "you may only enter ID values for property %s"
 msgstr "du kan bare oppgi ID-verdier for egenskap %s"
 
-#: ../roundup/hyperdb.py:1954
+#: ../roundup/hyperdb.py:1976
 #, python-format
 msgid "%r is not a property of %s"
 msgstr "%r er ikke en egenskap ved %s"
@@ -2635,28 +2630,28 @@ msgstr "opprettet av"
 msgid "No key for \"%(adr)s\" in keyring"
 msgstr ""
 
-#: ../roundup/roundupdb.py:484
+#: ../roundup/roundupdb.py:486
 #, python-format
 msgid "New submission from %(authname)s%(authaddr)s:"
 msgstr "Ny sak fra %(authname)s%(authaddr)s:"
 
-#: ../roundup/roundupdb.py:487
+#: ../roundup/roundupdb.py:489
 #, python-format
 msgid "%(authname)s%(authaddr)s added the comment:"
 msgstr "%(authname)s%(authaddr)s la inn kommentaren:"
 
-#: ../roundup/roundupdb.py:490
+#: ../roundup/roundupdb.py:492
 #, python-format
 msgid "Change by %(authname)s%(authaddr)s:"
 msgstr "Endret av %(authname)s%(authaddr)s:"
 
-#: ../roundup/roundupdb.py:509
+#: ../roundup/roundupdb.py:511
 #, python-format
 msgid "File '%(filename)s' not attached - you can download it from %(link)s."
 msgstr ""
 "Filen '%(filename)s' er ikke vedlagt - du kan laste den ned fra %(link)s."
 
-#: ../roundup/roundupdb.py:886
+#: ../roundup/roundupdb.py:888
 #, python-format
 msgid ""
 "\n"
