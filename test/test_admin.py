@@ -1044,6 +1044,94 @@ Role "user":
         print(outlist)
         self.assertEqual(sorted(outlist), sorted(spec))
 
+    def testRetireRestore(self):
+        ''' Note the tests will fail if you run this under pdb.
+            the context managers capture the pdb prompts and this screws
+            up the stdout strings with (pdb) prefixed to the line.
+        '''
+        import sys
+
+        # create user1 at id 3
+        self.install_init()
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'create', 'user',
+                      'username=user1', 'address=user1' ]
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, '3')
+
+        # retire user1 at id 3
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'retire', 'user3']
+            ret = self.admin.main()
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, '')
+
+        # create new user1 at id 4 - note need unique address to succeed.
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'create', 'user',
+                      'username=user1', 'address=user1a' ]
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, '4')
+
+        # fail to restore old user1 at id 3
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'restore', 'user3']
+            ret = self.admin.main()
+        out = out.getvalue().strip()
+        print(out)
+        self.assertIn('Error: Key property (username) of retired node clashes with existing one (user1)', out)
+
+        # verify that user4 is listed
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'list', 'user']
+            ret = self.admin.main()
+        out = out.getvalue().strip()
+        print(out)
+        expected="1: admin\n   2: anonymous\n   4: user1"
+        self.assertEqual(out, expected)
+
+        # retire user4
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'retire', 'user4']
+            ret = self.admin.main()
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, '')
+
+        # now we can restore user3
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'restore', 'user3']
+            ret = self.admin.main()
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, '')
+
+        # verify that user3 is listed
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'list', 'user']
+            ret = self.admin.main()
+        out = out.getvalue().strip()
+        print(out)
+        expected="1: admin\n   2: anonymous\n   3: user1"
+        self.assertEqual(out, expected)
+
+
+
     def testTable(self):
         ''' Note the tests will fail if you run this under pdb.
             the context managers capture the pdb prompts and this screws

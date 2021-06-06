@@ -1250,9 +1250,13 @@ Erase it? Y/N: """))
             except hyperdb.DesignatorError as message:
                 raise UsageError(message)
             try:
-                self.db.getclass(classname).restore(nodeid)
+                dbclass = self.db.getclass(classname)
             except KeyError:
                 raise UsageError(_('no such class "%(classname)s"') % locals())
+            try:
+                dbclass.restore(nodeid)
+            except KeyError as e:
+                raise UsageError(e.args[0])
             except IndexError:
                 raise UsageError(_('no such %(classname)s node '
                                    '" % (nodeid)s"')%locals())

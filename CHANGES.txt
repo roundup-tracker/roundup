@@ -127,6 +127,10 @@ Fixed:
   find(). (John Rouillard)
 - Fix traceback caused by calling history() with arguments in a
   non-item context.
+- issue2551141 - roudup-admin returns no such class when restoring
+  item with duplicate key. Fix incorrect error message when using
+  roundup-admin to restore a user when the username is aleady in use.
+  (John Rouillard)
 
 Features:
 - issue2550522 - Add 'filter' command to command-line
