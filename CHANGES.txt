@@ -131,6 +131,8 @@ Fixed:
   item with duplicate key. Fix incorrect error message when using
   roundup-admin to restore a user when the username is aleady in use.
   (John Rouillard)
+- issue2551142 - Import of retired node with username after active
+  node fails with unique constraint failure. (John Rouillard)
 
 Features:
 - issue2550522 - Add 'filter' command to command-line

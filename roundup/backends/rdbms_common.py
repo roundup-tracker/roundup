@@ -3113,6 +3113,9 @@ class Class(hyperdb.Class):
 
             Return the nodeid of the node imported.
         """
+
+        logger = logging.getLogger('roundup.hyperdb.backend')
+
         if self.db.journaltag is None:
             raise DatabaseError(_('Database open read-only'))
         properties = self.getprops()
@@ -3168,19 +3171,57 @@ class Class(hyperdb.Class):
         if newid is None:
             newid = self.db.newid(self.classname)
 
+        activeid = None
+        has_node = False
+
+        # use the arg for __retired__ to cope with any odd database type
+        # conversion (hello, sqlite)
+        retired_sql = 'update _%s set __retired__=%s where id=%s'%(
+            self.classname, self.db.arg, self.db.arg)
+
         # insert new node or update existing?
-        if not self.hasnode(newid):
-            self.db.addnode(self.classname, newid, d) # insert
-        else:
-            self.db.setnode(self.classname, newid, d) # update
+        # if integrity error raised try to recover
+        try:
+            has_node = self.hasnode(newid)
+            if not has_node:
+                self.db.addnode(self.classname, newid, d) # insert
+            else:
+                self.db.setnode(self.classname, newid, d) # update
+        # Blech, different db's return different exceptions
+        # so I can't list them here as some might not be defined
+        # on a given system. So capture all exceptions from the
+        # code above and try to correct it. If it's correctable its
+        # some form of Uniqueness Failure/Integrity Error otherwise
+        # undo the fixup and pass on the error.
+        except Exception as e:
+            logger.info('Attempting to handle import exception '
+                        'for id %s: %s' % (newid,e))
+
+            keyname = self.db.user.getkey()
+            if has_node or not keyname:  # Not an integrity error
+                raise
+            activeid = self.db.user.lookup(d[keyname])
+            self.db.sql(retired_sql, (-1, activeid)) # clear the active node
+            # this can only happen on an addnode, so retry
+            try:
+                # if this raises an error, let it propagate upward
+                self.db.addnode(self.classname, newid, d) # insert
+            except Exception:
+                # undo the database change
+                self.db.sql(retired_sql, (0, activeid)) # clear the active node
+                raise # propagate
+            logger.info('Successfully handled import exception '
+                        'for id %s which conflicted with %s' % (
+                            newid, activeid))
 
         # retire?
         if retire:
-            # use the arg for __retired__ to cope with any odd database type
-            # conversion (hello, sqlite)
-            sql = 'update _%s set __retired__=%s where id=%s'%(self.classname,
-                self.db.arg, self.db.arg)
-            self.db.sql(sql, (newid, newid))
+            self.db.sql(retired_sql, (newid, newid))
+
+        if activeid:
+            # unretire the active node
+            self.db.sql(retired_sql, ('0', activeid))
+
         return newid
 
     def export_journals(self):

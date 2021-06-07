@@ -1319,8 +1319,23 @@ Erase it? Y/N: """))
             fields.append('is retired')
             writer.writerow(fields)
 
-            # all nodes for this class
-            for nodeid in cl.getnodeids():
+            # If a node has a key, sort all nodes by key
+            # with retired nodes first. Retired nodes
+            # must occur before a non-retired node with
+            # the same key. Otherwise you get an
+            # IntegrityError: UNIQUE constraint failed:
+            #     _class.__retired__, _<class>._<keyname>
+            # on imports to rdbms.
+            all_nodes = cl.getnodeids()
+
+            classkey = cl.getkey()
+            if classkey: # False sorts before True, so negate is_retired
+                keysort = lambda i: (cl.get(i, classkey),
+                                     not cl.is_retired(i))
+                all_nodes.sort(key=keysort)
+            # if there is no classkey no need to sort
+
+            for nodeid in all_nodes:
                 if self.verbose:
                     sys.stdout.write('\rExporting %s - %s' % 
                                      (classname, nodeid))

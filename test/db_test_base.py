@@ -235,6 +235,10 @@ class commonDBTest(MyTestCase):
 
 class DBTest(commonDBTest):
 
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self._caplog = caplog
+
     def testRefresh(self):
         self.db.refresh_database()
 
@@ -2808,6 +2812,27 @@ class DBTest(commonDBTest):
         self.db.user.retire('3')
         self.db.issue.retire('2')
 
+        # Key fields must be unique. There can only be one unretired
+        # object with a given key value. When importing verify that
+        # having the unretired object with a key value before a retired
+        # object with the same key value is handled properly.
+
+        # Since the order of the exported objects is not consistant
+        # across backends, we sort the objects by id (as an int) and
+        # make sure that the active (non-retired) entry sorts before
+        # the retired entry.
+        active_dupe_id = self.db.user.create(username="duplicate",
+                                             roles='User',
+            password=password.Password('sekrit'), address='dupe1@example.com')
+        self.db.user.retire(active_dupe_id) # allow us to create second dupe
+
+        retired_dupe_id = self.db.user.create(username="duplicate",
+                                              roles='User',
+            password=password.Password('sekrit'), address='dupe2@example.com')
+        self.db.user.retire(retired_dupe_id)
+        self.db.user.restore(active_dupe_id) # unretire lower numbered id
+        self.db.commit()
+
         # grab snapshot of the current database
         orig = {}
         origj = {}
@@ -2825,10 +2850,23 @@ class DBTest(commonDBTest):
             # grab the export
             export = {}
             journals = {}
+            active_dupe_id_first = -1 # -1 unknown, False or True
             for cn,klass in self.db.classes.items():
                 names = klass.export_propnames()
                 cl = export[cn] = [names+['is retired']]
-                for id in klass.getnodeids():
+                classname = klass.classname
+                nodeids =  klass.getnodeids()
+                # sort to enforce retired/unretired order
+                nodeids.sort(key=int)
+                for id in nodeids:
+                    if (classname == 'user' and 
+                       id == retired_dupe_id and 
+                       active_dupe_id_first == -1):
+                       active_dupe_id_first = False
+                    if (classname == 'user' and 
+                       id == active_dupe_id and 
+                       active_dupe_id_first == -1):
+                        active_dupe_id_first = True
                     cl.append(klass.export_list(names, id))
                     if hasattr(klass, 'export_files'):
                         klass.export_files('_test_export', id)
@@ -2836,18 +2874,40 @@ class DBTest(commonDBTest):
 
             self.nukeAndCreate()
 
+            if not active_dupe_id_first:
+                # verify that the test is configured properly to
+                # trigger the exception code to handle uniqueness
+                # failure.
+                self.fail("Setup failure: active user id not first.")
+
             # import
-            for cn, items in export.items():
-                klass = self.db.classes[cn]
-                names = items[0]
-                maxid = 1
-                for itemprops in items[1:]:
-                    id = int(klass.import_list(names, itemprops))
-                    if hasattr(klass, 'import_files'):
-                        klass.import_files('_test_export', str(id))
-                    maxid = max(maxid, id)
-                self.db.setid(cn, str(maxid+1))
-                klass.import_journals(journals[cn])
+            with self._caplog.at_level(logging.INFO,
+                                       logger="roundup.hyperdb.backend"):
+            # not supported in python2, so use caplog rather than len(log)
+            #  X in log[0] ... 
+            #    with self.assertLogs('roundup.hyperdb.backend',
+            #                     level="INFO") as log:
+              for cn, items in export.items():
+                  klass = self.db.classes[cn]
+                  names = items[0]
+                  maxid = 1
+                  for itemprops in items[1:]:
+                      id = int(klass.import_list(names, itemprops))
+                      if hasattr(klass, 'import_files'):
+                          klass.import_files('_test_export', str(id))
+                      maxid = max(maxid, id)
+                  self.db.setid(cn, str(maxid+1))
+                  klass.import_journals(journals[cn])
+
+            if self.db.dbtype != 'anydbm':
+                # no logs or fixup needed under anydbm
+                self.assertEqual(2, len(self._caplog.record_tuples))
+                self.assertIn('Attempting to handle import exception for id 7:',
+                              self._caplog.record_tuples[0][2])
+                self.assertIn('Successfully handled import exception for id 7 '
+                              'which conflicted with 6',
+                              self._caplog.record_tuples[1][2])
+
             # This is needed, otherwise journals won't be there for anydbm
             self.db.commit()
         finally:
@@ -2895,7 +2955,7 @@ class DBTest(commonDBTest):
         # make sure id counters are set correctly
         maxid = max([int(id) for id in self.db.user.list()])
         newid = int(self.db.user.create(username='testing'))
-        assert newid > maxid
+        self.assertGreater(newid, maxid)
 
     # test import/export via admin interface
     def testAdminImportExport(self):
