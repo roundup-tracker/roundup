@@ -2899,7 +2899,7 @@ class DBTest(commonDBTest):
                   self.db.setid(cn, str(maxid+1))
                   klass.import_journals(journals[cn])
 
-            if self.db.dbtype != 'anydbm':
+            if self.db.dbtype not in ['anydbm', 'memorydb']:
                 # no logs or fixup needed under anydbm
                 self.assertEqual(2, len(self._caplog.record_tuples))
                 self.assertIn('Attempting to handle import exception for id 7:',
