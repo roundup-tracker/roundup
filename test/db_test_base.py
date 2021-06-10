@@ -242,6 +242,59 @@ class DBTest(commonDBTest):
     def testRefresh(self):
         self.db.refresh_database()
 
+    
+    def testUpgrade_5_to_6(self):
+
+        if(self.db.dbtype in ['anydbm', 'memorydb']):
+           self.skipTest('No schema upgrade needed on non rdbms backends')
+
+        # load the database
+        self.db.issue.create(title="flebble frooz")
+        self.db.commit()
+
+        self.assertEqual(self.db.database_schema['version'], 6,
+                         "This test only runs for database version 6")
+        self.db.database_schema['version'] = 5
+        if self.db.dbtype == 'mysql':
+            # version 6 has 5 indexes
+            self.db.sql('show indexes from _user;')
+            self.assertEqual(5,len(self.db.cursor.fetchall()),
+                             "Database created with wrong number of indexes")
+
+            self.drop_key_retired_idx()
+
+            # after dropping (key.__retired__) composite index we have
+            # 3 index entries
+            self.db.sql('show indexes from _user;')
+            self.assertEqual(3,len(self.db.cursor.fetchall()))
+
+            # test upgrade adding index
+            self.db.post_init()
+
+            # they're back
+            self.db.sql('show indexes from _user;')
+            self.assertEqual(5,len(self.db.cursor.fetchall()))
+
+            # test a database already upgraded from 4 to 5
+            # so it has the index to enforce key uniqueness
+            self.db.database_schema['version'] = 5
+            self.db.post_init()
+
+            # they're still here.
+            self.db.sql('show indexes from _user;')
+            self.assertEqual(5,len(self.db.cursor.fetchall()))
+        else:
+            # this should be a no-op
+            # test upgrade
+            self.db.post_init()
+
+    def drop_key_retired_idx(self):
+        c = self.db.cursor
+        for cn, klass in self.db.classes.items():
+            if klass.key:
+                sql = '''drop index _%s_key_retired_idx on _%s''' % (cn, cn)
+                self.db.sql(sql)
+
     #
     # automatic properties (well, the two easy ones anyway)
     #
@@ -2901,12 +2954,24 @@ class DBTest(commonDBTest):
 
             if self.db.dbtype not in ['anydbm', 'memorydb']:
                 # no logs or fixup needed under anydbm
-                self.assertEqual(2, len(self._caplog.record_tuples))
+                # postgres requires commits and rollbacks
+                # as part of error recovery, so we get commit
+                # logging that we need to account for
+                if self.db.dbtype == 'postgres':
+                    log_count=24
+                    handle_msg_location=16
+                    # add two since rollback is logged
+                    success_msg_location = handle_msg_location+2
+                else:
+                    log_count=2
+                    handle_msg_location=0
+                    success_msg_location = handle_msg_location+1
+                self.assertEqual(log_count, len(self._caplog.record_tuples))
                 self.assertIn('Attempting to handle import exception for id 7:',
-                              self._caplog.record_tuples[0][2])
+                              self._caplog.record_tuples[handle_msg_location][2])
                 self.assertIn('Successfully handled import exception for id 7 '
                               'which conflicted with 6',
-                              self._caplog.record_tuples[1][2])
+                              self._caplog.record_tuples[success_msg_location][2])
 
             # This is needed, otherwise journals won't be there for anydbm
             self.db.commit()

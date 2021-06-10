@@ -200,6 +200,22 @@ class Database(rdbms_common.Database):
             # the necessary tables (in a parallel connection!)
             self.commit()
 
+    def checkpoint_data(self):
+        """Commit the state of the database. Allows recovery/retry
+           of operation in exception handler because postgres
+           requires a rollback in case of error generating exception
+        """
+        self.commit()
+
+    def restore_connection_on_error(self):
+        """Postgres leaves a cursor in an unusable state after
+           an error. Rollback the transaction to recover and
+           permit a retry of the failed statement. Used with
+           checkpoint_data to handle uniqueness conflict in
+           import_table()
+        """
+        self.rollback()
+
     def create_version_2_tables(self):
         # OTK store
         self.sql('''CREATE TABLE otks (otk_key VARCHAR(255),

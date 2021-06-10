@@ -330,7 +330,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
     # update this number when we need to make changes to the SQL structure
     # of the backen database
-    current_db_version = 5
+    current_db_version = 6
     db_version_updated = False
 
     def upgrade_db(self):
@@ -372,6 +372,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             self.log_info('upgrade to version 5')
             self.fix_version_4_tables()
 
+        if version < 6:
+            self.log_info('upgrade to version 6')
+            self.fix_version_5_tables()
+
         self.database_schema['version'] = self.current_db_version
         self.db_version_updated = True
         return 1
@@ -398,6 +402,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
             if klass.key:
                 self.add_class_key_required_unique_constraint(cn, klass.key)
+
+    def fix_version_5_tables(self):
+        # Default (used by sqlite, postgres): NOOP
+        # mysql overrides this because it is missing
+        # _<class>_key_retired_idx index used to make
+        # sure that the key is unique if it was created
+        # as version 5.
+        pass
 
     def _convert_journal_tables(self):
         """Get current journal table contents, drop the table and re-create"""
@@ -466,6 +478,21 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 for nodeid in klass.list():
                     klass.index(nodeid)
         self.indexer.save_index()
+
+    def checkpoint_data(self):
+        """Call if you need to commit the state of the database
+           so you can try to fix the error rather than rolling back
+
+           Needed for postgres when importing data.
+        """
+        pass
+
+    def restore_connection_on_error(self):
+        """on a database error/exception recover the db connection
+           if left in an unusable state (e.g. postgres requires
+           a rollback).
+        """
+        pass
 
     # Used here in the generic backend to determine if the database
     # supports 'DOUBLE PRECISION' for floating point numbers.
@@ -3187,19 +3214,21 @@ class Class(hyperdb.Class):
                 self.db.addnode(self.classname, newid, d) # insert
             else:
                 self.db.setnode(self.classname, newid, d) # update
+            self.db.checkpoint_data()
         # Blech, different db's return different exceptions
         # so I can't list them here as some might not be defined
         # on a given system. So capture all exceptions from the
         # code above and try to correct it. If it's correctable its
         # some form of Uniqueness Failure/Integrity Error otherwise
         # undo the fixup and pass on the error.
-        except Exception as e:
+        except Exception as e:  # nosec
             logger.info('Attempting to handle import exception '
                         'for id %s: %s' % (newid,e))
 
             keyname = self.db.user.getkey()
             if has_node or not keyname:  # Not an integrity error
                 raise
+            self.db.restore_connection_on_error()
             activeid = self.db.user.lookup(d[keyname])
             self.db.sql(retired_sql, (-1, activeid)) # clear the active node
             # this can only happen on an addnode, so retry
