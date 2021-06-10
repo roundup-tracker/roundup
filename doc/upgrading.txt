@@ -27,6 +27,80 @@ Contents:
 Migrating from 2.0.0 to 2.x.x
 =============================
 
+Rdbms version change from 5 to 6 (**)
+-------------------------------------
+
+To fix an issue with importing databases, the database has to be
+upgraded for rdbms backends.
+
+You should run the ``roundup-admin migrate`` command for your
+tracker once you've installed the latest codebase.
+
+Do this before you use the web, command-line or mail interface
+and before any users access the tracker.
+
+If successful, this command will respond with either "Tracker
+updated" (if you've not previously run it on an RDBMS backend) or
+"No migration action required" (if you have run it, or have used
+another interface to the tracker, or are using anydbm).
+
+This only changes the schema for the mysql backend. It has no
+effect other than upgrading the revision on other rdbms backends.
+
+On the mysql backend it creates the database index that makes
+sure the key field for your class is unique.
+
+If your update/migration fails, you will see an::
+
+   IntegrityError: (1062, "Duplicate entry '0-NULL' for key '_user_key_retired_idx'")
+
+it means you have two non-retired members of the class with the
+same key field. E.G. two non-retired users with the same
+username.
+
+Debug this using roundup-admin using the list command. For
+example dump the user class by the key field ``username``::
+
+   $ roundup-admin -i <tracker_home> list user username
+     1: admin
+     2: anonymous
+     3: demo
+     4: agent
+     5: provisional
+     6: foo@example.com
+     7: dupe
+     8: dupe
+     ...
+
+then search the usernames for duplicates. Once you have
+identified the duplicate username (``dupe`` above), you should
+retire the other active duplicates or change the username for the
+duplicate.  To retire ``7: dupe``, you run::
+
+   roundup-admin -i <tracker_home> retire user7
+
+(use ``restore user7`` if you retired the wrong item).  If you
+want to rename the entry use::
+
+   roundup-admin -i <tracker_home> set user7 username=dupe1
+
+Keep doing this until you have no more duplicates. Then run the
+update/migrate again.
+
+If you have duplicate non-retired entries in your database,
+please email roundup-users at lists.sourceforge.net. We are
+interested in how many issues this has caused. Duplicate creation
+should occur only when two or more mysql processes run in
+parallel and both of them creating an item with the same key. So
+this should be a rare event. The internal duplicate prevention
+checks should work in other cases.
+
+For the nerds: if you had a new installation that was created at
+version 5, the uniqueness of a key was not enforced at the
+database level. If you had a database that was at version 4 and
+then upgraded to version 5 you have the uniqueness enforcing
+constraint.
+
 Setuptools is now required to install
 -------------------------------------
 

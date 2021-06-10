@@ -133,6 +133,10 @@ Fixed:
   (John Rouillard)
 - issue2551142 - Import of retired node with username after active
   node fails with unique constraint failure. (John Rouillard)
+- *** Must run roundup-admin migrate ***
+  Increment rdbms version from 5 to 6. Mysql rdbms classes were
+  missing unique key constraint. Found during fix for issue2551142.
+  See upgrading.txt.
 
 Features:
 - issue2550522 - Add 'filter' command to command-line

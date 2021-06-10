@@ -2957,21 +2957,27 @@ class DBTest(commonDBTest):
                 # postgres requires commits and rollbacks
                 # as part of error recovery, so we get commit
                 # logging that we need to account for
+                log = []
                 if self.db.dbtype == 'postgres':
-                    log_count=24
-                    handle_msg_location=16
-                    # add two since rollback is logged
-                    success_msg_location = handle_msg_location+2
+                    # remove commit and rollback log messages
+                    # so the indexes below work correctly.
+                    for i in range(0,len(self._caplog.record_tuples)):
+                        if self._caplog.record_tuples[i][2] not in \
+                           ["commit", "rollback"]:
+                            log.append(self._caplog.record_tuples[i])
                 else:
-                    log_count=2
-                    handle_msg_location=0
-                    success_msg_location = handle_msg_location+1
-                self.assertEqual(log_count, len(self._caplog.record_tuples))
+                    log = self._caplog.record_tuples[:]
+
+                log_count=2
+                handle_msg_location=0
+                success_msg_location = handle_msg_location+1
+
+                self.assertEqual(log_count, len(log))
                 self.assertIn('Attempting to handle import exception for id 7:',
-                              self._caplog.record_tuples[handle_msg_location][2])
+                              log[handle_msg_location][2])
                 self.assertIn('Successfully handled import exception for id 7 '
                               'which conflicted with 6',
-                              self._caplog.record_tuples[success_msg_location][2])
+                              log[success_msg_location][2])
 
             # This is needed, otherwise journals won't be there for anydbm
             self.db.commit()
