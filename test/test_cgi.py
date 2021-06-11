@@ -1477,6 +1477,15 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         self.assertEqual(cl._ok_message, ['Items edited OK'])
         k = self.db.keyword.getnode('1')
         self.assertEqual(k.name, u2s(u'\xe4\xf6\xfc'))
+        form = dict(rows='id,name\n1,newkey\n\n2,newerkey\n\n')
+        cl = self._make_client(form, userid='1', classname='keyword')
+        cl._ok_message = []
+        actions.EditCSVAction(cl).handle()
+        self.assertEqual(cl._ok_message, ['Items edited OK'])
+        k = self.db.keyword.getnode('1')
+        self.assertEqual(k.name, 'newkey')
+        k = self.db.keyword.getnode('2')
+        self.assertEqual(k.name, 'newerkey')
 
     def testEditCSVTest(self):
 

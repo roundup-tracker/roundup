@@ -513,6 +513,10 @@ class EditCSVAction(Action):
             # skip property names header
             if values == props:
                 continue
+            # skip blank lines. Can be in the middle
+            # of the data or a newline at end of file.
+            if len(values) == 0:
+                continue
 
             # extract the itemid
             itemid, values = values[0], values[1:]

@@ -137,6 +137,7 @@ Fixed:
   Increment rdbms version from 5 to 6. Mysql rdbms classes were
   missing unique key constraint. Found during fix for issue2551142.
   See upgrading.txt.
+- ignore blank lines in CSV class editing. (John Rouillard)
 
 Features:
 - issue2550522 - Add 'filter' command to command-line
