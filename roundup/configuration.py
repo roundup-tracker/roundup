@@ -836,10 +836,16 @@ SETTINGS = (
             "trust *all* users uploading content to your tracker."),
         (BooleanOption, 'http_auth', "yes",
             "Whether to use HTTP Basic Authentication, if present.\n"
-            "Roundup will use either the REMOTE_USER or HTTP_AUTHORIZATION\n"
+            "Roundup will use either the REMOTE_USER (the value set \n"
+            "by http_auth_header) or HTTP_AUTHORIZATION\n"
             "variables supplied by your web server (in that order).\n"
             "Set this option to 'no' if you do not wish to use HTTP Basic\n"
             "Authentication in your web interface."),
+        (Option, "http_auth_header", "",
+            "The HTTP header that holds the user authentication information.\n"
+            "If empty (default) the REMOTE_USER header is used.\n"
+            "This is used when the upstream HTTP server authenticates\n"
+            "the user and passes the username using this HTTP header."),
         (BooleanOption, 'http_auth_convert_realm_to_lowercase', "no",
             "If usernames consist of a name and a domain/realm part of\n"
             "the form user@realm and we're using REMOTE_USER for\n"

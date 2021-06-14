@@ -109,6 +109,47 @@ install setuptools.  Use the version packgaged by your OS vendor.  If
 your OS vendor doesn't supply setuptools use ``pip install
 setuptools``. (You may need pip3 rather than pip if using python3.)
 
+Define Authentication Header
+----------------------------
+
+The front end server running roundup can perform the user
+authentication. It pass the authenticated username to the backend in a
+variable. By default roundup looks for the ``REMOTE_USER`` variable
+This can be changed by setting the parameter ``http_auth_header`` in the
+``[web]`` section of the tracker's ``config.ini`` file. If the value
+is unset (the default) the REMOTE_USER variable is used.
+
+If you are running roundup using ``roundup-server`` behind a proxy
+that authenticates the user you need to configure ``roundup-server`` to
+pass the proper header to the tracker. By default ``roundup-server``
+looks for the ``REMOTE_USER`` header for the authenticated user.  You
+can copy an arbitrary header variable to the tracker using the ``-I``
+option to roundup-server (or the equivalent option in the
+roundup-server config file).
+
+For example to use the ``uid_variable`` header, two configuration
+changes are needed: First configure ``roundup-server`` to pass the
+header to the tracker using::
+
+  roundup-server -I uid_variable ....
+
+note that the header is passed exactly as supplied by the upstream
+server. It is **not** prefixed with ``HTTP_`` like other headers since
+you are explicitly whitelisting the header. Multiple comma separated
+headers can be passed to the ``-I`` option. These could be used in a
+detector or other tracker extensions, but only one header can be used
+by the tracker as an authentication header.
+
+To make the tracker honor the new variable changing the tracker
+``config.ini`` to read::
+
+  [web]
+  ...
+  http_auth_header = uid_variable
+
+At the time this is written, support is experimental. If you use it
+you should notify the roundup maintainers using the roundup-users
+mailing list.
 
 Classname Format Enforced
 -------------------------

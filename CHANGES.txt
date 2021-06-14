@@ -178,6 +178,10 @@ Features:
   translations from https://sourceforge.net/p/roundup/code/merge-requests/3/
   (John Rouillard. DE translations by Tobias Herp.)
 - send_message now allows setting authid to set source of email. (John Rouillard)
+- issue2550837 - New option for web auth (also http header passing).
+  Allow admin to configure authentication header replacing the default
+  REMOTE_USER. Also allow arbitrary headers to be passed to the
+  tracker when using roundup-serverbhind a proxy.
 
 2020-07-13 2.0.0
 
