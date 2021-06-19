@@ -36,7 +36,7 @@ Among the notable improvements from the 2.0.0 release are:
   Security fixes for jQuery, markdown handling,
 
   Valid class names are documented and enforced. All class names now
-  match [A-z][A-z0-9_]+[A-z_].
+  match ``[A-z][A-z0-9_]+[A-z_]``.
 
   A number of fixes to markdown handling if using the jinja2
   template.
