@@ -11,7 +11,7 @@ Python v2.5 and v2.6.  Starting with the v1.6 releases of Roundup
 v2.7.2 or later are required to run newer releases of Roundup.  From v2.0
 onwards Python 3.4 and later are also supported.
 
-XXXX-XX-XX 2.0.1
+2021-06-13 2.1.0b1
 
 Fixed:
 
@@ -58,12 +58,12 @@ Fixed:
   the current run_tests.py.  (reported by lmsteffan in irc)
 - issue2551104 - fix issue with markdown autolink next to punctuation (ced)
 - removed support for old style trackers that use dbinit.py and
-  config.py. Also remove all uses of depricated imp module. (John Rouillard)
+  config.py. Also remove all uses of deprecated imp module. (John Rouillard)
 - removed support for setting database type using
   <database>/backend_name. (John Rouillard)
 - fixed some issues when generating translations. Use mappings and
   named format parameters so translators can move substituted tokens
-  in tranlsations.
+  in translations.
 - in rest interface, fix uncaught exceptions when parsing invalid
   Content-Type and Accept headers. Document response formats more
   fully in doc/rest.txt.
@@ -109,10 +109,10 @@ Fixed:
   link to open the editor.
 - issue2551136 - timezone extention crash on Python 3.8. cgi.escape
   is used in some template to provide a select box of timezones. It
-  uses cgi.escape that is depricated and removed from 3.8 and newer.
+  uses cgi.escape that is deprecated and removed from 3.8 and newer.
   Use html.escape with fallback to cgi.escape. (Cedric Krier)
 - roundup-server can act as an SSL server. Usually SSL is provided by
-  a front-end server like nginx, hiawtha, apache. The SSL parameters
+  a front-end server like nginx, hiawatha, apache. The SSL parameters
   have been upgraded to TLS 1.1. Cert is RSA 2048 bytes with SHA512
   signature. Without these upgrades, ssl mode won't start. Note this
   exposes other issue with roundup-server operating as an SSL
@@ -130,7 +130,7 @@ Fixed:
   non-item context.
 - issue2551141 - roudup-admin returns no such class when restoring
   item with duplicate key. Fix incorrect error message when using
-  roundup-admin to restore a user when the username is aleady in use.
+  roundup-admin to restore a user when the username is already in use.
   (John Rouillard)
 - issue2551142 - Import of retired node with username after active
   node fails with unique constraint failure. (John Rouillard)
@@ -174,7 +174,7 @@ Features:
   tracker instances without copying code. Also move the test-detectors in
   tx_Source_detector.py to roundup/test for two reasons: It's used in the
   memorydb convenience functions and it may be useful in other tests. Make
-  the prefix a paramter of the convenience functions to be usable in other
+  the prefix a parameter of the convenience functions to be usable in other
   tests.
 - pytest suite now starts the server under wsgi and loads the home
   page. This test is skipped if the requests module is not installed.

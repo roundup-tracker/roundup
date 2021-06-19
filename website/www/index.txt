@@ -19,6 +19,8 @@ stable release (v1.6.1). These features include:
    * a new REST interface
    * updates to jinja2 templates including security improvements
 
+The current latest release is 2.1.0beta1.
+
 For more information see the :doc:`design overview <docs/design>`, and
 all the other :doc:`documentation <docs>`. Roundup has been deployed
 for:

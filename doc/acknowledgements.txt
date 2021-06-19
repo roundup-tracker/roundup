@@ -13,6 +13,19 @@ ideas and everything else that helped!
 2.0
 ---
 
+2.1.0beta1
+~~~~~~~~~~
+
+Maintainer:  John Rouillard, Ralf Schlatterbeck
+
+Release Manager: John Rouillard
+
+Developer activity by changesets::
+
+    rouilj@ieee.org      175 ***************************************************
+    rsc@runtux.com        29 ********
+    cmeerw@cmeerw.org      1
+
 2.0.0
 ~~~~~
 

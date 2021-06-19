@@ -150,8 +150,8 @@ Roundup release checklist:
     the gpg asc files and upload the .whl distribution and .whl.asc
     signature files together.
 14. Send doc/announcement.txt to python-announce@python.org and
-    roundup-users@lists.sourceforge.net and
-    roundup-devel@lists.sourceforge.net
+    roundup-users@lists.sourceforge.net,
+    roundup-devel@lists.sourceforge.net and lwn@lwn.net.
 14b. Update entry on https://freshcode.club/projects/roundup-tracker
 14c. Update entries for fossies by emailing announcement to
      announce@fossies.org
