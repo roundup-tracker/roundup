@@ -11,7 +11,7 @@ Python v2.5 and v2.6.  Starting with the v1.6 releases of Roundup
 v2.7.2 or later are required to run newer releases of Roundup.  From v2.0
 onwards Python 3.4 and later are also supported.
 
-2021-06-13 2.1.0b1
+2021-06-19 2.1.0b1
 
 Fixed:
 
