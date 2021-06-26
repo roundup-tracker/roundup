@@ -2636,11 +2636,18 @@ class MultilinkHTMLProperty(HTMLProperty):
 
         value = list(self.__iter__())
 
-        # determine orderprop for property.
-        if value: 
-            orderprop = value[0]._db.getclass(property).orderprop()
-        else: # return empty list, nothing to sort.
+        if not value:
+            # return empty list, nothing to sort.
             return value
+
+        # determine orderprop for property if property is a link or multilink
+        prop = self._db.getclass(self._classname).getprops()[property]
+        if type(prop) in [hyperdb.Link, hyperdb.Multilink]:
+            orderprop = value[0]._db.getclass(prop.classname).orderprop()
+            sort_by_link = True
+        else: 
+            orderprop = property
+            sort_by_link = False
 
         def keyfunc(v):
             # Return tuples made of (group order (int), base python
@@ -2652,7 +2659,10 @@ class MultilinkHTMLProperty(HTMLProperty):
             if not prop._value:
                 return (NoneCode, None)
 
-            val = prop[orderprop]._value
+            if sort_by_link:
+                val = prop[orderprop]._value
+            else:
+                val = prop._value
 
             if val is None: # verify orderprop is set to a value
                 return (NoneCode, None)
