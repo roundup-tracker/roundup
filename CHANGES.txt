@@ -22,6 +22,10 @@ Features:
 
 - add image/svg-xml as valid mime type to serve. Was being served as
   octet-stream. (John Rouillard)
+- improve customizing.txt documentation on use of Special Form
+  Variables. Added example html inputs to illustrate the doc.
+  Fix position of designator in doc example. It occurs before
+  @link@ or other edit command.
 
 2021-06-19 2.1.0b1
 

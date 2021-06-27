@@ -2445,6 +2445,11 @@ Two special form values are supported for backwards compatibility:
         @link@messages=msg-1
         msg-1@content=value
 
+    which is equivalent to the html::
+
+        <textarea name="msg-1@content"></textarea>
+        <input type="hidden" name="@link@messages" value="msg-1">
+
     except that in addition, the "author" and "date" properties of
     "msg-1" are set to the userid of the submitter, and the current
     time, respectively.
@@ -2455,15 +2460,22 @@ Two special form values are supported for backwards compatibility:
         @link@files=file-1
         file-1@content=value
 
+    by adding the HTML::
+
+        <input type="file" name="file-1@content">
+        <input type="hidden" name="@link@files" value="file-1">
+
     The String content value is handled as described above for file
     uploads.
 
 If both the "@note" and "@file" form variables are
 specified, the action::
 
-        @link@msg-1@files=file-1
+        msg-1@link@files=file-1
 
-is also performed.
+is also performed. This would be expressed in HTML with::
+
+        <input type="hidden" name="msg-1@link@files" value="file-1">
 
 We also check that FileClass items have a "content" property with
 actual content, otherwise we remove them from all_props before
