@@ -25,6 +25,28 @@ branches:
 dist:
  - xenial
 
+# Commented out stanza for bionic 18.04. Currently testing on
+# xenial 16.04.
+# Consider move to this after 2.1.0 release. Python 3.4
+# is not supported on bionic and 3.4 is obsolete. Was retained
+# because 3.4 was EPEL version for centos 7. With centos demise,
+# remove it from 'python:' settings and test earliest still supported
+# release, last two production releases and nightly to cut down on cost
+# of testing.
+# dist:
+#   - bionic
+#
+# python:
+#   - 2.7
+#   - 3.6
+#   - 3.8
+#   - 3.9-dev
+#   - nightly
+#
+# services:
+#   - mysql
+#   - postgresql
+
 jobs:
     allow_failures:  # nightly not ready for prime time yet.
       - python: nightly
