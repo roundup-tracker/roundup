@@ -25,7 +25,7 @@ Features:
 - improve customizing.txt documentation on use of Special Form
   Variables. Added example html inputs to illustrate the doc.
   Fix position of designator in doc example. It occurs before
-  @link@ or other edit command.
+  @link@ or other edit command. (John Rouillard)
 
 2021-06-19 2.1.0b1
 
@@ -46,7 +46,7 @@ Fixed:
   an empty link in the transitive property (e.g. author.username when
   requesting message properties) would result in a 404 error. Now we're
   returning a JSON 'null' value. for an empty link (e.g. empty author in
-  the example).
+  the example). (John Rouillard)
 - sphinxcontrib.cheeseshop is unmaintained and using old http
   url. Attempts to override cheeseshop_url failed. Replace call to
   cheeseshop in docs with raw html and remove references to
@@ -65,7 +65,7 @@ Fixed:
 - issue2551099 - disable processing of data url's in markdown. Display
   as plain text. (John Rouillard)
 - issue2551100 - old jquery has security issues, upgrade it and fix
-  user.help.html
+  user.help.html (John Rouillard)
 - replace deprecated base64.decodestring with base64.b64decode in
   roundup_server.py and roundup_xlmrpc_server.py (reported by
   lmsteffan in irc)
@@ -79,14 +79,14 @@ Fixed:
   <database>/backend_name. (John Rouillard)
 - fixed some issues when generating translations. Use mappings and
   named format parameters so translators can move substituted tokens
-  in translations.
+  in translations.  (John Rouillard)
 - in rest interface, fix uncaught exceptions when parsing invalid
   Content-Type and Accept headers. Document response formats more
-  fully in doc/rest.txt.
+  fully in doc/rest.txt.  (John Rouillard)
 - in filter, filter_iter and _materialize_multilinks, use named cursor
   with postgresql. This turns of client-side cursor handling and avoids
   *large* roundup process (or wsgi process) in case of large results.
-  Fixes issue2551114.
+  Fixes issue2551114. (Ralf Schlatterbeck)
 - issue2551108 - fix handling of designator links when formatted
   as markdown links. (Reported by Cedric Krier; John Rouillard)
 - Fix filename created from mail attachments, fixes issue2551118
@@ -122,7 +122,7 @@ Fixed:
   sort at start or end of sorted list. (John Rouillard)
 - issue2550648 - keyword boolean search. Issue has multiple problems.
   Fix issue where saving the keyword boolean search would remove the
-  link to open the editor.
+  link to open the editor. (John Rouillard)
 - issue2551136 - timezone extention crash on Python 3.8. cgi.escape
   is used in some template to provide a select box of timezones. It
   uses cgi.escape that is deprecated and removed from 3.8 and newer.
@@ -132,28 +132,29 @@ Fixed:
   have been upgraded to TLS 1.1. Cert is RSA 2048 bytes with SHA512
   signature. Without these upgrades, ssl mode won't start. Note this
   exposes other issue with roundup-server operating as an SSL
-  endpoint. See issue2551138 and issue2551137.
+  endpoint. See issue2551138 and issue2551137. (John Rouillard)
 - issue2551122 - sorted method of MultilinkHTMLProperty does a string
   sort even if the property is an integer. Fixed so that the orderprop
   for the linked class is used. (John Rouillard, reported by Nagy Gabor)
 - issue2550964 - History can (temporarily) show incorrect value when a
   change is rejected. Fix history function to always use the database
-  values and ignore the current setting in the form.
+  values and ignore the current setting in the form. (John Rouillard)
 - Fix find() with anydbm. Using protected properties raised KeyError.
   Add shortcut fast return. Both changes come from rdbms_common.py's
   find(). (John Rouillard)
 - Fix traceback caused by calling history() with arguments in a
-  non-item context.
-- issue2551141 - roudup-admin returns no such class when restoring
+  non-item context. (John Rouillard)
+- issue2551141 - roundup-admin returns no such class when restoring
   item with duplicate key. Fix incorrect error message when using
   roundup-admin to restore a user when the username is already in use.
   (John Rouillard)
 - issue2551142 - Import of retired node with username after active
-  node fails with unique constraint failure. (John Rouillard)
+  node is imported raises unique constraint failure. (Reported by Ganesh
+  Sittampalam/Heffalump on irc. John Rouillard)
 - *** Must run roundup-admin migrate ***
   Increment rdbms version from 5 to 6. Mysql rdbms classes were
   missing unique key constraint. Found during fix for issue2551142.
-  See upgrading.txt.
+  See upgrading.txt. (John Rouillard)
 - ignore blank lines in CSV class editing. (John Rouillard)
 
 Features:
@@ -191,7 +192,7 @@ Features:
   tx_Source_detector.py to roundup/test for two reasons: It's used in the
   memorydb convenience functions and it may be useful in other tests. Make
   the prefix a parameter of the convenience functions to be usable in other
-  tests.
+  tests.  (Ralf Schlatterbeck)
 - pytest suite now starts the server under wsgi and loads the home
   page. This test is skipped if the requests module is not installed.
 - extract translatable strings from devel and responsive templates. Merge
@@ -203,7 +204,7 @@ Features:
   Allow admin to configure authentication header replacing the default
   REMOTE_USER. Also allow arbitrary headers to be passed to the
   tracker when using roundup-server behind a proxy. This code is
-  experimental see upgrading.txt admin_guide.txt.
+  experimental see upgrading.txt admin_guide.txt. (John Rouillard)
 
 2020-07-13 2.0.0
 
