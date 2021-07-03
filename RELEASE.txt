@@ -13,8 +13,10 @@ Roundup release checklist:
     translations. Merge into .po files by running 'make *.po'
     in the locale directory. Run:
 
+       cd locale
        make template
        make *.po
+       cd ..
 
 2.  Run unit tests! They should pass successfully. Install pytest
     using pip2/pip3 for python2 and python3. Then invoke pytest
