@@ -157,14 +157,19 @@
 
 <tr tal:condition="context/is_edit_ok">
  <th><label for="file-1@content" i18n:translate="">File</label>:</th>
- <td colspan=3>
+ <td>
    <input type="hidden" name="@link@files" value="file-1">
    <input type="file" id="file-1@content" name="file-1@content" size="40">
  </td>
+  <th><label for="file-1@description" i18n:translate="">File Description</label>:</th>
+ <td colspan=3><input type="edit" id="file-1@description" name="file-1@description" size="40"></td>
 </tr>
 <tr tal:condition="context/is_edit_ok">
- <th><label for="file-1@description" i18n:translate="">File Description</label>:</th>
- <td colspan=3><input type="edit" id="file-1@description" name="file-1@description" size="40"></td>
+  <td colspan=4>
+   <textarea readonly id="DropZone">
+     paste images or drag and drop files here....
+   </textarea>
+  </td>
 </tr>
 </table>
 </fieldset>
@@ -183,6 +188,197 @@
 </tr>
 </table>
 </form>
+
+<!-- drag and drop code -->
+              <script tal:attributes="nonce request/client/client_nonce">
+                /* multiple file drops cause issues with redefined
+                   file-X@content issues. input multiple assumes
+                   it can start numbering from 1 for each of the
+                   multiple files. However numbering here does the
+                   same leading to duplicate file-2@content.
+
+                   layout needs some work, alignnment of new file
+                   input's isn't great.
+
+                   Need a way to delete or reset file inputs so file
+                   assigned to them isn't uploaded. Clicking on button
+                   in chrome and then canceling unsets the file. But this
+                   sequence does nothing in firefox.
+
+                   Pasting always uses image.<type> can't name file.
+                   Need to query user during paste for name/description.
+                */
+
+                let newInput=null;
+                let NextInputNum = 100; /* file input 1 is hardcoded in form.
+                     It is a multiple file input control. To
+                     prevent collision, we start dynamic file controls at
+                     file-100@content. 100 is larger than we expect
+                     the number of files uploaded using file input 1.*/
+
+                let target = document.getElementById('DropZone');
+                target.style.display = "block";
+                let body = document.body;
+                let fileInput = document.getElementById('file-1@content');
+		let fileDesc = document.getElementById('file-1@description');
+
+                function add_file_input () {
+
+                 // Only allow one change listener on newest input.
+                 fileInput.removeEventListener('change',
+                          add_file_input,
+                          false);
+
+                  /* create new file input to get next dragged file */
+                  /* <input type="file" name="file-2@content"> for 2,
+                     3, 4, ... */
+                  newInput=document.createElement('input');
+                  newInput.type="file";
+                  newInput.id="file-" + NextInputNum +"@content";
+                  newInput.name=newInput.id;
+                  fileInput = fileInput.insertAdjacentElement('afterend',
+                                                               newInput);
+                  // add change hander to newest file input
+                  fileInput.addEventListener('change',
+                        add_file_input, // create new input for more files
+                        false);
+
+                  /* link file-N to list of files on issue.
+                     also link to msg-1 */
+                  addLink=document.createElement('input');
+                  addLink.type="hidden";
+                  addLink.id="@link@file=file-" + NextInputNum;
+                  addLink.name="@link@files"
+                  addLink.value="file-" + NextInputNum;
+                  fileInput.insertAdjacentElement('afterend', addLink);
+
+                  addLink=document.createElement('input');
+                  addLink.type="hidden";
+                  addLink.id="msg-1@link@files=file-" + NextInputNum;
+                  addLink.name="msg-1@link@files"
+                  addLink.value="file-" + NextInputNum
+                  fileInput.insertAdjacentElement('afterend', addLink);
+
+                  addLink=document.createElement('input');
+                  addLink.type="edit";
+                  addLink.id="file-" + NextInputNum + "@description";
+                  addLink.name=addLink.id
+                  addLink.size = 40
+                  fileDesc=fileDesc.insertAdjacentElement('afterend', addLink);
+
+                  NextInputNum = NextInputNum+1;
+
+                }
+
+                function MarkDropZone(e, active) {
+                    active == true ? e.style.backgroundColor = "goldenrod" :
+                    e.style.backgroundColor = "";
+                }
+                fileInput.addEventListener('change',
+                         add_file_input, // create new input for more files
+                         false);
+
+                target.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    body.classList.add('dragging');
+                });
+
+                target.addEventListener('dragenter', (e) => {
+                    e.preventDefault();
+                    MarkDropZone(target, true);
+                });
+
+
+                target.addEventListener('dragleave', (e) => {
+                    e.preventDefault();
+                    MarkDropZone(target, false);
+                });
+
+                target.addEventListener('dragleave', () => {
+                    body.classList.remove('dragging');
+                });
+
+                target.addEventListener('drop', (e) => {
+                    body.classList.remove('dragging');
+                    MarkDropZone(target, false);
+
+		    // Only allow single file drop unless
+		    // fileInput name is @file that can support
+		    // multiple file drop and file drop is multiple.
+		    if (( fileInput.name != "@file" ||
+			  ! fileInput.hasAttribute('multiple')) &&
+			  e.dataTransfer.files.length != 1 ) {
+			alert("File input can only accept one file.")
+			e.preventDefault();
+			return
+		    }
+                    // set file input files to the dragged files
+                    fileInput.files = e.dataTransfer.files;
+
+                    add_file_input(); // create new input for more files
+                    // run last otherwise firefox empties e.dataTransfer
+                    e.preventDefault();
+                });
+
+                target.addEventListener('mouseover', (e) => {
+                    e.preventDefault();
+                    MarkDropZone(target, true);
+                });
+
+                target.addEventListener('mouseout', (e) => {
+                    e.preventDefault();
+                    MarkDropZone(target, false);
+                });
+
+                target.addEventListener('paste', (event) => {
+                    // https://mobiarch.wordpress.com/2013/09/25/upload-image-by-copy-and-paste/
+                    // add paste event listener to the page
+
+                    // https://stackoverflow.com/questions/50427513/
+                    // html-paste-clipboard-image-to-file-input
+                    if ( event.clipboardData.files.length == 0) {
+                       // if not file data alert
+                       alert("No image found for pasting");
+                       event.preventDefault();
+                       return;
+                    }
+                    fileInput.files = event.clipboardData.files;
+
+                    /* Possible enhancement if file check fails.
+                       iterate over all items 0 ...:
+                           event.clipboardData.items.length
+                       look at all items[i].kind for 'string' and
+                       items[i].type looking for a text/plain item. If
+                       found,
+                         event.clipboardData.items[1].getAsString(
+                           callback_fcn(s))
+
+                       where callback function that creates a new
+                       dataTransfer object with a file and insert the
+                       content s and assigns it to the input.
+
+                       https://gist.github.com/guest271314/7eac2c21911f5e40f489\33ac78e518bd
+                    */
+                    add_file_input(); // create new input for more files
+                    // do not paste contents to dropzone
+                    event.preventDefault();
+                }, false);
+              </script>
+              <style tal:attributes="nonce request/client/client_nonce">
+                #FileArea input[type=file] ~ input[type=file] {display:block;}
+                #DropZone {     /* don't display dropzone by default.
+                                   Displayed as block by javascript. */
+                             display:none;
+	                     width: 100%;
+                                /* override textarea inset */
+                             border-style: dashed;
+                             padding: 3ex 0; /* larger dropzone */
+                             /* add space below inputs */
+                             margin-block-start: 1em;
+                                /* lighter color */
+                             background: rgba(255,255,255,0.4);
+                          }
+              </style>
 
 <p tal:condition="context/id" i18n:translate="">
  Created on <b><tal:x replace="python:context.creation.pretty('%Y-%m-%d %H:%M')" i18n:name="creation" /></b>
@@ -259,3 +455,4 @@
 </td>
 
 </tal:block>
+<!-- SHA: ad841842c0da5f9d1a7f69a1e0c847a549b75bf2 -->
