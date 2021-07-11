@@ -164,12 +164,13 @@ Roundup release checklist:
     distributions (if created). Follow the directions for generating
     the gpg asc files and upload the .whl distribution and .whl.asc
     signature files together.
-14. Send doc/announcement.txt to python-announce@python.org and
+14. Send doc/announcement.txt to python-announce@python.org,
     roundup-users@lists.sourceforge.net,
-    roundup-devel@lists.sourceforge.net and lwn@lwn.net.
+    roundup-devel@lists.sourceforge.net, and lwn@lwn.net.
 14b. Update entry on https://freshcode.club/projects/roundup-tracker
 14c. Update entries for fossies by emailing announcement to
      announce@fossies.org
+14d. Update entry on https://directory.fsf.org/wiki/Roundup.
 15. Refresh website.
       website/README.txt
       https://www.roundup-tracker.org/ should state that the stable
