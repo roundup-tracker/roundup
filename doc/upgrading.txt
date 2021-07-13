@@ -15,7 +15,9 @@ steps.
 
 **IMPORTANT** The v1.5.x releases of Roundup were the last to support
 Python v2.5 and v2.6.  Starting with the v1.6 releases of Roundup
-v2.7.2 is required to run newer releases of Roundup.
+Python version 2.7 that is newer than 2.7.2 is required to run
+roundup.  Starting with Roundup version 2.0.0 we also support Python 3
+versions newer than 3.4.
 
 Contents:
 
@@ -24,7 +26,7 @@ Contents:
 
 .. index:: Upgrading; 2.0.0 to 2.1.0
 
-Migrating from 2.0.0 to 2.x.x
+Migrating from 2.0.0 to 2.1.0
 =============================
 
 Rdbms version change from 5 to 6 (**)
@@ -99,7 +101,8 @@ For the nerds: if you had a new installation that was created at
 version 5, the uniqueness of a key was not enforced at the
 database level. If you had a database that was at version 4 and
 then upgraded to version 5 you have the uniqueness enforcing
-constraint.
+constraint. Running migrate updates to schema version 6 and installs
+the unique index constraint if it is missing.
 
 Setuptools is now required to install
 -------------------------------------
@@ -112,20 +115,21 @@ setuptools``. (You may need pip3 rather than pip if using python3.)
 Define Authentication Header
 ----------------------------
 
-The front end server running roundup can perform the user
-authentication. It pass the authenticated username to the backend in a
-variable. By default roundup looks for the ``REMOTE_USER`` variable
-This can be changed by setting the parameter ``http_auth_header`` in the
-``[web]`` section of the tracker's ``config.ini`` file. If the value
-is unset (the default) the REMOTE_USER variable is used.
+The web server in front of roundup (apache, nginx) can perform user
+authentication. It can pass the authenticated username to the backend
+in a variable. By default roundup looks for the ``REMOTE_USER``
+variable. This can be changed by setting the parameter
+``http_auth_header`` in the ``[web]`` section of the tracker's
+``config.ini`` file to a different value. The value is case sensitive.
+If the value is unset (the default) the REMOTE_USER variable is used.
 
 If you are running roundup using ``roundup-server`` behind a proxy
-that authenticates the user you need to configure ``roundup-server`` to
-pass the proper header to the tracker. By default ``roundup-server``
-looks for the ``REMOTE_USER`` header for the authenticated user.  You
-can copy an arbitrary header variable to the tracker using the ``-I``
-option to roundup-server (or the equivalent option in the
-roundup-server config file).
+that authenticates the user you need to configure ``roundup-server``
+to pass the HTTP header with the authenticated username to the
+tracker. By default ``roundup-server`` looks for the ``REMOTE_USER``
+header for the authenticated user.  You can copy an arbitrary header
+variable to the tracker using the ``-I`` option to roundup-server (or
+the equivalent option in the roundup-server config file).
 
 For example to use the ``uid_variable`` header, two configuration
 changes are needed: First configure ``roundup-server`` to pass the
@@ -135,7 +139,7 @@ header to the tracker using::
 
 note that the header is passed exactly as supplied by the upstream
 server. It is **not** prefixed with ``HTTP_`` like other headers since
-you are explicitly whitelisting the header. Multiple comma separated
+you are explicitly allowing the header. Multiple comma separated
 headers can be passed to the ``-I`` option. These could be used in a
 detector or other tracker extensions, but only one header can be used
 by the tracker as an authentication header.
@@ -149,7 +153,7 @@ To make the tracker honor the new variable changing the tracker
 
 At the time this is written, support is experimental. If you use it
 you should notify the roundup maintainers using the roundup-users
-mailing list.
+at lists.sourceforge.net mailing list.
 
 Classname Format Enforced
 -------------------------

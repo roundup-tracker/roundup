@@ -1,71 +1,75 @@
-I'm proud to release version 2.1.0beta1 of the Roundup issue tracker
-which has been possible due to the help of several contributors. This
-release is a bugfix and feature release, so make sure to read
-`docs/upgrading.txt <https://www.roundup-tracker.org/docs/upgrading.html>`_
-to bring your tracker up to date.
+I'm proud to release version 2.1.0 of the Roundup issue tracker.
+This 20th anniversary edition has been possible due to the help of
+several contributors. This release is a bugfix and minor feature
+release, so make sure to read `docs/upgrading.txt
+<https://www.roundup-tracker.org/docs/upgrading.html>`_ to bring your
+tracker up to date.
+
+2.1.0 builds on the 2.0.0 major release that introduced:
+
+   * Python 2 and Python 3 support
+   * a new REST interface
+   * updates to jinja2 templates including security improvements
+
+The changes, as usual, include some new features and many bug fixes.
 
 Note that you should run ``roundup-admin ... migrate`` to update the
 database schema version. Do this before you use the web, command-line
 or mail interface and before any users access the tracker.  
 
-The changes, as usual, include some new features and many bug fixes.
-
 You can download it with:
 
-   pip download roundup==2.1.0b1
+   pip download roundup
 
 then unpack and test/install the tarball.
 
 Among the notable improvements from the 2.0.0 release are:
 
-  Uses setuptools not distutils for installation. This code **needs
-  testing** as it has caused issues. It seems to work with virtualenv,
-  and --prefix install as well as standard install into the platform
-  supplied python install.
+  Mysql backend now uses an index to make sure that key values are not
+  duplicated when two roundup processes run in parallel. (Hence the
+  need for ``roundup-admin ... migrate``.)
 
-  mysql backend now uses an index to make sure that key values are not
-  duplicated when two roundup processes run in parallel.
-
-  Postgres back end now uses a server side cursor, so large queries
-  won't consume hunge amounts of memory.
-
-  roundup-admin security exits non-zero if it finds an invalid
-  property. It can be used as part of a CI/CD pipeline to validate
-  schema security.
-
-  Security fixes for jQuery, markdown handling,
-
-  Valid class names are documented and enforced. All class names now
-  match ``[A-z][A-z0-9_]+[A-z_]``.
-
-  A number of fixes to markdown handling if using the jinja2
-  template.
-
-  Fix a number of tracebacks.
+  Postgres back end uses a server side cursor. This reduces the memory
+  use of the roundup process on large queries.
 
   Fix sorting of multilinks in templating code. Sorting by a link
   without a value no longer generates a traceback. Sorting now works
   as documented by the spec.
 
-  Fix a number of deprecated calls for newer pythons.
+  If ``roundup-admin security`` finds an invalid property, it exits
+  with a non-zero status. It can be used as part of a CI/CD pipeline
+  to validate schema security.
+
+  Security fixes for jQuery, markdown handling.
+
+  Fixes to markdown handling if using the jinja2 template.
+
+  Keyword editing in jinja2 template improved.
+
+  Fix a number of tracebacks.
+
+  Installation uses setuptools not distutils.
+
+  Valid class names are documented and enforced. All class names now
+  match ``[A-z][A-z0-9_]+[A-z_]``.
+
+  Replace a number of deprecated/missing functions in newer pythons.
 
   Fix history showing invalid data when an update is rejected.
 
-  roundup-admin filter works transitively and handles empty values
-  properly.
+  The filter command in roundup-admin works transitively and handles
+  empty values properly.
 
-  password reset documented in user guide.
+  Password reset documented in user guide.
 
-  keyword editing in jinja2 template improved.
+  Admins can set the language used for stemming in the xapian indexer.
 
-  language used for stemming in xapian indexer can be set.
+  Devel and responsive template strings now extracted for translation.
 
-  devel and responsive template strings now extracted for translation
-
-The file CHANGES.txt has a detailed list of feature additions and bug
-fixes for each release. The most recent changes from there are at the
-end of this announcement.  Also see the information in
-doc/upgrading.txt.
+The file CHANGES.txt has a detailed list of feature additions and
+bug fixes (58) for each release. The most recent changes from
+there are at the end of this announcement.  Also see the
+information in doc/upgrading.txt.
 
 If you find bugs, please report them to issues AT roundup-tracker.org
 or create an account at https://issues.roundup-tracker.org and open a
@@ -86,12 +90,11 @@ or mail interface and before any users access the tracker.
 Roundup requires Python 2 newer than version 2.7.2 or Python 3 newer
 than or equal to version 3.4 for correct operation.
 
-The wsgi, server and cgi web deployment modes are the ones with the
-most testing.
-
 To give Roundup a try, just download (see below), unpack and run::
 
     python demo.py
+
+then open the url printed by the demo app.
 
 Release info and download page:
      https://pypi.org/project/roundup
@@ -109,7 +112,10 @@ command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
 Note: Ping is not responsible for this project. The contact for this
-project is richard@users.sourceforge.net.
+project is rouilj at users.sourceforge.net. Use this address for
+security or other sensitive issues. Development discussions occur on
+the roundup-devel at lists.sourceforge.net mailing list. Tickets can
+be opened at https://issues.roundup-tracker.org.
 
 Roundup manages a number of issues (with flexible properties such as
 "description", "priority", and so on) and provides the ability to:
@@ -125,7 +131,7 @@ is therefore usable "out of the box" with any Python 2.7.2+ (or 3.4+)
 installation. It doesn't even need to be "installed" to be operational,
 though an install script is provided.
 
-It comes with five issue tracker templates
+It comes with five basic issue tracker templates
 
 * a classic bug/feature tracker
 * a more extensive devel tracker for bug/features etc.
@@ -137,6 +143,8 @@ and supports four database back-ends (anydbm, sqlite, mysql and postgresql).
 
 Recent Changes
 ==============
+
+From 2.0.0 to 2.1.0.
 
 Fixed:
 
@@ -155,7 +163,7 @@ Fixed:
   an empty link in the transitive property (e.g. author.username when
   requesting message properties) would result in a 404 error. Now we're
   returning a JSON 'null' value. for an empty link (e.g. empty author in
-  the example).
+  the example). (John Rouillard)
 - sphinxcontrib.cheeseshop is unmaintained and using old http
   url. Attempts to override cheeseshop_url failed. Replace call to
   cheeseshop in docs with raw html and remove references to
@@ -174,7 +182,7 @@ Fixed:
 - issue2551099 - disable processing of data url's in markdown. Display
   as plain text. (John Rouillard)
 - issue2551100 - old jquery has security issues, upgrade it and fix
-  user.help.html
+  user.help.html (John Rouillard)
 - replace deprecated base64.decodestring with base64.b64decode in
   roundup_server.py and roundup_xlmrpc_server.py (reported by
   lmsteffan in irc)
@@ -188,14 +196,14 @@ Fixed:
   <database>/backend_name. (John Rouillard)
 - fixed some issues when generating translations. Use mappings and
   named format parameters so translators can move substituted tokens
-  in translations.
+  in translations.  (John Rouillard)
 - in rest interface, fix uncaught exceptions when parsing invalid
   Content-Type and Accept headers. Document response formats more
-  fully in doc/rest.txt.
+  fully in doc/rest.txt.  (John Rouillard)
 - in filter, filter_iter and _materialize_multilinks, use named cursor
   with postgresql. This turns of client-side cursor handling and avoids
   *large* roundup process (or wsgi process) in case of large results.
-  Fixes issue2551114.
+  Fixes issue2551114. (Ralf Schlatterbeck)
 - issue2551108 - fix handling of designator links when formatted
   as markdown links. (Reported by Cedric Krier; John Rouillard)
 - Fix filename created from mail attachments, fixes issue2551118
@@ -231,7 +239,7 @@ Fixed:
   sort at start or end of sorted list. (John Rouillard)
 - issue2550648 - keyword boolean search. Issue has multiple problems.
   Fix issue where saving the keyword boolean search would remove the
-  link to open the editor.
+  link to open the editor. (John Rouillard)
 - issue2551136 - timezone extention crash on Python 3.8. cgi.escape
   is used in some template to provide a select box of timezones. It
   uses cgi.escape that is deprecated and removed from 3.8 and newer.
@@ -241,29 +249,32 @@ Fixed:
   have been upgraded to TLS 1.1. Cert is RSA 2048 bytes with SHA512
   signature. Without these upgrades, ssl mode won't start. Note this
   exposes other issue with roundup-server operating as an SSL
-  endpoint. See issue2551138 and issue2551137.
+  endpoint. See issue2551138 and issue2551137. (John Rouillard)
 - issue2551122 - sorted method of MultilinkHTMLProperty does a string
   sort even if the property is an integer. Fixed so that the orderprop
   for the linked class is used. (John Rouillard, reported by Nagy Gabor)
 - issue2550964 - History can (temporarily) show incorrect value when a
   change is rejected. Fix history function to always use the database
-  values and ignore the current setting in the form.
+  values and ignore the current setting in the form. (John Rouillard)
 - Fix find() with anydbm. Using protected properties raised KeyError.
   Add shortcut fast return. Both changes come from rdbms_common.py's
   find(). (John Rouillard)
 - Fix traceback caused by calling history() with arguments in a
-  non-item context.
-- issue2551141 - roudup-admin returns no such class when restoring
+  non-item context. (John Rouillard)
+- issue2551141 - roundup-admin returns no such class when restoring
   item with duplicate key. Fix incorrect error message when using
   roundup-admin to restore a user when the username is already in use.
   (John Rouillard)
 - issue2551142 - Import of retired node with username after active
-  node fails with unique constraint failure. (John Rouillard)
+  node is imported raises unique constraint failure. (Reported by Ganesh
+  Sittampalam/Heffalump on irc. John Rouillard)
 - *** Must run roundup-admin migrate ***
   Increment rdbms version from 5 to 6. Mysql rdbms classes were
   missing unique key constraint. Found during fix for issue2551142.
-  See upgrading.txt.
+  See upgrading.txt. (John Rouillard)
 - ignore blank lines in CSV class editing. (John Rouillard)
+- issue2551122 - fixing order by a link/multilink broke other props
+  should be final change for that ticket. (John Rouillard)
 
 Features:
 
@@ -300,7 +311,7 @@ Features:
   tx_Source_detector.py to roundup/test for two reasons: It's used in the
   memorydb convenience functions and it may be useful in other tests. Make
   the prefix a parameter of the convenience functions to be usable in other
-  tests.
+  tests.  (Ralf Schlatterbeck)
 - pytest suite now starts the server under wsgi and loads the home
   page. This test is skipped if the requests module is not installed.
 - extract translatable strings from devel and responsive templates. Merge
@@ -312,4 +323,10 @@ Features:
   Allow admin to configure authentication header replacing the default
   REMOTE_USER. Also allow arbitrary headers to be passed to the
   tracker when using roundup-server behind a proxy. This code is
-  experimental see upgrading.txt admin_guide.txt.
+  experimental see upgrading.txt admin_guide.txt. (John Rouillard)
+- add image/svg-xml as valid mime type to serve. Was being served as
+  octet-stream. (John Rouillard)
+- improve customizing.txt documentation on use of Special Form
+  Variables. Added example html inputs to illustrate the doc.
+  Fix position of designator in doc example. It occurs before
+  @link@ or other edit command. (John Rouillard)

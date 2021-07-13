@@ -1,6 +1,6 @@
 Acknowledgements
 ================
-The Roundup Initative is a group of people that regularily works
+The Roundup Initative is a group of people that regularly work
 together to produce new releases of the Roundup Issue Tracker.
 We like to thank our community and all organisation and people
 that support us doing so with code, money, time, testing, reports,
@@ -10,11 +10,11 @@ ideas and everything else that helped!
 
 .. _`Announcement with changelog for current release.`: announcement.html
 
-2.0
+2.1
 ---
 
-2.1.0beta1
-~~~~~~~~~~
+2.1.0
+~~~~~
 
 Maintainer:  John Rouillard, Ralf Schlatterbeck
 
@@ -22,9 +22,15 @@ Release Manager: John Rouillard
 
 Developer activity by changesets::
 
-    rouilj@ieee.org      175 ***************************************************
-    rsc@runtux.com        29 ********
-    cmeerw@cmeerw.org      1
+    rouilj at ieee.org       178 ***************************************************
+    rsc at runtux.com         29 ********
+    cedric.krier at b2ck.com   6 **
+    cmeerw at cmeerw.org       1
+    john at jerrykan.com       1 
+    Tobias Herp                1
+
+2.0
+---
 
 2.0.0
 ~~~~~
@@ -35,9 +41,9 @@ Release Manager: John Rouillard
 
 Developer activity by changesets::
 
-    rouilj@ieee.org       62 ***************************************************
-    rsc@runtux.com        11 *********
-    cmeerw@cmeerw.org      4 ***
+    rouilj at ieee.org       62 ***************************************************
+    rsc at runtux.com        11 *********
+    cmeerw at cmeerw.org      4 ***
 
 2.0.0b0
 ~~~~~~~
@@ -48,10 +54,10 @@ Release Manager: John Rouillard
 
 Developer activity by changesets::
 
-    rouilj@ieee.org         133 ************************************************
-    cmeerw@cmeerw.org        35 *************
-    rsc@runtux.com           10 ****
-    jsm@polyomino.org.uk      1
+    rouilj at ieee.org         133 ************************************************
+    cmeerw at cmeerw.org        35 *************
+    rsc at runtux.com           10 ****
+    jsm at polyomino.org.uk      1
 
 
 2.0.0a0

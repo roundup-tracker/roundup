@@ -229,8 +229,11 @@ delegating translation to the Client instance.  In HTML templates,
 translator object is available as context variable ``i18n``.
 
 HTML templates have special markup for translatable strings.
-The syntax for this markup is defined on `ZPTInternationalizationSupport`_
-page.  Roundup translation service currently ignores values for
+The syntax for this markup is discussed at `ZPTInternationalization`_.
+(Originally documented at
+http://dev.zope.org/Wikis/DevSite/Projects/ComponentArchitecture/ZPTInternationalizationSupport
+which is now gone.)
+Roundup translation service currently ignores values for
 ``i18n:domain``, ``i18n:source`` and ``i18n:target``.
 
 Template markup examples:
@@ -419,5 +422,4 @@ At run time, Roundup automatically compiles message catalogs whenever
 .. _Template Attribute Language Expression Syntax:
    https://pagetemplates.readthedocs.io/en/latest/history/TALESSpecification13.html
 .. _vim: https://www.vim.org/
-.. _ZPTInternationalizationSupport: http://dev.zope.org/Wikis/DevSite/Projects/ComponentArchitecture/ZPTInternationalizationSupport
-
+.. _ZPTInternationalization: http://grok.zope.org/documentation/how-to/how-to-internationalize-your-application/view
