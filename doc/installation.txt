@@ -129,6 +129,14 @@ markdown, markdown2 or mistune
   To use markdown rendering you need to have the markdown_, markdown2_
   or mistune_ (v0.8.4 tested) package installed.
 
+zstd, brotli
+  To have roundup compress the returned data using one of these
+  algorithms, you can install one or more of zstd_ or brotli_.
+  Roundup's responses can always be compressed with gzip from the
+  Python standard library. Also nginx and various wsgi server can
+  compress the response from roundup as they transmit/proxy it to the
+  client.
+
 Windows Service
   You can run Roundup as a Windows service if pywin32_ is installed.
   Otherwise it must be started manually.
@@ -386,7 +394,8 @@ There are multiple web interfaces to choose from:
 4. `Zope product - ZRoundup`_
 5. `Apache HTTP Server with mod_wsgi`_
 6. `Apache HTTP Server with mod_python`_  (deprecated)
-7. `WSGI Variations`_
+7. `Nginx HTTP Server`_
+8. `WSGI Variations`_
 
 You may need to give the web server user permission to access the tracker home
 - see the `UNIX environment steps`_ for information. You may also need to
@@ -818,6 +827,120 @@ The URL for accessing these trackers then become:
 Note that in order to use https connections you must set up Apache for secure
 serving with SSL.
 
+Nginx HTTP Server
+~~~~~~~~~~~~~~~~~
+
+This configuration uses gunicorn to run roundup behind an Nginx proxy.
+The proxy also compresses the data using gzip. The url for the tracker
+in config.ini should be ``https://tracker.example.org``.
+
+  .. code:: 
+
+    user nginx;
+    worker_processes auto;
+    worker_rlimit_nofile 10000;
+
+    error_log /var/log/nginx/global-error.log;
+    pid /var/run/nginx.pid;
+
+    events {
+	worker_connections 1024;
+    }
+
+    upstream tracker-tracker {
+      # gunicorn uses this socket for communication
+      server unix:/var/run/roundup/tracker.sock fail_timeout=0;
+    }
+
+    http {
+      include /etc/nginx/mime.types;
+      default_type application/octet-stream;
+
+      log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+		      '$status $body_bytes_sent "$http_referer" '
+		      '"$http_user_agent" "$http_x_forwarded_for"';
+
+      access_log /var/log/nginx/global-access.log main;
+      sendfile on;
+      tcp_nopush on;
+      tcp_nodelay on;
+      server_tokens off;
+
+      gzip_http_version 1.1;
+      gzip_proxied      any;
+      gzip_min_length   500;
+      # default comp_level is 1
+      gzip_comp_level   6;
+      gzip_disable      msie6
+      gzip_types        text/plain text/css
+			text/xml application/xml
+			text/javascript application/javascript
+			text/json application/json;
+      # upstream proxies need to match Accept-Encoding as
+      # part of their cache check
+      gzip_vary         on
+
+      server {
+	listen 80;
+	server_name tracker.example.org;
+
+	location /.well-known/acme-challenge/ {
+	    alias /etc/lego/.well-known/acme-challenge/;
+	    try_files $uri =404;
+	}
+
+	location / {
+	  return 301 https://$http_host$request_uri;
+	}
+      }
+
+      server {
+	listen 443 ssl;
+	server_name tracker.example.org;
+	include mime.types;
+
+	# By default use the snakeoil certificate...
+	# change this if you are using a real SSL cert
+	ssl_certificate /etc/ssl/certs/ssl-cert-snakeoil.pem;
+	ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
+
+	# These are useful for @@files where roundup is bypassed.
+	# but can be set by roundup as well. See:
+        #    https://wiki.roundup-tracker.org/AddingContentSecurityPolicy
+        # which also sets other security headers.
+	add_header Strict-Transport-Security "max-age=63072000; includeSubdomains; preload";
+	add_header X-Frame-Options "sameorigin";
+	add_header X-Xss-Protection "1; mode=block";
+	add_header X-Content-Type-Options "nosniff";
+	add_header X-Permitted-Cross-Domain-Policies "none";
+
+	error_log /var/log/nginx/roundup-tracker.error.log;
+	access_log /var/log/nginx/roundup-tracker.access.log
+
+	root /home/roundup/trackers/tracker/;
+
+	# have nginx return files from @@file directly rather than
+	# going though roundup
+	location /@@file/ {
+	  rewrite ^/@@file/(.*) /html/$1 break;
+	  # note that you can not use cache control (see customizing doc)
+          # in roundup to set the expires headers since we are
+	  # bypassing roundup. Consider using a map or different
+	  # location stanzas to vary the expiration times.  
+	  expires 1h;
+	}
+
+	location / {
+	  # must define tracker-tracker in upstream stanza
+	  proxy_pass http://tracker-tracker/;
+	  proxy_set_header Host $host;
+	  proxy_set_header X-Real-IP $remote_addr;
+	  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+	}
+      }
+    }
+
+
 WSGI Variations
 ~~~~~~~~~~~~~~~
 
@@ -957,6 +1080,9 @@ Assuming the proxy forwards /tracker, run gunicorn as::
 
 this runs roundup at port 8917 on the loopback interface. You should
 configure the reverse proxy to talk to 127.0.0.1 at port 8917.
+If you want you can use a unix domain socket instead. Example:
+``--bind unix:///var/run/roundup/tracker.sock`` would be used for the
+nginx configuration below.
 
 .. index:: pair: web interface; uWSGI
    single: wsgi; uWSGI
@@ -1438,6 +1564,7 @@ there are no errors. If there are errors, please let us know!
 .. _`adding MySQL users`:
     https://dev.mysql.com/doc/refman/8.0/en/creating-accounts.html
 .. _apache: https://httpd.apache.org/
+.. _brotli: https://pypi.org/project/Brotli/
 .. _docutils: https://pypi.org/project/docutils/
 .. _flup: https://pypi.org/project/flup/
 .. _gpg: https://www.gnupg.org/software/gpgme/index.html
@@ -1457,3 +1584,4 @@ there are no errors. If there are errors, please let us know!
 .. _pywin32: https://pypi.org/project/pywin32/
 .. _Whoosh: https://whoosh.readthedocs.org/en/latest
 .. _Xapian: https://xapian.org/
+.. _zstd: https://pypi.org/project/zstd/

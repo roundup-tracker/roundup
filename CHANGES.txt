@@ -11,6 +11,18 @@ Python v2.5 and v2.6.  Starting with the v1.6 releases of Roundup
 v2.7.2 or later are required to run newer releases of Roundup.  From v2.0
 onwards Python 3.4 and later are also supported.
 
+20xx-yy-zz 2.2.0
+
+Fixed:
+
+Features:
+
+- issue2551147 - Enable compression of http responses in roundup.
+  Allow roundup to return gzip, (br or zstd with added modules)
+  Content-Encoded replies. Compression could be done in upstream
+  proxies/wsgi server but this allows it to occur natively. (John
+  Rouillard)
+
 2021-07-13 2.1.0
 
 Fixed:

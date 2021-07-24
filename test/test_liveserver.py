@@ -1,5 +1,6 @@
-import shutil, errno, pytest
+import shutil, errno, pytest, json, gzip, os
 
+from roundup.anypy.strings import b2s
 from roundup.cgi.wsgi_handler import RequestDispatcher
 from .wsgi_liveserver import LiveServerTestCase
 from . import db_test_base
@@ -12,7 +13,23 @@ except ImportError:
     skip_requests = mark_class(pytest.mark.skip(
         reason='Skipping liveserver tests: requests library not available'))
 
- 
+try:
+    import brotli
+    skip_brotli = lambda func, *args, **kwargs: func
+except ImportError:
+    from .pytest_patcher import mark_class
+    skip_brotli = mark_class(pytest.mark.skip(
+        reason='Skipping brotli tests: brotli library not available'))
+    brotli = None
+
+try:
+    import zstd
+    skip_zstd = lambda func, *args, **kwargs: func
+except ImportError:
+    from .pytest_patcher import mark_class
+    skip_zstd = mark_class(pytest.mark.skip(
+        reason='Skipping zstd tests: zstd library not available'))
+
 @skip_requests
 class SimpleTest(LiveServerTestCase):
     # have chicken and egg issue here. Need to encode the base_url
@@ -40,6 +57,14 @@ class SimpleTest(LiveServerTestCase):
 
         # set the url the test instance will run at.
         cls.db.config['TRACKER_WEB'] = "http://localhost:9001/"
+        # set up mailhost so errors get reported to debuging capture file
+        cls.db.config.MAILHOST = "localhost"
+        cls.db.config.MAIL_HOST = "localhost"
+        cls.db.config.MAIL_DEBUG = "../mail.log.t"
+
+        # enable static precompressed files
+        cls.db.config.WEB_USE_PRECOMPRESSED_FILES = 1
+
         cls.db.config.save()
 
         cls.db.commit()
@@ -206,4 +231,542 @@ class SimpleTest(LiveServerTestCase):
 
         self.assertEqual(f.status_code, 404)
 
+    def test_ims(self):
+        ''' retreive the user_utils.js file with old and new
+            if-modified-since timestamps.
+        '''
+        from datetime import datetime
 
+        f = requests.get(self.url_base() + '/@@file/user_utils.js',
+                         headers = { 'Accept-Encoding': 'gzip, foo',
+                                     'If-Modified-Since': 'Sun, 13 Jul 1986 01:20:00',
+                                     'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        expected = { 'Content-Type': 'application/javascript',
+                     'Content-Encoding': 'gzip',
+                     'Vary': 'Accept-Encoding',
+        }
+
+        # use dict comprehension to remove fields like date,
+        # etag etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
+
+        # now use today's date
+        a_few_seconds_ago = datetime.now().strftime('%a, %d %b %Y %H:%M:%S GMT') 
+        f = requests.get(self.url_base() + '/@@file/user_utils.js',
+                         headers = { 'Accept-Encoding': 'gzip, foo',
+                                     'If-Modified-Since': a_few_seconds_ago,
+                                     'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 304)
+        expected = { 'Content-Type': 'application/javascript',
+                     'Vary': 'Accept-Encoding',
+                     'Content-Length': '0',
+        }
+
+        # use dict comprehension to remove fields like date, etag
+        #  etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
+
+
+    def test_compression_gzipfile(self):
+        '''Get the compressed dummy file'''
+
+        # create a user_utils.js.gz file to test pre-compressed
+        # file serving code. Has custom contents to verify
+        # that I get the compressed one.
+        gzfile = "%s/html/user_utils.js.gzip"%self.dirname
+        test_text= b"Custom text for user_utils.js\n"
+
+        with gzip.open(gzfile, 'wb') as f:
+            bytes_written = f.write(test_text)
+
+        self.assertEqual(bytes_written, 30)
+
+        # test file x-fer
+        f = requests.get(self.url_base() + '/@@file/user_utils.js',
+                         headers = { 'Accept-Encoding': 'gzip, foo',
+                                     'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        expected = { 'Content-Type': 'application/javascript',
+                     'Content-Encoding': 'gzip',
+                     'Vary': 'Accept-Encoding',
+                     'Content-Length': '69',
+        }
+
+        # use dict comprehension to remove fields like date,
+        # content-length etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in
+                               f.headers.items() if key in expected },
+                             expected)
+
+
+        # check content - verify it's the .gz file not the real file.
+        self.assertEqual(f.content, test_text)
+
+        '''# verify that a different encoding request returns on the fly
+
+        # test file x-fer using br, so we get runtime compression
+        f = requests.get(self.url_base() + '/@@file/user_utils.js',
+                         headers = { 'Accept-Encoding': 'br, foo',
+                                     'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        expected = { 'Content-Type': 'application/javascript',
+                     'Content-Encoding': 'br',
+                     'Vary': 'Accept-Encoding',
+                     'Content-Length': '960',
+        }
+
+        # use dict comprehension to remove fields like date,
+        # content-length etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in
+                               f.headers.items() if key in expected },
+                             expected)
+
+        try:
+           from urllib3.response import BrotliDecoder
+           # requests has decoded br to text for me
+           data = f.content
+        except ImportError:
+            # I need to decode
+            data = brotli.decompress(f.content)
+
+        self.assertEqual(b2s(data)[0:25], '// User Editing Utilities')
+        '''
+
+        # re-request file, but now make .gzip out of date. So we get the
+        # real file compressed on the fly, not our test file.
+        os.utime(gzfile, (0,0)) # use 1970/01/01 or os base time
+
+        f = requests.get(self.url_base() + '/@@file/user_utils.js',
+                         headers = { 'Accept-Encoding': 'gzip, foo',
+                                     'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        expected = { 'Content-Type': 'application/javascript',
+                     'Content-Encoding': 'gzip',
+                     'Vary': 'Accept-Encoding',
+        }
+
+        # use dict comprehension to remove fields like date,
+        # content-length etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in
+                               f.headers.items() if key in expected },
+                             expected)
+
+
+        # check content - verify it's the real file, not crafted .gz.
+        self.assertEqual(b2s(f.content)[0:25], '// User Editing Utilities')
+
+        # cleanup
+        os.remove(gzfile)
+
+    def test_compression_gzip(self):
+        # use basic auth for rest endpoint
+        f = requests.get(self.url_base() + '/rest/data/user/1/username',
+                             auth=('admin', 'sekrit'),
+                             headers = {'content-type': "",
+                                        'Accept-Encoding': 'gzip, foo',
+                                        'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        expected = { 'Content-Type': 'application/json',
+                     'Access-Control-Allow-Origin': '*',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+                     'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Content-Encoding': 'gzip',
+                     'Vary': 'Accept-Encoding',
+        }
+
+        content_str = '''{ "data": {
+                        "id": "1",
+                        "link": "http://localhost:9001/rest/data/user/1/username",
+                        "data": "admin"
+                    }
+        }'''
+        content = json.loads(content_str)
+
+
+        if (type("") == type(f.content)):
+            json_dict = json.loads(f.content)
+        else:
+            json_dict = json.loads(b2s(f.content))
+
+        # etag wil not match, creation date different
+        del(json_dict['data']['@etag']) 
+
+        # type is "class 'str'" under py3, "type 'str'" py2
+        # just skip comparing it.
+        del(json_dict['data']['type']) 
+
+        self.assertDictEqual(json_dict, content)
+
+        # use dict comprehension to remove fields like date,
+        # content-length etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
+
+
+
+        # use basic auth for rest endpoint, error case, bad attribute
+        f = requests.get(self.url_base() + '/rest/data/user/1/foo',
+                             auth=('admin', 'sekrit'),
+                             headers = {'content-type': "",
+                                        'Accept-Encoding': 'gzip, foo',
+                                        'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        # ERROR: attribute error turns into 405, not sure that's right.
+        # NOTE: not compressed payload too small
+        self.assertEqual(f.status_code, 405)
+        expected = { 'Content-Type': 'application/json',
+                     'Access-Control-Allow-Origin': '*',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+                     'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+        }
+
+        content = { "error":
+                    {
+                        "status": 405,
+                        "msg": "'foo'"
+                    }
+        }
+
+        json_dict = json.loads(b2s(f.content))
+        self.assertDictEqual(json_dict, content)
+
+        # use dict comprehension to remove fields like date,
+        # content-length etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
+
+        # test file x-fer
+        f = requests.get(self.url_base() + '/@@file/user_utils.js',
+                         headers = { 'Accept-Encoding': 'gzip, foo',
+                                     'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        expected = { 'Content-Type': 'application/javascript',
+                     'Content-Encoding': 'gzip',
+                     'Vary': 'Accept-Encoding',
+        }
+
+        # check first few bytes.
+        self.assertEqual(b2s(f.content[0:25]), '// User Editing Utilities')
+
+        # use dict comprehension to remove fields like date,
+        # content-length etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in
+                               f.headers.items() if key in expected },
+                             expected)
+
+        # test file x-fer
+        f = requests.get(self.url_base() + '/user1',
+                         headers = { 'Accept-Encoding': 'gzip, foo',
+                                     'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        expected = { 'Content-Type': 'text/html; charset=utf-8',
+                     'Content-Encoding': 'gzip',
+                     'Vary': 'Accept-Encoding',
+        }
+
+        # check first few bytes.
+        self.assertEqual(b2s(f.content[0:25]), '<!-- dollarId: user.item,')
+
+        # use dict comprehension to remove fields like date,
+        # content-length etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in
+                               f.headers.items() if key in expected },
+                             expected)
+
+    @skip_brotli
+    def test_compression_br(self):
+        # use basic auth for rest endpoint
+        f = requests.get(self.url_base() + '/rest/data/user/1/username',
+                             auth=('admin', 'sekrit'),
+                             headers = {'content-type': "",
+                                        'Accept-Encoding': 'br, foo',
+                                        'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        expected = { 'Content-Type': 'application/json',
+                     'Access-Control-Allow-Origin': '*',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+                     'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Content-Encoding': 'br',
+                     'Vary': 'Accept-Encoding',
+        }
+
+        content_str = '''{ "data": {
+                        "id": "1",
+                        "link": "http://localhost:9001/rest/data/user/1/username",
+                        "data": "admin"
+                    }
+        }'''
+        content = json.loads(content_str)
+
+
+        if (type("") == type(f.content)):
+            json_dict = json.loads(f.content)
+        else:
+            json_dict = json.loads(b2s(brotli.decompress(f.content)))
+
+        # etag wil not match, creation date different
+        del(json_dict['data']['@etag']) 
+
+        # type is "class 'str'" under py3, "type 'str'" py2
+        # just skip comparing it.
+        del(json_dict['data']['type']) 
+
+        self.assertDictEqual(json_dict, content)
+
+        # use dict comprehension to remove fields like date,
+        # content-length etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
+
+
+
+        # use basic auth for rest endpoint, error case, bad attribute
+        f = requests.get(self.url_base() + '/rest/data/user/1/foo',
+                             auth=('admin', 'sekrit'),
+                             headers = {'Accept-Encoding': 'br, foo',
+                                        'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+        # ERROR: attribute error turns into 405, not sure that's right.
+        # Note: not compressed payload too small
+        self.assertEqual(f.status_code, 405)
+        expected = { 'Content-Type': 'application/json',
+                     'Access-Control-Allow-Origin': '*',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+                     'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+        }
+
+        content = { "error":
+                    {
+                        "status": 405,
+                        "msg": "'foo'"
+                    }
+        }
+        json_dict = json.loads(b2s(f.content))
+
+        self.assertDictEqual(json_dict, content)
+
+        # use dict comprehension to remove fields like date,
+        # content-length etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
+
+        # test file x-fer
+        f = requests.get(self.url_base() + '/@@file/user_utils.js',
+                         headers = { 'Accept-Encoding': 'br, foo',
+                                     'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        expected = { 'Content-Type': 'application/javascript',
+                     'Content-Encoding': 'br',
+                     'Vary': 'Accept-Encoding',
+        }
+
+        try:
+           from urllib3.response import BrotliDecoder
+           # requests has decoded br to text for me
+           data = f.content
+        except ImportError:
+            # I need to decode
+            data = brotli.decompress(f.content)
+
+        # check first few bytes.
+        self.assertEqual(b2s(data)[0:25], '// User Editing Utilities')
+
+        # use dict comprehension to remove fields like date,
+        # content-length etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in
+                               f.headers.items() if key in expected },
+                             expected)
+
+        # test file x-fer
+        f = requests.get(self.url_base() + '/user1',
+                         headers = { 'Accept-Encoding': 'br, foo',
+                                     'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        expected = { 'Content-Type': 'text/html; charset=utf-8',
+                     'Content-Encoding': 'br',
+                     'Vary': 'Accept-Encoding',
+        }
+
+        try:
+           from urllib3.response import BrotliDecoder
+           # requests has decoded br to text for me
+           data = f.content
+        except ImportError:
+            # I need to decode
+            data = brotli.decompress(f.content)
+
+        # check first few bytes.
+        self.assertEqual(b2s(data)[0:25],
+                         '<!-- dollarId: user.item,')
+
+        # use dict comprehension to remove fields like date,
+        # content-length etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in
+                               f.headers.items() if key in expected },
+                             expected)
+
+
+    @skip_zstd
+    def test_compression_zstd(self):
+        # use basic auth for rest endpoint
+        f = requests.get(self.url_base() + '/rest/data/user/1/username',
+                             auth=('admin', 'sekrit'),
+                             headers = {'content-type': "",
+                                        'Accept-Encoding': 'zstd, foo',
+                                        'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        expected = { 'Content-Type': 'application/json',
+                     'Access-Control-Allow-Origin': '*',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+                     'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Content-Encoding': 'zstd',
+                     'Vary': 'Accept-Encoding',
+        }
+
+        content_str = '''{ "data": {
+                        "id": "1",
+                        "link": "http://localhost:9001/rest/data/user/1/username",
+                        "data": "admin"
+                    }
+        }'''
+        content = json.loads(content_str)
+
+
+        if (type("") == type(f.content)):
+            json_dict = json.loads(f.content)
+        else:
+            json_dict = json.loads(b2s(zstd.decompress(f.content)))
+
+        # etag wil not match, creation date different
+        del(json_dict['data']['@etag']) 
+
+        # type is "class 'str'" under py3, "type 'str'" py2
+        # just skip comparing it.
+        del(json_dict['data']['type']) 
+
+        self.assertDictEqual(json_dict, content)
+
+        # use dict comprehension to remove fields like date,
+        # content-length etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
+
+
+
+        # use basic auth for rest endpoint, error case, bad attribute
+        f = requests.get(self.url_base() + '/rest/data/user/1/foo',
+                             auth=('admin', 'sekrit'),
+                             headers = {'content-type': "",
+                                        'Accept-Encoding': 'zstd, foo',
+                                        'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        # ERROR: attribute error turns into 405, not sure that's right.
+        # Note: not compressed, payload too small
+        self.assertEqual(f.status_code, 405)
+        expected = { 'Content-Type': 'application/json',
+                     'Access-Control-Allow-Origin': '*',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+                     'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+        }
+
+        content = { "error":
+                    {
+                        "status": 405,
+                        "msg": "'foo'"
+                    }
+        }
+
+        json_dict = json.loads(b2s(f.content))
+        self.assertDictEqual(json_dict, content)
+
+        # use dict comprehension to remove fields like date,
+        # content-length etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
+
+        # test file x-fer
+        f = requests.get(self.url_base() + '/@@file/user_utils.js',
+                         headers = { 'Accept-Encoding': 'zstd, foo',
+                                     'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        expected = { 'Content-Type': 'application/javascript',
+                     'Content-Encoding': 'zstd',
+                     'Vary': 'Accept-Encoding',
+        }
+
+        # check first few bytes.
+        self.assertEqual(b2s(zstd.decompress(f.content)[0:25]), '// User Editing Utilities')
+
+        # use dict comprehension to remove fields like date,
+        # content-length etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in
+                               f.headers.items() if key in expected },
+                             expected)
+
+        # test file x-fer
+        f = requests.get(self.url_base() + '/user1',
+                         headers = { 'Accept-Encoding': 'zstd, foo',
+                                     'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        expected = { 'Content-Type': 'text/html; charset=utf-8',
+                     'Content-Encoding': 'zstd',
+                     'Vary': 'Accept-Encoding',
+        }
+
+        # check first few bytes.
+        self.assertEqual(b2s(zstd.decompress(f.content)[0:25]),
+                         '<!-- dollarId: user.item,')
+
+        # use dict comprehension to remove fields like date,
+        # content-length etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in
+                               f.headers.items() if key in expected },
+                             expected)

@@ -120,6 +120,7 @@ install:
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install mistune; fi
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* && $TRAVIS_PYTHON_VERSION != "2."* ]]; then pip install Markdown; fi
   - pip install markdown2
+  - pip install brotli zstd
 
 before_script:
   # set up mysql database

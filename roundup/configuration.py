@@ -846,6 +846,18 @@ SETTINGS = (
             "If empty (default) the REMOTE_USER header is used.\n"
             "This is used when the upstream HTTP server authenticates\n"
             "the user and passes the username using this HTTP header."),
+        (BooleanOption, "dynamic_compression", "yes",
+            "Setting this option makes roundup look at the Accept-Encoding\n"
+            "header supplied by the client. It will compress the response\n"
+            "on the fly using a common encoding. Disable it if your\n"
+            "upstream server does compression of dynamic data."),
+        (BooleanOption, "use_precompressed_files", "no",
+            "Setting this option enables Roundup to serve precompressed\n"
+            "static files. The admin must create the compressed files with\n"
+            "proper extension (.gzip, .br, .zstd) in the same directory as\n"
+            "the uncompressed file. If a precompressed file doesn't\n"
+            "exist, the uncompressed file will be served possibly with\n"
+            "dynamic compression."),
         (BooleanOption, 'http_auth_convert_realm_to_lowercase', "no",
             "If usernames consist of a name and a domain/realm part of\n"
             "the form user@realm and we're using REMOTE_USER for\n"
