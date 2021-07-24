@@ -534,7 +534,7 @@ class SimpleTest(LiveServerTestCase):
 
         try:
             json_dict = json.loads(f.content)
-        except (ValueError):
+        except (ValueError, TypeError):
             # Handle error from trying to load compressed data
             json_dict = json.loads(b2s(brotli.decompress(f.content)))
 
@@ -678,7 +678,7 @@ class SimpleTest(LiveServerTestCase):
 
         try:
             json_dict = json.loads(f.content)
-        except (ValueError, UnicodeDecodeError):
+        except (ValueError, UnicodeDecodeError, TypeError):
             # ValueError - raised by loads on compressed content python2
             # UnicodeDecodeError - raised by loads on compressed content
             #    python3
