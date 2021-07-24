@@ -529,10 +529,13 @@ class SimpleTest(LiveServerTestCase):
         }'''
         content = json.loads(content_str)
 
+        print(f.content)
+        print(type(f.content))
 
-        if (type("") == type(f.content)):
+        try:
             json_dict = json.loads(f.content)
-        else:
+        except (ValueError):
+            # Handle error from trying to load compressed data
             json_dict = json.loads(b2s(brotli.decompress(f.content)))
 
         # etag wil not match, creation date different
@@ -673,9 +676,12 @@ class SimpleTest(LiveServerTestCase):
         content = json.loads(content_str)
 
 
-        if (type("") == type(f.content)):
+        try:
             json_dict = json.loads(f.content)
-        else:
+        except (ValueError, UnicodeDecodeError):
+            # ValueError - raised by loads on compressed content python2
+            # UnicodeDecodeError - raised by loads on compressed content
+            #    python3
             json_dict = json.loads(b2s(zstd.decompress(f.content)))
 
         # etag wil not match, creation date different
