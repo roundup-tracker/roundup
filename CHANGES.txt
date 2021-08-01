@@ -22,6 +22,9 @@ Features:
   Content-Encoded replies. Compression could be done in upstream
   proxies/wsgi server but this allows it to occur natively. (John
   Rouillard)
+- Change tracker templates adding required to login forms. Invokes
+  browser error reporting if user forgets to fill in a field.
+  (John Rouillard)
 
 2021-07-13 2.1.0
 
