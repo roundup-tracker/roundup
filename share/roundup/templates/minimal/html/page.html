@@ -129,8 +129,8 @@ status_notresolved string:-1,1,2,3,4,5,6,7;
         tal:attributes="action request/base">
    <p class="userblock">
     <b i18n:translate="">Login</b><br>
-    <input size="10" name="__login_name"><br>
-    <input size="10" type="password" name="__login_password"><br>
+    <input size="10" required name="__login_name"><br>
+    <input size="10" type="password" required name="__login_password"><br>
     <input name="@csrf" type="hidden"
            tal:attributes="value python:utils.anti_csrf_nonce()">
     <input type="hidden" name="@action" value="Login">
