@@ -32,6 +32,13 @@ Fixed:
 
 - issue2551122 - fixing order by a link/multilink broke other props
   should be final change for that ticket. (John Rouillard)
+- when isset() is used in templates on a StringHTMLProperty, it
+  returns True. 2.1.0 made default_value work properly. Hyperdb's
+  String(_Type) class sets the default value to the empty string and
+  not None. Change __init__ so default_value is None and not "".
+  roundup-user mailing list thread:
+  https://sourceforge.net/p/roundup/mailman/roundup-users/thread/20210801020640.73ac1729%40Dell/#msg37328813
+  (reported by Nagy Gabor. fix: John Rouillard)
 
 Features:
 

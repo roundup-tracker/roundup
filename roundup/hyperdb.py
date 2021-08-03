@@ -77,7 +77,7 @@ class _Type(object):
 
 class String(_Type):
     """An object designating a String property."""
-    def __init__(self, indexme='no', required=False, default_value="",
+    def __init__(self, indexme='no', required=False, default_value=None,
                  quiet=False):
         super(String, self).__init__(required, default_value, quiet)
         self.indexme = indexme == 'yes'
