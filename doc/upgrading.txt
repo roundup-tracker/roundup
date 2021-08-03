@@ -44,6 +44,13 @@ merge any local comments from the tracker's ``config.ini`` into
 compression settings as you want. Then replace ``config.ini`` with the
 ``newconfig.ini`` file.
 
+Search Added to User Index Page
+-------------------------------
+
+A search form and count of number of hits has been added to the
+``user.index.html`` template page in the classic template. You may
+want to merge the search form and footer into your template.
+
 
 Migrating from 2.0.0 to 2.1.0
 =============================

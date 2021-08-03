@@ -25,6 +25,11 @@ Features:
 - Change tracker templates adding required to login forms. Invokes
   browser error reporting if user forgets to fill in a field.
   (John Rouillard)
+- issue1596345 - filtering user list (need
+  user.search.hml). Incorporate user search features from
+  issues.roundup-tracker.org into classic template. Devel and
+  responsive templates already have this feature.
+  
 
 2021-07-13 2.1.0
 
