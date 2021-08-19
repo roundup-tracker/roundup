@@ -2101,7 +2101,7 @@ class Client:
 
     def compress_encode(self, byte_content, quality=4):
 
-        if not self.db.config.WEB_DYNAMIC_COMPRESSION:
+        if not self.instance.config.WEB_DYNAMIC_COMPRESSION:
             # dynamic compression disabled.
             return byte_content
 
