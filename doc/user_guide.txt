@@ -305,6 +305,9 @@ and messages, and the issue history at the bottom of the page:
 
 .. image:: images/edit_issue.png
 
+The "Make a copy" link duplicate the current issue copying most of the
+properties to a new issue. This is useful for splitting am issue into
+sub-issues that can be assigned to different people.
 
 Searching Page
 --------------
