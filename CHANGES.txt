@@ -29,7 +29,8 @@ Features:
   user.search.hml). Incorporate user search features from
   issues.roundup-tracker.org into classic template. Devel and
   responsive templates already have this feature.
-  
+- issue2550917 - Add a: "Welcome user, you have logged in" ok_message
+  on login. (Ashley Burke)
 
 2021-07-13 2.1.0
 
