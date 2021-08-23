@@ -4,18 +4,38 @@ add-issue
  Add a single issue, as specified on the command line, to your tracker. The
  initial message for the issue is taken from standard input.
 
+copy-user.py
+ Copy one or more Roundup users from one tracker instance to another. 
+
+imapServer.py
+ This IMAP server script that runs in the background and checks for new
+ email from a variety of mailboxes.
+
+import_sf.py
+ Import tracker data from Sourceforge.NET into a new roundup instance.
+
 roundup-reminder
  Generate an email that lists outstanding issues. Send in both plain text
  and HTML formats.
-
-weekly-report
- Generate a simple report outlining the activity in one tracker for the
- most recent week.
 
 schema_diagram.py
  Generate a schema diagram for a roundup tracker. It generates a 'dot file'
  that is then fed into the 'dot' tool (http://www.graphviz.org) to generate
  a graph.
+
+schema-dump.py
+ Use recently documented XML-RPC API to dump Roundup data schema in
+ human readable form.
+
+spam-remover
+ Remove file attachment spam from a tracker. (Warning destructive,
+ read script well.)
+
+weekly-report
+ Generate a simple report outlining the activity in one tracker for the
+ most recent week.
+
+----
 
 server-ctl
  Control the roundup-server daemon from the command line with start, stop,
@@ -27,9 +47,11 @@ roundup.rc-debian
  Offers start, stop and restart commands and integrates with the Debian
  init process.
 
-imapServer.py
- This IMAP server script that runs in the background and checks for new
- email from a variety of mailboxes.
+
+systemd.gunicorn
+ A systemd unit file for running roundup under gnuicorn WSGI server.
+
+----
 
 contributors.py
  Analyzes Mercurial log, filters and compiles list of committers with years
