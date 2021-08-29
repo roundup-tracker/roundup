@@ -153,13 +153,19 @@ table
 
 table:not(.list) th {
     text-align: left;
+    padding-block-end: 0.75em;
+}
+
+table textarea {
+    width: 99%;
 }
 
 table th[colspan] {
     text-align: center;
 }
 /* Need some space between content of Issue List columns */
-td, th { padding-left: 1em; }
+td, th { padding-left: 1em;
+	 vertical-align: top; }
 
 tr.odd { background-color:#f5f5f5; }
 
