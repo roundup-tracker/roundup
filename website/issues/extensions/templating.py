@@ -102,7 +102,7 @@ def AboutPage(db):
     info.append(get_status_of_module('jinja2') + "<br>")
 
     uid = db._db.getuid()
-    if uid == "1" or db._db.security.hasPermission("Admin", uid):
+    if uid == "1" or db._db.user.has_role(uid,"Admin"):
         #may leak sensitive info about system, directory paths etc.
         #and keys so require admin user access. Consider expanding
         #to Admin rights for tracker.
