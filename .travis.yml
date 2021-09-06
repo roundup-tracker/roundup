@@ -140,7 +140,7 @@ before_script:
   # build the .mo translation files and install them into a tree
   # (locale/locale under roundup directory root) 
   # suitable for use by gettext.
-  - (cd locale; make local_install; ls -lR locale)
+  - (cd locale; make local_install; ls -lR locale/de/LC_MESSAGES)
 
 script:
   - PATH=$VIRTUAL_ENV/bin:$PATH
