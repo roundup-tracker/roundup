@@ -147,7 +147,7 @@ script:
   - export LD_LIBRARY_PATH=$VIRTUAL_ENV/lib:$LD_LIBRARY_PATH
   - py.test 
     -W error 
-    -W "ignore::SelectableGroups" 
+    -W "ignore:SelectableGroups:DeprecationWarning" 
     -W "ignore:the imp module:DeprecationWarning:gpg.gpgme:15" 
     -W "ignore:'U' mode::docutils.io" 
     -v --maxfail=20 test/ --cov=roundup
