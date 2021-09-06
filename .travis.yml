@@ -147,13 +147,13 @@ script:
   - PATH=$VIRTUAL_ENV/bin:$PATH
   - export LD_LIBRARY_PATH=$VIRTUAL_ENV/lib:$LD_LIBRARY_PATH
   - py.test 
-    -W error 
+    -W default
     -W "ignore:SelectableGroups:DeprecationWarning" 
     -W "ignore:the imp module:DeprecationWarning:gpg.gpgme:15" 
     -W "ignore:'U' mode::docutils.io" 
     -W "ignore:unclosed:ResourceWarning:roundup.roundup.demo" 
     -W "ignore:unclosed file:ResourceWarning:enum" 
-    -v --maxfail=50 test/ --cov=roundup
+    -v --maxfail=20 test/ --cov=roundup
   
 after_success:
   - codecov
