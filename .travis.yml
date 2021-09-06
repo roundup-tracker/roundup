@@ -151,6 +151,7 @@ script:
     -W "ignore:SelectableGroups:DeprecationWarning" 
     -W "ignore:the imp module:DeprecationWarning:gpg.gpgme:15" 
     -W "ignore:'U' mode::docutils.io" 
+    -W "ignore:unclosed:ResourceWarning:roundup.roundup.demo" 
     -v --maxfail=20 test/ --cov=roundup
   
 after_success:
