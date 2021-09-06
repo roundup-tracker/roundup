@@ -62,7 +62,7 @@ def create(journaltag, create=True, debug=False, prefix=default_prefix):
         adminpw=password.Password('sekrit'))
     fd = open(initial_data)
     exec(compile(fd.read(), initial_data, 'exec'), vars)
-    fd.close
+    fd.close()
 
     # load standard detectors
     dirname = os.path.join(prefix, 'detectors')
