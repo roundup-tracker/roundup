@@ -1,3 +1,6 @@
+# check syntax using:
+# https://config.travis-ci.com/explore
+
 os: linux
 
 language: python
