@@ -52,7 +52,7 @@ template:
 
 local_install: dist
 	for file in $(MO_FILES); do \
-	   set -xv; lang=`basename $$file .mo`; \
+	   lang=`basename $$file .mo`; \
 	   mkdir -p locale/$$lang/LC_MESSAGES; \
 	   cp $$file locale/$$lang/LC_MESSAGES/roundup.mo; \
 	done
