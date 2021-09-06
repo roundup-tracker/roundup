@@ -137,10 +137,20 @@ before_script:
   #   needed for test_mysql.mysqlDBTest.testFilteringSpecialChars
   - sed -i 's/CREATE DATABASE \%s/CREATE DATABASE \%s COLLATE utf8_general_ci/' roundup/backends/back_mysql.py
 
+  # build the .mo translation files and install them into a tree
+  # (locale/locale under roundup directory root) 
+  # suitable for use by gettext.
+  - (cd locale; make local_install; ls -lR locale)
+
 script:
   - PATH=$VIRTUAL_ENV/bin:$PATH
   - export LD_LIBRARY_PATH=$VIRTUAL_ENV/lib:$LD_LIBRARY_PATH
-  - py.test -v --maxfail=20 test/ --cov=roundup
+  - py.test \
+    -W error \
+    -W "ignore::SelectableGroups" \
+    -W "ignore:the imp module:DeprecationWarning:gpg.gpgme:15" \
+    -W "ignore:'U' mode::docutils.io" \
+    -v --maxfail=20 test/ --cov=roundup
   
 
 after_success:
