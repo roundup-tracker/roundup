@@ -332,7 +332,9 @@ class FileStorage(object):
         # in multi-tracker (i.e. multi-umask) or modpython scenarios
         # the umask may have changed since last we set it.
         os.umask(self.umask)
-        open(name, 'wb').write(content)
+        fd = open(name, 'wb')
+        fd.write(content)
+        fd.close()
 
     def getfile(self, classname, nodeid, property):
         """Get the content of the file in the database.
