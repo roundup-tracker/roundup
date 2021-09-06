@@ -6,12 +6,13 @@ cache: pip
 
 python:
   - 2.7
-  - 3.4
-  - 3.6
-  - 3.7
-  - 3.8
   - 3.9-dev
+  - 3.8
+  - 3.7
+  - 3.6
+  - 3.4
   - nightly
+
 
 #I would like to build and test the maint-1.6 and trunk/default
 #but we need different environments for these:
