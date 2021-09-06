@@ -102,7 +102,7 @@ before_install:
   - GPGME_VERSION=1.11.1
   - cd /tmp
   - curl -s -O https://www.gnupg.org/ftp/gcrypt/gpgme/gpgme-$GPGME_VERSION.tar.bz2
-  - tar -jxvf gpgme-$GPGME_VERSION.tar.bz2
+  - tar -jxf gpgme-$GPGME_VERSION.tar.bz2
   - cd gpgme-$GPGME_VERSION
   - ./configure --prefix=$VIRTUAL_ENV
   - make && make install
