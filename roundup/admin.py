@@ -1367,7 +1367,6 @@ Erase it? Y/N: """))
         if max_len > self.db.config.CSV_FIELD_SIZE:
             print("Warning: config csv_field_size should be at least %s" %
                   max_len, file=sys.stderr)
-            jf.close()
         return 0
 
     def do_exporttables(self, args):

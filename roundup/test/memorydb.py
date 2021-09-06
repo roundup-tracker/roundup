@@ -63,8 +63,9 @@ def create(journaltag, create=True, debug=False, prefix=default_prefix):
     for fn in os.listdir(dirname):
         if not fn.endswith('.py'): continue
         vars = {}
-        exec(compile(open(os.path.join(dirname, fn)).read(),
-                     os.path.join(dirname, fn), 'exec'), vars)
+        with open(os.path.join(dirname, fn)) as fd:
+            exec(compile(fd.read(),
+                         os.path.join(dirname, fn), 'exec'), vars)
         vars['init'](db)
 
     tx_Source_init(db)

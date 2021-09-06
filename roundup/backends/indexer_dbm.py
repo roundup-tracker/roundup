@@ -51,7 +51,9 @@ class Indexer(IndexerBase):
             # for now the file itself is a flag
             self.force_reindex()
         elif os.path.exists(version):
-            version = open(version).read()
+            fd = open(version)
+            version = fd.read()
+            fd.close()
             # check the value and reindex if it's not the latest
             if version.strip() != '1':
                 self.force_reindex()
@@ -63,7 +65,9 @@ class Indexer(IndexerBase):
             shutil.rmtree(self.indexdb_path)
         os.makedirs(self.indexdb_path)
         os.chmod(self.indexdb_path, 0o775)  # nosec - allow group write
-        open(os.path.join(self.indexdb_path, 'version'), 'w').write('1\n')
+        fd = open(os.path.join(self.indexdb_path, 'version'), 'w')
+        fd.write('1\n')
+        fd.close()
         self.reindex = 1
         self.changed = 1
 
@@ -260,6 +264,7 @@ class Indexer(IndexerBase):
             filename = self.indexdb + initchar
             pickle_fh = open(filename, 'wb')
             pickle_fh.write(zlib.compress(pickle_str))
+            pickle_fh.close()
             os.chmod(filename, 0o664)
 
         # save done

@@ -5,13 +5,13 @@ language: python
 cache: pip
 
 python:
-  - 2.7
+#  - 2.7
   - 3.9-dev
-  - 3.8
-  - 3.7
-  - 3.6
-  - 3.4
-  - nightly
+#  - 3.8
+#  - 3.7
+#  - 3.6
+#  - 3.4
+#  - nightly
 
 
 #I would like to build and test the maint-1.6 and trunk/default
@@ -153,7 +153,7 @@ script:
     -W "ignore:'U' mode::docutils.io" 
     -W "ignore:unclosed:ResourceWarning:roundup.roundup.demo" 
     -W "ignore:unclosed file:ResourceWarning:enum" 
-    -v --maxfail=20 test/ --cov=roundup
+    -v --maxfail=50 test/ --cov=roundup
   
 after_success:
   - codecov
