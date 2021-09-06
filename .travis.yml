@@ -146,15 +146,19 @@ before_script:
 script:
   - PATH=$VIRTUAL_ENV/bin:$PATH
   - export LD_LIBRARY_PATH=$VIRTUAL_ENV/lib:$LD_LIBRARY_PATH
-  - [[ $TRAVIS_PYTHON_VERSION != "2."* ]] && py.test 
-    -W default
-    -W "ignore:SelectableGroups:DeprecationWarning" 
-    -W "ignore:the imp module:DeprecationWarning:gpg.gpgme:15" 
-    -W "ignore:'U' mode::docutils.io" 
-    -W "ignore:unclosed:ResourceWarning:roundup.roundup.demo" 
-    -W "ignore:unclosed file:ResourceWarning:enum" 
-    -v --maxfail=20 test/ --cov=roundup
-  - py.test -v --maxfail=20 test/ --cov=roundup
+  - if [[ "$TRAVIS_PYTHON_VERSION" != "2."* ]]; then
+    py.test 
+      -W default
+      -W "ignore:SelectableGroups:DeprecationWarning" 
+      -W "ignore:the imp module:DeprecationWarning:gpg.gpgme:15" 
+      -W "ignore:'U' mode::docutils.io" 
+      -W "ignore:unclosed:ResourceWarning:roundup.roundup.demo" 
+      -W "ignore:unclosed file:ResourceWarning:enum" 
+      -v --maxfail=20 test/ --cov=roundup;
+    fi
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2."* ]]; then
+      py.test -v --maxfail=20 test/ --cov=roundup;
+    fi
 
 after_success:
   - codecov
