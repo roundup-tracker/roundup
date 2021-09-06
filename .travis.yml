@@ -154,8 +154,7 @@ script:
     -W "ignore:unclosed:ResourceWarning:roundup.roundup.demo" 
     -W "ignore:unclosed file:ResourceWarning:enum" 
     -v --maxfail=20 test/ --cov=roundup
-  - [[ $TRAVIS_PYTHON_VERSION == "2."*  ]] && py.test 
-    -v --maxfail=20 test/ --cov=roundup
+  - [[ $TRAVIS_PYTHON_VERSION == "2."*  ]] && py.test -v --maxfail=20 test/ --cov=roundup
 
 after_success:
   - codecov
