@@ -15,6 +15,10 @@ onwards Python 3.4 and later are also supported.
 
 Fixed:
 
+- issue2551161 - Fix ResourceWarnings when running with -W default.
+  Cleaned up leaking file descriptors from zopetal pre-compile, python
+  module compile and loading localization file. (John Rouillard) 
+
 Features:
 
 - issue2551147 - Enable compression of http responses in roundup.

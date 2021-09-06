@@ -194,6 +194,7 @@ def get_translation(language=None, tracker_home=None,
                 # note: current implementation of gettext_module
                 #   always adds fallback to the end of the fallback chain.
                 translator.add_fallback(translation_class(mo))
+            mo.close()
         except IOError:
             # ignore unreadable .mo files
             pass
