@@ -177,8 +177,8 @@
               <form method="post" tal:attributes="action request/base">
                 <fieldset>
                   <legend><i class='icon-user'></i>Login form</legend>
-                  <input name="__login_name" type='text' placeholder='Username' i18n:attributes="placeholder">
-                  <input type="password" name="__login_password" placeholder='Password' i18n:attributes="placeholder">
+                  <input name="__login_name" type='text' placeholder='Username' i18n:attributes="placeholder" required>
+                  <input type="password" name="__login_password" placeholder='Password' i18n:attributes="placeholder" required>
 		  <input name="@csrf" type="hidden"
 			 tal:attributes="value python:utils.anti_csrf_nonce()">
                   <input type="hidden" name="@action" value="Login"/>

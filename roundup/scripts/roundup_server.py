@@ -109,7 +109,7 @@ def auto_ssl():
     print(_('WARNING: generating temporary SSL certificate'))
     import OpenSSL, random
     pkey = OpenSSL.crypto.PKey()
-    pkey.generate_key(OpenSSL.crypto.TYPE_RSA, 768)
+    pkey.generate_key(OpenSSL.crypto.TYPE_RSA, 2048)
     cert = OpenSSL.crypto.X509()
     cert.set_serial_number(random.randint(0, sys.maxsize))
     cert.gmtime_adj_notBefore(0)
@@ -119,8 +119,8 @@ def auto_ssl():
     cert.get_issuer().CN = 'Roundup Dummy Certificate Authority'
     cert.get_issuer().O = 'Self-Signed'
     cert.set_pubkey(pkey)
-    cert.sign(pkey, 'md5')
-    ctx = SSL.Context(SSL.SSLv23_METHOD)
+    cert.sign(pkey, 'sha512')
+    ctx = SSL.Context(OpenSSL.SSL.TLSv1_1_METHOD)
     ctx.use_privatekey(pkey)
     ctx.use_certificate(cert)
 
@@ -133,7 +133,7 @@ class SecureHTTPServer(http_.server.HTTPServer):
         http_.server.HTTPServer.__init__(self, server_address, HandlerClass)
         self.socket = socket.socket(self.address_family, self.socket_type)
         if ssl_pem:
-            ctx = SSL.Context(SSL.SSLv23_METHOD)
+            ctx = SSL.Context(SSL.TLSv1_1_METHOD)
             ctx.use_privatekey_file(ssl_pem)
             ctx.use_certificate_file(ssl_pem)
         else:
@@ -406,6 +406,12 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
         if co:
             env['HTTP_COOKIE'] = ', '.join(co)
         env['HTTP_AUTHORIZATION'] = self.headers.get('authorization')
+        # self.CONFIG['INCLUDE_HEADERS'] is a list.
+        for h in self.CONFIG['INCLUDE_HEADERS']:
+            env[h] = self.headers.get(h, None)
+            # if header is MISSING
+            if env[h] is None:
+                del(env[h])
         env['SCRIPT_NAME'] = ''
         env['SERVER_NAME'] = self.server.server_name
         env['SERVER_PORT'] = str(self.server.server_port)
@@ -626,6 +632,12 @@ class ServerConfig(configuration.Config):
             (configuration.NullableFilePathOption, "pem", "",
                 "PEM file used for SSL. A temporary self-signed certificate\n"
                 "will be used if left blank."),
+            (configuration.WordListOption, "include_headers", "",
+                "Comma separated list of extra headers that should\n"
+                "be copied into the CGI environment.\n"
+                "E.G. if you want to acces the REMOTE_USER and\n"
+                "X-Proxy-User headers in the back end,\n"
+                "set to the value REMOTE_USER,X-Proxy-User."),
         )),
         ("trackers", (), "Roundup trackers to serve.\n"
             "Each option in this section defines single Roundup tracker.\n"
@@ -650,6 +662,7 @@ class ServerConfig(configuration.Config):
         "loghttpvialogger": 'L',
         "ssl": "s",
         "pem": "e:",
+        "include_headers": "I:",
     }
 
     def __init__(self, config_file=None):
@@ -864,6 +877,7 @@ Options:
                connections, defaults to localhost, use 0.0.0.0 to bind
                to all network interfaces
  -p <port>     set the port to listen on (default: %(port)s)
+ -I <header1[,header2]*> list of headers to pass to the backend
  -l <fname>    log to the file indicated by fname instead of stderr/stdout
  -N            log client machine names instead of IP addresses (much slower)
  -i <fname>    set tracker index template

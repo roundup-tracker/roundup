@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roundup 0.7.0\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2020-12-20 22:53-0500\n"
+"POT-Creation-Date: 2021-07-12 22:10-0400\n"
 "PO-Revision-Date: 2004-11-20 13:47+0200\n"
 "Language-Team: English\n"
 "Language: \n"
@@ -211,9 +211,9 @@ msgstr ""
 #: ../roundup/admin.py:674 ../roundup/admin.py:732 ../roundup/admin.py:816
 #: ../roundup/admin.py:875 ../roundup/admin.py:902 ../roundup/admin.py:929
 #: ../roundup/admin.py:1004 ../roundup/admin.py:1071 ../roundup/admin.py:1157
-#: ../roundup/admin.py:1218 ../roundup/admin.py:1245 ../roundup/admin.py:1277
-#: ../roundup/admin.py:1393 ../roundup/admin.py:1480
-#: ../roundup/admin.py:378:510 :1071 :1157:1218 :1245:1277 :1393:1480 :583:674
+#: ../roundup/admin.py:1218 ../roundup/admin.py:1245 ../roundup/admin.py:1281
+#: ../roundup/admin.py:1412 ../roundup/admin.py:1499
+#: ../roundup/admin.py:378:510 :1071 :1157:1218 :1245:1281 :1412:1499 :583:674
 #: :732:816 :875:902 :929:1004
 msgid "Not enough arguments supplied"
 msgstr ""
@@ -619,12 +619,12 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1257
+#: ../roundup/admin.py:1261
 msgid "no such %(classname)s node \" % (nodeid)s\""
 msgstr ""
 
 #. grab the directory to export to
-#: ../roundup/admin.py:1263
+#: ../roundup/admin.py:1267
 msgid ""
 "Usage: export [[-]class[,class]] export_dir\n"
 "        Export the database to colon-separated-value files.\n"
@@ -640,7 +640,7 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1358
+#: ../roundup/admin.py:1377
 msgid ""
 "Usage: exporttables [[-]class[,class]] export_dir\n"
 "        Export the database to colon-separated-value files, excluding the\n"
@@ -657,7 +657,7 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1373
+#: ../roundup/admin.py:1392
 msgid ""
 "Usage: import import_dir\n"
 "        Import a database from the directory containing CSV files,\n"
@@ -680,7 +680,7 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1455
+#: ../roundup/admin.py:1474
 msgid ""
 "Usage: importtables export_dir\n"
 "\n"
@@ -688,7 +688,7 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1462
+#: ../roundup/admin.py:1481
 msgid ""
 "Usage: pack period | date\n"
 "\n"
@@ -710,11 +710,11 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1490
+#: ../roundup/admin.py:1509
 msgid "Invalid format"
 msgstr ""
 
-#: ../roundup/admin.py:1501
+#: ../roundup/admin.py:1520
 msgid ""
 "Usage: reindex [classname|designator]*\n"
 "        Re-generate a tracker's search indexes.\n"
@@ -724,12 +724,12 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1515
+#: ../roundup/admin.py:1534
 #, python-format
 msgid "no such item \"%(designator)s\""
 msgstr ""
 
-#: ../roundup/admin.py:1525
+#: ../roundup/admin.py:1544
 msgid ""
 "Usage: security [Role name]\n"
 "\n"
@@ -737,46 +737,46 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1534
+#: ../roundup/admin.py:1553
 #, python-format
 msgid "No such Role \"%(role)s\"\n"
 msgstr ""
 
-#: ../roundup/admin.py:1540
+#: ../roundup/admin.py:1559
 #, python-format
 msgid "New Web users get the Roles \"%(role)s\"\n"
 msgstr ""
 
-#: ../roundup/admin.py:1543
+#: ../roundup/admin.py:1562
 #, python-format
 msgid "New Web users get the Role \"%(role)s\"\n"
 msgstr ""
 
-#: ../roundup/admin.py:1547
+#: ../roundup/admin.py:1566
 #, python-format
 msgid "New Email users get the Roles \"%(role)s\"\n"
 msgstr ""
 
-#: ../roundup/admin.py:1549
+#: ../roundup/admin.py:1568
 #, python-format
 msgid "New Email users get the Role \"%(role)s\"\n"
 msgstr ""
 
-#: ../roundup/admin.py:1552
+#: ../roundup/admin.py:1571
 #, python-format
 msgid "Role \"%(name)s\":\n"
 msgstr ""
 
-#: ../roundup/admin.py:1557
+#: ../roundup/admin.py:1576
 msgid " %(description)s (%(name)s for \"%(klass)s\""
 msgstr ""
 
-#: ../roundup/admin.py:1557
+#: ../roundup/admin.py:1576
 #, python-format
 msgid " %(description)s (%(name)s for \"%(klass)s\": %(properties)s only)\n"
 msgstr ""
 
-#: ../roundup/admin.py:1569
+#: ../roundup/admin.py:1588
 #, python-format
 msgid ""
 "\n"
@@ -784,17 +784,17 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../roundup/admin.py:1571
+#: ../roundup/admin.py:1591
 #, python-format
 msgid " %(description)s (%(name)s for \"%(klass)s\" only)\n"
 msgstr ""
 
-#: ../roundup/admin.py:1574
+#: ../roundup/admin.py:1594
 #, python-format
 msgid " %(description)s (%(name)s)\n"
 msgstr ""
 
-#: ../roundup/admin.py:1578
+#: ../roundup/admin.py:1598
 msgid ""
 "Usage: migrate\n"
 "\n"
@@ -818,142 +818,142 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1599
+#: ../roundup/admin.py:1619
 msgid "Tracker updated"
 msgstr ""
 
-#: ../roundup/admin.py:1602
+#: ../roundup/admin.py:1622
 msgid "No migration action required"
 msgstr ""
 
-#: ../roundup/admin.py:1628
+#: ../roundup/admin.py:1648
 #, python-format
 msgid "Unknown command \"%(command)s\" (\"help commands\" for a list)"
 msgstr ""
 
-#: ../roundup/admin.py:1634
+#: ../roundup/admin.py:1654
 #, python-format
 msgid "Multiple commands match \"%(command)s\": %(list)s"
 msgstr ""
 
-#: ../roundup/admin.py:1643
+#: ../roundup/admin.py:1663
 msgid "Enter tracker home: "
 msgstr ""
 
-#: ../roundup/admin.py:1652 ../roundup/admin.py:1658 ../roundup/admin.py:1684
-#: ../roundup/admin.py:1652:1658:1684
+#: ../roundup/admin.py:1672 ../roundup/admin.py:1678 ../roundup/admin.py:1704
+#: ../roundup/admin.py:1672:1678:1704
 #, python-format
 msgid "Error: %(message)s"
 msgstr ""
 
-#: ../roundup/admin.py:1666 ../roundup/admin.py:1670
-#: ../roundup/admin.py:1666:1670
+#: ../roundup/admin.py:1686 ../roundup/admin.py:1690
+#: ../roundup/admin.py:1686:1690
 #, python-format
 msgid "Error: Couldn't open tracker: %(message)s"
 msgstr ""
 
-#: ../roundup/admin.py:1697
+#: ../roundup/admin.py:1717
 #, python-format
 msgid ""
 "Roundup %s ready for input.\n"
 "Type \"help\" for help."
 msgstr ""
 
-#: ../roundup/admin.py:1702
+#: ../roundup/admin.py:1722
 msgid "Note: command history and editing not available"
 msgstr ""
 
-#: ../roundup/admin.py:1706
+#: ../roundup/admin.py:1726
 msgid "roundup> "
 msgstr ""
 
-#: ../roundup/admin.py:1708
+#: ../roundup/admin.py:1728
 msgid "exit..."
 msgstr ""
 
-#: ../roundup/admin.py:1721
+#: ../roundup/admin.py:1741
 msgid "There are unsaved changes. Commit them (y/N)? "
 msgstr ""
 
-#: ../roundup/backends/back_anydbm.py:253
-#: ../roundup/backends/rdbms_common.py:850
+#: ../roundup/backends/back_anydbm.py:173
+#: ../roundup/backends/rdbms_common.py:877
 #, python-format
 msgid "Class \"%s\" already defined."
 msgstr ""
 
-#: ../roundup/backends/back_anydbm.py:314
+#: ../roundup/backends/back_anydbm.py:234
 #: ../roundup/backends/sessions_dbm.py:55
 msgid "Couldn't identify database type"
 msgstr ""
 
-#: ../roundup/backends/back_anydbm.py:348
+#: ../roundup/backends/back_anydbm.py:268
 #, python-format
 msgid ""
 "Couldn't open database - the required module '%s' (as dbm.gnu) is not "
 "available"
 msgstr ""
 
-#: ../roundup/backends/back_anydbm.py:351
+#: ../roundup/backends/back_anydbm.py:271
 #, python-format
 msgid "Couldn't open database - the required module '%s' is not available"
 msgstr ""
 
-#: ../roundup/backends/back_anydbm.py:907
-#: ../roundup/backends/back_anydbm.py:920
-#: ../roundup/backends/back_anydbm.py:1191
-#: ../roundup/backends/back_anydbm.py:1226
-#: ../roundup/backends/back_anydbm.py:1452
-#: ../roundup/backends/back_anydbm.py:1470
-#: ../roundup/backends/back_anydbm.py:1516
-#: ../roundup/backends/back_anydbm.py:2138
-#: ../roundup/backends/back_anydbm.py:907:920
-#: ../roundup/backends/rdbms_common.py:1600
-#: ../roundup/backends/rdbms_common.py:1847
-#: ../roundup/backends/rdbms_common.py:2082
-#: ../roundup/backends/rdbms_common.py:2102
-#: ../roundup/backends/rdbms_common.py:2155
-#: ../roundup/backends/rdbms_common.py:3025
-#: ../roundup/backends/rdbms_common.py:1600:1847 :1191:1226 :1452:1470:1516
-#: :2082:2102:2138 :2155:3025
+#: ../roundup/backends/back_anydbm.py:827
+#: ../roundup/backends/back_anydbm.py:840
+#: ../roundup/backends/back_anydbm.py:1113
+#: ../roundup/backends/back_anydbm.py:1148
+#: ../roundup/backends/back_anydbm.py:1374
+#: ../roundup/backends/back_anydbm.py:1392
+#: ../roundup/backends/back_anydbm.py:1438
+#: ../roundup/backends/back_anydbm.py:2063
+#: ../roundup/backends/back_anydbm.py:827:840
+#: ../roundup/backends/rdbms_common.py:1646
+#: ../roundup/backends/rdbms_common.py:1893
+#: ../roundup/backends/rdbms_common.py:2128
+#: ../roundup/backends/rdbms_common.py:2148
+#: ../roundup/backends/rdbms_common.py:2201
+#: ../roundup/backends/rdbms_common.py:3147
+#: ../roundup/backends/rdbms_common.py:1646:1893 :1113:1148 :1374:1392:1438
+#: :2063 :2128:2148 :2201:3147
 msgid "Database open read-only"
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:553
+#: ../roundup/backends/rdbms_common.py:580
 #, python-format
 msgid "ALTER operation disallowed: %(old)r -> %(new)r."
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:789
+#: ../roundup/backends/rdbms_common.py:816
 #, python-format
 msgid "CREATE operation disallowed: \"%s\"."
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:806
+#: ../roundup/backends/rdbms_common.py:833
 #, python-format
 msgid "DROP operation disallowed: \"%s\"."
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:1743
+#: ../roundup/backends/rdbms_common.py:1789
 msgid "create"
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:1917
+#: ../roundup/backends/rdbms_common.py:1963
 msgid "unlink"
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:1921
+#: ../roundup/backends/rdbms_common.py:1967
 msgid "link"
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:2063
+#: ../roundup/backends/rdbms_common.py:2109
 msgid "set"
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:2092
+#: ../roundup/backends/rdbms_common.py:2138
 msgid "retired"
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:2122
+#: ../roundup/backends/rdbms_common.py:2168
 msgid "restored"
 msgstr ""
 
@@ -1021,15 +1021,15 @@ msgid "\"%(input)s\" is not an ID (%(classname)s ID required)"
 msgstr ""
 
 #: ../roundup/cgi/actions.py:230 ../roundup/cgi/actions.py:268
-#: ../roundup/cgi/actions.py:494 ../roundup/cgi/actions.py:829
-#: ../roundup/cgi/actions.py:876 ../roundup/cgi/actions.py:1081
-#: ../roundup/cgi/actions.py:1238 ../roundup/cgi/actions.py:230:268:1238
-#: :494:829 :876:1081
+#: ../roundup/cgi/actions.py:494 ../roundup/cgi/actions.py:833
+#: ../roundup/cgi/actions.py:880 ../roundup/cgi/actions.py:1085
+#: ../roundup/cgi/actions.py:1242 ../roundup/cgi/actions.py:230:268:1242
+#: :494:833 :880:1085
 msgid "Invalid request"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:248 ../roundup/cgi/actions.py:600
-#: ../roundup/cgi/actions.py:248:600
+#: ../roundup/cgi/actions.py:248 ../roundup/cgi/actions.py:604
+#: ../roundup/cgi/actions.py:248:604
 #, python-format
 msgid "You do not have permission to retire %(class)s"
 msgstr ""
@@ -1072,132 +1072,132 @@ msgstr ""
 msgid "Invalid integer: "
 msgstr ""
 
-#: ../roundup/cgi/actions.py:528 ../roundup/cgi/actions.py:731
-#: ../roundup/cgi/actions.py:528:731
+#: ../roundup/cgi/actions.py:532 ../roundup/cgi/actions.py:735
+#: ../roundup/cgi/actions.py:532:735
 #, python-format
 msgid "You do not have permission to create %(class)s"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:541
+#: ../roundup/cgi/actions.py:545
 #, python-format
 msgid "Not enough values on line %(line)s"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:552 ../roundup/cgi/actions.py:719
-#: ../roundup/cgi/actions.py:552:719
+#: ../roundup/cgi/actions.py:556 ../roundup/cgi/actions.py:723
+#: ../roundup/cgi/actions.py:556:723
 #, python-format
 msgid "You do not have permission to edit %(class)s"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:607
+#: ../roundup/cgi/actions.py:611
 msgid "Items edited OK"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:667
+#: ../roundup/cgi/actions.py:671
 #, python-format
 msgid "%(class)s %(id)s %(properties)s edited ok"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:685
+#: ../roundup/cgi/actions.py:689
 #, python-format
 msgid "%(class)s %(id)s created"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:813
+#: ../roundup/cgi/actions.py:817
 #, python-format
 msgid ""
 "Edit Error: someone else has edited this %(klass)s (%(props)s). View <a "
 "target=\"_blank\" href=\"%(klass)s%(id)s\">their changes</a> in a new window."
 msgstr ""
 
-#: ../roundup/cgi/actions.py:846
+#: ../roundup/cgi/actions.py:850
 #, python-format
 msgid "Edit Error: %s"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:882 ../roundup/cgi/actions.py:893
-#: ../roundup/cgi/actions.py:1096 ../roundup/cgi/actions.py:1109
-#: ../roundup/cgi/actions.py:882:893 :1096:1109
+#: ../roundup/cgi/actions.py:886 ../roundup/cgi/actions.py:897
+#: ../roundup/cgi/actions.py:1100 ../roundup/cgi/actions.py:1113
+#: ../roundup/cgi/actions.py:886:897 :1100:1113
 #, python-format
 msgid "Error: %s"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:927
+#: ../roundup/cgi/actions.py:931
 msgid ""
 "Invalid One Time Key!\n"
 "(a Mozilla bug may cause this message to show up erroneously, please check "
 "your email)"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:978
+#: ../roundup/cgi/actions.py:982
 #, python-format
 msgid "Password reset and email sent to %s"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:987
+#: ../roundup/cgi/actions.py:991
 msgid "Unknown username"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:995
+#: ../roundup/cgi/actions.py:999
 msgid "Unknown email address"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1000
+#: ../roundup/cgi/actions.py:1004
 msgid "You need to specify a username or address"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1026
+#: ../roundup/cgi/actions.py:1030
 #, python-format
 msgid "Email sent to primary notification address for %s."
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1028
+#: ../roundup/cgi/actions.py:1032
 #, python-format
 msgid "Email sent to %s."
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1043
+#: ../roundup/cgi/actions.py:1047
 msgid "You are now registered, welcome!"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1133
+#: ../roundup/cgi/actions.py:1137
 #, python-format
 msgid "Username '%s' is already used."
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1198
+#: ../roundup/cgi/actions.py:1202
 msgid "It is not permitted to supply roles at registration."
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1212
+#: ../roundup/cgi/actions.py:1216
 msgid "You are logged out"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1242
+#: ../roundup/cgi/actions.py:1246
 msgid "Username required"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1321
+#: ../roundup/cgi/actions.py:1325
 #, python-format
 msgid "Logins occurring too fast. Please wait: %s seconds."
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1360 ../roundup/cgi/actions.py:1364
-#: ../roundup/cgi/actions.py:1360:1364
+#: ../roundup/cgi/actions.py:1369 ../roundup/cgi/actions.py:1373
+#: ../roundup/cgi/actions.py:1369:1373
 msgid "Invalid login"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1370
+#: ../roundup/cgi/actions.py:1379
 msgid "You do not have permission to login"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1413 ../roundup/cgi/actions.py:1578
-#: ../roundup/cgi/actions.py:1413:1578
+#: ../roundup/cgi/actions.py:1422 ../roundup/cgi/actions.py:1587
+#: ../roundup/cgi/actions.py:1422:1587
 #, python-format
 msgid "Column \"%(column)s\" not found in %(class)s"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1634
+#: ../roundup/cgi/actions.py:1643
 #, python-format
 msgid "You do not have permission to view %(class)s"
 msgstr ""
@@ -1290,145 +1290,145 @@ msgstr ""
 msgid "Unrecognized charset: %r"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1140
+#: ../roundup/cgi/client.py:1141
 msgid "Anonymous users are not allowed to use the web interface"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1213
+#: ../roundup/cgi/client.py:1214
 msgid "Referer header not available."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1217
+#: ../roundup/cgi/client.py:1218
 #, python-format
 msgid "csrf key used with wrong method from: %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1245
+#: ../roundup/cgi/client.py:1246
 #, python-format
 msgid "csrf header %s required but missing for user%s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1246
+#: ../roundup/cgi/client.py:1247
 #, python-format
 msgid "Missing header: %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1256 ../roundup/cgi/client.py:1259
-#: ../roundup/cgi/client.py:1256:1259
+#: ../roundup/cgi/client.py:1257 ../roundup/cgi/client.py:1260
+#: ../roundup/cgi/client.py:1257:1260
 #, python-format
 msgid "csrf Referer header check failed for user%s. Value=%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1257
+#: ../roundup/cgi/client.py:1258
 #, python-format
 msgid "Invalid Referer %s, %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1272 ../roundup/cgi/client.py:1275
-#: ../roundup/cgi/client.py:1272:1275
+#: ../roundup/cgi/client.py:1273 ../roundup/cgi/client.py:1276
+#: ../roundup/cgi/client.py:1273:1276
 #, python-format
 msgid "csrf Origin header check failed for user%s. Value=%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1273
+#: ../roundup/cgi/client.py:1274
 #, python-format
 msgid "Invalid Origin %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1287 ../roundup/cgi/client.py:1290
-#: ../roundup/cgi/client.py:1287:1290
+#: ../roundup/cgi/client.py:1288 ../roundup/cgi/client.py:1291
+#: ../roundup/cgi/client.py:1288:1291
 #, python-format
 msgid "csrf X-FORWARDED-HOST header check failed for user%s. Value=%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1288
+#: ../roundup/cgi/client.py:1289
 #, python-format
 msgid "Invalid X-FORWARDED-HOST %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1307 ../roundup/cgi/client.py:1310
-#: ../roundup/cgi/client.py:1307:1310
+#: ../roundup/cgi/client.py:1308 ../roundup/cgi/client.py:1311
+#: ../roundup/cgi/client.py:1308:1311
 #, python-format
 msgid "csrf HOST header check failed for user%s. Value=%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1308
+#: ../roundup/cgi/client.py:1309
 #, python-format
 msgid "Invalid HOST %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1316
+#: ../roundup/cgi/client.py:1317
 msgid "Csrf: unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1317
+#: ../roundup/cgi/client.py:1318
 msgid "Unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1330
+#: ../roundup/cgi/client.py:1331
 #, python-format
 msgid "csrf X-REQUESTED-WITH xmlrpc required header check failed for user%s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1331
+#: ../roundup/cgi/client.py:1332
 msgid "Required Header Missing"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1368
+#: ../roundup/cgi/client.py:1369
 #, python-format
 msgid "Required csrf field missing for user%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1369 ../roundup/cgi/client.py:1421
-#: ../roundup/cgi/client.py:1431 ../roundup/cgi/client.py:1369:1421:1431
+#: ../roundup/cgi/client.py:1370 ../roundup/cgi/client.py:1422
+#: ../roundup/cgi/client.py:1432 ../roundup/cgi/client.py:1370:1422:1432
 msgid ""
 "We can't validate your session (csrf failure). Re-enter any unsaved data and "
 "try again."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1372
+#: ../roundup/cgi/client.py:1373
 #, python-format
 msgid "csrf field not supplied by user%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1419
+#: ../roundup/cgi/client.py:1420
 #, python-format
 msgid ""
 "Csrf mismatch user: current user %s != stored user %s, current session, "
 "stored session: %s,%s for key %s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1424
+#: ../roundup/cgi/client.py:1425
 #, python-format
 msgid ""
 "logged only: Csrf mismatch user: current user %s != stored user %s, current "
 "session, stored session: %s,%s for key %s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1429
+#: ../roundup/cgi/client.py:1430
 #, python-format
 msgid ""
 "Csrf mismatch user: current session %s != stored session %s, current user/"
 "stored user is: %s for key %s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1434
+#: ../roundup/cgi/client.py:1435
 #, python-format
 msgid ""
 "logged only: Csrf mismatch user: current session %s != stored session %s, "
 "current user/stored user is: %s for key %s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1606
+#: ../roundup/cgi/client.py:1607
 msgid "You are not allowed to view this file."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1884
+#: ../roundup/cgi/client.py:1886
 #, python-format
 msgid "%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1888
+#: ../roundup/cgi/client.py:1890
 #, python-format
 msgid ""
 "%(starttag)sCache hits: %(cache_hits)d, misses %(cache_misses)d. Loading "
@@ -1491,125 +1491,125 @@ msgstr[1] ""
 msgid "You are not allowed to %(action)s items of class %(class)s"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:869
+#: ../roundup/cgi/templating.py:868
 msgid "(list)"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:942
+#: ../roundup/cgi/templating.py:941
 msgid "Submit New Entry"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:964 ../roundup/cgi/templating.py:1132
-#: ../roundup/cgi/templating.py:1715 ../roundup/cgi/templating.py:1744
-#: ../roundup/cgi/templating.py:1764 ../roundup/cgi/templating.py:1777
-#: ../roundup/cgi/templating.py:1814 ../roundup/cgi/templating.py:1867
-#: ../roundup/cgi/templating.py:1890 ../roundup/cgi/templating.py:1897
-#: ../roundup/cgi/templating.py:1933 ../roundup/cgi/templating.py:1970
-#: ../roundup/cgi/templating.py:2003 ../roundup/cgi/templating.py:2092
-#: ../roundup/cgi/templating.py:2113 ../roundup/cgi/templating.py:2203
-#: ../roundup/cgi/templating.py:2223 ../roundup/cgi/templating.py:2241
-#: ../roundup/cgi/templating.py:2280 ../roundup/cgi/templating.py:2290
-#: ../roundup/cgi/templating.py:2354 ../roundup/cgi/templating.py:2601
-#: ../roundup/cgi/templating.py:964:1132 :1715:1744 :1764:1777 :1814:1867
-#: :1890:1897 :1933:1970 :2003:2092 :2113:2203 :2223:2241 :2280:2290 :2354:2601
+#: ../roundup/cgi/templating.py:963 ../roundup/cgi/templating.py:1134
+#: ../roundup/cgi/templating.py:1747 ../roundup/cgi/templating.py:1776
+#: ../roundup/cgi/templating.py:1796 ../roundup/cgi/templating.py:1809
+#: ../roundup/cgi/templating.py:1846 ../roundup/cgi/templating.py:1899
+#: ../roundup/cgi/templating.py:1922 ../roundup/cgi/templating.py:1929
+#: ../roundup/cgi/templating.py:1965 ../roundup/cgi/templating.py:2002
+#: ../roundup/cgi/templating.py:2035 ../roundup/cgi/templating.py:2124
+#: ../roundup/cgi/templating.py:2145 ../roundup/cgi/templating.py:2235
+#: ../roundup/cgi/templating.py:2255 ../roundup/cgi/templating.py:2277
+#: ../roundup/cgi/templating.py:2316 ../roundup/cgi/templating.py:2326
+#: ../roundup/cgi/templating.py:2390 ../roundup/cgi/templating.py:2688
+#: ../roundup/cgi/templating.py:963:1134 :1747:1776 :1796:1809 :1846:1899
+#: :1922:1929 :1965:2002 :2035:2124 :2145:2235 :2255:2277 :2316:2326 :2390:2688
 msgid "[hidden]"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:965
+#: ../roundup/cgi/templating.py:964
 msgid "New node - no history"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1097
+#: ../roundup/cgi/templating.py:1099
 msgid "Submit Changes"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1169
+#: ../roundup/cgi/templating.py:1177
 msgid "<em>The indicated property no longer exists</em>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1170
+#: ../roundup/cgi/templating.py:1178
 #, python-format
 msgid "<em>%s: %s</em>\n"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1205
+#: ../roundup/cgi/templating.py:1213
 #, python-format
 msgid "The linked class %(classname)s no longer exists"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1243 ../roundup/cgi/templating.py:1269
-#: ../roundup/cgi/templating.py:1243:1269
+#: ../roundup/cgi/templating.py:1251 ../roundup/cgi/templating.py:1277
+#: ../roundup/cgi/templating.py:1251:1277
 msgid "<strike>The linked node no longer exists</strike>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1330
+#: ../roundup/cgi/templating.py:1338
 #, python-format
 msgid "%s: (no value)"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1346
+#: ../roundup/cgi/templating.py:1354
 #, python-format
 msgid ""
 "<strong><em>This event %s is not handled by the history display!</em></"
 "strong>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1359
+#: ../roundup/cgi/templating.py:1367
 msgid "<tr><td colspan=4><strong>Note:</strong></td></tr>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1368
+#: ../roundup/cgi/templating.py:1376
 msgid "History"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1370
+#: ../roundup/cgi/templating.py:1378
 msgid "<th>Date</th>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1371
+#: ../roundup/cgi/templating.py:1379
 msgid "<th>User</th>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1372
+#: ../roundup/cgi/templating.py:1380
 msgid "<th>Action</th>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1373
+#: ../roundup/cgi/templating.py:1381
 msgid "<th>Args</th>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1421
+#: ../roundup/cgi/templating.py:1432
 #, python-format
 msgid "Copy of %(class)s %(id)s"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:2007 ../roundup/cgi/templating.py:2040
-#: ../roundup/cgi/templating.py:1312:2007:2040
+#: ../roundup/cgi/templating.py:2039 ../roundup/cgi/templating.py:2072
+#: ../roundup/cgi/templating.py:1320:2039:2072
 msgid "No"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:2007 ../roundup/cgi/templating.py:2035
-#: ../roundup/cgi/templating.py:1312:2007:2035
+#: ../roundup/cgi/templating.py:2039 ../roundup/cgi/templating.py:2067
+#: ../roundup/cgi/templating.py:1320:2039:2067
 msgid "Yes"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:2161
+#: ../roundup/cgi/templating.py:2193
 msgid ""
 "default value for DateHTMLProperty must be either DateHTMLProperty or string "
 "date representation."
 msgstr ""
 
-#: ../roundup/cgi/templating.py:2334
+#: ../roundup/cgi/templating.py:2370
 #, python-format
 msgid "Attempt to look up %(attr)s on a missing value"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:2345
+#: ../roundup/cgi/templating.py:2381
 #, python-format
 msgid "Attempt to look up %(item)s on a missing value"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:2448
+#: ../roundup/cgi/templating.py:2484
 #, python-format
 msgid "<option %svalue=\"-1\">- no selection -</option>"
 msgstr ""
@@ -1627,181 +1627,185 @@ msgstr ""
 msgid "Responding to form too quickly."
 msgstr ""
 
-#: ../roundup/date.py:391
+#: ../roundup/configuration.py:1887
+msgid "Valid languages: "
+msgstr ""
+
+#: ../roundup/date.py:395
 #, python-format
 msgid ""
 "Not a date spec: %r (\"yyyy-mm-dd\", \"mm-dd\", \"HH:MM\", \"HH:MM:SS\" or "
 "\"yyyy-mm-dd.HH:MM:SS.SSS\")"
 msgstr ""
 
-#: ../roundup/date.py:414
+#: ../roundup/date.py:418
 msgid "Could not determine granularity"
 msgstr ""
 
-#: ../roundup/date.py:466
+#: ../roundup/date.py:470
 #, python-format
 msgid ""
 "%r not a date / time spec \"yyyy-mm-dd\", \"mm-dd\", \"HH:MM\", \"HH:MM:SS\" "
 "or \"yyyy-mm-dd.HH:MM:SS.SSS\""
 msgstr ""
 
-#: ../roundup/date.py:838
+#: ../roundup/date.py:842
 #, python-format
 msgid ""
 "Not an interval spec: \"%s\" ([+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS] [date "
 "spec])"
 msgstr ""
 
-#: ../roundup/date.py:861
+#: ../roundup/date.py:865
 #, python-format
 msgid "Not an interval spec: \"%s\" ([+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS])"
 msgstr ""
 
-#: ../roundup/date.py:1038
+#: ../roundup/date.py:1042
 #, python-format
 msgid "%(number)s year"
 msgid_plural "%(number)s years"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../roundup/date.py:1042
+#: ../roundup/date.py:1046
 #, python-format
 msgid "%(number)s month"
 msgid_plural "%(number)s months"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../roundup/date.py:1046
+#: ../roundup/date.py:1050
 #, python-format
 msgid "%(number)s week"
 msgid_plural "%(number)s weeks"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../roundup/date.py:1050
+#: ../roundup/date.py:1054
 #, python-format
 msgid "%(number)s day"
 msgid_plural "%(number)s days"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../roundup/date.py:1054
+#: ../roundup/date.py:1058
 msgid "tomorrow"
 msgstr ""
 
-#: ../roundup/date.py:1056
+#: ../roundup/date.py:1060
 msgid "yesterday"
 msgstr ""
 
-#: ../roundup/date.py:1059
+#: ../roundup/date.py:1063
 #, python-format
 msgid "%(number)s hour"
 msgid_plural "%(number)s hours"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../roundup/date.py:1063
+#: ../roundup/date.py:1067
 msgid "an hour"
 msgstr ""
 
-#: ../roundup/date.py:1065
+#: ../roundup/date.py:1069
 msgid "1 1/2 hours"
 msgstr ""
 
-#: ../roundup/date.py:1067
+#: ../roundup/date.py:1071
 #, python-format
 msgid "1 %(number)s/4 hours"
 msgid_plural "1 %(number)s/4 hours"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../roundup/date.py:1072
+#: ../roundup/date.py:1076
 msgid "in a moment"
 msgstr ""
 
-#: ../roundup/date.py:1074
+#: ../roundup/date.py:1078
 msgid "just now"
 msgstr ""
 
-#: ../roundup/date.py:1077
+#: ../roundup/date.py:1081
 msgid "1 minute"
 msgstr ""
 
-#: ../roundup/date.py:1080
+#: ../roundup/date.py:1084
 #, python-format
 msgid "%(number)s minute"
 msgid_plural "%(number)s minutes"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../roundup/date.py:1083
+#: ../roundup/date.py:1087
 msgid "1/2 an hour"
 msgstr ""
 
-#: ../roundup/date.py:1085
+#: ../roundup/date.py:1089
 #, python-format
 msgid "%(number)s/4 hour"
 msgid_plural "%(number)s/4 hours"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../roundup/date.py:1089
+#: ../roundup/date.py:1093
 #, python-format
 msgid "%s ago"
 msgstr ""
 
-#: ../roundup/date.py:1091
+#: ../roundup/date.py:1095
 #, python-format
 msgid "in %s"
 msgstr ""
 
-#: ../roundup/hyperdb.py:114
+#: ../roundup/hyperdb.py:115
 #, python-format
 msgid "property %s: %s"
 msgstr ""
 
-#: ../roundup/hyperdb.py:141
+#: ../roundup/hyperdb.py:142
 #, python-format
 msgid "property %s: %r is an invalid date (%s)"
 msgstr ""
 
-#: ../roundup/hyperdb.py:162
+#: ../roundup/hyperdb.py:163
 #, python-format
 msgid "property %s: %r is an invalid date interval (%s)"
 msgstr ""
 
-#: ../roundup/hyperdb.py:416
+#: ../roundup/hyperdb.py:417
 #, python-format
 msgid "property %s: %r is not a number"
 msgstr ""
 
-#: ../roundup/hyperdb.py:428
+#: ../roundup/hyperdb.py:429
 #, python-format
 msgid "property %s: %r is not an integer"
 msgstr ""
 
-#: ../roundup/hyperdb.py:446
+#: ../roundup/hyperdb.py:447
 #, python-format
 msgid "\"%s\" not a node designator"
 msgstr ""
 
-#: ../roundup/hyperdb.py:1397 ../roundup/hyperdb.py:1405
-#: ../roundup/hyperdb.py:1397:1405
+#: ../roundup/hyperdb.py:1472 ../roundup/hyperdb.py:1480
+#: ../roundup/hyperdb.py:1472:1480
 #, python-format
 msgid "Not a property name: %s"
 msgstr ""
 
-#: ../roundup/hyperdb.py:1846
+#: ../roundup/hyperdb.py:1939
 #, python-format
 msgid "property %s: %r is not a %s."
 msgstr ""
 
-#: ../roundup/hyperdb.py:1849
+#: ../roundup/hyperdb.py:1942
 #, python-format
 msgid "you may only enter ID values for property %s"
 msgstr ""
 
-#: ../roundup/hyperdb.py:1883
+#: ../roundup/hyperdb.py:1976
 #, python-format
 msgid "%r is not a property of %s"
 msgstr ""
@@ -1837,25 +1841,25 @@ msgstr ""
 msgid "Unsigned Message"
 msgstr ""
 
-#: ../roundup/mailgw.py:446
+#: ../roundup/mailgw.py:463
 msgid "Unknown multipart/encrypted version."
 msgstr ""
 
-#: ../roundup/mailgw.py:455
+#: ../roundup/mailgw.py:472
 msgid "Unable to decrypt your message."
 msgstr ""
 
-#: ../roundup/mailgw.py:482
+#: ../roundup/mailgw.py:499
 msgid "No PGP signature found in message."
 msgstr ""
 
-#: ../roundup/mailgw.py:563
+#: ../roundup/mailgw.py:580
 msgid ""
 "\n"
 "Emails to Roundup trackers must include a Subject: line!\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:676
+#: ../roundup/mailgw.py:693
 #, python-format
 msgid ""
 "\n"
@@ -1872,7 +1876,7 @@ msgid ""
 "Subject was: '%(subject)s'\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:714
+#: ../roundup/mailgw.py:731
 #, python-format
 msgid ""
 "\n"
@@ -1883,7 +1887,7 @@ msgid ""
 "Subject was: \"%(subject)s\"\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:722
+#: ../roundup/mailgw.py:739
 #, python-format
 msgid ""
 "\n"
@@ -1900,7 +1904,7 @@ msgid ""
 "Subject was: '%(subject)s'\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:758
+#: ../roundup/mailgw.py:775
 #, python-format
 msgid ""
 "\n"
@@ -1911,7 +1915,7 @@ msgid ""
 "Subject was: \"%(subject)s\"\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:791
+#: ../roundup/mailgw.py:808
 #, python-format
 msgid ""
 "\n"
@@ -1921,7 +1925,7 @@ msgid ""
 "Subject was: \"%(subject)s\"\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:836
+#: ../roundup/mailgw.py:853
 #, python-format
 msgid ""
 "\n"
@@ -1930,21 +1934,21 @@ msgid ""
 "Unknown address: %(from_address)s\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:844
+#: ../roundup/mailgw.py:861
 msgid "You are not permitted to access this tracker."
 msgstr ""
 
-#: ../roundup/mailgw.py:855
+#: ../roundup/mailgw.py:872
 #, python-format
 msgid "You are not permitted to edit %(classname)s."
 msgstr ""
 
-#: ../roundup/mailgw.py:861
+#: ../roundup/mailgw.py:878
 #, python-format
 msgid "You are not permitted to create %(classname)s."
 msgstr ""
 
-#: ../roundup/mailgw.py:943
+#: ../roundup/mailgw.py:960
 #, python-format
 msgid ""
 "\n"
@@ -1954,38 +1958,38 @@ msgid ""
 "Subject was: \"%(subject)s\"\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:995
+#: ../roundup/mailgw.py:1012
 msgid "This tracker has been configured to require all email be PGP encrypted."
 msgstr ""
 
-#: ../roundup/mailgw.py:1032
+#: ../roundup/mailgw.py:1049
 msgid ""
 "\n"
 "This tracker has been configured to require all email be PGP signed or\n"
 "encrypted."
 msgstr ""
 
-#: ../roundup/mailgw.py:1063
+#: ../roundup/mailgw.py:1080
 msgid "You are not permitted to create files."
 msgstr ""
 
-#: ../roundup/mailgw.py:1077
+#: ../roundup/mailgw.py:1094
 #, python-format
 msgid "You are not permitted to add files to %(classname)s."
 msgstr ""
 
-#: ../roundup/mailgw.py:1107
+#: ../roundup/mailgw.py:1124
 msgid ""
 "\n"
 "Roundup requires the submission to be plain text. The message parser could\n"
 "not find a text/plain part to use.\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:1120
+#: ../roundup/mailgw.py:1137
 msgid "You are not permitted to create messages."
 msgstr ""
 
-#: ../roundup/mailgw.py:1128
+#: ../roundup/mailgw.py:1145
 #, python-format
 msgid ""
 "\n"
@@ -1993,22 +1997,22 @@ msgid ""
 "%(error)s\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:1136
+#: ../roundup/mailgw.py:1153
 #, python-format
 msgid "You are not permitted to add messages to %(classname)s."
 msgstr ""
 
-#: ../roundup/mailgw.py:1158
+#: ../roundup/mailgw.py:1175
 #, python-format
 msgid "You are not permitted to edit property %(prop)s of class %(classname)s."
 msgstr ""
 
-#: ../roundup/mailgw.py:1167
+#: ../roundup/mailgw.py:1184
 #, python-format
 msgid "You are not permitted to set property %(prop)s of class %(classname)s."
 msgstr ""
 
-#: ../roundup/mailgw.py:1175
+#: ../roundup/mailgw.py:1192
 #, python-format
 msgid ""
 "\n"
@@ -2016,7 +2020,7 @@ msgid ""
 "   %(message)s\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:1641
+#: ../roundup/mailgw.py:1658
 #, python-format
 msgid ""
 "\n"
@@ -2025,7 +2029,7 @@ msgid ""
 "  %(clsname)s\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:1672
+#: ../roundup/mailgw.py:1689
 #, python-format
 msgid ""
 "\n"
@@ -2034,13 +2038,20 @@ msgid ""
 "  %(errors)s\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:1693
+#: ../roundup/mailgw.py:1710
 msgid "not of form [arg=value,value,...;arg=value,value,...]"
 msgstr ""
 
-#: ../roundup/rest.py:1844
+#: ../roundup/rest.py:1883
 #, python-format
 msgid "Api rate limits exceeded. Please wait: %s seconds."
+msgstr ""
+
+#: ../roundup/rest.py:1918
+#, python-format
+msgid ""
+"Unable to parse Accept Header. %(error)s. Acceptable types: "
+"%(acceptable_types)s"
 msgstr ""
 
 #: ../roundup/roundupdb.py:135
@@ -2107,27 +2118,27 @@ msgstr ""
 msgid "No key for \"%(adr)s\" in keyring"
 msgstr ""
 
-#: ../roundup/roundupdb.py:484
+#: ../roundup/roundupdb.py:486
 #, python-format
 msgid "New submission from %(authname)s%(authaddr)s:"
 msgstr ""
 
-#: ../roundup/roundupdb.py:487
+#: ../roundup/roundupdb.py:489
 #, python-format
 msgid "%(authname)s%(authaddr)s added the comment:"
 msgstr ""
 
-#: ../roundup/roundupdb.py:490
+#: ../roundup/roundupdb.py:492
 #, python-format
 msgid "Change by %(authname)s%(authaddr)s:"
 msgstr ""
 
-#: ../roundup/roundupdb.py:509
+#: ../roundup/roundupdb.py:511
 #, python-format
 msgid "File '%(filename)s' not attached - you can download it from %(link)s."
 msgstr ""
 
-#: ../roundup/roundupdb.py:886
+#: ../roundup/roundupdb.py:888
 #, python-format
 msgid ""
 "\n"
@@ -2268,52 +2279,52 @@ msgid ""
 "<body><h1>Roundup trackers index</h1><ol>\n"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:502
+#: ../roundup/scripts/roundup_server.py:508
 #, python-format
 msgid "Error: %(type)s: %(value)s"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:514
+#: ../roundup/scripts/roundup_server.py:520
 msgid "WARNING: ignoring \"-g\" argument, not root"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:520
+#: ../roundup/scripts/roundup_server.py:526
 msgid "Can't change groups - no grp module"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:529
+#: ../roundup/scripts/roundup_server.py:535
 #, python-format
 msgid "Group %(group)s doesn't exist"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:541
+#: ../roundup/scripts/roundup_server.py:547
 msgid "Can't run as root!"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:544
+#: ../roundup/scripts/roundup_server.py:550
 msgid "WARNING: ignoring \"-u\" argument, not root"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:550
+#: ../roundup/scripts/roundup_server.py:556
 msgid "Can't change users - no pwd module"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:559
+#: ../roundup/scripts/roundup_server.py:565
 #, python-format
 msgid "User %(user)s doesn't exist"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:742
+#: ../roundup/scripts/roundup_server.py:755
 #, python-format
 msgid "Multiprocess mode \"%s\" is not available, switching to single-process"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:769
+#: ../roundup/scripts/roundup_server.py:782
 #, python-format
 msgid "Unable to bind to port %s, port already in use."
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:841
+#: ../roundup/scripts/roundup_server.py:854
 msgid ""
 " -c <Command>  Windows Service options.\n"
 "               If you want to run the server as a Windows Service, you\n"
@@ -2323,7 +2334,7 @@ msgid ""
 "               specifics."
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:848
+#: ../roundup/scripts/roundup_server.py:861
 msgid ""
 " -u <UID>      runs the Roundup web server as this UID\n"
 " -g <GID>      runs the Roundup web server as this GID\n"
@@ -2332,7 +2343,7 @@ msgid ""
 "               specified if -d is used."
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:855
+#: ../roundup/scripts/roundup_server.py:868
 #, python-format
 msgid ""
 "%(message)sUsage: roundup-server [options] [name=tracker home]*\n"
@@ -2347,6 +2358,7 @@ msgid ""
 "               connections, defaults to localhost, use 0.0.0.0 to bind\n"
 "               to all network interfaces\n"
 " -p <port>     set the port to listen on (default: %(port)s)\n"
+" -I <header1[,header2]*> list of headers to pass to the backend\n"
 " -l <fname>    log to the file indicated by fname instead of stderr/stdout\n"
 " -N            log client machine names instead of IP addresses (much "
 "slower)\n"
@@ -2394,36 +2406,42 @@ msgid ""
 "   any url-unsafe characters like spaces, as these confuse IE.\n"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:1027
+#: ../roundup/scripts/roundup_server.py:1041
 msgid "Instances must be name=home"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:1041
+#: ../roundup/scripts/roundup_server.py:1055
 #, python-format
 msgid "Configuration saved to %s"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:1059
+#: ../roundup/scripts/roundup_server.py:1073
 msgid "Sorry, you can't run the server as a daemon on this Operating System"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:1079
+#: ../roundup/scripts/roundup_server.py:1093
 #, python-format
 msgid "Roundup server started on %(HOST)s:%(PORT)s"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/_generic.collision.html:4
+#: ../share/roundup/templates/devel/html/_generic.collision.html:4
 #: ../share/roundup/templates/minimal/html/_generic.collision.html:4
+#: ../share/roundup/templates/responsive/html/_generic.collision.html:4
 msgid "${class} Edit Collision - ${tracker}"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/_generic.collision.html:7
+#: ../share/roundup/templates/devel/html/_generic.collision.html:7
 #: ../share/roundup/templates/minimal/html/_generic.collision.html:7
+#: ../share/roundup/templates/responsive/html/_generic.collision.html:7
 msgid "${class} Edit Collision"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/_generic.collision.html:14
+#: ../share/roundup/templates/devel/html/_generic.collision.html:14
 #: ../share/roundup/templates/minimal/html/_generic.collision.html:14
+#: ../share/roundup/templates/responsive/html/_generic.collision.html:14
 msgid ""
 "\n"
 "  There has been a collision. Another user updated this node\n"
@@ -2432,6 +2450,10 @@ msgid ""
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/_generic.help-empty.html:6
+#: ../share/roundup/templates/devel/html/_generic.help-empty.html:6
+#: ../share/roundup/templates/devel/html/user.help.html:90
+#: ../share/roundup/templates/responsive/html/_generic.help-empty.html:6
+#: ../share/roundup/templates/responsive/html/user.help.html:90
 msgid "Please specify your search parameters!"
 msgstr ""
 
@@ -2444,19 +2466,57 @@ msgstr ""
 #: ../share/roundup/templates/classic/html/msg.item.html:26
 #: ../share/roundup/templates/classic/html/user.index.html:9
 #: ../share/roundup/templates/classic/html/user.item.html:35
+#: ../share/roundup/templates/devel/html/_generic.help-list.html:2
+#: ../share/roundup/templates/devel/html/_generic.index.html:12
+#: ../share/roundup/templates/devel/html/_generic.item.html:12
+#: ../share/roundup/templates/devel/html/_generic.query.html:2
+#: ../share/roundup/templates/devel/html/bug.index.html:15
+#: ../share/roundup/templates/devel/html/bug.item.html:27
+#: ../share/roundup/templates/devel/html/file.item.html:9
+#: ../share/roundup/templates/devel/html/keyword.index.html:15
+#: ../share/roundup/templates/devel/html/keyword.item.html:33
+#: ../share/roundup/templates/devel/html/milestone.index.html:15
+#: ../share/roundup/templates/devel/html/msg.item.html:25
+#: ../share/roundup/templates/devel/html/patch.item.html:9
+#: ../share/roundup/templates/devel/html/patch.item.html:97
+#: ../share/roundup/templates/devel/html/task.index.html:15
+#: ../share/roundup/templates/devel/html/task.item.html:27
+#: ../share/roundup/templates/devel/html/user.index.html:8
+#: ../share/roundup/templates/devel/html/user.item.html:34
 #: ../share/roundup/templates/minimal/html/_generic.index.html:14
 #: ../share/roundup/templates/minimal/html/_generic.item.html:12
 #: ../share/roundup/templates/minimal/html/user.index.html:9
 #: ../share/roundup/templates/minimal/html/user.item.html:34
 #: ../share/roundup/templates/minimal/html/user.register.html:14
+#: ../share/roundup/templates/responsive/html/_generic.help-list.html:2
+#: ../share/roundup/templates/responsive/html/_generic.index.html:12
+#: ../share/roundup/templates/responsive/html/_generic.item.html:12
+#: ../share/roundup/templates/responsive/html/_generic.query.html:2
+#: ../share/roundup/templates/responsive/html/bug.index.html:15
+#: ../share/roundup/templates/responsive/html/bug.item.html:27
+#: ../share/roundup/templates/responsive/html/file.item.html:9
+#: ../share/roundup/templates/responsive/html/keyword.index.html:15
+#: ../share/roundup/templates/responsive/html/keyword.item.html:33
+#: ../share/roundup/templates/responsive/html/milestone.index.html:15
+#: ../share/roundup/templates/responsive/html/msg.item.html:26
+#: ../share/roundup/templates/responsive/html/patch.item.html:9
+#: ../share/roundup/templates/responsive/html/patch.item.html:95
+#: ../share/roundup/templates/responsive/html/task.index.html:15
+#: ../share/roundup/templates/responsive/html/task.item.html:27
+#: ../share/roundup/templates/responsive/html/user.index.html:8
+#: ../share/roundup/templates/responsive/html/user.item.html:34
 msgid "You are not allowed to view this page."
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/_generic.help-list.html:34
+#: ../share/roundup/templates/devel/html/_generic.help-list.html:12
+#: ../share/roundup/templates/responsive/html/_generic.help-list.html:12
 msgid "1..25 out of 50"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/_generic.help-search.html:9
+#: ../share/roundup/templates/devel/html/_generic.help-search.html:9
+#: ../share/roundup/templates/responsive/html/_generic.help-search.html:9
 msgid ""
 "Generic template ${template} or version for class ${classname} is not yet "
 "implemented"
@@ -2464,13 +2524,21 @@ msgstr ""
 
 #: ../share/roundup/templates/classic/html/_generic.help-submit.html:57
 #: ../share/roundup/templates/classic/html/_generic.help.html:31
+#: ../share/roundup/templates/devel/html/_generic.help-submit.html:57
+#: ../share/roundup/templates/devel/html/user.help.html:103
 #: ../share/roundup/templates/minimal/html/_generic.help.html:31
+#: ../share/roundup/templates/responsive/html/_generic.help-submit.html:57
+#: ../share/roundup/templates/responsive/html/user.help.html:103
 msgid " Cancel "
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/_generic.help-submit.html:63
 #: ../share/roundup/templates/classic/html/_generic.help.html:34
+#: ../share/roundup/templates/devel/html/_generic.help-submit.html:63
+#: ../share/roundup/templates/devel/html/user.help.html:108
 #: ../share/roundup/templates/minimal/html/_generic.help.html:34
+#: ../share/roundup/templates/responsive/html/_generic.help-submit.html:63
+#: ../share/roundup/templates/responsive/html/user.help.html:108
 msgid " Apply "
 msgstr ""
 
@@ -2483,35 +2551,70 @@ msgstr ""
 #: ../share/roundup/templates/classic/html/_generic.help.html:41
 #: ../share/roundup/templates/classic/html/help.html:21
 #: ../share/roundup/templates/classic/html/issue.index.html:80
+#: ../share/roundup/templates/devel/html/_generic.help.html:42
+#: ../share/roundup/templates/devel/html/bug.index.html:94
+#: ../share/roundup/templates/devel/html/help.html:51
+#: ../share/roundup/templates/devel/html/milestone.index.html:59
+#: ../share/roundup/templates/devel/html/task.index.html:94
+#: ../share/roundup/templates/devel/html/user.index.html:76
 #: ../share/roundup/templates/minimal/html/_generic.help.html:41
+#: ../share/roundup/templates/responsive/html/_generic.help.html:42
+#: ../share/roundup/templates/responsive/html/help.html:59
+#: ../share/roundup/templates/responsive/html/user.index.html:77
 msgid "&lt;&lt; previous"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/_generic.help.html:53
 #: ../share/roundup/templates/classic/html/help.html:28
 #: ../share/roundup/templates/classic/html/issue.index.html:88
+#: ../share/roundup/templates/devel/html/_generic.help.html:54
+#: ../share/roundup/templates/devel/html/bug.index.html:102
+#: ../share/roundup/templates/devel/html/help.html:58
+#: ../share/roundup/templates/devel/html/milestone.index.html:67
+#: ../share/roundup/templates/devel/html/task.index.html:102
+#: ../share/roundup/templates/devel/html/user.index.html:84
 #: ../share/roundup/templates/minimal/html/_generic.help.html:53
+#: ../share/roundup/templates/responsive/html/_generic.help.html:54
+#: ../share/roundup/templates/responsive/html/help.html:66
+#: ../share/roundup/templates/responsive/html/user.index.html:85
 msgid "${start}..${end} out of ${total}"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/_generic.help.html:57
 #: ../share/roundup/templates/classic/html/help.html:32
 #: ../share/roundup/templates/classic/html/issue.index.html:91
+#: ../share/roundup/templates/devel/html/_generic.help.html:58
+#: ../share/roundup/templates/devel/html/bug.index.html:105
+#: ../share/roundup/templates/devel/html/help.html:62
+#: ../share/roundup/templates/devel/html/milestone.index.html:70
+#: ../share/roundup/templates/devel/html/task.index.html:105
+#: ../share/roundup/templates/devel/html/user.index.html:87
 #: ../share/roundup/templates/minimal/html/_generic.help.html:57
+#: ../share/roundup/templates/responsive/html/_generic.help.html:58
+#: ../share/roundup/templates/responsive/html/help.html:70
+#: ../share/roundup/templates/responsive/html/user.index.html:88
 msgid "next &gt;&gt;"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/_generic.index.html:6
 #: ../share/roundup/templates/classic/html/_generic.item.html:4
+#: ../share/roundup/templates/devel/html/_generic.index.html:4
+#: ../share/roundup/templates/devel/html/_generic.item.html:4
 #: ../share/roundup/templates/minimal/html/_generic.index.html:6
 #: ../share/roundup/templates/minimal/html/_generic.item.html:4
+#: ../share/roundup/templates/responsive/html/_generic.index.html:4
+#: ../share/roundup/templates/responsive/html/_generic.item.html:4
 msgid "${class} editing - ${tracker}"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/_generic.index.html:9
 #: ../share/roundup/templates/classic/html/_generic.item.html:7
+#: ../share/roundup/templates/devel/html/_generic.index.html:7
+#: ../share/roundup/templates/devel/html/_generic.item.html:7
 #: ../share/roundup/templates/minimal/html/_generic.index.html:9
 #: ../share/roundup/templates/minimal/html/_generic.item.html:7
+#: ../share/roundup/templates/responsive/html/_generic.index.html:7
+#: ../share/roundup/templates/responsive/html/_generic.item.html:7
 msgid "${class} editing"
 msgstr ""
 
@@ -2523,11 +2626,41 @@ msgstr ""
 #: ../share/roundup/templates/classic/html/msg.item.html:30
 #: ../share/roundup/templates/classic/html/user.index.html:13
 #: ../share/roundup/templates/classic/html/user.item.html:39
+#: ../share/roundup/templates/devel/html/_generic.index.html:17
+#: ../share/roundup/templates/devel/html/_generic.item.html:16
+#: ../share/roundup/templates/devel/html/bug.index.html:19
+#: ../share/roundup/templates/devel/html/bug.item.html:31
+#: ../share/roundup/templates/devel/html/file.item.html:13
+#: ../share/roundup/templates/devel/html/keyword.index.html:19
+#: ../share/roundup/templates/devel/html/keyword.item.html:37
+#: ../share/roundup/templates/devel/html/milestone.index.html:19
+#: ../share/roundup/templates/devel/html/msg.item.html:29
+#: ../share/roundup/templates/devel/html/patch.item.html:13
+#: ../share/roundup/templates/devel/html/patch.item.html:101
+#: ../share/roundup/templates/devel/html/task.index.html:19
+#: ../share/roundup/templates/devel/html/task.item.html:31
+#: ../share/roundup/templates/devel/html/user.index.html:12
+#: ../share/roundup/templates/devel/html/user.item.html:38
 #: ../share/roundup/templates/minimal/html/_generic.index.html:19
 #: ../share/roundup/templates/minimal/html/_generic.item.html:16
 #: ../share/roundup/templates/minimal/html/user.index.html:13
 #: ../share/roundup/templates/minimal/html/user.item.html:38
 #: ../share/roundup/templates/minimal/html/user.register.html:17
+#: ../share/roundup/templates/responsive/html/_generic.index.html:17
+#: ../share/roundup/templates/responsive/html/_generic.item.html:16
+#: ../share/roundup/templates/responsive/html/bug.index.html:19
+#: ../share/roundup/templates/responsive/html/bug.item.html:31
+#: ../share/roundup/templates/responsive/html/file.item.html:13
+#: ../share/roundup/templates/responsive/html/keyword.index.html:19
+#: ../share/roundup/templates/responsive/html/keyword.item.html:37
+#: ../share/roundup/templates/responsive/html/milestone.index.html:19
+#: ../share/roundup/templates/responsive/html/msg.item.html:30
+#: ../share/roundup/templates/responsive/html/patch.item.html:13
+#: ../share/roundup/templates/responsive/html/patch.item.html:99
+#: ../share/roundup/templates/responsive/html/task.index.html:19
+#: ../share/roundup/templates/responsive/html/task.item.html:31
+#: ../share/roundup/templates/responsive/html/user.index.html:12
+#: ../share/roundup/templates/responsive/html/user.item.html:38
 msgid "Please login with your username and password."
 msgstr ""
 
@@ -2547,7 +2680,9 @@ msgid ""
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/_generic.index.html:53
+#: ../share/roundup/templates/devel/html/_generic.index.html:50
 #: ../share/roundup/templates/minimal/html/_generic.index.html:53
+#: ../share/roundup/templates/responsive/html/_generic.index.html:50
 msgid "Edit Items"
 msgstr ""
 
@@ -2559,55 +2694,113 @@ msgid ""
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/file.index.html:4
+#: ../share/roundup/templates/devel/html/file.index.html:3
+#: ../share/roundup/templates/responsive/html/file.index.html:3
 msgid "List of files - ${tracker}"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/file.index.html:5
+#: ../share/roundup/templates/devel/html/file.index.html:4
+#: ../share/roundup/templates/responsive/html/file.index.html:4
 msgid "List of files"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/file.index.html:10
+#: ../share/roundup/templates/devel/html/file.index.html:9
+#: ../share/roundup/templates/devel/html/patch.index.html:10
+#: ../share/roundup/templates/devel/html/patch.index.html:43
+#: ../share/roundup/templates/responsive/html/file.index.html:9
+#: ../share/roundup/templates/responsive/html/patch.index.html:10
+#: ../share/roundup/templates/responsive/html/patch.index.html:43
 msgid "Download"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/file.index.html:11
 #: ../share/roundup/templates/classic/html/file.item.html:27
+#: ../share/roundup/templates/devel/html/file.index.html:11
+#: ../share/roundup/templates/devel/html/file.item.html:31
+#: ../share/roundup/templates/devel/html/patch.index.html:12
+#: ../share/roundup/templates/devel/html/patch.index.html:45
+#: ../share/roundup/templates/devel/html/patch.item.html:31
+#: ../share/roundup/templates/devel/html/patch.item.html:119
+#: ../share/roundup/templates/responsive/html/file.index.html:11
+#: ../share/roundup/templates/responsive/html/file.item.html:31
+#: ../share/roundup/templates/responsive/html/patch.index.html:12
+#: ../share/roundup/templates/responsive/html/patch.index.html:45
+#: ../share/roundup/templates/responsive/html/patch.item.html:31
+#: ../share/roundup/templates/responsive/html/patch.item.html:117
 msgid "Content Type"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/file.index.html:12
+#: ../share/roundup/templates/devel/html/file.index.html:12
+#: ../share/roundup/templates/devel/html/patch.index.html:13
+#: ../share/roundup/templates/devel/html/patch.index.html:46
+#: ../share/roundup/templates/responsive/html/file.index.html:12
+#: ../share/roundup/templates/responsive/html/patch.index.html:13
+#: ../share/roundup/templates/responsive/html/patch.index.html:46
 msgid "Uploaded By"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/file.index.html:13
 #: ../share/roundup/templates/classic/html/msg.item.html:48
+#: ../share/roundup/templates/devel/html/file.index.html:13
+#: ../share/roundup/templates/devel/html/msg.item.html:47
+#: ../share/roundup/templates/devel/html/patch.index.html:14
+#: ../share/roundup/templates/devel/html/patch.index.html:47
+#: ../share/roundup/templates/responsive/html/file.index.html:13
+#: ../share/roundup/templates/responsive/html/msg.item.html:40
+#: ../share/roundup/templates/responsive/html/patch.index.html:14
+#: ../share/roundup/templates/responsive/html/patch.index.html:47
 msgid "Date"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/file.item.html:2
+#: ../share/roundup/templates/devel/html/file.item.html:2
+#: ../share/roundup/templates/responsive/html/file.item.html:2
 msgid "File display - ${tracker}"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/file.item.html:4
+#: ../share/roundup/templates/devel/html/file.item.html:4
+#: ../share/roundup/templates/responsive/html/file.item.html:4
 msgid "File display"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/file.item.html:23
 #: ../share/roundup/templates/classic/html/user.register.html:19
+#: ../share/roundup/templates/devel/html/file.item.html:23
+#: ../share/roundup/templates/devel/html/patch.item.html:23
+#: ../share/roundup/templates/devel/html/patch.item.html:111
+#: ../share/roundup/templates/devel/html/user.register.html:26
+#: ../share/roundup/templates/responsive/html/file.item.html:23
+#: ../share/roundup/templates/responsive/html/patch.item.html:23
+#: ../share/roundup/templates/responsive/html/patch.item.html:109
+#: ../share/roundup/templates/responsive/html/user.register.html:25
 msgid "Name"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/file.item.html:45
+#: ../share/roundup/templates/devel/html/file.item.html:53
+#: ../share/roundup/templates/devel/html/patch.item.html:61
+#: ../share/roundup/templates/devel/html/patch.item.html:149
+#: ../share/roundup/templates/responsive/html/file.item.html:53
+#: ../share/roundup/templates/responsive/html/patch.item.html:61
+#: ../share/roundup/templates/responsive/html/patch.item.html:147
 msgid "download"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/home.classlist.html:2
+#: ../share/roundup/templates/devel/html/home.classlist.html:2
 #: ../share/roundup/templates/minimal/html/home.classlist.html:2
+#: ../share/roundup/templates/responsive/html/home.classlist.html:2
 msgid "List of classes - ${tracker}"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/home.classlist.html:4
+#: ../share/roundup/templates/devel/html/home.classlist.html:4
 #: ../share/roundup/templates/minimal/html/home.classlist.html:4
+#: ../share/roundup/templates/responsive/html/home.classlist.html:4
 msgid "List of classes"
 msgstr ""
 
@@ -2618,45 +2811,96 @@ msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.index.html:26
 #: ../share/roundup/templates/classic/html/issue.item.html:49
+#: ../share/roundup/templates/responsive/html/bug.item.html:142
+#: ../share/roundup/templates/responsive/html/bug.item.html:241
+#: ../share/roundup/templates/responsive/html/task.item.html:118
+#: ../share/roundup/templates/responsive/html/task.item.html:215
 msgid "Priority"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.index.html:27
+#: ../share/roundup/templates/devel/html/bug.index.html:27
+#: ../share/roundup/templates/devel/html/milestone.index.html:26
+#: ../share/roundup/templates/devel/html/task.index.html:27
+#: ../share/roundup/templates/responsive/html/bug.index.html:27
+#: ../share/roundup/templates/responsive/html/milestone.index.html:26
+#: ../share/roundup/templates/responsive/html/task.index.html:26
 msgid "ID"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.index.html:28
+#: ../share/roundup/templates/devel/html/bug.index.html:28
+#: ../share/roundup/templates/devel/html/task.index.html:28
+#: ../share/roundup/templates/responsive/html/task.index.html:27
 msgid "Creation"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.index.html:29
+#: ../share/roundup/templates/devel/html/bug.index.html:29
+#: ../share/roundup/templates/devel/html/task.index.html:29
+#: ../share/roundup/templates/responsive/html/bug.index.html:28
+#: ../share/roundup/templates/responsive/html/task.index.html:28
 msgid "Activity"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.index.html:30
+#: ../share/roundup/templates/devel/html/bug.index.html:30
+#: ../share/roundup/templates/devel/html/task.index.html:30
+#: ../share/roundup/templates/responsive/html/bug.index.html:29
+#: ../share/roundup/templates/responsive/html/task.index.html:29
 msgid "Actor"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.index.html:31
 #: ../share/roundup/templates/classic/html/keyword.item.html:37
+#: ../share/roundup/templates/devel/html/keyword.index.html:25
+#: ../share/roundup/templates/responsive/html/keyword.index.html:25
 msgid "Keyword"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.index.html:32
 #: ../share/roundup/templates/classic/html/issue.item.html:44
+#: ../share/roundup/templates/devel/html/bug.index.html:31
+#: ../share/roundup/templates/devel/html/milestone.index.html:27
+#: ../share/roundup/templates/devel/html/task.index.html:31
+#: ../share/roundup/templates/responsive/html/bug.index.html:30
+#: ../share/roundup/templates/responsive/html/bug.item.html:44
+#: ../share/roundup/templates/responsive/html/bug.item.html:57
+#: ../share/roundup/templates/responsive/html/milestone.index.html:27
+#: ../share/roundup/templates/responsive/html/task.index.html:30
+#: ../share/roundup/templates/responsive/html/task.item.html:45
+#: ../share/roundup/templates/responsive/html/task.item.html:56
+#: ../share/roundup/templates/responsive/html/task.item.html:62
 msgid "Title"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.index.html:33
 #: ../share/roundup/templates/classic/html/issue.item.html:51
+#: ../share/roundup/templates/devel/html/bug.index.html:34
+#: ../share/roundup/templates/devel/html/milestone.index.html:28
+#: ../share/roundup/templates/devel/html/task.index.html:34
+#: ../share/roundup/templates/responsive/html/bug.index.html:33
+#: ../share/roundup/templates/responsive/html/bug.item.html:128
+#: ../share/roundup/templates/responsive/html/bug.item.html:159
+#: ../share/roundup/templates/responsive/html/milestone.index.html:28
+#: ../share/roundup/templates/responsive/html/task.index.html:32
+#: ../share/roundup/templates/responsive/html/task.item.html:104
+#: ../share/roundup/templates/responsive/html/task.item.html:133
 msgid "Status"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.index.html:34
+#: ../share/roundup/templates/devel/html/bug.index.html:36
+#: ../share/roundup/templates/devel/html/task.index.html:36
+#: ../share/roundup/templates/responsive/html/bug.index.html:35
 msgid "Creator"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.index.html:35
+#: ../share/roundup/templates/devel/html/bug.index.html:37
+#: ../share/roundup/templates/devel/html/task.index.html:37
+#: ../share/roundup/templates/responsive/html/bug.index.html:36
+#: ../share/roundup/templates/responsive/html/task.index.html:34
 msgid "Assigned&nbsp;To"
 msgstr ""
 
@@ -2670,19 +2914,43 @@ msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.index.html:118
 #: ../share/roundup/templates/classic/html/issue.index.html:139
+#: ../share/roundup/templates/devel/html/bug.index.html:155
+#: ../share/roundup/templates/devel/html/milestone.index.html:120
+#: ../share/roundup/templates/devel/html/task.index.html:155
+#: ../share/roundup/templates/responsive/html/bug.index.html:143
+#: ../share/roundup/templates/responsive/html/milestone.index.html:118
+#: ../share/roundup/templates/responsive/html/task.index.html:138
 msgid "- nothing -"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.index.html:126
 #: ../share/roundup/templates/classic/html/issue.index.html:147
+#: ../share/roundup/templates/devel/html/bug.index.html:163
+#: ../share/roundup/templates/devel/html/milestone.index.html:128
+#: ../share/roundup/templates/devel/html/task.index.html:163
+#: ../share/roundup/templates/responsive/html/bug.index.html:151
+#: ../share/roundup/templates/responsive/html/milestone.index.html:126
+#: ../share/roundup/templates/responsive/html/task.index.html:146
 msgid "Descending:"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.index.html:135
+#: ../share/roundup/templates/devel/html/bug.index.html:151
+#: ../share/roundup/templates/devel/html/milestone.index.html:116
+#: ../share/roundup/templates/devel/html/task.index.html:151
+#: ../share/roundup/templates/responsive/html/bug.index.html:139
+#: ../share/roundup/templates/responsive/html/milestone.index.html:114
+#: ../share/roundup/templates/responsive/html/task.index.html:134
 msgid "Group on:"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.index.html:154
+#: ../share/roundup/templates/devel/html/bug.index.html:170
+#: ../share/roundup/templates/devel/html/milestone.index.html:135
+#: ../share/roundup/templates/devel/html/task.index.html:170
+#: ../share/roundup/templates/responsive/html/bug.index.html:158
+#: ../share/roundup/templates/responsive/html/milestone.index.html:133
+#: ../share/roundup/templates/responsive/html/task.index.html:153
 msgid "Redisplay"
 msgstr ""
 
@@ -2711,6 +2979,10 @@ msgid "Issue${id} Editing"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.item.html:56
+#: ../share/roundup/templates/devel/html/bug.item.html:115
+#: ../share/roundup/templates/devel/html/task.item.html:90
+#: ../share/roundup/templates/responsive/html/bug.item.html:134
+#: ../share/roundup/templates/responsive/html/task.item.html:110
 msgid "Superseder"
 msgstr ""
 
@@ -2719,16 +2991,27 @@ msgid "View:"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.item.html:67
+#: ../share/roundup/templates/devel/html/bug.item.html:135
+#: ../share/roundup/templates/devel/html/task.item.html:110
+#: ../share/roundup/templates/responsive/html/bug.item.html:224
+#: ../share/roundup/templates/responsive/html/task.item.html:198
 msgid "Nosy List"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.item.html:76
+#: ../share/roundup/templates/devel/html/bug.item.html:133
+#: ../share/roundup/templates/devel/html/task.item.html:108
+#: ../share/roundup/templates/responsive/html/bug.item.html:216
+#: ../share/roundup/templates/responsive/html/task.item.html:190
 msgid "Assigned To"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.item.html:78
 #: ../share/roundup/templates/classic/html/page.html:105
+#: ../share/roundup/templates/devel/html/bug.index.html:38
+#: ../share/roundup/templates/devel/html/task.index.html:38
 #: ../share/roundup/templates/minimal/html/page.html:105
+#: ../share/roundup/templates/responsive/html/bug.item.html:144
 msgid "Keywords"
 msgstr ""
 
@@ -2737,17 +3020,29 @@ msgid "Change Note"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.item.html:94
+#: ../share/roundup/templates/devel/html/bug.item.html:164
+#: ../share/roundup/templates/devel/html/task.item.html:133
+#: ../share/roundup/templates/responsive/html/bug.item.html:274
+#: ../share/roundup/templates/responsive/html/task.item.html:241
 msgid "File"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.item.html:106
+#: ../share/roundup/templates/devel/html/bug.item.html:207
+#: ../share/roundup/templates/devel/html/task.item.html:154
+#: ../share/roundup/templates/responsive/html/bug.item.html:301
+#: ../share/roundup/templates/responsive/html/task.item.html:268
 msgid "Make a copy"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.item.html:114
 #: ../share/roundup/templates/classic/html/user.item.html:153
 #: ../share/roundup/templates/classic/html/user.register.html:74
+#: ../share/roundup/templates/devel/html/user.item.html:149
+#: ../share/roundup/templates/devel/html/user.register.html:81
 #: ../share/roundup/templates/minimal/html/user.item.html:103
+#: ../share/roundup/templates/responsive/html/user.item.html:149
+#: ../share/roundup/templates/responsive/html/user.register.html:80
 msgid ""
 "<table class=\"form\"> <tr> <td>Note:&nbsp;</td> <th class=\"required"
 "\">highlighted</th> <td>&nbsp;fields are required.</td> </tr> </table>"
@@ -2760,40 +3055,90 @@ msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.item.html:132
 #: ../share/roundup/templates/classic/html/msg.item.html:61
+#: ../share/roundup/templates/devel/html/bug.item.html:222
+#: ../share/roundup/templates/devel/html/msg.item.html:103
+#: ../share/roundup/templates/devel/html/task.item.html:169
+#: ../share/roundup/templates/responsive/html/msg.item.html:56
 msgid "Files"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.item.html:134
 #: ../share/roundup/templates/classic/html/msg.item.html:63
+#: ../share/roundup/templates/devel/html/bug.item.html:224
+#: ../share/roundup/templates/devel/html/msg.item.html:105
+#: ../share/roundup/templates/devel/html/task.item.html:171
+#: ../share/roundup/templates/responsive/html/bug.item.html:316
+#: ../share/roundup/templates/responsive/html/msg.item.html:58
+#: ../share/roundup/templates/responsive/html/task.item.html:283
 msgid "File name"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.item.html:135
 #: ../share/roundup/templates/classic/html/msg.item.html:64
+#: ../share/roundup/templates/devel/html/bug.item.html:225
+#: ../share/roundup/templates/devel/html/msg.item.html:106
+#: ../share/roundup/templates/devel/html/task.item.html:172
+#: ../share/roundup/templates/responsive/html/bug.item.html:317
+#: ../share/roundup/templates/responsive/html/msg.item.html:59
+#: ../share/roundup/templates/responsive/html/task.item.html:284
 msgid "Uploaded"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.item.html:136
+#: ../share/roundup/templates/devel/html/bug.index.html:40
+#: ../share/roundup/templates/devel/html/task.index.html:40
+#: ../share/roundup/templates/responsive/html/bug.index.html:37
+#: ../share/roundup/templates/responsive/html/bug.item.html:46
+#: ../share/roundup/templates/responsive/html/bug.item.html:71
+#: ../share/roundup/templates/responsive/html/task.index.html:35
+#: ../share/roundup/templates/responsive/html/task.item.html:47
+#: ../share/roundup/templates/responsive/html/task.item.html:76
 msgid "Type"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.item.html:137
 #: ../share/roundup/templates/classic/html/query.edit.html:60
+#: ../share/roundup/templates/devel/html/bug.item.html:227
+#: ../share/roundup/templates/devel/html/query.edit.html:62
+#: ../share/roundup/templates/devel/html/task.item.html:174
+#: ../share/roundup/templates/responsive/html/bug.item.html:319
+#: ../share/roundup/templates/responsive/html/query.edit.html:62
+#: ../share/roundup/templates/responsive/html/task.item.html:286
 msgid "Edit"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.item.html:138
+#: ../share/roundup/templates/devel/html/bug.item.html:228
+#: ../share/roundup/templates/devel/html/task.item.html:175
+#: ../share/roundup/templates/responsive/html/bug.item.html:320
+#: ../share/roundup/templates/responsive/html/task.item.html:287
 msgid "Remove"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.item.html:160
 #: ../share/roundup/templates/classic/html/issue.item.html:183
 #: ../share/roundup/templates/classic/html/query.edit.html:83
+#: ../share/roundup/templates/devel/html/bug.item.html:248
+#: ../share/roundup/templates/devel/html/bug.item.html:305
+#: ../share/roundup/templates/devel/html/query.edit.html:82
+#: ../share/roundup/templates/devel/html/task.item.html:197
+#: ../share/roundup/templates/devel/html/task.item.html:221
+#: ../share/roundup/templates/responsive/html/bug.item.html:341
+#: ../share/roundup/templates/responsive/html/bug.item.html:365
+#: ../share/roundup/templates/responsive/html/query.edit.html:82
+#: ../share/roundup/templates/responsive/html/task.item.html:310
+#: ../share/roundup/templates/responsive/html/task.item.html:334
 msgid "remove"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.item.html:167
 #: ../share/roundup/templates/classic/html/msg.index.html:9
+#: ../share/roundup/templates/devel/html/bug.item.html:291
+#: ../share/roundup/templates/devel/html/msg.index.html:9
+#: ../share/roundup/templates/devel/html/task.item.html:204
+#: ../share/roundup/templates/responsive/html/bug.item.html:347
+#: ../share/roundup/templates/responsive/html/msg.index.html:9
+#: ../share/roundup/templates/responsive/html/task.item.html:316
 msgid "Messages"
 msgstr ""
 
@@ -2806,6 +3151,10 @@ msgid "Author: ${author}"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.item.html:174
+#: ../share/roundup/templates/devel/html/bug.item.html:298
+#: ../share/roundup/templates/devel/html/task.item.html:211
+#: ../share/roundup/templates/responsive/html/bug.item.html:357
+#: ../share/roundup/templates/responsive/html/task.item.html:326
 msgid "Date: ${date}"
 msgstr ""
 
@@ -2818,56 +3167,126 @@ msgid "Issue searching"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:32
+#: ../share/roundup/templates/devel/html/bug.search.html:32
+#: ../share/roundup/templates/devel/html/task.search.html:32
+#: ../share/roundup/templates/responsive/html/bug.search.html:32
+#: ../share/roundup/templates/responsive/html/task.search.html:32
 msgid "Filter on"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:33
+#: ../share/roundup/templates/devel/html/bug.search.html:33
+#: ../share/roundup/templates/devel/html/task.search.html:33
+#: ../share/roundup/templates/responsive/html/bug.search.html:33
+#: ../share/roundup/templates/responsive/html/task.search.html:33
 msgid "Display"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:34
+#: ../share/roundup/templates/devel/html/bug.search.html:34
+#: ../share/roundup/templates/devel/html/task.search.html:34
+#: ../share/roundup/templates/responsive/html/bug.search.html:34
+#: ../share/roundup/templates/responsive/html/task.search.html:34
 msgid "Sort on"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:35
+#: ../share/roundup/templates/devel/html/bug.search.html:35
+#: ../share/roundup/templates/devel/html/task.search.html:35
+#: ../share/roundup/templates/responsive/html/bug.search.html:35
+#: ../share/roundup/templates/responsive/html/task.search.html:35
 msgid "Group on"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:39
+#: ../share/roundup/templates/devel/html/bug.search.html:39
+#: ../share/roundup/templates/devel/html/task.search.html:39
+#: ../share/roundup/templates/responsive/html/bug.search.html:39
+#: ../share/roundup/templates/responsive/html/task.search.html:39
 msgid "All text*:"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:47
+#: ../share/roundup/templates/devel/html/bug.item.html:44
+#: ../share/roundup/templates/devel/html/bug.search.html:47
+#: ../share/roundup/templates/devel/html/task.item.html:44
+#: ../share/roundup/templates/devel/html/task.search.html:47
+#: ../share/roundup/templates/responsive/html/bug.search.html:47
+#: ../share/roundup/templates/responsive/html/task.search.html:47
 msgid "Title:"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:57
+#: ../share/roundup/templates/devel/html/bug.search.html:194
+#: ../share/roundup/templates/devel/html/keyword.item.html:51
+#: ../share/roundup/templates/devel/html/task.search.html:194
+#: ../share/roundup/templates/responsive/html/bug.search.html:194
+#: ../share/roundup/templates/responsive/html/keyword.item.html:51
 msgid "Keyword:"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:59
 #: ../share/roundup/templates/classic/html/issue.search.html:124
 #: ../share/roundup/templates/classic/html/issue.search.html:140
+#: ../share/roundup/templates/devel/html/bug.search.html:117
+#: ../share/roundup/templates/devel/html/bug.search.html:130
+#: ../share/roundup/templates/devel/html/bug.search.html:143
+#: ../share/roundup/templates/devel/html/bug.search.html:209
+#: ../share/roundup/templates/devel/html/bug.search.html:225
+#: ../share/roundup/templates/devel/html/task.search.html:117
+#: ../share/roundup/templates/devel/html/task.search.html:130
+#: ../share/roundup/templates/devel/html/task.search.html:143
+#: ../share/roundup/templates/devel/html/task.search.html:209
+#: ../share/roundup/templates/devel/html/task.search.html:225
+#: ../share/roundup/templates/responsive/html/bug.search.html:117
+#: ../share/roundup/templates/responsive/html/bug.search.html:130
+#: ../share/roundup/templates/responsive/html/bug.search.html:143
+#: ../share/roundup/templates/responsive/html/bug.search.html:209
+#: ../share/roundup/templates/responsive/html/bug.search.html:225
+#: ../share/roundup/templates/responsive/html/task.search.html:117
+#: ../share/roundup/templates/responsive/html/task.search.html:130
+#: ../share/roundup/templates/responsive/html/task.search.html:170
+#: ../share/roundup/templates/responsive/html/task.search.html:186
 msgid "not selected"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:68
+#: ../share/roundup/templates/devel/html/bug.search.html:55
+#: ../share/roundup/templates/devel/html/task.search.html:55
+#: ../share/roundup/templates/responsive/html/bug.search.html:55
+#: ../share/roundup/templates/responsive/html/task.search.html:55
 msgid "ID:"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:76
+#: ../share/roundup/templates/devel/html/bug.search.html:63
+#: ../share/roundup/templates/devel/html/task.search.html:63
+#: ../share/roundup/templates/responsive/html/bug.search.html:63
+#: ../share/roundup/templates/responsive/html/task.search.html:63
 msgid "Creation Date:"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:87
+#: ../share/roundup/templates/devel/html/bug.search.html:73
+#: ../share/roundup/templates/devel/html/task.search.html:73
+#: ../share/roundup/templates/responsive/html/bug.search.html:73
+#: ../share/roundup/templates/responsive/html/task.search.html:73
 msgid "Creator:"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:89
+#: ../share/roundup/templates/devel/html/bug.search.html:75
+#: ../share/roundup/templates/devel/html/task.search.html:75
+#: ../share/roundup/templates/responsive/html/bug.search.html:75
+#: ../share/roundup/templates/responsive/html/task.search.html:75
 msgid "created by me"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:98
+#: ../share/roundup/templates/devel/html/bug.search.html:84
+#: ../share/roundup/templates/devel/html/task.search.html:84
+#: ../share/roundup/templates/responsive/html/bug.search.html:84
+#: ../share/roundup/templates/responsive/html/task.search.html:84
 msgid "Activity:"
 msgstr ""
 
@@ -2876,14 +3295,26 @@ msgid "Actor:"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:111
+#: ../share/roundup/templates/devel/html/bug.search.html:96
+#: ../share/roundup/templates/devel/html/task.search.html:96
+#: ../share/roundup/templates/responsive/html/bug.search.html:96
+#: ../share/roundup/templates/responsive/html/task.search.html:96
 msgid "done by me"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:122
+#: ../share/roundup/templates/devel/html/bug.search.html:207
+#: ../share/roundup/templates/devel/html/task.search.html:207
+#: ../share/roundup/templates/responsive/html/bug.search.html:207
+#: ../share/roundup/templates/responsive/html/task.search.html:168
 msgid "Priority:"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:135
+#: ../share/roundup/templates/devel/html/bug.search.html:220
+#: ../share/roundup/templates/devel/html/task.search.html:220
+#: ../share/roundup/templates/responsive/html/bug.search.html:220
+#: ../share/roundup/templates/responsive/html/task.search.html:181
 msgid "Status:"
 msgstr ""
 
@@ -2892,38 +3323,74 @@ msgid "not resolved"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:153
+#: ../share/roundup/templates/devel/html/bug.search.html:177
+#: ../share/roundup/templates/devel/html/task.search.html:177
+#: ../share/roundup/templates/responsive/html/bug.search.html:177
+#: ../share/roundup/templates/responsive/html/task.search.html:151
 msgid "Assigned to:"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:156
+#: ../share/roundup/templates/devel/html/bug.search.html:180
+#: ../share/roundup/templates/devel/html/task.search.html:180
+#: ../share/roundup/templates/responsive/html/bug.search.html:180
+#: ../share/roundup/templates/responsive/html/task.search.html:154
 msgid "assigned to me"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:158
+#: ../share/roundup/templates/devel/html/bug.search.html:182
+#: ../share/roundup/templates/devel/html/task.search.html:182
+#: ../share/roundup/templates/responsive/html/bug.search.html:182
+#: ../share/roundup/templates/responsive/html/task.search.html:156
 msgid "unassigned"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:168
+#: ../share/roundup/templates/devel/html/bug.search.html:245
+#: ../share/roundup/templates/devel/html/task.search.html:245
+#: ../share/roundup/templates/responsive/html/bug.search.html:245
+#: ../share/roundup/templates/responsive/html/task.search.html:206
 msgid "No Sort or group:"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:176
+#: ../share/roundup/templates/devel/html/bug.search.html:253
+#: ../share/roundup/templates/devel/html/task.search.html:253
+#: ../share/roundup/templates/responsive/html/bug.search.html:253
+#: ../share/roundup/templates/responsive/html/task.search.html:214
 msgid "Pagesize:"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:182
+#: ../share/roundup/templates/devel/html/bug.search.html:259
+#: ../share/roundup/templates/devel/html/task.search.html:259
+#: ../share/roundup/templates/responsive/html/bug.search.html:259
+#: ../share/roundup/templates/responsive/html/task.search.html:220
 msgid "Start With:"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:188
+#: ../share/roundup/templates/devel/html/bug.search.html:265
+#: ../share/roundup/templates/devel/html/task.search.html:265
+#: ../share/roundup/templates/responsive/html/bug.search.html:265
+#: ../share/roundup/templates/responsive/html/task.search.html:226
 msgid "Sort Descending:"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:195
+#: ../share/roundup/templates/devel/html/bug.search.html:272
+#: ../share/roundup/templates/devel/html/task.search.html:272
+#: ../share/roundup/templates/responsive/html/bug.search.html:272
+#: ../share/roundup/templates/responsive/html/task.search.html:233
 msgid "Group Descending:"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:202
+#: ../share/roundup/templates/devel/html/bug.search.html:279
+#: ../share/roundup/templates/devel/html/task.search.html:279
+#: ../share/roundup/templates/responsive/html/bug.search.html:279
+#: ../share/roundup/templates/responsive/html/task.search.html:240
 msgid "Query name**:"
 msgstr ""
 
@@ -2931,8 +3398,22 @@ msgstr ""
 #: ../share/roundup/templates/classic/html/page.html:40
 #: ../share/roundup/templates/classic/html/page.html:92
 #: ../share/roundup/templates/classic/html/user.help-search.html:69
+#: ../share/roundup/templates/devel/html/bug.search.html:292
+#: ../share/roundup/templates/devel/html/page.html:79
+#: ../share/roundup/templates/devel/html/page.html:126
+#: ../share/roundup/templates/devel/html/task.search.html:292
+#: ../share/roundup/templates/devel/html/user.help-search.html:69
+#: ../share/roundup/templates/devel/html/user.help.html:77
+#: ../share/roundup/templates/devel/html/user.index.html:37
 #: ../share/roundup/templates/minimal/html/page.html:40
 #: ../share/roundup/templates/minimal/html/page.html:92
+#: ../share/roundup/templates/responsive/html/bug.search.html:292
+#: ../share/roundup/templates/responsive/html/page.html:95
+#: ../share/roundup/templates/responsive/html/page.html:143
+#: ../share/roundup/templates/responsive/html/task.search.html:253
+#: ../share/roundup/templates/responsive/html/user.help-search.html:69
+#: ../share/roundup/templates/responsive/html/user.help.html:77
+#: ../share/roundup/templates/responsive/html/user.index.html:39
 msgid "Search"
 msgstr ""
 
@@ -2941,6 +3422,10 @@ msgid "*: The \"all text\" field will look in message bodies and issue titles"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/issue.search.html:223
+#: ../share/roundup/templates/devel/html/bug.search.html:300
+#: ../share/roundup/templates/devel/html/task.search.html:300
+#: ../share/roundup/templates/responsive/html/bug.search.html:300
+#: ../share/roundup/templates/responsive/html/task.search.html:261
 msgid ""
 "**: If you supply a name, the query will be saved off and available as a "
 "link in the sidebar"
@@ -2973,42 +3458,62 @@ msgid "Continue adding keywords."
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/msg.index.html:3
+#: ../share/roundup/templates/devel/html/msg.index.html:3
+#: ../share/roundup/templates/responsive/html/msg.index.html:3
 msgid "List of messages - ${tracker}"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/msg.index.html:5
+#: ../share/roundup/templates/devel/html/msg.index.html:5
+#: ../share/roundup/templates/responsive/html/msg.index.html:5
 msgid "Message listing"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/msg.item.html:6
+#: ../share/roundup/templates/devel/html/msg.item.html:5
+#: ../share/roundup/templates/responsive/html/msg.item.html:5
 msgid "Message ${id} - ${tracker}"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/msg.item.html:9
+#: ../share/roundup/templates/devel/html/msg.item.html:8
+#: ../share/roundup/templates/responsive/html/msg.item.html:8
 msgid "New Message - ${tracker}"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/msg.item.html:13
+#: ../share/roundup/templates/devel/html/msg.item.html:12
+#: ../share/roundup/templates/responsive/html/msg.item.html:12
 msgid "New Message"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/msg.item.html:15
+#: ../share/roundup/templates/devel/html/msg.item.html:14
+#: ../share/roundup/templates/responsive/html/msg.item.html:14
 msgid "New Message Editing"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/msg.item.html:18
+#: ../share/roundup/templates/devel/html/msg.item.html:17
+#: ../share/roundup/templates/responsive/html/msg.item.html:17
 msgid "Message${id}"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/msg.item.html:21
+#: ../share/roundup/templates/devel/html/msg.item.html:20
+#: ../share/roundup/templates/responsive/html/msg.item.html:20
 msgid "Message${id} Editing"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/msg.item.html:38
+#: ../share/roundup/templates/devel/html/msg.item.html:37
+#: ../share/roundup/templates/responsive/html/msg.item.html:36
 msgid "Author"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/msg.item.html:43
+#: ../share/roundup/templates/devel/html/msg.item.html:42
+#: ../share/roundup/templates/responsive/html/msg.item.html:38
 msgid "Recipients"
 msgstr ""
 
@@ -3028,13 +3533,23 @@ msgstr ""
 
 #: ../share/roundup/templates/classic/html/page.html:67
 #: ../share/roundup/templates/classic/html/page.html:107
+#: ../share/roundup/templates/devel/html/page.html:48
+#: ../share/roundup/templates/devel/html/page.html:96
+#: ../share/roundup/templates/devel/html/page.html:143
 #: ../share/roundup/templates/minimal/html/page.html:67
 #: ../share/roundup/templates/minimal/html/page.html:107
+#: ../share/roundup/templates/responsive/html/page.html:64
+#: ../share/roundup/templates/responsive/html/page.html:113
+#: ../share/roundup/templates/responsive/html/page.html:161
 msgid "Create New"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/page.html:69
+#: ../share/roundup/templates/devel/html/page.html:64
+#: ../share/roundup/templates/devel/html/page.html:112
 #: ../share/roundup/templates/minimal/html/page.html:69
+#: ../share/roundup/templates/responsive/html/page.html:80
+#: ../share/roundup/templates/responsive/html/page.html:129
 msgid "Show Unassigned"
 msgstr ""
 
@@ -3054,46 +3569,64 @@ msgid "Edit Existing"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/page.html:116
+#: ../share/roundup/templates/devel/html/page.html:224
 #: ../share/roundup/templates/minimal/html/page.html:116
+#: ../share/roundup/templates/responsive/html/page.html:241
 msgid "Administration"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/page.html:118
+#: ../share/roundup/templates/devel/html/page.html:227
 #: ../share/roundup/templates/minimal/html/page.html:118
+#: ../share/roundup/templates/responsive/html/page.html:244
 msgid "Class List"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/page.html:122
+#: ../share/roundup/templates/devel/html/page.html:231
 #: ../share/roundup/templates/minimal/html/page.html:122
+#: ../share/roundup/templates/responsive/html/page.html:248
 msgid "User List"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/page.html:124
+#: ../share/roundup/templates/devel/html/page.html:234
 #: ../share/roundup/templates/minimal/html/page.html:124
+#: ../share/roundup/templates/responsive/html/page.html:251
 msgid "Add User"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/page.html:131
 #: ../share/roundup/templates/classic/html/page.html:139
+#: ../share/roundup/templates/devel/html/page.html:164
+#: ../share/roundup/templates/devel/html/page.html:172
 #: ../share/roundup/templates/minimal/html/page.html:131
 #: ../share/roundup/templates/minimal/html/page.html:139
+#: ../share/roundup/templates/responsive/html/page.html:188
 msgid "Login"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/page.html:136
+#: ../share/roundup/templates/devel/html/page.html:171
 #: ../share/roundup/templates/minimal/html/page.html:138
 msgid "Remember me?"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/page.html:147
 #: ../share/roundup/templates/classic/html/user.register.html:68
+#: ../share/roundup/templates/devel/html/page.html:182
+#: ../share/roundup/templates/devel/html/user.register.html:75
 #: ../share/roundup/templates/minimal/html/page.html:147
 #: ../share/roundup/templates/minimal/html/user.register.html:65
+#: ../share/roundup/templates/responsive/html/page.html:200
+#: ../share/roundup/templates/responsive/html/user.register.html:74
 msgid "Register"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/page.html:150
+#: ../share/roundup/templates/devel/html/page.html:187
 #: ../share/roundup/templates/minimal/html/page.html:150
+#: ../share/roundup/templates/responsive/html/page.html:205
 msgid "Lost&nbsp;your&nbsp;login?"
 msgstr ""
 
@@ -3107,12 +3640,16 @@ msgid "Your Issues"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/page.html:169
+#: ../share/roundup/templates/devel/html/page.html:209
 #: ../share/roundup/templates/minimal/html/page.html:157
+#: ../share/roundup/templates/responsive/html/page.html:226
 msgid "Your Details"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/page.html:171
+#: ../share/roundup/templates/devel/html/page.html:212
 #: ../share/roundup/templates/minimal/html/page.html:159
+#: ../share/roundup/templates/responsive/html/page.html:229
 msgid "Logout"
 msgstr ""
 
@@ -3127,7 +3664,9 @@ msgid "Roundup docs"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/page.html:187
+#: ../share/roundup/templates/devel/html/page.html:254
 #: ../share/roundup/templates/minimal/html/page.html:175
+#: ../share/roundup/templates/responsive/html/page.html:269
 msgid "clear this message"
 msgstr ""
 
@@ -3135,9 +3674,17 @@ msgstr ""
 #: ../share/roundup/templates/classic/html/page.html:264
 #: ../share/roundup/templates/classic/html/page.html:282
 #: ../share/roundup/templates/classic/html/page.html:296
+#: ../share/roundup/templates/devel/html/page.html:316
+#: ../share/roundup/templates/devel/html/page.html:329
+#: ../share/roundup/templates/devel/html/page.html:347
+#: ../share/roundup/templates/devel/html/page.html:361
 #: ../share/roundup/templates/minimal/html/page.html:239
 #: ../share/roundup/templates/minimal/html/page.html:254
 #: ../share/roundup/templates/minimal/html/page.html:268
+#: ../share/roundup/templates/responsive/html/page.html:331
+#: ../share/roundup/templates/responsive/html/page.html:344
+#: ../share/roundup/templates/responsive/html/page.html:362
+#: ../share/roundup/templates/responsive/html/page.html:376
 msgid "don't care"
 msgstr ""
 
@@ -3145,42 +3692,66 @@ msgstr ""
 #: ../share/roundup/templates/classic/html/page.html:266
 #: ../share/roundup/templates/classic/html/page.html:284
 #: ../share/roundup/templates/classic/html/page.html:297
+#: ../share/roundup/templates/devel/html/page.html:318
+#: ../share/roundup/templates/devel/html/page.html:331
+#: ../share/roundup/templates/devel/html/page.html:349
+#: ../share/roundup/templates/devel/html/page.html:362
 #: ../share/roundup/templates/minimal/html/page.html:241
 #: ../share/roundup/templates/minimal/html/page.html:256
 #: ../share/roundup/templates/minimal/html/page.html:269
+#: ../share/roundup/templates/responsive/html/page.html:333
+#: ../share/roundup/templates/responsive/html/page.html:346
+#: ../share/roundup/templates/responsive/html/page.html:364
+#: ../share/roundup/templates/responsive/html/page.html:377
 msgid "------------"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/page.html:325
+#: ../share/roundup/templates/devel/html/page.html:390
 #: ../share/roundup/templates/minimal/html/page.html:297
+#: ../share/roundup/templates/responsive/html/page.html:405
 msgid "no value"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/query.edit.html:4
+#: ../share/roundup/templates/devel/html/query.edit.html:3
+#: ../share/roundup/templates/responsive/html/query.edit.html:3
 msgid "\"Your Queries\" Editing - ${tracker}"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/query.edit.html:6
+#: ../share/roundup/templates/devel/html/query.edit.html:5
+#: ../share/roundup/templates/responsive/html/query.edit.html:5
 msgid "\"Your Queries\" Editing"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/query.edit.html:12
+#: ../share/roundup/templates/devel/html/query.edit.html:11
+#: ../share/roundup/templates/responsive/html/query.edit.html:11
 msgid "You are not allowed to edit queries."
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/query.edit.html:58
+#: ../share/roundup/templates/devel/html/query.edit.html:60
+#: ../share/roundup/templates/responsive/html/query.edit.html:60
 msgid "Query"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/query.edit.html:59
+#: ../share/roundup/templates/devel/html/query.edit.html:61
+#: ../share/roundup/templates/responsive/html/query.edit.html:61
 msgid "Include in \"Your Queries\""
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/query.edit.html:61
+#: ../share/roundup/templates/devel/html/query.edit.html:63
+#: ../share/roundup/templates/responsive/html/query.edit.html:63
 msgid "Private to you?"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/query.edit.html:62
+#: ../share/roundup/templates/devel/html/query.edit.html:64
+#: ../share/roundup/templates/responsive/html/query.edit.html:64
 msgid "delete/restore<br> (javascript<br>required)"
 msgstr ""
 
@@ -3189,31 +3760,47 @@ msgid "Queries I created"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/query.edit.html:77
+#: ../share/roundup/templates/devel/html/query.edit.html:76
+#: ../share/roundup/templates/responsive/html/query.edit.html:76
 msgid "leave out"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/query.edit.html:78
+#: ../share/roundup/templates/devel/html/query.edit.html:77
+#: ../share/roundup/templates/responsive/html/query.edit.html:77
 msgid "include"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/query.edit.html:82
+#: ../share/roundup/templates/devel/html/query.edit.html:81
+#: ../share/roundup/templates/responsive/html/query.edit.html:81
 msgid "leave in"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/query.edit.html:87
 #: ../share/roundup/templates/classic/html/query.edit.html:121
+#: ../share/roundup/templates/devel/html/query.edit.html:99
+#: ../share/roundup/templates/devel/html/query.edit.html:124
+#: ../share/roundup/templates/responsive/html/query.edit.html:99
+#: ../share/roundup/templates/responsive/html/query.edit.html:124
 msgid "edit"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/query.edit.html:91
+#: ../share/roundup/templates/devel/html/query.edit.html:103
+#: ../share/roundup/templates/responsive/html/query.edit.html:103
 msgid "yes"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/query.edit.html:93
+#: ../share/roundup/templates/devel/html/query.edit.html:105
+#: ../share/roundup/templates/responsive/html/query.edit.html:105
 msgid "no"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/query.edit.html:99
+#: ../share/roundup/templates/devel/html/query.edit.html:111
+#: ../share/roundup/templates/responsive/html/query.edit.html:111
 msgid "Delete"
 msgstr ""
 
@@ -3226,6 +3813,8 @@ msgid "Owner"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/query.edit.html:118
+#: ../share/roundup/templates/devel/html/query.edit.html:126
+#: ../share/roundup/templates/responsive/html/query.edit.html:126
 msgid "[not yours to edit]"
 msgstr ""
 
@@ -3239,6 +3828,8 @@ msgstr ""
 
 #: ../share/roundup/templates/classic/html/query.edit.html:138
 #: ../share/roundup/templates/classic/html/query.edit.html:139
+#: ../share/roundup/templates/devel/html/query.edit.html:86
+#: ../share/roundup/templates/responsive/html/query.edit.html:86
 msgid "[query is retired]"
 msgstr ""
 
@@ -3252,47 +3843,71 @@ msgid "[query is private]"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/query.edit.html:168
+#: ../share/roundup/templates/devel/html/query.edit.html:136
+#: ../share/roundup/templates/responsive/html/query.edit.html:136
 msgid "Save Selection"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.forgotten.html:3
+#: ../share/roundup/templates/devel/html/user.forgotten.html:2
+#: ../share/roundup/templates/responsive/html/user.forgotten.html:2
 msgid "Password reset request - ${tracker}"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.forgotten.html:5
+#: ../share/roundup/templates/devel/html/user.forgotten.html:4
+#: ../share/roundup/templates/responsive/html/user.forgotten.html:4
 msgid "Password reset request"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.forgotten.html:9
+#: ../share/roundup/templates/devel/html/user.forgotten.html:10
+#: ../share/roundup/templates/responsive/html/user.forgotten.html:10
 msgid ""
 "You have two options if you have forgotten your password. If you know the "
 "email address you registered with, enter it below."
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.forgotten.html:16
+#: ../share/roundup/templates/devel/html/user.forgotten.html:22
+#: ../share/roundup/templates/responsive/html/user.forgotten.html:22
 msgid "Email Address:"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.forgotten.html:26
 #: ../share/roundup/templates/classic/html/user.forgotten.html:36
+#: ../share/roundup/templates/devel/html/user.forgotten.html:32
+#: ../share/roundup/templates/devel/html/user.forgotten.html:46
+#: ../share/roundup/templates/responsive/html/user.forgotten.html:32
+#: ../share/roundup/templates/responsive/html/user.forgotten.html:46
 msgid "Request password reset"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.forgotten.html:32
+#: ../share/roundup/templates/devel/html/user.forgotten.html:38
+#: ../share/roundup/templates/responsive/html/user.forgotten.html:38
 msgid "Or, if you know your username, then enter it below."
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.forgotten.html:35
+#: ../share/roundup/templates/devel/html/user.forgotten.html:45
+#: ../share/roundup/templates/responsive/html/user.forgotten.html:45
 msgid "Username:"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.forgotten.html:41
+#: ../share/roundup/templates/devel/html/user.forgotten.html:51
+#: ../share/roundup/templates/responsive/html/user.forgotten.html:51
 msgid ""
 "A confirmation email will be sent to you - please follow the instructions "
 "within it to complete the reset process."
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.help-search.html:73
+#: ../share/roundup/templates/devel/html/user.help-search.html:73
+#: ../share/roundup/templates/devel/html/user.help.html:81
+#: ../share/roundup/templates/responsive/html/user.help-search.html:73
+#: ../share/roundup/templates/responsive/html/user.help.html:81
 msgid "Pagesize"
 msgstr ""
 
@@ -3303,85 +3918,124 @@ msgid ""
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.index.html:3
+#: ../share/roundup/templates/devel/html/user.index.html:2
 #: ../share/roundup/templates/minimal/html/user.index.html:3
+#: ../share/roundup/templates/responsive/html/user.index.html:2
 msgid "User listing - ${tracker}"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.index.html:5
+#: ../share/roundup/templates/devel/html/user.index.html:4
 #: ../share/roundup/templates/minimal/html/user.index.html:5
+#: ../share/roundup/templates/responsive/html/user.index.html:4
 msgid "User listing"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.index.html:19
+#: ../share/roundup/templates/devel/html/user.index.html:48
 #: ../share/roundup/templates/minimal/html/user.index.html:19
+#: ../share/roundup/templates/responsive/html/page.html:180
+#: ../share/roundup/templates/responsive/html/user.index.html:49
 msgid "Username"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.index.html:20
+#: ../share/roundup/templates/devel/html/user.index.html:49
+#: ../share/roundup/templates/responsive/html/user.index.html:50
 msgid "Real name"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.index.html:21
 #: ../share/roundup/templates/classic/html/user.register.html:47
+#: ../share/roundup/templates/devel/html/user.index.html:50
+#: ../share/roundup/templates/devel/html/user.register.html:54
+#: ../share/roundup/templates/responsive/html/user.index.html:51
+#: ../share/roundup/templates/responsive/html/user.register.html:53
 msgid "Organisation"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.index.html:22
+#: ../share/roundup/templates/devel/html/user.index.html:51
 #: ../share/roundup/templates/minimal/html/user.index.html:20
+#: ../share/roundup/templates/responsive/html/user.index.html:52
 msgid "Email address"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.index.html:23
+#: ../share/roundup/templates/devel/html/user.index.html:52
+#: ../share/roundup/templates/responsive/html/user.index.html:53
 msgid "Phone number"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.index.html:24
+#: ../share/roundup/templates/devel/html/user.index.html:53
+#: ../share/roundup/templates/responsive/html/user.index.html:54
 msgid "Retire"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.index.html:43
+#: ../share/roundup/templates/devel/html/user.index.html:66
+#: ../share/roundup/templates/responsive/html/user.index.html:67
 msgid "retire"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.item.html:9
+#: ../share/roundup/templates/devel/html/user.item.html:8
 #: ../share/roundup/templates/minimal/html/user.item.html:8
+#: ../share/roundup/templates/responsive/html/user.item.html:8
 msgid "User ${id}: ${title} - ${tracker}"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.item.html:12
+#: ../share/roundup/templates/devel/html/user.item.html:11
 #: ../share/roundup/templates/minimal/html/user.item.html:11
+#: ../share/roundup/templates/responsive/html/user.item.html:11
 msgid "New User - ${tracker}"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.item.html:21
+#: ../share/roundup/templates/devel/html/user.item.html:20
 #: ../share/roundup/templates/minimal/html/user.item.html:20
+#: ../share/roundup/templates/responsive/html/user.item.html:20
 msgid "New User"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.item.html:23
+#: ../share/roundup/templates/devel/html/user.item.html:22
 #: ../share/roundup/templates/minimal/html/user.item.html:22
+#: ../share/roundup/templates/responsive/html/user.item.html:22
 msgid "New User Editing"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.item.html:26
+#: ../share/roundup/templates/devel/html/user.item.html:25
 #: ../share/roundup/templates/minimal/html/user.item.html:25
+#: ../share/roundup/templates/responsive/html/user.item.html:25
 msgid "User${id}"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.item.html:29
+#: ../share/roundup/templates/devel/html/user.item.html:28
 #: ../share/roundup/templates/minimal/html/user.item.html:28
+#: ../share/roundup/templates/responsive/html/user.item.html:28
 msgid "User${id} Editing"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.item.html:80
 #: ../share/roundup/templates/classic/html/user.register.html:35
+#: ../share/roundup/templates/devel/html/user.item.html:78
+#: ../share/roundup/templates/devel/html/user.register.html:42
 #: ../share/roundup/templates/minimal/html/user.item.html:75
 #: ../share/roundup/templates/minimal/html/user.register.html:43
+#: ../share/roundup/templates/responsive/html/user.item.html:78
+#: ../share/roundup/templates/responsive/html/user.register.html:41
 msgid "Roles"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.item.html:88
+#: ../share/roundup/templates/devel/html/user.item.html:86
 #: ../share/roundup/templates/minimal/html/user.item.html:83
+#: ../share/roundup/templates/responsive/html/user.item.html:86
 msgid "(to give the user more than one role, enter a comma,separated,list)"
 msgstr ""
 
@@ -3391,53 +4045,77 @@ msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.item.html:130
 #: ../share/roundup/templates/classic/html/user.register.html:55
+#: ../share/roundup/templates/devel/html/user.item.html:126
+#: ../share/roundup/templates/devel/html/user.register.html:62
 #: ../share/roundup/templates/minimal/html/user.register.html:55
+#: ../share/roundup/templates/responsive/html/user.item.html:126
+#: ../share/roundup/templates/responsive/html/user.register.html:61
 msgid "Alternate E-mail addresses<br>One address per line"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.register.html:4
 #: ../share/roundup/templates/classic/html/user.register.html:7
+#: ../share/roundup/templates/devel/html/user.register.html:3
+#: ../share/roundup/templates/devel/html/user.register.html:6
 #: ../share/roundup/templates/minimal/html/user.register.html:4
 #: ../share/roundup/templates/minimal/html/user.register.html:7
+#: ../share/roundup/templates/responsive/html/user.register.html:3
+#: ../share/roundup/templates/responsive/html/user.register.html:6
 msgid "Registering with ${tracker}"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.register.html:23
+#: ../share/roundup/templates/devel/html/user.register.html:30
 #: ../share/roundup/templates/minimal/html/user.register.html:31
+#: ../share/roundup/templates/responsive/html/user.register.html:29
 msgid "Login Name"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.register.html:27
+#: ../share/roundup/templates/devel/html/user.register.html:34
 #: ../share/roundup/templates/minimal/html/user.register.html:35
+#: ../share/roundup/templates/responsive/html/user.register.html:33
 msgid "Login Password"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.register.html:31
+#: ../share/roundup/templates/devel/html/user.register.html:38
 #: ../share/roundup/templates/minimal/html/user.register.html:39
+#: ../share/roundup/templates/responsive/html/user.register.html:37
 msgid "Confirm Password"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.register.html:43
+#: ../share/roundup/templates/devel/html/user.register.html:50
+#: ../share/roundup/templates/responsive/html/user.register.html:49
 msgid "Phone"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.register.html:51
+#: ../share/roundup/templates/devel/html/user.register.html:58
 #: ../share/roundup/templates/minimal/html/user.register.html:51
+#: ../share/roundup/templates/responsive/html/user.register.html:57
 msgid "E-mail address"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.rego_progress.html:4
+#: ../share/roundup/templates/devel/html/user.rego_progress.html:3
 #: ../share/roundup/templates/minimal/html/user.rego_progress.html:4
+#: ../share/roundup/templates/responsive/html/user.rego_progress.html:3
 msgid "Registration in progress - ${tracker}"
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.rego_progress.html:6
+#: ../share/roundup/templates/devel/html/user.rego_progress.html:5
 #: ../share/roundup/templates/minimal/html/user.rego_progress.html:6
+#: ../share/roundup/templates/responsive/html/user.rego_progress.html:5
 msgid "Registration in progress..."
 msgstr ""
 
 #: ../share/roundup/templates/classic/html/user.rego_progress.html:10
+#: ../share/roundup/templates/devel/html/user.rego_progress.html:9
 #: ../share/roundup/templates/minimal/html/user.rego_progress.html:10
+#: ../share/roundup/templates/responsive/html/user.rego_progress.html:9
 msgid ""
 "You will shortly receive an email to confirm your registration. To complete "
 "the registration process, visit the link indicated in the email."
@@ -3518,6 +4196,520 @@ msgstr ""
 msgid "Unable to classify message, got error:"
 msgstr ""
 
+#: ../share/roundup/templates/devel/html/_generic.index.html:26
+#: ../share/roundup/templates/responsive/html/_generic.index.html:26
+msgid ""
+"<p class=\"form-help\"> You may edit the contents of the ${classname} class "
+"using this form. Commas, newlines and double quotes (\") must be handled "
+"delicately. You may include commas and newlines by enclosing the values in "
+"double-quotes (\"). Double quotes themselves must be quoted by doubling "
+"(\"\"). </p> <p class=\"form-help\"> Multilink properties have their "
+"multiple values colon (\":\") separated (... ,\"one:two:three\", ...) </p> "
+"<p class=\"form-help\"> Remove entries by deleting their line. Add new "
+"entries by appending them to the table - put an X in the id column. </p>"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.index.html:3
+#: ../share/roundup/templates/devel/html/bug.index.html:9
+#: ../share/roundup/templates/responsive/html/bug.index.html:3
+#: ../share/roundup/templates/responsive/html/bug.index.html:9
+msgid "List of bugs"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.index.html:26
+#: ../share/roundup/templates/devel/html/task.index.html:26
+#: ../share/roundup/templates/responsive/html/bug.index.html:26
+#: ../share/roundup/templates/responsive/html/bug.item.html:84
+msgid "Severity"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.index.html:32
+#: ../share/roundup/templates/devel/html/task.index.html:32
+#: ../share/roundup/templates/responsive/html/bug.index.html:31
+#: ../share/roundup/templates/responsive/html/bug.item.html:48
+#: ../share/roundup/templates/responsive/html/task.index.html:31
+#: ../share/roundup/templates/responsive/html/task.item.html:49
+msgid "Components"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.index.html:33
+#: ../share/roundup/templates/devel/html/task.index.html:33
+#: ../share/roundup/templates/responsive/html/bug.index.html:32
+#: ../share/roundup/templates/responsive/html/bug.item.html:113
+msgid "Versions"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.index.html:35
+#: ../share/roundup/templates/devel/html/task.index.html:35
+#: ../share/roundup/templates/responsive/html/bug.index.html:34
+#: ../share/roundup/templates/responsive/html/bug.item.html:130
+#: ../share/roundup/templates/responsive/html/bug.item.html:172
+#: ../share/roundup/templates/responsive/html/task.index.html:33
+#: ../share/roundup/templates/responsive/html/task.item.html:106
+#: ../share/roundup/templates/responsive/html/task.item.html:146
+msgid "Resolution"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.index.html:39
+#: ../share/roundup/templates/devel/html/task.index.html:39
+msgid "Depends On"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.item.html:6
+#: ../share/roundup/templates/responsive/html/bug.item.html:6
+msgid "Bug ${id}: ${title} - ${tracker}"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.item.html:9
+#: ../share/roundup/templates/responsive/html/bug.item.html:9
+msgid "New Bug report - ${tracker}"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.item.html:13
+#: ../share/roundup/templates/responsive/html/bug.item.html:13
+msgid "New Bug"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.item.html:15
+#: ../share/roundup/templates/responsive/html/bug.item.html:15
+msgid "New Bug Editing"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.item.html:18
+#: ../share/roundup/templates/responsive/html/bug.item.html:18
+msgid "Bug ${id}"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.item.html:21
+#: ../share/roundup/templates/responsive/html/bug.item.html:21
+msgid "Bug ${id} Editing"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.item.html:57
+msgid "<span>Type</span>:"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.item.html:63
+msgid "<span>Severity</span>:"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.item.html:72
+msgid "<span>Components</span>:"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.item.html:78
+msgid "<span>Versions</span>:"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.item.html:91
+msgid "<span>Status</span>:"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.item.html:97
+msgid "<span>Resolution</span>:"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.item.html:104
+#: ../share/roundup/templates/devel/html/task.item.html:79
+#: ../share/roundup/templates/responsive/html/bug.item.html:132
+#: ../share/roundup/templates/responsive/html/bug.item.html:183
+#: ../share/roundup/templates/responsive/html/task.item.html:108
+#: ../share/roundup/templates/responsive/html/task.item.html:157
+msgid "Dependencies"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.item.html:116
+#: ../share/roundup/templates/devel/html/task.item.html:91
+msgid "x:"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.item.html:126
+#: ../share/roundup/templates/devel/html/task.item.html:101
+#: ../share/roundup/templates/responsive/html/bug.item.html:204
+#: ../share/roundup/templates/responsive/html/task.item.html:178
+msgid "View"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.item.html:150
+#: ../share/roundup/templates/responsive/html/bug.item.html:249
+msgid "Keywords:"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.item.html:156
+#: ../share/roundup/templates/devel/html/task.item.html:125
+msgid "Comment"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.item.html:171
+#: ../share/roundup/templates/devel/html/task.item.html:140
+#: ../share/roundup/templates/responsive/html/bug.item.html:287
+#: ../share/roundup/templates/responsive/html/task.item.html:254
+msgid "File Description"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.item.html:218
+#: ../share/roundup/templates/devel/html/task.item.html:165
+#: ../share/roundup/templates/responsive/html/bug.item.html:310
+#: ../share/roundup/templates/responsive/html/task.item.html:277
+msgid ""
+"Created on <b>${creation}</b> by <b>${creator}</b>, last changed <b>"
+"${activity}</b> by <b>${actor}</b>."
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.item.html:226
+#: ../share/roundup/templates/devel/html/file.index.html:10
+#: ../share/roundup/templates/devel/html/file.item.html:27
+#: ../share/roundup/templates/devel/html/keyword.index.html:26
+#: ../share/roundup/templates/devel/html/patch.index.html:11
+#: ../share/roundup/templates/devel/html/patch.index.html:44
+#: ../share/roundup/templates/devel/html/patch.item.html:27
+#: ../share/roundup/templates/devel/html/patch.item.html:115
+#: ../share/roundup/templates/devel/html/task.item.html:173
+#: ../share/roundup/templates/responsive/html/bug.item.html:318
+#: ../share/roundup/templates/responsive/html/file.index.html:10
+#: ../share/roundup/templates/responsive/html/file.item.html:27
+#: ../share/roundup/templates/responsive/html/keyword.index.html:26
+#: ../share/roundup/templates/responsive/html/patch.index.html:11
+#: ../share/roundup/templates/responsive/html/patch.index.html:44
+#: ../share/roundup/templates/responsive/html/patch.item.html:27
+#: ../share/roundup/templates/responsive/html/patch.item.html:113
+#: ../share/roundup/templates/responsive/html/task.item.html:285
+msgid "Description"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.item.html:295
+#: ../share/roundup/templates/devel/html/task.item.html:208
+#: ../share/roundup/templates/responsive/html/bug.item.html:352
+#: ../share/roundup/templates/responsive/html/task.item.html:321
+msgid "msg${id}"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.item.html:297
+#: ../share/roundup/templates/devel/html/task.item.html:210
+#: ../share/roundup/templates/responsive/html/bug.item.html:356
+#: ../share/roundup/templates/responsive/html/task.item.html:325
+msgid "Author: ${author} ()"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.search.html:2
+#: ../share/roundup/templates/responsive/html/bug.search.html:2
+msgid "Bug searching - ${tracker}"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.search.html:4
+#: ../share/roundup/templates/responsive/html/bug.search.html:4
+msgid "Bug searching"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.search.html:94
+#: ../share/roundup/templates/devel/html/task.search.html:94
+#: ../share/roundup/templates/responsive/html/bug.search.html:94
+#: ../share/roundup/templates/responsive/html/task.search.html:94
+msgid "Last actor:"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.search.html:105
+#: ../share/roundup/templates/devel/html/task.search.html:105
+#: ../share/roundup/templates/responsive/html/bug.search.html:105
+#: ../share/roundup/templates/responsive/html/task.search.html:105
+msgid "Nosy list member:"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.search.html:115
+#: ../share/roundup/templates/devel/html/task.search.html:115
+#: ../share/roundup/templates/responsive/html/bug.search.html:115
+#: ../share/roundup/templates/responsive/html/task.search.html:115
+msgid "Type:"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.search.html:128
+#: ../share/roundup/templates/devel/html/task.search.html:128
+#: ../share/roundup/templates/responsive/html/bug.search.html:128
+#: ../share/roundup/templates/responsive/html/task.search.html:128
+msgid "Components:"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.search.html:141
+#: ../share/roundup/templates/devel/html/task.search.html:141
+#: ../share/roundup/templates/responsive/html/bug.search.html:141
+msgid "Versions:"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.search.html:167
+#: ../share/roundup/templates/devel/html/task.search.html:167
+#: ../share/roundup/templates/responsive/html/bug.search.html:167
+#: ../share/roundup/templates/responsive/html/task.search.html:141
+msgid "Depends on:"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.search.html:196
+#: ../share/roundup/templates/devel/html/task.search.html:196
+#: ../share/roundup/templates/responsive/html/bug.search.html:196
+msgid "not set"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.search.html:223
+#: ../share/roundup/templates/devel/html/task.search.html:223
+#: ../share/roundup/templates/responsive/html/bug.search.html:223
+#: ../share/roundup/templates/responsive/html/task.search.html:184
+msgid "not closed"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.search.html:237
+#: ../share/roundup/templates/devel/html/task.item.html:73
+#: ../share/roundup/templates/devel/html/task.search.html:237
+#: ../share/roundup/templates/responsive/html/bug.search.html:237
+#: ../share/roundup/templates/responsive/html/task.search.html:198
+msgid "Resolution:"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/bug.search.html:297
+#: ../share/roundup/templates/responsive/html/bug.search.html:297
+msgid "*: The \"all text\" field will look in message bodies and bug titles"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/help.html:11
+#: ../share/roundup/templates/responsive/html/help.html:14
+msgid "${what} help - ${tracker}"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/keyword.index.html:3
+#: ../share/roundup/templates/devel/html/keyword.index.html:9
+#: ../share/roundup/templates/responsive/html/keyword.index.html:3
+#: ../share/roundup/templates/responsive/html/keyword.index.html:9
+msgid "List of keywords"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/keyword.item.html:8
+#: ../share/roundup/templates/responsive/html/keyword.item.html:8
+msgid "Keyword ${id}: ${title} - ${tracker}"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/keyword.item.html:11
+#: ../share/roundup/templates/responsive/html/keyword.item.html:11
+msgid "New Keyword - ${tracker}"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/keyword.item.html:19
+#: ../share/roundup/templates/responsive/html/keyword.item.html:19
+msgid "New Keyword"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/keyword.item.html:21
+#: ../share/roundup/templates/responsive/html/keyword.item.html:21
+msgid "New Keyword Editing"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/keyword.item.html:24
+#: ../share/roundup/templates/responsive/html/keyword.item.html:24
+msgid "Keyword${id}"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/keyword.item.html:27
+#: ../share/roundup/templates/responsive/html/keyword.item.html:27
+msgid "Keyword${id} Editing"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/keyword.item.html:57
+#: ../share/roundup/templates/responsive/html/keyword.item.html:57
+msgid "Description:"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/milestone.index.html:3
+#: ../share/roundup/templates/devel/html/milestone.index.html:9
+#: ../share/roundup/templates/responsive/html/milestone.index.html:3
+#: ../share/roundup/templates/responsive/html/milestone.index.html:9
+msgid "List of milestones"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/msg.item.html:52
+#: ../share/roundup/templates/responsive/html/msg.item.html:42
+msgid "Message-id"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/msg.item.html:57
+#: ../share/roundup/templates/responsive/html/msg.item.html:44
+msgid "In-reply-to"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/page.html:45
+#: ../share/roundup/templates/responsive/html/page.html:61
+msgid "Bugs"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/page.html:51
+#: ../share/roundup/templates/devel/html/page.html:99
+#: ../share/roundup/templates/devel/html/page.html:146
+#: ../share/roundup/templates/responsive/html/page.html:67
+#: ../share/roundup/templates/responsive/html/page.html:116
+#: ../share/roundup/templates/responsive/html/page.html:164
+msgid "Show Open"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/page.html:83
+msgid "Show bug:"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/page.html:93
+#: ../share/roundup/templates/responsive/html/page.html:111
+msgid "Tasks"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/page.html:130
+msgid "Show task:"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/page.html:140
+#: ../share/roundup/templates/responsive/html/page.html:159
+msgid "Milestones"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/page.html:160
+msgid "User"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/page.html:196
+#: ../share/roundup/templates/responsive/html/page.html:213
+msgid "Bugs assigned to you"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/page.html:216
+#: ../share/roundup/templates/responsive/html/page.html:233
+msgid ""
+"<b>Your Queries</b> (<a class=\"nomargin\" href=\"query?@template=edit"
+"\">edit</a>)"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/page.html:237
+#: ../share/roundup/templates/responsive/html/page.html:254
+msgid "Edit Keywords"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/patch.index.html:3
+#: ../share/roundup/templates/devel/html/patch.index.html:36
+#: ../share/roundup/templates/responsive/html/patch.index.html:3
+#: ../share/roundup/templates/responsive/html/patch.index.html:36
+msgid "List of patches - ${tracker}"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/patch.index.html:5
+#: ../share/roundup/templates/devel/html/patch.index.html:38
+#: ../share/roundup/templates/responsive/html/patch.index.html:5
+#: ../share/roundup/templates/responsive/html/patch.index.html:38
+msgid "List of patches"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/patch.item.html:2
+#: ../share/roundup/templates/devel/html/patch.item.html:90
+#: ../share/roundup/templates/responsive/html/patch.item.html:2
+#: ../share/roundup/templates/responsive/html/patch.item.html:88
+msgid "Patch display - ${tracker}"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/patch.item.html:4
+#: ../share/roundup/templates/responsive/html/patch.item.html:4
+msgid "Modify patch"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/patch.item.html:37
+#: ../share/roundup/templates/devel/html/patch.item.html:125
+#: ../share/roundup/templates/responsive/html/patch.item.html:37
+#: ../share/roundup/templates/responsive/html/patch.item.html:123
+msgid "Repository"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/patch.item.html:41
+#: ../share/roundup/templates/devel/html/patch.item.html:129
+#: ../share/roundup/templates/responsive/html/patch.item.html:41
+#: ../share/roundup/templates/responsive/html/patch.item.html:127
+msgid "Repository revision"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/patch.item.html:92
+#: ../share/roundup/templates/responsive/html/patch.item.html:90
+msgid "Patch display"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/query.html:21
+#: ../share/roundup/templates/responsive/html/query.html:21
+msgid "${start}.. ${end} out of ${total}"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/task.index.html:3
+#: ../share/roundup/templates/devel/html/task.index.html:9
+#: ../share/roundup/templates/responsive/html/task.index.html:3
+#: ../share/roundup/templates/responsive/html/task.index.html:9
+msgid "List of tasks"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/task.item.html:6
+#: ../share/roundup/templates/responsive/html/task.item.html:6
+msgid "Task ${id}: ${title} - ${tracker}"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/task.item.html:9
+#: ../share/roundup/templates/responsive/html/task.item.html:9
+msgid "New Task - ${tracker}"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/task.item.html:13
+#: ../share/roundup/templates/responsive/html/task.item.html:13
+msgid "New Task"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/task.item.html:15
+#: ../share/roundup/templates/responsive/html/task.item.html:15
+msgid "New Task Editing"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/task.item.html:18
+#: ../share/roundup/templates/responsive/html/task.item.html:18
+msgid "Task ${id}"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/task.item.html:21
+#: ../share/roundup/templates/responsive/html/task.item.html:21
+msgid "Task${id} Editing"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/task.item.html:55
+#: ../share/roundup/templates/devel/html/task.item.html:59
+#: ../share/roundup/templates/devel/html/task.item.html:70
+msgid ":"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/task.search.html:2
+#: ../share/roundup/templates/responsive/html/task.search.html:2
+msgid "Task searching - ${tracker}"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/task.search.html:4
+#: ../share/roundup/templates/responsive/html/task.search.html:4
+msgid "Task searching"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/task.search.html:297
+#: ../share/roundup/templates/responsive/html/task.search.html:258
+msgid "*: The \"all text\" field will look in message bodies and task titles"
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/user.forgotten.html:13
+#: ../share/roundup/templates/responsive/html/user.forgotten.html:13
+msgid ""
+"If your user was automatically created during import from the old "
+"sourceforge tracker, your e-mail address is &lt;Sourceforge username&gt;"
+"@users.sourceforge.net. The mail address associated with your account can be "
+"changed after login."
+msgstr ""
+
+#: ../share/roundup/templates/devel/html/user.forgotten.html:40
+#: ../share/roundup/templates/responsive/html/user.forgotten.html:40
+msgid ""
+"If you have previously created or modified issue reports in the sourceforge "
+"issue tracker, you have an account here with the same username as your "
+"sourceforge username."
+msgstr ""
+
 #: ../share/roundup/templates/minimal/html/home.html:2
 msgid "Tracker home - ${tracker}"
 msgstr ""
@@ -3532,4 +4724,64 @@ msgstr ""
 
 #: ../share/roundup/templates/minimal/html/home.html:19
 msgid "Please log in or register."
+msgstr ""
+
+#: ../share/roundup/templates/responsive/html/bug.index.html:84
+#: ../share/roundup/templates/responsive/html/bug.index.html:89
+#: ../share/roundup/templates/responsive/html/milestone.index.html:58
+#: ../share/roundup/templates/responsive/html/milestone.index.html:63
+#: ../share/roundup/templates/responsive/html/task.index.html:78
+#: ../share/roundup/templates/responsive/html/task.index.html:83
+msgid "Previous"
+msgstr ""
+
+#: ../share/roundup/templates/responsive/html/bug.index.html:93
+#: ../share/roundup/templates/responsive/html/milestone.index.html:67
+#: ../share/roundup/templates/responsive/html/task.index.html:87
+msgid "<a href=\"#\">${start}..${end} out of ${total}</a>"
+msgstr ""
+
+#: ../share/roundup/templates/responsive/html/bug.index.html:96
+#: ../share/roundup/templates/responsive/html/bug.index.html:101
+#: ../share/roundup/templates/responsive/html/milestone.index.html:70
+#: ../share/roundup/templates/responsive/html/milestone.index.html:75
+#: ../share/roundup/templates/responsive/html/task.index.html:90
+#: ../share/roundup/templates/responsive/html/task.index.html:95
+msgid "Next"
+msgstr ""
+
+#: ../share/roundup/templates/responsive/html/bug.item.html:50
+msgid "Version"
+msgstr ""
+
+#: ../share/roundup/templates/responsive/html/bug.item.html:100
+#: ../share/roundup/templates/responsive/html/task.item.html:89
+msgid "component"
+msgstr ""
+
+#: ../share/roundup/templates/responsive/html/bug.item.html:138
+#: ../share/roundup/templates/responsive/html/task.item.html:114
+msgid "Assigned to"
+msgstr ""
+
+#: ../share/roundup/templates/responsive/html/bug.item.html:140
+#: ../share/roundup/templates/responsive/html/task.item.html:116
+msgid "Nosy list"
+msgstr ""
+
+#: ../share/roundup/templates/responsive/html/bug.item.html:260
+#: ../share/roundup/templates/responsive/html/task.item.html:227
+msgid "<span class=\"badge badge-inverse\">Comment</span> &nbsp;"
+msgstr ""
+
+#: ../share/roundup/templates/responsive/html/page.html:100
+msgid "Show bug"
+msgstr ""
+
+#: ../share/roundup/templates/responsive/html/page.html:148
+msgid "Show task"
+msgstr ""
+
+#: ../share/roundup/templates/responsive/html/page.html:181
+msgid "Password"
 msgstr ""

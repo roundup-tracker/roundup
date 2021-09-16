@@ -66,7 +66,7 @@ from roundup.backends.indexer_common import get_indexer
 from roundup.backends.sessions_rdbms import Sessions, OneTimeKeys
 from roundup.date import Range
 
-from roundup.backends.back_anydbm import compile_expression
+from roundup.mlink_expr import compile_expression
 from roundup.anypy.strings import b2s, bs2b, us2s, repr_export, eval_import
 
 from hashlib import md5
@@ -330,7 +330,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
     # update this number when we need to make changes to the SQL structure
     # of the backen database
-    current_db_version = 5
+    current_db_version = 6
     db_version_updated = False
 
     def upgrade_db(self):
@@ -372,6 +372,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             self.log_info('upgrade to version 5')
             self.fix_version_4_tables()
 
+        if version < 6:
+            self.log_info('upgrade to version 6')
+            self.fix_version_5_tables()
+
         self.database_schema['version'] = self.current_db_version
         self.db_version_updated = True
         return 1
@@ -398,6 +402,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
             if klass.key:
                 self.add_class_key_required_unique_constraint(cn, klass.key)
+
+    def fix_version_5_tables(self):
+        # Default (used by sqlite, postgres): NOOP
+        # mysql overrides this because it is missing
+        # _<class>_key_retired_idx index used to make
+        # sure that the key is unique if it was created
+        # as version 5.
+        pass
 
     def _convert_journal_tables(self):
         """Get current journal table contents, drop the table and re-create"""
@@ -466,6 +478,21 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 for nodeid in klass.list():
                     klass.index(nodeid)
         self.indexer.save_index()
+
+    def checkpoint_data(self):
+        """Call if you need to commit the state of the database
+           so you can try to fix the error rather than rolling back
+
+           Needed for postgres when importing data.
+        """
+        pass
+
+    def restore_connection_on_error(self):
+        """on a database error/exception recover the db connection
+           if left in an unusable state (e.g. postgres requires
+           a rollback).
+        """
+        pass
 
     # Used here in the generic backend to determine if the database
     # supports 'DOUBLE PRECISION' for floating point numbers.
@@ -571,7 +598,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         old_has = {}
         for name, prop in old_spec[1]:
             old_has[name] = 1
-            if name in spec.properties:
+            if name in spec.properties and not spec.properties[name].computed:
                 continue
 
             if prop.find('Multilink to') != -1:
@@ -1146,14 +1173,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                     joi = ', %s' % tn2
                     w = ' and %s.%s=%s.id and %s.__retired__=0'%(tn, lid,
                         tn2, tn2)
+            cursor = self.sql_new_cursor(name='_materialize_multilink')
             sql = 'select %s from %s%s where %s=%s%s' %(lid, tn, joi, nid,
                 self.arg, w)
-            self.sql(sql, (nodeid,))
-            # extract the first column from the result
-            # XXX numeric ids
-            items = [int(x[0]) for x in self.cursor.fetchall()]
-            items.sort()
-            node[propname] = [str(x) for x in items]
+            self.sql(sql, (nodeid,), cursor)
+            # Reduce this to only the first row (the ID), this can save a
+            # lot of space for large query results (not using fetchall)
+            node[propname] = [str(x) for x in sorted(int(r[0]) for r in cursor)]
+            cursor.close()
 
     def _materialize_multilinks(self, classname, nodeid, node, props=None):
         """ get all Multilinks of a node (lazy eval may have skipped this)
@@ -1461,6 +1488,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # open a new cursor for subsequent work
         self.cursor = self.conn.cursor()
 
+    def sql_new_cursor(self, conn=None, *args, **kw):
+        """ Create new cursor, this may need additional parameters for
+            performance optimization for different backends.
+        """
+        if conn is None:
+            conn = self.conn
+        return conn.cursor()
+
     def commit(self):
         """ Commit the current transactions.
 
@@ -1549,6 +1584,17 @@ class Class(hyperdb.Class):
     # For some databases (mysql) the = operator for strings ignores case.
     # We define the default here, can be changed in derivative class
     case_sensitive_equal = '='
+
+    # Some DBs order NULL values last. Set this variable in the backend
+    # for prepending an order by clause for each attribute that causes
+    # correct sort order for NULLs. Examples:
+    # order_by_null_values = '(%s is not NULL)'
+    # order_by_null_values = 'notnull(%s)'
+    # The format parameter is replaced with the attribute.
+    order_by_null_values = None
+
+    # Assuming DBs can do subselects, overwrite if they cannot.
+    supports_subselects = True
 
     def schema(self):
         """ A dumpable version of the schema that we can store in the
@@ -2357,7 +2403,7 @@ class Class(hyperdb.Class):
         ids = [str(x[0]) for x in self.db.cursor.fetchall()]
         return ids
 
-    def _subselect(self, proptree):
+    def _subselect(self, proptree, parentname=None):
         """Create a subselect. This is factored out because some
            databases (hmm only one, so far) doesn't support subselects
            look for "I can't believe it's not a toy RDBMS" in the mysql
@@ -2366,6 +2412,9 @@ class Class(hyperdb.Class):
         multilink_table = proptree.propclass.table_name
         nodeid_name     = proptree.propclass.nodeid_name
         linkid_name     = proptree.propclass.linkid_name
+        if parentname is None:
+            parentname = '_' + proptree.parent.classname
+
         w = ''
         if proptree.need_retired:
             w = ' where %s.__retired__=0'%(multilink_table)
@@ -2374,27 +2423,16 @@ class Class(hyperdb.Class):
             tn2 = '_' + proptree.classname
             w = ', %s where %s.%s=%s.id and %s.__retired__=0'%(tn2,
                 tn1, linkid_name, tn2, tn2)
-        classname = proptree.parent.classname
-        return '_%s.id not in (select %s from %s%s)'%(classname, nodeid_name,
+        return '%s.id not in (select %s from %s%s)'%(parentname, nodeid_name,
             multilink_table, w)
 
-    # Some DBs order NULL values last. Set this variable in the backend
-    # for prepending an order by clause for each attribute that causes
-    # correct sort order for NULLs. Examples:
-    # order_by_null_values = '(%s is not NULL)'
-    # order_by_null_values = 'notnull(%s)'
-    # The format parameter is replaced with the attribute.
-    order_by_null_values = None
-
-    def supports_subselects(self): 
-        '''Assuming DBs can do subselects, overwrite if they cannot.
-	'''
-        return True
-
-    def _filter_multilink_expression_fallback(
-        self, classname, multilink_table, expr):
+    def _filter_multilink_expression_fallback(self, proptree, expr):
         '''This is a fallback for database that do not support
            subselects.'''
+        classname = proptree.parent.uniqname
+        multilink_table = proptree.propclass.table_name
+        nid = proptree.propclass.nodeid_name
+        lid = proptree.propclass.linkid_name
 
         is_valid = expr.evaluate
 
@@ -2411,24 +2449,33 @@ class Class(hyperdb.Class):
         # would be nice but this tricky: Think about the cases
         # where the multilink table does not have join values
         # needed in evaluation.
+        w = j = ''
+        s = 'm.%s' % lid
+        if proptree.need_retired:
+            w = ' and m.__retired__=0'
+        elif proptree.need_child_retired:
+            tn2 = '_' + proptree.classname
+            j = ' LEFT OUTER JOIN %s ON %s.id = m.%s' % (tn2, tn2, lid)
+            w = ' and %s.__retired__=0'%(tn2)
+            s = '%s.id' % tn2
 
-        stmnt = "SELECT c.id, m.linkid FROM _%s c " \
-                "LEFT OUTER JOIN %s m " \
-                "ON c.id = m.nodeid ORDER BY c.id" % (
-                    classname, multilink_table)
+        stmnt = "SELECT c.id, %s FROM _%s as c " \
+                "LEFT OUTER JOIN %s as m " \
+                "ON c.id = m.%s%s%s ORDER BY c.id" % (
+                    s, classname, multilink_table, nid, j, w)
         self.db.sql(stmnt)
 
         # collect all multilink items for a class item
-        for nid, kw in self.db.sql_fetchiter():
-            if nid != last_id:
+        for nodeid, kw in self.db.sql_fetchiter():
+            if nodeid != last_id:
                 if last_id is None:
-                    last_id = nid
+                    last_id = nodeid
                 else:
                     # we have all multilink items -> evaluate!
                     if is_valid(kws): append(last_id)
-                    last_id, kws = nid, []
+                    last_id, kws = nodeid, []
             if kw is not None:
-                kws.append(kw)
+                kws.append(int(kw))
 
         if last_id is not None and is_valid(kws): 
             append(last_id)
@@ -2436,44 +2483,120 @@ class Class(hyperdb.Class):
         # we have ids of the classname table
         return ids.where("_%s.id" % classname, self.db.arg)
 
-    def _filter_multilink_expression(self, classname, multilink_table,
-        linkid_name, nodeid_name, v):
+    def _filter_link_expression(self, proptree, v):
+        """ Filter elements in the table that match the given expression
+        """
+        pln = proptree.parent.uniqname
+        prp = proptree.name
+        try:
+            opcodes = [int(x) for x in v]
+            if min(opcodes) >= -1:
+                raise ValueError()
+            expr = compile_expression(opcodes)
+            # NULL doesn't compare to NULL in SQL
+            # So not (x = '1') will *not* include NULL values for x
+            # That's why we need that and clause:
+            atom = "_%s._%s = %s and _%s._%s is not NULL" % (
+                pln, prp, self.db.arg, pln, prp)
+            atom_nil = "_%s._%s is NULL" % (pln, prp)
+            lambda_atom = lambda n: atom if n.x >= 0 else atom_nil
+            values = []
+            w = expr.generate(lambda_atom)
+            def collect_values(n):
+                if n.x >= 0:
+                    values.append(n.x)
+            expr.visit(collect_values)
+            return w, values
+        except:
+            pass
+        # Fallback to original code
+        args = []
+        where = None
+        d = {}
+        for entry in v:
+            if entry == '-1':
+                entry = None
+            d[entry] = entry
+        l = []
+        if None in d or not d:
+            if None in d: del d[None]
+            l.append('_%s._%s is NULL'%(pln, prp))
+        if d:
+            v = list(d)
+            s = ','.join([self.db.arg for x in v])
+            l.append('(_%s._%s in (%s))'%(pln, prp, s))
+            args = v
+        if l:
+            where = '(' + ' or '.join(l) +')'
+        return where, args
+
+    def _filter_multilink_expression(self, proptree, v):
         """ Filters out elements of the classname table that do not
             match the given expression.
             Returns tuple of 'WHERE' introns for the overall filter.
         """
+        classname = proptree.parent.uniqname
+        multilink_table = proptree.propclass.table_name
+        nid = proptree.propclass.nodeid_name
+        lid = proptree.propclass.linkid_name
+
         try:
             opcodes = [int(x) for x in v]
-            if min(opcodes) >= -1: raise ValueError()
+            if min(opcodes) >= -1:
+                raise ValueError()
 
             expr = compile_expression(opcodes)
 
-            if not self.supports_subselects():
+            if not self.supports_subselects:
                 # We heavily rely on subselects. If there is
                 # no decent support fall back to slower variant.
                 return self._filter_multilink_expression_fallback(
-                    classname, multilink_table, expr)
+                    proptree, expr)
+
+            w = j = ''
+            if proptree.need_retired:
+                w = ' and %s.__retired__=0'%(multilink_table)
+            elif proptree.need_child_retired:
+                tn1 = multilink_table
+                tn2 = '_' + proptree.classname
+                j = ', %s' % tn2
+                w = ' and %s.%s=%s.id and %s.__retired__=0'%(tn1, lid, tn2, tn2)
 
             atom = \
-                "%s IN(SELECT %s FROM %s WHERE %s=a.id)" % (
-                self.db.arg, linkid_name, multilink_table, nodeid_name)
+                "%s IN(SELECT %s FROM %s%s WHERE %s=a.id%s)" % (
+                self.db.arg, lid, multilink_table, j, nid, w)
+            atom_nil = self._subselect(proptree, 'a')
+
+            lambda_atom = lambda n: atom if n.x >= 0 else atom_nil
 
             intron = \
                 "_%(classname)s.id in (SELECT id " \
                 "FROM _%(classname)s AS a WHERE %(condition)s) " % {
                     'classname' : classname,
-                    'condition' : expr.generate(lambda n: atom) }
+                    'condition' : expr.generate(lambda_atom) }
 
             values = []
-            def collect_values(n): values.append(n.x)
+            def collect_values(n):
+                if n.x >= 0:
+                    values.append(n.x)
             expr.visit(collect_values)
 
             return intron, values
         except:
-            # original behavior
-            where = "%s.%s in (%s)" % (
-                multilink_table, linkid_name, ','.join([self.db.arg] * len(v)))
-            return where, v, True # True to indicate original
+            # fallback behavior when expression parsing above fails
+            orclause = ''
+            if '-1' in v :
+                v = [x for x in v if int (x) > 0]
+                orclause = self._subselect(proptree)
+            where = []
+            where.append("%s.%s in (%s)" % (multilink_table, lid,
+                ','.join([self.db.arg] * len(v))))
+            where.append('_%s.id=%s.%s'%(classname, multilink_table, nid))
+            where = ' and '.join (where)
+            if orclause :
+                where = '((' + ' or '.join ((where + ')', orclause)) + ')'
+
+            return where, v
 
     def _filter_sql (self, search_matches, filterspec, srt=[], grp=[], retr=0,
                      retired=False, exact_match_spec={}, limit=None,
@@ -2499,7 +2622,7 @@ class Class(hyperdb.Class):
         a = self.db.arg
 
         # figure the WHERE clause from the filterspec
-        mlfilt = 0      # are we joining with Multilink tables?
+        use_distinct = False  # Do we need a distinct clause?
         sortattr = self._sortattr (group = grp, sort = srt)
         proptree = self._proptree(filterspec, exact_match_spec, sortattr, retr)
         mlseen = 0
@@ -2535,37 +2658,35 @@ class Class(hyperdb.Class):
                 rc = oc = ac = '_%s._%s'%(pln, k)
             if isinstance(propclass, Multilink):
                 if 'search' in p.need_for:
-                    mlfilt = 1
+                    # if we joining with Multilink tables we need distinct
+                    use_distinct = True
                     tn = propclass.table_name
                     nid = propclass.nodeid_name
                     lid = propclass.linkid_name
+                    frum.append(tn)
+                    if p.children or p.need_child_retired:
+                        frum.append('_%s as _%s' % (cn, ln))
+                        where.append('%s.%s=_%s.id'%(tn, lid, ln))
+                        if p.need_child_retired:
+                            where.append('_%s.__retired__=0'%(ln))
+                    # Note: need the where-clause if p has
+                    # children that compute additional restrictions
+                    if  (not p.has_values
+                         or (not isinstance(v, type([])) and v != '-1')
+                         or p.children):
+                        where.append('_%s.id=%s.%s'%(pln, tn, nid))
                     if v in ('-1', ['-1'], []):
                         # only match rows that have count(linkid)=0 in the
                         # corresponding multilink table)
                         where.append(self._subselect(p))
                     else:
-                        frum.append(tn)
-                        gen_join = True
-
-                        if p.has_values and isinstance(v, type([])):
-                            result = self._filter_multilink_expression(pln,
-                                tn, lid, nid, v)
-                            # XXX: We dont need an id join if we used the filter
-                            gen_join = len(result) == 3
-
-                        if gen_join:
-                            where.append('_%s.id=%s.%s'%(pln, tn, nid))
-
-                        if p.children or p.need_child_retired:
-                            frum.append('_%s as _%s' % (cn, ln))
-                            where.append('%s.%s=_%s.id'%(tn, lid, ln))
-                            if p.need_child_retired:
-                                where.append('_%s.__retired__=0'%(ln))
-
                         if p.has_values:
                             if isinstance(v, type([])):
-                                where.append(result[0])
-                                args += result[1]
+                                # The where-clause above is conditionally
+                                # created in _filter_multilink_expression
+                                w, arg = self._filter_multilink_expression(p, v)
+                                where.append(w)
+                                args += arg
                             else:
                                 where.append('%s.%s=%s'%(tn, lid, a))
                                 args.append(v)
@@ -2629,25 +2750,15 @@ class Class(hyperdb.Class):
                     if p.children:
                         if 'sort' not in p.need_for:
                             frum.append('_%s as _%s' % (cn, ln))
-                        where.append('_%s._%s=_%s.id'%(pln, k, ln))
+                        c = [x for x in p.children if 'search' in x.need_for]
+                        if c:
+                            where.append('_%s._%s=_%s.id'%(pln, k, ln))
                     if p.has_values:
                         if isinstance(v, type([])):
-                            d = {}
-                            for entry in v:
-                                if entry == '-1':
-                                    entry = None
-                                d[entry] = entry
-                            l = []
-                            if None in d or not d:
-                                if None in d: del d[None]
-                                l.append('_%s._%s is NULL'%(pln, k))
-                            if d:
-                                v = list(d)
-                                s = ','.join([a for x in v])
-                                l.append('(_%s._%s in (%s))'%(pln, k, s))
-                                args = args + v
-                            if l:
-                                where.append('(' + ' or '.join(l) +')')
+                            w, arg = self._filter_link_expression(p, v)
+                            if w:
+                                where.append(w)
+                                args += arg
                         else:
                             if v in ('-1', None):
                                 v = None
@@ -2792,9 +2903,8 @@ class Class(hyperdb.Class):
             where = ' where ' + (' and '.join(where))
         else:
             where = ''
-        if mlfilt:
-            # we're joining tables on the id, so we will get dupes if we
-            # don't distinct()
+        if use_distinct:
+            # Avoid dupes
             cols[0] = 'distinct(_%s.id)'%icn
 
         order = []
@@ -2857,18 +2967,26 @@ class Class(hyperdb.Class):
             return []
         proptree, sql, args = sq
 
-        self.db.sql(sql, args)
-        l = self.db.sql_fetchall()
+        cursor = self.db.sql_new_cursor(name='filter')
+        self.db.sql(sql, args, cursor)
+        # Reduce this to only the first row (the ID), this can save a
+        # lot of space for large query results (not using fetchall)
+        # We cannot do this if sorting by multilink
+        if proptree.tree_sort_done:
+            l = [str(row[0]) for row in cursor]
+        else:
+            l = cursor.fetchall()
+        cursor.close()
 
+        # Multilink sorting
         # Compute values needed for sorting in proptree.sort
-        for p in proptree:
-            if hasattr(p, 'auxcol'):
-                p.sort_ids = [row[p.auxcol] for row in l]
-                p.sort_result = p._sort_repr (p.propclass.sort_repr, p.sort_ids)
-        # return the IDs (the first column)
-        # XXX numeric ids
-        l = [str(row[0]) for row in l]
-        l = proptree.sort (l)
+        if not proptree.tree_sort_done:
+            for p in proptree:
+                if hasattr(p, 'auxcol'):
+                    p.sort_ids = [row[p.auxcol] for row in l]
+                    p.sort_result = p._sort_repr \
+                        (p.propclass.sort_repr, p.sort_ids)
+            l = proptree.sort ([str(row[0]) for row in l])
 
         if __debug__:
             self.db.stats['filtering'] += (time.time() - start_t)
@@ -2893,7 +3011,7 @@ class Class(hyperdb.Class):
         if sq is None:
             return
         proptree, sql, args = sq
-        cursor = self.db.conn.cursor()
+        cursor = self.db.sql_new_cursor(name='filter_iter')
         self.db.sql(sql, args, cursor)
         classes = {}
         for p in proptree:
@@ -2925,6 +3043,7 @@ class Class(hyperdb.Class):
                     node[propname] = value
                 self.db._cache_save(key, node)
             yield str(row[0])
+        cursor.close()
 
     def filter_sql(self, sql):
         """Return a list of the ids of the items in this class that match
@@ -3024,6 +3143,9 @@ class Class(hyperdb.Class):
 
             Return the nodeid of the node imported.
         """
+
+        logger = logging.getLogger('roundup.hyperdb.backend')
+
         if self.db.journaltag is None:
             raise DatabaseError(_('Database open read-only'))
         properties = self.getprops()
@@ -3079,19 +3201,59 @@ class Class(hyperdb.Class):
         if newid is None:
             newid = self.db.newid(self.classname)
 
+        activeid = None
+        has_node = False
+
+        # use the arg for __retired__ to cope with any odd database type
+        # conversion (hello, sqlite)
+        retired_sql = 'update _%s set __retired__=%s where id=%s'%(
+            self.classname, self.db.arg, self.db.arg)
+
         # insert new node or update existing?
-        if not self.hasnode(newid):
-            self.db.addnode(self.classname, newid, d) # insert
-        else:
-            self.db.setnode(self.classname, newid, d) # update
+        # if integrity error raised try to recover
+        try:
+            has_node = self.hasnode(newid)
+            if not has_node:
+                self.db.addnode(self.classname, newid, d) # insert
+            else:
+                self.db.setnode(self.classname, newid, d) # update
+            self.db.checkpoint_data()
+        # Blech, different db's return different exceptions
+        # so I can't list them here as some might not be defined
+        # on a given system. So capture all exceptions from the
+        # code above and try to correct it. If it's correctable its
+        # some form of Uniqueness Failure/Integrity Error otherwise
+        # undo the fixup and pass on the error.
+        except Exception as e:  # nosec
+            logger.info('Attempting to handle import exception '
+                        'for id %s: %s' % (newid,e))
+
+            keyname = self.db.user.getkey()
+            if has_node or not keyname:  # Not an integrity error
+                raise
+            self.db.restore_connection_on_error()
+            activeid = self.db.user.lookup(d[keyname])
+            self.db.sql(retired_sql, (-1, activeid)) # clear the active node
+            # this can only happen on an addnode, so retry
+            try:
+                # if this raises an error, let it propagate upward
+                self.db.addnode(self.classname, newid, d) # insert
+            except Exception:
+                # undo the database change
+                self.db.sql(retired_sql, (0, activeid)) # clear the active node
+                raise # propagate
+            logger.info('Successfully handled import exception '
+                        'for id %s which conflicted with %s' % (
+                            newid, activeid))
 
         # retire?
         if retire:
-            # use the arg for __retired__ to cope with any odd database type
-            # conversion (hello, sqlite)
-            sql = 'update _%s set __retired__=%s where id=%s'%(self.classname,
-                self.db.arg, self.db.arg)
-            self.db.sql(sql, (newid, newid))
+            self.db.sql(retired_sql, (newid, newid))
+
+        if activeid:
+            # unretire the active node
+            self.db.sql(retired_sql, ('0', activeid))
+
         return newid
 
     def export_journals(self):

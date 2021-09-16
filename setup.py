@@ -21,19 +21,13 @@
 
 from __future__ import print_function
 from roundup.dist.command.build_doc import build_doc
-from roundup.dist.command.build_scripts import build_scripts
 from roundup.dist.command.build import build, list_message_files
 from roundup.dist.command.bdist_rpm import bdist_rpm
 from roundup.dist.command.install_lib import install_lib
 
-# FIXME: setuptools breaks the --manifest-only option to setup.py and
-# doesn't seem to generate a MANIFEST file. Since I'm not familiar with
-# the way setuptools handles the files to include I'm commenting this
-# for now -- Ralf Schlatterbeck
-#try:
-#    from setuptools import setup
-#except ImportError:
-from distutils.core import setup
+from setuptools import setup
+
+from sysconfig import get_path
 
 import sys, os
 from glob import glob
@@ -48,13 +42,61 @@ def include(d, e):
 
     return (d, [f for f in glob('%s/%s'%(d, e)) if os.path.isfile(f)])
 
-def scriptname(path):
+
+def mapscript(path):
     """ Helper for building a list of script names from a list of
         module files.
     """
-    script = os.path.splitext(os.path.basename(path))[0]
-    script = script.replace('_', '-')
-    return script
+    module = os.path.splitext(os.path.basename(path))[0]
+    script = module.replace('_', '-')
+    return '%s = roundup.scripts.%s:run' % (script, module)
+
+def make_data_files_absolute(data_files, prefix):
+    """Using setuptools data files are put under the egg install directory
+       if the datafiles are relative paths. We don't want this. Data files
+       like man pages, documentation, templates etc. should be installed
+       in a directory outside of the install directory. So we prefix
+       all datafiles making them absolute so man pages end up in places
+       like: /usr/local/share/man, docs in /usr/local/share/doc/roundup,
+       templates in /usr/local/share/roundup/templates.
+    """
+    new_data_files = [ (os.path.join(prefix,df[0]),df[1])
+                       for df in data_files ]
+
+    return new_data_files
+
+def get_prefix():
+    """Get site specific prefix using --prefix, platform lib or
+       sys.prefix.
+    """
+    prefix_arg=False
+    prefix=""
+    for a in sys.argv:
+        if prefix_arg:
+            prefix=a
+            break
+        # is there a short form -p or something for this??
+        if a.startswith('--prefix'):
+            if a == '--prefix':
+                # next argument is prefix
+                prefix_arg=True
+                continue
+            else:
+                # strip '--prefix='
+                prefix=a[9:]
+    if prefix:
+        return prefix
+    else:
+        # get the platform lib path.
+        plp = get_path('platlib')
+        # nuke suffix that matches lib/* and return prefix
+        head, tail = os.path.split(plp)
+        while tail != 'lib' and head != '':
+            head, tail = os.path.split(head)
+        if not head:
+            head = sys.prefix
+        return head
+
 
 def main():
     # template munching
@@ -67,10 +109,11 @@ def main():
         'roundup.cgi.ZTUtils',
         'roundup.backends',
         'roundup.scripts',
+        'roundup.test',
     ]
 
     # build list of scripts from their implementation modules
-    scripts = [scriptname(f) for f in glob('roundup/scripts/[!_]*.py')]
+    scripts = [mapscript(f) for f in glob('roundup/scripts/[!_]*.py')]
 
     data_files = [
         ('share/roundup/cgi-bin', ['frontends/roundup.cgi']),
@@ -97,6 +140,8 @@ def main():
     data_files.append(include('share/doc/roundup/html/_images', '*'))
     data_files.append(include('share/doc/roundup/html/_sources', '*'))
     data_files.append(include('share/doc/roundup/html/_static', '*'))
+
+    data_files = make_data_files_absolute(data_files, get_prefix())
 
     # perform the setup action
     from roundup import __version__
@@ -160,13 +205,14 @@ def main():
 
           # Override certain command classes with our own ones
           cmdclass= {'build_doc': build_doc,
-                     'build_scripts': build_scripts,
                      'build': build,
                      'bdist_rpm': bdist_rpm,
                      'install_lib': install_lib,
                      },
           packages=packages,
-          scripts=scripts,
+          entry_points={
+              'console_scripts': scripts
+          },
           data_files=data_files)
 
 if __name__ == '__main__':

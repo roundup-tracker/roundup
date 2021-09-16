@@ -733,9 +733,8 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         for klass, htmlklass in propclasses:
             if not isinstance(prop, klass):
                 continue
-            value = prop.get_default_value()
             return htmlklass(self._client, self._classname, None, prop, item,
-                value, self._anonymous)
+                None, self._anonymous)
 
         # no good
         raise KeyError(item)
@@ -959,7 +958,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
             '\n' + \
             self.input(type="hidden", name="@action", value=action)
 
-    def history(self):
+    def history(self, **args):
         if not self.is_view_ok():
             return self._('[hidden]')
         return self._('New node - no history')
@@ -1058,8 +1057,11 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
 
         # get the value, handling missing values
         value = None
-        if int(self._nodeid) > 0:
-            value = self._klass.get(self._nodeid, items[0], None)
+        try:
+            if int(self._nodeid) > 0:
+                value = self._klass.get(self._nodeid, items[0], None)
+        except ValueError:
+            value = self._nodeid
         if value is None:
             if isinstance(prop, hyperdb.Multilink):
                 value = []
@@ -1131,6 +1133,12 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         if not self.is_view_ok():
             return self._('[hidden]')
 
+        # history should only use database values not current
+        # form values. Disable form_wins for the body of the
+        # function. Reset it to original value on return.
+        orig_form_wins = self._client.form_wins
+        self._client.form_wins = False
+                
         # get the journal, sort and reverse
         history = self._klass.history(self._nodeid, skipquiet=(not showall))
         history.sort(key=lambda a: a[:3])
@@ -1373,6 +1381,9 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
              self._('<th>Args</th>'),
             '</tr>']
         l.append('</table>')
+
+        self._client.form_wins = orig_form_wins
+        
         return '\n'.join(l)
 
     def renderQueryForm(self):
@@ -1512,6 +1523,10 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
             else:
                 value = form.getfirst(self._formname).strip() or None
             self._value = value
+
+        # if self._value is None see if we have a default value
+        if self._value is None:
+            self._value = prop.get_default_value()
 
         HTMLInputMixin.__init__(self)
 
@@ -1691,6 +1706,23 @@ class StringHTMLProperty(HTMLProperty):
                 s = match.group(group)
                 return '<%s>' % s
         if match.group('id') and len(match.group('id')) < 10:
+            # Pass through markdown style links:
+            #     [issue1](https://....)
+            #     [issue1](issue1)
+            # as 'issue1'. Don't convert issue1 into a link.
+            # https://issues.roundup-tracker.org/issue2551108
+            start = match.start('item') - 1
+            end = match.end('item')
+            if start >= 0:
+                prefix = match.string[start]
+                if end < len(match.string):
+                    suffix = match.string[end]
+                    if (prefix, suffix) in {('[', ']')}:
+                        if match.string[end+1] == '(': # find following (
+                            return match.group(0)
+                    if (prefix, suffix) in {('(',')')}:
+                        if match.string[start-1] == ']':
+                            return match.group(0)
             return self._hyper_repl_item(match,'[%(item)s](%(cls)s%(id)s)')
         else:
             # just return the matched text
@@ -2254,12 +2286,16 @@ class DateHTMLProperty(HTMLProperty):
         else:
             offset = self._offset
 
-        if not self._value:
-            return ''
-        elif format is not self._marker:
-            return self._value.local(offset).pretty(format)
-        else:
-            return self._value.local(offset).pretty()
+        try:
+            if not self._value:
+                return ''
+            elif format is not self._marker:
+                return self._value.local(offset).pretty(format)
+            else:
+                return self._value.local(offset).pretty()
+        except AttributeError:
+            # not a date value, e.g. from unsaved form data
+            return str(self._value)
 
     def local(self, offset):
         """ Return the date/time as a local (timezone offset) date/time.
@@ -2510,7 +2546,14 @@ class LinkHTMLProperty(HTMLProperty):
 
         for optionid in options:
             # get the option value, and if it's None use an empty string
-            option = linkcl.get(optionid, k) or ''
+            try:
+                option = linkcl.get(optionid, k) or ''
+            except IndexError:
+                # optionid does not exist. E.G.
+                #   IndexError: no such queue z
+                # can be set using ?queue=z in URL for
+                # a new issue
+                continue
 
             # figure if this option is selected
             s = ''
@@ -2605,10 +2648,54 @@ class MultilinkHTMLProperty(HTMLProperty):
         l.reverse()
         return self.viewableGenerator(l)
 
-    def sorted(self, property, reverse=False):
-        """ Return this multilink sorted by the given property """
+    def sorted(self, property, reverse=False, NoneFirst=False):
+        """ Return this multilink sorted by the given property 
+
+            Set Nonefirst to True to sort None/unset property
+            before a property with a valid value.
+            
+        """
+
+        # use 2 if NoneFirst is False to sort None last
+        # 0 to sort to sort None first
+        # 1 is used to sort the integer values.
+        NoneCode = (2,0)[NoneFirst]
+
         value = list(self.__iter__())
-        value.sort(key=lambda a:a[property], reverse=reverse)
+
+        if not value:
+            # return empty list, nothing to sort.
+            return value
+
+        # determine orderprop for property if property is a link or multilink
+        prop = self._db.getclass(self._classname).getprops()[property]
+        if type(prop) in [hyperdb.Link, hyperdb.Multilink]:
+            orderprop = value[0]._db.getclass(prop.classname).orderprop()
+            sort_by_link = True
+        else: 
+            orderprop = property
+            sort_by_link = False
+
+        def keyfunc(v):
+            # Return tuples made of (group order (int), base python
+            # type) to sort function.
+            # Do not return v[property] as that returns an HTMLProperty
+            # type/subtype that throws an exception when sorting
+            # python type (int. str ...) against None.
+            prop = v[property]
+            if not prop._value:
+                return (NoneCode, None)
+
+            if sort_by_link:
+                val = prop[orderprop]._value
+            else:
+                val = prop._value
+
+            if val is None: # verify orderprop is set to a value
+                return (NoneCode, None)
+            return (1, val)  # val should be base python type
+
+        value.sort(key=keyfunc, reverse=reverse)
         return value
 
     def __contains__(self, value):

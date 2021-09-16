@@ -20,6 +20,7 @@ import roundup.date
 from roundup.anypy.strings import b2s
 import roundup.anypy.random_ as random_
 import binascii
+from roundup.i18n import _
 
 from roundup.backends import list_backends
 
@@ -407,6 +408,18 @@ class IsolationOption(Option):
             return _val
         raise OptionValueError(self, value, self.class_description)
 
+class IndexerOption(Option):
+    """Valid options for indexer"""
+
+    allowed = ['', 'xapian', 'whoosh', 'native']
+    class_description = "Allowed values: %s" % ', '.join("'%s'" % a
+                                                         for a in allowed)
+
+    def str2value(self, value):
+        _val = value.lower()
+        if _val in self.allowed:
+            return _val
+        raise OptionValueError(self, value, self.class_description)
 
 class MailAddressOption(Option):
 
@@ -724,7 +737,7 @@ SETTINGS = (
             "visible to all users by adding, e.g., the 'User' role here."),
         (Option, "error_messages_to", "user",
             'Send error message emails to the "dispatcher", "user", '
-            'or "both" (these are the allowed values)?\n'
+            'or "both" (these are the three allowed values).\n'
             'The dispatcher is configured using the DISPATCHER_EMAIL'
             ' setting.'),
         (Option, "html_version", "html4",
@@ -741,11 +754,17 @@ SETTINGS = (
             "email?"),
         (BooleanOption, "email_registration_confirmation", "yes",
             "Offer registration confirmation by email or only through the web?"),
-        (Option, "indexer", "",
+        (IndexerOption, "indexer", "",
             "Force Roundup to use a particular text indexer.\n"
             "If no indexer is supplied, the first available indexer\n"
             "will be used in the following order:\n"
             "Possible values: xapian, whoosh, native (internal)."),
+        (Option, "indexer_language", "english",
+            "Used to determine what language should be used by the\n"
+            "indexer above. Currently only affects Xapian indexer. It\n"
+            "sets the language for the stemmer.\n"
+            "Possible values: must be a valid language for the indexer,\n"
+            "see indexer documentation for details."),
         (WordListOption, "indexer_stopwords", "",
             "Additional stop-words for the full-text indexer specific to\n"
             "your tracker. See the indexer source for the default list of\n"
@@ -817,10 +836,28 @@ SETTINGS = (
             "trust *all* users uploading content to your tracker."),
         (BooleanOption, 'http_auth', "yes",
             "Whether to use HTTP Basic Authentication, if present.\n"
-            "Roundup will use either the REMOTE_USER or HTTP_AUTHORIZATION\n"
+            "Roundup will use either the REMOTE_USER (the value set \n"
+            "by http_auth_header) or HTTP_AUTHORIZATION\n"
             "variables supplied by your web server (in that order).\n"
             "Set this option to 'no' if you do not wish to use HTTP Basic\n"
             "Authentication in your web interface."),
+        (Option, "http_auth_header", "",
+            "The HTTP header that holds the user authentication information.\n"
+            "If empty (default) the REMOTE_USER header is used.\n"
+            "This is used when the upstream HTTP server authenticates\n"
+            "the user and passes the username using this HTTP header."),
+        (BooleanOption, "dynamic_compression", "yes",
+            "Setting this option makes roundup look at the Accept-Encoding\n"
+            "header supplied by the client. It will compress the response\n"
+            "on the fly using a common encoding. Disable it if your\n"
+            "upstream server does compression of dynamic data."),
+        (BooleanOption, "use_precompressed_files", "no",
+            "Setting this option enables Roundup to serve precompressed\n"
+            "static files. The admin must create the compressed files with\n"
+            "proper extension (.gzip, .br, .zstd) in the same directory as\n"
+            "the uncompressed file. If a precompressed file doesn't\n"
+            "exist, the uncompressed file will be served possibly with\n"
+            "dynamic compression."),
         (BooleanOption, 'http_auth_convert_realm_to_lowercase', "no",
             "If usernames consist of a name and a domain/realm part of\n"
             "the form user@realm and we're using REMOTE_USER for\n"
@@ -1048,7 +1085,7 @@ always passes, so setting it less than 1 is not recommended."""),
         (NullableOption, 'read_default_group', 'roundup',
             "Name of the group to use in the MySQL defaults file (.my.cnf).\n"
             "Only used in MySQL connections."),
-        (Option, 'mysql_charset', 'utf8',
+        (Option, 'mysql_charset', 'utf8mb4',
             "Charset to use for mysql connection,\n"
             "use 'default' for the mysql default, no charset option\n"
             "is used when creating the connection in that case.\n"
@@ -1082,6 +1119,10 @@ always passes, so setting it less than 1 is not recommended."""),
             "Database isolation level, currently supported for\n"
             "PostgreSQL and mysql. See, e.g.,\n"
             "http://www.postgresql.org/docs/9.1/static/transaction-iso.html"),
+        (BooleanOption, "serverside_cursor", "yes",
+            "Set the database cursor for filter queries to serverside\n"
+            "cursor, this avoids caching large amounts of data in the\n"
+            "client. This option only applies for the postgresql backend."),
     ), "Settings in this section (except for backend) are used"
         " by RDBMS backends only."
     ),
@@ -1762,8 +1803,7 @@ class CoreConfig(Config):
     """Roundup instance configuration.
 
     Core config has a predefined layout (see the SETTINGS structure),
-    supports loading of old-style pythonic configurations and holds
-    three additional attributes:
+    two additional attributes:
         detectors:
             user-defined configuration for detectors
         ext:
@@ -1771,8 +1811,6 @@ class CoreConfig(Config):
 
     """
 
-    # module name for old style configuration
-    PYCONFIG = "config"
     # user configs
     ext = None
     detectors = None
@@ -1837,12 +1875,44 @@ class CoreConfig(Config):
         logger.handlers = [hdlr]
         logger.setLevel(self["LOGGING_LEVEL"] or "ERROR")
 
+    def validator(self, options):
+        """ Validate options once all options are loaded.
+
+            Used to validate settings when options are dependent
+            on each other. E.G. indexer_language can only be
+            validated if xapian indexer is used.
+        """
+        if options['INDEXER']._value in ("", "xapian"):
+            try:
+                import xapian
+            except ImportError:
+                # indexer is probably '' and xapian isn't present
+                # so just return at end of method
+                pass
+            else:
+                try:
+                    lang = options["INDEXER_LANGUAGE"]._value
+                    xapian.Stem(lang)
+                except xapian.InvalidArgumentError:
+                    import textwrap
+                    lang_avail = b2s(xapian.Stem.get_available_languages())
+                    languages = textwrap.fill(_("Valid languages: ") +
+                                              lang_avail, 75,
+                                              subsequent_indent="   ")
+                    raise OptionValueError( options["INDEXER_LANGUAGE"],
+                                            lang, languages)
+
     def load(self, home_dir):
         """Load configuration from path designated by home_dir argument"""
         if os.path.isfile(os.path.join(home_dir, self.INI_FILE)):
             self.load_ini(home_dir)
         else:
             raise NoConfigError(home_dir)
+
+        # validator does inter-setting validation checks.
+        # when there are dependencies between options.
+        self.validator(self.options)
+
         self.init_logging()
         self.ext = UserConfig(os.path.join(home_dir, "extensions"))
         self.detectors = UserConfig(os.path.join(home_dir, "detectors"))

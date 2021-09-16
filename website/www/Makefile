@@ -17,7 +17,7 @@ docs:
 
 html: docs
 	mkdir -p $(TMP)/doctrees $(HTML)
-	sphinx-build -b html -d $(TMP)/doctrees . $(HTML)
+	sphinx-build -n -W -b html -d $(TMP)/doctrees . $(HTML)
 
 linkcheck:
 	mkdir -p $(TMP)/linkcheck $(TMP)/doctrees

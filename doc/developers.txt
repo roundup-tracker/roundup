@@ -12,6 +12,10 @@ Contents
 .. contents::
    :local:
 
+If you are looking for info on managing the roundup-tracker.org
+infrastructure, that information has migrated to website/README.txt
+in the roundup repo.
+
 Getting Started
 ---------------
 
@@ -24,67 +28,6 @@ All development is coordinated through two resources:
   https://sourceforge.net/projects/roundup/lists/roundup-devel
 - The issue tracker running at
   https://issues.roundup-tracker.org/
-
-Website, wiki
--------------
-
-The website is in our repository, so is the configuration of the wiki.
-Please check the README.txt in the "website" subdirectory 
-of a current checkout.
-
-Issue Tracker
--------------
-
-The tracker resides on bugs.ams1.psf.io (188.166.48.69). You can also
-ssh to issues.roundup-tracker.org. They have the same fingerprint:
-
-    ED25519 key fingerprint is f1:f7:3d:bf:3b:01:8d:e1:4e:30:b3:0f:6e:98:b8:9b.
-
-The roundup installation belongs to the user roundup. 
-The setup uses virtualenv. Use the python version:
-
-  /srv/roundup/env/bin/python2.7
-
-to get a python with roundup on the PYTHONPATH.
-
-The Roundup tracker https://issues.roundup-tracker.org/ is in
-/srv/roundup/trackers/roundup/ with the database set to
-/srv/roundup/data/roundup/. Note that postgres is used for the
-backend, so the database directory above is used for msgs and files.
-
-Source is in: /srv/roundup/src/
-
-Roundup is run using gunicorn and wsgi.
-
-You have 'sudo -u roundup' access if you need to run things as the
-roundup user.
-
-The configuration is in the "website/issues" section of Roundup's
-Mercurical SCM repository and copied manually to the live tracker.
-
-  * get a working copy of roundup/website/issues from the SCM, either via
-        hg clone https://hg.code.sf.net/p/roundup/code
-    or download a snapshot:
-        https://sourceforge.net/p/roundup/code/ci/default/tarball
-
-  * check the differences
-      diff -ur /srv/roundup/trackers/roundup/ roundup/website/issues/
-
-Copy differences using 'sudo -u roundup ...'.
-
-Getting a user account
-~~~~~~~~~~~~~~~~~~~~~~
-
-To get access to the host, submit a pull request for:
-
-    https://github.com/python/psf-salt
-
-by forking the repo, make a change similar to:
-
-    https://github.com/rouilj/psf-salt/commit/2aa55d0fc5a343f45f5507437d3fba077cbaf852
-
-and submit it as a pull request. Contact ewdurbin via #roundup IRC or by
-adding an issue to the master psf-salt repo.
 
 
 Small Changes
@@ -286,8 +229,11 @@ delegating translation to the Client instance.  In HTML templates,
 translator object is available as context variable ``i18n``.
 
 HTML templates have special markup for translatable strings.
-The syntax for this markup is defined on `ZPTInternationalizationSupport`_
-page.  Roundup translation service currently ignores values for
+The syntax for this markup is discussed at `ZPTInternationalization`_.
+(Originally documented at
+http://dev.zope.org/Wikis/DevSite/Projects/ComponentArchitecture/ZPTInternationalizationSupport
+which is now gone.)
+Roundup translation service currently ignores values for
 ``i18n:domain``, ``i18n:source`` and ``i18n:target``.
 
 Template markup examples:
@@ -476,5 +422,4 @@ At run time, Roundup automatically compiles message catalogs whenever
 .. _Template Attribute Language Expression Syntax:
    https://pagetemplates.readthedocs.io/en/latest/history/TALESSpecification13.html
 .. _vim: https://www.vim.org/
-.. _ZPTInternationalizationSupport: http://dev.zope.org/Wikis/DevSite/Projects/ComponentArchitecture/ZPTInternationalizationSupport
-
+.. _ZPTInternationalization: http://grok.zope.org/documentation/how-to/how-to-internationalize-your-application/view

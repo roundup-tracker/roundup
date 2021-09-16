@@ -28,6 +28,7 @@ import logging
 # roundup modules
 from . import date, password
 from .support import ensureParentsExist, PrioList
+from roundup.mlink_expr import Expression
 from roundup.i18n import _
 from roundup.cgi.exceptions import DetectorError
 from roundup.anypy.cmp_ import NoneAndDictComparable
@@ -141,7 +142,7 @@ class Computed(object):
 
 class String(_Type):
     """An object designating a String property."""
-    def __init__(self, indexme='no', required=False, default_value="",
+    def __init__(self, indexme='no', required=False, default_value=None,
                  quiet=False):
         super(String, self).__init__(required, default_value, quiet)
         self.indexme = indexme == 'yes'
@@ -529,7 +530,7 @@ class Proptree(object):
 
     The Proptree is also used for transitively searching attributes for
     backends that do not support transitive search (e.g. anydbm). The
-    _val attribute with set_val is used for this.
+    val attribute with set_val is used for this.
     """
 
     def __init__(self, db, cls, name, props, parent=None, retr=False):
@@ -537,8 +538,9 @@ class Proptree(object):
         self.name = name
         self.props = props
         self.parent = parent
-        self._val = None
+        self.val = None
         self.has_values = False
+        self.has_result = False
         self.cls = cls
         self.classname = None
         self.uniqname = None
@@ -582,8 +584,9 @@ class Proptree(object):
         if name in self.propdict:
             pt = self.propdict[name]
             pt.need_for[need_for] = True
-            if retr and isinstance(pt.propclass, Link):
-                pt.append_retr_props()
+            # For now we do not recursively retrieve Link properties
+            #if retr and isinstance(pt.propclass, Link):
+            #    pt.append_retr_props()
             return pt
         propclass = self.props[name]
         cls = None
@@ -601,8 +604,9 @@ class Proptree(object):
                 child.need_child_retired = True
         self.children.append(child)
         self.propdict[name] = child
-        if retr and isinstance(child.propclass, Link):
-            child.append_retr_props()
+        # For now we do not recursively retrieve Link properties
+        #if retr and isinstance(child.propclass, Link):
+        #    child.append_retr_props()
         return child
 
     def append_retr_props(self):
@@ -648,31 +652,63 @@ class Proptree(object):
         exact_match_spec = {}
         for p in self.children:
             if 'search' in p.need_for:
-                if p.children:
+                x = [c for c in p.children if 'search' in c.need_for]
+                if x:
                     p.search(sort=False)
                 if getattr(p.propclass,'rev_property',None):
                     pn = p.propclass.rev_property.name
                     cl = p.propclass.rev_property.cls
                     if not isinstance(p.val, type([])):
                         p.val = [p.val]
-                    if p.val == ['-1'] :
-                        s1 = set(self.cls.getnodeids(retired=False))
-                        s2 = set()
+                    nval = [int(i) for i in p.val]
+                    pval = [str(i) for i in nval if i >= 0]
+                    items = set()
+                    if not nval or min(nval) >= -1:
+                        if -1 in nval:
+                            s1 = set(self.cls.getnodeids(retired=False))
+                            s2 = set()
+                            for id in cl.getnodeids(retired=False):
+                                node = cl.getnode(id)
+                                if node[pn]:
+                                    if isinstance(node[pn], type([])):
+                                        s2.update(node[pn])
+                                    else:
+                                        s2.add(node[pn])
+                            items |= s1.difference(s2)
+                        if isinstance(p.propclass.rev_property, Link):
+                            items |= set(cl.get(x, pn) for x in pval
+                                if not cl.is_retired(x))
+                        else:
+                            items |= set().union(*(cl.get(x, pn) for x in pval
+                                if not cl.is_retired(x)))
+                    else:
+                        # Expression: materialize rev multilinks and run
+                        # expression on them
+                        expr = Expression(nval)
+                        by_id = {}
+                        for id in self.cls.getnodeids(retired=False):
+                            by_id[id] = set()
+                        items = set()
                         for id in cl.getnodeids(retired=False):
                             node = cl.getnode(id)
                             if node[pn]:
-                                if isinstance(node [pn], type([])):
-                                    s2.update(node [pn])
-                                else:
-                                    s2.add(node [pn])
-                        items = s1.difference(s2)
-                    elif isinstance(p.propclass.rev_property, Link):
-                        items = set(cl.get(x, pn) for x in p.val
-                            if not cl.is_retired(x))
-                    else:
-                        items = set().union(*(cl.get(x, pn) for x in p.val
-                            if not cl.is_retired(x)))
-                    filterspec[p.name] = list(sorted(items))
+                                v = node[pn]
+                                if not isinstance(v, type([])):
+                                    v = [v]
+                                for x in v:
+                                    if x not in by_id:
+                                        continue
+                                    by_id[x].add(id)
+                        for k in by_id:
+                            if expr.evaluate(by_id[k]):
+                                items.add(k)
+
+                    # The subquery has found nothing. So it doesn't make
+                    # sense to search further.
+                    if not items:
+                        self.set_val([], force=True)
+                        return self.val
+                    filterspec[p.name] = list(sorted(items, key=int))
                 elif isinstance(p.val, type([])):
                     exact = []
                     subst = []
@@ -686,13 +722,19 @@ class Proptree(object):
                     if subst:
                         filterspec[p.name] = subst
                     elif not exact: # don't set if we have exact criteria
-                        filterspec[p.name] =[ '-1' ] # no match was found
+                        if p.has_result:
+                            # A subquery already has found nothing. So
+                            # it doesn't make sense to search further.
+                            self.set_val([], force=True)
+                            return self.val
+                        else:
+                            filterspec[p.name] = ['-1'] # no match was found
                 else:
                     assert not isinstance(p.val, Exact_Match)
                     filterspec[p.name] = p.val
-        self.val = self.cls._filter(search_matches, filterspec, sort and self,
-                                    retired=retired,
-                                    exact_match_spec=exact_match_spec)
+        self.set_val(self.cls._filter(search_matches, filterspec, sort and self,
+                                      retired=retired,
+                                      exact_match_spec=exact_match_spec))
         return self.val
 
     def sort(self, ids=None):
@@ -780,8 +822,9 @@ class Proptree(object):
                 pt.sort_result = None
         return ids
 
-    def _set_val(self, val):
-        """ Check if self._val is already defined. If yes, we compute the
+    def set_val(self, val, force=False, result=True):
+        """ Check if self.val is already defined (it is not None and
+            has_values is True). If yes, we compute the
             intersection of the old and the new value(s)
             Note: If self is a Leaf node we need to compute a
             union: Normally we intersect (logical and) different
@@ -791,24 +834,56 @@ class Proptree(object):
             generated search will ensure a logical and of all tests for
             equality/substring search.
         """
+        if force:
+            assert val == []
+            assert result
+            self.val = val
+            self.has_values = True
+            self.has_result = True
+            return
         if self.has_values:
-            v = self._val
-            if not isinstance(self._val, type([])):
-                v = [self._val]
+            v = self.val
+            if not isinstance(self.val, type([])):
+                v = [self.val]
             vals = set(v)
             if not isinstance(val, type([])):
                 val = [val]
+        if self.has_result:
+            assert result
             # if cls is None we're a leaf
             if self.cls:
                 vals.intersection_update(val)
             else:
                 vals.update(val)
-            self._val = [v for v in vals]
+            self.val = list(vals)
         else:
-            self._val = val
+            # If a subquery found nothing we don't care if there is an
+            # expression
+            if not self.has_values or not val:
+                self.val = val
+                if result:
+                    self.has_result = True
+            else:
+                if not result:
+                    assert not self.cls
+                    vals.update(val)
+                    self.val = list(vals)
+                else:
+                    assert self.cls
+                    is_expression = \
+                        self.val and min(int(i) for i in self.val) < -1
+                    if is_expression:
+                        # Tag on the ORed values with an AND
+                        l = val
+                        for i in range(len(val)-1):
+                            l.append('-4')
+                        l.append('-3')
+                        self.val = self.val + l
+                    else:
+                        vals.intersection_update(val)
+                        self.val = list(vals)
+                    self.has_result = True
         self.has_values = True
-
-    val = property(lambda self: self._val, _set_val)
 
     def _sort(self, val):
         """Finally sort by the given sortattr.sort_result. Note that we
@@ -1558,8 +1633,7 @@ class Class:
         """Build a tree of all transitive properties in the given
         exact_match_spec/filterspec.
         If we retrieve (retr is True) linked items we don't follow
-        across multilinks. We also don't follow if the searched value
-        can contain NULL values.
+        across multilinks or links.
         """
         proptree = Proptree(self.db, self, '', self.getprops(), retr=retr)
         for exact, spec in enumerate((filterspec, exact_match_spec)):
@@ -1580,11 +1654,11 @@ class Class:
                         vv = []
                         for x in v:
                             vv.append(Exact_Match(x))
-                        p.val = vv
+                        p.set_val(vv, result=False)
                     else:
-                        p.val = [Exact_Match(v)]
+                        p.set_val([Exact_Match(v)], result=False)
                 else:
-                    p.val = v
+                    p.set_val(v, result=False)
         multilinks = {}
         for s in sortattr:
             keys = s[1].split('.')
@@ -1694,6 +1768,25 @@ class Class:
         This also means that for strings in exact_match_spec it doesn't
         make sense to specify multiple values because those cannot all
         be matched exactly.
+
+        For Link and Multilink properties the special ID value '-1'
+        matches empty Link or Multilink fields. For Multilinks a postfix
+        expression syntax using negative ID numbers (as strings) as
+        operators is supported. Each non-negative number (or '-1') is
+        pushed on an operand stack. A negative number pops the required
+        number of arguments from the stack, applies the operator, and
+        pushes the result. The following operators are supported:
+        - -2 stands for 'NOT' and takes one argument
+        - -3 stands for 'AND' and takes two arguments
+        - -4 stands for 'OR' and takes two arguments
+        Note that this special handling of ID arguments is applied only
+        when a negative number smaller than -1 is encountered as an ID
+        in the filter call. Otherwise the implicit OR default applies.
+        Examples of using Multilink expressions would be
+        - '1', '2', '-4', '3', '4', '-4', '-3'
+          would search for IDs (1 or 2) and (3 or 4)
+        - '-1' '-2' would search for all non-empty Multilinks
+
 
         The propname in filterspec and prop in a sort/group spec may be
         transitive, i.e., it may contain properties of the form
@@ -2096,4 +2189,3 @@ def Choice(name, db, *options):
         cl.create(name=options[i], order=i)
     return Link(name)
 
-# vim: set filetype=python sts=4 sw=4 et si :

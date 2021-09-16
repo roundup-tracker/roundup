@@ -7,6 +7,7 @@ import cgi
 
 from time import sleep
 from datetime import datetime, timedelta
+from roundup.test.tx_Source_detector import init as tx_Source_init
 
 try:
     from datetime import timezone
@@ -43,7 +44,7 @@ from roundup.anypy.dbm_ import anydbm, whichdb
 
 from .db_test_base import setupTracker
 
-from .mocknull import MockNull
+from roundup.test.mocknull import MockNull
 
 from io import BytesIO
 import json
@@ -230,12 +231,7 @@ class TestCase():
 
         self.db.post_init()
 
-        thisdir = os.path.dirname(__file__)
-        vars = {}
-        with open(os.path.join(thisdir, "tx_Source_detector.py")) as f:
-            code = compile(f.read(), "tx_Source_detector.py", "exec")
-            exec(code, vars)
-        vars['init'](self.db)
+        tx_Source_init(self.db)
 
         env = {
             'PATH_INFO': 'http://localhost/rounduptest/rest/',
@@ -2973,7 +2969,6 @@ class TestCase():
         results = self.server.get_element('issue', issue_id, self.terse_form)
         results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
-        self.assertEqual(len(results['attributes']['nosy']), 2)
         self.assertListEqual(results['attributes']['nosy'], ['1', '2'])
 
         etag = calculate_etag(self.db.issue.getnode(issue_id),
@@ -2991,8 +2986,8 @@ class TestCase():
         results = self.server.get_element('issue', issue_id, self.terse_form)
         results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
-        self.assertEqual(len(results['attributes']['nosy']), 3)
         self.assertListEqual(results['attributes']['nosy'], ['1', '2', '3'])
+
 
         # patch with no new_val/data
         etag = calculate_etag(self.db.issue.getnode(issue_id),
@@ -3010,7 +3005,6 @@ class TestCase():
         results = self.server.get_element('issue', issue_id, self.terse_form)
         results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
-        self.assertEqual(len(results['attributes']['nosy']), 3)
         self.assertListEqual(results['attributes']['nosy'], ['1', '2', '3'])
 
         # patch invalid property
@@ -3057,7 +3051,6 @@ class TestCase():
         results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['attributes']['status'], '1')
-        self.assertEqual(len(results['attributes']['nosy']), 1)
         self.assertListEqual(results['attributes']['nosy'], ['1'])
 
         # replace userid 2 to the nosy list and status = 3
@@ -3077,7 +3070,6 @@ class TestCase():
         results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['attributes']['status'], '3')
-        self.assertEqual(len(results['attributes']['nosy']), 1)
         self.assertListEqual(results['attributes']['nosy'], ['2'])
 
         # replace status = 2 using status attribute

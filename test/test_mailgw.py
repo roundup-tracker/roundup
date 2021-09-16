@@ -41,7 +41,7 @@ from roundup.mailgw import MailGW, Unauthorized, uidFromAddress, \
 from roundup import init, instance, password, __version__
 
 #import db_test_base
-from . import memorydb
+from roundup.test import memorydb
 from .cmp_helper import StringFragmentCmpHelper
 
 def expectedFailure(method):
@@ -223,6 +223,7 @@ class MailgwTestAbstractBase(DiffHelper):
         if os.path.exists(SENDMAILDEBUG):
             os.remove(SENDMAILDEBUG)
         self.db.close()
+        memorydb.db_nuke('')
 
     def _allowAnonymousSubmit(self):
         p = [
@@ -700,6 +701,37 @@ in latin-1 format =E4=F6=FC=C4=D6=DC=DF
 --uh56ypi7view24rr--
 '''
 
+    filename_msg = '''From: mary <mary@test.test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: [issue1] Testing...
+Content-Type: multipart/mixed; boundary="uh56ypi7view24rr"
+Content-Disposition: inline
+
+--uh56ypi7view24rr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+Attach a file with non-ascii characters in it (encoded latin-1 should
+make it as-is through roundup due to Content-Type
+application/octet-stream)
+-- 
+Ralf Schlatterbeck             email: ralf@zoo.priv.at
+
+--uh56ypi7view24rr
+Content-Type: application/octet-stream
+Content-Disposition: attachment;
+    filename==?iso-8859-1?Q?20210312=5FM=FCnchen=5FRepor?=
+    =?iso-8859-1?Q?t.pdf?=
+Content-Transfer-Encoding: quoted-printable
+
+This is a file containing text
+in latin-1 format =E4=F6=FC=C4=D6=DC=DF
+
+--uh56ypi7view24rr--
+'''
+
     multipart_msg = '''From: mary <mary@test.test>
 To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <followup_dummy_id>
@@ -843,6 +875,22 @@ some text in inner email
         msg = self.db.msg.getnode (messages[-1])
         assert(len(msg.files) == 1)
         names = {0 : 'testfile'}
+        content = [b'''This is a file containing text
+in latin-1 format \xE4\xF6\xFC\xC4\xD6\xDC\xDF
+''']
+        for n, id in enumerate (msg.files):
+            f = self.db.file.getnode (id)
+            self.assertEqual(f.name, names.get (n, 'unnamed'))
+            self.assertEqual(f.binary_content, content [n])
+
+    def testFileAttachWithUmlaut(self):
+        self.doNewIssue()
+        self._handle_mail(self.filename_msg)
+        messages = self.db.issue.get('1', 'messages')
+        messages.sort()
+        msg = self.db.msg.getnode (messages[-1])
+        assert(len(msg.files) == 1)
+        names = {0 : u'20210312_M\xfcnchen_Report.pdf'}
         content = [b'''This is a file containing text
 in latin-1 format \xE4\xF6\xFC\xC4\xD6\xDC\xDF
 ''']

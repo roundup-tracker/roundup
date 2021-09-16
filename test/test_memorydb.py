@@ -3,19 +3,21 @@ import unittest, os, shutil, time
 from roundup import hyperdb
 
 from .db_test_base import DBTest, ROTest, SchemaTest, config, setupSchema
-from . import memorydb
+from roundup.test import memorydb
 
 class memorydbOpener:
     module = memorydb
 
     def nuke_database(self):
         # really kill it
+        memorydb.db_nuke('')
         self.db = None
 
     db = None
-    def open_database(self):
-        if self.db is None:
-            self.db = self.module.Database(config, 'admin')
+    def open_database(self, user='admin'):
+        if self.db:
+            self.db.close()
+        self.db = self.module.Database(config, user)
         return self.db
 
     def setUp(self):
@@ -25,6 +27,8 @@ class memorydbOpener:
     def tearDown(self):
         if self.db is not None:
             self.db.close()
+            self.db = None
+        self.nuke_database()
 
     # nuke and re-create db for restore
     def nukeAndCreate(self):

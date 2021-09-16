@@ -15,17 +15,171 @@ steps.
 
 **IMPORTANT** The v1.5.x releases of Roundup were the last to support
 Python v2.5 and v2.6.  Starting with the v1.6 releases of Roundup
-v2.7.2 is required to run newer releases of Roundup.
+Python version 2.7 that is newer than 2.7.2 is required to run
+roundup.  Starting with Roundup version 2.0.0 we also support Python 3
+versions newer than 3.4.
 
 Contents:
 
 .. contents::
    :local:
 
-.. index:: Upgrading; 1.6.x to 2.x.x
+.. index:: Upgrading; 2.0.0 to 2.1.0
 
-Migrating from 2.0.0 to 2.x.x
+Migrating from 2.1.0 to 2.x.y
 =============================
+
+Check Compression Settings
+--------------------------
+
+Read the `administration guide`_ section on 'Configuring Compression'.
+
+Upgrade tracker's config.ini file. Use::
+
+  roundup-admin -i /path/to/tracker updateconfig newconfig.ini
+
+to generate a new ini file preserving all your settings. You can then
+merge any local comments from the tracker's ``config.ini`` into
+``newconfig.ini``. Compare the old and new files and configure new
+compression settings as you want. Then replace ``config.ini`` with the
+``newconfig.ini`` file.
+
+Search Added to User Index Page
+-------------------------------
+
+A search form and count of number of hits has been added to the
+``user.index.html`` template page in the classic template. You may
+want to merge the search form and footer into your template.
+
+
+Migrating from 2.0.0 to 2.1.0
+=============================
+
+Rdbms version change from 5 to 6 (**)
+-------------------------------------
+
+To fix an issue with importing databases, the database has to be
+upgraded for rdbms backends.
+
+You should run the ``roundup-admin migrate`` command for your
+tracker once you've installed the latest codebase.
+
+Do this before you use the web, command-line or mail interface
+and before any users access the tracker.
+
+If successful, this command will respond with either "Tracker
+updated" (if you've not previously run it on an RDBMS backend) or
+"No migration action required" (if you have run it, or have used
+another interface to the tracker, or are using anydbm).
+
+This only changes the schema for the mysql backend. It has no
+effect other than upgrading the revision on other rdbms backends.
+
+On the mysql backend it creates the database index that makes
+sure the key field for your class is unique.
+
+If your update/migration fails, you will see an::
+
+   IntegrityError: (1062, "Duplicate entry '0-NULL' for key '_user_key_retired_idx'")
+
+it means you have two non-retired members of the class with the
+same key field. E.G. two non-retired users with the same
+username.
+
+Debug this using roundup-admin using the list command. For
+example dump the user class by the key field ``username``::
+
+   $ roundup-admin -i <tracker_home> list user username
+     1: admin
+     2: anonymous
+     3: demo
+     4: agent
+     5: provisional
+     6: foo@example.com
+     7: dupe
+     8: dupe
+     ...
+
+then search the usernames for duplicates. Once you have
+identified the duplicate username (``dupe`` above), you should
+retire the other active duplicates or change the username for the
+duplicate.  To retire ``7: dupe``, you run::
+
+   roundup-admin -i <tracker_home> retire user7
+
+(use ``restore user7`` if you retired the wrong item).  If you
+want to rename the entry use::
+
+   roundup-admin -i <tracker_home> set user7 username=dupe1
+
+Keep doing this until you have no more duplicates. Then run the
+update/migrate again.
+
+If you have duplicate non-retired entries in your database,
+please email roundup-users at lists.sourceforge.net. We are
+interested in how many issues this has caused. Duplicate creation
+should occur only when two or more mysql processes run in
+parallel and both of them creating an item with the same key. So
+this should be a rare event. The internal duplicate prevention
+checks should work in other cases.
+
+For the nerds: if you had a new installation that was created at
+version 5, the uniqueness of a key was not enforced at the
+database level. If you had a database that was at version 4 and
+then upgraded to version 5 you have the uniqueness enforcing
+constraint. Running migrate updates to schema version 6 and installs
+the unique index constraint if it is missing.
+
+Setuptools is now required to install
+-------------------------------------
+
+Roundup install now uses setuptools rather than distutils. You must
+install setuptools.  Use the version packgaged by your OS vendor.  If
+your OS vendor doesn't supply setuptools use ``pip install
+setuptools``. (You may need pip3 rather than pip if using python3.)
+
+Define Authentication Header
+----------------------------
+
+The web server in front of roundup (apache, nginx) can perform user
+authentication. It can pass the authenticated username to the backend
+in a variable. By default roundup looks for the ``REMOTE_USER``
+variable. This can be changed by setting the parameter
+``http_auth_header`` in the ``[web]`` section of the tracker's
+``config.ini`` file to a different value. The value is case sensitive.
+If the value is unset (the default) the REMOTE_USER variable is used.
+
+If you are running roundup using ``roundup-server`` behind a proxy
+that authenticates the user you need to configure ``roundup-server``
+to pass the HTTP header with the authenticated username to the
+tracker. By default ``roundup-server`` looks for the ``REMOTE_USER``
+header for the authenticated user.  You can copy an arbitrary header
+variable to the tracker using the ``-I`` option to roundup-server (or
+the equivalent option in the roundup-server config file).
+
+For example to use the ``uid_variable`` header, two configuration
+changes are needed: First configure ``roundup-server`` to pass the
+header to the tracker using::
+
+  roundup-server -I uid_variable ....
+
+note that the header is passed exactly as supplied by the upstream
+server. It is **not** prefixed with ``HTTP_`` like other headers since
+you are explicitly allowing the header. Multiple comma separated
+headers can be passed to the ``-I`` option. These could be used in a
+detector or other tracker extensions, but only one header can be used
+by the tracker as an authentication header.
+
+To make the tracker honor the new variable changing the tracker
+``config.ini`` to read::
+
+  [web]
+  ...
+  http_auth_header = uid_variable
+
+At the time this is written, support is experimental. If you use it
+you should notify the roundup maintainers using the roundup-users
+at lists.sourceforge.net mailing list.
 
 Classname Format Enforced
 -------------------------
@@ -54,6 +208,43 @@ references the new ``jquery-3.5.1.js`` file and also fixes a bug that
 prevented applying the change from the helper to the field on the main
 form.
 
+Roundup-admin security stops on incorrect properties
+----------------------------------------------------
+
+The ``roundup-admin ... security`` command used to continue
+running through the rest of the security roles after reporting a
+property error. Now it stops after reporting the incorrect property.
+
+If run non-interactively, it exits with status 1. It can now be
+used in a startup script to detect permission errors.
+
+Futureproof devel and responsive timezone selection extension
+-------------------------------------------------------------
+
+The devel and responsive (derived from devel) templates use a select
+control to list all available timezones when pytz is used. It
+sanitizes the data using cgi.escape. Cgi.escape is deprecated and
+removed in newer pythons. Change your ``extensions/timezone.py``
+file by applying the following patch manually::
+
+
+    -import cgi
+    +try:
+    +    from html import escape
+    +except ImportError:
+    +    from cgi import escape
+
+     try:
+	 import pytz
+    @@ -25,7 +28,7 @@
+		 s = ' '
+		 if zone == value:
+		     s = 'selected=selected '
+    -            z = cgi.escape(zone)
+    +            z = escape(zone)
+
+See https://issues.roundup-tracker.org/issue2551136 for more details.
+
 .. index:: Upgrading; 1.6.x to 2.0.0
 
 Migrating from 1.6.X to 2.0.0
@@ -77,10 +268,10 @@ are more changes required for running roundup 2.0 if you choose to use
 python3. See `Python 3 support`_.
 
 In an upgraded ``config.ini`` (see next section) the ``[rdbms]``
-section has a key ``mysql_charset`` set by default to ``utf-8``.
+section has a key ``mysql_charset`` set by default to ``utf8mb4``.
 
-It should be possible to change utf-8 to any mysql charset. So if you
-know what charset is enabled (e.g. via a setting in ~roundup/.my.cnf,
+It should be possible to change ``utf8mb4`` to any mysql charset. So
+if you know what charset is enabled (e.g. via a setting in ~roundup/.my.cnf,
 or the default charset for the database) you can set it in
 ``config.ini`` and not need to covert the database. However the
 underlying issues with misconverted data and bad searches will still

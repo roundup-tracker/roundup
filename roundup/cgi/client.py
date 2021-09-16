@@ -50,7 +50,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import roundup.anypy.email_
 
-from roundup.anypy.strings import s2b, b2s, uchr, is_us
+from roundup.anypy.strings import s2b, b2s, bs2b, uchr, is_us
 
 def initialiseSecurity(security):
     '''Create some Permissions and Roles on the security object
@@ -336,8 +336,41 @@ class Client:
         errno.ETIMEDOUT,
     )
 
+    # Cache_Control[key] = Cache-Control header value
+    # Key can be explicitly file basename - value applied to just that file
+    #     takes precedence over mime type.
+    # Key can be mime type - all files of that mimetype will get the value
     Cache_Control = {}
-    
+
+    # list of valid http compression (Content-Encoding) algorithms
+    # we have available
+    compressors = []
+    try:
+        # Only one provided by standard library
+        import gzip
+        compressors.append('gzip')
+    except ImportError:
+        pass
+    try:
+        import brotli
+        compressors.append('br')
+    except ImportError:
+        pass
+    try:
+        import zstd
+        compressors.append('zstd')
+    except ImportError:
+        pass
+
+    # mime types of files that are already compressed and should not be
+    # compressed on the fly. Can be extended/reduced using interfaces.py.
+    # This excludes types from being compressed. Should we have a list
+    # of mime types we should compress? write_html() calls compress_encode
+    # which uses this without a content-type so that's an issue.
+    # Also for text based data, might have charset too so need to parse
+    # content-type.
+    precompressed_mime_types = [ "image/png", "image/jpeg" ]
+
     def __init__(self, instance, request, env, form=None, translator=None):
         # re-seed the random number generator. Is this is an instance of
         # random.SystemRandom it has no effect.
@@ -997,17 +1030,18 @@ class Client:
         user = None
         # first up, try http authorization if enabled
         cfg = self.instance.config
+        remote_user_header = cfg.WEB_HTTP_AUTH_HEADER or 'REMOTE_USER'
         if cfg.WEB_COOKIE_TAKES_PRECEDENCE:
             user = self.session_api.get('user')
             if user:
                 # update session lifetime datestamp
                 self.session_api.update()
-                if 'REMOTE_USER' in self.env:
-                    del self.env['REMOTE_USER']
+                if remote_user_header in self.env:
+                    del self.env[remote_user_header]
         if not user and cfg.WEB_HTTP_AUTH:
-            if 'REMOTE_USER' in self.env:
+            if remote_user_header in self.env:
                 # we have external auth (e.g. by Apache)
-                user = self.env['REMOTE_USER']
+                user = self.env[remote_user_header]
                 if cfg.WEB_HTTP_AUTH_CONVERT_REALM_TO_LOWERCASE and '@' in user:
                     u, d = user.split ('@', 1)
                     user = '@'.join ((u, d.lower()))
@@ -1624,6 +1658,7 @@ class Client:
             'image/gif',
             'image/jpeg',
             'image/png',
+            'image/svg+xml',
             'image/webp',
             'audio/ogg',
             'video/webm',
@@ -1742,16 +1777,20 @@ class Client:
 
         ims = None
         # see if there's an if-modified-since...
-        # XXX see which interfaces set this
-        #if hasattr(self.request, 'headers'):
-            #ims = self.request.headers.getheader('if-modified-since')
-        if 'HTTP_IF_MODIFIED_SINCE' in self.env:
+        #    used if this is run behind a non-caching http proxy
+        if hasattr(self.request, 'headers'):
+            ims = self.request.headers.get('if-modified-since')
+        elif 'HTTP_IF_MODIFIED_SINCE' in self.env:
             # cgi will put the header in the env var
             ims = self.env['HTTP_IF_MODIFIED_SINCE']
         if ims:
             ims = email.utils.parsedate(ims)[:6]
             lmtt = time.gmtime(lmt)[:6]
             if lmtt <= ims:
+                if (self.determine_content_encoding()):
+                    # set vary header as though we were returning 200
+                    # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Vary
+                    self.setVary("Accept-Encoding")
                 raise NotModified
 
         if filename:
@@ -1863,14 +1902,14 @@ class Client:
     def renderContext(self):
         """ Return a PageTemplate for the named page
         """
-        tplname = self.selectTemplate(self.classname, self.template)
-
-        # catch errors so we can handle PT rendering errors more nicely
-        args = {
-            'ok_message': self._ok_message,
-            'error_message': self._error_message
-        }
         try:
+            tplname = self.selectTemplate(self.classname, self.template)
+
+            # catch errors so we can handle PT rendering errors more nicely
+            args = {
+                'ok_message': self._ok_message,
+                'error_message': self._error_message
+            }
             pt = self.instance.templates.load(tplname)
             # let the template render figure stuff out
             result = pt.render(self, None, None, **args)
@@ -1894,6 +1933,7 @@ class Client:
                 result = result.replace('</body>', s)
             return result
         except templating.NoTemplate as message:
+            self.response_code = 400 
             return '<strong>%s</strong>'%html_escape(str(message))
         except templating.Unauthorised as message:
             raise Unauthorised(html_escape(str(message)))
@@ -2020,13 +2060,134 @@ class Client:
             # most likely case.
             pass
 
+    def determine_content_encoding(self, list_all=False, precompressed=False):
+
+        encoding_list = []
+
+        # FIXME: Should parse for q= values and properly order
+        # the request encodings. Also should handle identity coding.
+        # Then return first acceptable by q value.
+        # This code always uses order: zstd, br, gzip. It will send identity
+        #  even if identity excluded rather than returning 406.
+        accept_encoding = self.request.headers.get('accept-encoding') or []
+
+        if accept_encoding:
+            for enc in ['zstd', 'br', 'gzip']:
+                if ((enc in self.compressors) or precompressed) and \
+                   (enc in accept_encoding):
+                    if not list_all:
+                        return enc
+                    else:
+                        encoding_list.append(enc)
+
+        # Return value must evaluate to false in boolean context if no
+        # acceptable encoding is found. If an (non-identity) encoding
+        # is found the Vary header will include accept-encoding.
+        # What to return if the identity encoding is unacceptable?
+        #   Maybe raise a 406 from here?
+        if not list_all:
+            return None
+        else:
+            return encoding_list
+
+    def setVary(self, header):
+        '''Vary header will include the new header. This will append
+           if Vary exists.'''
+
+        if ('Vary' in self.additional_headers):
+            self.additional_headers['Vary'] += ", %s"%header
+        else:
+            self.additional_headers['Vary'] = header
+
+    def compress_encode(self, byte_content, quality=4):
+
+        if not self.instance.config.WEB_DYNAMIC_COMPRESSION:
+            # dynamic compression disabled.
+            return byte_content
+
+        # don't compress small content
+        if len(byte_content) < 100:
+            return byte_content
+
+        # abort if already encoded (e.g. served from
+        # precompressed file or cache on disk)
+        if ('Content-Encoding' in self.additional_headers):
+            return byte_content
+
+        # abort if file-type already compressed
+        if ('Content-Type' in self.additional_headers) and \
+           (self.additional_headers['Content-Type'] in \
+               self.precompressed_mime_types):
+            return byte_content
+
+        encoder = None
+        # return same content if unable to compress
+        new_content = byte_content
+
+ 
+        encoder = self.determine_content_encoding()
+
+        if encoder == 'zstd':
+            new_content = self.zstd.ZSTD_compress(byte_content, 3)
+        elif encoder == 'br':
+            # lgblock=0 sets value from quality
+            new_content = self.brotli.compress(byte_content,
+                                               quality=quality,
+                                               mode=1,
+                                               lgblock=0)
+        elif encoder == 'gzip':
+            try:
+                new_content = self.gzip.compress(byte_content, compresslevel=5)
+            except AttributeError:
+                try:
+                    from StringIO import cStringIO as IOBuff
+                except ImportError:
+                    # python 3
+                    # however this code should not be needed under python3
+                    # since py3 gzip library has compress() method.
+                    from io import BytesIO as IOBuff
+
+                out = IOBuff()
+                # handle under python2
+                f = self.gzip.GzipFile(fileobj=out, mode='w', compresslevel=5)
+                f.write(byte_content)
+                f.close()
+                new_content = out.getvalue()
+
+        if encoder:
+            # we changed the data, change existing content-length header
+            # and add Content-Encoding and Vary header.
+            self.additional_headers['Content-Length'] = str(len(new_content))
+            self.additional_headers['Content-Encoding'] = encoder
+            self.setVary('Accept-Encoding')
+
+        return new_content
+
     def write(self, content):
+        if not self.headers_done and self.env['REQUEST_METHOD'] != 'HEAD':
+            # compress_encode modifies headers, must run before self.header()
+            content = self.compress_encode(bs2b(content))
+
         if not self.headers_done:
             self.header()
         if self.env['REQUEST_METHOD'] != 'HEAD':
             self._socket_op(self.request.wfile.write, content)
 
     def write_html(self, content):
+        if sys.version_info[0] > 2:
+            # An action setting appropriate headers for a non-HTML
+            # response may return a bytes object directly.
+            if not isinstance(content, bytes):
+                content = content.encode(self.charset, 'xmlcharrefreplace')
+        elif self.charset != self.STORAGE_CHARSET:
+            # recode output
+            content = content.decode(self.STORAGE_CHARSET, 'replace')
+            content = content.encode(self.charset, 'xmlcharrefreplace')
+
+        if self.env['REQUEST_METHOD'] != 'HEAD' and not self.headers_done:
+            # compress_encode modifies headers, must run before self.header()
+            content = self.compress_encode(bs2b(content))
+
         if not self.headers_done:
             # at this point, we are sure about Content-Type
             if 'Content-Type' not in self.additional_headers:
@@ -2037,16 +2198,6 @@ class Client:
         if self.env['REQUEST_METHOD'] == 'HEAD':
             # client doesn't care about content
             return
-
-        if sys.version_info[0] > 2:
-            # An action setting appropriate headers for a non-HTML
-            # response may return a bytes object directly.
-            if not isinstance(content, bytes):
-                content = content.encode(self.charset, 'xmlcharrefreplace')
-        elif self.charset != self.STORAGE_CHARSET:
-            # recode output
-            content = content.decode(self.STORAGE_CHARSET, 'replace')
-            content = content.encode(self.charset, 'xmlcharrefreplace')
 
         # and write
         self._socket_op(self.request.wfile.write, content)
@@ -2220,19 +2371,71 @@ class Client:
         return (first, last - first + 1)
 
     def write_file(self, filename):
-        """Send the contents of 'filename' to the user."""
+        """Send the contents of 'filename' to the user.
+           Send an acceptable pre-compressed version of the
+           file if it is newer than the uncompressed version.
+        """
 
-        # Determine the length of the file.
-        stat_info = os.stat(filename)
-        length = stat_info[stat.ST_SIZE]
         # Assume we will return the entire file.
         offset = 0
+
+        # initalize length from uncompressed file
+        stat_info = os.stat(filename)
+        length = stat_info[stat.ST_SIZE]
+
+        # Determine if we are sending a range. If so, compress
+        # on the fly. Otherwise see if we have a suitable
+        # pre-compressed/encoded file we can send.
+        if not self.env.get("HTTP_RANGE"):
+            # no range, search for file in list ordered
+            # from best to worst alternative
+            encoding_list = self.determine_content_encoding(list_all=True,
+                                                            precompressed=True)
+            if encoding_list and self.db.config.WEB_USE_PRECOMPRESSED_FILES:
+                # do we need to search through list? If best is not
+                # precompressed, on the fly compress with best?
+                # by searching list we will respond with precompressed
+                # 2nd best or worse.
+                for encoder in encoding_list:
+                    try:
+                        trial_filename = '%s.%s'%(filename,encoder)
+                        trial_stat_info = os.stat(trial_filename)
+                        if stat_info[stat.ST_MTIME] > \
+                           trial_stat_info[stat.ST_MTIME]:
+                            # compressed file is obsolete
+                            # don't use it
+                            logger.warning(self._("Cache failure: "
+                                    "compressed file %(compressed)s is "
+                                    "older than its source file "
+                                    "%(filename)s"%{'filename': filename,
+                                             'compressed': trial_filename}))
+
+                            continue
+                        filename = trial_filename
+                        length = trial_stat_info[stat.ST_SIZE]
+                        self.setHeader('Content-Encoding', encoder)
+                        self.setVary('Accept-Encoding')
+                        break
+                    # except FileNotFoundError: py2/py3
+                    # compatible version
+                    except EnvironmentError as e:
+                        if e.errno != errno.ENOENT:
+                            raise
+                    
         # If the headers have not already been finalized,
         if not self.headers_done:
             # RFC 2616 14.19: ETag
             #
             # Compute the entity tag, in a format similar to that
             # used by Apache.
+            # 
+            # Tag does *not* change with Content-Encoding.
+            # Header 'Vary: Accept-Encoding' is returned with response.
+            # RFC2616 section 13.32 discusses etag and references
+            # section 14.44 (Vary header) as being applicable to etag.
+            # Hence the intermediate proxy should/must match
+            # Accept-Encoding and ETag to determine whether to return
+            # a 304 or report cache miss and fetch from origin server.
             etag = '"%x-%x-%x"' % (stat_info[stat.ST_INO],
                                    length,
                                    stat_info[stat.ST_MTIME])
@@ -2252,8 +2455,6 @@ class Client:
             #
             # Tell the client how much data we are providing.
             self.setHeader("Content-Length", str(length))
-            # Send the HTTP header.
-            self.header()
         # If the client doesn't actually want the body, or if we are
         # indicating an invalid range.
         if (self.env['REQUEST_METHOD'] == 'HEAD'
@@ -2261,6 +2462,7 @@ class Client:
             return
         # Use the optimized "sendfile" operation, if possible.
         if hasattr(self.request, "sendfile"):
+            self.header()
             self._socket_op(self.request.sendfile, filename, offset, length)
             return
         # Fallback to the "write" operation.

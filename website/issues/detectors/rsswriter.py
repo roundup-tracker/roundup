@@ -63,7 +63,7 @@ __license__ = 'MIT'
 
 
 # The strftime format to use for <pubDate>s.
-RSS20_DATE_FORMAT = '%a, %d %b %Y %H:%M:%S %z'
+RSS20_DATE_FORMAT = '%a, %d %b %Y %H:%M:%S +0000'
 
 
 def newRss(title, link, description):
@@ -74,6 +74,7 @@ def newRss(title, link, description):
         root = rss.appendChild(rss.createElement("rss"))
         root.setAttribute("version", "2.0")
         root.setAttribute("xmlns:atom","http://www.w3.org/2005/Atom")
+        root.setAttribute("xmlns:dc","http://purl.org/dc/elements/1.1/")
 
         channel = root.appendChild(rss.createElement("channel"))
         addEl = lambda tag,value: channel.appendChild(rss.createElement(tag)).appendChild(rss.createTextNode(value))
@@ -175,9 +176,11 @@ def writeRss(db, cl, nodeid, olddata):
                 addEl(item, 'comments', issuelink)
                 addEl(item, 'description', desc.replace('&','&amp;').replace('<','&lt;').replace('\n', '<br>\n'))
                 addEl(item, 'pubDate', date)
-                addEl(item, 'author',
-                        '%s (%s)' % (
-                                db.user.get(userid, 'address'),
+                # use dc:creator as username is not valid email address and
+                # author element must be valid email address
+                # addEl(item, 'author',
+                addEl(item, 'dc:creator',
+                        '%s' % (
                                 db.user.get(userid, 'username')
                         )
                 )

@@ -11,24 +11,44 @@ command-line, web and e-mail interfaces.  It is based on the winning
 design from Ka-Ping Yee in the Software Carpentry "Track" design
 competition.
 
-The current stable version of Roundup is 2.0.0 which has quite a
-comprehensive :doc:`feature set <docs/features>` compared to the last
-stable release (v1.6.1). These features include:
+The current stable version of Roundup is 2.1.0. It is a bug fix
+and minor feature release for the major 2.0.0 release which
+added:
 
    * Python 2 and Python 3 support
    * a new REST interface
    * updates to jinja2 templates including security improvements
 
-For more information see the :doc:`design overview <docs/design>`, and
-all the other :doc:`documentation <docs>`. Roundup has been deployed
-for:
+Fixes and features in the 2.1.0 release include:
 
-    * bug tracking and TODO list management (the classic installation)
-    * customer help desk support (with a wizard for the phone answerers, linking to networking, 
-      system and development issue trackers)
+   * Installation uses setuptools and not distutils.
+   * Mysql backend now uses an index to make sure that key values are
+     not duplicated when two roundup processes run in parallel.
+   * Postgres back end now uses a server side cursor, so large queries
+     won't consume huge amounts of memory.
+   * Security fixes for jQuery, markdown handling,
+   * Valid class names are documented and enforced. All class names now
+     match ``[A-z][A-z0-9_]+[A-z_]``.
+   * Fixes/improvements to jinja2 templates
+   * Fixes for python3 compatibility.
+   * Fix sorting of multilinks in templating code.
+   * Password reset documented in user guide.
+
+More info on the 58 changes can be found in the `change note`_.
+
+For more information on Roundup see the :doc:`design overview
+<docs/design>`, and all the other :doc:`documentation <docs>`. Roundup
+has been deployed for:
+
+    * bug tracking and TODO list management (the classic
+      installation)
+    * customer help desk support (with a wizard for the phone
+      answerers, linking to networking, system and development
+      issue trackers)
     * issue management for IETF working groups
     * sales lead tracking
-    * conference paper submission and double-blind referee management
+    * conference paper submission and double-blind referee
+      management
     * weblogging (well, almost :) 
 
 ...and so on. It's been designed with :doc:`flexibility
@@ -37,7 +57,8 @@ tracker. Roundup ships with a *demo tracker* to play with - after
 you've unpacked the source, just run "python demo.py" and load up the
 URL it prints out!
 
-Roundup was originally released as version 0.1.1 in late August, 2001. The first `change note`_ I wrote says:
+Roundup was originally released as version 0.1.1 in late August, 2001.
+The first `change note`_ written said:
 
     Needed a bug tracking system. Looked around. Tried to install many Perl-based systems, to no avail.
     Got tired of waiting for Roundup to be released. Had just finished major product project, so needed

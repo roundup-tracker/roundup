@@ -395,6 +395,21 @@ class Database(rdbms_common.Database):
         # Convert all String properties to TEXT
         self._convert_string_properties()
 
+    def fix_version_5_tables(self):
+        # A bug caused the _<class>_key_retired_idx to be missing
+        # unless the database was upgraded from version 4 to 5.
+        # If it was created at version 5, the index is missing.
+        # The user class is always present and has a key.
+        # Check it for the index. If missing, add index to all
+        # classes by rerunning self.fix_version_4_tables().
+
+        # if this fails abort. Probably means no user class
+        # so we should't be doing anything.
+        if not self.sql_index_exists("_user", "_user_key_retired_idx"):
+            self.fix_version_4_tables()
+        else:
+            self.log_info('No changes needed.')
+
     def __repr__(self):
         return '<myroundsql 0x%x>'%id(self)
 
@@ -445,6 +460,10 @@ class Database(rdbms_common.Database):
                         spec.classname, spec.key,
                         spec.classname, idx)
             self.sql(index_sql3)
+
+            # and the unique index for key / retired(id)
+            self.add_class_key_required_unique_constraint(spec.classname,
+                                                          spec.key)
 
         # TODO: create indexes on (selected?) Link property columns, as
         # they're more likely to be used for lookup
@@ -530,6 +549,12 @@ class Database(rdbms_common.Database):
         sql = 'drop index %s on %s'%(index_name, table_name)
         self.sql(sql)
 
+        # and now the retired unique index too
+        index_name = '_%s_key_retired_idx' % cn
+        if self.sql_index_exists(table_name, index_name):
+            sql = 'drop index %s on _%s'%(index_name, cn)
+            self.sql(sql)
+
     # old-skool id generation
     def newid(self, classname):
         ''' Generate a new id for the given class
@@ -602,9 +627,8 @@ class Database(rdbms_common.Database):
 class MysqlClass:
     case_sensitive_equal = 'COLLATE utf8_bin ='
 
-    def supports_subselects(self):
-        # TODO: AFAIK its version dependent for MySQL
-        return False
+    # TODO: AFAIK its version dependent for MySQL
+    supports_subselects = False
 
     def _subselect(self, proptree):
         ''' "I can't believe it's not a toy RDBMS"

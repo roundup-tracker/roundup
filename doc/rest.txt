@@ -35,7 +35,7 @@ This is usually included near where other permissions like "Web Access"
 or "Email Access" are assigned.
 
 You could also create a new role "rest" and assign the "Rest Access"
-permission to that role and then just add the "rest" permissions to
+permission to that role and then just add the "rest" role to
 those users who should have access.
 
 The REST api is reached via the ``/rest/`` endpoint of the tracker
@@ -190,7 +190,10 @@ described above.
 Input Formats
 =============
 
-Content-Type is allowed to be ``application/json`` or
+For a GET or OPTIONS request, the Content-Type header should
+not be sent.
+
+Otherwise Content-Type is allowed to be ``application/json`` or
 ``application/x-www-form-urlencoded``. Any other value returns error
 code 415.
 

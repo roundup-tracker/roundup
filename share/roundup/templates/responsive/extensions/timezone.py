@@ -1,7 +1,10 @@
 # Utility for replacing the simple input field for the timezone with
 # a select-field that lists the available values.
 
-import cgi
+try:
+    from html import escape
+except ImportError:
+    from cgi import escape
 
 try:
     import pytz
@@ -25,7 +28,7 @@ def tzfield(prop, name, default):
             s = ' '
             if zone == value:
                 s = 'selected=selected '
-            z = cgi.escape(zone)
+            z = escape(zone)
             l.append('<option %svalue="%s">%s</option>' % (s, z, z))
         l.append('</select>')
         return '\n'.join(l)

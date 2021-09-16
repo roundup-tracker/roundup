@@ -28,6 +28,7 @@ from roundup.anypy.dbm_ import anydbm, whichdb
 from roundup.anypy.strings import b2s, bs2b, repr_export, eval_import, is_us
 
 from roundup import hyperdb, date, password, roundupdb, security, support
+from roundup.mlink_expr import Expression
 from roundup.backends import locking
 from roundup.i18n import _
 
@@ -47,87 +48,6 @@ def db_exists(config):
 
 def db_nuke(config):
     shutil.rmtree(config.DATABASE)
-
-class Binary:
-
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def visit(self, visitor):
-        self.x.visit(visitor)
-        self.y.visit(visitor)
-
-class Unary:
-
-    def __init__(self, x):
-        self.x = x
-
-    def generate(self, atom):
-        return atom(self)
-
-    def visit(self, visitor):
-        self.x.visit(visitor)
-
-class Equals(Unary):
-
-    def evaluate(self, v):
-        return self.x in v
-
-    def visit(self, visitor):
-        visitor(self)
-
-class Not(Unary):
-
-    def evaluate(self, v):
-        return not self.x.evaluate(v)
-
-    def generate(self, atom):
-        return "NOT(%s)" % self.x.generate(atom)
-
-class Or(Binary):
-
-    def evaluate(self, v):
-        return self.x.evaluate(v) or self.y.evaluate(v)
-
-    def generate(self, atom):
-        return "(%s)OR(%s)" % (
-            self.x.generate(atom),
-            self.y.generate(atom))
-
-class And(Binary):
-
-    def evaluate(self, v):
-        return self.x.evaluate(v) and self.y.evaluate(v)
-
-    def generate(self, atom):
-        return "(%s)AND(%s)" % (
-            self.x.generate(atom),
-            self.y.generate(atom))
-
-def compile_expression(opcodes):
-
-    stack = []
-    push, pop = stack.append, stack.pop
-    for opcode in opcodes:
-        if   opcode == -2: push(Not(pop()))
-        elif opcode == -3: push(And(pop(), pop()))
-        elif opcode == -4: push(Or(pop(), pop()))
-        else:              push(Equals(opcode))
-
-    return pop()
-
-class Expression:
-
-    def __init__(self, v):
-        try:
-            opcodes = [int(x) for x in v]
-            if min(opcodes) >= -1: raise ValueError()
-
-            compiled = compile_expression(opcodes)
-            self.evaluate = lambda x: compiled.evaluate([int(y) for y in x])
-        except:
-            self.evaluate = lambda x: bool(set(x) & set(v))
 
 #
 # Now the database
@@ -1165,7 +1085,9 @@ class Class(hyperdb.Class):
 
         # return a dupe of the list so code doesn't get confused
         if isinstance(prop, hyperdb.Multilink):
-            return d[propname][:]
+            ids = d[propname][:]
+            ids.sort(key=lambda x: int(x))
+            return ids
 
         return d[propname]
 
@@ -1587,9 +1509,15 @@ class Class(hyperdb.Class):
             db.issue.find(messages=('1','3'), files=('7',))
             db.issue.find(messages=['1','3'], files=['7'])
         """
+        # shortcut
+        if not propspec:
+            return []
+
+        # validate the args
+        props = self.getprops()
         for propname, itemids in propspec.items():
             # check the prop is OK
-            prop = self.properties[propname]
+            prop = props[propname]
             if not isinstance(prop, hyperdb.Link) and not isinstance(prop, hyperdb.Multilink):
                 raise TypeError("'%s' not a Link/Multilink "
                     "property"%propname)
@@ -1618,7 +1546,7 @@ class Class(hyperdb.Class):
                         continue
 
                     # grab the property definition and its value on this item
-                    prop = self.properties[propname]
+                    prop = props[propname]
                     value = item[propname]
                     if isinstance(prop, hyperdb.Link) and value in itemids:
                         l.append(id)
@@ -1782,13 +1710,7 @@ class Class(hyperdb.Class):
                 if isinstance(propclass, hyperdb.Link):
                     if type(v) is not type([]):
                         v = [v]
-                    u = []
-                    for entry in v:
-                        # the value -1 is a special "not set" sentinel
-                        if entry == '-1':
-                            entry = None
-                        u.append(entry)
-                    l.append((LINK, k, u))
+                    l.append((LINK, k, v))
                 elif isinstance(propclass, hyperdb.Multilink):
                     # If it's a reverse multilink, we've already
                     # computed the ids of our own class.
@@ -1895,7 +1817,9 @@ class Class(hyperdb.Class):
                     if t == LINK:
                         # link - if this node's property doesn't appear in the
                         # filterspec's nodeid list, skip it
-                        match = nv in v
+                        expr = Expression(v, is_link=True)
+                        if expr.evaluate(nv):
+                            match = 1
                     elif t == MULTILINK:
                         # multilink - if any of the nodeids required by the
                         # filterspec aren't in this node's property, then skip
@@ -1909,7 +1833,8 @@ class Class(hyperdb.Class):
                             # otherwise, make sure this node has each of the
                             # required values
                             expr = Expression(v)
-                            if expr.evaluate(nv): match = 1
+                            if expr.evaluate(nv):
+                                match = 1
                     elif t == STRING:
                         if nv is None:
                             nv = ''

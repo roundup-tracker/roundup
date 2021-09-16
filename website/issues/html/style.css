@@ -151,11 +151,23 @@ table
   background-color: #fafafa;
 }
 
+table:not(.list) th {
+    text-align: left;
+}
+
+table th[colspan] {
+    text-align: center;
+}
 /* Need some space between content of Issue List columns */
-td { padding-left: 1em; }
+td, th { padding-left: 1em; }
 
 tr.odd { background-color:#f5f5f5; }
 
+/* widen tables since headers have a lot of info and are squished
+   and difficult to read */
+table.messages, table.files {
+    width: 95%;
+}
 /* Make sure that user name starts at the top of the change list
 and not in the middle Issue2550809: History display misalignment */
 table.history td {
@@ -175,4 +187,4 @@ table.classhelp td {
     font-weight: bold;
 }
 
-/* SHA: 01691a9346b3bc6a29a505a2dfa389ee3edc950f */
+/* SHA: 2a5330c3d1ee6bf31e672e1c8a9317d11b7eb436 */

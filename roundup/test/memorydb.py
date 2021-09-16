@@ -16,11 +16,18 @@ from roundup.backends import sessions_dbm
 from roundup.backends import indexer_common
 from roundup.support import ensureParentsExist
 from roundup.anypy.strings import s2b
+from roundup.test.tx_Source_detector import init as tx_Source_init
 
-def new_config(debug=False):
+default_prefix = '../../share/roundup/templates/classic'
+
+def new_config(debug=False, prefix=default_prefix):
+    if not prefix.startswith('/'):
+        prefix = os.path.join (os.path.dirname(__file__), prefix)
     config = configuration.CoreConfig()
-    config.detectors = configuration.UserConfig("share/roundup/templates/classic/detectors/config.ini")
-    config.ext = configuration.UserConfig("share/roundup/templates/classic/extensions/config.ini")
+    config.detectors = configuration.UserConfig(
+        os.path.join(prefix, "detectors/config.ini"))
+    config.ext = configuration.UserConfig(
+        os.path.join(prefix, "extensions/config.ini"))
     config.DATABASE = "db"
     #config.logging = MockNull()
     # these TRACKER_WEB and MAIL_DOMAIN values are used in mailgw tests
@@ -30,28 +37,29 @@ def new_config(debug=False):
     config.TRACKER_WEB = "http://tracker.example/cgi-bin/roundup.cgi/bugs/"
     return config
 
-def create(journaltag, create=True, debug=False):
+def create(journaltag, create=True, debug=False, prefix=default_prefix):
+    # "Nuke" in-memory db
+    db_nuke('')
+
     db = Database(new_config(debug), journaltag)
 
     # load standard schema
-    schema = os.path.join(os.path.dirname(__file__),
-        '../share/roundup/templates/classic/schema.py')
+    if not prefix.startswith('/'):
+        prefix = os.path.join (os.path.dirname(__file__), prefix)
+    schema = os.path.join(prefix, 'schema.py')
     vars = hyperdb.__dict__
     vars['Class'] = Class
     vars['FileClass'] = FileClass
     vars['IssueClass'] = IssueClass
     vars['db'] = db
     exec(compile(open(schema).read(), schema, 'exec'), vars)
-    initial_data = os.path.join(os.path.dirname(__file__),
-        '../share/roundup/templates/classic/initial_data.py')
+    initial_data = os.path.join(prefix, 'initial_data.py')
     vars = dict(db=db, admin_email='admin@test.com',
         adminpw=password.Password('sekrit'))
     exec(compile(open(initial_data).read(), initial_data, 'exec'), vars)
 
     # load standard detectors
-    thisdir = os.path.dirname(__file__)
-    dirname = os.path.join(thisdir,
-        '../share/roundup/templates/classic/detectors')
+    dirname = os.path.join(prefix, 'detectors')
     for fn in os.listdir(dirname):
         if not fn.endswith('.py'): continue
         vars = {}
@@ -59,10 +67,7 @@ def create(journaltag, create=True, debug=False):
                      os.path.join(dirname, fn), 'exec'), vars)
         vars['init'](db)
 
-    vars = {}
-    exec(compile(open(os.path.join(thisdir, "tx_Source_detector.py")).read(),
-                 os.path.join(thisdir, "tx_Source_detector.py"), 'exec'), vars)
-    vars['init'](db)
+    tx_Source_init(db)
 
     '''
     status = Class(db, "status", name=String())
@@ -212,12 +217,12 @@ class Database(back_anydbm.Database):
 
     dbtype = "memorydb"
 
+    # Make it a little more persistent across re-open
+    memdb = {}
+
     def __init__(self, config, journaltag=None):
         self.config, self.journaltag = config, journaltag
         self.classes = {}
-        self.items = {}
-        self.ids = {}
-        self.journals = {}
         self.files = {}
         self.tx_files = {}
         self.security = security.Security(self)
@@ -234,6 +239,10 @@ class Database(back_anydbm.Database):
         self.destroyednodes = {}# keep track of the destroyed nodes by class
         self.transactions = []
         self.tx_Source = None
+        # persistence across re-open
+        self.items = self.__class__.memdb.get('items', {})
+        self.ids = self.__class__.memdb.get('ids', {})
+        self.journals = self.__class__.memdb.get('journals', {})
 
     def filename(self, classname, nodeid, property=None, create=0):
         shutil.copyfile(__file__, __file__+'.dummy')
@@ -288,6 +297,10 @@ class Database(back_anydbm.Database):
         # kill the schema too
         self.classes = {}
         # just keep the .items
+        # persistence across re-open
+        self.__class__.memdb['items'] = self.items
+        self.__class__.memdb['ids'] = self.ids
+        self.__class__.memdb['journals'] = self.journals
 
     #
     # Classes
@@ -469,5 +482,14 @@ class IssueClass(Class, roundupdb.IssueClass):
         if 'superseder' not in properties:
             properties['superseder'] = hyperdb.Multilink(classname)
         Class.__init__(self, db, classname, **properties)
+
+# Methods to check for existence and nuke the db
+# We don't support multiple named databases
+
+def db_exists(name):
+    return bool(Database.memdb)
+
+def db_nuke(name):
+    Database.memdb = {}
 
 # vim: set et sts=4 sw=4 :

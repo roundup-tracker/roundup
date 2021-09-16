@@ -513,6 +513,10 @@ class EditCSVAction(Action):
             # skip property names header
             if values == props:
                 continue
+            # skip blank lines. Can be in the middle
+            # of the data or a newline at end of file.
+            if len(values) == 0:
+                continue
 
             # extract the itemid
             itemid, values = values[0], values[1:]
@@ -1350,6 +1354,14 @@ class LoginAction(Action):
 
         # If we came from someplace, go back there
         if '__came_from' in self.form:
+            query['@ok_message'] = _("Welcome %(username)s!") %{"username" : self.client.user, }       # adds welcome message to user when logged in
+            redirect_url = urllib_.urlunparse((redirect_url_tuple.scheme,
+                                               redirect_url_tuple.netloc,
+                                               redirect_url_tuple.path,
+                                               redirect_url_tuple.params,
+                                               urllib_.urlencode(list(sorted(query.items())), doseq=True),
+                                               redirect_url_tuple.fragment))
+
             raise exceptions.Redirect(redirect_url)
 
     def verifyLogin(self, username, password):
@@ -1357,6 +1369,11 @@ class LoginAction(Action):
         try:
             self.client.userid = self.db.user.lookup(username)
         except KeyError:
+            # Perform password check against anonymous user.
+            # Prevents guessing of valid usernames by detecting
+            # delay caused by checking password only on valid
+            # users.
+            _discard = self.verifyPassword("2", password)
             raise exceptions.LoginError(self._('Invalid login'))
 
         # verify the password

@@ -162,8 +162,8 @@
        <ul>
         <li>
          <tal:span i18n:translate="">Login</tal:span><br/>
-         <input size="10" name="__login_name"/><br/>
-         <input size="10" type="password" name="__login_password"/><br/>
+         <input size="10" required name="__login_name"/><br/>
+         <input size="10" type="password" required name="__login_password"/><br/>
 	 <input name="@csrf" type="hidden"
 		tal:attributes="value python:utils.anti_csrf_nonce()">
          <input type="hidden" name="@action" value="Login"/>

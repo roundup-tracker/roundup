@@ -23,6 +23,7 @@ class Indexer:
         # gibberish (encoded text or somesuch) or shorter than 2 characters
         self.minlength = 2
         self.maxlength = 25
+        self.language = db.config[('main','indexer_language')]
 
     def is_stopword(self, word):
         return word in self.stopwords

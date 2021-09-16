@@ -54,6 +54,9 @@ def have_backend(name):
         else:
             modname = e.args[0][16:] if e.args[0].startswith('No module named ') else None
 
+        # It's always ok if memorydb is not found
+        if modname.endswith('back_memorydb'):
+            return 0
         if modname and (modname in _modules.get(name, (name,))):
             return 0
         raise
@@ -65,9 +68,15 @@ def list_backends():
     This function has side-effect of registering backward-compatible
     globals for all available backends.
 
+    Note: Since memorydb does not live in the backends directory, it will
+    never be found in the default setup. It *can* be enabled by preloading
+    test/memorydb and injecting into roundup.backends. So the normal user
+    can never configure memorydb but it makes using the tests easier
+    because we do not need to monkey-patch list_backends.
+
     '''
     l = []
-    for name in 'anydbm', 'mysql', 'sqlite', 'postgresql':
+    for name in 'anydbm', 'mysql', 'sqlite', 'postgresql', 'memorydb':
         if have_backend(name):
             l.append(name)
     return l

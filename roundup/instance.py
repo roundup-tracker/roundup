@@ -80,17 +80,6 @@ class Tracker:
 
         rdbms_backend = self.config.RDBMS_BACKEND
 
-        # TODO: Remove in v1.7
-        # Provide some backwards compatability for existing Roundup instances
-        # that still define the backend type in 'db/backend_name' and warn the
-        # users they need to update their config.ini. Note that a missing
-        # rdbms backend causes the config to throw an error, so this may
-        # not be possible.
-        if rdbms_backend == '':
-            raise TrackerError("database backend not found in config.ini.\n"
-                   "Old style `backend_name` in db directory not supported\n"
-                   "See doc/upgrading.txt for required steps.")
-
         self.backend = backends.get_backend(rdbms_backend)
 
         if self.optimize:

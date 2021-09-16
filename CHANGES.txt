@@ -11,13 +11,58 @@ Python v2.5 and v2.6.  Starting with the v1.6 releases of Roundup
 v2.7.2 or later are required to run newer releases of Roundup.  From v2.0
 onwards Python 3.4 and later are also supported.
 
-XXXX-XX-XX 2.0.1
+20xx-yy-zz 2.2.0
 
 Fixed:
+
+Features:
+
+- issue2551147 - Enable compression of http responses in roundup.
+  Allow roundup to return gzip, (br or zstd with added modules)
+  Content-Encoded replies. Compression could be done in upstream
+  proxies/wsgi server but this allows it to occur natively. (John
+  Rouillard)
+- Change tracker templates adding required to login forms. Invokes
+  browser error reporting if user forgets to fill in a field.
+  (John Rouillard)
+- issue1596345 - filtering user list (need
+  user.search.hml). Incorporate user search features from
+  issues.roundup-tracker.org into classic template. Devel and
+  responsive templates already have this feature.
+- issue2550917 - Add a: "Welcome user, you have logged in" ok_message
+  on login. (Ashley Burke)
+
+2021-07-13 2.1.0
+
+Fixed:
+
+- issue2551122 - fixing order by a link/multilink broke other props
+  should be final change for that ticket. (John Rouillard)
+- when isset() is used in templates on a StringHTMLProperty, it
+  returns True. 2.1.0 made default_value work properly. Hyperdb's
+  String(_Type) class sets the default value to the empty string and
+  not None. Change __init__ so default_value is None and not "".
+  roundup-user mailing list thread:
+  https://sourceforge.net/p/roundup/mailman/roundup-users/thread/20210801020640.73ac1729%40Dell/#msg37328813
+  (reported by Nagy Gabor. fix: John Rouillard)
+
+Features:
+
+- add image/svg-xml as valid mime type to serve. Was being served as
+  octet-stream. (John Rouillard)
+- improve customizing.txt documentation on use of Special Form
+  Variables. Added example html inputs to illustrate the doc.
+  Fix position of designator in doc example. It occurs before
+  @link@ or other edit command. (John Rouillard)
+
+2021-06-19 2.1.0b1
+
+Fixed:
+
 - Reverse multilink to *the same class* would trigger a traceback about
   a modified dictionary on iteration (Ralf Schlatterbeck)
 - issue2551086 - Valid class names not documented. Should follow
-  [A-z][A-z0-9_]+[A-z_]. This was never documented or enforced, but
+  ``[A-z][A-z0-9_]+[A-z_]``. This was never documented or enforced, but
   we get obscure errors if the rules are not followed. (Tom
   Ekberg tests by John Rouilard)
 - issue2550564 - Roundup sets "Precedence: bulk" on all outgoing mail,
@@ -25,11 +70,11 @@ Fixed:
   like we do precedence bulk. This is part of this issue.
 - roundup-admin filter calls find() not filter when using -s -c -S
   (John Rouillard)
-- When requesting transitive properties via '@fields' in the REST-API,
+- When requesting transitive properties via ``@fields`` in the REST-API,
   an empty link in the transitive property (e.g. author.username when
   requesting message properties) would result in a 404 error. Now we're
   returning a JSON 'null' value. for an empty link (e.g. empty author in
-  the example).
+  the example). (John Rouillard)
 - sphinxcontrib.cheeseshop is unmaintained and using old http
   url. Attempts to override cheeseshop_url failed. Replace call to
   cheeseshop in docs with raw html and remove references to
@@ -40,7 +85,7 @@ Fixed:
   backend markdown formatters. (report: Cedric Krier, patch: Christof
   Meerwald) 
 - issue2551092 - fix crash bug by aligning
-  roundup.anypy.email_.decode_header with stdlib email.header and
+  ``roundup.anypy.email_.decode_header`` with stdlib ``email.header`` and
   convert string to bytes for python 3. (Cedric Krier)
 - issue2551097 - fix underlying bug in use of fenced codeblocks with
   markdown2. Fix for issue2551093 to prevent exception trigger.
@@ -48,7 +93,7 @@ Fixed:
 - issue2551099 - disable processing of data url's in markdown. Display
   as plain text. (John Rouillard)
 - issue2551100 - old jquery has security issues, upgrade it and fix
-  user.help.html
+  user.help.html (John Rouillard)
 - replace deprecated base64.decodestring with base64.b64decode in
   roundup_server.py and roundup_xlmrpc_server.py (reported by
   lmsteffan in irc)
@@ -57,21 +102,97 @@ Fixed:
   the current run_tests.py.  (reported by lmsteffan in irc)
 - issue2551104 - fix issue with markdown autolink next to punctuation (ced)
 - removed support for old style trackers that use dbinit.py and
-  config.py. Also remove all uses of depricated imp module. (John Rouillard)
+  config.py. Also remove all uses of deprecated imp module. (John Rouillard)
 - removed support for setting database type using
   <database>/backend_name. (John Rouillard)
 - fixed some issues when generating translations. Use mappings and
   named format parameters so translators can move substituted tokens
-  in tranlsations.
+  in translations.  (John Rouillard)
 - in rest interface, fix uncaught exceptions when parsing invalid
   Content-Type and Accept headers. Document response formats more
-  fully in doc/rest.txt.
+  fully in doc/rest.txt.  (John Rouillard)
+- in filter, filter_iter and _materialize_multilinks, use named cursor
+  with postgresql. This turns of client-side cursor handling and avoids
+  *large* roundup process (or wsgi process) in case of large results.
+  Fixes issue2551114. (Ralf Schlatterbeck)
+- issue2551108 - fix handling of designator links when formatted
+  as markdown links. (Reported by Cedric Krier; John Rouillard)
+- Fix filename created from mail attachments, fixes issue2551118
+- Call verifyPassword even if user does not exist. Address timing
+  attack to discover valid account names. Useful where anonymous user
+  is not allowed access. (John Rouillard)
+- issue2551126 - AttributeError: 'str' object has no attribute
+  'local'. Fix traceback caused by DateHTMLProperty.pretty() called
+  on a string value due to error in some other field. (Reported by
+  reda, fix: John Rouillard)
+- issue2550899 - Migrate setup.py to setuptools; fixes:
+  issue2550866 'pip install --editable .' fails; et al.
+  this now requires that setuptools be installed. (Patch by John
+  Kristensen (jerrykan); additional doc changes (upgrade.txt,
+  RELEASE.txt) John Rouillard)
+- issue2551128 - Impossible to validate a user with unknown timezone
+  Raise KeyError when an unrecognized timezones is passed to
+  pytz. (patch Cedric Krier, test John Rouillard)
+- issue2551129 - Template not found return 500
+  Handle traceback caused when requested @template is not found.
+  Return 400 error in this condition. (patch Cedric Krier,
+  additional change and test John Rouillard)
+- issue2551062: roundup-admin security now exits status 1 when
+  it finds an invalid property. It no longer tries to print the rest
+  of the security properties. (John Rouillard)
+- issue2551078 - Fix traceback caused when putting two id's into a
+  Link html field. A ValueError is raised. Handle exception and return
+  value. hyperdb.py now reports 'you may only enter ID values for
+  property ...' to the user. (John Rouillard)
+- issue2551120 - The sorted method of MultilinkHTMLProperty crashes,
+  if the given property is unset for an element of the list. Crash
+  fixed. New feature NoneFirst added to method to make unset values
+  sort at start or end of sorted list. (John Rouillard)
+- issue2550648 - keyword boolean search. Issue has multiple problems.
+  Fix issue where saving the keyword boolean search would remove the
+  link to open the editor. (John Rouillard)
+- issue2551136 - timezone extention crash on Python 3.8. cgi.escape
+  is used in some template to provide a select box of timezones. It
+  uses cgi.escape that is deprecated and removed from 3.8 and newer.
+  Use html.escape with fallback to cgi.escape. (Cedric Krier)
+- roundup-server can act as an SSL server. Usually SSL is provided by
+  a front-end server like nginx, hiawatha, apache. The SSL parameters
+  have been upgraded to TLS 1.1. Cert is RSA 2048 bytes with SHA512
+  signature. Without these upgrades, ssl mode won't start. Note this
+  exposes other issue with roundup-server operating as an SSL
+  endpoint. See issue2551138 and issue2551137. (John Rouillard)
+- issue2551122 - sorted method of MultilinkHTMLProperty does a string
+  sort even if the property is an integer. Fixed so that the orderprop
+  for the linked class is used. (John Rouillard, reported by Nagy Gabor)
+- issue2550964 - History can (temporarily) show incorrect value when a
+  change is rejected. Fix history function to always use the database
+  values and ignore the current setting in the form. (John Rouillard)
+- Fix find() with anydbm. Using protected properties raised KeyError.
+  Add shortcut fast return. Both changes come from rdbms_common.py's
+  find(). (John Rouillard)
+- Fix traceback caused by calling history() with arguments in a
+  non-item context. (John Rouillard)
+- issue2551141 - roundup-admin returns no such class when restoring
+  item with duplicate key. Fix incorrect error message when using
+  roundup-admin to restore a user when the username is already in use.
+  (John Rouillard)
+- issue2551142 - Import of retired node with username after active
+  node is imported raises unique constraint failure. (Reported by Ganesh
+  Sittampalam/Heffalump on irc. John Rouillard)
+- *** Must run roundup-admin migrate ***
+  Increment rdbms version from 5 to 6. Mysql rdbms classes were
+  missing unique key constraint. Found during fix for issue2551142.
+  See upgrading.txt. (John Rouillard)
+- ignore blank lines in CSV class editing. (John Rouillard)
 
 Features:
+
 - issue2550522 - Add 'filter' command to command-line
   interface. Filter command was actually added in 2.0.0, but this
-  issue requested transitive searching. So that:
+  issue requested transitive searching. So that::
+
     roundup-admin -i . filter issue assignedto.username=Admin
+
   will work. This also fixes a bug. If assignedto.username had no
   matches, all issues would be returned.  This is also fixed.
   (John Rouillard)
@@ -91,6 +212,27 @@ Features:
 - Added explanation for modifying Fileclass content files to
   customizing.txt. Result of mailing list question. (John Rouillard)
 - issue2551109 - Improve keyword editing in jinja2 template. (Cedric Krier)
+- issue2551117 - Add example systemd config
+- Allow admin to configure language used for stemming in xapian
+  indexer. (John Rouillard request by Nagy Gabor)
+- Move memorydb from test to roundup/test to allow regression-testing in
+  tracker instances without copying code. Also move the test-detectors in
+  tx_Source_detector.py to roundup/test for two reasons: It's used in the
+  memorydb convenience functions and it may be useful in other tests. Make
+  the prefix a parameter of the convenience functions to be usable in other
+  tests.  (Ralf Schlatterbeck)
+- pytest suite now starts the server under wsgi and loads the home
+  page. This test is skipped if the requests module is not installed.
+- extract translatable strings from devel and responsive templates. Merge
+  translations from https://sourceforge.net/p/roundup/code/merge-requests/3/
+  (John Rouillard. DE translations by Tobias Herp.)
+- send_message now allows setting authid to set source of email.
+  (John Rouillard)
+- issue2550837 - New option for web auth (also http header passing).
+  Allow admin to configure authentication header replacing the default
+  REMOTE_USER. Also allow arbitrary headers to be passed to the
+  tracker when using roundup-server behind a proxy. This code is
+  experimental see upgrading.txt admin_guide.txt. (John Rouillard)
 
 2020-07-13 2.0.0
 
@@ -442,6 +584,7 @@ Fixed:
 2019-07-13 1.6.1
 
 Features:
+
 - doc updates. Link rot fixed and some grammar changes.
   'Provisional User' config example fixed. Issue tracker is
   now https. (John Rouillard)
@@ -507,27 +650,35 @@ Features:
   otherwise they will clash with the "hidden" input elements generated by
   indexargs_form itself.
 
-  For example:
+  For example::
+
     <tal:block replace="structure python:request.indexargs_form(
                       sort=0,group=0,filter=0,columns=0,
                       exclude=['type','status','assignedto'])"/>
+
   where the variables type, status and assignedto are supplied via other
   form input elements. Without the new exclude argument to indexargs_form,
   all hidden input elements otherwise generated by this call would need to
   be manually added to the template code. Further, given that the template
   may not know what other variables may be defined, it may not even be
   possible to code this without some python helpers.
+
     [ rouilj I think this is an example usecase. Possible assignedto
     users need to have a specific role. Create TAL that
     filters the users to the select few. Defines a select list for
     assignedto. Use exclude=['assignedto'] to prevent the
     indexargs_form from generating a confliciting assignedto field
     which lists all users regardless of the role.]
+
 - allow user to recover account password using an entry in the
   Alternate E-mail addresses list. See:
+
      http://psf.upfronthosting.co.za/roundup/meta/issue564
+
   for description. Merge request at:
+
     https://sourceforge.net/p/roundup/code/merge-requests/1/
+
   Patch supplied by kinggreedy. Applied/tested by John Rouillard
 - issue2550636, issue2550909: Added support for Whoosh indexer.
   Also adds new config.ini setting called indexer to select
@@ -537,28 +688,36 @@ Features:
 - issue2550803: Replying to NOSY mail goes to the tracker through
   reply-to, not original message author.
   Created new [tracker] replyto_address config.ini option to allow:
+
     1) setting reply-to header to the tracker
     2) setting reply-to header to the address of the author
        of the change
     3) setting it to a fixed address (like noreply@some.place)
+
   Done by John Rouillard from proposal by Peter Funk (pefu)
   in discussion with Tom Ekberg (tekberg). See doc/upgrading.txt.
 - issue1714899: Feature Request: Optional Change Note. Added a new
   quiet=True/False option for all property types. When quiet=True
   changes to the property will not be displayed in the::
-    confirmation banner (shown in green) when a change is made
-    property change section of change note (nosy emails)
-    web history display for an item.
+
+   - confirmation banner (shown in green) when a change is made
+   - property change section of change note (nosy emails)
+   - web history display for an item.
+
   Note that this may confuse users if used on a property that is
   meant to be changed by a user. It is most useful on administrative
   properties that are changed by an auditor as part of a user
   generated change. Original patch by Daniel Diniz (ajaksu2)
   discussed also at:
+
     http://psf.upfronthosting.co.za/roundup/meta/issue249
+
   Support for setting quiet when calling the class specifiers:
   E.G. prop=String(quiet=True) rather than::
+
     prop=String()
     prop.quiet=True
+
   support for anydb backend, added tests, doc updates, support for
   ignoring quiet setting using showall=True in call to history()
   function in templates by (John Rouillard). (Note implementation
@@ -629,12 +788,16 @@ Features:
   on "Implementing Modal Editing Using @template" in
   ``customizing.txt``. (John Rouillard)
 - New form of check function is permitted in permission definitions.
-  If the check function is defined as:
+  If the check function is defined as::
+
       check(db, userid, itemid, **ctx)
-  the ctx variable will have:
-     ctx['property'] the name of the property being checked or None
-     ctx['classname'] the class that is being checked or None
-     ctx['permission'] the name of the permission (e.g. View, Edit)
+
+  the ctx variable will have::
+
+     ctx['property']: the name of the property being checked or None
+     ctx['classname']: the class that is being checked or None
+     ctx['permission']: the name of the permission (e.g. View, Edit)
+
   At some future date the older 3 argument style check command will
   be deprecated. See ``upgrading.txt`` for details.
 - New property for permissions added to simplify the model. See
@@ -750,9 +913,9 @@ Fixed:
   pagesize is not propigated to the prev link. This patch fixes that.
   Patch provided by John Kristensen. (Applied, light testing by John
   Rouillard.)
-- issue2550850 anypy/email_.py uses BSPACE which is not defined in python 2.7
-  Supplied a definition for BSPACE since it seems to not be defined
-  anywhere. Reported by Dennis Boone. (John Rouillard)
+- issue2550850 ``anypy/email_.py`` uses BSPACE which is not defined \
+  in python 2.7. Supplied a definition for BSPACE since it seems to
+  not be defined anywhere. Reported by Dennis Boone. (John Rouillard)
 - Validate properties specified for sorting and grouping in index
   views. Original patch from martin.v.loewis via:
   https://hg.python.org/tracker/roundup/rev/439bd3060df2
@@ -802,7 +965,9 @@ Fixed:
   also improves handling of retryable errors. Applied and
   edited by John Rouillard. Edits included removing support for
   psycopg1. See:
+
     https://sourceforge.net/p/roundup/mailman/message/32855027/
+
   for rational for dropping it.
 - issue2550831: Make the classic template query.edit page work.
   Many fixes and improvements. See ``upgrading.txt`` for details.
@@ -903,7 +1068,9 @@ Fixed:
   error. Also the index.search.html template in the classic tracker
   and corresponding templates in the other example trackers
   has been modified to include:
+
     <input type="hidden" name="@template" value="index|search"/>
+
   so an error from SearchAction will display an error message and keep
   the user on the search page so they can correct the error. See
   ``doc/upgrading.txt``. (John Rouillard)
@@ -935,7 +1102,9 @@ Fixed:
   list of directories to search for static files in the web interface.
   If one of the elements is -, the search stops and the TEMPLATES
   directory is not searched. See:
+
     https://sourceforge.net/p/roundup/mailman/message/35773357/
+
   subject is "showing template sources to all".
 - issue2550945: OpenPGP: Extends newissuecopy.py to encrypt if configured.
   (Bernhard Reiter)
@@ -1167,6 +1336,7 @@ Features:
   changes arriving by unauthenticated mechanisms (e.g. plain email
   where headers can be faked). The property db.tx_Source has the
   following values:
+
   * None - Default value set to None. May be valid if it's a script
     that is created by the user. Otherwise it's an error and indicates
     that some code path is not properly setting the tx_Source property.
@@ -1180,6 +1350,7 @@ Features:
     valid pgp signature is used. (*NOTE* the testing for this mode
     is incomplete. If you have a pgp infrastructure you should test
     and verify that this is properly set.) (John Rouillard)
+
 - Introducing Template Loader API (anatoly techtonik)
 - Experimental support for Jinja2, try 'jinja2' for template_engine
   in config (anatoly techtonik)
@@ -1250,9 +1421,9 @@ Fixed:
 
 - issue2550765: Don't show links in calendar that will fail.
   Found and fixed by C\E9dric Krier. (Bernhard)
-- issue2550765: use <meta name="robots" content="noindex, nofollow"> in the
-  _generic.calendar.html to prevent robots to follow all the links in the
-  calendar. (Ezio Melotti)
+- issue2550765: use ``<meta name="robots" content="noindex,
+  nofollow">`` in  the _generic.calendar.html to prevent robots to
+  follow all the links in the calendar. (Ezio Melotti)
 - "BaseException.with_traceback" is not available on Python 2, so use
   "raise E, V, T" instead of "raise E(V).with_traceback(T)".  This change was
   originally introduced in 74476eaac38a. (Ezio Melotti)
@@ -1268,7 +1439,7 @@ Fixed:
   thanks John Kristensen. (Bernhard Reiter)
 - issue2550738: Fixes for various documentation typoes,
   thanks Nathan Russell. (John Kristensen)
-- issue2550756: Fix `oder' typo in mailer.Mailer.bounce_message docstring,
+- issue2550756: Fix 'oder' typo in mailer.Mailer.bounce_message docstring,
   thanks W. Trevor King (John Kristensen)
 - Fix basic authentication: instatiating the login action would fail if
   the user is not set. We now first set the user to anonymous and then
@@ -1649,15 +1820,18 @@ Fixed:
 2010-02-19: 1.4.13
 
 Fixed:
+
 - Multilink edit fields lose their values (thanks Will Maier)
 
 
 2010-02-09: 1.4.12
 
 Features:
+
 - Support IMAP CRAM-MD5, thanks Jochen Maes
 
 Fixes:
+
 - Proper handling of 'Create' permissions in both mail gateway (earlier
   commit r4405 by Richard), web interface, and xmlrpc. This used to
   check 'Edit' permission previously. See
@@ -1690,9 +1864,11 @@ Fixes:
 2009-12-21: 1.4.11
 
 Features:
+
 - Generic class editor may now restore retired items (thanks Ralf Hemmecke)
 
 Fixes:
+
 - Fix security hole allowing user permission escalation (thanks Ralf
   Schlatterbeck)
 - More SSL fixes. SSL wants the underlying socket non-blocking. So we
@@ -1746,6 +1922,7 @@ Fixes:
 2009-10-09: 1.4.10
 
 Fixes:
+
 - Minor update of doc/developers.txt to point to the new resources
   on www.roundup-tracker.org (Bernhard Reiter)
 - Small CSS improvements regaring the search box (thanks Thomas Arendsen Hein)
@@ -1769,6 +1946,7 @@ Fixes:
 2009-08-10: 1.4.9
 
 Fixes:
+
 - fixed action taken in response to invalid GET request
 - fixed classic tracker template to submit POST requests when appropriate
 - fix problems with french and german locale files (issue 2550546)
@@ -1788,6 +1966,7 @@ Fixes:
 2009-03-18: 1.4.8
 
 Fixes:
+
 - bug introduced into hyperdb filter (issue 2550505)
 - bug introduced into CVS export and view (issue 2550529)
 - bugs introduced in the migration to the email package (issue 2550531)
@@ -1798,6 +1977,7 @@ Fixes:
 2009-03-13: 1.4.7
 
 Features:
+
 - Provide a "no selection" option in web interface selection widgets
 - Debug logging now uses the logging module rather than print
 - Allow CGI frontend to serve XMLRPC requests.
@@ -1806,6 +1986,7 @@ Features:
 - Support resuming downloads for (large) files.
 
 Fixes:
+
 - a number of security issues were discovered by Daniel Diniz
 - EditCSV and ExportCSV altered to include permission checks
 - HTTP POST required on actions which alter data
@@ -1820,18 +2001,23 @@ Fixes:
 
 
 2008-09-01: 1.4.6
+
 Fixed:
+
 - Fix bug introduced in 1.4.5 in RDBMS full-text indexing
 - Make URL matching code less matchy
 - Try to clarify mail_domain config setting
 
 
 2008-08-19: 1.4.5
+
 Feature:
+
 - Add use of username/password stored in ~/.netrc in mailgw (sf patch
   #1912105)
 
 Fixed:
+
 - 'Make a Copy' failed with more than one person in nosy list (sf #1906147)
 - xml-rpc security checks and tests across all backends (sf #1907211)
 - Send a Precedence header in email so (well-written) autoresponders don't
@@ -1856,18 +2042,24 @@ Fixed:
 
 
 2008-03-01: 1.4.4
+
 Fixed:
+
 - Security fixes (thanks Roland Meister)
 
 
 2008-02-27: 1.4.3
+
 Fixed:
+
 - MySQL backend bug introduced in 1.4.2 (TEXT columns need a size when
   being indexed)
 
 
 2008-02-08: 1.4.2
+
 Feature:
+
 - New config option in mail section: ignore_alternatives allows to
   ignore alternatives besides the text/plain part used for the content
   of a message in multipart/alternative attachments.
@@ -1879,6 +2071,7 @@ Feature:
   properties with a "name" attribute) (thanks Martin v. L\F6wis)
 
 Fixed:
+
 - Searching date range by supplying just a date as the filter spec
 - Handle no time.tzset under Windows (sf #1825643)
 - Fix race condition in file storage transaction commit (sf #1883580)
@@ -1889,12 +2082,16 @@ Fixed:
 
 
 2007-11-09: 1.4.1
+
 Fixed:
+
 - Removed some metakit references
 
 
 2007-11-04: 1.4.0
+
 Feature:
+
 - Roundup has a new xmlrpc frontend that gives access to a tracker using
   XMLRPC.
 - Dates can now be in the year-range 1-9999
@@ -1917,6 +2114,7 @@ Feature:
 - support for receiving OpenPGP MIME messages (signed or encrypted)
 
 Fixed:
+
 - Handling of unset Link search in RDBMS backend
 - Journal export of anydbm didn't correctly export previously empty values
 - Fix handling of defaults for date fields
@@ -1958,7 +2156,9 @@ Fixed:
 
 
 2007-02-15: 1.3.3
+
 Fixed:
+
 - If-Modified-Since handling was broken
 - Updated documentation for customising hard-coded searches in page.html
 - Updated Windows installation docs (thanks Bo Berglund)
@@ -1969,7 +2169,9 @@ Fixed:
 
 
 2006-12-19: 1.3.2
+
 Fixed:
+
 - relax rules for required fields in form_parser.py (sf bug 1599740)
 - documentation cleanup from Luke Ross (sf patch 1594860)
 - updated Spanish translation from Ramiro Morales (sf patch 1594718)
@@ -1986,17 +2188,22 @@ Fixed:
 
 
 2006-11-11: 1.3.1
+
 Fixed:
+
 - setup.py had broken reference to roundup.cgi (sf bug 1593573)
 - full-text search wasn't coping with multiple multilinks to the same class
 - unicode / sqlite 3 problem (sf bug 1589292)
 
 
 2006-11-09: 1.3.0
+
 Feature:
+
 - WSGI support via roundup.cgi.wsgi_handler
 
 Fixed:
+
 - sqlite module detection was broken for python 2.5 compiled without sqlite
   support
 - fixed support for pysqlite2 (version 2.1.0 is the minimum version
@@ -2011,13 +2218,17 @@ Fixed:
 
 
 2006-10-07: 1.2.1
+
 Fixed:
+
 - E-mail subject line prefix delimiter configuration was being ignored.
 - Password confirm field in user editing.
 
 
 2006-10-04: 1.2.0
+
 Feature:
+
 - supports Python 2.5, including the sqlite3 module
 - full timezone support (sf patch 1465296)
 - handle connection loss when responding to web requests
@@ -2041,6 +2252,7 @@ Feature:
 
 
 Fixed:
+
 - Verbose option for import and export (sf bug 1505645)
 - -c option for roundup-mailgw won't accept parameter (sf bug 1505649)
 - '?' in rfc2822-encoded header isn't quoted (sf bug 1505663)
@@ -2077,11 +2289,14 @@ Fixed:
 
 
 2006-04-27: 1.1.2
+
 Feature:
+
 - server-ctl script uses server configuration file (sf bug 1443805)
 - mail user interface translated (sf patch 1462491)
 
 Fixed:
+
 - progress display in roundup-admin reindex
 - bug in menu() permission filter (sf bug 1444440)
 - indexing may be turned off for FileClass "content" now
@@ -2102,7 +2317,9 @@ Fixed:
 
 
 2006-03-03: 1.1.1
+
 Fixed:
+
 - failure with browsers not sending "Accept-Language" header
   (sf bugs 1429646 and 1435335)
 - translate class name in "required property not supplied" error message
@@ -2127,7 +2344,9 @@ Fixed:
 
 
 2006-02-10: 1.1.0
+
 Feature:
+
 - trackers may configure custom stop-words for the full-text indexer
 - login may now be for a single session (and this is the default)
 - trackers may hide exceptions from web users (they will be mailed to the
@@ -2135,6 +2354,7 @@ Feature:
 - include "clear this message" link in the "ok" message bar
 
 Fixed:
+
 - fixes in scripts/import_sf.py
 - fix some unicode bugs in roundup-admin import
 - Xapian indexer wasn't actually being used and its reindexing of existing
@@ -2146,11 +2366,14 @@ Fixed:
 
 
 2006-02-03: 1.0.1
+
 Feature:
+
 - scripts/import_sf.py will import a tracker from Sourceforge.NET
 - added hasRole() to HTMLUser
 
 Fixed:
+
 - SQL generation for sort/group by separate Link properties (sf bug
   1417565)
 - fix timezone offsetting in email Date: header
@@ -2158,7 +2381,9 @@ Fixed:
 
 
 2006-01-27: 1.0
+
 Feature:
+
 - Lithuanian translation by Aiste Kesminaite
 - Web User Interface language selection by form variable @language,
   browser cookie or HTTP header Accept-Language (sf patch 1360321)
@@ -2182,6 +2407,7 @@ Feature:
 - added "copy_url" method to generate a URL for copying an item
 
 Fixed:
+
 - MySQL now creates String columns using the TEXT column type
 - password.crypt won't work with md5 passwords (sf bug 1372253)
 - use quoted printable encoding for nosy attachments that have MIME
@@ -2204,7 +2430,9 @@ Fixed:
 
 
 2005-10-07: 0.9.0b1
+
 Feature:
+
 - added "imapServer.py" script (sf patch 934567)
 - added date selection popup windows (thanks Marcus Priesch)
 - added Xapian indexer; replaces standard indexers if Xapian is available
@@ -2215,6 +2443,7 @@ Feature:
 
 2006-01-27: 0.8.6
 Fixed:
+
 - french translation updated by Patrick Decat (sf patch 1397059)
 - tighten up Date parsing to not allow 'M/D/YY' (or 'D/M/YY) (sf bug
   1290550)
@@ -2236,10 +2465,13 @@ Fixed:
 
 
 2005-10-07: 0.8.5
+
 Feature:
+
 - Argentinian Spanish translation by Ramiro Morales
 
 Fixed:
+
 - Display of Multilinks where linked Class labelprop values are None
 - Fix references to the old * Registration Permissions
 - Fix missing merge of fix to sf bug 1177057
@@ -2248,7 +2480,9 @@ Fixed:
 
 
 2005-07-18: 0.8.4
+
 Fixed:
+
 - extra CRs in CSV export files on Windows platform (sf bug 1195742)
 - activity RDBMS columns were being reported in changes
 - fix name collision in roundup.cgi script (sf bug 1203795)
@@ -2277,10 +2511,13 @@ Fixed:
 
 
 2005-05-02: 0.8.3
+
 Feature:
+
 - chinese translation by limodou
 
 Fixed:
+
 - fix reference to The Zope Book in Roundup FAQ
 - disabled file logging in Roundup test suite (sf bug 1155649)
 - return original string if message issue xref isn't valid
@@ -2309,11 +2546,14 @@ Fixed:
 
 
 2005-03-03: 0.8.2
+
 Feature:
+
 - roundup-server automatically redirects from trackers list
   to the tracker page if there is only one tracker
 
 Fixed:
+
 - added content to ZRoundup refresh.txt file (sf bug 1147622)
 - fix invalid reference to csv.colon_separated
 - correct URL to What's New in setup.py meta-data
@@ -2325,7 +2565,9 @@ Fixed:
 
 
 2005-02-17: 0.8.1
+
 Fixed:
+
 - replaced MutlilinkIterator with multilinkGenerator (thanks Bob Ippolito)
 - fixed broken csv import in roundup.admin module
 - fixed braino in HTMLClass.filter() (sf bug 1124213)
@@ -2333,7 +2575,9 @@ Fixed:
 
 
 2005-01-16: 0.8.0
+
 Fixed:
+
 - fix roundup-server log and PID file paths to be absolute
 - fix initialisation of roundup-server in daemon mode so initialisation
   errors are visible
@@ -2359,7 +2603,9 @@ Fixed:
 
 
 2005-01-13: 0.8.0b2
+
 Fixed:
+
 - note about how to run roundup demo in Windows (sf bug 1082090)
 - fix API for templating utils extensions - remove "utils" arg (sf bug 1081981)
 - back_sqlite.py is missing "import time" (sf bug 1081959)
@@ -2374,7 +2620,9 @@ Fixed:
 
 
 2004-12-08: 0.8.0b1
+
 Feature:
+
 - added MD5 scheme for password hiding
 - added support for HTTP charset selection
 - implement __nonzero__ for HTMLProperty
@@ -2413,15 +2661,18 @@ Feature:
   getPermission call
 
 Fixed:
+
 - postgres backend open doesn't hide corruption in schema (sf bug 956375)
-- *dbm-style backends nuke() method now clear id counters
+- \*dbm-style backends nuke() method now clear id counters
 - removed safeget() from the API (sf bug 994750)
 - demo tracker is always set up on localhost (sf bug 1049101)
 - relaxed URL designator syntax to allow issue[0]*1 (sf bug 1054523)
 
 
 2005-05-02: 0.7.12
+
 Fixed:
+
 - handle capitalisation of class names in text hyperlinking (sf bug
   1101043)
 - quote full-text search text in URL generation
@@ -2436,14 +2687,18 @@ Fixed:
 
 
 2005-01-06: 0.7.11
+
 Fixed:
+
 - index args URL generation broken in .10 (sf bug 1096027)
 - handle NotModified for non-static files (sf patch 1095790)
 - fix permission lookup in query editing
 
 
 2005-01-04: 0.7.10
+
 Fixed:
+
 - reset ID counters if the database is cleared (thanks William)
 - apply IE caching "fix" to automatically serve up all pages expired
 - fix typo (sf patch 1076629)
@@ -2460,10 +2715,13 @@ Fixed:
 
 
 2004-10-26: 0.7.9
+
 Feature:
+
 - DateHTMLProperty.field() accepts format string (thanks Wil Cooley)
 
 Fixed:
+
 - popup listing uses filter args (thanks Marlon van den Berg)
 - fixed editing of message contents
 - loosened the detection of issue cross-references in messages
@@ -2486,12 +2744,16 @@ Fixed:
 
 
 2004-10-15: 0.7.8
+
 Fixed:
+
 - Clean out sessions / otks tables when migrating
 
 
 2004-10-11: 0.7.7
+
 Fixed:
+
 - ZRoundup's search interface works now (sf bug 994957)
 - fixed history display when "ascending"
 - removed references to py2.3+ boolean values (sf bug 995682)
@@ -2513,7 +2775,9 @@ Fixed:
 
 
 2004-07-21: 0.7.6
+
 Fixed:
+
 - rdbms backend full text search failure after import (sf bug 980314)
 - rdbms backends not filtering correctly on link=None
 - fix anydbm journal import (sf bug 983166)
@@ -2536,7 +2800,9 @@ Fixed:
 
 
 2004-06-24: 0.7.5
+
 Fixed:
+
 - force lookup of journal props in anydbm filtering
 - fixed lookup of "missing" Link values for new props in anydbm backend
 - allow list of values for id, Number and Boolean filtering in anydbm
@@ -2553,7 +2819,9 @@ Fixed:
 
 
 2004-06-10: 0.7.4
+
 Fixed:
+
 - re-acquire the OTK manager when we re-open the database
 - mailgw handler can close the database on us
 - fixed grouping by a NULL Link value
@@ -2566,7 +2834,9 @@ Fixed:
 
 
 2004-05-28: 0.7.3
+
 Fixed:
+
 - add "checked" to truth values for Boolean input
 - fixed import in metakit backend
 - fix SearchAction use of Class.filter(), and clarify API docs for same
@@ -2575,7 +2845,9 @@ Fixed:
 
 
 2004-05-17: 0.7.2
+
 Fixed:
+
 - anydbm sorting with None values (sf bug 952853)
 - roundup-server -g option not recognised (sf bug 952310)
 - HTML templating isset() inverted (sf bug 951779)
@@ -2589,7 +2861,9 @@ Fixed:
 
 
 2004-05-10: 0.7.1
+
 Fixed:
+
 - several temp files made it into the source distribution (sf bug 949243)
 - typo in roundup/instance.py
 - missing CRLF var in rfc822.py (sf patch 949471)
@@ -2601,7 +2875,9 @@ Fixed:
 
 
 2004-05-06: 0.7.0
+
 Fixed:
+
 - sqlite migration drops some journal information (thanks David Linke)
 - user editing Role entry help text always appears
 - disable forking server when os.fork() not available (sf bug 938586)
@@ -2619,7 +2895,9 @@ Fixed:
 
 
 2004-04-18: 0.7.0b3
+
 Feature:
+
 - added a favicon
 - added url_quote and html_quote methods to the utils object
 - added isset method to HTMLProperty
@@ -2633,6 +2911,7 @@ Feature:
 - roundupdb nosymessage() takes an optional bcc list
 
 Fixed:
+
 - mysql and postgresql schema mutation now handle added Multilinks
 - web CSV export was busted (as was any action returning a result)
 - MultiMapping deviated from the Zope C implementation in a number of
@@ -2653,7 +2932,9 @@ Fixed:
 
 
 2004-03-27: 0.7.0b2
+
 Feature:
+
 - added CSV export to index pages
 - added emailauditor.py which works around a bug in IE. See
   "detectors/emailauditor.py" for more info.
@@ -2667,6 +2948,7 @@ Feature:
 - added is_retired to HTMLItems in templating
 
 Fixed:
+
 - Boolean, Date and Link HTML templating was broken
 - fix reporting of test inclusion in postgresql test
 - EditAction was confused about who "self" was
@@ -2679,7 +2961,9 @@ Fixed:
 
 
 2004-03-24: 0.7.0b1
+
 Major new features:
+
 - added postgresql backend (originally from sf patch 761740, many changes
   since)
 - added new "actor" automatic property (indicates user who cause the last
@@ -2693,6 +2977,7 @@ Major new features:
   (either view or edit as appropriate), greatly simplifying templates
 
 Other new features:
+
 - simple support for collision detection (sf rfe 648763)
 - support setgid and running on port < 1024 (sf patch 777528)
 - using Zope3's test runner now, allowing GC checks, nicer controls and
@@ -2717,6 +3002,7 @@ Other new features:
 - date.Date now handles fractional seconds
 
 Fixed:
+
 - mysql documentation fixed to note requirement of 4.0+ and InnoDB
 - added testing of schema mutation, fixed rdbms backends handling of a
   couple of cases
@@ -2741,6 +3027,7 @@ Fixed:
 - fixed ability to edit "content" property (sf bug 914062)
 
 Cleanup:
+
 - replace curuserid attribute on Database with the extended getuid() method
 - extract a new 'mailer' module for sending mail
 - extract a '_send_mail' method for testing mail sending
@@ -2752,6 +3039,7 @@ Cleanup:
 - tidied up forms in default stylesheet
 - force textareas to use monospace fonts, lessening surprise on the user
 - moved out parts of client.py to new modules:
+
   * actions.py - the xxxAction and xxxPermission functions refactored into
     Action classes
   * exceptions.py - all exceptions
@@ -2760,14 +3048,18 @@ Cleanup:
 
 
 2004-05-17: 0.6.10
+
 Fixed:
+
 - mysql backend wasn't locking tracker
 - ensure static files may only be served out of the tracker's "static
   files" directory
 
 
 2004-04-18: 0.6.9
+
 Fixed:
+
 - paging in classhelp popup was broken
 - socket timeout error logging can fail
 - hyperlink designators in message display (sf bug 931828)
@@ -2775,7 +3067,9 @@ Fixed:
 
 
 2004-04-01: 0.6.8
+
 Fixed:
+
 - existing trackers (ie. live ones) may be used as templates for new
   trackers - the TEMPLATE-INFO.txt name entry has the tracker's dir name
   appended (so the demo tracker's template name is "classic-demo")
@@ -2790,7 +3084,9 @@ Fixed:
 
 
 2004-03-01: 0.6.7
+
 Fixed:
+
 - be more backward-compatible when asking for EMAIL_CHARSET
 - made error on create consistent with edit when user enters invalid data
   for Multilink and Link form fields (sf bug 904072)
@@ -2802,7 +3098,9 @@ Fixed:
 
 
 2004-02-25: 0.6.6
+
 Fixed:
+
 - don't insert spaces into designators, it just confuses users (sf bug
   898087)
 - Eudora can't handle utf-8 headers. We love Eudora. (sf bug 900046)
@@ -2814,7 +3112,9 @@ Fixed:
 
 
 2004-02-16: 0.6.5
+
 Fixed:
+
 - mailgw handling of subject-line errors
 - allow serving of FileClass file content when the class isn't called
   "file" (eg. messages and other FileClasses)
@@ -2833,7 +3133,9 @@ Fixed:
 
 
 2003-12-17: 0.6.4
+
 Fixed:
+
 - fixed date arithmetic to not allow day-of-month == 0 (sf bug 853306)
 - fixed date arithmetic to limit hours-per-day to 24, not 60
 - hard-coded python2.3-ism (socket.timeout) fixed
@@ -2844,7 +3146,9 @@ Fixed:
 
 
 2003-11-14: 0.6.3
+
 Fixed:
+
 - fixed detectors fix incorrectly fixed in bugfix release 0.6.2
 - added note to upgrading doc for detectors fix in 0.6.2
 - added script to help migrating queries from pre-0.6 trackers
@@ -2856,12 +3160,14 @@ Fixed:
   an Interval.
 - handle socket timeout exception (thanks Marcus Priesch)
 - fixed retirement of items in rdbms imports (sf bug 841355)
-- fixed bug in looking up journal of newly-created items in *dbm backends
+- fixed bug in looking up journal of newly-created items in \*dbm backends
 
 
 2003-09-29: 0.6.2
+
 Fixed:
-- cleaned up, clarified internal caching API in *dbm backends
+
+- cleaned up, clarified internal caching API in \*dbm backends
 - stopped pyc writing to current directory! yay! (patch 800718 with changes)
 - fixed file leak in detector initialisation (patch 800715)
 - commented out example tracker homes (patch 800720)
@@ -2871,7 +3177,9 @@ Fixed:
 
 
 2003-08-31: 0.6.1
+
 Fixed:
+
 - Add note about installing cgi-bin with a different interpreter
 - Importing wasn't setting None values explicitly when it should have been
 - Fixed import warning regarding 0xffff0000 literal, finally, really this
@@ -2888,6 +3196,9 @@ Fixed:
 
 
 2003-08-08: 0.6.0
+
+Fixed:
+
 - Fixed editing attributes on FileClass nodes.
 - Query editing now works correctly (sf bug 621248)
 - roundup-server now logs IP addresses by default (sf bug 778795)
@@ -2901,6 +3212,9 @@ Fixed:
 
 
 2003-07-29: 0.6.0b4
+
+Fixed:
+
 - plugged cross-site-scripting hole (thanks Jeff Epler)
 - handle deprecation of FCNTL in python2.2+ (sf bug 756756)
 - handle missing Subject: line (sf bug 755331)
@@ -2916,28 +3230,36 @@ Fixed:
 
 
 2003-06-10: 0.6.0b3
+
 Fixed:
+
 - cgi client was broken during b2 fixing
 
 
 2003-06-09: 0.6.0b2
+
 Feature:
+
 - added the start/stop/restart/condstart/status roundup-server control
   script
 
 Fixed:
+
 - handle non-existant demo dir (thanks Ollie Rutherfurd)
 - strip whitespace from Role names so "User, Admin" will work
 - fixed template searching on Windows (thanks J Vickroy)
 
 
 2003-05-09: 0.6.0b1
+
 Removed:
+
 - having served its purpose as a template for other relational database
   implementations, the gadfly backend has now been removed from the Roundup
   distribution.
 
 Feature:
+
 - new instant-gratification Demo Mode
 - support setting of properties on message and file through web and
   email interface (thanks John Rouillard)
@@ -3002,6 +3324,7 @@ Feature:
 - nicer index navigation (sf feature 676866)
 
 Fixed:
+
 - applied unicode patch. All data is stored in utf-8. Incoming messages
   converted from any encoding to utf-8, outgoing messages are encoded
   according to rfc2822 (sf bug 568873)
@@ -3020,7 +3343,7 @@ Fixed:
 - added example HTML tempating for vacation flag (sf bug 701722)
 - finally, tables autosize columns (sf bug 609070)
 - added creation to index columns (sf bug 708247)
-- fixed missing (pre-commit) journal entries in *dbm backends (sf bug 679217)
+- fixed missing (pre-commit) journal entries in \*dbm backends (sf bug 679217)
 - URL cited in roundup email confusing dumb Email clients (sf bug 716585)
 - set title on issues even when the email body is empty (sf bug 727430)
 - under the heading of "questionable whether it's a fix or not"
@@ -3028,6 +3351,9 @@ Fixed:
 
 
 2003-05-08: 0.5.7
+
+Fixed:
+
 - fixed Interval maths (sf bug 665357)
 - fixed sqlite rollback/caching bug (sf bug 689383)
 - fixed rdbms table update detection logic (sf bug 703297)
@@ -3043,6 +3369,9 @@ Fixed:
 
 
 2003-02-27: 0.5.6
+
+Fixed:
+
 - fixed templating filter function arguments (sf bug 678911)
 - fixed multiselect in searching (sf bug 676874)
 - fixed parsing of content-disposition filenames (sf bug 675116)
@@ -3060,6 +3389,9 @@ Fixed:
 
 
 2003-01-24: 0.5.5
+
+Fixed:
+
 - fixed rdbms searching by ID (sf bug 666615)
 - fixed metakit searching by ID
 - detect corrupted index and raise semi-useful exception (sf bug 666767)
@@ -3073,6 +3405,9 @@ Fixed:
 
 
 2003-01-10: 0.5.4
+
+Fixed:
+
 - key the templates cache off full path, not filename
 - implemented whole-database locking
 - hyperlinking of special text (url, email, item designator) in messages
@@ -3092,6 +3427,9 @@ Fixed:
 
 
 2002-12-11: 0.5.3
+
+Fixed:
+
 - added mention of how to give users multiple Roles
 - mention needed trailing "/" in TRACKER_WEB
 - fixed upgrading doc to have CGI changes in the correct order
@@ -3116,6 +3454,9 @@ Fixed:
 
 
 2002-11-07: 0.5.2
+
+Fixed:
+
 - added quotes around python interpreter in windows bat (sf bug 623963)
 - fixed link at end of installation doc (sf bug 623957)
 - handle "classname" URL path errors cleaner (generate a 404)
@@ -3142,6 +3483,9 @@ Fixed:
 
 
 2002-10-16: 0.5.1
+
+Fixed:
+
 - highlight rows in groups of three
 - metakit cleanups
 - nicer "navigation" style in index views
@@ -3173,6 +3517,9 @@ Fixed:
 
 
 2002-10-02: 0.5.0
+
+Fixed:
+
 - fixed style for alternating rows in user lists
 - fixed query edit form so it doesn't barf
 - #617133 ] 0.5.0pr1 uses nonexistent renderTemplate
@@ -3180,6 +3527,9 @@ Fixed:
 
 
 2002-09-27: 0.5.0 pr1
+
+Fixed:
+
 - handling of None for Date/Interval/Password values in export/import
 - handling of journal values in export/import
 - password edit now has a confirmation field
@@ -3196,7 +3546,7 @@ Fixed:
   if they're not all there
 - sf 611217 ] menu() has problems when labelprop==None
 - verify contents of tracker module when the tracker is opened
-- many performance improvements in *dbm and sql backends
+- many performance improvements in \*dbm and sql backends
 - mailgw was missing an "import sys"
 - setup now installs scripts with python -O flag, doubling performance in some
   cases (there's a lot of __debug__ use)
@@ -3228,6 +3578,9 @@ Fixed:
 
 
 2002-09-13: 0.5.0 beta2
+
+Fixed:
+
 -  all backends now have a .close() method, and it's used everywhere
 -  fixed bug in detectors __init__
 -  switched the default issue item display to only show issue summary
@@ -3240,7 +3593,9 @@ Fixed:
 
 
 2002-09-11: 0.5.0 beta1
+
 Fixed:
+
 -  #576086 ] dumb copying mistake (frontends/ZRoundup.py)
 -  installation instructions now mention "python2" in "testing your python".
 -  made the unit tests run again - they were quite b0rken
@@ -3252,6 +3607,7 @@ Fixed:
 -  instance __init__ no longer silently traps dbinit import errors
 
 Feature:
+
 -  new backend for metakit (thanks Gordon McMillan)
 -  new backend for gadfly (it's as done as it's going to get)
 -  further split the dbm backends from the core code, allowing easier
@@ -3282,6 +3638,7 @@ Feature:
 -  several bug fixes and documentation fixes
 -  added is_retired test to hyperdb.Class
 -  added capability to save queries:
+
    - a query Class with name, klass (to search) and url (query string)
      properties
    - a Multilink to query on user called queries
@@ -3290,7 +3647,9 @@ Feature:
    - saved queries put in menu in pagehead
    - for migration, none of the above is required and old behavior preserved.
    - showquery translates search form <-> query string
+
 -  cleaned up the indexer code:
+
    - it splits more words out
    - removed code we'll never use (roundup.roundup_indexer has the full
      implementation, and replaces roundup.indexer)
@@ -3300,11 +3659,13 @@ Feature:
    - all String properties may now be indexed too. Currently there's a bit of
      "issue" specific code in the actual searching which needs to be
      addressed. In a nutshell:
+
      + pass 'indexme="yes"' as a String() property initialisation arg, eg:
            file = FileClass(db, "file", name=String(), type=String(),
                comment=String(indexme="yes"))
      + the comment will then be indexed and be searchable, with the results
        related back to the issue that the file is linked to
+
    - as a result of this work, the FileClass has a default MIME type that may
      be overridden in a subclass, or by the use of a "type" property as is
      done in the default templates.
@@ -3312,6 +3673,7 @@ Feature:
      set up in the dbinit.
    - new "reindex" command in roundup-admin used to force regeneration of the
      index
+
 -  added email display function - mangles email addrs so they're not so easily
    scraped from the web
 -  switched to using a session-based web login
@@ -3321,7 +3683,9 @@ Feature:
 
 
 2002-06-24: 0.4.2
+
 Fixed:
+
 -  Cleaned up the hyperdb unit tests.
 -  Applied patch from Andrew W. Nosenko to give nicer Unauthorised message
    when anonymous user tries to edit. Should've been applied in 0.4.2pr1. Oops.
@@ -3329,7 +3693,9 @@ Fixed:
 
 
 2002-06-19: 0.4.2pr1
+
 Feature:
+
 -  added a "detectors" directory for people to put their useful auditors and
    reactors in. Note - the roundupdb.IssueClass.sendmessage method has been
    split and renamed "nosymessage" specifically for things like the nosy
@@ -3338,14 +3704,16 @@ Feature:
    multilinks. When true, it only displays the linked node id as the anchor
    text. The link value is displayed as a tooltip using the title anchor
    attribute.
-   To use in eg. the superseder field, have something like this:
-   <td>
-    <display call="field('superseder', showid=1)">
-    <display call="classhelp('issue', 'id,title', label='list', width=500)">
-    <property name="superseder">
-     <br>View: <display call="link('superseder', showid=1)">
-    </property>
-   </td>
+   To use in eg. the superseder field, have something like this::
+
+     <td>
+      <display call="field('superseder', showid=1)">
+      <display call="classhelp('issue', 'id,title', label='list', width=500)">
+      <property name="superseder">
+       <br>View: <display call="link('superseder', showid=1)">
+      </property>
+     </td>
+
 -  stripping of the email message body can now be controlled through the
    config variables EMAIL_KEEP_QUOTED_TEXT and EMAIL_LEAVE_BODY_UNCHANGED.
 -  all database files created are now group readable and writable.
@@ -3363,10 +3731,12 @@ Feature:
 -  may now display additional fields in Multilink form menus
 -  #541941 ] changing multilink properties by mail
 -  #526730 ] search for messages capability
--  #505180 ] split MailGW.handle_Message
+-  #505180 ] split MailGW.handle_Message:
+
    - also changed cgi client since it was duplicating the functionality
 
 Fixed:
+
 -  stop sending blank (whitespace-only) notes
 -  cleanup of serialisation for database storage
 -  node ids are now generated from a lockable store - no more race conditions
@@ -3408,29 +3778,39 @@ Fixed:
 
 
 2002-03-25: 0.4.1
+
 Feature:
+
 -  use blobfiles in back_anydbm which is used in back_bsddb.
    change test_db as dirlist does not work for subdirectories.
    ATTENTION: blobfiles now creates subdirectories for files.
 -  add module blobfiles in backends with file access functions.
 -  roundup db catch only IOError in getfile.
 -  roundup db catches retrieving not existing files.
--  #503204 ] mailgw needs a default class
+-  #503204 ] mailgw needs a default class:
+
    - partially done - the setting of additional properties can wait for a
      better configuration system.
+
 -  Alternate email addresses are now available for users. See the MIGRATION
    file for info on how to activate the feature.
 -  #511168 ] Web interface: Adding new products
-   Classes that don't provide template html get a default edit interface now:
+   Classes that don't provide template html get a default edit
+   interface now:
+
    - access using the admin "class list" interface
    - limited to admin-only
    - requires the csv module from object-craft (url given if it's missing)
--  Added popup help for classes using the classhelp html template function.
-   - add <display call="classhelp('priority', 'id,name,description')">
+
+-  Added popup help for classes using the classhelp html template
+   function.
+
+   - add ``<display call="classhelp('priority', 'id,name,description')">``
      to an item page, and it generates a link to a popup window which displays
      the id, name and description for the priority class. The description
      field won't exist in most installations, but it will be added to the
      default templates.
+
 -  #517734 ] web header customisation is obscure
 -  All messages sent to the nosy list are now encoded as
    quoted-printable before they are sent.
@@ -3438,6 +3818,7 @@ Feature:
    functions, menu and plain.
 
 Fixed:
+
 -  Clean up mail handling, multipart handling.
 -  respect encodings in non multipart messages.
 -  makeHtmlBase: re.sub under python 2.2 did not replace '.', string.replace
@@ -3463,7 +3844,9 @@ Fixed:
 
 
 2002-01-24: 0.4.0
+
 Feature:
+
 -  much nicer history display (actualy real handling of property types etc)
 -  journal entries for link and mutlilink properties can be switched on or
    off
@@ -3471,6 +3854,7 @@ Feature:
 -  you can now use the roundup-admin tool pack the database
 
 Fixed:
+
 -  the mail gateway now responds with an error message when invalid values
    for arguments are specified for link or mutlilink properties
 -  modified unit test to check nosy and assignedto when specified as arguments
@@ -3489,7 +3873,9 @@ Fixed:
 
 
 2002-01-16: 0.4.0b2
+
 Fixed:
+
 -  #495392 ] empty nosy -patch
 -  #500574 ] messageid must have format <part1@part2>
 -  fixed some problems with web editing and change detection
@@ -3521,7 +3907,9 @@ Fixed:
 
 
 2002-01-08: 0.4.0b1
+
 Feature:
+
 -  Added INSTANCE_NAME to configuration - used in web and email to identify
    the instance.
 -  Added EMAIL_SIGNATURE_POSITION to indicate where to place the roundup
@@ -3533,11 +3921,13 @@ Feature:
    the database when the commit() method is called. Only the anydbm and
    bsddb3 backends are modified in this way - the bsddb3 backend needs a
    lot more work anyway...
+
     - the CGI and mailgw automatically commit() at the end of processing a
       single transaction
     - the admin tool requires an explicit "commit" - it will prompt at exit
       if there are unsaved changes. A "rollback" removes all changes made
       during the session (up to the last commit).
+
 -  Added the "display" command to the admin tool - displays a node's values
 -  Message author's name appears in From: instead of roundup instance name
    (which still appears in the Reply-To:)
@@ -3551,6 +3941,7 @@ Feature:
    feature, and we hope to add support for it to the web gateway.
 
 Fixed:
+
 -  Lots of bugs, thanks Roch\E9 and others on the devel mailing list!
 -  login_action and newuser_action return values were being ignored
 -  Woohoo! Found that bloody re-login bug that was killing the mail
@@ -3579,7 +3970,9 @@ Fixed:
 
 
 2001-11-23: 0.3.0
+
 Feature:
+
 -  #467129 ] Lossage when username=e-mail-address
 -  #473123 ] Change message generation for author
 -  MailGW now moves 'resolved' to 'chatting' on receiving e-mail for an issue.
@@ -3597,6 +3990,7 @@ Feature:
    translatable messages
 
 Fixed:
+
 -  Fixed a bug in HTMLTemplate changes.
 -  'unread' to 'chatting' automagic status change was b0rken.
 -  Anonymous user lockout wasn't working.
@@ -3629,21 +4023,27 @@ Fixed:
 
 
 2001-10-23: 0.3.0 pre 3
+
 Feature:
+
 -  MailGW now moves 'unread' to 'chatting' on receiving e-mail for an issue.
 -  feature #473127: Filenames. I modified the file.index and htmltemplate
    source so that the filename is used in the link and the creation
    information is displayed.
- Admin Tool (roundup-admin):
+
+Admin Tool (roundup-admin):
+
  -  Interactive mode for running multiple (independant at present) commands.
  -  Tabular display of nodes.
  -  Import and export via colon-separated files.
 
 Changed:
+
 -  re-organised the html templating code. Fixed some bugs, probably
    introduced some more.  Hopefully not too many.
 
 Fixed:
+
 -  Stand-alone server now has a configurable setuid user.
 -  CGI interface wasn't handling checkboxes at all.
 -  Fixed quopri usage in mailgw from bug reports on mailing list.
@@ -3664,13 +4064,17 @@ Fixed:
 
 
 2001-10-11: 0.3.0 pre 2
+
 Fixed:
+
 -  Hyperdatabase was inserting empty strings instead of None for missing
    property values. This broke a lot of things.
 
 
 2001-10-10: 0.3.0 pre 1
+
 Feature:
+
 -  roundup-admin create now prompts for property info if none is supplied
    on the command-line.
 -  hyperdb Class getprops() method may now return only the mutable
@@ -3678,6 +4082,7 @@ Feature:
 -  CGI interfaces now generate a top-level index of their known instances.
 
 Changed:
+
 -  Login now uses cookies, which makes it a whole lot more flexible. We can
    now support anonymous user access (read-only, unless there's an
    "anonymous" user, in which case write access is permitted). Login
@@ -3695,6 +4100,7 @@ Changed:
    documentation for details.)
 
 Fixed:
+
 -  Incorrectly had a Bizar Software copyright on the cgitb.py module from
    Ping - has been removed.
 -  Pretty time interval wasn't handling > 1 month properly.
@@ -3712,17 +4118,22 @@ Fixed:
 --------------
 
 2001-08-30: 0.2.8
+
 Fixed:
+
 -  Wasn't handling unguessable mime types for file uploads.
 -  Missing import in mailgw.
 
 
 2001-08-29: 0.2.7
+
 Feature:
+
 -  Text searches are now case insensitive. All forms of text search use
    regular expressions now.
 
 Fixed:
+
 -  Had another 2.1-ism in the unit tests
 -  Made the mail parser a little more robust w.r.t missing Subject:
    (both thanks Mikhail Sobolev)
@@ -3739,10 +4150,13 @@ Fixed:
 
 
 2001-08-08: 0.2.6
+
 Note:
+
 -  Roundup is now released under the same terms as the Python License.
 
 Feature:
+
 -  Added tests for instance initialisation. No more releasing the software
    with bugs in roundup.init!
 -  Now bundling unittest with the package so that python 2.0 users can use
@@ -3750,6 +4164,7 @@ Feature:
 -  Much better error handling and messages generated by the mail gateway.
 
 Fixed:
+
 -  Implemented correct mail splitting. Added unit tests. Also snips
    signatures now too.
 -  Bug #447671 - typo in roundup/init.py
@@ -3761,17 +4176,22 @@ Fixed:
 
 
 2001-08-03: 0.2.5
+
 Note:
+
 -  The bsddb3 module has a bug that renders it non-functional. Users should
    select the anydbm or bsddb backend instead.
 
 Fixed:
+
 -  Python 2.0 does not contain the unittest module. The setup.py module now
    checks for unittest before attempting to run the unit tests.
 
 
 2001-08-03: 0.2.4
+
 Features:
+
 -  Added ability for cgi newblah forms to indicate that the new node
    should be linked somewhere.
 -  Added time logging and file uploading to the templates.
@@ -3792,6 +4212,7 @@ Features:
    instructions, etc).
 
 Fixed:
+
 -  Argument handling for the roundup-admin find command.
 -  Handling of summary when no note supplied for newblah. Again.
 -  Detection of no form in htmltemplate Field display.
@@ -3806,7 +4227,9 @@ Fixed:
 
 
 2001-07-30: 0.2.3
+
 Big change:
+
 -  I've split off the support class from the issue class in "extended".
    Anyone who has any support entries, sorry. It should be possible to
    write a scipt that moves the entries over pretty easily. If this causes
@@ -3814,6 +4237,7 @@ Big change:
    code in "extended" either way.
 
 Features:
+
 -  Added the unit tests to the start of setup.py so they're run whenever
    we do anything distutils'y.
 -  Added nicer prompting to the roundup-admin "init" command.
@@ -3824,6 +4248,7 @@ Features:
 -  Added more DB to test. Skips tests where imports fail.
 
 Fixed:
+
 -  One of the tests in test_date had the wrong expected result.
 -  Fixed IssueClass so that superseders links to its classname rather than
    hard-coded to "issue".
@@ -3835,7 +4260,9 @@ Fixed:
 
 
 2001-07-29: 0.2.2
+
 Features:
+
 -  Added implementation.txt to the doc directory. Contains implementation
    notes specific to this implementations of Roundup.
 -  Cleaned up mailgw some (subclass Message for getPart) and added some
@@ -3851,6 +4278,7 @@ Features:
    it).
 
 Fixed:
+
 -  Everything uses errno module now to check errno values.
 -  New issue form handles lack of note better now.
 -  HTML templating uses section-bar style for index group headers now.
@@ -3862,12 +4290,15 @@ Fixed:
 
 
 2001-07-28: 0.2.1
+
 Features:
+
 -  Added docstring to roundup package so pydoc reports useful information.
 -  Added the roundup 1 software carpentry submission HTML to the doc
    directory as "overview.html".
 
 Fixes:
+
 -  Fixed bug in init command - templatebuilder was assuming existence of
    "html" directory in instance home.
 -  Fixed INSTALL.txt to reflect some changes in the installation and test
@@ -3877,7 +4308,9 @@ Fixes:
    strict about such things.
 
 2001-07-26: 0.2.0
+
 Features:
+
 -  Major reorganisation of code to allow multiple roundup instances and a
    single, site-packages -based installation. Also allows multiple database
    back-ends.
@@ -3892,6 +4325,7 @@ Features:
 -  Added some unit tests.
 
 Fixes:
+
 -  Fixed bug in re generation in the filter
 -  Fixed handling of None String property in grouped list headings
 -  Fixed adding new issue with no change note
@@ -3901,6 +4335,7 @@ Fixes:
    message.
 
 2001-07-19: 0.1.3
+
 -  Reldate now takes an argument "pretty" - when true, it pretty-prints the
    interval generated up to 5 days, then pretty-prints the date of last
    activity. The issue index and item now use the pretty format.
@@ -3922,14 +4357,17 @@ Fixes:
 
 
 2001-07-18: 0.1.2
+
 -  Set default index to ?:group=priority&:columns=activity,status,title so
    the priority column isn't displayed.
 -  Thanks Anthony:
+
    - added notes to the README about Python prerequisites
    - added check to roundup.py, roundup.cgi, server.py and roundup-mailgw.py
      for python 2+ - and made the file itself parseable by 1.5.2 ;)
    - python 2.0 didn't have the default args for the time module functions.
    - better handling of db directory in initDB
+
 -  Sorting on the extra properties defined by roundupdb classes was broken
    due to the caching used. May now sort on activity and creation
    properties, etc.
@@ -3937,10 +4375,12 @@ Fixes:
 
 
 2001-07-18: 0.1.1
+
 -  Initial version release with consent of Roundup spec author, Ka-Ping Yee:
    "Amazing!  Nice work.  I'll watch for the source code on your website."
 
 2001-07-11: 0.1.0
+
 -  Needed a bug tracking system. Looked around. Tried to install many
    Perl-based systems, to no avail. Got tired of waiting for Roundup to be
    released. Had just finished major product project, so needed something

@@ -44,6 +44,12 @@ from roundup.anypy.strings import u2s, s2u
 
 class MockDatabase(MockNull):
     def getclass(self, name):
+        # limit class names
+        if name not in [ 'issue', 'user', 'status' ]:
+            raise KeyError('There is no class called "%s"' % name)
+        # Class returned must have hasnode(id) method that returns true
+        # otherwise designators like 'issue1' can't be hyperlinked.
+        self.classes[name].hasnode = lambda id: True if int(id) < 10 else False
         return self.classes[name]
 
     # setup for csrf testing of otks database api
@@ -138,15 +144,60 @@ class HTMLClassTestCase(TemplatingTestCase) :
         def lookup(key) :
             self.assertEqual(key, key.strip())
             return "Status%s"%key
-        self.form.list.append(MiniFieldStorage("status", "1"))
-        self.form.list.append(MiniFieldStorage("status", "2"))
+        self.form.list.append(MiniFieldStorage("issue@status", "1"))
+        self.form.list.append(MiniFieldStorage("issue@status", "2"))
         status = hyperdb.Link("status")
         self.client.db.classes = dict \
             ( issue = MockNull(getprops = lambda : dict(status = status))
             , status  = MockNull(get = lambda id, name : id, lookup = lookup)
             )
+        self.client.form = self.form
         cls = HTMLClass(self.client, "issue")
-        cls["status"]
+
+        s = cls["status"]
+        self.assertEqual(s._value, '1')
+
+    def test_link_default(self):
+        """Make sure default value for link is returned
+           if new item and no value in form."""
+        def lookup(key) :
+            self.assertEqual(key, key.strip())
+            return "Status%s"%key
+        status = hyperdb.Link("status")
+        # set default_value
+        status.__dict__['_Type__default_value'] = "4"
+
+        self.client.db.classes = dict \
+            ( issue = MockNull(getprops = lambda : dict(status = status))
+            , status  = MockNull(get = lambda id, name : id, lookup = lookup, get_default_value = lambda: 4)
+            )
+        self.client.form = self.form
+
+        cls = HTMLClass(self.client, "issue")
+        s = cls["status"]
+        self.assertEqual(s._value, '4')
+
+    def test_link_with_value_and_default(self):
+        """Make sure default value is not used if there
+           is a value in the form."""
+        def lookup(key) :
+            self.assertEqual(key, key.strip())
+            return "Status%s"%key
+        self.form.list.append(MiniFieldStorage("issue@status", "2"))
+        self.form.list.append(MiniFieldStorage("issue@status", "1"))
+        status = hyperdb.Link("status")
+        # set default_value
+        status.__dict__['_Type__default_value'] = "4"
+
+        self.client.db.classes = dict \
+            ( issue = MockNull(getprops = lambda : dict(status = status))
+            , status  = MockNull(get = lambda id, name : id, lookup = lookup, get_default_value = lambda: 4)
+            )
+        self.client.form = self.form
+
+        cls = HTMLClass(self.client, "issue")
+        s = cls["status"]
+        self.assertEqual(s._value, '2')
 
     def test_multilink(self):
         """`lookup` of an item will fail if leading or trailing whitespace
@@ -237,6 +288,25 @@ class HTMLClassTestCase(TemplatingTestCase) :
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', 'rouilj@foo.example.com')
         self.assertEqual(p.email(), 'rouilj at foo example ...')
 
+    def test_string_wrapped(self):
+        test_string = ('A long string that needs to be wrapped to'
+                       ' 80 characters and no more. Put in a link issue1.'
+                       ' Put in <html> to be escaped. Put in a'
+                       ' https://example.com/link as well. Let us see if'
+                       ' it will wrap properly.' )
+        test_result = ('A long string that needs to be wrapped to 80'
+                       ' characters and no more. Put in a\n'
+                       'link <a href="issue1">issue1</a>. Put in'
+                       ' &lt;html&gt; to be escaped. Put in a <a'
+                       ' href="https://example.com/link"'
+                       ' rel="nofollow noopener">'
+                       'https://example.com/link</a> as\n'
+                       'well. Let us see if it will wrap properly.')
+
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test',
+                               test_string)
+        self.assertEqual(p.wrapped(), test_result)
+
     def test_string_plain_or_hyperlinked(self):
         ''' test that email obscures the email '''
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', 'A string <b> with rouilj@example.com embedded &lt; html</b>')
@@ -246,6 +316,26 @@ class HTMLClassTestCase(TemplatingTestCase) :
         self.assertEqual(p.plain(escape=1, hyperlink=1), 'A string &lt;b&gt; with <a href="mailto:rouilj@example.com">rouilj@example.com</a> embedded &amp;lt; html&lt;/b&gt;')
 
         self.assertEqual(p.hyperlinked(), 'A string &lt;b&gt; with <a href="mailto:rouilj@example.com">rouilj@example.com</a> embedded &amp;lt; html&lt;/b&gt;')
+        # check designators
+        for designator in [ "issue1", "issue 1" ]:
+            p = StringHTMLProperty(self.client, 'test', '1', None, 'test', designator)
+            self.assertEqual(p.hyperlinked(),
+                             '<a href="issue1">%s</a>'%designator)
+
+        # issue 100 > 10 which is a magic number for the mocked hasnode
+        # If id number is greater than 10 hasnode reports it does not have
+        # the node.
+        for designator in ['issue100', 'issue 100']:
+            p = StringHTMLProperty(self.client, 'test', '1', None, 'test',
+                                   designator)
+            self.assertEqual(p.hyperlinked(), designator)
+
+        # zoom class does not exist
+        for designator in ['zoom1', 'zoom100', 'zoom 1']:
+            p = StringHTMLProperty(self.client, 'test', '1', None, 'test',
+                                   designator)
+            self.assertEqual(p.hyperlinked(), designator)
+
 
     @skip_rst
     def test_string_rst(self):
@@ -286,10 +376,20 @@ class HTMLClassTestCase(TemplatingTestCase) :
         s = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'<badtag>\njavascript:badcode data:text/plain;base64,SGVsbG8sIFdvcmxkIQ=='))
         s_result = '<div class="document">\n<p>&lt;badtag&gt;\njavascript:badcode data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==</p>\n</div>\n'
 
+        # test url recognition
+        t = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'link is https://example.com/link for testing.'))
+        t_result = '<div class="document">\n<p>link is <a class="reference external" href="https://example.com/link">https://example.com/link</a> for testing.</p>\n</div>\n'
+
+        # test text that doesn't need to be processed
+        u = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'Just a plain old string here. Nothig to process.'))
+        u_result = '<div class="document">\n<p>Just a plain old string here. Nothig to process.</p>\n</div>\n'
+
         self.assertEqual(p.rst(), u2s(u'<div class="document">\n<p>A string with <a class="reference external" href="mailto:cmeerw&#64;example.com">cmeerw&#64;example.com</a> <em>embedded</em> \u00df</p>\n</div>\n'))
         self.assertEqual(q.rst(), u2s(q_result))
         self.assertEqual(r.rst(), u2s(r_result))
         self.assertEqual(s.rst(), u2s(s_result))
+        self.assertEqual(t.rst(), u2s(t_result))
+        self.assertEqual(u.rst(), u2s(u_result))
 
     @skip_stext
     def test_string_stext(self):
@@ -419,6 +519,46 @@ class HTMLClassTestCase(TemplatingTestCase) :
         input=input_xhtml(**attrs)
         self.assertEqual(input, '<input class="required" disabled="disabled" size="30" type="text"/>')
 
+
+class HTMLPropertyTestClass(unittest.TestCase):
+    def setUp(self):
+        self.form = FieldStorage()
+        self.client = MockNull()
+        self.client.db = db = MockDatabase()
+        db.security.hasPermission = lambda *args, **kw: True
+        self.client.form = self.form
+
+        self.client._props = MockNull()
+        # add client props for testing anti_csrf_nonce
+        self.client.session_api = MockNull(_sid="1234567890")
+        self.client.db.getuid = lambda : 10
+
+class DateHTMLPropertyTestCase(HTMLPropertyTestClass):
+
+    def test_DateHTMLWithText(self):
+        """Test methods when DateHTMLProperty._value is a string
+           rather than a hyperdb.Date()
+        """
+        test_datestring = "2021-01-01 11:22:10"
+        test_date = hyperdb.Date("2")
+
+        self.form.list.append(MiniFieldStorage("test1@test", test_datestring))
+        self.client._props=test_date
+
+        self.client.db.classes = dict \
+            ( test = MockNull(getprops = lambda : test_date)
+            )
+
+        # client, classname, nodeid, prop, name, value,
+        #    anonymous=0, offset=None
+        d = DateHTMLProperty(self.client, 'test', '1', self.client._props,
+                             'test', '')
+        self.assertIs(type(d._value), str)
+        self.assertEqual(d.pretty(), "2021-01-01 11:22:10")
+        self.assertEqual(d.plain(), "2021-01-01 11:22:10")
+        input = """<input name="test1@test" size="30" type="text" value="2021-01-01 11:22:10"><a class="classhelp" data-calurl="test?@template=calendar&amp;amp;property=test&amp;amp;form=itemSynopsis&amp;date=2021-01-01 11:22:10" data-height="200" data-width="300" href="javascript:help_window('test?@template=calendar&amp;property=test&amp;form=itemSynopsis&date=2021-01-01 11:22:10', 300, 200)">(cal)</a>"""
+        self.assertEqual(d.field(), input)
+
 # common markdown test cases
 class MarkdownTests:
     def mangleMarkdown2(self, s):
@@ -467,6 +607,34 @@ class MarkdownTests:
     def test_string_markdown_link(self):
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A link <http://localhost>'))
         self.assertEqual(p.markdown().strip(), u2s(u'<p>A link <a href="http://localhost">http://localhost</a></p>'))
+
+    def test_string_markdown_link_item(self):
+        """ The link formats for the different markdown engines changes.
+            Order of attributes, value for rel (noopener, nofollow etc)
+            is different. So most tests check for a substring that indicates
+            success rather than the entire returned string.
+        """
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'An issue1 link'))
+        self.assertIn( u2s(u'href="issue1"'), p.markdown().strip())
+        # just verify that plain linking is working
+        self.assertIn( u2s(u'href="issue1"'), p.plain(hyperlink=1))
+
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'An [issue1](issue1) link'))
+        self.assertIn( u2s(u'href="issue1"'), p.markdown().strip())
+        # just verify that plain linking is working
+        self.assertIn( u2s(u'href="issue1"'), p.plain(hyperlink=1))
+
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'An [issue1](https://example.com/issue1) link'))
+        self.assertIn( u2s(u'href="https://example.com/issue1"'), p.markdown().strip())
+
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'An [issue1] (https://example.com/issue1) link'))
+        self.assertIn( u2s(u'href="issue1"'), p.markdown().strip())
+        if type(self) == MistuneTestCase:
+            # mistune makes the https url into a real link
+            self.assertIn( u2s(u'href="https://example.com/issue1"'), p.markdown().strip())
+        else:
+            # the other two engines leave the parenthesized url as is.
+            self.assertIn( u2s(u' (https://example.com/issue1) link'), p.markdown().strip())
 
     def test_string_markdown_link(self):
         # markdown2 and markdown escape the email address

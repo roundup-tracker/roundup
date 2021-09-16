@@ -64,15 +64,18 @@ def parse(language_header):
     # use a heap queue to sort by quality values.
     # the value of each item is 1.0 complement.
     pq = []
+    order=0
     for l in qls:
+        order +=1
         if l[0] != '':
-            heapq.heappush(pq, (0.0, l[0]))
+            heapq.heappush(pq, (0.0, order, l[0]))
         else:
-            heapq.heappush(pq, (1.0-float(l[2]), l[1]))
+            heapq.heappush(pq, (1.0-float(l[2]), order, l[1]))
 
     # get the languages ordered by quality
     # and replace - by _
-    return [x[1].replace('-', '_') for x in pq]
+    return [ heapq.heappop(pq)[2].replace('-','_') 
+             for x in range(len(pq)) ]
 
 if __name__ == "__main__":
     import doctest

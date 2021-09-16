@@ -21,13 +21,14 @@ from roundup.cgi.templating import HTMLProperty, _HTMLItem, anti_csrf_nonce
 from roundup.cgi.form_parser import FormParser
 from roundup import init, instance, password, hyperdb, date
 from roundup.anypy.strings import u2s, b2s, s2b
+from roundup.test.tx_Source_detector import init as tx_Source_init
 
 from time import sleep
 
 # For testing very simple rendering
 from roundup.cgi.engine_zopetal import RoundupPageTemplate
 
-from .mocknull import MockNull
+from roundup.test.mocknull import MockNull
 
 from . import db_test_base
 from .db_test_base import FormTestParent, setupTracker, FileUpload
@@ -83,13 +84,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
     def setUp(self):
         FormTestParent.setUp(self)
 
-        vars = {}
-        thisdir = os.path.dirname(__file__)
-        exec(compile(open(os.path.join(thisdir,
-                                       "tx_Source_detector.py")).read(),
-                     os.path.join(thisdir, "tx_Source_detector.py"), 'exec'),
-             vars)
-        vars['init'](self.db)
+        tx_Source_init(self.db)
 
         test = self.instance.backend.Class(self.db, "test",
             string=hyperdb.String(), number=hyperdb.Number(),
@@ -750,6 +745,17 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
             ({('issue', None): {}, ('file', '-1'): {'content': 'foo',
             'name': 'foo.txt', 'type': 'text/plain'}},
             [('issue', None, 'files', [('file', '-1')])]))
+
+    def testErrorForBadTemplate(self):
+         form = {}
+         cl = self.setupClient(form, 'issue', '1', template="broken",
+                 env_addon = {'HTTP_REFERER': 'http://whoami.com/path/'})
+         out = []
+
+         out = cl.renderContext()
+
+         self.assertEqual(out, '<strong>No template file exists for templating "issue" with template "broken" (neither "issue.broken" nor "_generic.broken")</strong>')
+         self.assertEqual(cl.response_code, 400)
 
     def testFormValuePreserveOnError(self):
         page_template = """
@@ -1471,6 +1477,15 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         self.assertEqual(cl._ok_message, ['Items edited OK'])
         k = self.db.keyword.getnode('1')
         self.assertEqual(k.name, u2s(u'\xe4\xf6\xfc'))
+        form = dict(rows='id,name\n1,newkey\n\n2,newerkey\n\n')
+        cl = self._make_client(form, userid='1', classname='keyword')
+        cl._ok_message = []
+        actions.EditCSVAction(cl).handle()
+        self.assertEqual(cl._ok_message, ['Items edited OK'])
+        k = self.db.keyword.getnode('1')
+        self.assertEqual(k.name, 'newkey')
+        k = self.db.keyword.getnode('2')
+        self.assertEqual(k.name, 'newerkey')
 
     def testEditCSVTest(self):
 

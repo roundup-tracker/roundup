@@ -191,6 +191,84 @@ overwrite an existing file) from the roundup-server command line use::
  roundup_server -p 8017  -u roundup --save-config  demo=/trackers/demo \
     sysadmin=/trackers/sysadmin
 
+Configuring Compression
+=======================
+
+Roundup will compress HTTP responses to clients on the fly. Dynamic,
+on the fly, compression is enabled by default, to disable it set::
+
+    [web]
+    ...
+    dynamic_compression = No
+
+in the tracker's ``config.ini``. You should disable compression if
+your proxy (e.g. nginx or apache) or wsgi server (uwsgi) is configured
+to compress responses on the fly. The python standard library includes
+gzip support. For brotli or zstd you will need to install packges. See
+the `installation documentation`_ for details.
+
+Some assets will not be compressed on the fly. Assets with mime types
+of "image/png" or "image/jpeg" will not be compressed. You
+can add mime types to the list by using ``interfaces.py`` as discussed
+in the `customisation documentation`_. As an example adding::
+
+  from roundup.cgi.client import Client
+
+  Client.precompressed_mime_types.append('application/zip`)
+
+to ``interfaces.py`` will prevent zip files from being compressed.
+
+Any content less than 100 bytes in size will not be compressed (e.g
+errors messages, short json responses).
+
+Zstd will be used if the client can understand it, followed by brotli
+then gzip encoding. Currently the preference order is hard coded into
+the server and not parsed using ``q`` values from the client's
+Accept-Encoding header. This is an area for improvement.
+
+In addition to dynamic compression, static files/assets accessed using
+``@@file`` can be pre-compressed. This reduces CPU load on the server
+and reduces the time required to respond to the client. By default
+searching for pre-compressed files is disabled. To enable it set::
+
+    [web]
+    ...
+    use_precompressed_files = Yes
+
+in the tracker's ``config.ini`` file. Then you can create a
+precompressed file and it will be served if the client is able to
+accept it. For a file ``.../@@file/library.js`` you can create::
+
+    tracker_home/html/library.js.gzip
+    tracker_home/html/library.js.br
+    tracker_home/html/library.js.zstd
+
+which should be created by using (respectively)::
+
+      gzip --keep --suffix .gzip library.js
+      brotli library.js
+      zstd library.js && mv library.js.zst library.js.zstd
+
+see the man pages for options that control compression level. Note
+that some levels require additional memory on the client side, so you
+may not always want to use the highest compression available.
+
+A pre-compressed file will not be used if its modified date is earlier
+than the uncompressed file. For example, if ``library.js.gzip`` is
+older (has earlier modification date) than ``library.js``,
+``library.js.gzip`` will be ignored. ``library.js`` will be
+served instead.  ``library.js`` will be dynamically compressed on the
+fly and a warning message will be logged.
+
+Precompressed files override dynamic compression. For example, assume
+the client can accept brotli and gzip. If there are no precompressed
+files, the data will be compressed dynamically (on the fly) using
+brotli. If there is a precompressed gzip file present the client will
+get the gzip version and not a brotli compressed version. This
+mechanism allows the admin to allow use of brotli and zstd for
+dynamic content, but not for static content.
+
+
 Users and Security
 ==================
 
@@ -208,7 +286,8 @@ Roundup identifies users in a number of ways:
    Authentication or cookie authentication. If you are running the web
    server (roundup-server) through another HTTP server (eg. apache or IIS)
    then that server may require HTTP Basic Authentication, and it will pass
-   the ``REMOTE_USER`` variable through to Roundup. If this variable is not
+   the ``REMOTE_USER`` variable (or variable defined using
+   http_auth_header) through to Roundup. If this variable is not
    present, then Roundup defaults to using its own cookie-based login
    mechanism.
 2. In email messages handled by roundup-mailgw, users are identified by the
@@ -228,6 +307,47 @@ Email Registration
 More information about how to customise your tracker's security settings
 may be found in the `customisation documentation`_.
 
+Configuring Authentication Header/Variable
+------------------------------------------
+
+The front end server running roundup can perform the user
+authentication. It pass the authenticated username to the backend in a
+variable. By default roundup looks for the ``REMOTE_USER`` variable
+This can be changed by setting the parameter ``http_auth_header`` in the
+``[web]`` section of the tracker's ``config.ini`` file. If the value
+is unset (the default) the REMOTE_USER variable is used.
+
+If you are running roundup using ``roundup-server`` behind a proxy
+that authenticates the user you need to configure ``roundup-server`` to
+pass the proper header to the tracker. By default ``roundup-server``
+looks for the ``REMOTE_USER`` header for the authenticated user.  You
+can copy an arbitrary header variable to the tracker using the ``-I``
+option to roundup-server (or the equivalent option in the
+roundup-server config file).
+
+For example to use the ``uid_variable`` header, two configuration
+changes are needed: First configure ``roundup-server`` to pass the
+header to the tracker using::
+
+  roundup-server -I uid_variable ....
+
+note that the header is passed exactly as supplied by the upstream
+server. It is **not** prefixed with ``HTTP_`` like other headers since
+you are explicitly whitelisting the header. Multiple comma separated
+headers can be passed to the ``-I`` option. These could be used in a
+detector or other tracker extensions, but only one header can be used
+by the tracker as an authentication header.
+
+To make the tracker honor the new variable changing the tracker
+``config.ini`` to read::
+
+  [web]
+  ...
+  http_auth_header = uid_variable
+
+At the time this is written, support is experimental. If you use it
+you should notify the roundup maintainers using the roundup-users
+mailing list.
 
 Tasks
 =====
@@ -411,6 +531,9 @@ On Unix systems, use the scripts/server-ctl script to control the
 roundup-server server. Copy it somewhere and edit the variables at the top
 to reflect your specific installation.
 
+If you use systemd look at scripts/systemd.gunicorn. It is configured
+for a wsgi deployment using gunicorn, but may be a good starting
+point for your setup.
 
 Windows
 -------
@@ -480,3 +603,4 @@ Run ``roundup-admin help commands`` for a complete list of subcommands.
 
 .. _`customisation documentation`: customizing.html
 .. _`upgrading documentation`: upgrading.html
+.. _`installation documentation`: installation.html

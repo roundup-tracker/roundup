@@ -13,7 +13,7 @@ from roundup.anypy.cmp_ import NoneAndDictComparable
 from time import sleep
 from datetime import datetime
 
-from .mocknull import MockNull
+from roundup.test.mocknull import MockNull
 
 def true(*args, **kwargs):
     return 1
@@ -368,22 +368,22 @@ class LoginTestCase(ActionTestCase):
         self.client.opendb = opendb
 
         # basic test with query
-        self.assertLoginRaisesRedirect("http://whoami.com/path/issue?%40action=search",
+        self.assertLoginRaisesRedirect("http://whoami.com/path/issue?%40action=search&%40ok_message=Welcome+foo%21",
                                  'foo', 'right', "http://whoami.com/path/issue?@action=search")
 
         # test that old messages are removed
         self.form.value[:] = []         # clear out last test's setup values
-        self.assertLoginRaisesRedirect("http://whoami.com/path/issue?%40action=search",
+        self.assertLoginRaisesRedirect("http://whoami.com/path/issue?%40action=search&%40ok_message=Welcome+foo%21",
                                  'foo', 'right', "http://whoami.com/path/issue?@action=search&@ok_messagehurrah+we+win&@error_message=blam")
 
         # test when there is no query
         self.form.value[:] = []         # clear out last test's setup values
-        self.assertLoginRaisesRedirect("http://whoami.com/path/issue255",
+        self.assertLoginRaisesRedirect("http://whoami.com/path/issue255?%40ok_message=Welcome+foo%21",
                                  'foo', 'right', "http://whoami.com/path/issue255")
 
         # test if we are logged out; should kill the @action=logout
         self.form.value[:] = []         # clear out last test's setup values
-        self.assertLoginRaisesRedirect("http://whoami.com/path/issue39?%40pagesize=50&%40startwith=0",
+        self.assertLoginRaisesRedirect("http://whoami.com/path/issue39?%40ok_message=Welcome+foo%21&%40pagesize=50&%40startwith=0",
                                  'foo', 'right', "http://whoami.com/path/issue39?@action=logout&@pagesize=50&@startwith=0")
 
     def testInvalidLoginRedirect(self):

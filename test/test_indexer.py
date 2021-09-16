@@ -55,6 +55,7 @@ class db:
         DATABASE = 'test-index'
     config = config()
     config[('main', 'indexer_stopwords')] = []
+    config[('main', 'indexer_language')] = "english"
 
 class IndexerTest(unittest.TestCase):
     def setUp(self):
@@ -194,7 +195,6 @@ class XapianIndexerTest(IndexerTest):
         self.dex = Indexer(db)
     def tearDown(self):
         shutil.rmtree('test-index')
-
 
 class RDBMSIndexerTest(object):
     def setUp(self):

@@ -911,8 +911,7 @@ behaviour:
 
     when the class for attached files is defined as::
 
-       file = FileClass(db, "file",
-                name=String())
+       file = FileClass(db, "file", name=String())
 
     ``MySpecialFile.doc`` is the name for the file object.
 
@@ -1426,8 +1425,11 @@ but with great power comes great responsibility.
 
 Interfaces.py has been around since the earliest releases of roundup
 and used to be the main way to get a lot of customization done. In
-modern roundup, the extensions_ mechanism is used, but there are places
-where interfaces.py is still useful.
+modern roundup, the extensions_ mechanism is used, but there are
+places where interfaces.py is still useful. Note that the tracker
+directories are not on the Python system path when interfaces.py is
+evaluated. You need to add library directories explicty by
+modifying sys.path.
 
 Example: Changing Cache-Control headers
 ---------------------------------------
@@ -1709,6 +1711,7 @@ A set of Permissions is built into the security module by default:
 
 - Create (everything)
 - Edit (everything)
+- Search (everything) (used if View does not permit access)
 - View (everything)
 - Register (User class only)
 
@@ -1736,7 +1739,7 @@ also define:
 
 These are hooked into the default Roles:
 
-- Admin (Create, Edit, View and everything; Web Roles)
+- Admin (Create, Edit, Search, View and everything; Web Roles)
 - User (Web Access; Email Access)
 - Anonymous (Web Access)
 
@@ -1775,7 +1778,7 @@ Put together, these settings appear in the tracker's ``schema.py`` file::
 
     # Assign the access and edit Permissions for issue, file and message
     # to regular users now
-    for cl in 'issue', 'file', 'msg', 'query', 'keyword':
+    for cl in 'issue', 'file', 'msg', 'keyword':
         db.security.addPermissionToRole('User', 'View', cl)
         db.security.addPermissionToRole('User', 'Edit', cl)
         db.security.addPermissionToRole('User', 'Create', cl)
@@ -1784,11 +1787,13 @@ Put together, these settings appear in the tracker's ``schema.py`` file::
 
     # May users view other user information? Comment these lines out
     # if you don't want them to
-    db.security.addPermissionToRole('User', 'View', 'user')
+    p = db.security.addPermission(name='View', klass='user', 
+	properties=('id', 'organisation', 'phone', 'realname', 'timezone',
+	'username'))
+    db.security.addPermissionToRole('User', p)
 
-    # Users should be able to edit their own details -- this permission
-    # is limited to only the situation where the Viewed or Edited item
-    # is their own.
+    # Users should be able to edit their own details -- this permission is
+    # limited to only the situation where the Viewed or Edited item is their own.
     def own_record(db, userid, itemid, **ctx):
         '''Determine whether the userid matches the item being accessed.'''
         return userid == itemid
@@ -1796,7 +1801,36 @@ Put together, these settings appear in the tracker's ``schema.py`` file::
         description="User is allowed to view their own user details")
     db.security.addPermissionToRole('User', p)
     p = db.security.addPermission(name='Edit', klass='user', check=own_record,
+        properties=('username', 'password', 'address', 'realname', 'phone',
+            'organisation', 'alternate_addresses', 'queries', 'timezone'),
         description="User is allowed to edit their own user details")
+    db.security.addPermissionToRole('User', p)
+
+    # Users should be able to edit and view their own queries. They should also
+    # be able to view any marked as not private. They should not be able to
+    # edit others' queries, even if they're not private
+    def view_query(db, userid, itemid):
+	private_for = db.query.get(itemid, 'private_for')
+	if not private_for: return True
+	return userid == private_for
+    def edit_query(db, userid, itemid):
+	return userid == db.query.get(itemid, 'creator')
+    p = db.security.addPermission(name='View', klass='query', check=view_query,
+	description="User is allowed to view their own and public queries")
+    db.security.addPermissionToRole('User', p)
+    p = db.security.addPermission(name='Search', klass='query')
+    db.security.addPermissionToRole('User', p)
+    p = db.security.addPermission(name='Edit', klass='query', check=edit_query,
+	description="User is allowed to edit their queries")
+    db.security.addPermissionToRole('User', p)
+    p = db.security.addPermission(name='Retire', klass='query', check=edit_query,
+	description="User is allowed to retire their queries")
+    db.security.addPermissionToRole('User', p)
+    p = db.security.addPermission(name='Restore', klass='query', check=edit_query,
+	description="User is allowed to restore their queries")
+    db.security.addPermissionToRole('User', p)
+    p = db.security.addPermission(name='Create', klass='query',
+	description="User is allowed to create queries")
     db.security.addPermissionToRole('User', p)
 
     #
@@ -1817,12 +1851,20 @@ Put together, these settings appear in the tracker's ``schema.py`` file::
     # Assign the appropriate permissions to the anonymous user's Anonymous
     # Role. Choices here are:
     # - Allow anonymous users to register
-    db.security.addPermissionToRole('Anonymous', 'Create', 'user')
+    db.security.addPermissionToRole('Anonymous', 'Register', 'user')
 
     # Allow anonymous users access to view issues (and the related, linked
     # information)
     for cl in 'issue', 'file', 'msg', 'keyword', 'priority', 'status':
         db.security.addPermissionToRole('Anonymous', 'View', cl)
+
+    # Allow the anonymous user to use the "Show Unassigned" search.
+    # It acts like "Show Open" if this permission is not available.
+    # If you are running a tracker that does not allow read access for
+    # anonymous, you should remove this entry as it can be used to perform
+    # a username guessing attack against a roundup install.
+    p = db.security.addPermission(name='Search', klass='user')
+    db.security.addPermissionToRole ('Anonymous', p)
 
     # [OPTIONAL]
     # Allow anonymous users access to create or edit "issue" items (and the
@@ -2210,7 +2252,10 @@ of:
 
 **edit**
  Perform an edit of an item in the database. There are some `special form
- variables`_ you may use.
+ variables`_ you may use. Also you can set the ``__redirect_to`` form
+ variable to the URL that should be displayed after the edit is succesfully
+ completed. If you wanted to edit a sequence of issues, users etc. this
+ could be used to display the next item in the sequence to the user. 
 
 **new**
  Add a new item to the database. You may use the same `special form
@@ -2457,6 +2502,11 @@ Two special form values are supported for backwards compatibility:
         @link@messages=msg-1
         msg-1@content=value
 
+    which is equivalent to the html::
+
+        <textarea name="msg-1@content"></textarea>
+        <input type="hidden" name="@link@messages" value="msg-1">
+
     except that in addition, the "author" and "date" properties of
     "msg-1" are set to the userid of the submitter, and the current
     time, respectively.
@@ -2467,15 +2517,22 @@ Two special form values are supported for backwards compatibility:
         @link@files=file-1
         file-1@content=value
 
+    by adding the HTML::
+
+        <input type="file" name="file-1@content">
+        <input type="hidden" name="@link@files" value="file-1">
+
     The String content value is handled as described above for file
     uploads.
 
 If both the "@note" and "@file" form variables are
 specified, the action::
 
-        @link@msg-1@files=file-1
+        msg-1@link@files=file-1
 
-is also performed.
+is also performed. This would be expressed in HTML with::
+
+        <input type="hidden" name="msg-1@link@files" value="file-1">
 
 We also check that FileClass items have a "content" property with
 actual content, otherwise we remove them from all_props before
@@ -2720,7 +2777,7 @@ Additionally, you may include tags such as <tal:block>, which are
 removed from output. Its content is kept, but the tag itself is not (so
 don't go using any "tal:attributes" commands on it). This is useful for
 making arbitrary blocks of HTML conditional or repeatable (very handy
-for repeating multiple table rows, which would othewise require an
+for repeating multiple table rows, which would otherwise require an
 illegal tag placement to effect the repeat).
 
 
@@ -2996,6 +3053,31 @@ filter      lists of items from this class, filtered and sorted. Two
             the last week, sorted by activity date:
             ``issue.filter(filterspec={"priority": "1",
             'messages.creation' : '.-1w;'}, sort=[('activity', '+')])``
+
+            Note that when searching for Link and Multilink values, the
+            special value '-1' searches for empty Link or Multilink
+            values. For both, Links and Multilinks, multiple values
+            given in a filter call are combined with 'OR' by default.
+            For Multilinks a postfix expression syntax using negative ID
+            numbers (as strings) as operators is supported. Each
+            non-negative number (or '-1') is pushed on an operand stack.
+            A negative number pops the required number of arguments from
+            the stack, applies the operator, and pushes the result. The
+            following operators are supported:
+
+	    - '-2' stands for 'NOT' and takes one argument
+	    - '-3' stands for 'AND' and takes two arguments
+	    - '-4' stands for 'OR' and takes two arguments
+
+	    Note that this special handling of ID arguments is applied only
+	    when a negative number smaller than -1 is encountered as an ID
+	    in the filter call. Otherwise the implicit OR default
+            applies.
+	    Examples of using Multilink expressions would be
+
+	    - '1', '2', '-4', '3', '4', '-4', '-3'
+	      would search for IDs (1 or 2) and (3 or 4)
+	    - '-1' '-2' would search for all non-empty Multilinks
 
 filter_sql  **Only in SQL backends**
 
@@ -3282,7 +3364,20 @@ sorted      only on Multilink properties - produce a list of the linked
                python:context.files.sorted('creation', reverse=True)
 
             Will list the files by upload date in reverse order from
-            the prior example.
+            the prior example. If the property can be unset, you can
+            use the ``NoneFirst`` parameter to sort the None/Unset
+            values at the front or the end of the list. For example::
+            
+                python:context.files.sorted('creation', NoneFirst=True)
+            
+            will sort files by creation date with files missing a
+            creation date at the start of the list. The default for
+            ``NoneFirst`` is False so these files will sort at the end
+            by default. (Note creation date is never unset, but you
+            get the idea.) If you combine NoneFirst with
+            ``reverse=True`` the meaning of NoneFirst is inverted:
+	    True sorts None/unset at the end and False sorts at the
+	    beginning.
 reverse     only on Multilink properties - produce a list of the linked
             items in reverse order
 isset       returns True if the property has been set to a value
@@ -3472,6 +3567,7 @@ html_quote      quote some text as safe in HTML (ie. <, >, ...)
 html_calendar   renders an HTML calendar used by the
                 ``_generic.calendar.html`` template (itself invoked by
                 the popupCalendar DateHTMLProperty method
+anti_csrf_nonce returns the random noncue generated for this session
 =============== ========================================================
 
 
@@ -5841,7 +5937,7 @@ Editing multiple items in an index view
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To edit the status of all items in the item index view, edit the
-``issue.item.html``:
+``issue.index.html``:
 
 1. add a form around the listing table (separate from the existing
    index-page form), so at the top it reads::

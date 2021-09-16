@@ -495,6 +495,16 @@ class TimezoneTestCase(unittest.TestCase):
         date = Date(date, tz)
         ae(str(date), '2006-01-01.11:00:00')
 
+    def testUnrecognizedTimezone(self):
+        '''Unrecognize timezone should raise key error'''
+
+        # unrecognized timezone
+        tz = 'Zoot'
+
+        with self.assertRaises(KeyError) as cm:
+            date = Date('2006-04-04.12:00:00', tz)
+
+        self.assertEqual(cm.exception.args, ('Zoot',))
 
 class RangeTestCase(unittest.TestCase):
 

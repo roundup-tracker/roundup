@@ -117,34 +117,29 @@ jinja2
   to have the jinja2_ template engine installed.
 
 pyjwt
-  To use jwt tokens for login (experimental), install pyjwt. If you
-  don't have it installed, jwt tokens are not supported.
+  To use jwt tokens for login (experimental), install `pyjwt`_
+  (v1.7.1, v2.0.1 tested). If you don't have it installed, jwt
+  tokens are not supported.
 
 docutils
-  To use ReStructuredText rendering you need to have the docutils
+  To use ReStructuredText rendering you need to have the `docutils`_
   package installed.
 
 markdown, markdown2 or mistune
-  To use markdown rendering you need to have the markdown, markdown2
-  or mistune package installed.
+  To use markdown rendering you need to have the markdown_, markdown2_
+  or mistune_ (v0.8.4 tested) package installed.
+
+zstd, brotli
+  To have roundup compress the returned data using one of these
+  algorithms, you can install one or more of zstd_ or brotli_.
+  Roundup's responses can always be compressed with gzip from the
+  Python standard library. Also nginx and various wsgi server can
+  compress the response from roundup as they transmit/proxy it to the
+  client.
 
 Windows Service
   You can run Roundup as a Windows service if pywin32_ is installed.
   Otherwise it must be started manually.
-
-.. _Xapian: https://xapian.org/
-.. _Whoosh: https://bitbucket.org/mchaput/whoosh/wiki/Home
-.. _pytz: https://pypi.org/project/pytz/
-.. _Olson tz database: https://www.iana.org/time-zones
-.. _pyopenssl: http://pyopenssl.sourceforge.net
-.. _gpg: https://www.gnupg.org/software/gpgme/index.html
-.. _pywin32: https://pypi.org/project/pywin32/
-.. _jinja2: http://jinja.pocoo.org/
-.. _docutils: https://docutils.sourceforge.io/
-.. _markdown: https://python-markdown.github.io/
-.. _markdown2: https://github.com/trentm/python-markdown2
-.. _mistune: https://github.com/lepture/mistune
-
 
 Getting Roundup
 ===============
@@ -399,7 +394,8 @@ There are multiple web interfaces to choose from:
 4. `Zope product - ZRoundup`_
 5. `Apache HTTP Server with mod_wsgi`_
 6. `Apache HTTP Server with mod_python`_  (deprecated)
-7. `WSGI Variations`_
+7. `Nginx HTTP Server`_
+8. `WSGI Variations`_
 
 You may need to give the web server user permission to access the tracker home
 - see the `UNIX environment steps`_ for information. You may also need to
@@ -426,9 +422,13 @@ The ``adsutil.vbs`` file can be found in either ``c:\inetpub\adminscripts``
 or ``c:\winnt\system32\inetsrv\adminsamples\`` or
 ``c:\winnt\system32\inetsrv\adminscripts\`` depending on your installation.
 
+See:
+
+   https://docs.microsoft.com/en-us/iis/web-dev-reference/server-variables
+
 More information about ISS setup may be found at:
 
-   http://support.microsoft.com/default.aspx?scid=kb%3Ben-us%3B276494
+   https://docs.microsoft.com/en-us/iis/
 
 Copy the ``frontends/roundup.cgi`` file to your web server's ``cgi-bin``
 directory. You will need to configure it to tell it where your tracker home
@@ -827,6 +827,120 @@ The URL for accessing these trackers then become:
 Note that in order to use https connections you must set up Apache for secure
 serving with SSL.
 
+Nginx HTTP Server
+~~~~~~~~~~~~~~~~~
+
+This configuration uses gunicorn to run roundup behind an Nginx proxy.
+The proxy also compresses the data using gzip. The url for the tracker
+in config.ini should be ``https://tracker.example.org``.
+
+  .. code:: 
+
+    user nginx;
+    worker_processes auto;
+    worker_rlimit_nofile 10000;
+
+    error_log /var/log/nginx/global-error.log;
+    pid /var/run/nginx.pid;
+
+    events {
+	worker_connections 1024;
+    }
+
+    upstream tracker-tracker {
+      # gunicorn uses this socket for communication
+      server unix:/var/run/roundup/tracker.sock fail_timeout=0;
+    }
+
+    http {
+      include /etc/nginx/mime.types;
+      default_type application/octet-stream;
+
+      log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+		      '$status $body_bytes_sent "$http_referer" '
+		      '"$http_user_agent" "$http_x_forwarded_for"';
+
+      access_log /var/log/nginx/global-access.log main;
+      sendfile on;
+      tcp_nopush on;
+      tcp_nodelay on;
+      server_tokens off;
+
+      gzip_http_version 1.1;
+      gzip_proxied      any;
+      gzip_min_length   500;
+      # default comp_level is 1
+      gzip_comp_level   6;
+      gzip_disable      msie6
+      gzip_types        text/plain text/css
+			text/xml application/xml
+			text/javascript application/javascript
+			text/json application/json;
+      # upstream proxies need to match Accept-Encoding as
+      # part of their cache check
+      gzip_vary         on
+
+      server {
+	listen 80;
+	server_name tracker.example.org;
+
+	location /.well-known/acme-challenge/ {
+	    alias /etc/lego/.well-known/acme-challenge/;
+	    try_files $uri =404;
+	}
+
+	location / {
+	  return 301 https://$http_host$request_uri;
+	}
+      }
+
+      server {
+	listen 443 ssl;
+	server_name tracker.example.org;
+	include mime.types;
+
+	# By default use the snakeoil certificate...
+	# change this if you are using a real SSL cert
+	ssl_certificate /etc/ssl/certs/ssl-cert-snakeoil.pem;
+	ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
+
+	# These are useful for @@files where roundup is bypassed.
+	# but can be set by roundup as well. See:
+        #    https://wiki.roundup-tracker.org/AddingContentSecurityPolicy
+        # which also sets other security headers.
+	add_header Strict-Transport-Security "max-age=63072000; includeSubdomains; preload";
+	add_header X-Frame-Options "sameorigin";
+	add_header X-Xss-Protection "1; mode=block";
+	add_header X-Content-Type-Options "nosniff";
+	add_header X-Permitted-Cross-Domain-Policies "none";
+
+	error_log /var/log/nginx/roundup-tracker.error.log;
+	access_log /var/log/nginx/roundup-tracker.access.log
+
+	root /home/roundup/trackers/tracker/;
+
+	# have nginx return files from @@file directly rather than
+	# going though roundup
+	location /@@file/ {
+	  rewrite ^/@@file/(.*) /html/$1 break;
+	  # note that you can not use cache control (see customizing doc)
+          # in roundup to set the expires headers since we are
+	  # bypassing roundup. Consider using a map or different
+	  # location stanzas to vary the expiration times.  
+	  expires 1h;
+	}
+
+	location / {
+	  # must define tracker-tracker in upstream stanza
+	  proxy_pass http://tracker-tracker/;
+	  proxy_set_header Host $host;
+	  proxy_set_header X-Real-IP $remote_addr;
+	  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+	}
+      }
+    }
+
+
 WSGI Variations
 ~~~~~~~~~~~~~~~
 
@@ -946,8 +1060,8 @@ uses a front end web server like nginx, hiawatha, apache configured as
 a reverse proxy. See your web server's documentation on how to set it
 up as a reverse proxy.
 
-The file wsgi.py should be in the current directory with the
-contents::
+The file wsgi.py (obtained from ``frontends/wsgi.py``) should be in
+the current directory with the contents::
 
   # if roundup is not installed on the default PYTHONPATH
   # set it here with:
@@ -966,6 +1080,9 @@ Assuming the proxy forwards /tracker, run gunicorn as::
 
 this runs roundup at port 8917 on the loopback interface. You should
 configure the reverse proxy to talk to 127.0.0.1 at port 8917.
+If you want you can use a unix domain socket instead. Example:
+``--bind unix:///var/run/roundup/tracker.sock`` would be used for the
+nginx configuration below.
 
 .. index:: pair: web interface; uWSGI
    single: wsgi; uWSGI
@@ -1442,12 +1559,29 @@ there are no errors. If there are errors, please let us know!
 
 .. _External hyperlink targets:
 
-.. _apache: http://httpd.apache.org/
-.. _flup: https://pypi.org/project/flup/
-.. _mod_python: http://modpython.org/
-.. _mod_wsgi: https://pypi.org/project/mod-wsgi/
-.. _MySQLdb: https://pypi.org/project/mysqlclient/
-.. _Psycopg: https://www.psycopg.org/
-.. _pysqlite: https://pysqlite.org/
+
+
 .. _`adding MySQL users`:
     https://dev.mysql.com/doc/refman/8.0/en/creating-accounts.html
+.. _apache: https://httpd.apache.org/
+.. _brotli: https://pypi.org/project/Brotli/
+.. _docutils: https://pypi.org/project/docutils/
+.. _flup: https://pypi.org/project/flup/
+.. _gpg: https://www.gnupg.org/software/gpgme/index.html
+.. _jinja2: https://palletsprojects.com/p/jinja/
+.. _markdown: https://python-markdown.github.io/
+.. _markdown2: https://github.com/trentm/python-markdown2
+.. _mistune: https://pypi.org/project/mistune/
+.. _mod_python: https://github.com/grisha/mod_python
+.. _mod_wsgi: https://pypi.org/project/mod-wsgi/
+.. _MySQLdb: https://pypi.org/project/mysqlclient/
+.. _Olson tz database: https://www.iana.org/time-zones
+.. _Psycopg: https://www.psycopg.org/
+.. _pyjwt: https://pypi.org/project/PyJWT/
+.. _pyopenssl: https://pypi.org/project/pyOpenSSL/
+.. _pysqlite: https://pysqlite.org/
+.. _pytz: https://pypi.org/project/pytz/
+.. _pywin32: https://pypi.org/project/pywin32/
+.. _Whoosh: https://whoosh.readthedocs.org/en/latest
+.. _Xapian: https://xapian.org/
+.. _zstd: https://pypi.org/project/zstd/
