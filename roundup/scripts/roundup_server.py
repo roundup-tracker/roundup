@@ -120,7 +120,7 @@ def auto_ssl():
     cert.get_issuer().O = 'Self-Signed'
     cert.set_pubkey(pkey)
     cert.sign(pkey, 'sha512')
-    ctx = SSL.Context(OpenSSL.SSL.TLSv1_1_METHOD)
+    ctx = SSL.Context(OpenSSL.SSL.TLSv1_2_METHOD)
     ctx.use_privatekey(pkey)
     ctx.use_certificate(cert)
 
@@ -133,7 +133,7 @@ class SecureHTTPServer(http_.server.HTTPServer):
         http_.server.HTTPServer.__init__(self, server_address, HandlerClass)
         self.socket = socket.socket(self.address_family, self.socket_type)
         if ssl_pem:
-            ctx = SSL.Context(SSL.TLSv1_1_METHOD)
+            ctx = SSL.Context(SSL.TLSv1_2_METHOD)
             ctx.use_privatekey_file(ssl_pem)
             ctx.use_certificate_file(ssl_pem)
         else:

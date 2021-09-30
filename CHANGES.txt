@@ -18,6 +18,11 @@ Fixed:
 - issue2551161 - Fix ResourceWarnings when running with -W default.
   Cleaned up leaking file descriptors from zopetal pre-compile, python
   module compile and loading localization file. (John Rouillard) 
+- When using roundup-server with native SSL, only accept TLS v1.2.
+  Previously it used to accept only TLS v1.1. 1.1 is deprecated by
+  chrome. I don't expect this to be a major problem since a front
+  end server (apache, Nginx...) is usually customer facing and
+  terminates SSL.
 
 Features:
 
