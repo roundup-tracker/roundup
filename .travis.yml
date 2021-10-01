@@ -7,16 +7,6 @@ language: python
 
 cache: pip
 
-python:
-  - 2.7
-  - 3.9-dev
-  - 3.8
-  - 3.7
-  - 3.6
-  - 3.4
-  - nightly
-
-
 #I would like to build and test the maint-1.6 and trunk/default
 #but we need different environments for these:
 #  maint-1.6 only python 2, install only psycopg2 version with support for
@@ -27,29 +17,18 @@ branches:
 #    - maint-1.6
 
 dist:
- - xenial
+  - bionic
 
-# Commented out stanza for bionic 18.04. Currently testing on
-# xenial 16.04.
-# Consider move to this after 2.1.0 release. Python 3.4
-# is not supported on bionic and 3.4 is obsolete. Was retained
-# because 3.4 was EPEL version for centos 7. With centos demise,
-# remove it from 'python:' settings and test earliest still supported
-# release, last two production releases and nightly to cut down on cost
-# of testing.
-# dist:
-#   - bionic
-#
-# python:
-#   - 2.7
-#   - 3.6
-#   - 3.8
-#   - 3.9-dev
-#   - nightly
-#
-# services:
-#   - mysql
-#   - postgresql
+python:
+  - 2.7
+  - 3.9-dev
+  - 3.8
+  - 3.6
+  - nightly
+
+services:
+  - mysql
+  - postgresql
 
 jobs:
     allow_failures:  # nightly not ready for prime time yet.
