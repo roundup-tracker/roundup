@@ -607,7 +607,10 @@ class Client:
 
         if not self.db.security.hasPermission('Rest Access', self.userid):
             self.response_code = 403
-            self.write(s2b('{ "error": { "status": 403, "msg": "Forbidden." } }'))
+            output = s2b('{ "error": { "status": 403, "msg": "Forbidden." } }')
+            self.setHeader("Content-Length", str(len(output)))
+            self.setHeader("Content-Type", "application/json")
+            self.write(output)
             return
         
         self.check_anonymous_access()

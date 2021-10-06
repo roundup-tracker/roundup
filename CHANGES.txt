@@ -23,6 +23,8 @@ Fixed:
   chrome. I don't expect this to be a major problem since a front
   end server (apache, Nginx...) is usually customer facing and
   terminates SSL.
+- Fix hang when valid user without authorization for REST tries to use
+  the rest interface.
 
 Features:
 
