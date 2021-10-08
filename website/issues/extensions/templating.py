@@ -111,7 +111,7 @@ def AboutPage(db):
 
         info.append("<h2>Environment Variables</h2>")
         info.append("<pre>") # include pre to prevent wrapping of values
-        for key in db._client.env.keys():
+        for key in list(db._client.env.keys()):
             info.append("%s=%s"%(key,db._client.env[key]) + "<br>")
         info.append("</pre>")
     return "\n".join(info)
