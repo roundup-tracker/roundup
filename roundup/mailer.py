@@ -278,9 +278,11 @@ class Mailer:
             # that resulting file can be openened in a mailer
             fmt = '%a %b %m %H:%M:%S %Y'
             unixfrm = 'From %s %s' % (sender, Date('.').pretty(fmt))
-            open(self.debug, 'a').write('%s\nFROM: %s\nTO: %s\n%s\n\n' %
+            debug_fh = open(self.debug, 'a')
+            debug_fh.write('%s\nFROM: %s\nTO: %s\n%s\n\n' %
                                         (unixfrm, sender,
                                          ', '.join(to), message))
+            debug_fh.close()
         else:
             # now try to send the message
             try:

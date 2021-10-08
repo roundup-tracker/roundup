@@ -219,7 +219,8 @@ class Tracker:
 
     def _compile(self, fname):
         fname = os.path.join(self.tracker_home, fname)
-        return compile(builtins.open(fname).read(), fname, 'exec')
+        with builtins.open(fname) as fnamed:
+            return compile(fnamed.read(), fname, 'exec')
 
     def _exec(self, obj, env):
         if self.libdir:

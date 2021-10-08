@@ -50,6 +50,13 @@ template:
 	  --copyright-holder="See Roundup README.txt" \
 	  -o $(TEMPLATE) $(SOURCES)
 
+local_install: dist
+	for file in $(MO_FILES); do \
+	   lang=`basename $$file .mo`; \
+	   mkdir -p locale/$$lang/LC_MESSAGES; \
+	   cp $$file locale/$$lang/LC_MESSAGES/roundup.mo; \
+	done
+
 # helps to check template file before check in
 diff:
 	svn diff roundup.pot|grep -v '^[-+]#'|vim -Rv -

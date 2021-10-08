@@ -1310,64 +1310,60 @@ Erase it? Y/N: """))
                 sys.stdout.write('Exporting %s WITHOUT the files\r\n' %
                     classname)
 
-            f = open(os.path.join(dir, classname+'.csv'), 'w')
-            writer = csv.writer(f, colon_separated)
+            with open(os.path.join(dir, classname+'.csv'), 'w') as f:
+                writer = csv.writer(f, colon_separated)
 
-            properties = cl.getprops()
-            propnames = cl.export_propnames()
-            fields = propnames[:]
-            fields.append('is retired')
-            writer.writerow(fields)
+                properties = cl.getprops()
+                propnames = cl.export_propnames()
+                fields = propnames[:]
+                fields.append('is retired')
+                writer.writerow(fields)
 
-            # If a node has a key, sort all nodes by key
-            # with retired nodes first. Retired nodes
-            # must occur before a non-retired node with
-            # the same key. Otherwise you get an
-            # IntegrityError: UNIQUE constraint failed:
-            #     _class.__retired__, _<class>._<keyname>
-            # on imports to rdbms.
-            all_nodes = cl.getnodeids()
+                # If a node has a key, sort all nodes by key
+                # with retired nodes first. Retired nodes
+                # must occur before a non-retired node with
+                # the same key. Otherwise you get an
+                # IntegrityError: UNIQUE constraint failed:
+                #     _class.__retired__, _<class>._<keyname>
+                # on imports to rdbms.
+                all_nodes = cl.getnodeids()
 
-            classkey = cl.getkey()
-            if classkey: # False sorts before True, so negate is_retired
-                keysort = lambda i: (cl.get(i, classkey),
-                                     not cl.is_retired(i))
-                all_nodes.sort(key=keysort)
-            # if there is no classkey no need to sort
+                classkey = cl.getkey()
+                if classkey: # False sorts before True, so negate is_retired
+                    keysort = lambda i: (cl.get(i, classkey),
+                                         not cl.is_retired(i))
+                    all_nodes.sort(key=keysort)
+                # if there is no classkey no need to sort
 
-            for nodeid in all_nodes:
-                if self.verbose:
-                    sys.stdout.write('\rExporting %s - %s' % 
-                                     (classname, nodeid))
-                    sys.stdout.flush()
-                node = cl.getnode(nodeid)
-                exp = cl.export_list(propnames, nodeid)
-                lensum = sum([len(repr_export(node[p])) for p in propnames])
-                # for a safe upper bound of field length we add
-                # difference between CSV len and sum of all field lengths
-                d = sum([len(x) for x in exp]) - lensum
-                if not d > 0:
-                    raise AssertionError("Bad assertion d > 0")
-                for p in propnames:
-                    ll = len(repr_export(node[p])) + d
-                    if ll > max_len:
-                        max_len = ll
-                writer.writerow(exp)
-                if export_files and hasattr(cl, 'export_files'):
-                    cl.export_files(dir, nodeid)
-
-            # close this file
-            f.close()
+                for nodeid in all_nodes:
+                    if self.verbose:
+                        sys.stdout.write('\rExporting %s - %s' % 
+                                         (classname, nodeid))
+                        sys.stdout.flush()
+                    node = cl.getnode(nodeid)
+                    exp = cl.export_list(propnames, nodeid)
+                    lensum = sum([len(repr_export(node[p])) for p in propnames])
+                    # for a safe upper bound of field length we add
+                    # difference between CSV len and sum of all field lengths
+                    d = sum([len(x) for x in exp]) - lensum
+                    if not d > 0:
+                        raise AssertionError("Bad assertion d > 0")
+                    for p in propnames:
+                        ll = len(repr_export(node[p])) + d
+                        if ll > max_len:
+                            max_len = ll
+                    writer.writerow(exp)
+                    if export_files and hasattr(cl, 'export_files'):
+                        cl.export_files(dir, nodeid)
 
             # export the journals
-            jf = open(os.path.join(dir, classname+'-journals.csv'), 'w')
-            if self.verbose:
-                sys.stdout.write("\nExporting Journal for %s\n" % classname)
-                sys.stdout.flush()
-            journals = csv.writer(jf, colon_separated)
-            for row in cl.export_journals():
-                journals.writerow(row)
-            jf.close()
+            with open(os.path.join(dir, classname+'-journals.csv'), 'w') as jf:
+                if self.verbose:
+                    sys.stdout.write("\nExporting Journal for %s\n" % classname)
+                    sys.stdout.flush()
+                journals = csv.writer(jf, colon_separated)
+                for row in cl.export_journals():
+                    journals.writerow(row)
         if max_len > self.db.config.CSV_FIELD_SIZE:
             print("Warning: config csv_field_size should be at least %s" %
                   max_len, file=sys.stderr)

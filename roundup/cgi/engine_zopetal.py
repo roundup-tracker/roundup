@@ -42,7 +42,8 @@ class Loader(TALLoaderBase):
         pt = RoundupPageTemplate()
         # use pt_edit so we can pass the content_type guess too
         content_type = mimetypes.guess_type(filename)[0] or 'text/html'
-        pt.pt_edit(open(src).read(), content_type)
+        with open(src) as srcd:
+            pt.pt_edit(srcd.read(), content_type)
         pt.id = filename
         pt.mtime = stime
         # Add it to the cache.  We cannot do this until the template

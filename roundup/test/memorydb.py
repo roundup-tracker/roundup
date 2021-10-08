@@ -46,25 +46,32 @@ def create(journaltag, create=True, debug=False, prefix=default_prefix):
     # load standard schema
     if not prefix.startswith('/'):
         prefix = os.path.join (os.path.dirname(__file__), prefix)
+
     schema = os.path.join(prefix, 'schema.py')
     vars = hyperdb.__dict__
     vars['Class'] = Class
     vars['FileClass'] = FileClass
     vars['IssueClass'] = IssueClass
     vars['db'] = db
-    exec(compile(open(schema).read(), schema, 'exec'), vars)
+    fd = open(schema)
+    exec(compile(fd.read(), schema, 'exec'), vars)
+    fd.close()
+
     initial_data = os.path.join(prefix, 'initial_data.py')
     vars = dict(db=db, admin_email='admin@test.com',
         adminpw=password.Password('sekrit'))
-    exec(compile(open(initial_data).read(), initial_data, 'exec'), vars)
+    fd = open(initial_data)
+    exec(compile(fd.read(), initial_data, 'exec'), vars)
+    fd.close()
 
     # load standard detectors
     dirname = os.path.join(prefix, 'detectors')
     for fn in os.listdir(dirname):
         if not fn.endswith('.py'): continue
         vars = {}
-        exec(compile(open(os.path.join(dirname, fn)).read(),
-                     os.path.join(dirname, fn), 'exec'), vars)
+        with open(os.path.join(dirname, fn)) as fd:
+            exec(compile(fd.read(),
+                         os.path.join(dirname, fn), 'exec'), vars)
         vars['init'](db)
 
     tx_Source_init(db)
