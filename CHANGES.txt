@@ -22,9 +22,15 @@ Fixed:
   Previously it used to accept only TLS v1.1. 1.1 is deprecated by
   chrome. I don't expect this to be a major problem since a front
   end server (apache, Nginx...) is usually customer facing and
-  terminates SSL.
+  terminates SSL.  (John Rouillard)
 - Fix hang when valid user without authorization for REST tries to use
-  the rest interface.
+  the rest interface.  (John Rouillard)
+- Remove Content-Type and make sure no content is returned by OPTIONS
+  request in REST interface. (John Rouillard)
+- In write_html set the Content-Length when response is not
+  encoded/compressed. (John Rouillard)
+- In REST interface do not raise UsageError for invalid api version.
+  Return json error with proper message. Fixes crash. (John Rouillard)
 
 Features:
 
