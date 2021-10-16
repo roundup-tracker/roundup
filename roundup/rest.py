@@ -2052,7 +2052,7 @@ class RestfulInstance(object):
             #    Use default if not specified for now.
             self.api_version = self.__default_api_version
         elif self.api_version not in self.__supported_api_versions:
-            raise UsageError(msg % self.api_version)
+            output = self.error_obj(400, msg % self.api_version)
 
         # sadly del doesn't work on FieldStorage which can be the type of
         # input. So we have to ignore keys starting with @ at other

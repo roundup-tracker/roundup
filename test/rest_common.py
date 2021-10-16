@@ -2272,13 +2272,15 @@ class TestCase():
         headers={"accept": "application/json; version=99"
         }
         self.headers=headers
-        with self.assertRaises(UsageError) as ctx:
-            results = self.server.dispatch('GET',
-                                           "/rest/data/status/1",
-                                           self.empty_form)
+        results = self.server.dispatch('GET',
+                                       "/rest/data/status/1",
+                                       self.empty_form)
         print(results)
-        self.assertEqual(self.server.client.response_code, 200)
-        self.assertEqual(ctx.exception.args[0],
+        json_dict = json.loads(b2s(results))
+        self.assertEqual(self.server.client.response_code, 400)
+        self.assertEqual(self.server.client.additional_headers['Content-Type'],
+                         "application/json")
+        self.assertEqual(json_dict['error']['msg'],
                          "Unrecognized version: 99. See /rest without "
                          "specifying version for supported versions.")
 

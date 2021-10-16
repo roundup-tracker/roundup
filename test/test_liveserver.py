@@ -113,8 +113,7 @@ class SimpleTest(LiveServerTestCase):
         print(f.headers)
 
         self.assertEqual(f.status_code, 204)
-        expected = { 'Content-Type': 'application/json',
-                     'Access-Control-Allow-Origin': '*',
+        expected = { 'Access-Control-Allow-Origin': '*',
                      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET',
                      'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
@@ -134,8 +133,7 @@ class SimpleTest(LiveServerTestCase):
         print(f.headers)
 
         self.assertEqual(f.status_code, 204)
-        expected = { 'Content-Type': 'application/json',
-                     'Access-Control-Allow-Origin': '*',
+        expected = { 'Access-Control-Allow-Origin': '*',
                      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET',
                      'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
@@ -154,8 +152,7 @@ class SimpleTest(LiveServerTestCase):
         print(f.headers)
 
         self.assertEqual(f.status_code, 204)
-        expected = { 'Content-Type': 'application/json',
-                     'Access-Control-Allow-Origin': '*',
+        expected = { 'Access-Control-Allow-Origin': '*',
                      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, POST',
                      'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
@@ -175,8 +172,7 @@ class SimpleTest(LiveServerTestCase):
         print(f.headers)
 
         self.assertEqual(f.status_code, 204)
-        expected = { 'Content-Type': 'application/json',
-                     'Access-Control-Allow-Origin': '*',
+        expected = { 'Access-Control-Allow-Origin': '*',
                      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, PUT, DELETE, PATCH',
                      'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
@@ -195,8 +191,7 @@ class SimpleTest(LiveServerTestCase):
         print(f.headers)
 
         self.assertEqual(f.status_code, 204)
-        expected = { 'Content-Type': 'application/json',
-                     'Access-Control-Allow-Origin': '*',
+        expected = { 'Access-Control-Allow-Origin': '*',
                      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, PUT, DELETE, PATCH',
                      'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',

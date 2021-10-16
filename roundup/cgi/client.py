@@ -645,8 +645,11 @@ class Client:
 
         # type header set by rest handler
         # self.setHeader("Content-Type", "text/xml")
-        self.setHeader("Content-Length", str(len(output)))
-        self.write(output)
+        if self.response_code == 204: # no body with 204
+            self.write("")
+        else:
+            self.setHeader("Content-Length", str(len(output)))
+            self.write(output)
 
     def add_ok_message(self, msg, escape=True):
         add_message(self._ok_message, msg, escape)
@@ -848,7 +851,7 @@ class Client:
             else:
                 # in debug mode, only write error to screen.
                 self.write_html(e.html)
-        except:
+        except Exception as e:
             # Something has gone badly wrong.  Therefore, we should
             # make sure that the response code indicates failure.
             if self.response_code == http_.client.OK:
@@ -2196,6 +2199,8 @@ class Client:
             if 'Content-Type' not in self.additional_headers:
                 self.additional_headers['Content-Type'] = \
                     'text/html; charset=%s' % self.charset
+            if 'Content-Length' not in self.additional_headers:
+                self.additional_headers['Content-Length'] = len(content)
             self.header()
 
         if self.env['REQUEST_METHOD'] == 'HEAD':
@@ -2496,6 +2501,9 @@ class Client:
 
         if headers.get('Content-Type', 'text/html') == 'text/html':
             headers['Content-Type'] = 'text/html; charset=utf-8'
+
+        if response == 204: # has no body so no content-type
+            del(headers['Content-Type'])
 
         headers = list(headers.items())
 
