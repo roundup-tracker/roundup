@@ -1949,8 +1949,8 @@ class RestfulInstance(object):
                     self.api_version = None
                 except (ValueError, TypeError):
                     # TypeError if int(None)
-                    msg = ("Unrecognized version: %s. "
-                           "See /rest without specifying version "
+                    msg = ("Unrecognized api version: %s. "
+                           "See /rest without specifying api version "
                            "for supported versions." % (
                                part[1]['version']))
                     output = self.error_obj(400, msg)
@@ -2030,8 +2030,8 @@ class RestfulInstance(object):
             report_stats = False
 
         # check for @apiver in query string
-        msg = ("Unrecognized version: %s. "
-               "See /rest without specifying version "
+        msg = _("Unrecognized api version: %s. "
+               "See /rest without specifying api version "
                "for supported versions.")
         try:
             if not self.api_version:
