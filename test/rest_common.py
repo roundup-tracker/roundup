@@ -2010,8 +2010,8 @@ class TestCase():
         json_dict = json.loads(b2s(results))
         self.assertEqual(json_dict['error']['status'], 400)
         self.assertEqual(json_dict['error']['msg'],
-              "Unrecognized version: L. See /rest without "
-              "specifying version for supported versions.")
+              "Unrecognized api version: L. See /rest without "
+              "specifying api version for supported versions.")
 
         headers={"accept": "application/json; version=z" }
         self.headers=headers
@@ -2022,8 +2022,8 @@ class TestCase():
         json_dict = json.loads(b2s(results))
         self.assertEqual(json_dict['error']['status'], 400)
         self.assertEqual(json_dict['error']['msg'],
-              "Unrecognized version: z. See /rest without "
-              "specifying version for supported versions.")
+              "Unrecognized api version: z. See /rest without "
+              "specifying api version for supported versions.")
 
         headers={"accept": "application/vnd.roundup.test-vz+json" }
         self.headers=headers
@@ -2035,8 +2035,8 @@ class TestCase():
         json_dict = json.loads(b2s(results))
         self.assertEqual(json_dict['error']['status'], 400)
         self.assertEqual(json_dict['error']['msg'],
-              "Unrecognized version: z. See /rest without "
-              "specifying version for supported versions.")
+              "Unrecognized api version: z. See /rest without "
+              "specifying api version for supported versions.")
 
         # verify that version priority is correct; should be version=...
         headers={"accept": "application/vnd.roundup.test-vz+json; version=a"
@@ -2050,8 +2050,8 @@ class TestCase():
         json_dict = json.loads(b2s(results))
         self.assertEqual(json_dict['error']['status'], 400)
         self.assertEqual(json_dict['error']['msg'],
-              "Unrecognized version: a. See /rest without "
-              "specifying version for supported versions.")
+              "Unrecognized api version: a. See /rest without "
+              "specifying api version for supported versions.")
 
         # TEST #10
         # check /rest and /rest/summary and /rest/notthere
