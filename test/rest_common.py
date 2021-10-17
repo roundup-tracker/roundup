@@ -2281,8 +2281,9 @@ class TestCase():
         self.assertEqual(self.server.client.additional_headers['Content-Type'],
                          "application/json")
         self.assertEqual(json_dict['error']['msg'],
-                         "Unrecognized version: 99. See /rest without "
-                         "specifying version for supported versions.")
+                         "Unrecognized api version: 99. See /rest "
+                         "without specifying api version for "
+                         "supported versions.")
 
     def testMethodOverride(self):
         # TEST #1
