@@ -639,6 +639,16 @@ class TimezoneOption(Option):
         return value
 
 
+class HttpVersionOption(Option):
+    """Used by roundup-server to verify http version is set to valid
+       string."""
+
+    def str2value(self, value):
+        if value not in ["HTTP/1.0", "HTTP/1.1"]:
+            raise OptionValueError(self, value, "Valid vaues for -V or --http_version are: HTTP/1.0, HTTP/1.1")
+        return value
+
+
 class RegExpOption(Option):
 
     """Regular Expression option (value is Regular Expression Object)"""

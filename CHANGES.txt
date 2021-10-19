@@ -48,6 +48,10 @@ Features:
   responsive templates already have this feature.
 - issue2550917 - Add a: "Welcome user, you have logged in" ok_message
   on login. (Ashley Burke)
+- enable HTTP/1.1 for roundup-server. This enables keep-alive for
+  faster response/loading. Also eliminates stalls when the front end web
+  server uses http 1.1 but the roundup-server uses 1.0. New option
+  "-V HTTP/1.0" can turn it off. (John Rouillard)
 
 2021-07-13 2.1.0
 
