@@ -1961,9 +1961,12 @@ class RestfulInstance(object):
         #            default (application/json)
         ext_type = os.path.splitext(urlparse(uri).path)[1][1:]
 
-        # Use explicit list of extensions. Even if xml isn't supported
-        # recognize it as a valid directive.
-        if ext_type in ['json', 'xml']:
+        # Check to see if the length of the extension is less than 6.
+        # this allows use of .vcard for a future use in downloading
+        # user info. It also allows passing through larger items like
+        # JWT that has a final component > 6 items. This method also
+        # allow detection of mistyped types like jon for json.
+        if ext_type  and (len(ext_type) < 6):
             # strip extension so uri make sense
             # .../issue.json -> .../issue
             uri = uri[:-(len(ext_type) + 1)]
@@ -1975,11 +1978,6 @@ class RestfulInstance(object):
         # accept_type wil be empty only if there is an Accept header
         # with invalid values.
         data_type = ext_type or accept_type or headers.get('Accept') or "invalid"
-
-        if (ext_type):
-            # strip extension so uri make sense
-            # .../issue.json -> .../issue
-            uri = uri[:-(len(ext_type) + 1)]
 
         # add access-control-allow-* to support CORS
         self.client.setHeader("Access-Control-Allow-Origin", "*")

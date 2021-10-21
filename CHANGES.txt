@@ -31,8 +31,8 @@ Fixed:
   encoded/compressed. (John Rouillard)
 - In REST interface do not raise UsageError for invalid api version.
   Return json error with proper message. Fixes crash. (John Rouillard)
-- In REST interface, only allow .json or .xml (if supported) as
-  extensions. All other paths with a . in then will be passed through
+- In REST interface, allow extensions on URI less than 6 characters in
+  length. All other paths with a . in then will be passed through
   without change. This allows items like a JWT to be passed as a path
   element. (John Rouillard)
 
