@@ -1961,6 +1961,15 @@ class RestfulInstance(object):
         #            default (application/json)
         ext_type = os.path.splitext(urlparse(uri).path)[1][1:]
 
+        # Use explicit list of extensions. Even if xml isn't supported
+        # recognize it as a valid directive.
+        if ext_type in ['json', 'xml']:
+            # strip extension so uri make sense
+            # .../issue.json -> .../issue
+            uri = uri[:-(len(ext_type) + 1)]
+        else:
+            ext_type = None
+
         # headers.get('Accept') is never empty if called here.
         # accept_type will be set to json if there is no Accept header
         # accept_type wil be empty only if there is an Accept header
