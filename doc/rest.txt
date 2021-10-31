@@ -1857,6 +1857,8 @@ only been tested with python3)::
         @Routing.route("/jwt/issue", 'POST')
         @_data_decorator
         def generate_jwt(self, input):
+        """Create a JSON Web Token (jwt)
+        """
             import jwt
             import datetime
             from roundup.anypy.strings import b2s
@@ -1878,6 +1880,11 @@ only been tested with python3)::
                     raise Unauthorised(denialmsg)
             else:
                 raise Unauthorised(denialmsg)
+
+            # verify we have input data.
+            if not input:
+                raise UsageError("Missing data payload. "
+                             "Verify Content-Type is sent")
 
             # If we reach this point we have validated that the user has
             # logged in with a password using basic auth.
@@ -1910,7 +1917,7 @@ only been tested with python3)::
 
             newroles = []
             if 'roles' in input:
-                for role in input['roles'].value:
+                for role in [ r.lower() for r in input['roles'].value ]:
                     if role not in rolenames:
                         raise UsageError("Role %s is not valid."%role)
                     if role in user_roles:
