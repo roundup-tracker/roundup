@@ -59,7 +59,9 @@ RUN set -xv && if [ "$source" = "local" ] || [ "$source" = "pypi" ]; then :; \
            else echo "invalid value for source: $source"; \
                 echo "must be local or pypi"; exit 1; fi; \
     if [ "$source" = "local" ]; then cd install && ./setup.py install; fi; \
-    if [ "$source" = "pypi" ]; then pip install roundup; fi
+    if [ "$source" = "pypi" ]; then pip install roundup; \
+       	cp -ril /usr/local/lib/python3.10/site-packages/usr/local/share/* \
+	   /usr/local/share; fi
 
 # build a new smaller docker image for execution. Build image above
 # is 1G in size.
