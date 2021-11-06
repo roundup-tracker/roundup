@@ -2,14 +2,13 @@
 pytz
 # indexer
 Whoosh
-# databases - need devel and other files installed to be built.
-#psycopg2==2.7.4
-#mysqlclient==1.3.10
-# encryption - need additional packages
-#gpg==1.10.0
+# extra database support
+psycopg2
+mysqlclient
+# encryption
+gpg
 # java web tokens
-PyJWT==1.7.1
-# extra compression support - build needs gcc
-#Brotli==1.0.4
-#zstd==1.5.0.2
-
+PyJWT
+# extra HTTP compression methods
+Brotli
+zstd

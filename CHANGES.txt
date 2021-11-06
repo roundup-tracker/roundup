@@ -56,6 +56,8 @@ Features:
   faster response/loading. Also eliminates stalls when the front end web
   server uses http 1.1 but the roundup-server uses 1.0. New option
   "-V HTTP/1.0" can turn it off. (John Rouillard)
+- issue2551163 - add scripts/Dockerfile to provide basic support for
+  containerization. See installation.txt for details. (John Rouillard)
 
 2021-07-13 2.1.0
 

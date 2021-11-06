@@ -216,6 +216,70 @@ base directory, if you do not want to use administrator rights. If you
 choose to do this, you may have to change Python's search path (sys.path)
 yourself.
 
+Creating a Docker Container
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you don't want to install it natively, you can create a Docker
+container.  This uses the Dockerfile in the scripts directory. The
+roundup code in the distribuion and any changes will be used. The
+build command is::
+
+     docker build -t roundup-app --rm -f scripts/Dockerfile .
+
+It supports the following backends: anydbm, sqlite, mysql and
+postgresql. Mysql and postgresql support hasn't been tested, but the
+Python modules are built and available.  See scripts/requirement.txt
+for the additional modules that are installed.
+
+If you want to build a docker from the latest release on PyPI, you can
+use::
+
+     docker build -t roundup-app --build-arg="source=pypi" \
+          --rm -f scripts/Dockerfile .
+
+Once the docker is created, run it with::
+
+    docker run --rm -p 9017:8080 \
+         -v /.../issue.tracker:/usr/src/app/tracker \
+         roundup-app:latest
+
+This will make the tracker available at:
+``http://yourhost:9017/issues/``.
+
+The ``-p`` option maps an external port (9017) to proxy the roundup
+server running at port 8080 to the outside. The ``-v`` option maps a
+directory from the host into the docker container. It should be a
+tracker home directory. Note that uid 1000 is used by roundup. So the
+uid of the directory must be 1000.
+
+If you want to run multiple trackers, create a subdirectory for each
+tracker home under the volume mount point. Then invoke ``docker run``
+passing the roundup-server tracker specifications like::
+
+    docker run --rm -p 9017:8080 \
+        -v /.../issue.tracker:/usr/src/app/tracker \
+        roundup-app:latest tracker1=tracker1_home  tracker2=tracker2_home
+
+
+This will set up two trackers that can be reached at
+``http://yourhost:9017/tracker1/`` and ``http://yourhost:9017/tracker2/``.
+
+If you need to install and initialize the trackers, you can get a
+shell without starting the roundup-server using::
+
+    docker run -it \
+        -v /.../issue.tracker:/usr/src/app/tracker \
+        --entrypoint sh roundup-app:latest
+
+Now you can configure your tracker using ``roundup-admin -i tracker``
+using the directions below.
+
+If you need to access your container while the server is running you
+can use::
+
+   docker exec -it c0d5 sh
+
+where ``c0d5`` is the id prefix for the running container.
 
 Configuring your first tracker
 ------------------------------
