@@ -35,6 +35,9 @@ Fixed:
   length. All other paths with a . in then will be passed through
   without change. This allows items like a JWT to be passed as a path
   element. (John Rouillard)
+- issue2551167 - pip install in containerized environments puts
+  template and locale files under site-packages where roundup can't find
+  them. Change code to find them under site-packages.
 
 Features:
 

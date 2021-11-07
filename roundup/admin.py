@@ -324,6 +324,21 @@ Command help:
                 templates = init.listTemplates(tdir)
                 break
 
+        # search for data files parallel to the roundup
+        # install dir. E.G. a wheel install
+        #  use roundup.__path__ and go up a level then use sys.prefix
+        #  to create a base path for searching.
+
+        import roundup, sys
+        # roundup.__path__ should be something like:
+        #    /usr/local/lib/python3.10/site-packages/roundup
+        # os.prefix should be /usr, /usr/local or root of virtualenv
+        #    strip leading / to make os.path.join work right.
+        tdir = os.path.join(os.path.dirname(roundup.__path__[0]),
+                            sys.prefix[1:], 'share', 'roundup', 'templates')
+        if os.path.isdir(tdir):
+            templates.update(init.listTemplates(tdir))
+            
         # OK, now try as if we're in the roundup source distribution
         # directory, so this module will be in .../roundup-*/roundup/admin.py
         # and we're interested in the .../roundup-*/ part.

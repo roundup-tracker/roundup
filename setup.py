@@ -216,6 +216,16 @@ def main():
           data_files=data_files)
 
 if __name__ == '__main__':
+
+    # Prevent `pip install roundup` from building bdist_wheel.
+    # Man pages, templates, locales installed under site-packages not
+    #  in normal system locations.
+    # https://stackoverflow.com/questions/36846260/can-python-setuptools-install-files-outside-dist-packages
+    '''
+    if 'bdist_wheel' in sys.argv:
+        raise RuntimeError("This setup.py does not support wheels")
+    '''
+
     os.chdir(os.path.dirname(__file__) or '.')
     main()
 
