@@ -321,6 +321,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
 
             self.send_response(200)
             self.send_header('Content-Type', 'image/x-icon')
+            self.send_header('Content-Length', len(favico))
             self.end_headers()
 
             # this bufsize is completely arbitrary, I picked 4K because
