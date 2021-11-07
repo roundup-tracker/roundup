@@ -101,7 +101,6 @@ class SimpleTest(LiveServerTestCase):
                              auth=('admin', 'sekrit'),
                              headers = {'content-type': "",
                              'x-requested-with': "rest"})
-        import pdb; pdb.set_trace()
         print(f.status_code)
         print(f.headers)
         print(f.content)
@@ -183,7 +182,7 @@ class SimpleTest(LiveServerTestCase):
         expected = { 'Access-Control-Allow-Origin': '*',
                      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, POST',
-                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'OPTIONS, GET, POST',
         }
 
         # use dict comprehension to remove fields like date,
