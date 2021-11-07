@@ -38,6 +38,9 @@ Fixed:
 - issue2551167 - pip install in containerized environments puts
   template and locale files under site-packages where roundup can't find
   them. Change code to find them under site-packages.
+- REST replace hard coded list of child endpoints for /rest/ with list
+  pulled from registered endpoints. So newly added endpoints are
+  shown. (John Rouillard)
 
 Features:
 
@@ -61,6 +64,15 @@ Features:
   "-V HTTP/1.0" can turn it off. (John Rouillard)
 - issue2551163 - add scripts/Dockerfile to provide basic support for
   containerization. See installation.txt for details. (John Rouillard)
+- REST add openapi_doc decorator to add openapi_doc to
+  endpoints. Decorate a couple of examples. (John Rouillard)
+- REST when incorrect method is used, report allowed methods in error
+  message as well as in an Allow header. (John Rouillard)
+- REST change response to invalid attribute specified in path.  Return
+  400 code not 405 code for this case and improve error. (John
+  Rouillard)
+- REST correct values for some Access-Control-Allow-Methods and
+  Access-Control-Allow-Headers headers. (John Rouillard)
 
 2021-07-13 2.1.0
 

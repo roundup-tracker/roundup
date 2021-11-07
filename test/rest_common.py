@@ -2063,16 +2063,16 @@ class TestCase():
               "default_version": 1,
               "links": [
                   {
-                      "rel": "summary",
-                      "uri": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/summary"
-                  },
-                  {
                       "rel": "self",
                       "uri": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest"
                   },
                   {
                       "rel": "data",
                       "uri": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data"
+                  },
+                  {
+                      "rel": "summary",
+                      "uri": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/summary"
                   }
               ]
           }

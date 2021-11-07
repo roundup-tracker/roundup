@@ -95,6 +95,34 @@ class SimpleTest(LiveServerTestCase):
         self.assertTrue(b'Creator' in f.content)
 
 
+    def test_rest_invalid_method_collection(self):
+        # use basic auth for rest endpoint
+        f = requests.put(self.url_base() + '/rest/data/user',
+                             auth=('admin', 'sekrit'),
+                             headers = {'content-type': "",
+                             'x-requested-with': "rest"})
+        import pdb; pdb.set_trace()
+        print(f.status_code)
+        print(f.headers)
+        print(f.content)
+
+        self.assertEqual(f.status_code, 405)
+        expected = { 'Access-Control-Allow-Origin': '*',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
+                     'Allow': 'DELETE, GET, OPTIONS, POST',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
+        }
+
+        print(f.headers)
+        # use dict comprehension to remove fields like date,
+        # content-length etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
+
+        content = json.loads(f.content)
+
+        exp_content = "Method PUT not allowed. Allowed: DELETE, GET, OPTIONS, POST"
+        self.assertEqual(exp_content, content['error']['msg'])
+
     def test_http_options(self):
         """ options returns an unimplemented error for this case."""
         
@@ -114,9 +142,9 @@ class SimpleTest(LiveServerTestCase):
 
         self.assertEqual(f.status_code, 204)
         expected = { 'Access-Control-Allow-Origin': '*',
-                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET',
-                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
         }
 
         # use dict comprehension to remove fields like date,
@@ -134,9 +162,9 @@ class SimpleTest(LiveServerTestCase):
 
         self.assertEqual(f.status_code, 204)
         expected = { 'Access-Control-Allow-Origin': '*',
-                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET',
-                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
         }
 
         # use dict comprehension to remove fields like date,
@@ -153,9 +181,9 @@ class SimpleTest(LiveServerTestCase):
 
         self.assertEqual(f.status_code, 204)
         expected = { 'Access-Control-Allow-Origin': '*',
-                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, POST',
-                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
         }
 
         # use dict comprehension to remove fields like date,
@@ -173,9 +201,9 @@ class SimpleTest(LiveServerTestCase):
 
         self.assertEqual(f.status_code, 204)
         expected = { 'Access-Control-Allow-Origin': '*',
-                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, PUT, DELETE, PATCH',
-                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
         }
 
         # use dict comprehension to remove fields like date,
@@ -192,9 +220,9 @@ class SimpleTest(LiveServerTestCase):
 
         self.assertEqual(f.status_code, 204)
         expected = { 'Access-Control-Allow-Origin': '*',
-                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, PUT, DELETE, PATCH',
-                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
         }
 
         # use dict comprehension to remove fields like date,
@@ -382,9 +410,9 @@ class SimpleTest(LiveServerTestCase):
         self.assertEqual(f.status_code, 200)
         expected = { 'Content-Type': 'application/json',
                      'Access-Control-Allow-Origin': '*',
-                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
-                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
                      'Content-Encoding': 'gzip',
                      'Vary': 'Accept-Encoding',
         }
@@ -427,20 +455,19 @@ class SimpleTest(LiveServerTestCase):
         print(f.status_code)
         print(f.headers)
 
-        # ERROR: attribute error turns into 405, not sure that's right.
         # NOTE: not compressed payload too small
-        self.assertEqual(f.status_code, 405)
+        self.assertEqual(f.status_code, 400)
         expected = { 'Content-Type': 'application/json',
                      'Access-Control-Allow-Origin': '*',
-                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
-                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
         }
 
         content = { "error":
                     {
-                        "status": 405,
-                        "msg": "'foo'"
+                        "status": 400,
+                        "msg": "Invalid attribute foo"
                     }
         }
 
@@ -509,9 +536,9 @@ class SimpleTest(LiveServerTestCase):
         self.assertEqual(f.status_code, 200)
         expected = { 'Content-Type': 'application/json',
                      'Access-Control-Allow-Origin': '*',
-                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
-                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
                      'Content-Encoding': 'br',
                      'Vary': 'Accept-Encoding',
         }
@@ -555,20 +582,20 @@ class SimpleTest(LiveServerTestCase):
                                         'Accept': '*/*'})
         print(f.status_code)
         print(f.headers)
-        # ERROR: attribute error turns into 405, not sure that's right.
+
         # Note: not compressed payload too small
-        self.assertEqual(f.status_code, 405)
+        self.assertEqual(f.status_code, 400)
         expected = { 'Content-Type': 'application/json',
                      'Access-Control-Allow-Origin': '*',
-                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
-                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
         }
 
         content = { "error":
                     {
-                        "status": 405,
-                        "msg": "'foo'"
+                        "status": 400,
+                        "msg": "Invalid attribute foo"
                     }
         }
         json_dict = json.loads(b2s(f.content))
@@ -655,9 +682,9 @@ class SimpleTest(LiveServerTestCase):
         self.assertEqual(f.status_code, 200)
         expected = { 'Content-Type': 'application/json',
                      'Access-Control-Allow-Origin': '*',
-                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
-                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
                      'Content-Encoding': 'zstd',
                      'Vary': 'Accept-Encoding',
         }
@@ -703,20 +730,19 @@ class SimpleTest(LiveServerTestCase):
         print(f.status_code)
         print(f.headers)
 
-        # ERROR: attribute error turns into 405, not sure that's right.
         # Note: not compressed, payload too small
-        self.assertEqual(f.status_code, 405)
+        self.assertEqual(f.status_code, 400)
         expected = { 'Content-Type': 'application/json',
                      'Access-Control-Allow-Origin': '*',
-                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
-                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
         }
 
         content = { "error":
                     {
-                        "status": 405,
-                        "msg": "'foo'"
+                        "status": 400,
+                        "msg": "Invalid attribute foo"
                     }
         }
 
