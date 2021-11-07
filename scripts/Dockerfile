@@ -55,10 +55,14 @@ COPY share install/share/
 # or install in python3 standard directories from pypi using pip
 # import from global/command line
 ARG source
-RUN set -xv && if [ "$source" = "local" ] || [ "$source" = "pypi" ]; then :; \
+RUN set -xv && if [ "$source" = "local" ] ||  \
+                  [ "$source" = "pypi"  ] || \
+                  [ "$source" = "local_pip"   ]; then :; \
            else echo "invalid value for source: $source"; \
                 echo "must be local or pypi"; exit 1; fi; \
     if [ "$source" = "local" ]; then cd install && ./setup.py install; fi; \
+    if [ "$source" = "local_pip" ]; then cd install && pip install \
+                            --use-feature=in-tree-build . ; fi; \
     if [ "$source" = "pypi" ]; then pip install roundup; \
        	cp -ril /usr/local/lib/python3.10/site-packages/usr/local/share/* \
 	   /usr/local/share; fi

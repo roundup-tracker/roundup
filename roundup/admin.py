@@ -295,12 +295,15 @@ Command help:
          2. <prefix>/share/roundup/templates/*
             this should be the standard place to find them when Roundup is
             installed
-         3. <roundup.admin.__file__>/../templates/*
+         3. <roundup.admin.__file__>/../../<sys.prefix>/share/\
+                 roundup/templates/* which is where they will be found if
+            roundup is installed as a wheel using pip install
+         4. <roundup.admin.__file__>/../templates/*
             this will be used if Roundup's run in the distro (aka. source)
             directory
-         4. <current working dir>/*
+         5. <current working dir>/*
             this is for when someone unpacks a 3rd-party template
-         5. <current working dir>
+         6. <current working dir>
             this is for someone who "cd"s to the 3rd-party template dir
         """
         # OK, try <prefix>/share/roundup/templates
@@ -329,13 +332,17 @@ Command help:
         #  use roundup.__path__ and go up a level then use sys.prefix
         #  to create a base path for searching.
 
-        import roundup, sys
-        # roundup.__path__ should be something like:
-        #    /usr/local/lib/python3.10/site-packages/roundup
+        import sys
+        # __file__ should be something like:
+        #    /usr/local/lib/python3.10/site-packages/roundup/admin.py
         # os.prefix should be /usr, /usr/local or root of virtualenv
         #    strip leading / to make os.path.join work right.
-        tdir = os.path.join(os.path.dirname(roundup.__path__[0]),
-                            sys.prefix[1:], 'share', 'roundup', 'templates')
+        path = __file__
+        for N in 1, 2:
+            path = os.path.dirname(path)
+        # path is /usr/local/lib/python3.10/site-packages
+        tdir = os.path.join(path, sys.prefix[1:], 'share',
+                            'roundup', 'templates')
         if os.path.isdir(tdir):
             templates.update(init.listTemplates(tdir))
             

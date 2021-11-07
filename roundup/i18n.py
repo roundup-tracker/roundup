@@ -58,15 +58,16 @@ if _mo_path not in LOCALE_DIRS:
     LOCALE_DIRS.append(_mo_path)
 del _mo_path
 
-# find path when locale files are installed as part of a wheel
-# roundup.__path__ should be something like:
-#    /usr/local/lib/python3.10/site-packages/roundup
+import sys
+# __file__ should be something like:
+#    /usr/local/lib/python3.10/site-packages/roundup/i18n.py
 # os.prefix should be /usr, /usr/local or root of virtualenv
 #    strip leading / to make os.path.join work right.
-import roundup, sys
-_ldir = os.path.join(
-    os.path.dirname(roundup.__path__[0]),
-    sys.prefix[1:], 'share', 'locale')
+path = __file__
+for N in 1, 2:
+    path = os.path.dirname(path)
+    # path is /usr/local/lib/python3.10/site-packages
+_ldir = os.path.join(path, sys.prefix[1:], 'share', 'locale')
 if os.path.isdir(_ldir):
     LOCALE_DIRS.append(_ldir)
 del _ldir
