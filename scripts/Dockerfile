@@ -13,7 +13,9 @@
 # application directory
 ARG appdir=/usr/src/app
 
-# support roundup install from 'local' directory or from 'pypi'
+# support roundup install from 'local' directory,
+# 'local_pip' local directory using pip to install or
+# latest release from 'pypi'
 ARG source=local
 
 FROM python:3-alpine as build
@@ -99,6 +101,9 @@ EXPOSE 8080/tcp
 # mount a trackerdir on tracker location
 RUN mkdir tracker
 VOLUME $appdir/tracker
+
+HEALTHCHECK --start-period=1m \
+   CMD wget -q -O /dev/null --no-verbose http://localhost:8080/issues/
 
 # do not run roundup as root
 RUN adduser -D -h /usr/src/app roundup
