@@ -142,7 +142,15 @@ def repr_export(v):
 def eval_import(s):
     """Evaluate a Python-2-style value imported from a CSV file."""
     if _py3:
-        v = eval(s)
+        try:
+            v = eval(s)
+        except SyntaxError:
+            # handle case where link operation reports id a long int
+            # ('issue', 5002L, "status") rather than as a string.
+            # This was a bug that existed and was fixed before or with v1.2.0
+            import re
+            v = eval(re.sub(r', ([0-9]+)L,',r', \1,', s))
+
         if isinstance(v, str):
             return v.encode('iso-8859-1').decode('utf-8')
         elif isinstance(v, dict):

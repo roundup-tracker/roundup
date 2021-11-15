@@ -41,6 +41,12 @@ Fixed:
 - REST replace hard coded list of child endpoints for /rest/ with list
   pulled from registered endpoints. So newly added endpoints are
   shown. (John Rouillard)
+- issue2551107 - Handle representation of long int in history params
+  for python3. Causes SyntaxError crash when showing history due to
+  long int e.g. 2345L. This is not a problem for roundup trackers
+  created using 1.2.0 or newer. The fix may have predated the 1.2.0
+  release but where the fix actually landed (representing id as a
+  string and not as an int) is unknown.
 
 Features:
 
