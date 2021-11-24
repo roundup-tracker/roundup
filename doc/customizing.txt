@@ -5786,12 +5786,19 @@ for the "issue", "file" and "msg" classes with the following::
         return check
     for cl in 'issue', 'file', 'msg':
         p = db.security.addPermission(name='View', klass=cl,
-            check=checker(cl))
+            check=checker(cl),
+            description='User can view only if creator.')
         db.security.addPermissionToRole('User', p)
         p = db.security.addPermission(name='Edit', klass=cl,
-            check=checker(cl))
+            check=checker(cl),
+            description='User can edit only if creator.')
         db.security.addPermissionToRole('User', p)
         db.security.addPermissionToRole('User', 'Create', cl)
+    # This allows the interface to get the names of the properties
+    # in the issue. Used for selecting sorting and grouping
+    # on the index page.
+    p = db.security.addPermission(name='Search', klass='issue')
+    db.security.addPermissionToRole ('User', p)
 
 
 Moderating user registration
