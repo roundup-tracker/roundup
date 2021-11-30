@@ -21,9 +21,10 @@ dist:
 
 python:
   - 2.7
-  - 3.9-dev
+  - 3.9
   - 3.8
   - 3.6
+  - pypy3
   - nightly
 
 services:
@@ -33,6 +34,7 @@ services:
 jobs:
     allow_failures:  # nightly not ready for prime time yet.
       - python: nightly
+      - python: pypy3
 
 addons:
   apt:
