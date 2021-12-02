@@ -19,12 +19,12 @@ branches:
 dist:
   - bionic
 
+#  - pypy3
 python:
   - 2.7
   - 3.9
   - 3.8
   - 3.6
-  - pypy3
   - nightly
 
 services:
@@ -67,7 +67,7 @@ before_install:
   - PATH=$VIRTUAL_ENV/bin:$PATH
 
   # libgpg-error
-  - LIBGPG_ERROR_VERSION=1.32
+  - LIBGPG_ERROR_VERSION=1.43
   - cd /tmp
   - curl -s -O https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-$LIBGPG_ERROR_VERSION.tar.bz2
   - tar -jxvf libgpg-error-$LIBGPG_ERROR_VERSION.tar.bz2
@@ -76,7 +76,7 @@ before_install:
   - make && make install
 
   # libassuan
-  - LIBASSUAN_VERSION=2.5.1
+  - LIBASSUAN_VERSION=2.5.5
   - cd /tmp
   - curl -s -O https://www.gnupg.org/ftp/gcrypt/libassuan/libassuan-$LIBASSUAN_VERSION.tar.bz2
   - tar -jxvf libassuan-$LIBASSUAN_VERSION.tar.bz2
@@ -85,7 +85,7 @@ before_install:
   - make && make install
 
   # gpgme
-  - GPGME_VERSION=1.11.1
+  - GPGME_VERSION=1.16.0
   - cd /tmp
   - curl -s -O https://www.gnupg.org/ftp/gcrypt/gpgme/gpgme-$GPGME_VERSION.tar.bz2
   - tar -jxf gpgme-$GPGME_VERSION.tar.bz2
