@@ -47,6 +47,10 @@ Fixed:
   created using 1.2.0 or newer. The fix may have predated the 1.2.0
   release but where the fix actually landed (representing id as a
   string and not as an int) is unknown.
+- issue2551175 - Make ETag content-encoding aware. HTTP ETag headers
+  now include a suffix indicating the content-encoding used to send
+  the data per rfc7232. Properly validate any form of ETag suffixed or
+  non-suffixed for If-Match.
 
 Features:
 

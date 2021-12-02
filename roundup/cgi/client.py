@@ -2166,6 +2166,14 @@ class Client:
             self.additional_headers['Content-Length'] = str(len(new_content))
             self.additional_headers['Content-Encoding'] = encoder
             self.setVary('Accept-Encoding')
+            try:
+                current_etag = self.additional_headers['ETag']
+            except KeyError:
+                pass  # etag not set for non-rest endpoints
+            else:
+                etag_end = current_etag.rindex('"')
+                self.additional_headers['ETag'] = ( current_etag[:etag_end] +
+                                    '-' + encoder + current_etag[etag_end:])
 
         return new_content
 

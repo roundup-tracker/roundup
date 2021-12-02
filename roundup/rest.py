@@ -218,8 +218,20 @@ def check_etag(node, key, etags, classname="Missing", id="0",
                                repr_format=repr_format)
 
     for etag in etags:
-        if etag is not None:
-            if etag != node_etag:
+        # etag includes doublequotes around tag:
+        #   '"a46a5572190e4fad63958c135f3746fa"'
+        # but can include content-encoding suffix like:
+        #   '"a46a5572190e4fad63958c135f3746fa-gzip"'
+        # turn the latter into the former as we don't care what
+        # encoding was used to send the body with the etag.
+        try:
+            suffix_start = etag.rindex('-')
+            clean_etag = etag[:suffix_start] + '"'
+        except (ValueError, AttributeError):
+            # - not in etag or etag is None
+            clean_etag = etag
+        if clean_etag is not None:
+            if clean_etag != node_etag:
                 return False
             have_etag_match = True
 

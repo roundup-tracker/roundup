@@ -227,7 +227,12 @@ Performing a ``GET`` on an item or property of an item will return an
 ETag header or an @etag property. This needs to be submitted with
 ``DELETE``, ``PUT`` and ``PATCH`` operations on the item using an
 ``If-Match`` header or an ``"@etag`` property in the data payload if
-the method supports a payload.
+the method supports a payload. The ETag header value will include a
+suffix (starting with '-') indicating the Content-Encoding used to
+respond to the request. If the response was uncompressed, there will
+be no suffix. The ``@etag`` property never includes the suffix. Any
+ETag value suffixed or not can be sent in an ``If-Match`` header as
+the suffix is ignored during comparison.
 
 The exact details of returned data is determined by the value of the
 ``@verbose`` query parameter.  The various supported values and their

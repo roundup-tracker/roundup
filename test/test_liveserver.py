@@ -439,6 +439,13 @@ class SimpleTest(LiveServerTestCase):
 
         self.assertDictEqual(json_dict, content)
 
+        # verify that ETag header ends with -gzip
+        try:
+            self.assertRegex(f.headers['ETag'], r'^"[0-9a-f]{32}-gzip"$')
+        except AttributeError:
+            # python2 no assertRegex so try substring match
+            self.assertEqual(33, f.headers['ETag'].rindex('-gzip"'))
+
         # use dict comprehension to remove fields like date,
         # content-length etc. from f.headers.
         self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
@@ -567,6 +574,13 @@ class SimpleTest(LiveServerTestCase):
         del(json_dict['data']['type']) 
 
         self.assertDictEqual(json_dict, content)
+
+        # verify that ETag header ends with -br
+        try:
+            self.assertRegex(f.headers['ETag'], r'^"[0-9a-f]{32}-br"$')
+        except AttributeError:
+            # python2 no assertRegex so try substring match
+            self.assertEqual(33, f.headers['ETag'].rindex('-br"'))
 
         # use dict comprehension to remove fields like date,
         # content-length etc. from f.headers.
@@ -713,6 +727,13 @@ class SimpleTest(LiveServerTestCase):
         del(json_dict['data']['type']) 
 
         self.assertDictEqual(json_dict, content)
+
+        # verify that ETag header ends with -zstd
+        try:
+            self.assertRegex(f.headers['ETag'], r'^"[0-9a-f]{32}-zstd"$')
+        except AttributeError:
+            # python2 no assertRegex so try substring match
+            self.assertEqual(33, f.headers['ETag'].rindex('-zstd"'))
 
         # use dict comprehension to remove fields like date,
         # content-length etc. from f.headers.

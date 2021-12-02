@@ -1180,8 +1180,8 @@ class TestCase():
         each one broke and no etag. Use the put command
         to trigger the etag checking code.
         '''
-        for mode in ('header', 'etag', 'both',
-                     'brokenheader', 'brokenetag', 'none'):
+        for mode in ('header', 'header-gzip', 'etag', 'etag-br',
+                     'both', 'brokenheader', 'brokenetag', 'none'):
             try:
                 # clean up any old header
                 del(self.headers)
@@ -1198,9 +1198,17 @@ class TestCase():
             if mode == 'header':
                 print("Mode = %s"%mode)
                 self.headers = {'if-match': etag}
+            elif mode == 'header-gzip':
+                print("Mode = %s"%mode)
+                gzip_etag = etag[:-1] + "-gzip" + etag[-1:]
+                self.headers = {'if-match': gzip_etag}
             elif mode == 'etag':
                 print("Mode = %s"%mode)
                 form.list.append(cgi.MiniFieldStorage('@etag', etag))
+            elif mode == 'etag-br':
+                print("Mode = %s"%mode)
+                br_etag = etag[:-1] + "-br" + etag[-1:]
+                form.list.append(cgi.MiniFieldStorage('@etag', br_etag))
             elif mode == 'both':
                 print("Mode = %s"%mode)
                 self.headers = {'etag': etag}
@@ -1216,7 +1224,7 @@ class TestCase():
             elif mode == 'none':
                 print( "Mode = %s"%mode)
             else:
-                self.fail("unknown mode found")
+                self.fail("unknown mode '%s' found"%mode)
 
             results = self.server.put_attribute(
                 'user', self.joeid, 'realname', form
