@@ -396,6 +396,57 @@ class SimpleTest(LiveServerTestCase):
         # cleanup
         os.remove(gzfile)
 
+    def test_compression_none_etag(self):
+        # use basic auth for rest endpoint
+        f = requests.get(self.url_base() + '/rest/data/user/1/username',
+                             auth=('admin', 'sekrit'),
+                             headers = {'content-type': "",
+                                        'Accept-Encoding': "",
+                                        'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        expected = { 'Content-Type': 'application/json',
+                     'Access-Control-Allow-Origin': '*',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
+                     'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH'
+        }
+
+        content_str = '''{ "data": {
+                        "id": "1",
+                        "link": "http://localhost:9001/rest/data/user/1/username",
+                        "data": "admin"
+                    }
+        }'''
+        content = json.loads(content_str)
+
+
+        if (type("") == type(f.content)):
+            json_dict = json.loads(f.content)
+        else:
+            json_dict = json.loads(b2s(f.content))
+
+        # etag wil not match, creation date different
+        del(json_dict['data']['@etag']) 
+
+        # type is "class 'str'" under py3, "type 'str'" py2
+        # just skip comparing it.
+        del(json_dict['data']['type']) 
+
+        self.assertDictEqual(json_dict, content)
+
+        # verify that ETag header has no - delimiter
+        print(f.headers['ETag'])
+        with self.assertRaises(ValueError):
+            f.headers['ETag'].index('-')
+
+        # use dict comprehension to remove fields like date,
+        # content-length etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
+
+
     def test_compression_gzip(self):
         # use basic auth for rest endpoint
         f = requests.get(self.url_base() + '/rest/data/user/1/username',
