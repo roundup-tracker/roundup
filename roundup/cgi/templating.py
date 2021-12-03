@@ -1281,7 +1281,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                                 label = None
                         if label is not None:
                             if hrefable:
-                                old = '<a ref="nofollow noopener" href="%s%s">%s</a>'%(classname,
+                                old = '<a rel="nofollow noopener" href="%s%s">%s</a>'%(classname,
                                     args[k], label)
                             else:
                                 old = label;
