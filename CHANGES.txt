@@ -51,6 +51,7 @@ Fixed:
   now include a suffix indicating the content-encoding used to send
   the data per rfc7232. Properly validate any form of ETag suffixed or
   non-suffixed for If-Match.
+- issue2551178 - fix Traceback in Apache WSGI - during file upload
 
 Features:
 

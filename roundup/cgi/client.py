@@ -2492,9 +2492,15 @@ class Client:
         self.write(content)
 
     def setHeader(self, header, value):
-        """Override a header to be returned to the user's browser.
+        """Override or delete a header to be returned to the user's browser.
         """
-        self.additional_headers[header] = value
+        if value is None:
+            try:
+                del(self.additional_headers[header])
+            except KeyError:
+                pass
+        else:
+            self.additional_headers[header] = value
 
     def header(self, headers=None, response=None):
         """Put up the appropriate header.

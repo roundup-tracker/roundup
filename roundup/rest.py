@@ -1256,11 +1256,11 @@ class RestfulInstance(object):
 
         self.client.setHeader(
             "Allow",
-            ""
+            None
         )
         self.client.setHeader(
             "Access-Control-Allow-Methods",
-            ""
+            None
         )
 
         # set the response body
