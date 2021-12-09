@@ -868,3 +868,33 @@ class SimpleTest(LiveServerTestCase):
         self.assertDictEqual({ key: value for (key, value) in
                                f.headers.items() if key in expected },
                              expected)
+
+    def test_cache_control_css(self):
+        f = requests.get(self.url_base() + '/@@file/style.css',
+                             headers = {'content-type': "",
+                                        'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        self.assertEqual(f.headers['Cache-Control'], 'public, max-age=4838400')
+
+        f = requests.get(self.url_base() + '/@@file/style.css',
+                             headers = {'content-type': "",
+                                        'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        self.assertEqual(f.headers['Cache-Control'], 'public, max-age=4838400')
+
+    def test_cache_control_js(self):
+        f = requests.get(self.url_base() + '/@@file/help_controls.js',
+                             headers = {'content-type': "",
+                                        'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        self.assertEqual(f.headers['Cache-Control'], 'public, max-age=1209600')
+

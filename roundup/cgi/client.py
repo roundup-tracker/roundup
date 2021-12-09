@@ -340,7 +340,10 @@ class Client:
     # Key can be explicitly file basename - value applied to just that file
     #     takes precedence over mime type.
     # Key can be mime type - all files of that mimetype will get the value
-    Cache_Control = {}
+    Cache_Control = {
+        'application/javascript': "public, max-age=1209600", # 2 weeks
+        'text/css':               "public, max-age=4838400", # 8 weeks/2 months
+    }
 
     # list of valid http compression (Content-Encoding) algorithms
     # we have available
