@@ -52,6 +52,10 @@ Fixed:
   the data per rfc7232. Properly validate any form of ETag suffixed or
   non-suffixed for If-Match.
 - issue2551178 - fix Traceback in Apache WSGI - during file upload
+- issue2551179 - make roundup-demo initialize templates using
+  config_ini.ini overrides. Needed for jinja to set template lang etc.
+  Recognize minimal template when presented with a full
+  path. (John Kristensen (jerrykan) and John Rouillard)
 
 Features:
 
