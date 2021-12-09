@@ -88,6 +88,8 @@ Features:
   Rouillard)
 - REST correct values for some Access-Control-Allow-Methods and
   Access-Control-Allow-Headers headers. (John Rouillard)
+- issue2550991 - define default cache control settings for javascript
+  and css assets. (John Rouillard)
 
 2021-07-13 2.1.0
 
