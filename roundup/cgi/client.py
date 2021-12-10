@@ -1781,7 +1781,6 @@ class Client:
         """
 
         # spit out headers
-        self.additional_headers['Content-Type'] = mime_type
         self.additional_headers['Last-Modified'] = email.utils.formatdate(lmt)
 
         ims = None
@@ -1801,6 +1800,9 @@ class Client:
                     # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Vary
                     self.setVary("Accept-Encoding")
                 raise NotModified
+
+        # don't set until we are sure we are sending a response body.
+        self.additional_headers['Content-Type'] = mime_type
 
         if filename:
             self.write_file(filename)
@@ -2519,7 +2521,7 @@ class Client:
         if headers.get('Content-Type', 'text/html') == 'text/html':
             headers['Content-Type'] = 'text/html; charset=utf-8'
 
-        if response == 204: # has no body so no content-type
+        if response in [ 204, 304]: # has no body so no content-type
             del(headers['Content-Type'])
 
         headers = list(headers.items())
