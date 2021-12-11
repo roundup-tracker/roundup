@@ -422,6 +422,7 @@ class HTMLClassTestCase(TemplatingTestCase) :
                     groups[g], s))
 
         #t('123.321.123.321', 'url')
+        t('https://example.com/demo/issue8#24MRV9BZYx:V:1B~sssssssssssssss~4~4', url="https://example.com/demo/issue8#24MRV9BZYx:V:1B~sssssssssssssss~4~4")
         t('http://localhost/', url='http://localhost/')
         t('http://roundup.net/', url='http://roundup.net/')
         t('http://richard@localhost/', url='http://richard@localhost/')
@@ -439,6 +440,7 @@ class HTMLClassTestCase(TemplatingTestCase) :
         t('r@a.com', email='r@a.com')
         t('i1', **{'class':'i', 'id':'1'})
         t('item123', **{'class':'item', 'id':'123'})
+        t('item 123', **{'class':'item', 'id':'123'})
         t('www.user:pass@host.net', email='pass@host.net')
         t('user:pass@www.host.net', url='user:pass@www.host.net')
         t('123.35', nothing=True)
@@ -448,6 +450,9 @@ class HTMLClassTestCase(TemplatingTestCase) :
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', '')
         def t(s): return p.hyper_re.sub(p._hyper_repl, s)
         ae = self.assertEqual
+        ae(t('foo https://example.com/demo/issue8#24MRV9BZYx:V:1B~sssssssssssssss~4~4 bar'),
+           'foo <a href="https://example.com/demo/issue8#24MRV9BZYx:V:1B~sssssssssssssss~4~4" rel="nofollow noopener">'
+           'https://example.com/demo/issue8#24MRV9BZYx:V:1B~sssssssssssssss~4~4</a> bar')
         ae(t('item123123123123'), 'item123123123123')
         ae(t('http://roundup.net/'),
            '<a href="http://roundup.net/" rel="nofollow noopener">http://roundup.net/</a>')
@@ -478,9 +483,19 @@ class HTMLClassTestCase(TemplatingTestCase) :
             # trailing punctuation is not included
             ae(t('http://roundup.net/%c ' % c),
                '<a href="http://roundup.net/" rel="nofollow noopener">http://roundup.net/</a>%c ' % c)
+            # trailing punctuation is not included without trailing space
+            ae(t('http://roundup.net/%c' % c),
+               '<a href="http://roundup.net/" rel="nofollow noopener">http://roundup.net/</a>%c' % c)
             # but it's included if it's part of the URL
             ae(t('http://roundup.net/%c/' % c),
                '<a href="http://roundup.net/%c/" rel="nofollow noopener">http://roundup.net/%c/</a>' % (c, c))
+            # including with a non / terminated path
+            ae(t('http://roundup.net/test%c ' % c),
+               '<a href="http://roundup.net/test" rel="nofollow noopener">http://roundup.net/test</a>%c ' % c)
+            # but it's included if it's part of the URL path
+            ae(t('http://roundup.net/%ctest' % c),
+               '<a href="http://roundup.net/%ctest" rel="nofollow noopener">http://roundup.net/%ctest</a>' % (c, c))
+
 
     def test_input_html4(self):
         # boolean attributes are just the attribute name
