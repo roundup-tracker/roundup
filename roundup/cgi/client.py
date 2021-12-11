@@ -2213,7 +2213,7 @@ class Client:
                 self.additional_headers['Content-Type'] = \
                     'text/html; charset=%s' % self.charset
             if 'Content-Length' not in self.additional_headers:
-                self.additional_headers['Content-Length'] = len(content)
+                self.additional_headers['Content-Length'] = str(len(content))
             self.header()
 
         if self.env['REQUEST_METHOD'] == 'HEAD':
