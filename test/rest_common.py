@@ -391,6 +391,68 @@ class TestCase():
         results = self.server.get_collection('issue', form)
         self.assertDictEqual(expected, results)
 
+    def testGetBadTransitive(self):
+        """
+        Mess up the names of various properties and make sure we get a 400
+        and a somewhat useful error message.
+        """
+        base_path = self.db.config['TRACKER_WEB'] + 'rest/data/'
+        #self.maxDiff=None
+        self.create_sampledata()
+        self.db.issue.set('2', status=self.db.status.lookup('closed'))
+        self.db.issue.set('3', status=self.db.status.lookup('chatting'))
+        expected = [
+            {'error': {'msg': KeyError('Unknown property: assignedto.isse',),
+             'status': 400}},
+            {'error': {'msg': KeyError('Unknown property: stat',),
+             'status': 400}},
+            {'error': {'msg': KeyError('Unknown property: status.nam',),
+             'status': 400}},
+        ]
+
+        ## test invalid transitive property in @fields
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('status.name', 'o'),
+            cgi.MiniFieldStorage('@fields', 'status,assignedto.isse'),
+            cgi.MiniFieldStorage('@sort', 'status.name'),
+        ]
+        results = self.server.get_collection('issue', form)
+        self.assertEqual(self.dummy_client.response_code, 400)
+        self.assertEqual(repr(expected[0]['error']['msg']),
+                         repr(results['error']['msg']))
+        self.assertEqual(expected[0]['error']['status'],
+                         results['error']['status'])
+
+        ## test invalid property in @fields
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('status.name', 'o'),
+            cgi.MiniFieldStorage('@fields', 'stat,assignedto.isuse'),
+            cgi.MiniFieldStorage('@sort', 'status.name'),
+        ]
+        results = self.server.get_collection('issue', form)
+        self.assertEqual(self.dummy_client.response_code, 400)
+        self.assertEqual(repr(expected[1]['error']['msg']),
+                         repr(results['error']['msg']))
+        self.assertEqual(expected[1]['error']['status'],
+                         results['error']['status'])
+
+        ## test invalid transitive property in filter TODO
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('status.nam', 'o'),
+            cgi.MiniFieldStorage('@fields', 'status,assignedto.isuse'),
+            cgi.MiniFieldStorage('@sort', 'status.name'),
+        ]
+        results = self.server.get_collection('issue', form)
+        # is currently 403 not 400
+        self.assertEqual(self.dummy_client.response_code, 400)
+        self.assertEqual(repr(expected[2]['error']['msg']),
+                         repr(results['error']['msg']))
+        self.assertEqual(expected[2]['error']['status'],
+                         results['error']['status'])
+
     def testGetExactMatch(self):
         """ Retrieve all issues with an exact title
         """

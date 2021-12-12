@@ -563,13 +563,13 @@ class RestfulInstance(object):
                 for pn in p.split('.'):
                     # Tried to dereference a non-Link property
                     if cn is None:
-                        raise AttributeError("Unknown: %s" % p)
+                        raise UsageError("Property %(base)s can not be dereferenced in %(p)s." % { "base": p[:-(len(pn)+1)], "p": p})
                     cls = self.db.getclass(cn)
                     # This raises a KeyError for unknown prop:
                     try:
                         prop = cls.getprops(protected=True)[pn]
                     except KeyError:
-                        raise AttributeError("Unknown: %s" % p)
+                        raise KeyError("Unknown property: %s" % p)
                     if isinstance(prop, hyperdb.Multilink):
                         raise UsageError(
                             'Multilink Traversal not allowed: %s' % p)
@@ -582,6 +582,13 @@ class RestfulInstance(object):
                         cn = prop.classname
                     except AttributeError:
                         cn = None
+            else:
+                cls = self.db.getclass(cn)
+                # This raises a KeyError for unknown prop:
+                try:
+                    prop = cls.getprops(protected=True)[pn]
+                except KeyError:
+                    raise KeyError("Unknown property: %s" % pn)
             checked_props.append (p)
         return checked_props
 
@@ -802,11 +809,9 @@ class RestfulInstance(object):
                 f = value.split(",")
                 if len(f) == 1:
                     f = value.split(":")
-                allprops = class_obj.getprops(protected=True)
                 display_props.update(self.transitive_props(class_name, f))
             elif key == "@sort":
                 f = value.split(",")
-                allprops = class_obj.getprops(protected=True)
                 for p in f:
                     if not p:
                         raise UsageError("Empty property "
@@ -845,6 +850,8 @@ class RestfulInstance(object):
                 except KeyError:
                     raise UsageError("Field %s is not valid for %s class." %
                                      (p, class_name))
+                # Call this for the side effect of validating the key
+                _ = self.transitive_props(class_name, [ key ])
                 # We drop properties without search permission silently
                 # This reflects the current behavior of other roundup
                 # interfaces
@@ -1024,7 +1031,6 @@ class RestfulInstance(object):
                 f = value.split(",")
                 if len(f) == 1:
                     f = value.split(":")
-                allprops = class_obj.getprops(protected=True)
                 props.update(self.transitive_props(class_name, f))
             elif key == "@protected":
                 # allow client to request read only
