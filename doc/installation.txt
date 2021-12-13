@@ -5,7 +5,7 @@ Installing Roundup
 ==================
 
 .. contents::
-   :depth: 2
+   :depth: 3
    :local:
 
 
@@ -216,70 +216,144 @@ base directory, if you do not want to use administrator rights. If you
 choose to do this, you may have to change Python's search path (sys.path)
 yourself.
 
-Creating a Docker Container
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Docker Support
+~~~~~~~~~~~~~~
 
 If you don't want to install it natively, you can create a Docker
-container.  This uses the Dockerfile in the scripts directory. The
-roundup code in the distribuion and any changes will be used. The
-build command is::
+container. This installs roundup using the `stand-alone web server`_
+method. This is an http only install so we suggest putting an https
+terminating proxy in front of it.
 
-     docker build -t roundup-app --rm -f scripts/Dockerfile .
+This is a work in progress and patches to improve it are welcome. You
+can find the docker config files under the `scripts/Docker` directory
+of the source tree.
 
-It supports the following backends: anydbm, sqlite, mysql and
-postgresql. Mysql and postgresql support hasn't been tested, but the
-Python modules are built and available.  See scripts/requirement.txt
-for the additional modules that are installed.
+The dockerized Roundup includes database drivers for anydbm, sqlite,
+MySQL and Postgresql (Postgresl is untested). It also includes
+additional libraries that are listed in
+`scripts/Docker/requirements.txt`.
 
-If you want to build a docker from the latest release on PyPI, you can
-use::
+Email support is a work in progress. Outgoing email should work given
+an external SMTP server. Reciving email should work by using a
+scheduled (cron) job to access email:
+
+* `As a regular job using a mailbox source`_
+* `As a regular job using a POP source`_
+* `As a regular job using an IMAP source`_
+
+Patches for better email support are welcome.
+
+If you want to use a MySQL backend, the `docker-compose.yml` file will
+deploy a Roundup container and a MySQL container backend for use with
+Roundup.
+
+Building a Docker Container
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To build a docker container using the code in the current directory,
+run this build command from the top of the source tree::
+
+     docker build -t roundup-app -f scripts/Docker/Dockerfile .
+
+You can also build a container using the newest Roundup release on
+PyPI, by running::
 
      docker build -t roundup-app --build-arg="source=pypi" \
-          --rm -f scripts/Dockerfile .
+          -f scripts/Docker/Dockerfile .
 
-Once the docker is created, run it with::
+The docker declares a single volume mounted at
+``/usr/src/app/tracker`` inside the container. You will mount your
+tracker home directory at this location.
 
-    docker run --rm -p 9017:8080 \
-         -v /.../issue.tracker:/usr/src/app/tracker \
-         roundup-app:latest
 
-This will make the tracker available at:
-``http://yourhost:9017/issues/``.
+Configuring Roundup in the Container
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Once the docker is created using one of the build commands above, run
+an interactive session it with::
+
+    docker run -it --rm -p 9017:8080 \
+       -v $PWD/tracker:/usr/src/app/tracker roundup-app:latest
+
+The ``-v`` option maps a directory from the host into the docker
+container. Note that uid 1000 is used by roundup. So the uid of the
+directory (and all files under it) must be uid 1000.  This example
+assumes your tracker configs are in the tracker subdirectory. Replace
+``$PWD/tracker`` with the full path name to the directory where the
+tracker home(s) are to be stored.
 
 The ``-p`` option maps an external port (9017) to proxy the roundup
-server running at port 8080 to the outside. The ``-v`` option maps a
-directory from the host into the docker container. It should be a
-tracker home directory. Note that uid 1000 is used by roundup. So the
-uid of the directory must be 1000.
+server running at port 8080 to the outside.
 
-If you want to run multiple trackers, create a subdirectory for each
-tracker home under the volume mount point. Then invoke ``docker run``
-passing the roundup-server tracker specifications like::
+If the tracker directory is empty, the docker container will prompt
+you to install a tracker template and prompt you for the database
+type.
 
-    docker run --rm -p 9017:8080 \
-        -v /.../issue.tracker:/usr/src/app/tracker \
-        roundup-app:latest tracker1=tracker1_home  tracker2=tracker2_home
+Once you have edited and configured ``template/config.ini``, (see
+`Configuring your first tracker`) run another interactive session
+with::
 
+    docker run --rm -it -p 9017:8080 \
+         -v $PWD/tracker:/usr/src/app/tracker roundup-app:latest
 
-This will set up two trackers that can be reached at
-``http://yourhost:9017/tracker1/`` and ``http://yourhost:9017/tracker2/``.
+this will initialize the database and attempt to start the server.  If
+that is successful, use control-c to exit the server.
 
-If you need to install and initialize the trackers, you can get a
-shell without starting the roundup-server using::
+Now start the server non-interactively (note no `-it` option) with::
 
-    docker run -it \
-        -v /.../issue.tracker:/usr/src/app/tracker \
-        --entrypoint sh roundup-app:latest
+    docker run -p 9017:8080 \
+       -v $PWD/tracker:/usr/src/app/tracker roundup-app:latest
 
-Now you can configure your tracker using ``roundup-admin -i tracker``
-using the directions below.
+Your tracker will be available at: ``http://yourhost:9017/issues/``.
 
 If you need to access your container while the server is running you
 can use::
 
    docker exec -it c0d5 sh
 
-where ``c0d5`` is the id prefix for the running container.
+where ``c0d5`` is the id prefix for the running container obtained
+from ``docker container ls``.
+
+Non-Guided Installation
+'''''''''''''''''''''''
+
+If you got a tracker installed using the automatic setup above, you
+can skip this section. To manually install and initialize the
+trackers, you can get a shell without starting the roundup-server
+using::
+
+    docker run -it \
+        -v $PWD/tracker:/usr/src/app/tracker \
+        --entrypoint sh roundup-app:latest
+
+Now you can configure your tracker using ``roundup-admin -i tracker``
+using the directions for `Configuring your first tracker`.
+
+Defining Multiple Trackers
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you want to run multiple trackers, create a subdirectory for each
+tracker home under the volume mount point (``$PWD/tracker``). Then
+invoke ``docker run`` passing the roundup-server tracker
+specifications like::
+
+    docker run --rm -p 9017:8080 \
+        -v /.../issue.tracker:/usr/src/app/tracker \
+        roundup-app:latest tracker1=tracker/tracker1_home \
+          tracker2=tracker/tracker2_home
+
+This will set up two trackers that can be reached at
+``http://yourhost:9017/tracker1/`` and ``http://yourhost:9017/tracker2/``.
+The arguments after roundup-app:latest are tracker paths that are
+passed to roundup-server.
+
+Docker-compose Deployment
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you want to run using the mysql backend, you can use docker-compose
+with ``scripts/Docker/docker-compose.yml``. This will run Roundup and
+MySQL in containers. Directions for building using docker-compose are
+at the top of the yml file.
 
 Configuring your first tracker
 ------------------------------
@@ -452,14 +526,9 @@ Configure a Web Interface
 
 There are multiple web interfaces to choose from:
 
-1. `web server cgi-bin`_
-2. `cgi-bin for limited-access hosting`_
-3. `stand-alone web server`_
-4. `Zope product - ZRoundup`_
-5. `Apache HTTP Server with mod_wsgi`_
-6. `Apache HTTP Server with mod_python`_  (deprecated)
-7. `Nginx HTTP Server`_
-8. `WSGI Variations`_
+.. contents::
+   :depth: 1
+   :local:
 
 You may need to give the web server user permission to access the tracker home
 - see the `UNIX environment steps`_ for information. You may also need to
@@ -1004,6 +1073,23 @@ in config.ini should be ``https://tracker.example.org``.
       }
     }
 
+
+FastCGI (Cherokee, Hiawatha, lighttpd)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Hiawatha and lighttpd web servers can run Roundup using FastCGI.
+Cherokee can run FastCGI but it also supports wsgi directly using a
+uWSGI, Gnuicorn etc.
+
+To run Roundup suing FastCGI, the flup_ package can be used under
+Python 2 and Python 3. We don't have a detailed config for this, but
+the basic idea can be found at:
+https://flask.palletsprojects.com/en/2.0.x/deploying/fastcgi/
+
+If you have deployed Roundup using FastCGI and flup we welcome example
+configuration files and instructions.
+
+.. _flup: https://pypi.org/project/flup/
 
 WSGI Variations
 ~~~~~~~~~~~~~~~

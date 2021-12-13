@@ -41,7 +41,7 @@ RUN apk add \
 # add requirements for pip here, e.g. Whoosh, gpg, zstd or other
 #   modules not installed in the base library.
 # ignore warnings from pip to use virtualenv
-COPY scripts/requirements.txt .
+COPY scripts/Docker/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # copy the elements of the release directory to the docker image
@@ -66,7 +66,7 @@ RUN set -xv && if [ "$source" = "local" ] ||  \
     if [ "$source" = "local_pip" ]; then cd install && pip install \
                             --use-feature=in-tree-build . ; fi; \
     if [ "$source" = "pypi" ]; then pip install roundup; \
-       	cp -ril /usr/local/lib/python3.10/site-packages/usr/local/share/* \
+       cp -ril /usr/local/lib/python3.10/site-packages/usr/local/share/* \
 	   /usr/local/share; fi
 
 # build a new smaller docker image for execution. Build image above
@@ -94,6 +94,7 @@ LABEL "org.roundup-tracker.vendor"="Roundup Issue Tracker Team" \
 COPY --from=build /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages/
 COPY --from=build /usr/local/bin/roundup* /usr/local/bin/
 COPY --from=build /usr/local/share /usr/local/share/
+COPY scripts/Docker/roundup_start .
 
 # map port 8080 to your local port
 EXPOSE 8080/tcp
@@ -111,7 +112,8 @@ USER roundup
 
 # run the server, disable output buffering so we can see logs.
 ENV PYTHONUNBUFFERED=1
-ENTRYPOINT [ "roundup-server", "-n", "0.0.0.0" ]
+#ENTRYPOINT [ "roundup-server", "-n", "0.0.0.0" ]
+ENTRYPOINT [ "./roundup_start" ]
 
 # allow the invoker to override cmd with multiple trackers
 # in each subdirectory under $appdir/tracker. E.G.
