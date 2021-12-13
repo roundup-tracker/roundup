@@ -31,13 +31,16 @@ else:
 
 from roundup.exceptions import RoundupException
 
-# XXX i don't think this module needs string translation, does it?
-
 ### Exceptions
 
 
 class ConfigurationError(RoundupException):
     pass
+
+class ParsingOptionError(ConfigurationError):
+    def __str__(self):
+        _args = self.args
+        return self.args[0]
 
 
 class NoConfigError(ConfigurationError):
@@ -261,8 +264,17 @@ class Option:
 
     def load_ini(self, config):
         """Load value from ConfigParser object"""
-        if config.has_option(self.section, self.setting):
-            self.set(config.get(self.section, self.setting))
+        try:
+            if config.has_option(self.section, self.setting):
+                self.set(config.get(self.section, self.setting))
+        except configparser.InterpolationSyntaxError as e:
+            raise ParsingOptionError(
+                _("Error in %(filepath)s with section [%(section)s] at option %(option)s: %(message)s")%{
+                "filepath": self.config.filepath,
+                "section": e.section,
+                "option": e.option,
+                "message": e.message})
+
 
 
 class BooleanOption(Option):

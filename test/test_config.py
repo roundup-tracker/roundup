@@ -19,7 +19,7 @@ import unittest
 import logging
 import fileinput
 
-import os, shutil, errno
+import os, shutil, errno, sys
 
 import pytest
 from roundup import configuration
@@ -37,7 +37,17 @@ except ImportError:
     skip_xapian = mark_class(pytest.mark.skip(
         "Skipping Xapian indexer tests: 'xapian' not installed"))
     include_no_xapian = lambda func, *args, **kwargs: func
-    
+
+_py3 = sys.version_info[0] > 2
+if _py3:
+    skip_py2 = lambda func, *args, **kwargs: func
+else:
+    # FIX: workaround for a bug in pytest.mark.skip():
+    #   https://github.com/pytest-dev/pytest/issues/568
+    from .pytest_patcher import mark_class
+    skip_py2 = mark_class(pytest.mark.skip(
+        reason='Skipping test under python2.'))
+
 
 config = configuration.CoreConfig()
 config.DATABASE = "db"
@@ -552,6 +562,29 @@ class TrackerConfig(unittest.TestCase):
 
         # this should work
         self.assertEqual(config_copy['HTML_VERSION'], 'xhtml')
+
+    @skip_py2
+    def testConfigValueInterpolateError(self):
+        ''' error is not raised using ConfigParser under Python 2.
+            Unknown cause, so skip it if running python 2.
+        '''
+
+        self.munge_configini(mods=[ ("admin_email = ", "a bare % is invalid") ])
+
+        config = configuration.CoreConfig()
+
+        # load config generates:
+        '''
+E           roundup.configuration.ParsingOptionError: Error in _test_instance/config.ini with section [main] at option admin_email: '%' must be followed by '%' or '(', found: '% is invalid'
+        '''
+
+        with self.assertRaises(configuration.ParsingOptionError) as cm:
+            config.load(self.dirname)
+
+        print(cm.exception)
+        self.assertIn("'%' must be followed by '%' or '(', found: '% is invalid'", cm.exception.args[0])
+        self.assertIn("_test_instance/config.ini with section [main] at option admin_email", cm.exception.args[0])
+
 
     def testInvalidIndexerValue(self):
         """ Mistype native indexer. Verify exception is

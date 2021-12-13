@@ -28,7 +28,8 @@ import csv, getopt, getpass, os, re, shutil, sys, operator
 from roundup import date, hyperdb, init, password, token
 from roundup import __version__ as roundup_version
 import roundup.instance
-from roundup.configuration import CoreConfig, NoConfigError, UserConfig
+from roundup.configuration import (CoreConfig, NoConfigError,
+                                   ParsingOptionError, UserConfig)
 from roundup.i18n import _
 from roundup.exceptions import UsageError
 from roundup.anypy.my_input import my_input
@@ -1706,6 +1707,9 @@ Erase it? Y/N: """))
         except NoConfigError as message:  # noqa: F841
             self.tracker_home = ''
             print(_("Error: Couldn't open tracker: %(message)s") % locals())
+            return 1
+        except ParsingOptionError as message:
+            print("%(message)s" % locals())
             return 1
 
         # only open the database once!

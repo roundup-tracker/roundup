@@ -56,6 +56,9 @@ Fixed:
   config_ini.ini overrides. Needed for jinja to set template lang etc.
   Recognize minimal template when presented with a full
   path. (John Kristensen (jerrykan) and John Rouillard)
+- handle configparser.InterpolationSyntaxError raised if value
+  has a single %. Seems to afect python 3 only. Reported by
+  nomicon on IRC. (John Rouillard)
 
 Features:
 
