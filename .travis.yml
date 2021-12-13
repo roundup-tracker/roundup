@@ -34,6 +34,7 @@ services:
 
 jobs:
     allow_failures:  # nightly not ready for prime time yet.
+      - python: 3.10
       - python: nightly
       - python: pypy3
 
