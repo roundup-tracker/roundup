@@ -586,6 +586,20 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
         self.assertIn("_test_instance/config.ini with section [main] at option admin_email", cm.exception.args[0])
 
 
+        from roundup.admin import AdminTool
+        from .test_admin import captured_output
+
+        admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'get', 'tile', 'issue1']
+            ret = admin.main()
+
+        expected_err = "Error in _test_instance/config.ini with section [main] at option admin_email: '%' must be followed by '%' or '(', found: '% is invalid'"
+
+        self.assertEqual(ret, 1)
+        out = out.getvalue().strip()
+        self.assertEqual(out, expected_err)
+
     def testInvalidIndexerValue(self):
         """ Mistype native indexer. Verify exception is
             generated.
@@ -609,5 +623,3 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
         print(string_rep)
         self.assertIn("nati", string_rep)
         self.assertIn("'whoosh'", string_rep)
-
-
