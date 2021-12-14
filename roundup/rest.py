@@ -851,7 +851,9 @@ class RestfulInstance(object):
                     raise UsageError("Field %s is not valid for %s class." %
                                      (p, class_name))
                 # Call this for the side effect of validating the key
-                _ = self.transitive_props(class_name, [ key ])
+                # use _discard as _ is apparently a global for the translation
+                # service.
+                _discard = self.transitive_props(class_name, [ key ])
                 # We drop properties without search permission silently
                 # This reflects the current behavior of other roundup
                 # interfaces
