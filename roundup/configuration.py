@@ -39,7 +39,6 @@ class ConfigurationError(RoundupException):
 
 class ParsingOptionError(ConfigurationError):
     def __str__(self):
-        _args = self.args
         return self.args[0]
 
 
