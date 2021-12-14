@@ -2212,11 +2212,12 @@ class RestfulInstance(object):
 
         # check for runtime statistics
         try:
+            # self.report_stats initialized to False
             self.report_stats = input['@stats'].value.lower() == "true"
         # Can also return a TypeError ("not indexable")
         # In case the FieldStorage could not parse the result
         except (KeyError, TypeError):
-            report_stats = False
+            pass
 
         # check for @apiver in query string
         msg = _("Unrecognized api version: %s. "
