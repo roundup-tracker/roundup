@@ -96,6 +96,11 @@ Features:
   Access-Control-Allow-Headers headers. (John Rouillard)
 - issue2550991 - define default cache control settings for javascript
   and css assets. (John Rouillard)
+- issue2551181 - fragments can be appended to designators. So
+  issue23#msg24 could jump to the element with id msg24 in issue 23.
+  Before this patch you would have two links issue23 and msg24
+  separated by # (John Rouillard).
+
 
 2021-07-13 2.1.0
 

@@ -1612,7 +1612,7 @@ class StringHTMLProperty(HTMLProperty):
          (/[\w\-$.+!*(),;:@&=?/~\\#%]*)?   # path etc.
         )|
         (?P<email>[-+=%/\w\.]+@[\w\.\-]+)|
-        (?P<item>(?P<class>[A-Za-z_]+)(\s*)(?P<id>\d+))
+        (?P<item>(?P<class>[A-Za-z_]+)(\s*)(?P<id>\d+)(?P<fragment>\#[^][\#%^{}"<>\s]+)?)
     )''', re.X | re.I)
     protocol_re = re.compile('^(ht|f)tp(s?)://', re.I)
 
@@ -1630,7 +1630,7 @@ class StringHTMLProperty(HTMLProperty):
             return self._hyper_repl_email(match, '<a href="mailto:%s">%s</a>')
         elif len(match.group('id')) < 10:
             return self._hyper_repl_item(match,
-                '<a href="%(cls)s%(id)s">%(item)s</a>')
+                '<a href="%(cls)s%(id)s%(fragment)s">%(item)s</a>')
         else:
             # just return the matched text
             return match.group(0)
@@ -1664,6 +1664,9 @@ class StringHTMLProperty(HTMLProperty):
         item = match.group('item')
         cls = match.group('class').lower()
         id = match.group('id')
+        fragment = match.group('fragment')
+        if fragment is None:
+            fragment=""
         try:
             # make sure cls is a valid tracker classname
             cl = self._db.getclass(cls)

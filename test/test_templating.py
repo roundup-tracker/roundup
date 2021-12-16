@@ -450,6 +450,9 @@ class HTMLClassTestCase(TemplatingTestCase) :
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', '')
         def t(s): return p.hyper_re.sub(p._hyper_repl, s)
         ae = self.assertEqual
+        ae(t('issue5#msg10'), '<a href="issue5#msg10">issue5#msg10</a>')
+        ae(t('issue5'), '<a href="issue5">issue5</a>')
+        ae(t('issue2255'), 'issue2255')
         ae(t('foo https://example.com/demo/issue8#24MRV9BZYx:V:1B~sssssssssssssss~4~4 bar'),
            'foo <a href="https://example.com/demo/issue8#24MRV9BZYx:V:1B~sssssssssssssss~4~4" rel="nofollow noopener">'
            'https://example.com/demo/issue8#24MRV9BZYx:V:1B~sssssssssssssss~4~4</a> bar')
