@@ -59,6 +59,10 @@ Fixed:
 - handle configparser.InterpolationSyntaxError raised if value
   has a single %. Seems to afect python 3 only. Reported by
   nomicon on IRC. (John Rouillard)
+- add random delay to session database retry code between 0 and .125
+  seconds. This seems to help reduce stalled connections when a
+  number of connections are made at the same time. Log remaining
+  retries once 5 of them have been used. (John Rouillard)
 
 Features:
 

@@ -6,7 +6,7 @@ class. It's now also used for One Time Key handling too.
 """
 __docformat__ = 'restructuredtext'
 
-import os, marshal, time
+import os, marshal, time, logging, random
 
 from roundup.anypy.html import html_escape as escape
 
@@ -132,21 +132,24 @@ class BasicDatabase:
         dbm = __import__(db_type)
 
         retries_left = 15
+        logger = logging.getLogger('roundup.hyperdb.backend.sessions')
         while True:
             try:
                 handle = dbm.open(path, mode)
                 break
-            except OSError:
+            except OSError as e:
                 # Primarily we want to catch and retry:
                 #   [Errno 11] Resource temporarily unavailable retry
                 # FIXME: make this more specific
+                if retries_left < 10:
+                    logger.warning('dbm.open failed, retrying %s left: %s'%(retries_left,e))
                 if retries_left < 0:
                     # We have used up the retries. Reraise the exception
                     # that got us here.
                     raise
                 else:
-                    # delay retry a bit
-                    time.sleep(0.01)
+                    # stagger retry to try to get around thundering herd issue.
+                    time.sleep(random.randint(0,25)*.005)
                     retries_left = retries_left - 1
                     continue  # the while loop
         return handle
