@@ -88,7 +88,9 @@ RUN apk add \
 ARG source
 LABEL "org.roundup-tracker.vendor"="Roundup Issue Tracker Team" \
       "org.roundup-tracker.description"="Roundup Issue Tracker using sqlite" \
-      "version"="2.1.0 $source"
+      "version"="2.1.0 $source" \
+      "org.opencontainers.image.authors"="roundup-devel@lists.sourceforge.net"
+
 
 # pull over built assets
 COPY --from=build /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages/
