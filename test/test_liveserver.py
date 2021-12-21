@@ -891,6 +891,7 @@ class SimpleTest(LiveServerTestCase):
         self.assertEqual(f.status_code, 200)
         self.assertEqual(f.headers['Cache-Control'], 'public, max-age=1209600')
 
+    @pytest.mark.xfail(reason="Work in progress")
     def test_new_issue_with_file_upload(self):
         # Set up session to manage cookies <insert blue monster here>
         session = requests.Session()
@@ -918,7 +919,7 @@ class SimpleTest(LiveServerTestCase):
         self.assertEqual(f.text, file_content)
         print(f.text)
 
-
+    @pytest.mark.xfail(reason="Work in progress")
     def test_new_file_via_rest(self):
 
         session = requests.Session()
