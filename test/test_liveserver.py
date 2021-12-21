@@ -62,7 +62,7 @@ class SimpleTest(LiveServerTestCase):
         # set up mailhost so errors get reported to debuging capture file
         cls.db.config.MAILHOST = "localhost"
         cls.db.config.MAIL_HOST = "localhost"
-        cls.db.config.MAIL_DEBUG = "../mail.log.t"
+        cls.db.config.MAIL_DEBUG = "../_test_tracker_mail.log"
 
         # enable static precompressed files
         cls.db.config.WEB_USE_PRECOMPRESSED_FILES = 1
@@ -890,4 +890,82 @@ class SimpleTest(LiveServerTestCase):
 
         self.assertEqual(f.status_code, 200)
         self.assertEqual(f.headers['Cache-Control'], 'public, max-age=1209600')
+
+    def test_new_issue_with_file_upload(self):
+        # Set up session to manage cookies <insert blue monster here>
+        session = requests.Session()
+
+        # login using form
+        login = {"__login_name": 'admin', '__login_password': 'sekrit', 
+                 "@action": "login"}
+        f = session.post(self.url_base()+'/', data=login)
+        # look for change in text in sidebar post login
+        self.assertIn('Hello, admin', f.text)
+
+        # create a new issue and upload a file
+        file_content = 'this is a test file\n'
+        file = {"@file": ('test1.txt', file_content, "text/plain") }
+        issue = {"title": "my title", "priority": "1", "@action": "new"}
+        f = session.post(self.url_base()+'/issue?@template=item', data=issue, files=file)
+        # we have an issue display, verify filename is listed there
+        self.assertIn("test1.txt", f.text)
+        # verify message in redirected url: file 1 created\nissue 1 created
+        # warning may fail if another test loads tracker with files.
+        self.assertEqual('http://localhost:9001/issue1?@ok_message=file%201%20created%0Aissue%201%20created&@template=item', f.url)
+
+        # download file and verify content
+        f = session.get(self.url_base()+'/file1/text1.txt')
+        self.assertEqual(f.text, file_content)
+        print(f.text)
+
+
+    def test_new_file_via_rest(self):
+
+        session = requests.Session()
+        session.auth = ('admin', 'sekrit')
+
+        url = self.url_base() + '/rest/data/'
+        fname   = 'a-bigger-testfile'
+        d = dict(name = fname, type='application/octet-stream')
+        c = dict (content = r'xyzzy')
+        r = session.post(url + 'file', files = c, data = d,
+                          headers = {'x-requested-with': "rest"}
+        )
+
+        # was a 500 before fix for issue2551178
+        self.assertEqual(r.status_code, 201)
+        # just compare the path leave off the number
+        self.assertIn('http://localhost:9001/rest/data/file/',
+                      r.headers["location"])
+        json_dict = json.loads(r.text)
+        self.assertEqual(json_dict["data"]["link"], r.headers["location"])
+
+        # download file and verify content
+        r = session.get(r.headers["location"] +'/content')
+        json_dict = json.loads(r.text)
+        self.assertEqual(json_dict['data']['data'], c["content"])
+        print(r.text)
+
+        # Upload a file via rest interface - no auth 
+        session.auth = None
+        r = session.post(url + 'file', files = c, data = d,
+                          headers = {'x-requested-with': "rest"}
+        )
+        self.assertEqual(r.status_code, 403)
+
+        # get session variable from web form login
+        #   and use it to upload file
+        # login using form
+        login = {"__login_name": 'admin', '__login_password': 'sekrit', 
+                 "@action": "login"}
+        f = session.post(self.url_base()+'/', data=login)
+        # look for change in text in sidebar post login
+        self.assertIn('Hello, admin', f.text)
+
+        r = session.post(url + 'file', files = c, data = d,
+                          headers = {'x-requested-with': "rest"}
+        )
+        self.assertEqual(r.status_code, 201)
+        print(r.status_code)
+
 
