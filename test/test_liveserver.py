@@ -32,6 +32,10 @@ except ImportError:
     skip_zstd = mark_class(pytest.mark.skip(
         reason='Skipping zstd tests: zstd library not available'))
 
+import sys
+
+_py3 = sys.version_info[0] > 2
+
 @skip_requests
 class SimpleTest(LiveServerTestCase):
     # have chicken and egg issue here. Need to encode the base_url
@@ -86,7 +90,13 @@ class SimpleTest(LiveServerTestCase):
 
     def create_app(self):
         '''The wsgi app to start'''
-        return validator(RequestDispatcher(self.dirname))
+        if _py3:
+            return validator(RequestDispatcher(self.dirname))
+        else:
+            # wsgiref/validator.py InputWrapper::readline is broke and
+            # doesn't support the max bytes to read argument.
+            return RequestDispatcher(self.dirname)
+
 
     def test_start_page(self):
         """ simple test that verifies that the server can serve a start page.
@@ -919,7 +929,6 @@ class SimpleTest(LiveServerTestCase):
         self.assertEqual(f.text, file_content)
         print(f.text)
 
-    @pytest.mark.xfail(reason="Work in progress")
     def test_new_file_via_rest(self):
 
         session = requests.Session()
