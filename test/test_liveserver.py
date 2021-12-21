@@ -1,4 +1,4 @@
-import shutil, errno, pytest, json, gzip, os
+import shutil, errno, pytest, json, gzip, os, re
 
 from roundup.anypy.strings import b2s
 from roundup.cgi.wsgi_handler import RequestDispatcher
@@ -901,7 +901,6 @@ class SimpleTest(LiveServerTestCase):
         self.assertEqual(f.status_code, 200)
         self.assertEqual(f.headers['Cache-Control'], 'public, max-age=1209600')
 
-    @pytest.mark.xfail(reason="Work in progress")
     def test_new_issue_with_file_upload(self):
         # Set up session to manage cookies <insert blue monster here>
         session = requests.Session()
@@ -918,14 +917,23 @@ class SimpleTest(LiveServerTestCase):
         file = {"@file": ('test1.txt', file_content, "text/plain") }
         issue = {"title": "my title", "priority": "1", "@action": "new"}
         f = session.post(self.url_base()+'/issue?@template=item', data=issue, files=file)
-        # we have an issue display, verify filename is listed there
-        self.assertIn("test1.txt", f.text)
+
+        # use redirected url to determine which issue and file were created.
+        m = re.search(r'[0-9]/issue(?P<issue>[0-9]+)\?@ok_message.*file%20(?P<file>[0-9]+)%20', f.url)
+
         # verify message in redirected url: file 1 created\nissue 1 created
         # warning may fail if another test loads tracker with files.
-        self.assertEqual('http://localhost:9001/issue1?@ok_message=file%201%20created%0Aissue%201%20created&@template=item', f.url)
+        # Escape % signs in string by doubling them. This verifies the
+        # search is working correctly.
+        # use groupdict for python2.
+        self.assertEqual('http://localhost:9001/issue%(issue)s?@ok_message=file%%20%(file)s%%20created%%0Aissue%%20%(issue)s%%20created&@template=item'%m.groupdict(), f.url)
+
+        # we have an issue display, verify filename is listed there
+        # seach for unique filename given to it.
+        self.assertIn("test1.txt", f.text)
 
         # download file and verify content
-        f = session.get(self.url_base()+'/file1/text1.txt')
+        f = session.get(self.url_base()+'/file%(file)s/text1.txt'%m.groupdict())
         self.assertEqual(f.text, file_content)
         print(f.text)
 
