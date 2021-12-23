@@ -87,13 +87,13 @@ def get_prefix():
     if prefix:
         return prefix
     else:
-        # get the platform lib path.
+        # get the platform lib path. Must start with / else infinite loop.
         plp = get_path('platlib')
         # nuke suffix that matches lib/* and return prefix
         head, tail = os.path.split(plp)
-        while tail != 'lib' and head != '':
+        while tail not in ['lib', 'lib64' ] and head != '/':
             head, tail = os.path.split(head)
-        if not head:
+        if head == '/':
             head = sys.prefix
         return head
 

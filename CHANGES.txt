@@ -63,6 +63,8 @@ Fixed:
   seconds. This seems to help reduce stalled connections when a
   number of connections are made at the same time. Log remaining
   retries once 5 of them have been used. (John Rouillard)
+- issue2551169 - setup.py enters endless loop on gentoo linux python2
+  installation. Fixed.
 
 Features:
 
