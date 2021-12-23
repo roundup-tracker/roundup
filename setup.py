@@ -143,6 +143,19 @@ def main():
 
     data_files = make_data_files_absolute(data_files, get_prefix())
 
+    # when running under python2, even if called from setup, it tries
+    # and fails to perform an egg easy install even though it shouldn't:
+    # https://issues.roundup-tracker.org/issue2551185
+    # Add this argument if we are an install to prevent this.
+    # This works right under python3.
+    # FIXME there has to be a better way than this
+    # https://issues.roundup-tracker.org/issue2551185
+
+    if sys.version_info[0] < 3:
+        for arg in sys.argv:
+            if arg == 'install':
+                sys.argv.append('--old-and-unmanageable')
+
     # perform the setup action
     from roundup import __version__
 

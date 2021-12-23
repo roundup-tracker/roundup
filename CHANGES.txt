@@ -65,6 +65,10 @@ Fixed:
   retries once 5 of them have been used. (John Rouillard)
 - issue2551169 - setup.py enters endless loop on gentoo linux python2
   installation. Fixed.
+- issue2551185 - must set PYTHONPATH=... python2 setup.py install
+  --prefix=/tmp/r2. Force insert --old-and-unmangable to get it
+  to use a classic installer and not an easy install. This only
+  affects python2.
 
 Features:
 
