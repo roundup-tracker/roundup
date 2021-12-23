@@ -104,6 +104,8 @@ Features:
   issue23#msg24 could jump to the element with id msg24 in issue 23.
   Before this patch you would have two links issue23 and msg24
   separated by # (John Rouillard).
+- added small utility script to dump dbm based tracker databases
+  (e.g. db/sessions). (John Rouillard)
 
 
 2021-07-13 2.1.0

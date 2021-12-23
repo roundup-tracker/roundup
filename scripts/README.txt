@@ -7,6 +7,10 @@ add-issue
 copy-user.py
  Copy one or more Roundup users from one tracker instance to another. 
 
+dump_dbm_sessions_db.py
+ Simple script to dump a session style dbm database e.g. db/otks or
+ db/sessions in readable form.
+ 
 imapServer.py
  This IMAP server script that runs in the background and checks for new
  email from a variety of mailboxes.
