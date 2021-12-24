@@ -464,7 +464,7 @@ class SearchAction(Action):
         different from 'index'
         """
         template = self.getFromForm('template')
-        if template and template != 'index':
+        if template and template not in ['index', 'index|search']:
             return req.indexargs_url('', {'@template': template})[1:]
         return req.indexargs_url('', {})[1:]
 
