@@ -89,6 +89,8 @@ Whoosh full-text indexer
   The Whoosh_ full-text indexer is also supported and will be used by
   default if it is available (and Xapian is not installed). This is
   recommended if you are anticipating a large number of issues (> 5000).
+  It is also the only search backend that implements fuzzy search. It
+  matches any word that has a 1 character difference from the search term.
 
   You may install Whoosh at any time, even after a tracker has been
   installed and used. You will need to run the "roundup-admin reindex"
