@@ -32,11 +32,31 @@ RUN apk add \
     g++ \
     gcc \
     gpgme-dev \
+    libxapian \
     linux-headers \
+    make \
     musl-dev \
     mysql-dev \
     postgresql-dev \
-    swig
+    swig \
+    xapian-core-dev
+
+# build xapian bindings:
+# file with sphinx build dependencies to remove after build
+# they are over 70MB of space.
+COPY scripts/Docker/sphinxdeps.txt .
+
+RUN set -xv && CWD=$PWD && \
+    VER=$(apk list -I 'xapian-core-dev' | \
+          sed 's/^xapian-core-dev-\([0-9.]*\)-.*/\1/') && \
+    cd /tmp && \
+    wget https://oligarchy.co.uk/xapian/$VER/xapian-bindings-$VER.tar.xz && \
+    tar -Jxvf xapian-bindings-$VER.tar.xz && \
+    cd xapian-bindings-$VER/ && \
+    pip --no-cache-dir install sphinx==1.8.5 && \
+    ./configure --prefix=/usr/local --with-python3 --disable-documentation && \
+    make && make install && \
+    pip uninstall --no-cache-dir -y -r $CWD/sphinxdeps.txt
 
 # add requirements for pip here, e.g. Whoosh, gpg, zstd or other
 #   modules not installed in the base library.
@@ -83,7 +103,8 @@ RUN apk add \
      gpgme \
      mariadb-connector-c \
      libpq \
-     libstdc++
+     libstdc++ \
+     libxapian
 
 ARG source
 LABEL "org.roundup-tracker.vendor"="Roundup Issue Tracker Team" \
