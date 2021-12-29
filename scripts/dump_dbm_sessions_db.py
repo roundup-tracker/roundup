@@ -11,7 +11,7 @@ Dump format:
 where <timestamp> is the human readable __timestamp decoded from the
 data object.
 
-""""
+"""
 
 import dbm, marshal, sys
 from datetime import datetime
