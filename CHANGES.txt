@@ -69,6 +69,10 @@ Fixed:
   --prefix=/tmp/r2. Force insert --old-and-unmangable to get it
   to use a classic installer and not an easy install. This only
   affects python2.
+- issue2551186 - Python versions >= 3.3 no longer use socket.sslerror.
+  Andrew (kragacles) patched uses of socket.sslerror in mailgy.py.
+  Patch adapted to allow trapping sslerror under both python2 and 3.
+  (John Rouillard)
 
 Features:
 
