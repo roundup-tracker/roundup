@@ -6,7 +6,9 @@
 
 # "$@" should be a set of tracker=directory pairs.
 
-set -xv
+if ! [ -z "$SHELL_DEBUG" ]; then
+    set -xv
+fi
 
 trap exit INT
 
@@ -22,7 +24,7 @@ for tracker_spec in "$@"; do
     # ^ is a tab for use with <<-
 
     # was $tracker_spec in the form of a=b, if not ignore it.
-    # allows setting CMD to -p 9090 issue=tracker for example.
+    # allows setting CMD to -i index_template issue=tracker for example.
     if [ -z "$directory" ]; then continue; fi
 
     # something is specified or built wrong. Don't start.

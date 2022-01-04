@@ -291,8 +291,12 @@ If the tracker directory is empty, the docker container will prompt
 you to install a tracker template and prompt you for the database
 type.
 
-Once you have edited and configured ``template/config.ini``, (see
-`Configuring your first tracker`) run another interactive session
+Then you need to configure the tracker by editing
+``template/config.ini``.  Make sure that the tracker web setting ends
+in ``/issues/`` See `Configuring your first tracker` and the top of
+``config.ini`` for other settings.
+
+Once you have configured the tracker, run another interactive session
 with::
 
     docker run --rm -it -p 9017:8080 \
@@ -315,6 +319,10 @@ can use::
 
 where ``c0d5`` is the id prefix for the running container obtained
 from ``docker container ls``.
+
+If you add ``-e SHELL_DEBUG=1`` to the docker command, it sets the
+``SHELL_DEBUG`` environment variable which will enable debugging
+output from the startup script.
 
 Non-Guided Installation
 '''''''''''''''''''''''
