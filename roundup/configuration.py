@@ -9,7 +9,9 @@ __docformat__ = "restructuredtext"
 # used here instead of try/except.
 import sys
 import getopt
-import logging, logging.config
+import errno
+import logging
+import logging.config
 import os
 import re
 import time
@@ -36,6 +38,7 @@ from roundup.exceptions import RoundupException
 
 class ConfigurationError(RoundupException):
     pass
+
 
 class ParsingOptionError(ConfigurationError):
     def __str__(self):
@@ -268,12 +271,12 @@ class Option:
                 self.set(config.get(self.section, self.setting))
         except configparser.InterpolationSyntaxError as e:
             raise ParsingOptionError(
-                _("Error in %(filepath)s with section [%(section)s] at option %(option)s: %(message)s")%{
-                "filepath": self.config.filepath,
-                "section": e.section,
-                "option": e.option,
-                "message": e.message})
-
+                _("Error in %(filepath)s with section [%(section)s] at "
+                  "option %(option)s: %(message)s") % {
+                      "filepath": self.config.filepath,
+                      "section": e.section,
+                      "option": e.option,
+                      "message": str(e)})
 
 
 class BooleanOption(Option):
@@ -419,6 +422,7 @@ class IsolationOption(Option):
             return _val
         raise OptionValueError(self, value, self.class_description)
 
+
 class IndexerOption(Option):
     """Valid options for indexer"""
 
@@ -431,6 +435,7 @@ class IndexerOption(Option):
         if _val in self.allowed:
             return _val
         raise OptionValueError(self, value, self.class_description)
+
 
 class MailAddressOption(Option):
 
@@ -563,6 +568,46 @@ class MandatoryOption(Option):
             return value
 
 
+class SecretOption(Option):
+    """A string not beginning with file:// or a file starting with file://
+
+    Paths may be either absolute or relative to the HOME.
+    Value for option is the first line in the file.
+    It is mean to store secret information in the config file but
+    allow the config file to be stored in version control without
+    storing the secret there.
+
+    """
+
+    class_description = \
+      "A string that starts with 'file://' is interpreted as a file path \n" \
+      "relative to the tracker home. Using 'file:///' defines an absolute \n" \
+      "path. The first line of the file will be used as the value. Any \n" \
+      "string that does not start with 'file://' is used as is. It \n" \
+      "removes any whitespace at the end of the line, so a newline can \n" \
+      "be put in the file.\n"
+
+    def get(self):
+        _val = Option.get(self)
+        if isinstance(_val, str) and _val.startswith('file://'):
+            filepath = _val[7:]
+            if filepath and not os.path.isabs(filepath):
+                filepath = os.path.join(self.config["HOME"], filepath.strip())
+            try:
+                with open(filepath) as f:
+                    _val = f.readline().rstrip()
+            # except FileNotFoundError: py2/py3
+            # compatible version
+            except EnvironmentError as e:
+                if e.errno != errno.ENOENT:
+                    raise
+                else:
+                    raise OptionValueError(self, _val,
+                        "Unable to read value for %s. Error opening "
+                        "%s: %s." % (self.name, e.filename, e.args[1]))
+        return self.str2value(_val)
+
+
 class WebUrlOption(Option):
     """URL MUST start with http/https scheme and end with '/'"""
 
@@ -625,6 +670,18 @@ class NullableFilePathOption(NullableOption, FilePathOption):
     # everything else taken from NullableOption (inheritance order)
 
 
+class SecretMandatoryOption(MandatoryOption, SecretOption):
+    # use get from SecretOption and rest from MandatoryOption
+    get = SecretOption.get
+    class_description = SecretOption.class_description
+
+
+class SecretNullableOption(NullableOption, SecretOption):
+    # use get from SecretOption and rest from NullableOption
+    get = SecretOption.get
+    class_description = SecretOption.class_description
+
+
 class TimezoneOption(Option):
 
     class_description = \
@@ -656,7 +713,8 @@ class HttpVersionOption(Option):
 
     def str2value(self, value):
         if value not in ["HTTP/1.0", "HTTP/1.1"]:
-            raise OptionValueError(self, value, "Valid vaues for -V or --http_version are: HTTP/1.0, HTTP/1.1")
+            raise OptionValueError(self, value,
+                "Valid vaues for -V or --http_version are: HTTP/1.0, HTTP/1.1")
         return value
 
 
@@ -1059,7 +1117,7 @@ always passes, so setting it less than 1 is not recommended."""),
             "Setting this option makes Roundup migrate passwords with\n"
             "an insecure password-scheme to a more secure scheme\n"
             "when the user logs in via the web-interface."),
-        (MandatoryOption, "secret_key", create_token(),
+        (SecretMandatoryOption, "secret_key", create_token(),
             "A per tracker secret used in etag calculations for\n"
             "an object. It must not be empty.\n"
             "It prevents reverse engineering hidden data in an object\n"
@@ -1071,7 +1129,7 @@ always passes, so setting it less than 1 is not recommended."""),
             "(Note the default value changes every time\n"
             "     roundup-admin updateconfig\n"
             "is run, so it must be explicitly set to a non-empty string.\n"),
-        (MandatoryOption, "jwt_secret", "disabled",
+        (SecretNullableOption, "jwt_secret", "disabled",
             "This is used to generate/validate json web tokens (jwt).\n"
             "Even if you don't use jwts it must not be empty.\n"
             "If less than 256 bits (32 characters) in length it will\n"
@@ -1097,7 +1155,7 @@ always passes, so setting it less than 1 is not recommended."""),
         (NullableOption, 'user', 'roundup',
             "Database user name that Roundup should use.",
             ['MYSQL_DBUSER']),
-        (NullableOption, 'password', 'roundup',
+        (SecretNullableOption, 'password', 'roundup',
             "Database user password.",
             ['MYSQL_DBPASSWORD']),
         (NullableOption, 'read_default_file', '~/.my.cnf',
@@ -1178,7 +1236,7 @@ always passes, so setting it less than 1 is not recommended."""),
         (Option, "username", "", "SMTP login name.\n"
             "Set this if your mail host requires authenticated access.\n"
             "If username is not empty, password (below) MUST be set!"),
-        (Option, "password", NODEFAULT, "SMTP login password.\n"
+        (SecretMandatoryOption, "password", NODEFAULT, "SMTP login password.\n"
             "Set this if your mail host requires authenticated access."),
         (IntegerNumberGeqZeroOption, "port", smtplib.SMTP_PORT,
             "Default port to send SMTP on.\n"
@@ -1421,7 +1479,7 @@ class Config:
     # actual name of the config file.  set on load.
     filepath = os.path.join(HOME, INI_FILE)
 
-    def __init__(self, config_path=None, layout=None, settings={}):
+    def __init__(self, config_path=None, layout=None, settings=None):
         """Initialize confing instance
 
         Parameters:
@@ -1438,6 +1496,8 @@ class Config:
                 The overrides are applied after loading config file.
 
         """
+        if settings is None:
+            settings = {}
         # initialize option containers:
         self.sections = []
         self.section_descriptions = {}
@@ -1836,7 +1896,9 @@ class CoreConfig(Config):
     ext = None
     detectors = None
 
-    def __init__(self, home_dir=None, settings={}):
+    def __init__(self, home_dir=None, settings=None):
+        if settings is None:
+            settings = {}
         Config.__init__(self, home_dir, layout=SETTINGS, settings=settings)
         # load the config if home_dir given
         if home_dir is None:
@@ -1920,8 +1982,15 @@ class CoreConfig(Config):
                     languages = textwrap.fill(_("Valid languages: ") +
                                               lang_avail, 75,
                                               subsequent_indent="   ")
-                    raise OptionValueError( options["INDEXER_LANGUAGE"],
+                    raise OptionValueError(options["INDEXER_LANGUAGE"],
                                             lang, languages)
+
+        if options['MAIL_USERNAME']._value != "":
+            # require password to be set
+            if options['MAIL_PASSWORD']._value is NODEFAULT:
+                raise OptionValueError(options["MAIL_PASSWORD"],
+                                        "not defined",
+                "mail username is set, so this must be defined.")
 
     def load(self, home_dir):
         """Load configuration from path designated by home_dir argument"""

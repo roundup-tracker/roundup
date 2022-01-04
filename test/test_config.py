@@ -349,34 +349,59 @@ class TrackerConfig(unittest.TestCase):
         except OSError as error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
 
-    def munge_configini(self, mods = None):
+    def munge_configini(self, mods = None, section=None):
         """ modify config.ini to meet testing requirements
 
             mods is a list of tuples:
-               [ ( "a = ", "b" ), ("c = ", None) ]
+               [ ( "a = ", "b" ), ("c = ", None), ("d = ", "b", "z = ") ]
             Match line with first tuple element e.g. "a = ". Note specify
             trailing "=" and space to delimit keyword and properly format
-            replacement line. If first tuple element matches, the line is
+            replacement line. If there are two elements in the tuple,
+            and the first element matches, the line is
             replaced with the concatenation of the first and second elements.
             If second element is None ("" doesn't work), the line will be
-            deleted.
+            deleted. If there are three elements in the tuple, the line
+            is replaced with the contcatentation of the third and second
+            elements (used to replace commented out parameters).
 
-            Note the key/first element of tuple must be unique in config.ini.
-            It is possible to have duplicates in different sections. This
-            method doesn't handle that. TBD option third element of tuple
-            defining section if needed.
+            Note if the key/first element of tuple is not unique in
+            config.ini, you must set the section to match the bracketed
+            section name.
         """
 
         if mods is None:
             return
 
+        # if section is defined, the tests in the loop will turn
+        # it off on [main] if section != '[main]'.
+        in_section = True 
+
         for line in fileinput.input(os.path.join(self.dirname, "config.ini"),
                                     inplace=True):
-            for match, value in mods:
-                if line.startswith(match):
-                    if value is not None:
-                        print(match + value)
-                    break
+            if section:
+                if line.startswith('['):
+                    in_section = False
+
+                if line.startswith(section):
+                    in_section = True
+
+            if in_section:
+                for rule in mods:
+                    if len(rule) == 3:
+                        match, value, repl = rule
+                    else:
+                        match, value = rule
+                        repl = None
+
+                    if line.startswith(match):
+                        if value is not None:
+                            if repl:
+                                print(repl + value)
+                            else:
+                                print(match + value)
+                        break
+                else:
+                    print(line[:-1]) # remove trailing \n
             else:
                 print(line[:-1]) # remove trailing \n
 
@@ -396,6 +421,186 @@ class TrackerConfig(unittest.TestCase):
 
         self.assertEqual("RDBMS_BACKEND is not set"
                       " and has no default", cm.exception.__str__())
+
+    def testUnsetMailPassword_with_set_username(self):
+        """ Set [mail] username but don't set the 
+            [mail] password. Should get an OptionValueError. 
+        """
+        # SETUP: set mail username
+        self.munge_configini(mods=[ ("username = ", "foo"), ],
+                             section="[mail]")
+
+        config = configuration.CoreConfig()
+
+        with self.assertRaises(configuration.OptionValueError) as cm:
+            config.load(self.dirname)
+
+        print(cm.exception)
+        # test repr. The type is right since it passed assertRaises.
+        self.assertIn("OptionValueError", repr(cm.exception))
+        # look for 'not defined'
+        self.assertEqual("not defined", cm.exception.args[1])
+
+    def testUnsetMailPassword_with_unset_username(self):
+        """ Set [mail] username but don't set the 
+            [mail] password. Should get an OptionValueError. 
+        """
+        config = configuration.CoreConfig()
+
+        config.load(self.dirname)
+
+        self.assertEqual(config['MAIL_USERNAME'], '')
+
+        with self.assertRaises(configuration.OptionUnsetError) as cm:
+            self.assertEqual(config['MAIL_PASSWORD'], 'NO DEFAULT')
+
+    def testSecretMandatory_missing_file(self):
+
+        # SETUP: 
+        self.munge_configini(mods=[ ("secret_key = ", "file://secret_key"), ])
+
+        config = configuration.CoreConfig()
+
+        config.load(self.dirname)
+
+        with self.assertRaises(configuration.OptionValueError) as cm:
+            self.assertEqual(config['WEB_SECRET_KEY'],"")
+
+        print(cm.exception)
+        self.assertEqual(cm.exception.args[0].setting, "secret_key")
+
+    def testSecretMandatory_load_from_file(self):
+
+        # SETUP: 
+        self.munge_configini(mods=[ ("secret_key = ", "file://secret_key"), ])
+
+        secret = "ASDQWEZXCRFVBGTYHNMJU"
+        with open(self.dirname + "/secret_key", "w") as f:
+            f.write(secret + "\n")
+
+        config = configuration.CoreConfig()
+
+        config.load(self.dirname)
+
+        self.assertEqual(config['WEB_SECRET_KEY'], secret)
+
+
+    def testSecretMandatory_load_from_abs_file(self):
+
+        abs_file = "/tmp/secret_key.%s"%os.getpid()
+
+        # SETUP: 
+        self.munge_configini(mods=[ ("secret_key = ", "file://%s"%abs_file), ])
+
+        secret = "ASDQWEZXCRFVBGTYHNMJU"
+        with open(abs_file, "w") as f:
+            f.write(secret + "\n")
+
+        config = configuration.CoreConfig()
+
+        config.load(self.dirname)
+
+        self.assertEqual(config['WEB_SECRET_KEY'], secret)
+
+        os.remove(abs_file)
+
+    def testSecretMandatory_empty_file(self):
+
+        self.munge_configini(mods=[ ("secret_key = ", "file:// secret_key"), ])
+
+        # file with no value just newline.
+        with open(self.dirname + "/secret_key", "w") as f:
+            f.write("\n")
+
+        config = configuration.CoreConfig()
+
+        config.load(self.dirname)
+
+        with self.assertRaises(configuration.OptionValueError) as cm:
+            config['WEB_SECRET_KEY']
+
+        print(cm.exception.args)
+        self.assertEqual(cm.exception.args[2],"Value must not be empty.")
+
+    def testNullableSecret_empty_file(self):
+
+        self.munge_configini(mods=[ ("password = ", "file://db_password"), ])
+
+        # file with no value just newline.
+        with open(self.dirname + "/db_password", "w") as f:
+            f.write("\n")
+
+        config = configuration.CoreConfig()
+
+        config.load(self.dirname)
+
+        v = config['RDBMS_PASSWORD']
+
+        self.assertEqual(v, None)
+
+    def testNullableSecret_with_file_value(self):
+
+        self.munge_configini(mods=[ ("password = ", "file://db_password"), ])
+
+        # file with no value just newline.
+        with open(self.dirname + "/db_password", "w") as f:
+            f.write("test\n")
+
+        config = configuration.CoreConfig()
+
+        config.load(self.dirname)
+
+        v = config['RDBMS_PASSWORD']
+
+        self.assertEqual(v, "test")
+
+    def testNullableSecret_with_value(self):
+
+        self.munge_configini(mods=[ ("password = ", "test"), ])
+
+        config = configuration.CoreConfig()
+
+        config.load(self.dirname)
+
+        v = config['RDBMS_PASSWORD']
+
+        self.assertEqual(v, "test")
+
+    def testSetMailPassword_with_set_username(self):
+        """ Set [mail] username and set the password.
+            Should have both values set.
+        """
+        # SETUP: set mail username
+        self.munge_configini(mods=[ ("username = ", "foo"),
+                                    ("#password = ", "passwordfoo",
+                                    "password = ") ],
+                             section="[mail]")
+
+        config = configuration.CoreConfig()
+
+        config.load(self.dirname)
+
+        self.assertEqual(config['MAIL_USERNAME'], 'foo')
+        self.assertEqual(config['MAIL_PASSWORD'], 'passwordfoo')
+
+    def testSetMailPassword_from_file(self):
+        """ Set [mail] username and set the password.
+            Should have both values set.
+        """
+        # SETUP: set mail username
+        self.munge_configini(mods=[ ("username = ", "foo"),
+                                    ("#password = ", "file://password",
+                                     "password = ") ],
+                             section="[mail]")
+        with open(self.dirname + "/password", "w") as f:
+            f.write("passwordfoo\n")
+
+        config = configuration.CoreConfig()
+
+        config.load(self.dirname)
+
+        self.assertEqual(config['MAIL_USERNAME'], 'foo')
+        self.assertEqual(config['MAIL_PASSWORD'], 'passwordfoo')
 
     @skip_xapian
     def testInvalidIndexerLanguage_w_empty(self):

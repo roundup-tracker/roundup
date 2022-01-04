@@ -112,6 +112,10 @@ Features:
   separated by # (John Rouillard).
 - added small utility script to dump dbm based tracker databases
   (e.g. db/sessions). (John Rouillard)
+- issue2551182 - Enhance configuration module to allow loading values
+  from an external file. Secrets (passwords, secrets) can specify
+  file using file:// or file:///. The first line of the file is used
+  as the secret. This allows committing config.ini to a VCS.
 
 
 2021-07-13 2.1.0
