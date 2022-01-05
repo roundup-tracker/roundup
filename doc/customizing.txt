@@ -576,6 +576,71 @@ applied to the extension config files, so if you instead have::
 
 then the above ``db.config.detectors['QA_RECIPIENTS']`` will still work.
 
+Unlike values in the tracker's main ``config.ini``, the values defined
+in these config files are not validated. For example: a setting that
+is supposed to be an integer value (e.g. 4) could be the word
+"foo". If you are writing Python code that uses these settings, you
+should expect to handle invalid values.
+
+Also, incorrect values aren't discovered until the config setting is
+used. This can be long after the tracker is started and the error may
+not be seen in the logs.
+
+It is possible to validate these settings. Validation involves calling
+the ``update_options`` method on the configuration option. This can be
+done from the ``init()`` function in the Python files implementing
+extensions_ or detectors_.
+
+As an example, adding the following to an extension::
+
+   from roundup.configuration import SecretMandatoryOption
+
+   def init(instance):
+       instance.config.ext.update_option('RECAPTCHA_SECRET',
+           SecretMandatoryOption,description="Secret securing reCaptcha.")
+
+similarly for a detector::
+
+   from roundup.configuration import MailAddressOption
+
+   def init(db):
+       try:
+           db.config.detectors.update_option('QA_RECIPIENTS',
+               MailAddressOption,
+	       description="Email used for QA comment followup.")
+       except KeyError:
+           # COMMENT_EMAIL setting is not found, but it's optional
+	   # so continue
+           pass
+
+will allow reading the secret from a file or append the tracker domain
+to an email address if it does not have a domain.
+
+Running ``roundup-admin -i tracker_home display user1`` will validate
+the settings for both config.ini`s. Otherwise detector options are not
+validated until the first request to the web interface (or email
+gateway).
+
+There are 4 arguments for ``update_option``:
+
+1. config setting name - string (positional, mandatory)
+2. option type - Option derived class from configuration.py
+   (positional, mandatory)
+3. default value - string (optional, named default) 
+4. description - string (optional, named description) 
+
+The first argument is the config setting name as described at the
+beginning of this section.
+
+The second argument is a class in the roundup.configuration module.
+There are a number of these classes: BooleanOption,
+IntegerNumberOption, RegExpOption.... Please see the configuration
+module for all Option validators and their descriptions. You can also
+define your own custom validator in `interfaces.py`_.
+
+The third and fourth arguments are strings and are optional. They are
+printed if there is an error and may help the user correct the problem.
+
 .. index:: ! schema
 
 Tracker Schema
