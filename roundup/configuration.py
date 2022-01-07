@@ -436,6 +436,28 @@ class IndexerOption(Option):
             return _val
         raise OptionValueError(self, value, self.class_description)
 
+    def validate(self, options):
+
+        if self._value in ("", "xapian"):
+            try:
+                import xapian
+            except ImportError:
+                # indexer is probably '' and xapian isn't present
+                # so just return at end of method
+                pass
+            else:
+                try:
+                    lang = options["INDEXER_LANGUAGE"]._value
+                    xapian.Stem(lang)
+                except xapian.InvalidArgumentError:
+                    import textwrap
+                    lang_avail = b2s(xapian.Stem.get_available_languages())
+                    languages = textwrap.fill(_("Valid languages: ") +
+                                              lang_avail, 75,
+                                              subsequent_indent="   ")
+                    raise OptionValueError(options["INDEXER_LANGUAGE"],
+                                            lang, languages)
+
 
 class MailAddressOption(Option):
 
@@ -606,6 +628,22 @@ class SecretOption(Option):
                         "Unable to read value for %s. Error opening "
                         "%s: %s." % (self.name, e.filename, e.args[1]))
         return self.str2value(_val)
+
+    def validate(self, options):
+        if self.name == 'MAIL_PASSWORD':
+            if options['MAIL_USERNAME']._value:
+                # MAIL_PASSWORD is an exception. It is mandatory only
+                # if MAIL_USERNAME is set. So check only if username
+                # is set.
+                try:
+                    self.get()
+                except OptionUnsetError:
+                    # provide error message with link to MAIL_USERNAME
+                    raise OptionValueError(options["MAIL_PASSWORD"],
+                                           "not defined",
+                            "Mail username is set, so this must be defined.")
+        else:
+            self.get()
 
 
 class WebUrlOption(Option):
@@ -1479,6 +1517,10 @@ class Config:
     # actual name of the config file.  set on load.
     filepath = os.path.join(HOME, INI_FILE)
 
+    # List of option names that need additional validation after
+    # all options are loaded.
+    option_validators = []
+
     def __init__(self, config_path=None, layout=None, settings=None):
         """Initialize confing instance
 
@@ -1551,6 +1593,9 @@ class Config:
         # make the option known under all of its A.K.A.s
         for _name in option.aliases:
             self.options[_name] = option
+
+        if hasattr(option, 'validate'):
+            self.option_validators.append(option.name)
 
     def update_option(self, name, klass,
                       default=NODEFAULT, description=None):
@@ -1965,32 +2010,10 @@ class CoreConfig(Config):
             on each other. E.G. indexer_language can only be
             validated if xapian indexer is used.
         """
-        if options['INDEXER']._value in ("", "xapian"):
-            try:
-                import xapian
-            except ImportError:
-                # indexer is probably '' and xapian isn't present
-                # so just return at end of method
-                pass
-            else:
-                try:
-                    lang = options["INDEXER_LANGUAGE"]._value
-                    xapian.Stem(lang)
-                except xapian.InvalidArgumentError:
-                    import textwrap
-                    lang_avail = b2s(xapian.Stem.get_available_languages())
-                    languages = textwrap.fill(_("Valid languages: ") +
-                                              lang_avail, 75,
-                                              subsequent_indent="   ")
-                    raise OptionValueError(options["INDEXER_LANGUAGE"],
-                                            lang, languages)
 
-        if options['MAIL_USERNAME']._value != "":
-            # require password to be set
-            if options['MAIL_PASSWORD']._value is NODEFAULT:
-                raise OptionValueError(options["MAIL_PASSWORD"],
-                                        "not defined",
-                "mail username is set, so this must be defined.")
+        for option in self.option_validators:
+            # validate() should throw an exception if there is an issue.
+            options[option].validate(options)
 
     def load(self, home_dir):
         """Load configuration from path designated by home_dir argument"""

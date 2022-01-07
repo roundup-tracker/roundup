@@ -441,6 +441,7 @@ class TrackerConfig(unittest.TestCase):
         # look for 'not defined'
         self.assertEqual("not defined", cm.exception.args[1])
 
+
     def testUnsetMailPassword_with_unset_username(self):
         """ Set [mail] username but don't set the 
             [mail] password. Should get an OptionValueError. 
@@ -461,10 +462,8 @@ class TrackerConfig(unittest.TestCase):
 
         config = configuration.CoreConfig()
 
-        config.load(self.dirname)
-
         with self.assertRaises(configuration.OptionValueError) as cm:
-            self.assertEqual(config['WEB_SECRET_KEY'],"")
+            config.load(self.dirname)
 
         print(cm.exception)
         self.assertEqual(cm.exception.args[0].setting, "secret_key")
@@ -514,10 +513,8 @@ class TrackerConfig(unittest.TestCase):
 
         config = configuration.CoreConfig()
 
-        config.load(self.dirname)
-
         with self.assertRaises(configuration.OptionValueError) as cm:
-            config['WEB_SECRET_KEY']
+            config.load(self.dirname)
 
         print(cm.exception.args)
         self.assertEqual(cm.exception.args[2],"Value must not be empty.")
