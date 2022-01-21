@@ -1,3 +1,9 @@
+.. meta::
+    :description language=en:
+        Features of using the Roundup Issue Tracker. Describes
+        all access methods, configuration and workflow capabilities.
+	Links to detailed documentation.
+
 ================
 Roundup Features
 ================

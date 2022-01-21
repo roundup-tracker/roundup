@@ -1,3 +1,11 @@
+.. meta::
+    :description language=en:
+        How to administer, backup, upgrade a Roundup installation.
+        System and user security, configuring web compression,
+        documentation on using roundup-server and running
+        roundup-admin.
+
+
 ====================
 Administration Guide
 ====================

@@ -1,3 +1,8 @@
+.. meta::
+    :description language=en:
+        Definitions of terms used in the Roundup Issue Tracker
+	documentation.
+
 ================
 Roundup Glossary
 ================

@@ -1,3 +1,9 @@
+.. meta::
+    :description language=en:
+        Documentation on the RESTful interface to the Roundup Issue
+	Tracker.
+
+
 .. index:: pair: api; Representational state transfer
    pair: api; rest
 
