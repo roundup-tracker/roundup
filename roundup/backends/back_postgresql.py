@@ -196,6 +196,7 @@ class Database(rdbms_common.Database):
             self.sql("CREATE TABLE dual (dummy integer)")
             self.sql("insert into dual values (1)")
             self.create_version_2_tables()
+            self.fix_version_3_tables()
             # Need to commit here, otherwise otk/session will not find
             # the necessary tables (in a parallel connection!)
             self.commit()
