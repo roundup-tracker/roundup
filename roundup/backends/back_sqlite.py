@@ -174,6 +174,7 @@ class Database(rdbms_common.Database):
             self.sql('create table ids (name varchar, num integer)')
             self.sql('create index ids_name_idx on ids(name)')
             self.create_version_2_tables()
+            self._add_fts5_table()
 
     def create_version_2_tables(self):
         self.sql('create table otks (otk_key varchar, '
@@ -211,6 +212,15 @@ class Database(rdbms_common.Database):
     def fix_version_3_tables(self):
         # NOOP - no restriction on column length here
         pass
+
+    def _add_fts5_table(self):
+        self.sql('CREATE virtual TABLE __fts USING fts5(_class, '
+                 '_itemid, _prop, _textblob)'
+        )
+
+    def fix_version_6_tables(self):
+        # Add native full-text indexing table
+        self._add_fts5_table()
 
     def update_class(self, spec, old_spec, force=0, adding_v2=0):
         """ Determine the differences between the current spec and the

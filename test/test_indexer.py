@@ -24,6 +24,8 @@ import pytest
 from roundup.backends import get_backend, have_backend
 from roundup.backends.indexer_rdbms import Indexer
 
+from roundup.cgi.exceptions import IndexerQueryError
+
 # borrow from other tests
 from .db_test_base import setupSchema, config
 from .test_postgresql import postgresqlOpener, skip_postgresql
@@ -115,6 +117,11 @@ class IndexerTest(unittest.TestCase):
                                                      ('test', '2', 'bar')])
     def test_extremewords(self):
         """Testing too short or too long words."""
+
+        # skip this for FTS test
+        if isinstance(self,sqliteFtsIndexerTest):
+            pytest.skip("extremewords not tested for native FTS backends")
+
         short = "b"
         long = "abcdefghijklmnopqrstuvwxyz"
         self.dex.add_text(('test', '1', 'a'), '%s hello world' % short)
@@ -219,6 +226,16 @@ class postgresqlIndexerTest(postgresqlOpener, RDBMSIndexerTest, IndexerTest):
         RDBMSIndexerTest.tearDown(self)
         postgresqlOpener.tearDown(self)
 
+"""
+@skip_postgresql
+class postgresqlFtsIndexerTest(postgresqlOpener, RDBMSIndexerTest, IndexerTest):
+    def setUp(self):
+        postgresqlOpener.setUp(self)
+        RDBMSIndexerTest.setUp(self)
+    def tearDown(self):
+        RDBMSIndexerTest.tearDown(self)
+        postgresqlOpener.tearDown(self)
+"""
 
 @skip_mysql
 class mysqlIndexerTest(mysqlOpener, RDBMSIndexerTest, IndexerTest):
@@ -232,5 +249,130 @@ class mysqlIndexerTest(mysqlOpener, RDBMSIndexerTest, IndexerTest):
 
 class sqliteIndexerTest(sqliteOpener, RDBMSIndexerTest, IndexerTest):
     pass
+
+class sqliteFtsIndexerTest(sqliteOpener, RDBMSIndexerTest, IndexerTest):
+    def setUp(self):
+        RDBMSIndexerTest.setUp(self)
+        from roundup.backends.indexer_sqlite_fts import Indexer
+        self.dex = Indexer(db)
+        self.dex.db = self.db
+
+    def test_phrase_and_near(self):
+        self.dex.add_text(('test', '1', 'foo'), 'a the hello world')
+        self.dex.add_text(('test', '2', 'foo'), 'helh blah blah the world')
+        self.dex.add_text(('test', '3', 'foo'), 'blah hello the world')
+        self.dex.add_text(('test', '4', 'foo'), 'hello blah blech the world')
+
+        # test two separate words for sanity
+        self.assertSeqEqual(self.dex.find(['"hello" "world"']),
+                                                    [('test', '1', 'foo'),
+                                                     ('test', '3', 'foo'),
+                                                     ('test', '4', 'foo')
+                                                    ])
+        # now check the phrase
+        self.assertSeqEqual(self.dex.find(['"hello world"']),
+                                                    [('test', '1', 'foo'),
+                                                     ])
+
+        # now check the phrase with near explicitly 0 intervening items
+        self.assertSeqEqual(self.dex.find(['NEAR(hello world, 0)']),
+                                                    [('test', '1', 'foo'),
+                                                     ])
+
+        # now check the phrase with near explicitly 1 intervening item
+        self.assertSeqEqual(self.dex.find(['NEAR(hello world, 1)']),
+                                                    [('test', '1', 'foo'),
+                                                     ('test', '3', 'foo'),
+                                                     ])
+        # now check the phrase with near explicitly 3 intervening item
+        self.assertSeqEqual(self.dex.find(['NEAR(hello world, 3)']),
+                                                    [('test', '1', 'foo'),
+                                                     ('test', '3', 'foo'),
+                                                     ('test', '4', 'foo'),
+                                                     ])
+
+    def test_prefix(self):
+        self.dex.add_text(('test', '1', 'foo'), 'a the hello world')
+        self.dex.add_text(('test', '2', 'foo'), 'helh blah blah the world')
+        self.dex.add_text(('test', '3', 'foo'), 'blah hello the world')
+        self.dex.add_text(('test', '4', 'foo'), 'hello blah blech the world')
+
+        self.assertSeqEqual(self.dex.find(['hel*']),
+                                                    [('test', '1', 'foo'),
+                                                     ('test', '2', 'foo'),
+                                                     ('test', '3', 'foo'),
+                                                     ('test', '4', 'foo')
+                                                    ])
+
+
+    def test_bool_start(self):
+        self.dex.add_text(('test', '1', 'foo'), 'a the hello world')
+        self.dex.add_text(('test', '2', 'foo'), 'helh blah blah the world')
+        self.dex.add_text(('test', '3', 'foo'), 'blah hello the world')
+        self.dex.add_text(('test', '4', 'foo'), 'hello blah blech the world')
+
+        self.assertSeqEqual(self.dex.find(['hel* NOT helh NOT blech']),
+                                                    [('test', '1', 'foo'),
+                                                     ('test', '3', 'foo'),
+                                                    ])
+
+        self.assertSeqEqual(self.dex.find(['hel* NOT helh NOT blech OR the']),
+                                                    [('test', '1', 'foo'),
+                                                     ('test', '2', 'foo'),
+                                                     ('test', '3', 'foo'),
+                                                     ('test', '4', 'foo'),
+                                                    ])
+
+        self.assertSeqEqual(self.dex.find(['helh OR hello']),
+                                                    [('test', '1', 'foo'),
+                                                     ('test', '2', 'foo'),
+                                                     ('test', '3', 'foo'),
+                                                     ('test', '4', 'foo'),
+                                                    ])
+
+
+        self.assertSeqEqual(self.dex.find(['helh AND hello']),
+                                                    [])
+        # matches if line starts with hello
+        self.assertSeqEqual(self.dex.find(['^hello']),
+                                                    [
+                                                     ('test', '4', 'foo'),
+                                                    ])
+
+        self.assertSeqEqual(self.dex.find(['hello']),
+                                                    [
+                                                     ('test', '1', 'foo'),
+                                                     ('test', '3', 'foo'),
+                                                     ('test', '4', 'foo'),
+                                                    ])
+
+    def test_query_errors(self):
+        """test query phrases that generate an error. Also test the
+           correction"""
+
+        self.dex.add_text(('test', '1', 'foo'), 'a the hello-world')
+        self.dex.add_text(('test', '2', 'foo'), 'helh blah blah the world')
+        self.dex.add_text(('test', '3', 'foo'), 'blah hello the world')
+        self.dex.add_text(('test', '4', 'foo'), 'hello blah blech the world')
+
+        # handle known error that roundup recognizes and tries to diagnose
+        with self.assertRaises(IndexerQueryError) as ctx:
+            self.dex.find(['the hello-world'])
+
+        error = ( "Search failed. Try quoting any terms that include a '-' "
+                  "and retry the search.")
+        self.assertEqual(str(ctx.exception), error)
+
+
+        self.assertSeqEqual(self.dex.find(['the "hello-world"']),
+                                                    [('test', '1', 'foo'),
+                                                    ])
+
+        # handle known error that roundup recognizes and tries to diagnose
+        with self.assertRaises(IndexerQueryError) as ctx:
+                self.dex.find(['hello world + ^the'])
+
+        error = 'Query error: syntax error near "^"'
+        self.assertEqual(str(ctx.exception), error)
 
 # vim: set filetype=python ts=4 sw=4 et si

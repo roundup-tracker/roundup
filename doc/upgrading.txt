@@ -35,7 +35,7 @@ Contents:
 Migrating from 2.1.0 to 2.x.y
 =============================
 
-Check Compression Settings
+Check compression settings
 --------------------------
 
 Read the `administration guide`_ section on 'Configuring Compression'.
@@ -50,12 +50,54 @@ merge any local comments from the tracker's ``config.ini`` into
 compression settings as you want. Then replace ``config.ini`` with the
 ``newconfig.ini`` file.
 
-Search Added to User Index Page
+Search added to user index page
 -------------------------------
 
 A search form and count of number of hits has been added to the
 ``user.index.html`` template page in the classic template. You may
 want to merge the search form and footer into your template.
+
+Enhanced full-text search
+-------------------------
+
+SQLite's `FTS5 full-text search engine`_ is available. It should work
+with any recent sqlite3 installation. Any full text search field will
+allow searching using the MATCH query format described at:
+https://www.sqlite.org/fts5.html#full_text_query_syntax. A list of
+words behaves almost the same as the default text search
+(`native`). So the search string `fts search` will find all issues
+that have both of those words (an AND search) in a text-field (like
+title) or in a message (or file) attached to the issue.
+
+One thing to note is that the fts search does not ignore words longer
+than 25 characters or less than 2 characters. Also it does not filter
+out common works (i.e. there is no stoplist). So words like "and",
+"or", "then", "with" ...  are included in the FTS5 search. The native
+search applies both filters.
+
+Using SQLite FTS requires a schema change so you should run
+`roundup-admin -i tracker_home migrate` as the FTS specific tables
+need to be created.
+
+Then you must explicitly enable it by changing the `indexer` setting
+in `config.ini` to `native-fts`. Native-fts is never chosen by default
+like xapian or whoosh. This prevents the existing native indexing from
+being discarded if `indexer` is not set.
+
+Next re-index your data with `roundup-admin -i tracker_home
+reindex`. This can take a while depending on the size of the tracker.
+
+You may want to update your `config.ini` by following the directions
+above to get the latest documentation.
+
+If you are happy with the fts indexing, you can save some space by
+removing the data from the native text indexing tables. This requires
+using the `sqlite3` command to delete the rows in the `__textids` and
+`__words` tables. You can do this with the following sqlite3
+commands::
+
+   delete from __words;
+   delete from __textids;
 
 
 Migrating from 2.0.0 to 2.1.0
@@ -3270,3 +3312,4 @@ copy.
 .. _`security documentation`: security.html
 .. _`administration guide`: admin_guide.html
 .. _`xmlrpc guide`: xmlrpc.html
+.. _FTS5 full-text search engine: https://www.sqlite.org/fts5.html

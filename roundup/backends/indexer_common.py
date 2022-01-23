@@ -24,6 +24,9 @@ class Indexer:
         self.minlength = 2
         self.maxlength = 25
         self.language = db.config[('main','indexer_language')]
+        # Some indexers have a query language. If that is the case,
+        # we don't parse the user supplied query into a wordlist.
+        self.query_language = False
 
     def is_stopword(self, word):
         return word in self.stopwords
@@ -133,6 +136,19 @@ def get_indexer(config, db):
     if indexer_name == "whoosh":
         from .indexer_whoosh import Indexer
         return Indexer(db)
+
+    if indexer_name == "native-fts":
+        if db.dbtype not in ("sqlite", "postgres"):
+            raise AssertionError("Indexer native-fts is configured, but only sqlite and postgres support it. Database is: %r" % db.dbtype)
+
+        if db.dbtype == "sqlite":
+            from roundup.backends.indexer_sqlite_fts import Indexer
+            return Indexer(db)
+
+        if db.dbtype == "postgres":
+            raise NotImplementedError("Postgres FTS not available")
+            from roundup.backends.indexer_postgres_fts import Indexer
+            return Indexer(db)
 
     if indexer_name == "native":
         # load proper native indexing based on database type

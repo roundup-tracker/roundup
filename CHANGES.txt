@@ -122,6 +122,11 @@ Features:
   as the secret. This allows committing config.ini to a VCS. (John
   Rouillard)
 - Added xapian indexer to Docker container. (John Rouillard)
+- Add support for indexer type native-fts to use FTS5 for sqlite
+  databases. (John Rouillard)
+- Add better error display to the user. Needed to expose errors in fts5
+  search syntax to the user while also displaying the template page
+  structure. (John Rouillard)
 
 2021-07-13 2.1.0
 

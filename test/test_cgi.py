@@ -2036,6 +2036,61 @@ class TemplateHtmlRendering(unittest.TestCase):
         self.assertNotEqual(-1,
            self.output[0].index('<!-- SHA: c87a4e18d59a527331f1d367c0c6cc67ee123e63 -->'))
 
+    def testRenderError(self):
+        # set up the client;
+        # run determine_context to set the required client attributes
+        # run renderError(); check result for proper page
+
+        self.client.form=db_test_base.makeForm({})
+        self.client.path = ''
+        self.client.determine_context()
+
+        error = "Houston, we have a problem"
+
+
+        # template rendering will fail and return fallback html
+        out = self.client.renderError(error, 404)
+
+        expected_fallback = (
+            '\n<html><head><title>Roundup issue tracker: '
+            'An error has occurred</title>\n'
+            ' <link rel="stylesheet" type="text/css" href="@@file/style.css">\n'
+            '</head>\n'
+            '<body class="body" marginwidth="0" marginheight="0">\n'
+            ' <p class="error-message">Houston, we have a problem</p>\n'
+            '</body></html>\n')
+
+        self.assertEqual(out, expected_fallback)
+        self.assertIn(error, self.client._error_message)
+        self.assertEqual(self.client.response_code, 404)
+
+        ### next test
+        # Set this so template rendering works.
+        self.client.classname = 'issue'
+
+        out = self.client.renderError("Houston, we have a problem", 404)
+        # match hard coded line in 404 template
+        expected = ('There is no <span>issue</span> with id')
+        
+        self.assertIn(expected, out)
+        self.assertEqual(self.client.response_code, 404)
+
+
+        ### next test
+        # disable template use get fallback
+        out = self.client.renderError("Houston, we have a problem", 404,
+                                      use_template=False)
+        
+        self.assertEqual(out, expected_fallback)
+        self.assertEqual(self.client.response_code, 404)
+
+        ### next test
+        # no 400 template (default 2nd param) so we get fallback
+        out = self.client.renderError("Houston, we have a problem")
+        self.assertEqual(out, expected_fallback)
+        self.assertIn(error, self.client._error_message)
+        self.assertEqual(self.client.response_code, 400)
+
     def testrenderContext(self):
         # set up the client;
         # run determine_context to set the required client attributes
@@ -2287,5 +2342,70 @@ class TemplateTestCase(unittest.TestCase):
         # template check works
         r = t.selectTemplate("user", "subdir/item")
         self.assertEqual("subdir/user.item", r)
+
+class SqliteCgiTest(unittest.TestCase):
+    """All of the rest of the tests use anydbm as the backend.
+       This class tests renderError when renderContext fails.
+       Triggering this error requires the native-fts backend for
+       the sqlite db.
+    """
+
+    def setUp(self):
+        self.dirname = '_test_template'
+        # set up and open a tracker
+        self.instance = setupTracker(self.dirname, backend="sqlite")
+
+        self.instance.config.INDEXER = "native-fts"
+
+        # open the database
+        self.db = self.instance.open('admin')
+        self.db.tx_Source = "web"
+
+        # create a client instance and hijack write_html
+        self.client = client.Client(self.instance, "user",
+                {'PATH_INFO':'/user', 'REQUEST_METHOD':'POST'},
+                form=db_test_base.makeForm({"@template": "item"}))
+
+        self.client._error_message = []
+        self.client._ok_message = []
+        self.client.db = self.db
+        self.client.userid = '1'
+        self.client.language = ('en',)
+        self.client.session_api = MockNull(_sid="1234567890")
+
+        self.output = []
+        # ugly hack to get html_write to return data here.
+        def html_write(s):
+            self.output.append(s)
+
+        # hijack html_write
+        self.client.write_html = html_write
+
+    def tearDown(self):
+        self.db.close()
+        try:
+            shutil.rmtree(self.dirname)
+        except OSError as error:
+            if error.errno not in (errno.ENOENT, errno.ESRCH): raise
+
+    def testRenderContextBadFtsQuery(self):
+        # only test for sqlite
+        if self.db.dbtype not in [ "sqlite" ]:
+            pytest.skip("Not tested for backends without native FTS")
+
+        # generate a bad fts query
+        self.client.form=db_test_base.makeForm(
+            { "@ok_message": "ok message", "@template": "index",
+            "@search_text": "foo-bar"})
+        self.client.path = 'issue'
+        self.client.determine_context()
+
+        result = self.client.renderContext()
+
+        expected = '\n<html><head><title>Roundup issue tracker: An error has occurred</title>\n <link rel="stylesheet" type="text/css" href="@@file/style.css">\n</head>\n<body class="body" marginwidth="0" marginheight="0">\n <p class="error-message">Search failed. Try quoting any terms that include a \'-\' and retry the search.</p>\n</body></html>\n'
+
+        self.assertEqual(result, expected)
+        self.assertEqual(self.client.response_code, 400)
+
 
 # vim: set filetype=python sts=4 sw=4 et si :

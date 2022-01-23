@@ -31,8 +31,8 @@ from roundup.cgi import actions
 from roundup.exceptions import LoginError, Reject, RejectRaw, \
                                Unauthorised, UsageError
 from roundup.cgi.exceptions import (
-    FormError, NotFound, NotModified, Redirect, SendFile, SendStaticFile,
-    DetectorError, SeriousError)
+    FormError, IndexerQueryError, NotFound, NotModified, Redirect,
+    SendFile, SendStaticFile, DetectorError, SeriousError)
 from roundup.cgi.form_parser import FormParser
 from roundup.mailer import Mailer, MessageSendError
 from roundup.cgi import accept_language
@@ -1923,7 +1923,11 @@ class Client:
             }
             pt = self.instance.templates.load(tplname)
             # let the template render figure stuff out
-            result = pt.render(self, None, None, **args)
+            try:
+                result = pt.render(self, None, None, **args)
+            except IndexerQueryError as e:
+                result = self.renderError(e.args[0])
+
             self.additional_headers['Content-Type'] = pt.content_type
             if self.env.get('CGI_SHOW_TIMING', ''):
                 if self.env['CGI_SHOW_TIMING'].upper() == 'COMMENT':
@@ -1969,6 +1973,46 @@ class Client:
                     raise exc_info[0](exc_info[1]).with_traceback(exc_info[2])
                 else:
                     exec('raise exc_info[0], exc_info[1], exc_info[2]')  # nosec
+
+    def renderError(self, error, response_code=400, use_template=True):
+        self.response_code = response_code
+
+        # see if error message already logged add if not
+        if error not in self._error_message:
+            self.add_error_message(error, escape=True)
+
+        # allow use of template for a specific code
+        trial_templates = []
+        if use_template:
+            if response_code == 400:
+                trial_templates = [ "400" ]
+            else:
+                trial_templates = [ str(response_code), "400" ]
+
+        tplname = None
+        for rcode in trial_templates:
+            try:
+                tplname = self.selectTemplate(self.classname, rcode)
+                break
+            except templating.NoTemplate:
+                pass
+
+        if not tplname:
+            # call string of serious error to get basic html
+            # response.
+            return str(SeriousError(error))
+
+        args = {
+            'ok_message': self._ok_message,
+            'error_message': self._error_message
+        }
+
+        try:
+            pt = self.instance.templates.load(tplname)
+            return pt.render(self, None, None, **args)
+        except Exception:
+            # report original error
+            return str(SeriousError(error))
 
     # these are the actions that are available
     actions = (

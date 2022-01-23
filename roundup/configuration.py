@@ -426,7 +426,7 @@ class IsolationOption(Option):
 class IndexerOption(Option):
     """Valid options for indexer"""
 
-    allowed = ['', 'xapian', 'whoosh', 'native']
+    allowed = ['', 'xapian', 'whoosh', 'native', 'native-fts']
     class_description = "Allowed values: %s" % ', '.join("'%s'" % a
                                                          for a in allowed)
 
@@ -875,7 +875,8 @@ SETTINGS = (
             "Force Roundup to use a particular text indexer.\n"
             "If no indexer is supplied, the first available indexer\n"
             "will be used in the following order:\n"
-            "Possible values: xapian, whoosh, native (internal)."),
+            "Possible values: xapian, whoosh, native (internal), "
+            "native-fts.\nNote 'native-fts' will only be used if set."),
         (Option, "indexer_language", "english",
             "Used to determine what language should be used by the\n"
             "indexer above. Currently only affects Xapian indexer. It\n"
@@ -885,7 +886,8 @@ SETTINGS = (
         (WordListOption, "indexer_stopwords", "",
             "Additional stop-words for the full-text indexer specific to\n"
             "your tracker. See the indexer source for the default list of\n"
-            "stop-words (eg. A,AND,ARE,AS,AT,BE,BUT,BY, ...)"),
+            "stop-words (eg. A,AND,ARE,AS,AT,BE,BUT,BY, ...). This is\n"
+            "not used by the native-fts indexer."),
         (OctalNumberOption, "umask", "0o002",
             "Defines the file creation mode mask."),
         (IntegerNumberGeqZeroOption, 'csv_field_size', '131072',

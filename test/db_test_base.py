@@ -252,8 +252,9 @@ class DBTest(commonDBTest):
         self.db.issue.create(title="flebble frooz")
         self.db.commit()
 
-        self.assertEqual(self.db.database_schema['version'], 6,
-                         "This test only runs for database version 6")
+        if self.db.database_schema['version'] != 6:
+            self.skipTest("This test only runs for database version 6")
+
         self.db.database_schema['version'] = 5
         if self.db.dbtype == 'mysql':
             # version 6 has 5 indexes
