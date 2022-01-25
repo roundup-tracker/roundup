@@ -33,6 +33,9 @@ from roundup.test.mocknull import MockNull
 from . import db_test_base
 from .db_test_base import FormTestParent, setupTracker, FileUpload
 from .cmp_helper import StringFragmentCmpHelper
+from .test_postgresql import skip_postgresql
+from .test_mysql import skip_mysql
+
 
 class FileList:
     def __init__(self, name, *files):
@@ -41,6 +44,24 @@ class FileList:
     def items (self):
         for f in self.files:
             yield (self.name, f)
+
+class testFtsQuery(object):
+
+    def testRenderContextFtsQuery(self):
+        self.db.issue.create(title='i1 is found', status="chatting")
+
+        self.client.form=db_test_base.makeForm(
+            { "@ok_message": "ok message", "@template": "index",
+            "@search_text": "found"})
+        self.client.path = 'issue'
+        self.client.determine_context()
+
+        result = self.client.renderContext()
+
+        expected = '">i1 is found</a>'
+
+        self.assertIn(expected, result)
+        self.assertEqual(self.client.response_code, 200)
 
 cm = client.add_message
 class MessageTestCase(unittest.TestCase):
@@ -1976,7 +1997,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         self.assertRaises(exceptions.Unauthorised,
             actions.ExportCSVWithIdAction(cl).handle)
 
-class TemplateHtmlRendering(unittest.TestCase):
+class TemplateHtmlRendering(unittest.TestCase, testFtsQuery):
     ''' try to test the rendering code for tal '''
     def setUp(self):
         self.dirname = '_test_template'
@@ -2343,9 +2364,10 @@ class TemplateTestCase(unittest.TestCase):
         r = t.selectTemplate("user", "subdir/item")
         self.assertEqual("subdir/user.item", r)
 
-class SqliteCgiTest(unittest.TestCase):
+class SqliteNativeFtsCgiTest(unittest.TestCase, testFtsQuery):
     """All of the rest of the tests use anydbm as the backend.
-       This class tests renderError when renderContext fails.
+       In addtion to normal fts test, this class tests renderError
+       when renderContext fails.
        Triggering this error requires the native-fts backend for
        the sqlite db.
     """
@@ -2407,5 +2429,138 @@ class SqliteCgiTest(unittest.TestCase):
         self.assertEqual(result, expected)
         self.assertEqual(self.client.response_code, 400)
 
+class SqliteNativeCgiTest(unittest.TestCase, testFtsQuery):
+    """All of the rest of the tests use anydbm as the backend.
+       This class tests renderContext for fulltext search.
+       Run with sqlite and native indexer.
+    """
+
+    def setUp(self):
+        self.dirname = '_test_template'
+        # set up and open a tracker
+        self.instance = setupTracker(self.dirname, backend="sqlite")
+
+        self.instance.config.INDEXER = "native"
+
+        # open the database
+        self.db = self.instance.open('admin')
+        self.db.tx_Source = "web"
+
+        # create a client instance and hijack write_html
+        self.client = client.Client(self.instance, "user",
+                {'PATH_INFO':'/user', 'REQUEST_METHOD':'POST'},
+                form=db_test_base.makeForm({"@template": "item"}))
+
+        self.client._error_message = []
+        self.client._ok_message = []
+        self.client.db = self.db
+        self.client.userid = '1'
+        self.client.language = ('en',)
+        self.client.session_api = MockNull(_sid="1234567890")
+
+        self.output = []
+        # ugly hack to get html_write to return data here.
+        def html_write(s):
+            self.output.append(s)
+
+        # hijack html_write
+        self.client.write_html = html_write
+
+    def tearDown(self):
+        self.db.close()
+        try:
+            shutil.rmtree(self.dirname)
+        except OSError as error:
+            if error.errno not in (errno.ENOENT, errno.ESRCH): raise
+
+@skip_postgresql
+class PostgresqlNativeCgiTest(unittest.TestCase, testFtsQuery):
+    """All of the rest of the tests use anydbm as the backend.
+       This class tests renderContext for fulltext search.
+       Run with postgresql and native indexer.
+    """
+
+    def setUp(self):
+        self.dirname = '_test_template'
+        # set up and open a tracker
+        self.instance = setupTracker(self.dirname, backend="postgresql")
+
+        self.instance.config.INDEXER = "native"
+
+        # open the database
+        self.db = self.instance.open('admin')
+        self.db.tx_Source = "web"
+
+        # create a client instance and hijack write_html
+        self.client = client.Client(self.instance, "user",
+                {'PATH_INFO':'/user', 'REQUEST_METHOD':'POST'},
+                form=db_test_base.makeForm({"@template": "item"}))
+
+        self.client._error_message = []
+        self.client._ok_message = []
+        self.client.db = self.db
+        self.client.userid = '1'
+        self.client.language = ('en',)
+        self.client.session_api = MockNull(_sid="1234567890")
+
+        self.output = []
+        # ugly hack to get html_write to return data here.
+        def html_write(s):
+            self.output.append(s)
+
+        # hijack html_write
+        self.client.write_html = html_write
+
+    def tearDown(self):
+        self.db.close()
+        try:
+            shutil.rmtree(self.dirname)
+        except OSError as error:
+            if error.errno not in (errno.ENOENT, errno.ESRCH): raise
+
+@skip_mysql
+class MysqlNativeCgiTest(unittest.TestCase, testFtsQuery):
+    """All of the rest of the tests use anydbm as the backend.
+       This class tests renderContext for fulltext search.
+       Run with mysql and native indexer.
+    """
+
+    def setUp(self):
+        self.dirname = '_test_template'
+        # set up and open a tracker
+        self.instance = setupTracker(self.dirname, backend="mysql")
+
+        self.instance.config.INDEXER = "native"
+
+        # open the database
+        self.db = self.instance.open('admin')
+        self.db.tx_Source = "web"
+
+        # create a client instance and hijack write_html
+        self.client = client.Client(self.instance, "user",
+                {'PATH_INFO':'/user', 'REQUEST_METHOD':'POST'},
+                form=db_test_base.makeForm({"@template": "item"}))
+
+        self.client._error_message = []
+        self.client._ok_message = []
+        self.client.db = self.db
+        self.client.userid = '1'
+        self.client.language = ('en',)
+        self.client.session_api = MockNull(_sid="1234567890")
+
+        self.output = []
+        # ugly hack to get html_write to return data here.
+        def html_write(s):
+            self.output.append(s)
+
+        # hijack html_write
+        self.client.write_html = html_write
+
+    def tearDown(self):
+        self.db.close()
+        try:
+            shutil.rmtree(self.dirname)
+        except OSError as error:
+            if error.errno not in (errno.ENOENT, errno.ESRCH): raise
 
 # vim: set filetype=python sts=4 sw=4 et si :

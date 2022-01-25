@@ -1433,9 +1433,10 @@ class ExportCSVAction(Action):
 
         # full-text search
         if request.search_text:
+            indexer = self.db.indexer
             if self.db.indexer.query_language:
                 try:
-                    matches = self.db.indexer.search(
+                    matches = indexer.search(
                         [request.search_text], klass)
                 except Exception as e:
                     error = " ".join(e.args)
@@ -1444,8 +1445,10 @@ class ExportCSVAction(Action):
                     # trigger error reporting. NotFound isn't right but...
                     raise exceptions.NotFound(error)
             else:
-                matches = self.db.indexer.search(
-                    re.findall(r'\b\w{2,25}\b', request.search_text), klass)
+                matches = indexer.search(
+                    re.findall(r'\b\w{%s,%s}\b' % (indexer.minlength,
+                                                   indexer.maxlength),
+                               request.search_text), klass)
         else:
             matches = None
 
@@ -1609,9 +1612,10 @@ class ExportCSVWithIdAction(Action):
 
         # full-text search
         if request.search_text:
-            if self.db.indexer.query_language:
+            indexer = self.db.indexer
+            if indexer.query_language:
                 try:
-                    matches = self.db.indexer.search(
+                    matches = indexer.search(
                         [request.search_text], klass)
                 except Exception as e:
                     error = " ".join(e.args)
@@ -1620,8 +1624,10 @@ class ExportCSVWithIdAction(Action):
                     # trigger error reporting. NotFound isn't right but...
                     raise exceptions.NotFound(error)
             else:
-                matches = self.db.indexer.search(
-                    re.findall(r'\b\w{2,25}\b', request.search_text),
+                matches = indexer.search(
+                    re.findall(r'\b\w{%s,%s}\b' % (indexer.minlength,
+                                                   indexer.maxlength),
+                               request.search_text),
                     klass)
         else:
             matches = None

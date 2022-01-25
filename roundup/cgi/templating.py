@@ -3318,17 +3318,19 @@ function help_window(helpurl, width, height) {
         # get the list of ids we're batching over
         klass = self.client.db.getclass(self.classname)
         if self.search_text:
-            if self.client.db.indexer.query_language:
+            indexer = self.client.db.indexer
+            if indexer.query_language:
                 try:
-                    matches = self.client.db.indexer.search(
+                    matches = indexer.search(
                         [self.search_text], klass)
                 except Exception as e:
                     self.client.add_error_message(" ".join(e.args))
                     raise
             else:
-                matches = self.client.db.indexer.search(
+                matches = indexer.search(
                     [u2s(w.upper()) for w in re.findall(
-                        r'(?u)\b\w{2,25}\b',
+                        r'(?u)\b\w{%s,%s}\b' % (indexer.minlength,
+                                                indexer.maxlength),
                         s2u(self.search_text, "replace")
                     )], klass)
         else:

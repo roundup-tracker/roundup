@@ -235,8 +235,8 @@ class Database(rdbms_common.Database):
         self.sql('''CREATE TABLE __textids (
             _textid integer primary key, _class VARCHAR(255),
             _itemid VARCHAR(255), _prop VARCHAR(255))''')
-        self.sql('''CREATE TABLE __words (_word VARCHAR(30),
-            _textid integer)''')
+        self.sql('''CREATE TABLE __words (_word VARCHAR(%s),
+            _textid integer)''' % (self.indexer.maxlength + 5))
         self.sql('CREATE INDEX words_word_idx ON __words(_word)')
         self.sql('CREATE INDEX words_by_id ON __words (_textid)')
         self.sql('CREATE UNIQUE INDEX __textids_by_props ON '

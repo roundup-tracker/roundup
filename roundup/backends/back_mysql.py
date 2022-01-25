@@ -234,8 +234,10 @@ class Database(rdbms_common.Database):
         self.sql('''CREATE TABLE __textids (_class VARCHAR(255),
             _itemid VARCHAR(255), _prop VARCHAR(255), _textid INT)
             ENGINE=%s'''%self.mysql_backend)
-        self.sql('''CREATE TABLE __words (_word VARCHAR(30),
-            _textid INT) ENGINE=%s'''%self.mysql_backend)
+        self.sql('''CREATE TABLE __words (_word VARCHAR(%s),
+            _textid INT) ENGINE=%s''' % ((self.indexer.maxlength + 5),
+                                         self.mysql_backend)
+            )
         self.sql('CREATE INDEX words_word_ids ON __words(_word)')
         self.sql('CREATE INDEX words_by_id ON __words (_textid)')
         self.sql('CREATE UNIQUE INDEX __textids_by_props ON '
