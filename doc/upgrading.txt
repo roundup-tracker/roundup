@@ -55,7 +55,7 @@ another interface to the tracker, or are using anydbm).
 Check compression settings (optional)
 -------------------------------------
 
-Read the `administration guide`_ section on 'Configuring Compression'.
+Read the `administration guide`_ section on `Configuring Compression`_.
 
 Upgrade tracker's config.ini file. Use::
 
@@ -93,24 +93,24 @@ out common works (i.e. there is no stoplist). So words like "and",
 search applies both filters.
 
 Using SQLite FTS requires a schema change so you should run
-`roundup-admin -i tracker_home migrate` as the FTS specific tables
+``roundup-admin -i tracker_home migrate`` as the FTS specific tables
 need to be created.
 
-Then you must explicitly enable it by changing the `indexer` setting
-in `config.ini` to `native-fts`. Native-fts is never chosen by default
+Then you must explicitly enable it by changing the ``indexer`` setting
+in ``config.ini`` to ``native-fts``. Native-fts is never chosen by default
 like xapian or whoosh. This prevents the existing native indexing from
-being discarded if `indexer` is not set.
+being discarded if ``indexer`` is not set.
 
-Next re-index your data with `roundup-admin -i tracker_home
-reindex`. This can take a while depending on the size of the tracker.
+Next re-index your data with ``roundup-admin -i tracker_home
+reindex``. This can take a while depending on the size of the tracker.
 
-You may want to update your `config.ini` by following the directions
+You may want to update your ``config.ini`` by following the directions
 above to get the latest documentation.
 
 If you are happy with the fts indexing, you can save some space by
 removing the data from the native text indexing tables. This requires
-using the `sqlite3` command to delete the rows in the `__textids` and
-`__words` tables. You can do this with the following sqlite3
+using the ``sqlite3`` command to delete the rows in the ``__textids`` and
+``__words`` tables. You can do this with the following sqlite3
 commands::
 
    delete from __words;
@@ -124,12 +124,12 @@ error message. The usual chrome supplied by page.html is not shown.
 For example query language syntax errors for full text search methods
 will display a bare HTML error page.
 
-If you add an `_generic.400.html` template to the html directory, you
-can display the error inside of the layout provided by the `page.html`
+If you add an ``_generic.400.html`` template to the html directory, you
+can display the error inside of the layout provided by the ``page.html``
 template. This can make fixing the error and navigation easier. You
-can use the `_generic.404.html` template to create a
-`_generic.400.html` by modifying the title and body text. You can test
-the 400 template by appending `@template=400` to the url for the
+can use the ``_generic.404.html`` template to create a
+``_generic.400.html`` by modifying the title and body text. You can test
+the 400 template by appending ``@template=400`` to the url for the
 tracker.
 
 Migrating from 2.0.0 to 2.1.0
@@ -3345,3 +3345,4 @@ copy.
 .. _`administration guide`: admin_guide.html
 .. _`xmlrpc guide`: xmlrpc.html
 .. _FTS5 full-text search engine: https://www.sqlite.org/fts5.html
+.. _Configuring Compression: admin_guide.html#configuring-compression
