@@ -35,8 +35,8 @@ Contents:
 Migrating from 2.1.0 to 2.x.y
 =============================
 
-Check compression settings
---------------------------
+Check compression settings (optional)
+-------------------------------------
 
 Read the `administration guide`_ section on 'Configuring Compression'.
 
@@ -50,15 +50,15 @@ merge any local comments from the tracker's ``config.ini`` into
 compression settings as you want. Then replace ``config.ini`` with the
 ``newconfig.ini`` file.
 
-Search added to user index page
--------------------------------
+Search added to user index page (optional)
+------------------------------------------
 
 A search form and count of number of hits has been added to the
 ``user.index.html`` template page in the classic template. You may
 want to merge the search form and footer into your template.
 
-Enhanced full-text search
--------------------------
+Enhanced full-text search (optional)
+------------------------------------
 
 SQLite's `FTS5 full-text search engine`_ is available. It should work
 with any recent sqlite3 installation. Any full text search field will
@@ -99,6 +99,21 @@ commands::
    delete from __words;
    delete from __textids;
 
+Adding error reporting templates (optional)
+-------------------------------------------
+
+Currently some internal errors result in a bare html page with an
+error message. The usual chrome supplied by page.html is not shown.
+For example query language syntax errors for full text search methods
+will display a bare HTML error page.
+
+If you add an `_generic.400.html` template to the html directory, you
+can display the error inside of the layout provided by the `page.html`
+template. This can make fixing the error and navigation easier. You
+can use the `_generic.404.html` template to create a
+`_generic.400.html` by modifying the title and body text. You can test
+the 400 template by appending `@template=400` to the url for the
+tracker.
 
 Migrating from 2.0.0 to 2.1.0
 =============================
