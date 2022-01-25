@@ -17,7 +17,7 @@ branches:
 #    - maint-1.6
 
 dist:
-  - bionic
+  - focal
 
 #  - pypy3
 python:
