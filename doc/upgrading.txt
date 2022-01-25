@@ -35,6 +35,23 @@ Contents:
 Migrating from 2.1.0 to 2.x.y
 =============================
 
+Rdbms version change from 6 to 7 (required)
+-------------------------------------------
+
+To add support for database supported full-text search (FTS), the
+rdbms database schema has to be upgraded.
+
+You should run the ``roundup-admin migrate`` command for your
+tracker once you've installed the latest codebase.
+
+Do this before you use the web, command-line or mail interface
+and before any users access the tracker.
+
+If successful, this command will respond with either "Tracker
+updated" (if you've not previously run it on an RDBMS backend) or
+"No migration action required" (if you have run it, or have used
+another interface to the tracker, or are using anydbm).
+
 Check compression settings (optional)
 -------------------------------------
 
