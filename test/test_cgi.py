@@ -102,7 +102,7 @@ class MessageTestCase(unittest.TestCase):
 
 class testCsvExport(object):
 
-    def testCSVExport(self):
+    def testCSVExportBase(self):
         cl = self._make_client(
             {'@columns': 'id,title,status,keyword,assignedto,nosy'},
             nodeid=None, userid='1')
@@ -137,10 +137,11 @@ class testCsvExport(object):
                         "\"2\",\"bar2\",\"1\",\"['1', '2']\",\"3\",\"['3']\"\r\n"
                         '\"3\","baz32",\"4\","[]","None","[]"\r\n')
         #print(should_be)
-        print(output.getvalue())
+        #print(output.getvalue())
         self.assertEqual(output.getvalue(), should_be)
 
         # test full text search
+        # call export version that outputs names
         cl = self._make_client(
             {'@columns': 'id,title,status,keyword,assignedto,nosy',
              "@search_text": "bar2"}, nodeid=None, userid='1')
@@ -148,16 +149,20 @@ class testCsvExport(object):
         output = io.BytesIO()
         cl.request = MockNull()
         cl.request.wfile = output
-
-        # call export version that outputs names
         actions.ExportCSVAction(cl).handle()
         should_be=(s2b('"id","title","status","keyword","assignedto","nosy"\r\n'
                        '"2","bar2","unread","keyword1;keyword2","Bork, Chef","Bork, Chef"\r\n'))
 
+        self.assertEqual(output.getvalue(), should_be)
+
         # call export version that outputs id numbers
+        output = io.BytesIO()
+        cl.request = MockNull()
+        cl.request.wfile = output
         actions.ExportCSVWithIdAction(cl).handle()
         should_be = s2b('"id","title","status","keyword","assignedto","nosy"\r\n'
                         "\"2\",\"bar2\",\"1\",\"['1', '2']\",\"3\",\"['3']\"\r\n")
+        self.assertEqual(output.getvalue(), should_be)
 
 class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unittest.TestCase):
 
@@ -2478,6 +2483,26 @@ class SqliteNativeFtsCgiTest(unittest.TestCase, testFtsQuery, testCsvExport):
         cl.template = template
         return cl
 
+    def testCSVExportSearchError(self):
+        # test full text search
+        cl = self._make_client(
+            {'@columns': 'id,title,status,keyword,assignedto,nosy',
+             "@search_text": "foo + ^bar2"}, nodeid=None, userid='1')
+        cl.classname = 'issue'
+        output = io.BytesIO()
+        cl.request = MockNull()
+        cl.request.wfile = output
+
+        # note NotFound isn't quite right. however this exception
+        # passes up the stack to where it is handled with a suitable
+        # display of the error.
+        # call export version that outputs names
+        with self.assertRaises(NotFound) as cm:        
+            actions.ExportCSVAction(cl).handle()
+
+        # call export version that outputs id numbers
+        with self.assertRaises(NotFound) as cm:
+            actions.ExportCSVWithIdAction(cl).handle()
 
 class SqliteNativeCgiTest(unittest.TestCase, testFtsQuery):
     """All of the rest of the tests use anydbm as the backend.
