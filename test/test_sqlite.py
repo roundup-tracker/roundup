@@ -16,6 +16,8 @@
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 import unittest, os, shutil, time
+import sqlite3 as sqlite
+
 from roundup.backends import get_backend, have_backend
 
 from .db_test_base import DBTest, ROTest, SchemaTest, ClassicInitTest, config
@@ -32,8 +34,36 @@ class sqliteOpener:
 
 
 class sqliteDBTest(sqliteOpener, DBTest, unittest.TestCase):
-    pass
 
+    def testUpgrade_6_to_7(self):
+
+        # load the database
+        self.db.issue.create(title="flebble frooz")
+        self.db.commit()
+
+        if self.db.database_schema['version'] != 7:
+            self.skipTest("This test only runs for database version 7")
+
+        self.db.database_schema['version'] = 6
+
+        # dropping _fts
+        #  select * from _fts
+        #    it should fail.
+        # run post-init
+        #    same select should succeed (with no rows returned)
+
+        self.db.sql("drop table __fts")
+
+        with self.assertRaises(sqlite.OperationalError) as ctx:
+            self.db.sql("select * from __fts")
+
+        self.assertIn("no such table: __fts", ctx.exception.args[0])
+
+        # test upgrade adding __fts table
+        self.db.post_init()
+
+        # select should now work.
+        self.db.sql("select * from __fts")
 
 class sqliteROTest(sqliteOpener, ROTest, unittest.TestCase):
     pass

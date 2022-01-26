@@ -123,7 +123,7 @@ class IndexerTest(unittest.TestCase):
             pytest.skip("extremewords not tested for native FTS backends")
 
         short = "b"
-        long = "abcdefghijklmnopqrstuvwxyz"
+        long = "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
         self.dex.add_text(('test', '1', 'a'), '%s hello world' % short)
         self.dex.add_text(('test', '2', 'a'), 'blah a %s world' % short)
         self.dex.add_text(('test', '3', 'a'), 'blah Blub river')

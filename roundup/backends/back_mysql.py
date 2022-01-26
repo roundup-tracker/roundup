@@ -412,6 +412,15 @@ class Database(rdbms_common.Database):
         else:
             self.log_info('No changes needed.')
 
+    def fix_version_6_tables(self):
+        # Modify length for __words._word column.
+        c = self.cursor
+        sql = "alter table __words change column _word _word varchar(%s)" % (
+                                                                   self.arg)
+        # Why magic number 5? It was the original offset between
+        #   column length and maxlength.
+        c.execute(sql, (self.indexer.maxlength + 5,))
+
     def __repr__(self):
         return '<myroundsql 0x%x>'%id(self)
 

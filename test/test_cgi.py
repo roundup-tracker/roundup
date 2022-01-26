@@ -100,7 +100,66 @@ class MessageTestCase(unittest.TestCase):
         self.assertEqual(cm([],'<i>x</i>\n<b>x</b>',False),
             ['<i>x</i><br />\n<b>x</b>'])
 
-class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
+class testCsvExport(object):
+
+    def testCSVExport(self):
+        cl = self._make_client(
+            {'@columns': 'id,title,status,keyword,assignedto,nosy'},
+            nodeid=None, userid='1')
+        cl.classname = 'issue'
+
+        demo_id=self.db.user.create(username='demo', address='demo@test.test',
+            roles='User', realname='demo')
+        key_id1=self.db.keyword.create(name='keyword1')
+        key_id2=self.db.keyword.create(name='keyword2')
+        self.db.issue.create(title='foo1', status='2', assignedto='4', nosy=['3',demo_id])
+        self.db.issue.create(title='bar2', status='1', assignedto='3', keyword=[key_id1,key_id2])
+        self.db.issue.create(title='baz32', status='4')
+        output = io.BytesIO()
+        cl.request = MockNull()
+        cl.request.wfile = output
+        # call export version that outputs names
+        actions.ExportCSVAction(cl).handle()
+        should_be=(s2b('"id","title","status","keyword","assignedto","nosy"\r\n'
+                       '"1","foo1","deferred","","Contrary, Mary","Bork, Chef;Contrary, Mary;demo"\r\n'
+                       '"2","bar2","unread","keyword1;keyword2","Bork, Chef","Bork, Chef"\r\n'
+                       '"3","baz32","need-eg","","",""\r\n'))
+        #print(should_be)
+        print(output.getvalue())
+        self.assertEqual(output.getvalue(), should_be)
+        output = io.BytesIO()
+        cl.request = MockNull()
+        cl.request.wfile = output
+        # call export version that outputs id numbers
+        actions.ExportCSVWithIdAction(cl).handle()
+        should_be = s2b('"id","title","status","keyword","assignedto","nosy"\r\n'
+                        "\"1\",\"foo1\",\"2\",\"[]\",\"4\",\"['3', '4', '5']\"\r\n"
+                        "\"2\",\"bar2\",\"1\",\"['1', '2']\",\"3\",\"['3']\"\r\n"
+                        '\"3\","baz32",\"4\","[]","None","[]"\r\n')
+        #print(should_be)
+        print(output.getvalue())
+        self.assertEqual(output.getvalue(), should_be)
+
+        # test full text search
+        cl = self._make_client(
+            {'@columns': 'id,title,status,keyword,assignedto,nosy',
+             "@search_text": "bar2"}, nodeid=None, userid='1')
+        cl.classname = 'issue'
+        output = io.BytesIO()
+        cl.request = MockNull()
+        cl.request.wfile = output
+
+        # call export version that outputs names
+        actions.ExportCSVAction(cl).handle()
+        should_be=(s2b('"id","title","status","keyword","assignedto","nosy"\r\n'
+                       '"2","bar2","unread","keyword1;keyword2","Bork, Chef","Bork, Chef"\r\n'))
+
+        # call export version that outputs id numbers
+        actions.ExportCSVWithIdAction(cl).handle()
+        should_be = s2b('"id","title","status","keyword","assignedto","nosy"\r\n'
+                        "\"2\",\"bar2\",\"1\",\"['1', '2']\",\"3\",\"['3']\"\r\n")
+
+class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unittest.TestCase):
 
     def setUp(self):
         FormTestParent.setUp(self)
@@ -1810,44 +1869,6 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         self.db.user.set('1', roles='')
         self.assertTrue(not item.hasRole(''))
 
-    def testCSVExport(self):
-        cl = self._make_client(
-            {'@columns': 'id,title,status,keyword,assignedto,nosy'},
-            nodeid=None, userid='1')
-        cl.classname = 'issue'
-
-        demo_id=self.db.user.create(username='demo', address='demo@test.test',
-            roles='User', realname='demo')
-        key_id1=self.db.keyword.create(name='keyword1')
-        key_id2=self.db.keyword.create(name='keyword2')
-        self.db.issue.create(title='foo1', status='2', assignedto='4', nosy=['3',demo_id])
-        self.db.issue.create(title='bar2', status='1', assignedto='3', keyword=[key_id1,key_id2])
-        self.db.issue.create(title='baz32', status='4')
-        output = io.BytesIO()
-        cl.request = MockNull()
-        cl.request.wfile = output
-        # call export version that outputs names
-        actions.ExportCSVAction(cl).handle()
-        should_be=(s2b('"id","title","status","keyword","assignedto","nosy"\r\n'
-                       '"1","foo1","deferred","","Contrary, Mary","Bork, Chef;Contrary, Mary;demo"\r\n'
-                       '"2","bar2","unread","keyword1;keyword2","Bork, Chef","Bork, Chef"\r\n'
-                       '"3","baz32","need-eg","","",""\r\n'))
-        #print(should_be)
-        print(output.getvalue())
-        self.assertEqual(output.getvalue(), should_be)
-        output = io.BytesIO()
-        cl.request = MockNull()
-        cl.request.wfile = output
-        # call export version that outputs id numbers
-        actions.ExportCSVWithIdAction(cl).handle()
-        should_be = s2b('"id","title","status","keyword","assignedto","nosy"\r\n'
-                        "\"1\",\"foo1\",\"2\",\"[]\",\"4\",\"['3', '4', '5']\"\r\n"
-                        "\"2\",\"bar2\",\"1\",\"['1', '2']\",\"3\",\"['3']\"\r\n"
-                        '\"3\","baz32",\"4\","[]","None","[]"\r\n')
-        #print(should_be)
-        print(output.getvalue())
-        self.assertEqual(output.getvalue(), should_be)
-
     def testCSVExportCharset(self):
         cl = self._make_client(
             {'@columns': 'id,title,status,keyword,assignedto,nosy'},
@@ -2364,7 +2385,7 @@ class TemplateTestCase(unittest.TestCase):
         r = t.selectTemplate("user", "subdir/item")
         self.assertEqual("subdir/user.item", r)
 
-class SqliteNativeFtsCgiTest(unittest.TestCase, testFtsQuery):
+class SqliteNativeFtsCgiTest(unittest.TestCase, testFtsQuery, testCsvExport):
     """All of the rest of the tests use anydbm as the backend.
        In addtion to normal fts test, this class tests renderError
        when renderContext fails.
@@ -2382,6 +2403,11 @@ class SqliteNativeFtsCgiTest(unittest.TestCase, testFtsQuery):
         # open the database
         self.db = self.instance.open('admin')
         self.db.tx_Source = "web"
+        self.db.user.create(username='Chef', address='chef@bork.bork.bork',
+            realname='Bork, Chef', roles='User')
+        self.db.user.create(username='mary', address='mary@test.test',
+            roles='User', realname='Contrary, Mary')
+        self.db.post_init()
 
         # create a client instance and hijack write_html
         self.client = client.Client(self.instance, "user",
@@ -2428,6 +2454,30 @@ class SqliteNativeFtsCgiTest(unittest.TestCase, testFtsQuery):
 
         self.assertEqual(result, expected)
         self.assertEqual(self.client.response_code, 400)
+
+    #
+    # SECURITY
+    #
+    # XXX test all default permissions
+    def _make_client(self, form, classname='user', nodeid='1',
+           userid='2', template='item'):
+        cl = client.Client(self.instance, None, {'PATH_INFO':'/',
+            'REQUEST_METHOD':'POST'}, db_test_base.makeForm(form))
+        cl.classname = classname
+        if nodeid is not None:
+            cl.nodeid = nodeid
+        cl.db = self.db
+        #cl.db.Otk = MockNull()
+        #cl.db.Otk.data = {}
+        #cl.db.Otk.getall = self.data_get
+        #cl.db.Otk.set = self.data_set
+        cl.userid = userid
+        cl.language = ('en',)
+        cl._error_message = []
+        cl._ok_message = []
+        cl.template = template
+        return cl
+
 
 class SqliteNativeCgiTest(unittest.TestCase, testFtsQuery):
     """All of the rest of the tests use anydbm as the backend.

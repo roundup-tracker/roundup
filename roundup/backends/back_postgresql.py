@@ -264,6 +264,15 @@ class Database(rdbms_common.Database):
         self.sql('''CREATE INDEX words_both_idx ON public.__words
             USING btree (_word, _textid)''')
 
+    def fix_version_6_tables(self):
+        # Modify length for __words._word column.
+        c = self.cursor
+        sql = 'alter table __words alter column _word type varchar(%s)' % (
+                                                                  self.arg)
+        # Why magic number 5? It was the original offset between
+        #   column length and maxlength.
+        c.execute(sql, (self.indexer.maxlength + 5,))
+
     def add_actor_column(self):
         # update existing tables to have the new actor column
         tables = self.database_schema['tables']

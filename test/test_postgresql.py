@@ -68,6 +68,49 @@ class postgresqlDBTest(postgresqlOpener, DBTest, unittest.TestCase):
         DBTest.tearDown(self)
         postgresqlOpener.tearDown(self)
 
+    def testUpgrade_6_to_7(self):
+
+        # load the database
+        self.db.issue.create(title="flebble frooz")
+        self.db.commit()
+
+        if self.db.database_schema['version'] != 7:
+            self.skipTest("This test only runs for database version 7")
+
+        self.db.database_schema['version'] = 6
+
+        # test by shrinking _words and trying to insert a long value
+        #    it should fail.
+        # run post-init
+        #    same test should succeed.
+
+        self.db.sql("alter table __words ALTER column _word type varchar(10)")
+
+        long_string = "a" * (self.db.indexer.maxlength + 5)
+
+        with self.assertRaises(psycopg2.DataError) as ctx:
+            # DataError : value too long for type character varying(10)
+            self.db.sql("insert into __words VALUES('%s',1)" % long_string)
+
+        self.assertIn("varying(10)", ctx.exception.args[0])
+
+        # clear the cursor error so it can be used again
+        self.db.rollback()
+
+        # test upgrade altering row
+        self.db.post_init()
+
+        # This insert with text of expected column size should succeed
+        self.db.sql("insert into __words VALUES('%s',1)" % long_string)
+
+        # verify it fails at one more than the expected column size
+        too_long_string = "a" * (self.db.indexer.maxlength + 6)
+        with self.assertRaises(psycopg2.DataError) as ctx:
+            self.db.sql("insert into __words VALUES('%s',1)" % too_long_string)
+
+        # clean db handle
+        self.db.rollback()
+
 
 @skip_postgresql
 class postgresqlROTest(postgresqlOpener, ROTest, unittest.TestCase):

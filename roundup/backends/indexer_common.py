@@ -19,10 +19,11 @@ class Indexer:
         self.stopwords = set(STOPWORDS)
         for word in db.config[('main', 'indexer_stopwords')]:
             self.stopwords.add(word)
-        # Do not index anything longer than 25 characters since that'll be
-        # gibberish (encoded text or somesuch) or shorter than 2 characters
+        # Do not index anything longer than maxlength characters since
+        # that'll be gibberish (encoded text or somesuch) or shorter
+        # than 2 characters
         self.minlength = 2
-        self.maxlength = 25
+        self.maxlength = 50
         self.language = db.config[('main','indexer_language')]
         # Some indexers have a query language. If that is the case,
         # we don't parse the user supplied query into a wordlist.

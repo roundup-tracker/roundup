@@ -416,9 +416,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         pass
 
     def fix_version_6_tables(self):
-        # Default (used by mysql): NOOP
-        # sqlite/postgres override this to add fts
-        # full text search tables.
+        # Default (used by nobody): NOOP
+        # Each backend mysql, postgres, sqlite overrides this
+        # You would think ALTER commands would be the same but nooo.
         pass
 
     def _convert_journal_tables(self):

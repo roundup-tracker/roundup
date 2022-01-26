@@ -38,8 +38,15 @@ Migrating from 2.1.0 to 2.x.y
 Rdbms version change from 6 to 7 (required)
 -------------------------------------------
 
-To add support for database supported full-text search (FTS), the
-rdbms database schema has to be upgraded.
+This release includes two changes that require updates to the database
+schema:
+
+  1. The size of words included in the Roundup FTS indexers have been
+     increased from 25 to 50. This requires changes to the database
+     columns used by the native indexer.  This also affect the whoosh
+     and xapian indexers.
+  2. Some databases that include native full-text search (native-fts
+     indexer) searching are now supported.
 
 You should run the ``roundup-admin migrate`` command for your
 tracker once you've installed the latest codebase.
@@ -51,6 +58,16 @@ If successful, this command will respond with either "Tracker
 updated" (if you've not previously run it on an RDBMS backend) or
 "No migration action required" (if you have run it, or have used
 another interface to the tracker, or are using anydbm).
+
+See `below for directions on enabling native-fts`_.
+
+.. _below for directions on enabling native-fts: \
+    #enhanced-full-text-search-optional
+
+The increase in indexed word length also affects whoosh and xapian
+backends. You may want to run ``roundup-admin -i tracker_home
+reindex`` if you want to index or search for longer words in your full
+text searches. Re-indexing make take some time.
 
 Check compression settings (optional)
 -------------------------------------

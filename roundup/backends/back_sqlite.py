@@ -219,6 +219,8 @@ class Database(rdbms_common.Database):
         )
 
     def fix_version_6_tables(self):
+        # note sqlite has no limit on column size so v6 fixes
+        # to __words._word length are not needed.
         # Add native full-text indexing table
         self._add_fts5_table()
 
