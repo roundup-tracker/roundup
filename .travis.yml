@@ -17,7 +17,7 @@ branches:
 #    - maint-1.6
 
 dist:
-  - focal
+  - bionic
 
 #  - pypy3
 python:
@@ -40,8 +40,8 @@ jobs:
 
 addons:
   apt:
-    #sources:
-    #  - sourceline: ppa:xapian-backports/ppa
+    sources:
+      - sourceline: ppa:xapian-backports/ppa
 
     packages:
       # Required to build/install the xapian-binding
