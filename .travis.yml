@@ -105,7 +105,7 @@ install:
   - pip install gpg pytz whoosh pyjwt requests
   - pip install pytest-cov codecov
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install docutils; fi
-  - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install mistune; fi
+  - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install mistune==0.8.4; fi
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* && $TRAVIS_PYTHON_VERSION != "2."* ]]; then pip install Markdown; fi
   - pip install markdown2
   - pip install brotli zstd
