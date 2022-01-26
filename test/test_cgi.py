@@ -104,7 +104,7 @@ class testCsvExport(object):
 
     def testCSVExportBase(self):
         cl = self._make_client(
-            {'@columns': 'id,title,status,keyword,assignedto,nosy'},
+            {'@columns': 'id,title,status,keyword,assignedto,nosy,creation'},
             nodeid=None, userid='1')
         cl.classname = 'issue'
 
@@ -112,6 +112,16 @@ class testCsvExport(object):
             roles='User', realname='demo')
         key_id1=self.db.keyword.create(name='keyword1')
         key_id2=self.db.keyword.create(name='keyword2')
+
+        originalDate = date.Date
+        dummy=date.Date('2000-06-26.00:34:02.0')
+        # is a closure the best way to return a static Date object??
+        def dummyDate(adate=None):
+            def dummyClosure(adate=None, translator=None):
+                return dummy
+            return dummyClosure
+        date.Date = dummyDate()
+
         self.db.issue.create(title='foo1', status='2', assignedto='4', nosy=['3',demo_id])
         self.db.issue.create(title='bar2', status='1', assignedto='3', keyword=[key_id1,key_id2])
         self.db.issue.create(title='baz32', status='4')
@@ -120,25 +130,30 @@ class testCsvExport(object):
         cl.request.wfile = output
         # call export version that outputs names
         actions.ExportCSVAction(cl).handle()
-        should_be=(s2b('"id","title","status","keyword","assignedto","nosy"\r\n'
-                       '"1","foo1","deferred","","Contrary, Mary","Bork, Chef;Contrary, Mary;demo"\r\n'
-                       '"2","bar2","unread","keyword1;keyword2","Bork, Chef","Bork, Chef"\r\n'
-                       '"3","baz32","need-eg","","",""\r\n'))
+        should_be=(s2b('"id","title","status","keyword","assignedto","nosy","creation"\r\n'
+                       '"1","foo1","deferred","","Contrary, Mary","Bork, Chef;Contrary, Mary;demo","2000-06-26 00:34"\r\n'
+                       '"2","bar2","unread","keyword1;keyword2","Bork, Chef","Bork, Chef","2000-06-26 00:34"\r\n'
+                       '"3","baz32","need-eg","","","","2000-06-26 00:34"\r\n'))
+
+
         #print(should_be)
-        print(output.getvalue())
+        #print(output.getvalue())
         self.assertEqual(output.getvalue(), should_be)
         output = io.BytesIO()
         cl.request = MockNull()
         cl.request.wfile = output
         # call export version that outputs id numbers
         actions.ExportCSVWithIdAction(cl).handle()
-        should_be = s2b('"id","title","status","keyword","assignedto","nosy"\r\n'
-                        "\"1\",\"foo1\",\"2\",\"[]\",\"4\",\"['3', '4', '5']\"\r\n"
-                        "\"2\",\"bar2\",\"1\",\"['1', '2']\",\"3\",\"['3']\"\r\n"
-                        '\"3\","baz32",\"4\","[]","None","[]"\r\n')
+        should_be = s2b('"id","title","status","keyword","assignedto","nosy","creation"\r\n'
+                        '''"1","foo1","2","[]","4","['3', '4', '5']","2000-06-26.00:34:02"\r\n'''
+                        '''"2","bar2","1","['1', '2']","3","['3']","2000-06-26.00:34:02"\r\n'''
+                        '''"3","baz32","4","[]","None","[]","2000-06-26.00:34:02"\r\n''')
         #print(should_be)
         #print(output.getvalue())
         self.assertEqual(output.getvalue(), should_be)
+
+        # reset the real date command
+        date.Date = originalDate
 
         # test full text search
         # call export version that outputs names
