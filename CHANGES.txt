@@ -129,9 +129,9 @@ Features:
   structure. (John Rouillard)
 - issue2551189 - increase size of words in full text index.
   Many terms (like exception names or symbolic constants) are larger
-  than 25. Also German words are long. Since there is little chance
-  of fixing German to shorten their words, change indexer maxlength to
-  50. (Thomas Hein provided patch; patch reworked John Rouillard)
+  than 25. Also German words are long. Since there is little chance of
+  fixing German to shorten their words, change indexer maxlength to 50.
+  (Thomas Arendsen Hein provided patch; patch reworked John Rouillard)
 
 2021-07-13 2.1.0
 
