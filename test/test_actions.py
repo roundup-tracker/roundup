@@ -82,6 +82,16 @@ class ShowActionTestCase(ActionTestCase):
         self.assertRaisesMessage(ValueError, action.handle,
             'No type specified')
 
+    def testShowActionBadNumber(self):
+        action = ShowAction(self.client)
+        self.assertRaises(ValueError, action.handle)
+        self.form.value.append(MiniFieldStorage('@number', 'A'))
+        self.form.value.append(MiniFieldStorage('@type', 'issue'))
+        with self.assertRaises(SeriousError) as ctx:
+            action.handle()
+        self.assertEqual('"A" is not an ID (issue ID required)',
+                         ctx.exception.args[0])
+
 class RetireActionTestCase(ActionTestCase):
     def testRetireAction(self):
         self.client.db.security.hasPermission = true
