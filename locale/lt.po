@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: roundup-1.1.2\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2021-07-12 22:10-0400\n"
+"POT-Creation-Date: 2022-01-28 00:18-0500\n"
 "PO-Revision-Date: 2013-10-31 12:21+0100\n"
 "Last-Translator: Nerijus Baliunas <nerijus@users.sourceforge.net>\n"
 "Language-Team: \n"
@@ -29,19 +29,19 @@ msgid "You may not retire the admin or anonymous user"
 msgstr "Negalite deaktyvuoti administratoriaus ar anoniminio vartotojo"
 
 # ../roundup/admin.py:85 :962 :1011 :1033
-#: ../roundup/admin.py:95 ../roundup/admin.py:1173 ../roundup/admin.py:1228
-#: ../roundup/admin.py:1255 ../roundup/admin.py:95:1173 :1228:1255
+#: ../roundup/admin.py:99 ../roundup/admin.py:1199 ../roundup/admin.py:1254
+#: ../roundup/admin.py:1281 ../roundup/admin.py:99:1199 :1254:1281
 #, python-format
 msgid "no such class \"%(classname)s\""
 msgstr "nėra klasės \"%(classname)s\""
 
 # ../roundup/admin.py:95 :99
-#: ../roundup/admin.py:107
+#: ../roundup/admin.py:111
 #, python-format
 msgid "argument \"%(arg)s\" not propname=value"
 msgstr "argumentas \"%(arg)s\" nėra parinktis=reikšmė formato"
 
-#: ../roundup/admin.py:120
+#: ../roundup/admin.py:124
 #, python-format
 msgid ""
 "Problem: %(message)s\n"
@@ -50,7 +50,7 @@ msgstr ""
 "Problema: %(message)s\n"
 "\n"
 
-#: ../roundup/admin.py:121
+#: ../roundup/admin.py:125
 #, fuzzy, python-format
 msgid ""
 "%(message)sUsage: roundup-admin [options] [<command> <arguments>]\n"
@@ -100,12 +100,12 @@ msgstr ""
 " roundup-admin help <komanda>             -- specifinė pagalba komandoms\n"
 " roundup-admin help all                   -- visa įmanoma pagalba\n"
 
-#: ../roundup/admin.py:148
+#: ../roundup/admin.py:152
 #, fuzzy
 msgid "Commands: "
 msgstr "Komandos:"
 
-#: ../roundup/admin.py:155
+#: ../roundup/admin.py:159
 msgid ""
 "Commands may be abbreviated as long as the abbreviation\n"
 "matches only one command, e.g. l == li == lis == list."
@@ -113,7 +113,7 @@ msgstr ""
 "Komandos gali būti sutrumpintos, tačiau sutrumpinimas turi atitikti tik\n"
 "vieną komandą, pvz. l == li == lis == list."
 
-#: ../roundup/admin.py:182
+#: ../roundup/admin.py:186
 msgid ""
 "\n"
 "All commands (except help) require a tracker specifier. This is just\n"
@@ -246,12 +246,12 @@ msgstr ""
 "\n"
 "Komandų pagalba:\n"
 
-#: ../roundup/admin.py:245
+#: ../roundup/admin.py:249
 #, python-format
 msgid "%s:"
 msgstr "%s:"
 
-#: ../roundup/admin.py:250
+#: ../roundup/admin.py:254
 msgid ""
 "Usage: help topic\n"
 "        Give help about topic.\n"
@@ -271,22 +271,22 @@ msgstr ""
 "        all       -- visa įmanoma pagalba\n"
 "        "
 
-#: ../roundup/admin.py:272
+#: ../roundup/admin.py:276
 #, python-format
 msgid "Sorry, no help for \"%(topic)s\""
 msgstr "Atsiprašome, pagalbos temai \"%(topic)s\" nėra"
 
 # ../roundup/admin.py:338 :387
-#: ../roundup/admin.py:349 ../roundup/admin.py:405 ../roundup/admin.py:349:405
+#: ../roundup/admin.py:375 ../roundup/admin.py:431 ../roundup/admin.py:375:431
 msgid "Templates:"
 msgstr "Šablonai:"
 
 # ../roundup/admin.py:341 :398
-#: ../roundup/admin.py:352 ../roundup/admin.py:415 ../roundup/admin.py:352:415
+#: ../roundup/admin.py:378 ../roundup/admin.py:441 ../roundup/admin.py:378:441
 msgid "Back ends:"
 msgstr "Duomenų saugyklos:"
 
-#: ../roundup/admin.py:355
+#: ../roundup/admin.py:381
 msgid ""
 "Usage: install [template [backend [key=val[,key=val]]]]\n"
 "        Install a new Roundup tracker.\n"
@@ -336,23 +336,23 @@ msgstr ""
 
 # ../roundup/admin.py:360 :447 :508 :587 :637 :695 :716 :744 :815 :882 :953
 # :1001 :1023 :1050 :1117 :1184
-#: ../roundup/admin.py:378 ../roundup/admin.py:510 ../roundup/admin.py:583
-#: ../roundup/admin.py:674 ../roundup/admin.py:732 ../roundup/admin.py:816
-#: ../roundup/admin.py:875 ../roundup/admin.py:902 ../roundup/admin.py:929
-#: ../roundup/admin.py:1004 ../roundup/admin.py:1071 ../roundup/admin.py:1157
-#: ../roundup/admin.py:1218 ../roundup/admin.py:1245 ../roundup/admin.py:1281
-#: ../roundup/admin.py:1412 ../roundup/admin.py:1499
-#: ../roundup/admin.py:378:510 :1071 :1157:1218 :1245:1281 :1412:1499 :583:674
-#: :732:816 :875:902 :929:1004
+#: ../roundup/admin.py:404 ../roundup/admin.py:536 ../roundup/admin.py:609
+#: ../roundup/admin.py:700 ../roundup/admin.py:758 ../roundup/admin.py:842
+#: ../roundup/admin.py:901 ../roundup/admin.py:928 ../roundup/admin.py:955
+#: ../roundup/admin.py:1030 ../roundup/admin.py:1097 ../roundup/admin.py:1183
+#: ../roundup/admin.py:1244 ../roundup/admin.py:1271 ../roundup/admin.py:1307
+#: ../roundup/admin.py:1435 ../roundup/admin.py:1522
+#: ../roundup/admin.py:404:536 :1097 :1183:1244 :1271:1307 :1435:1522 :609:700
+#: :758:842 :901:928 :955:1030
 msgid "Not enough arguments supplied"
 msgstr "Paduota nepakankamai argumentų"
 
-#: ../roundup/admin.py:384
+#: ../roundup/admin.py:410
 #, python-format
 msgid "Instance home parent directory \"%(parent)s\" does not exist"
 msgstr "Namų direktorijos tėvinė direktorija \"%(parent)s\" neegzistuoja"
 
-#: ../roundup/admin.py:393
+#: ../roundup/admin.py:419
 #, python-format
 msgid ""
 "WARNING: There appears to be a tracker in \"%(tracker_home)s\"!\n"
@@ -363,22 +363,22 @@ msgstr ""
 "Jei jūs jį perdiegsite, prarasite visus duomenis!\n"
 "Ištrinti jį? Y/N: "
 
-#: ../roundup/admin.py:406
+#: ../roundup/admin.py:432
 #, fuzzy
 msgid "Select template"
 msgstr "Pasirinkite šabloną [klasikinis]: "
 
-#: ../roundup/admin.py:416
+#: ../roundup/admin.py:442
 #, fuzzy
 msgid "Select backend"
 msgstr "Pasirinkite duomenų saugyklą [anydbm]: "
 
-#: ../roundup/admin.py:427
+#: ../roundup/admin.py:453
 #, python-format
 msgid "Error in configuration settings: \"%s\""
 msgstr "Klaida konfigūracijos nustatymuose: \"%s\""
 
-#: ../roundup/admin.py:458
+#: ../roundup/admin.py:484
 #, python-format
 msgid ""
 "\n"
@@ -391,11 +391,11 @@ msgstr ""
 " Dabar jūs turėtumėte pakeisti tracker'io konfigūracijos failą:\n"
 "   %(config_file)s"
 
-#: ../roundup/admin.py:468
+#: ../roundup/admin.py:494
 msgid " ... at a minimum, you must set following options:"
 msgstr " ... mažiausiai turėtumėte nustalyti šias parinktis:"
 
-#: ../roundup/admin.py:473
+#: ../roundup/admin.py:499
 #, python-format
 msgid ""
 "\n"
@@ -424,7 +424,7 @@ msgstr ""
 " aukščiau minėtus žingsnius.\n"
 "---------------------------------------------------------------------------\n"
 
-#: ../roundup/admin.py:505
+#: ../roundup/admin.py:531
 #, fuzzy
 msgid ""
 "Usage: genconfig <filename>\n"
@@ -437,7 +437,7 @@ msgstr ""
 "            įprastomis reikšmėmis faile <failovardas>.\n"
 "        "
 
-#: ../roundup/admin.py:520
+#: ../roundup/admin.py:546
 #, fuzzy
 msgid ""
 "Usage: updateconfig <filename>\n"
@@ -452,7 +452,7 @@ msgstr ""
 "        "
 
 #. password
-#: ../roundup/admin.py:528
+#: ../roundup/admin.py:554
 msgid ""
 "Usage: initialise [adminpw]\n"
 "        Initialise a new Roundup tracker.\n"
@@ -470,23 +470,23 @@ msgstr ""
 "            Vykdyti tracker'io inicializacijos funkciją dbinit.init()\n"
 "        "
 
-#: ../roundup/admin.py:542
+#: ../roundup/admin.py:568
 msgid "Admin Password: "
 msgstr "Administratoriaus slaptažodis: "
 
-#: ../roundup/admin.py:543
+#: ../roundup/admin.py:569
 msgid "       Confirm: "
 msgstr "       Patvirtinkite: "
 
-#: ../roundup/admin.py:547
+#: ../roundup/admin.py:573
 msgid "Instance home does not exist"
 msgstr "Namų direktorija neegzistuoja"
 
-#: ../roundup/admin.py:551
+#: ../roundup/admin.py:577
 msgid "Instance has not been installed"
 msgstr "Egzempliorius nebuvo įdiegtas"
 
-#: ../roundup/admin.py:557
+#: ../roundup/admin.py:583
 msgid ""
 "WARNING: The database is already initialised!\n"
 "If you re-initialise it, you will lose all the data!\n"
@@ -496,7 +496,7 @@ msgstr ""
 "Jei jūs ją inicializuosite dar kartą, prarasite visus duomenis!\n"
 "Ištrinti duomenų bazę? Y/N: "
 
-#: ../roundup/admin.py:573
+#: ../roundup/admin.py:599
 #, fuzzy
 msgid ""
 "Usage: get property designator[,designator]*\n"
@@ -516,7 +516,7 @@ msgstr ""
 "            "
 
 # ../roundup/admin.py:541 :556
-#: ../roundup/admin.py:616 ../roundup/admin.py:633 ../roundup/admin.py:616:633
+#: ../roundup/admin.py:642 ../roundup/admin.py:659 ../roundup/admin.py:642:659
 #, python-format
 msgid "property %s is not of type Multilink or Link so -d flag does not apply."
 msgstr ""
@@ -524,18 +524,18 @@ msgstr ""
 "-d netinkamas."
 
 # ../roundup/admin.py:564 :964 :1013 :1035
-#: ../roundup/admin.py:643 ../roundup/admin.py:1175 ../roundup/admin.py:1230
-#: ../roundup/admin.py:643:1175:1230
+#: ../roundup/admin.py:669 ../roundup/admin.py:1201 ../roundup/admin.py:1256
+#: ../roundup/admin.py:669:1201:1256
 #, python-format
 msgid "no such %(classname)s node \"%(nodeid)s\""
 msgstr "nėra tokio %(classname)s elemento \"%(nodeid)s\""
 
-#: ../roundup/admin.py:646
+#: ../roundup/admin.py:672
 #, python-format
 msgid "no such %(classname)s property \"%(propname)s\""
 msgstr "nėra tokio %(classname)s parinkties \"%(propname)s\""
 
-#: ../roundup/admin.py:654
+#: ../roundup/admin.py:680
 #, fuzzy
 msgid ""
 "Usage: set items property=value property=value ...\n"
@@ -570,7 +570,7 @@ msgstr ""
 "            reikšmės (t.y. \"1,2,3\").\n"
 "        "
 
-#: ../roundup/admin.py:722
+#: ../roundup/admin.py:748
 #, fuzzy
 msgid ""
 "Usage: filter classname propname=value ...\n"
@@ -593,20 +593,20 @@ msgstr ""
 "        "
 
 # ../roundup/admin.py:682 :835 :847 :901
-#: ../roundup/admin.py:764
+#: ../roundup/admin.py:790
 #, fuzzy, python-format
 msgid "Class %(curclassname)s has no property %(pn)s in %(propname)s."
 msgstr "%(classname)s neturi parinkties \"%(propname)s\""
 
 # ../roundup/admin.py:682 :835 :847 :901
-#: ../roundup/admin.py:801 ../roundup/admin.py:862 ../roundup/admin.py:1024
-#: ../roundup/admin.py:1036 ../roundup/admin.py:1091
-#: ../roundup/admin.py:801:862 :1024:1036:1091
+#: ../roundup/admin.py:827 ../roundup/admin.py:888 ../roundup/admin.py:1050
+#: ../roundup/admin.py:1062 ../roundup/admin.py:1117
+#: ../roundup/admin.py:827:888 :1050:1062:1117
 #, python-format
 msgid "%(classname)s has no property \"%(propname)s\""
 msgstr "%(classname)s neturi parinkties \"%(propname)s\""
 
-#: ../roundup/admin.py:808
+#: ../roundup/admin.py:834
 msgid ""
 "Usage: find classname propname=value ...\n"
 "        Find the nodes of the given class with a given link property value.\n"
@@ -625,7 +625,7 @@ msgstr ""
 "            arba jo raktinė reikšmė.\n"
 "        "
 
-#: ../roundup/admin.py:869
+#: ../roundup/admin.py:895
 msgid ""
 "Usage: specification classname\n"
 "        Show the properties for a classname.\n"
@@ -639,17 +639,17 @@ msgstr ""
 "            Ši komanda išvardina duotos klasės parinktis.\n"
 "        "
 
-#: ../roundup/admin.py:885
+#: ../roundup/admin.py:911
 #, fuzzy, python-format
 msgid "%(key)s: %(value)s (key property)\n"
 msgstr "%(key)s: %(value)s (key property)"
 
-#: ../roundup/admin.py:888
+#: ../roundup/admin.py:914
 #, fuzzy, python-format
 msgid "%(key)s: %(value)s\n"
 msgstr "%(key)s: %(value)s"
 
-#: ../roundup/admin.py:891
+#: ../roundup/admin.py:917
 #, fuzzy
 msgid ""
 "Usage: display designator[,designator]*\n"
@@ -669,12 +669,12 @@ msgstr ""
 "            Ši komanda išvardina parinktis ir jų reikšmes duotam elementui.\n"
 "        "
 
-#: ../roundup/admin.py:918
+#: ../roundup/admin.py:944
 #, python-format
 msgid "%(key)s: %(value)s"
 msgstr "%(key)s: %(value)s"
 
-#: ../roundup/admin.py:921
+#: ../roundup/admin.py:947
 msgid ""
 "Usage: create classname property=value ...\n"
 "        Create a new entry of a given class.\n"
@@ -693,31 +693,31 @@ msgstr ""
 "            eilutėje po \"create\" komandos.\n"
 "        "
 
-#: ../roundup/admin.py:949
+#: ../roundup/admin.py:975
 #, python-format
 msgid "%(propname)s (Password): "
 msgstr "%(propname)s (Slaptažodis): "
 
-#: ../roundup/admin.py:952
+#: ../roundup/admin.py:978
 #, python-format
 msgid "   %(propname)s (Again): "
 msgstr "   %(propname)s (Pakartoti): "
 
-#: ../roundup/admin.py:955
+#: ../roundup/admin.py:981
 msgid "Sorry, try again..."
 msgstr "Bandykite dar kartą..."
 
-#: ../roundup/admin.py:959
+#: ../roundup/admin.py:985
 #, python-format
 msgid "%(propname)s (%(proptype)s): "
 msgstr "%(propname)s (%(proptype)s): "
 
-#: ../roundup/admin.py:977
+#: ../roundup/admin.py:1003
 #, python-format
 msgid "you must provide the \"%(propname)s\" property."
 msgstr "turite pateikti parinktį \"%(propname)s\"."
 
-#: ../roundup/admin.py:989
+#: ../roundup/admin.py:1015
 msgid ""
 "Usage: list classname [property]\n"
 "        List the instances of a class.\n"
@@ -745,16 +745,16 @@ msgstr ""
 "            parinkties sąrašas kiekvienam klasės egzemplioriui.\n"
 "        "
 
-#: ../roundup/admin.py:1002
+#: ../roundup/admin.py:1028
 msgid "Too many arguments supplied"
 msgstr "Pateikta per daug argumentų"
 
-#: ../roundup/admin.py:1038
+#: ../roundup/admin.py:1064
 #, python-format
 msgid "%(nodeid)4s: %(value)s"
 msgstr "%(nodeid)4s: %(value)s"
 
-#: ../roundup/admin.py:1042
+#: ../roundup/admin.py:1068
 msgid ""
 "Usage: table classname [property[,property]*]\n"
 "        List the instances of a class in tabular form.\n"
@@ -816,17 +816,17 @@ msgstr ""
 "            pateiks 4 simbolių ilgio \"Name\" stulpelį.\n"
 "        "
 
-#: ../roundup/admin.py:1086
+#: ../roundup/admin.py:1112
 #, python-format
 msgid "\"%(spec)s\" not name:width"
 msgstr "\"%(spec)s\" ne vardas:plotis"
 
-#: ../roundup/admin.py:1108
+#: ../roundup/admin.py:1134
 #, python-format
 msgid "\"%(spec)s\" does not have an integer width: \"%(width)s\""
 msgstr ""
 
-#: ../roundup/admin.py:1144
+#: ../roundup/admin.py:1170
 msgid ""
 "Usage: history designator [skipquiet]\n"
 "        Show the history entries of a designator.\n"
@@ -841,7 +841,7 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1180
+#: ../roundup/admin.py:1206
 msgid ""
 "Usage: commit\n"
 "        Commit changes made to the database during an interactive session.\n"
@@ -866,7 +866,7 @@ msgstr ""
 "            išsaugomos, jei jos įvykdomos sėkmingai.\n"
 "        "
 
-#: ../roundup/admin.py:1195
+#: ../roundup/admin.py:1221
 msgid ""
 "Usage: rollback\n"
 "        Undo all changes that are pending commit to the database.\n"
@@ -888,7 +888,7 @@ msgstr ""
 "             nepadarys jokių pakeitimų duomenų bazėje.\n"
 "        "
 
-#: ../roundup/admin.py:1208
+#: ../roundup/admin.py:1234
 #, fuzzy
 msgid ""
 "Usage: retire designator[,designator]*\n"
@@ -909,7 +909,7 @@ msgstr ""
 "            kartą.\n"
 "        "
 
-#: ../roundup/admin.py:1236
+#: ../roundup/admin.py:1262
 #, fuzzy
 msgid ""
 "Usage: restore designator[,designator]*\n"
@@ -928,13 +928,13 @@ msgstr ""
 "        "
 
 # ../roundup/admin.py:564 :964 :1013 :1035
-#: ../roundup/admin.py:1261
+#: ../roundup/admin.py:1287
 #, fuzzy
 msgid "no such %(classname)s node \" % (nodeid)s\""
 msgstr "nėra tokio %(classname)s elemento \"%(nodeid)s\""
 
 #. grab the directory to export to
-#: ../roundup/admin.py:1267
+#: ../roundup/admin.py:1293
 msgid ""
 "Usage: export [[-]class[,class]] export_dir\n"
 "        Export the database to colon-separated-value files.\n"
@@ -962,7 +962,7 @@ msgstr ""
 "        direktorijoje.\n"
 "        "
 
-#: ../roundup/admin.py:1377
+#: ../roundup/admin.py:1400
 msgid ""
 "Usage: exporttables [[-]class[,class]] export_dir\n"
 "        Export the database to colon-separated-value files, excluding the\n"
@@ -992,7 +992,7 @@ msgstr ""
 "        direktorijoje.\n"
 "        "
 
-#: ../roundup/admin.py:1392
+#: ../roundup/admin.py:1415
 msgid ""
 "Usage: import import_dir\n"
 "        Import a database from the directory containing CSV files,\n"
@@ -1037,7 +1037,7 @@ msgstr ""
 "            veiksmas).\n"
 "        "
 
-#: ../roundup/admin.py:1474
+#: ../roundup/admin.py:1497
 msgid ""
 "Usage: importtables export_dir\n"
 "\n"
@@ -1045,7 +1045,7 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1481
+#: ../roundup/admin.py:1504
 msgid ""
 "Usage: pack period | date\n"
 "\n"
@@ -1084,11 +1084,11 @@ msgstr ""
 "\n"
 "        "
 
-#: ../roundup/admin.py:1509
+#: ../roundup/admin.py:1532
 msgid "Invalid format"
 msgstr "Netinkamas formatas"
 
-#: ../roundup/admin.py:1520
+#: ../roundup/admin.py:1543
 msgid ""
 "Usage: reindex [classname|designator]*\n"
 "        Re-generate a tracker's search indexes.\n"
@@ -1104,12 +1104,12 @@ msgstr ""
 "            Paprastai tai įvyksta automatiškai.\n"
 "        "
 
-#: ../roundup/admin.py:1534
+#: ../roundup/admin.py:1557
 #, python-format
 msgid "no such item \"%(designator)s\""
 msgstr "nėra elemento \"%(designator)s\""
 
-#: ../roundup/admin.py:1544
+#: ../roundup/admin.py:1567
 #, fuzzy
 msgid ""
 "Usage: security [Role name]\n"
@@ -1121,47 +1121,47 @@ msgstr ""
 "            Parodo vienos ar kelių rolių permisijas.\n"
 "        "
 
-#: ../roundup/admin.py:1553
+#: ../roundup/admin.py:1576
 #, fuzzy, python-format
 msgid "No such Role \"%(role)s\"\n"
 msgstr "Nėra tokios rolės \"%(role)s\""
 
-#: ../roundup/admin.py:1559
+#: ../roundup/admin.py:1582
 #, fuzzy, python-format
 msgid "New Web users get the Roles \"%(role)s\"\n"
 msgstr "Naujiems web vartotojams suteikiamos rolės \"%(role)s\""
 
-#: ../roundup/admin.py:1562
+#: ../roundup/admin.py:1585
 #, fuzzy, python-format
 msgid "New Web users get the Role \"%(role)s\"\n"
 msgstr "Naujiems web vartotojams suteikiama rolė \"%(role)s\""
 
-#: ../roundup/admin.py:1566
+#: ../roundup/admin.py:1589
 #, fuzzy, python-format
 msgid "New Email users get the Roles \"%(role)s\"\n"
 msgstr "Naujiems vartotojams per el. paštą suteikiamos rolės \"%(role)s\""
 
-#: ../roundup/admin.py:1568
+#: ../roundup/admin.py:1591
 #, fuzzy, python-format
 msgid "New Email users get the Role \"%(role)s\"\n"
 msgstr "Naujiems vartotojams per el. paštą suteikiama rolė \"%(role)s\""
 
-#: ../roundup/admin.py:1571
+#: ../roundup/admin.py:1594
 #, fuzzy, python-format
 msgid "Role \"%(name)s\":\n"
 msgstr "Rolė \"%(name)s\":"
 
-#: ../roundup/admin.py:1576
+#: ../roundup/admin.py:1599
 #, fuzzy
 msgid " %(description)s (%(name)s for \"%(klass)s\""
 msgstr " %(description)s (%(name)s skirta tik \"%(klass)s\")"
 
-#: ../roundup/admin.py:1576
+#: ../roundup/admin.py:1599
 #, fuzzy, python-format
 msgid " %(description)s (%(name)s for \"%(klass)s\": %(properties)s only)\n"
 msgstr " %(description)s (%(name)s skirta tik \"%(klass)s\": %(properties)s)"
 
-#: ../roundup/admin.py:1588
+#: ../roundup/admin.py:1611
 #, python-format
 msgid ""
 "\n"
@@ -1169,17 +1169,17 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../roundup/admin.py:1591
+#: ../roundup/admin.py:1614
 #, fuzzy, python-format
 msgid " %(description)s (%(name)s for \"%(klass)s\" only)\n"
 msgstr " %(description)s (%(name)s skirta tik \"%(klass)s\")"
 
-#: ../roundup/admin.py:1594
+#: ../roundup/admin.py:1617
 #, fuzzy, python-format
 msgid " %(description)s (%(name)s)\n"
 msgstr " %(description)s (%(name)s)"
 
-#: ../roundup/admin.py:1598
+#: ../roundup/admin.py:1621
 msgid ""
 "Usage: migrate\n"
 "\n"
@@ -1203,45 +1203,45 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1619
+#: ../roundup/admin.py:1642
 #, fuzzy
 msgid "Tracker updated"
 msgstr "Tracker'io namų direktorija"
 
-#: ../roundup/admin.py:1622
+#: ../roundup/admin.py:1645
 msgid "No migration action required"
 msgstr ""
 
-#: ../roundup/admin.py:1648
+#: ../roundup/admin.py:1671
 #, python-format
 msgid "Unknown command \"%(command)s\" (\"help commands\" for a list)"
 msgstr ""
 "Nežinoma komanda \"%(command)s\" (įveskite \"help commands\" komandų\n"
 "sąrašui gauti)"
 
-#: ../roundup/admin.py:1654
+#: ../roundup/admin.py:1677
 #, python-format
 msgid "Multiple commands match \"%(command)s\": %(list)s"
 msgstr "Kelios komandos atitinka \"%(command)s\": %(list)s"
 
-#: ../roundup/admin.py:1663
+#: ../roundup/admin.py:1686
 msgid "Enter tracker home: "
 msgstr "Įveskite tracker'io namų direktoriją: "
 
 # ../roundup/admin.py:1312 :1318 :1338
-#: ../roundup/admin.py:1672 ../roundup/admin.py:1678 ../roundup/admin.py:1704
-#: ../roundup/admin.py:1672:1678:1704
+#: ../roundup/admin.py:1695 ../roundup/admin.py:1701 ../roundup/admin.py:1730
+#: ../roundup/admin.py:1695:1701:1730
 #, python-format
 msgid "Error: %(message)s"
 msgstr "Klaida: %(message)s"
 
-#: ../roundup/admin.py:1686 ../roundup/admin.py:1690
-#: ../roundup/admin.py:1686:1690
+#: ../roundup/admin.py:1709 ../roundup/admin.py:1713
+#: ../roundup/admin.py:1709:1713
 #, python-format
 msgid "Error: Couldn't open tracker: %(message)s"
 msgstr "Klaida: Negaliu atidaryti tracker'io: %(message)s"
 
-#: ../roundup/admin.py:1717
+#: ../roundup/admin.py:1743
 #, python-format
 msgid ""
 "Roundup %s ready for input.\n"
@@ -1250,41 +1250,41 @@ msgstr ""
 "Roundup %s pasiruošęs priimti duomenis.\n"
 "Norėdami iškviesti pagalbą įveskite \"help\"."
 
-#: ../roundup/admin.py:1722
+#: ../roundup/admin.py:1748
 msgid "Note: command history and editing not available"
 msgstr "Pastaba: komandų archyvas ir redagavimas neprieinami"
 
-#: ../roundup/admin.py:1726
+#: ../roundup/admin.py:1752
 msgid "roundup> "
 msgstr "roundup> "
 
-#: ../roundup/admin.py:1728
+#: ../roundup/admin.py:1754
 msgid "exit..."
 msgstr "išeiti..."
 
-#: ../roundup/admin.py:1741
+#: ../roundup/admin.py:1767
 msgid "There are unsaved changes. Commit them (y/N)? "
 msgstr "Yra neišsaugotų pakeitimų. Išsaugoti juos (y/N)? "
 
-#: ../roundup/backends/back_anydbm.py:173
-#: ../roundup/backends/rdbms_common.py:877
+#: ../roundup/backends/back_anydbm.py:173 ../roundup/backends/back_lmdb.py:251
+#: ../roundup/backends/rdbms_common.py:887
 #, python-format
 msgid "Class \"%s\" already defined."
 msgstr ""
 
-#: ../roundup/backends/back_anydbm.py:234
+#: ../roundup/backends/back_anydbm.py:234 ../roundup/backends/back_lmdb.py:312
 #: ../roundup/backends/sessions_dbm.py:55
 msgid "Couldn't identify database type"
 msgstr ""
 
-#: ../roundup/backends/back_anydbm.py:268
+#: ../roundup/backends/back_anydbm.py:268 ../roundup/backends/back_lmdb.py:346
 #, python-format
 msgid ""
 "Couldn't open database - the required module '%s' (as dbm.gnu) is not "
 "available"
 msgstr ""
 
-#: ../roundup/backends/back_anydbm.py:271
+#: ../roundup/backends/back_anydbm.py:271 ../roundup/backends/back_lmdb.py:349
 #, python-format
 msgid "Couldn't open database - the required module '%s' is not available"
 msgstr ""
@@ -1298,53 +1298,75 @@ msgstr ""
 #: ../roundup/backends/back_anydbm.py:1438
 #: ../roundup/backends/back_anydbm.py:2063
 #: ../roundup/backends/back_anydbm.py:827:840
-#: ../roundup/backends/rdbms_common.py:1646
-#: ../roundup/backends/rdbms_common.py:1893
-#: ../roundup/backends/rdbms_common.py:2128
-#: ../roundup/backends/rdbms_common.py:2148
-#: ../roundup/backends/rdbms_common.py:2201
-#: ../roundup/backends/rdbms_common.py:3147
-#: ../roundup/backends/rdbms_common.py:1646:1893 :1113:1148 :1374:1392:1438
-#: :2063 :2128:2148 :2201:3147
+#: ../roundup/backends/back_lmdb.py:905 ../roundup/backends/back_lmdb.py:918
+#: ../roundup/backends/back_lmdb.py:1191 ../roundup/backends/back_lmdb.py:1226
+#: ../roundup/backends/back_lmdb.py:1452 ../roundup/backends/back_lmdb.py:1470
+#: ../roundup/backends/back_lmdb.py:1516 ../roundup/backends/back_lmdb.py:2138
+#: ../roundup/backends/back_lmdb.py:905:918
+#: ../roundup/backends/rdbms_common.py:1656
+#: ../roundup/backends/rdbms_common.py:1903
+#: ../roundup/backends/rdbms_common.py:2138
+#: ../roundup/backends/rdbms_common.py:2158
+#: ../roundup/backends/rdbms_common.py:2211
+#: ../roundup/backends/rdbms_common.py:3157
+#: ../roundup/backends/rdbms_common.py:1656:1903 :1113:1148 :1191:1226
+#: :1374:1392:1438 :1452:1470 :1516:2138:2063 :2138:2158:2211 :3157
 msgid "Database open read-only"
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:580
+#: ../roundup/backends/indexer_postgresql_fts.py:108
+msgid ""
+"You have non-word/operator characters \"<>!&|()*\" in your query. Did you "
+"want to do a tsquery search and forgot to start it with \"ts:\"?"
+msgstr ""
+
+#: ../roundup/backends/indexer_postgresql_fts.py:135
+#, python-format
+msgid ""
+"Check tracker config.ini for a bad indexer_language setting. Error is: %s"
+msgstr ""
+
+#: ../roundup/backends/indexer_sqlite_fts.py:117
+msgid ""
+"Search failed. Try quoting any terms that include a '-' and retry the search."
+msgstr ""
+
+#: ../roundup/backends/rdbms_common.py:590
 #, python-format
 msgid "ALTER operation disallowed: %(old)r -> %(new)r."
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:816
+#: ../roundup/backends/rdbms_common.py:826
 #, python-format
 msgid "CREATE operation disallowed: \"%s\"."
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:833
+#: ../roundup/backends/rdbms_common.py:843
 #, python-format
 msgid "DROP operation disallowed: \"%s\"."
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:1789
+#: ../roundup/backends/rdbms_common.py:1799
 msgid "create"
 msgstr "sukurti"
 
-#: ../roundup/backends/rdbms_common.py:1963
+#: ../roundup/backends/rdbms_common.py:1973
 msgid "unlink"
 msgstr "atsieti"
 
-#: ../roundup/backends/rdbms_common.py:1967
+#: ../roundup/backends/rdbms_common.py:1977
 msgid "link"
 msgstr "susieti"
 
-#: ../roundup/backends/rdbms_common.py:2109
+#: ../roundup/backends/rdbms_common.py:2119
 msgid "set"
 msgstr "nustatyti"
 
-#: ../roundup/backends/rdbms_common.py:2138
+#: ../roundup/backends/rdbms_common.py:2148
 msgid "retired"
 msgstr "deaktyvuotas"
 
-#: ../roundup/backends/rdbms_common.py:2168
+#: ../roundup/backends/rdbms_common.py:2178
 msgid "restored"
 msgstr "aktyvuotas"
 
@@ -1586,23 +1608,28 @@ msgstr "Reikalingas vartotojo vardas"
 msgid "Logins occurring too fast. Please wait: %s seconds."
 msgstr ""
 
+#: ../roundup/cgi/actions.py:1357
+#, python-format
+msgid "Welcome %(username)s!"
+msgstr ""
+
 # ../roundup/cgi/actions.py:897 :901
-#: ../roundup/cgi/actions.py:1369 ../roundup/cgi/actions.py:1373
-#: ../roundup/cgi/actions.py:1369:1373
+#: ../roundup/cgi/actions.py:1377 ../roundup/cgi/actions.py:1381
+#: ../roundup/cgi/actions.py:1377:1381
 msgid "Invalid login"
 msgstr "Neteisingas vartotojo vardas ar slaptažodis"
 
-#: ../roundup/cgi/actions.py:1379
+#: ../roundup/cgi/actions.py:1387
 msgid "You do not have permission to login"
 msgstr "Neturite prisijungimo teisių"
 
-#: ../roundup/cgi/actions.py:1422 ../roundup/cgi/actions.py:1587
-#: ../roundup/cgi/actions.py:1422:1587
+#: ../roundup/cgi/actions.py:1430 ../roundup/cgi/actions.py:1609
+#: ../roundup/cgi/actions.py:1430:1609
 #, python-format
 msgid "Column \"%(column)s\" not found in %(class)s"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1643
+#: ../roundup/cgi/actions.py:1680
 #, fuzzy, python-format
 msgid "You do not have permission to view %(class)s"
 msgstr "Neturite leidimo redaguoti %(class)s"
@@ -1706,155 +1733,155 @@ msgstr ""
 "Apie klaidą pranešėme tracker'io administratoriui.</p>\n"
 "</body></html>"
 
-#: ../roundup/cgi/client.py:795
+#: ../roundup/cgi/client.py:837
 msgid "Form Error: "
 msgstr "Formos klaida: "
 
-#: ../roundup/cgi/client.py:885
+#: ../roundup/cgi/client.py:927
 #, python-format
 msgid "Unrecognized charset: %r"
 msgstr "Neatpažinta koduotė: %r"
 
-#: ../roundup/cgi/client.py:1141
+#: ../roundup/cgi/client.py:1183
 msgid "Anonymous users are not allowed to use the web interface"
 msgstr "Anoniminiai vartotojai neturi teisių naudoti web interfeisą"
 
-#: ../roundup/cgi/client.py:1214
+#: ../roundup/cgi/client.py:1256
 msgid "Referer header not available."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1218
+#: ../roundup/cgi/client.py:1260
 #, python-format
 msgid "csrf key used with wrong method from: %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1246
+#: ../roundup/cgi/client.py:1288
 #, python-format
 msgid "csrf header %s required but missing for user%s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1247
+#: ../roundup/cgi/client.py:1289
 #, python-format
 msgid "Missing header: %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1257 ../roundup/cgi/client.py:1260
-#: ../roundup/cgi/client.py:1257:1260
+#: ../roundup/cgi/client.py:1299 ../roundup/cgi/client.py:1302
+#: ../roundup/cgi/client.py:1299:1302
 #, python-format
 msgid "csrf Referer header check failed for user%s. Value=%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1258
+#: ../roundup/cgi/client.py:1300
 #, python-format
 msgid "Invalid Referer %s, %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1273 ../roundup/cgi/client.py:1276
-#: ../roundup/cgi/client.py:1273:1276
+#: ../roundup/cgi/client.py:1315 ../roundup/cgi/client.py:1318
+#: ../roundup/cgi/client.py:1315:1318
 #, python-format
 msgid "csrf Origin header check failed for user%s. Value=%s"
 msgstr ""
 
 # ../roundup/cgi/actions.py:897 :901
-#: ../roundup/cgi/client.py:1274
+#: ../roundup/cgi/client.py:1316
 #, fuzzy, python-format
 msgid "Invalid Origin %s"
 msgstr "Neteisingas vartotojo vardas ar slaptažodis"
 
-#: ../roundup/cgi/client.py:1288 ../roundup/cgi/client.py:1291
-#: ../roundup/cgi/client.py:1288:1291
+#: ../roundup/cgi/client.py:1330 ../roundup/cgi/client.py:1333
+#: ../roundup/cgi/client.py:1330:1333
 #, python-format
 msgid "csrf X-FORWARDED-HOST header check failed for user%s. Value=%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1289
+#: ../roundup/cgi/client.py:1331
 #, python-format
 msgid "Invalid X-FORWARDED-HOST %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1308 ../roundup/cgi/client.py:1311
-#: ../roundup/cgi/client.py:1308:1311
+#: ../roundup/cgi/client.py:1350 ../roundup/cgi/client.py:1353
+#: ../roundup/cgi/client.py:1350:1353
 #, python-format
 msgid "csrf HOST header check failed for user%s. Value=%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1309
+#: ../roundup/cgi/client.py:1351
 #, python-format
 msgid "Invalid HOST %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1317
+#: ../roundup/cgi/client.py:1359
 msgid "Csrf: unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1318
+#: ../roundup/cgi/client.py:1360
 msgid "Unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1331
+#: ../roundup/cgi/client.py:1373
 #, python-format
 msgid "csrf X-REQUESTED-WITH xmlrpc required header check failed for user%s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1332
+#: ../roundup/cgi/client.py:1374
 msgid "Required Header Missing"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1369
+#: ../roundup/cgi/client.py:1411
 #, python-format
 msgid "Required csrf field missing for user%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1370 ../roundup/cgi/client.py:1422
-#: ../roundup/cgi/client.py:1432 ../roundup/cgi/client.py:1370:1422:1432
+#: ../roundup/cgi/client.py:1412 ../roundup/cgi/client.py:1464
+#: ../roundup/cgi/client.py:1474 ../roundup/cgi/client.py:1412:1464:1474
 msgid ""
 "We can't validate your session (csrf failure). Re-enter any unsaved data and "
 "try again."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1373
+#: ../roundup/cgi/client.py:1415
 #, python-format
 msgid "csrf field not supplied by user%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1420
+#: ../roundup/cgi/client.py:1462
 #, python-format
 msgid ""
 "Csrf mismatch user: current user %s != stored user %s, current session, "
 "stored session: %s,%s for key %s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1425
+#: ../roundup/cgi/client.py:1467
 #, python-format
 msgid ""
 "logged only: Csrf mismatch user: current user %s != stored user %s, current "
 "session, stored session: %s,%s for key %s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1430
+#: ../roundup/cgi/client.py:1472
 #, python-format
 msgid ""
 "Csrf mismatch user: current session %s != stored session %s, current user/"
 "stored user is: %s for key %s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1435
+#: ../roundup/cgi/client.py:1477
 #, python-format
 msgid ""
 "logged only: Csrf mismatch user: current session %s != stored session %s, "
 "current user/stored user is: %s for key %s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1607
+#: ../roundup/cgi/client.py:1649
 msgid "You are not allowed to view this file."
 msgstr "Jūs neturite teisių žiūrėti šį failą."
 
-#: ../roundup/cgi/client.py:1886
+#: ../roundup/cgi/client.py:1938
 #, python-format
 msgid "%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n"
 msgstr "%(starttag)sPraėjęs laikas: %(seconds)fs%(endtag)s\n"
 
-#: ../roundup/cgi/client.py:1890
+#: ../roundup/cgi/client.py:1942
 #, python-format
 msgid ""
 "%(starttag)sCache hits: %(cache_hits)d, misses %(cache_misses)d. Loading "
@@ -1863,6 +1890,13 @@ msgstr ""
 "%(starttag)sAtmintinės atitikimai: %(cache_hits)d, neatitikimai "
 "%(cache_misses)d. Įkeliami elementai: %(get_items)f sek. Filtruojama: "
 "%(filtering)f sek.%(endtag)s\n"
+
+#: ../roundup/cgi/client.py:2472
+#, python-format
+msgid ""
+"Cache failure: compressed file %(compressed)s is older than its source file "
+"%(filename)s"
+msgstr ""
 
 #: ../roundup/cgi/form_parser.py:290
 #, python-format
@@ -1938,18 +1972,18 @@ msgstr "Įvesti naują įrašą"
 # ../roundup/cgi/templating.py:700 :819 :1193 :1214 :1258 :1280 :1314 :1353
 # :1404 :1421 :1497 :1517 :1530 :1547 :1557 :1607 :1794
 #: ../roundup/cgi/templating.py:963 ../roundup/cgi/templating.py:1134
-#: ../roundup/cgi/templating.py:1747 ../roundup/cgi/templating.py:1776
-#: ../roundup/cgi/templating.py:1796 ../roundup/cgi/templating.py:1809
-#: ../roundup/cgi/templating.py:1846 ../roundup/cgi/templating.py:1899
-#: ../roundup/cgi/templating.py:1922 ../roundup/cgi/templating.py:1929
-#: ../roundup/cgi/templating.py:1965 ../roundup/cgi/templating.py:2002
-#: ../roundup/cgi/templating.py:2035 ../roundup/cgi/templating.py:2124
-#: ../roundup/cgi/templating.py:2145 ../roundup/cgi/templating.py:2235
-#: ../roundup/cgi/templating.py:2255 ../roundup/cgi/templating.py:2277
-#: ../roundup/cgi/templating.py:2316 ../roundup/cgi/templating.py:2326
-#: ../roundup/cgi/templating.py:2390 ../roundup/cgi/templating.py:2688
-#: ../roundup/cgi/templating.py:963:1134 :1747:1776 :1796:1809 :1846:1899
-#: :1922:1929 :1965:2002 :2035:2124 :2145:2235 :2255:2277 :2316:2326 :2390:2688
+#: ../roundup/cgi/templating.py:1750 ../roundup/cgi/templating.py:1779
+#: ../roundup/cgi/templating.py:1799 ../roundup/cgi/templating.py:1812
+#: ../roundup/cgi/templating.py:1849 ../roundup/cgi/templating.py:1902
+#: ../roundup/cgi/templating.py:1925 ../roundup/cgi/templating.py:1932
+#: ../roundup/cgi/templating.py:1968 ../roundup/cgi/templating.py:2005
+#: ../roundup/cgi/templating.py:2038 ../roundup/cgi/templating.py:2127
+#: ../roundup/cgi/templating.py:2148 ../roundup/cgi/templating.py:2238
+#: ../roundup/cgi/templating.py:2258 ../roundup/cgi/templating.py:2280
+#: ../roundup/cgi/templating.py:2319 ../roundup/cgi/templating.py:2329
+#: ../roundup/cgi/templating.py:2393 ../roundup/cgi/templating.py:2691
+#: ../roundup/cgi/templating.py:963:1134 :1750:1779 :1799:1812 :1849:1902
+#: :1925:1932 :1968:2005 :2038:2127 :2148:2238 :2258:2280 :2319:2329 :2393:2691
 msgid "[hidden]"
 msgstr "[paslėpta]"
 
@@ -2023,18 +2057,18 @@ msgid "Copy of %(class)s %(id)s"
 msgstr "%(class)s %(id)s kopija"
 
 # ../roundup/cgi/templating.py:993 :1357 :1378 :1384
-#: ../roundup/cgi/templating.py:2039 ../roundup/cgi/templating.py:2072
-#: ../roundup/cgi/templating.py:1320:2039:2072
+#: ../roundup/cgi/templating.py:2042 ../roundup/cgi/templating.py:2075
+#: ../roundup/cgi/templating.py:1320:2042:2075
 msgid "No"
 msgstr "Ne"
 
 # ../roundup/cgi/templating.py:993 :1357 :1376 :1381
-#: ../roundup/cgi/templating.py:2039 ../roundup/cgi/templating.py:2067
-#: ../roundup/cgi/templating.py:1320:2039:2067
+#: ../roundup/cgi/templating.py:2042 ../roundup/cgi/templating.py:2070
+#: ../roundup/cgi/templating.py:1320:2042:2070
 msgid "Yes"
 msgstr "Taip"
 
-#: ../roundup/cgi/templating.py:2193
+#: ../roundup/cgi/templating.py:2196
 msgid ""
 "default value for DateHTMLProperty must be either DateHTMLProperty or string "
 "date representation."
@@ -2042,17 +2076,17 @@ msgstr ""
 "standartinė DateHTMLProperty reikšmė turi būti arba DateHTMLProperty arba "
 "datos reprezentacija kaip simbolių eilutės."
 
-#: ../roundup/cgi/templating.py:2370
+#: ../roundup/cgi/templating.py:2373
 #, python-format
 msgid "Attempt to look up %(attr)s on a missing value"
 msgstr "Bandėte pažiūrėti %(attr)s neegzistuojančiai reikšmei"
 
-#: ../roundup/cgi/templating.py:2381
+#: ../roundup/cgi/templating.py:2384
 #, fuzzy, python-format
 msgid "Attempt to look up %(item)s on a missing value"
 msgstr "Bandėte pažiūrėti %(attr)s neegzistuojančiai reikšmei"
 
-#: ../roundup/cgi/templating.py:2484
+#: ../roundup/cgi/templating.py:2487
 #, python-format
 msgid "<option %svalue=\"-1\">- no selection -</option>"
 msgstr "<option %svalue=\"-1\">- nepasirinkta -</option>"
@@ -2070,9 +2104,21 @@ msgstr ""
 msgid "Responding to form too quickly."
 msgstr ""
 
-#: ../roundup/configuration.py:1887
+#: ../roundup/configuration.py:274
+#, python-format
+msgid ""
+"Error in %(filepath)s with section [%(section)s] at option %(option)s: "
+"%(message)s"
+msgstr ""
+
+#: ../roundup/configuration.py:494
 #, fuzzy
 msgid "Valid languages: "
+msgstr "Netinkamas formatas"
+
+#: ../roundup/configuration.py:504
+#, fuzzy
+msgid "Expected languages: "
 msgstr "Netinkamas formatas"
 
 #: ../roundup/date.py:395
@@ -2247,23 +2293,23 @@ msgstr ""
 msgid "\"%s\" not a node designator"
 msgstr ""
 
-#: ../roundup/hyperdb.py:1472 ../roundup/hyperdb.py:1480
-#: ../roundup/hyperdb.py:1472:1480
+#: ../roundup/hyperdb.py:1473 ../roundup/hyperdb.py:1481
+#: ../roundup/hyperdb.py:1473:1481
 #, python-format
 msgid "Not a property name: %s"
 msgstr ""
 
-#: ../roundup/hyperdb.py:1939
+#: ../roundup/hyperdb.py:1940
 #, python-format
 msgid "property %s: %r is not a %s."
 msgstr ""
 
-#: ../roundup/hyperdb.py:1942
+#: ../roundup/hyperdb.py:1943
 #, python-format
 msgid "you may only enter ID values for property %s"
 msgstr ""
 
-#: ../roundup/hyperdb.py:1976
+#: ../roundup/hyperdb.py:1977
 #, python-format
 msgid "%r is not a property of %s"
 msgstr ""
@@ -2277,44 +2323,44 @@ msgstr ""
 "PERSPĖJIMAS: direktorijoje '%s'\n"
 "\tseno tipo šablonas, praleistas"
 
-#: ../roundup/mailgw.py:197 ../roundup/mailgw.py:210
-#: ../roundup/mailgw.py:197:210
+#: ../roundup/mailgw.py:198 ../roundup/mailgw.py:211
+#: ../roundup/mailgw.py:198:211
 #, python-format
 msgid "Message signed with unknown key: %s"
 msgstr ""
 
-#: ../roundup/mailgw.py:200
+#: ../roundup/mailgw.py:201
 #, python-format
 msgid "Message signed with an expired key: %s"
 msgstr ""
 
-#: ../roundup/mailgw.py:203
+#: ../roundup/mailgw.py:204
 #, python-format
 msgid "Message signed with a revoked key: %s"
 msgstr ""
 
-#: ../roundup/mailgw.py:206
+#: ../roundup/mailgw.py:207
 msgid "Invalid PGP signature detected."
 msgstr ""
 
-#: ../roundup/mailgw.py:213
+#: ../roundup/mailgw.py:214
 #, fuzzy
 msgid "Unsigned Message"
 msgstr "Naujas pranešimas"
 
-#: ../roundup/mailgw.py:463
+#: ../roundup/mailgw.py:464
 msgid "Unknown multipart/encrypted version."
 msgstr ""
 
-#: ../roundup/mailgw.py:472
+#: ../roundup/mailgw.py:473
 msgid "Unable to decrypt your message."
 msgstr ""
 
-#: ../roundup/mailgw.py:499
+#: ../roundup/mailgw.py:500
 msgid "No PGP signature found in message."
 msgstr ""
 
-#: ../roundup/mailgw.py:580
+#: ../roundup/mailgw.py:581
 msgid ""
 "\n"
 "Emails to Roundup trackers must include a Subject: line!\n"
@@ -2322,7 +2368,7 @@ msgstr ""
 "\n"
 "Laiškai Roundup'o tracker'iams privalo turėti temos (Subject:) eilutę!\n"
 
-#: ../roundup/mailgw.py:693
+#: ../roundup/mailgw.py:694
 #, python-format
 msgid ""
 "\n"
@@ -2349,7 +2395,7 @@ msgstr ""
 "\n"
 "Tema buvo: '%(subject)s'\n"
 
-#: ../roundup/mailgw.py:731
+#: ../roundup/mailgw.py:732
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -2366,7 +2412,7 @@ msgstr ""
 "Teisingi klasių vardai yra: %(validname)s\n"
 "Tema buvo: \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:739
+#: ../roundup/mailgw.py:740
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -2393,7 +2439,7 @@ msgstr ""
 "\n"
 "Tema buvo: '%(subject)s'\n"
 
-#: ../roundup/mailgw.py:775
+#: ../roundup/mailgw.py:776
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -2410,7 +2456,7 @@ msgstr ""
 "\n"
 "Tema buvo: \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:808
+#: ../roundup/mailgw.py:809
 #, python-format
 msgid ""
 "\n"
@@ -2425,7 +2471,7 @@ msgstr ""
 "\n"
 "Tema buvo: \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:853
+#: ../roundup/mailgw.py:854
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -2438,21 +2484,21 @@ msgstr ""
 "\n"
 "Nežinomas adresas: %(from_address)s\n"
 
-#: ../roundup/mailgw.py:861
+#: ../roundup/mailgw.py:862
 msgid "You are not permitted to access this tracker."
 msgstr "Neturite teisių naudotis šiuo tracker'iu."
 
-#: ../roundup/mailgw.py:872
+#: ../roundup/mailgw.py:873
 #, python-format
 msgid "You are not permitted to edit %(classname)s."
 msgstr "Neturite leidimo redaguoti %(classname)s."
 
-#: ../roundup/mailgw.py:878
+#: ../roundup/mailgw.py:879
 #, python-format
 msgid "You are not permitted to create %(classname)s."
 msgstr "Neturite leidimo sukurti %(classname)s."
 
-#: ../roundup/mailgw.py:960
+#: ../roundup/mailgw.py:961
 #, python-format
 msgid ""
 "\n"
@@ -2467,27 +2513,27 @@ msgstr ""
 "\n"
 "Tema buvo: \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:1012
+#: ../roundup/mailgw.py:1013
 msgid "This tracker has been configured to require all email be PGP encrypted."
 msgstr ""
 
-#: ../roundup/mailgw.py:1049
+#: ../roundup/mailgw.py:1050
 msgid ""
 "\n"
 "This tracker has been configured to require all email be PGP signed or\n"
 "encrypted."
 msgstr ""
 
-#: ../roundup/mailgw.py:1080
+#: ../roundup/mailgw.py:1081
 msgid "You are not permitted to create files."
 msgstr "Neturite teisių sukurti failą."
 
-#: ../roundup/mailgw.py:1094
+#: ../roundup/mailgw.py:1095
 #, python-format
 msgid "You are not permitted to add files to %(classname)s."
 msgstr "Neturite leidimo pridėti failų prie %(classname)s."
 
-#: ../roundup/mailgw.py:1124
+#: ../roundup/mailgw.py:1125
 msgid ""
 "\n"
 "Roundup requires the submission to be plain text. The message parser could\n"
@@ -2497,11 +2543,11 @@ msgstr ""
 "Roundup'ui reikia, kad laiškas būtų tekstinis. Laiškų analizatorius nerado\n"
 "text/plain dalies.\n"
 
-#: ../roundup/mailgw.py:1137
+#: ../roundup/mailgw.py:1138
 msgid "You are not permitted to create messages."
 msgstr "Neturite leidimo sukurti pranešimų."
 
-#: ../roundup/mailgw.py:1145
+#: ../roundup/mailgw.py:1146
 #, python-format
 msgid ""
 "\n"
@@ -2512,22 +2558,22 @@ msgstr ""
 "Detektorius atmetė jūsų laišką.\n"
 "%(error)s\n"
 
-#: ../roundup/mailgw.py:1153
+#: ../roundup/mailgw.py:1154
 #, python-format
 msgid "You are not permitted to add messages to %(classname)s."
 msgstr "Neturite leidimo pridėti pranešimų prie %(classname)s."
 
-#: ../roundup/mailgw.py:1175
+#: ../roundup/mailgw.py:1176
 #, python-format
 msgid "You are not permitted to edit property %(prop)s of class %(classname)s."
 msgstr "Neturite leidimo redaguoti %(classname)s parinkties %(prop)s."
 
-#: ../roundup/mailgw.py:1184
+#: ../roundup/mailgw.py:1185
 #, fuzzy, python-format
 msgid "You are not permitted to set property %(prop)s of class %(classname)s."
 msgstr "Neturite leidimo redaguoti %(classname)s parinkties %(prop)s."
 
-#: ../roundup/mailgw.py:1192
+#: ../roundup/mailgw.py:1193
 #, python-format
 msgid ""
 "\n"
@@ -2537,7 +2583,7 @@ msgstr ""
 "\n"
 "Jūsų laiške %(message)s yra klaidų.\n"
 
-#: ../roundup/mailgw.py:1658
+#: ../roundup/mailgw.py:1659
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -2550,7 +2596,7 @@ msgstr ""
 "%(mailadmin)s, kad pataisytų neteisingą klasės pavadinimą:\n"
 "  %(current_class)s\n"
 
-#: ../roundup/mailgw.py:1689
+#: ../roundup/mailgw.py:1690
 #, python-format
 msgid ""
 "\n"
@@ -2563,20 +2609,38 @@ msgstr ""
 "%(mailadmin)s, kad pataisytų neteisingus atributus:\n"
 "  %(errors)s\n"
 
-#: ../roundup/mailgw.py:1710
+#: ../roundup/mailgw.py:1711
 msgid "not of form [arg=value,value,...;arg=value,value,...]"
 msgstr "ne tokios formos: [arg=reikšmė,reikšmė,...;arg=reikšmė,reikšmė,...]"
 
-#: ../roundup/rest.py:1883
+#: ../roundup/rest.py:406
+#, python-format
+msgid "Method %(m)s not allowed. Allowed: %(a)s"
+msgstr ""
+
+# ../roundup/cgi/actions.py:897 :901
+#: ../roundup/rest.py:1104
+#, fuzzy, python-format
+msgid "Invalid attribute %s"
+msgstr "Neteisingas vartotojo vardas ar slaptažodis"
+
+#: ../roundup/rest.py:2065
 #, python-format
 msgid "Api rate limits exceeded. Please wait: %s seconds."
 msgstr ""
 
-#: ../roundup/rest.py:1918
+#: ../roundup/rest.py:2100
 #, python-format
 msgid ""
 "Unable to parse Accept Header. %(error)s. Acceptable types: "
 "%(acceptable_types)s"
+msgstr ""
+
+#: ../roundup/rest.py:2223
+#, python-format
+msgid ""
+"Unrecognized api version: %s. See /rest without specifying api version for "
+"supported versions."
 msgstr ""
 
 #: ../roundup/roundupdb.py:135
@@ -2869,7 +2933,7 @@ msgstr "Klaida: Šaltinis turi būti „mailbox“, „pop“, „apop“, „im
 msgid "WARNING: generating temporary SSL certificate"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:293
+#: ../roundup/scripts/roundup_server.py:296
 msgid ""
 "<html><head><title>Roundup trackers index</title></head>\n"
 "<body><h1>Roundup trackers index</h1><ol>\n"
@@ -2877,52 +2941,52 @@ msgstr ""
 "<html><head><title>Roundup tracker'io indeksas</title></head>\n"
 "<body><h1>Roundup tracker'io indeksas</h1><ol>\n"
 
-#: ../roundup/scripts/roundup_server.py:508
+#: ../roundup/scripts/roundup_server.py:525
 #, fuzzy, python-format
 msgid "Error: %(type)s: %(value)s"
 msgstr "%(key)s: %(value)s"
 
-#: ../roundup/scripts/roundup_server.py:520
+#: ../roundup/scripts/roundup_server.py:537
 msgid "WARNING: ignoring \"-g\" argument, not root"
 msgstr "PERSPĖJIMAS: \"-g\" argumentas ignoruojamas, nėra root teisių"
 
-#: ../roundup/scripts/roundup_server.py:526
+#: ../roundup/scripts/roundup_server.py:543
 msgid "Can't change groups - no grp module"
 msgstr "Negaliu pakeisti grupių -- nėra grp modulio"
 
-#: ../roundup/scripts/roundup_server.py:535
+#: ../roundup/scripts/roundup_server.py:552
 #, python-format
 msgid "Group %(group)s doesn't exist"
 msgstr "Grupės %(group)s nėra"
 
-#: ../roundup/scripts/roundup_server.py:547
+#: ../roundup/scripts/roundup_server.py:564
 msgid "Can't run as root!"
 msgstr "Negaliu paleisti root teisėmis!"
 
-#: ../roundup/scripts/roundup_server.py:550
+#: ../roundup/scripts/roundup_server.py:567
 msgid "WARNING: ignoring \"-u\" argument, not root"
 msgstr "PERSPĖJIMAS: \"-u\" argumentas ignoruojamas, nėra root teisių"
 
-#: ../roundup/scripts/roundup_server.py:556
+#: ../roundup/scripts/roundup_server.py:573
 msgid "Can't change users - no pwd module"
 msgstr "Negaliu pakesiti vartotojų - nėra pwd modulio"
 
-#: ../roundup/scripts/roundup_server.py:565
+#: ../roundup/scripts/roundup_server.py:582
 #, python-format
 msgid "User %(user)s doesn't exist"
 msgstr "Vartotojo %(user)s nėra"
 
-#: ../roundup/scripts/roundup_server.py:755
+#: ../roundup/scripts/roundup_server.py:778
 #, python-format
 msgid "Multiprocess mode \"%s\" is not available, switching to single-process"
 msgstr "Multiprocesinė aplinka \"%s\" neprieinama, perjungiu į vienprocesinę"
 
-#: ../roundup/scripts/roundup_server.py:782
+#: ../roundup/scripts/roundup_server.py:805
 #, python-format
 msgid "Unable to bind to port %s, port already in use."
 msgstr "Negaliu prijungti prie jungties %s, jungtis jau naudojama."
 
-#: ../roundup/scripts/roundup_server.py:854
+#: ../roundup/scripts/roundup_server.py:877
 msgid ""
 " -c <Command>  Windows Service options.\n"
 "               If you want to run the server as a Windows Service, you\n"
@@ -2939,7 +3003,7 @@ msgstr ""
 "               Įvedę \"roundup-server -c help\" pamatysite Windows Services\n"
 "               specifiką."
 
-#: ../roundup/scripts/roundup_server.py:861
+#: ../roundup/scripts/roundup_server.py:884
 msgid ""
 " -u <UID>      runs the Roundup web server as this UID\n"
 " -g <GID>      runs the Roundup web server as this GID\n"
@@ -2953,9 +3017,10 @@ msgstr ""
 "               nurodytą PIDfaile. Parinktis -l *privalo* būti nurodyta\n"
 "               jei naudojama -d."
 
-#: ../roundup/scripts/roundup_server.py:868
+#: ../roundup/scripts/roundup_server.py:891
 #, fuzzy, python-format
 msgid ""
+"\n"
 "%(message)sUsage: roundup-server [options] [name=tracker home]*\n"
 "\n"
 "Options:\n"
@@ -2978,6 +3043,9 @@ msgid ""
 " -e <fname>    PEM file containing SSL key and certificate\n"
 " -t <mode>     multiprocess mode (default: %(mp_def)s).\n"
 "               Allowed values: %(mp_types)s.\n"
+" -V <version>  set HTTP version (default: HTTP/1.1).\n"
+"               Allowed values: HTTP/1.0, HTTP/1.1.\n"
+"\n"
 "%(os_part)s\n"
 "\n"
 "Long options:\n"
@@ -3069,21 +3137,21 @@ msgstr ""
 "   nesupras.\n"
 "\n"
 
-#: ../roundup/scripts/roundup_server.py:1041
+#: ../roundup/scripts/roundup_server.py:1067
 msgid "Instances must be name=home"
 msgstr "Egzempliorius turi būti nurodomas taip: vardas=namų_direktorija"
 
-#: ../roundup/scripts/roundup_server.py:1055
+#: ../roundup/scripts/roundup_server.py:1081
 #, python-format
 msgid "Configuration saved to %s"
 msgstr "Konfigūracija išsaugota %s"
 
-#: ../roundup/scripts/roundup_server.py:1073
+#: ../roundup/scripts/roundup_server.py:1099
 msgid "Sorry, you can't run the server as a daemon on this Operating System"
 msgstr ""
 "Jūs negalite paleisti serverio kaip daemon'o šioje operacinėje sistemoje"
 
-#: ../roundup/scripts/roundup_server.py:1093
+#: ../roundup/scripts/roundup_server.py:1119
 #, python-format
 msgid "Roundup server started on %(HOST)s:%(PORT)s"
 msgstr "Roundup serveris paleistas ant %(HOST)s:%(PORT)s"
@@ -3220,6 +3288,7 @@ msgstr "${property} pagalba - ${tracker}"
 #: ../share/roundup/templates/classic/html/_generic.help.html:41
 #: ../share/roundup/templates/classic/html/help.html:21
 #: ../share/roundup/templates/classic/html/issue.index.html:80
+#: ../share/roundup/templates/classic/html/user.index.html:82
 #: ../share/roundup/templates/devel/html/_generic.help.html:42
 #: ../share/roundup/templates/devel/html/bug.index.html:94
 #: ../share/roundup/templates/devel/html/help.html:51
@@ -3236,6 +3305,7 @@ msgstr "&lt;&lt; pirmesnis"
 #: ../share/roundup/templates/classic/html/_generic.help.html:53
 #: ../share/roundup/templates/classic/html/help.html:28
 #: ../share/roundup/templates/classic/html/issue.index.html:88
+#: ../share/roundup/templates/classic/html/user.index.html:90
 #: ../share/roundup/templates/devel/html/_generic.help.html:54
 #: ../share/roundup/templates/devel/html/bug.index.html:102
 #: ../share/roundup/templates/devel/html/help.html:58
@@ -3252,6 +3322,7 @@ msgstr "${start}..${end} iš ${total}"
 #: ../share/roundup/templates/classic/html/_generic.help.html:57
 #: ../share/roundup/templates/classic/html/help.html:32
 #: ../share/roundup/templates/classic/html/issue.index.html:91
+#: ../share/roundup/templates/classic/html/user.index.html:93
 #: ../share/roundup/templates/devel/html/_generic.help.html:58
 #: ../share/roundup/templates/devel/html/bug.index.html:105
 #: ../share/roundup/templates/devel/html/help.html:62
@@ -4083,6 +4154,7 @@ msgstr "Užklausos vardas**:"
 #: ../share/roundup/templates/classic/html/page.html:40
 #: ../share/roundup/templates/classic/html/page.html:92
 #: ../share/roundup/templates/classic/html/user.help-search.html:69
+#: ../share/roundup/templates/classic/html/user.index.html:38
 #: ../share/roundup/templates/devel/html/bug.search.html:292
 #: ../share/roundup/templates/devel/html/page.html:79
 #: ../share/roundup/templates/devel/html/page.html:126
@@ -4631,7 +4703,7 @@ msgstr "Vartotojų sąrašas - ${tracker}"
 msgid "User listing"
 msgstr "Vartotojų sąrašas"
 
-#: ../share/roundup/templates/classic/html/user.index.html:19
+#: ../share/roundup/templates/classic/html/user.index.html:48
 #: ../share/roundup/templates/devel/html/user.index.html:48
 #: ../share/roundup/templates/minimal/html/user.index.html:19
 #: ../share/roundup/templates/responsive/html/page.html:180
@@ -4639,13 +4711,13 @@ msgstr "Vartotojų sąrašas"
 msgid "Username"
 msgstr "Vartotojo vardas"
 
-#: ../share/roundup/templates/classic/html/user.index.html:20
+#: ../share/roundup/templates/classic/html/user.index.html:49
 #: ../share/roundup/templates/devel/html/user.index.html:49
 #: ../share/roundup/templates/responsive/html/user.index.html:50
 msgid "Real name"
 msgstr "Tikras vardas"
 
-#: ../share/roundup/templates/classic/html/user.index.html:21
+#: ../share/roundup/templates/classic/html/user.index.html:50
 #: ../share/roundup/templates/classic/html/user.register.html:47
 #: ../share/roundup/templates/devel/html/user.index.html:50
 #: ../share/roundup/templates/devel/html/user.register.html:54
@@ -4654,26 +4726,26 @@ msgstr "Tikras vardas"
 msgid "Organisation"
 msgstr "Organizacija"
 
-#: ../share/roundup/templates/classic/html/user.index.html:22
+#: ../share/roundup/templates/classic/html/user.index.html:51
 #: ../share/roundup/templates/devel/html/user.index.html:51
 #: ../share/roundup/templates/minimal/html/user.index.html:20
 #: ../share/roundup/templates/responsive/html/user.index.html:52
 msgid "Email address"
 msgstr "El. pašto adresas"
 
-#: ../share/roundup/templates/classic/html/user.index.html:23
+#: ../share/roundup/templates/classic/html/user.index.html:52
 #: ../share/roundup/templates/devel/html/user.index.html:52
 #: ../share/roundup/templates/responsive/html/user.index.html:53
 msgid "Phone number"
 msgstr "Telefono numeris"
 
-#: ../share/roundup/templates/classic/html/user.index.html:24
+#: ../share/roundup/templates/classic/html/user.index.html:53
 #: ../share/roundup/templates/devel/html/user.index.html:53
 #: ../share/roundup/templates/responsive/html/user.index.html:54
 msgid "Retire"
 msgstr "Deaktyvuoti"
 
-#: ../share/roundup/templates/classic/html/user.index.html:43
+#: ../share/roundup/templates/classic/html/user.index.html:72
 #: ../share/roundup/templates/devel/html/user.index.html:66
 #: ../share/roundup/templates/responsive/html/user.index.html:67
 msgid "retire"
@@ -4826,67 +4898,67 @@ msgstr ""
 "pabaigtumėte registracijoc procesą, sekite nuorodą atsiųstame laiške."
 
 #: ../share/roundup/templates/classic/initial_data.py:5
-#: ../share/roundup/templates/jinja2/initial_data.py:6
+#: ../share/roundup/templates/jinja2/initial_data.py:4
 msgid "critical"
 msgstr "kritinis"
 
 #: ../share/roundup/templates/classic/initial_data.py:6
-#: ../share/roundup/templates/jinja2/initial_data.py:7
+#: ../share/roundup/templates/jinja2/initial_data.py:5
 msgid "urgent"
 msgstr "skubus"
 
 #: ../share/roundup/templates/classic/initial_data.py:7
-#: ../share/roundup/templates/jinja2/initial_data.py:8
+#: ../share/roundup/templates/jinja2/initial_data.py:6
 msgid "bug"
 msgstr "klaida"
 
 #: ../share/roundup/templates/classic/initial_data.py:8
-#: ../share/roundup/templates/jinja2/initial_data.py:9
+#: ../share/roundup/templates/jinja2/initial_data.py:7
 msgid "feature"
 msgstr "nauja savybė"
 
 #: ../share/roundup/templates/classic/initial_data.py:9
-#: ../share/roundup/templates/jinja2/initial_data.py:10
+#: ../share/roundup/templates/jinja2/initial_data.py:8
 msgid "wish"
 msgstr "pageidavimas"
 
 #: ../share/roundup/templates/classic/initial_data.py:12
-#: ../share/roundup/templates/jinja2/initial_data.py:13
+#: ../share/roundup/templates/jinja2/initial_data.py:11
 msgid "unread"
 msgstr "neskaityta"
 
 #: ../share/roundup/templates/classic/initial_data.py:13
-#: ../share/roundup/templates/jinja2/initial_data.py:14
+#: ../share/roundup/templates/jinja2/initial_data.py:12
 msgid "deferred"
 msgstr "atidėta"
 
 #: ../share/roundup/templates/classic/initial_data.py:14
-#: ../share/roundup/templates/jinja2/initial_data.py:15
+#: ../share/roundup/templates/jinja2/initial_data.py:13
 msgid "chatting"
 msgstr "vyksta pokalbis"
 
 #: ../share/roundup/templates/classic/initial_data.py:15
-#: ../share/roundup/templates/jinja2/initial_data.py:16
+#: ../share/roundup/templates/jinja2/initial_data.py:14
 msgid "need-eg"
 msgstr "reikia pvz."
 
 #: ../share/roundup/templates/classic/initial_data.py:16
-#: ../share/roundup/templates/jinja2/initial_data.py:17
+#: ../share/roundup/templates/jinja2/initial_data.py:15
 msgid "in-progress"
 msgstr "eigoje"
 
 #: ../share/roundup/templates/classic/initial_data.py:17
-#: ../share/roundup/templates/jinja2/initial_data.py:18
+#: ../share/roundup/templates/jinja2/initial_data.py:16
 msgid "testing"
 msgstr "testuojama"
 
 #: ../share/roundup/templates/classic/initial_data.py:18
-#: ../share/roundup/templates/jinja2/initial_data.py:19
+#: ../share/roundup/templates/jinja2/initial_data.py:17
 msgid "done-cbb"
 msgstr "atlikta - galėtų būti geriau"
 
 #: ../share/roundup/templates/classic/initial_data.py:19
-#: ../share/roundup/templates/jinja2/initial_data.py:20
+#: ../share/roundup/templates/jinja2/initial_data.py:18
 msgid "resolved"
 msgstr "išspręsta"
 
