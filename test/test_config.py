@@ -704,6 +704,24 @@ class TrackerConfig(unittest.TestCase):
         # if exception not generated assertRaises
         # will generate failure.
 
+    def testInvalidIndexerLanguage_w_native_fts(self):
+        """ Use explicit native-fts indexer. Verify exception is
+            generated.
+        """
+
+        self.munge_configini(mods=[ ("indexer = ", "native-fts"),
+            ("indexer_language = ", "NO_LANG") ])
+
+        with self.assertRaises(configuration.OptionValueError) as cm:
+            config.load(self.dirname)
+
+        # test repr. The type is right since it passed assertRaises.
+        self.assertIn("OptionValueError", repr(cm.exception))
+        # look for failing language
+        self.assertIn("NO_LANG", cm.exception.args[1])
+        # look for supported language
+        self.assertIn("basque", cm.exception.args[2])
+
     def testLoadConfig(self):
         """ run load to validate config """
 

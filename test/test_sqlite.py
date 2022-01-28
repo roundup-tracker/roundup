@@ -59,11 +59,18 @@ class sqliteDBTest(sqliteOpener, DBTest, unittest.TestCase):
 
         self.assertIn("no such table: __fts", ctx.exception.args[0])
 
+        if hasattr(self, "downgrade_only"):
+            return
+
         # test upgrade adding __fts table
         self.db.post_init()
 
         # select should now work.
         self.db.sql("select * from __fts")
+
+        # we should be at the current db version
+        self.assertEqual(self.db.database_schema['version'],
+                         self.db.current_db_version)
 
 class sqliteROTest(sqliteOpener, ROTest, unittest.TestCase):
     pass

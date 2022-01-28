@@ -276,6 +276,173 @@ get the gzip version and not a brotli compressed version. This
 mechanism allows the admin to allow use of brotli and zstd for
 dynamic content, but not for static content.
 
+Configuring native-fts Full Text Search
+=======================================
+
+Roundup release 2.2.0 can use database native full text search.
+SQLite (minimum version 3.9.0) with FTS5 and PostgreSQL (minimum
+version 11.0) with websearch_to_tsvector are supported.
+
+To enable this method, change the ``indexer`` setting in the tracker's
+config.ini to ``native-fts``. Then reindex using ``roundup-admin -i
+tracker_home reindex``.  The amount of time it takes to reindex
+depends on the amount of data in your tracker, the speed of your
+disks, etc. It can take hours.
+
+SQLite details
+--------------
+
+The SQLite native-fts changes the full text search query a little bit.
+For the other search methods, the search terms are split on white
+space and each item in the index: a field (e.g. title), message
+content and file content is searched for all the terms. If any term is
+missing that item is ignored. Once the items are found they are mapped
+to an issue and the normal issue index is displayed.
+
+When using FTS5, the search terms can use the full text search query
+language described at:
+https://www.sqlite.org/fts5.html#full_text_query_syntax. This
+supports:
+
+  * plain word search (joined with and similar to other search methods)
+  * phrase search with terms enclosed in ``"`` quotes
+  * proximity search with varying distances using ``NEAR()``
+  * boolean operations by grouping with parentheses and using ``AND``
+    and ``OR``
+  * exclusion using ``NOT``
+  * prefix searching by prefixing the term with``^``
+
+All of the data that is indexed is in a single column, so when column
+specifiers are used they usually result in an error which is detected
+and an enhanced error message is produced.
+
+Unlike the native, xapian and whoosh indexers, there are no stopwords,
+and there is no limit to the length of terms that are indexed. Keeping
+these would break proximity and phrase searching. This may be helpful
+or problematic for your particular tracker.
+
+To support the most languages available, the unicode61 tokenizer is
+used without porter stemming. Using the ``indexer_language`` setting
+to enable stemming for ``english`` is not available in this
+implementation.  Also ranking information is not used in this
+implementation. These are areas for improvement.
+
+PostgreSQL info
+---------------
+
+The PostgreSQL native-fts changes the full text search query a little
+bit. When using PostgreSQL full text search, two different query
+languages are supported.
+
+1. websearch - described at the end of
+   `Parsing Queries`_ under websearch_to_tsquery. This is the default.
+
+2. tsquery - described at the beginning of `Parsing Queries`_ with
+   to_tsquery. It is enabled by starting the search phrase with ``ts:``.
+
+.. _Parsing Queries: \
+   https://www.postgresql.org/docs/14/textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES
+
+Websearch provides a more natural style of search and supports:
+
+* plain word search (stemmed in most cases)
+* phrase search with terms enclosed in quotes
+* exclusion by prefixing a term/phrase with ``-``
+* alternative/or searching with ``or`` between terms
+* ignores non-word characters including punctuation
+
+Tsquery supports:
+
+* a strict query syntax
+* plain word search
+* phrase search with the ``<->`` operator or enclosing the phrase in
+  ``'`` single quotes (note this will use a stemmer on the terms
+  in the phrase).
+* proximity search with varying distances using ``<N>``
+* boolean operations by grouping with parentheses and using ``&``
+  and ``|``
+* exclusion using ``!``
+* prefix searching using ``:*`` at the end of the prefix
+
+All of the data that is indexed is in a single column and input
+weighing is not used.
+
+Depending on the FTS configuration (determined by the
+``indexer_language`` setting), stopwords are supported.  PostgreSQL
+takes the stopwords into account when calculating the data needed for
+proximity/near searches. Like SQLite FTS, there is no limit to the
+length of terms that are indexed. Again this may be helpful or
+problematic for your particular tracker.
+
+The config.ini ``indexer_language`` setting is used to define the
+configuration used for indexing. For example with the default
+``english`` setting a snowball stemmer (english_stem) is used. So
+words like 'drive' and 'driving' and 'drive-in' will all match a
+search for 'drive' but will not match 'driver'.
+
+The indexer_language is used as the configuration name for every call
+to the text search functions (to_tsvector, to_tsquery). Changing this
+requires reindexing.
+
+The `configuration list can be obtained using using psql's`_
+``\dF`` command.
+
+.. _configuration list can be obtained using using psql's: \
+    https://www.postgresql.org/docs/current/textsearch-psql.html
+
+Roundup includes a hardcoded list for all languages supported by
+PostgreSQL 14.1. The list includes 5 custom "languages"
+``custom1`` ... ``custom5`` to allow you to set up your `own textsearch
+configuration`_ using one of the custom names. Depending on your
+PostgreSQL version, we may allow an invalid language to be configured.
+You will see an error about ``text search configuration ... does not
+exist``.
+
+.. _own textsearch configuration: \
+  https://www.postgresql.org/docs/14/textsearch-configuration.html
+
+It may be possible to append to this list using the tracker's
+interfaces.py. For details, see ``test/test_indexer.py`` in the
+roundup distribution and search for ``valid_langs``. If you succeed
+please email roundup-users AT lists.sourceforge.net with a description
+of your success.
+
+After changing the configuration language, you must reindex the
+tracker since the index must match the configuration language used for
+querying.
+
+Also there are various `dictionaries`_ that allow you to:
+
+  * add stopwords
+  * override stemming for a term
+  * add synonyms (e.g. a search for "pg" can also match 'psql'
+    "postgresql")
+  * add terms that expand/contract the search space (Thesaurus
+    dictionary)
+  * additional transforms
+  
+.. _dictionaries: https://www.postgresql.org/docs/14/textsearch-dictionaries.html
+
+Use of these is beyond this documentation. Please visit the
+appropriate PostgreSQL documents.
+
+Ranking information is not used in this implementation. Also stop
+words set in config.ini are ignored. These are areas for improvement.
+
+Cleaning up old native indexes
+------------------------------
+
+If you are happy with the database fts indexing, you can save some space by
+removing the data from the native text indexing tables. This requires
+using the ``sqlite3`` or ``psql`` commands to execute SQL to delete the
+rows in the ``__textids`` and ``__words`` tables. You can do this with
+the following SQL commands::
+
+   delete from __words;
+   delete from __textids;
+
+Note this deletes data from the tables and does *not* delete the
+table.
 
 Users and Security
 ==================

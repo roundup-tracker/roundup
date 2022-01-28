@@ -200,6 +200,8 @@ class Database(rdbms_common.Database):
             # Need to commit here, otherwise otk/session will not find
             # the necessary tables (in a parallel connection!)
             self.commit()
+            self._add_fts_table()
+            self.commit()
 
     def checkpoint_data(self):
         """Commit the state of the database. Allows recovery/retry
@@ -264,6 +266,13 @@ class Database(rdbms_common.Database):
         self.sql('''CREATE INDEX words_both_idx ON public.__words
             USING btree (_word, _textid)''')
 
+    def _add_fts_table(self):
+        self.sql('CREATE TABLE __fts (_class VARCHAR(255), '
+                 '_itemid VARCHAR(255), _prop VARCHAR(255), _tsv tsvector)'
+        )
+
+        self.sql('CREATE INDEX __fts_idx ON __fts USING GIN (_tsv)')
+
     def fix_version_6_tables(self):
         # Modify length for __words._word column.
         c = self.cursor
@@ -272,6 +281,8 @@ class Database(rdbms_common.Database):
         # Why magic number 5? It was the original offset between
         #   column length and maxlength.
         c.execute(sql, (self.indexer.maxlength + 5,))
+
+        self._add_fts_table()
 
     def add_actor_column(self):
         # update existing tables to have the new actor column

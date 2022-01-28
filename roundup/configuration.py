@@ -430,6 +430,45 @@ class IndexerOption(Option):
     class_description = "Allowed values: %s" % ', '.join("'%s'" % a
                                                          for a in allowed)
 
+    # FIXME this is the result of running:
+    #    SELECT cfgname FROM pg_ts_config;
+    # on a postgresql 14.1 server.
+    # So the best we can do is hardcode this.
+    valid_langs = [ "simple",
+                    "custom1",
+                    "custom2",
+                    "custom3",
+                    "custom4",
+                    "custom5",
+                    "arabic",
+                    "armenian",
+                    "basque",
+                    "catalan",
+                    "danish",
+                    "dutch",
+                    "english",
+                    "finnish",
+                    "french",
+                    "german",
+                    "greek",
+                    "hindi",
+                    "hungarian",
+                    "indonesian",
+                    "irish",
+                    "italian",
+                    "lithuanian",
+                    "nepali",
+                    "norwegian",
+                    "portuguese",
+                    "romanian",
+                    "russian",
+                    "serbian",
+                    "spanish",
+                    "swedish",
+                    "tamil",
+                    "turkish",
+                    "yiddish" ]
+                                                         
     def str2value(self, value):
         _val = value.lower()
         if _val in self.allowed:
@@ -458,6 +497,15 @@ class IndexerOption(Option):
                     raise OptionValueError(options["INDEXER_LANGUAGE"],
                                             lang, languages)
 
+        if self._value == "native-fts":
+            lang = options["INDEXER_LANGUAGE"]._value
+            if lang not in self.valid_langs:
+                import textwrap
+                languages = textwrap.fill(_("Expected languages: ") +
+                                            " ".join(self.valid_langs), 75,
+                                            subsequent_indent="   ")
+                raise OptionValueError(options["INDEXER_LANGUAGE"],
+                                       lang, languages)
 
 class MailAddressOption(Option):
 
@@ -879,8 +927,9 @@ SETTINGS = (
             "native-fts.\nNote 'native-fts' will only be used if set."),
         (Option, "indexer_language", "english",
             "Used to determine what language should be used by the\n"
-            "indexer above. Currently only affects Xapian indexer. It\n"
-            "sets the language for the stemmer.\n"
+            "indexer above. Applies to Xapian and PostgreSQL native-fts\n"
+            "indexer. It sets the language for the stemmer, and PostgreSQL\n"
+            "native-fts stopwords and other dictionaries.\n"
             "Possible values: must be a valid language for the indexer,\n"
             "see indexer documentation for details."),
         (WordListOption, "indexer_stopwords", "",
