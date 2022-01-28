@@ -68,15 +68,6 @@ class postgresqlDBTest(postgresqlOpener, DBTest, unittest.TestCase):
         DBTest.tearDown(self)
         postgresqlOpener.tearDown(self)
 
-    def does_index_exist(self, index_name):
-        sql = """SELECT count(*) > 0
-                 FROM pg_class c
-                 WHERE c.relname = '%s' 
-                 AND c.relkind = 'i';""" % index_name
-
-        self.db.sql(sql)
-        return self.db.cursor.fetchone()[0]
-
     def testUpgrade_6_to_7(self):
 
         # load the database
@@ -113,7 +104,7 @@ class postgresqlDBTest(postgresqlOpener, DBTest, unittest.TestCase):
             self.db.sql("select * from _fts")
         self.db.rollback()
 
-        self.assertFalse(self.does_index_exist('__fts_idx'))
+        self.assertFalse(self.db.sql_index_exists('__fts', '__fts_idx'))
 
         if hasattr(self, "downgrade_only"):
             return
@@ -132,7 +123,7 @@ class postgresqlDBTest(postgresqlOpener, DBTest, unittest.TestCase):
         # clean db handle
         self.db.rollback()
 
-        self.assertTrue(self.does_index_exist('__fts_idx'))
+        self.assertTrue(self.db.sql_index_exists('__fts', '__fts_idx'))
 
         self.db.sql("select * from __fts")
 
