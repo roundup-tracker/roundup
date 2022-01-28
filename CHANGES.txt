@@ -124,6 +124,8 @@ Features:
 - Added xapian indexer to Docker container. (John Rouillard)
 - Add support for indexer type native-fts to use FTS5 for sqlite
   databases. (John Rouillard)
+- Add support for indexer type native-fts to use PostreSQL's full text
+  search. (John Rouillard)
 - Add better error display to the user. Needed to expose errors in fts5
   search syntax to the user while also displaying the template page
   structure. (John Rouillard)
