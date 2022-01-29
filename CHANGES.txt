@@ -73,6 +73,8 @@ Fixed:
   Andrew (kragacles) patched uses of socket.sslerror in mailgy.py.
   Patch adapted to allow trapping sslerror under both python2 and 3.
   (John Rouillard)
+- issue2551142 - postgresql reworked to use savepoint/"rollback to"
+  rather than commit()/rollback(). Using savepoint should be faster.
 
 Features:
 
