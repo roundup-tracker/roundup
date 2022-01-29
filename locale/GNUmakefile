@@ -6,7 +6,7 @@ XPOT ?= xpot
 MSGFMT ?= msgfmt
 MSGMERGE ?= msgmerge
 XGETTEXT ?= xgettext
-PYTHON ?= python
+PYTHON ?= python3
 
 TEMPLATE=roundup.pot
 
@@ -22,7 +22,10 @@ all: dist
 
 help:
 	@echo "$(MAKE)           - build MO files.  Run this before sdist"
+	@echo "$(MAKE) dist      - same as above
 	@echo "$(MAKE) template  - update message template from sources"
+	@echo "$(MAKE) diff      - see template differences in vi"
+	@echo "$(MAKE) pytest    - create locale files to run pytest
 	@echo "$(MAKE) locale.po - update message file from template"
 	@echo "$(MAKE) locale.mo - compile individual message file"
 	@echo "$(MAKE) help      - this text"\
@@ -37,7 +40,7 @@ dist:
 	done
 
 template:
-	test -d $(PYTHON_BUILD) || (echo "Missing build directory. ln -s lib to build library"; exit 1)
+	test -d $(PYTHON_BUILD) || (echo "Missing build directory $(PYTHON_BUILD). ln -s lib to build library"; exit 1)
 	${XPOT} -n -o $(TEMPLATE) $(SOURCES)
 
 	${RUN_PYTHON} ../roundup/cgi/TAL/talgettext.py -u $(TEMPLATE) \
@@ -50,7 +53,7 @@ template:
 	  --copyright-holder="See Roundup README.txt" \
 	  -o $(TEMPLATE) $(SOURCES)
 
-local_install: dist
+pytest local_install: dist
 	for file in $(MO_FILES); do \
 	   lang=`basename $$file .mo`; \
 	   mkdir -p locale/$$lang/LC_MESSAGES; \
@@ -59,7 +62,7 @@ local_install: dist
 
 # helps to check template file before check in
 diff:
-	svn diff roundup.pot|grep -v '^[-+]#'|vim -Rv -
+	hg diff roundup.pot|grep -v '^[-+]#'| vi -Rv -
 
 %.po: $(TEMPLATE)
 	${MSGMERGE} -U --suffix=.bak $@ $<
