@@ -203,21 +203,33 @@ class Database(rdbms_common.Database):
             self._add_fts_table()
             self.commit()
 
-    def checkpoint_data(self):
-        """Commit the state of the database. Allows recovery/retry
-           of operation in exception handler because postgres
-           requires a rollback in case of error generating exception
+    def checkpoint_data(self, savepoint="importing"):
+        """Create a subtransaction savepoint. Allows recovery/retry
+           of operation in exception handler because
+           postgres requires a rollback in case of error
+           generating exception.  Used with
+           restore_connecion_on_error to handle uniqueness
+           conflict in import_table().
         """
-        self.commit()
+        # Savepoints take resources. Postgres keeps all
+        # savepoints (rather than overwriting) until a
+        # commit(). If an import fails because of a resource
+        # issue with savepoints, uncomment this line. I
+        # expect it will slow down the import but it should
+        # eliminate any issue with stored savepoints and
+        # resource use.
+        #
+        # self.sql('RELEASE SAVEPOINT %s' % savepoint)
+        self.sql('SAVEPOINT %s' % savepoint)
 
-    def restore_connection_on_error(self):
-        """Postgres leaves a cursor in an unusable state after
-           an error. Rollback the transaction to recover and
-           permit a retry of the failed statement. Used with
-           checkpoint_data to handle uniqueness conflict in
-           import_table()
+    def restore_connection_on_error(self, savepoint="importing"):
+        """Postgres leaves a connection/cursor in an unusable state
+           after an error. Rollback the transaction to a
+           previous savepoint and permit a retry of the
+           failed statement. Used with checkpoint_data to
+           handle uniqueness conflict in import_table().
         """
-        self.rollback()
+        self.sql('ROLLBACK TO %s' % savepoint)
 
     def create_version_2_tables(self):
         # OTK store
