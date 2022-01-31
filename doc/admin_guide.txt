@@ -279,7 +279,7 @@ dynamic content, but not for static content.
 Configuring native-fts Full Text Search
 =======================================
 
-Roundup release 2.2.0 can use database native full text search.
+Roundup release 2.2.0 supports database-native full text search.
 SQLite (minimum version 3.9.0) with FTS5 and PostgreSQL (minimum
 version 11.0) with websearch_to_tsvector are supported.
 
