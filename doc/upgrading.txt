@@ -119,15 +119,16 @@ that have both of those words (an AND search) in a text-field (like
 title) or in a message (or file) attached to the issue.
 
 One thing to note is that native-fts searches do not ignore words
-longer than 25 characters or less than 2 characters. Also SQLite does
-not filter out common works (i.e. there is no stopword list). So words
+longer than 50 characters or less than 2 characters. Also SQLite does
+not filter out common words (i.e. there is no stopword list). So words
 like "and", "or", "then", "with" ...  are included in the FTS5 search.
 
 You must explicitly enable this search mechanism by changing the
-``indexer`` setting in ``config.ini`` to ``native-fts``. Native-fts is
-never chosen by default like xapian or whoosh. This prevents the
-existing native indexing from being discarded if ``indexer`` is not
-set.
+``indexer`` setting in ``config.ini`` to ``native-fts``. Native-fts
+must be explicitly chosen. This is different from Xapian or Whoosh
+indexers, which are chosen if they are installed in the Python
+environment. This prevents the existing native indexing from being
+discarded if ``indexer`` is not set.
 
 Next re-index your data with ``roundup-admin -i tracker_home
 reindex``. This can take a while depending on the size of the tracker.

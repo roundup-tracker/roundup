@@ -377,7 +377,7 @@ You may manually write URLS that contain these arguments, like so
 
 Full text search using the xapian, whoosh and native indexers treats
 the search query as a series of space separated words. Any word less
-than 2 characters or more than 25 characters is discarded. Also a
+than 2 characters or more than 50 characters is discarded. Also a
 stoplist is used to remove common words like "with", "and"
 etc. Additional stoplist words can be added in the tracker's
 config.ini file. Once filtering of the word list is done, each indexed
@@ -389,8 +389,10 @@ Other searching backends such as native-fts can be used in which case
 the filtering above is not used. The search query can support
 structure such as quoted phrases, matching one term or another rather
 than both (or search), prefixes etc. In this case you should look at
-the documentation for the native-fts backend to find the supported
-format and features.
+the `documentation for configuring the native-fts`_ backend to find
+the supported format and features.
+
+.. _`documentation for configuring the native-fts`: admin_guide.html#configuring-native-fts-full-text-search
 
 Access Controls
 ---------------

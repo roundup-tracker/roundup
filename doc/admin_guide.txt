@@ -305,7 +305,7 @@ https://www.sqlite.org/fts5.html#full_text_query_syntax. This
 supports:
 
   * plain word search (joined with and similar to other search methods)
-  * phrase search with terms enclosed in ``"`` quotes
+  * phrase search with terms enclosed in quotes (``"``)
   * proximity search with varying distances using ``NEAR()``
   * boolean operations by grouping with parentheses and using ``AND``
     and ``OR``
@@ -346,7 +346,7 @@ languages are supported.
 Websearch provides a more natural style of search and supports:
 
 * plain word search (stemmed in most cases)
-* phrase search with terms enclosed in quotes
+* phrase search with terms enclosed in quotes (``"``)
 * exclusion by prefixing a term/phrase with ``-``
 * alternative/or searching with ``or`` between terms
 * ignores non-word characters including punctuation
