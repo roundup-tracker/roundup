@@ -118,8 +118,7 @@ before_script:
   - mysql -u root -e 'CREATE USER "rounduptest"@"localhost" IDENTIFIED WITH mysql_native_password BY "rounduptest"; GRANT ALL on rounduptest.* TO "rounduptest"@"localhost";'
 
   # Disable fsync for speed, don't care about data durability when testing
-  - echo "fsync = off"  >> /etc/postgresql/*/*/postgresql.conf
-  - ls /etc/postgres
+  - sudo sed -i -e '$a\fsync = off' /etc/postgresql/*/*/postgresql.conf
   - sudo service postgresql restart; sleep 30
   # set up postgresql database
   - psql -c "CREATE ROLE rounduptest WITH CREATEDB LOGIN PASSWORD 'rounduptest';" -U postgres
@@ -145,6 +144,7 @@ script:
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2."* ]]; then
       py.test -v --maxfail=20 test/ --cov=roundup;
     fi
+  - ./setup.py build_doc
 
 after_success:
   - codecov
