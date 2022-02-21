@@ -22,13 +22,13 @@ all: dist
 
 help:
 	@echo "$(MAKE)           - build MO files.  Run this before sdist"
-	@echo "$(MAKE) dist      - same as above
+	@echo "$(MAKE) dist      - same as above"
 	@echo "$(MAKE) template  - update message template from sources"
 	@echo "$(MAKE) diff      - see template differences in vi"
-	@echo "$(MAKE) pytest    - create locale files to run pytest
+	@echo "$(MAKE) pytest    - create locale files to run pytest"
 	@echo "$(MAKE) locale.po - update message file from template"
 	@echo "$(MAKE) locale.mo - compile individual message file"
-	@echo "$(MAKE) help      - this text"\
+	@echo "$(MAKE) help      - this text"
 
 # This will rebuild all MO files without updating their corresponding PO
 # files first.  Run before creating Roundup distribution (hence the name).
