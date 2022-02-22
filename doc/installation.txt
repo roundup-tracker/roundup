@@ -1710,7 +1710,7 @@ Problems? Testing your Python...
    ``-d`` option to allow database creation.
 
 Once you've unpacked roundup's source, if you have pytest installed,
-run ``python -m pytest /test`` in the source directory and make sure
+run ``python -m pytest test`` in the source directory and make sure
 there are no errors. If there are errors, please let us know!
 
 .. _`table of contents`: index.html
