@@ -75,6 +75,9 @@ Fixed:
   (John Rouillard)
 - issue2551142 - postgresql reworked to use savepoint/"rollback to"
   rather than commit()/rollback(). Using savepoint should be faster.
+- issue2551196 - Unset labelprop of a Multilink can lead to Python
+  error when using context/history. (reported and initial patch: Nagy
+  Gabor, John Rouillard)
 
 Features:
 

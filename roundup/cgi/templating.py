@@ -1244,7 +1244,9 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                                 try:
                                     if labelprop is not None and \
                                             labelprop != 'id':
-                                        label = linkcl.get(linkid, labelprop)
+                                        label = linkcl.get(linkid, labelprop,
+                                                     default=self._(
+                                                        "[label is missing]"))
                                         label = html_escape(label)
                                 except IndexError:
                                     comments['no_link'] = self._(
@@ -1271,7 +1273,8 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                         if labelprop is not None and labelprop != 'id':
                             try:
                                 label = html_escape(linkcl.get(args[k],
-                                    labelprop))
+                                    labelprop, default=self._(
+                                        "[label is missing]")))
                             except IndexError:
                                 comments['no_link'] = self._(
                                     "<strike>The linked node"
@@ -2398,7 +2401,8 @@ class LinkHTMLProperty(HTMLProperty):
         k = linkcl.labelprop(1)
         if num_re.match(self._value):
             try:
-                value = str(linkcl.get(self._value, k))
+                value = str(linkcl.get(self._value, k,
+                                       default=self._("[label is missing]")))
             except IndexError:
                 value = self._value
         else :
@@ -2696,7 +2700,8 @@ class MultilinkHTMLProperty(HTMLProperty):
         for v in self._value:
             if num_re.match(v):
                 try:
-                    label = linkcl.get(v, k)
+                    label = linkcl.get(v, k,
+                                       default=self._("[label is missing]"))
                 except IndexError:
                     label = None
                 # fall back to designator if label is None

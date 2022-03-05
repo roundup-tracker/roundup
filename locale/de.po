@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roundup 1.5.0\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2022-01-28 00:18-0500\n"
+"POT-Creation-Date: 2022-03-05 18:51-0500\n"
 "PO-Revision-Date: 2016-04-11 09:13+0200\n"
 "Last-Translator: Tobias Herp <tobias.herp@gmx.de>\n"
 "Language-Team: German Translators <roundup-devel@lists.sourceforge.net>\n"
@@ -2000,18 +2000,18 @@ msgid "Submit New Entry"
 msgstr "Eintrag speichern"
 
 #: ../roundup/cgi/templating.py:963 ../roundup/cgi/templating.py:1134
-#: ../roundup/cgi/templating.py:1750 ../roundup/cgi/templating.py:1779
-#: ../roundup/cgi/templating.py:1799 ../roundup/cgi/templating.py:1812
-#: ../roundup/cgi/templating.py:1849 ../roundup/cgi/templating.py:1902
-#: ../roundup/cgi/templating.py:1925 ../roundup/cgi/templating.py:1932
-#: ../roundup/cgi/templating.py:1968 ../roundup/cgi/templating.py:2005
-#: ../roundup/cgi/templating.py:2038 ../roundup/cgi/templating.py:2127
-#: ../roundup/cgi/templating.py:2148 ../roundup/cgi/templating.py:2238
-#: ../roundup/cgi/templating.py:2258 ../roundup/cgi/templating.py:2280
-#: ../roundup/cgi/templating.py:2319 ../roundup/cgi/templating.py:2329
-#: ../roundup/cgi/templating.py:2393 ../roundup/cgi/templating.py:2691
-#: ../roundup/cgi/templating.py:963:1134 :1750:1779 :1799:1812 :1849:1902
-#: :1925:1932 :1968:2005 :2038:2127 :2148:2238 :2258:2280 :2319:2329 :2393:2691
+#: ../roundup/cgi/templating.py:1753 ../roundup/cgi/templating.py:1782
+#: ../roundup/cgi/templating.py:1802 ../roundup/cgi/templating.py:1815
+#: ../roundup/cgi/templating.py:1852 ../roundup/cgi/templating.py:1905
+#: ../roundup/cgi/templating.py:1928 ../roundup/cgi/templating.py:1935
+#: ../roundup/cgi/templating.py:1971 ../roundup/cgi/templating.py:2008
+#: ../roundup/cgi/templating.py:2041 ../roundup/cgi/templating.py:2130
+#: ../roundup/cgi/templating.py:2151 ../roundup/cgi/templating.py:2241
+#: ../roundup/cgi/templating.py:2261 ../roundup/cgi/templating.py:2283
+#: ../roundup/cgi/templating.py:2322 ../roundup/cgi/templating.py:2332
+#: ../roundup/cgi/templating.py:2396 ../roundup/cgi/templating.py:2695
+#: ../roundup/cgi/templating.py:963:1134 :1753:1782 :1802:1815 :1852:1905
+#: :1928:1935 :1971:2008 :2041:2130 :2151:2241 :2261:2283 :2322:2332 :2396:2695
 msgid "[hidden]"
 msgstr "[verborgen]"
 
@@ -2037,18 +2037,24 @@ msgstr "<em>%s: %s</em>\n"
 msgid "The linked class %(classname)s no longer exists"
 msgstr "Die verlinkte Klasse \"%(classname)s\" existiert nicht mehr"
 
+#: ../roundup/cgi/templating.py:1249 ../roundup/cgi/templating.py:1277
+#: ../roundup/cgi/templating.py:2405 ../roundup/cgi/templating.py:2704
+#: ../roundup/cgi/templating.py:1249:1277 :2405:2704
+msgid "[label is missing]"
+msgstr ""
+
 # ../roundup/cgi/templating.py:905 :926
-#: ../roundup/cgi/templating.py:1251 ../roundup/cgi/templating.py:1277
-#: ../roundup/cgi/templating.py:1251:1277
+#: ../roundup/cgi/templating.py:1253 ../roundup/cgi/templating.py:1280
+#: ../roundup/cgi/templating.py:1253:1280
 msgid "<strike>The linked node no longer exists</strike>"
 msgstr "<strike>Der verknüpfte Eintrag existiert nicht mehr</strike>"
 
-#: ../roundup/cgi/templating.py:1338
+#: ../roundup/cgi/templating.py:1341
 #, python-format
 msgid "%s: (no value)"
 msgstr "%s: (kein Wert)"
 
-#: ../roundup/cgi/templating.py:1354
+#: ../roundup/cgi/templating.py:1357
 #, fuzzy, python-format
 msgid ""
 "<strong><em>This event %s is not handled by the history display!</em></"
@@ -2057,46 +2063,46 @@ msgstr ""
 "<strong><em>Dieses Ereignis kann nicht im Verlauf angezeigt werden!</em></"
 "strong>"
 
-#: ../roundup/cgi/templating.py:1367
+#: ../roundup/cgi/templating.py:1370
 msgid "<tr><td colspan=4><strong>Note:</strong></td></tr>"
 msgstr "<tr><td colspan=\"4\"><strong>Bitte beachten:</strong></td></tr>"
 
-#: ../roundup/cgi/templating.py:1376
+#: ../roundup/cgi/templating.py:1379
 msgid "History"
 msgstr "Verlauf"
 
-#: ../roundup/cgi/templating.py:1378
+#: ../roundup/cgi/templating.py:1381
 msgid "<th>Date</th>"
 msgstr "<th>Datum</th>"
 
-#: ../roundup/cgi/templating.py:1379
+#: ../roundup/cgi/templating.py:1382
 msgid "<th>User</th>"
 msgstr "<th>Benutzer</th>"
 
-#: ../roundup/cgi/templating.py:1380
+#: ../roundup/cgi/templating.py:1383
 msgid "<th>Action</th>"
 msgstr "<th>Aktion</th>"
 
-#: ../roundup/cgi/templating.py:1381
+#: ../roundup/cgi/templating.py:1384
 msgid "<th>Args</th>"
 msgstr "<th>Argumente</th>"
 
-#: ../roundup/cgi/templating.py:1432
+#: ../roundup/cgi/templating.py:1435
 #, python-format
 msgid "Copy of %(class)s %(id)s"
 msgstr "Kopie von %(class)s %(id)s"
 
-#: ../roundup/cgi/templating.py:2042 ../roundup/cgi/templating.py:2075
-#: ../roundup/cgi/templating.py:1320:2042:2075
+#: ../roundup/cgi/templating.py:2045 ../roundup/cgi/templating.py:2078
+#: ../roundup/cgi/templating.py:1323:2045:2078
 msgid "No"
 msgstr "Nein"
 
-#: ../roundup/cgi/templating.py:2042 ../roundup/cgi/templating.py:2070
-#: ../roundup/cgi/templating.py:1320:2042:2070
+#: ../roundup/cgi/templating.py:2045 ../roundup/cgi/templating.py:2073
+#: ../roundup/cgi/templating.py:1323:2045:2073
 msgid "Yes"
 msgstr "Ja"
 
-#: ../roundup/cgi/templating.py:2196
+#: ../roundup/cgi/templating.py:2199
 msgid ""
 "default value for DateHTMLProperty must be either DateHTMLProperty or string "
 "date representation."
@@ -2104,19 +2110,19 @@ msgstr ""
 "Der voreingestellte Wert einer DateHTML-Eigenschaft muss entweder ein\n"
 "DateHTML-Objekt sein oder ein Datum repräsentieren."
 
-#: ../roundup/cgi/templating.py:2373
+#: ../roundup/cgi/templating.py:2376
 #, python-format
 msgid "Attempt to look up %(attr)s on a missing value"
 msgstr ""
 "Versuch, das Attribut %(attr)s eines nicht vorhandenen Werts abzufragen"
 
-#: ../roundup/cgi/templating.py:2384
+#: ../roundup/cgi/templating.py:2387
 #, fuzzy, python-format
 msgid "Attempt to look up %(item)s on a missing value"
 msgstr ""
 "Versuch, das Attribut %(attr)s eines nicht vorhandenen Werts abzufragen"
 
-#: ../roundup/cgi/templating.py:2487
+#: ../roundup/cgi/templating.py:2491
 #, python-format
 msgid "<option %svalue=\"-1\">- no selection -</option>"
 msgstr "<option %svalue=\"-1\">- nichts ausgewählt -</option>"
