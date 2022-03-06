@@ -1103,7 +1103,7 @@ All methods except __repr__ must be implemented by a concrete backend Database.
         This method must be called at the end of processing.
 
         """
-
+        raise NotImplementedError
 
 def iter_roles(roles):
     ''' handle the text processing of turning the roles list
