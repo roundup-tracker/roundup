@@ -47,6 +47,16 @@ class postgresqlOpener:
     if have_backend('postgresql'):
         module = get_backend('postgresql')
 
+    def setup_class(cls):
+        # nuke the db once for the class. Handles the case
+        # where an aborted test run (^C during setUp for example)
+        # leaves the database in an unusable, partly configured state.
+        try:
+            cls.nuke_database(cls)
+        except:
+            # ignore failure to nuke the database.
+            pass
+
     def setUp(self):
         pass
 
