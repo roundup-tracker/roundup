@@ -111,7 +111,7 @@ install:
   - pip install brotli
   # zstd fails to build under python nightly aborting test.
   # allow testing to still happen if the optional package doesn't install.
-  - pip install zstd || exit 0
+  - pip install zstd || true
 
 before_script:
   # set up mysql database
