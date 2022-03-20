@@ -201,7 +201,10 @@ def encodePassword(plaintext, scheme, other=None, config=None):
         s = sha1(s2b(plaintext)).hexdigest()  # nosec
     elif scheme == 'MD5':
         s = md5(s2b(plaintext)).hexdigest()  # nosec
-    elif scheme == 'crypt' and crypt is not None:
+    elif scheme == 'crypt':
+        if crypt is None:
+            raise PasswordValueError(
+                'Unsupported encryption scheme %r' % scheme)
         if other is not None:
             salt = other
         else:
@@ -355,6 +358,8 @@ class Password(JournalPassword):
             raise ValueError('Password not set')
         return '{%s}%s' % (self.scheme, self.password)
 
+def test_missing_crypt():
+    p = encodePassword('sekrit', 'crypt')
 
 def test():
     # SHA
@@ -415,5 +420,6 @@ def test():
 
 if __name__ == '__main__':
     test()
+    test_missing_crypt()
 
 # vim: set filetype=python sts=4 sw=4 et si :

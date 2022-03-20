@@ -411,8 +411,15 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         self.assertEqual(has(uimu, 'issue', 'messages.recipients'), 1)
         self.assertEqual(has(uimu, 'issue', 'messages.recipients.username'), 1)
 
-    # roundup.password has its own built-in test, call it.
+    # roundup.password has its own built-in tests, call them.
     def test_password(self):
         roundup.password.test()
+
+        # pretend import of crypt failed
+        orig_crypt = roundup.password.crypt
+        roundup.password.crypt = None
+        with self.assertRaises(roundup.password.PasswordValueError) as ctx:
+            roundup.password.test_missing_crypt()
+        roundup.password.crypt = orig_crypt
 
 # vim: set filetype=python sts=4 sw=4 et si :

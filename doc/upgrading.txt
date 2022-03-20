@@ -154,6 +154,33 @@ can use the ``_generic.404.html`` template to create a
 the 400 template by appending ``@template=400`` to the url for the
 tracker.
 
+Change passwords using crypt module (optional)
+----------------------------------------------
+
+The crypt module is being removed from the standard library.  Any
+stored password using crypt encoding will fail to verify once the
+crypt module is removed (expected in Python 3.13 see
+pep-0594). Automatic migration of passwords (if enabled in config.ini)
+re-encrypts old passwords using something other than crypt if a user
+logs in using the web interface.
+
+You can find users with passwords still encrypted using crypt by
+running::
+
+    roundup-admin -i <tracker_home> table password,id,username
+
+Look for lines starting with ``{CRYPT}``. You can reset the user's
+password using::
+
+    roundup-admin -i <tracker_home>
+    roundup> set user16 password=somenewpassword
+
+changing ``16`` to the id in the second column of the table output.
+The example uses interactive mode (indicated by the ``roundup>``
+prompt). This prevents the new password from showing up in the output
+of ps or shell history. The new password will be encrypted using the
+default encryption method (usually pbkdf2).
+
 Migrating from 2.0.0 to 2.1.0
 =============================
 
