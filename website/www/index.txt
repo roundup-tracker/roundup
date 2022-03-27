@@ -1,7 +1,9 @@
 Roundup Issue Tracker
 =====================
 
-.. meta::
+.. raw:: foo
+
+   meta::
    :title: Roundup Issue Tracker
    :description: A simple-to-use and -install issue-tracking system
        with command-line, web, REST, XML-RPC and e-mail interfaces.
