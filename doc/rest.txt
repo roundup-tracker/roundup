@@ -719,8 +719,7 @@ To retreive the content, you can use the content link property:
 /, you get a web page that includes metadata about the message. With
 the slash you get a text/plain (in most cases) data stream.
 
-Also you can use the url:
-
+Also you can use the url: ``https://.../demo/rest/data/msg/11?@verbose=3``
 and the content property (if the data is utf-8 compatible) now looks
 like::
 
