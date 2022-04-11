@@ -2208,16 +2208,29 @@ The following prefix is used to access static resources:
 
 4. ``/@@file/``
 
+Two additional url's are used for the API's.
+The `REST api`_ is accessed via:
+ 
+5. ``/rest/``
+
+.. _`REST api`: rest.html
+
+and the `XMLRPC api`_ is available at:
+
+6. ``/rest/``
+
+.. _`XMLRPC api`: xmlrpc.html
+
 All other URLs depend on the classes configured in Roundup database.
 Each class receives two URLs - one for the class itself and another
 for specific items of that class. Example for class URL:
 
-5. ``/issue``
+7. ``/issue``
 
 This is usually used to show listings of class items. The URL for
 for specific object of issue class with id 1 will look like:
 
-6. ``/issue1``
+8. ``/issue1``
 
 
 Determining web context
