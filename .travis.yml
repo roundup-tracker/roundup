@@ -22,11 +22,12 @@ dist:
 #  - pypy3
 python:
   - 2.7
-  - 3.10.0
+  - 3.10.4
   - 3.9
   - 3.8
   - 3.6
   - nightly
+  - 3.11
 
 services:
   - mysql
@@ -34,8 +35,8 @@ services:
 
 jobs:
     allow_failures:  # nightly not ready for prime time yet.
-      - python: 3.10
       - python: nightly
+      - python: 3.11
       - python: pypy3
 
 addons:
