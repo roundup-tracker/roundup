@@ -196,25 +196,40 @@ class Database(rdbms_common.Database):
             self.sql("CREATE TABLE dual (dummy integer)")
             self.sql("insert into dual values (1)")
             self.create_version_2_tables()
+            self.fix_version_3_tables()
             # Need to commit here, otherwise otk/session will not find
             # the necessary tables (in a parallel connection!)
             self.commit()
+            self._add_fts_table()
+            self.commit()
 
-    def checkpoint_data(self):
-        """Commit the state of the database. Allows recovery/retry
-           of operation in exception handler because postgres
-           requires a rollback in case of error generating exception
+    def checkpoint_data(self, savepoint="importing"):
+        """Create a subtransaction savepoint. Allows recovery/retry
+           of operation in exception handler because
+           postgres requires a rollback in case of error
+           generating exception.  Used with
+           restore_connecion_on_error to handle uniqueness
+           conflict in import_table().
         """
-        self.commit()
+        # Savepoints take resources. Postgres keeps all
+        # savepoints (rather than overwriting) until a
+        # commit(). If an import fails because of a resource
+        # issue with savepoints, uncomment this line. I
+        # expect it will slow down the import but it should
+        # eliminate any issue with stored savepoints and
+        # resource use.
+        #
+        # self.sql('RELEASE SAVEPOINT %s' % savepoint)
+        self.sql('SAVEPOINT %s' % savepoint)
 
-    def restore_connection_on_error(self):
-        """Postgres leaves a cursor in an unusable state after
-           an error. Rollback the transaction to recover and
-           permit a retry of the failed statement. Used with
-           checkpoint_data to handle uniqueness conflict in
-           import_table()
+    def restore_connection_on_error(self, savepoint="importing"):
+        """Postgres leaves a connection/cursor in an unusable state
+           after an error. Rollback the transaction to a
+           previous savepoint and permit a retry of the
+           failed statement. Used with checkpoint_data to
+           handle uniqueness conflict in import_table().
         """
-        self.rollback()
+        self.sql('ROLLBACK TO %s' % savepoint)
 
     def create_version_2_tables(self):
         # OTK store
@@ -234,8 +249,8 @@ class Database(rdbms_common.Database):
         self.sql('''CREATE TABLE __textids (
             _textid integer primary key, _class VARCHAR(255),
             _itemid VARCHAR(255), _prop VARCHAR(255))''')
-        self.sql('''CREATE TABLE __words (_word VARCHAR(30),
-            _textid integer)''')
+        self.sql('''CREATE TABLE __words (_word VARCHAR(%s),
+            _textid integer)''' % (self.indexer.maxlength + 5))
         self.sql('CREATE INDEX words_word_idx ON __words(_word)')
         self.sql('CREATE INDEX words_by_id ON __words (_textid)')
         self.sql('CREATE UNIQUE INDEX __textids_by_props ON '
@@ -262,6 +277,24 @@ class Database(rdbms_common.Database):
         rdbms_common.Database.fix_version_3_tables(self)
         self.sql('''CREATE INDEX words_both_idx ON public.__words
             USING btree (_word, _textid)''')
+
+    def _add_fts_table(self):
+        self.sql('CREATE TABLE __fts (_class VARCHAR(255), '
+                 '_itemid VARCHAR(255), _prop VARCHAR(255), _tsv tsvector)'
+        )
+
+        self.sql('CREATE INDEX __fts_idx ON __fts USING GIN (_tsv)')
+
+    def fix_version_6_tables(self):
+        # Modify length for __words._word column.
+        c = self.cursor
+        sql = 'alter table __words alter column _word type varchar(%s)' % (
+                                                                  self.arg)
+        # Why magic number 5? It was the original offset between
+        #   column length and maxlength.
+        c.execute(sql, (self.indexer.maxlength + 5,))
+
+        self._add_fts_table()
 
     def add_actor_column(self):
         # update existing tables to have the new actor column

@@ -1,0 +1,81 @@
+# docker-roundup
+# roundup issue tracker application with mariadb running as docker container
+#
+# docker-compose.yml
+#
+# Build components:
+#    docker-compose  -f scripts/Docker/docker-compose.yml build
+# 
+# Install tracker template:
+#   $ docker-compose  -f scripts/Docker/docker-compose.yml run \
+#        --rm --entrypoint roundup-admin --no-deps roundup-app \
+#        -i tracker install
+#
+# Edit scripts/Docker/tracker/config.ini configure database settings
+# and any NO DEFAULT settings.
+#
+# Initialize the database, wait 1 minute so 
+#   
+#   $ docker-compose  -f scripts/Docker/docker-compose.yml run \
+#        --rm --entrypoint roundup-admin roundup-app \
+#        -i tracker
+#
+# wait 1 minute for mariadb to initialize
+# init tracker at roundup prompt
+#
+#   roundup> init
+#   roundup> exit
+#
+# may need ^\ to get roundup-admin to exit.
+#
+# run
+#    docker-compose -f scripts/Docker/docker-compose.yml up
+#
+# tracker should be running at port 9017.
+
+# Note: mysql volume and tracker directories will be put in the
+# scripts/Docker subdir.
+# Paths for volumes are relative to docker-compose.yml location not
+# docker-compose cwd or build context directory.
+
+version: '3'
+services:
+  mariadb:
+    image: lscr.io/linuxserver/mariadb
+    container_name: mariadb
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/New_York
+      - MYSQL_ROOT_PASSWORD=myPassword
+      - MYSQL_DATABASE=roundup
+      - MYSQL_USER=roundup_user
+      - MYSQL_PASSWORD=roundup_pass
+#    ports:
+#      - 3306:3306
+    volumes:
+      - ./dbData:/config
+
+  roundup-app:
+    container_name: roundup-app
+    build:
+       context: ../..
+       dockerfile: scripts/Docker/Dockerfile
+       args:
+         source: local_pip
+         #source: local
+         #source: pypi
+    command: "issues=tracker"
+    restart: unless-stopped
+    environment:
+      - TZ=America/New_York
+    ports:
+      - 9017:8080
+    links:
+      - mariadb
+    depends_on:
+      - mariadb
+    volumes:
+      # will be placed in Docker subdir next to this file
+      - ./tracker:/usr/src/app/tracker

@@ -17,12 +17,18 @@ def AboutPage(db):
             if module == 'pyme':
                 from pyme import version
                 version="version %s"%version.versionstr
+            elif module == 'MySQLdb':
+                from MySQLdb import version_info
+                version="version %s"%".".join([str(v) for v in version_info])
             elif module == 'pychart':
                 from pychart import version
                 version="version %s"%version.version
             elif module == 'sqlite3':
                 from sqlite3 import version
                 version="version %s"%version
+            elif module == "whoosh":
+                from whoosh import versionstring
+                version="version %s"%versionstring()
             elif module == 'xapian':
                 from xapian import version_string
                 version="version %s"%version_string()

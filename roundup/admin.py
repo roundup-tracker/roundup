@@ -23,12 +23,13 @@ from __future__ import print_function
 
 __docformat__ = 'restructuredtext'
 
-import csv, getopt, getpass, os, re, shutil, sys, operator
+import csv, getopt, getpass, operator, os, re, shutil, sys
 
 from roundup import date, hyperdb, init, password, token
 from roundup import __version__ as roundup_version
 import roundup.instance
-from roundup.configuration import CoreConfig, NoConfigError, UserConfig
+from roundup.configuration import (CoreConfig, NoConfigError,
+                                   ParsingOptionError, UserConfig)
 from roundup.i18n import _
 from roundup.exceptions import UsageError
 from roundup.anypy.my_input import my_input
@@ -51,13 +52,16 @@ class CommandDict(UserDict):
         if key in self.data:
             return [(key, self.data[key])]
         keylist = sorted(self.data)
-        l = []
+        matching_keys = []
         for ki in keylist:
             if ki.startswith(key):
-                l.append((ki, self.data[ki]))
-        if not l and default is self._marker:
+                matching_keys.append((ki, self.data[ki]))
+        if not matching_keys and default is self._marker:
             raise KeyError(key)
-        return l
+        # FIXME: what happens if default is not self._marker but
+        # there are no matching keys? Should (default, self.data[default])
+        # be returned???
+        return matching_keys
 
 
 class AdminTool:
@@ -101,12 +105,12 @@ class AdminTool:
         """
         props = {}
         for arg in args:
-            l = arg.split('=', 1)
+            key_val = arg.split('=', 1)
             # if = not in string, will return one element
-            if len(l) < 2:
+            if len(key_val) < 2:
                 raise UsageError(_('argument "%(arg)s" not propname=value') %
                                  locals())
-            key, value = l
+            key, value = key_val
             if value:
                 props[key] = value
             else:
@@ -117,7 +121,7 @@ class AdminTool:
         """ Display a simple usage message.
         """
         if message:
-            message = _('Problem: %(message)s\n\n')% locals()
+            message = _('Problem: %(message)s\n\n') % locals()
         sys.stdout.write(_("""%(message)sUsage: roundup-admin [options] [<command> <arguments>]
 
 Options:
@@ -267,13 +271,13 @@ Command help:
 
         # try command docstrings
         try:
-            l = self.commands.get(topic)
+            cmd_docs = self.commands.get(topic)
         except KeyError:
             print(_('Sorry, no help for "%(topic)s"') % locals())
             return 1
 
         # display the help for each match, removing the docstring indent
-        for _name, help in l:
+        for _name, help in cmd_docs:
             lines = nl_re.split(_(help.__doc__))
             print(lines[0])
             indent = indent_re.match(lines[1])
@@ -295,12 +299,15 @@ Command help:
          2. <prefix>/share/roundup/templates/*
             this should be the standard place to find them when Roundup is
             installed
-         3. <roundup.admin.__file__>/../templates/*
+         3. <roundup.admin.__file__>/../../<sys.prefix>/share/\
+                 roundup/templates/* which is where they will be found if
+            roundup is installed as a wheel using pip install
+         4. <roundup.admin.__file__>/../templates/*
             this will be used if Roundup's run in the distro (aka. source)
             directory
-         4. <current working dir>/*
+         5. <current working dir>/*
             this is for when someone unpacks a 3rd-party template
-         5. <current working dir>
+         6. <current working dir>
             this is for someone who "cd"s to the 3rd-party template dir
         """
         # OK, try <prefix>/share/roundup/templates
@@ -323,6 +330,25 @@ Command help:
             if os.path.isdir(tdir):
                 templates = init.listTemplates(tdir)
                 break
+
+        # search for data files parallel to the roundup
+        # install dir. E.G. a wheel install
+        #  use roundup.__path__ and go up a level then use sys.prefix
+        #  to create a base path for searching.
+
+        import sys
+        # __file__ should be something like:
+        #    /usr/local/lib/python3.10/site-packages/roundup/admin.py
+        # os.prefix should be /usr, /usr/local or root of virtualenv
+        #    strip leading / to make os.path.join work right.
+        path = __file__
+        for _N in 1, 2:
+            path = os.path.dirname(path)
+        # path is /usr/local/lib/python3.10/site-packages
+        tdir = os.path.join(path, sys.prefix[1:], 'share',
+                            'roundup', 'templates')
+        if os.path.isdir(tdir):
+            templates.update(init.listTemplates(tdir))
 
         # OK, now try as if we're in the roundup source distribution
         # directory, so this module will be in .../roundup-*/roundup/admin.py
@@ -435,7 +461,7 @@ Erase it? Y/N: """) % locals())
         # it sets parameters like template_engine that are
         # template specific.
         template_config = UserConfig(templates[template]['path'] +
-                                   "/config_ini.ini")
+                                     "/config_ini.ini")
         for k in template_config.keys():
             if k == 'HOME':  # ignore home. It is a default param.
                 continue
@@ -583,7 +609,7 @@ Erase it? Y/N: """))
             raise UsageError(_('Not enough arguments supplied'))
         propname = args[0]
         designators = args[1].split(',')
-        l = []
+        linked_props = []
         for designator in designators:
             # decode the node designator
             try:
@@ -619,11 +645,11 @@ Erase it? Y/N: """))
                         propclassname = self.db.getclass(property.classname).classname
                         id = cl.get(nodeid, propname)
                         for i in id:
-                            l.append(propclassname + i)
+                            linked_props.append(propclassname + i)
                     else:
                         id = cl.get(nodeid, propname)
                         for i in id:
-                            l.append(i)
+                            linked_props.append(i)
                 else:
                     if self.print_designator:
                         properties = cl.getprops()
@@ -646,7 +672,7 @@ Erase it? Y/N: """))
                 raise UsageError(_('no such %(classname)s property '
                                    '"%(propname)s"') % locals())
         if self.separator:
-            print(self.separator.join(l))
+            print(self.separator.join(linked_props))
 
         return 0
 
@@ -743,20 +769,20 @@ Erase it? Y/N: """))
             if ',' in value:
                 values = value.split(',')
             else:
-                values = [ value ]
+                values = [value]
 
             props[propname] = []
             # start handling transitive props
             # given filter issue assignedto.roles=Admin
             # start at issue
             curclass = cl
-            lastprop = propname # handle case 'issue assignedto=admin'
+            lastprop = propname  # handle case 'issue assignedto=admin'
             if '.' in propname:
                 # start splitting transitive prop into components
                 # we end when we have no more links
                 for pn in propname.split('.'):
                     try:
-                        lastprop=pn # get current component
+                        lastprop = pn  # get current component
                         # get classname for this link
                         try:
                             curclassname = curclass.getprops()[pn].classname
@@ -779,7 +805,7 @@ Erase it? Y/N: """))
         try:
             id = []
             designator = []
-            props = { "filterspec": props }
+            props = {"filterspec": props}
 
             if self.separator:
                 if self.print_designator:
@@ -967,7 +993,7 @@ Erase it? Y/N: """))
         for propname in props:
             try:
                 props[propname] = hyperdb.rawToHyperdb(self.db, cl, None,
-                    propname, props[propname])
+                                                    propname, props[propname])
             except hyperdb.HyperdbValueError as message:
                 raise UsageError(message)
 
@@ -975,7 +1001,7 @@ Erase it? Y/N: """))
         propname = cl.getkey()
         if propname and propname not in props:
             raise UsageError(_('you must provide the "%(propname)s" '
-                'property.') % locals())
+                               'property.') % locals())
 
         # do the actual create
         try:
@@ -1099,7 +1125,7 @@ Erase it? Y/N: """))
             if ':' in spec:
                 name, width = spec.split(':')
                 if width == '':
-                    # spec includes trailing :, use label/name width 
+                    # spec includes trailing :, use label/name width
                     props.append((name, len(name)))
                 else:
                     try:
@@ -1123,7 +1149,7 @@ Erase it? Y/N: """))
 
         # and the table data
         for nodeid in cl.list():
-            l = []
+            table_columns = []
             for name, width in props:
                 if name != 'id':
                     try:
@@ -1136,8 +1162,8 @@ Erase it? Y/N: """))
                 else:
                     value = str(nodeid)
                 f = '%%-%ds' % width
-                l.append(f % value[:width])
-            print(' '.join(l))
+                table_columns.append(f % value[:width])
+            print(' '.join(table_columns))
         return 0
 
     def do_history(self, args):
@@ -1259,7 +1285,7 @@ Erase it? Y/N: """))
                 raise UsageError(e.args[0])
             except IndexError:
                 raise UsageError(_('no such %(classname)s node '
-                                   '" % (nodeid)s"')%locals())
+                                   '" % (nodeid)s"') % locals())
         self.db_uncommitted = True
         return 0
 
@@ -1286,7 +1312,7 @@ Erase it? Y/N: """))
         if len(args) == 2:
             if args[0].startswith('-'):
                 classes = [c for c in self.db.classes
-                            if c not in args[0][1:].split(',')]
+                           if c not in args[0][1:].split(',')]
             else:
                 classes = args[0].split(',')
         else:
@@ -1308,12 +1334,11 @@ Erase it? Y/N: """))
 
             if not export_files and hasattr(cl, 'export_files'):
                 sys.stdout.write('Exporting %s WITHOUT the files\r\n' %
-                    classname)
+                                 classname)
 
             with open(os.path.join(dir, classname+'.csv'), 'w') as f:
                 writer = csv.writer(f, colon_separated)
 
-                properties = cl.getprops()
                 propnames = cl.export_propnames()
                 fields = propnames[:]
                 fields.append('is retired')
@@ -1329,7 +1354,7 @@ Erase it? Y/N: """))
                 all_nodes = cl.getnodeids()
 
                 classkey = cl.getkey()
-                if classkey: # False sorts before True, so negate is_retired
+                if classkey:  # False sorts before True, so negate is_retired
                     keysort = lambda i: (cl.get(i, classkey),
                                          not cl.is_retired(i))
                     all_nodes.sort(key=keysort)
@@ -1337,12 +1362,13 @@ Erase it? Y/N: """))
 
                 for nodeid in all_nodes:
                     if self.verbose:
-                        sys.stdout.write('\rExporting %s - %s' % 
+                        sys.stdout.write('\rExporting %s - %s' %
                                          (classname, nodeid))
                         sys.stdout.flush()
                     node = cl.getnode(nodeid)
                     exp = cl.export_list(propnames, nodeid)
-                    lensum = sum([len(repr_export(node[p])) for p in propnames])
+                    lensum = sum([len(repr_export(node[p])) for
+                                  p in propnames])
                     # for a safe upper bound of field length we add
                     # difference between CSV len and sum of all field lengths
                     d = sum([len(x) for x in exp]) - lensum
@@ -1359,7 +1385,8 @@ Erase it? Y/N: """))
             # export the journals
             with open(os.path.join(dir, classname+'-journals.csv'), 'w') as jf:
                 if self.verbose:
-                    sys.stdout.write("\nExporting Journal for %s\n" % classname)
+                    sys.stdout.write("\nExporting Journal for %s\n" %
+                                     classname)
                     sys.stdout.flush()
                 journals = csv.writer(jf, colon_separated)
                 for row in cl.export_journals():
@@ -1642,12 +1669,12 @@ Erase it? Y/N: """))
         except KeyError:
             # not a valid command
             print(_('Unknown command "%(command)s" ("help commands" for a '
-                'list)') % locals())
+                    'list)') % locals())
             return 1
 
         # check for multiple matches
         if len(functions) > 1:
-            print(_('Multiple commands match "%(command)s": %(list)s') % \
+            print(_('Multiple commands match "%(command)s": %(list)s') %
                   {'command': command,
                    'list': ', '.join([i[0] for i in functions])})
             return 1
@@ -1684,6 +1711,9 @@ Erase it? Y/N: """))
         except NoConfigError as message:  # noqa: F841
             self.tracker_home = ''
             print(_("Error: Couldn't open tracker: %(message)s") % locals())
+            return 1
+        except ParsingOptionError as message: # message used via locals
+            print("%(message)s" % locals())
             return 1
 
         # only open the database once!
@@ -1751,10 +1781,10 @@ Erase it? Y/N: """))
         self.name = 'admin'
         self.password = ''  # unused
         if 'ROUNDUP_LOGIN' in os.environ:
-            l = os.environ['ROUNDUP_LOGIN'].split(':')
-            self.name = l[0]
-            if len(l) > 1:
-                self.password = l[1]
+            login_env = os.environ['ROUNDUP_LOGIN'].split(':')
+            self.name = login_env[0]
+            if len(login_env) > 1:
+                self.password = login_env[1]
         self.separator = None
         self.print_designator = 0
         self.verbose = 0
@@ -1788,10 +1818,10 @@ Erase it? Y/N: """))
             elif opt == '-d':
                 self.print_designator = 1
             elif opt == '-u':
-                l = arg.split(':')
-                self.name = l[0]
-                if len(l) > 1:
-                    self.password = l[1]
+                login_opt = arg.split(':')
+                self.name = login_opt[0]
+                if len(login_opt) > 1:
+                    self.password = login_opt[1]
 
         # if no command - go interactive
         # wrap in a try/finally so we always close off the db

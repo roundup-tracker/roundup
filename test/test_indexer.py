@@ -24,6 +24,8 @@ import pytest
 from roundup.backends import get_backend, have_backend
 from roundup.backends.indexer_rdbms import Indexer
 
+from roundup.cgi.exceptions import IndexerQueryError
+
 # borrow from other tests
 from .db_test_base import setupSchema, config
 from .test_postgresql import postgresqlOpener, skip_postgresql
@@ -115,8 +117,14 @@ class IndexerTest(unittest.TestCase):
                                                      ('test', '2', 'bar')])
     def test_extremewords(self):
         """Testing too short or too long words."""
+
+        # skip this for FTS test
+        if ( isinstance(self,sqliteFtsIndexerTest) or
+             isinstance(self,postgresqlFtsIndexerTest)):
+            pytest.skip("extremewords not tested for native FTS backends")
+
         short = "b"
-        long = "abcdefghijklmnopqrstuvwxyz"
+        long = "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
         self.dex.add_text(('test', '1', 'a'), '%s hello world' % short)
         self.dex.add_text(('test', '2', 'a'), 'blah a %s world' % short)
         self.dex.add_text(('test', '3', 'a'), 'blah Blub river')
@@ -133,7 +141,7 @@ class IndexerTest(unittest.TestCase):
                                                         % (short, long))
         self.assertSeqEqual(self.dex.find(["py"]), [('test', '5', 'a')])
 
-    def test_casesensitity(self):
+    def test_casesensitivity(self):
         """Test if searches are case-in-sensitive."""
         self.dex.add_text(('test', '1', 'a'), 'aaaa bbbb')
         self.dex.add_text(('test', '2', 'a'), 'aAaa BBBB')
@@ -220,6 +228,214 @@ class postgresqlIndexerTest(postgresqlOpener, RDBMSIndexerTest, IndexerTest):
         postgresqlOpener.tearDown(self)
 
 
+@skip_postgresql
+class postgresqlFtsIndexerTest(postgresqlOpener, RDBMSIndexerTest, IndexerTest):
+    def setUp(self):
+        postgresqlOpener.setUp(self)
+        RDBMSIndexerTest.setUp(self)
+        from roundup.backends.indexer_postgresql_fts import Indexer
+        self.dex = Indexer(self.db)
+        self.dex.db = self.db
+
+    def tearDown(self):
+        RDBMSIndexerTest.tearDown(self)
+        postgresqlOpener.tearDown(self)
+
+    def test_websearch_syntax(self):
+        """Test searches using websearch_to_tsquery. These never throw
+           errors regardless of how wacky the input.
+        """
+
+        self.dex.add_text(('test', '1', 'foo'), 'a the hello world')
+        self.dex.add_text(('test', '2', 'foo'), 'helh blah blah the world')
+        self.dex.add_text(('test', '3', 'foo'), 'blah hello the world')
+        self.dex.add_text(('test', '4', 'foo'), 'hello blah blech the world')
+        self.dex.add_text(('test', '5', 'foo'), 'a car drove')
+        self.dex.add_text(('test', '6', 'foo'), 'a car driving itself')
+        self.dex.add_text(('test', '7', 'foo'), "let's drive in the car")
+        self.dex.add_text(('test', '8', 'foo'), 'a drive-in movie')
+
+        # test two separate words for sanity
+        self.assertSeqEqual(self.dex.find(['"hello" "world"']),
+                                                    [('test', '1', 'foo'),
+                                                     ('test', '3', 'foo'),
+                                                     ('test', '4', 'foo')
+                                                    ])
+        # now check the phrase
+        self.assertSeqEqual(self.dex.find(['"hello world"']),
+                                                    [('test', '1', 'foo'),
+                                                     ])
+
+        # test negation
+        self.assertSeqEqual(self.dex.find(['hello world -blech']),
+                                                    [('test', '1', 'foo'),
+                                                     ('test', '3', 'foo'),
+                                                    ])
+
+        # phrase negation
+        self.assertSeqEqual(self.dex.find(['hello world -"blah hello"']),
+                                                    [('test', '1', 'foo'),
+                                                     ('test', '4', 'foo'),
+                                                    ])
+
+        # test without or
+        self.assertSeqEqual(self.dex.find(['blah blech']),
+                                                    [('test', '4', 'foo'),
+                                                    ])
+
+        # test with or
+        self.assertSeqEqual(self.dex.find(['blah or blech']),
+                                                    [ ('test', '2', 'foo'),
+                                                      ('test', '3', 'foo'),
+                                                      ('test', '4', 'foo'),
+                                                    ])
+
+        # stemmer test for english
+        self.assertSeqEqual(self.dex.find(['ts:drive']),
+                                                    [('test', '6', 'foo'),
+                                                     ('test', '7', 'foo'),
+                                                     ('test', '8', 'foo')
+                                                    ])
+
+        # stemmer is not disabled by quotes 8-(
+        self.assertSeqEqual(self.dex.find(['ts:"drive"']),
+                                                    [('test', '6', 'foo'),
+                                                     ('test', '7', 'foo'),
+                                                     ('test', '8', 'foo')
+                                                    ])
+
+
+        # this is missing ts: at the start, so uses the websearch
+        # parser. We search for operator characters and wanr the user
+        # Otherwise "hello <-> world" is the same as "hello world"
+        # and is not a phrase search.
+        with self.assertRaises(IndexerQueryError) as ctx:
+            self.dex.find(['hello <-> world'])
+
+        self.assertIn('do a tsquery search', ctx.exception.args[0])
+
+    def test_tsquery_syntax(self):
+        """Because websearch_to_tsquery doesn't allow prefix searches,
+           near searches with any value except 1 (phrase search), allow
+           use of to_tsquery by prefixing the search term wih ts:.
+
+           However, unlike websearch_to_tsquery, this will throw a
+           psycopg2.errors.SyntaxError on bad input. SyntaxError is
+           re-raised as IndexerQueryError.  But it makes a bunch of
+           useful expert functionality available.
+
+        """
+
+        self.dex.add_text(('test', '1', 'foo'), 'a the hello world')
+        self.dex.add_text(('test', '2', 'foo'), 'helh blah blah the world')
+        self.dex.add_text(('test', '3', 'foo'), 'blah hello the world')
+        self.dex.add_text(('test', '4', 'foo'), 'hello blah blech the world')
+        self.dex.add_text(('test', '5', 'foo'), 'a car drove')
+        self.dex.add_text(('test', '6', 'foo'), 'a car driving itself')
+        self.dex.add_text(('test', '7', 'foo'), "let's drive in the car")
+        self.dex.add_text(('test', '8', 'foo'), 'a drive-in movie')
+        self.dex.db.commit()
+
+        # test two separate words for sanity
+        self.assertSeqEqual(self.dex.find(['ts:hello & world']),
+                                                    [('test', '1', 'foo'),
+                                                     ('test', '3', 'foo'),
+                                                     ('test', '4', 'foo')
+                                                    ])
+        # now check the phrase
+        self.assertSeqEqual(self.dex.find(['ts:hello <-> world']),
+                                                    [('test', '1', 'foo'),
+                                                     ])
+
+        # test negation
+        self.assertSeqEqual(self.dex.find(['ts:hello & world & !blech']),
+                                                    [('test', '1', 'foo'),
+                                                     ('test', '3', 'foo'),
+                                                    ])
+
+        self.assertSeqEqual(self.dex.find(
+            ['ts:hello & world & !(blah <-> hello)']),
+                                                    [('test', '1', 'foo'),
+                                                     ('test', '4', 'foo'),
+                                                    ])
+
+        # test without or
+        self.assertSeqEqual(self.dex.find(['ts:blah & blech']),
+                                                    [('test', '4', 'foo'),
+                                                    ])
+
+        # test with or
+        self.assertSeqEqual(self.dex.find(['ts:blah | blech']),
+                                                    [ ('test', '2', 'foo'),
+                                                      ('test', '3', 'foo'),
+                                                      ('test', '4', 'foo'),
+                                                    ])
+        # stemmer test for english
+        self.assertSeqEqual(self.dex.find(['ts:drive']),
+                                                    [('test', '6', 'foo'),
+                                                     ('test', '7', 'foo'),
+                                                     ('test', '8', 'foo')
+                                                    ])
+
+        # stemmer is not disabled by quotes 8-(
+        self.assertSeqEqual(self.dex.find(['ts:"drive"']),
+                                                    [('test', '6', 'foo'),
+                                                     ('test', '7', 'foo'),
+                                                     ('test', '8', 'foo')
+                                                    ])
+
+
+        # test with syntax error
+        with self.assertRaises(IndexerQueryError) as ctx:
+            self.dex.find(['ts:blah blech'])
+
+        self.assertEqual(ctx.exception.args[0],
+                         'syntax error in tsquery: "blah blech"\n')
+
+        # now check the phrase Note unlike sqlite, order matters,
+        # hello must come first.
+        self.assertSeqEqual(self.dex.find(['ts:hello <-> world']),
+                                                    [('test', '1', 'foo'),
+                                                     ])
+
+        # now check the phrase with explicitly 1 intervening item
+        self.assertSeqEqual(self.dex.find(['ts:hello <2> world']),
+                                                    [('test', '3', 'foo'),
+                                                     ])
+        # now check the phrase with near explicitly 1 or 3 intervening items
+        self.assertSeqEqual(self.dex.find([
+            'ts:(hello <4> world) | (hello<2>world)']),
+                                                    [('test', '3', 'foo'),
+                                                     ('test', '4', 'foo'),
+                                                     ])
+
+        # now check the phrase with near explicitly 3 intervening item
+        # with prefix for world.
+        self.assertSeqEqual(self.dex.find(['ts:hello <4> wor:*']),
+                                                    [('test', '4', 'foo'),
+                                                     ])
+
+    def test_invalid_language(self):
+        import psycopg2
+
+        from roundup.configuration import IndexerOption
+        IndexerOption.valid_langs.append("foo")
+        self.db.config["INDEXER_LANGUAGE"] = "foo"
+
+        with self.assertRaises(psycopg2.errors.UndefinedObject) as ctx:
+            # psycopg2.errors.UndefinedObject: text search configuration
+            #  "foo" does not exist
+            self.dex.add_text(('test', '1', 'foo'), 'a the hello world')
+        self.assertIn('search configuration "foo" does', ctx.exception.args[0])
+        self.db.rollback()
+
+        with self.assertRaises(ValueError) as ctx:
+            self.dex.find(['"hello" "world"'])
+        self.assertIn('search configuration "foo" does', ctx.exception.args[0])
+        self.db.rollback()
+
+        self.db.config["INDEXER_LANGUAGE"] = "english"
+
 @skip_mysql
 class mysqlIndexerTest(mysqlOpener, RDBMSIndexerTest, IndexerTest):
     def setUp(self):
@@ -232,5 +448,130 @@ class mysqlIndexerTest(mysqlOpener, RDBMSIndexerTest, IndexerTest):
 
 class sqliteIndexerTest(sqliteOpener, RDBMSIndexerTest, IndexerTest):
     pass
+
+class sqliteFtsIndexerTest(sqliteOpener, RDBMSIndexerTest, IndexerTest):
+    def setUp(self):
+        RDBMSIndexerTest.setUp(self)
+        from roundup.backends.indexer_sqlite_fts import Indexer
+        self.dex = Indexer(self.db)
+        self.dex.db = self.db
+
+    def test_phrase_and_near(self):
+        self.dex.add_text(('test', '1', 'foo'), 'a the hello world')
+        self.dex.add_text(('test', '2', 'foo'), 'helh blah blah the world')
+        self.dex.add_text(('test', '3', 'foo'), 'blah hello the world')
+        self.dex.add_text(('test', '4', 'foo'), 'hello blah blech the world')
+
+        # test two separate words for sanity
+        self.assertSeqEqual(self.dex.find(['"hello" "world"']),
+                                                    [('test', '1', 'foo'),
+                                                     ('test', '3', 'foo'),
+                                                     ('test', '4', 'foo')
+                                                    ])
+        # now check the phrase
+        self.assertSeqEqual(self.dex.find(['"hello world"']),
+                                                    [('test', '1', 'foo'),
+                                                     ])
+
+        # now check the phrase with near explicitly 0 intervening items
+        self.assertSeqEqual(self.dex.find(['NEAR(hello world, 0)']),
+                                                    [('test', '1', 'foo'),
+                                                     ])
+
+        # now check the phrase with near explicitly 1 intervening item
+        self.assertSeqEqual(self.dex.find(['NEAR(hello world, 1)']),
+                                                    [('test', '1', 'foo'),
+                                                     ('test', '3', 'foo'),
+                                                     ])
+        # now check the phrase with near explicitly 3 intervening item
+        self.assertSeqEqual(self.dex.find(['NEAR(hello world, 3)']),
+                                                    [('test', '1', 'foo'),
+                                                     ('test', '3', 'foo'),
+                                                     ('test', '4', 'foo'),
+                                                     ])
+
+    def test_prefix(self):
+        self.dex.add_text(('test', '1', 'foo'), 'a the hello world')
+        self.dex.add_text(('test', '2', 'foo'), 'helh blah blah the world')
+        self.dex.add_text(('test', '3', 'foo'), 'blah hello the world')
+        self.dex.add_text(('test', '4', 'foo'), 'hello blah blech the world')
+
+        self.assertSeqEqual(self.dex.find(['hel*']),
+                                                    [('test', '1', 'foo'),
+                                                     ('test', '2', 'foo'),
+                                                     ('test', '3', 'foo'),
+                                                     ('test', '4', 'foo')
+                                                    ])
+
+
+    def test_bool_start(self):
+        self.dex.add_text(('test', '1', 'foo'), 'a the hello world')
+        self.dex.add_text(('test', '2', 'foo'), 'helh blah blah the world')
+        self.dex.add_text(('test', '3', 'foo'), 'blah hello the world')
+        self.dex.add_text(('test', '4', 'foo'), 'hello blah blech the world')
+
+        self.assertSeqEqual(self.dex.find(['hel* NOT helh NOT blech']),
+                                                    [('test', '1', 'foo'),
+                                                     ('test', '3', 'foo'),
+                                                    ])
+
+        self.assertSeqEqual(self.dex.find(['hel* NOT helh NOT blech OR the']),
+                                                    [('test', '1', 'foo'),
+                                                     ('test', '2', 'foo'),
+                                                     ('test', '3', 'foo'),
+                                                     ('test', '4', 'foo'),
+                                                    ])
+
+        self.assertSeqEqual(self.dex.find(['helh OR hello']),
+                                                    [('test', '1', 'foo'),
+                                                     ('test', '2', 'foo'),
+                                                     ('test', '3', 'foo'),
+                                                     ('test', '4', 'foo'),
+                                                    ])
+
+
+        self.assertSeqEqual(self.dex.find(['helh AND hello']),
+                                                    [])
+        # matches if line starts with hello
+        self.assertSeqEqual(self.dex.find(['^hello']),
+                                                    [
+                                                     ('test', '4', 'foo'),
+                                                    ])
+
+        self.assertSeqEqual(self.dex.find(['hello']),
+                                                    [
+                                                     ('test', '1', 'foo'),
+                                                     ('test', '3', 'foo'),
+                                                     ('test', '4', 'foo'),
+                                                    ])
+
+    def test_query_errors(self):
+        """test query phrases that generate an error. Also test the
+           correction"""
+
+        self.dex.add_text(('test', '1', 'foo'), 'a the hello-world')
+        self.dex.add_text(('test', '2', 'foo'), 'helh blah blah the world')
+        self.dex.add_text(('test', '3', 'foo'), 'blah hello the world')
+        self.dex.add_text(('test', '4', 'foo'), 'hello blah blech the world')
+
+        # handle known error that roundup recognizes and tries to diagnose
+        with self.assertRaises(IndexerQueryError) as ctx:
+            self.dex.find(['the hello-world'])
+
+        error = ( "Search failed. Try quoting any terms that include a '-' "
+                  "and retry the search.")
+        self.assertEqual(str(ctx.exception), error)
+
+
+        self.assertSeqEqual(self.dex.find(['the "hello-world"']),
+                                                    [('test', '1', 'foo'),
+                                                    ])
+
+        # handle known error that roundup recognizes and tries to diagnose
+        with self.assertRaises(IndexerQueryError) as ctx:
+                self.dex.find(['hello world + ^the'])
+
+        error = 'Query error: syntax error near "^"'
+        self.assertEqual(str(ctx.exception), error)
 
 # vim: set filetype=python ts=4 sw=4 et si

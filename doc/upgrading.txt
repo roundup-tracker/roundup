@@ -1,3 +1,9 @@
+.. meta::
+    :description language=en:
+        Critical documentation on how to upgrade the Roundup Issue
+	Tracker. Actions that must or can be taken when upgrading from
+	one version to another are documented here.
+
 .. index:: Upgrading
 
 ======================================
@@ -29,10 +35,44 @@ Contents:
 Migrating from 2.1.0 to 2.x.y
 =============================
 
-Check Compression Settings
---------------------------
+Rdbms version change from 6 to 7 (required)
+-------------------------------------------
 
-Read the `administration guide`_ section on 'Configuring Compression'.
+This release includes two changes that require updates to the database
+schema:
+
+  1. The size of words included in the Roundup FTS indexers have been
+     increased from 25 to 50. This requires changes to the database
+     columns used by the native indexer.  This also affect the whoosh
+     and xapian indexers.
+  2. Some databases that include native full-text search (native-fts
+     indexer) searching are now supported.
+
+You should run the ``roundup-admin migrate`` command for your
+tracker once you've installed the latest codebase.
+
+Do this before you use the web, command-line or mail interface
+and before any users access the tracker.
+
+If successful, this command will respond with either "Tracker
+updated" (if you've not previously run it on an RDBMS backend) or
+"No migration action required" (if you have run it, or have used
+another interface to the tracker, or are using anydbm).
+
+See `below for directions on enabling native-fts`_.
+
+.. _below for directions on enabling native-fts: \
+    #enhanced-full-text-search-optional
+
+The increase in indexed word length also affects whoosh and xapian
+backends. You may want to run ``roundup-admin -i tracker_home
+reindex`` if you want to index or search for longer words in your full
+text searches. Re-indexing make take some time.
+
+Check compression settings (optional)
+-------------------------------------
+
+Read the `administration guide`_ section on `Configuring Compression`_.
 
 Upgrade tracker's config.ini file. Use::
 
@@ -44,13 +84,102 @@ merge any local comments from the tracker's ``config.ini`` into
 compression settings as you want. Then replace ``config.ini`` with the
 ``newconfig.ini`` file.
 
-Search Added to User Index Page
--------------------------------
+Search added to user index page (optional)
+------------------------------------------
 
 A search form and count of number of hits has been added to the
 ``user.index.html`` template page in the classic template. You may
 want to merge the search form and footer into your template.
 
+Enhanced full-text search (optional)
+------------------------------------
+
+SQLite's `FTS5 full-text search engine`_ is available as is
+`PostgreSQL's full text search`_. Both require a schema upgrade so you
+should run::
+
+  roundup-admin -i tracker_home migrate
+
+to create FTS specific tables before restarting the roundup-web or
+email interfaces.
+
+SQLite 3.9.0+ or PostgreSQL 11.0+ are required to use this feature.
+When using SQLite, all full text search fields will allow searching
+using the MATCH query format described at:
+https://www.sqlite.org/fts5.html#full_text_query_syntax. When using
+PostgreSQL either the websearch_to_tsquery or to_tsquery formats
+described on
+https://www.postgresql.org/docs/14/textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES
+can be used. The default is websearch. Prefixing the search with
+``ts:`` enables tsquery mode.
+
+A list of words behaves almost the same as the default text search
+(`native`). So the search string `fts search` will find all issues
+that have both of those words (an AND search) in a text-field (like
+title) or in a message (or file) attached to the issue.
+
+One thing to note is that native-fts searches do not ignore words
+longer than 50 characters or less than 2 characters. Also SQLite does
+not filter out common words (i.e. there is no stopword list). So words
+like "and", "or", "then", "with" ...  are included in the FTS5 search.
+
+You must explicitly enable this search mechanism by changing the
+``indexer`` setting in ``config.ini`` to ``native-fts``. Native-fts
+must be explicitly chosen. This is different from Xapian or Whoosh
+indexers, which are chosen if they are installed in the Python
+environment. This prevents the existing native indexing from being
+discarded if ``indexer`` is not set.
+
+Next re-index your data with ``roundup-admin -i tracker_home
+reindex``. This can take a while depending on the size of the tracker.
+
+You may want to update your ``config.ini`` by following the directions
+above to get the latest documentation.
+
+See the `administration guide notes on native-fts`_ for further details.
+
+Adding error reporting templates (optional)
+-------------------------------------------
+
+Currently some internal errors result in a bare html page with an
+error message. The usual chrome supplied by page.html is not shown.
+For example query language syntax errors for full text search methods
+will display a bare HTML error page.
+
+If you add an ``_generic.400.html`` template to the html directory, you
+can display the error inside of the layout provided by the ``page.html``
+template. This can make fixing the error and navigation easier. You
+can use the ``_generic.404.html`` template to create a
+``_generic.400.html`` by modifying the title and body text. You can test
+the 400 template by appending ``@template=400`` to the url for the
+tracker.
+
+Change passwords using crypt module (optional)
+----------------------------------------------
+
+The crypt module is being removed from the standard library.  Any
+stored password using crypt encoding will fail to verify once the
+crypt module is removed (expected in Python 3.13 see
+pep-0594). Automatic migration of passwords (if enabled in config.ini)
+re-encrypts old passwords using something other than crypt if a user
+logs in using the web interface.
+
+You can find users with passwords still encrypted using crypt by
+running::
+
+    roundup-admin -i <tracker_home> table password,id,username
+
+Look for lines starting with ``{CRYPT}``. You can reset the user's
+password using::
+
+    roundup-admin -i <tracker_home>
+    roundup> set user16 password=somenewpassword
+
+changing ``16`` to the id in the second column of the table output.
+The example uses interactive mode (indicated by the ``roundup>``
+prompt). This prevents the new password from showing up in the output
+of ps or shell history. The new password will be encrypted using the
+default encryption method (usually pbkdf2).
 
 Migrating from 2.0.0 to 2.1.0
 =============================
@@ -3264,3 +3393,7 @@ copy.
 .. _`security documentation`: security.html
 .. _`administration guide`: admin_guide.html
 .. _`xmlrpc guide`: xmlrpc.html
+.. _FTS5 full-text search engine: https://www.sqlite.org/fts5.html
+.. _PostgreSQL's full text search: https://www.postgresql.org/docs/current/textsearch.html
+.. _`administration guide notes on native-fts`: admin_guide.html#configuring-native-fts-full-text-search
+.. _Configuring Compression: admin_guide.html#configuring-compression

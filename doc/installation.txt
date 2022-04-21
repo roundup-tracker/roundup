@@ -1,3 +1,10 @@
+.. meta::
+    :description language=en:
+        Everything about installing the Roundup issue tracker web and
+	mail interfaces and configuring a tracker. How to download and
+	demonstrate Roundup using using command line or
+	Docker. Optional software that adds functionality to Roundup.
+
 .. index:: Installation
 
 ==================
@@ -5,7 +12,7 @@ Installing Roundup
 ==================
 
 .. contents::
-   :depth: 2
+   :depth: 3
    :local:
 
 
@@ -41,15 +48,6 @@ of python as these contain many fixes to serious bugs.
 Some variants of Linux will need an additional "python dev" package
 installed for Roundup installation to work. Debian and derivatives, are
 known to require this.
-
-If you are using the Roundup Windows installer on a 64 bit system and
-you get the error message::
-
-  "No Python installation found in the registry"
-
-you need to install a 32 bit version of python. The 64 bit versions
-use a different registry key that the installer doesn't detect. See:
-https://issues.roundup-tracker.org/issue2550718 for details.
 
 Optional Components
 ===================
@@ -89,6 +87,8 @@ Whoosh full-text indexer
   The Whoosh_ full-text indexer is also supported and will be used by
   default if it is available (and Xapian is not installed). This is
   recommended if you are anticipating a large number of issues (> 5000).
+  It is also the only search backend that implements fuzzy search. It
+  matches any word that has a 1 character difference from the search term.
 
   You may install Whoosh at any time, even after a tracker has been
   installed and used. You will need to run the "roundup-admin reindex"
@@ -145,10 +145,12 @@ Getting Roundup
 ===============
 
 .. note::
-    Some systems, such as Debian and NetBSD, already have Roundup
+    Some systems, such as Gentoo and NetBSD, already have Roundup
     installed. Try running the command "roundup-admin" with no arguments,
     and if it runs you may skip the `Basic Installation Steps`_
     below and go straight to `configuring your first tracker`_.
+    However they may install an old version, so you are probably
+    beter off installing it from the roundup web site or pypi.
 
 Download the latest version from https://www.roundup-tracker.org/.
 
@@ -216,6 +218,152 @@ base directory, if you do not want to use administrator rights. If you
 choose to do this, you may have to change Python's search path (sys.path)
 yourself.
 
+Docker Support
+~~~~~~~~~~~~~~
+
+If you don't want to install it natively, you can create a Docker
+container. This installs roundup using the `stand-alone web server`_
+method. This is an http only install so we suggest putting an https
+terminating proxy in front of it.
+
+This is a work in progress and patches to improve it are welcome. You
+can find the docker config files under the `scripts/Docker` directory
+of the source tree.
+
+The dockerized Roundup includes database drivers for anydbm, sqlite,
+MySQL and Postgresql (Postgresl is untested). It also includes
+additional libraries that are listed in
+`scripts/Docker/requirements.txt`.
+
+Email support is a work in progress. Outgoing email should work given
+an external SMTP server. Reciving email should work by using a
+scheduled (cron) job to access email:
+
+* `As a regular job using a mailbox source`_
+* `As a regular job using a POP source`_
+* `As a regular job using an IMAP source`_
+
+Patches for better email support are welcome.
+
+If you want to use a MySQL backend, the `docker-compose.yml` file will
+deploy a Roundup container and a MySQL container backend for use with
+Roundup.
+
+Building a Docker Container
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To build a docker container using the code in the current directory,
+run this build command from the top of the source tree::
+
+     docker build -t roundup-app -f scripts/Docker/Dockerfile .
+
+You can also build a container using the newest Roundup release on
+PyPI, by running::
+
+     docker build -t roundup-app --build-arg="source=pypi" \
+          -f scripts/Docker/Dockerfile .
+
+The docker declares a single volume mounted at
+``/usr/src/app/tracker`` inside the container. You will mount your
+tracker home directory at this location.
+
+
+Configuring Roundup in the Container
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Once the docker is created using one of the build commands above, run
+an interactive session it with::
+
+    docker run -it --rm -p 9017:8080 \
+       -v $PWD/tracker:/usr/src/app/tracker roundup-app:latest
+
+The ``-v`` option maps a directory from the host into the docker
+container. Note that uid 1000 is used by roundup. So the uid of the
+directory (and all files under it) must be uid 1000.  This example
+assumes your tracker configs are in the tracker subdirectory. Replace
+``$PWD/tracker`` with the full path name to the directory where the
+tracker home(s) are to be stored.
+
+The ``-p`` option maps an external port (9017) to proxy the roundup
+server running at port 8080 to the outside.
+
+If the tracker directory is empty, the docker container will prompt
+you to install a tracker template and prompt you for the database
+type.
+
+Then you need to configure the tracker by editing
+``template/config.ini``.  Make sure that the tracker web setting ends
+in ``/issues/`` See `Configuring your first tracker` and the top of
+``config.ini`` for other settings.
+
+Once you have configured the tracker, run another interactive session
+with::
+
+    docker run --rm -it -p 9017:8080 \
+         -v $PWD/tracker:/usr/src/app/tracker roundup-app:latest
+
+this will initialize the database and attempt to start the server.  If
+that is successful, use control-c to exit the server.
+
+Now start the server non-interactively (note no `-it` option) with::
+
+    docker run -p 9017:8080 \
+       -v $PWD/tracker:/usr/src/app/tracker roundup-app:latest
+
+Your tracker will be available at: ``http://yourhost:9017/issues/``.
+
+If you need to access your container while the server is running you
+can use::
+
+   docker exec -it c0d5 sh
+
+where ``c0d5`` is the id prefix for the running container obtained
+from ``docker container ls``.
+
+If you add ``-e SHELL_DEBUG=1`` to the docker command, it sets the
+``SHELL_DEBUG`` environment variable which will enable debugging
+output from the startup script.
+
+Non-Guided Installation
+'''''''''''''''''''''''
+
+If you got a tracker installed using the automatic setup above, you
+can skip this section. To manually install and initialize the
+trackers, you can get a shell without starting the roundup-server
+using::
+
+    docker run -it \
+        -v $PWD/tracker:/usr/src/app/tracker \
+        --entrypoint sh roundup-app:latest
+
+Now you can configure your tracker using ``roundup-admin -i tracker``
+using the directions for `Configuring your first tracker`.
+
+Defining Multiple Trackers
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you want to run multiple trackers, create a subdirectory for each
+tracker home under the volume mount point (``$PWD/tracker``). Then
+invoke ``docker run`` passing the roundup-server tracker
+specifications like::
+
+    docker run --rm -p 9017:8080 \
+        -v /.../issue.tracker:/usr/src/app/tracker \
+        roundup-app:latest tracker1=tracker/tracker1_home \
+          tracker2=tracker/tracker2_home
+
+This will set up two trackers that can be reached at
+``http://yourhost:9017/tracker1/`` and ``http://yourhost:9017/tracker2/``.
+The arguments after roundup-app:latest are tracker paths that are
+passed to roundup-server.
+
+Docker-compose Deployment
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you want to run using the mysql backend, you can use docker-compose
+with ``scripts/Docker/docker-compose.yml``. This will run Roundup and
+MySQL in containers. Directions for building using docker-compose are
+at the top of the yml file.
 
 Configuring your first tracker
 ------------------------------
@@ -362,6 +510,10 @@ mysql      Fast        Many  Needs install/admin (MySQLdb_)
 
   Installed SQLite should be the latest version available (3.3.8 is known
   to work, 3.1.3 is known to have problems).
+
+  Roundup supports using sqlite's full text search capability. This
+  can improve searching if you are not installing another indexer like
+  xapian or whoosh. It works best with English text.
 **postgresql**
   Backend for popular RDBMS PostgreSQL. You must read doc/postgresql.txt for
   additional installation steps and requirements. You must also configure
@@ -388,14 +540,9 @@ Configure a Web Interface
 
 There are multiple web interfaces to choose from:
 
-1. `web server cgi-bin`_
-2. `cgi-bin for limited-access hosting`_
-3. `stand-alone web server`_
-4. `Zope product - ZRoundup`_
-5. `Apache HTTP Server with mod_wsgi`_
-6. `Apache HTTP Server with mod_python`_  (deprecated)
-7. `Nginx HTTP Server`_
-8. `WSGI Variations`_
+.. contents::
+   :depth: 1
+   :local:
 
 You may need to give the web server user permission to access the tracker home
 - see the `UNIX environment steps`_ for information. You may also need to
@@ -940,6 +1087,23 @@ in config.ini should be ``https://tracker.example.org``.
       }
     }
 
+
+FastCGI (Cherokee, Hiawatha, lighttpd)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Hiawatha and lighttpd web servers can run Roundup using FastCGI.
+Cherokee can run FastCGI but it also supports wsgi directly using a
+uWSGI, Gnuicorn etc.
+
+To run Roundup suing FastCGI, the flup_ package can be used under
+Python 2 and Python 3. We don't have a detailed config for this, but
+the basic idea can be found at:
+https://flask.palletsprojects.com/en/2.0.x/deploying/fastcgi/
+
+If you have deployed Roundup using FastCGI and flup we welcome example
+configuration files and instructions.
+
+.. _flup: https://pypi.org/project/flup/
 
 WSGI Variations
 ~~~~~~~~~~~~~~~
@@ -1539,7 +1703,7 @@ Problems? Testing your Python...
    ``-d`` option to allow database creation.
 
 Once you've unpacked roundup's source, if you have pytest installed,
-run ``python -m pytest /test`` in the source directory and make sure
+run ``python -m pytest test`` in the source directory and make sure
 there are no errors. If there are errors, please let us know!
 
 .. _`table of contents`: index.html

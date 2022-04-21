@@ -123,8 +123,51 @@ def _data_decorator(func):
                 'data': data
             }
         return result
+
+    format_object.wrapped_func = func
     return format_object
 
+def openapi_doc(d):
+    """Annotate rest routes with openapi data. Takes a dict
+       for the openapi spec. It can be used standalone
+       as the openapi spec paths.<path>.<method> =
+
+     {
+        "summary": "this path gets a value",
+        "description": "a longer description",
+        "responses": {
+          "200": {
+            "description": "normal response",
+            "content": {
+              "application/json": {},
+              "application/xml": {}
+            }
+          },
+          "406": {
+            "description": "Unable to provide requested content type",
+            "content": {
+              "application/json": {}
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#components/parameters/generic_.stats"
+          },
+          {
+            "$ref": "#components/parameters/generic_.apiver"
+          },
+          {
+            "$ref": "#components/parameters/generic_.verbose"
+          }
+        ]
+     }
+    """
+
+    def wrapper(f):
+        f.openapi_doc = d
+        return f
+    return wrapper
 
 def calculate_etag(node, key, classname="Missing", id="0",
                    repr_format="json"):
@@ -175,8 +218,20 @@ def check_etag(node, key, etags, classname="Missing", id="0",
                                repr_format=repr_format)
 
     for etag in etags:
-        if etag is not None:
-            if etag != node_etag:
+        # etag includes doublequotes around tag:
+        #   '"a46a5572190e4fad63958c135f3746fa"'
+        # but can include content-encoding suffix like:
+        #   '"a46a5572190e4fad63958c135f3746fa-gzip"'
+        # turn the latter into the former as we don't care what
+        # encoding was used to send the body with the etag.
+        try:
+            suffix_start = etag.rindex('-')
+            clean_etag = etag[:suffix_start] + '"'
+        except (ValueError, AttributeError):
+            # - not in etag or etag is None
+            clean_etag = etag
+        if clean_etag is not None:
+            if clean_etag != node_etag:
                 return False
             have_etag_match = True
 
@@ -347,7 +402,13 @@ class Routing(object):
                 try:
                     func_obj = funcs[method]
                 except KeyError:
-                    raise Reject('Method %s not allowed' % method)
+                    valid_methods = ', '.join(sorted(funcs.keys()))
+                    raise Reject(_('Method %(m)s not allowed. '
+                                   'Allowed: %(a)s')% {
+                                       'm': method,
+                                       'a': valid_methods
+                                   },
+                                   valid_methods)
 
                 # retrieve the vars list and the function caller
                 list_vars = func_obj['vars']
@@ -502,13 +563,13 @@ class RestfulInstance(object):
                 for pn in p.split('.'):
                     # Tried to dereference a non-Link property
                     if cn is None:
-                        raise AttributeError("Unknown: %s" % p)
+                        raise UsageError("Property %(base)s can not be dereferenced in %(p)s." % { "base": p[:-(len(pn)+1)], "p": p})
                     cls = self.db.getclass(cn)
                     # This raises a KeyError for unknown prop:
                     try:
                         prop = cls.getprops(protected=True)[pn]
                     except KeyError:
-                        raise AttributeError("Unknown: %s" % p)
+                        raise KeyError("Unknown property: %s" % p)
                     if isinstance(prop, hyperdb.Multilink):
                         raise UsageError(
                             'Multilink Traversal not allowed: %s' % p)
@@ -521,6 +582,13 @@ class RestfulInstance(object):
                         cn = prop.classname
                     except AttributeError:
                         cn = None
+            else:
+                cls = self.db.getclass(cn)
+                # This raises a KeyError for unknown prop:
+                try:
+                    prop = cls.getprops(protected=True)[pn]
+                except KeyError:
+                    raise KeyError("Unknown property: %s" % pn)
             checked_props.append (p)
         return checked_props
 
@@ -741,11 +809,9 @@ class RestfulInstance(object):
                 f = value.split(",")
                 if len(f) == 1:
                     f = value.split(":")
-                allprops = class_obj.getprops(protected=True)
                 display_props.update(self.transitive_props(class_name, f))
             elif key == "@sort":
                 f = value.split(",")
-                allprops = class_obj.getprops(protected=True)
                 for p in f:
                     if not p:
                         raise UsageError("Empty property "
@@ -784,6 +850,10 @@ class RestfulInstance(object):
                 except KeyError:
                     raise UsageError("Field %s is not valid for %s class." %
                                      (p, class_name))
+                # Call this for the side effect of validating the key
+                # use _discard as _ is apparently a global for the translation
+                # service.
+                _discard = self.transitive_props(class_name, [ key ])
                 # We drop properties without search permission silently
                 # This reflects the current behavior of other roundup
                 # interfaces
@@ -891,6 +961,7 @@ class RestfulInstance(object):
 
         result['@total_size'] = result_len
         self.client.setHeader("X-Count-Total", str(result_len))
+        self.client.setHeader("Allow", "OPTIONS, GET, POST")
         return 200, result
 
     @Routing.route("/data/<:class_name>/<:item_id>", 'GET')
@@ -962,7 +1033,6 @@ class RestfulInstance(object):
                 f = value.split(",")
                 if len(f) == 1:
                     f = value.split(":")
-                allprops = class_obj.getprops(protected=True)
                 props.update(self.transitive_props(class_name, f))
             elif key == "@protected":
                 # allow client to request read only
@@ -1028,7 +1098,10 @@ class RestfulInstance(object):
         node = class_obj.getnode(item_id)
         etag = calculate_etag(node, self.db.config.WEB_SECRET_KEY,
                               class_name, item_id,  repr_format="json")
-        data = node.__getattr__(attr_name)
+        try:
+            data = node.__getattr__(attr_name)
+        except AttributeError as e:
+            raise UsageError(_("Invalid attribute %s"%attr_name))
         result = {
             'id': item_id,
             'type': str(type(data)),
@@ -1188,6 +1261,15 @@ class RestfulInstance(object):
         # set the header Location
         link = '%s/%s/%s' % (self.data_path, class_name, item_id)
         self.client.setHeader("Location", link)
+
+        self.client.setHeader(
+            "Allow",
+            None
+        )
+        self.client.setHeader(
+            "Access-Control-Allow-Methods",
+            None
+        )
 
         # set the response body
         result = {
@@ -1643,6 +1725,11 @@ class RestfulInstance(object):
             "Allow",
             "OPTIONS, GET, POST"
         )
+
+        self.client.setHeader(
+            "Access-Control-Allow-Methods",
+            "OPTIONS, GET, POST"
+        )
         return 204, ""
 
     @Routing.route("/data/<:class_name>/<:item_id>", 'OPTIONS')
@@ -1698,19 +1785,114 @@ class RestfulInstance(object):
                 attr_name, class_name))
         return 204, ""
 
+    @openapi_doc({"summary": "Describe Roundup rest endpoint.",
+                  "description": ("Report all supported api versions "
+                                  "and default api version. "
+                                  "Also report next level of link "
+                                  "endpoints below /rest endpoint"),
+                  "responses": {
+                      "200": {
+                          "description": "Successful response.",
+                          "content": {
+                              "application/json": {
+                              "examples": {
+                                  "success": {
+                                      "summary": "Normal json data.",
+                                      "value": """{
+  "data": {
+    "default_version": 1,
+    "supported_versions": [
+      1
+    ],
+    "links": [
+      {
+        "uri": "https://tracker.example.com/demo/rest",
+        "rel": "self"
+      },
+      {
+        "uri": "https://tracker.example.com/demo/rest/data",
+        "rel": "data"
+      },
+      {
+        "uri": "https://tracker.example.com/demo/rest/summary",
+        "rel": "summary"
+      }
+    ]
+  }
+}"""
+                                  }
+                              }
+                          },
+                          "application/xml": {
+                              "examples": {
+                                  "success": {
+                                      "summary": "Normal xml data",
+                                      "value": """<dataf type="dict">
+  <default_version type="int">1</default_version>
+  <supported_versions type="list">
+    <item type="int">1</item>
+  </supported_versions>
+  <links type="list">
+    <item type="dict">
+      <uri type="str">https://rouilj.dynamic-dns.net/sysadmin/rest</uri>
+      <rel type="str">self</rel>
+    </item>
+    <item type="dict">
+      <uri type="str">https://rouilj.dynamic-dns.net/sysadmin/rest/data</uri>
+      <rel type="str">data</rel>
+    </item>
+    <item type="dict">
+      <uri type="str">https://rouilj.dynamic-dns.net/sysadmin/rest/summary</uri>
+      <rel type="str">summary</rel>
+    </item>
+    <item type="dict">
+      <uri type="str">https://rouilj.dynamic-dns.net/sysadmin/rest/summary2</uri>
+      <rel type="str">summary2</rel>
+    </item>
+  </links>
+</dataf>"""
+                                  }
+                              }
+                          }
+                        }
+                      }
+                  }
+    }
+    )
     @Routing.route("/")
     @_data_decorator
     def describe(self, input):
-        """Describe the rest endpoint"""
+        """Describe the rest endpoint. Return direct children in
+           links list.
+        """
+
+        # paths looks like ['^rest/$', '^rest/summary$',
+        #                   '^rest/data/<:class>$', ...]
+        paths = Routing._Routing__route_map.keys()
+
+        links = []
+        # p[1:-1] removes ^ and $ from regexp
+        # if p has only 1 /, it's a child of rest/ root.
+        child_paths = sorted([ p[1:-1] for p in paths if
+                               p.count('/') == 1 ])
+        for p in child_paths:
+            # p.split('/')[1] is the residual path after
+            # removing rest/. child_paths look like:
+            # ['rest/', 'rest/summary'] etc.
+            rel = p.split('/')[1]
+            if rel:
+                rel_path = "/" + rel
+            else:
+                rel_path = rel
+                rel = "self"
+            links.append( {"uri": self.base_path + rel_path,
+                           "rel": rel
+                           })
+
         result = {
             "default_version": self.__default_api_version,
             "supported_versions": self.__supported_api_versions,
-            "links": [{"uri": self.base_path + "/summary",
-                       "rel": "summary"},
-                      {"uri": self.base_path,
-                       "rel": "self"},
-                      {"uri": self.base_path + "/data",
-                       "rel": "data"}]
+            "links": links
         }
 
         return 200, result
@@ -1949,8 +2131,8 @@ class RestfulInstance(object):
                     self.api_version = None
                 except (ValueError, TypeError):
                     # TypeError if int(None)
-                    msg = ("Unrecognized version: %s. "
-                           "See /rest without specifying version "
+                    msg = ("Unrecognized api version: %s. "
+                           "See /rest without specifying api version "
                            "for supported versions." % (
                                part[1]['version']))
                     output = self.error_obj(400, msg)
@@ -1961,22 +2143,29 @@ class RestfulInstance(object):
         #            default (application/json)
         ext_type = os.path.splitext(urlparse(uri).path)[1][1:]
 
+        # Check to see if the length of the extension is less than 6.
+        # this allows use of .vcard for a future use in downloading
+        # user info. It also allows passing through larger items like
+        # JWT that has a final component > 6 items. This method also
+        # allow detection of mistyped types like jon for json.
+        if ext_type  and (len(ext_type) < 6):
+            # strip extension so uri make sense
+            # .../issue.json -> .../issue
+            uri = uri[:-(len(ext_type) + 1)]
+        else:
+            ext_type = None
+
         # headers.get('Accept') is never empty if called here.
         # accept_type will be set to json if there is no Accept header
         # accept_type wil be empty only if there is an Accept header
         # with invalid values.
         data_type = ext_type or accept_type or headers.get('Accept') or "invalid"
 
-        if (ext_type):
-            # strip extension so uri make sense
-            # .../issue.json -> .../issue
-            uri = uri[:-(len(ext_type) + 1)]
-
         # add access-control-allow-* to support CORS
         self.client.setHeader("Access-Control-Allow-Origin", "*")
         self.client.setHeader(
             "Access-Control-Allow-Headers",
-            "Content-Type, Authorization, X-HTTP-Method-Override"
+            "Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override"
         )
         self.client.setHeader(
             "Allow",
@@ -1984,7 +2173,7 @@ class RestfulInstance(object):
         )
         self.client.setHeader(
             "Access-Control-Allow-Methods",
-            "HEAD, OPTIONS, GET, PUT, DELETE, PATCH"
+            "HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH"
         )
         # Is there an input.value with format json data?
         # If so turn it into an object that emulates enough
@@ -2023,15 +2212,16 @@ class RestfulInstance(object):
 
         # check for runtime statistics
         try:
+            # self.report_stats initialized to False
             self.report_stats = input['@stats'].value.lower() == "true"
         # Can also return a TypeError ("not indexable")
         # In case the FieldStorage could not parse the result
         except (KeyError, TypeError):
-            report_stats = False
+            pass
 
         # check for @apiver in query string
-        msg = ("Unrecognized version: %s. "
-               "See /rest without specifying version "
+        msg = _("Unrecognized api version: %s. "
+               "See /rest without specifying api version "
                "for supported versions.")
         try:
             if not self.api_version:
@@ -2052,7 +2242,7 @@ class RestfulInstance(object):
             #    Use default if not specified for now.
             self.api_version = self.__default_api_version
         elif self.api_version not in self.__supported_api_versions:
-            raise UsageError(msg % self.api_version)
+            output = self.error_obj(400, msg % self.api_version)
 
         # sadly del doesn't work on FieldStorage which can be the type of
         # input. So we have to ignore keys starting with @ at other
@@ -2069,7 +2259,8 @@ class RestfulInstance(object):
         except NotFound as msg:
             output = self.error_obj(404, msg)
         except Reject as msg:
-            output = self.error_obj(405, msg)
+            output = self.error_obj(405, msg.args[0])
+            self.client.setHeader("Allow", msg.args[1])
 
         # Format the content type
         if data_type.lower() == "json":

@@ -112,6 +112,7 @@ from roundup.i18n import _
 from roundup.hyperdb import iter_roles
 from roundup.anypy.strings import StringIO, b2s, u2s
 import roundup.anypy.random_ as random_
+import roundup.anypy.ssl_ as ssl_
 
 try:
     import gpg, gpg.core, gpg.constants, gpg.constants.sigsum
@@ -1373,7 +1374,7 @@ class MailGW:
             else:
                 self.logger.debug('Trying server %r without ssl' % server)
                 server = imaplib.IMAP4(server)
-        except (imaplib.IMAP4.error, socket.error, socket.sslerror):
+        except (imaplib.IMAP4.error, socket.error, ssl_.SSLError):
             self.logger.exception('IMAP server error')
             return 1
 
@@ -1415,7 +1416,7 @@ class MailGW:
         finally:
             try:
                 server.expunge()
-            except (imaplib.IMAP4.error, socket.error, socket.sslerror):
+            except (imaplib.IMAP4.error, socket.error, ssl_.SSLError):
                 pass
             server.logout()
 
@@ -1461,7 +1462,7 @@ class MailGW:
             else:
                 klass = poplib.POP3
             server = klass(server)
-        except socket.error:
+        except (socket.error, ssl_.SSLError):
             self.logger.exception('POP server error')
             return 1
         if apop:

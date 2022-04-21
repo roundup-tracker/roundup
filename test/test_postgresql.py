@@ -47,6 +47,16 @@ class postgresqlOpener:
     if have_backend('postgresql'):
         module = get_backend('postgresql')
 
+    def setup_class(cls):
+        # nuke the db once for the class. Handles the case
+        # where an aborted test run (^C during setUp for example)
+        # leaves the database in an unusable, partly configured state.
+        try:
+            cls.nuke_database(cls)
+        except:
+            # ignore failure to nuke the database.
+            pass
+
     def setUp(self):
         pass
 
@@ -68,6 +78,67 @@ class postgresqlDBTest(postgresqlOpener, DBTest, unittest.TestCase):
         DBTest.tearDown(self)
         postgresqlOpener.tearDown(self)
 
+    def testUpgrade_6_to_7(self):
+
+        # load the database
+        self.db.issue.create(title="flebble frooz")
+        self.db.commit()
+
+        if self.db.database_schema['version'] != 7:
+            # consider calling next testUpgrade script to roll back
+            # schema to version 7.
+            self.skipTest("This test only runs for database version 7")
+
+        # remove __fts table/index; shrink length of  __words._words
+        #  trying to insert a long word in __words._words should fail.
+        #  trying to select from __fts should fail
+        #  looking for the index should fail
+        # run post-init
+        #    tests should succeed.
+
+        self.db.sql("drop table __fts")  # also drops __fts_idx
+        self.db.sql("alter table __words ALTER column _word type varchar(10)")
+        self.db.commit()
+
+        self.db.database_schema['version'] = 6
+
+        long_string = "a" * (self.db.indexer.maxlength + 5)
+        with self.assertRaises(psycopg2.DataError) as ctx:
+            # DataError : value too long for type character varying(10)
+            self.db.sql("insert into __words VALUES('%s',1)" % long_string)
+
+        self.assertIn("varying(10)", ctx.exception.args[0])
+        self.db.rollback()  # clear cursor error so db.sql can be used again
+
+        with self.assertRaises(psycopg2.errors.UndefinedTable) as ctx:
+            self.db.sql("select * from _fts")
+        self.db.rollback()
+
+        self.assertFalse(self.db.sql_index_exists('__fts', '__fts_idx'))
+
+        if hasattr(self, "downgrade_only"):
+            return
+
+        # test upgrade path
+        self.db.post_init()
+
+        # This insert with text of expected column size should succeed
+        self.db.sql("insert into __words VALUES('%s',1)" % long_string)
+
+        # verify it fails at one more than the expected column size
+        too_long_string = "a" * (self.db.indexer.maxlength + 6)
+        with self.assertRaises(psycopg2.DataError) as ctx:
+            self.db.sql("insert into __words VALUES('%s',1)" % too_long_string)
+
+        # clean db handle
+        self.db.rollback()
+
+        self.assertTrue(self.db.sql_index_exists('__fts', '__fts_idx'))
+
+        self.db.sql("select * from __fts")
+
+        self.assertEqual(self.db.database_schema['version'],
+                         self.db.current_db_version)
 
 @skip_postgresql
 class postgresqlROTest(postgresqlOpener, ROTest, unittest.TestCase):

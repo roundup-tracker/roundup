@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from roundup import password, date
 
 pri = db.getclass('priority')

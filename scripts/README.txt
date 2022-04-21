@@ -7,6 +7,10 @@ add-issue
 copy-user.py
  Copy one or more Roundup users from one tracker instance to another. 
 
+dump_dbm_sessions_db.py
+ Simple script to dump a session style dbm database e.g. db/otks or
+ db/sessions in readable form.
+ 
 imapServer.py
  This IMAP server script that runs in the background and checks for new
  email from a variety of mailboxes.
@@ -30,6 +34,10 @@ schema-dump.py
 spam-remover
  Remove file attachment spam from a tracker. (Warning destructive,
  read script well.)
+
+stats.xmlrpc.py
+ Script using the xmlrpc interface to retrieve info. Generates report
+ on what values are used by the various issues on bugs.python.org.
 
 weekly-report
  Generate a simple report outlining the activity in one tracker for the
@@ -56,3 +64,18 @@ systemd.gunicorn
 contributors.py
  Analyzes Mercurial log, filters and compiles list of committers with years
  of contribution. Can be useful for updating COPYING.txt
+
+----
+
+Docker
+  Directory for docker setup. More info on how to use it is in
+  doc/installation.txt.
+
+Docker/Dockerfile - Create roundup docker.
+
+Docker/requirements.txt - Python requirements built into docker.
+
+Docker/roundup-start - Startup script for roundup in docker.
+
+Docker/docker-compose.yml - Manage two docker containers for roundup
+      and mysql.

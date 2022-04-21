@@ -1,0 +1,61 @@
+#! /bin/sh
+
+# When container starts verify that the trackers are configured.
+# If they are, start the server otherwise run roundup-admin
+# for installation and initialization.
+
+# "$@" should be a set of tracker=directory pairs.
+
+if ! [ -z "$SHELL_DEBUG" ]; then
+    set -xv
+fi
+
+trap exit INT
+
+do_exit=0
+
+for tracker_spec in "$@"; do
+    # IFS== set a=b doesn't assign $1 and $2 in busybox ash
+    # it also clobbers '$@'. 'echo mumble | read' starts read in a
+    # subshell so vars are not available in parent.
+    IFS="=" read tracker directory <<- EOE
+    $tracker_spec
+	EOE
+    # ^ is a tab for use with <<-
+
+    # was $tracker_spec in the form of a=b, if not ignore it.
+    # allows setting CMD to -i index_template issue=tracker for example.
+    if [ -z "$directory" ]; then continue; fi
+
+    # something is specified or built wrong. Don't start.
+    if [ ! -d "$directory" ]; then
+        printf "Unable to find directory %s. Exiting\n" "$directory"
+	exit 1
+    fi
+
+    # user must define web in config.ini.
+    if ! grep '^\s*web\s\s*=\s\s*' "$directory/config.ini" > /dev/null; then
+        roundup-admin -i "$directory" install
+        do_exit=1
+    fi
+
+    # we have a valid config.ini so init database if not done
+    if [ $do_exit == 0 -a ! -e "$directory/.init_done" ]; then
+        if roundup-admin -i "$directory" init; then
+	  cat > "$directory/.init_done" <<- EOD
+	  Don't delete this file. The docker startup needs it so it won't
+	  re-initialze the database destroying all the data.
+	EOD
+	else
+	    do_exit=1
+	fi
+    fi
+done
+
+# if any config.ini needs editing don't start up.
+if [ $do_exit == 0 ]; then
+   # make roundup-server process 1 with exec
+   exec roundup-server -n 0.0.0.0 "$@"
+fi
+
+exit 0

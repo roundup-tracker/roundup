@@ -391,6 +391,68 @@ class TestCase():
         results = self.server.get_collection('issue', form)
         self.assertDictEqual(expected, results)
 
+    def testGetBadTransitive(self):
+        """
+        Mess up the names of various properties and make sure we get a 400
+        and a somewhat useful error message.
+        """
+        base_path = self.db.config['TRACKER_WEB'] + 'rest/data/'
+        #self.maxDiff=None
+        self.create_sampledata()
+        self.db.issue.set('2', status=self.db.status.lookup('closed'))
+        self.db.issue.set('3', status=self.db.status.lookup('chatting'))
+        expected = [
+            {'error': {'msg': KeyError('Unknown property: assignedto.isse',),
+             'status': 400}},
+            {'error': {'msg': KeyError('Unknown property: stat',),
+             'status': 400}},
+            {'error': {'msg': KeyError('Unknown property: status.nam',),
+             'status': 400}},
+        ]
+
+        ## test invalid transitive property in @fields
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('status.name', 'o'),
+            cgi.MiniFieldStorage('@fields', 'status,assignedto.isse'),
+            cgi.MiniFieldStorage('@sort', 'status.name'),
+        ]
+        results = self.server.get_collection('issue', form)
+        self.assertEqual(self.dummy_client.response_code, 400)
+        self.assertEqual(repr(expected[0]['error']['msg']),
+                         repr(results['error']['msg']))
+        self.assertEqual(expected[0]['error']['status'],
+                         results['error']['status'])
+
+        ## test invalid property in @fields
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('status.name', 'o'),
+            cgi.MiniFieldStorage('@fields', 'stat,assignedto.isuse'),
+            cgi.MiniFieldStorage('@sort', 'status.name'),
+        ]
+        results = self.server.get_collection('issue', form)
+        self.assertEqual(self.dummy_client.response_code, 400)
+        self.assertEqual(repr(expected[1]['error']['msg']),
+                         repr(results['error']['msg']))
+        self.assertEqual(expected[1]['error']['status'],
+                         results['error']['status'])
+
+        ## test invalid transitive property in filter TODO
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('status.nam', 'o'),
+            cgi.MiniFieldStorage('@fields', 'status,assignedto.isuse'),
+            cgi.MiniFieldStorage('@sort', 'status.name'),
+        ]
+        results = self.server.get_collection('issue', form)
+        # is currently 403 not 400
+        self.assertEqual(self.dummy_client.response_code, 400)
+        self.assertEqual(repr(expected[2]['error']['msg']),
+                         repr(results['error']['msg']))
+        self.assertEqual(expected[2]['error']['status'],
+                         results['error']['status'])
+
     def testGetExactMatch(self):
         """ Retrieve all issues with an exact title
         """
@@ -1180,8 +1242,8 @@ class TestCase():
         each one broke and no etag. Use the put command
         to trigger the etag checking code.
         '''
-        for mode in ('header', 'etag', 'both',
-                     'brokenheader', 'brokenetag', 'none'):
+        for mode in ('header', 'header-gzip', 'etag', 'etag-br',
+                     'both', 'brokenheader', 'brokenetag', 'none'):
             try:
                 # clean up any old header
                 del(self.headers)
@@ -1198,9 +1260,17 @@ class TestCase():
             if mode == 'header':
                 print("Mode = %s"%mode)
                 self.headers = {'if-match': etag}
+            elif mode == 'header-gzip':
+                print("Mode = %s"%mode)
+                gzip_etag = etag[:-1] + "-gzip" + etag[-1:]
+                self.headers = {'if-match': gzip_etag}
             elif mode == 'etag':
                 print("Mode = %s"%mode)
                 form.list.append(cgi.MiniFieldStorage('@etag', etag))
+            elif mode == 'etag-br':
+                print("Mode = %s"%mode)
+                br_etag = etag[:-1] + "-br" + etag[-1:]
+                form.list.append(cgi.MiniFieldStorage('@etag', br_etag))
             elif mode == 'both':
                 print("Mode = %s"%mode)
                 self.headers = {'etag': etag}
@@ -1216,7 +1286,7 @@ class TestCase():
             elif mode == 'none':
                 print( "Mode = %s"%mode)
             else:
-                self.fail("unknown mode found")
+                self.fail("unknown mode '%s' found"%mode)
 
             results = self.server.put_attribute(
                 'user', self.joeid, 'realname', form
@@ -2010,8 +2080,8 @@ class TestCase():
         json_dict = json.loads(b2s(results))
         self.assertEqual(json_dict['error']['status'], 400)
         self.assertEqual(json_dict['error']['msg'],
-              "Unrecognized version: L. See /rest without "
-              "specifying version for supported versions.")
+              "Unrecognized api version: L. See /rest without "
+              "specifying api version for supported versions.")
 
         headers={"accept": "application/json; version=z" }
         self.headers=headers
@@ -2022,8 +2092,8 @@ class TestCase():
         json_dict = json.loads(b2s(results))
         self.assertEqual(json_dict['error']['status'], 400)
         self.assertEqual(json_dict['error']['msg'],
-              "Unrecognized version: z. See /rest without "
-              "specifying version for supported versions.")
+              "Unrecognized api version: z. See /rest without "
+              "specifying api version for supported versions.")
 
         headers={"accept": "application/vnd.roundup.test-vz+json" }
         self.headers=headers
@@ -2035,8 +2105,8 @@ class TestCase():
         json_dict = json.loads(b2s(results))
         self.assertEqual(json_dict['error']['status'], 400)
         self.assertEqual(json_dict['error']['msg'],
-              "Unrecognized version: z. See /rest without "
-              "specifying version for supported versions.")
+              "Unrecognized api version: z. See /rest without "
+              "specifying api version for supported versions.")
 
         # verify that version priority is correct; should be version=...
         headers={"accept": "application/vnd.roundup.test-vz+json; version=a"
@@ -2050,8 +2120,8 @@ class TestCase():
         json_dict = json.loads(b2s(results))
         self.assertEqual(json_dict['error']['status'], 400)
         self.assertEqual(json_dict['error']['msg'],
-              "Unrecognized version: a. See /rest without "
-              "specifying version for supported versions.")
+              "Unrecognized api version: a. See /rest without "
+              "specifying api version for supported versions.")
 
         # TEST #10
         # check /rest and /rest/summary and /rest/notthere
@@ -2063,16 +2133,16 @@ class TestCase():
               "default_version": 1,
               "links": [
                   {
-                      "rel": "summary",
-                      "uri": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/summary"
-                  },
-                  {
                       "rel": "self",
                       "uri": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest"
                   },
                   {
                       "rel": "data",
                       "uri": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data"
+                  },
+                  {
+                      "rel": "summary",
+                      "uri": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/summary"
                   }
               ]
           }
@@ -2272,15 +2342,18 @@ class TestCase():
         headers={"accept": "application/json; version=99"
         }
         self.headers=headers
-        with self.assertRaises(UsageError) as ctx:
-            results = self.server.dispatch('GET',
-                                           "/rest/data/status/1",
-                                           self.empty_form)
+        results = self.server.dispatch('GET',
+                                       "/rest/data/status/1",
+                                       self.empty_form)
         print(results)
-        self.assertEqual(self.server.client.response_code, 200)
-        self.assertEqual(ctx.exception.args[0],
-                         "Unrecognized version: 99. See /rest without "
-                         "specifying version for supported versions.")
+        json_dict = json.loads(b2s(results))
+        self.assertEqual(self.server.client.response_code, 400)
+        self.assertEqual(self.server.client.additional_headers['Content-Type'],
+                         "application/json")
+        self.assertEqual(json_dict['error']['msg'],
+                         "Unrecognized api version: 99. See /rest "
+                         "without specifying api version for "
+                         "supported versions.")
 
     def testMethodOverride(self):
         # TEST #1

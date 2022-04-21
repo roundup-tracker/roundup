@@ -321,6 +321,8 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
 
             self.send_response(200)
             self.send_header('Content-Type', 'image/x-icon')
+            self.send_header('Content-Length', len(favico))
+            self.send_header('Cache-Control', "public, max-age=86400")
             self.end_headers()
 
             # this bufsize is completely arbitrary, I picked 4K because
@@ -635,9 +637,12 @@ class ServerConfig(configuration.Config):
             (configuration.WordListOption, "include_headers", "",
                 "Comma separated list of extra headers that should\n"
                 "be copied into the CGI environment.\n"
-                "E.G. if you want to acces the REMOTE_USER and\n"
+                "E.G. if you want to access the REMOTE_USER and\n"
                 "X-Proxy-User headers in the back end,\n"
                 "set to the value REMOTE_USER,X-Proxy-User."),
+            (configuration.HttpVersionOption, "http_version", "HTTP/1.1",
+                "Change to HTTP/1.0 if needed. This disables keepalive."),
+
         )),
         ("trackers", (), "Roundup trackers to serve.\n"
             "Each option in this section defines single Roundup tracker.\n"
@@ -663,6 +668,7 @@ class ServerConfig(configuration.Config):
         "ssl": "s",
         "pem": "e:",
         "include_headers": "I:",
+        "http_version": 'V:',
     }
 
     def __init__(self, config_file=None):
@@ -732,6 +738,8 @@ class ServerConfig(configuration.Config):
                     # internal state correctly so that later closing SSL
                     # socket works (with SSL end-handshake started)
                     self.request.do_handshake()
+                RoundupRequestHandler.protocol_version = \
+                                         self.CONFIG["HTTP_VERSION"]
                 RoundupRequestHandler.setup(self)
 
             def finish(self):
@@ -864,8 +872,8 @@ def usage(message=''):
                to the file indicated by PIDfile. The -l option *must* be
                specified if -d is used.'''
     if message:
-        message += '\n'
-    print(_('''%(message)sUsage: roundup-server [options] [name=tracker home]*
+        message += '\n\n'
+    print(_('''\n%(message)sUsage: roundup-server [options] [name=tracker home]*
 
 Options:
  -v            print the Roundup version number and exit
@@ -886,6 +894,9 @@ Options:
  -e <fname>    PEM file containing SSL key and certificate
  -t <mode>     multiprocess mode (default: %(mp_def)s).
                Allowed values: %(mp_types)s.
+ -V <version>  set HTTP version (default: HTTP/1.1).
+               Allowed values: HTTP/1.0, HTTP/1.1.
+
 %(os_part)s
 
 Long options:

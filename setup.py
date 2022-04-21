@@ -87,13 +87,13 @@ def get_prefix():
     if prefix:
         return prefix
     else:
-        # get the platform lib path.
+        # get the platform lib path. Must start with / else infinite loop.
         plp = get_path('platlib')
         # nuke suffix that matches lib/* and return prefix
         head, tail = os.path.split(plp)
-        while tail != 'lib' and head != '':
+        while tail not in ['lib', 'lib64' ] and head != '/':
             head, tail = os.path.split(head)
-        if not head:
+        if head == '/':
             head = sys.prefix
         return head
 
@@ -142,6 +142,19 @@ def main():
     data_files.append(include('share/doc/roundup/html/_static', '*'))
 
     data_files = make_data_files_absolute(data_files, get_prefix())
+
+    # when running under python2, even if called from setup, it tries
+    # and fails to perform an egg easy install even though it shouldn't:
+    # https://issues.roundup-tracker.org/issue2551185
+    # Add this argument if we are an install to prevent this.
+    # This works right under python3.
+    # FIXME there has to be a better way than this
+    # https://issues.roundup-tracker.org/issue2551185
+
+    if sys.version_info[0] < 3:
+        for arg in sys.argv:
+            if arg == 'install':
+                sys.argv.append('--old-and-unmanageable')
 
     # perform the setup action
     from roundup import __version__
@@ -216,6 +229,16 @@ def main():
           data_files=data_files)
 
 if __name__ == '__main__':
+
+    # Prevent `pip install roundup` from building bdist_wheel.
+    # Man pages, templates, locales installed under site-packages not
+    #  in normal system locations.
+    # https://stackoverflow.com/questions/36846260/can-python-setuptools-install-files-outside-dist-packages
+    '''
+    if 'bdist_wheel' in sys.argv:
+        raise RuntimeError("This setup.py does not support wheels")
+    '''
+
     os.chdir(os.path.dirname(__file__) or '.')
     main()
 

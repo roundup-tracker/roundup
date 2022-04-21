@@ -1,9 +1,11 @@
-import shutil, errno, pytest, json, gzip, os
+import shutil, errno, pytest, json, gzip, os, re
 
 from roundup.anypy.strings import b2s
 from roundup.cgi.wsgi_handler import RequestDispatcher
 from .wsgi_liveserver import LiveServerTestCase
 from . import db_test_base
+
+from wsgiref.validate import validator
 
 try:
     import requests
@@ -29,6 +31,10 @@ except ImportError:
     from .pytest_patcher import mark_class
     skip_zstd = mark_class(pytest.mark.skip(
         reason='Skipping zstd tests: zstd library not available'))
+
+import sys
+
+_py3 = sys.version_info[0] > 2
 
 @skip_requests
 class SimpleTest(LiveServerTestCase):
@@ -60,7 +66,7 @@ class SimpleTest(LiveServerTestCase):
         # set up mailhost so errors get reported to debuging capture file
         cls.db.config.MAILHOST = "localhost"
         cls.db.config.MAIL_HOST = "localhost"
-        cls.db.config.MAIL_DEBUG = "../mail.log.t"
+        cls.db.config.MAIL_DEBUG = "../_test_tracker_mail.log"
 
         # enable static precompressed files
         cls.db.config.WEB_USE_PRECOMPRESSED_FILES = 1
@@ -84,7 +90,13 @@ class SimpleTest(LiveServerTestCase):
 
     def create_app(self):
         '''The wsgi app to start'''
-        return RequestDispatcher(self.dirname)
+        if _py3:
+            return validator(RequestDispatcher(self.dirname))
+        else:
+            # wsgiref/validator.py InputWrapper::readline is broke and
+            # doesn't support the max bytes to read argument.
+            return RequestDispatcher(self.dirname)
+
 
     def test_start_page(self):
         """ simple test that verifies that the server can serve a start page.
@@ -94,6 +106,33 @@ class SimpleTest(LiveServerTestCase):
         self.assertTrue(b'Roundup' in f.content)
         self.assertTrue(b'Creator' in f.content)
 
+
+    def test_rest_invalid_method_collection(self):
+        # use basic auth for rest endpoint
+        f = requests.put(self.url_base() + '/rest/data/user',
+                             auth=('admin', 'sekrit'),
+                             headers = {'content-type': "",
+                             'x-requested-with': "rest"})
+        print(f.status_code)
+        print(f.headers)
+        print(f.content)
+
+        self.assertEqual(f.status_code, 405)
+        expected = { 'Access-Control-Allow-Origin': '*',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
+                     'Allow': 'DELETE, GET, OPTIONS, POST',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
+        }
+
+        print(f.headers)
+        # use dict comprehension to remove fields like date,
+        # content-length etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
+
+        content = json.loads(f.content)
+
+        exp_content = "Method PUT not allowed. Allowed: DELETE, GET, OPTIONS, POST"
+        self.assertEqual(exp_content, content['error']['msg'])
 
     def test_http_options(self):
         """ options returns an unimplemented error for this case."""
@@ -113,11 +152,10 @@ class SimpleTest(LiveServerTestCase):
         print(f.headers)
 
         self.assertEqual(f.status_code, 204)
-        expected = { 'Content-Type': 'application/json',
-                     'Access-Control-Allow-Origin': '*',
-                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+        expected = { 'Access-Control-Allow-Origin': '*',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET',
-                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
         }
 
         # use dict comprehension to remove fields like date,
@@ -134,11 +172,10 @@ class SimpleTest(LiveServerTestCase):
         print(f.headers)
 
         self.assertEqual(f.status_code, 204)
-        expected = { 'Content-Type': 'application/json',
-                     'Access-Control-Allow-Origin': '*',
-                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+        expected = { 'Access-Control-Allow-Origin': '*',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET',
-                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
         }
 
         # use dict comprehension to remove fields like date,
@@ -154,11 +191,10 @@ class SimpleTest(LiveServerTestCase):
         print(f.headers)
 
         self.assertEqual(f.status_code, 204)
-        expected = { 'Content-Type': 'application/json',
-                     'Access-Control-Allow-Origin': '*',
-                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+        expected = { 'Access-Control-Allow-Origin': '*',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, POST',
-                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'OPTIONS, GET, POST',
         }
 
         # use dict comprehension to remove fields like date,
@@ -175,11 +211,10 @@ class SimpleTest(LiveServerTestCase):
         print(f.headers)
 
         self.assertEqual(f.status_code, 204)
-        expected = { 'Content-Type': 'application/json',
-                     'Access-Control-Allow-Origin': '*',
-                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+        expected = { 'Access-Control-Allow-Origin': '*',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, PUT, DELETE, PATCH',
-                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
         }
 
         # use dict comprehension to remove fields like date,
@@ -195,11 +230,10 @@ class SimpleTest(LiveServerTestCase):
         print(f.headers)
 
         self.assertEqual(f.status_code, 204)
-        expected = { 'Content-Type': 'application/json',
-                     'Access-Control-Allow-Origin': '*',
-                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+        expected = { 'Access-Control-Allow-Origin': '*',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, PUT, DELETE, PATCH',
-                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
         }
 
         # use dict comprehension to remove fields like date,
@@ -264,8 +298,7 @@ class SimpleTest(LiveServerTestCase):
         print(f.headers)
 
         self.assertEqual(f.status_code, 304)
-        expected = { 'Content-Type': 'application/javascript',
-                     'Vary': 'Accept-Encoding',
+        expected = { 'Vary': 'Accept-Encoding',
                      'Content-Length': '0',
         }
 
@@ -374,6 +407,57 @@ class SimpleTest(LiveServerTestCase):
         # cleanup
         os.remove(gzfile)
 
+    def test_compression_none_etag(self):
+        # use basic auth for rest endpoint
+        f = requests.get(self.url_base() + '/rest/data/user/1/username',
+                             auth=('admin', 'sekrit'),
+                             headers = {'content-type': "",
+                                        'Accept-Encoding': "",
+                                        'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        expected = { 'Content-Type': 'application/json',
+                     'Access-Control-Allow-Origin': '*',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
+                     'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH'
+        }
+
+        content_str = '''{ "data": {
+                        "id": "1",
+                        "link": "http://localhost:9001/rest/data/user/1/username",
+                        "data": "admin"
+                    }
+        }'''
+        content = json.loads(content_str)
+
+
+        if (type("") == type(f.content)):
+            json_dict = json.loads(f.content)
+        else:
+            json_dict = json.loads(b2s(f.content))
+
+        # etag wil not match, creation date different
+        del(json_dict['data']['@etag']) 
+
+        # type is "class 'str'" under py3, "type 'str'" py2
+        # just skip comparing it.
+        del(json_dict['data']['type']) 
+
+        self.assertDictEqual(json_dict, content)
+
+        # verify that ETag header has no - delimiter
+        print(f.headers['ETag'])
+        with self.assertRaises(ValueError):
+            f.headers['ETag'].index('-')
+
+        # use dict comprehension to remove fields like date,
+        # content-length etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
+
+
     def test_compression_gzip(self):
         # use basic auth for rest endpoint
         f = requests.get(self.url_base() + '/rest/data/user/1/username',
@@ -387,9 +471,9 @@ class SimpleTest(LiveServerTestCase):
         self.assertEqual(f.status_code, 200)
         expected = { 'Content-Type': 'application/json',
                      'Access-Control-Allow-Origin': '*',
-                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
-                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
                      'Content-Encoding': 'gzip',
                      'Vary': 'Accept-Encoding',
         }
@@ -417,6 +501,13 @@ class SimpleTest(LiveServerTestCase):
 
         self.assertDictEqual(json_dict, content)
 
+        # verify that ETag header ends with -gzip
+        try:
+            self.assertRegex(f.headers['ETag'], r'^"[0-9a-f]{32}-gzip"$')
+        except AttributeError:
+            # python2 no assertRegex so try substring match
+            self.assertEqual(33, f.headers['ETag'].rindex('-gzip"'))
+
         # use dict comprehension to remove fields like date,
         # content-length etc. from f.headers.
         self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
@@ -432,20 +523,19 @@ class SimpleTest(LiveServerTestCase):
         print(f.status_code)
         print(f.headers)
 
-        # ERROR: attribute error turns into 405, not sure that's right.
         # NOTE: not compressed payload too small
-        self.assertEqual(f.status_code, 405)
+        self.assertEqual(f.status_code, 400)
         expected = { 'Content-Type': 'application/json',
                      'Access-Control-Allow-Origin': '*',
-                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
-                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
         }
 
         content = { "error":
                     {
-                        "status": 405,
-                        "msg": "'foo'"
+                        "status": 400,
+                        "msg": "Invalid attribute foo"
                     }
         }
 
@@ -514,9 +604,9 @@ class SimpleTest(LiveServerTestCase):
         self.assertEqual(f.status_code, 200)
         expected = { 'Content-Type': 'application/json',
                      'Access-Control-Allow-Origin': '*',
-                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
-                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
                      'Content-Encoding': 'br',
                      'Vary': 'Accept-Encoding',
         }
@@ -547,6 +637,13 @@ class SimpleTest(LiveServerTestCase):
 
         self.assertDictEqual(json_dict, content)
 
+        # verify that ETag header ends with -br
+        try:
+            self.assertRegex(f.headers['ETag'], r'^"[0-9a-f]{32}-br"$')
+        except AttributeError:
+            # python2 no assertRegex so try substring match
+            self.assertEqual(33, f.headers['ETag'].rindex('-br"'))
+
         # use dict comprehension to remove fields like date,
         # content-length etc. from f.headers.
         self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
@@ -560,20 +657,20 @@ class SimpleTest(LiveServerTestCase):
                                         'Accept': '*/*'})
         print(f.status_code)
         print(f.headers)
-        # ERROR: attribute error turns into 405, not sure that's right.
+
         # Note: not compressed payload too small
-        self.assertEqual(f.status_code, 405)
+        self.assertEqual(f.status_code, 400)
         expected = { 'Content-Type': 'application/json',
                      'Access-Control-Allow-Origin': '*',
-                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
-                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
         }
 
         content = { "error":
                     {
-                        "status": 405,
-                        "msg": "'foo'"
+                        "status": 400,
+                        "msg": "Invalid attribute foo"
                     }
         }
         json_dict = json.loads(b2s(f.content))
@@ -660,9 +757,9 @@ class SimpleTest(LiveServerTestCase):
         self.assertEqual(f.status_code, 200)
         expected = { 'Content-Type': 'application/json',
                      'Access-Control-Allow-Origin': '*',
-                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
-                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
                      'Content-Encoding': 'zstd',
                      'Vary': 'Accept-Encoding',
         }
@@ -693,6 +790,13 @@ class SimpleTest(LiveServerTestCase):
 
         self.assertDictEqual(json_dict, content)
 
+        # verify that ETag header ends with -zstd
+        try:
+            self.assertRegex(f.headers['ETag'], r'^"[0-9a-f]{32}-zstd"$')
+        except AttributeError:
+            # python2 no assertRegex so try substring match
+            self.assertEqual(33, f.headers['ETag'].rindex('-zstd"'))
+
         # use dict comprehension to remove fields like date,
         # content-length etc. from f.headers.
         self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
@@ -708,20 +812,19 @@ class SimpleTest(LiveServerTestCase):
         print(f.status_code)
         print(f.headers)
 
-        # ERROR: attribute error turns into 405, not sure that's right.
         # Note: not compressed, payload too small
-        self.assertEqual(f.status_code, 405)
+        self.assertEqual(f.status_code, 400)
         expected = { 'Content-Type': 'application/json',
                      'Access-Control-Allow-Origin': '*',
-                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-HTTP-Method-Override',
+                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
-                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, PUT, DELETE, PATCH',
+                     'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
         }
 
         content = { "error":
                     {
-                        "status": 405,
-                        "msg": "'foo'"
+                        "status": 400,
+                        "msg": "Invalid attribute foo"
                     }
         }
 
@@ -776,3 +879,111 @@ class SimpleTest(LiveServerTestCase):
         self.assertDictEqual({ key: value for (key, value) in
                                f.headers.items() if key in expected },
                              expected)
+
+    @pytest.mark.xfail(reason="Fails with 3600 age on circle ci not sure why")
+    def test_cache_control_css(self):
+        f = requests.get(self.url_base() + '/@@file/style.css',
+                             headers = {'content-type': "",
+                                        'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        self.assertEqual(f.headers['Cache-Control'], 'public, max-age=4838400')
+
+    def test_cache_control_js(self):
+        f = requests.get(self.url_base() + '/@@file/help_controls.js',
+                             headers = {'content-type': "",
+                                        'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        self.assertEqual(f.headers['Cache-Control'], 'public, max-age=1209600')
+
+    def test_new_issue_with_file_upload(self):
+        # Set up session to manage cookies <insert blue monster here>
+        session = requests.Session()
+
+        # login using form
+        login = {"__login_name": 'admin', '__login_password': 'sekrit', 
+                 "@action": "login"}
+        f = session.post(self.url_base()+'/', data=login)
+        # look for change in text in sidebar post login
+        self.assertIn('Hello, admin', f.text)
+
+        # create a new issue and upload a file
+        file_content = 'this is a test file\n'
+        file = {"@file": ('test1.txt', file_content, "text/plain") }
+        issue = {"title": "my title", "priority": "1", "@action": "new"}
+        f = session.post(self.url_base()+'/issue?@template=item', data=issue, files=file)
+
+        # use redirected url to determine which issue and file were created.
+        m = re.search(r'[0-9]/issue(?P<issue>[0-9]+)\?@ok_message.*file%20(?P<file>[0-9]+)%20', f.url)
+
+        # verify message in redirected url: file 1 created\nissue 1 created
+        # warning may fail if another test loads tracker with files.
+        # Escape % signs in string by doubling them. This verifies the
+        # search is working correctly.
+        # use groupdict for python2.
+        self.assertEqual('http://localhost:9001/issue%(issue)s?@ok_message=file%%20%(file)s%%20created%%0Aissue%%20%(issue)s%%20created&@template=item'%m.groupdict(), f.url)
+
+        # we have an issue display, verify filename is listed there
+        # seach for unique filename given to it.
+        self.assertIn("test1.txt", f.text)
+
+        # download file and verify content
+        f = session.get(self.url_base()+'/file%(file)s/text1.txt'%m.groupdict())
+        self.assertEqual(f.text, file_content)
+        print(f.text)
+
+    def test_new_file_via_rest(self):
+
+        session = requests.Session()
+        session.auth = ('admin', 'sekrit')
+
+        url = self.url_base() + '/rest/data/'
+        fname   = 'a-bigger-testfile'
+        d = dict(name = fname, type='application/octet-stream')
+        c = dict (content = r'xyzzy')
+        r = session.post(url + 'file', files = c, data = d,
+                          headers = {'x-requested-with': "rest"}
+        )
+
+        # was a 500 before fix for issue2551178
+        self.assertEqual(r.status_code, 201)
+        # just compare the path leave off the number
+        self.assertIn('http://localhost:9001/rest/data/file/',
+                      r.headers["location"])
+        json_dict = json.loads(r.text)
+        self.assertEqual(json_dict["data"]["link"], r.headers["location"])
+
+        # download file and verify content
+        r = session.get(r.headers["location"] +'/content')
+        json_dict = json.loads(r.text)
+        self.assertEqual(json_dict['data']['data'], c["content"])
+        print(r.text)
+
+        # Upload a file via rest interface - no auth 
+        session.auth = None
+        r = session.post(url + 'file', files = c, data = d,
+                          headers = {'x-requested-with': "rest"}
+        )
+        self.assertEqual(r.status_code, 403)
+
+        # get session variable from web form login
+        #   and use it to upload file
+        # login using form
+        login = {"__login_name": 'admin', '__login_password': 'sekrit', 
+                 "@action": "login"}
+        f = session.post(self.url_base()+'/', data=login)
+        # look for change in text in sidebar post login
+        self.assertIn('Hello, admin', f.text)
+
+        r = session.post(url + 'file', files = c, data = d,
+                          headers = {'x-requested-with': "rest"}
+        )
+        self.assertEqual(r.status_code, 201)
+        print(r.status_code)
+
+

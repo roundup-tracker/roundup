@@ -1,3 +1,8 @@
+.. meta::
+    :description language=en:
+        Documentation on the XMLRPC interface to the Roundup Issue
+	Tracker. Includes sample clients.
+
 .. index:: triple: api; xml; remote procedure call
    pair: api; xmlrpc
 

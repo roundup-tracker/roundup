@@ -16,12 +16,13 @@ branches:
 #    - default
 #    - maint-1.6
 
-dist:
-  - bionic
+dist: focal
 
+#  - pypy3
 python:
   - 2.7
-  - 3.9-dev
+  - 3.10.0
+  - 3.9
   - 3.8
   - 3.6
   - nightly
@@ -33,11 +34,12 @@ services:
 jobs:
     allow_failures:  # nightly not ready for prime time yet.
       - python: nightly
+      - python: pypy3
 
 addons:
   apt:
-    sources:
-      - sourceline: ppa:xapian-backports/ppa
+    #sources:
+    #  - sourceline: ppa:xapian-backports/ppa
 
     packages:
       # Required to build/install the xapian-binding
@@ -48,8 +50,12 @@ addons:
       - gpgsm
 
 before_install:
-  # Sphinx required to build the xapian python bindings
-  - pip install sphinx==1.8.5
+  - echo "$TRAVIS_PYTHON_VERSION"
+  # Sphinx required to build the xapian python bindings. Use 1.8.5 on
+  # older python and newest on newer.
+  - if [[ $TRAVIS_PYTHON_VERSION == "2."* ]]; then pip install sphinx==1.8.5; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.'* ]] ; then pip install sphinx; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then pip install sphinx; fi
   - XAPIAN_VER=$(dpkg -l libxapian-dev | tail -n 1 | awk '{print $3}' | cut -d '-' -f 1)
   - cd /tmp
   - curl -s -O https://oligarchy.co.uk/xapian/$XAPIAN_VER/xapian-bindings-$XAPIAN_VER.tar.xz
@@ -59,12 +65,13 @@ before_install:
   - if [[ $TRAVIS_PYTHON_VERSION == "2."* ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python; fi
   - if [[ $TRAVIS_PYTHON_VERSION == "3."* ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3; fi
   - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == "pypy3" ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3; fi
   - make && make install
 
   - PATH=$VIRTUAL_ENV/bin:$PATH
 
   # libgpg-error
-  - LIBGPG_ERROR_VERSION=1.32
+  - LIBGPG_ERROR_VERSION=1.43
   - cd /tmp
   - curl -s -O https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-$LIBGPG_ERROR_VERSION.tar.bz2
   - tar -jxvf libgpg-error-$LIBGPG_ERROR_VERSION.tar.bz2
@@ -73,7 +80,7 @@ before_install:
   - make && make install
 
   # libassuan
-  - LIBASSUAN_VERSION=2.5.1
+  - LIBASSUAN_VERSION=2.5.5
   - cd /tmp
   - curl -s -O https://www.gnupg.org/ftp/gcrypt/libassuan/libassuan-$LIBASSUAN_VERSION.tar.bz2
   - tar -jxvf libassuan-$LIBASSUAN_VERSION.tar.bz2
@@ -82,7 +89,7 @@ before_install:
   - make && make install
 
   # gpgme
-  - GPGME_VERSION=1.11.1
+  - GPGME_VERSION=1.16.0
   - cd /tmp
   - curl -s -O https://www.gnupg.org/ftp/gcrypt/gpgme/gpgme-$GPGME_VERSION.tar.bz2
   - tar -jxf gpgme-$GPGME_VERSION.tar.bz2
@@ -100,24 +107,31 @@ install:
   - pip install gpg pytz whoosh pyjwt requests
   - pip install pytest-cov codecov
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install docutils; fi
-  - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install mistune; fi
+  - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install mistune==0.8.4; fi
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* && $TRAVIS_PYTHON_VERSION != "2."* ]]; then pip install Markdown; fi
   - pip install markdown2
-  - pip install brotli zstd
+  - pip install brotli
+  # zstd fails to build under python nightly aborting test.
+  # allow testing to still happen if the optional package doesn't install.
+  - pip install zstd || true
 
 before_script:
   # set up mysql database
   - sudo sed -i -e '/^\[mysqld\]/,/^\[mysql/s/^max_allowed_packet.*/max_allowed_packet = 500M/' /etc/mysql/my.cnf
   - cat /etc/mysql/my.cnf
   - sudo service mysql restart
-  - mysql -u root -e 'GRANT ALL ON rounduptest.* TO rounduptest@localhost IDENTIFIED BY "rounduptest";'
+  - mysql -u root -e 'CREATE USER "rounduptest"@"localhost" IDENTIFIED WITH mysql_native_password BY "rounduptest"; GRANT ALL on rounduptest.* TO "rounduptest"@"localhost";'
 
+  # Disable fsync for speed, don't care about data durability when testing
+  - sudo sed -i -e '$a\fsync = off' /etc/postgresql/*/*/postgresql.conf
   - sudo service postgresql restart; sleep 30
   # set up postgresql database
   - psql -c "CREATE ROLE rounduptest WITH CREATEDB LOGIN PASSWORD 'rounduptest';" -U postgres
 
   # HACK: workaround mysql bug: http://bugs.mysql.com/bug.php?id=74901
   #   needed for test_mysql.mysqlDBTest.testFilteringSpecialChars
+  # plus others. Otherwise we get:
+  # COLLATION 'utf8_bin' is not valid for CHARACTER SET 'utf8mb4'
   - sed -i 's/CREATE DATABASE \%s/CREATE DATABASE \%s COLLATE utf8_general_ci/' roundup/backends/back_mysql.py
 
   # build the .mo translation files and install them into a tree
@@ -141,6 +155,7 @@ script:
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2."* ]]; then
       py.test -v --maxfail=20 test/ --cov=roundup;
     fi
+  - ./setup.py build_doc
 
 after_success:
   - codecov

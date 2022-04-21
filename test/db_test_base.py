@@ -252,9 +252,21 @@ class DBTest(commonDBTest):
         self.db.issue.create(title="flebble frooz")
         self.db.commit()
 
-        self.assertEqual(self.db.database_schema['version'], 6,
-                         "This test only runs for database version 6")
-        self.db.database_schema['version'] = 5
+        if self.db.database_schema['version'] > 6:
+            # make testUpgrades run the downgrade code only.
+            if hasattr(self, "downgrade_only"):
+                # we are being called by an earlier test
+                self.testUpgrade_6_to_7()
+                self.assertEqual(self.db.database_schema['version'], 6)
+            else:
+                # we are being called directly
+                self.downgrade_only = True
+                self.testUpgrade_6_to_7()
+                self.assertEqual(self.db.database_schema['version'], 6)
+                del(self.downgrade_only)
+        elif self.db.database_schema['version'] != 6:
+            self.skipTest("This test only runs for database version 6")
+
         if self.db.dbtype == 'mysql':
             # version 6 has 5 indexes
             self.db.sql('show indexes from _user;')
@@ -267,6 +279,11 @@ class DBTest(commonDBTest):
             # 3 index entries
             self.db.sql('show indexes from _user;')
             self.assertEqual(3,len(self.db.cursor.fetchall()))
+
+            self.db.database_schema['version'] = 5
+
+            if hasattr(self, "downgrade_only"):
+                return
 
             # test upgrade adding index
             self.db.post_init()
@@ -284,9 +301,15 @@ class DBTest(commonDBTest):
             self.db.sql('show indexes from _user;')
             self.assertEqual(5,len(self.db.cursor.fetchall()))
         else:
+            if hasattr(self, "downgrade_only"):
+                return
             # this should be a no-op
             # test upgrade
             self.db.post_init()
+
+        # we should be at the current db version
+        self.assertEqual(self.db.database_schema['version'],
+                         self.db.current_db_version)
 
     def drop_key_retired_idx(self):
         c = self.db.cursor

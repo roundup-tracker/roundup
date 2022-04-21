@@ -33,6 +33,9 @@ from roundup.test.mocknull import MockNull
 from . import db_test_base
 from .db_test_base import FormTestParent, setupTracker, FileUpload
 from .cmp_helper import StringFragmentCmpHelper
+from .test_postgresql import skip_postgresql
+from .test_mysql import skip_mysql
+
 
 class FileList:
     def __init__(self, name, *files):
@@ -41,6 +44,24 @@ class FileList:
     def items (self):
         for f in self.files:
             yield (self.name, f)
+
+class testFtsQuery(object):
+
+    def testRenderContextFtsQuery(self):
+        self.db.issue.create(title='i1 is found', status="chatting")
+
+        self.client.form=db_test_base.makeForm(
+            { "@ok_message": "ok message", "@template": "index",
+            "@search_text": "found"})
+        self.client.path = 'issue'
+        self.client.determine_context()
+
+        result = self.client.renderContext()
+
+        expected = '">i1 is found</a>'
+
+        self.assertIn(expected, result)
+        self.assertEqual(self.client.response_code, 200)
 
 cm = client.add_message
 class MessageTestCase(unittest.TestCase):
@@ -79,7 +100,86 @@ class MessageTestCase(unittest.TestCase):
         self.assertEqual(cm([],'<i>x</i>\n<b>x</b>',False),
             ['<i>x</i><br />\n<b>x</b>'])
 
-class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
+class testCsvExport(object):
+
+    def testCSVExportBase(self):
+        cl = self._make_client(
+            {'@columns': 'id,title,status,keyword,assignedto,nosy,creation'},
+            nodeid=None, userid='1')
+        cl.classname = 'issue'
+
+        demo_id=self.db.user.create(username='demo', address='demo@test.test',
+            roles='User', realname='demo')
+        key_id1=self.db.keyword.create(name='keyword1')
+        key_id2=self.db.keyword.create(name='keyword2')
+
+        originalDate = date.Date
+        dummy=date.Date('2000-06-26.00:34:02.0')
+        # is a closure the best way to return a static Date object??
+        def dummyDate(adate=None):
+            def dummyClosure(adate=None, translator=None):
+                return dummy
+            return dummyClosure
+        date.Date = dummyDate()
+
+        self.db.issue.create(title='foo1', status='2', assignedto='4', nosy=['3',demo_id])
+        self.db.issue.create(title='bar2', status='1', assignedto='3', keyword=[key_id1,key_id2])
+        self.db.issue.create(title='baz32', status='4')
+        output = io.BytesIO()
+        cl.request = MockNull()
+        cl.request.wfile = output
+        # call export version that outputs names
+        actions.ExportCSVAction(cl).handle()
+        should_be=(s2b('"id","title","status","keyword","assignedto","nosy","creation"\r\n'
+                       '"1","foo1","deferred","","Contrary, Mary","Bork, Chef;Contrary, Mary;demo","2000-06-26 00:34"\r\n'
+                       '"2","bar2","unread","keyword1;keyword2","Bork, Chef","Bork, Chef","2000-06-26 00:34"\r\n'
+                       '"3","baz32","need-eg","","","","2000-06-26 00:34"\r\n'))
+
+
+        #print(should_be)
+        #print(output.getvalue())
+        self.assertEqual(output.getvalue(), should_be)
+        output = io.BytesIO()
+        cl.request = MockNull()
+        cl.request.wfile = output
+        # call export version that outputs id numbers
+        actions.ExportCSVWithIdAction(cl).handle()
+        should_be = s2b('"id","title","status","keyword","assignedto","nosy","creation"\r\n'
+                        '''"1","foo1","2","[]","4","['3', '4', '5']","2000-06-26.00:34:02"\r\n'''
+                        '''"2","bar2","1","['1', '2']","3","['3']","2000-06-26.00:34:02"\r\n'''
+                        '''"3","baz32","4","[]","None","[]","2000-06-26.00:34:02"\r\n''')
+        #print(should_be)
+        #print(output.getvalue())
+        self.assertEqual(output.getvalue(), should_be)
+
+        # reset the real date command
+        date.Date = originalDate
+
+        # test full text search
+        # call export version that outputs names
+        cl = self._make_client(
+            {'@columns': 'id,title,status,keyword,assignedto,nosy',
+             "@search_text": "bar2"}, nodeid=None, userid='1')
+        cl.classname = 'issue'
+        output = io.BytesIO()
+        cl.request = MockNull()
+        cl.request.wfile = output
+        actions.ExportCSVAction(cl).handle()
+        should_be=(s2b('"id","title","status","keyword","assignedto","nosy"\r\n'
+                       '"2","bar2","unread","keyword1;keyword2","Bork, Chef","Bork, Chef"\r\n'))
+
+        self.assertEqual(output.getvalue(), should_be)
+
+        # call export version that outputs id numbers
+        output = io.BytesIO()
+        cl.request = MockNull()
+        cl.request.wfile = output
+        actions.ExportCSVWithIdAction(cl).handle()
+        should_be = s2b('"id","title","status","keyword","assignedto","nosy"\r\n'
+                        "\"2\",\"bar2\",\"1\",\"['1', '2']\",\"3\",\"['3']\"\r\n")
+        self.assertEqual(output.getvalue(), should_be)
+
+class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unittest.TestCase):
 
     def setUp(self):
         FormTestParent.setUp(self)
@@ -1789,44 +1889,6 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         self.db.user.set('1', roles='')
         self.assertTrue(not item.hasRole(''))
 
-    def testCSVExport(self):
-        cl = self._make_client(
-            {'@columns': 'id,title,status,keyword,assignedto,nosy'},
-            nodeid=None, userid='1')
-        cl.classname = 'issue'
-
-        demo_id=self.db.user.create(username='demo', address='demo@test.test',
-            roles='User', realname='demo')
-        key_id1=self.db.keyword.create(name='keyword1')
-        key_id2=self.db.keyword.create(name='keyword2')
-        self.db.issue.create(title='foo1', status='2', assignedto='4', nosy=['3',demo_id])
-        self.db.issue.create(title='bar2', status='1', assignedto='3', keyword=[key_id1,key_id2])
-        self.db.issue.create(title='baz32', status='4')
-        output = io.BytesIO()
-        cl.request = MockNull()
-        cl.request.wfile = output
-        # call export version that outputs names
-        actions.ExportCSVAction(cl).handle()
-        should_be=(s2b('"id","title","status","keyword","assignedto","nosy"\r\n'
-                       '"1","foo1","deferred","","Contrary, Mary","Bork, Chef;Contrary, Mary;demo"\r\n'
-                       '"2","bar2","unread","keyword1;keyword2","Bork, Chef","Bork, Chef"\r\n'
-                       '"3","baz32","need-eg","","",""\r\n'))
-        #print(should_be)
-        print(output.getvalue())
-        self.assertEqual(output.getvalue(), should_be)
-        output = io.BytesIO()
-        cl.request = MockNull()
-        cl.request.wfile = output
-        # call export version that outputs id numbers
-        actions.ExportCSVWithIdAction(cl).handle()
-        should_be = s2b('"id","title","status","keyword","assignedto","nosy"\r\n'
-                        "\"1\",\"foo1\",\"2\",\"[]\",\"4\",\"['3', '4', '5']\"\r\n"
-                        "\"2\",\"bar2\",\"1\",\"['1', '2']\",\"3\",\"['3']\"\r\n"
-                        '\"3\","baz32",\"4\","[]","None","[]"\r\n')
-        #print(should_be)
-        print(output.getvalue())
-        self.assertEqual(output.getvalue(), should_be)
-
     def testCSVExportCharset(self):
         cl = self._make_client(
             {'@columns': 'id,title,status,keyword,assignedto,nosy'},
@@ -1976,7 +2038,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, unittest.TestCase):
         self.assertRaises(exceptions.Unauthorised,
             actions.ExportCSVWithIdAction(cl).handle)
 
-class TemplateHtmlRendering(unittest.TestCase):
+class TemplateHtmlRendering(unittest.TestCase, testFtsQuery):
     ''' try to test the rendering code for tal '''
     def setUp(self):
         self.dirname = '_test_template'
@@ -2035,6 +2097,61 @@ class TemplateHtmlRendering(unittest.TestCase):
         # page
         self.assertNotEqual(-1,
            self.output[0].index('<!-- SHA: c87a4e18d59a527331f1d367c0c6cc67ee123e63 -->'))
+
+    def testRenderError(self):
+        # set up the client;
+        # run determine_context to set the required client attributes
+        # run renderError(); check result for proper page
+
+        self.client.form=db_test_base.makeForm({})
+        self.client.path = ''
+        self.client.determine_context()
+
+        error = "Houston, we have a problem"
+
+
+        # template rendering will fail and return fallback html
+        out = self.client.renderError(error, 404)
+
+        expected_fallback = (
+            '\n<html><head><title>Roundup issue tracker: '
+            'An error has occurred</title>\n'
+            ' <link rel="stylesheet" type="text/css" href="@@file/style.css">\n'
+            '</head>\n'
+            '<body class="body" marginwidth="0" marginheight="0">\n'
+            ' <p class="error-message">Houston, we have a problem</p>\n'
+            '</body></html>\n')
+
+        self.assertEqual(out, expected_fallback)
+        self.assertIn(error, self.client._error_message)
+        self.assertEqual(self.client.response_code, 404)
+
+        ### next test
+        # Set this so template rendering works.
+        self.client.classname = 'issue'
+
+        out = self.client.renderError("Houston, we have a problem", 404)
+        # match hard coded line in 404 template
+        expected = ('There is no <span>issue</span> with id')
+        
+        self.assertIn(expected, out)
+        self.assertEqual(self.client.response_code, 404)
+
+
+        ### next test
+        # disable template use get fallback
+        out = self.client.renderError("Houston, we have a problem", 404,
+                                      use_template=False)
+        
+        self.assertEqual(out, expected_fallback)
+        self.assertEqual(self.client.response_code, 404)
+
+        ### next test
+        # no 400 template (default 2nd param) so we get fallback
+        out = self.client.renderError("Houston, we have a problem")
+        self.assertEqual(out, expected_fallback)
+        self.assertIn(error, self.client._error_message)
+        self.assertEqual(self.client.response_code, 400)
 
     def testrenderContext(self):
         # set up the client;
@@ -2287,5 +2404,253 @@ class TemplateTestCase(unittest.TestCase):
         # template check works
         r = t.selectTemplate("user", "subdir/item")
         self.assertEqual("subdir/user.item", r)
+
+class SqliteNativeFtsCgiTest(unittest.TestCase, testFtsQuery, testCsvExport):
+    """All of the rest of the tests use anydbm as the backend.
+       In addtion to normal fts test, this class tests renderError
+       when renderContext fails.
+       Triggering this error requires the native-fts backend for
+       the sqlite db.
+    """
+
+    def setUp(self):
+        self.dirname = '_test_template'
+        # set up and open a tracker
+        self.instance = setupTracker(self.dirname, backend="sqlite")
+
+        self.instance.config.INDEXER = "native-fts"
+
+        # open the database
+        self.db = self.instance.open('admin')
+        self.db.tx_Source = "web"
+        self.db.user.create(username='Chef', address='chef@bork.bork.bork',
+            realname='Bork, Chef', roles='User')
+        self.db.user.create(username='mary', address='mary@test.test',
+            roles='User', realname='Contrary, Mary')
+        self.db.post_init()
+
+        # create a client instance and hijack write_html
+        self.client = client.Client(self.instance, "user",
+                {'PATH_INFO':'/user', 'REQUEST_METHOD':'POST'},
+                form=db_test_base.makeForm({"@template": "item"}))
+
+        self.client._error_message = []
+        self.client._ok_message = []
+        self.client.db = self.db
+        self.client.userid = '1'
+        self.client.language = ('en',)
+        self.client.session_api = MockNull(_sid="1234567890")
+
+        self.output = []
+        # ugly hack to get html_write to return data here.
+        def html_write(s):
+            self.output.append(s)
+
+        # hijack html_write
+        self.client.write_html = html_write
+
+    def tearDown(self):
+        self.db.close()
+        try:
+            shutil.rmtree(self.dirname)
+        except OSError as error:
+            if error.errno not in (errno.ENOENT, errno.ESRCH): raise
+
+    def testRenderContextBadFtsQuery(self):
+        # only test for sqlite
+        if self.db.dbtype not in [ "sqlite" ]:
+            pytest.skip("Not tested for backends without native FTS")
+
+        # generate a bad fts query
+        self.client.form=db_test_base.makeForm(
+            { "@ok_message": "ok message", "@template": "index",
+            "@search_text": "foo-bar"})
+        self.client.path = 'issue'
+        self.client.determine_context()
+
+        result = self.client.renderContext()
+
+        expected = '\n<html><head><title>Roundup issue tracker: An error has occurred</title>\n <link rel="stylesheet" type="text/css" href="@@file/style.css">\n</head>\n<body class="body" marginwidth="0" marginheight="0">\n <p class="error-message">Search failed. Try quoting any terms that include a \'-\' and retry the search.</p>\n</body></html>\n'
+
+        self.assertEqual(result, expected)
+        self.assertEqual(self.client.response_code, 400)
+
+    #
+    # SECURITY
+    #
+    # XXX test all default permissions
+    def _make_client(self, form, classname='user', nodeid='1',
+           userid='2', template='item'):
+        cl = client.Client(self.instance, None, {'PATH_INFO':'/',
+            'REQUEST_METHOD':'POST'}, db_test_base.makeForm(form))
+        cl.classname = classname
+        if nodeid is not None:
+            cl.nodeid = nodeid
+        cl.db = self.db
+        #cl.db.Otk = MockNull()
+        #cl.db.Otk.data = {}
+        #cl.db.Otk.getall = self.data_get
+        #cl.db.Otk.set = self.data_set
+        cl.userid = userid
+        cl.language = ('en',)
+        cl._error_message = []
+        cl._ok_message = []
+        cl.template = template
+        return cl
+
+    def testCSVExportSearchError(self):
+        # test full text search
+        cl = self._make_client(
+            {'@columns': 'id,title,status,keyword,assignedto,nosy',
+             "@search_text": "foo + ^bar2"}, nodeid=None, userid='1')
+        cl.classname = 'issue'
+        output = io.BytesIO()
+        cl.request = MockNull()
+        cl.request.wfile = output
+
+        # note NotFound isn't quite right. however this exception
+        # passes up the stack to where it is handled with a suitable
+        # display of the error.
+        # call export version that outputs names
+        with self.assertRaises(NotFound) as cm:        
+            actions.ExportCSVAction(cl).handle()
+
+        # call export version that outputs id numbers
+        with self.assertRaises(NotFound) as cm:
+            actions.ExportCSVWithIdAction(cl).handle()
+
+class SqliteNativeCgiTest(unittest.TestCase, testFtsQuery):
+    """All of the rest of the tests use anydbm as the backend.
+       This class tests renderContext for fulltext search.
+       Run with sqlite and native indexer.
+    """
+
+    def setUp(self):
+        self.dirname = '_test_template'
+        # set up and open a tracker
+        self.instance = setupTracker(self.dirname, backend="sqlite")
+
+        self.instance.config.INDEXER = "native"
+
+        # open the database
+        self.db = self.instance.open('admin')
+        self.db.tx_Source = "web"
+
+        # create a client instance and hijack write_html
+        self.client = client.Client(self.instance, "user",
+                {'PATH_INFO':'/user', 'REQUEST_METHOD':'POST'},
+                form=db_test_base.makeForm({"@template": "item"}))
+
+        self.client._error_message = []
+        self.client._ok_message = []
+        self.client.db = self.db
+        self.client.userid = '1'
+        self.client.language = ('en',)
+        self.client.session_api = MockNull(_sid="1234567890")
+
+        self.output = []
+        # ugly hack to get html_write to return data here.
+        def html_write(s):
+            self.output.append(s)
+
+        # hijack html_write
+        self.client.write_html = html_write
+
+    def tearDown(self):
+        self.db.close()
+        try:
+            shutil.rmtree(self.dirname)
+        except OSError as error:
+            if error.errno not in (errno.ENOENT, errno.ESRCH): raise
+
+@skip_postgresql
+class PostgresqlNativeCgiTest(unittest.TestCase, testFtsQuery):
+    """All of the rest of the tests use anydbm as the backend.
+       This class tests renderContext for fulltext search.
+       Run with postgresql and native indexer.
+    """
+
+    def setUp(self):
+        self.dirname = '_test_template'
+        # set up and open a tracker
+        self.instance = setupTracker(self.dirname, backend="postgresql")
+
+        self.instance.config.INDEXER = "native"
+
+        # open the database
+        self.db = self.instance.open('admin')
+        self.db.tx_Source = "web"
+
+        # create a client instance and hijack write_html
+        self.client = client.Client(self.instance, "user",
+                {'PATH_INFO':'/user', 'REQUEST_METHOD':'POST'},
+                form=db_test_base.makeForm({"@template": "item"}))
+
+        self.client._error_message = []
+        self.client._ok_message = []
+        self.client.db = self.db
+        self.client.userid = '1'
+        self.client.language = ('en',)
+        self.client.session_api = MockNull(_sid="1234567890")
+
+        self.output = []
+        # ugly hack to get html_write to return data here.
+        def html_write(s):
+            self.output.append(s)
+
+        # hijack html_write
+        self.client.write_html = html_write
+
+    def tearDown(self):
+        self.db.close()
+        try:
+            shutil.rmtree(self.dirname)
+        except OSError as error:
+            if error.errno not in (errno.ENOENT, errno.ESRCH): raise
+
+@skip_mysql
+class MysqlNativeCgiTest(unittest.TestCase, testFtsQuery):
+    """All of the rest of the tests use anydbm as the backend.
+       This class tests renderContext for fulltext search.
+       Run with mysql and native indexer.
+    """
+
+    def setUp(self):
+        self.dirname = '_test_template'
+        # set up and open a tracker
+        self.instance = setupTracker(self.dirname, backend="mysql")
+
+        self.instance.config.INDEXER = "native"
+
+        # open the database
+        self.db = self.instance.open('admin')
+        self.db.tx_Source = "web"
+
+        # create a client instance and hijack write_html
+        self.client = client.Client(self.instance, "user",
+                {'PATH_INFO':'/user', 'REQUEST_METHOD':'POST'},
+                form=db_test_base.makeForm({"@template": "item"}))
+
+        self.client._error_message = []
+        self.client._ok_message = []
+        self.client.db = self.db
+        self.client.userid = '1'
+        self.client.language = ('en',)
+        self.client.session_api = MockNull(_sid="1234567890")
+
+        self.output = []
+        # ugly hack to get html_write to return data here.
+        def html_write(s):
+            self.output.append(s)
+
+        # hijack html_write
+        self.client.write_html = html_write
+
+    def tearDown(self):
+        self.db.close()
+        try:
+            shutil.rmtree(self.dirname)
+        except OSError as error:
+            if error.errno not in (errno.ENOENT, errno.ESRCH): raise
 
 # vim: set filetype=python sts=4 sw=4 et si :

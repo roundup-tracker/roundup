@@ -464,7 +464,7 @@ class SearchAction(Action):
         different from 'index'
         """
         template = self.getFromForm('template')
-        if template and template != 'index':
+        if template and template not in ['index', 'index|search']:
             return req.indexargs_url('', {'@template': template})[1:]
         return req.indexargs_url('', {})[1:]
 
@@ -1433,8 +1433,22 @@ class ExportCSVAction(Action):
 
         # full-text search
         if request.search_text:
-            matches = self.db.indexer.search(
-                re.findall(r'\b\w{2,25}\b', request.search_text), klass)
+            indexer = self.db.indexer
+            if self.db.indexer.query_language:
+                try:
+                    matches = indexer.search(
+                        [request.search_text], klass)
+                except Exception as e:
+                    error = " ".join(e.args)
+                    self.client.add_error_message(error)
+                    self.client.response_code = 400
+                    # trigger error reporting. NotFound isn't right but...
+                    raise exceptions.NotFound(error)
+            else:
+                matches = indexer.search(
+                    re.findall(r'\b\w{%s,%s}\b' % (indexer.minlength,
+                                                   indexer.maxlength),
+                               request.search_text), klass)
         else:
             matches = None
 
@@ -1598,8 +1612,23 @@ class ExportCSVWithIdAction(Action):
 
         # full-text search
         if request.search_text:
-            matches = self.db.indexer.search(
-                re.findall(r'\b\w{2,25}\b', request.search_text), klass)
+            indexer = self.db.indexer
+            if indexer.query_language:
+                try:
+                    matches = indexer.search(
+                        [request.search_text], klass)
+                except Exception as e:
+                    error = " ".join(e.args)
+                    self.client.add_error_message(error)
+                    self.client.response_code = 400
+                    # trigger error reporting. NotFound isn't right but...
+                    raise exceptions.NotFound(error)
+            else:
+                matches = indexer.search(
+                    re.findall(r'\b\w{%s,%s}\b' % (indexer.minlength,
+                                                   indexer.maxlength),
+                               request.search_text),
+                    klass)
         else:
             matches = None
 

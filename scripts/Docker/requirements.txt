@@ -1,0 +1,14 @@
+# human timezones
+pytz
+# indexer
+Whoosh
+# extra database support
+psycopg2
+mysqlclient
+# encryption
+gpg
+# java web tokens
+PyJWT
+# extra HTTP compression methods
+Brotli
+zstd

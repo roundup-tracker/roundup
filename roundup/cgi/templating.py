@@ -1244,7 +1244,9 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                                 try:
                                     if labelprop is not None and \
                                             labelprop != 'id':
-                                        label = linkcl.get(linkid, labelprop)
+                                        label = linkcl.get(linkid, labelprop,
+                                                     default=self._(
+                                                        "[label is missing]"))
                                         label = html_escape(label)
                                 except IndexError:
                                     comments['no_link'] = self._(
@@ -1271,7 +1273,8 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                         if labelprop is not None and labelprop != 'id':
                             try:
                                 label = html_escape(linkcl.get(args[k],
-                                    labelprop))
+                                    labelprop, default=self._(
+                                        "[label is missing]")))
                             except IndexError:
                                 comments['no_link'] = self._(
                                     "<strike>The linked node"
@@ -1281,7 +1284,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                                 label = None
                         if label is not None:
                             if hrefable:
-                                old = '<a ref="nofollow noopener" href="%s%s">%s</a>'%(classname,
+                                old = '<a rel="nofollow noopener" href="%s%s">%s</a>'%(classname,
                                     args[k], label)
                             else:
                                 old = label;
@@ -1612,7 +1615,7 @@ class StringHTMLProperty(HTMLProperty):
          (/[\w\-$.+!*(),;:@&=?/~\\#%]*)?   # path etc.
         )|
         (?P<email>[-+=%/\w\.]+@[\w\.\-]+)|
-        (?P<item>(?P<class>[A-Za-z_]+)(\s*)(?P<id>\d+))
+        (?P<item>(?P<class>[A-Za-z_]+)(\s*)(?P<id>\d+)(?P<fragment>\#[^][\#%^{}"<>\s]+)?)
     )''', re.X | re.I)
     protocol_re = re.compile('^(ht|f)tp(s?)://', re.I)
 
@@ -1630,7 +1633,7 @@ class StringHTMLProperty(HTMLProperty):
             return self._hyper_repl_email(match, '<a href="mailto:%s">%s</a>')
         elif len(match.group('id')) < 10:
             return self._hyper_repl_item(match,
-                '<a href="%(cls)s%(id)s">%(item)s</a>')
+                '<a href="%(cls)s%(id)s%(fragment)s">%(item)s</a>')
         else:
             # just return the matched text
             return match.group(0)
@@ -1664,6 +1667,9 @@ class StringHTMLProperty(HTMLProperty):
         item = match.group('item')
         cls = match.group('class').lower()
         id = match.group('id')
+        fragment = match.group('fragment')
+        if fragment is None:
+            fragment=""
         try:
             # make sure cls is a valid tracker classname
             cl = self._db.getclass(cls)
@@ -2422,7 +2428,8 @@ class LinkHTMLProperty(HTMLProperty):
         k = linkcl.labelprop(1)
         if num_re.match(self._value):
             try:
-                value = str(linkcl.get(self._value, k))
+                value = str(linkcl.get(self._value, k,
+                                       default=self._("[label is missing]")))
             except IndexError:
                 value = self._value
         else :
@@ -2720,7 +2727,8 @@ class MultilinkHTMLProperty(HTMLProperty):
         for v in self._value:
             if num_re.match(v):
                 try:
-                    label = linkcl.get(v, k)
+                    label = linkcl.get(v, k,
+                                       default=self._("[label is missing]"))
                 except IndexError:
                     label = None
                 # fall back to designator if label is None
@@ -3343,11 +3351,21 @@ function help_window(helpurl, width, height) {
         # get the list of ids we're batching over
         klass = self.client.db.getclass(self.classname)
         if self.search_text:
-            matches = self.client.db.indexer.search(
-                [u2s(w.upper()) for w in re.findall(
-                    r'(?u)\b\w{2,25}\b',
-                    s2u(self.search_text, "replace")
-                )], klass)
+            indexer = self.client.db.indexer
+            if indexer.query_language:
+                try:
+                    matches = indexer.search(
+                        [self.search_text], klass)
+                except Exception as e:
+                    self.client.add_error_message(" ".join(e.args))
+                    raise
+            else:
+                matches = indexer.search(
+                    [u2s(w.upper()) for w in re.findall(
+                        r'(?u)\b\w{%s,%s}\b' % (indexer.minlength,
+                                                indexer.maxlength),
+                        s2u(self.search_text, "replace")
+                    )], klass)
         else:
             matches = None
 

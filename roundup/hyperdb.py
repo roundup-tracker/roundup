@@ -1019,8 +1019,9 @@ All methods except __repr__ must be implemented by a concrete backend Database.
         for cn in self.getclasses():
             cl = self.getclass(cn)
             # This will change properties if a back-multilink happens to
-            # have the same class, so we need to iterate over .keys()
-            for p in cl.properties.keys():
+            # have the same class, so we need to iterate over a list made
+            # from .keys()
+            for p in list(cl.properties.keys()):
                 prop = cl.properties[p]
                 if not isinstance (prop, (Link, Multilink)):
                     continue
@@ -1167,7 +1168,7 @@ All methods except __repr__ must be implemented by a concrete backend Database.
         This method must be called at the end of processing.
 
         """
-
+        raise NotImplementedError
 
 def iter_roles(roles):
     ''' handle the text processing of turning the roles list

@@ -134,6 +134,8 @@ class Tracker:
                 extension(self)
             detectors = self.get_extensions('detectors')
         db = env['db']
+        # *Must* call post_init! It is not an error if called multiple times.
+        db.post_init ()
         db.tx_Source = None
 
         # apply the detectors

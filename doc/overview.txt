@@ -1,3 +1,9 @@
+.. meta::
+    :description language=en:
+        Original proposal for the Roundup Issue Tracker. The problem
+        it solves, and guiding principles. Presents the
+        components of Roundup and how they interact.
+
 =======================================================
 Roundup: an Issue-Tracking System for Knowledge Workers
 =======================================================

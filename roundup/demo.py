@@ -39,7 +39,13 @@ def install_demo(home, backend, template):
     from roundup import init, instance, password
 
     # set up the config for this tracker
-    config = configuration.CoreConfig()
+    template_dir = os.path.join('share', 'roundup', 'templates', template)
+
+    # Load optional override ini file. Missing ini file is ignored.
+    template_cfg = configuration.UserConfig(template_dir + "/config_ini.ini")
+    config = configuration.CoreConfig(settings={
+        i.name: i.get() for i in template_cfg.items()
+    })
     config['TRACKER_HOME'] = home
     config['MAIL_DOMAIN'] = 'localhost'
     config['DATABASE'] = 'db'
@@ -64,8 +70,18 @@ def install_demo(home, backend, template):
             print("    %s" % home)
             sys.exit(1)
 
-    template_dir = os.path.join('share', 'roundup', 'templates', template)
     init.install(home, template_dir)
+    # Remove config_ini.ini file from tracker_home (not template dir).
+    # Ignore file not found - not all templates have
+    #   config_ini.ini files.
+    try:
+        os.remove(home + "/config_ini.ini")
+    except OSError as e:  # FileNotFound exception under py3
+        if e.errno == 2:
+            pass
+        else:
+            raise
+
     # don't have email flying around
     nosyreaction = os.path.join(home, 'detectors', 'nosyreaction.py')
     if os.path.exists(nosyreaction):
@@ -97,12 +113,6 @@ def install_demo(home, backend, template):
 
     # write the config
     config['INSTANT_REGISTRATION'] = 1
-    # FIXME: Move template-specific demo initialization into the templates.
-    if template == 'responsive':
-        config['STATIC_FILES'] = "static"
-    if template == 'jinja2':
-        config['TEMPLATE_ENGINE'] = 'jinja2'
-        config['STATIC_FILES'] = "static"
     config.save(os.path.join(home, config.INI_FILE))
 
     # open the tracker and initialise
@@ -113,7 +123,7 @@ def install_demo(home, backend, template):
     db = tracker.open('admin')
     # FIXME: Move tracker-specific demo initialization into the tracker
     # templates.
-    if template == 'minimal':
+    if os.path.basename(template) == 'minimal':
         db.user.create(username='demo', password=password.Password('demo'),
                        roles='User')
     else:

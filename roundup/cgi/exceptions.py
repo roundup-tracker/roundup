@@ -54,6 +54,11 @@ class FormError(ValueError):
     """
     pass
 
+class IndexerQueryError(RoundupException):
+    """Raised to handle errors from FTS searches due to query
+       syntax errors.
+    """
+    pass
 
 class SendFile(RoundupException):
     """Send a file from the database."""

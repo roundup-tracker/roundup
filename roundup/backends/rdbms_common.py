@@ -329,8 +329,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.sql_commit()
 
     # update this number when we need to make changes to the SQL structure
-    # of the backen database
-    current_db_version = 6
+    # of the backend database
+    current_db_version = 7
     db_version_updated = False
 
     def upgrade_db(self):
@@ -376,9 +376,17 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             self.log_info('upgrade to version 6')
             self.fix_version_5_tables()
 
+        if version < 7:
+            self.log_info('upgrade to version 7')
+            self.fix_version_6_tables()
+
         self.database_schema['version'] = self.current_db_version
         self.db_version_updated = True
         return 1
+
+    def fix_version_2_tables(self):
+        # Default (used by sqlite): NOOP
+        pass
 
     def fix_version_3_tables(self):
         # drop the shorter VARCHAR OTK column and add a new TEXT one
@@ -386,10 +394,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             self.sql('DELETE FROM %ss' % name)
             self.sql('ALTER TABLE %ss DROP %s_value' % (name, name))
             self.sql('ALTER TABLE %ss ADD %s_value TEXT' % (name, name))
-
-    def fix_version_2_tables(self):
-        # Default (used by sqlite): NOOP
-        pass
 
     def fix_version_4_tables(self):
         # note this is an explicit call now
@@ -409,6 +413,12 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # _<class>_key_retired_idx index used to make
         # sure that the key is unique if it was created
         # as version 5.
+        pass
+
+    def fix_version_6_tables(self):
+        # Default (used by nobody): NOOP
+        # Each backend mysql, postgres, sqlite overrides this
+        # You would think ALTER commands would be the same but nooo.
         pass
 
     def _convert_journal_tables(self):

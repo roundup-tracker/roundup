@@ -31,8 +31,8 @@ from roundup.cgi import actions
 from roundup.exceptions import LoginError, Reject, RejectRaw, \
                                Unauthorised, UsageError
 from roundup.cgi.exceptions import (
-    FormError, NotFound, NotModified, Redirect, SendFile, SendStaticFile,
-    DetectorError, SeriousError)
+    FormError, IndexerQueryError, NotFound, NotModified, Redirect,
+    SendFile, SendStaticFile, DetectorError, SeriousError)
 from roundup.cgi.form_parser import FormParser
 from roundup.mailer import Mailer, MessageSendError
 from roundup.cgi import accept_language
@@ -340,7 +340,10 @@ class Client:
     # Key can be explicitly file basename - value applied to just that file
     #     takes precedence over mime type.
     # Key can be mime type - all files of that mimetype will get the value
-    Cache_Control = {}
+    Cache_Control = {
+        'application/javascript': "public, max-age=1209600", # 2 weeks
+        'text/css':               "public, max-age=4838400", # 8 weeks/2 months
+    }
 
     # list of valid http compression (Content-Encoding) algorithms
     # we have available
@@ -645,8 +648,11 @@ class Client:
 
         # type header set by rest handler
         # self.setHeader("Content-Type", "text/xml")
-        self.setHeader("Content-Length", str(len(output)))
-        self.write(output)
+        if self.response_code == 204: # no body with 204
+            self.write("")
+        else:
+            self.setHeader("Content-Length", str(len(output)))
+            self.write(output)
 
     def add_ok_message(self, msg, escape=True):
         add_message(self._ok_message, msg, escape)
@@ -848,7 +854,7 @@ class Client:
             else:
                 # in debug mode, only write error to screen.
                 self.write_html(e.html)
-        except:
+        except Exception as e:
             # Something has gone badly wrong.  Therefore, we should
             # make sure that the response code indicates failure.
             if self.response_code == http_.client.OK:
@@ -1775,7 +1781,6 @@ class Client:
         """
 
         # spit out headers
-        self.additional_headers['Content-Type'] = mime_type
         self.additional_headers['Last-Modified'] = email.utils.formatdate(lmt)
 
         ims = None
@@ -1795,6 +1800,9 @@ class Client:
                     # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Vary
                     self.setVary("Accept-Encoding")
                 raise NotModified
+
+        # don't set until we are sure we are sending a response body.
+        self.additional_headers['Content-Type'] = mime_type
 
         if filename:
             self.write_file(filename)
@@ -1915,7 +1923,11 @@ class Client:
             }
             pt = self.instance.templates.load(tplname)
             # let the template render figure stuff out
-            result = pt.render(self, None, None, **args)
+            try:
+                result = pt.render(self, None, None, **args)
+            except IndexerQueryError as e:
+                result = self.renderError(e.args[0])
+
             self.additional_headers['Content-Type'] = pt.content_type
             if self.env.get('CGI_SHOW_TIMING', ''):
                 if self.env['CGI_SHOW_TIMING'].upper() == 'COMMENT':
@@ -1961,6 +1973,46 @@ class Client:
                     raise exc_info[0](exc_info[1]).with_traceback(exc_info[2])
                 else:
                     exec('raise exc_info[0], exc_info[1], exc_info[2]')  # nosec
+
+    def renderError(self, error, response_code=400, use_template=True):
+        self.response_code = response_code
+
+        # see if error message already logged add if not
+        if error not in self._error_message:
+            self.add_error_message(error, escape=True)
+
+        # allow use of template for a specific code
+        trial_templates = []
+        if use_template:
+            if response_code == 400:
+                trial_templates = [ "400" ]
+            else:
+                trial_templates = [ str(response_code), "400" ]
+
+        tplname = None
+        for rcode in trial_templates:
+            try:
+                tplname = self.selectTemplate(self.classname, rcode)
+                break
+            except templating.NoTemplate:
+                pass
+
+        if not tplname:
+            # call string of serious error to get basic html
+            # response.
+            return str(SeriousError(error))
+
+        args = {
+            'ok_message': self._ok_message,
+            'error_message': self._error_message
+        }
+
+        try:
+            pt = self.instance.templates.load(tplname)
+            return pt.render(self, None, None, **args)
+        except Exception:
+            # report original error
+            return str(SeriousError(error))
 
     # these are the actions that are available
     actions = (
@@ -2163,6 +2215,14 @@ class Client:
             self.additional_headers['Content-Length'] = str(len(new_content))
             self.additional_headers['Content-Encoding'] = encoder
             self.setVary('Accept-Encoding')
+            try:
+                current_etag = self.additional_headers['ETag']
+            except KeyError:
+                pass  # etag not set for non-rest endpoints
+            else:
+                etag_end = current_etag.rindex('"')
+                self.additional_headers['ETag'] = ( current_etag[:etag_end] +
+                                    '-' + encoder + current_etag[etag_end:])
 
         return new_content
 
@@ -2196,6 +2256,8 @@ class Client:
             if 'Content-Type' not in self.additional_headers:
                 self.additional_headers['Content-Type'] = \
                     'text/html; charset=%s' % self.charset
+            if 'Content-Length' not in self.additional_headers:
+                self.additional_headers['Content-Length'] = str(len(content))
             self.header()
 
         if self.env['REQUEST_METHOD'] == 'HEAD':
@@ -2479,9 +2541,15 @@ class Client:
         self.write(content)
 
     def setHeader(self, header, value):
-        """Override a header to be returned to the user's browser.
+        """Override or delete a header to be returned to the user's browser.
         """
-        self.additional_headers[header] = value
+        if value is None:
+            try:
+                del(self.additional_headers[header])
+            except KeyError:
+                pass
+        else:
+            self.additional_headers[header] = value
 
     def header(self, headers=None, response=None):
         """Put up the appropriate header.
@@ -2496,6 +2564,9 @@ class Client:
 
         if headers.get('Content-Type', 'text/html') == 'text/html':
             headers['Content-Type'] = 'text/html; charset=utf-8'
+
+        if response in [ 204, 304]: # has no body so no content-type
+            del(headers['Content-Type'])
 
         headers = list(headers.items())
 

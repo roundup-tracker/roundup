@@ -234,8 +234,10 @@ class Database(rdbms_common.Database):
         self.sql('''CREATE TABLE __textids (_class VARCHAR(255),
             _itemid VARCHAR(255), _prop VARCHAR(255), _textid INT)
             ENGINE=%s'''%self.mysql_backend)
-        self.sql('''CREATE TABLE __words (_word VARCHAR(30),
-            _textid INT) ENGINE=%s'''%self.mysql_backend)
+        self.sql('''CREATE TABLE __words (_word VARCHAR(%s),
+            _textid INT) ENGINE=%s''' % ((self.indexer.maxlength + 5),
+                                         self.mysql_backend)
+            )
         self.sql('CREATE INDEX words_word_ids ON __words(_word)')
         self.sql('CREATE INDEX words_by_id ON __words (_textid)')
         self.sql('CREATE UNIQUE INDEX __textids_by_props ON '
@@ -409,6 +411,15 @@ class Database(rdbms_common.Database):
             self.fix_version_4_tables()
         else:
             self.log_info('No changes needed.')
+
+    def fix_version_6_tables(self):
+        # Modify length for __words._word column.
+        c = self.cursor
+        sql = "alter table __words change column _word _word varchar(%s)" % (
+                                                                   self.arg)
+        # Why magic number 5? It was the original offset between
+        #   column length and maxlength.
+        c.execute(sql, (self.indexer.maxlength + 5,))
 
     def __repr__(self):
         return '<myroundsql 0x%x>'%id(self)

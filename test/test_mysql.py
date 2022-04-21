@@ -65,6 +65,51 @@ class mysqlDBTest(mysqlOpener, DBTest, unittest.TestCase):
         mysqlOpener.setUp(self)
         DBTest.setUp(self)
 
+    def testUpgrade_6_to_7(self):
+
+        # load the database
+        self.db.issue.create(title="flebble frooz")
+        self.db.commit()
+
+        if self.db.database_schema['version'] != 7:
+            self.skipTest("This test only runs for database version 7")
+
+
+        # test by shrinking _words and trying to insert a long value
+        #    it should fail.
+        # run post-init
+        #    same test should succeed.
+
+        self.db.sql("alter table __words change column "
+                    "_word _word varchar(10)")
+
+        long_string = "a" * (self.db.indexer.maxlength + 5)
+
+        with self.assertRaises(MySQLdb.DataError) as ctx:
+            # DataError : Data too long for column '_word' at row 1
+            self.db.sql("insert into __words VALUES('%s',1)" % long_string)
+
+        self.assertIn("Data too long for column '_word'",
+                      ctx.exception.args[1])
+
+        self.db.database_schema['version'] = 6
+
+        if hasattr(self,"downgrade_only"):
+            return
+
+        # test upgrade altering row
+        self.db.post_init()
+
+        # This insert with text of expected column size should succeed
+        self.db.sql("insert into __words VALUES('%s',1)" % long_string)
+
+        # Verify it fails at one more than the expected column size
+        too_long_string = "a" * (self.db.indexer.maxlength + 6)
+        with self.assertRaises(MySQLdb.DataError) as ctx:
+            self.db.sql("insert into __words VALUES('%s',1)" % too_long_string)
+
+        self.assertEqual(self.db.database_schema['version'],
+                         self.db.current_db_version)
 
 @skip_mysql
 class mysqlROTest(mysqlOpener, ROTest, unittest.TestCase):

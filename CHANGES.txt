@@ -22,9 +22,62 @@ Fixed:
   Previously it used to accept only TLS v1.1. 1.1 is deprecated by
   chrome. I don't expect this to be a major problem since a front
   end server (apache, Nginx...) is usually customer facing and
-  terminates SSL.
+  terminates SSL.  (John Rouillard)
 - Fix hang when valid user without authorization for REST tries to use
-  the rest interface.
+  the rest interface.  (John Rouillard)
+- Remove Content-Type and make sure no content is returned by OPTIONS
+  request in REST interface. (John Rouillard)
+- In write_html set the Content-Length when response is not
+  encoded/compressed. (John Rouillard)
+- In REST interface do not raise UsageError for invalid api version.
+  Return json error with proper message. Fixes crash. (John Rouillard)
+- In REST interface, allow extensions on URI less than 6 characters in
+  length. All other paths with a . in then will be passed through
+  without change. This allows items like a JWT to be passed as a path
+  element. (John Rouillard)
+- issue2551167 - pip install in containerized environments puts
+  template and locale files under site-packages where roundup can't find
+  them. Change code to find them under site-packages.
+- REST replace hard coded list of child endpoints for /rest/ with list
+  pulled from registered endpoints. So newly added endpoints are
+  shown. (John Rouillard)
+- issue2551107 - Handle representation of long int in history params
+  for python3. Causes SyntaxError crash when showing history due to
+  long int e.g. 2345L. This is not a problem for roundup trackers
+  created using 1.2.0 or newer. The fix may have predated the 1.2.0
+  release but where the fix actually landed (representing id as a
+  string and not as an int) is unknown.
+- issue2551175 - Make ETag content-encoding aware. HTTP ETag headers
+  now include a suffix indicating the content-encoding used to send
+  the data per rfc7232. Properly validate any form of ETag suffixed or
+  non-suffixed for If-Match.
+- issue2551178 - fix Traceback in Apache WSGI - during file upload
+- issue2551179 - make roundup-demo initialize templates using
+  config_ini.ini overrides. Needed for jinja to set template lang etc.
+  Recognize minimal template when presented with a full
+  path. (John Kristensen (jerrykan) and John Rouillard)
+- handle configparser.InterpolationSyntaxError raised if value
+  has a single %. Seems to afect python 3 only. Reported by
+  nomicon on IRC. (John Rouillard)
+- add random delay to session database retry code between 0 and .125
+  seconds. This seems to help reduce stalled connections when a
+  number of connections are made at the same time. Log remaining
+  retries once 5 of them have been used. (John Rouillard)
+- issue2551169 - setup.py enters endless loop on gentoo linux python2
+  installation. Fixed.
+- issue2551185 - must set PYTHONPATH=... python2 setup.py install
+  --prefix=/tmp/r2. Force insert --old-and-unmangable to get it
+  to use a classic installer and not an easy install. This only
+  affects python2.
+- issue2551186 - Python versions >= 3.3 no longer use socket.sslerror.
+  Andrew (kragacles) patched uses of socket.sslerror in mailgy.py.
+  Patch adapted to allow trapping sslerror under both python2 and 3.
+  (John Rouillard)
+- issue2551142 - postgresql reworked to use savepoint/"rollback to"
+  rather than commit()/rollback(). Using savepoint should be faster.
+- issue2551196 - Unset labelprop of a Multilink can lead to Python
+  error when using context/history. (reported and initial patch: Nagy
+  Gabor, John Rouillard)
 
 Features:
 
@@ -42,6 +95,50 @@ Features:
   responsive templates already have this feature.
 - issue2550917 - Add a: "Welcome user, you have logged in" ok_message
   on login. (Ashley Burke)
+- enable HTTP/1.1 for roundup-server. This enables keep-alive for
+  faster response/loading. Also eliminates stalls when the front end web
+  server uses http 1.1 but the roundup-server uses 1.0. New option
+  "-V HTTP/1.0" can turn it off. (John Rouillard)
+- issue2551163 - add scripts/Docker/Dockerfile to provide basic support for
+  containerization. See installation.txt for details. (John Rouillard)
+- issue2551163 - add scripts/Docker/docker-compose.yml to get a
+  mysql/roundup deployment. (Norbert Schlemmer, modified by John
+  Rouilard)
+- REST add openapi_doc decorator to add openapi_doc to
+  endpoints. Decorate a couple of examples. (John Rouillard)
+- REST when incorrect method is used, report allowed methods in error
+  message as well as in an Allow header. (John Rouillard)
+- REST change response to invalid attribute specified in path.  Return
+  400 code not 405 code for this case and improve error. (John
+  Rouillard)
+- REST correct values for some Access-Control-Allow-Methods and
+  Access-Control-Allow-Headers headers. (John Rouillard)
+- issue2550991 - define default cache control settings for javascript
+  and css assets. (John Rouillard)
+- issue2551181 - fragments can be appended to designators. So
+  issue23#msg24 could jump to the element with id msg24 in issue 23.
+  Before this patch you would have two links issue23 and msg24
+  separated by # (John Rouillard).
+- added small utility script to dump dbm based tracker databases
+  (e.g. db/sessions). (John Rouillard)
+- issue2551182 - Enhance configuration module to allow loading values
+  from an external file. Secrets (passwords, secrets) can specify
+  file using file:// or file:///. The first line of the file is used
+  as the secret. This allows committing config.ini to a VCS. (John
+  Rouillard)
+- Added xapian indexer to Docker container. (John Rouillard)
+- Add support for indexer type native-fts to use FTS5 for sqlite
+  databases. (John Rouillard)
+- Add support for indexer type native-fts to use PostreSQL's full text
+  search. (John Rouillard)
+- Add better error display to the user. Needed to expose errors in fts5
+  search syntax to the user while also displaying the template page
+  structure. (John Rouillard)
+- issue2551189 - increase size of words in full text index.
+  Many terms (like exception names or symbolic constants) are larger
+  than 25. Also German words are long. Since there is little chance of
+  fixing German to shorten their words, change indexer maxlength to 50.
+  (Thomas Arendsen Hein provided patch; patch reworked John Rouillard)
 
 2021-07-13 2.1.0
 

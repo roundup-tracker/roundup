@@ -1,15 +1,32 @@
 Roundup Issue Tracker
 =====================
 
+.. raw:: foo
+
+   meta::
+   :title: Roundup Issue Tracker
+   :description: A simple-to-use and -install issue-tracking system
+       with command-line, web, REST, XML-RPC and e-mail interfaces.
+       Adaptable to many uses cases. Allows you to customise the look
+       and feel and implement different workflows.
+   :og:type: website
+   :og:url: https://www.roundup-tracker.org/
+   :og:title: Roundup Issue Tracker
+   :og:description: A simple-to-use and -install issue-tracking system
+       with command-line, web, REST, XML-RPC and e-mail interfaces.
+       Adaptable to many uses cases. Allows you to customise the look
+       and feel and implement different workflows.
+   :og:image: https://www.roundup-tracker.org/_images/index_logged_out.png
+
 .. raw:: html
 
    <div class="release_info note">Download:
    <a href="https://pypi.org/project/roundup/">latest</a></div>
 
 Roundup is a simple-to-use and -install issue-tracking system with
-command-line, web and e-mail interfaces.  It is based on the winning
-design from Ka-Ping Yee in the Software Carpentry "Track" design
-competition.
+command-line, web, REST, XML-RPC and e-mail interfaces.  It is based
+on the winning design from Ka-Ping Yee in the Software Carpentry
+"Track" design competition.
 
 The current stable version of Roundup is 2.1.0. It is a bug fix
 and minor feature release for the major 2.0.0 release which
