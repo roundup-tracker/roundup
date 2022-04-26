@@ -106,6 +106,17 @@ class SimpleTest(LiveServerTestCase):
         self.assertTrue(b'Roundup' in f.content)
         self.assertTrue(b'Creator' in f.content)
 
+    def test_start_in_german(self):
+        """ simple test that verifies that the server can serve a start page
+            and translate text to german. Use page title and remeber login
+            checkbox label.
+        """
+        f = requests.get(self.url_base() + "?@language=de")
+        self.assertEqual(f.status_code, 200)
+        print(f.content)
+        self.assertTrue(b'Roundup' in f.content)
+        self.assertTrue(b'Aufgabenliste' in f.content)
+        self.assertTrue(b'dauerhaft anmelden?' in f.content)
 
     def test_rest_invalid_method_collection(self):
         # use basic auth for rest endpoint
@@ -264,6 +275,42 @@ class SimpleTest(LiveServerTestCase):
         print(f.headers)
 
         self.assertEqual(f.status_code, 404)
+
+    def test_rest_login_rate_limit(self):
+        """login rate limit applies to api endpoints. Only failure
+            logins count though. So log in 10 times in a row
+            to verify that valid username/passwords aren't limited.
+        """
+
+        for i in range(10):
+            # use basic auth for rest endpoint
+        
+            f = requests.options(self.url_base() + '/rest/data',
+                                 auth=('admin', 'sekrit'),
+                                 headers = {'content-type': ""}
+            )
+            print(f.status_code)
+            print(f.headers)
+            
+            self.assertEqual(f.status_code, 204)
+            expected = { 'Access-Control-Allow-Origin': '*',
+                         'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
+                         'Allow': 'OPTIONS, GET',
+                         'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
+            }
+
+        for i in range(10):
+            # use basic auth for rest endpoint
+        
+            f = requests.options(self.url_base() + '/rest/data',
+                                 auth=('admin', 'ekrit'),
+                                 headers = {'content-type': ""}
+            )
+            print(i, f.status_code)
+            print(f.headers)
+            print(f.text)
+
+            self.assertEqual(f.status_code, 401)
 
     def test_ims(self):
         ''' retreive the user_utils.js file with old and new
