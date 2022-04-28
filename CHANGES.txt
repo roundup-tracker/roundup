@@ -78,6 +78,12 @@ Fixed:
 - issue2551196 - Unset labelprop of a Multilink can lead to Python
   error when using context/history. (reported and initial patch: Nagy
   Gabor, John Rouillard)
+- Fix roundup-server to pass If-Range http header so Ranges work
+  better. (John Rouillard)
+- issue2551183 - Replace references to distutils in
+  roundup/dist/command (John Rouillard)
+- Fix hang if Range request was not able to be satified or a HEAD
+  request was done.
 
 Features:
 
