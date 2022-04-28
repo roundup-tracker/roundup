@@ -109,8 +109,15 @@ class SimpleTest(LiveServerTestCase):
     def test_start_in_german(self):
         """ simple test that verifies that the server can serve a start page
             and translate text to german. Use page title and remeber login
-            checkbox label.
+            checkbox label as translation test points..
+
+            use:
+               url parameter @language
+               cookie set by param
+               set @language to none and verify language cookie is unset
         """
+
+        # test url parameter
         f = requests.get(self.url_base() + "?@language=de")
         self.assertEqual(f.status_code, 200)
         print(f.content)
@@ -118,6 +125,63 @@ class SimpleTest(LiveServerTestCase):
         self.assertTrue(b'Aufgabenliste' in f.content)
         self.assertTrue(b'dauerhaft anmelden?' in f.content)
 
+        # test language cookie - should still be german
+        bluemonster = f.cookies
+        f = requests.get(self.url_base(), cookies=bluemonster)
+        self.assertEqual(f.status_code, 200)
+        print(f.content)
+        self.assertTrue(b'Roundup' in f.content)
+        self.assertTrue(b'Aufgabenliste' in f.content)
+        self.assertTrue(b'dauerhaft anmelden?' in f.content)
+
+        # unset language cookie, should be english
+        f = requests.get(self.url_base() + "?@language=none")
+        self.assertEqual(f.status_code, 200)
+        print(f.content)
+        self.assertTrue(b'Roundup' in f.content)
+        self.assertFalse(b'Aufgabenliste' in f.content)
+        self.assertFalse(b'dauerhaft anmelden?' in f.content)
+        with self.assertRaises(KeyError):
+            l = f.cookies['roundup_language']
+
+        # check with Accept-Language header
+        alh = {"Accept-Language":
+               "fr;q=0.2, en;q=0.8, de;q=0.9, *;q=0.5"}
+        f = requests.get(self.url_base(), headers=alh)
+        self.assertEqual(f.status_code, 200)
+        print(f.content)
+        self.assertTrue(b'Roundup' in f.content)
+        self.assertTrue(b'Aufgabenliste' in f.content)
+        self.assertTrue(b'dauerhaft anmelden?' in f.content)
+
+    def test_byte_Ranges(self):
+        """ Roundup only handles one simple two number range.
+            Range: 10-20
+
+            The following are not supported.
+            Range: 10-20, 25-30
+            Range: 10-
+
+            Also If-Range only supports strong etags not dates or weak etags.
+
+        """
+        # check with Accept-Language header
+        hdrs = {"Range": "bytes=0-10"}
+        f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
+        self.assertEqual(f.status_code, 206)
+        self.assertEqual(f.content, b"/* main pag")
+
+        etag = f.headers['etag']
+        hdrs['If-Range'] = etag
+        f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
+        self.assertEqual(f.status_code, 206)
+        self.assertEqual(f.content, b"/* main pag")
+
+        etag = f.headers['etag']
+        hdrs['If-Range'] = etag[2:]  # bad tag
+        f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
+        self.assertEqual(f.status_code, 200)
+        
     def test_rest_invalid_method_collection(self):
         # use basic auth for rest endpoint
         f = requests.put(self.url_base() + '/rest/data/user',
