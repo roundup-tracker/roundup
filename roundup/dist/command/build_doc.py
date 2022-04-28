@@ -8,14 +8,26 @@ import os, sys
 import os.path
 import glob
 
-from distutils.command import build
-from distutils.spawn import spawn, find_executable
-from distutils.dep_util import newer, newer_group
-from distutils.dir_util import copy_tree, remove_tree, mkpath
-from distutils.file_util import copy_file
-from distutils import sysconfig
+try:
+    from setuptools.command.install import install as _build_py
+    raise ImportError
+except ImportError:
+    from distutils.command.build import build as _build_py  # try/except clause
+    orig_build = _build_py
 
-class build_doc(build.build):
+try:
+    # would be nice to use setuptools.Command.spawn() as it
+    # obeys the dry-run flag.
+    from subprocess import run as spawn
+except ImportError:
+    from distutils.spawn import spawn  # try/except: in except for subprocess
+
+try:
+    from distutils.spawn import find_executable # try/except: in try local find
+except ImportError:
+    from roundup.dist.command import find_executable
+
+class build_doc(_build_py):
     """Defines the specific procedure to build roundup's documentation."""
 
     description = "build documentation"

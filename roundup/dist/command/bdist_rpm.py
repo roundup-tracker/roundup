@@ -3,9 +3,21 @@
 # All rights reserved.
 # For license terms see the file COPYING.txt.
 #
-from distutils.command.bdist_rpm import bdist_rpm as base
-from distutils.file_util import write_file
+# converted to not use distutils 2021
+from setuptools.command.bdist_rpm import bdist_rpm as base
 import os
+
+# cribbed from 2.7 distutils
+def write_file (filename, contents):
+    """Create a file with the specified name and write 'contents' (a
+    sequence of strings without line terminators) to it.
+    """
+    f = open(filename, "w")
+    try:
+        for line in contents:
+            f.write(line + "\n")
+    finally:
+        f.close()
 
 class bdist_rpm(base):
 

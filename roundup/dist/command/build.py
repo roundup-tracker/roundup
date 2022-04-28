@@ -5,7 +5,11 @@
 #
 from __future__ import print_function
 from roundup import msgfmt
-from distutils.command.build import build as base
+try:
+    from setuptool.command.install import install as base
+    raise ImportError
+except ImportError:
+    from distutils.command.build import build as base
 import os
 from glob import glob
 
@@ -24,10 +28,11 @@ def check_manifest():
     """Check that the files listed in the MANIFEST are present when the
     source is unpacked.
     """
+    manifest_file = 'roundup.egg-info/SOURCES.txt'
     try:
-        f = open('MANIFEST')
+        f=open(manifest_file)
     except:
-        print('\n*** SOURCE WARNING: The MANIFEST file is missing!')
+        print('\n*** SOURCE WARNING: The MANIFEST file "%s" is missing!' % manifest_file)
         return
     try:
         manifest = [l.strip() for l in f.readlines()]
