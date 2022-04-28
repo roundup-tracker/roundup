@@ -120,5 +120,17 @@
       </div>
     </div>
 {%- endblock %}
+    <script>
+      /* locally hosted goatcounter https://www.goatcounter.com/ */
+      /* include site info in path url to allow multiple sites to be
+      tracked together */
+      window.goatcounter = {
+      path: function(p) { return location.host + p }
+      }
+    </script>
+    <script data-goatcounter="https://stats.rouilj.dynamic-dns.net/count"
+	    integrity="sha384-QGgNMMRFTi8ul5kHJ+vXysPe8gySvSA/Y3rpXZiRLzKPIw8CWY+a3ObKmQsyDr+a"
+            async="" src="_static/goatcounter_count.v3.js">
+    </script>
   </body>
 </html>
