@@ -714,7 +714,12 @@ class MarkdownTests:
         elif type(self) == MarkdownTestCase:
             self.assertEqual(m.replace('\n\n','\n'), '<p>embedded code block &lt;pre&gt;</p>\n<pre><code class="language-python">line 1\nline 2\n</code></pre>\n<p>new &lt;/pre&gt; paragraph</p>')
         else:
-            self.assertEqual(m.replace('\n\n', '\n'), '<p>embedded code block &lt;pre&gt;</p>\n<div class="codehilite"><pre><span></span><code><span class="n">line</span> <span class="mi">1</span>\n<span class="n">line</span> <span class="mi">2</span>\n</code></pre></div>\n<p>new &lt;/pre&gt; paragraph</p>')
+            test_output = m.replace('\n\n', '\n')
+            expected_result = '<p>embedded code block &lt;pre&gt;</p>\n<div class="codehilite"><pre><span></span><code><span class="n">line</span> <span class="mi">1</span>\n<span class="n">line</span> <span class="mi">2</span>\n</code></pre></div>\n<p>new &lt;/pre&gt; paragraph</p>g'
+            if  test_output != expected_result:
+                print("test_output:", test_output, file=sys.stderr)
+                print("expected_result:", expected_result, file=sys.stderr)
+            self.assertEqual( test_output, expected_result)
 
     def test_markdown_return_text_on_exception(self):
         ''' string is invalid markdown. missing end of fenced code block '''
