@@ -468,6 +468,9 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
         range = self.headers.get('range')
         if range:
             env['HTTP_RANGE'] = range
+        if_range = self.headers.get('if-range')
+        if range:
+            env['HTTP_IF_RANGE'] = if_range
 
         # do the roundup thing
         tracker = self.get_tracker(tracker_name)
