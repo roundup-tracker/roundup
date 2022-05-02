@@ -175,22 +175,67 @@ class SimpleTest(LiveServerTestCase):
             Also If-Range only supports strong etags not dates or weak etags.
 
         """
-        # check with Accept-Language header
+
+        # get whole file uncompressed. Extract content length and etag
+        # for future use
+        f = requests.get(self.url_base() + "/@@file/style.css",
+                         headers = {"Accept-Encoding": "identity"})
+        # store etag for condition range testing
+        etag = f.headers['etag']
+        expected_length = f.headers['content-length']
+
+        # get first 11 bytes unconditionally (0 index really??)
         hdrs = {"Range": "bytes=0-10"}
         f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
         self.assertEqual(f.status_code, 206)
         self.assertEqual(f.content, b"/* main pag")
+        # compression disabled for length < 100, so we can use 11 here
+        self.assertEqual(f.headers['content-length'], '11')
+        self.assertEqual(f.headers['content-range'],
+                         "bytes 0-10/%s"%expected_length)
 
-        etag = f.headers['etag']
+        # conditional request 11 bytes since etag matches 206 code
         hdrs['If-Range'] = etag
         f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
         self.assertEqual(f.status_code, 206)
         self.assertEqual(f.content, b"/* main pag")
+        # compression disabled for length < 100, so we can use 11 here
+        self.assertEqual(f.headers['content-length'], '11')
+        self.assertEqual(f.headers['content-range'],
+                         "bytes 0-10/%s"%expected_length)
 
-        etag = f.headers['etag']
+        # conditional request returns all bytes as etag isn't correct 200 code
         hdrs['If-Range'] = etag[2:]  # bad tag
         f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
         self.assertEqual(f.status_code, 200)
+        # not checking content length since it could be compressed
+        self.assertNotIn('content-range', f.headers, 'content-range should not be present')
+
+        # range is too large, but etag is bad also, return whole file 200 code
+        hdrs['Range'] = "0-99999" # too large
+        hdrs['If-Range'] = etag[2:]  # bad tag
+        f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
+        self.assertEqual(f.status_code, 200)
+        # not checking content length since it could be compressed
+        self.assertNotIn('content-range', f.headers, 'content-range should not be present')
+
+        # range is too large, but etag is specified so return whole file
+        # 200 code
+        hdrs['Range'] = "bytes=0-99999" # too large
+        hdrs['If-Range'] = etag  # any tag works
+        f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
+        self.assertEqual(f.status_code, 200)
+        # not checking content length since it could be compressed
+        self.assertNotIn('content-range', f.headers, 'content-range should not be present')
+
+        # range too large, not if-range so error code 416
+        hdrs['Range'] = "bytes=0-99999" # too large
+        del(hdrs['If-Range'])
+        print(hdrs)
+        f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
+        self.assertEqual(f.status_code, 416)
+        self.assertEqual(f.headers['content-range'],
+                         "bytes */%s"%expected_length)
         
     def test_rest_invalid_method_collection(self):
         # use basic auth for rest endpoint
