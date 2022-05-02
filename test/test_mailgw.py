@@ -1381,22 +1381,33 @@ Content-Transfer-Encoding: quoted-printable
 --001485f339f8f361fb049188dbba--
 '''%html_doc
 
-    def testMultipartTextifyHTML(self):
-        text_fragments = ['Roundup\n        Home\nDownload\nDocs\nRoundup Features\nInstalling Roundup\nUpgrading to newer versions of Roundup\nRoundup FAQ\nUser Guide\nCustomising Roundup\nAdministration Guide\nPrerequisites\n\nRoundup requires Python 2.5 or newer (but not Python 3) with a functioning\nanydbm module. Download the latest version from http://www.python.org/.\nIt is highly recommended that users install the latest patch version\nof python as these contain many fixes to serious bugs.\n\nSome variants of Linux will need an additional ', ('python dev', u2s(u'\u201cpython dev\u201d')), ' package\ninstalled for Roundup installation to work. Debian and derivatives, are\nknown to require this.\n\nIf you', (u2s(u'\u2019'), ''), 're on windows, you will either need to be using the ActiveState python\ndistribution (at http://www.activestate.com/Products/ActivePython/), or you', (u2s(u'\u2019'), ''), 'll\nhave to install the win32all package separately (get it from\nhttp://starship.python.net/crew/mhammond/win32/).\n\numlaut']
+    def disabletestMultipartTextifyHTMLBeautifulSoup(self):
+        self.maxDiff = None
+        self.MultipartTextifyHTML(converter="beautifulsoup")
+
+    def testMultipartTextifyHTMLDehtml(self):
+        self.MultipartTextifyHTML(converter="dehtml")
+
+    def MultipartTextifyHTML(self, converter='dehtml'):
+        text_fragments = {}
+        text_fragments['dehtml'] = ['Roundup\n        Home\nDownload\nDocs\nRoundup Features\nInstalling Roundup\nUpgrading to newer versions of Roundup\nRoundup FAQ\nUser Guide\nCustomising Roundup\nAdministration Guide\nPrerequisites\n\nRoundup requires Python 2.5 or newer (but not Python 3) with a functioning\nanydbm module. Download the latest version from http://www.python.org/.\nIt is highly recommended that users install the latest patch version\nof python as these contain many fixes to serious bugs.\n\nSome variants of Linux will need an additional ', ('python dev', u2s(u'\u201cpython dev\u201d')), ' package\ninstalled for Roundup installation to work. Debian and derivatives, are\nknown to require this.\n\nIf you', (u2s(u'\u2019'), ''), 're on windows, you will either need to be using the ActiveState python\ndistribution (at http://www.activestate.com/Products/ActivePython/), or you', (u2s(u'\u2019'), ''), 'll\nhave to install the win32all package separately (get it from\nhttp://starship.python.net/crew/mhammond/win32/).\n\numlaut']  + [b2s(b" \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f")]
 
 #  \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f
 # append above with leading space to end of mycontent. It is the 
 # translated content when =E4=F6=FC=C4=D6=DC=DF is added to the html
 # input.
         self.doNewIssue()
-        self.db.config.MAILGW_CONVERT_HTMLTOTEXT = 'dehtml'
+        self.db.config.MAILGW_CONVERT_HTMLTOTEXT = converter
         self._handle_mail(self.multipart_msg_notext)
         messages = self.db.issue.get('1', 'messages')
         messages.sort()
         msg = self.db.msg.getnode(messages[-1])
+
+        print(msg.content)
+        print(text_fragments[converter][0])
         # html converted to utf-8 text
         self.compareStringFragments(msg.content,
-                                    text_fragments + [b2s(b" \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f")])
+                                    text_fragments[converter])
         self.assertEqual(msg.type, None)
         self.assertEqual(len(msg.files), 2)
         name = "unnamed" # no name for any files
