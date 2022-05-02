@@ -116,6 +116,9 @@ class Theme(ThemeBase):
             self.credits(d),
             self.showversion(d, **keywords),
             u'</div>',
+
+            # Post footer custom html
+            self.emit_custom_html(self.cfg.page_footer2),
             ]
         return u'\n'.join(html)
 
