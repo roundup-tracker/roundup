@@ -1,5 +1,6 @@
 import shutil, errno, pytest, json, gzip, os, re
 
+from roundup import i18n
 from roundup.anypy.strings import b2s
 from roundup.cgi.wsgi_handler import RequestDispatcher
 from .wsgi_liveserver import LiveServerTestCase
@@ -40,7 +41,7 @@ _py3 = sys.version_info[0] > 2
 class SimpleTest(LiveServerTestCase):
     # have chicken and egg issue here. Need to encode the base_url
     # in the config file but we don't know it until after
-    # the server is started nd has read the config.ini.
+    # the server is started and has read the config.ini.
     # so only allow one port number
     port_range = (9001, 9001)  # default is (8080, 8090)
 
@@ -49,7 +50,7 @@ class SimpleTest(LiveServerTestCase):
     
     @classmethod
     def setup_class(cls):
-        '''All test in this class use the same roundup instance.
+        '''All tests in this class use the same roundup instance.
            This instance persists across all tests.
            Create the tracker dir here so that it is ready for the
            create_app() method to be called.
@@ -75,6 +76,13 @@ class SimpleTest(LiveServerTestCase):
 
         cls.db.commit()
         cls.db.close()
+        
+        # Force locale config to find locales in checkout not in
+        # installed directories
+        cls.backup_domain = i18n.DOMAIN
+        cls.backup_locale_dirs = i18n.LOCALE_DIRS
+        i18n.LOCALE_DIRS = ['locale']
+        i18n.DOMAIN = ''
 
     @classmethod
     def teardown_class(cls):
@@ -87,6 +95,8 @@ class SimpleTest(LiveServerTestCase):
             shutil.rmtree(cls.dirname)
         except OSError as error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
+        i18n.LOCALE_DIRS = cls.backup_locale_dirs
+        i18n.DOMAIN = cls.backup_domain
 
     def create_app(self):
         '''The wsgi app to start'''
