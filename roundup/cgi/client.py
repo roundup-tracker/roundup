@@ -2524,7 +2524,7 @@ class Client:
         # indicating an invalid range.
         if (self.env['REQUEST_METHOD'] == 'HEAD'
             or self.response_code == http_.client.REQUESTED_RANGE_NOT_SATISFIABLE):
-            self.setHeader("Content-Length", 0)
+            self.setHeader("Content-Length", "0")
             self.header()
             return
         # Use the optimized "sendfile" operation, if possible.
