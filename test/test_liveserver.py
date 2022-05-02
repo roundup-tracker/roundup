@@ -1001,7 +1001,6 @@ class SimpleTest(LiveServerTestCase):
                                f.headers.items() if key in expected },
                              expected)
 
-    @pytest.mark.xfail(reason="Fails with 3600 age on circle ci not sure why")
     def test_cache_control_css(self):
         f = requests.get(self.url_base() + '/@@file/style.css',
                              headers = {'content-type': "",

@@ -12,6 +12,7 @@ from __future__ import print_function
 import unittest, os, shutil, errno, sys, difflib, cgi, re, io
 
 import pytest
+import copy
 
 from roundup.cgi import client, actions, exceptions
 from roundup.cgi.exceptions import FormError, NotFound, Redirect
@@ -1084,7 +1085,6 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         del(out[0])
         cl.db.config['WEB_CSRF_ENFORCE_TOKEN'] = 'yes'
 
-        import copy
         form2 = copy.copy(form)
         form2.update({'@csrf': 'booogus'})
         # add a bogus csrf field to the form and rerun the inner_main
@@ -1763,6 +1763,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
     def testserve_static_files(self):
         # make a client instance
         cl = self._make_client({})
+        # Make local copy in cl to not modify value in class
+        cl.Cache_Control = copy.copy (cl.Cache_Control)
 
         # hijack _serve_file so I can see what is found
         output = []
