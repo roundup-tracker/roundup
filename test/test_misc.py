@@ -2,6 +2,8 @@
 
 import unittest
 import roundup.anypy.cmp_
+import sys
+from roundup.anypy.strings import StringIO  # define StringIO
 from roundup.cgi.accept_language import parse
 
 class AcceptLanguageTest(unittest.TestCase):
@@ -30,3 +32,34 @@ class AcceptLanguageTest(unittest.TestCase):
 class CmpTest(unittest.TestCase):
     def testCmp(self):
         roundup.anypy.cmp_._test()
+
+class VersionCheck(unittest.TestCase):
+    def test_Version_Check(self):
+
+        # test for valid versions
+        from roundup.version_check import VERSION_NEEDED
+        self.assertEqual((2, 7), VERSION_NEEDED)
+        del(sys.modules['roundup.version_check'])
+
+
+        # fake an invalid version
+        real_ver =  sys.version_info
+        sys.version_info = (2, 1)
+
+        # exit is called on failure, but that breaks testing so
+        # just return and discard the exit code.
+        real_exit = sys.exit 
+        sys.exit =  lambda code: code
+
+        # error case uses print(), capture and check
+        capturedOutput = StringIO()
+        sys.stdout = capturedOutput
+        from roundup.version_check import VERSION_NEEDED
+        sys.stdout = sys.__stdout__
+        self.assertIn("Roundup requires Python 2.7", capturedOutput.getvalue())
+
+        # reset to valid values for future tests
+        sys.exit = real_exit
+        sys.version_info = real_ver
+
+
