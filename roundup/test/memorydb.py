@@ -238,6 +238,7 @@ class Database(back_anydbm.Database):
         self.sessions = Sessions()
         self.otks = OneTimeKeys()
         self.indexer = Indexer(self)
+        roundupdb.Database.__init__(self)
 
         # anydbm bits
         self.cache = {}         # cache of nodes loaded or created

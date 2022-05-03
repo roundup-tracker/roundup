@@ -36,6 +36,7 @@ from roundup.i18n import _
 from roundup.hyperdb import iter_roles
 
 from roundup.mailer import Mailer, MessageSendError, nice_sender_header
+from roundup.i18n import RoundupNullTranslations
 
 from roundup.anypy.strings import b2s, s2u
 import roundup.anypy.random_ as random_
@@ -53,6 +54,9 @@ class Database(object):
     # b. if the journaltag disappears during a transaction, we don't barf
     #    (eg. the current user edits their username)
     journal_uid = None
+
+    def __init__(self):
+        self.i18n = RoundupNullTranslations()
 
     def getuid(self):
         """Return the id of the "user" node associated with the user

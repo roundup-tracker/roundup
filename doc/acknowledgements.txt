@@ -10,6 +10,24 @@ ideas and everything else that helped!
 
 .. _`Announcement with changelog for current release.`: announcement.html
 
+2.2
+---
+
+2.2.0
+~~~~~
+
+Maintainer:  John Rouillard, Ralf Schlatterbeck
+
+Release Manager: John Rouillard
+
+Developer activity by changesets::
+
+    FIXME
+
+Other contributers
+
+Marcus Priesch
+
 2.1
 ---
 

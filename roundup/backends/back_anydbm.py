@@ -90,6 +90,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         disabled.
         """
         FileStorage.__init__(self, config.UMASK)
+        roundupdb.Database.__init__(self)
         self.config, self.journaltag = config, journaltag
         self.dir = config.DATABASE
         self.classes = {}

@@ -170,6 +170,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """ Open the database and load the schema from it.
         """
         FileStorage.__init__(self, config.UMASK)
+        roundupdb.Database.__init__(self)
         self.config, self.journaltag = config, journaltag
         self.dir = config.DATABASE
         self.classes = {}

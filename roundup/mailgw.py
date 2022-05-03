@@ -1603,6 +1603,12 @@ class MailGW:
         # get database handle for handling one email
         self.db = self.instance.open('admin')
 
+        language = self.instance.config["MAILGW_LANGUAGE"] or self.instance.config["TRACKER_LANGUAGE"]
+        self.db.i18n = i18n.get_language (language)
+
+        global _
+        _ = self.db.i18n.gettext
+
         self.db.tx_Source = "email"
 
         try:

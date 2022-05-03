@@ -387,7 +387,15 @@ class Client:
         self.instance = instance
         self.request = request
         self.env = env
-        self.setTranslator(translator)
+        if translator is not None :
+            self.setTranslator(translator)
+            # XXX we should set self.language to "translator"'s language,
+            # but how to get it ?
+            self.language = ""
+        else :
+            self.setTranslator(TranslationService.NullTranslationService())
+            self.language = "" # as is the default from determine_language
+
         self.mailer = Mailer(instance.config)
         # If True the form contents wins over the database contents when
         # rendering html properties. This is set when an error occurs so
@@ -540,11 +548,13 @@ class Client:
         # Set the charset and language, since other parts of
         # Roundup may depend upon that.
         self.determine_charset()
-        self.determine_language()
+        if self.instance.config["WEB_TRANSLATE_XMLRPC"] :
+            self.determine_language()
         # Open the database as the correct user.
         try:
             self.determine_user()
             self.db.tx_Source = "xmlrpc"
+            self.db.i18n = self.translator
         except LoginError as msg:
             output = xmlrpc_.client.dumps(
                 xmlrpc_.client.Fault(401, "%s" % msg),
@@ -594,12 +604,14 @@ class Client:
     def handle_rest(self):
         # Set the charset and language
         self.determine_charset()
-        self.determine_language()
+        if self.instance.config["WEB_TRANSLATE_REST"] :
+            self.determine_language()
         # Open the database as the correct user.
         # TODO: add everything to RestfulDispatcher
         try:
             self.determine_user()
             self.db.tx_Source = "rest"
+            self.db.i18n = self.translator
         except LoginError as err:
             self.response_code = http_.client.UNAUTHORIZED
             output = s2b("Invalid Login - %s"%str(err))
@@ -622,7 +634,7 @@ class Client:
             # Call csrf with xmlrpc checks enabled.
             # It will return True if everything is ok,
             # raises exception on check failure.
-            csrf_ok =  self.handle_csrf(xmlrpc=True)
+            csrf_ok = self.handle_csrf(xmlrpc=True)
         except (Unauthorised, UsageError) as msg:
             # report exception back to server
             exc_type, exc_value, exc_tb = sys.exc_info()
@@ -699,7 +711,6 @@ class Client:
         self._error_message = []
         try:
             self.determine_charset()
-            self.determine_language()
 
             try:
                 # make sure we're identified (even anonymously)
@@ -707,6 +718,9 @@ class Client:
 
                 # figure out the context and desired content template
                 self.determine_context()
+
+                self.determine_language()
+                self.db.i18n = self.translator
 
                 # if we've made it this far the context is to a bit of
                 # Roundup's real web interface (not a file being served up)
@@ -764,6 +778,9 @@ class Client:
                 # exception or a NotModified exception.  Those
                 # exceptions will be handled by the outermost set of
                 # exception handlers.
+                self.determine_language()
+                self.db.i18n = self.translator
+
                 self.serve_file(designator)
             except SendStaticFile as file:
                 self.serve_static_file(str(file))
@@ -985,11 +1002,18 @@ class Client:
             else:
                 language = ""
 
+        if not language :
+            # default to tracker language
+            language = self.instance.config["TRACKER_LANGUAGE"]
+
+        # this maybe is not correct, as get_translation could not
+        # find desired locale and switch back to "en" but we set
+        # self.language to the desired language !
         self.language = language
-        if language:
-            self.setTranslator(TranslationService.get_translation(
-                    language,
-                    tracker_home=self.instance.config["TRACKER_HOME"]))
+
+        self.setTranslator(TranslationService.get_translation(
+                language,
+                tracker_home=self.instance.config["TRACKER_HOME"]))
 
     def authenticate_bearer_token(self, challenge):
         ''' authenticate the bearer token. Refactored from determine_user()

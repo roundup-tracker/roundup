@@ -1080,12 +1080,20 @@ interface. By default the XMLRPC endpoint is the string 'xmlrpc'
 after the roundup web url configured in the 'tracker' section.
 If this variable is set to 'no', the xmlrpc path has no special meaning
 and will yield an error message."""),
+        (BooleanOption, 'translate_xmlrpc', 'no',
+            """Whether to enable i18n for the xmlrpc endpoint. Enable it if
+you want to enable translation based on browsers lang (if enabled), trackers
+lang (if set) or environment."""),
         (BooleanOption, 'enable_rest', "yes",
             """Whether to enable the REST API in the roundup web
 interface. By default the REST endpoint is the string 'rest' plus any
 additional REST-API parameters after the roundup web url configured in
 the tracker section. If this variable is set to 'no', the rest path has
 no special meaning and will yield an error message."""),
+        (BooleanOption, 'translate_rest', 'no',
+            """Whether to enable i18n for the rest endpoint. Enable it if
+you want to enable translation based on browsers lang (if enabled), trackers
+lang (if set) or environment."""),
         (IntegerNumberGeqZeroOption, 'api_calls_per_interval', "0",
          "Limit API calls per api_interval_in_sec seconds to\n"
          "this number.\n"

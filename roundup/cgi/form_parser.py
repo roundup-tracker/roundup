@@ -1,7 +1,7 @@
 import re, mimetypes
 
 from roundup import hyperdb, date, password
-from roundup.cgi import templating
+from roundup.cgi import templating, TranslationService
 from roundup.cgi.exceptions import FormError
 
 
@@ -38,7 +38,7 @@ class FormParser:
             self._ = self.gettext = client.gettext
             self.ngettext = client.ngettext
         except AttributeError:
-            _translator = templating.translationService
+            _translator = TranslationService.get_translation()
             self._ = self.gettext = _translator.gettext
             self.ngettext = _translator.ngettext
 
