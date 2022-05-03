@@ -145,6 +145,11 @@ Features:
   than 25. Also German words are long. Since there is little chance of
   fixing German to shorten their words, change indexer maxlength to 50.
   (Thomas Arendsen Hein provided patch; patch reworked John Rouillard)
+- issue2551184 - add an i18n object to the roundupdb. This makes it
+  possible to translate error messages in detectors (or actions). The
+  i18n object is now also correctly set for the mail interface:
+  previously the 'language' setting in the [mailgw] section seems to
+  have been ignored. Thanks to Marcus Priesch for the patch.
 
 2021-07-13 2.1.0
 
