@@ -197,13 +197,7 @@ def _import_mistune():
 markdown = _import_markdown2() or _import_markdown() or _import_mistune()
 
 # bring in the templating support
-from roundup.cgi import TranslationService, ZTUtils
-
-### i18n services
-# this global translation service is not thread-safe.
-# it is left here for backward compatibility
-# until all Web UI translations are done via client.translator object
-translationService = TranslationService.get_translation()
+from roundup.cgi import ZTUtils
 
 def anti_csrf_nonce(client, lifetime=None):
     ''' Create a nonce for defending against CSRF attack.

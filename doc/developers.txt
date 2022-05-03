@@ -290,6 +290,22 @@ Template markup examples:
       fine) % fine"
     />
 
+Detectors and extensions
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+The correct ``i18n`` objects gets automatically injected in the hyperdb.
+In a detector you can access the i18n object and do translation like
+this::
+
+  def statusfail(db, cl, nodeid, newvalues):
+    _ = db.i18n.gettext
+    raise ValueError(_("this does not work"))
+
+  def init(db):
+    # fire before changes are made
+    db.status.audit('create', statusfail)
+
+
 Extracting Translatable Messages
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

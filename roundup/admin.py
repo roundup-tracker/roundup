@@ -30,7 +30,7 @@ from roundup import __version__ as roundup_version
 import roundup.instance
 from roundup.configuration import (CoreConfig, NoConfigError,
                                    ParsingOptionError, UserConfig)
-from roundup.i18n import _
+from roundup.i18n import _, get_translation
 from roundup.exceptions import UsageError
 from roundup.anypy.my_input import my_input
 from roundup.anypy.strings import repr_export
@@ -1719,6 +1719,11 @@ Erase it? Y/N: """))
         # only open the database once!
         if not self.db:
             self.db = tracker.open(self.name)
+            # dont use tracker.config["TRACKER_LANGUAGE"] here as the
+            # cli operator likely wants to have i18n as set in the
+            # environment.
+            # This is needed to fetch the locale's of the tracker's home dir.
+            self.db.i18n = get_translation (tracker_home = tracker.tracker_home)
 
         self.db.tx_Source = 'cli'
 
