@@ -495,7 +495,7 @@ Name       Speed       Users   Support
 ========== =========== ===== ==============================
 anydbm     Slowest     Few   Always available
 sqlite     Fastest(*)  Few   May need install (PySQLite_)
-postgresql Fast        Many  Needs install/admin (psycopg_)
+postgresql Fast        Many  Needs install/admin (psycopg2_)
 mysql      Fast        Many  Needs install/admin (MySQLdb_)
 ========== =========== ===== ==============================
 
@@ -515,14 +515,15 @@ mysql      Fast        Many  Needs install/admin (MySQLdb_)
   can improve searching if you are not installing another indexer like
   xapian or whoosh. It works best with English text.
 **postgresql**
-  Backend for popular RDBMS PostgreSQL. You must read doc/postgresql.txt for
-  additional installation steps and requirements. You must also configure
+  Backend for popular RDBMS PostgreSQL. You must read
+  `doc/postgresql.txt`_ for additional installation steps and
+  requirements. You must also configure
   the ``rdbms`` section of your tracker's ``config.ini``.  It is recommended
-  that you use at least version 1.1.21 of psycopg.
+  that you use at least version 2.8 of psycopg2.
 **mysql**
-  Backend for popular RDBMS MySQL. You must read doc/mysql.txt for additional
-  installation steps and requirements. You must also configure the ``rdbms``
-  section of your tracker's ``config.ini``
+  Backend for popular RDBMS MySQL. You must read `doc/mysql.txt`_ for
+  additional installation steps and requirements. You must also
+  configure the ``rdbms`` section of your tracker's ``config.ini``
 
 You may defer your decision by setting your tracker up with the anydbm
 backend (which is guaranteed to be available) and switching to one of the
@@ -1719,6 +1720,8 @@ there are no errors. If there are errors, please let us know!
 .. _`customising roundup`: customizing.html
 .. _`upgrading document`: upgrading.html
 .. _`administration guide`: admin_guide.html
+.. _`doc/postgresql.txt`: postgresql.html
+.. _`doc/mysql.txt`: mysql.html
 
 
 .. _External hyperlink targets:
@@ -1740,7 +1743,7 @@ there are no errors. If there are errors, please let us know!
 .. _mod_wsgi: https://pypi.org/project/mod-wsgi/
 .. _MySQLdb: https://pypi.org/project/mysqlclient/
 .. _Olson tz database: https://www.iana.org/time-zones
-.. _Psycopg: https://www.psycopg.org/
+.. _Psycopg2: https://www.psycopg.org/
 .. _pyjwt: https://pypi.org/project/PyJWT/
 .. _pyopenssl: https://pypi.org/project/pyOpenSSL/
 .. _pysqlite: https://pysqlite.org/
