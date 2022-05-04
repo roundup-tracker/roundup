@@ -9,7 +9,7 @@ import os
 import os.path
 
 from roundup.cgi.templating import StringIO, context, TALLoaderBase
-from roundup.cgi.PageTemplates import PageTemplate, GlobalTranslationService
+from roundup.cgi.PageTemplates import PageTemplate
 from roundup.cgi.PageTemplates.Expressions import getEngine
 from roundup.cgi.TAL import TALInterpreter
 

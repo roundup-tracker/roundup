@@ -14,6 +14,8 @@
 # Modifications for Roundup:
 # 1. implemented ustr as str
 # 2. make imports use roundup.cgi
+# 3. stripped GlobalTranslationService of everything except
+#    DummyTranslationService
 """Global Translation Service for providing I18n to Page Templates.
 
 """
@@ -33,16 +35,3 @@ class DummyTranslationService:
         cre = re.compile(r'\$(?:(%s)|\{(%s)\})' % (NAME_RE, NAME_RE))
         return cre.sub(repl, default or msgid)
     # XXX Not all of Zope.I18n.ITranslationService is implemented.
-
-translationService = DummyTranslationService()
-
-def setGlobalTranslationService(service):
-    """Sets the global translation service, and returns the previous one."""
-    global translationService
-    old_service = translationService
-    translationService = service
-    return old_service
-
-def getGlobalTranslationService():
-    """Returns the global translation service."""
-    return translationService
