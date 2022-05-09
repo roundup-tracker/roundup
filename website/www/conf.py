@@ -106,6 +106,10 @@ html_style = 'default.css'
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #html_short_title = None
 
+# The base URL which points to the root of the HTML documentation. It is
+# used to indicate the location of document using The Canonical Link Relation.
+html_baseurl = "https://www.roundup-tracker.org/"
+
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
 #html_logo = None
