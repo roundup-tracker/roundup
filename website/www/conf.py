@@ -29,7 +29,10 @@ import sys, os
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-# extensions = ['sphinxcontrib.cheeseshop']
+extensions = ['sphinx_sitemap']
+
+# for sitemap default: "{lang}{version}subdir/{link}"
+sitemap_url_scheme = "{link}"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -131,6 +134,13 @@ html_last_updated_fmt = '%b %d, %Y'
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
 #html_use_smartypants = True
+
+# A list of paths that contain extra files not directly related to the
+# documentation, such as robots.txt or .htaccess. Relative paths are
+# taken as relative to the configuration directory. They are copied to
+# the output directory. They will overwrite any existing file of the
+# same name.
+html_extra_path = ['robots.txt']
 
 # Custom sidebar templates, maps document names to template names.
 #html_sidebars = {}
