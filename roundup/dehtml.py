@@ -17,7 +17,7 @@ class dehtml:
                 from bs4 import BeautifulSoup
 
                 def html2text(html):
-                    soup = BeautifulSoup(html)
+                    soup = BeautifulSoup(html, "html.parser")
 
                     # kill all script and style elements
                     for script in soup(["script", "style"]):
