@@ -27,6 +27,14 @@ except ImportError:
     skip_pgp = mark_class(pytest.mark.skip(
         reason="Skipping PGP tests: 'gpg' not installed"))
 
+try:
+    import bs4
+    skip_beautifulsoup = lambda func, *args, **kwargs: func
+except ImportError:
+    from .pytest_patcher import mark_class
+    skip_beautifulsoup = mark_class(pytest.mark.skip(
+        reason="Skipping beautifulsoup tests: 'bs4' not installed"))
+
 
 from roundup.anypy.email_ import message_from_bytes
 from roundup.anypy.strings import b2s, u2s, s2b
@@ -236,6 +244,10 @@ class MailgwTestAbstractBase(DiffHelper):
 
     def _create_mailgw(self, message, args=()):
         class MailGW(self.instance.MailGW):
+            """call _handle_message as handle_message 
+               the real handle_message reopens the database, and destroys
+               the db that we supply as part of the test.
+            """
             def handle_message(self, message):
                 return self._handle_message(message)
         handler = MailGW(self.instance, args)
@@ -297,7 +309,11 @@ Subject: [issue] Testing...
 
 class MailgwTestCase(MailgwTestAbstractBase, StringFragmentCmpHelper, unittest.TestCase):
 
-    def testTextHtmlMessage(self):
+    @skip_beautifulsoup
+    def testTextHtmlMessageBeautifulSoup(self):
+        self.testTextHtmlMessage(converter='beautifulsoup')
+
+    def testTextHtmlMessage(self, converter='dehtml'):
         html_message='''Content-Type: text/html;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
@@ -353,17 +369,20 @@ have to install the win32all package separately (get it from
 </div>
 </body>
 '''
-        text_fragments = ['Roundup\n        Home\nDownload\nDocs\nRoundup Features\nInstalling Roundup\nUpgrading to newer versions of Roundup\nRoundup FAQ\nUser Guide\nCustomising Roundup\nAdministration Guide\nPrerequisites\n\nRoundup requires Python 2.6 or newer (but not Python 3) with a functioning\nanydbm module. Download the latest version from http://www.python.org/.\nIt is highly recommended that users install the latest patch version\nof python as these contain many fixes to serious bugs.\n\nSome variants of Linux will need an additional ', ('python dev', u2s(u'\u201cpython dev\u201d')), ' package\ninstalled for Roundup installation to work. Debian and derivatives, are\nknown to require this.\n\nIf you', (u2s(u'\u2019'), ''), 're on windows, you will either need to be using the ActiveState python\ndistribution (at http://www.activestate.com/Products/ActivePython/), or you', (u2s(u'\u2019'), ''), 'll\nhave to install the win32all package separately (get it from\nhttp://starship.python.net/crew/mhammond/win32/).']
+        text_fragments = {}
+        text_fragments['dehtml'] = ['Roundup\n        Home\nDownload\nDocs\nRoundup Features\nInstalling Roundup\nUpgrading to newer versions of Roundup\nRoundup FAQ\nUser Guide\nCustomising Roundup\nAdministration Guide\nPrerequisites\n\nRoundup requires Python 2.6 or newer (but not Python 3) with a functioning\nanydbm module. Download the latest version from http://www.python.org/.\nIt is highly recommended that users install the latest patch version\nof python as these contain many fixes to serious bugs.\n\nSome variants of Linux will need an additional ', ('python dev', u2s(u'\u201cpython dev\u201d')), ' package\ninstalled for Roundup installation to work. Debian and derivatives, are\nknown to require this.\n\nIf you', (u2s(u'\u2019'), ''), 're on windows, you will either need to be using the ActiveState python\ndistribution (at http://www.activestate.com/Products/ActivePython/), or you', (u2s(u'\u2019'), ''), 'll\nhave to install the win32all package separately (get it from\nhttp://starship.python.net/crew/mhammond/win32/).']
+        text_fragments['beautifulsoup'] = ['Roundup\nHome\nDownload\nDocs\nRoundup Features\nInstalling Roundup\nUpgrading to newer versions of Roundup\nRoundup FAQ\nUser Guide\nCustomising Roundup\nAdministration Guide\nPrerequisites\nRoundup requires Python 2.6 or newer (but not Python 3) with a functioning\nanydbm module. Download the latest version from\nhttp://www.python.org/\n.\nIt is highly recommended that users install the latest patch version\nof python as these contain many fixes to serious bugs.\nSome variants of Linux will need an additional ', ('python dev', u2s(u'\u201cpython dev\u201d')), ' package\ninstalled for Roundup installation to work. Debian and derivatives, are\nknown to require this.\nIf you', (u2s(u'\u2019'), "'"), 're on windows, you will either need to be using the ActiveState python\ndistribution (at\nhttp://www.activestate.com/Products/ActivePython/\n), or you’ll\nhave to install the win32all package separately (get it from\nhttp://starship.python.net/crew/mhammond/win32/\n).']
 
-        self.db.config.MAILGW_CONVERT_HTMLTOTEXT = "dehtml"
+        self.db.config.MAILGW_CONVERT_HTMLTOTEXT = converter
         nodeid = self._handle_mail(html_message)
         assert not os.path.exists(SENDMAILDEBUG)
         msgid = self.db.issue.get(nodeid, 'messages')[0]
         self.compareStringFragments(self.db.msg.get(msgid, 'content'),
-                                    text_fragments)
+                                    text_fragments[converter])
 
-        self.db.config.MAILGW_CONVERT_HTMLTOTEXT = "none"
-        self.assertRaises(MailUsageError, self._handle_mail, html_message)
+        if converter == 'dehtml':
+            self.db.config.MAILGW_CONVERT_HTMLTOTEXT = "none"
+            self.assertRaises(MailUsageError, self._handle_mail, html_message)
 
     def testMessageWithFromInIt(self):
         nodeid = self._handle_mail('''Content-Type: text/plain;
@@ -1381,16 +1400,15 @@ Content-Transfer-Encoding: quoted-printable
 --001485f339f8f361fb049188dbba--
 '''%html_doc
 
-    def disabletestMultipartTextifyHTMLBeautifulSoup(self):
-        self.maxDiff = None
-        self.MultipartTextifyHTML(converter="beautifulsoup")
+    @skip_beautifulsoup
+    def testMultipartTextifyHTMLBeautifulSoup(self):
+        self.testMultipartTextifyHTML(converter="beautifulsoup")
 
-    def testMultipartTextifyHTMLDehtml(self):
-        self.MultipartTextifyHTML(converter="dehtml")
-
-    def MultipartTextifyHTML(self, converter='dehtml'):
+    def testMultipartTextifyHTML(self, converter='dehtml'):
         text_fragments = {}
         text_fragments['dehtml'] = ['Roundup\n        Home\nDownload\nDocs\nRoundup Features\nInstalling Roundup\nUpgrading to newer versions of Roundup\nRoundup FAQ\nUser Guide\nCustomising Roundup\nAdministration Guide\nPrerequisites\n\nRoundup requires Python 2.5 or newer (but not Python 3) with a functioning\nanydbm module. Download the latest version from http://www.python.org/.\nIt is highly recommended that users install the latest patch version\nof python as these contain many fixes to serious bugs.\n\nSome variants of Linux will need an additional ', ('python dev', u2s(u'\u201cpython dev\u201d')), ' package\ninstalled for Roundup installation to work. Debian and derivatives, are\nknown to require this.\n\nIf you', (u2s(u'\u2019'), ''), 're on windows, you will either need to be using the ActiveState python\ndistribution (at http://www.activestate.com/Products/ActivePython/), or you', (u2s(u'\u2019'), ''), 'll\nhave to install the win32all package separately (get it from\nhttp://starship.python.net/crew/mhammond/win32/).\n\numlaut']  + [b2s(b" \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f")]
+        text_fragments['beautifulsoup'] = ['Roundup\nHome\nDownload\nDocs\nRoundup Features\nInstalling Roundup\nUpgrading to newer versions of Roundup\nRoundup FAQ\nUser Guide\nCustomising Roundup\nAdministration Guide\nPrerequisites\nRoundup requires Python 2.5 or newer (but not Python 3) with a functioning\nanydbm module. Download the latest version from\nhttp://www.python.org/\n.\nIt is highly recommended that users install the latest patch version\nof python as these contain many fixes to serious bugs.\nSome variants of Linux will need an additional ', ('python dev', u2s(u'\u201cpython dev\u201d')), ' package\ninstalled for Roundup installation to work. Debian and derivatives, are\nknown to require this.\nIf you', (u2s(u'\u2019'), "'"), 're on windows, you will either need to be using the ActiveState python\ndistribution (at\nhttp://www.activestate.com/Products/ActivePython/\n), or you’ll\nhave to install the win32all package separately (get it from\nhttp://starship.python.net/crew/mhammond/win32/\n).\numlaut'] + [b2s(b" \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f")]
+
 
 #  \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f
 # append above with leading space to end of mycontent. It is the 
@@ -1404,7 +1422,6 @@ Content-Transfer-Encoding: quoted-printable
         msg = self.db.msg.getnode(messages[-1])
 
         print(msg.content)
-        print(text_fragments[converter][0])
         # html converted to utf-8 text
         self.compareStringFragments(msg.content,
                                     text_fragments[converter])
@@ -1418,6 +1435,63 @@ Content-Transfer-Encoding: quoted-printable
         content = { 0: "75,23,16,18\n",
                     1: self.html_doc.replace(" =E4=F6=FC=C4=D6=DC=DF",
                                              b2s(b" \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f")) }
+        email_body = {}
+        email_body['dehtml'] = '''Roundup
+        Home
+Download
+Docs
+Roundup Features
+Installing Roundup
+Upgrading to newer versions of Roundup
+Roundup FAQ
+User Guide
+Customising Roundup
+Administration Guide
+Prerequisites
+
+Roundup requires Python 2.5 or newer (but not Python 3) with a functioning
+anydbm module. Download the latest version from http://www.python.org/.
+It is highly recommended that users install the latest patch version
+of python as these contain many fixes to serious bugs.
+
+Some variants of Linux will need an additional python dev package
+installed for Roundup installation to work. Debian and derivatives, are
+known to require this.
+
+If youre on windows, you will either need to be using the ActiveState python
+distribution (at http://www.activestate.com/Products/ActivePython/), or youll
+have to install the win32all package separately (get it from
+http://starship.python.net/crew/mhammond/win32/).
+'''
+        email_body['beautifulsoup']='''Roundup
+Home
+Download
+Docs
+Roundup Features
+Installing Roundup
+Upgrading to newer versions of Roundup
+Roundup FAQ
+User Guide
+Customising Roundup
+Administration Guide
+Prerequisites
+Roundup requires Python 2.5 or newer (but not Python 3) with a functioning
+anydbm module. Download the latest version from
+http://www.python.org/
+.
+It is highly recommended that users install the latest patch version
+of python as these contain many fixes to serious bugs.
+Some variants of Linux will need an additional python dev package
+installed for Roundup installation to work. Debian and derivatives, are
+known to require this.
+If youre on windows, you will either need to be using the ActiveState python
+distribution (at
+http://www.activestate.com/Products/ActivePython/
+), or youll
+have to install the win32all package separately (get it from
+http://starship.python.net/crew/mhammond/win32/
+).'''
+
         for n, id in enumerate (msg.files):
             f = self.db.file.getnode (id)
             self.assertEqual(f.name, name)
@@ -1458,33 +1532,8 @@ Content-Transfer-Encoding: quoted-printable
 
 Contrary, Mary <mary@test.test> added the comment:
 
-Roundup
-        Home
-Download
-Docs
-Roundup Features
-Installing Roundup
-Upgrading to newer versions of Roundup
-Roundup FAQ
-User Guide
-Customising Roundup
-Administration Guide
-Prerequisites
-
-Roundup requires Python 2.5 or newer (but not Python 3) with a functioning
-anydbm module. Download the latest version from http://www.python.org/.
-It is highly recommended that users install the latest patch version
-of python as these contain many fixes to serious bugs.
-
-Some variants of Linux will need an additional python dev package
-installed for Roundup installation to work. Debian and derivatives, are
-known to require this.
-
-If youre on windows, you will either need to be using the ActiveState python
-distribution (at http://www.activestate.com/Products/ActivePython/), or youll
-have to install the win32all package separately (get it from
-http://starship.python.net/crew/mhammond/win32/).
-
+''' + email_body[converter] +
+'''
 umlaut =C3=A4=C3=B6=C3=BC=C3=84=C3=96=C3=9C=C3=9F
 
 ----------
