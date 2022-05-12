@@ -233,7 +233,7 @@ multipart/form-data`) will be included.
 
 It will also include rate limit headers since the request is included
 in the rate limit for the URL.  The results from the CORS preflight
-should be cached for a week so preflight requests are not expected to
+should be cached for a day so preflight requests are not expected to
 cause a problem. If it is an issue, you can see
 `Creating Custom Rate Limits`_
 and craft a rate limiter that ignores anonymous OPTIONS requests.
