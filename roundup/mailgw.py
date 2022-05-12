@@ -109,6 +109,7 @@ from roundup.anypy.my_input import my_input
 from roundup import configuration, hyperdb, date, password, exceptions
 from roundup.mailer import Mailer
 from roundup.i18n import _
+from roundup import i18n
 from roundup.hyperdb import iter_roles
 from roundup.anypy.strings import StringIO, b2s, u2s
 import roundup.anypy.random_ as random_
@@ -1604,7 +1605,8 @@ class MailGW:
         self.db = self.instance.open('admin')
 
         language = self.instance.config["MAILGW_LANGUAGE"] or self.instance.config["TRACKER_LANGUAGE"]
-        self.db.i18n = i18n.get_language (language)
+        self.db.i18n = i18n.get_translation(language,
+                          tracker_home=self.instance.config["TRACKER_HOME"])
 
         global _
         _ = self.db.i18n.gettext

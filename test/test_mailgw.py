@@ -3754,6 +3754,89 @@ Message-Id: <dummy_test_message_id>
 
 ''')
 
+
+    def testNoSubjectErrorTranslation(self):
+        """ Use message with no subject to trigger an error """
+        message = '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id_2>
+
+Just a test reply
+'''
+        print(self.db.config.MAILGW_LANGUAGE, self.db.config.TRACKER_LANGUAGE)
+        # verify proper value when no translation
+        self.db.config.MAILGW_LANGUAGE = 'en'
+        self.db.config.TRACKER_LANGUAGE = 'en'
+        print(self.db.config.MAILGW_LANGUAGE, self.db.config.TRACKER_LANGUAGE)
+
+        ### copied from mailgw.py handle_message()
+        language = self.instance.config["MAILGW_LANGUAGE"] or self.instance.config["TRACKER_LANGUAGE"]
+        # use . as tracker home to get .mo files from top level
+        # locale directory.
+        self.assertEqual('en', language)
+        print(i18n.DOMAIN)
+
+        self.db.i18n = i18n.get_translation(language,
+                        self.instance.config['TRACKER_HOME'])
+
+        _ = self.db.i18n.gettext
+        roundupdb._ = mailgw._ = _
+
+        self.db.tx_Source = "email"
+        ### end copy
+
+        # insert translation string
+        self.db.i18n._catalog['\nEmails to Roundup trackers must include a Subject: line!\n'] = 'me me me'
+
+        with self.assertRaises(MailUsageError) as ctx:
+            self._handle_mail(message)
+
+        self.assertEqual(str(ctx.exception), "me me me")
+
+
+    def testNoSubjectErrorTranslationDe(self):
+        """ Use message with no subject to trigger an error get output in
+            German. """
+
+        message = '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id_2>
+
+Just a test reply
+'''
+        print(self.db.config.MAILGW_LANGUAGE, self.db.config.TRACKER_LANGUAGE)
+        # verify proper value when no translation
+        self.db.config.MAILGW_LANGUAGE = 'de'
+        self.db.config.TRACKER_LANGUAGE = 'de'
+        print(self.db.config.MAILGW_LANGUAGE, self.db.config.TRACKER_LANGUAGE)
+
+        ### copied from mailgw.py handle_message()
+        language = self.instance.config["MAILGW_LANGUAGE"] or self.instance.config["TRACKER_LANGUAGE"]
+        # use . as tracker home to get .mo files from top level
+        # locale directory.
+        self.assertEqual('de', language)
+        print(i18n.DOMAIN)
+
+        self.db.i18n = i18n.get_translation(language,
+                        self.instance.config['TRACKER_HOME'])
+
+        _ = self.db.i18n.gettext
+        roundupdb._ = mailgw._ = _
+
+        self.db.tx_Source = "email"
+        ### end copy
+
+        de_translation = "\nMails an Roundup müssen eine Subject-Zeile haben (Betreff)!\n"
+
+        with self.assertRaises(MailUsageError) as ctx:
+            self._handle_mail(message)
+
+        self.assertEqual(str(ctx.exception), de_translation)
+
     #
     # TEST FOR INVALID DESIGNATOR HANDLING
     #

@@ -204,10 +204,14 @@ def get_translation(language=None, tracker_home=None,
             mo = open(mofile, "rb")
             if translator is None:
                 translator = translation_class(mo)
+                # the .mo file this translator loaded from
+                translator._file = mofile
             else:
                 # note: current implementation of gettext_module
                 #   always adds fallback to the end of the fallback chain.
-                translator.add_fallback(translation_class(mo))
+                fallback = translation_class(mo)
+                fallback._file = mofile
+                translator.add_fallback(fallback)
             mo.close()
         except IOError:
             # ignore unreadable .mo files
