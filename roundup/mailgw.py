@@ -1600,6 +1600,12 @@ class MailGW:
         ''' message - a Message instance
 
         Parse the message as per the module docstring.
+
+        WARNING: any changes in this code need to be moved to all
+        *Translate* test cases in test/test_mailgw.py. This method
+        can't be tested directly because it opens the instance
+        erasing the database mocked by the test harness.
+        
         '''
         # get database handle for handling one email
         self.db = self.instance.open('admin')

@@ -3782,6 +3782,7 @@ Just a test reply
                         self.instance.config['TRACKER_HOME'])
 
         _ = self.db.i18n.gettext
+        old_translate_ = mailgw._
         roundupdb._ = mailgw._ = _
 
         self.db.tx_Source = "email"
@@ -3795,6 +3796,7 @@ Just a test reply
 
         self.assertEqual(str(ctx.exception), "me me me")
 
+        roundupdb._ = mailgw._ = old_translate_
 
     def testNoSubjectErrorTranslationDe(self):
         """ Use message with no subject to trigger an error get output in
@@ -3825,6 +3827,7 @@ Just a test reply
                         self.instance.config['TRACKER_HOME'])
 
         _ = self.db.i18n.gettext
+        old_translate_ = mailgw._
         roundupdb._ = mailgw._ = _
 
         self.db.tx_Source = "email"
@@ -3836,6 +3839,72 @@ Just a test reply
             self._handle_mail(message)
 
         self.assertEqual(str(ctx.exception), de_translation)
+
+        roundupdb._ = mailgw._ = old_translate_
+
+    def testNoIssueClassErrorTranslationDe(self):
+        """ Use message with a non-existant issue designator
+            to trigger an error get output in German. """
+
+        message = '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id_2>
+Subject: [issue9999999] this is a nonexistant issue
+
+Just a test reply
+'''
+        print(self.db.config.MAILGW_LANGUAGE, self.db.config.TRACKER_LANGUAGE)
+        # verify proper value when no translation
+        self.db.config.MAILGW_LANGUAGE = 'de'
+        self.db.config.TRACKER_LANGUAGE = 'de'
+        print(self.db.config.MAILGW_LANGUAGE, self.db.config.TRACKER_LANGUAGE)
+
+        ### copied from mailgw.py handle_message()
+        language = self.instance.config["MAILGW_LANGUAGE"] or self.instance.config["TRACKER_LANGUAGE"]
+        # use . as tracker home to get .mo files from top level
+        # locale directory.
+        self.assertEqual('de', language)
+        print(i18n.DOMAIN)
+
+        self.db.i18n = i18n.get_translation(language,
+                        self.instance.config['TRACKER_HOME'])
+
+        _ = self.db.i18n.gettext
+        old_translate_ = mailgw._
+        roundupdb._ = mailgw._ = _
+
+        self.db.tx_Source = "email"
+        ### end copy
+
+        de_translation = "Der in der Betreffzeile Ihre Nachricht bezeichnete Eintrag"
+
+        with self.assertRaises(MailUsageError) as ctx:
+            self._handle_mail(message)
+
+        self.assertIn(de_translation, str(ctx.exception))
+
+        de_translation = """Der Betreff muss einen Klassennamen oder Bezeichner enthalten, um
+anzuzeigen, worum es geht. Zum Beispiel:
+"""
+        with self.assertRaises(MailUsageError) as ctx:
+            self._handle_mail(
+            '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Subject: [frobulated] testing
+Cc: richard@test.test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+
+''')
+
+        self.assertIn(de_translation, str(ctx.exception))
+
+
+        roundupdb._ = mailgw._ = old_translate_
 
     #
     # TEST FOR INVALID DESIGNATOR HANDLING
