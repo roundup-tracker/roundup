@@ -203,6 +203,45 @@ Otherwise Content-Type is allowed to be ``application/json`` or
 ``application/x-www-form-urlencoded``. Any other value returns error
 code 415.
 
+CORS preflight requests
+^^^^^^^^^^^^^^^^^^^^^^^
+
+CORS preflight requests are done using the OPTIONS method. They
+require that REST be enabled. These requests do not make any changes
+or get any information from the database. As a result they are
+available to the anonymous user and any authenticated user. The user
+does not need to have `Rest Access` permissions. Also these requests
+bypass CSRF checks.
+
+The headers:
+
+* `Access-Control-Request-Headers`
+* `Access-Control-Request-Method`
+* `Origin`
+
+must all be present. The 204 response will include:
+
+* `Access-Control-Allow-Origin`
+* `Access-Control-Allow-Headers`
+* `Access-Control-Allow-Methods`
+* `Access-Control-Allow-Credentials: true`
+* `Access-Control-Max-Age: 86400`
+
+If the endpoint accepts the PATCH verb the header `Accept-Patch` with
+valid mime types (usually `application/x-www-form-urlencoded,
+multipart/form-data`) will be included.
+
+It will also include rate limit headers since the request is included
+in the rate limit for the URL.  The results from the CORS preflight
+should be cached for a week so preflight requests are not expected to
+cause a problem. If it is an issue, you can see
+`Creating Custom Rate Limits`_
+and craft a rate limiter that ignores anonymous OPTIONS requests.
+
+Support for filtering by ORIGIN is not included. If you want to add
+this, see `Programming the REST API`_ on directions for overriding
+existing endpoints with a wrapper that can verify the ORIGIN.
+
 Response Formats
 ================
 
@@ -1407,7 +1446,9 @@ Retire/Restore::
 Note the addition of headers for: x-requested-with and referer. This
 allows the request to pass the CSRF protection mechanism. You may need
 to add an Origin header if this check is enabled in your tracker's
-config.ini (look for csrf_enforce_header_origin).
+config.ini (look for csrf_enforce_header_origin). (Note the Origin
+header check may have to be disabled if an application is making a
+CORS request to the Roundup server.)
 
 A similar curl based retire example is to use::
 
@@ -2056,7 +2097,8 @@ Creating Custom Rate Limits
 
 You can replace the default rate limiter that is configured using
 the tracker's ``config.ini``. You can return different rate
-limits based on the user, time of day, phase of moon etc.
+limits based on the user, time of day, phase of moon, request
+method (via self.client.request.command) etc.
 
 Assume you add two integer valued properties to the user
 object. Let's call them ``rate_limit_interval`` and
