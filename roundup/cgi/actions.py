@@ -969,12 +969,12 @@ class PassResetAction(Action):
 
             # send the email
             tracker_name = self.db.config.TRACKER_NAME
-            subject = 'Password reset for %s' % tracker_name
-            body = '''
+            subject = self._('Password reset for %s') % tracker_name
+            body = self._('''
 The password has been reset for username "%(name)s".
 
 Your password is now: %(password)s
-''' % {'name': name, 'password': newpw}
+''') % {'name': name, 'password': newpw}
             if not self.client.standard_message([address], subject, body):
                 return
 
@@ -1013,8 +1013,8 @@ Your password is now: %(password)s
 
         # send the email
         tracker_name = self.db.config.TRACKER_NAME
-        subject = 'Confirm reset of password for %s' % tracker_name
-        body = '''
+        subject = self._('Confirm reset of password for %s') % tracker_name
+        body = self._('''
 Someone, perhaps you, has requested that the password be changed for your
 username, "%(name)s". If you wish to proceed with the change, please follow
 the link below:
@@ -1022,7 +1022,7 @@ the link below:
   %(url)suser?@template=forgotten&@action=passrst&otk=%(otk)s
 
 You should then receive another email with the new password.
-''' % {'name': name, 'tracker': tracker_name, 'url': self.base, 'otk': otk}
+''') % {'name': name, 'tracker': tracker_name, 'url': self.base, 'otk': otk}
         if not self.client.standard_message([address], subject, body):
             return
 
@@ -1159,9 +1159,9 @@ class RegisterAction(RegoCommon, EditCommon, Timestamped):
         tracker_name = self.db.config.TRACKER_NAME
         tracker_email = self.db.config.TRACKER_EMAIL
         if self.db.config['EMAIL_REGISTRATION_CONFIRMATION']:
-            subject = 'Complete your registration to %s -- key %s' % (
+            subject = _('Complete your registration to %s -- key %s') % (
                 tracker_name, otk)
-            body = """To complete your registration of the user "%(name)s" with
+            body = _("""To complete your registration of the user "%(name)s" with
 %(tracker)s, please do one of the following:
 
 - send a reply to %(tracker_email)s and maintain the subject line as is (the
@@ -1171,16 +1171,16 @@ reply's additional "Re:" is ok),
 
 %(url)s?@action=confrego&otk=%(otk)s
 
-""" % {'name': user_props['username'], 'tracker': tracker_name,
+""") % {'name': user_props['username'], 'tracker': tracker_name,
        'url': self.base, 'otk': otk, 'tracker_email': tracker_email}
         else:
-            subject = 'Complete your registration to %s' % (tracker_name)
-            body = """To complete your registration of the user "%(name)s" with
+            subject = _('Complete your registration to %s') % (tracker_name)
+            body = _("""To complete your registration of the user "%(name)s" with
 %(tracker)s, please visit the following URL:
 
 %(url)s?@action=confrego&otk=%(otk)s
 
-""" % {'name': user_props['username'], 'tracker': tracker_name,
+""") % {'name': user_props['username'], 'tracker': tracker_name,
        'url': self.base, 'otk': otk}
         if not self.client.standard_message([user_props['address']], subject,
                                             body,

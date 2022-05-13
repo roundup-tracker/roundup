@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roundup 1.5.0\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2022-05-11 20:51-0400\n"
+"POT-Creation-Date: 2022-05-12 21:22-0400\n"
 "PO-Revision-Date: 2016-04-11 09:13+0200\n"
 "Last-Translator: Tobias Herp <tobias.herp@gmx.de>\n"
 "Language-Team: German Translators <roundup-devel@lists.sourceforge.net>\n"
@@ -1583,6 +1583,20 @@ msgstr ""
 "(Ein Fehler in Mozilla kann diese Meldung hervorrufen, bitte prüfen Sie Ihr "
 "E-Mail-Konto)"
 
+#: ../roundup/cgi/actions.py:972
+#, fuzzy, python-format
+msgid "Password reset for %s"
+msgstr "Passwort zurücksetzen"
+
+#: ../roundup/cgi/actions.py:973
+#, python-format
+msgid ""
+"\n"
+"The password has been reset for username \"%(name)s\".\n"
+"\n"
+"Your password is now: %(password)s\n"
+msgstr ""
+
 #: ../roundup/cgi/actions.py:982
 #, python-format
 msgid "Password reset and email sent to %s"
@@ -1599,6 +1613,25 @@ msgstr "E-Mail-Adresse unbekannt"
 #: ../roundup/cgi/actions.py:1004
 msgid "You need to specify a username or address"
 msgstr "Sie müssen einen Benutzernamen oder eine E-Mail-Adresse angeben"
+
+#: ../roundup/cgi/actions.py:1016
+#, fuzzy, python-format
+msgid "Confirm reset of password for %s"
+msgstr "Passwort bestätigen"
+
+#: ../roundup/cgi/actions.py:1017
+#, python-format
+msgid ""
+"\n"
+"Someone, perhaps you, has requested that the password be changed for your\n"
+"username, \"%(name)s\". If you wish to proceed with the change, please "
+"follow\n"
+"the link below:\n"
+"\n"
+"  %(url)suser?@template=forgotten&@action=passrst&otk=%(otk)s\n"
+"\n"
+"You should then receive another email with the new password.\n"
+msgstr ""
 
 #: ../roundup/cgi/actions.py:1030
 #, python-format
@@ -1617,6 +1650,42 @@ msgstr "Sie sind nun registriert. Willkommen!"
 #: ../roundup/cgi/actions.py:1137
 #, python-format
 msgid "Username '%s' is already used."
+msgstr ""
+
+#: ../roundup/cgi/actions.py:1162
+#, python-format
+msgid "Complete your registration to %s -- key %s"
+msgstr ""
+
+#: ../roundup/cgi/actions.py:1164
+#, python-format
+msgid ""
+"To complete your registration of the user \"%(name)s\" with\n"
+"%(tracker)s, please do one of the following:\n"
+"\n"
+"- send a reply to %(tracker_email)s and maintain the subject line as is "
+"(the\n"
+"reply's additional \"Re:\" is ok),\n"
+"\n"
+"- or visit the following URL:\n"
+"\n"
+"%(url)s?@action=confrego&otk=%(otk)s\n"
+"\n"
+msgstr ""
+
+#: ../roundup/cgi/actions.py:1177
+#, python-format
+msgid "Complete your registration to %s"
+msgstr ""
+
+#: ../roundup/cgi/actions.py:1178
+#, python-format
+msgid ""
+"To complete your registration of the user \"%(name)s\" with\n"
+"%(tracker)s, please visit the following URL:\n"
+"\n"
+"%(url)s?@action=confrego&otk=%(otk)s\n"
+"\n"
 msgstr ""
 
 #: ../roundup/cgi/actions.py:1202
@@ -2389,7 +2458,7 @@ msgstr "Kann Ihre Nachricht nicht entschlüsseln"
 msgid "No PGP signature found in message."
 msgstr "Keine PGP-Signatur in Nachricht gefunden"
 
-#: ../roundup/mailgw.py:583
+#: ../roundup/mailgw.py:582
 msgid ""
 "\n"
 "Emails to Roundup trackers must include a Subject: line!\n"
@@ -2397,7 +2466,7 @@ msgstr ""
 "\n"
 "Mails an Roundup müssen eine Subject-Zeile haben (Betreff)!\n"
 
-#: ../roundup/mailgw.py:696
+#: ../roundup/mailgw.py:695
 #, python-format
 msgid ""
 "\n"
@@ -2426,7 +2495,7 @@ msgstr ""
 "\n"
 "Der Betreff war: '%(subject)s'\n"
 
-#: ../roundup/mailgw.py:734
+#: ../roundup/mailgw.py:733
 #, python-format
 msgid ""
 "\n"
@@ -2442,7 +2511,7 @@ msgstr ""
 "Gültige Klassen sind: %(validname)s\n"
 "Die Betreffzeile war: \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:742
+#: ../roundup/mailgw.py:741
 #, python-format
 msgid ""
 "\n"
@@ -2472,7 +2541,7 @@ msgstr ""
 "Die Betreffzeile (Subject) war:\n"
 "   '%(subject)s'\n"
 
-#: ../roundup/mailgw.py:778
+#: ../roundup/mailgw.py:777
 #, python-format
 msgid ""
 "\n"
@@ -2491,7 +2560,7 @@ msgstr ""
 "Die Betreffzeile (Subject) war:\n"
 "   '%(subject)s'\n"
 
-#: ../roundup/mailgw.py:811
+#: ../roundup/mailgw.py:810
 #, python-format
 msgid ""
 "\n"
@@ -2507,7 +2576,7 @@ msgstr ""
 "Die Betreffzeile (Subject) war:\n"
 "   '%(subject)s'\n"
 
-#: ../roundup/mailgw.py:856
+#: ../roundup/mailgw.py:855
 #, python-format
 msgid ""
 "\n"
@@ -2520,21 +2589,21 @@ msgstr ""
 "\n"
 "Unbekannte Adresse: %(from_address)s\n"
 
-#: ../roundup/mailgw.py:864
+#: ../roundup/mailgw.py:863
 msgid "You are not permitted to access this tracker."
 msgstr "Sie haben keinen Zugriff auf diesen Tracker."
 
-#: ../roundup/mailgw.py:875
+#: ../roundup/mailgw.py:874
 #, python-format
 msgid "You are not permitted to edit %(classname)s."
 msgstr "Sie sind nicht berechtigt, die Klasse \"%(classname)s\" zu bearbeiten"
 
-#: ../roundup/mailgw.py:881
+#: ../roundup/mailgw.py:880
 #, python-format
 msgid "You are not permitted to create %(classname)s."
 msgstr "Sie sind nicht berechtigt, ein \"%(classname)s\" zu erzeugen"
 
-#: ../roundup/mailgw.py:963
+#: ../roundup/mailgw.py:962
 #, python-format
 msgid ""
 "\n"
@@ -2549,7 +2618,7 @@ msgstr ""
 "\n"
 "Die Betreffzeile war: \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:1015
+#: ../roundup/mailgw.py:1014
 #, fuzzy
 msgid "This tracker has been configured to require all email be PGP encrypted."
 msgstr ""
@@ -2557,7 +2626,7 @@ msgstr ""
 "Dieser Tracker wurde konfiguriert, E-Mail-Nachrichten nur PGP-signiert oder\n"
 "verschlüsselt entgegenzunehmen."
 
-#: ../roundup/mailgw.py:1052
+#: ../roundup/mailgw.py:1051
 msgid ""
 "\n"
 "This tracker has been configured to require all email be PGP signed or\n"
@@ -2567,16 +2636,16 @@ msgstr ""
 "Dieser Tracker wurde konfiguriert, E-Mail-Nachrichten nur PGP-signiert oder\n"
 "verschlüsselt entgegenzunehmen."
 
-#: ../roundup/mailgw.py:1083
+#: ../roundup/mailgw.py:1082
 msgid "You are not permitted to create files."
 msgstr "Sie sind nicht berechtigt, Dateien zu erzeugen."
 
-#: ../roundup/mailgw.py:1097
+#: ../roundup/mailgw.py:1096
 #, python-format
 msgid "You are not permitted to add files to %(classname)s."
 msgstr "Sie sind nicht berechtigt, Dateien zu %(classname)s hinzuzufügen."
 
-#: ../roundup/mailgw.py:1127
+#: ../roundup/mailgw.py:1126
 msgid ""
 "\n"
 "Roundup requires the submission to be plain text. The message parser could\n"
@@ -2587,11 +2656,11 @@ msgstr ""
 "konnte\n"
 "keinen entsprechenden Teil (\"text/plain\") finden.\n"
 
-#: ../roundup/mailgw.py:1140
+#: ../roundup/mailgw.py:1139
 msgid "You are not permitted to create messages."
 msgstr "Sie sind nicht berechtigt, Nachrichten zu erzeugen"
 
-#: ../roundup/mailgw.py:1148
+#: ../roundup/mailgw.py:1147
 #, python-format
 msgid ""
 "\n"
@@ -2602,12 +2671,12 @@ msgstr ""
 "Die Mail-Nachricht wurde von einem Detektor zurückgewiesen.\n"
 "%(error)s\n"
 
-#: ../roundup/mailgw.py:1156
+#: ../roundup/mailgw.py:1155
 #, python-format
 msgid "You are not permitted to add messages to %(classname)s."
 msgstr "Sie sind nicht berechtigt, Kommentare zu %(classname)s hinzuzufügen."
 
-#: ../roundup/mailgw.py:1178
+#: ../roundup/mailgw.py:1177
 #, python-format
 msgid "You are not permitted to edit property %(prop)s of class %(classname)s."
 msgstr ""
@@ -2615,7 +2684,7 @@ msgstr ""
 "%(classname)s\n"
 "zu bearbeiten."
 
-#: ../roundup/mailgw.py:1187
+#: ../roundup/mailgw.py:1186
 #, fuzzy, python-format
 msgid "You are not permitted to set property %(prop)s of class %(classname)s."
 msgstr ""
@@ -2623,7 +2692,7 @@ msgstr ""
 "%(classname)s\n"
 "zu bearbeiten."
 
-#: ../roundup/mailgw.py:1195
+#: ../roundup/mailgw.py:1194
 #, python-format
 msgid ""
 "\n"
@@ -2634,7 +2703,7 @@ msgstr ""
 "Es gab ein Problem mit Ihrer Nachricht:\n"
 "   %(message)s\n"
 
-#: ../roundup/mailgw.py:1668
+#: ../roundup/mailgw.py:1673
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -2647,7 +2716,7 @@ msgstr ""
 "Sie sich an %(mailadmin)s und bitten Sie um Korrektur der\n"
 "fehlerhaften Klasse:  %(current_class)s\n"
 
-#: ../roundup/mailgw.py:1699
+#: ../roundup/mailgw.py:1704
 #, python-format
 msgid ""
 "\n"
@@ -2660,7 +2729,7 @@ msgstr ""
 "Sie sich an %(mailadmin)s und bitten Sie um Korrektur der\n"
 "fehlerhaften Eigenschaften:  %(errors)s\n"
 
-#: ../roundup/mailgw.py:1720
+#: ../roundup/mailgw.py:1725
 msgid "not of form [arg=value,value,...;arg=value,value,...]"
 msgstr "entspricht nicht der Form [arg=wert,wert,...;arg=wert,wert,...]"
 
@@ -2686,7 +2755,7 @@ msgid ""
 "%(acceptable_types)s"
 msgstr ""
 
-#: ../roundup/rest.py:2264
+#: ../roundup/rest.py:2268
 #, python-format
 msgid ""
 "Unrecognized api version: %s. See /rest without specifying api version for "

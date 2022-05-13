@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.8.3\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2022-05-11 21:03-0400\n"
+"POT-Creation-Date: 2022-05-12 21:22-0400\n"
 "PO-Revision-Date: 2013-10-31 12:23+0100\n"
 "Last-Translator: Fred Lin <gasolin@gmail>\n"
 "Language-Team: Chinese Traditional <gasolin@gmail.com>\n"
@@ -1476,6 +1476,20 @@ msgstr ""
 "Invalid One Time Key!\n"
 "(一個 Mozilla 的錯誤可能會錯誤地引發這個消息，你檢查你的郵件)"
 
+#: ../roundup/cgi/actions.py:972
+#, fuzzy, python-format
+msgid "Password reset for %s"
+msgstr "口令重設請求"
+
+#: ../roundup/cgi/actions.py:973
+#, python-format
+msgid ""
+"\n"
+"The password has been reset for username \"%(name)s\".\n"
+"\n"
+"Your password is now: %(password)s\n"
+msgstr ""
+
 #: ../roundup/cgi/actions.py:982
 #, python-format
 msgid "Password reset and email sent to %s"
@@ -1492,6 +1506,25 @@ msgstr "未知郵件地址"
 #: ../roundup/cgi/actions.py:1004
 msgid "You need to specify a username or address"
 msgstr "你需要指定用戶名或地址"
+
+#: ../roundup/cgi/actions.py:1016
+#, fuzzy, python-format
+msgid "Confirm reset of password for %s"
+msgstr "口令確認"
+
+#: ../roundup/cgi/actions.py:1017
+#, python-format
+msgid ""
+"\n"
+"Someone, perhaps you, has requested that the password be changed for your\n"
+"username, \"%(name)s\". If you wish to proceed with the change, please "
+"follow\n"
+"the link below:\n"
+"\n"
+"  %(url)suser?@template=forgotten&@action=passrst&otk=%(otk)s\n"
+"\n"
+"You should then receive another email with the new password.\n"
+msgstr ""
 
 #: ../roundup/cgi/actions.py:1030
 #, python-format
@@ -1510,6 +1543,42 @@ msgstr "你已經註冊，歡迎！"
 #: ../roundup/cgi/actions.py:1137
 #, python-format
 msgid "Username '%s' is already used."
+msgstr ""
+
+#: ../roundup/cgi/actions.py:1162
+#, python-format
+msgid "Complete your registration to %s -- key %s"
+msgstr ""
+
+#: ../roundup/cgi/actions.py:1164
+#, python-format
+msgid ""
+"To complete your registration of the user \"%(name)s\" with\n"
+"%(tracker)s, please do one of the following:\n"
+"\n"
+"- send a reply to %(tracker_email)s and maintain the subject line as is "
+"(the\n"
+"reply's additional \"Re:\" is ok),\n"
+"\n"
+"- or visit the following URL:\n"
+"\n"
+"%(url)s?@action=confrego&otk=%(otk)s\n"
+"\n"
+msgstr ""
+
+#: ../roundup/cgi/actions.py:1177
+#, python-format
+msgid "Complete your registration to %s"
+msgstr ""
+
+#: ../roundup/cgi/actions.py:1178
+#, python-format
+msgid ""
+"To complete your registration of the user \"%(name)s\" with\n"
+"%(tracker)s, please visit the following URL:\n"
+"\n"
+"%(url)s?@action=confrego&otk=%(otk)s\n"
+"\n"
 msgstr ""
 
 #: ../roundup/cgi/actions.py:1202
@@ -2410,7 +2479,7 @@ msgid ""
 "   %(message)s\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:1667
+#: ../roundup/mailgw.py:1673
 #, python-format
 msgid ""
 "\n"
@@ -2419,7 +2488,7 @@ msgid ""
 "  %(clsname)s\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:1698
+#: ../roundup/mailgw.py:1704
 #, python-format
 msgid ""
 "\n"
@@ -2428,7 +2497,7 @@ msgid ""
 "  %(errors)s\n"
 msgstr ""
 
-#: ../roundup/mailgw.py:1719
+#: ../roundup/mailgw.py:1725
 msgid "not of form [arg=value,value,...;arg=value,value,...]"
 msgstr ""
 
@@ -2454,7 +2523,7 @@ msgid ""
 "%(acceptable_types)s"
 msgstr ""
 
-#: ../roundup/rest.py:2264
+#: ../roundup/rest.py:2268
 #, python-format
 msgid ""
 "Unrecognized api version: %s. See /rest without specifying api version for "

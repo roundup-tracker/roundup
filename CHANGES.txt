@@ -84,6 +84,8 @@ Fixed:
   roundup/dist/command (John Rouillard)
 - Fix hang if Range request was not able to be satified or a HEAD
   request was done.
+- Mark strings involved with password reset and registration for
+  translation. (reported: Thomas Arendsen Hein, John Rouillard)
 
 Features:
 
