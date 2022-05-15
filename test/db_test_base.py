@@ -1807,6 +1807,23 @@ class DBTest(commonDBTest):
         self.db.commit()
         return self.iterSetup(classname)
 
+    def testFilteringNone(self):
+        ae, iiter = self.filteringSetup()
+        for filt in iiter():
+            ae(filt(None, None, ('+','id'), (None,None)), ['1', '2', '3', '4'])
+
+    def testSortingNone(self):
+        ae, iiter = self.filteringSetup()
+        for filt in iiter():
+            ae(filt(None, {'id': ['1','3','4']}, None, ('-', 'status')),
+                    ['3', '4', '1'])
+
+    def testGroupingNone(self):
+        ae, iiter = self.filteringSetup()
+        for filt in iiter():
+            ae(filt(None, {'title': ['issue']}, [('-', 'id')],
+                    None), ['3', '2', '1'])
+
     def testFilteringID(self):
         ae, iiter = self.filteringSetup()
         for filt in iiter():

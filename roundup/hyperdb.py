@@ -1571,6 +1571,9 @@ class Class:
         If we retrieve (retr is True) linked items we don't follow
         across multilinks or links.
         """
+        if filterspec is None:
+            filterspec = {}
+
         proptree = Proptree(self.db, self, '', self.getprops(), retr=retr)
         for exact, spec in enumerate((filterspec, exact_match_spec)):
             for key, v in spec.items():
@@ -1647,6 +1650,11 @@ class Class:
         with sanity checks (no duplicate properties) included. Always
         sort last by id -- if id is not already in sortattr.
         """
+        if sort is None:
+            sort = [(None,None)]
+        if group is None:
+            group = [(None, None)]
+
         seen = {}
         sortattr = []
         for srt in group, sort:
@@ -1695,7 +1703,7 @@ class Class:
         is returning the first item of a sorted search by specifying
         limit=1 (i.e. the maximum or minimum depending on sort order).
 
-        The filter must match all properties specificed. If the property
+        The filter must match all properties specified. If the property
         value to match is a list:
 
         1. String properties must match all elements in the list, and
