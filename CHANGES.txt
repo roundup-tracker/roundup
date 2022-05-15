@@ -86,6 +86,11 @@ Fixed:
   request was done.
 - Mark strings involved with password reset and registration for
   translation. (reported: Thomas Arendsen Hein, John Rouillard)
+- issue2551159 - cl.filter fails if filterspec is None (also
+  group and sort). Passing a sort, group or filterprop param
+  set to None to any filter() call should not cause a
+  traceback. It will pretend as though no filter, sort or
+  group was specified. (John Rouillard)
 
 Features:
 
