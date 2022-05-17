@@ -142,7 +142,7 @@ class BasicDatabase:
                 #   [Errno 11] Resource temporarily unavailable retry
                 # FIXME: make this more specific
                 if retries_left < 10:
-                    logger.warning('dbm.open failed, retrying %s left: %s'%(retries_left,e))
+                    logger.warning('dbm.open failed on ...%s, retry %s left: %s, %s'%(path[-15:],15-retries_left,retries_left,e))
                 if retries_left < 0:
                     # We have used up the retries. Reraise the exception
                     # that got us here.
