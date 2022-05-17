@@ -72,6 +72,11 @@ Clients should set the header X-REQUESTED-WITH to any value and the
 tracker's config.ini should have ``csrf_enforce_header_x-requested-with
 = yes`` or ``required``.
 
+If you want to allow Roundup's api to be accessed by an application
+that is not hosted at the same origin as Roundup, you must permit
+the origin using the ``allowed_api_origins`` setting in
+``config.ini``.
+
 Rate Limiting the API
 =====================
 
@@ -211,15 +216,22 @@ require that REST be enabled. These requests do not make any changes
 or get any information from the database. As a result they are
 available to the anonymous user and any authenticated user. The user
 does not need to have `Rest Access` permissions. Also these requests
-bypass CSRF checks.
+bypass CSRF checks except for the Origin header check which is always
+run for preflight requests.
 
-The headers:
+You can permit only allowed ORIGINS by setting ``allowed_api_origins``
+in ``config.ini`` to the list of origins permitted to access your
+api. By default only your tracker's origin is allowed. If a preflight
+request fails, the api request will be stopped by the browser.
+
+The following CORS preflight headers are usually added automatically by
+the browser and must all be present:
 
 * `Access-Control-Request-Headers`
 * `Access-Control-Request-Method`
 * `Origin`
 
-must all be present. The 204 response will include:
+The 204 response will include the headers:
 
 * `Access-Control-Allow-Origin`
 * `Access-Control-Allow-Headers`
@@ -237,10 +249,6 @@ should be cached for a day so preflight requests are not expected to
 cause a problem. If it is an issue, you can see
 `Creating Custom Rate Limits`_
 and craft a rate limiter that ignores anonymous OPTIONS requests.
-
-Support for filtering by ORIGIN is not included. If you want to add
-this, see `Programming the REST API`_ on directions for overriding
-existing endpoints with a wrapper that can verify the ORIGIN.
 
 Response Formats
 ================

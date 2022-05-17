@@ -540,6 +540,38 @@ class FilePathOption(Option):
             _val = os.path.join(self.config["HOME"], _val)
         return _val
 
+class SpaceSeparatedListOption(Option):
+
+    """List of space seperated elements.
+    """
+
+    class_description = "A list of space separated elements."
+
+    def get(self):
+        pathlist = []
+        _val = Option.get(self)
+        for elem in _val.split():
+                pathlist.append(elem)
+        if pathlist:
+            return pathlist
+        else:
+            return None
+
+class OriginHeadersListOption(Option):
+
+    """List of space seperated origin header values.
+    """
+
+    class_description = "A list of space separated case sensitive origin headers 'scheme://host'."
+
+
+    def set(self, _val):
+        pathlist = self._value = []
+        for elem in _val.split():
+                pathlist.append(elem)
+        if '*' in pathlist and len(pathlist) != 1:
+            raise OptionValueError(self, _val,
+                                   "If using '*' it must be the only element.")
 
 class MultiFilePathOption(Option):
 
@@ -1170,6 +1202,21 @@ Set this to 'logfailure' to log a notice to the roundup
     log if the header is invalid or missing, but accept
     the post.
 Set this to 'no' to ignore the header and accept the post."""),
+        (OriginHeadersListOption, 'allowed_api_origins', "",
+            """A comma separated list of additonal valid Origin header
+values used when enforcing the header origin. They are used
+only for the api URL's (/rest and /xmlrpc). They are not
+used for the usual html URL's. These strings must match the
+value of the Origin header exactly. So 'https://bar.edu' and
+'https://Bar.edu' are two different Origin values. Note that
+the origin value is scheme://host. There is no path
+component. So 'https://bar.edu/' would never be valid.
+
+You need to set these if you have a web application on a
+different origin accessing your roundup instance.
+
+(The origin from the tracker.web setting in config.ini is
+always valid and does not need to be specified.)"""),
         (CsrfSettingOption, 'csrf_enforce_header_x-forwarded-host', "yes",
             """Verify that the X-Forwarded-Host http header matches
 the host part of the tracker.web setting in config.ini.

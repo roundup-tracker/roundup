@@ -279,6 +279,18 @@ class ConfigTest(unittest.TestCase):
        self.assertEqual("3", 
             config._get_option('WEB_LOGIN_ATTEMPTS_MIN')._value2str(3.00))
 
+    def testOriginHeader(self):
+        config = configuration.CoreConfig()
+
+        with self.assertRaises(configuration.OptionValueError) as cm:
+            config._get_option('WEB_ALLOWED_API_ORIGINS').set("* https://foo.edu")
+
+        config._get_option('WEB_ALLOWED_API_ORIGINS').set("https://foo.edu HTTP://baR.edu")
+
+        self.assertEqual(config['WEB_ALLOWED_API_ORIGINS'][0], 'https://foo.edu')
+        self.assertEqual(config['WEB_ALLOWED_API_ORIGINS'][1], 'HTTP://baR.edu')
+        
+
 
     def testOptionAsString(self):
 

@@ -581,7 +581,7 @@ class Client:
             # Call csrf with xmlrpc checks enabled.
             # It will return True if everything is ok,
             # raises exception on check failure.
-            csrf_ok =  self.handle_csrf(xmlrpc=True)
+            csrf_ok =  self.handle_csrf(api=True)
         except (Unauthorised, UsageError) as msg:
             # report exception back to server
             exc_type, exc_value, exc_tb = sys.exc_info()
@@ -631,10 +631,10 @@ class Client:
         self.check_anonymous_access()
 
         try:
-            # Call csrf with xmlrpc checks enabled.
+            # Call csrf with api (xmlrpc, rest) checks enabled.
             # It will return True if everything is ok,
             # raises exception on check failure.
-            csrf_ok = self.handle_csrf(xmlrpc=True)
+            csrf_ok = self.handle_csrf(api=True)
         except (Unauthorised, UsageError) as msg:
             # report exception back to server
             exc_type, exc_value, exc_tb = sys.exc_info()
@@ -1207,8 +1207,28 @@ class Client:
                 raise Unauthorised(self._("Anonymous users are not "
                     "allowed to use the web interface"))
 
+    def is_origin_header_ok(self, api=False):
+        origin = self.env['HTTP_ORIGIN']
+        # note base https://host/... ends host with with a /,
+        # so add it to origin.
+        foundat = self.base.find(origin +'/')
+        if foundat == 0:
+            return True
 
-    def handle_csrf(self, xmlrpc=False):
+        if not api:
+            return False
+
+        allowed_origins = self.db.config['WEB_ALLOWED_API_ORIGINS']
+        # find a match for other possible origins
+        # Original spec says origin is case sensitive match.
+        # Living spec doesn't address Origin value's case or
+        # how to compare it. So implement case sensitive.... 
+        if allowed_origins[0] == '*' or origin in allowed_origins:
+            return True
+
+        return False
+
+    def handle_csrf(self, api=False):
         '''Handle csrf token lookup and validate current user and session
 
             This implements (or tries to implement) the
@@ -1332,9 +1352,8 @@ class Client:
         # self.base.find("") returns 0 for example not -1
         enforce=config['WEB_CSRF_ENFORCE_HEADER_ORIGIN']
         if 'HTTP_ORIGIN' in self.env and enforce != "no":
-            origin = self.env['HTTP_ORIGIN']
-            foundat = self.base.find(origin +'/')
-            if foundat != 0:
+            if not self.is_origin_header_ok(api=api):
+                origin = self.env['HTTP_ORIGIN']
                 if enforce in ('required', 'yes'):
                     logger.error(self._("csrf Origin header check failed for user%s. Value=%s"), current_user, origin)
                     raise Unauthorised(self._("Invalid Origin %s"%origin))
@@ -1384,13 +1403,13 @@ class Client:
             raise UsageError(self._("Unable to verify sufficient headers"))
 
         enforce=config['WEB_CSRF_ENFORCE_HEADER_X-REQUESTED-WITH']
-        if xmlrpc:
+        if api:
             if enforce in ['required', 'yes']:
                 # if we get here we have usually passed at least one
                 # header check. We check for presence of this custom
-                # header for xmlrpc calls only.
+                # header for xmlrpc/rest calls only.
                 # E.G. X-Requested-With: XMLHttpRequest
-                # Note we do not use CSRF nonces for xmlrpc requests.
+                # Note we do not use CSRF nonces for xmlrpc/rest requests.
                 #
                 # see: https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Protecting_REST_Services:_Use_of_Custom_Request_Headers
                 if 'HTTP_X_REQUESTED_WITH' not in self.env:
@@ -1405,7 +1424,7 @@ class Client:
         # our own.
         otks.clean()
 
-        if xmlrpc:
+        if api:
             # Save removal of expired keys from database.
             otks.commit()
             # Return from here since we have done housekeeping

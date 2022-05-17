@@ -91,6 +91,9 @@ Fixed:
   set to None to any filter() call should not cause a
   traceback. It will pretend as though no filter, sort or
   group was specified. (John Rouillard)
+- issue2551205 - Add support for specifying valid origins
+  for api: xmlrpc/rest. Allows CORS to work with roundup
+  backend. (John Rouillard)
 
 Features:
 
