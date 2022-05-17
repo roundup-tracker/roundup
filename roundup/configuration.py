@@ -573,6 +573,9 @@ class OriginHeadersListOption(Option):
             raise OptionValueError(self, _val,
                                    "If using '*' it must be the only element.")
 
+    def _value2str(self, value):
+        return ','.join(value)
+
 class MultiFilePathOption(Option):
 
     """List of space seperated File or directory path name
