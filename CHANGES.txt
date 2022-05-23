@@ -94,6 +94,9 @@ Fixed:
 - issue2551205 - Add support for specifying valid origins
   for api: xmlrpc/rest. Allows CORS to work with roundup
   backend. (John Rouillard)
+- new option added to config.ini: login_empty_passwords set to
+  no by default. Setting this to yes allows a user with an
+  empty password to login.
 
 Features:
 

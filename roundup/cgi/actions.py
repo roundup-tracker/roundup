@@ -1398,7 +1398,8 @@ class LoginAction(Action):
                 db.user.set(userid, password=newpw)
                 db.commit()
             return 1
-        if not givenpw and not stored:
+        # allow blank password
+        if db.config.WEB_LOGIN_EMPTY_PASSWORDS and not givenpw and not stored:
             return 1
         return 0
 

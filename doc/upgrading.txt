@@ -69,6 +69,15 @@ backends. You may want to run ``roundup-admin -i tracker_home
 reindex`` if you want to index or search for longer words in your full
 text searches. Re-indexing make take some time.
 
+Check new login_empty_passwords setting
+---------------------------------------
+
+In this version of Roundup, users with a blank password are not
+allowed to login. Blank passwords have been allowed since 2002, but
+2022 is a different time. If you have a use case that requires a user
+to login without a password, set the ``login_empty_passwords`` setting
+in the ``web`` section of ``config.ini`` to ``yes``.
+
 Check compression settings (optional)
 -------------------------------------
 

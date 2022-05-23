@@ -1260,6 +1260,9 @@ always passes, so setting it less than 1 is not recommended."""),
             "Setting this option makes Roundup display error tracebacks\n"
             "in the user's browser rather than emailing them to the\n"
             "tracker admin."),
+        (BooleanOption, "login_empty_passwords", "no",
+            "Setting this option to yes/true allows users with an empty/blank\n"
+            "password to login to the web/http interfaces."),
         (BooleanOption, "migrate_passwords", "yes",
             "Setting this option makes Roundup migrate passwords with\n"
             "an insecure password-scheme to a more secure scheme\n"
