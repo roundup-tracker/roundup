@@ -139,7 +139,7 @@ Roundup release checklist:
     You need to sign the tarball. This can be done with:
 
       cd dist
-      gpg --detach-sign --armor <filename>.tgz
+      gpg --detach-sign --armor -u 1F2DD0CB756A76D8 <filename>.tgz
       
     you should be prompted to use the roundup release key. If not you
     can add  --local=roundup-devel@lists.sourceforge.net.
