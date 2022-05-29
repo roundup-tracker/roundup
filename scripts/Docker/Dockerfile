@@ -53,7 +53,7 @@ RUN set -xv && CWD=$PWD && \
     wget https://oligarchy.co.uk/xapian/$VER/xapian-bindings-$VER.tar.xz && \
     tar -Jxvf xapian-bindings-$VER.tar.xz && \
     cd xapian-bindings-$VER/ && \
-    pip --no-cache-dir install sphinx==1.8.5 && \
+    pip --no-cache-dir install sphinx && \
     ./configure --prefix=/usr/local --with-python3 --disable-documentation && \
     make && make install && \
     pip uninstall --no-cache-dir -y -r $CWD/sphinxdeps.txt
@@ -129,7 +129,7 @@ VOLUME $appdir/tracker
 HEALTHCHECK --start-period=1m \
    CMD wget -q -O /dev/null --no-verbose http://localhost:8080/issues/
 
-# do not run roundup as root
+# do not run roundup as root. This creates roundup user and group.
 RUN adduser -D -h /usr/src/app roundup
 USER roundup
 
