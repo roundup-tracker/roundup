@@ -1487,7 +1487,7 @@ and used to be the main way to get a lot of customization done. In
 modern roundup, the extensions_ mechanism is used, but there are
 places where interfaces.py is still useful. Note that the tracker
 directories are not on the Python system path when interfaces.py is
-evaluated. You need to add library directories explicty by
+evaluated. You need to add library directories explictly by
 modifying sys.path.
 
 Example: Changing Cache-Control headers
