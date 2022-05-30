@@ -1214,6 +1214,9 @@ value of the Origin header exactly. So 'https://bar.edu' and
 'https://Bar.edu' are two different Origin values. Note that
 the origin value is scheme://host. There is no path
 component. So 'https://bar.edu/' would never be valid.
+Also the value * can be used to match any origin. Note that
+this setting allows any other web page to make requests against
+your roundup tracker and is not generally a good idea.
 
 You need to set these if you have a web application on a
 different origin accessing your roundup instance.

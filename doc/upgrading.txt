@@ -35,6 +35,19 @@ Contents:
 Migrating from 2.1.0 to 2.x.y
 =============================
 
+Update your ``config.ini`` (required)
+-------------------------------------
+
+Upgrade tracker's config.ini file. Use::
+
+  roundup-admin -i /path/to/tracker updateconfig newconfig.ini
+
+to generate a new ini file preserving all your settings. You
+can then merge any local comments from the tracker's
+``config.ini`` into ``newconfig.ini``. You can then merge
+comments from ``config.ini`` to ``newconfig.ini`` and
+replace ``config.ini`` with ``newconfig.ini``.
+
 Rdbms version change from 6 to 7 (required)
 -------------------------------------------
 
@@ -69,29 +82,35 @@ backends. You may want to run ``roundup-admin -i tracker_home
 reindex`` if you want to index or search for longer words in your full
 text searches. Re-indexing make take some time.
 
-Check new login_empty_passwords setting
----------------------------------------
+Check new login_empty_passwords setting (required)
+--------------------------------------------------
 
 In this version of Roundup, users with a blank password are not
 allowed to login. Blank passwords have been allowed since 2002, but
 2022 is a different time. If you have a use case that requires a user
 to login without a password, set the ``login_empty_passwords`` setting
-in the ``web`` section of ``config.ini`` to ``yes``.
+in the ``web`` section of ``config.ini`` to ``yes``. In
+general this should be left at its default value of ``no``.
+
+Check allowed_api_origins setting (optional)
+--------------------------------------------
+
+If you are using the REST or xmlrpc api's from an origin
+that is different from your roundup tracker, you will need
+to add your allowed origins to the allowed_api_origins in
+your updated ``config.ini``. Upgrade your ``config.ini`` as
+described above then read the documentation for the setting
+in ``config.ini``.
 
 Check compression settings (optional)
 -------------------------------------
 
 Read the `administration guide`_ section on `Configuring Compression`_.
 
-Upgrade tracker's config.ini file. Use::
-
-  roundup-admin -i /path/to/tracker updateconfig newconfig.ini
-
-to generate a new ini file preserving all your settings. You can then
-merge any local comments from the tracker's ``config.ini`` into
-``newconfig.ini``. Compare the old and new files and configure new
-compression settings as you want. Then replace ``config.ini`` with the
-``newconfig.ini`` file.
+Upgrade your tracker's config.ini as described
+above. Compare the old and new files and configure new
+compression settings as you want. Then replace
+``config.ini`` with the ``newconfig.ini`` file.
 
 Search added to user index page (optional)
 ------------------------------------------
@@ -961,7 +980,7 @@ Support for SameSite cookie option for session cookie
 
 Support for serving the session cookie using the SameSite cookie option
 has been added. By default it is set to lax to provide a better user
-experience. But this can be changes to strict or the option can be
+experience. But this can be changed to strict or the option can be
 removed entirely.
 
 Using the process for merging config.ini changes described in
