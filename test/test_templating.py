@@ -108,6 +108,21 @@ class HTMLDatabaseTestCase(TemplatingTestCase):
         db._db.classes = {'issue':MockNull(), 'user': MockNull()}
         db.classes()
 
+    def test_HTMLDatabase_list(self):
+        # The list method used to produce a traceback when a None value
+        # for an order attribute of a class was encountered. This
+        # happens when the 'get' of the order attribute for a numeric
+        # id produced a None value. So we put '23' as a key into the
+        # list and set things up that a None value is returned on 'get'.
+
+        # This keeps db.issue static, otherwise it changes for each call
+        db = MockNull(issue = HTMLDatabase(self.client).issue)
+        db.issue._klass.list = lambda : ['23', 'a', 'b']
+        # Make db.getclass return something that has a sensible 'get' method
+        mock = MockNull(get = lambda x, y : None)
+        db.issue._db.getclass = lambda x : mock
+        l = db.issue.list()
+
 class FunctionsTestCase(TemplatingTestCase):
     def test_lookupIds(self):
         db = HTMLDatabase(self.client)

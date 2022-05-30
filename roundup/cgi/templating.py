@@ -2883,6 +2883,9 @@ def make_key_function(db, classname, sort_on=None):
     def keyfunc(a):
         if num_re.match(a):
             a = linkcl.get(a, sort_on)
+            # In Python3 we may not compare strings and None
+            if a is None :
+                return ''
         return a
     return keyfunc
 
