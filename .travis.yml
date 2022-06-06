@@ -35,7 +35,7 @@ services:
 jobs:
     allow_failures:  # nightly not ready for prime time yet.
       - python: nightly
-      - 3.11-dev
+      - python: 3.11-dev
       - python: pypy3
 
 addons:
