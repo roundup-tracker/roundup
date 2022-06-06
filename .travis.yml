@@ -68,7 +68,7 @@ before_install:
   - if [[ $TRAVIS_PYTHON_VERSION == "3."* ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3; fi
   - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3; fi
   - if [[ $TRAVIS_PYTHON_VERSION == "pypy3" ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3; fi
-  - make && make install
+  - if [[ $TRAVIS_PYTHON_VERSION != "3.11-dev" ]]; then make && make install; fi
 
   - PATH=$VIRTUAL_ENV/bin:$PATH
 
