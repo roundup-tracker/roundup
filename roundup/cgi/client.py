@@ -620,7 +620,32 @@ class Client:
             self.write(output)
             return
 
-        if not self.db.security.hasPermission('Rest Access', self.userid):
+        # allow preflight request even if unauthenticated
+        if ( self.env['REQUEST_METHOD'] == "OPTIONS"
+             and self.request.headers.get ("Access-Control-Request-Headers")
+             and self.request.headers.get ("Access-Control-Request-Method")
+             and self.request.headers.get ("Origin")
+        ):
+            # verify Origin is allowed
+            if not self.is_origin_header_ok(api=True):
+                # Use code 400 as 401 and 403 imply that authentication
+                # is needed or authenticates person is not authorized.
+                # Preflight doesn't do authentication.
+                self.response_code = 400
+                msg = self._("Client is not allowed to use Rest Interface.")
+                output = s2b(
+                    '{ "error": { "status": 400, "msg": "%s" } }'%msg )
+                self.setHeader("Content-Length", str(len(output)))
+                self.setHeader("Content-Type", "application/json")
+                self.write(output)
+                return
+            
+            # Call rest library to handle the pre-flight request
+            handler = rest.RestfulInstance(self, self.db)
+            output = handler.dispatch(self.env['REQUEST_METHOD'],
+                                      self.path, self.form)
+
+        elif not self.db.security.hasPermission('Rest Access', self.userid):
             self.response_code = 403
             output = s2b('{ "error": { "status": 403, "msg": "Forbidden." } }')
             self.setHeader("Content-Length", str(len(output)))
@@ -636,14 +661,12 @@ class Client:
             # raises exception on check failure.
             csrf_ok = self.handle_csrf(api=True)
         except (Unauthorised, UsageError) as msg:
-            # report exception back to server
-            exc_type, exc_value, exc_tb = sys.exc_info()
             # FIXME should return what the client requests
             # via accept header.
-            output = s2b("%s: %s\n"%(exc_type, exc_value))
+            output = s2b('{ "error": { "status": 400, "msg": "%s"}}'% str(msg))
             self.response_code = 400
             self.setHeader("Content-Length", str(len(output)))
-            self.setHeader("Content-Type", "text/plain")
+            self.setHeader("Content-Type", "application/json")
             self.write(output)
             csrf_ok = False # we had an error, failed check
             return
@@ -1223,9 +1246,39 @@ class Client:
         # Original spec says origin is case sensitive match.
         # Living spec doesn't address Origin value's case or
         # how to compare it. So implement case sensitive.... 
-        if allowed_origins[0] == '*' or origin in allowed_origins:
+        if allowed_origins:
+            if allowed_origins[0] == '*' or origin in allowed_origins:
+                return True
+
+        return False
+
+    def is_referer_header_ok(self, api=False):
+        referer = self.env['HTTP_REFERER']
+        # parse referer and create an origin
+        referer_comp = urllib_.urlparse(referer)
+
+        # self.base always has trailing /, so add trailing / to referer_origin
+        referer_origin = "%s://%s/"%(referer_comp[0], referer_comp[1])
+        foundat = self.base.find(referer_origin)
+        if foundat == 0:
             return True
 
+        if not api:
+            return False
+        
+        allowed_origins = self.db.config['WEB_ALLOWED_API_ORIGINS']
+        if allowed_origins[0] == '*':
+            return True
+
+        # For referer, loop over allowed_api_origins and
+        # see if any of them are a prefix to referer, case sensitive.
+        # Append / to each origin so that:
+        # an allowed_origin of https://my.host does not match
+        # a referer of https://my.host.com/my/path
+        for allowed_origin in allowed_origins:
+            foundat = referer_origin.find(allowed_origin + '/')
+            if foundat == 0:
+                return True
         return False
 
     def handle_csrf(self, api=False):
@@ -1335,13 +1388,11 @@ class Client:
         # self.base always matches: ^https?://hostname
         enforce=config['WEB_CSRF_ENFORCE_HEADER_REFERER']
         if 'HTTP_REFERER' in self.env and enforce != "no":
-            referer = self.env['HTTP_REFERER']
-            # self.base always has trailing /
-            foundat = referer.find(self.base)
-            if foundat != 0:
+            if not self.is_referer_header_ok(api=api):
+                referer = self.env['HTTP_REFERER']
                 if enforce in ('required', 'yes'):
                     logger.error(self._("csrf Referer header check failed for user%s. Value=%s"), current_user, referer)
-                    raise Unauthorised(self._("Invalid Referer %s, %s")%(referer,self.base))
+                    raise Unauthorised(self._("Invalid Referer: %s")%(referer))
                 elif enforce == 'logfailure':
                     logger.warning(self._("csrf Referer header check failed for user%s. Value=%s"), current_user, referer)
             else:

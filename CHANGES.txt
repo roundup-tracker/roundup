@@ -99,6 +99,8 @@ Fixed:
   empty password to login.
 - issue2551207 - Fix sorting by order attribute if order attributes can
   be None. Add a test.
+- issue2551203 fix CORS requests by providing proper headers and allowing
+  unauthenticted CORS preflight requests.
 
 Features:
 

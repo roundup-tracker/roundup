@@ -1751,6 +1751,10 @@ class RestfulInstance(object):
             "Allow",
             "OPTIONS, GET, PUT, DELETE, PATCH"
         )
+        self.client.setHeader(
+            "Access-Control-Allow-Methods",
+            "OPTIONS, GET, PUT, DELETE, PATCH"
+        )
         return 204, ""
 
     @Routing.route("/data/<:class_name>/<:item_id>/<:attr_name>", 'OPTIONS')
@@ -1774,10 +1778,18 @@ class RestfulInstance(object):
                 "Allow",
                 "OPTIONS, GET, PUT, DELETE, PATCH"
             )
+            self.client.setHeader(
+                "Access-Control-Allow-Methods",
+                "OPTIONS, GET, PUT, DELETE, PATCH"
+            )
         elif attr_name in class_obj.getprops(protected=True):
             # It must match a protected prop. These can't be written.
             self.client.setHeader(
                 "Allow",
+                "OPTIONS, GET"
+            )
+            self.client.setHeader(
+                "Access-Control-Allow-Methods",
                 "OPTIONS, GET"
             )
         else:
@@ -1910,6 +1922,10 @@ class RestfulInstance(object):
             "Allow",
             "OPTIONS, GET"
         )
+        self.client.setHeader(
+            "Access-Control-Allow-Methods",
+            "OPTIONS, GET"
+        )
         return 204, ""
 
     @Routing.route("/data")
@@ -1937,6 +1953,10 @@ class RestfulInstance(object):
         """
         self.client.setHeader(
             "Allow",
+            "OPTIONS, GET"
+        )
+        self.client.setHeader(
+            "Access-Control-Allow-Methods",
             "OPTIONS, GET"
         )
         return 204, ""
@@ -2161,20 +2181,46 @@ class RestfulInstance(object):
         # with invalid values.
         data_type = ext_type or accept_type or headers.get('Accept') or "invalid"
 
-        # add access-control-allow-* to support CORS
-        self.client.setHeader("Access-Control-Allow-Origin", "*")
+        if method.upper() == 'OPTIONS':
+            # add access-control-allow-* access-control-max-age to support
+            # CORS preflight
+            self.client.setHeader(
+                "Access-Control-Allow-Headers",
+                "Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override"
+            )
+            # can be overridden by options handlers to provide supported
+            # methods for endpoint
+            self.client.setHeader(
+                "Access-Control-Allow-Methods",
+                "HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH"
+            )
+            # cache the Access headings for a week. Allows one CORS pre-flight
+            # request to be reused again and again.
+            self.client.setHeader("Access-Control-Max-Age", "86400")
+
+        # response may change based on Origin value.
+        self.client.setVary("Origin") 
+
+        # Allow-Origin must match origin supplied by client. '*' doesn't
+        # work for authenticated requests.
         self.client.setHeader(
-            "Access-Control-Allow-Headers",
-            "Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override"
+            "Access-Control-Allow-Origin",
+            self.client.request.headers.get("Origin")
         )
+
+        # allow credentials
+        self.client.setHeader(
+            "Access-Control-Allow-Credentials",
+            "true"
+        )
+        # set allow header in case of error. 405 handlers below should
+        # replace it with a custom version as will OPTIONS handler
+        # doing CORS.
         self.client.setHeader(
             "Allow",
             "OPTIONS, GET, POST, PUT, DELETE, PATCH"
         )
-        self.client.setHeader(
-            "Access-Control-Allow-Methods",
-            "HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH"
-        )
+
         # Is there an input.value with format json data?
         # If so turn it into an object that emulates enough
         # of the FieldStorge methods/props to allow a response.

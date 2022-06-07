@@ -1169,6 +1169,20 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         del(cl.env['HTTP_ORIGIN'])
         cl.db.config.WEB_ALLOWED_API_ORIGINS = ""
         del(out[0])
+
+        # test by setting allowed api origins to *
+        # this should not redirect as it is not an API call.
+        cl.db.config.WEB_ALLOWED_API_ORIGINS = "  *  "
+        cl.env['HTTP_ORIGIN'] = 'http://whoami.com'
+        cl.env['HTTP_REFERER'] = 'https://baz.edu/path/'
+        cl.inner_main()
+        match_at=out[0].find('Invalid Referer: https://baz.edu/path/')
+        print("result of subtest invalid referer:", out[0])
+        self.assertEqual(match_at, 36)
+        del(cl.env['HTTP_ORIGIN'])
+        del(cl.env['HTTP_REFERER'])
+        cl.db.config.WEB_ALLOWED_API_ORIGINS = ""
+        del(out[0])
         
         # clean up from email log
         if os.path.exists(SENDMAILDEBUG):
@@ -1215,7 +1229,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # Should return explanation because content type is text/plain
         # and not text/xml
         cl.handle_rest()
-        self.assertEqual(b2s(out[0]), "<class 'roundup.exceptions.UsageError'>: Required Header Missing\n")
+        self.assertEqual(b2s(out[0]), '{ "error": { "status": 400, "msg": "Required Header Missing"}}')
         del(out[0])
 
         cl = client.Client(self.instance, None,
@@ -1320,7 +1334,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # Should return explanation because content type is text/plain
         # and not text/xml
         cl.handle_rest()
-        self.assertEqual(b2s(out[0]), "<class 'roundup.exceptions.Unauthorised'>: Invalid Origin httxs://bar.edu\n")
+        self.assertEqual(b2s(out[0]), '{ "error": { "status": 400, "msg": "Invalid Origin httxs://bar.edu"}}')
         del(out[0])
 
 
@@ -1332,7 +1346,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
                             'HTTP_ORIGIN': 'httxs://bar.edu',
                             'HTTP_X_REQUESTED_WITH': 'rest',
                             'HTTP_AUTHORIZATION': 'Basic YWRtaW46YWRtaW4=',
-                            'HTTP_REFERER': 'http://whoami.com/path/',
+                            'HTTP_REFERER': 'httxp://bar.edu/path/',
                             'HTTP_ACCEPT': "application/json;version=1"
                         }, form)
         cl.db = self.db
@@ -1346,9 +1360,66 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
                                       
         cl.write = wh # capture output
 
-        # create third issue
+        # create fourth issue
         cl.handle_rest()
         self.assertIn('"id": "3"', b2s(out[0]))
+        del(out[0])
+
+        cl.db.config.WEB_ALLOWED_API_ORIGINS = "httxs://bar.foo.edu httxs://bar.edu"
+        for referer in [ 'httxs://bar.edu/path/foo',
+                         'httxs://bar.edu/path/foo?g=zz',
+                         'httxs://bar.edu']:
+            cl = client.Client(self.instance, None,
+                               {'REQUEST_METHOD':'POST',
+                                'PATH_INFO':'rest/data/issue',
+                                'CONTENT_TYPE': 'application/x-www-form-urlencoded',
+                                'HTTP_ORIGIN': 'httxs://bar.edu',
+                                'HTTP_X_REQUESTED_WITH': 'rest',
+                                'HTTP_AUTHORIZATION': 'Basic YWRtaW46YWRtaW4=',
+                                'HTTP_REFERER': referer,
+                                'HTTP_ACCEPT': "application/json;version=1"
+                               }, form)
+            cl.db = self.db
+            cl.base = 'http://whoami.com/path/'
+            cl._socket_op = lambda *x : True
+            cl._error_message = []
+            cl.request = MockNull()
+            h = { 'content-type': 'application/json',
+                  'accept': 'application/json' }
+            cl.request.headers = MockNull(**h)
+            
+            cl.write = wh # capture output
+
+            # create fourth issue
+            cl.handle_rest()
+            self.assertIn('"id": "', b2s(out[0]))
+            del(out[0])
+        
+        cl.db.config.WEB_ALLOWED_API_ORIGINS = "httxs://bar.foo.edu httxs://bar.edu"
+        cl = client.Client(self.instance, None,
+                           {'REQUEST_METHOD':'POST',
+                            'PATH_INFO':'rest/data/issue',
+                            'CONTENT_TYPE': 'application/x-www-form-urlencoded',
+                            'HTTP_ORIGIN': 'httxs://bar.edu',
+                            'HTTP_X_REQUESTED_WITH': 'rest',
+                            'HTTP_AUTHORIZATION': 'Basic YWRtaW46YWRtaW4=',
+                            'HTTP_REFERER': 'httxp://bar.edu/path/',
+                            'HTTP_ACCEPT': "application/json;version=1"
+                        }, form)
+        cl.db = self.db
+        cl.base = 'http://whoami.com/path/'
+        cl._socket_op = lambda *x : True
+        cl._error_message = []
+        cl.request = MockNull()
+        h = { 'content-type': 'application/json',
+              'accept': 'application/json' }
+        cl.request.headers = MockNull(**h)
+                                      
+        cl.write = wh # capture output
+
+        # create fourth issue
+        cl.handle_rest()
+        self.assertEqual(b2s(out[0]), '{ "error": { "status": 400, "msg": "Invalid Referer: httxp://bar.edu/path/"}}')
         del(out[0])
 
     def testXmlrpcCsrfProtection(self):
