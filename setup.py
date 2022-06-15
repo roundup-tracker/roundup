@@ -184,6 +184,7 @@ def main():
             " with command-line, web and e-mail interfaces. Highly"
             " customisable.",
           long_description=long_description,
+          long_description_content_type='text/x-rst',
           url='https://www.roundup-tracker.org',
           download_url='https://pypi.org/project/roundup',
           classifiers=[#'Development Status :: 5 - Production/Stable',
