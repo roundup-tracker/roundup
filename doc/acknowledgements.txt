@@ -13,8 +13,8 @@ ideas and everything else that helped!
 2.2
 ---
 
-2.2.0
-~~~~~
+2.2.0b1
+~~~~~~~
 
 Maintainer:  John Rouillard, Ralf Schlatterbeck
 
@@ -22,11 +22,20 @@ Release Manager: John Rouillard
 
 Developer activity by changesets::
 
-    FIXME
+  rouilj@ieee.org         224  ************************************************
+  rsc@runtux.com           11 **
+  aburke                    1
+  cmeerw@cmeerw.org         1
+  thomas@intevation.de      1
 
 Other contributers
 
 Marcus Priesch
+John Kristensen (jerrykan)
+Ashely Burke
+Nagy Gabor
+Norbert Schlemmer
+Thomas Arendsen Hein
 
 2.1
 ---

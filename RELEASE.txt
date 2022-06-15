@@ -87,6 +87,7 @@ Roundup release checklist:
 
     to create binary distributions in wheel format. (egg format is
     deprecated.)
+
 10. Check the roundup.egg-info/SOURCES.txt to make sure that any new files are
     included.  (use hg status --rev <last release or tag>:tip to list changed
     added and removed files. Last release e.g. 1.5.1 where tip is what would
