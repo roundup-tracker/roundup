@@ -298,6 +298,7 @@ class TALLoaderBase(LoaderBase):
                 return # will raise invalid template
             if os.path.exists(src):
                 return (src, f)
+        raise NoTemplate("Unable to load template: %s"%name)
 
     def check(self, name):
         return bool(self._find(name))
