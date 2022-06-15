@@ -67,9 +67,9 @@ Among the notable improvements from the 2.1.0 release are:
 
 - Improvements to tracker templates.
 
-   Translation object added to internal database
-       handle. This allows auditors and extensions to
-       provide efficient translations.
+- Translation object added to internal database
+  handle. This allows auditors and extensions to
+  provide efficient translations.
 
 The file CHANGES.txt has a detailed list of feature additions and
 bug fixes (50) for each release. The most recent changes from
