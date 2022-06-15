@@ -1,15 +1,8 @@
-I'm proud to release version 2.1.0 of the Roundup issue tracker.
-This 20th anniversary edition has been possible due to the help of
-several contributors. This release is a bugfix and minor feature
+I'm proud to release version 2.2.0b1 of the Roundup issue tracker.
+This release is a bugfix and minor feature
 release, so make sure to read `docs/upgrading.txt
 <https://www.roundup-tracker.org/docs/upgrading.html>`_ to bring your
 tracker up to date.
-
-2.1.0 builds on the 2.0.0 major release that introduced:
-
-   * Python 2 and Python 3 support
-   * a new REST interface
-   * updates to jinja2 templates including security improvements
 
 The changes, as usual, include some new features and many bug fixes.
 
@@ -23,51 +16,63 @@ You can download it with:
 
 then unpack and test/install the tarball.
 
-Among the notable improvements from the 2.0.0 release are:
+Among the notable improvements from the 2.1.0 release are:
 
-  Mysql backend now uses an index to make sure that key values are not
-  duplicated when two roundup processes run in parallel. (Hence the
-  need for ``roundup-admin ... migrate``.)
+- Roundup supports dynamic and static compression of http
+  responses.
 
-  Postgres back end uses a server side cursor. This reduces the memory
-  use of the roundup process on large queries.
+- Better support for range headers and HTTP 1.1 in
+  roundup-server.
 
-  Fix sorting of multilinks in templating code. Sorting by a link
-  without a value no longer generates a traceback. Sorting now works
-  as documented by the spec.
+- New full text search methods. SQLite FTS and PostgreSQL
+  full text search are supported. These allow search
+  expressions in addition to simple word based
+  searches.
 
-  If ``roundup-admin security`` finds an invalid property, it exits
-  with a non-zero status. It can be used as part of a CI/CD pipeline
-  to validate schema security.
+- Word size for Roundup's full text search increased to 50.
 
-  Security fixes for jQuery, markdown handling.
+- CORS support for the REST interface allowing Roundup to
+  be use by third party services. Includes ability to
+  list valid Origins in CSRF checks.
 
-  Fixes to markdown handling if using the jinja2 template.
+- Dockerfile support. Docker-compose for a mysql based
+  tracker.
 
-  Keyword editing in jinja2 template improved.
+- Secret values in config.ini can be stored in external
+  files. This allows config.ini to be stored in a VCS
+  without exposing secrets.
 
-  Fix a number of tracebacks.
+- Improvements to REST: fix crashes, support JWT in url,
+  dynamic endpoint list, OpenAPI (Swagger) doc can be specified,
+  allowed methods reported on error.
 
-  Installation uses setuptools not distutils.
+- Define default cache times for js and css assets.
 
-  Valid class names are documented and enforced. All class names now
-  match ``[A-z][A-z0-9_]+[A-z_]``.
+- Login with empty passwords is disabled by default.
 
-  Replace a number of deprecated/missing functions in newer pythons.
+- ETag value changes depending on content-encoding.
 
-  Fix history showing invalid data when an update is rejected.
+- Fix crash when importing legacy Roundup tracker with long
+  integers.
 
-  The filter command in roundup-admin works transitively and handles
-  empty values properly.
+- Workaround lock contention by adding jitter to access of
+  one time key and sessions anydbm databases.
 
-  Password reset documented in user guide.
+- Fixes for deprecated calls/libraries in newer Pythons:
+  distutils, crypt, socket.sslserver....
 
-  Admins can set the language used for stemming in the xapian indexer.
+- Additional strings marked for translation.
 
-  Devel and responsive template strings now extracted for translation.
+- Multiple crash fixes.
+
+- Improvements to tracker templates.
+
+- Translation object added to internal database
+  handle. This allows auditors and extensions to
+  provide efficient translations.
 
 The file CHANGES.txt has a detailed list of feature additions and
-bug fixes (58) for each release. The most recent changes from
+bug fixes (50) for each release. The most recent changes from
 there are at the end of this announcement.  Also see the
 information in doc/upgrading.txt.
 
@@ -88,7 +93,8 @@ database schema version. Do this before you use the web, command-line
 or mail interface and before any users access the tracker.  
 
 Roundup requires Python 2 newer than version 2.7.2 or Python 3 newer
-than or equal to version 3.4 for correct operation.
+than or equal to version 3.6 for correct operation. (Python
+3.4 or 3.5 may work, but are not tested.)
 
 To give Roundup a try, just download (see below), unpack and run::
 
@@ -127,7 +133,7 @@ Roundup manages a number of issues (with flexible properties such as
 The system facilitates communication among the participants by managing
 discussions and notifying interested parties when issues are edited. One of
 the major design goals for Roundup that it be simple to get going. Roundup
-is therefore usable "out of the box" with any Python 2.7.2+ (or 3.4+)
+is therefore usable "out of the box" with any Python 2.7.2+ (or 3.6+)
 installation. It doesn't even need to be "installed" to be operational,
 though an install script is provided.
 
@@ -144,189 +150,159 @@ and supports four database back-ends (anydbm, sqlite, mysql and postgresql).
 Recent Changes
 ==============
 
-From 2.0.0 to 2.1.0.
+From 2.1.0 to 2.2.0b1.
 
 Fixed:
 
-- Reverse multilink to *the same class* would trigger a traceback about
-  a modified dictionary on iteration (Ralf Schlatterbeck)
-- issue2551086 - Valid class names not documented. Should follow
-  ``[A-z][A-z0-9_]+[A-z_]``. This was never documented or enforced, but
-  we get obscure errors if the rules are not followed. (Tom
-  Ekberg tests by John Rouilard)
-- issue2550564 - Roundup sets "Precedence: bulk" on all outgoing mail,
-  which seems wrong. Handle Auto-Submitted header on *inbound* email
-  like we do precedence bulk. This is part of this issue.
-- roundup-admin filter calls find() not filter when using -s -c -S
+- issue2551161 - Fix ResourceWarnings when running with -W default.
+  Cleaned up leaking file descriptors from zopetal pre-compile, python
+  module compile and loading localization file. (John Rouillard) 
+- When using roundup-server with native SSL, only accept TLS v1.2.
+  Previously it used to accept only TLS v1.1. 1.1 is deprecated by
+  chrome. I don't expect this to be a major problem since a front
+  end server (apache, Nginx...) is usually customer facing and
+  terminates SSL.  (John Rouillard)
+- Fix hang when valid user without authorization for REST tries to use
+  the rest interface.  (John Rouillard)
+- Remove Content-Type and make sure no content is returned by OPTIONS
+  request in REST interface. (John Rouillard)
+- In write_html set the Content-Length when response is not
+  encoded/compressed. (John Rouillard)
+- In REST interface do not raise UsageError for invalid api version.
+  Return json error with proper message. Fixes crash. (John Rouillard)
+- In REST interface, allow extensions on URI less than 6 characters in
+  length. All other paths with a . in then will be passed through
+  without change. This allows items like a JWT to be passed as a path
+  element. (John Rouillard)
+- issue2551167 - pip install in containerized environments puts
+  template and locale files under site-packages where roundup can't find
+  them. Change code to find them under site-packages.
+- REST replace hard coded list of child endpoints for /rest/ with list
+  pulled from registered endpoints. So newly added endpoints are
+  shown. (John Rouillard)
+- issue2551107 - Handle representation of long int in history params
+  for python3. Causes SyntaxError crash when showing history due to
+  long int e.g. 2345L. This is not a problem for roundup trackers
+  created using 1.2.0 or newer. The fix may have predated the 1.2.0
+  release but where the fix actually landed (representing id as a
+  string and not as an int) is unknown.
+- issue2551175 - Make ETag content-encoding aware. HTTP ETag headers
+  now include a suffix indicating the content-encoding used to send
+  the data per rfc7232. Properly validate any form of ETag suffixed or
+  non-suffixed for If-Match.
+- issue2551178 - fix Traceback in Apache WSGI - during file upload
+- issue2551179 - make roundup-demo initialize templates using
+  config_ini.ini overrides. Needed for jinja to set template lang etc.
+  Recognize minimal template when presented with a full
+  path. (John Kristensen (jerrykan) and John Rouillard)
+- handle configparser.InterpolationSyntaxError raised if value
+  has a single %. Seems to afect python 3 only. Reported by
+  nomicon on IRC. (John Rouillard)
+- add random delay to session database retry code between 0 and .125
+  seconds. This seems to help reduce stalled connections when a
+  number of connections are made at the same time. Log remaining
+  retries once 5 of them have been used. (John Rouillard)
+- issue2551169 - setup.py enters endless loop on gentoo linux python2
+  installation. Fixed.
+- issue2551185 - must set PYTHONPATH=... python2 setup.py install
+  --prefix=/tmp/r2. Force insert --old-and-unmangable to get it
+  to use a classic installer and not an easy install. This only
+  affects python2.
+- issue2551186 - Python versions >= 3.3 no longer use socket.sslerror.
+  Andrew (kragacles) patched uses of socket.sslerror in mailgy.py.
+  Patch adapted to allow trapping sslerror under both python2 and 3.
   (John Rouillard)
-- When requesting transitive properties via ``@fields`` in the REST-API,
-  an empty link in the transitive property (e.g. author.username when
-  requesting message properties) would result in a 404 error. Now we're
-  returning a JSON 'null' value. for an empty link (e.g. empty author in
-  the example). (John Rouillard)
-- sphinxcontrib.cheeseshop is unmaintained and using old http
-  url. Attempts to override cheeseshop_url failed. Replace call to
-  cheeseshop in docs with raw html and remove references to
-  cheeseshop.  (John Rouillard)
-- issue2551093 - return plain text if markdown formatter throws exception
-  (reported by Cedric Krier, fix by John Rouillard)
-- issue2551094 - make simplemde handle line breaks the same as the
-  backend markdown formatters. (report: Cedric Krier, patch: Christof
-  Meerwald) 
-- issue2551092 - fix crash bug by aligning
-  ``roundup.anypy.email_.decode_header`` with stdlib ``email.header`` and
-  convert string to bytes for python 3. (Cedric Krier)
-- issue2551097 - fix underlying bug in use of fenced codeblocks with
-  markdown2. Fix for issue2551093 to prevent exception trigger.
-  (patch: Cedric Krier)
-- issue2551099 - disable processing of data url's in markdown. Display
-  as plain text. (John Rouillard)
-- issue2551100 - old jquery has security issues, upgrade it and fix
-  user.help.html (John Rouillard)
-- replace deprecated base64.decodestring with base64.b64decode in
-  roundup_server.py and roundup_xlmrpc_server.py (reported by
-  lmsteffan in irc)
-- removed run_tests.py. Newer pytest doesn't support generating
-  stand alone testing bundles. Python 3.9 generates errors running
-  the current run_tests.py.  (reported by lmsteffan in irc)
-- issue2551104 - fix issue with markdown autolink next to punctuation (ced)
-- removed support for old style trackers that use dbinit.py and
-  config.py. Also remove all uses of deprecated imp module. (John Rouillard)
-- removed support for setting database type using
-  <database>/backend_name. (John Rouillard)
-- fixed some issues when generating translations. Use mappings and
-  named format parameters so translators can move substituted tokens
-  in translations.  (John Rouillard)
-- in rest interface, fix uncaught exceptions when parsing invalid
-  Content-Type and Accept headers. Document response formats more
-  fully in doc/rest.txt.  (John Rouillard)
-- in filter, filter_iter and _materialize_multilinks, use named cursor
-  with postgresql. This turns of client-side cursor handling and avoids
-  *large* roundup process (or wsgi process) in case of large results.
-  Fixes issue2551114. (Ralf Schlatterbeck)
-- issue2551108 - fix handling of designator links when formatted
-  as markdown links. (Reported by Cedric Krier; John Rouillard)
-- Fix filename created from mail attachments, fixes issue2551118
-- Call verifyPassword even if user does not exist. Address timing
-  attack to discover valid account names. Useful where anonymous user
-  is not allowed access. (John Rouillard)
-- issue2551126 - AttributeError: 'str' object has no attribute
-  'local'. Fix traceback caused by DateHTMLProperty.pretty() called
-  on a string value due to error in some other field. (Reported by
-  reda, fix: John Rouillard)
-- issue2550899 - Migrate setup.py to setuptools; fixes:
-  issue2550866 'pip install --editable .' fails; et al.
-  this now requires that setuptools be installed. (Patch by John
-  Kristensen (jerrykan); additional doc changes (upgrade.txt,
-  RELEASE.txt) John Rouillard)
-- issue2551128 - Impossible to validate a user with unknown timezone
-  Raise KeyError when an unrecognized timezones is passed to
-  pytz. (patch Cedric Krier, test John Rouillard)
-- issue2551129 - Template not found return 500
-  Handle traceback caused when requested @template is not found.
-  Return 400 error in this condition. (patch Cedric Krier,
-  additional change and test John Rouillard)
-- issue2551062: roundup-admin security now exits status 1 when
-  it finds an invalid property. It no longer tries to print the rest
-  of the security properties. (John Rouillard)
-- issue2551078 - Fix traceback caused when putting two id's into a
-  Link html field. A ValueError is raised. Handle exception and return
-  value. hyperdb.py now reports 'you may only enter ID values for
-  property ...' to the user. (John Rouillard)
-- issue2551120 - The sorted method of MultilinkHTMLProperty crashes,
-  if the given property is unset for an element of the list. Crash
-  fixed. New feature NoneFirst added to method to make unset values
-  sort at start or end of sorted list. (John Rouillard)
-- issue2550648 - keyword boolean search. Issue has multiple problems.
-  Fix issue where saving the keyword boolean search would remove the
-  link to open the editor. (John Rouillard)
-- issue2551136 - timezone extention crash on Python 3.8. cgi.escape
-  is used in some template to provide a select box of timezones. It
-  uses cgi.escape that is deprecated and removed from 3.8 and newer.
-  Use html.escape with fallback to cgi.escape. (Cedric Krier)
-- roundup-server can act as an SSL server. Usually SSL is provided by
-  a front-end server like nginx, hiawatha, apache. The SSL parameters
-  have been upgraded to TLS 1.1. Cert is RSA 2048 bytes with SHA512
-  signature. Without these upgrades, ssl mode won't start. Note this
-  exposes other issue with roundup-server operating as an SSL
-  endpoint. See issue2551138 and issue2551137. (John Rouillard)
-- issue2551122 - sorted method of MultilinkHTMLProperty does a string
-  sort even if the property is an integer. Fixed so that the orderprop
-  for the linked class is used. (John Rouillard, reported by Nagy Gabor)
-- issue2550964 - History can (temporarily) show incorrect value when a
-  change is rejected. Fix history function to always use the database
-  values and ignore the current setting in the form. (John Rouillard)
-- Fix find() with anydbm. Using protected properties raised KeyError.
-  Add shortcut fast return. Both changes come from rdbms_common.py's
-  find(). (John Rouillard)
-- Fix traceback caused by calling history() with arguments in a
-  non-item context. (John Rouillard)
-- issue2551141 - roundup-admin returns no such class when restoring
-  item with duplicate key. Fix incorrect error message when using
-  roundup-admin to restore a user when the username is already in use.
-  (John Rouillard)
-- issue2551142 - Import of retired node with username after active
-  node is imported raises unique constraint failure. (Reported by Ganesh
-  Sittampalam/Heffalump on irc. John Rouillard)
-- *** Must run roundup-admin migrate ***
-  Increment rdbms version from 5 to 6. Mysql rdbms classes were
-  missing unique key constraint. Found during fix for issue2551142.
-  See upgrading.txt. (John Rouillard)
-- ignore blank lines in CSV class editing. (John Rouillard)
-- issue2551122 - fixing order by a link/multilink broke other props
-  should be final change for that ticket. (John Rouillard)
+- issue2551142 - postgresql reworked to use savepoint/"rollback to"
+  rather than commit()/rollback(). Using savepoint should be faster.
+- issue2551196 - Unset labelprop of a Multilink can lead to Python
+  error when using context/history. (reported and initial patch: Nagy
+  Gabor, John Rouillard)
+- Fix roundup-server to pass If-Range http header so Ranges work
+  better. (John Rouillard)
+- issue2551183 - Replace references to distutils in
+  roundup/dist/command (John Rouillard)
+- Fix hang if Range request was not able to be satified or a HEAD
+  request was done.
+- Mark strings involved with password reset and registration for
+  translation. (reported: Thomas Arendsen Hein, John Rouillard)
+- issue2551159 - cl.filter fails if filterspec is None (also
+  group and sort). Passing a sort, group or filterprop param
+  set to None to any filter() call should not cause a
+  traceback. It will pretend as though no filter, sort or
+  group was specified. (John Rouillard)
+- issue2551205 - Add support for specifying valid origins
+  for api: xmlrpc/rest. Allows CORS to work with roundup
+  backend. (John Rouillard)
+- new option added to config.ini: login_empty_passwords set to
+  no by default. Setting this to yes allows a user with an
+  empty password to login.
+- issue2551207 - Fix sorting by order attribute if order attributes can
+  be None. Add a test.
+- issue2551203 fix CORS requests by providing proper headers and allowing
+  unauthenticted CORS preflight requests.
 
 Features:
 
-- issue2550522 - Add 'filter' command to command-line
-  interface. Filter command was actually added in 2.0.0, but this
-  issue requested transitive searching. So that::
-
-    roundup-admin -i . filter issue assignedto.username=Admin
-
-  will work. This also fixes a bug. If assignedto.username had no
-  matches, all issues would be returned.  This is also fixed.
+- issue2551147 - Enable compression of http responses in roundup.
+  Allow roundup to return gzip, (br or zstd with added modules)
+  Content-Encoded replies. Compression could be done in upstream
+  proxies/wsgi server but this allows it to occur natively. (John
+  Rouillard)
+- Change tracker templates adding required to login forms. Invokes
+  browser error reporting if user forgets to fill in a field.
   (John Rouillard)
-- issue2550716 - Email address displayed after password reset request.
-  This fix actually made it into 1.6 release. However this release
-  documents how password reset works in user_guide.txt. (John Rouillard)
-- issue2551094 - add new markdown config.ini setting to allow embedded
-  newlines to cause a linebreak same as GitHub Flavored Markdown.
-  (Patch: Cedric Krier; Doc change/checkin John Rouillard)
-- issue2551096 - enable markdown autolink for email and bare url's.
-  Modify raw markdown adding appropriate link markers on the fly.
-  (Cedric Krier)
-- issue2551098 - add rel="nofollow" for links generated by markdown2
-  backend and rel="nofollow noopener" for mistune and markdown
-  backends. Prevents link spam. noopener prevents security issue when
-  available. (John Rouillard)
-- Added explanation for modifying Fileclass content files to
-  customizing.txt. Result of mailing list question. (John Rouillard)
-- issue2551109 - Improve keyword editing in jinja2 template. (Cedric Krier)
-- issue2551117 - Add example systemd config
-- Allow admin to configure language used for stemming in xapian
-  indexer. (John Rouillard request by Nagy Gabor)
-- Move memorydb from test to roundup/test to allow regression-testing in
-  tracker instances without copying code. Also move the test-detectors in
-  tx_Source_detector.py to roundup/test for two reasons: It's used in the
-  memorydb convenience functions and it may be useful in other tests. Make
-  the prefix a parameter of the convenience functions to be usable in other
-  tests.  (Ralf Schlatterbeck)
-- pytest suite now starts the server under wsgi and loads the home
-  page. This test is skipped if the requests module is not installed.
-- extract translatable strings from devel and responsive templates. Merge
-  translations from https://sourceforge.net/p/roundup/code/merge-requests/3/
-  (John Rouillard. DE translations by Tobias Herp.)
-- send_message now allows setting authid to set source of email.
-  (John Rouillard)
-- issue2550837 - New option for web auth (also http header passing).
-  Allow admin to configure authentication header replacing the default
-  REMOTE_USER. Also allow arbitrary headers to be passed to the
-  tracker when using roundup-server behind a proxy. This code is
-  experimental see upgrading.txt admin_guide.txt. (John Rouillard)
-- add image/svg-xml as valid mime type to serve. Was being served as
-  octet-stream. (John Rouillard)
-- improve customizing.txt documentation on use of Special Form
-  Variables. Added example html inputs to illustrate the doc.
-  Fix position of designator in doc example. It occurs before
-  @link@ or other edit command. (John Rouillard)
+- issue1596345 - filtering user list (need
+  user.search.hml). Incorporate user search features from
+  issues.roundup-tracker.org into classic template. Devel and
+  responsive templates already have this feature.
+- issue2550917 - Add a: "Welcome user, you have logged in" ok_message
+  on login. (Ashley Burke)
+- enable HTTP/1.1 for roundup-server. This enables keep-alive for
+  faster response/loading. Also eliminates stalls when the front end web
+  server uses http 1.1 but the roundup-server uses 1.0. New option
+  "-V HTTP/1.0" can turn it off. (John Rouillard)
+- issue2551163 - add scripts/Docker/Dockerfile to provide basic support for
+  containerization. See installation.txt for details. (John Rouillard)
+- issue2551163 - add scripts/Docker/docker-compose.yml to get a
+  mysql/roundup deployment. (Norbert Schlemmer, modified by John
+  Rouilard)
+- REST add openapi_doc decorator to add openapi_doc to
+  endpoints. Decorate a couple of examples. (John Rouillard)
+- REST when incorrect method is used, report allowed methods in error
+  message as well as in an Allow header. (John Rouillard)
+- REST change response to invalid attribute specified in path.  Return
+  400 code not 405 code for this case and improve error. (John
+  Rouillard)
+- REST correct values for some Access-Control-Allow-Methods and
+  Access-Control-Allow-Headers headers. (John Rouillard)
+- issue2550991 - define default cache control settings for javascript
+  and css assets. (John Rouillard)
+- issue2551181 - fragments can be appended to designators. So
+  issue23#msg24 could jump to the element with id msg24 in issue 23.
+  Before this patch you would have two links issue23 and msg24
+  separated by # (John Rouillard).
+- added small utility script to dump dbm based tracker databases
+  (e.g. db/sessions). (John Rouillard)
+- issue2551182 - Enhance configuration module to allow loading values
+  from an external file. Secrets (passwords, secrets) can specify
+  file using file:// or file:///. The first line of the file is used
+  as the secret. This allows committing config.ini to a VCS. (John
+  Rouillard)
+- Added xapian indexer to Docker container. (John Rouillard)
+- Add support for indexer type native-fts to use FTS5 for sqlite
+  databases. (John Rouillard)
+- Add support for indexer type native-fts to use PostreSQL's full text
+  search. (John Rouillard)
+- Add better error display to the user. Needed to expose errors in fts5
+  search syntax to the user while also displaying the template page
+  structure. (John Rouillard)
+- issue2551189 - increase size of words in full text index.
+  Many terms (like exception names or symbolic constants) are larger
+  than 25. Also German words are long. Since there is little chance of
+  fixing German to shorten their words, change indexer maxlength to 50.
+  (Thomas Arendsen Hein provided patch; patch reworked John Rouillard)
+- issue2551184 - add an i18n object to the roundupdb. This makes it
+  possible to translate error messages in detectors (or actions). The
+  i18n object is now also correctly set for the mail interface:
+  previously the 'language' setting in the [mailgw] section seems to
+  have been ignored. Thanks to Marcus Priesch for the patch.

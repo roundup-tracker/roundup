@@ -33,6 +33,7 @@ Roundup release checklist:
 3a. Update license end date in COPYING.txt
 3b. Update doc/acknowledgements.txt (add section for
     release, churn contributers etc.). (Use hg churn -c -r ####..####)
+
 4.  Update documentation
       doc/announcement.txt
       doc/upgrading.txt
@@ -40,6 +41,7 @@ Roundup release checklist:
     _tmp/linkcheck/output.txt
        fix broken references in docs
        verify redirects are correct
+
 5.  Update setup.py info if needed (contacts, classifiers, etc.). When
     releasing check that Development Status matches release: stable,
     beta alpha etc.
@@ -70,6 +72,7 @@ Roundup release checklist:
       python3 setup.py build
 
     (sdist generation will fail if this isn't done)
+
 8.  Rebuild documentation in "share/doc/roundup/html"
 
       python3 setup.py build_doc
@@ -87,6 +90,7 @@ Roundup release checklist:
 
     to create binary distributions in wheel format. (egg format is
     deprecated.)
+
 10. Check the roundup.egg-info/SOURCES.txt to make sure that any new files are
     included.  (use hg status --rev <last release or tag>:tip to list changed
     added and removed files. Last release e.g. 1.5.1 where tip is what would
@@ -101,7 +105,6 @@ Roundup release checklist:
     edit MANIFEST.in to include them. For format docs see
     https://packaging.python.org/guides/using-manifest-in/#using-manifest-in
     (Note: files under website/ shouldn't be in the manifest.)
-
 10a: Check for removed files still in manifest:
 
       hg status --rev 2.0.0:tip | sed -ne 's/^R //p' | while read i ; \
@@ -110,7 +113,6 @@ Roundup release checklist:
 
     any file with a count of 2 or more needs to be removed from
     MANIFEST.in and possibly cleaned out of the build tree.
-
 10b: if you added/removed files rebuild starting at step 6a.
 
 11. Unpack the new tarball created in dist/roundup-<version>.tar.gz
@@ -120,11 +122,13 @@ Roundup release checklist:
       b) demo.py
     with all available Python versions.
 11a. (TBD how to test wheel binary distribution before uploading.)
+
 12. Assuming all is well tag the release in the version-control
     system.
       a) hg tag 1.6.0  # use right version. Should create/commit a changeset
       b) hg push       # update main repo
       c) hg sum        # verify that the tag shows up
+
 13. Upload source distribution to PyPI - requires you sign up for a
     pypi account and be added as a maintainer to roundup. Ask existing
     maintainer for access. You can do this two ways:

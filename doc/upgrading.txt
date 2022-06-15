@@ -32,7 +32,7 @@ Contents:
 
 .. index:: Upgrading; 2.0.0 to 2.1.0
 
-Migrating from 2.1.0 to 2.x.y
+Migrating from 2.1.0 to 2.2.0
 =============================
 
 Update your ``config.ini`` (required)
