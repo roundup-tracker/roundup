@@ -18,54 +18,54 @@ then unpack and test/install the tarball.
 
 Among the notable improvements from the 2.1.0 release are:
 
-   Roundup supports dynamic and static compression of http
-       responses.
+- Roundup supports dynamic and static compression of http
+  responses.
 
-   Better support for range headers and HTTP 1.1 in
-       roundup-server.
+- Better support for range headers and HTTP 1.1 in
+  roundup-server.
 
-   New full text search methods. SQLite FTS and PostgreSQL
-       full text search are supported. These allow search
-       expressions in addition to simple word based
-       searches.
+- New full text search methods. SQLite FTS and PostgreSQL
+  full text search are supported. These allow search
+  expressions in addition to simple word based
+  searches.
 
-   Word size for Roundup's full text search increased to 50.
+- Word size for Roundup's full text search increased to 50.
 
-   CORS support for the REST interface allowing Roundup to
-       be use by third party services. Includes ability to
-       list valid Origins in CSRF checks.
+- CORS support for the REST interface allowing Roundup to
+  be use by third party services. Includes ability to
+  list valid Origins in CSRF checks.
 
-   Dockerfile support. Docker-compose for a mysql based
-       tracker.
+- Dockerfile support. Docker-compose for a mysql based
+  tracker.
 
-   Secret values in config.ini can be stored in external
-       files. This allows config.ini to be stored in a VCS
-       without exposing secrets.
+- Secret values in config.ini can be stored in external
+  files. This allows config.ini to be stored in a VCS
+  without exposing secrets.
 
-   Improvements to REST: fix crashes, support JWT in url,
-       dynamic endpoint list, OpenAPI (Swagger) doc can be specified,
-       allowed methods reported on error.
+- Improvements to REST: fix crashes, support JWT in url,
+  dynamic endpoint list, OpenAPI (Swagger) doc can be specified,
+  allowed methods reported on error.
 
-   Define default cache times for js and css assets.
+- Define default cache times for js and css assets.
 
-   Login with empty passwords is disabled by default.
+- Login with empty passwords is disabled by default.
 
-   ETag value changes depending on content-encoding
+- ETag value changes depending on content-encoding.
 
-   Fix crash when importing legacy Roundup tracker with long
-       integers.
+- Fix crash when importing legacy Roundup tracker with long
+  integers.
 
-   Workaround lock contention by adding jitter to access of
-       one time key and sessions anydbm databases.
+- Workaround lock contention by adding jitter to access of
+  one time key and sessions anydbm databases.
 
-   Fixes for deprecated calls/libraries in newer Pythons:
-       distutils, crypt, socket.sslserver....
+- Fixes for deprecated calls/libraries in newer Pythons:
+  distutils, crypt, socket.sslserver....
 
-   Additional strings marked for translation.
+- Additional strings marked for translation.
 
-   Multiple crash fixes.
+- Multiple crash fixes.
 
-   Improvements to tracker templates.
+- Improvements to tracker templates.
 
    Translation object added to internal database
        handle. This allows auditors and extensions to
@@ -93,7 +93,8 @@ database schema version. Do this before you use the web, command-line
 or mail interface and before any users access the tracker.  
 
 Roundup requires Python 2 newer than version 2.7.2 or Python 3 newer
-than or equal to version 3.4 for correct operation.
+than or equal to version 3.6 for correct operation. (Python
+3.4 or 3.5 may work, but are not tested.)
 
 To give Roundup a try, just download (see below), unpack and run::
 
@@ -132,7 +133,7 @@ Roundup manages a number of issues (with flexible properties such as
 The system facilitates communication among the participants by managing
 discussions and notifying interested parties when issues are edited. One of
 the major design goals for Roundup that it be simple to get going. Roundup
-is therefore usable "out of the box" with any Python 2.7.2+ (or 3.4+)
+is therefore usable "out of the box" with any Python 2.7.2+ (or 3.6+)
 installation. It doesn't even need to be "installed" to be operational,
 though an install script is provided.
 
