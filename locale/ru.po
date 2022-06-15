@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roundup 1.3.2\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2022-05-12 21:22-0400\n"
+"POT-Creation-Date: 2022-06-15 09:50-0400\n"
 "PO-Revision-Date: 2013-10-31 12:21+0100\n"
 "Last-Translator: alexander smishlajev <alex@tycobka.lv>\n"
 "Language-Team: Russian\n"
@@ -1279,25 +1279,25 @@ msgstr "приходите к нам еще..."
 msgid "There are unsaved changes. Commit them (y/N)? "
 msgstr "Ой, тут несохраненные изменения. Записать в базу данных (y/N)? "
 
-#: ../roundup/backends/back_anydbm.py:174 ../roundup/backends/back_lmdb.py:251
+#: ../roundup/backends/back_anydbm.py:174
 #: ../roundup/backends/rdbms_common.py:888
 #, python-format
 msgid "Class \"%s\" already defined."
 msgstr ""
 
-#: ../roundup/backends/back_anydbm.py:235 ../roundup/backends/back_lmdb.py:312
+#: ../roundup/backends/back_anydbm.py:235
 #: ../roundup/backends/sessions_dbm.py:55
 msgid "Couldn't identify database type"
 msgstr ""
 
-#: ../roundup/backends/back_anydbm.py:269 ../roundup/backends/back_lmdb.py:346
+#: ../roundup/backends/back_anydbm.py:269
 #, python-format
 msgid ""
 "Couldn't open database - the required module '%s' (as dbm.gnu) is not "
 "available"
 msgstr ""
 
-#: ../roundup/backends/back_anydbm.py:272 ../roundup/backends/back_lmdb.py:349
+#: ../roundup/backends/back_anydbm.py:272
 #, python-format
 msgid "Couldn't open database - the required module '%s' is not available"
 msgstr ""
@@ -1311,19 +1311,14 @@ msgstr ""
 #: ../roundup/backends/back_anydbm.py:1439
 #: ../roundup/backends/back_anydbm.py:2064
 #: ../roundup/backends/back_anydbm.py:828:841
-#: ../roundup/backends/back_lmdb.py:905 ../roundup/backends/back_lmdb.py:918
-#: ../roundup/backends/back_lmdb.py:1191 ../roundup/backends/back_lmdb.py:1226
-#: ../roundup/backends/back_lmdb.py:1452 ../roundup/backends/back_lmdb.py:1470
-#: ../roundup/backends/back_lmdb.py:1516 ../roundup/backends/back_lmdb.py:2138
-#: ../roundup/backends/back_lmdb.py:905:918
 #: ../roundup/backends/rdbms_common.py:1657
 #: ../roundup/backends/rdbms_common.py:1904
 #: ../roundup/backends/rdbms_common.py:2139
 #: ../roundup/backends/rdbms_common.py:2159
 #: ../roundup/backends/rdbms_common.py:2212
 #: ../roundup/backends/rdbms_common.py:3158
-#: ../roundup/backends/rdbms_common.py:1657:1904 :1114:1149 :1191:1226
-#: :1375:1393:1439 :1452:1470 :1516:2138:2064 :2139:2159:2212 :3158
+#: ../roundup/backends/rdbms_common.py:1657:1904 :1114:1149 :1375:1393:1439
+#: :2064 :2139:2159 :2212:3158
 msgid "Database open read-only"
 msgstr ""
 
@@ -1702,13 +1697,13 @@ msgstr "Неправильный пароль или имя пользователя."
 msgid "You do not have permission to login"
 msgstr "У вас нет разрешения на работу с системой"
 
-#: ../roundup/cgi/actions.py:1430 ../roundup/cgi/actions.py:1609
-#: ../roundup/cgi/actions.py:1430:1609
+#: ../roundup/cgi/actions.py:1431 ../roundup/cgi/actions.py:1610
+#: ../roundup/cgi/actions.py:1431:1610
 #, python-format
 msgid "Column \"%(column)s\" not found in %(class)s"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1680
+#: ../roundup/cgi/actions.py:1681
 #, fuzzy, python-format
 msgid "You do not have permission to view %(class)s"
 msgstr "У вас нет разрешения редактировать %(class)s"
@@ -1814,154 +1809,159 @@ msgstr ""
 "Администратору трекера отослано сообщение об ошибке.</p>\n"
 "</body></html>"
 
-#: ../roundup/cgi/client.py:865
+#: ../roundup/cgi/client.py:635
+#, fuzzy
+msgid "Client is not allowed to use Rest Interface."
+msgstr "Анонимным пользователям не разрешено пользоваться веб-интерфейсом."
+
+#: ../roundup/cgi/client.py:877
 msgid "Form Error: "
 msgstr "Ошибка формы: "
 
-#: ../roundup/cgi/client.py:955
+#: ../roundup/cgi/client.py:967
 #, python-format
 msgid "Unrecognized charset: %r"
 msgstr "Кодировка %r не распознана"
 
-#: ../roundup/cgi/client.py:1218
+#: ../roundup/cgi/client.py:1230
 msgid "Anonymous users are not allowed to use the web interface"
 msgstr "Анонимным пользователям не разрешено пользоваться веб-интерфейсом."
 
-#: ../roundup/cgi/client.py:1291
+#: ../roundup/cgi/client.py:1353
 msgid "Referer header not available."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1295
+#: ../roundup/cgi/client.py:1357
 #, python-format
 msgid "csrf key used with wrong method from: %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1323
+#: ../roundup/cgi/client.py:1385
 #, python-format
 msgid "csrf header %s required but missing for user%s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1324
+#: ../roundup/cgi/client.py:1386
 #, python-format
 msgid "Missing header: %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1334 ../roundup/cgi/client.py:1337
-#: ../roundup/cgi/client.py:1334:1337
+#: ../roundup/cgi/client.py:1394 ../roundup/cgi/client.py:1397
+#: ../roundup/cgi/client.py:1394:1397
 #, python-format
 msgid "csrf Referer header check failed for user%s. Value=%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1335
-#, python-format
-msgid "Invalid Referer %s, %s"
-msgstr ""
+#: ../roundup/cgi/client.py:1395
+#, fuzzy, python-format
+msgid "Invalid Referer: %s"
+msgstr "Неправильный пароль или имя пользователя."
 
-#: ../roundup/cgi/client.py:1350 ../roundup/cgi/client.py:1353
-#: ../roundup/cgi/client.py:1350:1353
+#: ../roundup/cgi/client.py:1409 ../roundup/cgi/client.py:1412
+#: ../roundup/cgi/client.py:1409:1412
 #, python-format
 msgid "csrf Origin header check failed for user%s. Value=%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1351
+#: ../roundup/cgi/client.py:1410
 #, fuzzy, python-format
 msgid "Invalid Origin %s"
 msgstr "Неправильный пароль или имя пользователя."
 
-#: ../roundup/cgi/client.py:1365 ../roundup/cgi/client.py:1368
-#: ../roundup/cgi/client.py:1365:1368
+#: ../roundup/cgi/client.py:1424 ../roundup/cgi/client.py:1427
+#: ../roundup/cgi/client.py:1424:1427
 #, python-format
 msgid "csrf X-FORWARDED-HOST header check failed for user%s. Value=%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1366
+#: ../roundup/cgi/client.py:1425
 #, python-format
 msgid "Invalid X-FORWARDED-HOST %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1385 ../roundup/cgi/client.py:1388
-#: ../roundup/cgi/client.py:1385:1388
+#: ../roundup/cgi/client.py:1444 ../roundup/cgi/client.py:1447
+#: ../roundup/cgi/client.py:1444:1447
 #, python-format
 msgid "csrf HOST header check failed for user%s. Value=%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1386
+#: ../roundup/cgi/client.py:1445
 #, python-format
 msgid "Invalid HOST %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1394
+#: ../roundup/cgi/client.py:1453
 msgid "Csrf: unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1395
+#: ../roundup/cgi/client.py:1454
 msgid "Unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1408
+#: ../roundup/cgi/client.py:1467
 #, python-format
 msgid "csrf X-REQUESTED-WITH xmlrpc required header check failed for user%s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1409
+#: ../roundup/cgi/client.py:1468
 msgid "Required Header Missing"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1446
+#: ../roundup/cgi/client.py:1505
 #, python-format
 msgid "Required csrf field missing for user%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1447 ../roundup/cgi/client.py:1499
-#: ../roundup/cgi/client.py:1509 ../roundup/cgi/client.py:1447:1499:1509
+#: ../roundup/cgi/client.py:1506 ../roundup/cgi/client.py:1558
+#: ../roundup/cgi/client.py:1568 ../roundup/cgi/client.py:1506:1558:1568
 msgid ""
 "We can't validate your session (csrf failure). Re-enter any unsaved data and "
 "try again."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1450
+#: ../roundup/cgi/client.py:1509
 #, python-format
 msgid "csrf field not supplied by user%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1497
+#: ../roundup/cgi/client.py:1556
 #, python-format
 msgid ""
 "Csrf mismatch user: current user %s != stored user %s, current session, "
 "stored session: %s,%s for key %s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1502
+#: ../roundup/cgi/client.py:1561
 #, python-format
 msgid ""
 "logged only: Csrf mismatch user: current user %s != stored user %s, current "
 "session, stored session: %s,%s for key %s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1507
+#: ../roundup/cgi/client.py:1566
 #, python-format
 msgid ""
 "Csrf mismatch user: current session %s != stored session %s, current user/"
 "stored user is: %s for key %s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1512
+#: ../roundup/cgi/client.py:1571
 #, python-format
 msgid ""
 "logged only: Csrf mismatch user: current session %s != stored session %s, "
 "current user/stored user is: %s for key %s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1684
+#: ../roundup/cgi/client.py:1743
 msgid "You are not allowed to view this file."
 msgstr "У вас нет разрешения на просмотр этого файла."
 
-#: ../roundup/cgi/client.py:1973
+#: ../roundup/cgi/client.py:2032
 #, python-format
 msgid "%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n"
 msgstr "%(starttag)sЗатраченное время: %(seconds)fs%(endtag)s\n"
 
-#: ../roundup/cgi/client.py:1977
+#: ../roundup/cgi/client.py:2036
 #, python-format
 msgid ""
 "%(starttag)sCache hits: %(cache_hits)d, misses %(cache_misses)d. Loading "
@@ -1971,7 +1971,7 @@ msgstr ""
 "%(cache_misses)d. Загрузка объектов: %(get_items)f сек. Фильтрация: "
 "%(filtering)f сек.%(endtag)s\n"
 
-#: ../roundup/cgi/client.py:2507
+#: ../roundup/cgi/client.py:2566
 #, python-format
 msgid ""
 "Cache failure: compressed file %(compressed)s is older than its source file "
@@ -2384,17 +2384,17 @@ msgstr ""
 msgid "Not a property name: %s"
 msgstr ""
 
-#: ../roundup/hyperdb.py:1940
+#: ../roundup/hyperdb.py:1948
 #, python-format
 msgid "property %s: %r is not a %s."
 msgstr ""
 
-#: ../roundup/hyperdb.py:1943
+#: ../roundup/hyperdb.py:1951
 #, python-format
 msgid "you may only enter ID values for property %s"
 msgstr ""
 
-#: ../roundup/hyperdb.py:1977
+#: ../roundup/hyperdb.py:1985
 #, python-format
 msgid "%r is not a property of %s"
 msgstr ""
@@ -2733,7 +2733,7 @@ msgid ""
 "%(acceptable_types)s"
 msgstr ""
 
-#: ../roundup/rest.py:2268
+#: ../roundup/rest.py:2269
 #, python-format
 msgid ""
 "Unrecognized api version: %s. See /rest without specifying api version for "
@@ -3041,7 +3041,7 @@ msgstr ""
 msgid "WARNING: generating temporary SSL certificate"
 msgstr "ВНИМАНИЕ: создается временный сертификат для SSL"
 
-#: ../roundup/scripts/roundup_server.py:296
+#: ../roundup/scripts/roundup_server.py:293
 msgid ""
 "<html><head><title>Roundup trackers index</title></head>\n"
 "<body><h1>Roundup trackers index</h1><ol>\n"
@@ -3049,56 +3049,56 @@ msgstr ""
 "<html><head><title>Список трекеров Roundup</title></head>\n"
 "<body><h1>Список трекеров Roundup</h1><ol>\n"
 
-#: ../roundup/scripts/roundup_server.py:528
+#: ../roundup/scripts/roundup_server.py:513
 #, fuzzy, python-format
 msgid "Error: %(type)s: %(value)s"
 msgstr "%(key)s: %(value)s (ключевой атрибут)"
 
-#: ../roundup/scripts/roundup_server.py:540
+#: ../roundup/scripts/roundup_server.py:525
 msgid "WARNING: ignoring \"-g\" argument, not root"
 msgstr ""
 "ВНИМАНИЕ: параметр \"-g\" не используется, он разрешен только для "
 "пользователя root"
 
-#: ../roundup/scripts/roundup_server.py:546
+#: ../roundup/scripts/roundup_server.py:531
 msgid "Can't change groups - no grp module"
 msgstr "Подмена группы невозможна - нужен модуль grp"
 
-#: ../roundup/scripts/roundup_server.py:555
+#: ../roundup/scripts/roundup_server.py:540
 #, python-format
 msgid "Group %(group)s doesn't exist"
 msgstr "Группа %(group)s не существует"
 
-#: ../roundup/scripts/roundup_server.py:567
+#: ../roundup/scripts/roundup_server.py:552
 msgid "Can't run as root!"
 msgstr "Запуск сервера с полномочиями пользователя root запрещен!"
 
-#: ../roundup/scripts/roundup_server.py:570
+#: ../roundup/scripts/roundup_server.py:555
 msgid "WARNING: ignoring \"-u\" argument, not root"
 msgstr ""
 "ВНИМАНИЕ: параметр \"-u\" не используется, он разрешен только для "
 "пользователя root"
 
-#: ../roundup/scripts/roundup_server.py:576
+#: ../roundup/scripts/roundup_server.py:561
 msgid "Can't change users - no pwd module"
 msgstr "Подмена пользователя невозможна - нужен модуль pwd"
 
-#: ../roundup/scripts/roundup_server.py:585
+#: ../roundup/scripts/roundup_server.py:570
 #, python-format
 msgid "User %(user)s doesn't exist"
 msgstr "Пользователь %(user)s не существует"
 
-#: ../roundup/scripts/roundup_server.py:781
+#: ../roundup/scripts/roundup_server.py:766
 #, python-format
 msgid "Multiprocess mode \"%s\" is not available, switching to single-process"
 msgstr "Режим \"%s\" недоступен, переключаемся в однозадачный режим"
 
-#: ../roundup/scripts/roundup_server.py:808
+#: ../roundup/scripts/roundup_server.py:793
 #, python-format
 msgid "Unable to bind to port %s, port already in use."
 msgstr "Невозможно установить сервер на порту %s, порт уже занят."
 
-#: ../roundup/scripts/roundup_server.py:880
+#: ../roundup/scripts/roundup_server.py:865
 msgid ""
 " -c <Command>  Windows Service options.\n"
 "               If you want to run the server as a Windows Service, you\n"
@@ -3115,7 +3115,7 @@ msgstr ""
 "               файл протокола.  Команда 'roundup-server -c help'\n"
 "               выдает справку о командной строке сервиса Windows."
 
-#: ../roundup/scripts/roundup_server.py:887
+#: ../roundup/scripts/roundup_server.py:872
 msgid ""
 " -u <UID>      runs the Roundup web server as this UID\n"
 " -g <GID>      runs the Roundup web server as this GID\n"
@@ -3129,7 +3129,7 @@ msgstr ""
 "               и запустить сервер в фоновом режиме.  Если указано \"-d\",\n"
 "               файл протокола *обязательно* должен быть задан ключом \"-l\""
 
-#: ../roundup/scripts/roundup_server.py:894
+#: ../roundup/scripts/roundup_server.py:879
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -3252,21 +3252,21 @@ msgstr ""
 "   не могут использоваться в URL (пробелы, русские буквы и проч.),\n"
 "   потому что такие имена сбивают с толку некоторые браузеры типа IE.\n"
 
-#: ../roundup/scripts/roundup_server.py:1070
+#: ../roundup/scripts/roundup_server.py:1055
 msgid "Instances must be name=home"
 msgstr "Список трекеров должен быть в формате имя=каталог"
 
-#: ../roundup/scripts/roundup_server.py:1084
+#: ../roundup/scripts/roundup_server.py:1069
 #, python-format
 msgid "Configuration saved to %s"
 msgstr "Конфигурация записана в %s"
 
-#: ../roundup/scripts/roundup_server.py:1102
+#: ../roundup/scripts/roundup_server.py:1087
 msgid "Sorry, you can't run the server as a daemon on this Operating System"
 msgstr ""
 "Извините, в этой операционной системе работа в фоновом режиме невозможна"
 
-#: ../roundup/scripts/roundup_server.py:1122
+#: ../roundup/scripts/roundup_server.py:1107
 #, python-format
 msgid "Roundup server started on %(HOST)s:%(PORT)s"
 msgstr "Сервер Roundup готов к работе по адресу %(HOST)s:%(PORT)s"
