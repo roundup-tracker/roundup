@@ -44,34 +44,31 @@ addons:
     #  - sourceline: ppa:xapian-backports/ppa
 
     packages:
-#      # Required to build/install the xapian-binding
-#      - libxapian-dev
-#      # Required to install gpg
+      # Required to build/install the xapian-binding
+      - libxapian-dev
+      # Required to install gpg
       - swig
       # Required to build gpgme.
       - gpgsm
 
 before_install:
-  - if [[ $TRAVIS_PYTHON_VERSION == "2."* ]]; then sudo apt-get install python-xapian; else sudo apt-get install python3-xapian; fi
-
-#  - echo "$TRAVIS_PYTHON_VERSION"
-#  # Sphinx required to build the xapian python bindings. Use 1.8.5 on
-#  # older python and newest on newer.
-#  - if [[ $TRAVIS_PYTHON_VERSION == "2."* ]]; then pip install sphinx==1.8.5; fi
-#  - if [[ $TRAVIS_PYTHON_VERSION == '3.'* ]] ; then pip install sphinx; fi
-#  - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then pip install sphinx; fi
-#  - sudo apt-get update && sudo apt-get upgrade libxapian-dev libxapian
-#  - XAPIAN_VER=$(dpkg -l libxapian-dev | tail -n 1 | awk '{print $3}' | cut -d '-' -f 1); echo $XAPIAN_VER
-#  - cd /tmp
-#  - curl -s -O https://oligarchy.co.uk/xapian/$XAPIAN_VER/xapian-bindings-$XAPIAN_VER.tar.xz
-#  - tar -Jxvf xapian-bindings-$XAPIAN_VER.tar.xz
-#  - cd xapian-bindings-$XAPIAN_VER/
-#  - echo $TRAVIS_PYTHON_VERSION
-#  - if [[ $TRAVIS_PYTHON_VERSION == "2."* ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python; fi
-#  - if [[ $TRAVIS_PYTHON_VERSION == "3."* ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3; fi
-#  - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3; fi
-#  - if [[ $TRAVIS_PYTHON_VERSION == "pypy3" ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3; fi
-#  - make && make install
+  - echo "$TRAVIS_PYTHON_VERSION"
+  # Sphinx required to build the xapian python bindings. Use 1.8.5 on
+  # older python and newest on newer.
+  - if [[ $TRAVIS_PYTHON_VERSION == "2."* ]]; then pip install sphinx==1.8.5; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.'* ]] ; then pip install sphinx; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then pip install sphinx; fi
+  - XAPIAN_VER=$(dpkg -l libxapian-dev | tail -n 1 | awk '{print $3}' | cut -d '-' -f 1); echo $XAPIAN_VER
+  - cd /tmp
+  - curl -s -O https://oligarchy.co.uk/xapian/$XAPIAN_VER/xapian-bindings-$XAPIAN_VER.tar.xz
+  - tar -Jxvf xapian-bindings-$XAPIAN_VER.tar.xz
+  - cd xapian-bindings-$XAPIAN_VER/
+  - echo $TRAVIS_PYTHON_VERSION
+  - if [[ $TRAVIS_PYTHON_VERSION == "2."* ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == "3."* ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == "pypy3" ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3; fi
+  - make && make install
 
   - PATH=$VIRTUAL_ENV/bin:$PATH
 
