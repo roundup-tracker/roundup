@@ -1111,6 +1111,7 @@ ERROR: -c is not available because roundup couldn't import
         httpd.serve_forever()
     except KeyboardInterrupt:
         print('Keyboard Interrupt: exiting')
+        httpd.socket.close()
 
 
 if __name__ == '__main__':
