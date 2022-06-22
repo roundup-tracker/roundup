@@ -20,11 +20,11 @@ dist: focal
 
 #  - pypy3
 python:
-#  - 2.7
-#  - 3.10.4
+  - 2.7
+  - 3.10.4
 #  - 3.9
 #  - 3.8
-#  - 3.6
+  - 3.6
   - 3.11-dev
   - nightly
 
@@ -52,6 +52,7 @@ addons:
       - gpgsm
 
 before_install:
+  # build xapian
   - echo "$TRAVIS_PYTHON_VERSION"
   # Sphinx required to build the xapian python bindings. Use 1.8.5 on
   # older python and newest on newer.
@@ -68,7 +69,7 @@ before_install:
   - if [[ $TRAVIS_PYTHON_VERSION == "3."* ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3; fi
   - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3; fi
   - if [[ $TRAVIS_PYTHON_VERSION == "pypy3" ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3; fi
-  - make && make install
+  - case "$TRAVIS_PYTHON_VERSION" in nightly|3.11-dev) echo skipping xapian build;; *) make && make install; esac
 
   - PATH=$VIRTUAL_ENV/bin:$PATH
 
