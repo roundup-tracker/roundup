@@ -52,7 +52,7 @@ addons:
       - gpgsm
 
 before_install:
-  - if [[ $TRAVIS_PYTHON_VERSION == "2."* ]]; then apt-get install python-xapian; else apt-get install python3-xapian
+  - if [[ $TRAVIS_PYTHON_VERSION == "2."* ]]; then apt-get install python-xapian; else apt-get install python3-xapian; fi
 
 #  - echo "$TRAVIS_PYTHON_VERSION"
 #  # Sphinx required to build the xapian python bindings. Use 1.8.5 on
