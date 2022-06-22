@@ -26,8 +26,12 @@ from hashlib import md5, sha1
 from roundup.anypy.strings import us2s, b2s, s2b
 import roundup.anypy.random_ as random_
 
+import warnings
+
 try:
-    import crypt
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
+        import crypt
 except ImportError:
     crypt = None
 
