@@ -3649,7 +3649,6 @@ This is a test submission of a new issue.
         l = self.db.issue.get(nodeid, 'nosy')
         l.sort()
         self.assertEqual(l, [self.richard_id, self.mary_id])
-        return nodeid
 
     def testResentFromSwitchedOff(self):
         self.instance.config.EMAIL_KEEP_REAL_FROM = 'yes'
@@ -3668,7 +3667,6 @@ This is a test submission of a new issue.
         l = self.db.issue.get(nodeid, 'nosy')
         l.sort()
         self.assertEqual(l, [self.chef_id, self.richard_id])
-        return nodeid
 
     def testDejaVu(self):
         self.assertRaises(IgnoreLoop, self._handle_mail,
