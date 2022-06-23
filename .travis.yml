@@ -66,10 +66,14 @@ before_install:
   - cd xapian-bindings-$XAPIAN_VER/
   - echo $TRAVIS_PYTHON_VERSION
   - if [[ $TRAVIS_PYTHON_VERSION == "2."* ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python --disable-documentation; fi
-  - if [[ $TRAVIS_PYTHON_VERSION == "3."* ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
-  - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
-  - if [[ $TRAVIS_PYTHON_VERSION == "pypy3" ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
-  - case "$TRAVIS_PYTHON_VERSION" in nightly|3.11-dev) echo skipping xapian build;; *) make && make install; esac
+  # edit the configure script. distutils.sysconfig.get_config_vars('SO')
+  #  doesn't work for 3.11 or newer.
+  # Change distutils.sysconfig... to just sysconfig to get valid SO.
+  - if [[ $TRAVIS_PYTHON_VERSION == "3."* ]]; then sed -i '/PYTHON3_SO=/s/distutils.//g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then sed -i '/PYTHON3_SO=/s/distutils.//g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == "pypy3" ]]; then sed -i '/PYTHON3_SO=/s/distutils.//g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
+  # - case "$TRAVIS_PYTHON_VERSION" in nightly|3.11-dev) echo skipping xapian build;; *) make && make install; esac
+  - make && make install; esac
 
   - PATH=$VIRTUAL_ENV/bin:$PATH
 
