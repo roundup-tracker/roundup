@@ -60,6 +60,7 @@ before_install:
   - if [[ $TRAVIS_PYTHON_VERSION == '3.'* ]] ; then pip install sphinx; fi
   - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then pip install sphinx; fi
   - XAPIAN_VER=$(dpkg -l libxapian-dev | tail -n 1 | awk '{print $3}' | cut -d '-' -f 1); echo $XAPIAN_VER
+  # force specific version 1.4.19 for python 3.12 for debugging
   - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then XAPIAN_VER=1.4.19; fi; echo $XAPIAN_VER
   - cd /tmp
   - curl -s -O https://oligarchy.co.uk/xapian/$XAPIAN_VER/xapian-bindings-$XAPIAN_VER.tar.xz
@@ -74,7 +75,7 @@ before_install:
   - if [[ $TRAVIS_PYTHON_VERSION == "3."* ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
   - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
   - if [[ $TRAVIS_PYTHON_VERSION == "pypy3" ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
-  - case "$TRAVIS_PYTHON_VERSION" in ngihtly) echo skipping xapian build;; *) make && make install; esac
+  - case "$TRAVIS_PYTHON_VERSION" in nightly) echo skipping xapian build;; *) make && make install; esac
 
   - PATH=$VIRTUAL_ENV/bin:$PATH
 
