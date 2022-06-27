@@ -60,7 +60,7 @@ before_install:
   - if [[ $TRAVIS_PYTHON_VERSION == '3.'* ]] ; then pip install sphinx; fi
   - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then pip install sphinx; fi
   - XAPIAN_VER=$(dpkg -l libxapian-dev | tail -n 1 | awk '{print $3}' | cut -d '-' -f 1); echo $XAPIAN_VER
-  - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; XAPIAN_VER=1.4.19; fi; echo $XAPIAN_VER
+  - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then XAPIAN_VER=1.4.19; fi; echo $XAPIAN_VER
   - cd /tmp
   - curl -s -O https://oligarchy.co.uk/xapian/$XAPIAN_VER/xapian-bindings-$XAPIAN_VER.tar.xz
   - tar -Jxvf xapian-bindings-$XAPIAN_VER.tar.xz
