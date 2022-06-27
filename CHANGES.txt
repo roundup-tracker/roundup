@@ -104,6 +104,8 @@ Fixed:
 - issue2551203 fix CORS requests by providing proper headers and allowing
   unauthenticted CORS preflight requests.
 - issue2551206 - removed some windows installer references that were missed.
+- document use of jinja2 templating as optional in config.ini
+  file. Report if available or not.
 
 Features:
 

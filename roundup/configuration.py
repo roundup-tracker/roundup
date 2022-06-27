@@ -870,6 +870,12 @@ class RegExpOption(Option):
                 value = value.decode("utf-8")
         return re.compile(value, self.flags)
 
+try:
+   import jinja2
+   jinja2_avail = "Available found"
+except ImportError:
+   jinja2_avail = "Unavailable needs"
+
 ### Main configuration layout.
 # Config is described as a sequence of sections,
 # where each section name is followed by a sequence
@@ -886,8 +892,11 @@ SETTINGS = (
         (FilePathOption, "database", "db", "Database directory path."),
         (Option, "template_engine", "zopetal",
             "Templating engine to use.\n"
-            "Possible values are 'zopetal' for the old TAL engine\n"
-            "ported from Zope, or 'chameleon' for Chameleon."),
+            "Possible values are:\n"
+            "   'zopetal' for the old TAL engine ported from Zope,\n"
+            "   'chameleon' for Chameleon,\n"
+            "   'jinja2' for jinja2 templating.\n"
+            "      %s jinja2 module."%jinja2_avail),
         (FilePathOption, "templates", "html",
             "Path to the HTML templates directory."),
         (MultiFilePathOption, "static_files", "",
