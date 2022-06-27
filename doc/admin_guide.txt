@@ -19,7 +19,7 @@ What does Roundup install?
 There's two "installations" that we talk about when using Roundup:
 
 1. The installation of the software and its support files. This uses the
-   standard Python mechanism called "distutils" and thus Roundup's core code,
+   standard Python mechanism called "setuptools" and thus Roundup's core code,
    executable scripts and support data files are installed in Python's
    directories. On Windows, this is typically:
 

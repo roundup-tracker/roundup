@@ -192,9 +192,7 @@ installation:
 For information about how Roundup installs, see the `administration
 guide`_.
 
-The following assumes that you are using the source distribution.  If
-you are using the Windows installer, run it with Administrator
-privileges so it can correctly update the registry.
+The following assumes that you are using the source distribution.
 
 Basic Installation Steps
 ------------------------
@@ -1561,7 +1559,7 @@ On Windows 2000 and later:
 6) Choose "Environmental Variables"
 7) Add: "<dir>\Scripts" to the "Path" environmental variable.
 
-Where <dir> in 7) is the root directory (e.g., ``C:\Python22\Scripts``)
+Where <dir> in 7) is the root directory (e.g., ``C:\Python27\Scripts``)
 of your Python installation.
 
 I understand that in XP, 2) above is not needed as "Control

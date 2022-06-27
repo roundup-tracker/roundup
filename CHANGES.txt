@@ -101,6 +101,7 @@ Fixed:
   be None. Add a test.
 - issue2551203 fix CORS requests by providing proper headers and allowing
   unauthenticted CORS preflight requests.
+- issue2551206 - removed some windows installer references that were missed.
 
 Features:
 
