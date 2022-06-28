@@ -32,7 +32,7 @@ Among the notable improvements from the 2.1.0 release are:
 - Word size for Roundup's full text search increased to 50.
 
 - CORS support for the REST interface allowing Roundup to
-  be use by third party services. Includes ability to
+  be used by third party services. Includes ability to
   list valid Origins in CSRF checks.
 
 - Dockerfile support. Docker-compose for a mysql based
@@ -73,7 +73,7 @@ Among the notable improvements from the 2.1.0 release are:
 
 The file CHANGES.txt has a detailed list of feature additions and
 bug fixes (50) for each release. The most recent changes from
-there are at the end of this announcement.  Also see the
+there are at the end of this announcement. Also see the
 information in doc/upgrading.txt.
 
 If you find bugs, please report them to issues AT roundup-tracker.org
