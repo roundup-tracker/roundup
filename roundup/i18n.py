@@ -70,6 +70,19 @@ for N in 1, 2:
 _ldir = os.path.join(path, sys.prefix[1:], 'share', 'locale')
 if os.path.isdir(_ldir):
     LOCALE_DIRS.append(_ldir)
+# try other places locale files are hidden on install
+_ldir = os.path.join(path, sys.prefix[1:], 'local', 'share', 'locale')
+if os.path.isdir(_ldir):
+    LOCALE_DIRS.append(_ldir)
+try:
+    _ldir = os.path.join(path, sys.base_prefix[1:], 'local', 'share', 'locale')
+    if os.path.isdir(_ldir):
+        LOCALE_DIRS.append(_ldir)
+    _ldir = os.path.join(path, sys.base_prefix[1:], 'share', 'locale')
+    if os.path.isdir(_ldir):
+        LOCALE_DIRS.append(_ldir)
+except AttributeError:
+    pass # no base_prefix on 2.7
 del _ldir
 
 # Roundup text domain

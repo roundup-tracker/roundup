@@ -13,13 +13,14 @@ The template loading looks in four places to find the templates:
    This should be the standard place to find them when Roundup is
    installed running setup.py from source.
 2. ``install_dir``/../<prefix>/share/....``, where prefix is the
-   Python's ``sys.prefix``. This finds templates (and locales)
+   Python's ``sys.prefix``. ``sys.base_prefix`` or 
+   `sys.base_prefix/local``. This finds templates (and locales)
    installed by pip. E.G. in a virtualenv located at (``sys.prefix``):
    ``/tools/roundup``, roundup would be at:
    ``/tools/roundup/lib/python3.6/site-packages/roundup``. The
    templates would be at:
    ``/tools/roundup/lib/python3.6/site-packages/tools/roundup/share/roundup/templates/``.
-3. ``<roundup.admin.__file__>/../templates/*``.
+3. ``<roundup.admin.__file__>/../../share/roundup/templates/*``.
    This will be used if Roundup's run in the distro (aka. source)
    directory.
 4. ``<current working dir>/*``.

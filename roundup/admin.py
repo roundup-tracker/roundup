@@ -296,18 +296,16 @@ Command help:
 
          1. <roundup.admin.__file__>/../../share/roundup/templates/*
             this is where they will be if we installed an egg via easy_install
+            or we are in the source tree.
          2. <prefix>/share/roundup/templates/*
             this should be the standard place to find them when Roundup is
-            installed
+            installed using setup.py without a prefix
          3. <roundup.admin.__file__>/../../<sys.prefix>/share/\
                  roundup/templates/* which is where they will be found if
             roundup is installed as a wheel using pip install
-         4. <roundup.admin.__file__>/../templates/*
-            this will be used if Roundup's run in the distro (aka. source)
-            directory
-         5. <current working dir>/*
+         4. <current working dir>/*
             this is for when someone unpacks a 3rd-party template
-         6. <current working dir>
+         5. <current working dir>
             this is for someone who "cd"s to the 3rd-party template dir
         """
         # OK, try <prefix>/share/roundup/templates
@@ -320,15 +318,19 @@ Command help:
         #    (2 dirs up)
         #
         # we're interested in where the directory containing "share" is
+        debug = False
         templates = {}
+        if debug: print(__file__)
         for N in 2, 4, 5, 6:
             path = __file__
             # move up N elements in the path
             for _i in range(N):
                 path = os.path.dirname(path)
             tdir = os.path.join(path, 'share', 'roundup', 'templates')
+            if debug: print(tdir)
             if os.path.isdir(tdir):
                 templates = init.listTemplates(tdir)
+                if debug: print("  Found templates breaking loop")
                 break
 
         # search for data files parallel to the roundup
@@ -347,25 +349,39 @@ Command help:
         # path is /usr/local/lib/python3.10/site-packages
         tdir = os.path.join(path, sys.prefix[1:], 'share',
                             'roundup', 'templates')
+        if debug: print(tdir)
         if os.path.isdir(tdir):
             templates.update(init.listTemplates(tdir))
 
-        # OK, now try as if we're in the roundup source distribution
-        # directory, so this module will be in .../roundup-*/roundup/admin.py
-        # and we're interested in the .../roundup-*/ part.
-        path = __file__
-        for _i in range(2):
-            path = os.path.dirname(path)
-        tdir = os.path.join(path, 'templates')
-        if os.path.isdir(tdir):
-            templates.update(init.listTemplates(tdir))
+        try:
+            # sigh pip 3.10 in virtual env finds another place to bury them.
+            # why local and sys.base_prefix are in path I do not know.
+            # path is /usr/local/lib/python3.10/site-packages
+            tdir = os.path.join(path, sys.base_prefix[1:], 'local', 'share',
+                                'roundup', 'templates')
+            if debug: print(tdir)
+            if os.path.isdir(tdir):
+                templates.update(init.listTemplates(tdir))
+                            # path is /usr/local/lib/python3.10/site-packages
+
+
+            tdir = os.path.join(path, sys.base_prefix[1:], 'share',
+                                'roundup', 'templates')
+            if debug: print(tdir)
+            if os.path.isdir(tdir):
+                templates.update(init.listTemplates(tdir))
+        except AttributeError:
+            pass  # sys.base_prefix doesn't work under python2
 
         # Try subdirs of the current dir
         templates.update(init.listTemplates(os.getcwd()))
-
+        if debug: print(os.getcwd() + '/*')
+            
         # Finally, try the current directory as a template
         template = init.loadTemplateInfo(os.getcwd())
+        if debug: print(os.getcwd() + '/*')
         if template:
+            if debug: print("  Found template %s"%template['name'])
             templates[template['name']] = template
 
         return templates

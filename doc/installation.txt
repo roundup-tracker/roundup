@@ -198,10 +198,25 @@ The following assumes that you are using the source distribution.
 Basic Installation Steps
 ------------------------
 
-To install the Roundup support code into your Python tree and
-Roundup scripts into /usr/bin (substitute that path for whatever is
-appropriate on your system). You need to have write permissions
-for these locations, eg. being root on unix::
+Installation of Roundup using Python3 in a virtual environment is
+probably the path of least resistance. Use::
+
+   python3 -m venv /path/to/environment/roundup
+
+then proceed as below after activating (assuming a Bourne like shell)
+the Python environment using::
+
+   . /path/to/environment/roundup/bin/activate
+
+then use the alias ``deactivate`` to return to the normal Python
+environment. If you create the virtual envirnment as a non-root user,
+you can install below using the same user.
+
+To install the Roundup support code into your Python tree and Roundup
+scripts into /usr/bin (substitute that path for whatever is
+appropriate on your system). You need to have write permissions for
+these locations, so you may need to run wthese commands with ``sudo``
+if root permission is required::
 
     python setup.py install
 
