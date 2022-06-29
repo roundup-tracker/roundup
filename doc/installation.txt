@@ -159,7 +159,8 @@ For The Really Impatient
 
 If you just want to give Roundup a whirl Right Now, then simply unpack
 and run ``demo.py`` (it will be available as ``roundup-demo`` script
-after installation).
+after installation). (On systems that don't provide a ``python3``
+program you might need to run ``python demo.py``.)
 
 This will set up a simple demo tracker on your machine. [1]_
 When it's done, it'll print out a URL to point your web browser at
@@ -174,7 +175,7 @@ so you may start playing. Three users will be set up:
        If you run demo on a server host, please stop the demo when
        it has shown startup notice, open file ``demo/config.ini`` with
        your editor, change host name in the ``web`` option in section
-       ``[tracker]``, save the file, then re-run the demo program.
+       ``[tracker]``, save the file, then re-run the demo.py program.
 
 Installation
 ============
