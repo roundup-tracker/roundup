@@ -16,7 +16,7 @@ branches:
 #    - default
 #    - maint-1.6
 
-dist: focal
+dist: jammy
 
 python:
   - 2.7
@@ -75,7 +75,7 @@ before_install:
   - if [[ $TRAVIS_PYTHON_VERSION == "3."* ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
   - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
   - if [[ $TRAVIS_PYTHON_VERSION == "pypy3" ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
-  - case "$TRAVIS_PYTHON_VERSION" in nightly) echo skipping xapian build;; *) make && make install; esac
+  - case "$TRAVIS_PYTHON_VERSION" in ngihtly) echo skipping xapian build;; *) make && make install; esac
 
   - PATH=$VIRTUAL_ENV/bin:$PATH
 
