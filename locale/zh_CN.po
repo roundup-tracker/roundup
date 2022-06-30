@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.8.3\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2022-06-15 09:50-0400\n"
+"POT-Creation-Date: 2022-06-30 16:36-0400\n"
 "PO-Revision-Date: 2013-10-31 12:22+0100\n"
 "Last-Translator: Cheer Xiao <xiaqqaix@gmail.com>\n"
 "Language-Team: Chinese Simplified <limodou@gmail.com>\n"
@@ -31,8 +31,8 @@ msgid "You may not retire the admin or anonymous user"
 msgstr "你不能撤除管理员或匿名用户"
 
 # ../roundup/admin.py:84 :943 :992 :1014
-#: ../roundup/admin.py:99 ../roundup/admin.py:1199 ../roundup/admin.py:1254
-#: ../roundup/admin.py:1281 ../roundup/admin.py:99:1199 :1254:1281
+#: ../roundup/admin.py:99 ../roundup/admin.py:1215 ../roundup/admin.py:1270
+#: ../roundup/admin.py:1297 ../roundup/admin.py:99:1215 :1270:1297
 #, python-format
 msgid "no such class \"%(classname)s\""
 msgstr "无此类别 \"%(classname)s\""
@@ -266,16 +266,16 @@ msgid "Sorry, no help for \"%(topic)s\""
 msgstr "抱歉，没有“%(topic)s”的帮助信息"
 
 # ../roundup/admin.py:337 :387
-#: ../roundup/admin.py:375 ../roundup/admin.py:431 ../roundup/admin.py:375:431
+#: ../roundup/admin.py:391 ../roundup/admin.py:447 ../roundup/admin.py:391:447
 msgid "Templates:"
 msgstr "模板:"
 
 # ../roundup/admin.py:340 :398
-#: ../roundup/admin.py:378 ../roundup/admin.py:441 ../roundup/admin.py:378:441
+#: ../roundup/admin.py:394 ../roundup/admin.py:457 ../roundup/admin.py:394:457
 msgid "Back ends:"
 msgstr "后端:"
 
-#: ../roundup/admin.py:381
+#: ../roundup/admin.py:397
 #, fuzzy
 msgid ""
 "Usage: install [template [backend [key=val[,key=val]]]]\n"
@@ -317,23 +317,23 @@ msgstr ""
 
 # ../roundup/admin.py:359 :494 :573 :623 :676 :697 :725 :796 :863 :934 :982
 # :1004 :1031 :1093 :1159
-#: ../roundup/admin.py:404 ../roundup/admin.py:536 ../roundup/admin.py:609
-#: ../roundup/admin.py:700 ../roundup/admin.py:758 ../roundup/admin.py:842
-#: ../roundup/admin.py:901 ../roundup/admin.py:928 ../roundup/admin.py:955
-#: ../roundup/admin.py:1030 ../roundup/admin.py:1097 ../roundup/admin.py:1183
-#: ../roundup/admin.py:1244 ../roundup/admin.py:1271 ../roundup/admin.py:1307
-#: ../roundup/admin.py:1435 ../roundup/admin.py:1522
-#: ../roundup/admin.py:404:536 :1097 :1183:1244 :1271:1307 :1435:1522 :609:700
-#: :758:842 :901:928 :955:1030
+#: ../roundup/admin.py:420 ../roundup/admin.py:552 ../roundup/admin.py:625
+#: ../roundup/admin.py:716 ../roundup/admin.py:774 ../roundup/admin.py:858
+#: ../roundup/admin.py:917 ../roundup/admin.py:944 ../roundup/admin.py:971
+#: ../roundup/admin.py:1046 ../roundup/admin.py:1113 ../roundup/admin.py:1199
+#: ../roundup/admin.py:1260 ../roundup/admin.py:1287 ../roundup/admin.py:1323
+#: ../roundup/admin.py:1451 ../roundup/admin.py:1538
+#: ../roundup/admin.py:420:552 :1113 :1199:1260 :1287:1323 :1451:1538 :625:716
+#: :774:858 :917:944 :971:1046
 msgid "Not enough arguments supplied"
 msgstr "未提供足够的参数"
 
-#: ../roundup/admin.py:410
+#: ../roundup/admin.py:426
 #, python-format
 msgid "Instance home parent directory \"%(parent)s\" does not exist"
 msgstr "实例目录的父目录 \"%(parent)s\" 不存在"
 
-#: ../roundup/admin.py:419
+#: ../roundup/admin.py:435
 #, python-format
 msgid ""
 "WARNING: There appears to be a tracker in \"%(tracker_home)s\"!\n"
@@ -344,22 +344,22 @@ msgstr ""
 "如果你重新安装，所有的数据将会丢失！\n"
 "删除它吗？Y/N: "
 
-#: ../roundup/admin.py:432
+#: ../roundup/admin.py:448
 #, fuzzy
 msgid "Select template"
 msgstr "选择模板 [classic]:"
 
-#: ../roundup/admin.py:442
+#: ../roundup/admin.py:458
 #, fuzzy
 msgid "Select backend"
 msgstr "选择后端 [anydbm]:"
 
-#: ../roundup/admin.py:453
+#: ../roundup/admin.py:469
 #, python-format
 msgid "Error in configuration settings: \"%s\""
 msgstr "配置设定有错: “%s”"
 
-#: ../roundup/admin.py:484
+#: ../roundup/admin.py:500
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -371,11 +371,11 @@ msgstr ""
 " 现在你应该修改tracker的配置文件：\n"
 "   %(config_file)s"
 
-#: ../roundup/admin.py:494
+#: ../roundup/admin.py:510
 msgid " ... at a minimum, you must set following options:"
 msgstr " ... 至少，你必须设置以下选项："
 
-#: ../roundup/admin.py:499
+#: ../roundup/admin.py:515
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -399,7 +399,7 @@ msgstr ""
 "   %(database_init_file)s\n"
 " ... 查看关于客户化的文档来了解更多的信息。\n"
 
-#: ../roundup/admin.py:531
+#: ../roundup/admin.py:547
 msgid ""
 "Usage: genconfig <filename>\n"
 "        Generate a new tracker config file (ini style) with default\n"
@@ -407,7 +407,7 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:546
+#: ../roundup/admin.py:562
 msgid ""
 "Usage: updateconfig <filename>\n"
 "        Generate an updated tracker config file (ini style) in\n"
@@ -417,7 +417,7 @@ msgid ""
 msgstr ""
 
 #. password
-#: ../roundup/admin.py:554
+#: ../roundup/admin.py:570
 msgid ""
 "Usage: initialise [adminpw]\n"
 "        Initialise a new Roundup tracker.\n"
@@ -435,23 +435,23 @@ msgstr ""
 "        执行tracker的初始化函数 dbinit.init()\n"
 "        "
 
-#: ../roundup/admin.py:568
+#: ../roundup/admin.py:584
 msgid "Admin Password: "
 msgstr "管理员密码:"
 
-#: ../roundup/admin.py:569
+#: ../roundup/admin.py:585
 msgid "       Confirm: "
 msgstr "       确认:"
 
-#: ../roundup/admin.py:573
+#: ../roundup/admin.py:589
 msgid "Instance home does not exist"
 msgstr "实例目录不存在"
 
-#: ../roundup/admin.py:577
+#: ../roundup/admin.py:593
 msgid "Instance has not been installed"
 msgstr "实例还没有安装"
 
-#: ../roundup/admin.py:583
+#: ../roundup/admin.py:599
 msgid ""
 "WARNING: The database is already initialised!\n"
 "If you re-initialise it, you will lose all the data!\n"
@@ -461,7 +461,7 @@ msgstr ""
 "如果你重新初始化它，所有的数据将会丢失！\n"
 "删除它吗？Y/N: "
 
-#: ../roundup/admin.py:599
+#: ../roundup/admin.py:615
 #, fuzzy
 msgid ""
 "Usage: get property designator[,designator]*\n"
@@ -481,24 +481,24 @@ msgstr ""
 "        "
 
 # ../roundup/admin.py:527 :542
-#: ../roundup/admin.py:642 ../roundup/admin.py:659 ../roundup/admin.py:642:659
+#: ../roundup/admin.py:658 ../roundup/admin.py:675 ../roundup/admin.py:658:675
 #, python-format
 msgid "property %s is not of type Multilink or Link so -d flag does not apply."
 msgstr "属性 %s 不是 Multilink 或 Link 类型，所以 -d 标志不能应用。"
 
 # ../roundup/admin.py:550 :945 :994 :1016
-#: ../roundup/admin.py:669 ../roundup/admin.py:1201 ../roundup/admin.py:1256
-#: ../roundup/admin.py:669:1201:1256
+#: ../roundup/admin.py:685 ../roundup/admin.py:1217 ../roundup/admin.py:1272
+#: ../roundup/admin.py:685:1217:1272
 #, python-format
 msgid "no such %(classname)s node \"%(nodeid)s\""
 msgstr "没有这样的 %(classname)s 结点 \"%(nodeid)s\""
 
-#: ../roundup/admin.py:672
+#: ../roundup/admin.py:688
 #, python-format
 msgid "no such %(classname)s property \"%(propname)s\""
 msgstr "没有这样的 %(classname)s 属性 \"%(propname)s\""
 
-#: ../roundup/admin.py:680
+#: ../roundup/admin.py:696
 #, fuzzy
 msgid ""
 "Usage: set items property=value property=value ...\n"
@@ -531,7 +531,7 @@ msgstr ""
 "        你需要为多链接提供用逗号分隔的数字(例如 \"1,2,3\")。\n"
 "        "
 
-#: ../roundup/admin.py:748
+#: ../roundup/admin.py:764
 #, fuzzy
 msgid ""
 "Usage: filter classname propname=value ...\n"
@@ -553,20 +553,20 @@ msgstr ""
 "        "
 
 # ../roundup/admin.py:663 :816 :828 :882
-#: ../roundup/admin.py:790
+#: ../roundup/admin.py:806
 #, fuzzy, python-format
 msgid "Class %(curclassname)s has no property %(pn)s in %(propname)s."
 msgstr "%(classname)s 没有 \"%(propname)s\" 属性"
 
 # ../roundup/admin.py:663 :816 :828 :882
-#: ../roundup/admin.py:827 ../roundup/admin.py:888 ../roundup/admin.py:1050
-#: ../roundup/admin.py:1062 ../roundup/admin.py:1117
-#: ../roundup/admin.py:827:888 :1050:1062:1117
+#: ../roundup/admin.py:843 ../roundup/admin.py:904 ../roundup/admin.py:1066
+#: ../roundup/admin.py:1078 ../roundup/admin.py:1133
+#: ../roundup/admin.py:843:904 :1066:1078:1133
 #, python-format
 msgid "%(classname)s has no property \"%(propname)s\""
 msgstr "%(classname)s 没有 \"%(propname)s\" 属性"
 
-#: ../roundup/admin.py:834
+#: ../roundup/admin.py:850
 msgid ""
 "Usage: find classname propname=value ...\n"
 "        Find the nodes of the given class with a given link property value.\n"
@@ -584,7 +584,7 @@ msgstr ""
 "        或者是结点的键值。\n"
 "        "
 
-#: ../roundup/admin.py:895
+#: ../roundup/admin.py:911
 msgid ""
 "Usage: specification classname\n"
 "        Show the properties for a classname.\n"
@@ -598,17 +598,17 @@ msgstr ""
 "        会列出给定类型的属性。\n"
 "        "
 
-#: ../roundup/admin.py:911
+#: ../roundup/admin.py:927
 #, fuzzy, python-format
 msgid "%(key)s: %(value)s (key property)\n"
 msgstr "%(key)s: %(value)s (关键属性)"
 
-#: ../roundup/admin.py:914
+#: ../roundup/admin.py:930
 #, fuzzy, python-format
 msgid "%(key)s: %(value)s\n"
 msgstr "%(key)s: %(value)s"
 
-#: ../roundup/admin.py:917
+#: ../roundup/admin.py:933
 #, fuzzy
 msgid ""
 "Usage: display designator[,designator]*\n"
@@ -628,12 +628,12 @@ msgstr ""
 "        将显示给出结点的属性和相应的值。\n"
 "        "
 
-#: ../roundup/admin.py:944
+#: ../roundup/admin.py:960
 #, python-format
 msgid "%(key)s: %(value)s"
 msgstr "%(key)s: %(value)s"
 
-#: ../roundup/admin.py:947
+#: ../roundup/admin.py:963
 msgid ""
 "Usage: create classname property=value ...\n"
 "        Create a new entry of a given class.\n"
@@ -651,31 +651,31 @@ msgstr ""
 "name=value 参数。\n"
 "        "
 
-#: ../roundup/admin.py:975
+#: ../roundup/admin.py:991
 #, python-format
 msgid "%(propname)s (Password): "
 msgstr "%(propname)s (密码):"
 
-#: ../roundup/admin.py:978
+#: ../roundup/admin.py:994
 #, python-format
 msgid "   %(propname)s (Again): "
 msgstr "   %(propname)s (再次)："
 
-#: ../roundup/admin.py:981
+#: ../roundup/admin.py:997
 msgid "Sorry, try again..."
 msgstr "抱歉，再试一次..."
 
-#: ../roundup/admin.py:985
+#: ../roundup/admin.py:1001
 #, python-format
 msgid "%(propname)s (%(proptype)s): "
 msgstr ""
 
-#: ../roundup/admin.py:1003
+#: ../roundup/admin.py:1019
 #, python-format
 msgid "you must provide the \"%(propname)s\" property."
 msgstr "你必须提供 \"%(propname)s\" 属性。"
 
-#: ../roundup/admin.py:1015
+#: ../roundup/admin.py:1031
 msgid ""
 "Usage: list classname [property]\n"
 "        List the instances of a class.\n"
@@ -701,16 +701,16 @@ msgstr ""
 "        定了属性，对每个类型实例会打印出这个属性。\n"
 "        "
 
-#: ../roundup/admin.py:1028
+#: ../roundup/admin.py:1044
 msgid "Too many arguments supplied"
 msgstr "提供了太多的参数了"
 
-#: ../roundup/admin.py:1064
+#: ../roundup/admin.py:1080
 #, python-format
 msgid "%(nodeid)4s: %(value)s"
 msgstr "%(nodeid)4s: %(value)s"
 
-#: ../roundup/admin.py:1068
+#: ../roundup/admin.py:1084
 msgid ""
 "Usage: table classname [property[,property]*]\n"
 "        List the instances of a class in tabular form.\n"
@@ -768,17 +768,17 @@ msgstr ""
 "        将生成4个字符宽的 \"Name\" 列。\n"
 "        "
 
-#: ../roundup/admin.py:1112
+#: ../roundup/admin.py:1128
 #, python-format
 msgid "\"%(spec)s\" not name:width"
 msgstr "\"%(spec)s\" 不是 名字:宽度"
 
-#: ../roundup/admin.py:1134
+#: ../roundup/admin.py:1150
 #, python-format
 msgid "\"%(spec)s\" does not have an integer width: \"%(width)s\""
 msgstr ""
 
-#: ../roundup/admin.py:1170
+#: ../roundup/admin.py:1186
 msgid ""
 "Usage: history designator [skipquiet]\n"
 "        Show the history entries of a designator.\n"
@@ -793,7 +793,7 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1206
+#: ../roundup/admin.py:1222
 msgid ""
 "Usage: commit\n"
 "        Commit changes made to the database during an interactive session.\n"
@@ -814,7 +814,7 @@ msgstr ""
 "        在命令行中的 One-off 命令如果成功会被自动提交。\n"
 "        "
 
-#: ../roundup/admin.py:1221
+#: ../roundup/admin.py:1237
 msgid ""
 "Usage: rollback\n"
 "        Undo all changes that are pending commit to the database.\n"
@@ -833,7 +833,7 @@ msgstr ""
 "        产生变化。\n"
 "        "
 
-#: ../roundup/admin.py:1234
+#: ../roundup/admin.py:1250
 #, fuzzy
 msgid ""
 "Usage: retire designator[,designator]*\n"
@@ -853,7 +853,7 @@ msgstr ""
 "        它的键值可以被重用。\n"
 "        "
 
-#: ../roundup/admin.py:1262
+#: ../roundup/admin.py:1278
 #, fuzzy
 msgid ""
 "Usage: restore designator[,designator]*\n"
@@ -872,13 +872,13 @@ msgstr ""
 "        "
 
 # ../roundup/admin.py:550 :945 :994 :1016
-#: ../roundup/admin.py:1287
+#: ../roundup/admin.py:1303
 #, fuzzy
 msgid "no such %(classname)s node \" % (nodeid)s\""
 msgstr "没有这样的 %(classname)s 结点 \"%(nodeid)s\""
 
 #. grab the directory to export to
-#: ../roundup/admin.py:1293
+#: ../roundup/admin.py:1309
 #, fuzzy
 msgid ""
 "Usage: export [[-]class[,class]] export_dir\n"
@@ -903,7 +903,7 @@ msgstr ""
 "        放在指定的目标目录中。\n"
 "        "
 
-#: ../roundup/admin.py:1400
+#: ../roundup/admin.py:1416
 #, fuzzy
 msgid ""
 "Usage: exporttables [[-]class[,class]] export_dir\n"
@@ -929,7 +929,7 @@ msgstr ""
 "        放在指定的目标目录中。\n"
 "        "
 
-#: ../roundup/admin.py:1415
+#: ../roundup/admin.py:1431
 msgid ""
 "Usage: import import_dir\n"
 "        Import a database from the directory containing CSV files,\n"
@@ -969,7 +969,7 @@ msgstr ""
 "        旧数据。)\n"
 "        "
 
-#: ../roundup/admin.py:1497
+#: ../roundup/admin.py:1513
 msgid ""
 "Usage: importtables export_dir\n"
 "\n"
@@ -977,7 +977,7 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1504
+#: ../roundup/admin.py:1520
 msgid ""
 "Usage: pack period | date\n"
 "\n"
@@ -1015,11 +1015,11 @@ msgstr ""
 "\n"
 "        "
 
-#: ../roundup/admin.py:1532
+#: ../roundup/admin.py:1548
 msgid "Invalid format"
 msgstr "无效的格式"
 
-#: ../roundup/admin.py:1543
+#: ../roundup/admin.py:1559
 msgid ""
 "Usage: reindex [classname|designator]*\n"
 "        Re-generate a tracker's search indexes.\n"
@@ -1034,12 +1034,12 @@ msgstr ""
 "        重新生成 tracker 的搜索索引，它将自动进行。\n"
 "        "
 
-#: ../roundup/admin.py:1557
+#: ../roundup/admin.py:1573
 #, python-format
 msgid "no such item \"%(designator)s\""
 msgstr "没有这样的条目 \"%(designator)s\""
 
-#: ../roundup/admin.py:1567
+#: ../roundup/admin.py:1583
 #, fuzzy
 msgid ""
 "Usage: security [Role name]\n"
@@ -1051,47 +1051,47 @@ msgstr ""
 "        显示一个或多个角色的权限。\n"
 "        "
 
-#: ../roundup/admin.py:1576
+#: ../roundup/admin.py:1592
 #, fuzzy, python-format
 msgid "No such Role \"%(role)s\"\n"
 msgstr "没有这样的角色 \"%(role)s\""
 
-#: ../roundup/admin.py:1582
+#: ../roundup/admin.py:1598
 #, fuzzy, python-format
 msgid "New Web users get the Roles \"%(role)s\"\n"
 msgstr "新Web用户得到角色 \"%(role)s\""
 
-#: ../roundup/admin.py:1585
+#: ../roundup/admin.py:1601
 #, fuzzy, python-format
 msgid "New Web users get the Role \"%(role)s\"\n"
 msgstr "新Web用户得到角色 \"%(role)s\""
 
-#: ../roundup/admin.py:1589
+#: ../roundup/admin.py:1605
 #, fuzzy, python-format
 msgid "New Email users get the Roles \"%(role)s\"\n"
 msgstr "新邮件用户得到角色 \"%(role)s\""
 
-#: ../roundup/admin.py:1591
+#: ../roundup/admin.py:1607
 #, fuzzy, python-format
 msgid "New Email users get the Role \"%(role)s\"\n"
 msgstr "新邮件用户得到角色 \"%(role)s\""
 
-#: ../roundup/admin.py:1594
+#: ../roundup/admin.py:1610
 #, fuzzy, python-format
 msgid "Role \"%(name)s\":\n"
 msgstr "角色 \"%(name)s\"："
 
-#: ../roundup/admin.py:1599
+#: ../roundup/admin.py:1615
 #, fuzzy
 msgid " %(description)s (%(name)s for \"%(klass)s\""
 msgstr " %(description)s (%(name)s 仅用于 \"%(klass)s\")"
 
-#: ../roundup/admin.py:1599
+#: ../roundup/admin.py:1615
 #, fuzzy, python-format
 msgid " %(description)s (%(name)s for \"%(klass)s\": %(properties)s only)\n"
 msgstr " %(description)s (%(name)s 仅用于 \"%(klass)s\")"
 
-#: ../roundup/admin.py:1611
+#: ../roundup/admin.py:1627
 #, python-format
 msgid ""
 "\n"
@@ -1099,17 +1099,17 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../roundup/admin.py:1614
+#: ../roundup/admin.py:1630
 #, fuzzy, python-format
 msgid " %(description)s (%(name)s for \"%(klass)s\" only)\n"
 msgstr " %(description)s (%(name)s 仅用于 \"%(klass)s\")"
 
-#: ../roundup/admin.py:1617
+#: ../roundup/admin.py:1633
 #, fuzzy, python-format
 msgid " %(description)s (%(name)s)\n"
 msgstr " %(description)s (%(name)s)"
 
-#: ../roundup/admin.py:1621
+#: ../roundup/admin.py:1637
 msgid ""
 "Usage: migrate\n"
 "\n"
@@ -1133,42 +1133,42 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1642
+#: ../roundup/admin.py:1658
 msgid "Tracker updated"
 msgstr "Tracker 已经更新"
 
-#: ../roundup/admin.py:1645
+#: ../roundup/admin.py:1661
 msgid "No migration action required"
 msgstr "不必执行迁移"
 
-#: ../roundup/admin.py:1671
+#: ../roundup/admin.py:1687
 #, python-format
 msgid "Unknown command \"%(command)s\" (\"help commands\" for a list)"
 msgstr "未知命令 \"%(command)s\" (\"help commands\" 查看命令列表)"
 
-#: ../roundup/admin.py:1677
+#: ../roundup/admin.py:1693
 #, python-format
 msgid "Multiple commands match \"%(command)s\": %(list)s"
 msgstr "多命令匹配 \"%(command)s\": %(list)s"
 
-#: ../roundup/admin.py:1686
+#: ../roundup/admin.py:1702
 msgid "Enter tracker home: "
 msgstr "输入tracker起始目录："
 
 # ../roundup/admin.py:1279 :1285 :1305
-#: ../roundup/admin.py:1695 ../roundup/admin.py:1701 ../roundup/admin.py:1735
-#: ../roundup/admin.py:1695:1701:1735
+#: ../roundup/admin.py:1711 ../roundup/admin.py:1717 ../roundup/admin.py:1751
+#: ../roundup/admin.py:1711:1717:1751
 #, python-format
 msgid "Error: %(message)s"
 msgstr "错误：%(message)s"
 
-#: ../roundup/admin.py:1709 ../roundup/admin.py:1713
-#: ../roundup/admin.py:1709:1713
+#: ../roundup/admin.py:1725 ../roundup/admin.py:1729
+#: ../roundup/admin.py:1725:1729
 #, python-format
 msgid "Error: Couldn't open tracker: %(message)s"
 msgstr "错误：不能打开tracker：%(message)s"
 
-#: ../roundup/admin.py:1748
+#: ../roundup/admin.py:1764
 #, python-format
 msgid ""
 "Roundup %s ready for input.\n"
@@ -1177,19 +1177,19 @@ msgstr ""
 "Roundup %s 输入就绪。\n"
 "敲入 \"help\" 获得帮助。"
 
-#: ../roundup/admin.py:1753
+#: ../roundup/admin.py:1769
 msgid "Note: command history and editing not available"
 msgstr "注意：命令历史和编辑无效"
 
-#: ../roundup/admin.py:1757
+#: ../roundup/admin.py:1773
 msgid "roundup> "
 msgstr "roundup>"
 
-#: ../roundup/admin.py:1759
+#: ../roundup/admin.py:1775
 msgid "exit..."
 msgstr "退出..."
 
-#: ../roundup/admin.py:1772
+#: ../roundup/admin.py:1788
 msgid "There are unsaved changes. Commit them (y/N)? "
 msgstr "存在未被保存的改动。提交吗(y/N)？"
 
@@ -2854,7 +2854,13 @@ msgstr ""
 msgid "Unable to bind to port %s, port already in use."
 msgstr "无法绑定到端口 %s, 端口已经被占用。"
 
-#: ../roundup/scripts/roundup_server.py:865
+#: ../roundup/scripts/roundup_server.py:796
+#, fuzzy, python-format
+msgid ""
+"Unable to bind to port %(port)s, access not allowed, errno: %(errno)s %(msg)s"
+msgstr "无法绑定到端口 %s, 端口已经被占用。"
+
+#: ../roundup/scripts/roundup_server.py:874
 #, fuzzy
 msgid ""
 " -c <Command>  Windows Service options.\n"
@@ -2871,7 +2877,7 @@ msgstr ""
 "               变量上配置一个tracker。这个选项与其经选项是互斥的。打入\n"
 "               \"roundup-server -c help\" 来了解Windows服务的规范。"
 
-#: ../roundup/scripts/roundup_server.py:872
+#: ../roundup/scripts/roundup_server.py:881
 msgid ""
 " -u <UID>      runs the Roundup web server as this UID\n"
 " -g <GID>      runs the Roundup web server as this GID\n"
@@ -2885,7 +2891,7 @@ msgstr ""
 "去。\n"
 "               如果使用了 -d 选项，则 -l 选项 *必须* 要指定。"
 
-#: ../roundup/scripts/roundup_server.py:879
+#: ../roundup/scripts/roundup_server.py:888
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -2981,20 +2987,20 @@ msgstr ""
 "   意数量的 name=home 对。要确保 name 部分不能包括任何非url安全的\n"
 "   字符，象空格，因为它们会把IE搞乱。\n"
 
-#: ../roundup/scripts/roundup_server.py:1055
+#: ../roundup/scripts/roundup_server.py:1064
 msgid "Instances must be name=home"
 msgstr "实例必须是 实例名=实例路径"
 
-#: ../roundup/scripts/roundup_server.py:1069
+#: ../roundup/scripts/roundup_server.py:1078
 #, python-format
 msgid "Configuration saved to %s"
 msgstr "配置保存到 %s"
 
-#: ../roundup/scripts/roundup_server.py:1087
+#: ../roundup/scripts/roundup_server.py:1096
 msgid "Sorry, you can't run the server as a daemon on this Operating System"
 msgstr "抱歉，在这个操作系统上不能以守护进程的方式来运行服务"
 
-#: ../roundup/scripts/roundup_server.py:1107
+#: ../roundup/scripts/roundup_server.py:1116
 #, python-format
 msgid "Roundup server started on %(HOST)s:%(PORT)s"
 msgstr "Roundup server 启动于 %(HOST)s:%(PORT)s"

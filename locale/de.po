@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roundup 1.5.0\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2022-06-15 09:50-0400\n"
+"POT-Creation-Date: 2022-06-30 16:36-0400\n"
 "PO-Revision-Date: 2016-04-11 09:13+0200\n"
 "Last-Translator: Tobias Herp <tobias.herp@gmx.de>\n"
 "Language-Team: German Translators <roundup-devel@lists.sourceforge.net>\n"
@@ -30,8 +30,8 @@ msgstr ""
 msgid "You may not retire the admin or anonymous user"
 msgstr "Sie können den Administrator oder den Gast-Benutzer nicht löschen"
 
-#: ../roundup/admin.py:99 ../roundup/admin.py:1199 ../roundup/admin.py:1254
-#: ../roundup/admin.py:1281 ../roundup/admin.py:99:1199 :1254:1281
+#: ../roundup/admin.py:99 ../roundup/admin.py:1215 ../roundup/admin.py:1270
+#: ../roundup/admin.py:1297 ../roundup/admin.py:99:1215 :1270:1297
 #, python-format
 msgid "no such class \"%(classname)s\""
 msgstr "Die Klasse \"%(classname)s\" existiert nicht"
@@ -270,16 +270,16 @@ msgid "Sorry, no help for \"%(topic)s\""
 msgstr "Zum Thema \"%(topic)s\" existiert leider kein Hilfetext"
 
 # ../roundup/admin.py:336 :382
-#: ../roundup/admin.py:375 ../roundup/admin.py:431 ../roundup/admin.py:375:431
+#: ../roundup/admin.py:391 ../roundup/admin.py:447 ../roundup/admin.py:391:447
 msgid "Templates:"
 msgstr "Vorlagen:"
 
 # ../roundup/admin.py:339 :393
-#: ../roundup/admin.py:378 ../roundup/admin.py:441 ../roundup/admin.py:378:441
+#: ../roundup/admin.py:394 ../roundup/admin.py:457 ../roundup/admin.py:394:457
 msgid "Back ends:"
 msgstr "Datenbanken:"
 
-#: ../roundup/admin.py:381
+#: ../roundup/admin.py:397
 msgid ""
 "Usage: install [template [backend [key=val[,key=val]]]]\n"
 "        Install a new Roundup tracker.\n"
@@ -334,23 +334,23 @@ msgstr ""
 
 # ../roundup/admin.py:358 :483 :562 :612 :682 :703 :731 :802 :869 :940 :988
 # :1010 :1037 :1098 :1156
-#: ../roundup/admin.py:404 ../roundup/admin.py:536 ../roundup/admin.py:609
-#: ../roundup/admin.py:700 ../roundup/admin.py:758 ../roundup/admin.py:842
-#: ../roundup/admin.py:901 ../roundup/admin.py:928 ../roundup/admin.py:955
-#: ../roundup/admin.py:1030 ../roundup/admin.py:1097 ../roundup/admin.py:1183
-#: ../roundup/admin.py:1244 ../roundup/admin.py:1271 ../roundup/admin.py:1307
-#: ../roundup/admin.py:1435 ../roundup/admin.py:1522
-#: ../roundup/admin.py:404:536 :1097 :1183:1244 :1271:1307 :1435:1522 :609:700
-#: :758:842 :901:928 :955:1030
+#: ../roundup/admin.py:420 ../roundup/admin.py:552 ../roundup/admin.py:625
+#: ../roundup/admin.py:716 ../roundup/admin.py:774 ../roundup/admin.py:858
+#: ../roundup/admin.py:917 ../roundup/admin.py:944 ../roundup/admin.py:971
+#: ../roundup/admin.py:1046 ../roundup/admin.py:1113 ../roundup/admin.py:1199
+#: ../roundup/admin.py:1260 ../roundup/admin.py:1287 ../roundup/admin.py:1323
+#: ../roundup/admin.py:1451 ../roundup/admin.py:1538
+#: ../roundup/admin.py:420:552 :1113 :1199:1260 :1287:1323 :1451:1538 :625:716
+#: :774:858 :917:944 :971:1046
 msgid "Not enough arguments supplied"
 msgstr "Zu wenig Parameter übergeben"
 
-#: ../roundup/admin.py:410
+#: ../roundup/admin.py:426
 #, python-format
 msgid "Instance home parent directory \"%(parent)s\" does not exist"
 msgstr "Das angegebene Tracker-Verzeichnis \"%(parent)s\" existiert nicht"
 
-#: ../roundup/admin.py:419
+#: ../roundup/admin.py:435
 #, python-format
 msgid ""
 "WARNING: There appears to be a tracker in \"%(tracker_home)s\"!\n"
@@ -361,22 +361,22 @@ msgstr ""
 "installiert zu sein! Eine erneute Installation löscht sämtliche Daten!\n"
 "Wirklich löschen? Y/N: "
 
-#: ../roundup/admin.py:432
+#: ../roundup/admin.py:448
 #, fuzzy
 msgid "Select template"
 msgstr "Vorlagensatz auswählen [classic]:"
 
-#: ../roundup/admin.py:442
+#: ../roundup/admin.py:458
 #, fuzzy
 msgid "Select backend"
 msgstr "Datenbank auswählen [anydbm]"
 
-#: ../roundup/admin.py:453
+#: ../roundup/admin.py:469
 #, python-format
 msgid "Error in configuration settings: \"%s\""
 msgstr "Fehler in der Konfiguration: \"%s\""
 
-#: ../roundup/admin.py:484
+#: ../roundup/admin.py:500
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -388,11 +388,11 @@ msgstr ""
 " Sie sollten nun die Konfigurationsdatei des Trackers bearbeiten:\n"
 "   %(config_file)s"
 
-#: ../roundup/admin.py:494
+#: ../roundup/admin.py:510
 msgid " ... at a minimum, you must set following options:"
 msgstr " ... passen sie zumindest folgende Optionen an:"
 
-#: ../roundup/admin.py:499
+#: ../roundup/admin.py:515
 #, python-format
 msgid ""
 "\n"
@@ -418,7 +418,7 @@ msgstr ""
 " Anschließend MÜSSEN Sie \"roundup-admin initialise\" ausführen.\n"
 "---------------------------------------------------------------------------\n"
 
-#: ../roundup/admin.py:531
+#: ../roundup/admin.py:547
 #, fuzzy
 msgid ""
 "Usage: genconfig <filename>\n"
@@ -431,7 +431,7 @@ msgstr ""
 "        Standardwerten in die Datei <filename>.\n"
 "        "
 
-#: ../roundup/admin.py:546
+#: ../roundup/admin.py:562
 #, fuzzy
 msgid ""
 "Usage: updateconfig <filename>\n"
@@ -446,7 +446,7 @@ msgstr ""
 "        "
 
 #. password
-#: ../roundup/admin.py:554
+#: ../roundup/admin.py:570
 msgid ""
 "Usage: initialise [adminpw]\n"
 "        Initialise a new Roundup tracker.\n"
@@ -464,23 +464,23 @@ msgstr ""
 "        Die Funktion dbinit.init() wird aufgerufen\n"
 "        "
 
-#: ../roundup/admin.py:568
+#: ../roundup/admin.py:584
 msgid "Admin Password: "
 msgstr "Administratorpasswort: "
 
-#: ../roundup/admin.py:569
+#: ../roundup/admin.py:585
 msgid "       Confirm: "
 msgstr "  Wiederholen: "
 
-#: ../roundup/admin.py:573
+#: ../roundup/admin.py:589
 msgid "Instance home does not exist"
 msgstr "Tracker-Verzeichnis existiert nicht"
 
-#: ../roundup/admin.py:577
+#: ../roundup/admin.py:593
 msgid "Instance has not been installed"
 msgstr "Tracker-Instanz wurde nicht installiert"
 
-#: ../roundup/admin.py:583
+#: ../roundup/admin.py:599
 msgid ""
 "WARNING: The database is already initialised!\n"
 "If you re-initialise it, you will lose all the data!\n"
@@ -490,7 +490,7 @@ msgstr ""
 "Eine erneute Initialisierung löscht sämtliche Daten!\n"
 "Wirklich löschen? Y/N: "
 
-#: ../roundup/admin.py:599
+#: ../roundup/admin.py:615
 #, fuzzy
 msgid ""
 "Usage: get property designator[,designator]*\n"
@@ -511,7 +511,7 @@ msgstr ""
 "        "
 
 # ../roundup/admin.py:516 :531
-#: ../roundup/admin.py:642 ../roundup/admin.py:659 ../roundup/admin.py:642:659
+#: ../roundup/admin.py:658 ../roundup/admin.py:675 ../roundup/admin.py:658:675
 #, python-format
 msgid "property %s is not of type Multilink or Link so -d flag does not apply."
 msgstr ""
@@ -519,21 +519,21 @@ msgstr ""
 "hier nicht ausgewertet."
 
 # ../roundup/admin.py:539 :951 :1000 :1022
-#: ../roundup/admin.py:669 ../roundup/admin.py:1201 ../roundup/admin.py:1256
-#: ../roundup/admin.py:669:1201:1256
+#: ../roundup/admin.py:685 ../roundup/admin.py:1217 ../roundup/admin.py:1272
+#: ../roundup/admin.py:685:1217:1272
 #, python-format
 msgid "no such %(classname)s node \"%(nodeid)s\""
 msgstr ""
 "Es existiert kein Eintrag der Klasse %(classname)s mit der ID \"%(nodeid)s\""
 
-#: ../roundup/admin.py:672
+#: ../roundup/admin.py:688
 #, python-format
 msgid "no such %(classname)s property \"%(propname)s\""
 msgstr ""
 "Die Eigenschaft \"%(propname)s\" ist für die Klasse \"%(classname)s\" nicht "
 "definiert"
 
-#: ../roundup/admin.py:680
+#: ../roundup/admin.py:696
 #, fuzzy
 msgid ""
 "Usage: set items property=value property=value ...\n"
@@ -570,7 +570,7 @@ msgstr ""
 "(\"1,2,3\").\n"
 "        "
 
-#: ../roundup/admin.py:748
+#: ../roundup/admin.py:764
 #, fuzzy
 msgid ""
 "Usage: filter classname propname=value ...\n"
@@ -592,20 +592,20 @@ msgstr ""
 "        "
 
 # ../roundup/admin.py:631 :669 :822 :834 :888
-#: ../roundup/admin.py:790
+#: ../roundup/admin.py:806
 #, fuzzy, python-format
 msgid "Class %(curclassname)s has no property %(pn)s in %(propname)s."
 msgstr "Die Klasse \"%(classname)s\" hat keine Eigenschaft \"%(propname)s\""
 
 # ../roundup/admin.py:631 :669 :822 :834 :888
-#: ../roundup/admin.py:827 ../roundup/admin.py:888 ../roundup/admin.py:1050
-#: ../roundup/admin.py:1062 ../roundup/admin.py:1117
-#: ../roundup/admin.py:827:888 :1050:1062:1117
+#: ../roundup/admin.py:843 ../roundup/admin.py:904 ../roundup/admin.py:1066
+#: ../roundup/admin.py:1078 ../roundup/admin.py:1133
+#: ../roundup/admin.py:843:904 :1066:1078:1133
 #, python-format
 msgid "%(classname)s has no property \"%(propname)s\""
 msgstr "Die Klasse \"%(classname)s\" hat keine Eigenschaft \"%(propname)s\""
 
-#: ../roundup/admin.py:834
+#: ../roundup/admin.py:850
 msgid ""
 "Usage: find classname propname=value ...\n"
 "        Find the nodes of the given class with a given link property value.\n"
@@ -623,7 +623,7 @@ msgstr ""
 "        als ID oder als Bezeichner (\"msg23\") spezifiziert werden.\n"
 "        "
 
-#: ../roundup/admin.py:895
+#: ../roundup/admin.py:911
 msgid ""
 "Usage: specification classname\n"
 "        Show the properties for a classname.\n"
@@ -637,17 +637,17 @@ msgstr ""
 "        Zeigt sämtliche Eigenschaften der Klasse auf.\n"
 "        "
 
-#: ../roundup/admin.py:911
+#: ../roundup/admin.py:927
 #, fuzzy, python-format
 msgid "%(key)s: %(value)s (key property)\n"
 msgstr "%(key)s: %(value)s (Schlüsseleigenschaft)"
 
-#: ../roundup/admin.py:914
+#: ../roundup/admin.py:930
 #, fuzzy, python-format
 msgid "%(key)s: %(value)s\n"
 msgstr "%(key)s: %(value)s"
 
-#: ../roundup/admin.py:917
+#: ../roundup/admin.py:933
 #, fuzzy
 msgid ""
 "Usage: display designator[,designator]*\n"
@@ -668,12 +668,12 @@ msgstr ""
 "        gewählten Eintrags an.\n"
 "        "
 
-#: ../roundup/admin.py:944
+#: ../roundup/admin.py:960
 #, python-format
 msgid "%(key)s: %(value)s"
 msgstr "%(key)s: %(value)s"
 
-#: ../roundup/admin.py:947
+#: ../roundup/admin.py:963
 msgid ""
 "Usage: create classname property=value ...\n"
 "        Create a new entry of a given class.\n"
@@ -691,31 +691,31 @@ msgstr ""
 "        werden mit den Werten initialisiert\n"
 "        "
 
-#: ../roundup/admin.py:975
+#: ../roundup/admin.py:991
 #, python-format
 msgid "%(propname)s (Password): "
 msgstr "%(propname)s (Passwort):"
 
-#: ../roundup/admin.py:978
+#: ../roundup/admin.py:994
 #, python-format
 msgid "   %(propname)s (Again): "
 msgstr "   %(propname)s (Wiederholen):"
 
-#: ../roundup/admin.py:981
+#: ../roundup/admin.py:997
 msgid "Sorry, try again..."
 msgstr "Bitte erneut versuchen..."
 
-#: ../roundup/admin.py:985
+#: ../roundup/admin.py:1001
 #, python-format
 msgid "%(propname)s (%(proptype)s): "
 msgstr "%(propname)s (%(proptype)s): "
 
-#: ../roundup/admin.py:1003
+#: ../roundup/admin.py:1019
 #, python-format
 msgid "you must provide the \"%(propname)s\" property."
 msgstr "Sie müssen einen Wert für \"%(propname)s\" angeben."
 
-#: ../roundup/admin.py:1015
+#: ../roundup/admin.py:1031
 msgid ""
 "Usage: list classname [property]\n"
 "        List the instances of a class.\n"
@@ -746,16 +746,16 @@ msgstr ""
 "aufgelistet.\n"
 "        "
 
-#: ../roundup/admin.py:1028
+#: ../roundup/admin.py:1044
 msgid "Too many arguments supplied"
 msgstr "Sie haben zuviele Argumente übergeben"
 
-#: ../roundup/admin.py:1064
+#: ../roundup/admin.py:1080
 #, python-format
 msgid "%(nodeid)4s: %(value)s"
 msgstr "%(nodeid)4s: %(value)s"
 
-#: ../roundup/admin.py:1068
+#: ../roundup/admin.py:1084
 msgid ""
 "Usage: table classname [property[,property]*]\n"
 "        List the instances of a class in tabular form.\n"
@@ -818,17 +818,17 @@ msgstr ""
 "\n"
 "        "
 
-#: ../roundup/admin.py:1112
+#: ../roundup/admin.py:1128
 #, python-format
 msgid "\"%(spec)s\" not name:width"
 msgstr "\"%(spec)s\" entspricht nicht dem Format Eigenschaft:Breite"
 
-#: ../roundup/admin.py:1134
+#: ../roundup/admin.py:1150
 #, python-format
 msgid "\"%(spec)s\" does not have an integer width: \"%(width)s\""
 msgstr ""
 
-#: ../roundup/admin.py:1170
+#: ../roundup/admin.py:1186
 msgid ""
 "Usage: history designator [skipquiet]\n"
 "        Show the history entries of a designator.\n"
@@ -843,7 +843,7 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1206
+#: ../roundup/admin.py:1222
 msgid ""
 "Usage: commit\n"
 "        Commit changes made to the database during an interactive session.\n"
@@ -868,7 +868,7 @@ msgstr ""
 "        geschrieben.\n"
 "        "
 
-#: ../roundup/admin.py:1221
+#: ../roundup/admin.py:1237
 msgid ""
 "Usage: rollback\n"
 "        Undo all changes that are pending commit to the database.\n"
@@ -887,7 +887,7 @@ msgstr ""
 "        verworfen.\n"
 "        "
 
-#: ../roundup/admin.py:1234
+#: ../roundup/admin.py:1250
 #, fuzzy
 msgid ""
 "Usage: retire designator[,designator]*\n"
@@ -908,7 +908,7 @@ msgstr ""
 "        kann zudem wiederverwendet werden.\n"
 "        "
 
-#: ../roundup/admin.py:1262
+#: ../roundup/admin.py:1278
 #, fuzzy
 msgid ""
 "Usage: restore designator[,designator]*\n"
@@ -928,14 +928,14 @@ msgstr ""
 "        "
 
 # ../roundup/admin.py:539 :951 :1000 :1022
-#: ../roundup/admin.py:1287
+#: ../roundup/admin.py:1303
 #, fuzzy
 msgid "no such %(classname)s node \" % (nodeid)s\""
 msgstr ""
 "Es existiert kein Eintrag der Klasse %(classname)s mit der ID \"%(nodeid)s\""
 
 #. grab the directory to export to
-#: ../roundup/admin.py:1293
+#: ../roundup/admin.py:1309
 msgid ""
 "Usage: export [[-]class[,class]] export_dir\n"
 "        Export the database to colon-separated-value files.\n"
@@ -964,7 +964,7 @@ msgstr ""
 "        Exportverzeichnis geschrieben.\n"
 "        "
 
-#: ../roundup/admin.py:1400
+#: ../roundup/admin.py:1416
 msgid ""
 "Usage: exporttables [[-]class[,class]] export_dir\n"
 "        Export the database to colon-separated-value files, excluding the\n"
@@ -995,7 +995,7 @@ msgstr ""
 "        Exportverzeichnis geschrieben.\n"
 "        "
 
-#: ../roundup/admin.py:1415
+#: ../roundup/admin.py:1431
 msgid ""
 "Usage: import import_dir\n"
 "        Import a database from the directory containing CSV files,\n"
@@ -1039,7 +1039,7 @@ msgstr ""
 "        verbergen).\n"
 "        "
 
-#: ../roundup/admin.py:1497
+#: ../roundup/admin.py:1513
 msgid ""
 "Usage: importtables export_dir\n"
 "\n"
@@ -1047,7 +1047,7 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1504
+#: ../roundup/admin.py:1520
 msgid ""
 "Usage: pack period | date\n"
 "\n"
@@ -1086,11 +1086,11 @@ msgstr ""
 "\n"
 "        "
 
-#: ../roundup/admin.py:1532
+#: ../roundup/admin.py:1548
 msgid "Invalid format"
 msgstr "Ungültiges Format"
 
-#: ../roundup/admin.py:1543
+#: ../roundup/admin.py:1559
 msgid ""
 "Usage: reindex [classname|designator]*\n"
 "        Re-generate a tracker's search indexes.\n"
@@ -1106,12 +1106,12 @@ msgstr ""
 "        normalerweise automatisch.\n"
 "        "
 
-#: ../roundup/admin.py:1557
+#: ../roundup/admin.py:1573
 #, python-format
 msgid "no such item \"%(designator)s\""
 msgstr "Der Eintrag \"%(designator)s\" existiert nicht"
 
-#: ../roundup/admin.py:1567
+#: ../roundup/admin.py:1583
 #, fuzzy
 msgid ""
 "Usage: security [Role name]\n"
@@ -1123,48 +1123,48 @@ msgstr ""
 "        Zeigt die Berechtigungen einer oder aller Rollen an.\n"
 "        "
 
-#: ../roundup/admin.py:1576
+#: ../roundup/admin.py:1592
 #, fuzzy, python-format
 msgid "No such Role \"%(role)s\"\n"
 msgstr "Die Rolle \"%(role)s\" existiert nicht "
 
-#: ../roundup/admin.py:1582
+#: ../roundup/admin.py:1598
 #, fuzzy, python-format
 msgid "New Web users get the Roles \"%(role)s\"\n"
 msgstr "Neue Web-Benutzer erhalten die Rollen \"%(role)s\""
 
-#: ../roundup/admin.py:1585
+#: ../roundup/admin.py:1601
 #, fuzzy, python-format
 msgid "New Web users get the Role \"%(role)s\"\n"
 msgstr "Neue Web-Benutzer erhalten die Rolle \"%(role)s\""
 
-#: ../roundup/admin.py:1589
+#: ../roundup/admin.py:1605
 #, fuzzy, python-format
 msgid "New Email users get the Roles \"%(role)s\"\n"
 msgstr "Neue E-Mail-Benutzer erhalten die Rollen \"%(role)s\""
 
-#: ../roundup/admin.py:1591
+#: ../roundup/admin.py:1607
 #, fuzzy, python-format
 msgid "New Email users get the Role \"%(role)s\"\n"
 msgstr "Neue E-Mail-Benutzer erhalten die Rolle \"%(role)s\""
 
-#: ../roundup/admin.py:1594
+#: ../roundup/admin.py:1610
 #, fuzzy, python-format
 msgid "Role \"%(name)s\":\n"
 msgstr "Rolle \"%(name)s\":"
 
-#: ../roundup/admin.py:1599
+#: ../roundup/admin.py:1615
 #, fuzzy
 msgid " %(description)s (%(name)s for \"%(klass)s\""
 msgstr "%(description)s (%(name)s einzig für \"%(klass)s\")"
 
-#: ../roundup/admin.py:1599
+#: ../roundup/admin.py:1615
 #, fuzzy, python-format
 msgid " %(description)s (%(name)s for \"%(klass)s\": %(properties)s only)\n"
 msgstr ""
 " %(description)s (%(name)s für \"%(klass)s\": ausschließlich %(properties)s)"
 
-#: ../roundup/admin.py:1611
+#: ../roundup/admin.py:1627
 #, python-format
 msgid ""
 "\n"
@@ -1172,17 +1172,17 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../roundup/admin.py:1614
+#: ../roundup/admin.py:1630
 #, fuzzy, python-format
 msgid " %(description)s (%(name)s for \"%(klass)s\" only)\n"
 msgstr "%(description)s (%(name)s einzig für \"%(klass)s\")"
 
-#: ../roundup/admin.py:1617
+#: ../roundup/admin.py:1633
 #, fuzzy, python-format
 msgid " %(description)s (%(name)s)\n"
 msgstr " %(description)s (%(name)s)"
 
-#: ../roundup/admin.py:1621
+#: ../roundup/admin.py:1637
 #, fuzzy
 msgid ""
 "Usage: migrate\n"
@@ -1226,42 +1226,42 @@ msgstr ""
 "        es nicht nötig ist; also gewöhnen Sie es sich einfach an.\n"
 "        "
 
-#: ../roundup/admin.py:1642
+#: ../roundup/admin.py:1658
 msgid "Tracker updated"
 msgstr "Tracker aktualisiert"
 
-#: ../roundup/admin.py:1645
+#: ../roundup/admin.py:1661
 msgid "No migration action required"
 msgstr "Keine Migration notwendig"
 
-#: ../roundup/admin.py:1671
+#: ../roundup/admin.py:1687
 #, python-format
 msgid "Unknown command \"%(command)s\" (\"help commands\" for a list)"
 msgstr "Der Befehl \"%(command)s\" existiert nicht (siehe \"help commands\")"
 
-#: ../roundup/admin.py:1677
+#: ../roundup/admin.py:1693
 #, python-format
 msgid "Multiple commands match \"%(command)s\": %(list)s"
 msgstr "Zur Abkürzung \"%(command)s\" passen mehrere Befehle: %(list)s"
 
-#: ../roundup/admin.py:1686
+#: ../roundup/admin.py:1702
 msgid "Enter tracker home: "
 msgstr "Tracker-Verzeichnis: "
 
 # ../roundup/admin.py:1263 :1269 :1289
-#: ../roundup/admin.py:1695 ../roundup/admin.py:1701 ../roundup/admin.py:1735
-#: ../roundup/admin.py:1695:1701:1735
+#: ../roundup/admin.py:1711 ../roundup/admin.py:1717 ../roundup/admin.py:1751
+#: ../roundup/admin.py:1711:1717:1751
 #, python-format
 msgid "Error: %(message)s"
 msgstr "Fehler: %(message)s"
 
-#: ../roundup/admin.py:1709 ../roundup/admin.py:1713
-#: ../roundup/admin.py:1709:1713
+#: ../roundup/admin.py:1725 ../roundup/admin.py:1729
+#: ../roundup/admin.py:1725:1729
 #, python-format
 msgid "Error: Couldn't open tracker: %(message)s"
 msgstr "Fehler: Die Tracker-Instanz konnte nicht geöffnet werden: %(message)s"
 
-#: ../roundup/admin.py:1748
+#: ../roundup/admin.py:1764
 #, python-format
 msgid ""
 "Roundup %s ready for input.\n"
@@ -1270,19 +1270,19 @@ msgstr ""
 "Roundup %s ist bereit.\n"
 "Schreiben Sie \"help\", um zur Hilfe zu gelangen."
 
-#: ../roundup/admin.py:1753
+#: ../roundup/admin.py:1769
 msgid "Note: command history and editing not available"
 msgstr "Bemerkung: Befehlsverlauf/-bearbeitung möglicherweise nicht verfügbar"
 
-#: ../roundup/admin.py:1757
+#: ../roundup/admin.py:1773
 msgid "roundup> "
 msgstr "roundup> "
 
-#: ../roundup/admin.py:1759
+#: ../roundup/admin.py:1775
 msgid "exit..."
 msgstr "beenden..."
 
-#: ../roundup/admin.py:1772
+#: ../roundup/admin.py:1788
 msgid "There are unsaved changes. Commit them (y/N)? "
 msgstr "Es gibt noch ungespeicherte Änderungen. Änderungen speichern (y/N)?"
 
@@ -3116,7 +3116,13 @@ msgstr ""
 msgid "Unable to bind to port %s, port already in use."
 msgstr "Start des Servers auf Port %s schlug fehl. Port bereits verwendet."
 
-#: ../roundup/scripts/roundup_server.py:865
+#: ../roundup/scripts/roundup_server.py:796
+#, fuzzy, python-format
+msgid ""
+"Unable to bind to port %(port)s, access not allowed, errno: %(errno)s %(msg)s"
+msgstr "Start des Servers auf Port %s schlug fehl. Port bereits verwendet."
+
+#: ../roundup/scripts/roundup_server.py:874
 msgid ""
 " -c <Command>  Windows Service options.\n"
 "               If you want to run the server as a Windows Service, you\n"
@@ -3132,7 +3138,7 @@ msgstr ""
 "               Zudem müssen Sie die Logfile-Option aktivieren.\n"
 "               \"roundup-server -c help\" zeigt eine weitere Hilfe zum Thema."
 
-#: ../roundup/scripts/roundup_server.py:872
+#: ../roundup/scripts/roundup_server.py:881
 msgid ""
 " -u <UID>      runs the Roundup web server as this UID\n"
 " -g <GID>      runs the Roundup web server as this GID\n"
@@ -3146,7 +3152,7 @@ msgstr ""
 "               die Prozess-ID in die Datei PIDDatei.\n"
 "               Die Option -l muss dann auch angegeben werden."
 
-#: ../roundup/scripts/roundup_server.py:879
+#: ../roundup/scripts/roundup_server.py:888
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -3266,21 +3272,21 @@ msgstr ""
 "   URLs Probleme bereiten könnten. Am besten verwenden Sie nur Buchstaben, \n"
 "   Zahlen und \"-_\".\n"
 
-#: ../roundup/scripts/roundup_server.py:1055
+#: ../roundup/scripts/roundup_server.py:1064
 msgid "Instances must be name=home"
 msgstr "Instanzen müssen als Tracker-Name=Tracker-Verzeichnis angegeben werden"
 
-#: ../roundup/scripts/roundup_server.py:1069
+#: ../roundup/scripts/roundup_server.py:1078
 #, python-format
 msgid "Configuration saved to %s"
 msgstr "Konfiguration in der Datei %s gespeichert"
 
-#: ../roundup/scripts/roundup_server.py:1087
+#: ../roundup/scripts/roundup_server.py:1096
 msgid "Sorry, you can't run the server as a daemon on this Operating System"
 msgstr ""
 "Auf diesem Betriebssystem kann der Server nicht als Hintergrundprozess laufen"
 
-#: ../roundup/scripts/roundup_server.py:1107
+#: ../roundup/scripts/roundup_server.py:1116
 #, python-format
 msgid "Roundup server started on %(HOST)s:%(PORT)s"
 msgstr "Der Roundup-Server wurde unter %(HOST)s:%(PORT)s gestartet"
