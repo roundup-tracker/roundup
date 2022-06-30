@@ -792,6 +792,15 @@ class ServerConfig(configuration.Config):
             if e.args[0] == errno.EADDRINUSE:
                 raise socket.error(_("Unable to bind to port %s, "
                                      "port already in use.") % self["PORT"])
+            if e.args[0] == errno.EACCES:
+                raise socket.error(_("Unable to bind to port %(port)s, "
+                                     "access not allowed, "
+                                     "errno: %(errno)s %(msg)s" % {
+                                         "port": self["PORT"],
+                                         "errno": e.args[0],
+                                         "msg": e.args[1] }
+                ))
+                                     
             raise
         # change user and/or group
         setgid(self["GROUP"])
