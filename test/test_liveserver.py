@@ -38,7 +38,7 @@ import sys
 _py3 = sys.version_info[0] > 2
 
 @skip_requests
-class SimpleTest(LiveServerTestCase):
+class WsgiSetup(LiveServerTestCase):
     # have chicken and egg issue here. Need to encode the base_url
     # in the config file but we don't know it until after
     # the server is started and has read the config.ini.
@@ -103,7 +103,8 @@ class SimpleTest(LiveServerTestCase):
         i18n.DOMAIN = cls.backup_domain
 
     def create_app(self):
-        '''The wsgi app to start'''
+        '''The wsgi app to start - no feature_flags set.'''
+
         if _py3:
             return validator(RequestDispatcher(self.dirname))
         else:
@@ -111,6 +112,11 @@ class SimpleTest(LiveServerTestCase):
             # doesn't support the max bytes to read argument.
             return RequestDispatcher(self.dirname)
 
+
+class BaseTestCases(WsgiSetup):
+    """Class with all tests to run against wsgi server. Is reused when
+       wsgi server is started with various feature flags
+    """
 
     def test_start_page(self):
         """ simple test that verifies that the server can serve a start page.
@@ -973,4 +979,16 @@ class SimpleTest(LiveServerTestCase):
         self.assertEqual(r.status_code, 201)
         print(r.status_code)
 
-
+class TestFeatureFlagCacheTrackerOn(BaseTestCases, WsgiSetup):
+    """Class to run all test in BaseTestCases with the cache_tracker
+       feature flag enabled when starting the wsgi server
+    """
+    def create_app(self):
+        '''The wsgi app to start with feature flag enabled'''
+        ff = { "cache_tracker": "" }
+        if _py3:
+            return validator(RequestDispatcher(self.dirname, feature_flags=ff))
+        else:
+            # wsgiref/validator.py InputWrapper::readline is broke and
+            # doesn't support the max bytes to read argument.
+            return RequestDispatcher(self.dirname, feature_flags=ff)

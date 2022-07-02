@@ -209,6 +209,25 @@ prompt). This prevents the new password from showing up in the output
 of ps or shell history. The new password will be encrypted using the
 default encryption method (usually pbkdf2).
 
+Enable performance improvement for wsgi mode (optional)
+-------------------------------------------------------
+
+There is an experimental wsgi performance improvement mode that caches
+the loaded roundup instance. This eliminates disk reads that are
+incurred on each connection. In one report it improves speed by a
+factor of 2 to 3 times. To enable this you should add a feature flag
+to your Roundup wsgi wrapper (see the file
+``.../share/frontends/wsgi.py``) so it looks like::
+
+   feature_flags = { "cache_tracker": "" }
+   app =  RequestDispatcher(tracker_home, feature_flags=feature_flags)
+
+to enable this mode. Note that this is experimental and was added
+during the 2.2.0 beta period, so it is enabled using a feature flag.
+If you use this and it works for you please followup with an email to
+the roundup-users at lists.sourceforge.net mailing list so we can
+enable it by default in a future release.
+
 Migrating from 2.0.0 to 2.1.0
 =============================
 

@@ -176,6 +176,9 @@ Features:
   i18n object is now also correctly set for the mail interface:
   previously the 'language' setting in the [mailgw] section seems to
   have been ignored. Thanks to Marcus Priesch for the patch.
+- issue2551212 - speed up wsgi interface by caching the tracker
+  instance. Hidden behind a feature flag. See upgrading.txt for
+  details. (Marcus Priesch with feature flag by John Rouillard)
 
 2021-07-13 2.1.0
 
