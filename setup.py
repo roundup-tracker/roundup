@@ -115,8 +115,19 @@ def main():
     # build list of scripts from their implementation modules
     scripts = [mapscript(f) for f in glob('roundup/scripts/[!_]*.py')]
 
+    # build list of zope files/directories
+    Zope = {}
+    Zope['module'] = [f for f in glob('frontends/ZRoundup/*.py')]
+    Zope['module'].append('frontends/ZRoundup/refresh.txt');
+    Zope['icons'] = [f for f in glob('frontends/ZRoundupscripts/*.gif')]
+    Zope['dtml'] = [f for f in glob('frontends/ZRoundupscripts/*.dtml')]
+
     data_files = [
         ('share/roundup/cgi-bin', ['frontends/roundup.cgi']),
+        ('share/roundup/frontends', ['frontends/wsgi.py']),
+        ('share/roundup/frontends/Zope', Zope['module']),
+        ('share/roundup/frontends/Zope/icons', Zope['icons']),
+        ('share/roundup/frontends/Zope/dtml', Zope['dtml'])
     ]
     # install man pages on POSIX platforms
     if os.name == 'posix':
