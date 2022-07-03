@@ -545,6 +545,15 @@ class BaseTestCases(WsgiSetup):
         self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
 
 
+    def test_bad_path(self):
+        f = requests.get(self.url_base() + '/_bad>',
+                         headers = { 'Accept-Encoding': 'gzip, foo',
+                                     'Accept': '*/*'})
+
+        # test that returned text is encoded.
+        self.assertEqual(f.content, b'Not found: _bad&gt;')
+        self.assertEqual(f.status_code, 404)
+
     def test_compression_gzipfile(self):
         '''Get the compressed dummy file'''
 
