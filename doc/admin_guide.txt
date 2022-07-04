@@ -474,10 +474,10 @@ In both cases, Roundup's behaviour when dealing with unknown users is
 controlled by Permissions defined in the "SECURITY SETTINGS" section of the
 tracker's ``schema.py`` module:
 
-Web Registration
+Web Access and Register
   If granted to the Anonymous Role, then anonymous users will be able to
   register through the web.
-Email Registration
+Email Access and Register
   If granted to the Anonymous Role, then email messages from unknown users
   will result in those users being registered with the tracker.
 
