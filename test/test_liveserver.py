@@ -894,6 +894,26 @@ class BaseTestCases(WsgiSetup):
         self.assertEqual(f.status_code, 200)
         self.assertEqual(f.headers['Cache-Control'], 'public, max-age=1209600')
 
+    def test_login_fail_then_succeed(self):
+        # Set up session to manage cookies <insert blue monster here>
+        session = requests.Session()
+        session.headers.update({'Origin': 'http://localhost:9001'})
+
+        # login using form
+        login = {"__login_name": 'admin', '__login_password': 'bad_sekrit', 
+                 "@action": "login"}
+        f = session.post(self.url_base()+'/', data=login)
+        # verify error message and no hello message in sidebar.
+        self.assertIn('class="error-message">Invalid login <br/ >', f.text)
+        self.assertNotIn('<b>Hello, admin</b>', f.text)
+
+        # login using form
+        login = {"__login_name": 'admin', '__login_password': 'sekrit', 
+                 "@action": "login"}
+        f = session.post(self.url_base()+'/', data=login)
+        # look for change in text in sidebar post login
+        self.assertIn('<b>Hello, admin</b>', f.text)
+
     def test_new_issue_with_file_upload(self):
         # Set up session to manage cookies <insert blue monster here>
         session = requests.Session()
