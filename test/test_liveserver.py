@@ -923,38 +923,38 @@ class BaseTestCases(WsgiSetup):
         # look for change in text in sidebar post login
         self.assertIn('<b>Hello, admin</b>', f.text)
 
-    def test__generic_item_template(self):
+    def test__generic_item_template_editok(self, user="admin"):
         """Load /status1 object. Admin has edit rights so should see
            a submit button. fred doesn't have edit rights
            so should not have a submit button.
         """
-        for user in ["admin", "fred"]:
-            # Set up session to manage cookies <insert blue monster here>
-            session = requests.Session()
-            session.headers.update({'Origin': self.url_base()})
+        # Set up session to manage cookies <insert blue monster here>
+        session = requests.Session()
+        session.headers.update({'Origin': self.url_base()})
 
-            # login using form
-            login = {"__login_name": user, '__login_password': 'sekrit', 
-                     "@action": "login"}
-            f = session.post(self.url_base()+'/', data=login)
-            # look for change in text in sidebar post login
-            self.assertIn('Hello, %s'%user, f.text)
-            f = session.post(self.url_base()+'/status7', data=login)
-            print(f.content)
+        # login using form
+        login = {"__login_name": user, '__login_password': 'sekrit', 
+                 "@action": "login"}
+        f = session.post(self.url_base()+'/', data=login)
+        # look for change in text in sidebar post login
+        self.assertIn('Hello, %s'%user, f.text)
+        f = session.post(self.url_base()+'/status7', data=login)
+        print(f.content)
 
-            # status1's name is unread
-            self.assertIn(b'done-cbb', f.content)
+        # status1's name is unread
+        self.assertIn(b'done-cbb', f.content)
 
-            if user == 'admin':
-                self.assertIn(b'<input name="submit_button" type="submit" value="Submit Changes">', f.content)
-            else:
-                self.assertNotIn(b'<input name="submit_button" type="submit" value="Submit Changes">', f.content)
+        if user == 'admin':
+            self.assertIn(b'<input name="submit_button" type="submit" value="Submit Changes">', f.content)
+        else:
+            self.assertNotIn(b'<input name="submit_button" type="submit" value="Submit Changes">', f.content)
 
-            # try explicit logout to see if there is some carryover
-            # between sessions
-            f = session.get(self.url_base()+'/?@action=logout')
-            self.assertIn(b"Remember me?", f.content)
+        # logout
+        f = session.get(self.url_base()+'/?@action=logout')
+        self.assertIn(b"Remember me?", f.content)
 
+    def test__generic_item_template_editbad(self, user="fred"):
+        self.test__generic_item_template_editok(user=user)
 
     def test_new_issue_with_file_upload(self):
         # Set up session to manage cookies <insert blue monster here>
