@@ -2723,14 +2723,25 @@ How the templates work
 Templating engines
 ~~~~~~~~~~~~~~~~~~
 
-Since version 1.4.20 Roundup supports two templating engines: the original
-`Template Attribute Language`_ (TAL) engine from Zope and the standalone
-Chameleon templating engine. Chameleon is intended as a replacement for the
-original TAL engine, and supports the same syntax,
-but they are not 100% compatible. The major (and most likely the only)
-incompatibility is the default expression type being
-``python:`` instead of ``path:``. See also "Incompatibilities and
-differences" section of `Chameleon documentation`__.
+Since version 1.4.20 Roundup supports two templating engines:
+
+  * the original `Template Attribute Language`_ (TAL) engine from Zope
+  * the standalone Chameleon templating engine. Chameleon is intended
+    as a replacement for the original TAL engine, and supports the
+    same syntax, but they are not 100% compatible. The major (and most
+    likely the only) incompatibility is the default expression type being
+    ``python:`` instead of ``path:``. See also "Incompatibilities and
+    differences" section of `Chameleon documentation`__.
+
+Version 1.5.0 added experimental support for the `jinja2`_ templating
+language. You must install the `jinja2`_ module in order to use it. The
+``jinja2`` template supplied with Roundup has the templates rewritten
+to use ``jinja2`` rather than TAL. A number of trackers are running
+using ``jinja2`` templating so it is considered less experimental than
+Chameleon templating.
+
+.. _jinja2: https://palletsprojects.com/p/jinja/
+
 
 **NOTE1**: For historical reasons, examples given below assumes path
 expression as default expression type. With Chameleon you have to manually
