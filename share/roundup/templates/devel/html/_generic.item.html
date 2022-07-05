@@ -36,7 +36,8 @@
 </tr>
 <tr>
  <td>&nbsp;</td>
- <td colspan=3 tal:content="structure context/submit">
+ <td colspan=3 tal:content="structure context/submit"
+     tal:condition="context/is_edit_ok">
   submit button will go here
  </td>
 </tr>

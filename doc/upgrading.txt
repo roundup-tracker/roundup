@@ -228,6 +228,26 @@ If you use this and it works for you please followup with an email to
 the roundup-users at lists.sourceforge.net mailing list so we can
 enable it by default in a future release.
 
+
+Hide submit button during readonly use of _generic.item.html (optional)
+-----------------------------------------------------------------------
+
+The submit button in _generic.item.html always shows up even when the
+user doesn't have edit perms. Change the ``context/submit`` html to
+read::
+
+   <td colspan=3 tal:content="structure context/submit"
+       tal:condition="context/is_edit_ok">
+
+in your TAL based templates. The ``jinja2`` based templates are
+missing this file, but if you implemented one you want to surround the
+jinja2 code with::
+
+  {% if context.is_view_ok() %}
+    <submit button code here>
+  {% endif %}
+
+
 Migrating from 2.0.0 to 2.1.0
 =============================
 

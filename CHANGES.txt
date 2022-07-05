@@ -110,6 +110,8 @@ Fixed:
 - make setup.py install the Zope and wsgi.py frontends under
   share/frontends. This matches the install fo the cgi-bin/roundup.cgi
   frontend. (John Rouillard)
+- prevent submit button from showing up when using _generic.item.html
+  if the user doesn't have edit permissions
 
 Features:
 
