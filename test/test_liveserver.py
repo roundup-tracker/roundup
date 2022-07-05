@@ -950,6 +950,11 @@ class BaseTestCases(WsgiSetup):
             else:
                 self.assertNotIn(b'<input name="submit_button" type="submit" value="Submit Changes">', f.content)
 
+            # try explicit logout to see if there is some carryover
+            # between sessions
+            f = session.get(self.url_base()+'/?@action=logout')
+            self.assertIn(b"Remember me?", f.content)
+
 
     def test_new_issue_with_file_upload(self):
         # Set up session to manage cookies <insert blue monster here>
