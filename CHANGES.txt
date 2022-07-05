@@ -108,10 +108,10 @@ Fixed:
 - document use of jinja2 templating as optional in config.ini
   file. Report if available or not. (John Rouillard)
 - make setup.py install the Zope and wsgi.py frontends under
-  share/frontends. This matches the install fo the cgi-bin/roundup.cgi
+  share/frontends. This matches the install of the cgi-bin/roundup.cgi
   frontend. (John Rouillard)
 - prevent submit button from showing up when using _generic.item.html
-  if the user doesn't have edit permissions
+  if the user doesn't have edit permissions. (John Rouillard)
 
 Features:
 
