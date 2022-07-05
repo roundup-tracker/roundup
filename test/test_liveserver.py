@@ -75,6 +75,10 @@ class WsgiSetup(LiveServerTestCase):
         cls.db.config.MAIL_DEBUG = "../_test_tracker_mail.log"
         cls.db.config.WEB_CSRF_ENFORCE_HEADER_ORIGIN = "required"
         cls.db.config.WEB_ALLOWED_API_ORIGINS = "https://client.com"
+
+        # disable web login rate limiting. The fast rate of tests
+        # causes them to trip the rate limit and fail.
+        cls.db.config.WEB_LOGIN_ATTEMPTS_MIN = 0
         
         cls.db.config['WEB_CSRF_ENFORCE_HEADER_X-REQUESTED-WITH'] = "required"
 
