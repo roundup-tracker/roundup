@@ -953,6 +953,7 @@ class BaseTestCases(WsgiSetup):
         f = session.get(self.url_base()+'/?@action=logout')
         self.assertIn(b"Remember me?", f.content)
 
+    @pytest.mark.xfail
     def test__generic_item_template_editbad(self, user="fred"):
         self.test__generic_item_template_editok(user=user)
 
