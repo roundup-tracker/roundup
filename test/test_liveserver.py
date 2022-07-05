@@ -1,6 +1,7 @@
 import shutil, errno, pytest, json, gzip, os, re
 
 from roundup import i18n
+from roundup import password
 from roundup.anypy.strings import b2s
 from roundup.cgi.wsgi_handler import RequestDispatcher
 from .wsgi_liveserver import LiveServerTestCase
@@ -61,6 +62,10 @@ class WsgiSetup(LiveServerTestCase):
 
         # open the database
         cls.db = cls.instance.open('admin')
+
+        # add a user without edit access for status.
+        cls.db.user.create(username="fred", roles='User',
+            password=password.Password('sekrit'), address='fred@example.com')
 
         # set the url the test instance will run at.
         cls.db.config['TRACKER_WEB'] = "http://localhost:9001/"
@@ -913,6 +918,34 @@ class BaseTestCases(WsgiSetup):
         f = session.post(self.url_base()+'/', data=login)
         # look for change in text in sidebar post login
         self.assertIn('<b>Hello, admin</b>', f.text)
+
+    def test__generic_item_template(self):
+        """Load /status1 object. Admin has edit rights so should see
+           a submit button. fred doesn't have edit rights
+           so should not have a submit button.
+        """
+        for user in ["admin", "fred"]:
+            # Set up session to manage cookies <insert blue monster here>
+            session = requests.Session()
+            session.headers.update({'Origin': self.url_base()})
+
+            # login using form
+            login = {"__login_name": user, '__login_password': 'sekrit', 
+                     "@action": "login"}
+            f = session.post(self.url_base()+'/', data=login)
+            # look for change in text in sidebar post login
+            self.assertIn('Hello, %s'%user, f.text)
+            f = session.post(self.url_base()+'/status7', data=login)
+            print(f.content)
+
+            # status1's name is unread
+            self.assertIn(b'done-cbb', f.content)
+
+            if user == 'admin':
+                self.assertIn(b'<input name="submit_button" type="submit" value="Submit Changes">', f.content)
+            else:
+                self.assertNotIn(b'<input name="submit_button" type="submit" value="Submit Changes">', f.content)
+
 
     def test_new_issue_with_file_upload(self):
         # Set up session to manage cookies <insert blue monster here>
