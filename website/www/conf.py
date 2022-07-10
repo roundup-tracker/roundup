@@ -74,6 +74,7 @@ exclude_patterns = ['docs/index.txt',
                     'docs/whatsnew-0.7.txt',
                     'docs/whatsnew-0.8.txt',
                     'docs/security.txt',
+                    'robots.txt',
                     '_tmp']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
@@ -140,7 +141,9 @@ html_last_updated_fmt = '%b %d, %Y'
 # taken as relative to the configuration directory. They are copied to
 # the output directory. They will overwrite any existing file of the
 # same name.
-html_extra_path = ['robots.txt']
+# warning about it nt being in TOC tree causes build to fail with -W.
+# so install robots.txt via Makefile
+# html_extra_path = ['robots.txt']
 
 # Custom sidebar templates, maps document names to template names.
 #html_sidebars = {}
