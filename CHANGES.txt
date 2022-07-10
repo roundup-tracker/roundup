@@ -112,6 +112,8 @@ Fixed:
   frontend. (John Rouillard)
 - prevent submit button from showing up when using _generic.item.html
   if the user doesn't have edit permissions. (John Rouillard)
+- issue2551216 - create new mysql databases using COLLATE
+  utf8_general_ci to prevent crashes in test suite. (John Rouillard)
 
 Features:
 

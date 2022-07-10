@@ -92,7 +92,7 @@ def db_create(config):
     kwargs = connection_dict(config)
     conn = MySQLdb.connect(**kwargs)
     cursor = conn.cursor()
-    command = "CREATE DATABASE %s"%config.RDBMS_NAME
+    command = "CREATE DATABASE %s COLLATE utf8_general_ci"%config.RDBMS_NAME
     if sys.version_info[0] > 2:
         command += ' CHARACTER SET utf8'
     logging.info(command)

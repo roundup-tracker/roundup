@@ -139,12 +139,6 @@ before_script:
   # set up postgresql database
   - psql -c "CREATE ROLE rounduptest WITH CREATEDB LOGIN PASSWORD 'rounduptest';" -U postgres
 
-  # HACK: workaround mysql bug: http://bugs.mysql.com/bug.php?id=74901
-  #   needed for test_mysql.mysqlDBTest.testFilteringSpecialChars
-  # plus others. Otherwise we get:
-  # COLLATION 'utf8_bin' is not valid for CHARACTER SET 'utf8mb4'
-  - sed -i 's/CREATE DATABASE \%s/CREATE DATABASE \%s COLLATE utf8_general_ci/' roundup/backends/back_mysql.py
-
   # build the .mo translation files and install them into a tree
   # (locale/locale under roundup directory root) 
   # suitable for use by gettext.
