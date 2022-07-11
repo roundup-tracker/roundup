@@ -153,7 +153,9 @@ body > .footer { margin-inline-start: unset; }
  /* stop paths and things from overflowing the viewport. */
 div.content { overflow-wrap: break-word; }
 /* add spaces around items in TOC to make hitting the links easier */
-#contents ul.simple li { padding-block: .5em; }
+div.contents ul.simple li { padding-block: .5em; }
+ul.simple li a { min-height: 48px;
+			      display: block;}
 /* make examples with long lines scrollable */
 div.highlight pre { overflow: auto;}
 }
