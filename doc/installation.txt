@@ -406,14 +406,14 @@ Configuring your first tracker
       templates or backends available)::
 
           Enter tracker home: /opt/roundup/trackers/support
-          Templates: classic
+          Templates: minimal, jinja2, classic, responsive, devel
           Select template [classic]: classic
-          Back ends: anydbm, mysql, sqlite
+          Back ends: anydbm, sqlite
           Select backend [anydbm]: anydbm
 
       Note: "Back ends" selection list depends on availability of
       third-party database modules.  Standard python distribution
-      includes anydbm module only.
+      includes anydbm and sqlite module only.
 
       The "support" part of the tracker name can be anything you want - it
       is going to be used as the directory that the tracker information
