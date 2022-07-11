@@ -19,7 +19,6 @@
     {%- endfor %}
     {%- else %}
     <link rel="stylesheet" href="{{ pathto('_static/style.css', 1) }}" type="text/css" />
-    <link rel="stylesheet" href="{{ pathto('_static/pygments.css', 1) }}" type="text/css" />
 
     {%- endif %}
     {%- if builder != 'htmlhelp' %}
@@ -31,9 +30,6 @@
           FILE_SUFFIX: '{{ file_suffix }}'
       };
     </script>
-    {%- for scriptfile in script_files %}
-    <script type="text/javascript" src="{{ pathto(scriptfile, 1) }}"></script>
-    {%- endfor %}
     {%- if pageurl %}
     <link rel="canonical" href="{{ pageurl|e }}" />
     {%- endif %}
@@ -80,7 +76,6 @@
             <input type="hidden" name="area" value="default" />
           </form>
         </div>
-        <script type="text/javascript">$('#searchbox').show(0);</script>
       {%- endif %}
     </div>
     <div class="navigation">
@@ -123,6 +118,7 @@
       </div>
     </div>
 {%- endblock %}
+    <link rel="stylesheet" href="{{ pathto('_static/pygments.css', 1) }}" type="text/css" />
     <script>
       /* locally hosted goatcounter https://www.goatcounter.com/ */
       /* include site info in path url to allow multiple sites to be
@@ -133,7 +129,11 @@
     </script>
     <script data-goatcounter="https://stats.rouilj.dynamic-dns.net/count"
 	    integrity="sha384-QGgNMMRFTi8ul5kHJ+vXysPe8gySvSA/Y3rpXZiRLzKPIw8CWY+a3ObKmQsyDr+a"
-            async="" src="_static/goatcounter_count.v3.js">
+            async="" src="{{ pathto('_static/goatcounter_count.v3.js', 1) }}">
     </script>
+    {%- for scriptfile in script_files %}
+    <script type="text/javascript" src="{{ pathto(scriptfile, 1) }}"></script>
+    {%- endfor %}
+    <script type="text/javascript">$('#searchbox').show(0);</script>
   </body>
 </html>
