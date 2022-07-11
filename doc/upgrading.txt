@@ -995,13 +995,13 @@ the @csrf element for that form.
 
 Errors and Troubleshooting - xmlrpc Required Header Missing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-When performing and xmlrpc call, if you see something like:
+When performing and xmlrpc call, if you see something like::
 
   xmlrpclib.Fault: <Fault 1: "<class
      'roundup.exceptions.UsageError'>:Required Header Missing">
 
 change the setting of csrf_enforce_header_x-requested-with in
-config.ini to no. So it looks like:
+config.ini to no. So it looks like::
 
   csrf_enforce_header_x-requested-with = no
 
