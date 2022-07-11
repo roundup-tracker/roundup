@@ -250,7 +250,7 @@ additional libraries that are listed in
 `scripts/Docker/requirements.txt`.
 
 Email support is a work in progress. Outgoing email should work given
-an external SMTP server. Reciving email should work by using a
+an external SMTP server. Receiving email should work by using a
 scheduled (cron) job to access email:
 
 * `As a regular job using a mailbox source`_
