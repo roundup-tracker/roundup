@@ -470,7 +470,7 @@ parameters. Using: https://.../rest/data/issue you can search using:
   * - ``status=open``
     - Link
     - find any issue where the name of the status is open.
-      Note this is not a string match so using nosy=ope will fail.
+      Note this is not a string match so using status=ope will fail.
   * - ``nosy=1``
     - MultiLink
     - find any issue where the multilink nosy includes the id 1.
@@ -690,12 +690,10 @@ inclusion of ``@verbose=2``. Without verbose you would see::
       "data": {
 	  "collection": [
 	      {
-		  "link":
-      "https://.../rest/data/issue/1",
+		  "link": "https://.../rest/data/issue/1",
 		  "id": "1",
 		  "status": {
-		      "link":
-      "https://.../rest/data/status/1",
+		      "link": "https://.../rest/data/status/1",
 		      "id": "1"
 		  }
 	      },
@@ -1149,8 +1147,7 @@ example::
 	      ]
 	  },
 	  "type": "issue",
-	  "link":
-	  "https://example.com/demo/rest/data/issue/23",
+	  "link": "https://example.com/demo/rest/data/issue/23",
 	  "id": "23"
       }
   }
@@ -1313,7 +1310,8 @@ rest/data/msg/11/content to obtain::
     "id": "11",
     "type": "<class 'str'>",
     "link": "https://.../demo/rest/data/msg/11/content",
-    "data": "of has to who pleasure. or of account give because the reprehenderit\neu to quisquam velit, passage, was or...",
+    "data": "of has to who pleasure. or of account give because the
+              reprehenderit\neu to quisquam velit, passage, was or...",
             "@etag": "\"584f82231079e349031bbb853747df1c\""
     }
   }		
@@ -1456,7 +1454,8 @@ allows the request to pass the CSRF protection mechanism. You may need
 to add an Origin header if this check is enabled in your tracker's
 config.ini (look for csrf_enforce_header_origin). (Note the Origin
 header check may have to be disabled if an application is making a
-CORS request to the Roundup server.)
+CORS request to the Roundup server. If you have this issue, please
+contact the Roundup team using the mailing lists as this is a bug.)
 
 A similar curl based retire example is to use::
 
@@ -1850,7 +1849,7 @@ There are 5 steps to set this up:
    jwt module you will see the error ``Support for jwt disabled.``
 2. create a new role that allows Create access to timelog and edit/view
    access to an issues' ``times`` property.
-3. add support for issuing (and validating) jwts to the rest interface.
+3. add support for issuing (and validating) JWTs to the rest interface.
    This uses the `Adding new rest endpoints`_ mechanism.
 4. configure roundup's config.ini [web] jwt_secret with at least 32
    random characters of data. (You will get a message
@@ -2024,19 +2023,19 @@ only been tested with python3)::
             return 200, result
 
 **Note this is sample code. Use at your own risk.** It breaks a few
-rules about jwts (e.g. it allows you to make unlimited lifetime
-jwts). If you subscribe to the concept of jwt refresh tokens, this code
-will have to be changed as it will only generate jwts with
+rules about JWTs (e.g. it allows you to make unlimited lifetime
+JWTs). If you subscribe to the concept of JWT refresh tokens, this code
+will have to be changed as it will only generate JWTs with
 username/password authentication.
 
-Currently use of jwts an experiment. If this appeals to you consider
+Currently use of JWTs an experiment. If this appeals to you consider
 providing patches to existing code to:
 
-1. record all jwts created by a user
-2. using the record to allow jwts to be revoked and ignored by the
+1. record all JWTs created by a user
+2. using the record to allow JWTs to be revoked and ignored by the
    roundup core
-3. provide a UI page for managing/revoking jwts
-4. provide a rest api for revoking jwts
+3. provide a UI page for managing/revoking JWTs
+4. provide a rest api for revoking JWTs
 
 These end points can be used like::
 
@@ -2044,23 +2043,23 @@ These end points can be used like::
       -H "X-requested-with: rest" \
       -H "Content-Type: application/json" \
       --data '{"lifetime": "3600", "roles": [ "user:timelog" ] }' \
-   https://.../demo/rest/jwt/issue
+   https://.../demo/rest/JWT/issue
 
 (note roles is a json array/list of strings not a string) to get::
 
   {
     "data": {
-            "jwt":  "eyJ0eXAiOiJK......XxMDb-Q3oCnMpyhxPXMAk"
+            "JWT":  "eyJ0eXAiOiJK......XxMDb-Q3oCnMpyhxPXMAk"
         }
   }
 
-The jwt is shortened in the example since it's large. You can validate
-a jwt to see if it's still valid using::
+The JWT is shortened in the example since it's large. You can validate
+a JWT to see if it's still valid using::
 
 
   curl -s -H "Referer: https://.../demo/" \
   -H "X-requested-with: rest" \
-      https://.../demo/rest/jwt/validate?jwt=eyJ0eXAiOiJK...XxMDb-Q3oCnMpyhxPXMAk
+      https://.../demo/rest/JWT/validate?JWT=eyJ0eXAiOiJK...XxMDb-Q3oCnMpyhxPXMAk
 
 (note no login is required) which returns::
   
@@ -2077,12 +2076,18 @@ a jwt to see if it's still valid using::
      }
   }				
 
+
+There is an issue for `thoughts on JWT credentials`_ that you can view
+for ideas or add your own.
+
+.. _thoughts on JWT credentials: https://issues.roundup-tracker.org/issue2551064
+
 Final steps
 ^^^^^^^^^^^
 
 See the `upgrading directions`_ on how to use the ``updateconfig``
 command to generate an updated copy of config.ini using
-roundup-admin. Then set the ``jwt_secret`` to at least 32 characters
+roundup-admin. Then set the ``JWT_secret`` to at least 32 characters
 (more is better up to 512 bits).
 
 Writing an auditor that uses "db.user.get_roles" to see if the user
@@ -2094,7 +2099,7 @@ https://issues.roundup-tracker.org/.)
 
 Lastly you can create a JWT using the end point above and make a rest
 call to create a new timelog entry and another call to update the
-issues times property.  If you have other ideas on how jwts can be
+issues times property.  If you have other ideas on how JWTs can be
 used, please share on the roundup mailing lists. See:
 https://sourceforge.net/p/roundup/mailman/ for directions on
 subscribing and for archives of the lists.
