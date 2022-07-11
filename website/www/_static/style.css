@@ -146,9 +146,14 @@ body > .navigation { margin-inline-start: unset;
 		     float: none;}
 body > .navigation li > ul > li { padding-block: 1em;
                 /* move links away from each other */ }
-#roundup-issue-tracker .note { float: none; }
+#roundup-issue-tracker .note { float: none; /* download box */}
 body > .footer { margin-inline-start: unset; }
 
 /* changes for content */
+ /* stop paths and things from overflowing the viewport. */
+div.content { overflow-wrap: break-word; }
+/* add spaces around items in TOC to make hitting the links easier */
 #contents ul.simple li { padding-block: .5em; }
+/* make examples with long lines scrollable */
+div.highlight pre { overflow: auto;}
 }
