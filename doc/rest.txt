@@ -259,6 +259,20 @@ If you add the ``dicttoxml.py`` module you can request XML formatted
 data using the header ``Accept: application/xml`` in your
 request. Both output formats are similar in structure.
 
+``dicttoxml.py`` should be installed in the Python install directory,
+or the file can be added to the Roundup installation directory long
+ide ``rest.py``. It can also be enabled on a per tracker basis by
+adding ``dicttoxml.py`` to the lib directory in your tracker home (you
+may need to create the directory). Then this can be added to
+`interfaces.py`_ to enable xml::
+
+   from roundup import rest
+   from dicttoxml import dicttoxml as dtox # from tracker_root/lib directory
+
+   rest.dicttoxml = dtox
+
+.. _interfaces.py: customizing.html#interfaces-py-hooking-into-the-core-of-roundup 
+
 The rest interface accepts the http accept header and can include
 ``q`` values to specify the preferred mechanism. This is the preferred
 way to specify alternate acceptable response formats.
@@ -1594,7 +1608,7 @@ structure and implementation.
 Adding new rest endpoints
 =========================
 
-Add or edit the file interfaces.py at the root of the tracker
+Add or edit the file `interfaces.py`_ at the root of the tracker
 directory.
 
 In that file add::
@@ -2154,5 +2168,8 @@ Test Examples
 
 Rate limit tests::
 
-   seq 1 300 | xargs -P 20 -n 1 curl --head -si \
-        https://.../rest/data/status/new \# | grep Remaining
+   seq 1 300 | xargs -P 20 -n 1 curl --head -u user:password -si \
+        https://.../rest/data/status/new | grep Remaining
+
+will show you the number of remaining requests to the REST interface
+for the user identified by password.
