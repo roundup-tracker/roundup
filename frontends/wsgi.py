@@ -18,4 +18,5 @@ tracker_home = '/path/to/tracker'
 feature_flags =  { "cache_tracker": "" }
 
 # Definition signature for app: app(environ, start_response):
+# If using apache mod_wsgi change app to application.
 app =  RequestDispatcher(tracker_home, feature_flags=feature_flags)
