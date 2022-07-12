@@ -30,7 +30,7 @@ Contents:
 .. contents::
    :local:
 
-.. index:: Upgrading; 2.0.0 to 2.1.0
+.. index:: Upgrading; 2.1.0 to 2.2.0
 
 Migrating from 2.1.0 to 2.2.0
 =============================
@@ -247,6 +247,8 @@ jinja2 code with::
     <submit button code here>
   {% endif %}
 
+
+.. index:: Upgrading; 2.0.0 to 2.1.0
 
 Migrating from 2.0.0 to 2.1.0
 =============================
