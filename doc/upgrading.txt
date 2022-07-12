@@ -1,5 +1,5 @@
 .. meta::
-    :description language=en:
+    :description:
         Critical documentation on how to upgrade the Roundup Issue
 	Tracker. Actions that must or can be taken when upgrading from
 	one version to another are documented here.

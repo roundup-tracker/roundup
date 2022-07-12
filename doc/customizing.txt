@@ -1,5 +1,5 @@
 .. meta::
-    :description language=en:
+    :description:
         How to customize and extend the Roundup Issue
         Tracker. Includes many cookbook and how-to
         examples. Reference for the design and internals

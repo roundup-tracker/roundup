@@ -1,5 +1,5 @@
 .. meta::
-    :description language=en:
+    :description:
         Original proposal for the Roundup Issue Tracker. The problem
         it solves, and guiding principles. Presents the
         components of Roundup and how they interact.
