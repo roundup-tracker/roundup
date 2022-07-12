@@ -159,3 +159,5 @@ ul.simple li a { min-height: 48px;
 /* make examples with long lines scrollable */
 div.highlight pre { overflow: auto;}
 }
+/* set background when using borland pygments style */
+div.highlight pre { background: lightyellow;}

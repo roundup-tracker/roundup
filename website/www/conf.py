@@ -92,7 +92,7 @@ exclude_patterns = ['docs/index.txt',
 #show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'borland'
 
 
 # Options for HTML output
