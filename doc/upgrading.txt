@@ -61,8 +61,8 @@ schema:
   2. Some databases that include native full-text search (native-fts
      indexer) searching are now supported.
 
-You should run the ``roundup-admin migrate`` command for your
-tracker once you've installed the latest codebase.
+You should run the ``roundup-admin -i <tracker_home> migrate`` command
+for all your trackers once you've installed the latest codebase.
 
 Do this before you use the web, command-line or mail interface
 and before any users access the tracker.
@@ -72,9 +72,9 @@ updated" (if you've not previously run it on an RDBMS backend) or
 "No migration action required" (if you have run it, or have used
 another interface to the tracker, or are using anydbm).
 
-See `below for directions on enabling native-fts`_.
+See `below if you want to enable native-fts searching`_.
 
-.. _below for directions on enabling native-fts: \
+.. _below if you want to enable native-fts searching: \
     #enhanced-full-text-search-optional
 
 The increase in indexed word length also affects whoosh and xapian
