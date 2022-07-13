@@ -210,7 +210,7 @@ def main():
                        'Intended Audience :: System Administrators',
                        'License :: OSI Approved',
                        'License :: OSI Approved :: MIT License',
-                       'License :: OSI Approved :: Zope Public License'
+                       'License :: OSI Approved :: Zope Public License',
                        'Operating System :: MacOS :: MacOS X',
                        'Operating System :: Microsoft :: Windows',
                        'Operating System :: POSIX',
