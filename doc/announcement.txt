@@ -1,78 +1,68 @@
-I'm proud to release version 2.2.0b1 of the Roundup issue tracker.
-This release is a bugfix and minor feature
+I'm proud to release version 2.2.0 of the Roundup issue
+tracker.  This release is a bugfix and minor feature
 release, so make sure to read `docs/upgrading.txt
-<https://www.roundup-tracker.org/docs/upgrading.html>`_ to bring your
-tracker up to date.
+<https://www.roundup-tracker.org/docs/upgrading.html>`_ to
+bring your tracker up to date.
 
-The changes, as usual, include some new features and many bug fixes.
+The changes, as usual, include some new features and many
+bug fixes.
 
-Note that you should run ``roundup-admin ... migrate`` to update the
-database schema version. Do this before you use the web, command-line
-or mail interface and before any users access the tracker.  
+Note that you should run ``roundup-admin ... migrate`` to
+update the database schema version. Do this before you use
+the web, command-line or mail interface and before any users
+access the tracker.
 
-You can download it with:
+You can download it with::
 
    pip download roundup
 
-then unpack and test/install the tarball.
+then unpack and test/install the tarball. Also::
+
+   pip install roundup
+
+(preferably in a virtual environment) can be used.
 
 Among the notable improvements from the 2.1.0 release are:
 
-- Roundup supports dynamic and static compression of http
-  responses.
+- Dynamic and static compression of http responses. This
+  improves performance when a front end web server isn't
+  serving compressed assets.
+  
+- REST interface supports CORS allowing Roundup to be used
+  by third party web sites. Can specify origins allowed to
+  use the REST interface. OpenAPI (SWagger) docs can be
+  added. Error handling/reporting improved.
 
-- Better support for range headers and HTTP 1.1 in
-  roundup-server.
+- Dockerfile to build a containerized Roundup instance.  A
+  docker-compose configuration to deploy a a mysql based
+  tracker is also supplied.
 
 - New full text search methods. SQLite FTS and PostgreSQL
   full text search are supported. These allow search
-  expressions in addition to simple word based
-  searches.
-
-- Word size for Roundup's full text search increased to 50.
-
-- CORS support for the REST interface allowing Roundup to
-  be used by third party services. Includes ability to
-  list valid Origins in CSRF checks.
-
-- Dockerfile support. Docker-compose for a mysql based
-  tracker.
+  expressions in addition to simple word based searches.
 
 - Secret values in config.ini can be stored in external
   files. This allows config.ini to be stored in a VCS
   without exposing secrets.
 
-- Improvements to REST: fix crashes, support JWT in url,
-  dynamic endpoint list, OpenAPI (Swagger) doc can be specified,
-  allowed methods reported on error.
+- Translation object added to internal database handle. This
+  allows auditors and extensions to provide efficient
+  translations.
 
-- Define default cache times for js and css assets.
+- MySQL database creation uses COLLATE utf8_general_ci
 
-- Login with empty passwords is disabled by default.
-
-- ETag value changes depending on content-encoding.
+- Wsgi startup improvements (must be enabled by setting
+  feature flag).
 
 - Fix crash when importing legacy Roundup tracker with long
   integers.
 
-- Workaround lock contention by adding jitter to access of
-  one time key and sessions anydbm databases.
-
-- Fixes for deprecated calls/libraries in newer Pythons:
-  distutils, crypt, socket.sslserver....
-
-- Additional strings marked for translation.
-
-- Multiple crash fixes.
-
-- Improvements to tracker templates.
-
-- Translation object added to internal database
-  handle. This allows auditors and extensions to
-  provide efficient translations.
+- Fix issues with Roundup unable to find supporting files
+  when installed via pip. Removed additional references to
+  distfiles module.
 
 The file CHANGES.txt has a detailed list of feature additions and
-bug fixes (50) for each release. The most recent changes from
+bug fixes (57) for each release. The most recent changes from
 there are at the end of this announcement. Also see the
 information in doc/upgrading.txt.
 
@@ -88,9 +78,10 @@ If you're upgrading from an older version of Roundup you *must* follow
 all the "Software Upgrade" guidelines given in the doc/upgrading.txt
 documentation.
 
-Note that you should run ``roundup-admin ... migrate`` to update the
-database schema version. Do this before you use the web, command-line
-or mail interface and before any users access the tracker.  
+Note that you should run ``roundup-admin ... migrate`` for
+all your trackers to update the database schema version. Do
+this before you use the web, command-line or mail interface
+and before any users access the tracker.
 
 Roundup requires Python 2 newer than version 2.7.2 or Python 3 newer
 than or equal to version 3.6 for correct operation. (Python
@@ -150,9 +141,10 @@ and supports four database back-ends (anydbm, sqlite, mysql and postgresql).
 Recent Changes
 ==============
 
-From 2.1.0 to 2.2.0b1.
+From 2.1.0 to 2.2.0.
 
 Fixed:
+------
 
 - issue2551161 - Fix ResourceWarnings when running with -W default.
   Cleaned up leaking file descriptors from zopetal pre-compile, python
@@ -174,6 +166,8 @@ Fixed:
   length. All other paths with a . in then will be passed through
   without change. This allows items like a JWT to be passed as a path
   element. (John Rouillard)
+- issue2550995 - KeyError classic during roundup-admin install. Add
+  paths to search for locale and template files.
 - issue2551167 - pip install in containerized environments puts
   template and locale files under site-packages where roundup can't find
   them. Change code to find them under site-packages.
@@ -239,9 +233,21 @@ Fixed:
 - issue2551207 - Fix sorting by order attribute if order attributes can
   be None. Add a test.
 - issue2551203 fix CORS requests by providing proper headers and allowing
-  unauthenticted CORS preflight requests.
+  unauthenticted CORS preflight requests. (Marcus Priesch and John
+  Rouillard)
+- issue2551206 - removed some windows installer references that were missed.
+- document use of jinja2 templating as optional in config.ini
+  file. Report if available or not. (John Rouillard)
+- make setup.py install the Zope and wsgi.py frontends under
+  share/frontends. This matches the install of the cgi-bin/roundup.cgi
+  frontend. (John Rouillard)
+- prevent submit button from showing up when using _generic.item.html
+  if the user doesn't have edit permissions. (John Rouillard)
+- issue2551216 - create new mysql databases using COLLATE
+  utf8_general_ci to prevent crashes in test suite. (John Rouillard)
 
 Features:
+---------
 
 - issue2551147 - Enable compression of http responses in roundup.
   Allow roundup to return gzip, (br or zstd with added modules)
@@ -306,3 +312,6 @@ Features:
   i18n object is now also correctly set for the mail interface:
   previously the 'language' setting in the [mailgw] section seems to
   have been ignored. Thanks to Marcus Priesch for the patch.
+- issue2551212 - speed up wsgi interface by caching the tracker
+  instance. Hidden behind a feature flag. See upgrading.txt for
+  details. (Marcus Priesch with feature flag by John Rouillard)

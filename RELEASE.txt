@@ -26,7 +26,7 @@ Roundup release checklist:
         python2 -m pytest test/
 
 3.  Update version in:
-      CHANGES.txt
+      CHANGES.txt (set date for version as well) 
       roundup/__init__.py
       website/www/index.txt
       website/www/conf.py  (also update copyright)
@@ -84,7 +84,7 @@ Roundup release checklist:
     (if you find sdist a little verbose, add "--quiet" to the end of the
      command)
 9a. 2021/04/17 skip this for now. Need to make sure that whl installs
-    exectuable scripts properly and update these directions to test.
+    executable scripts properly and update these directions to test.
 
        python2 setup.py bdist_wheel; python3 setup.py bdist_wheel
 
@@ -123,11 +123,12 @@ Roundup release checklist:
     with all available Python versions.
 11a. (TBD how to test wheel binary distribution before uploading.)
 
-12. Assuming all is well tag the release in the version-control
+12. Assuming all is well commit and tag the release in the version-control
     system.
-      a) hg tag 1.6.0  # use right version. Should create/commit a changeset
-      b) hg push       # update main repo
-      c) hg sum        # verify that the tag shows up
+      a) hg commit ... # commit any edits from steps 1-5
+      b) hg tag 2.1.0  # use right version. Should create/commit a changeset
+      c) hg push       # update main repo
+      d) hg sum        # verify that the tag shows up
 
 13. Upload source distribution to PyPI - requires you sign up for a
     pypi account and be added as a maintainer to roundup. Ask existing
@@ -168,6 +169,7 @@ Roundup release checklist:
     distributions (if created). Follow the directions for generating
     the gpg asc files and upload the .whl distribution and .whl.asc
     signature files together.
+
 14. Refresh website.
       website/README.txt
       https://www.roundup-tracker.org/ should state that the stable
@@ -175,16 +177,18 @@ Roundup release checklist:
       https://www.roundup-tracker.org/docs.html should also match the
       released version (or at least the major non pre-release
       1.x/2.x version).
-16. Send doc/announcement.txt to python-announce@python.org,
+
+15. Send doc/announcement.txt to python-announce@python.org,
     roundup-users@lists.sourceforge.net,
     roundup-devel@lists.sourceforge.net, and lwn@lwn.net.
-16b. Update entry on https://freshcode.club/projects/roundup-tracker
-16c. Update entries for fossies by emailing announcement to
+15b. Update entry on https://freshcode.club/projects/roundup-tracker
+15c. Update entries for fossies by emailing announcement to
      announce@fossies.org
-16d. Update entry on https://directory.fsf.org/wiki/Roundup.
-17. Change the release version on the GitHub section at
+15d. Update entry on https://directory.fsf.org/wiki/Roundup.
+
+16. Change the release version on the GitHub section at
     https://wiki.roundup-tracker.org/CiTestingEnvironment
-17b. Update release info on wikipedia:
+16b. Update release info on wikipedia:
      https://en.wikipedia.org/wiki/Roundup_(issue_tracker)
 
      https://en.wikipedia.org/wiki/Comparison_of_issue-tracking_systems
