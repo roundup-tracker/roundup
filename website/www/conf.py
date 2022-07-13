@@ -121,7 +121,7 @@ html_baseurl = "https://www.roundup-tracker.org/"
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-#html_favicon = None
+html_favicon = 'favicon.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -141,8 +141,8 @@ html_last_updated_fmt = '%b %d, %Y'
 # taken as relative to the configuration directory. They are copied to
 # the output directory. They will overwrite any existing file of the
 # same name.
-# warning about it nt being in TOC tree causes build to fail with -W.
-# so install robots.txt via Makefile
+# Warns that robots.txt is not in TOC tree. Causes build to fail with
+# sphinx-build -W. So install robots.txt via Makefile.
 # html_extra_path = ['robots.txt']
 
 # Custom sidebar templates, maps document names to template names.
@@ -171,7 +171,7 @@ html_add_permalinks = ''
 # If true, an OpenSearch description file will be output, and all pages will
 # contain a <link> tag referring to it.  The value of this option must be the
 # base URL from which the finished HTML is served.
-#html_use_opensearch = ''
+html_use_opensearch = 'https://www.roundup-tracker.org'
 
 # If nonempty, this is the file name suffix for HTML files (e.g. ".xhtml").
 #html_file_suffix = ''
