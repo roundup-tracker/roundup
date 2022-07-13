@@ -32,6 +32,12 @@
           FILE_SUFFIX: '{{ file_suffix }}'
       };
     </script>
+    {%- if pagename == 'search' %}
+    {%- for scriptfile in script_files %}
+    <script type="text/javascript" src="{{ pathto(scriptfile, 1) }}"></script>
+    {%- endfor %}
+    <script type="text/javascript">$('#searchbox').show(0);</script>
+    {%- endif %}
     {%- if pageurl %}
     <link rel="canonical" href="{{ pageurl|e }}" />
     {%- endif %}
@@ -64,7 +70,6 @@
     <link rel="prev" title="{{ prev.title|striptags }}" href="{{ prev.link|e }}" />
     {%- endif %}
 {%- endblock %}
-{%- block extrahead %} {% endblock %}
   </head>
   <body>
     <div id="skiplink"><a href="#main">Skip to main content</a></div>
@@ -138,9 +143,13 @@
 	    integrity="sha384-QGgNMMRFTi8ul5kHJ+vXysPe8gySvSA/Y3rpXZiRLzKPIw8CWY+a3ObKmQsyDr+a"
             async="" src="{{ pathto('_static/goatcounter_count.v3.js', 1) }}">
     </script>
+    {%- if pagename != 'search' %}
     {%- for scriptfile in script_files %}
     <script type="text/javascript" src="{{ pathto(scriptfile, 1) }}"></script>
     {%- endfor %}
     <script type="text/javascript">$('#searchbox').show(0);</script>
+    {%- endif %}
+    {%- block extrahead %} {% endblock %}
+
   </body>
 </html>
