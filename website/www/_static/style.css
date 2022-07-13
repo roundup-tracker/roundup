@@ -180,3 +180,6 @@ div.highlight pre { background: lightyellow;}
                     width: auto;
                     height: auto; }
 
+/* remove solid black border when focus is around the main section
+   due to activation of skip-link. Page jumps there, that's enough. */
+#main:focus-visible {outline: none;}
