@@ -12,7 +12,7 @@ Upgrading to newer versions of Roundup
 
 Please read each section carefully and edit your tracker home files
 accordingly. Note that there is information about upgrade procedures in the
-`administration guide`_.
+`administration guide`_ in the `Software Upgrade`_ section.
 
 If a specific version transition isn't mentioned here (eg. 0.6.7 to 0.6.8)
 then you don't need to do anything. If you're upgrading from 0.5.6 to
@@ -3466,3 +3466,4 @@ copy.
 .. _PostgreSQL's full text search: https://www.postgresql.org/docs/current/textsearch.html
 .. _`administration guide notes on native-fts`: admin_guide.html#configuring-native-fts-full-text-search
 .. _Configuring Compression: admin_guide.html#configuring-compression
+.. _Software Upgrade: admin_guide.html#software-upgrade
