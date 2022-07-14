@@ -19,7 +19,6 @@ Roundup Issue Tracker
 .. raw:: html
 
    <div class="release_info note">
-   <div class="release_info note">Download:
    <a
       href="https://pypi.org/project/roundup/#files">Download:
      <img style="vertical-align: text-top"
