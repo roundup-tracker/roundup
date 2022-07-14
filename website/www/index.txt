@@ -19,8 +19,9 @@ Roundup Issue Tracker
 .. raw:: html
 
    <div class="release_info note">
+   <div class="release_info note">Download:
    <a
-      href="https://pypi.org/project/roundup/">Download:
+      href="https://pypi.org/project/roundup/#files">Download:
      <img style="vertical-align: text-top"
      src="https://badge.fury.io/py/roundup.svg?color=lightblue"
       alt="PyPI version" height="18"></a>
