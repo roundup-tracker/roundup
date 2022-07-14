@@ -1,5 +1,5 @@
 .. meta::
-    :description language=en:
+    :description:
         Everything about installing the Roundup issue tracker web and
 	mail interfaces and configuring a tracker. How to download and
 	demonstrate Roundup using using command line or

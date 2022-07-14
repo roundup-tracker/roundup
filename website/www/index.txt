@@ -18,38 +18,67 @@ Roundup Issue Tracker
 
 .. raw:: html
 
+   <div class="release_info note">
    <div class="release_info note">Download:
-   <a href="https://pypi.org/project/roundup/#files/">latest</a></div>
+   <a
+      href="https://pypi.org/project/roundup/#files">Download:
+     <img style="vertical-align: text-top"
+     src="https://badge.fury.io/py/roundup.svg?color=lightblue"
+      alt="PyPI version" height="18"></a>
+   <!--  <img src="https://shields.io/pypi/pyversions/roundup"> -->
+   <a style="display:block; margin-block-start: 1em; text-align:
+   center;" href="https://pypistats.org/packages/roundup" alt="">
+   <img
+   src="https://img.shields.io/badge/dynamic/json?color=blue&label=downloads%2Fmonth&cacheSeconds=86400&query=data.last_month&url=https%3A%2F%2Fpypistats.org%2Fapi%2Fpackages%2Froundup%2Frecent"
+   alt=""></a>
+   </div>
 
 Roundup is a simple-to-use and -install issue-tracking system with
 command-line, web, REST, XML-RPC and e-mail interfaces.  It is based
 on the winning design from Ka-Ping Yee in the Software Carpentry
 "Track" design competition.
 
-The current stable version of Roundup is 2.1.0. It is a bug fix
-and minor feature release for the major 2.0.0 release which
-added:
+The current stable version of Roundup is 2.2.0. It is a bug fix
+and feature release for the 2.1.0 release 
 
-   * Python 2 and Python 3 support
-   * a new REST interface
-   * updates to jinja2 templates including security improvements
+Some improvements from the 2.1.0 release are:
 
-Fixes and features in the 2.1.0 release include:
+    * Roundup supports dynamic and static compression of http
+      responses. This improves performance when a front end web
+      server isn't serving compressed assets.
 
-   * Installation uses setuptools and not distutils.
-   * Mysql backend now uses an index to make sure that key values are
-     not duplicated when two roundup processes run in parallel.
-   * Postgres back end now uses a server side cursor, so large queries
-     won't consume huge amounts of memory.
-   * Security fixes for jQuery, markdown handling,
-   * Valid class names are documented and enforced. All class names now
-     match ``[A-z][A-z0-9_]+[A-z_]``.
-   * Fixes/improvements to jinja2 templates
-   * Fixes for python3 compatibility.
-   * Fix sorting of multilinks in templating code.
-   * Password reset documented in user guide.
+    * REST interface: supports CORS allowing Roundup to be
+      used by third party web sites. Origins allowed to use
+      REST can be specified. OpenAPI (Swagger) docs can be
+      added. Error handling/reporting improved.
 
-More info on the 58 changes can be found in the `change note`_.
+    * Dockerfile support. Docker-compose for a mysql based
+      tracker.
+
+    * New full text search methods. SQLite FTS and PostgreSQL
+      full text search are supported. These allow search
+      expressions in addition to simple word based searches.
+
+    * Secret values in config.ini can be stored in external
+      files. This allows config.ini to be stored in a VCS
+      without exposing secrets.
+
+    * Translation object added to internal database handle. This
+      allows auditors and extensions to provide efficient
+      translations.
+
+    * MySQL database creation uses COLLATE utf8_general_ci
+
+    * Wsgi startup improvements (must be enabled by setting
+      feature flag).
+
+    * Fix crash when importing legacy Roundup tracker with long
+      integers.
+
+    * Fix issues with Roundup unable to find supporting files
+      when installed via pip.
+
+More info on the 57 changes can be found in the `change note`_.
 
 For more information on Roundup see the :doc:`design overview
 <docs/design>`, and all the other :doc:`documentation <docs>`. Roundup

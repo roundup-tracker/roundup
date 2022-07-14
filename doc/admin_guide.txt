@@ -1,5 +1,5 @@
 .. meta::
-    :description language=en:
+    :description:
         How to administer, backup, upgrade a Roundup installation.
         System and user security, configuring web compression,
         documentation on using roundup-server and running
@@ -556,8 +556,10 @@ it to be elsewhere) will then complete the backup.
 Software Upgrade
 ----------------
 
-Always make a backup of your tracker before upgrading software. Steps you may
-take:
+.. _make a backup: #tracker-backup
+
+Always `make a backup`_ of your tracker before upgrading software.
+Steps you may take:
 
 1. Install pytest and ensure that the unit tests run on your system
    (using your preferred python version)::
@@ -576,11 +578,11 @@ take:
 
     python setup.py install
 
-6. Follow the steps in the `upgrading documentation`_ for the new version of
-   the software in the copied.
+6. Follow the steps in the `upgrading documentation`_ for all the
+   version between your original version and th new version.
 
-   Usually you will be asked to run `roundup_admin migrate` on your tracker
-   before you allow users to start accessing the tracker.
+   Usually you should run `roundup_admin -i <tracker_home> migrate`
+   on your tracker(s) before you allow users to start accessing the tracker.
 
    It's safe to run this even if it's not required, so just get into the
    habit.
@@ -590,7 +592,6 @@ If something bad happens, you may reinstate your backup of the tracker and
 reinstall the older version of the sofware using the same install command::
 
     python setup.py install
-
 
 .. index:: database; convert from one database backend to another
    single: roundup-admin; import and export

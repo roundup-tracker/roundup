@@ -1,5 +1,5 @@
 .. meta::
-    :description language=en:
+    :description:
         Documentation on the RESTful interface to the Roundup Issue
 	Tracker.
 

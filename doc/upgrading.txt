@@ -1,5 +1,5 @@
 .. meta::
-    :description language=en:
+    :description:
         Critical documentation on how to upgrade the Roundup Issue
 	Tracker. Actions that must or can be taken when upgrading from
 	one version to another are documented here.
@@ -12,7 +12,7 @@ Upgrading to newer versions of Roundup
 
 Please read each section carefully and edit your tracker home files
 accordingly. Note that there is information about upgrade procedures in the
-`administration guide`_.
+`administration guide`_ in the `Software Upgrade`_ section.
 
 If a specific version transition isn't mentioned here (eg. 0.6.7 to 0.6.8)
 then you don't need to do anything. If you're upgrading from 0.5.6 to
@@ -30,7 +30,7 @@ Contents:
 .. contents::
    :local:
 
-.. index:: Upgrading; 2.0.0 to 2.1.0
+.. index:: Upgrading; 2.1.0 to 2.2.0
 
 Migrating from 2.1.0 to 2.2.0
 =============================
@@ -61,8 +61,8 @@ schema:
   2. Some databases that include native full-text search (native-fts
      indexer) searching are now supported.
 
-You should run the ``roundup-admin migrate`` command for your
-tracker once you've installed the latest codebase.
+You should run the ``roundup-admin -i <tracker_home> migrate`` command
+for all your trackers once you've installed the latest codebase.
 
 Do this before you use the web, command-line or mail interface
 and before any users access the tracker.
@@ -72,9 +72,9 @@ updated" (if you've not previously run it on an RDBMS backend) or
 "No migration action required" (if you have run it, or have used
 another interface to the tracker, or are using anydbm).
 
-See `below for directions on enabling native-fts`_.
+See `below if you want to enable native-fts searching`_.
 
-.. _below for directions on enabling native-fts: \
+.. _below if you want to enable native-fts searching: \
     #enhanced-full-text-search-optional
 
 The increase in indexed word length also affects whoosh and xapian
@@ -247,6 +247,8 @@ jinja2 code with::
     <submit button code here>
   {% endif %}
 
+
+.. index:: Upgrading; 2.0.0 to 2.1.0
 
 Migrating from 2.0.0 to 2.1.0
 =============================
@@ -3464,3 +3466,4 @@ copy.
 .. _PostgreSQL's full text search: https://www.postgresql.org/docs/current/textsearch.html
 .. _`administration guide notes on native-fts`: admin_guide.html#configuring-native-fts-full-text-search
 .. _Configuring Compression: admin_guide.html#configuring-compression
+.. _Software Upgrade: admin_guide.html#software-upgrade

@@ -1,5 +1,5 @@
 .. meta::
-    :description language=en:
+    :description:
         Describes how to interact with and use a tracker with the
         Roundup Issue Tracker.
 

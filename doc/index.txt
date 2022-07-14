@@ -1,5 +1,5 @@
 .. meta::
-    :description language=en:
+    :description:
         Table of contents for documentation on the Roundup Issue Tracker.
 
 =======================================================

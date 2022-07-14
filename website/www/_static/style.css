@@ -161,3 +161,25 @@ div.highlight pre { overflow: auto;}
 }
 /* set background when using borland pygments style */
 div.highlight pre { background: lightyellow;}
+
+#skiplink { display: block;
+                   margin-block-start: 1em;
+                   margin-inline-start: 1em;}
+#skiplink a {
+  /* force stuff for screenreader off screen */
+  position:absolute;
+  left:-10000px;
+  top:auto;
+  width:1px;
+  height:1px;
+  overflow:hidden;
+  padding: 0 0.75em;
+  font-weight: bold;
+}
+#skiplink a:focus { position: static;
+                    width: auto;
+                    height: auto; }
+
+/* remove solid black border when focus is around the main section
+   due to activation of skip-link. Page jumps there, that's enough. */
+#main:focus-visible {outline: none;}
