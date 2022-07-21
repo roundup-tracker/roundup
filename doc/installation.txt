@@ -279,8 +279,14 @@ PyPI, by running::
 
 The docker declares a single volume mounted at
 ``/usr/src/app/tracker`` inside the container. You will mount your
-tracker home directory at this location.
+tracker home directory at this location. The ``/usr/src/app`` path can
+be changed by using ``--build-args=/new/path``.
 
+You can also add additional modules to the docker container by using
+`--build-args="pip_mod=requests setproctitle"`.
+
+By default the container runs Roundup using UID 1000. By setting
+`--build-args="roundup_uid=2000"` you can change the UID.
 
 Configuring Roundup in the Container
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -292,11 +298,12 @@ an interactive session it with::
        -v $PWD/tracker:/usr/src/app/tracker roundup-app:latest
 
 The ``-v`` option maps a directory from the host into the docker
-container. Note that uid 1000 is used by roundup. So the uid of the
-directory (and all files under it) must be uid 1000.  This example
-assumes your tracker configs are in the tracker subdirectory. Replace
-``$PWD/tracker`` with the full path name to the directory where the
-tracker home(s) are to be stored.
+container. Note that uid 1000 is used by roundup by default. The uid
+of the directory (and all files under it) must match the uid. You can
+set the UID at image build time, see above. This
+example assumes your tracker configs are in the tracker
+subdirectory. Replace ``$PWD/tracker`` with the full path name to the
+directory where the tracker home(s) are to be stored.
 
 The ``-p`` option maps an external port (9017) to proxy the roundup
 server running at port 8080 to the outside.

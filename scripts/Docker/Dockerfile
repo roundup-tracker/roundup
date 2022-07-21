@@ -56,6 +56,7 @@ RUN set -xv && CWD=$PWD && \
     pip --no-cache-dir install sphinx && \
     ./configure --prefix=/usr/local --with-python3 --disable-documentation && \
     make && make install && \
+    pip uninstall --no-cache-dir -y sphinx && \
     pip uninstall --no-cache-dir -y -r $CWD/sphinxdeps.txt
 
 # add requirements for pip here, e.g. Whoosh, gpg, zstd or other
@@ -63,6 +64,10 @@ RUN set -xv && CWD=$PWD && \
 # ignore warnings from pip to use virtualenv
 COPY scripts/Docker/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Allow user to add more modules during build
+ARG pip_mod
+RUN if [ -n "$pip_mod" ]; then pip install --no-cache-dir ${pip_mod}; fi
 
 # copy the elements of the release directory to the docker image
 COPY setup.py install/
@@ -118,19 +123,21 @@ COPY --from=build /usr/local/lib/python3.10/site-packages /usr/local/lib/python3
 COPY --from=build /usr/local/bin/roundup* /usr/local/bin/
 COPY --from=build /usr/local/share /usr/local/share/
 COPY scripts/Docker/roundup_start .
+COPY scripts/Docker/roundup_healthcheck .
+
+# make roundup scripts execuable and mount a trackerdir on tracker location
+RUN chmod +x roundup_start roundup_healthcheck; mkdir tracker
+VOLUME $appdir/tracker
 
 # map port 8080 to your local port
 EXPOSE 8080/tcp
 
-# mount a trackerdir on tracker location
-RUN mkdir tracker
-VOLUME $appdir/tracker
-
 HEALTHCHECK --start-period=1m \
-   CMD wget -q -O /dev/null --no-verbose http://localhost:8080/issues/
+   CMD ./roundup_healthcheck
 
 # do not run roundup as root. This creates roundup user and group.
-RUN adduser -D -h /usr/src/app roundup
+ARG roundup_uid
+RUN adduser -D -h ${appdir} -u ${roundup_uid:-1000} roundup
 USER roundup
 
 # run the server, disable output buffering so we can see logs.
