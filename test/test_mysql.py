@@ -71,7 +71,19 @@ class mysqlDBTest(mysqlOpener, DBTest, unittest.TestCase):
         self.db.issue.create(title="flebble frooz")
         self.db.commit()
 
-        if self.db.database_schema['version'] != 7:
+        if self.db.database_schema['version'] > 7:
+            # make testUpgrades run the downgrade code only.
+            if hasattr(self, "downgrade_only"):
+                # we are being called by an earlier test
+                self.testUpgrade_7_to_8()
+                self.assertEqual(self.db.database_schema['version'], 7)
+            else:
+                # we are being called directly
+                self.downgrade_only = True
+                self.testUpgrade_7_to_8()
+                self.assertEqual(self.db.database_schema['version'], 7)
+                del(self.downgrade_only)
+        elif self.db.database_schema['version'] != 7:
             self.skipTest("This test only runs for database version 7")
 
 
@@ -110,6 +122,65 @@ class mysqlDBTest(mysqlOpener, DBTest, unittest.TestCase):
 
         self.assertEqual(self.db.database_schema['version'],
                          self.db.current_db_version)
+
+    def testUpgrade_7_to_8(self):
+        # load the database
+        self.db.issue.create(title="flebble frooz")
+        self.db.commit()
+
+        if self.db.database_schema['version'] != 8:
+            self.skipTest("This test only runs for database version 8")
+
+        # change otk and session db's _time value to their original types
+        sql = "alter table sessions modify session_time float;"
+        self.db.sql(sql)
+        sql = "alter table otks modify otk_time float;"
+        self.db.sql(sql)
+
+        # verify they truncate long ints.
+        test_double =  1658718284.7616878
+        for tablename in ['otk', 'session']:
+            self.db.sql(
+              'insert %(name)ss(%(name)s_key, %(name)s_time, %(name)s_value) '
+              'values("foo", %(double)s, "value");'%{'name': tablename,
+                                                     'double': test_double}
+            )
+
+            self.db.cursor.execute('select %(name)s_time from %(name)ss '
+                            'where %(name)s_key = "foo"'%{'name': tablename})
+
+            self.assertNotAlmostEqual(self.db.cursor.fetchone()[0],
+                                      test_double, -1)
+
+            # cleanup or else the inserts after the upgrade will not
+            # work.
+            self.db.sql("delete from %(name)ss where %(name)s_key='foo'"%{
+                'name': tablename} )
+
+        self.db.database_schema['version'] = 7
+
+        if hasattr(self,"downgrade_only"):
+            return
+
+        # test upgrade
+        self.db.post_init()
+
+        # verify they keep all signifcant digits before the decimal point
+        for tablename in ['otk', 'session']:
+            self.db.sql(
+              'insert %(name)ss(%(name)s_key, %(name)s_time, %(name)s_value) '
+              'values("foo", %(double)s, "value");'%{'name': tablename,
+                                                     'double': test_double}
+            )
+
+            self.db.cursor.execute('select %(name)s_time from %(name)ss '
+                            'where %(name)s_key = "foo"'%{'name': tablename})
+
+            # -1 compares just the integer part. No fractions.
+            self.assertAlmostEqual(self.db.cursor.fetchone()[0],
+                                  test_double, -1)
+
+        self.assertEqual(self.db.database_schema['version'], 8)
 
 @skip_mysql
 class mysqlROTest(mysqlOpener, ROTest, unittest.TestCase):

@@ -63,5 +63,9 @@ class memorydbSessionTest(memorydbOpener, SessionTest, unittest.TestCase):
         setupSchema(self.db, 1, self.module)
         self.sessions = self.db.sessions
 
+    # doesn't work for memory as it uses a mock for session db.
+    def testUpdateTimestamp(self):
+        pass
+
 # vim: set filetype=python ts=4 sw=4 et si
 

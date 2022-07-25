@@ -22,6 +22,10 @@ Fixed:
   sqlite. New databases are created for session data (db-session)
   and one time key data (db-otk). The data is ephemeral so no need to
   migrate.
+- issue2551223 - Timestamps are truncated in mysql and postgresql for
+  session and otk database tables. Modify db schema to use a numeric
+  type that preserves more significant figures. See upgrading.txt for
+  required steps.
 
 Features:
 

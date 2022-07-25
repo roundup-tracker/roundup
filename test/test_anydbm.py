@@ -55,6 +55,19 @@ from .session_common import SessionTest
 class anydbmSessionTest(anydbmOpener, SessionTest, unittest.TestCase):
     s2b = lambda x,y: strings.s2b(y)
 
+    # this only works for dbm. other backends don't change the __timestamp
+    # value, they have a separate column for the timestamp so they can
+    # update it with SQL.
+    def testUpdateTimestamp(self):
+        # make sure timestamp is older than one minute so update will work
+        timestamp = time.time() - 62
+        self.sessions.set('random_session', text='hello, world!',
+                          __timestamp=timestamp)
+        self.sessions.updateTimestamp('random_session')
+        self.assertNotEqual (self.sessions.get('random_session',
+                                               '__timestamp'),
+                             timestamp)
+
 class anydbmSpecialActionTestCase(anydbmOpener, SpecialActionTest,
                                   unittest.TestCase):
     backend = 'anydbm'

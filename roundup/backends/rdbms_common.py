@@ -331,7 +331,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
     # update this number when we need to make changes to the SQL structure
     # of the backend database
-    current_db_version = 7
+    current_db_version = 8
     db_version_updated = False
 
     def upgrade_db(self):
@@ -381,6 +381,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             self.log_info('upgrade to version 7')
             self.fix_version_6_tables()
 
+        if version < 8:
+            self.log_info('upgrade to version 8')
+            self.fix_version_7_tables()
+
         self.database_schema['version'] = self.current_db_version
         self.db_version_updated = True
         return 1
@@ -419,6 +423,12 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def fix_version_6_tables(self):
         # Default (used by nobody): NOOP
         # Each backend mysql, postgres, sqlite overrides this
+        # You would think ALTER commands would be the same but nooo.
+        pass
+
+    def fix_version_7_tables(self):
+        # Default (used by sqlite): NOOP
+        # Each backend mysql, postgres overrides this
         # You would think ALTER commands would be the same but nooo.
         pass
 

@@ -234,12 +234,12 @@ class Database(rdbms_common.Database):
     def create_version_2_tables(self):
         # OTK store
         self.sql('''CREATE TABLE otks (otk_key VARCHAR(255),
-            otk_value TEXT, otk_time REAL)''')
+            otk_value TEXT, otk_time float)''')
         self.sql('CREATE INDEX otks_key_idx ON otks(otk_key)')
 
         # Sessions store
         self.sql('''CREATE TABLE sessions (
-            session_key VARCHAR(255), session_time REAL,
+            session_key VARCHAR(255), session_time float,
             session_value TEXT)''')
         self.sql('''CREATE INDEX sessions_key_idx ON
             sessions(session_key)''')
@@ -295,6 +295,14 @@ class Database(rdbms_common.Database):
         c.execute(sql, (self.indexer.maxlength + 5,))
 
         self._add_fts_table()
+
+    def fix_version_7_tables(self):
+        # Modify type for session.session_time/otk.otk_time column.
+        # float is double precision 15 signifcant digits
+        sql = 'alter table sessions alter column session_time type float'
+        self.sql(sql)
+        sql = 'alter table otks alter column otk_time type float'
+        self.sql(sql)
 
     def add_actor_column(self):
         # update existing tables to have the new actor column

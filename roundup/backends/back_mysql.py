@@ -219,13 +219,13 @@ class Database(rdbms_common.Database):
     def create_version_2_tables(self):
         # OTK store
         self.sql('''CREATE TABLE otks (otk_key VARCHAR(255),
-            otk_value TEXT, otk_time FLOAT(20))
+            otk_value TEXT, otk_time DOUBLE)
             ENGINE=%s'''%self.mysql_backend)
         self.sql('CREATE INDEX otks_key_idx ON otks(otk_key)')
 
         # Sessions store
         self.sql('''CREATE TABLE sessions (session_key VARCHAR(255),
-            session_time FLOAT(20), session_value TEXT)
+            session_time DOUBLE, session_value TEXT)
             ENGINE=%s'''%self.mysql_backend)
         self.sql('''CREATE INDEX sessions_key_idx ON
             sessions(session_key)''')
@@ -420,6 +420,13 @@ class Database(rdbms_common.Database):
         # Why magic number 5? It was the original offset between
         #   column length and maxlength.
         c.execute(sql, (self.indexer.maxlength + 5,))
+
+    def fix_version_7_tables(self):
+        # Modify type for session.session_time/otk.otk_time column.
+        sql = "alter table sessions modify session_time double"
+        self.sql(sql)
+        sql = "alter table otks modify otk_time double"
+        self.sql(sql)
 
     def __repr__(self):
         return '<myroundsql 0x%x>'%id(self)
