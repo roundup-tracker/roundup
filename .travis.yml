@@ -148,7 +148,7 @@ script:
   - PATH=$VIRTUAL_ENV/bin:$PATH
   - export LD_LIBRARY_PATH=$VIRTUAL_ENV/lib:$LD_LIBRARY_PATH
   - if [[ "$TRAVIS_PYTHON_VERSION" != "2."* ]]; then
-    py.test 
+    py.test -r a
       -W default
       -W "ignore:SelectableGroups:DeprecationWarning" 
       -W "ignore:the imp module:DeprecationWarning:gpg.gpgme:15" 
@@ -158,7 +158,7 @@ script:
       -v --maxfail=5 test/ --cov=roundup;
     fi
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2."* ]]; then
-      py.test -v --maxfail=20 test/ --cov=roundup;
+      py.test -v -r a --maxfail=5 test/ --cov=roundup;
     fi
   - ./setup.py build_doc
 
