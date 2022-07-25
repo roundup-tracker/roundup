@@ -286,7 +286,7 @@ You can enter your username to get a reset email sent to your primary
 E-mail address. Otherwise you can enter your primary E-mail address or
 an Alternate E-mail address to get a reset email sent to that address.
 The reset email includes a verification link that can be used to
-complete the password reset.
+complete the password reset. The verification link expires in a week.
 
 Once you're logged in, the sidebar changes to:
 
