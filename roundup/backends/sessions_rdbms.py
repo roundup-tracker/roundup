@@ -60,19 +60,27 @@ class BasicDatabase:
         c = self.cursor
         n = self.name
         a = self.db.arg
-        c.execute('select %s_value from %ss where %s_key=%s'%(n, n, n, a),
+        c.execute('select %s_value, %s_time from %ss where %s_key=%s'% \
+                  (n, n, n, n, a),
             (infoid,))
         res = c.fetchone()
         if res:
             values = eval(res[0])
+            timestamp = res[1]
         else:
             values = {}
         values.update(newvalues)
-
         if res:
-            sql = 'update %ss set %s_value=%s where %s_key=%s'%(n, n,
-                a, n, a)
-            args = (repr(values), infoid)
+            if '__timestamp' in newvalues:
+                try:
+                    # __timestamp must be representable as a float. Check it.
+                    timestamp = float(newvalues['__timestamp'])
+                except ValueError:
+                    pass
+
+            sql = ('update %ss set %s_value=%s, %s_time=%s '
+                       'where %s_key=%s'%(n, n, a, n, a, n, a))
+            args = (repr(values), timestamp, infoid)
         else:
             if '__timestamp' in newvalues:
                 try:
