@@ -30,6 +30,39 @@ Contents:
 .. contents::
    :local:
 
+.. index:: Upgrading; 2.2.0 to 2.3.0
+
+Migrating from 2.2.0 to 2.3.0
+=============================
+
+Session/OTK data storage for SQLite backend changed
+---------------------------------------------------
+
+Roundup stores a lot of ephemeral data:
+
+* login session tokens,
+* rate limits
+* password reset attempt tokens
+* one time keys
+* and anti CSRF keys.
+
+These were stored using dbm style files while the main data
+is stored in a SQLite db. Using both dbm and sqlite style
+files is surprising and due to how we lock dbm files can be
+a performance issue.
+
+In this release two sqlite databases called ``db-otk`` and
+``db-session`` replace the dbm databases. Once you make the
+change the old ``otks`` and ``sessions`` dbm databases can
+be removed.
+
+Note this replacement will require users to log in again and
+refresh web pages to save data. It is best is people save
+all their changes and log out of Roundup before the upgrade
+is done to minimize confusion. Because the data is
+ephemeral, there is no plan to migrate this data to the new
+SQLite databases.
+
 .. index:: Upgrading; 2.1.0 to 2.2.0
 
 Migrating from 2.1.0 to 2.2.0

@@ -18,12 +18,15 @@ Fixed:
 
 - Dockerfile healthcheck fixed so it works when trackers are specified
   on command line. Also cleanup of unneeded packages.
-
+- issue2551224 - Replace dbm db for sessions and otks when using
+  sqlite. New databases are created for session data (db-session)
+  and one time key data (db-otk). The data is ephemeral so no need to
+  migrate.
 
 Features:
 
 - Dockerfile build allows adding additional python packages via pip,
-  setting UID traker is run under.
+  setting UID tracker is run under.
 
 2022-07-13 2.2.0
 

@@ -12,7 +12,7 @@ import os, marshal, shutil, time, logging
 
 from roundup import hyperdb, date, password
 from roundup.backends import rdbms_common
-from roundup.backends.sessions_dbm import Sessions, OneTimeKeys
+from roundup.backends.sessions_sqlite import Sessions, OneTimeKeys
 from roundup.anypy.strings import uany2s
 
 sqlite_version = None
@@ -128,7 +128,7 @@ class Database(rdbms_common.Database):
         time.sleep(time_to_sleep)
         return 1
 
-    def sql_open_connection(self):
+    def sql_open_connection(self, dbname=None):
         """Open a standard, non-autocommitting connection.
 
         pysqlite will automatically BEGIN TRANSACTION for us.
@@ -138,7 +138,10 @@ class Database(rdbms_common.Database):
         if not os.path.isdir(self.config.DATABASE):
             os.makedirs(self.config.DATABASE)
 
-        db = os.path.join(self.config.DATABASE, 'db')
+        if dbname:
+            db = os.path.join(self.config.DATABASE, 'db-' + dbname)
+        else:
+            db = os.path.join(self.config.DATABASE, 'db')
         logging.getLogger('roundup.hyperdb').info('open database %r' % db)
         # set timeout (30 second default is extraordinarily generous)
         # for handling locked database
