@@ -155,7 +155,7 @@ script:
       -W "ignore:'U' mode::docutils.io" 
       -W "ignore:unclosed:ResourceWarning:roundup.roundup.demo" 
       -W "ignore:unclosed file:ResourceWarning:enum" 
-      -v --maxfail=20 test/ --cov=roundup;
+      -v --maxfail=5 test/ --cov=roundup;
     fi
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2."* ]]; then
       py.test -v --maxfail=20 test/ --cov=roundup;
