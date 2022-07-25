@@ -278,6 +278,8 @@ class postgresqlClassicInitTest(postgresqlOpener, ClassicInitTest,
 from .session_common import SessionTest
 @skip_postgresql
 class postgresqlSessionTest(postgresqlOpener, SessionTest, unittest.TestCase):
+    s2b = lambda x,y : y
+
     def setUp(self):
         postgresqlOpener.setUp(self)
         SessionTest.setUp(self)

@@ -172,6 +172,8 @@ class mysqlFilterCacheTest(mysqlOpener, FilterCacheTest, unittest.TestCase):
 from .session_common import SessionTest
 @skip_mysql
 class mysqlSessionTest(mysqlOpener, SessionTest, unittest.TestCase):
+    s2b = lambda x,y : y
+
     def setUp(self):
         mysqlOpener.setUp(self)
         SessionTest.setUp(self)
