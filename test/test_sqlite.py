@@ -98,7 +98,7 @@ class sqliteSpecialActionTestCase(sqliteOpener, SpecialActionTest,
 
 from .session_common import SessionTest
 class sqliteSessionTest(sqliteOpener, SessionTest, unittest.TestCase):
-    pass
+    s2b = lambda x,y : y
 
 class sqliteRestTest (RestTestCase, unittest.TestCase):
     backend = 'sqlite'

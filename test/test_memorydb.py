@@ -5,6 +5,8 @@ from roundup import hyperdb
 from .db_test_base import DBTest, ROTest, SchemaTest, config, setupSchema
 from roundup.test import memorydb
 
+from roundup.anypy import strings
+
 class memorydbOpener:
     module = memorydb
 
@@ -54,6 +56,8 @@ class memorydbSchemaTest(memorydbOpener, SchemaTest, unittest.TestCase):
 
 from .session_common import SessionTest
 class memorydbSessionTest(memorydbOpener, SessionTest, unittest.TestCase):
+    s2b = lambda x,y: strings.s2b(y)
+
     def setUp(self):
         self.db = self.module.Database(config, 'admin')
         setupSchema(self.db, 1, self.module)
