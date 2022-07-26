@@ -2,7 +2,28 @@ import os, shutil, time, unittest
 
 from .db_test_base import config
 
+"""
+here are three different impementations for these. I am trying to fix
+them so they all act the same.
 
+set with invalid timestamp:
+
+   session_dbm/memorydb - sets to invalid timestamp if new or existing item.
+   session_rdbms - sets to time.time if new item, keeps original
+                   if item exists. (note that the timestamp is
+                   a separate column, the timestamp embedded in the
+                   value object in the db has the bad __timestamp.
+   reconciled: set to time.time for new item, keeps original time
+               of existing item.
+
+Also updateTimestamp does not update the marshalled values idea of
+   __timestamp. So get(item, '__timestamp') will not work as expected
+   for rdbms backends, need a sql query to get the timestamp column.
+
+FIXME need to add getTimestamp method to sessions_rdbms.py and
+sessions_dbm.py.
+
+"""
 class SessionTest(object):
     def setUp(self):
         # remove previous test, ignore errors
@@ -33,6 +54,11 @@ class SessionTest(object):
         self.assertEqual(self.sessions.list().sort(),
                 [self.s2b('random_key'), self.s2b('random_key2')].sort())
 
+    def testGetMissingKey(self):
+        self.sessions.set('random_key', text='hello, world!', otherval='bar')
+        with self.assertRaises(KeyError) as e:
+            self.sessions.get('badc_key', 'text')
+
     def testGetAll(self):
         self.sessions.set('random_key', text='hello, world!', otherval='bar')
         self.assertEqual(self.sessions.getall('random_key'),
@@ -44,6 +70,16 @@ class SessionTest(object):
             {'text': 'hello, world!'})
         self.sessions.destroy('random_key')
         self.assertRaises(KeyError, self.sessions.getall, 'random_key')
+
+    def testClear(self):
+        self.sessions.set('random_key', text='hello, world!')
+        self.sessions.set('random_key2', text='hello, world!')
+        self.sessions.set('random_key3', text='hello, world!')
+        self.assertEqual(self.sessions.getall('random_key3'),
+            {'text': 'hello, world!'})
+        self.assertEqual(len(self.sessions.list()), 3)
+        self.sessions.clear()
+        self.assertEqual(len(self.sessions.list()), 0)
 
     def testSetSession(self):
         self.sessions.set('random_key', text='hello, world!', otherval='bar')
@@ -58,6 +94,32 @@ class SessionTest(object):
             'hello, world!')
         self.sessions.set('random_key', text='nope')
         self.assertEqual(self.sessions.get('random_key', 'text'), 'nope')
+
+    def testBadTimestamp(self):
+        self.sessions.set('random_key',
+                          text='hello, world!',
+                          __timestamp='not a timestamp')
+        ts = self.sessions.get('random_key', '__timestamp')
+        self.assertNotEqual(ts, 'not a timestamp')
+        # use {1,7} because db's don't pad the fraction to 7 digits.
+        ts_re=r'^[0-9]{10,16}\.[0-9]{1,7}$'
+        try:
+            self.assertRegex(str(ts), ts_re)
+        except AttributeError:   # 2.7 version
+            import warnings
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore",category=DeprecationWarning)
+                self.assertRegexpMatches(str(ts), ts_re)
+
+        # now update with a bad timestamp, original timestamp should
+        # be kept.
+        self.sessions.set('random_key',
+                          text='hello, world2!',
+                          __timestamp='not a timestamp')
+        item = self.sessions.get('random_key', "text")
+        item_ts = self.sessions.get('random_key', "__timestamp")
+        self.assertEqual(item, 'hello, world2!')
+        self.assertAlmostEqual(ts, item_ts, 2)
 
     # overridden in dbm and memory backends
     def testUpdateTimestamp(self):
@@ -88,3 +150,9 @@ class SessionTest(object):
 
         # use 61 to allow a fudge factor
         self.assertGreater(get_ts_via_sql(self)[0] - timestamp, 61)
+
+    def testLifetime(self):
+        ts = self.sessions.lifetime(300)
+        week_ago =  time.time() - 60*60*24*7
+        self.assertGreater(week_ago + 302, ts)
+        self.assertLess(week_ago + 298, ts)

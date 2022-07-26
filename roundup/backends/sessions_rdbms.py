@@ -60,37 +60,34 @@ class BasicDatabase:
         c = self.cursor
         n = self.name
         a = self.db.arg
-        c.execute('select %s_value, %s_time from %ss where %s_key=%s'% \
-                  (n, n, n, n, a),
+        c.execute('select %s_value from %ss where %s_key=%s'% \
+                  (n, n, n, a),
             (infoid,))
         res = c.fetchone()
+
+        timestamp=time.time()
         if res:
             values = eval(res[0])
-            timestamp = res[1]
         else:
             values = {}
+
+        if '__timestamp' in newvalues:
+            try:
+                # __timestamp must be representable as a float. Check it.
+                timestamp = float(newvalues['__timestamp'])
+            except ValueError:
+                if res:
+                    # keep the original timestamp
+                    del(newvalues['__timestamp'])
+                else:
+                    # here timestamp is the new timestamp
+                    newvalues['__timestamp'] = timestamp
         values.update(newvalues)
         if res:
-            if '__timestamp' in newvalues:
-                try:
-                    # __timestamp must be representable as a float. Check it.
-                    timestamp = float(newvalues['__timestamp'])
-                except ValueError:
-                    pass
-
             sql = ('update %ss set %s_value=%s, %s_time=%s '
                        'where %s_key=%s'%(n, n, a, n, a, n, a))
             args = (repr(values), timestamp, infoid)
         else:
-            if '__timestamp' in newvalues:
-                try:
-                    # __timestamp must be represntable as a float. Check it.
-                    timestamp = float(newvalues['__timestamp'])
-                except ValueError:
-                    timestamp = time.time()
-            else:
-                timestamp = time.time()
-
             sql = 'insert into %ss (%s_key, %s_time, %s_value) '\
                 'values (%s, %s, %s)'%(n, n, n, n, a, a, a)
             args = (infoid, timestamp, repr(values))
@@ -127,6 +124,14 @@ class BasicDatabase:
         logger.info('commit %s' % self.name)
         self.conn.commit()
         self.cursor = self.conn.cursor()
+
+    def lifetime(self, item_lifetime=0):
+        """Return the proper timestamp for a key with key_lifetime specified
+           in seconds. Default lifetime is 0.
+        """
+        now = time.time()
+        week = 60*60*24*7
+        return now - week + item_lifetime
 
     def close(self):
         self.conn.close()

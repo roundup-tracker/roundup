@@ -3,6 +3,7 @@
 
 import shutil
 import os
+import time
 
 from roundup import date
 from roundup import hyperdb
@@ -163,12 +164,22 @@ class BasicDatabase(dict):
     def exists(self, infoid):
         return infoid in self
     def get(self, infoid, value, default=None):
+        if infoid not in self:
+            raise KeyError
         return self[infoid].get(value, default)
     def getall(self, infoid):
         if infoid not in self:
             raise KeyError(infoid)
         return self[infoid]
     def set(self, infoid, **newvalues):
+        if '__timestamp' in newvalues:
+            try:
+                float(newvalues['__timestamp'])
+            except ValueError:
+                if infoid in self:
+                    del(newvalues['__timestamp'])
+                else:
+                    newvalues['__timestamp'] = time.time()
         self[infoid].update(newvalues)
     def list(self):
         return list(self.keys())

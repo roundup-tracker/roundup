@@ -88,11 +88,26 @@ class BasicDatabase:
 
     def set(self, infoid, **newvalues):
         db = self.opendb('c')
+        timestamp=None
         try:
             if infoid in db:
                 values = marshal.loads(db[infoid])
+                try:
+                    timestamp = values['__timestamp']
+                except KeyError:
+                    pass  # stay at None
             else:
-                values = {'__timestamp': time.time()}
+                values = {}
+
+            if '__timestamp' in newvalues:
+                try:
+                    float(newvalues['__timestamp'])
+                except ValueError:
+                    # keep original timestamp if present
+                    newvalues['__timestamp'] = timestamp or time.time()
+            else:
+                newvalues['__timestamp'] = time.time()
+
             values.update(newvalues)
             db[infoid] = marshal.dumps(values)
         finally:
@@ -156,6 +171,14 @@ class BasicDatabase:
 
     def commit(self):
         pass
+
+    def lifetime(self, key_lifetime=0):
+        """Return the proper timestamp for a key with key_lifetime specified
+           in seconds. Default lifetime is 0.
+        """
+        now = time.time()
+        week = 60*60*24*7
+        return now - week + key_lifetime
 
     def close(self):
         pass
