@@ -26,7 +26,8 @@ html: docs
 	grep 'searchtools.js' html/search.html || sed -i -e '/language_data.js/s#</script>#</script>\n    <script type="text/javascript" src="_static/searchtools.js"></script>#' html/search.html
 	# sphinx inserts \: for : in meta tags. Get rid of the \ in
 	# opengraph tags
-	sed -i -e '/<meta/s/og\\:/og:/' html/index.html
+	sed -i -e '/<meta/s/og\\:/og:/' \
+             -e '/<meta/s/name="og:/property="og:/' html/index.html
 	cp robots.txt html/robots.txt
 
 linkcheck:
