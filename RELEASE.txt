@@ -193,6 +193,38 @@ Roundup release checklist:
 
      https://en.wikipedia.org/wiki/Comparison_of_issue-tracking_systems
 
+17 Push release docker image to dockerhub
+17a. install docker
+17b. run: (issues, how to release a version e.g. to update alpine for
+           secuity issues. Should release tag be
+	   roundup-tracker/roundup:2.2.0-1, -2 etc? Then add a tag
+	   roundup-tracker/roundup:2.2.0 that changes and always tags
+	   the latest -X release??)
+
+        docker build -t roundup-tracker/roundup:2.2.0 --build-arg="source=pypi" -f scripts/Docker/Dockerfile .
+
+     to create the dockerfile. *Change 2.2.0 to current version*
+     Always use the exact release tag.
+17c. vulnerability scan local image using:
+
+        docker run --rm --volume
+	/var/run/docker.sock:/var/run/docker.sock \
+            --name Grype anchore/grype:latest roundup-tracker/roundup:2.2.0
+
+     should report no vulnerabilities (note match version with current
+     build)
+17d. test roundup in demo mode:
+
+        docker run -it --rm -p 8917:8080 \
+         -v $PWD/tracker:/usr/src/app/tracker \
+         roundup-tracker/roundup:2.2.0 demo
+17e. push to DockerHub login (login using 'docker login <username>'
+     first and user must be member of roundup-tracker org with ability
+     to publish)
+
+	 docker tag roundup-tracker/roundup:2.2.0 roundup-tracker/roundup
+         docker push roundup-tracker/roundup:2.2.0
+         docker push roundup-tracker/roundup  # update roundup:latest
 
 -------------
 
