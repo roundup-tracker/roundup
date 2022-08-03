@@ -174,13 +174,13 @@ class Session:
             re.sub('[^a-zA-Z]', '', client.instance.config.TRACKER_NAME)
         cookies = LiberalCookie(client.env.get('HTTP_COOKIE', ''))
         if self.cookie_name in cookies:
-            if not self.session_db.exists(cookies[self.cookie_name].value):
+            try:
+                self._sid = cookies[self.cookie_name].value
+                self._data = self.session_db.getall(self._sid)
+            except KeyError:
                 self._sid = None
                 # remove old cookie
                 self.client.add_cookie(self.cookie_name, None)
-            else:
-                self._sid = cookies[self.cookie_name].value
-                self._data = self.session_db.getall(self._sid)
 
     def _gen_sid(self):
         """ generate a unique session key """

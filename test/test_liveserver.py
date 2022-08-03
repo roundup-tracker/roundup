@@ -73,15 +73,16 @@ class WsgiSetup(LiveServerTestCase):
         cls.db.config.MAILHOST = "localhost"
         cls.db.config.MAIL_HOST = "localhost"
         cls.db.config.MAIL_DEBUG = "../_test_tracker_mail.log"
+
+        # added to enable csrf forgeries/CORS to be tested
         cls.db.config.WEB_CSRF_ENFORCE_HEADER_ORIGIN = "required"
         cls.db.config.WEB_ALLOWED_API_ORIGINS = "https://client.com"
+        cls.db.config['WEB_CSRF_ENFORCE_HEADER_X-REQUESTED-WITH'] = "required"
 
         # disable web login rate limiting. The fast rate of tests
         # causes them to trip the rate limit and fail.
         cls.db.config.WEB_LOGIN_ATTEMPTS_MIN = 0
         
-        cls.db.config['WEB_CSRF_ENFORCE_HEADER_X-REQUESTED-WITH'] = "required"
-
         # enable static precompressed files
         cls.db.config.WEB_USE_PRECOMPRESSED_FILES = 1
 
@@ -902,6 +903,36 @@ class BaseTestCases(WsgiSetup):
 
         self.assertEqual(f.status_code, 200)
         self.assertEqual(f.headers['Cache-Control'], 'public, max-age=1209600')
+
+    def test_missing_session_key(self):
+        '''Test case where we have an outdated session cookie. Make
+           sure cookie is removed.
+        '''
+        session = requests.Session()
+        session.headers.update({'Origin': 'http://localhost:9001'})
+
+        # login using form to get cookie
+        login = {"__login_name": 'admin', '__login_password': 'sekrit',
+                 "@action": "login"}
+        f = session.post(self.url_base()+'/', data=login)
+        
+        # verify cookie is present and we are logged in
+        self.assertIn('<b>Hello, admin</b>', f.text)
+        self.assertIn('roundup_session_Roundupissuetracker',
+                         session.cookies)
+
+        f = session.get(self.url_base()+'/')
+        self.assertIn('<b>Hello, admin</b>', f.text)
+
+        for cookie in session.cookies:
+            if cookie.name == 'roundup_session_Roundupissuetracker':
+                cookie.value = 'bad_cookie_no_chocolate'
+                break
+
+        f = session.get(self.url_base()+'/')
+
+        self.assertNotIn('<b>Hello, admin</b>', f.text)
+        self.assertNotIn('roundup_session_Roundupissuetracker', session.cookies)
 
     def test_login_fail_then_succeed(self):
         # Set up session to manage cookies <insert blue monster here>
