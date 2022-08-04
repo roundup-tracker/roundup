@@ -56,6 +56,8 @@ class MockDatabase(MockNull):
     storage = {}
     def set(self, key, **props):
         MockDatabase.storage[key] = {}
+        if '__timestamp' not in props:
+            props['__timestamp'] = time.time() - 7*24*3600
         MockDatabase.storage[key].update(props)
 
     def get(self, key, field, default=None):
@@ -63,11 +65,19 @@ class MockDatabase(MockNull):
             return default
         return MockDatabase.storage[key][field]
 
+    def getall(self, key):
+        if key not in MockDatabase.storage:
+            return default
+        return MockDatabase.storage[key]
+
     def exists(self,key):
         return key in MockDatabase.storage
 
     def getOTKManager(self):
         return MockDatabase()
+
+    def lifetime(self, seconds):
+        return time.time() - 7*24*3600 + seconds
 
 class TemplatingTestCase(unittest.TestCase):
     def setUp(self):
