@@ -1469,36 +1469,33 @@ Erase it? Y/N: """))
             cl = self.get_class(classname)
 
             # ensure that the properties and the CSV file headings match
-            f = open(os.path.join(dir, file), 'r')
-            reader = csv.reader(f, colon_separated)
-            file_props = None
-            maxid = 1
-            # loop through the file and create a node for each entry
-            for n, r in enumerate(reader):
-                if file_props is None:
-                    file_props = r
-                    continue
+            with open(os.path.join(dir, file), 'r') as f:
+                reader = csv.reader(f, colon_separated)
+                file_props = None
+                maxid = 1
+                # loop through the file and create a node for each entry
+                for n, r in enumerate(reader):
+                    if file_props is None:
+                        file_props = r
+                        continue
 
-                if self.verbose:
-                    sys.stdout.write('\rImporting %s - %s' % (classname, n))
-                    sys.stdout.flush()
+                    if self.verbose:
+                        sys.stdout.write('\rImporting %s - %s' % (classname, n))
+                        sys.stdout.flush()
 
-                # do the import and figure the current highest nodeid
-                nodeid = cl.import_list(file_props, r)
-                if hasattr(cl, 'import_files') and import_files:
-                    cl.import_files(dir, nodeid)
-                maxid = max(maxid, int(nodeid))
+                    # do the import and figure the current highest nodeid
+                    nodeid = cl.import_list(file_props, r)
+                    if hasattr(cl, 'import_files') and import_files:
+                        cl.import_files(dir, nodeid)
+                    maxid = max(maxid, int(nodeid))
 
-            # (print to sys.stdout here to allow tests to squash it .. ugh)
-            print(file=sys.stdout)
-
-            f.close()
+                # (print to sys.stdout here to allow tests to squash it .. ugh)
+                print(file=sys.stdout)
 
             # import the journals
-            f = open(os.path.join(args[0], classname + '-journals.csv'), 'r')
-            reader = csv.reader(f, colon_separated)
-            cl.import_journals(reader)
-            f.close()
+            with open(os.path.join(args[0], classname + '-journals.csv'), 'r') as f:
+                reader = csv.reader(f, colon_separated)
+                cl.import_journals(reader)
 
             # (print to sys.stdout here to allow tests to squash it .. ugh)
             print('setting', classname, maxid+1, file=sys.stdout)
