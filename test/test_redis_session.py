@@ -39,7 +39,7 @@ class RedisSessionTest(SessionTest):
 
         # redefine the session db's as redis.
         self.db.config.SESSIONDB_BACKEND = "redis"
-        self.db.config.SESSIONDB_REDIS_URL = 'redis://:roundupSysadmin@localhost:6379/15?health_check_interval=2'
+        self.db.config.SESSIONDB_REDIS_URL = 'redis://localhost:6379/15?health_check_interval=2'
         self.db.Session = None
         self.db.Otk = None
         self.sessions = self.db.getSessionManager()
