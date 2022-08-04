@@ -1314,7 +1314,7 @@ class LoginAction(Action):
 
                 # Calculate a timestamp that will make OTK expire the
                 # unused entry 1 hour in the future
-                ts = time.time() - (60 * 60 * 24 * 7) + 3600
+                ts = otk.lifetime(3600)
                 otk.set(rlkey, tat=gcra.get_tat_as_string(rlkey),
                         __timestamp=ts)
                 otk.commit()

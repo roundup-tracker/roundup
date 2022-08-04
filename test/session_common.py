@@ -54,10 +54,16 @@ class SessionTest(object):
         self.assertEqual(self.sessions.list().sort(),
                 [self.s2b('random_key'), self.s2b('random_key2')].sort())
 
-    def testGetMissingKey(self):
-        self.sessions.set('random_key', text='hello, world!', otherval='bar')
+    def testGetGetAllMissingKey(self):
+        self.assertEqual(self.sessions.get('badc_key',
+                                          'text', 'default_val'),
+                         'default_val')
+
         with self.assertRaises(KeyError) as e:
             self.sessions.get('badc_key', 'text')
+
+        with self.assertRaises(KeyError) as e:
+            self.sessions.getall('badc_key')
 
     def testGetAll(self):
         self.sessions.set('random_key', text='hello, world!', otherval='bar')
@@ -121,19 +127,10 @@ class SessionTest(object):
         self.assertEqual(item, 'hello, world2!')
         self.assertAlmostEqual(ts, item_ts, 2)
 
-    # overridden in dbm and memory backends
+    # overridden in test_memory
     def testUpdateTimestamp(self):
-        def get_ts_via_sql(self):
-            sql = '''select %(name)s_time from %(name)ss
-                 where %(name)s_key = '%(session)s';'''% \
-                     {'name': self.sessions.name,
-                      'session': 'random_session'}
-
-            self.sessions.cursor.execute(sql)
-            db_tstamp = self.sessions.cursor.fetchone()
-            return db_tstamp
-
-        # make sure timestamp is older than one minute so update will apply
+        # make sure timestamp is older than one minute so update
+        # will apply
         timestamp = time.time() - 62
         self.sessions.set('random_session', text='hello, world!',
                           __timestamp=timestamp)
@@ -148,8 +145,40 @@ class SessionTest(object):
         #                                       '__timestamp'),
         #                     timestamp)
 
-        # use 61 to allow a fudge factor
-        self.assertGreater(get_ts_via_sql(self)[0] - timestamp, 61)
+        # use 61 to allow a 1 second delay in test
+        self.assertGreater(self.get_ts()[0] - timestamp, 61)
+
+    # overridden in test_anydbm
+    def get_ts(self, key="random_session"):
+        sql = '''select %(name)s_time from %(name)ss
+        where %(name)s_key = '%(session)s';'''% \
+            {'name': self.sessions.name,
+             'session': key}
+
+        self.sessions.cursor.execute(sql)
+        db_tstamp = self.sessions.cursor.fetchone()
+        return db_tstamp
+
+    def testDataTypes(self):
+        """make sure all data survives a round trip through the
+           session database including data types.
+
+           Found this was a problem when trying to store the
+           data using a redis hash that has no native data types
+           for booleans and numbers get returned by redis module
+           as strings.
+        """
+        in_data = {"text": 'hello, world!',
+                   "integer": 56, 
+                   "float": 3.1425,
+                   "list": [ 1, "Two", 3.0, "Four" ],
+                   "boolean": True,
+                   "tuple": ("f", 4),
+                   }
+
+        self.sessions.set('random_data', **in_data)
+        out_data = self.sessions.getall('random_data')
+        self.assertEqual(in_data, out_data)
 
     def testLifetime(self):
         ts = self.sessions.lifetime(300)

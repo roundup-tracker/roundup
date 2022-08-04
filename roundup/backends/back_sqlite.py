@@ -12,7 +12,14 @@ import os, marshal, shutil, time, logging
 
 from roundup import hyperdb, date, password
 from roundup.backends import rdbms_common
-from roundup.backends.sessions_sqlite import Sessions, OneTimeKeys
+from roundup.backends import sessions_sqlite
+from roundup.backends import sessions_dbm
+
+try:
+    from roundup.backends import sessions_redis
+except ModuleNotFoundError:
+    sessions_redis = None
+
 from roundup.anypy.strings import uany2s
 
 sqlite_version = None
@@ -105,12 +112,30 @@ class Database(rdbms_common.Database):
     # connections to the same database which SQLite doesn't support
     def getSessionManager(self):
         if not self.Session:
-            self.Session = Sessions(self)
+            if self.config.SESSIONDB_BACKEND == "redis":
+                if sessions_redis is None:
+                    self.Session = sessions_sqlite.Sessions(self)
+                    raise ValueError("[redis] session is set, but "
+                                     "redis module is not found")
+                self.Session = sessions_redis.Sessions(self)
+            elif self.config.SESSIONDB_BACKEND == "anydbm":
+                self.Session = sessions_dbm.Sessions(self)
+            else:
+                self.Session = sessions_sqlite.Sessions(self)
         return self.Session
 
     def getOTKManager(self):
         if not self.Otk:
-            self.Otk = OneTimeKeys(self)
+            if self.config.SESSIONDB_BACKEND == "redis":
+                if sessions_redis is None:
+                    self.Session = sessions_sqlite.OneTimeKeys(self)
+                    raise ValueError("[redis] session is set, but "
+                                     "redis is not found")
+                self.Otk = sessions_redis.OneTimeKeys(self)
+            elif self.config.SESSIONDB_BACKEND == "anydbm":
+                self.Otk = sessions_dbm.OneTimeKeys(self)
+            else:
+                self.Otk = sessions_sqlite.OneTimeKeys(self)
         return self.Otk
 
     def sqlite_busy_handler(self, data, table, count):

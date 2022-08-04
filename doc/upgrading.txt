@@ -35,6 +35,18 @@ Contents:
 Migrating from 2.2.0 to 2.3.0
 =============================
 
+Update your ``config.ini`` (required)
+-------------------------------------
+
+Upgrade tracker's config.ini file. Use::
+
+  roundup-admin -i /path/to/tracker updateconfig newconfig.ini
+
+to generate a new ini file preserving all your settings.
+You can then merge any local comments from the tracker's
+``config.ini`` to ``newconfig.ini`` and replace
+``config.ini`` with ``newconfig.ini``.
+
 Rdbms version change from 7 to 8 (required)
 -------------------------------------------
 
@@ -67,8 +79,8 @@ RDBMS backend) or "No migration action required" (if you
 have run it, or have used another interface to the tracker,
 or are using anydbm).
 
-Session/OTK data storage for SQLite backend changed
----------------------------------------------------
+Session/OTK data storage for SQLite backend changed (required)
+--------------------------------------------------------------
 
 Roundup stores a lot of ephemeral data:
 
@@ -83,17 +95,35 @@ is stored in a SQLite db. Using both dbm and sqlite style
 files is surprising and due to how we lock dbm files can be
 a performance issue.
 
-In this release two sqlite databases called ``db-otk`` and
-``db-session`` replace the dbm databases. Once you make the
-change the old ``otks`` and ``sessions`` dbm databases can
-be removed.
+However you can continue to use the dbm files by setting the
+``backend`` option in the ``[sessiondb]`` section of
+``config.ini`` to ``anydbm``.
+
+If you do not change the setting, two sqlite databases
+called ``db-otk`` and ``db-session`` replace the dbm
+databases. Once you make the change the old ``otks`` and
+``sessions`` dbm databases can be removed.
 
 Note this replacement will require users to log in again and
-refresh web pages to save data. It is best is people save
+refresh web pages to save data. It is best if people save
 all their changes and log out of Roundup before the upgrade
 is done to minimize confusion. Because the data is
 ephemeral, there is no plan to migrate this data to the new
-SQLite databases.
+SQLite databases. If you want to keep using the data set the
+``sessiondb`` ``backend`` option as described above.
+
+Session/OTK data storage using Redis (optional)
+-----------------------------------------------
+
+If you are running Roundup with Python 3.6 or newer, you can
+store your ephemeral data in a Redis database. This provides
+significantly better performance for ephemeral data than 
+SQLite or dbm files. See the section `Using Redis for Session
+Databases`_ in the `administration guide`_
+
+
+.. _Using Redis for Session Databases:
+    admin_guide.html#using-redis-for-session-databases
 
 .. index:: Upgrading; 2.1.0 to 2.2.0
 
@@ -107,11 +137,10 @@ Upgrade tracker's config.ini file. Use::
 
   roundup-admin -i /path/to/tracker updateconfig newconfig.ini
 
-to generate a new ini file preserving all your settings. You
-can then merge any local comments from the tracker's
-``config.ini`` into ``newconfig.ini``. You can then merge
-comments from ``config.ini`` to ``newconfig.ini`` and
-replace ``config.ini`` with ``newconfig.ini``.
+to generate a new ini file preserving all your settings.
+You can then merge any local comments from the tracker's
+``config.ini`` to ``newconfig.ini`` and replace
+``config.ini`` with ``newconfig.ini``.
 
 Rdbms version change from 6 to 7 (required)
 -------------------------------------------

@@ -33,7 +33,12 @@ from roundup.backends import locking
 from roundup.i18n import _
 
 from roundup.backends.blobfiles import FileStorage
-from roundup.backends.sessions_dbm import Sessions, OneTimeKeys
+from roundup.backends import sessions_dbm
+
+try:
+    from roundup.backends import sessions_redis
+except ModuleNotFoundError:
+    sessions_redis = None
 
 from roundup.backends.indexer_common import get_indexer
 
@@ -133,12 +138,26 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
     def getSessionManager(self):
         if not self.Session:
-            self.Session = Sessions(self)
+            if self.config.SESSIONDB_BACKEND == "redis":
+                if sessions_redis is None:
+                    self.Session = sessions_dbm.Sessions(self)
+                    raise ValueError("[redis] session is set, but "
+                                     "redis is not found")
+                self.Session = sessions_redis.Sessions(self)
+            else:
+                self.Session = sessions_dbm.Sessions(self)
         return self.Session
 
     def getOTKManager(self):
         if not self.Otk:
-            self.Otk = OneTimeKeys(self)
+            if self.config.SESSIONDB_BACKEND == "redis":
+                if sessions_redis is None:
+                    self.Session = sessions_dbm.OneTimeKeys(self)
+                    raise ValueError("[redis] session is set, but "
+                                     "redis is not found")
+                self.Otk = sessions_redis.OneTimeKeys(self)
+            else:
+                self.Otk = sessions_dbm.OneTimeKeys(self)
         return self.Otk
 
     def reindex(self, classname=None, show_progress=False):

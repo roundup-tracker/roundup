@@ -1166,7 +1166,7 @@ class RestfulInstance(object):
         # Default OTK lifetime is 1 week. So to make different
         # lifetime, take current time, subtract 1 week and add
         # lifetime.
-        ts = time.time() - (60 * 60 * 24 * 7) + lifetime
+        ts = otks.lifetime(lifetime)
         if is_generic:
             otks.set(u2s(poe_key), uid=self.db.getuid(),
                      __timestamp=ts)
@@ -2070,8 +2070,9 @@ class RestfulInstance(object):
 
             # Calculate a timestamp that will make OTK expire the
             # unused entry 1 hour in the future
-            ts = time.time() - (60 * 60 * 24 * 7) + 3600
-            otk.set(apiLimitKey, tat=gcra.get_tat_as_string(apiLimitKey),
+            ts = otk.lifetime(3600)
+            otk.set(apiLimitKey,
+                    tat=gcra.get_tat_as_string(apiLimitKey),
                     __timestamp=ts)
             otk.commit()
 

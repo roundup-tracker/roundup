@@ -217,15 +217,7 @@ def anti_csrf_nonce(client, lifetime=None):
     if lifetime is None:
         lifetime = client.db.config['WEB_CSRF_TOKEN_LIFETIME']
 
-    # offset to time.time is calculated as:
-    #  default lifetime is 1 week after __timestamp.
-    # That's the cleanup period hardcoded in otk.clean().
-    # If a user wants a 10 minute lifetime calculate
-    # 10 minutes newer than 1 week ago.
-    #   lifetime - 10080 (number of minutes in a week)
-    # convert to seconds and add (possible negative number)
-    # to current time (time.time()).
-    ts = time.time() + ((lifetime - 10080) * 60)
+    ts = otks.lifetime(lifetime * 60)
     otks.set(key, uid=client.db.getuid(),
              sid=client.session_api._sid,
              __timestamp=ts )

@@ -38,6 +38,17 @@ except ImportError:
         "Skipping Xapian indexer tests: 'xapian' not installed"))
     include_no_xapian = lambda func, *args, **kwargs: func
 
+
+try:
+    import redis
+    skip_redis = lambda func, *args, **kwargs: func
+except ImportError:
+    # FIX: workaround for a bug in pytest.mark.skip():
+    #   https://github.com/pytest-dev/pytest/issues/568
+    from .pytest_patcher import mark_class
+    skip_redis = mark_class(pytest.mark.skip(
+        "Skipping redis tests: 'redis' not installed"))
+
 _py3 = sys.version_info[0] > 2
 if _py3:
     skip_py2 = lambda func, *args, **kwargs: func
@@ -102,6 +113,17 @@ class ConfigTest(unittest.TestCase):
 
         self.assertRaises(configuration.OptionValueError,
              config._get_option('TRACKER_WEB').set, "")
+
+    def testRedis_Url(self):
+        config = configuration.CoreConfig()
+
+        with self.assertRaises(configuration.OptionValueError) as cm:
+            config._get_option('SESSIONDB_REDIS_URL').set(
+                "redis://foo.example/bar?decode_responses=False")
+        self.assertIn('decode_responses', cm.exception.__str__())
+
+        config._get_option('SESSIONDB_REDIS_URL').set(
+            "redis://localhost:6379/0?health_check_interval=2")
 
     def testLoginAttemptsMin(self):
         config = configuration.CoreConfig()
@@ -733,6 +755,73 @@ class TrackerConfig(unittest.TestCase):
         self.assertIn("NO_LANG", cm.exception.args[1])
         # look for supported language
         self.assertIn("basque", cm.exception.args[2])
+
+    @skip_redis
+    def testLoadSessionDbRedis(self):
+        """ run load to validate config """
+
+        config = configuration.CoreConfig()
+
+        # compatible pair
+        config.RDBMS_BACKEND = "sqlite"
+        config.SESSIONDB_BACKEND = "redis"
+
+        config.validator(config.options)
+
+        # compatible pair
+        config.RDBMS_BACKEND = "anydbm"
+        config.SESSIONDB_BACKEND = "redis"
+
+        config.validator(config.options)
+
+        # incompatible pair
+        config.RDBMS_BACKEND = "postgresql"
+        config.SESSIONDB_BACKEND = "redis"
+
+        with self.assertRaises(configuration.OptionValueError) as cm:
+            config.validator(config.options)
+
+        self.assertIn(" db type: redis with postgresql",
+                      cm.exception.__str__())
+
+    def testLoadSessionDb(self):
+        """ run load to validate config """
+
+        config = configuration.CoreConfig()
+
+        # incompatible pair
+        config.RDBMS_BACKEND = "sqlite"
+        config.SESSIONDB_BACKEND = "foo"
+
+        with self.assertRaises(configuration.OptionValueError) as cm:
+            config.validator(config.options)
+
+        self.assertIn(" db type: foo with sqlite",
+                      cm.exception.__str__())
+
+        # compatible pair
+        config.RDBMS_BACKEND = "sqlite"
+        config.SESSIONDB_BACKEND = ""
+
+        config.validator(config.options) # any exception will fail test
+
+        config.RDBMS_BACKEND = "sqlite"
+        config.SESSIONDB_BACKEND = "anydbm"
+
+        config.validator(config.options) # any exception will fail test
+
+        config.RDBMS_BACKEND = "anydbm"
+        config.SESSIONDB_BACKEND = "redis"
+
+        # make it looks like redis is not available
+        del(sys.modules['redis'])
+        sys.modules['redis'] = None
+        with self.assertRaises(configuration.OptionValueError) as cm:
+            config.validator(config.options)
+        del(sys.modules['redis'])
+
+        self.assertIn("Unable to load redis module",
+                      cm.exception.__str__())
 
     def testLoadConfig(self):
         """ run load to validate config """

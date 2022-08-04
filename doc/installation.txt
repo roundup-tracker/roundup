@@ -137,9 +137,19 @@ zstd, brotli
   compress the response from roundup as they transmit/proxy it to the
   client.
 
+redis
+  Storing ephemeral data: session keys, CSRF tokens etc. can be 
+  performance bottleneck. You can choose to deploy a Redis_ database
+  using the redis-py_ pypi package. See the section on
+  `Using Redis for Session Databases`_ in the `administration
+  guide`_ for details.
+
 Windows Service
   You can run Roundup as a Windows service if pywin32_ is installed.
   Otherwise it must be started manually.
+
+.. _Using Redis for Session Databases:
+   admin_guide.html#using-redis-for-session-databases
 
 Getting Roundup
 ===============
@@ -1770,6 +1780,8 @@ there are no errors. If there are errors, please let us know!
 .. _pysqlite: https://pysqlite.org/
 .. _pytz: https://pypi.org/project/pytz/
 .. _pywin32: https://pypi.org/project/pywin32/
+.. _Redis: https://redis.io
+.. _redis-py: https://pypi.org/project/redis/
 .. _Whoosh: https://whoosh.readthedocs.org/en/latest
 .. _Xapian: https://xapian.org/
 .. _zstd: https://pypi.org/project/zstd/

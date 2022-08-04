@@ -802,6 +802,83 @@ class SecretNullableOption(NullableOption, SecretOption):
     get = SecretOption.get
     class_description = SecretOption.class_description
 
+class RedisUrlOption(SecretNullableOption):
+    """Do required check to make sure known bad parameters are not
+       put in the url.
+
+       Should I do more URL validation? Validate schema:
+       redis, rediss, unix? How many cycles to invest
+       to keep users from their own mistakes?
+    """
+       
+    class_description = SecretNullableOption.class_description
+
+    def str2value(self, value):
+        if value and value.find("decode_responses") != -1:
+            raise OptionValueError(self, value, "URL must not include "
+                                   "decode_responses. Please remove "
+                                   "the option.")
+        return value
+
+class SessiondbBackendOption(Option):
+    """Make sure that sessiondb is compatile with the primary db.
+       Fail with error and suggestions if they are incompatible.
+    """
+
+    compatibility_matrix = [
+        ('anydbm', 'anydbm'),
+        ('anydbm', 'redis'),
+        ('sqlite', 'anydbm'),
+        ('sqlite', 'sqlite'),
+        ('sqlite', 'redis'),
+        ('mysql', 'mysql'),
+        ('postgresql', 'postgresql'),
+        ]
+
+    def validate(self, options):
+        ''' make sure session db is compatible with primary db.
+            also if redis is specified make sure it's available.
+            suggest valid session db backends include redis if
+            available.
+        '''
+
+        if self.name == 'SESSIONDB_BACKEND':
+            rdbms_backend = options['RDBMS_BACKEND']._value
+            sessiondb_backend = self._value
+
+            if not sessiondb_backend:
+                # unset will choose default
+                return
+
+            redis_available = False
+            try:
+                import redis
+                redis_available = True
+            except ImportError:
+                if sessiondb_backend == 'redis':
+                    valid_session_backends = ', '.join(sorted(list(
+                        [ x[1] for x in self.compatibility_matrix 
+                              if x[0] == rdbms_backend and x[1] != 'redis'])
+                    ))
+                    raise OptionValueError(self, sessiondb_backend,
+                            "Unable to load redis module. Please install "
+                            "a redis library or choose\n an alternate "
+                            "session db: %(valid_session_backends)s"%locals())
+
+            if ( (rdbms_backend, sessiondb_backend) not in 
+                 self.compatibility_matrix ):
+
+                valid_session_backends = ', '.join(sorted(list(
+                    set([ x[1] for x in self.compatibility_matrix 
+                          if x[0] == rdbms_backend and
+                            ( redis_available or x[1] != 'redis')])
+                )))
+
+                raise OptionValueError(self, sessiondb_backend,
+                    "You can not use session db type: %(sessiondb_backend)s "
+                    "with %(rdbms_backend)s.\n  Valid session db types: "
+                    "%(valid_session_backends)s."%locals())
+
 
 class TimezoneOption(Option):
 
@@ -1367,6 +1444,22 @@ always passes, so setting it less than 1 is not recommended."""),
     ), "Settings in this section (except for backend) are used"
         " by RDBMS backends only."
     ),
+    ("sessiondb", (
+        (SessiondbBackendOption, "backend", "",
+            "Set backend for storing one time key (otk) and session data.\n"
+            "Values have to be compatible with main backend.\n"
+            "main\\/ session>| anydbm | sqlite | redis | mysql | postgresql |\n"
+            " anydbm        |    D   |        |   X   |       |            |\n"
+            " sqlite        |    X   |    D   |   X   |       |            |\n"
+            " mysql         |        |        |       |   D   |            |\n"
+            " postgresql    |        |        |       |       |      D     |\n"
+            " -------------------------------------------------------------+\n"
+            "          D - default if unset,   X - compatible choice"),
+        (RedisUrlOption, "redis_url",
+            "redis://localhost:6379/0?health_check_interval=2",
+            "URL used to connect to redis. Default uses unauthenticated\n"
+            "redis database 0 running on localhost with default port.\n"),
+    ), "Choose configuration for session and one time key storage."),
     ("logging", (
         (FilePathOption, "config", "",
             "Path to configuration file for standard Python logging module.\n"

@@ -31,6 +31,7 @@ python:
 services:
   - mysql
   - postgresql
+  - redis-server
 
 jobs:
     allow_failures:  # releases not ready for prime time yet.
@@ -113,6 +114,7 @@ install:
   - if [[ $TRAVIS_PYTHON_VERSION == "3.4"* ]]; then  pip install mysqlclient==1.3.14; fi
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install mysqlclient; fi
   - pip install psycopg2
+  - pip install redis
   - pip install gpg pytz whoosh pyjwt requests
   - pip install jinja2
   - pip install pytest-cov codecov

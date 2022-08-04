@@ -176,5 +176,39 @@ from .session_common import SessionTest
 class sqliteSessionTest(sqliteOpener, SessionTest, unittest.TestCase):
     s2b = lambda x,y : y
 
+    def testDbType(self):
+        self.assertIn("roundlite", repr(self.db))
+        self.assertIn("roundup.backends.sessions_sqlite.Sessions", repr(self.db.Session))
+
+class anydbmSessionTest(sqliteOpener, SessionTest, unittest.TestCase):
+    s2b = lambda x,y : y
+
+    def setUp(self):
+        SessionTest.setUp(self)
+
+        # redefine the session db's as redis.
+        self.db.config.SESSIONDB_BACKEND = "anydbm"
+        self.db.Session = None
+        self.db.Otk = None
+        self.sessions = self.db.getSessionManager()
+        self.otks = self.db.getOTKManager()
+
+    def tearDown(self):
+        SessionTest.tearDown(self)
+
+        # reset to default session backend
+        self.db.config.SESSIONDB_BACKEND = ""
+        self.db.Session = None
+        self.db.Otk = None
+        self.sessions = self.db.getSessionManager()
+        self.otks = self.db.getOTKManager()
+
+    def get_ts(self):
+        return (self.sessions.get('random_session', '__timestamp'),)
+
+    def testDbType(self):
+        self.assertIn("roundlite", repr(self.db))
+        self.assertIn("roundup.backends.sessions_dbm.Sessions", repr(self.db.Session))
+    
 class sqliteRestTest (RestTestCase, unittest.TestCase):
     backend = 'sqlite'
