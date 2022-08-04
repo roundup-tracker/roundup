@@ -163,9 +163,13 @@ class BasicDatabase(dict):
         return super(BasicDatabase, self).__contains__(s2b(key))
     def exists(self, infoid):
         return infoid in self
-    def get(self, infoid, value, default=None):
+    _marker = []
+    def get(self, infoid, value, default=_marker):
         if infoid not in self:
-            raise KeyError
+            if default is self._marker:
+                raise KeyError
+            else:
+                return default
         return self[infoid].get(value, default)
     def getall(self, infoid):
         if infoid not in self:
