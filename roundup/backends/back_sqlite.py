@@ -17,7 +17,7 @@ from roundup.backends import sessions_dbm
 
 try:
     from roundup.backends import sessions_redis
-except ModuleNotFoundError:
+except ImportError:
     sessions_redis = None
 
 from roundup.anypy.strings import uany2s

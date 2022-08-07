@@ -37,7 +37,7 @@ from roundup.backends import sessions_dbm
 
 try:
     from roundup.backends import sessions_redis
-except ModuleNotFoundError:
+except ImportError:
     sessions_redis = None
 
 from roundup.backends.indexer_common import get_indexer
