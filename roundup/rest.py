@@ -18,6 +18,9 @@ import time
 import traceback
 import re
 
+import logging
+logger = logging.getLogger('roundup.rest')
+
 try:
     # if dicttoxml installed in roundup directory, use it
     from roundup.dicttoxml import dicttoxml
