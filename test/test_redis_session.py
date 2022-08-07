@@ -79,8 +79,8 @@ class RedisSessionTest(SessionTest):
         self.db.config.SESSIONDB_BACKEND = ""
         self.db.Session = None
         self.db.Otk = None
-        self.sessions = self.db.getSessionManager()
-        self.otks = self.db.getOTKManager()
+        self.sessions = None
+        self.otks = None
 
 
     def get_ts(self, key="random_session"):
