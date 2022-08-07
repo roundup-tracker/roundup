@@ -814,7 +814,12 @@ class TrackerConfig(unittest.TestCase):
         config.SESSIONDB_BACKEND = "redis"
 
         # make it looks like redis is not available
-        del(sys.modules['redis'])
+        try:
+            del(sys.modules['redis'])
+        except KeyError:
+            # redis is not available anyway.
+            pass
+
         sys.modules['redis'] = None
         with self.assertRaises(configuration.OptionValueError) as cm:
             config.validator(config.options)
