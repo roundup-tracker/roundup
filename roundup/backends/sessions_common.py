@@ -41,10 +41,10 @@ class SessionCommon:
         return self.__logger
 
     def getUniqueKey(self, length=40):
-        otk = b2s(base64.b64encode(
+        otk = b2s(base64.urlsafe_b64encode(
             random_.token_bytes(length))).rstrip('=')
         while self.exists(otk):
-            otk = b2s(base64.b64encode(
+            otk = b2s(base64.urlsafe_b64encode(
                 random_.token_bytes(length))).rstrip('=')
 
         return otk
