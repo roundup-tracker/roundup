@@ -201,7 +201,7 @@ class BasicDatabase(dict):
 class Sessions(BasicDatabase, sessions_dbm.Sessions):
     name = 'sessions'
 
-class OneTimeKeys(BasicDatabase, sessions_dbm.Sessions):
+class OneTimeKeys(BasicDatabase, sessions_dbm.OneTimeKeys):
     name = 'otks'
 
 class Indexer(indexer_dbm.Indexer):

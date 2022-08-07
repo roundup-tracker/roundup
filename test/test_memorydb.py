@@ -62,6 +62,7 @@ class memorydbSessionTest(memorydbOpener, SessionTest, unittest.TestCase):
         self.db = self.module.Database(config, 'admin')
         setupSchema(self.db, 1, self.module)
         self.sessions = self.db.sessions
+        self.otks = self.db.otks
 
     # doesn't work for memory as it uses a mock for session db.
     def testUpdateTimestamp(self):
