@@ -492,10 +492,9 @@ Using Redis for Session Databases
 
 Redis is an in memory key/value data structure store.
 
-To use redis you must be using Python 3.6 or newer.  You
-need to install the redis-py_ module from pypi. Then install
-Redis using your package manager or by downloading it from
-the Redis_ website.
+You need to install the redis-py_ module from pypi. Then
+install Redis using your package manager or by downloading
+it from the Redis_ website.
 
 You need to secure your redis instance. The data that
 Roundup stores includes session cookies and other

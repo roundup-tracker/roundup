@@ -115,11 +115,10 @@ SQLite databases. If you want to keep using the data set the
 Session/OTK data storage using Redis (optional)
 -----------------------------------------------
 
-If you are running Roundup with Python 3.6 or newer, you can
-store your ephemeral data in a Redis database. This provides
-significantly better performance for ephemeral data than 
-SQLite or dbm files. See the section `Using Redis for Session
-Databases`_ in the `administration guide`_
+You can store your ephemeral data in a Redis database. This
+provides significantly better performance for ephemeral data
+than SQLite or dbm files. See the section `Using Redis for
+Session Databases`_ in the `administration guide`_
 
 
 .. _Using Redis for Session Databases:
