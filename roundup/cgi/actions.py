@@ -10,7 +10,7 @@ from roundup.cgi.timestamp import Timestamped
 from roundup.exceptions import Reject, RejectRaw
 from roundup.anypy import urllib_
 from roundup.anypy.strings import StringIO
-import roundup.anypy.random_ as random_
+
 
 from roundup.anypy.html import html_escape
 
@@ -22,10 +22,6 @@ __all__ = ['Action', 'ShowAction', 'RetireAction', 'RestoreAction',
            'EditCSVAction', 'EditItemAction', 'PassResetAction',
            'ConfRegoAction', 'RegisterAction', 'LoginAction', 'LogoutAction',
            'NewItemAction', 'ExportCSVAction', 'ExportCSVWithIdAction']
-
-# used by a couple of routines
-chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-
 
 class Action:
     def __init__(self, client):
@@ -1005,9 +1001,8 @@ Your password is now: %(password)s
             return
 
         # generate the one-time-key and store the props for later
-        otk = ''.join([random_.choice(chars) for x in range(32)])
-        while otks.exists(otk):
-            otk = ''.join([random_.choice(chars) for x in range(32)])
+        otk = otks.getUniqueKey(length=32)
+
         otks.set(otk, uid=uid, uaddress=address)
         otks.commit()
 
@@ -1150,9 +1145,7 @@ class RegisterAction(RegoCommon, EditCommon, Timestamped):
             elif isinstance(proptype, hyperdb.Password):
                 user_props[propname] = str(value)
         otks = self.db.getOTKManager()
-        otk = ''.join([random_.choice(chars) for x in range(32)])
-        while otks.exists(otk):
-            otk = ''.join([random_.choice(chars) for x in range(32)])
+        otk = otks.getUniqueKey(length=32)
         otks.set(otk, **user_props)
 
         # send the email

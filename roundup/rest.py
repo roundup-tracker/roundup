@@ -50,18 +50,6 @@ except NameError:
     basestring = str
     unicode = str
 
-import roundup.anypy.random_ as random_
-
-import logging
-logger = logging.getLogger('roundup.rest')
-
-if not random_.is_weak:
-    logger.debug("Importing good random generator")
-else:
-    logger.warning("**SystemRandom not available. Using poor random generator")
-
-chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-
 
 def _data_decorator(func):
     """Wrap the returned data into an object."""
@@ -1140,9 +1128,7 @@ class RestfulInstance(object):
         """Get the Post Once Exactly token to create a new instance of class
            See https://tools.ietf.org/html/draft-nottingham-http-poe-00"""
         otks = self.db.Otk
-        poe_key = ''.join([random_.choice(chars) for x in range(40)])
-        while otks.exists(u2s(poe_key)):
-            poe_key = ''.join([random_.choice(chars) for x in range(40)])
+        poe_key = otks.getUniqueKey()
 
         try:
             lifetime = int(input['lifetime'].value)

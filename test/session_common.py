@@ -24,6 +24,18 @@ FIXME need to add getTimestamp method to sessions_rdbms.py and
 sessions_dbm.py.
 
 """
+
+import pytest, sys
+
+_py3 = sys.version_info[0] > 2
+if _py3:
+    skip_py2 = lambda func, *args, **kwargs: func
+else:
+    from .pytest_patcher import mark_class
+    skip_py2 = mark_class(pytest.mark.skip(
+        reason="Skipping log test, test doesn't work on python2"))
+
+
 class SessionTest(object):
     def setUp(self):
         # remove previous test, ignore errors
@@ -185,3 +197,75 @@ class SessionTest(object):
         week_ago =  time.time() - 60*60*24*7
         self.assertGreater(week_ago + 302, ts)
         self.assertLess(week_ago + 298, ts)
+
+    def testGetUniqueKey(self):
+        # 40 bytes of randomness gets larger when encoded
+        key = self.sessions.getUniqueKey()
+        self.assertEqual(len(key), 54)
+
+        # length is bytes of randomness
+        key = self.sessions.getUniqueKey(length=23)
+        self.assertEqual(len(key), 31)
+
+        key = self.sessions.getUniqueKey(length=200)
+        self.assertEqual(len(key), 267)
+
+    def testget_logger(self):
+        logger = self.sessions.get_logger()
+        # why do rdbms session use session/otk as the table name
+        # while dbm uses sessions/otks? In any case check both.
+        self.assertIn(logger.name, ["roundup.hyperdb.backends.sessions",
+                                    "roundup.hyperdb.backends.session"])
+
+        logger = self.otks.get_logger()
+        self.assertIn(logger.name, ["roundup.hyperdb.backends.otks",
+                                    "roundup.hyperdb.backends.otk"])
+
+    def testget_logger_name_test(self):
+        self.sessions.name="otks"
+        logger = self.sessions.get_logger()
+        self.assertEqual(logger.name, "roundup.hyperdb.backends.otks")
+
+    @skip_py2
+    def test_log_warning(self):
+        """Only python3 pytest has the right context handler for this,
+           so skip this on python2.
+        """
+
+        self.sessions.name = "newdb"
+
+        with self.assertLogs(logger="roundup.hyperdb.backends.newdb") as logs:
+            self.sessions.log_warning("hello world")
+
+        self.assertEqual(len(logs.records), 1)
+        self.assertEqual(logs.records[0].levelname, "WARNING")
+
+    @skip_py2
+    def test_log_info(self):
+        """Only python3 pytest has the right context handler for this,
+           so skip this on python2.
+        """
+
+        self.sessions.name = "newdb"
+
+        with self.assertLogs(logger="roundup.hyperdb.backends.newdb") as logs:
+            self.sessions.log_info("hello world")
+
+        self.assertEqual(len(logs.records), 1)
+        self.assertEqual(logs.records[0].levelname, "INFO")
+
+    @skip_py2
+    def test_log_debug(self):
+        """Only python3 pytest has the right context handler for this,
+           so skip this on python2.
+        """
+
+        self.sessions.name = "newdb"
+
+        with self.assertLogs(logger="roundup.hyperdb.backends.newdb",
+                             level='DEBUG') as logs:
+            self.sessions.log_debug("hello world")
+
+        self.assertEqual(len(logs.records), 1)
+        self.assertEqual(logs.records[0].levelname, "DEBUG")
+        

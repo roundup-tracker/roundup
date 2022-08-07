@@ -18,14 +18,16 @@ to read when viewing (using redis-cli).
 """
 __docformat__ = 'restructuredtext'
 
-import logging, marshal, redis, time
+import marshal, redis, time
 
 from roundup.anypy.html import html_escape as escape
 
 from roundup.i18n import _
 
+from roundup.backends.sessions_common import SessionCommon
 
-class BasicDatabase:
+
+class BasicDatabase(SessionCommon):
     ''' Provide a nice encapsulation of a redis store.
 
         Keys are id strings, values are automatically marshalled data.
@@ -185,9 +187,9 @@ class BasicDatabase:
                     transaction.execute()
                     break
                 except redis.Exceptions.WatchError:
-                    logging.getLogger('roundup.redis').info(
+                    self.log_info(
                         _('Key %(key)s changed in %(name)s db' %
-                        {"key": escape(infoid), "name": self.name})
+                          {"key": escape(infoid), "name": self.name})
                     )
             else:
                 raise Exception(_("Redis set failed afer 3 retries"))

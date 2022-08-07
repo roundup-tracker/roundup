@@ -11,52 +11,32 @@ didn't have to use dbm for the session/otk data. It hopefully will
 provide a performance speedup.
 """
 __docformat__ = 'restructuredtext'
-import os, time, logging
 
-from roundup.anypy.html import html_escape as escape
-import roundup.backends.sessions_rdbms as rdbms_session
+from roundup.backends import sessions_rdbms
 
-class BasicDatabase(rdbms_session.BasicDatabase):
+
+class BasicDatabase(sessions_rdbms.BasicDatabase):
     ''' Provide a nice encapsulation of an RDBMS table.
 
         Keys are id strings, values are automatically marshalled data.
     '''
     name = None
+
     def __init__(self, db):
         self.db = db
         self.conn, self.cursor = self.db.sql_open_connection(dbname=self.name)
 
-        self.sql('''SELECT name FROM sqlite_master WHERE type='table' AND name='%ss';'''%self.name)
+        self.sql('''SELECT name FROM sqlite_master WHERE type='table' AND '''
+                 '''name='%ss';''' % self.name)
         table_exists = self.cursor.fetchone()
 
         if not table_exists:
             # create table/rows etc.
             self.sql('''CREATE TABLE %(name)ss (%(name)s_key VARCHAR(255),
-            %(name)s_value TEXT, %(name)s_time REAL)'''%{"name":self.name})
-            self.sql('CREATE INDEX %(name)s_key_idx ON %(name)ss(%(name)s_key)'%{"name":self.name})
+            %(name)s_value TEXT, %(name)s_time REAL)''' % {"name": self.name})
+            self.sql('CREATE INDEX %(name)s_key_idx ON '
+                     '%(name)ss(%(name)s_key)' % {"name": self.name})
             self.commit()
-
-    def log_debug(self, msg, *args, **kwargs):
-        """Log a message with level DEBUG."""
-
-        logger = self.get_logger()
-        logger.debug(msg, *args, **kwargs)
-
-    def log_info(self, msg, *args, **kwargs):
-        """Log a message with level INFO."""
-
-        logger = self.get_logger()
-        logger.info(msg, *args, **kwargs)
-
-    def get_logger(self):
-        """Return the logger for this database."""
-
-        # Because getting a logger requires acquiring a lock, we want
-        # to do it only once.
-        if not hasattr(self, '__logger'):
-            self.__logger = logging.getLogger('roundup')
-
-        return self.__logger
 
     def sql(self, sql, args=None, cursor=None):
         """ Execute the sql with the optional args.
@@ -69,8 +49,10 @@ class BasicDatabase(rdbms_session.BasicDatabase):
         else:
             cursor.execute(sql)
 
+
 class Sessions(BasicDatabase):
     name = 'session'
+
 
 class OneTimeKeys(BasicDatabase):
     name = 'otk'

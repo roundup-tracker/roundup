@@ -23,7 +23,7 @@ import pytest
 try:
     from roundup.backends.sessions_redis import Sessions, OneTimeKeys
     skip_redis = lambda func, *args, **kwargs: func
-except ModuleNotFoundError as e:
+except ImportError as e:
     from .pytest_patcher import mark_class
     skip_redis = mark_class(pytest.mark.skip(
         reason='Skipping redis tests: redis module not available'))
@@ -37,9 +37,22 @@ class RedisSessionTest(SessionTest):
     def setUp(self):
         SessionTest.setUp(self)
 
+        import os
+        if 'pytest_redis_pw' in os.environ:
+            pw = os.environ['pytest_redis_pw']
+            if ':' in pw:
+                # pw is user:password
+                pw = "%s@" % pw
+            else:
+                # pw is just password
+                pw = ":%s@" % pw
+        else:
+            pw = ""
+
         # redefine the session db's as redis.
         self.db.config.SESSIONDB_BACKEND = "redis"
-        self.db.config.SESSIONDB_REDIS_URL = 'redis://localhost:6379/15?health_check_interval=2'
+        self.db.config.SESSIONDB_REDIS_URL = \
+                    'redis://%slocalhost:6379/15?health_check_interval=2' % pw
         self.db.Session = None
         self.db.Otk = None
         self.sessions = self.db.getSessionManager()

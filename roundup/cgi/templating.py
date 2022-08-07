@@ -208,11 +208,7 @@ def anti_csrf_nonce(client, lifetime=None):
         module/function.
     '''
     otks=client.db.getOTKManager()
-    key = b2s(base64.b32encode(random_.token_bytes(40)))
-
-    while otks.exists(key):
-        key = b2s(base64.b32encode(random_.token_bytes(40)))
-
+    key = otks.getUniqueKey()
     # lifetime is in minutes.
     if lifetime is None:
         lifetime = client.db.config['WEB_CSRF_TOKEN_LIFETIME']
