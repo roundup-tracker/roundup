@@ -66,7 +66,7 @@ class memorydbSessionTest(memorydbOpener, SessionTest, unittest.TestCase):
 
     # doesn't work for memory as it uses a mock for session db.
     def testUpdateTimestamp(self):
-        self.skipTest("This test does is not implemented for memorydb.")        
+        self.skipTest("This test is not implemented for memorydb.")        
 
 # vim: set filetype=python ts=4 sw=4 et si
 
