@@ -42,7 +42,9 @@ else:
 
 from roundup.anypy.strings import u2s, s2u
 
-class MockDatabase(MockNull):
+from roundup.backends.sessions_common import SessionCommon
+
+class MockDatabase(MockNull, SessionCommon):
     def getclass(self, name):
         # limit class names
         if name not in [ 'issue', 'user', 'status' ]:
@@ -244,7 +246,7 @@ class HTMLClassTestCase(TemplatingTestCase) :
         '''call the csrf creation function and do basic length test
 
            Store the data in a mock db with the same api as the otk
-           db. Make sure nonce is 64 chars long. Lookup the nonce in
+           db. Make sure nonce is 54 chars long. Lookup the nonce in
            db and retrieve data. Verify that the nonce lifetime is
            correct (within 1 second of 1 week - lifetime), the uid is
            correct (1), the dummy sid is correct.
@@ -280,7 +282,7 @@ class HTMLClassTestCase(TemplatingTestCase) :
                 # see above for web nonce lifetime.
                 greater_than = week_seconds - 10 * 60
 
-            self.assertEqual(len(nonce1), 64)
+            self.assertEqual(len(nonce1), 54)
 
             uid = otks.get(nonce1, 'uid', default=None)
             sid = otks.get(nonce1, 'sid', default=None)
