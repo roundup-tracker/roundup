@@ -62,11 +62,16 @@ class memorydbSessionTest(memorydbOpener, SessionTest, unittest.TestCase):
         self.db = self.module.Database(config, 'admin')
         setupSchema(self.db, 1, self.module)
         self.sessions = self.db.sessions
+        self.db.Session = self.sessions
         self.otks = self.db.otks
+        self.db.Otk = self.otks
 
-    # doesn't work for memory as it uses a mock for session db.
-    def testUpdateTimestamp(self):
-        self.skipTest("This test is not implemented for memorydb.")        
+    def get_ts(self):
+        return (self.sessions.get('random_session', '__timestamp'),)
+
+    def testDbType(self):
+        self.assertIn("memorydb", repr(self.db))
+        self.assertIn("{}", repr(self.db.Session))
 
 # vim: set filetype=python ts=4 sw=4 et si
 

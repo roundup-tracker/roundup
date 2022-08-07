@@ -194,7 +194,10 @@ class BasicDatabase(dict):
     def close(self):
         pass
     def updateTimestamp(self, sessid):
-        pass
+        sess = self.get(sessid, '__timestamp', None)
+        now = time.time()
+        if sess is None or now > sess + 60:
+            self.set(sessid, __timestamp=now)
     def clean(self):
         pass
 
