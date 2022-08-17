@@ -1957,6 +1957,21 @@ class NumberHTMLProperty(HTMLProperty):
 
         return str(self._value)
 
+    def pretty(self, format="%0.3f"):
+        '''Pretty print number using printf format specifier.
+        
+           If value is not convertable, returns str(_value) or ""
+           if None.
+        '''
+        try:
+            return format%self._value
+        except TypeError:
+            value = self._value
+            if value is None:
+                return ''
+            else:
+                return str(value)
+
     def field(self, size=30, **kwargs):
         """ Render a form edit field for the property.
 

@@ -37,6 +37,10 @@ Features:
   pip, setting UID tracker is run under. (John Rouillard)
 - issue2551140 - Added redis as a session and otk database for use
   with anydbm and sqlite primary databases. (John Rouillard)
+- issue2550559 - Pretty printing / formatting for Number types.
+  Added pretty(format='%0.3f') method to NumberHTMLProperty to
+  print numeric values. If value is None, return empty string
+  otherwise str() of value.
 
 2022-07-13 2.2.0
 

@@ -3397,6 +3397,11 @@ pretty      Date properties - render the date as "dd Mon YYYY" (eg. "19
             format (eg. "yesterday"). The format arguments are those used
             in the standard ``strftime`` call (see the `Python Library
             Reference: time module`__)
+
+            Number properties - takes a printf style format argument
+            (default: '%0.3f') and formats the number accordingly.
+            If the value can't be converted, '' is returned if the
+            value is ``None`` otherwise it is converted to a string.
 popcal      Generate a link to a popup calendar which may be used to
             edit the date field, for example::
 

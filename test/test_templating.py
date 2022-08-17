@@ -305,6 +305,128 @@ class HTMLClassTestCase(TemplatingTestCase) :
             self.assertEqual(True,
                        greater_than <= now - timestamp < (greater_than + 1) )
 
+    def test_number__int__(self):
+        # test with number
+        p = NumberHTMLProperty(self.client, 'testnum', '1', None, 'test',
+                               2345678.2345678)
+        self.assertEqual(p.__int__(), 2345678)
+
+        property = MockNull(get_default_value = lambda: None)
+        p = NumberHTMLProperty(self.client, 'testnum', '1', property, 
+                               'test', None)
+        with self.assertRaises(TypeError) as e:
+            p.__int__()
+
+    def test_number__float__(self):
+        # test with number
+        p = NumberHTMLProperty(self.client, 'testnum', '1', None, 'test',
+                               2345678.2345678)
+        self.assertEqual(p.__float__(), 2345678.2345678)
+
+        property = MockNull(get_default_value = lambda: None)
+        p = NumberHTMLProperty(self.client, 'testnum', '1', property, 
+                               'test', None)
+        with self.assertRaises(TypeError) as e:
+            p.__float__()
+
+    def test_number_field(self):
+        import sys
+
+        _py3 = sys.version_info[0] > 2
+
+        # python2 truncates while python3 rounds. Sigh.
+        if _py3:
+            expected_val = 2345678.2345678
+        else:
+            expected_val = 2345678.23457
+
+        # test with number
+        p = NumberHTMLProperty(self.client, 'testnum', '1', None, 'test',
+                               2345678.2345678)
+        self.assertEqual(p.field(),
+                         ('<input name="testnum1@test" size="30" type="text" '
+                         'value="%s">')%expected_val)
+        self.assertEqual(p.field(size=10),
+                         ('<input name="testnum1@test" size="10" type="text" '
+                         'value="%s">')%expected_val)
+        self.assertEqual(p.field(size=10, dataprop="foo", dataprop2=5),
+                         ('<input dataprop="foo" dataprop2="5" '
+                          'name="testnum1@test" size="10" type="text" '
+                          'value="%s">'%expected_val))
+
+        self.assertEqual(p.field(size=10, klass="class1", 
+                                 **{ "class": "class2 class3",
+                                     "data-prop": "foo",
+                                     "data-prop2": 5}),
+                         ('<input class="class2 class3" data-prop="foo" '
+                          'data-prop2="5" klass="class1" '
+                          'name="testnum1@test" size="10" type="text" '
+                          'value="%s">')%expected_val)
+
+        # get plain representation if user can't edit
+        p.is_edit_ok = lambda: False
+        self.assertEqual(p.field(), p.plain())
+
+        # test with string which is wrong type
+        p = NumberHTMLProperty(self.client, 'testnum', '1', None, 'test',
+                               "2345678.2345678")
+        self.assertEqual(p.field(),
+                         ('<input name="testnum1@test" size="30" type="text" '
+                          'value="2345678.2345678">'))
+
+        # test with None value, pretend property.__default_value = Null which
+        #    is the default. It would be returned by get_default_value
+        #    which I mock.
+        property = MockNull(get_default_value = lambda: None)
+        p = NumberHTMLProperty(self.client, 'testnum', '1', property, 
+                               'test', None)
+        self.assertEqual(p.field(),
+                         ('<input name="testnum1@test" size="30" type="text" '
+                          'value="">'))
+
+    def test_number_plain(self):
+        import sys
+
+        _py3 = sys.version_info[0] > 2
+
+        # python2 truncates while python3 rounds. Sigh.
+        if _py3:
+            expected_val = 2345678.2345678
+        else:
+            expected_val = 2345678.23457
+
+        p = NumberHTMLProperty(self.client, 'testnum', '1', None, 'test',
+                               2345678.2345678)
+
+        self.assertEqual(p.plain(), "%s"%expected_val)
+
+    def test_number_pretty(self):
+        # test with number
+        p = NumberHTMLProperty(self.client, 'testnum', '1', None, 'test',
+                               2345678.2345678)
+        self.assertEqual(p.pretty(), "2345678.235")
+
+        # test with string which is wrong type
+        p = NumberHTMLProperty(self.client, 'testnum', '1', None, 'test',
+                               "2345678.2345678")
+        self.assertEqual(p.pretty(), "2345678.2345678")
+
+        # test with boolean
+        p = NumberHTMLProperty(self.client, 'testnum', '1', None, 'test',
+                               True)
+        self.assertEqual(p.pretty(), "1.000")
+
+        # test with None value, pretend property.__default_value = Null which
+        #    is the default. It would be returned by get_default_value
+        #    which I mock.
+        property = MockNull(get_default_value = lambda: None)
+        p = NumberHTMLProperty(self.client, 'testnum', '1', property, 
+                               'test', None)
+        self.assertEqual(p.pretty(), '')
+
+        with self.assertRaises(ValueError) as e:
+            p.pretty('%0.3')
+
     def test_string_url_quote(self):
         ''' test that urlquote quotes the string '''
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', 'test string< foo@bar')
