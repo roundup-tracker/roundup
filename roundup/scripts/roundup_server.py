@@ -161,6 +161,13 @@ class SecureHTTPServer(http_.server.HTTPServer):
                             return self.__fileobj.readline(*args)
                         except SSL.WantReadError:
                             time.sleep(.1)
+                        except SSL.ZeroReturnError:
+                            # Raised here on every request.
+                            # SSL connection has been closed.
+                            # But maybe not the underlying socket.
+                            # FIXME: Does this lead to a socket leak??
+                            #  if so how to fix?
+                            pass
 
                 def read(self, *args):
                     """ SSL.Connection can return WantRead """
@@ -169,6 +176,15 @@ class SecureHTTPServer(http_.server.HTTPServer):
                             return self.__fileobj.read(*args)
                         except SSL.WantReadError:
                             time.sleep(.1)
+                        except SSL.ZeroReturnError:
+                            # Put here to match readline() handling above.
+                            # Even though this never was the source of the
+                            #  exception logged during use.
+                            # SSL connection has been closed.
+                            # But maybe not the underlying socket.
+                            # FIXME: Does this lead to a socket leak??
+                            #  if so how to fix?
+                            pass
 
                 def __getattr__(self, attrib):
                     return getattr(self.__fileobj, attrib)
@@ -180,8 +196,26 @@ class SecureHTTPServer(http_.server.HTTPServer):
                     self.__conn = conn
 
                 def makefile(self, mode, bufsize):
-                    fo = socket._fileobject(self.__conn, mode, bufsize)
-                    return RetryingFile(fo)
+                    fo = None
+                    try:
+                        # see below of url used for this
+                        fo = socket.SocketIO(self.__conn, mode)
+                    except AttributeError:
+                        # python 2 in use
+                        buffer = socket._fileobject(self.__conn, mode, bufsize)
+
+                    if fo:
+                        # python3 set up buffering
+                        # verify mode is rb and bufsize is -1
+                        # implement subset of socket::makefile
+                        # https://bugs.launchpad.net/python-glanceclient/+bug/1812525
+                        if mode == 'rb' and bufsize == -1:
+                            buffering = io.DEFAULT_BUFFER_SIZE
+                            buffer = io.BufferedReader(fo, buffering)
+                        else:
+                            buffer = fo
+
+                    return RetryingFile(buffer)
 
                 def __getattr__(self, attrib):
                     return getattr(self.__conn, attrib)

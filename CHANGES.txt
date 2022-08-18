@@ -30,6 +30,12 @@ Fixed:
 - added more testing of BasicDatabase to support use of SQLite
   for that purpose. Had to fix memory, rdbms and dbm edge cases
   due to new tests. (John Rouillard)
+- issue2551138 - roundup-server with ssl under python2 throws
+  traceback on socket close. Not sure how this got fixed,
+  but after fixing issue2551137 it was not an issue anymore.
+- issue2551137 - roundup-server won't run with ssl under python3
+  Fixed by using SocketIO and manually adding buffering io and
+  catching SSL.ZeroReturnError indicating SSL has been shut down.
 
 Features:
 
