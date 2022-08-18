@@ -181,11 +181,21 @@ Additional notes for each keyword:
   the variable "trackers" is available to the template and is a
   dict of all configured trackers.
 **ssl**
-  Enables the use of SSL to secure the connection to the roundup-server.
+  Enables use of SSL to secure the connection to the
+  roundup-server. In most cases, you will want to run a
+  real web server (Apache, Nginx) as a proxy to
+  roundup-server running without SSL.  The real web server
+  can filter/rate limit/firewall requests to roundup-server.
   If you enable this, ensure that your tracker's config.ini specifies
-  an *https* URL.
+  an *https* URL. See roundup-server.1 man page for
+  additional information.
 **pem**
   If specified, the SSL PEM file containing the private key and certificate.
+  The file must include both the private key and certificate with appropriate
+  headers (e.g. ``-----BEGIN PRIVATE KEY-----``,
+  ``-----END PRIVATE KEY-----`` and
+  ``-----BEGIN CERTIFICATE-----``,
+  ``-----END CERTIFICATE-----``.
   If not specified, roundup will generate a temporary, self-signed certificate
   for use.
 **trackers** section
