@@ -83,8 +83,9 @@ jobs:
       - name: Install aux packages that need versions differences
         # if zstd fails install, keep going with test, don't abort
         run: |
+          set -xv
           pip install zstd || true
-          if "$${{ matrix.python-version }}" != "2."* ]]; then 
+          if $(python -c 'import sys; print("%d.%d.%d"%(sys.version_info.major, sys.version_info.minor, sys.version_info.micro))' != "2."* ]]; then 
               pip install Markdown; fi
 
       - name: Install pytest and other packages needed for running tests
@@ -92,10 +93,10 @@ jobs:
 
       - name: Test build roundup and install locale so lang tests work.
         run: |
-          ${{ matrix.python-version }} setup.py install
+          python setup.py install
           (cd locale; make local_install; ls -lR locale/de/LC_MESSAGES)
 
-      - name: run flake8 in warn only mode
+      - name: run flake8: abort for syntax error, otherwise warn only
         run: |
             # stop the build for Python syntax errors or undefined names
             flake8 roundup --count --select=E9,F63,F7,F82 --show-source --statistics
@@ -115,4 +116,4 @@ jobs:
 
       - name: test build_doc
         run: |
-          ${{ matrix.python-version }} ./setup.py build_doc
+          python ./setup.py build_doc
