@@ -416,7 +416,7 @@ At run time, Roundup automatically compiles message catalogs whenever
 .. _GNU: http://www.gnu.org/
 .. _GNU mirror sites: http://www.gnu.org/prep/ftp.html
 .. _issue tracker: https://issues.roundup-tracker.org/
-.. _Lokalize: Lokalize
+.. _Lokalize: https://apps.kde.org/lokalize/
 .. _KDE: https://kde.org/
 .. _linux: https://www.linux.org/
 .. _Plural Forms:
