@@ -58,16 +58,16 @@ jobs:
       - name: Install mysql
         run: |
         apt-get install mysql
-	# set up mysql database
+        # set up mysql database
         sudo sed -i -e '/^\[mysqld\]/,/^\[mysql/s/^max_allowed_packet.*/max_allowed_packet = 500M/' /etc/mysql/my.cnf
         cat /etc/mysql/my.cnf
         sudo service mysql restart
         mysql -u root -e 'GRANT ALL ON rounduptest.* TO rounduptest@localhost IDENTIFIED BY "rounduptest";'
-	# HACK: workaround mysql bug: http://bugs.mysql.com/bug.php?id=74901
-	#   needed for test_mysql.mysqlDBTest.testFilteringSpecialChars
-	# plus others. Otherwise we get:
-	# COLLATION 'utf8_bin' is not valid for CHARACTER SET 'utf8mb4'
-	 sed -i 's/CREATE DATABASE \%s/CREATE DATABASE \%s COLLATE utf8_general_ci/' roundup/backends/back_mysql.py
+        # HACK: workaround mysql bug: http://bugs.mysql.com/bug.php?id=74901
+        #   needed for test_mysql.mysqlDBTest.testFilteringSpecialChars
+        # plus others. Otherwise we get:
+        # COLLATION 'utf8_bin' is not valid for CHARACTER SET 'utf8mb4'
+         sed -i 's/CREATE DATABASE \%s/CREATE DATABASE \%s COLLATE utf8_general_ci/' roundup/backends/back_mysql.py
 
       - name: Update pip
         run: python -m pip install --upgrade pip
@@ -83,8 +83,8 @@ jobs:
       - name: Install aux packages that need versions differences
         # if zstd fails install, keep going with test, don't abort
         run: |
-	  pip install zstd || true
-	  if "$${{ PYTHON_VERSION }} != "2."* ]]; then 
+          pip install zstd || true
+          if "$${{ PYTHON_VERSION }} != "2."* ]]; then 
               pip install Markdown; fi
 
       - name: Install pytest and other packages needed for running tests
@@ -92,15 +92,15 @@ jobs:
 
       - name: Test build roundup and install locale so lang tests work.
         run: |
-	  ${{ matrix.python-version }} setup.py install
-	  (cd locale; make local_install; ls -lR locale/de/LC_MESSAGES)
+          ${{ matrix.python-version }} setup.py install
+          (cd locale; make local_install; ls -lR locale/de/LC_MESSAGES)
 
       - name: run flake8 in warn only mode
         run: |
-  	    # stop the build for Python syntax errors or undefined names
+            # stop the build for Python syntax errors or undefined names
             flake8 roundup --count --select=E9,F63,F7,F82 --show-source --statistics
             # exit-zero treats all errors as warnings.
-	    #   The GitHub editor is 127 chars wide
+            #   The GitHub editor is 127 chars wide
             flake8 roundup --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
       # Run the tests using pytest with test files in tests directory.
@@ -109,7 +109,7 @@ jobs:
 
       - name: Upload coverage to Codecov
         # see: https://github.com/codecov/codecov-action#usage
-	uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v3
         with:
           verbose: true
 
