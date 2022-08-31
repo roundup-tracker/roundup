@@ -53,21 +53,21 @@ jobs:
           sudo sed -i -e '$a\fsync = off' /etc/postgresql/*/*/postgresql.conf
           sudo service postgresql restart; sleep 30
           # set up postgresql database
-           psql -c "CREATE ROLE rounduptest WITH CREATEDB LOGIN PASSWORD 'rounduptest';" -U postgres
+          psql -c "CREATE ROLE rounduptest WITH CREATEDB LOGIN PASSWORD 'rounduptest';" -U postgres
 
       - name: Install mysql
         run: |
-        apt-get install mysql
-        # set up mysql database
-        sudo sed -i -e '/^\[mysqld\]/,/^\[mysql/s/^max_allowed_packet.*/max_allowed_packet = 500M/' /etc/mysql/my.cnf
-        cat /etc/mysql/my.cnf
-        sudo service mysql restart
-        mysql -u root -e 'GRANT ALL ON rounduptest.* TO rounduptest@localhost IDENTIFIED BY "rounduptest";'
-        # HACK: workaround mysql bug: http://bugs.mysql.com/bug.php?id=74901
-        #   needed for test_mysql.mysqlDBTest.testFilteringSpecialChars
-        # plus others. Otherwise we get:
-        # COLLATION 'utf8_bin' is not valid for CHARACTER SET 'utf8mb4'
-         sed -i 's/CREATE DATABASE \%s/CREATE DATABASE \%s COLLATE utf8_general_ci/' roundup/backends/back_mysql.py
+          apt-get install mysql
+          # set up mysql database
+          sudo sed -i -e '/^\[mysqld\]/,/^\[mysql/s/^max_allowed_packet.*/max_allowed_packet = 500M/' /etc/mysql/my.cnf
+          cat /etc/mysql/my.cnf
+          sudo service mysql restart
+          mysql -u root -e 'GRANT ALL ON rounduptest.* TO rounduptest@localhost IDENTIFIED BY "rounduptest";'
+          # HACK: workaround mysql bug: http://bugs.mysql.com/bug.php?id=74901
+          #   needed for test_mysql.mysqlDBTest.testFilteringSpecialChars
+          # plus others. Otherwise we get:
+          # COLLATION 'utf8_bin' is not valid for CHARACTER SET 'utf8mb4'
+          sed -i 's/CREATE DATABASE \%s/CREATE DATABASE \%s COLLATE utf8_general_ci/' roundup/backends/back_mysql.py
 
       - name: Update pip
         run: python -m pip install --upgrade pip
@@ -84,7 +84,7 @@ jobs:
         # if zstd fails install, keep going with test, don't abort
         run: |
           pip install zstd || true
-          if "$${{ PYTHON_VERSION }} != "2."* ]]; then 
+          if "$${{ matrix.python-version }}" != "2."* ]]; then 
               pip install Markdown; fi
 
       - name: Install pytest and other packages needed for running tests
