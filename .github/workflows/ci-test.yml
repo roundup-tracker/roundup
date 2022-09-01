@@ -29,7 +29,7 @@ jobs:
 
     env:
       #  OS: ${{ matrix.os }}
-      - PYTHON_VERSION: ${{ matrix.python-version }}
+      PYTHON_VERSION: ${{ matrix.python-version }}
 
     steps:
       # Checkout the latest code from the repo
