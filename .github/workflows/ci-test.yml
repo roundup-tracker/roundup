@@ -22,7 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         # Run in all these versions of Python
-        python-version: [ "2.7", "3.10" ]
+        python-version: [ "2.7", "3.10", "3.11" ]
         #python-version: [ "2.7", "3.10", "3.9", "3.8", "3.6" ]
     # use for multiple os or ubuntu versions
     #    os: [ubuntu-latest, macos-latest, windows-latest]
@@ -117,7 +117,7 @@ jobs:
           # Change distutils.sysconfig... to just sysconfig and SO
           # to EXT_SUFFIX to get valid value.
           if [[ $PYTHON_VERSION == "3."* ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
-          case "$PYTHON_VERSION" in nightly) echo skipping xapian build;; *) make && make install; esac
+          case "$PYTHON_VERSION" in nightly) echo skipping xapian build;; *) make && sudo make install; esac
 
       - name: Install pytest and other packages needed for running tests
         run: pip install codecov flake8 pytest pytest-cov requests
