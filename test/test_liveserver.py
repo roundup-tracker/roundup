@@ -1,4 +1,4 @@
-import shutil, errno, pytest, json, gzip, os, re
+import shutil, errno, pytest, json, gzip, mimetypes, os, re
 
 from roundup import i18n
 from roundup import password
@@ -48,7 +48,9 @@ class WsgiSetup(LiveServerTestCase):
 
     dirname = '_test_instance'
     backend = 'anydbm'
-    
+
+    js_mime_type = mimetypes.guess_type("utils.js")[0]
+
     @classmethod
     def setup_class(cls):
         '''All tests in this class use the same roundup instance.
@@ -527,7 +529,7 @@ class BaseTestCases(WsgiSetup):
         print(f.headers)
 
         self.assertEqual(f.status_code, 200)
-        expected = { 'Content-Type': 'application/javascript',
+        expected = { 'Content-Type': self.js_mime_type,
                      'Content-Encoding': 'gzip',
                      'Vary': 'Accept-Encoding',
         }
@@ -586,7 +588,7 @@ class BaseTestCases(WsgiSetup):
         print(f.headers)
 
         self.assertEqual(f.status_code, 200)
-        expected = { 'Content-Type': 'application/javascript',
+        expected = { 'Content-Type': self.js_mime_type,
                      'Content-Encoding': 'gzip',
                      'Vary': 'Accept-Encoding',
                      'Content-Length': '69',
@@ -612,7 +614,7 @@ class BaseTestCases(WsgiSetup):
         print(f.headers)
 
         self.assertEqual(f.status_code, 200)
-        expected = { 'Content-Type': 'application/javascript',
+        expected = { 'Content-Type': self.js_mime_type,
                      'Content-Encoding': 'br',
                      'Vary': 'Accept-Encoding',
                      'Content-Length': '960',
@@ -646,7 +648,7 @@ class BaseTestCases(WsgiSetup):
         print(f.headers)
 
         self.assertEqual(f.status_code, 200)
-        expected = { 'Content-Type': 'application/javascript',
+        expected = { 'Content-Type': self.js_mime_type,
                      'Content-Encoding': 'gzip',
                      'Vary': 'Accept-Encoding',
         }
@@ -824,7 +826,7 @@ class BaseTestCases(WsgiSetup):
         print(f.headers)
 
         self.assertEqual(f.status_code, 200)
-        expected = { 'Content-Type': 'application/javascript',
+        expected = { 'Content-Type': self.js_mime_type,
                      'Content-Encoding': method,
                      'Vary': 'Accept-Encoding',
         }

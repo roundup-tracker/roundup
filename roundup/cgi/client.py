@@ -342,6 +342,7 @@ class Client:
     # Key can be mime type - all files of that mimetype will get the value
     Cache_Control = {
         'application/javascript': "public, max-age=1209600", # 2 weeks
+        'text/javascript': "public, max-age=1209600",        # 2 weeks
         'text/css':               "public, max-age=4838400", # 8 weeks/2 months
     }
 
