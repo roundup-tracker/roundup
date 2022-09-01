@@ -21,6 +21,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # number of parallel jobs
+        ci_node_total: [3]
+        ci_node_index: [0,1,2]
+
         # Run in all these versions of Python
         python-version: [ "2.7", "3.10", "3.11.0-rc.1" ]
         #python-version: [ "2.7", "3.10", "3.9", "3.8", "3.6" ]
@@ -62,7 +66,8 @@ jobs:
           sleep 5
           sudo service mysql restart; sleep 30
           ps -ef | grep mysqld
-          sudo mysql -u root -p root -e 'GRANT ALL ON rounduptest.* TO rounduptest@localhost IDENTIFIED BY "rounduptest";'
+          sudo netstat -anp | grep mysqld
+          sudo mysql -u root -proot -e 'GRANT ALL ON rounduptest.* TO rounduptest@localhost IDENTIFIED BY "rounduptest";'
 
       - name: Install postgres
         run: |
