@@ -198,12 +198,15 @@ jobs:
         run: |
           python ./setup.py build_doc
 
-      - name: test if command
-        if: matrix.python_version == '3.10' && matrix.os == 'ubuntu-latest'
+      - name: show matrix vars
         run: |
           env
-          echo "{{ matrix.python_version }}"
-          echo "{{ matrix.os }}"
+          echo "${{ matrix.python_version }}"
+          echo "${{ matrix.os }}"
+
+      - name: test if statement
+        if: matrix.python_version == '3.10' && matrix.os == 'ubuntu-latest'
+	run: echo "I ran so far awaaay"
 
       #- name: test docker build current version ubuntu-latest
       #  if: {{ matrix.python_version == "3.10" && matrix.os == "ubuntu-latest" }}
