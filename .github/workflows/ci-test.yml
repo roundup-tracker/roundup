@@ -4,6 +4,10 @@ name: roundup-ci
 
 on: 
     push:
+         # skip if github.ref is 'refs/heads/maint-1.6'
+         #   aka github.ref_name of 'maint-1.6'
+         # see https://github.com/orgs/community/discussions/26253
+         # for mechanism to control matrix based on branch
          branches: [ "*", '!maint-1.6' ]
 #    pull_request:
 #        branches: [ "master" ]
@@ -24,25 +28,29 @@ jobs:
       max-parallel: 4
       matrix:
         # Run in all these versions of Python
-        python-version: [ "3.10", "3.11-dev" ]
-        # python-version: [ "2.7", "3.10", "3.9", "3.8", "3.6", "3.11-dev" ]
+        python-version: [ "2.7", "3.10", "3.9", "3.8", "3.6", "3.11-dev" ]
+
         # use for multiple os or ubuntu versions
         #os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest, ubuntu-22.04]
+
         # if the ones above fail. fail the build
         experimental: [false]
+
         include:
            # example: if 3.12 fails the jobs still succeeds
         #   - python-version: 3.12
-        #     experimental: true
-            - python-version: 2.7
-              os: ubuntu-22.04
-              experimental: true
+        #     experimental: [true]
+             # version 2,7 not available on unbuntu-22.04 github
+        #    - python-version: 2.7
+        #      os: ubuntu-22.04
+        #      experimental: true
             - python-version: 3.11-dev
               os: ubuntu-22.04
-              experimental: true
+              experimental: [true]
+
         exclude:
-            # disable all python versions except as explicitly included
+            # skip all python versions on 22.04 except explicitly included
             - os: ubuntu-22.04
 
     env:
@@ -67,21 +75,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
-
-      - name: show matrix vars
-        run: |
-          echo 1. "${{ matrix.python-version }}"
-          echo 2. "$PYTHON_VERSION"
-          echo 3. "${{ matrix.os }}"
-          env
-
-      - name: test if statement
-        if: matrix.python-version == '3.10' && matrix.os == 'ubuntu-latest'
-        run: echo "I ran so far awaaay"
-
-      - name: test if statement os only
-        if: matrix.os == 'ubuntu-latest'
-        run: echo "I ran so far awaaay"
 
       # Display the Python version being used
       - name: Display Python version
@@ -211,7 +204,7 @@ jobs:
           python ./setup.py build_doc
 
       #- name: test docker build current version ubuntu-latest
-      #  if: {{ matrix.python_version == "3.10" && matrix.os == "ubuntu-latest" }}
+      #  if: matrix.python-version == '3.10' && matrix.os == 'ubuntu-latest'
       #  run: |
       #     docker build -t roundup-app-dev -f scripts/Docker/Dockerfile .
       #     mkdir tracker; chmod 777 tracker
