@@ -27,9 +27,9 @@ jobs:
     # use for multiple os or ubuntu versions
     #    os: [ubuntu-latest, macos-latest, windows-latest]
 
-    #env:
+    env:
     #  OS: ${{ matrix.os }}
-    #  PYTHON: ${{ matrix.python-version }}
+    PYTHON_VERSION: ${{ matrix.python-version }}
 
     steps:
       # Checkout the latest code from the repo
@@ -44,11 +44,10 @@ jobs:
 
       # Display the Python version being used
       - name: Display Python version
-        run: python -c "import sys; print(sys.version)"
+        run: python -c "import sys; print(sys.version)"; echo $PYTHON_VERSION
 
       # Install the databases
       - name: Install postgres
-        if: ${{ false }}
         run: |
           sudo apt-get install postgresql
           # Disable fsync for speed, don't care about data durability when testing
@@ -73,11 +72,9 @@ jobs:
           # sed -i 's/CREATE DATABASE \%s/CREATE DATABASE \%s COLLATE utf8_general_ci/' roundup/backends/back_mysql.py
 
       - name: Update pip
-        if: ${{ false }}
         run: python -m pip install --upgrade pip
 
       - name: Install db libraries
-        if: ${{ false }}
         run: pip install psycopg2 mysqlclient
 
       - name: Install auxilary packages
@@ -115,7 +112,20 @@ jobs:
 
       # Run the tests using pytest with test files in tests directory.
       - name: Run tests
-        run: pytest -v tests
+        run: |
+          if [[ $(python -c 'import sys; print("%d.%d.%d"%(sys.version_info.major, sys.version_info.minor, sys.version_info.micro))') != "2."* ]]; then 
+            pytest -r a \
+              -W default \
+              -W "ignore:SelectableGroups:DeprecationWarning" \
+              -W "ignore:the imp module:DeprecationWarning:gpg.gpgme:15" \
+              -W "ignore:'U' mode::docutils.io"  \
+              -W "ignore:unclosed:ResourceWarning:roundup.roundup.demo" \
+              -W "ignore:unclosed file:ResourceWarning:enum" \
+              -v --maxfail=5 test/ --cov=roundup
+          else
+            # python2 case
+            pytest -v -r a --maxfail=5 test/ --cov=roundup
+          fi
 
       - name: Upload coverage to Codecov
         # see: https://github.com/codecov/codecov-action#usage
