@@ -7,8 +7,9 @@ on:
         branches: [ "master" ]
 #    pull_request:
 #        branches: [ "master" ]
-#    schedule:
-#        - cron '0 11 * * 1-5'
+    schedule:
+        # monthly build/check
+        - cron '0 19 1 * *'
 
 jobs:
   test:
@@ -182,3 +183,18 @@ jobs:
       - name: test build_doc
         run: |
           python ./setup.py build_doc
+
+      #- name: test docker build current version
+      #  run: |
+      #     docker build -t roundup-app-dev -f scripts/Docker/Dockerfile .
+      #     mkdir tracker; chmod 777 tracker
+      #     docker run -d --rm -p 9017:8080 \
+      #         -v $PWD/tracker:/usr/src/app/tracker \
+      #         roundup-app-dev:latest demo
+            # expect 200
+      #     curl --fail http://localhost:9017/demo/ > /dev/null
+
+      #- name: test docker build released pip version
+      #  run: |
+      #     docker build -t roundup-app-rel --build-arg="source=pypi" \
+      #         -f scripts/Docker/Dockerfile . 
