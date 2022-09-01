@@ -38,6 +38,7 @@ from roundup.anypy.strings import is_us, b2s, s2b, us2s, s2u, u2s, StringIO
 from .KeywordsExpr import render_keywords_expression_editor
 
 from roundup.cgi.timestamp import pack_timestamp
+from roundup.cgi import TranslationService
 
 import roundup.anypy.random_ as random_
 try:
