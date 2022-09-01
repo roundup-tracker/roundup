@@ -58,6 +58,7 @@ jobs:
           sudo -u postgres psql -c "CREATE ROLE rounduptest WITH CREATEDB LOGIN PASSWORD 'rounduptest';" -U postgres
 
       - name: Install mysql/mariadb
+        if: ${{ false }}
         run: |
           sudo apt-get install mysql-server mysql-client
           # set up mysql database
