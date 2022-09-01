@@ -28,10 +28,10 @@ jobs:
         #os: [ubuntu-latest, macos-latest, windows-latest]
         # if the ones above fail. fail the build
         experimental: [false]
-        include:
+        #include:
            # example: if 3.12 fails the jobs still succeeds
-           - python-version: 3.12
-             experimental: true
+        #   - python-version: 3.12
+        #     experimental: true
 
     env:
       # get colorized pytest output even without a controlling tty
