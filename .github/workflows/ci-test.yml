@@ -80,8 +80,9 @@ jobs:
       - name: Install auxilary packages
         run: |
           sudo apt-get install swig gpgsm  # needed for gpg pulls in libgpgme
-          pip install beautifulsoup4 brotli gpg jinja2 markdown2 \
+          pip install beautifulsoup4 brotli jinja2 markdown2 \
               pyjwt pytz whoosh
+	  # pip install gpg
 
       - name: Install aux packages that need versions differences
         # if zstd fails install, keep going with test, don't abort
