@@ -22,7 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         # Run in all these versions of Python
-        python-version: [ "2.7", "3.10", "3.11" ]
+        python-version: [ "2.7", "3.10", "3.11.0-rc.1" ]
         #python-version: [ "2.7", "3.10", "3.9", "3.8", "3.6" ]
     # use for multiple os or ubuntu versions
     #    os: [ubuntu-latest, macos-latest, windows-latest]
