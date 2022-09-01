@@ -75,10 +75,15 @@ jobs:
         run: |
           env
           echo "${{ matrix.python_version }}"
+          echo "$PYTHON_VERSION"
           echo "${{ matrix.os }}"
 
       - name: test if statement
         if: matrix.python_version == '3.10' && matrix.os == 'ubuntu-latest'
+        run: echo "I ran so far awaaay"
+
+      - name: test if statement os only
+        if: matrix.os == 'ubuntu-latest'
         run: echo "I ran so far awaaay"
 
       # Display the Python version being used
