@@ -63,10 +63,13 @@ jobs:
         run: |
           set -xv
           # set up mysql database
-          sudo sed -i -e '/^\[mysqld\]/,/^\[mysql/s/^#* *max_allowed_packet.*/max_allowed_packet = 500M/' /etc/mysql/mysql.conf.d/mysqld.cnf
+          sudo sed -i -e '/^\[mysqld\]/,/^\[mysql/s/^#* *max_allowed_packet.*/max_allowed_packet = 500M/' /etc/mysql/mysql.conf.d/mysqld.cnf; sleep 3
           tail -n +0 /etc/mysql/my.cnf /etc/mysql/mysql.conf.d/mysqld.cnf
+          grep max_allowed /etc/mysql/mysql.conf.d/mysqld.cnf
           ls  /etc/mysql/conf.d/  /etc/mysql/mysql.conf.d/
-          sudo service mysql restart
+          sleep 5
+          sudo service mysql restart; sleep 30
+          ps -ef | grep mysqld
           sudo mysql -u root --protocol SOCKET -e 'GRANT ALL ON rounduptest.* TO rounduptest@localhost IDENTIFIED BY "rounduptest";'
 
       - name: install redis
