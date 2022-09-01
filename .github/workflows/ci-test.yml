@@ -70,7 +70,7 @@ jobs:
           sleep 5
           sudo service mysql restart; sleep 30
           ps -ef | grep mysqld
-          sudo -u mysql mysql -u root --protocol SOCKET -e 'GRANT ALL ON rounduptest.* TO rounduptest@localhost IDENTIFIED BY "rounduptest";'
+          sudo mysql -u root -p --protocol SOCKET -e 'GRANT ALL ON rounduptest.* TO rounduptest@localhost IDENTIFIED BY "rounduptest";'
 
       - name: install redis
         run: |
