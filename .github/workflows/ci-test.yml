@@ -20,16 +20,18 @@ jobs:
 
     strategy:
       fail-fast: false
+      max-parallel: 3
       matrix:
-        # number of parallel jobs
-        ci_node_total: [3]
-        ci_node_index: [0,1,2]
-
         # Run in all these versions of Python
-        python-version: [ "2.7", "3.10", "3.11.0-rc.1" ]
+        python-version: [ "2.7", "3.10", "3.11.0-rc.1", "3.12" ]
         #python-version: [ "2.7", "3.10", "3.9", "3.8", "3.6" ]
     # use for multiple os or ubuntu versions
     #    os: [ubuntu-latest, macos-latest, windows-latest]
+        experimental: [false]
+        include:
+           # example: if 3.12 fails the jobs still succeeds
+           - python-version: 3.12
+             experimental: true
 
     env:
       # get colorized pytest output even without a controlling tty
@@ -67,7 +69,7 @@ jobs:
           sudo service mysql restart; sleep 30
           ps -ef | grep mysqld
           sudo netstat -anp | grep mysqld
-          sudo mysql -u root -proot -e 'GRANT ALL ON rounduptest.* TO rounduptest@localhost IDENTIFIED BY "rounduptest";'
+          sudo mysql -u root -proot -e 'CREATE USER "rounduptest"@"localhost" IDENTIFIED WITH mysql_native_password BY "rounduptest"; GRANT ALL on rounduptest.* TO "rounduptest"@"localhost";'
 
       - name: Install postgres
         run: |
