@@ -35,13 +35,14 @@ jobs:
            # example: if 3.12 fails the jobs still succeeds
         #   - python-version: 3.12
         #     experimental: true
-            - os: ubuntu-22.04
-              python-version: 2.7
+            - python-version: 2.7
+              os: ubuntu-22.04
               experimental: true
-            - os: ubuntu-22.04
-              python-version: 3.11-dev
+            - python-version: 3.11-dev
+              os: ubuntu-22.04
               experimental: true
-        exclude:     
+        exclude:
+            # disable all python versions except as explicitly included
             - os: ubuntu-22.04
 
     env:
@@ -66,6 +67,9 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
+
+      - name: check file type of js
+        run: grep js /etc/mime.types
 
       # Display the Python version being used
       - name: Display Python version
@@ -194,7 +198,15 @@ jobs:
         run: |
           python ./setup.py build_doc
 
-      #- name: test docker build current version
+      - name: test if command
+        if: {{ matrix.python_version == "3.10" && matrix.os == "ubuntu-latest" }}
+	run: |
+          env
+          echo "{{ matrix.python_version }}"
+          echo "{{ matrix.os }}"
+
+      #- name: test docker build current version ubuntu-latest
+      #  if: {{ matrix.python_version == "3.10" && matrix.os == "ubuntu-latest" }}
       #  run: |
       #     docker build -t roundup-app-dev -f scripts/Docker/Dockerfile .
       #     mkdir tracker; chmod 777 tracker
