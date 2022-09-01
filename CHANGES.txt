@@ -36,6 +36,8 @@ Fixed:
 - issue2551137 - roundup-server won't run with ssl under python3
   Fixed by using SocketIO and manually adding buffering io and
   catching SSL.ZeroReturnError indicating SSL has been shut down.
+- add caching header for text/javascript in addition to depricated
+  application/javascript. (John Rouillard)
 
 Features:
 
