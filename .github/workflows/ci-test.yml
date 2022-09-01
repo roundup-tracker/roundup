@@ -62,12 +62,13 @@ jobs:
           sleep 5
           sudo service mysql restart; sleep 30
           ps -ef | grep mysqld
-          sudo mysql -u root -p "" --protocol SOCKET -e 'GRANT ALL ON rounduptest.* TO rounduptest@localhost IDENTIFIED BY "rounduptest";'
+          sudo mysql -u root -p root -e 'GRANT ALL ON rounduptest.* TO rounduptest@localhost IDENTIFIED BY "rounduptest";'
 
       - name: Install postgres
         run: |
           sudo apt-get install postgresql
-          # Disable fsync for speed, don't care about data durability when testing
+          # Disable fsync for speed, don't care about data durability
+          #   when testing
           sudo sed -i -e '$a\fsync = off' /etc/postgresql/*/*/postgresql.conf
           sudo service postgresql restart; sleep 30
           # set up postgresql database
