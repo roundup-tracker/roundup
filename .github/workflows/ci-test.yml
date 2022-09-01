@@ -63,9 +63,10 @@ jobs:
           sudo apt-get install mysql-server mysql-client
           # set up mysql database
           sudo sed -i -e '/^\[mysqld\]/,/^\[mysql/s/^max_allowed_packet.*/max_allowed_packet = 500M/' /etc/mysql/my.cnf
-          cat /etc/mysql/my.cnf
+          tail -n +0 /etc/mysql/my.cnf
+          ls  /etc/mysql/conf.d/  /etc/mysql/mysql.conf.d/
           sudo service mysql restart
-          sudo mysql -e 'GRANT ALL ON rounduptest.* TO rounduptest@localhost IDENTIFIED BY "rounduptest";'
+          sudo mysql -u root --skip-password -e 'GRANT ALL ON rounduptest.* TO rounduptest@localhost IDENTIFIED BY "rounduptest";'
 
       - name: Update pip
         run: python -m pip install --upgrade pip
