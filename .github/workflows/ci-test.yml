@@ -8,7 +8,7 @@ on:
 #        branches: [ "master" ]
     schedule:
         # monthly build/check
-        - cron: '0 16 23 * *'
+        - cron: '23 17 1 * *'
 
 jobs:
   test:
