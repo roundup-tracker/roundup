@@ -78,6 +78,7 @@ jobs:
 
       - name: Install auxilary packages
         run: |
+          sudo apt-get install swig gpgsm libgpgme  # needed for gpg
           pip install beautifulsoup4 brotli gpg jinja2 markdown2 \
               pyjwt pytz whoosh
 
