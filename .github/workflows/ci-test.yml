@@ -56,20 +56,20 @@ jobs:
           # set up postgresql database
           sudo -u postgres psql -c "CREATE ROLE rounduptest WITH CREATEDB LOGIN PASSWORD 'rounduptest';" -U postgres
 
-      - name: Install mysql
+      - name: Install mariadb/mysql
         if: ${{ false }}
         run: |
-          sudo apt-get install mysql
+          sudo apt-get install mariadb
           # set up mysql database
           sudo sed -i -e '/^\[mysqld\]/,/^\[mysql/s/^max_allowed_packet.*/max_allowed_packet = 500M/' /etc/mysql/my.cnf
           cat /etc/mysql/my.cnf
-          sudo service mysql restart
+          sudo service mariadb restart
           mysql -u root -e 'GRANT ALL ON rounduptest.* TO rounduptest@localhost IDENTIFIED BY "rounduptest";'
           # HACK: workaround mysql bug: http://bugs.mysql.com/bug.php?id=74901
           #   needed for test_mysql.mysqlDBTest.testFilteringSpecialChars
           # plus others. Otherwise we get:
           # COLLATION 'utf8_bin' is not valid for CHARACTER SET 'utf8mb4'
-          sed -i 's/CREATE DATABASE \%s/CREATE DATABASE \%s COLLATE utf8_general_ci/' roundup/backends/back_mysql.py
+          # sed -i 's/CREATE DATABASE \%s/CREATE DATABASE \%s COLLATE utf8_general_ci/' roundup/backends/back_mysql.py
 
       - name: Update pip
         run: python -m pip install --upgrade pip
@@ -79,10 +79,10 @@ jobs:
 
       - name: Install auxilary packages
         run: |
-          sudo apt-get install swig gpgsm  # needed for gpg pulls in libgpgme
+          sudo apt-get install swig gpgsm libgpgme-dev
           pip install beautifulsoup4 brotli jinja2 markdown2 \
               pyjwt pytz whoosh
-	  # pip install gpg
+          # pip install gpg
 
       - name: Install aux packages that need versions differences
         # if zstd fails install, keep going with test, don't abort
