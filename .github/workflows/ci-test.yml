@@ -3,7 +3,8 @@
 name: roundup-ci
 
 on: 
-    push
+    push:
+         branches: [ "*", '!maint-1.6' ]
 #    pull_request:
 #        branches: [ "master" ]
     schedule:
