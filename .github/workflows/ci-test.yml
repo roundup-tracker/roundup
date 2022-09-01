@@ -71,6 +71,16 @@ jobs:
       - name: check file type of js
         run: grep js /etc/mime.types
 
+      - name: show matrix vars
+        run: |
+          env
+          echo "${{ matrix.python_version }}"
+          echo "${{ matrix.os }}"
+
+      - name: test if statement
+        if: matrix.python_version == '3.10' && matrix.os == 'ubuntu-latest'
+	run: echo "I ran so far awaaay"
+
       # Display the Python version being used
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
@@ -197,16 +207,6 @@ jobs:
       - name: test build_doc
         run: |
           python ./setup.py build_doc
-
-      - name: show matrix vars
-        run: |
-          env
-          echo "${{ matrix.python_version }}"
-          echo "${{ matrix.os }}"
-
-      - name: test if statement
-        if: matrix.python_version == '3.10' && matrix.os == 'ubuntu-latest'
-	run: echo "I ran so far awaaay"
 
       #- name: test docker build current version ubuntu-latest
       #  if: {{ matrix.python_version == "3.10" && matrix.os == "ubuntu-latest" }}
