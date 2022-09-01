@@ -68,18 +68,15 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
 
-      - name: check file type of js
-        run: grep js /etc/mime.types
-
       - name: show matrix vars
         run: |
+          echo 1. "${{ matrix.python-version }}"
+          echo 2. "$PYTHON_VERSION"
+          echo 3. "${{ matrix.os }}"
           env
-          echo "${{ matrix.python_version }}"
-          echo "$PYTHON_VERSION"
-          echo "${{ matrix.os }}"
 
       - name: test if statement
-        if: matrix.python_version == '3.10' && matrix.os == 'ubuntu-latest'
+        if: matrix.python-version == '3.10' && matrix.os == 'ubuntu-latest'
         run: echo "I ran so far awaaay"
 
       - name: test if statement os only
