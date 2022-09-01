@@ -100,7 +100,7 @@ jobs:
 
       - name: Test build roundup and install locale so lang tests work.
         run: |
-	  sudo apt-get install gettext
+          sudo apt-get install gettext
           python setup.py build
           (cd locale; make local_install; ls -lR locale/de/LC_MESSAGES)
 
