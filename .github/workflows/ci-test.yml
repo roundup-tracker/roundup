@@ -48,7 +48,7 @@ jobs:
       # Install the databases
       - name: Install postgres
         run: |
-          apt-get install postgresql
+          sudo apt-get install postgresql
           # Disable fsync for speed, don't care about data durability when testing
           sudo sed -i -e '$a\fsync = off' /etc/postgresql/*/*/postgresql.conf
           sudo service postgresql restart; sleep 30
@@ -57,7 +57,7 @@ jobs:
 
       - name: Install mysql
         run: |
-          apt-get install mysql
+          sudo apt-get install mysql
           # set up mysql database
           sudo sed -i -e '/^\[mysqld\]/,/^\[mysql/s/^max_allowed_packet.*/max_allowed_packet = 500M/' /etc/mysql/my.cnf
           cat /etc/mysql/my.cnf
