@@ -97,6 +97,28 @@ jobs:
           if [[ "$PYTHON_VERSION" != "2."* ]]; then 
               pip install Markdown; fi
 
+      - name: Install xapian
+        continue-on-error: true
+        run: |
+          sudo apt-get install libxapian-dev
+          # Sphinx required to build the xapian python bindings. Use 1.8.5 on
+          # older python and newest on newer.
+          if [[ $PYTHON_VERSION == "2."* ]]; then pip install sphinx==1.8.5; fi
+          if [[ $PYTHON_VERSION == '3.'* ]] ; then pip install sphinx; fi
+          XAPIAN_VER=$(dpkg -l libxapian-dev | tail -n 1 | awk '{print $3}' | cut -d '-' -f 1); echo $XAPIAN_VER
+          cd /tmp
+          curl -s -O https://oligarchy.co.uk/xapian/$XAPIAN_VER/xapian-bindings-$XAPIAN_VER.tar.xz
+          tar -Jxvf xapian-bindings-$XAPIAN_VER.tar.xz
+          cd xapian-bindings-$XAPIAN_VER/
+          if [[ $PYTHON_VERSION == "2."* ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python --disable-documentation; fi
+          # edit the configure script.
+          # distutils.sysconfig.get_config_vars('SO')  doesn't work for
+          # 3.11 or newer.
+          # Change distutils.sysconfig... to just sysconfig and SO
+          # to EXT_SUFFIX to get valid value.
+          if [[ $PYTHON_VERSION == "3."* ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
+          case "$PYTHON_VERSION" in nightly) echo skipping xapian build;; *) make && make install; esac
+
       - name: Install pytest and other packages needed for running tests
         run: pip install codecov flake8 pytest pytest-cov requests
 
