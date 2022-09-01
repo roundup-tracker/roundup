@@ -107,7 +107,8 @@ jobs:
       - name: run flake8 - abort for syntax error, otherwise warn only
         run: |
             # stop the build for Python syntax errors or undefined names
-            flake8 roundup --count --select=E9,F63,F7,F82 --show-source --statistics
+            # talgettext is a utility function ignore it.
+            flake8 roundup --count --select=E9,F63,F7,F82 --show-source --statistics --extend-exclude talgettext.py
             # exit-zero treats all errors as warnings.
             #   The GitHub editor is 127 chars wide
             flake8 roundup --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
