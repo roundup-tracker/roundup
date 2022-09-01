@@ -100,7 +100,8 @@ jobs:
 
       - name: Test build roundup and install locale so lang tests work.
         run: |
-          python setup.py install
+	  sudo apt-get install gettext
+          python setup.py build
           (cd locale; make local_install; ls -lR locale/de/LC_MESSAGES)
 
       - name: run flake8 - abort for syntax error, otherwise warn only
