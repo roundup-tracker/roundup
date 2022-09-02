@@ -7,8 +7,9 @@
 from setuptools.command.bdist_rpm import bdist_rpm as base
 import os
 
+
 # cribbed from 2.7 distutils
-def write_file (filename, contents):
+def write_file(filename, contents):
     """Create a file with the specified name and write 'contents' (a
     sequence of strings without line terminators) to it.
     """
@@ -18,6 +19,7 @@ def write_file (filename, contents):
             f.write(line + "\n")
     finally:
         f.close()
+
 
 class bdist_rpm(base):
 
@@ -38,8 +40,7 @@ class bdist_rpm(base):
                 # man page here is any file
                 # with single-character extension
                 # in man directory
-                "sed -e 's,\(/man/.*\..\)$,\\1*,' "
-                    "<ROUNDUP_FILES >INSTALLED_FILES",
+                r"sed -e 's,\(/man/.*\..\)$,\\1*,' "
+                "<ROUNDUP_FILES >INSTALLED_FILES",
             ]), "writing '%s'" % install_script)
         self.install_script = install_script
-
