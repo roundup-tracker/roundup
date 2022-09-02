@@ -41,5 +41,5 @@ tracker home
 
 Back to `Table of Contents`_
 
-.. _`Table of Contents`: index.html
+.. _`Table of Contents`: ../docs.html
 
