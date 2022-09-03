@@ -147,8 +147,7 @@ def get_indexer(config, db):
             return Indexer(db)
 
         if db.dbtype == "postgres":
-            raise NotImplementedError("Postgres FTS not available")
-            from roundup.backends.indexer_postgres_fts import Indexer
+            from roundup.backends.indexer_postgresql_fts import Indexer
             return Indexer(db)
 
     if indexer_name == "native":

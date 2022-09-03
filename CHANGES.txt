@@ -38,6 +38,8 @@ Fixed:
   catching SSL.ZeroReturnError indicating SSL has been shut down.
 - add caching header for text/javascript in addition to depricated
   application/javascript. (John Rouillard)
+- Enable postgres-fts: fix indexer-common::get_indexer so it returns a
+  postgresql-fts Test code paths in get_indexer. (John Rouillard)
 
 Features:
 

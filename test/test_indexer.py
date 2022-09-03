@@ -241,6 +241,27 @@ class postgresqlFtsIndexerTest(postgresqlOpener, RDBMSIndexerTest, IndexerTest):
         RDBMSIndexerTest.tearDown(self)
         postgresqlOpener.tearDown(self)
 
+    def test_get_indexer(self):
+        def class_name_of(object):
+            """ take and object and return just the class name.
+                So in:
+
+                return the class name before "at".
+
+            """
+            return(str(object).split()[0])
+
+        from roundup.backends.indexer_common import get_indexer
+        old_indexer = self.db.config['INDEXER']
+        self.db.config['INDEXER'] = 'native-fts'
+
+        get_indexer(self.db.config, self.db)
+
+        self.assertEqual(class_name_of(self.dex),
+              class_name_of(get_indexer(self.db.config, self.db)))
+
+        self.db.config['INDEXER'] = old_indexer
+
     def test_websearch_syntax(self):
         """Test searches using websearch_to_tsquery. These never throw
            errors regardless of how wacky the input.
@@ -455,6 +476,27 @@ class sqliteFtsIndexerTest(sqliteOpener, RDBMSIndexerTest, IndexerTest):
         from roundup.backends.indexer_sqlite_fts import Indexer
         self.dex = Indexer(self.db)
         self.dex.db = self.db
+
+    def test_get_indexer(self):
+        def class_name_of(object):
+            """ take and object and return just the class name.
+                So in:
+
+                return the class name before "at".
+
+            """
+            return(str(object).split()[0])
+
+        from roundup.backends.indexer_common import get_indexer
+        old_indexer = 'native-fts'
+        self.db.config['INDEXER'] = 'native-fts'
+
+        get_indexer(self.db.config, self.db)
+
+        self.assertEqual(class_name_of(self.dex),
+              class_name_of(get_indexer(self.db.config, self.db)))
+
+        self.db.config['INDEXER'] = old_indexer
 
     def test_phrase_and_near(self):
         self.dex.add_text(('test', '1', 'foo'), 'a the hello world')
