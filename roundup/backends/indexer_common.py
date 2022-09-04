@@ -1,5 +1,3 @@
-import re
-
 from roundup import hyperdb
 
 STOPWORDS = [
@@ -10,9 +8,11 @@ STOPWORDS = [
     "THEY", "THIS", "TO", "WAS", "WILL", "WITH"
 ]
 
+
 def _isLink(propclass):
     return (isinstance(propclass, hyperdb.Link) or
             isinstance(propclass, hyperdb.Multilink))
+
 
 class Indexer:
     def __init__(self, db):
@@ -24,7 +24,7 @@ class Indexer:
         # than 2 characters
         self.minlength = 2
         self.maxlength = 50
-        self.language = db.config[('main','indexer_language')]
+        self.language = db.config[('main', 'indexer_language')]
         # Some indexers have a query language. If that is the case,
         # we don't parse the user supplied query into a wordlist.
         self.query_language = False
@@ -35,7 +35,7 @@ class Indexer:
     def getHits(self, search_terms, klass):
         return self.find(search_terms)
 
-    def search(self, search_terms, klass, ignore={}):
+    def search(self, search_terms, klass, ignore=None):
         """Display search results looking for [search, terms] associated
         with the hyperdb Class "klass". Ignore hits on {class: property}.
         """
@@ -48,16 +48,18 @@ class Indexer:
         for nm, propclass in klass.getprops().items():
             if _isLink(propclass):
                 designator_propname.setdefault(propclass.classname,
-                    []).append(nm)
+                                               []).append(nm)
 
         # build a dictionary of nodes and their associated messages
         # and files
         nodeids = {}      # this is the answer
         propspec = {}     # used to do the klass.find
-        for l in designator_propname.values():
-            for propname in l:
+        for pn in designator_propname.values():
+            for propname in pn:
                 propspec[propname] = {}  # used as a set (value doesn't matter)
 
+        if ignore is None:
+            ignore = {}
         # don't unpack hits entries as sqlite3's Row can't be unpacked :(
         for entry in hits:
             # skip this result if we don't care about this class/property
@@ -93,7 +95,7 @@ class Indexer:
         for resid in klass.find(**propspec):
             resid = str(resid)
             if resid in nodeids:
-                continue # we ignore duplicate resids
+                continue  # we ignore duplicate resids
             nodeids[resid] = {}
             node_dict = nodeids[resid]
             # now figure out where it came from
@@ -101,7 +103,8 @@ class Indexer:
                 v = klass.get(resid, linkprop)
                 # the link might be a Link so deal with a single result or None
                 if isinstance(propdefs[linkprop], hyperdb.Link):
-                    if v is None: continue
+                    if v is None:
+                        continue
                     v = [v]
                 for nodeid in v:
                     if nodeid in propspec[linkprop]:
@@ -111,6 +114,7 @@ class Indexer:
                         else:
                             node_dict[linkprop].append(nodeid)
         return nodeids
+
 
 def get_indexer(config, db):
     indexer_name = getattr(config, "INDEXER", "")
@@ -128,7 +132,7 @@ def get_indexer(config, db):
         except ImportError:
             pass
 
-        indexer_name = "native" # fallback to native full text search
+        indexer_name = "native"  # fallback to native full text search
 
     if indexer_name == "xapian":
         from .indexer_xapian import Indexer
@@ -140,7 +144,8 @@ def get_indexer(config, db):
 
     if indexer_name == "native-fts":
         if db.dbtype not in ("sqlite", "postgres"):
-            raise AssertionError("Indexer native-fts is configured, but only sqlite and postgres support it. Database is: %r" % db.dbtype)
+            raise AssertionError("Indexer native-fts is configured, but only "
+                "sqlite and postgres support it. Database is: %r" % db.dbtype)
 
         if db.dbtype == "sqlite":
             from roundup.backends.indexer_sqlite_fts import Indexer
@@ -160,5 +165,4 @@ def get_indexer(config, db):
             from roundup.backends.indexer_rdbms import Indexer
             return Indexer(db)
 
-    raise AssertionError("Invalid indexer: %r" %(indexer_name))
-
+    raise AssertionError("Invalid indexer: %r" % (indexer_name))
