@@ -114,7 +114,8 @@ class IndexerTest(anydbmOpener, unittest.TestCase):
         self.dex.add_text(('test', '1', 'foo'), '')
         self.assertSeqEqual(self.dex.find(['world']), [('test', '2', 'foo')])
 
-    def test_get_indexer(self):
+    def test_get_indexer_specified(self):
+        """Specify an indexer back end and make sure it's returned"""
         def class_name_of(object):
             """ take and object and return just the class name.
                 So in:
@@ -245,6 +246,44 @@ class XapianIndexerTest(IndexerTest):
         self.dex = Indexer(db)
     def tearDown(self):
         IndexerTest.tearDown(self)
+
+class Get_IndexerAutoSelectTest(anydbmOpener, unittest.TestCase):
+    
+    def setUp(self):
+        # remove previous test, ignore errors
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+        self.db = self.module.Database(config, 'admin')
+        # this is the default, but set it in case default
+        # changes in future
+        self.db.config['INDEXER'] = ''
+
+    def tearDown(self):
+        if hasattr(self, 'db'):
+            self.db.close()
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+
+    @skip_xapian
+    def test_xapian_select(self):
+        indexer = get_indexer(self.db.config, self.db)
+        self.assertIn('roundup.backends.indexer_xapian.Indexer', str(indexer))
+
+    @skip_whoosh
+    def test_whoosh_select(self):
+        import mock, sys
+        with mock.patch.dict('sys.modules',
+                             {'roundup.backends.indexer_xapian': None}):
+            indexer = get_indexer(self.db.config, self.db)
+        self.assertIn('roundup.backends.indexer_whoosh.Indexer', str(indexer))
+
+    def test_native_select(self):
+        import mock, sys
+        with mock.patch.dict('sys.modules',
+                             {'roundup.backends.indexer_xapian': None,
+                              'roundup.backends.indexer_whoosh': None}):
+            indexer = get_indexer(self.db.config, self.db)
+        self.assertIn('roundup.backends.indexer_dbm.Indexer', str(indexer))
 
 class RDBMSIndexerTest(object):
     def setUp(self):
