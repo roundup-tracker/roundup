@@ -304,7 +304,7 @@ class Database(rdbms_common.Database):
         sql = 'alter table otks alter column otk_time type float'
         self.sql(sql)
 
-    def add_actor_column(self):
+    def add_new_columns_v2(self):
         # update existing tables to have the new actor column
         tables = self.database_schema['tables']
         for name in tables:
