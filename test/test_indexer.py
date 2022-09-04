@@ -23,6 +23,7 @@ import os, unittest, shutil
 import pytest
 from roundup.backends import get_backend, have_backend
 from roundup.backends.indexer_rdbms import Indexer
+from roundup.backends.indexer_common import get_indexer
 
 from roundup.cgi.exceptions import IndexerQueryError
 
@@ -31,6 +32,7 @@ from .db_test_base import setupSchema, config
 from .test_postgresql import postgresqlOpener, skip_postgresql
 from .test_mysql import mysqlOpener, skip_mysql
 from .test_sqlite import sqliteOpener
+from .test_anydbm import anydbmOpener
 
 try:
     import xapian
@@ -59,8 +61,16 @@ class db:
     config[('main', 'indexer_stopwords')] = []
     config[('main', 'indexer_language')] = "english"
 
-class IndexerTest(unittest.TestCase):
+class IndexerTest(anydbmOpener, unittest.TestCase):
+
+    indexer_name = "native"
+
     def setUp(self):
+        # remove previous test, ignore errors
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+        self.db = self.module.Database(config, 'admin')
+
         if os.path.exists('test-index'):
             shutil.rmtree('test-index')
         os.mkdir('test-index')
@@ -103,6 +113,24 @@ class IndexerTest(unittest.TestCase):
                                                     ('test', '2', 'foo')])
         self.dex.add_text(('test', '1', 'foo'), '')
         self.assertSeqEqual(self.dex.find(['world']), [('test', '2', 'foo')])
+
+    def test_get_indexer(self):
+        def class_name_of(object):
+            """ take and object and return just the class name.
+                So in:
+
+                return the class name before "at".
+
+            """
+            return(str(object).split()[0])
+
+        old_indexer = self.db.config['INDEXER']
+        self.db.config['INDEXER'] = self.indexer_name
+
+        self.assertEqual(class_name_of(self.dex),
+              class_name_of(get_indexer(self.db.config, self.db)))
+
+        self.db.config['INDEXER'] = old_indexer
 
     def test_stopwords(self):
         """Test that we can find a text with a stopword in it."""
@@ -181,28 +209,42 @@ class IndexerTest(unittest.TestCase):
         
     def tearDown(self):
         shutil.rmtree('test-index')
+        if hasattr(self, 'db'):
+            self.db.close()
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
 
 @skip_whoosh
 class WhooshIndexerTest(IndexerTest):
+
+    indexer_name = "whoosh"
+
     def setUp(self):
+        IndexerTest.setUp(self)
+
         if os.path.exists('test-index'):
             shutil.rmtree('test-index')
         os.mkdir('test-index')
         from roundup.backends.indexer_whoosh import Indexer
         self.dex = Indexer(db)
     def tearDown(self):
-        shutil.rmtree('test-index')
+        IndexerTest.tearDown(self)
 
 @skip_xapian
 class XapianIndexerTest(IndexerTest):
+
+    indexer_name = "xapian"
+
     def setUp(self):
+        IndexerTest.setUp(self)
+
         if os.path.exists('test-index'):
             shutil.rmtree('test-index')
         os.mkdir('test-index')
         from roundup.backends.indexer_xapian import Indexer
         self.dex = Indexer(db)
     def tearDown(self):
-        shutil.rmtree('test-index')
+        IndexerTest.tearDown(self)
 
 class RDBMSIndexerTest(object):
     def setUp(self):
@@ -230,6 +272,9 @@ class postgresqlIndexerTest(postgresqlOpener, RDBMSIndexerTest, IndexerTest):
 
 @skip_postgresql
 class postgresqlFtsIndexerTest(postgresqlOpener, RDBMSIndexerTest, IndexerTest):
+
+    indexer_name = "native-fts"
+
     def setUp(self):
         postgresqlOpener.setUp(self)
         RDBMSIndexerTest.setUp(self)
@@ -240,27 +285,6 @@ class postgresqlFtsIndexerTest(postgresqlOpener, RDBMSIndexerTest, IndexerTest):
     def tearDown(self):
         RDBMSIndexerTest.tearDown(self)
         postgresqlOpener.tearDown(self)
-
-    def test_get_indexer(self):
-        def class_name_of(object):
-            """ take and object and return just the class name.
-                So in:
-
-                return the class name before "at".
-
-            """
-            return(str(object).split()[0])
-
-        from roundup.backends.indexer_common import get_indexer
-        old_indexer = self.db.config['INDEXER']
-        self.db.config['INDEXER'] = 'native-fts'
-
-        get_indexer(self.db.config, self.db)
-
-        self.assertEqual(class_name_of(self.dex),
-              class_name_of(get_indexer(self.db.config, self.db)))
-
-        self.db.config['INDEXER'] = old_indexer
 
     def test_websearch_syntax(self):
         """Test searches using websearch_to_tsquery. These never throw
@@ -471,32 +495,14 @@ class sqliteIndexerTest(sqliteOpener, RDBMSIndexerTest, IndexerTest):
     pass
 
 class sqliteFtsIndexerTest(sqliteOpener, RDBMSIndexerTest, IndexerTest):
+
+    indexer_name = "native-fts"
+
     def setUp(self):
         RDBMSIndexerTest.setUp(self)
         from roundup.backends.indexer_sqlite_fts import Indexer
         self.dex = Indexer(self.db)
         self.dex.db = self.db
-
-    def test_get_indexer(self):
-        def class_name_of(object):
-            """ take and object and return just the class name.
-                So in:
-
-                return the class name before "at".
-
-            """
-            return(str(object).split()[0])
-
-        from roundup.backends.indexer_common import get_indexer
-        old_indexer = 'native-fts'
-        self.db.config['INDEXER'] = 'native-fts'
-
-        get_indexer(self.db.config, self.db)
-
-        self.assertEqual(class_name_of(self.dex),
-              class_name_of(get_indexer(self.db.config, self.db)))
-
-        self.db.config['INDEXER'] = old_indexer
 
     def test_phrase_and_near(self):
         self.dex.add_text(('test', '1', 'foo'), 'a the hello world')
