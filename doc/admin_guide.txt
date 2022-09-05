@@ -326,10 +326,14 @@ All of the data that is indexed is in a single column, so when column
 specifiers are used they usually result in an error which is detected
 and an enhanced error message is produced.
 
-Unlike the native, xapian and whoosh indexers, there are no stopwords,
-and there is no limit to the length of terms that are indexed. Keeping
-these would break proximity and phrase searching. This may be helpful
-or problematic for your particular tracker.
+Unlike the native, xapian and whoosh indexers there is no
+limit to the length of terms that are indexed. Also
+stopwords are indexed but ignored when searching if they are
+the only word in the search. So a search for "the" will
+return no results but "the book" will return
+results. Pre-filtering the stopwords when indexing would
+break proximity and phrase searching. This may be helpful or
+problematic for your particular tracker.
 
 To support the most languages available, the unicode61 tokenizer is
 used without porter stemming. Using the ``indexer_language`` setting

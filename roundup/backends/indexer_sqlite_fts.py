@@ -97,6 +97,22 @@ class Indexer(IndexerBase):
 
            https://www.sqlite.org/fts5.html#full_text_query_syntax
         """
+
+        # Filter out stopwords. Other searches tokenize the user query
+        # into an list of simple word tokens. For fTS, query
+        # tokenization doesn't occur.
+
+        # A user's FTS query is a wordlist with one element.  The
+        # element is a string to parse and will probably not match a
+        # stop word.
+        #
+        # However the generic indexer search tests pass in a list of
+        # word tokens. We filter the word tokens so it behaves like
+        # other backends.  This means that a search for a simple word
+        # like 'the' (without quotes) will return no hits, as the test
+        # expects.
+        wordlist = [w for w in wordlist if not self.is_stopword(w.upper())]
+
         if not wordlist:
             return []
 

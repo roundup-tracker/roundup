@@ -415,7 +415,10 @@ class DBTest(commonDBTest):
         bstr = b'\x00\xF0\x34\x33' # random binary data
 
         # test set & retrieve (this time for file contents)
-        nid = self.db.file.create(content=bstr)
+        # Since it has null in it, set it to a binary mime type
+        # so indexer's don't try to index it.
+        nid = self.db.file.create(content=bstr,
+                                  type="application/octet-stream")
         print(nid)
         print(repr(self.db.file.get(nid, 'content')))
         print(repr(self.db.file.get(nid, 'binary_content')))
@@ -1522,6 +1525,32 @@ class DBTest(commonDBTest):
 
         # unindexed stopword
         self.assertEqual(self.db.indexer.search(['the'], self.db.issue), {})
+
+    def testIndexerSearchingIgnoreProps(self):
+        f1 = self.db.file.create(content='hello', type="text/plain")
+        # content='world' has the wrong content-type and won't be indexed
+        f2 = self.db.file.create(content='world', type="text/frozz",
+            comment='blah blah')
+        i1 = self.db.issue.create(files=[f1, f2], title="flebble plop")
+        i2 = self.db.issue.create(title="flebble the frooz")
+        self.db.commit()
+
+        # filter out hits that are in the titpe prop of issues
+        self.assertEqual(self.db.indexer.search(['frooz'], self.db.issue,
+                                        ignore={('issue', 'title'): True}),
+                         {})
+
+        # filter out hits in the title prop of content. Note the returned
+        # match is in a file not an issue, so ignore has no effect.
+        # also there is no content property for issue.
+        self.assertEqual(self.db.indexer.search(['hello'], self.db.issue,
+                                        ignore={('issue', 'content'): True}),
+            {f1: {'files': ['1']}})
+
+        # filter out file content property hit leaving no results
+        self.assertEqual(self.db.indexer.search(['hello'], self.db.issue,
+                                        ignore={('file', 'content'): True}),
+            {})
 
     def testIndexerSearchingLink(self):
         m1 = self.db.msg.create(content="one two")

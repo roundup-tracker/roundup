@@ -97,6 +97,7 @@ class IndexerTest(anydbmOpener, unittest.TestCase):
                                                     ('test', '2', 'foo')])
         self.assertSeqEqual(self.dex.find(['blah']), [('test', '2', 'foo')])
         self.assertSeqEqual(self.dex.find(['blah', 'hello']), [])
+        self.assertSeqEqual(self.dex.find([]), [])
 
     def test_change(self):
         self.dex.add_text(('test', '1', 'foo'), 'a the hello world')
@@ -207,6 +208,14 @@ class IndexerTest(anydbmOpener, unittest.TestCase):
                     [('test', '1', 'a'), ('test', '2', 'a')])
         self.assertSeqEqual(self.dex.find([u'\u0440\u0443\u0441\u0441\u043a\u0438\u0439']),
                             [('test', '2', 'a')])
+
+    def testNullChar(self):
+       """Test with null char in string. Postgres FTS will not index
+          it will just ignore string for now.
+       """
+       string="\x00\x01fred\x255"
+       self.dex.add_text(('test', '1', 'a'), string)
+       self.assertSeqEqual(self.dex.find(string), [])
         
     def tearDown(self):
         shutil.rmtree('test-index')
@@ -247,7 +256,7 @@ class XapianIndexerTest(IndexerTest):
     def tearDown(self):
         IndexerTest.tearDown(self)
 
-class Get_IndexerAutoSelectTest(anydbmOpener, unittest.TestCase):
+class Get_IndexerTest(anydbmOpener, unittest.TestCase):
     
     def setUp(self):
         # remove previous test, ignore errors
@@ -265,25 +274,66 @@ class Get_IndexerAutoSelectTest(anydbmOpener, unittest.TestCase):
             shutil.rmtree(config.DATABASE)
 
     @skip_xapian
-    def test_xapian_select(self):
+    def test_xapian_autoselect(self):
         indexer = get_indexer(self.db.config, self.db)
         self.assertIn('roundup.backends.indexer_xapian.Indexer', str(indexer))
 
     @skip_whoosh
-    def test_whoosh_select(self):
+    def test_whoosh_autoselect(self):
         import mock, sys
         with mock.patch.dict('sys.modules',
                              {'roundup.backends.indexer_xapian': None}):
             indexer = get_indexer(self.db.config, self.db)
         self.assertIn('roundup.backends.indexer_whoosh.Indexer', str(indexer))
 
-    def test_native_select(self):
+    def test_native_autoselect(self):
         import mock, sys
         with mock.patch.dict('sys.modules',
                              {'roundup.backends.indexer_xapian': None,
                               'roundup.backends.indexer_whoosh': None}):
             indexer = get_indexer(self.db.config, self.db)
         self.assertIn('roundup.backends.indexer_dbm.Indexer', str(indexer))
+
+    def test_invalid_indexer(self):
+        """There is code at the end of indexer_common::get_indexer() to
+           raise an AssertionError if the indexer name is invalid.
+           This should never be triggered. If it is, it means that
+           the code in configure.py that validates indexer names
+           allows a name through that get_indexer can't handle.
+
+           Simulate that failure and make sure that the
+           AssertionError is raised.
+
+        """
+
+        with self.assertRaises(ValueError) as cm:
+            self.db.config['INDEXER'] = 'no_such_indexer'
+
+        # mangle things so we can test AssertionError at end
+        # get_indexer()
+        from roundup.configuration import IndexerOption
+        IndexerOption.allowed.append("unrecognized_indexer")
+        self.db.config['INDEXER'] = "unrecognized_indexer"
+
+        with self.assertRaises(AssertionError) as cm:
+            indexer = get_indexer(self.db.config, self.db)
+
+        # unmangle state
+        IndexerOption.allowed.pop()
+        self.assertNotIn("unrecognized_indexer", IndexerOption.allowed)
+        self.db.config['INDEXER'] = ""
+
+    def test_unsupported_by_db(self):
+        """This requires that the db associated with the test
+           is not sqlite or postgres. anydbm works fine to trigger
+           the error.
+        """
+        self.db.config['INDEXER'] = 'native-fts'
+        with self.assertRaises(AssertionError) as cm:
+            get_indexer(self.db.config, self.db)
+
+        self.assertIn("native-fts", cm.exception.args[0])
+        self.db.config['INDEXER'] = ''
 
 class RDBMSIndexerTest(object):
     def setUp(self):
@@ -520,6 +570,26 @@ class postgresqlFtsIndexerTest(postgresqlOpener, RDBMSIndexerTest, IndexerTest):
 
         self.db.config["INDEXER_LANGUAGE"] = "english"
 
+    def testNullChar(self):
+       """Test with null char in string. Postgres FTS throws a ValueError
+          on indexing which we ignore. This could happen when
+          indexing a binary file with a bad mime type. On find, it
+          throws a ProgrammingError that we remap to
+          IndexerQueryError and pass up. If a null gets to that
+          level on search somebody entered it (not sure how you
+          could actually do that) but we want a crash in that case
+          as the person is probably up to "no good" (R) (TM).
+
+       """
+       import psycopg2
+
+       string="\x00\x01fred\x255"
+       self.dex.add_text(('test', '1', 'a'), string)
+       with self.assertRaises(IndexerQueryError) as ctx:
+           self.assertSeqEqual(self.dex.find(string), [])
+
+       self.assertIn("null", ctx.exception.args[0])
+
 @skip_mysql
 class mysqlIndexerTest(mysqlOpener, RDBMSIndexerTest, IndexerTest):
     def setUp(self):
@@ -660,5 +730,16 @@ class sqliteFtsIndexerTest(sqliteOpener, RDBMSIndexerTest, IndexerTest):
 
         error = 'Query error: syntax error near "^"'
         self.assertEqual(str(ctx.exception), error)
+
+    def testNullChar(self):
+       """Test with null char in string. FTS will throw
+          an error on null.
+       """
+       import psycopg2
+
+       string="\x00\x01fred\x255"
+       self.dex.add_text(('test', '1', 'a'), string)
+       with self.assertRaises(IndexerQueryError) as cm:
+           self.assertSeqEqual(self.dex.find(string), [])
 
 # vim: set filetype=python ts=4 sw=4 et si

@@ -40,6 +40,11 @@ Fixed:
   application/javascript. (John Rouillard)
 - Enable postgres-fts: fix indexer-common::get_indexer so it returns a
   postgresql-fts Test code paths in get_indexer. (John Rouillard)
+- Fix Postgres native-fts, implement a two phase initialization of the
+  indexer. The native-fts one gets assigned after the database
+  connection is open. (John Rouillard)
+- fix crash if postgresql native-fts backend is asked to index content
+  with null bytes. (John Rouillard)
 
 Features:
 
@@ -50,7 +55,10 @@ Features:
 - issue2550559 - Pretty printing / formatting for Number types.
   Added pretty(format='%0.3f') method to NumberHTMLProperty to
   print numeric values. If value is None, return empty string
-  otherwise str() of value.
+  otherwise str() of value. (John Rouillard)
+- sqlite native-fts backend now uses the stopwords list in config.ini
+  to filter words from queries. (Stopwords are still indexed so that
+  phrase/proximity searches still work.) (John Rouillard)
 
 2022-07-13 2.2.0
 

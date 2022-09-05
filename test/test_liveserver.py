@@ -90,6 +90,10 @@ class WsgiSetup(LiveServerTestCase):
 
         cls.db.config.save()
 
+        # add an issue to allow testing retrieval.
+        # also used for text searching.
+        result = cls.db.issue.create(title="foo bar RESULT")
+
         cls.db.commit()
         cls.db.close()
         
@@ -556,6 +560,14 @@ class BaseTestCases(WsgiSetup):
         #  etc. from f.headers.
         self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
 
+
+    def test_load_issue1(self):
+        f = requests.get(self.url_base() + '/issue1>',
+                         headers = { 'Accept-Encoding': 'gzip',
+                                     'Accept': '*/*'})
+
+        self.assertIn(b'foo bar RESULT', f.content)
+        self.assertEqual(f.status_code, 200)
 
     def test_bad_path(self):
         f = requests.get(self.url_base() + '/_bad>',
@@ -1083,6 +1095,10 @@ class BaseTestCases(WsgiSetup):
         )
         self.assertEqual(r.status_code, 201)
         print(r.status_code)
+        
+    def test_fts(self):
+        f = requests.get(self.url_base() + "?@search_text=RESULT")
+        self.assertIn("foo bar", f.text)
 
 class TestFeatureFlagCacheTrackerOn(BaseTestCases, WsgiSetup):
     """Class to run all test in BaseTestCases with the cache_tracker
@@ -1097,3 +1113,79 @@ class TestFeatureFlagCacheTrackerOn(BaseTestCases, WsgiSetup):
             # wsgiref/validator.py InputWrapper::readline is broke and
             # doesn't support the max bytes to read argument.
             return RequestDispatcher(self.dirname, feature_flags=ff)
+
+class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
+    """Class to run all test in BaseTestCases with the cache_tracker
+       feature flag enabled when starting the wsgi server
+    """
+
+    backend = 'postgresql'
+
+    @classmethod
+    def setup_class(cls):
+        '''All tests in this class use the same roundup instance.
+           This instance persists across all tests.
+           Create the tracker dir here so that it is ready for the
+           create_app() method to be called.
+
+           cribbed from WsgiSetup::setup_class
+        '''
+
+        # tests in this class.
+        # set up and open a tracker
+        cls.instance = db_test_base.setupTracker(cls.dirname, cls.backend)
+
+        # open the database
+        cls.db = cls.instance.open('admin')
+
+        # add a user without edit access for status.
+        cls.db.user.create(username="fred", roles='User',
+            password=password.Password('sekrit'), address='fred@example.com')
+
+        # set the url the test instance will run at.
+        cls.db.config['TRACKER_WEB'] = "http://localhost:9001/"
+        # set up mailhost so errors get reported to debuging capture file
+        cls.db.config.MAILHOST = "localhost"
+        cls.db.config.MAIL_HOST = "localhost"
+        cls.db.config.MAIL_DEBUG = "../_test_tracker_mail.log"
+
+        # added to enable csrf forgeries/CORS to be tested
+        cls.db.config.WEB_CSRF_ENFORCE_HEADER_ORIGIN = "required"
+        cls.db.config.WEB_ALLOWED_API_ORIGINS = "https://client.com"
+        cls.db.config['WEB_CSRF_ENFORCE_HEADER_X-REQUESTED-WITH'] = "required"
+
+        cls.db.config.INDEXER = "native-fts"
+
+        # disable web login rate limiting. The fast rate of tests
+        # causes them to trip the rate limit and fail.
+        cls.db.config.WEB_LOGIN_ATTEMPTS_MIN = 0
+        
+        # enable static precompressed files
+        cls.db.config.WEB_USE_PRECOMPRESSED_FILES = 1
+
+        cls.db.config.save()
+
+        cls.db.commit()
+        cls.db.close()
+
+        # re-open the database to get the updated INDEXER
+        cls.db = cls.instance.open('admin')
+
+        result = cls.db.issue.create(title="foo bar RESULT")
+
+        cls.db.commit()
+        cls.db.close()
+        
+        # Force locale config to find locales in checkout not in
+        # installed directories
+        cls.backup_domain = i18n.DOMAIN
+        cls.backup_locale_dirs = i18n.LOCALE_DIRS
+        i18n.LOCALE_DIRS = ['locale']
+        i18n.DOMAIN = ''
+
+    def test_native_fts(self):
+        self.assertIn("postgresql_fts", str(self.db.indexer))
+
+        # use a ts: search as well so it only works on postgres_fts indexer
+        f = requests.get(self.url_base() + "?@search_text=ts:RESULT")
+        self.assertIn("foo bar RESULT", f.text)

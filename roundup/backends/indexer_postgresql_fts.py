@@ -71,8 +71,13 @@ class Indexer(IndexerBase):
             # not previously indexed
             sql = 'insert into __fts (_class, _itemid, _prop, _tsv)'\
                 ' values (%s, %s, %s, to_tsvector(%s, %s))' % (a, a, a, a, a)
-            self.db.cursor.execute(sql, identifier +
-                                   (self.db.config['INDEXER_LANGUAGE'], text))
+            try:
+                self.db.cursor.execute(sql, identifier +
+                                    (self.db.config['INDEXER_LANGUAGE'], text))
+            except ValueError:
+                # if text is binary or otherwise un-indexable,
+                # we get a ValueError. For right now ignore it.
+                pass
         else:
             id = r[0]
             sql = 'update __fts set _tsv=to_tsvector(%s, %s) where ctid=%s' % \
@@ -122,6 +127,11 @@ class Indexer(IndexerBase):
             self.db.rollback()
 
             raise IndexerQueryError(e.args[0])
+        except ValueError as e:
+            # raised when search string has a null bytes in it or
+            # is otherwise unsuitable.
+            raise IndexerQueryError(
+                "Invalid search string, do you have a null in there? " + e.args[0])
         except InFailedSqlTransaction:
             # reset the cursor as it's invalid currently
             self.db.rollback()

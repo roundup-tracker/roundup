@@ -63,6 +63,7 @@ from roundup.i18n import _
 # support
 from roundup.backends.blobfiles import FileStorage
 from roundup.backends.indexer_common import get_indexer
+from roundup.backends.indexer_common import Indexer as CommonIndexer
 from roundup.backends.sessions_rdbms import Sessions, OneTimeKeys
 from roundup.date import Range
 
@@ -174,7 +175,20 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.config, self.journaltag = config, journaltag
         self.dir = config.DATABASE
         self.classes = {}
-        self.indexer = get_indexer(config, self)
+        # Assign the indexer base class here.  During schema
+        # generation in open_connection, the min/max size for FTS
+        # tokens is used when creating the database tables for
+        # indexer=native full text search. These tables are always
+        # created as part of the schema so that the admin can choose
+        # indexer=native at some later date and "things will just
+        # work" (TM).
+        #
+        # We would like to use get_indexer() to return the real
+        # indexer class. However indexer=native-fts for postgres
+        # requires a database connection (conn) to be defined when
+        # calling get_indexer.  The call to open_connection creates the
+        # conn but also creates the schema if it is missing.
+        self.indexer = CommonIndexer(self)
         self.security = security.Security(self)
 
         # additional transaction support for external files and the like
@@ -200,6 +214,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         # open a connection to the database, creating the "conn" attribute
         self.open_connection()
+
+        # If indexer is native-fts, conn to db must be available.
+        # so we set the real self.indexer value here, after db is open.
+        self.indexer = get_indexer(config, self)
 
     def clearCache(self):
         self.cache = {}

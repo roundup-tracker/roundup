@@ -1057,7 +1057,8 @@ SETTINGS = (
             "Additional stop-words for the full-text indexer specific to\n"
             "your tracker. See the indexer source for the default list of\n"
             "stop-words (eg. A,AND,ARE,AS,AT,BE,BUT,BY, ...). This is\n"
-            "not used by the native-fts indexer."),
+            "not used by the postgres native-fts indexer. But is used to\n"
+            "filter search terms with the sqlite native-fts indexer."),
         (OctalNumberOption, "umask", "0o002",
             "Defines the file creation mode mask."),
         (IntegerNumberGeqZeroOption, 'csv_field_size', '131072',

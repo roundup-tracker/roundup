@@ -35,6 +35,9 @@ class Indexer:
     def getHits(self, search_terms, klass):
         return self.find(search_terms)
 
+    def save_index(self):
+        pass
+
     def search(self, search_terms, klass, ignore=None):
         """Display search results looking for [search, terms] associated
         with the hyperdb Class "klass". Ignore hits on {class: property}.
