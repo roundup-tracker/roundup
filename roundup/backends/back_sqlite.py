@@ -418,11 +418,39 @@ class Database(rdbms_common.Database):
 
             Ignore errors if there's nothing to commit.
         """
+        def list_dir(dir):
+            import os
+            files = os.listdir(self.dir)
+                # ['db-journal', 'files', 'db']
+            for entry in [''] + files:
+                path = self.dir + '/' + entry
+                stat = os.stat(path)
+                print("file: %s, uid: %s, gid: %s, mode: %o"%(path,
+                                    stat.st_uid, stat.st_gid, stat.st_mode))
+
+        # Getting sqlite3.OperationalError: disk I/O error
+        # in CI. It happens intermittently. Try to get more
+        # info about what is happening and retry the commit.
+        # Some possibilities:
+        #       -journal file not writable
+        #       file has disappeared
+        #
+        # Note after exception self.conn.in_transaction is False
+        # but was True before failed commit(). Retry succeeds,
+        # but I am not sure it actually does anything.
+        # for retry in range(2):
         try:
             self.conn.commit()
+        except sqlite.OperationalError as error:
+            if str(error) != 'disk I/O error':
+                raise
+            list_dir(self.dir)
+            raise
         except sqlite.DatabaseError as error:
             if str(error) != 'cannot commit - no transaction is active':
                 raise
+        #   else:
+        #       break # out of loop if no exception
         # open a new cursor for subsequent work
         self.cursor = self.conn.cursor()
 
