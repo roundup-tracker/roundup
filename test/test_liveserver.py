@@ -1183,6 +1183,11 @@ class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
         i18n.LOCALE_DIRS = ['locale']
         i18n.DOMAIN = ''
 
+    @classmethod
+    def tearDownClass(cls):
+        # cleanup
+        cls.instance.backend.db_nuke(cls.db.config)
+
     def test_native_fts(self):
         self.assertIn("postgresql_fts", str(self.db.indexer))
 

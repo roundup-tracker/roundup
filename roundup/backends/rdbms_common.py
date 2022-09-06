@@ -188,7 +188,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # requires a database connection (conn) to be defined when
         # calling get_indexer.  The call to open_connection creates the
         # conn but also creates the schema if it is missing.
-        self.indexer = CommonIndexer(self)
+        if self.config['INDEXER'] != 'native-fts':
+            self.indexer = get_indexer(config, self)
+        else:
+            self.indexer = CommonIndexer(self)
         self.security = security.Security(self)
 
         # additional transaction support for external files and the like
@@ -217,7 +220,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         # If indexer is native-fts, conn to db must be available.
         # so we set the real self.indexer value here, after db is open.
-        self.indexer = get_indexer(config, self)
+        if self.config['INDEXER'] == 'native-fts':
+            self.indexer = get_indexer(config, self)
 
     def clearCache(self):
         self.cache = {}
