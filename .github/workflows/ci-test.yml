@@ -84,7 +84,7 @@ jobs:
       - name: Display Python and key module versions
         run: |
           python -c "import sys; print('python version: ', sys.version)"
-          python -c "import sqlite; print('sqlite3 version, sqlite version: 'sqlite3.version, sqlite3.sqlite_version)"
+          python -c "import sqlite; print('sqlite3 version, sqlite version: ', sqlite3.version, sqlite3.sqlite_version)"
 
       # Install the databases
       - name: Install mysql/mariadb
