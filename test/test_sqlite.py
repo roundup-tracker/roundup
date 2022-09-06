@@ -36,7 +36,7 @@ class sqliteOpener:
 
 class sqliteDBTest(sqliteOpener, DBTest, unittest.TestCase):
 
-    def setUp(self):
+    """def setUp(self):
         # set for manual integration testing of 'native-fts'
         # It is unset in tearDown so it doesn't leak into other tests.
         #  FIXME extract test methods in DBTest that hit the indexer
@@ -52,6 +52,7 @@ class sqliteDBTest(sqliteOpener, DBTest, unittest.TestCase):
         # clean up config to prevent leak if native-fts is tested
         config['INDEXER'] = ''
         DBTest.tearDown
+    """
 
     def testUpgrade_6_to_7(self):
 
