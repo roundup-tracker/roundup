@@ -203,6 +203,8 @@ class Database(rdbms_common.Database):
             self.sql('create index ids_name_idx on ids(name)')
             self.create_version_2_tables()
             self._add_fts5_table()
+            # Set journal mode to WAL.
+            self.conn.execute('pragma journal_mode=wal')
 
     def create_version_2_tables(self):
         self.sql('create table otks (otk_key varchar, '
