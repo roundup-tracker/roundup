@@ -190,10 +190,10 @@ jobs:
               -W "ignore:'U' mode::docutils.io"  \
               -W "ignore:unclosed:ResourceWarning:roundup.roundup.demo" \
               -W "ignore:unclosed file:ResourceWarning:enum" \
-              -v --maxfail=5 test/ --cov=roundup
+              -v  test/ --cov=roundup
           else
             # python2 case
-            pytest -v -r a --maxfail=5 test/ --cov=roundup
+            pytest -v -r a test/ --cov=roundup
           fi
 
       - name: Upload coverage to Codecov
