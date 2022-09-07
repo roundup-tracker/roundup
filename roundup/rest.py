@@ -7,18 +7,31 @@ and/or modify under the same terms as Python.
 
 from __future__ import print_function
 
+from datetime import timedelta
+from hashlib import md5
+import hmac
+import json
+import logging
+import os
+import re
+import sys
+import time
+import traceback
+
 try:
     from urllib.parse import urlparse
 except ImportError:
     from urlparse import urlparse
-import os
-import json
-import sys
-import time
-import traceback
-import re
 
-import logging
+from roundup import actions
+from roundup import date
+from roundup import hyperdb
+from roundup.anypy.strings import bs2b, b2s, u2s, is_us
+from roundup.cgi.exceptions import NotFound, Unauthorised, PreconditionFailed
+from roundup.exceptions import Reject, UsageError
+from roundup.i18n import _
+from roundup.rate_limit import RateLimit, Gcra
+
 logger = logging.getLogger('roundup.rest')
 
 try:
@@ -31,20 +44,6 @@ except ImportError:
     except ImportError:
         # else not supported
         dicttoxml = None
-
-from hashlib import md5
-
-from roundup import hyperdb
-from roundup import date
-from roundup import actions
-from roundup.i18n import _
-from roundup.anypy.strings import bs2b, b2s, u2s, is_us
-from roundup.rate_limit import RateLimit, Gcra
-from roundup.exceptions import Reject, UsageError
-from roundup.cgi.exceptions import NotFound, Unauthorised, PreconditionFailed
-
-import hmac
-from datetime import timedelta
 
 # Py3 compatible basestring
 try:
@@ -118,6 +117,7 @@ def _data_decorator(func):
     format_object.wrapped_func = func
     return format_object
 
+
 def openapi_doc(d):
     """Annotate rest routes with openapi data. Takes a dict
        for the openapi spec. It can be used standalone
@@ -159,6 +159,7 @@ def openapi_doc(d):
         f.openapi_doc = d
         return f
     return wrapper
+
 
 def calculate_etag(node, key, classname="Missing", id="0",
                    repr_format="json"):
@@ -272,7 +273,7 @@ def parse_accept_header(accept):
         try:
             typ, subtyp = media_type.split('/')
         except ValueError:
-            raise UsageError("Invalid media type: %s"%media_type)
+            raise UsageError("Invalid media type: %s" % media_type)
         # check for a + in the sub-type
         if '+' in subtyp:
             # if it exists, determine if the subtype is a vendor-specific type
@@ -298,7 +299,7 @@ def parse_accept_header(accept):
             try:
                 (key, value) = part.lstrip().split("=", 1)
             except ValueError:
-                raise UsageError("Invalid param: %s"%part.lstrip())
+                raise UsageError("Invalid param: %s" % part.lstrip())
             key = key.strip()
             value = value.strip()
             if key == "q":
@@ -395,11 +396,11 @@ class Routing(object):
                 except KeyError:
                     valid_methods = ', '.join(sorted(funcs.keys()))
                     raise Reject(_('Method %(m)s not allowed. '
-                                   'Allowed: %(a)s')% {
+                                   'Allowed: %(a)s') % {
                                        'm': method,
                                        'a': valid_methods
                                    },
-                                   valid_methods)
+                                 valid_methods)
 
                 # retrieve the vars list and the function caller
                 list_vars = func_obj['vars']
@@ -536,7 +537,7 @@ class RestfulInstance(object):
 
         return prop
 
-    def transitive_props (self, class_name, props):
+    def transitive_props(self, class_name, props):
         """Construct a list of transitive properties from the given
         argument, and return it after permission check. Raises
         Unauthorised if no permission. Permission is checked by
@@ -554,7 +555,7 @@ class RestfulInstance(object):
                 for pn in p.split('.'):
                     # Tried to dereference a non-Link property
                     if cn is None:
-                        raise UsageError("Property %(base)s can not be dereferenced in %(p)s." % { "base": p[:-(len(pn)+1)], "p": p})
+                        raise UsageError("Property %(base)s can not be dereferenced in %(p)s." % {"base": p[:-(len(pn)+1)], "p": p})
                     cls = self.db.getclass(cn)
                     # This raises a KeyError for unknown prop:
                     try:
@@ -580,7 +581,7 @@ class RestfulInstance(object):
                     prop = cls.getprops(protected=True)[pn]
                 except KeyError:
                     raise KeyError("Unknown property: %s" % pn)
-            checked_props.append (p)
+            checked_props.append(p)
         return checked_props
 
     def error_obj(self, status, msg, source=None):
@@ -694,7 +695,7 @@ class RestfulInstance(object):
                     id = v = getattr(nd, p)
                     # Handle transitive properties where something on
                     # the road is None (empty Link property)
-                    if id is None :
+                    if id is None:
                         prop = None
                         ok = True
                         break
@@ -820,7 +821,7 @@ class RestfulInstance(object):
                         uid, class_name, pn
                     ):
                         sort.append((ss, pn))
-                    else :
+                    else:
                         raise (Unauthorised(
                             'User does not have search permission on "%s.%s"'
                             % (class_name, pn)))
@@ -844,7 +845,8 @@ class RestfulInstance(object):
                 # Call this for the side effect of validating the key
                 # use _discard as _ is apparently a global for the translation
                 # service.
-                _discard = self.transitive_props(class_name, [ key ])
+                _discard = self.transitive_props(class_name, [key])  # noqa: F841
+
                 # We drop properties without search permission silently
                 # This reflects the current behavior of other roundup
                 # interfaces
@@ -1091,8 +1093,8 @@ class RestfulInstance(object):
                               class_name, item_id,  repr_format="json")
         try:
             data = node.__getattr__(attr_name)
-        except AttributeError as e:
-            raise UsageError(_("Invalid attribute %s"%attr_name))
+        except AttributeError:
+            raise UsageError(_("Invalid attribute %s" % attr_name))
         result = {
             'id': item_id,
             'type': str(type(data)),
@@ -1786,78 +1788,80 @@ class RestfulInstance(object):
                 attr_name, class_name))
         return 204, ""
 
-    @openapi_doc({"summary": "Describe Roundup rest endpoint.",
-                  "description": ("Report all supported api versions "
-                                  "and default api version. "
-                                  "Also report next level of link "
-                                  "endpoints below /rest endpoint"),
-                  "responses": {
-                      "200": {
-                          "description": "Successful response.",
-                          "content": {
-                              "application/json": {
-                              "examples": {
-                                  "success": {
-                                      "summary": "Normal json data.",
-                                      "value": """{
-  "data": {
-    "default_version": 1,
-    "supported_versions": [
-      1
-    ],
-    "links": [
-      {
-        "uri": "https://tracker.example.com/demo/rest",
-        "rel": "self"
-      },
-      {
-        "uri": "https://tracker.example.com/demo/rest/data",
-        "rel": "data"
-      },
-      {
-        "uri": "https://tracker.example.com/demo/rest/summary",
-        "rel": "summary"
-      }
-    ]
-  }
-}"""
-                                  }
-                              }
-                          },
-                          "application/xml": {
-                              "examples": {
-                                  "success": {
-                                      "summary": "Normal xml data",
-                                      "value": """<dataf type="dict">
-  <default_version type="int">1</default_version>
-  <supported_versions type="list">
-    <item type="int">1</item>
-  </supported_versions>
-  <links type="list">
-    <item type="dict">
-      <uri type="str">https://rouilj.dynamic-dns.net/sysadmin/rest</uri>
-      <rel type="str">self</rel>
-    </item>
-    <item type="dict">
-      <uri type="str">https://rouilj.dynamic-dns.net/sysadmin/rest/data</uri>
-      <rel type="str">data</rel>
-    </item>
-    <item type="dict">
-      <uri type="str">https://rouilj.dynamic-dns.net/sysadmin/rest/summary</uri>
-      <rel type="str">summary</rel>
-    </item>
-    <item type="dict">
-      <uri type="str">https://rouilj.dynamic-dns.net/sysadmin/rest/summary2</uri>
-      <rel type="str">summary2</rel>
-    </item>
-  </links>
-</dataf>"""
-                                  }
-                              }
-                          }
+    @openapi_doc({
+        "summary": "Describe Roundup rest endpoint.",
+        "description": (
+            "Report all supported api versions "
+            "and default api version. "
+            "Also report next level of link "
+            "endpoints below /rest endpoint"),
+        "responses": {
+            "200": {
+                "description": "Successful response.",
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "success": {
+                                "summary": "Normal json data.",
+                                "value": """
+                                {
+                                "data": {
+                                "default_version": 1,
+                                "supported_versions": [ 1 ],
+                                "links": [
+                                {
+                                "uri": "https://tracker.example.com/demo/rest",
+                                "rel": "self"
+                                },
+                                {
+                                "uri": "https://tracker.example.com/demo/rest/data",
+                                "rel": "data"
+                                },
+                                {
+                                "uri": "https://tracker.example.com/demo/rest/summary",
+                                "rel": "summary"
+                                }
+                                ]
+                                }
+                                }"""
+                            }
                         }
-                      }
-                  }
+                    },
+                    "application/xml": {
+                        "examples": {
+                            "success": {
+                                "summary": "Normal xml data",
+                                "value": """
+        <dataf type="dict">
+            <default_version type="int">1</default_version>
+            <supported_versions type="list">
+                <item type="int">1</item>
+            </supported_versions>
+            <links type="list">
+                <item type="dict">
+                    <uri type="str">https://rouilj.dynamic-dns.net/sysadmin/rest</uri>
+                    <rel type="str">self</rel>
+                </item>
+                <item type="dict">
+                    <uri type="str">https://rouilj.dynamic-dns.net/sysadmin/rest/data</uri>
+                    <rel type="str">data</rel>
+                </item>
+                <item type="dict">
+                    <uri type="str">https://rouilj.dynamic-dns.net/sysadmin/rest/summary</uri>
+                    <rel type="str">summary</rel>
+                </item>
+                <item type="dict">
+                    <uri type="str">https://rouilj.dynamic-dns.net/sysadmin/rest/summary2</uri>
+                    <rel type="str">summary2</rel>
+                </item>
+            </links>
+        </dataf>"""
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
     )
     @Routing.route("/")
@@ -1874,8 +1878,8 @@ class RestfulInstance(object):
         links = []
         # p[1:-1] removes ^ and $ from regexp
         # if p has only 1 /, it's a child of rest/ root.
-        child_paths = sorted([ p[1:-1] for p in paths if
-                               p.count('/') == 1 ])
+        child_paths = sorted([p[1:-1] for p in paths if
+                              p.count('/') == 1])
         for p in child_paths:
             # p.split('/')[1] is the residual path after
             # removing rest/. child_paths look like:
@@ -1886,9 +1890,8 @@ class RestfulInstance(object):
             else:
                 rel_path = rel
                 rel = "self"
-            links.append( {"uri": self.base_path + rel_path,
-                           "rel": rel
-                           })
+            links.append({"uri": self.base_path + rel_path,
+                          "rel": rel})
 
         result = {
             "default_version": self.__default_api_version,
@@ -2158,7 +2161,7 @@ class RestfulInstance(object):
         # user info. It also allows passing through larger items like
         # JWT that has a final component > 6 items. This method also
         # allow detection of mistyped types like jon for json.
-        if ext_type  and (len(ext_type) < 6):
+        if ext_type and (len(ext_type) < 6):
             # strip extension so uri make sense
             # .../issue.json -> .../issue
             uri = uri[:-(len(ext_type) + 1)]
@@ -2189,7 +2192,7 @@ class RestfulInstance(object):
             self.client.setHeader("Access-Control-Max-Age", "86400")
 
         # response may change based on Origin value.
-        self.client.setVary("Origin") 
+        self.client.setVary("Origin")
 
         # Allow-Origin must match origin supplied by client. '*' doesn't
         # work for authenticated requests.
@@ -2234,9 +2237,9 @@ class RestfulInstance(object):
                 except ValueError as msg:
                     output = self.error_obj(400, msg)
             else:
-                    output = self.error_obj(415,
+                output = self.error_obj(415,
                                 "Unable to process input of type %s" %
-                                            content_type_header)
+                                content_type_header)
 
         # check for pretty print
         try:
