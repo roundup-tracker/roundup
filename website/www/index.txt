@@ -19,23 +19,46 @@ Roundup Issue Tracker
 .. raw:: html
 
    <div class="release_info note">
-   <!-- package version/pypi download -->
-   <a
-      href="https://pypi.org/project/roundup/#files">Download:
-     <img style="vertical-align: text-top"
-     src="https://img.shields.io/pypi/v/roundup?color=blue&label=Current%20Version&cacheSeconds=86400"
-      alt="PyPI version" height="18"></a>
-   <!-- supported python versions: <img src="https://shields.io/pypi/pyversions/roundup"> -->
-   <!-- license: <img src="https://img.shields.io/pypi/l/roundup"> -->
-   <!-- changes since 2.2.0 <img src="https://img.shields.io/github/commits-since/roundup-tracker/roundup/2.2.0/master?sort=semver"> -->
-   <!-- status beta, stable, mature.... <img src="https://img.shields.io/pypi/status/roundup"> -->
-   <!-- mozilla observatory <img src="https://img.shields.io/mozilla-observatory/grade/www.roundup-tracker.org?publish"> -->
-   <!-- downloads/month -->
-   <a style="display:block; margin-block-start: 1em; text-align:
-   center;" href="https://pypistats.org/packages/roundup" alt="">
-   <img
-   src="https://img.shields.io/badge/dynamic/json?color=blue&label=downloads%2Fmonth&cacheSeconds=86400&query=data.last_month&url=https%3A%2F%2Fpypistats.org%2Fapi%2Fpackages%2Froundup%2Frecent"
-   alt=""></a>
+     <!-- package version/pypi download -->
+     <a
+	  href="https://pypi.org/project/roundup/#files">
+       <span style="padding-inline-end: 1.75ch">Download:</span>
+       <img style="vertical-align: text-top"
+	   src="https://img.shields.io/pypi/v/roundup?color=blue&label=Current%20Version&cacheSeconds=86400"
+	   alt="Display current version of Roundup on PyPI."
+	   height="18" width="127">
+     </a>
+
+     <!-- supported python versions: <img src="https://shields.io/pypi/pyversions/roundup"> -->
+     <!-- license: <img src="https://img.shields.io/pypi/l/roundup"> -->
+     <!-- changes since 2.2.0 <img src="https://img.shields.io/github/commits-since/roundup-tracker/roundup/2.2.0/master?sort=semver"> -->
+     <!-- status beta, stable, mature.... <img src="https://img.shields.io/pypi/status/roundup"> -->
+     <!-- mozilla observatory <img src="https://img.shields.io/mozilla-observatory/grade/www.roundup-tracker.org?publish"> -->
+
+     <!-- downloads/month -->
+     <a style="display:block; margin-block-start: 1em;"
+	  href="https://pypistats.org/packages/roundup">
+       <span style="padding-inline-start: 10.75ch"></span>
+       <img
+	 src="https://img.shields.io/badge/dynamic/json?color=blue&label=downloads%2Fmonth&cacheSeconds=86400&query=data.last_month&url=https%3A%2F%2Fpypistats.org%2Fapi%2Fpackages%2Froundup%2Frecent"
+	 alt=""
+	 height="18" width="127">
+     </a>
+
+     <!-- build status -->
+     <a 
+	 style="display:block; margin-block-start: 1em;"
+	 href="https://pypistats.org/packages/roundup">
+       <span>Build Status:</span>
+       <img
+	   src="https://img.shields.io/github/workflow/status/roundup-tracker/roundup/roundup-ci?label=roundup-ci&logo=github"
+	   alt="Current build status on GitHub"
+           height="18" width="127">
+     </a>
+   </div>
+
+ Roundup is a simple-to-use and -install issue-tracking system with
+
    </div>
 
 Roundup is a simple-to-use and -install issue-tracking system with
