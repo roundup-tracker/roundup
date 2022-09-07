@@ -48,7 +48,7 @@ Roundup Issue Tracker
      <!-- build status -->
      <a 
 	 style="display:block; margin-block-start: 1em;"
-	 href="https://pypistats.org/packages/roundup">
+	 href="https://github.com/roundup-tracker/roundup/actions?query=workflow%3Aroundup-ci++">
        <span>Build Status:</span>
        <img
 	   src="https://img.shields.io/github/workflow/status/roundup-tracker/roundup/roundup-ci?label=roundup-ci&logo=github"
