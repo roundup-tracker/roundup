@@ -21,22 +21,24 @@ from roundup.test.tx_Source_detector import init as tx_Source_init
 
 default_prefix = '../../share/roundup/templates/classic'
 
+
 def new_config(debug=False, prefix=default_prefix):
     if not prefix.startswith('/'):
-        prefix = os.path.join (os.path.dirname(__file__), prefix)
+        prefix = os.path.join(os.path.dirname(__file__), prefix)
     config = configuration.CoreConfig()
     config.detectors = configuration.UserConfig(
         os.path.join(prefix, "detectors/config.ini"))
     config.ext = configuration.UserConfig(
         os.path.join(prefix, "extensions/config.ini"))
     config.DATABASE = "db"
-    #config.logging = MockNull()
+    # config.logging = MockNull()
     # these TRACKER_WEB and MAIL_DOMAIN values are used in mailgw tests
     if debug:
         config.LOGGING_LEVEL = "DEBUG"
     config.MAIL_DOMAIN = "your.tracker.email.domain.example"
     config.TRACKER_WEB = "http://tracker.example/cgi-bin/roundup.cgi/bugs/"
     return config
+
 
 def create(journaltag, create=True, debug=False, prefix=default_prefix):
     # "Nuke" in-memory db
@@ -46,7 +48,7 @@ def create(journaltag, create=True, debug=False, prefix=default_prefix):
 
     # load standard schema
     if not prefix.startswith('/'):
-        prefix = os.path.join (os.path.dirname(__file__), prefix)
+        prefix = os.path.join(os.path.dirname(__file__), prefix)
 
     schema = os.path.join(prefix, 'schema.py')
     vars = hyperdb.__dict__
@@ -60,7 +62,7 @@ def create(journaltag, create=True, debug=False, prefix=default_prefix):
 
     initial_data = os.path.join(prefix, 'initial_data.py')
     vars = dict(db=db, admin_email='admin@test.com',
-        adminpw=password.Password('sekrit'))
+                adminpw=password.Password('sekrit'))
     fd = open(initial_data)
     exec(compile(fd.read(), initial_data, 'exec'), vars)
     fd.close()
@@ -68,7 +70,7 @@ def create(journaltag, create=True, debug=False, prefix=default_prefix):
     # load standard detectors
     dirname = os.path.join(prefix, 'detectors')
     for fn in os.listdir(dirname):
-        if not fn.endswith('.py'): continue
+        if not fn.endswith('.py'): continue                       # noqa: E701
         vars = {}
         with open(os.path.join(dirname, fn)) as fd:
             exec(compile(fd.read(),
@@ -108,7 +110,8 @@ def create(journaltag, create=True, debug=False, prefix=default_prefix):
     '''
     if create:
         db.user.create(username="fred", roles='User',
-            password=password.Password('sekrit'), address='fred@example.com')
+                       password=password.Password('sekrit'),
+                       address='fred@example.com')
 
     db.security.addPermissionToRole('User', 'Email Access')
     '''
@@ -125,21 +128,28 @@ def create(journaltag, create=True, debug=False, prefix=default_prefix):
     '''
     return db
 
+
 class cldb(dict):
     def __init__(self, **values):
         super(cldb, self).__init__()
         for key, value in values.items():
             super(cldb, self).__setitem__(s2b(key), value)
+
     def __getitem__(self, key):
         return super(cldb, self).__getitem__(s2b(key))
+
     def __setitem__(self, key, value):
         return super(cldb, self).__setitem__(s2b(key), value)
+
     def __delitem__(self, key):
         return super(cldb, self).__delitem__(s2b(key))
+
     def __contains__(self, key):
         return super(cldb, self).__contains__(s2b(key))
+
     def close(self):
         pass
+
 
 class BasicDatabase(dict):
     ''' Provide a nice encapsulation of an anydbm store.
@@ -150,20 +160,26 @@ class BasicDatabase(dict):
         super(BasicDatabase, self).__init__()
         for k, v in values.items():
             super(BasicDatabase, self).__setitem__(s2b(k), v)
+
     def __getitem__(self, key):
         if key not in self:
             d = self[key] = {}
             return d
         return super(BasicDatabase, self).__getitem__(s2b(key))
+
     def __setitem__(self, key, value):
         return super(BasicDatabase, self).__setitem__(s2b(key), value)
+
     def __delitem__(self, key):
         return super(BasicDatabase, self).__delitem__(s2b(key))
+
     def __contains__(self, key):
         return super(BasicDatabase, self).__contains__(s2b(key))
+
     def exists(self, infoid):
         return infoid in self
     _marker = []
+
     def get(self, infoid, value, default=_marker):
         if infoid not in self:
             if default is self._marker:
@@ -171,10 +187,12 @@ class BasicDatabase(dict):
             else:
                 return default
         return self[infoid].get(value, default)
+
     def getall(self, infoid):
         if infoid not in self:
             raise KeyError(infoid)
         return self[infoid]
+
     def set(self, infoid, **newvalues):
         if '__timestamp' in newvalues:
             try:
@@ -185,27 +203,36 @@ class BasicDatabase(dict):
                 else:
                     newvalues['__timestamp'] = time.time()
         self[infoid].update(newvalues)
+
     def list(self):
         return list(self.keys())
+
     def destroy(self, infoid):
         del self[infoid]
+
     def commit(self):
         pass
+
     def close(self):
         pass
+
     def updateTimestamp(self, sessid):
         sess = self.get(sessid, '__timestamp', None)
         now = time.time()
         if sess is None or now > sess + 60:
             self.set(sessid, __timestamp=now)
+
     def clean(self):
         pass
+
 
 class Sessions(BasicDatabase, sessions_dbm.Sessions):
     name = 'sessions'
 
+
 class OneTimeKeys(BasicDatabase, sessions_dbm.OneTimeKeys):
     name = 'otks'
+
 
 class Indexer(indexer_dbm.Indexer):
     def __init__(self, db):
@@ -219,16 +246,18 @@ class Indexer(indexer_dbm.Indexer):
         if self.index_loaded() and not reload:
             return 0
         self.words = {}
-        self.files = {'_TOP':(0,None)}
+        self.files = {'_TOP': (0, None)}
         self.fileids = {}
         self.changed = 0
 
     def save_index(self):
         pass
+
     def force_reindex(self):
         # TODO I'm concerned that force_reindex may not be tested by
         # testForcedReindexing if the functionality can just be removed
         pass
+
 
 class Database(back_anydbm.Database):
     """A database for storing records containing flexible data types.
@@ -252,17 +281,17 @@ class Database(back_anydbm.Database):
         self.tx_files = {}
         self.security = security.Security(self)
         self.stats = {'cache_hits': 0, 'cache_misses': 0, 'get_items': 0,
-            'filtering': 0}
+                      'filtering': 0}
         self.sessions = Sessions()
         self.otks = OneTimeKeys()
         self.indexer = Indexer(self)
         roundupdb.Database.__init__(self)
 
         # anydbm bits
-        self.cache = {}         # cache of nodes loaded or created
-        self.dirtynodes = {}    # keep track of the dirty nodes by class
-        self.newnodes = {}      # keep track of the new nodes by class
-        self.destroyednodes = {}# keep track of the destroyed nodes by class
+        self.cache = {}           # cache of nodes loaded or created
+        self.dirtynodes = {}      # keep track of the dirty nodes by class
+        self.newnodes = {}        # keep track of the new nodes by class
+        self.destroyednodes = {}  # keep track of the destroyed nodes by class
         self.transactions = []
         self.tx_Source = None
         # persistence across re-open
@@ -293,14 +322,14 @@ class Database(back_anydbm.Database):
         pass
 
     def __repr__(self):
-        return '<memorydb instance at %x>'%id(self)
+        return '<memorydb instance at %x>' % id(self)
 
     def storefile(self, classname, nodeid, property, content):
         if isinstance(content, str):
             content = s2b(content)
         self.tx_files[classname, nodeid, property] = content
         self.transactions.append((self.doStoreFile, (classname, nodeid,
-            property)))
+                                                     property)))
 
     def getfile(self, classname, nodeid, property):
         if (classname, nodeid, property) in self.tx_files:
@@ -340,7 +369,7 @@ class Database(back_anydbm.Database):
     def addclass(self, cl):
         cn = cl.classname
         if cn in self.classes:
-            raise ValueError('Class "%s" already defined.'%cn)
+            raise ValueError('Class "%s" already defined.' % cn)
         self.classes[cn] = cl
         if cn not in self.items:
             self.items[cn] = cldb()
@@ -348,11 +377,14 @@ class Database(back_anydbm.Database):
 
         # add default Edit and View permissions
         self.security.addPermission(name="Create", klass=cn,
-            description="User is allowed to create "+cn)
+                                    description="User is allowed to create " +
+                                    cn)
         self.security.addPermission(name="Edit", klass=cn,
-            description="User is allowed to edit "+cn)
+                                    description="User is allowed to edit " +
+                                    cn)
         self.security.addPermission(name="View", klass=cn,
-            description="User is allowed to access "+cn)
+                                    description="User is allowed to access " +
+                                    cn)
 
     def getclasses(self):
         """Return a list of the names of all existing classes."""
@@ -366,7 +398,7 @@ class Database(back_anydbm.Database):
         try:
             return self.classes[classname]
         except KeyError:
-            raise KeyError('There is no class called "%s"'%classname)
+            raise KeyError('There is no class called "%s"' % classname)
 
     #
     # Class DBs
@@ -389,6 +421,7 @@ class Database(back_anydbm.Database):
     def newid(self, classname):
         self.ids[classname] += 1
         return str(self.ids[classname])
+
     def setid(self, classname, id):
         self.ids[classname] = int(id)
 
@@ -396,13 +429,13 @@ class Database(back_anydbm.Database):
     # Journal
     #
     def doSaveJournal(self, classname, nodeid, action, params, creator,
-            creation):
+                      creation):
         if creator is None:
             creator = self.getuid()
         if creation is None:
             creation = date.Date()
-        self.journals.setdefault(classname, {}).setdefault(nodeid,
-            []).append((nodeid, creation, creator, action, params))
+        self.journals.setdefault(classname, {}).setdefault(
+            nodeid, []).append((nodeid, creation, creator, action, params))
 
     def doSetJournal(self, classname, nodeid, journal):
         self.journals.setdefault(classname, {})[nodeid] = journal
@@ -424,11 +457,11 @@ class Database(back_anydbm.Database):
                 if not cache_creation:
                     cache_creation = date.Date()
                 res.append((cache_nodeid, cache_creation, cache_creator,
-                    cache_action, cache_params))
+                            cache_action, cache_params))
         try:
             res += self.journals.get(classname, {})[nodeid]
         except KeyError:
-            if res: return res
+            if res: return res                                     # noqa: E701
             raise IndexError(nodeid)
         return res
 
@@ -440,21 +473,22 @@ class Database(back_anydbm.Database):
             db = self.journals[classname]
             for key in db:
                 # get the journal for this db entry
-                l = []
-                last_set_entry = None
+                kept_journals = []
                 for entry in db[key]:
                     # unpack the entry
                     (nodeid, date_stamp, self.journaltag, action,
-                        params) = entry
+                     params) = entry
                     date_stamp = date_stamp.serialise()
                     # if the entry is after the pack date, _or_ the initial
                     # create entry, then it stays
                     if date_stamp > pack_before or action == 'create':
-                        l.append(entry)
-                db[key] = l
+                        kept_journals.append(entry)
+                db[key] = kept_journals
+
 
 class Class(back_anydbm.Class):
     pass
+
 
 class FileClass(back_anydbm.FileClass):
     def __init__(self, db, classname, **properties):
@@ -484,7 +518,8 @@ class FileClass(back_anydbm.FileClass):
             mime_type = self.default_mime_type
         if props['content'].indexme:
             self.db.indexer.add_text((self.classname, nodeid, 'content'),
-                self.get(nodeid, 'content'), mime_type)
+                                     self.get(nodeid, 'content'), mime_type)
+
 
 # deviation from spec - was called ItemClass
 class IssueClass(Class, roundupdb.IssueClass):
@@ -512,8 +547,10 @@ class IssueClass(Class, roundupdb.IssueClass):
 # Methods to check for existence and nuke the db
 # We don't support multiple named databases
 
+
 def db_exists(name):
     return bool(Database.memdb)
+
 
 def db_nuke(name):
     Database.memdb = {}
