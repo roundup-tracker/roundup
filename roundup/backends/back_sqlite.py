@@ -204,7 +204,9 @@ class Database(rdbms_common.Database):
             self.create_version_2_tables()
             self._add_fts5_table()
             # Set journal mode to WAL.
-            self.conn.execute('pragma journal_mode=wal')
+            self.sql_commit()  # close out rollback journal/transaction
+            self.sql('pragma journal_mode=wal')  # set wal
+            self.sql_commit()  # close out rollback and commit wal change
 
     def create_version_2_tables(self):
         self.sql('create table otks (otk_key varchar, '

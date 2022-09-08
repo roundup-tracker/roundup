@@ -59,6 +59,9 @@ Features:
 - sqlite native-fts backend now uses the stopwords list in config.ini
   to filter words from queries. (Stopwords are still indexed so that
   phrase/proximity searches still work.) (John Rouillard)
+- sqlite databases use WAL mode when *created* to improve read
+  concurrency. Existing sqlite database still use rollback journal
+  mode. See upgrading.txt for details. (John Rouillard)
 
 2022-07-13 2.2.0
 

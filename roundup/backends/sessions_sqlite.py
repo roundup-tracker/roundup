@@ -36,7 +36,10 @@ class BasicDatabase(sessions_rdbms.BasicDatabase):
             %(name)s_value TEXT, %(name)s_time REAL)''' % {"name": self.name})
             self.sql('CREATE INDEX %(name)s_key_idx ON '
                      '%(name)ss(%(name)s_key)' % {"name": self.name})
-            self.commit()
+            # Set journal mode to WAL.
+            self.commit()  # close out rollback journal/transaction
+            self.sql('pragma journal_mode=wal')  # set wal
+            self.commit()  # close out rollback and commit wal change
 
     def sql(self, sql, args=None, cursor=None):
         """ Execute the sql with the optional args.

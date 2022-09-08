@@ -33,6 +33,18 @@ class sqliteOpener:
     def nuke_database(self):
         shutil.rmtree(config.DATABASE)
 
+    def testWalMode(self):
+        """verify that all sqlite db's are in WAL mode
+           and not journal mode
+        """
+        if not hasattr(self, 'db'):
+            self.skipTest("test has no database open")
+
+        for db in [self.db]:
+            print("testing db", str(db))
+            db.sql('pragma journal_mode;')
+            self.assertEqual(db.cursor.fetchone()['journal_mode'], 'wal')
+
 
 class sqliteDBTest(sqliteOpener, DBTest, unittest.TestCase):
 
@@ -198,6 +210,15 @@ class sqliteSessionTest(sqliteOpener, SessionTest, unittest.TestCase):
         self.assertIn("roundlite", repr(self.db))
         self.assertIn("roundup.backends.sessions_sqlite.Sessions", repr(self.db.Session))
 
+    def testWalMode(self):
+        """verify that all sqlite db's are in WAL mode
+           and not Rollback mode
+        """
+        for db in [self.db, self.db.Session, self.db.Otk]:
+            print("testing db", str(db))
+            db.sql('pragma journal_mode;')
+            self.assertEqual(db.cursor.fetchone()['journal_mode'], 'wal')
+
 class anydbmSessionTest(sqliteOpener, SessionTest, unittest.TestCase):
     s2b = lambda x,y : y
 
@@ -227,6 +248,7 @@ class anydbmSessionTest(sqliteOpener, SessionTest, unittest.TestCase):
     def testDbType(self):
         self.assertIn("roundlite", repr(self.db))
         self.assertIn("roundup.backends.sessions_dbm.Sessions", repr(self.db.Session))
-    
+
+  
 class sqliteRestTest (RestTestCase, unittest.TestCase):
     backend = 'sqlite'

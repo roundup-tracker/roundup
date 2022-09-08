@@ -124,6 +124,51 @@ Session Databases`_ in the `administration guide`_
 .. _Using Redis for Session Databases:
     admin_guide.html#using-redis-for-session-databases
 
+New SQLite databases created with WAL mode journaling (optional)
+----------------------------------------------------------------
+
+By default, SQLite databases use a rollback journal when
+writing an update. The rollback journal stores a copy of the
+data from before the update. One downside of this is that
+all reads have to be suspended while a write is
+occurring. SQLite has an alternate way of insuring ACID
+compliance by using a WAL (write ahead log) journal.
+
+Version 2.3.0 of Roundup, creates new SQLite databases using
+WAL journaling. With WAL, a writer does not block readers
+and readers do not block writing an update. This keeps
+Roundup accessible even under a heavy write load (e.g. when
+bulk loading data or automated updates via REST).
+
+If you want to convert your existing SQLite db to WAL mode:
+
+   1. check the current journal mode on your database
+      using::
+
+        sqlite3 <tracker_home>/db/db "pragma journal_mode;"
+
+   2. If it returns ``delete``, change it to WAL mode using::
+
+        sqlite3 <tracker_home>/db/db "pragma journal_mode=WAL;"
+ 
+   3. verify by running the command in step 1 again and you
+      should get ``wal``.
+
+If you are using SQLite for session and otk databases,
+perform the same steps replacing ``db`` with ``db-session``
+and ``db-otk``.
+
+If you find WAL mode is not working for you, you can set the
+journal method to a rollback journal (``delete`` mode) by
+using step 2 and replacing ``wal`` with ``delete``. (Note:
+SQLite supports other journaling modes, but only ``wal`` and
+``delete`` persist. Roundup doesn't set a journaling mode
+when it opens the database, so options such as ``truncate``
+are not used.)
+
+For details on WAL mode see `<https://www.sqlite.org/wal.html>`_
+and `<https://www.sqlite.org/pragma.html#pragma_journal_mode>`_.
+
 .. index:: Upgrading; 2.1.0 to 2.2.0
 
 Migrating from 2.1.0 to 2.2.0
