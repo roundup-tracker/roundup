@@ -45,6 +45,10 @@ Fixed:
   connection is open. (John Rouillard)
 - fix crash if postgresql native-fts backend is asked to index content
   with null bytes. (John Rouillard)
+- issue2551232 - modify in-reply-to threading when multiple matches
+  Change how in-reply-to threading works in the mailgw. If there is
+  more than one issue with a matching parent message, fall back to
+  subject matching. See upgrading.txt for details. (John Rouillard)
 
 Features:
 

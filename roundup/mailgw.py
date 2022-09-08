@@ -773,29 +773,36 @@ Subject was: '%(subject)s'
             nodeid = self.matches['nodeid']
 
         # try in-reply-to to match the message if there's no nodeid
-        # FIXME: possible crash if message linked to multiple issues
-        #    Use the in-reply-to of the current message to find an id
-        #    for the message being replied to.
-        #    Then search the current class (probably issue) for an issue
-        #    that has the parent_message id in the issue's messages
-        #    property. Then use this id as the node to update. HOWEVER if
-        #    the reply to message is linked to multiple issues, I think
-        #    this blows up.
-        #    Linking a message to multiple issues can be used to group
-        #    issues so that an update on a child issue is also reflected
-        #    on a parent issue. As the parent and child may have different
-        #    nosy/watchers.
-
+        # If there are multiple matches for the in-reply-to, fall back
+        # to title/subject match.
         inreplyto = self.message.get_header('in-reply-to') or ''
         if nodeid is None and inreplyto:
             parent_message = self.db.getclass('msg').stringFind(
                 messageid=inreplyto)
-            # FIXME: if a message is linked to multiple issues, can nodeid
-            # be a list? If so, will this crash??
             if parent_message:
                 nodeid = self.cl.filter(None,
-                                        {'messages': parent_message})[0]
-
+                                        {'messages': parent_message})
+                if len(nodeid) == 1:
+                    nodeid = nodeid[0]
+                elif nodeid:   # len(nodeid) > 1
+                    # This message is responding to a message
+                    # we know about. But there is more than 1 issue
+                    # associated with it.
+                    # Before bouncing it or creating a new issue,
+                    # force it to be treated as a reply even if the Subject
+                    # is missing 'Re:'
+                    # Note that multiple issues may be matched by
+                    #   Subject as well. The code chooses the most
+                    #   recently updated.  Hopefully Subjects have
+                    #   less of a chance of collision. Possible future
+                    #   idea filter ids that match subject by id's
+                    #   that match in-reply-to and choose newest
+                    #   match. Not sure if this would work better in
+                    #   production, so not implementing now.
+                    nodeid = None
+                    # trigger Subject match
+                    self.matches['refwd'] = True
+                
         # but we do need either a title or a nodeid...
         if nodeid is None and not title:
             raise MailUsageError(_("""

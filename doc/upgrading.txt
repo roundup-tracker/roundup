@@ -169,6 +169,30 @@ are not used.)
 For details on WAL mode see `<https://www.sqlite.org/wal.html>`_
 and `<https://www.sqlite.org/pragma.html#pragma_journal_mode>`_.
 
+Change in processing of In-Reply_to email header
+------------------------------------------------
+
+Messages received via email usually include a ``[issue23]``
+designator in the subject line. This indicates what issue is
+being updated. If the designator is missing, Roundup tries
+to find the correct issue by using the in-reply-to email
+header.
+
+The former code appends the new message to the first issue
+found with a message matching the in-reply-to
+header. Usually a message is associated with only one
+issue. However nothing in Roundup requires that.
+
+In this release, the in-reply-to matching is disabled if
+there are multiple issues with the same message. In this
+case, subject matching is used to try to find the matching
+issue.
+
+If you don't have messages assigned to multiple issues you
+will see no change. If you do have multi-linked messages
+this will hopefully result in better message->issue
+matching.
+
 .. index:: Upgrading; 2.1.0 to 2.2.0
 
 Migrating from 2.1.0 to 2.2.0

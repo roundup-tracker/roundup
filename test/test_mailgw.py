@@ -4204,6 +4204,60 @@ Yet another message in the same thread/issue.
         self.assertEqual(nodeid, nodeid2)
         self.assertEqual(nodeid, nodeid3)
 
+
+    def testReplytoMultiMatch(self):
+        """ If an in reply-to header matches more than 1 issue:
+            Try a subject match, if that fails create a new issue.
+        """
+
+        # create two issues with the same initial message/messgage-id.
+        nodeid1 = self.doNewIssue()
+        nodeid2 = self.doNewIssue()
+        
+        # set unique title/subject for second issue.
+        self.db.issue.set("2", title="Testing1...")
+
+        # Send an email that will match both issue1 and issue2 by
+        # in-reply-to. As a result we fall back to Subject match, but
+        # the Subject doesn't match issue1 or 2. So it creates a new
+        # issue.
+        nodeid3 = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id2>
+In-Reply-To: <dummy_test_message_id>
+Subject: Testing2...
+
+Followup message.
+''')
+        # this will be added to issue3 because of in-reply-to.
+        nodeid4 = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id3>
+In-Reply-To: <dummy_test_message_id2>
+Subject: Testing...
+
+Yet another message in the same thread/issue.
+''')
+
+        # this message gets added to issue 2 by subject match.
+        nodeid5 = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id4>
+In-Reply-To: <dummy_test_message_id>
+Subject: Testing1...
+
+Yet another message in the same thread/issue.
+''')
+
+        self.assertEqual(nodeid3, nodeid4)
+        self.assertEqual(nodeid2, nodeid5)
+
     def testHelpSubject(self):
         message = '''Content-Type: text/plain;
   charset="iso-8859-1"
