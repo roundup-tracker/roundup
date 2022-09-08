@@ -40,6 +40,9 @@ from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
  - database schema is also fully editable (only the "user" class is required)
    with a full set of data types (including dates and many-to-many relations)
    across all storages available
+ - authorization is fine grained and can be based on the properties of
+   a user and resource (`ABAC, PBAC (Attribute or Policy/Purpose Based Access
+   Control <https://en.wikipedia.org/wiki/Attribute-based_access_control>`_))
  - customised automatic auditors and reactors may be written that perform
    actions before and after changes are made to entries in the database,
    or may veto the creation or modification of items in the database
