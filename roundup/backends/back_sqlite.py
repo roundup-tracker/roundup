@@ -111,9 +111,11 @@ class Database(rdbms_common.Database):
         hyperdb.Multilink : lambda x: x,    # used in journal marshalling, # noqa: E203
     }
 
-    # We're using DBM for managing session info and one-time keys:
-    # For SQL database storage of this info we would need two concurrent
-    # connections to the same database which SQLite doesn't support
+    # We can use DBM, redis or SQLite for managing session info and
+    # one-time keys:
+    # For SQL database storage of this info we have to create separate
+    # databases for Otk and Session because SQLite doesn't support
+    # concurrent connections to the same database.
     def getSessionManager(self):
         if not self.Session:
             if self.config.SESSIONDB_BACKEND == "redis":
