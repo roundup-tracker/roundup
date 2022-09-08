@@ -95,28 +95,34 @@ explanatory message given in the exception.
 from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
-import base64, re, os, io, functools
-import time, sys, logging
-import traceback
+import base64
 import email
 import email.utils
+import functools
+import io
+import logging
+import os
+import re
+import sys
+import time
+import traceback
+
 from email.generator import Generator
 
-from roundup.anypy.email_ import decode_header, message_from_bytes, \
-    message_from_binary_file
-from roundup.anypy.my_input import my_input
-
-from roundup import configuration, hyperdb, date, password, exceptions
-from roundup.mailer import Mailer
-from roundup.i18n import _
-from roundup import i18n
-from roundup.hyperdb import iter_roles
-from roundup.anypy.strings import StringIO, b2s, u2s
 import roundup.anypy.random_ as random_
 import roundup.anypy.ssl_ as ssl_
 
+from roundup import configuration, date,  exceptions, hyperdb, i18n, password
+from roundup.anypy.email_ import decode_header, message_from_bytes, \
+    message_from_binary_file
+from roundup.anypy.my_input import my_input
+from roundup.anypy.strings import StringIO, b2s, u2s
+from roundup.hyperdb import iter_roles
+from roundup.i18n import _
+from roundup.mailer import Mailer
+
 try:
-    import gpg, gpg.core, gpg.constants, gpg.constants.sigsum
+    import gpg, gpg.core, gpg.constants, gpg.constants.sigsum   # noqa: E401
 except ImportError:
     gpg = None
 
@@ -352,8 +358,8 @@ class RoundupMessage(email.message.Message):
                     if html_part:
                         # attachment should be added elsewhere.
                         pass
-                    elif content_found or content_type != \
-                         'multipart/alternative':
+                    elif (content_found or
+                          content_type != 'multipart/alternative'):
                         attachments.append(part.text_as_attachment())
                     elif html_part_found:
                         # text/plain part found after html
@@ -409,7 +415,7 @@ class RoundupMessage(email.message.Message):
         # because it seems that email.message.Message isn't a new-style
         # class in python2
         fn = email.message.Message.get_filename(self)
-        if not fn :
+        if not fn:
             return fn
         h = []
         for x, t in decode_header(fn):
@@ -563,10 +569,11 @@ class parsedMessage:
         '''
         if self.message.get_header('x-roundup-loop', ''):
             raise IgnoreLoop
-        if (self.message.get_header('precedence', '') == 'bulk'
-                or self.message.get_header('auto-submitted', 'no').rstrip().lower() \
-                         != 'no'
-                or self.subject.lower().find("autoreply") > 0):
+        if (
+                self.message.get_header('precedence', '') == 'bulk' or
+                self.message.get_header('auto-submitted',
+                                        'no').rstrip().lower() != 'no' or
+                self.subject.lower().find("autoreply") > 0):
             raise IgnoreBulk
 
     def handle_help(self):
@@ -596,9 +603,9 @@ Emails to Roundup trackers must include a Subject: line!
 
         sd_open, sd_close = self.config['MAILGW_SUBJECT_SUFFIX_DELIMITERS']
         delim_open = re.escape(sd_open)
-        if delim_open in '[(': delim_open = '\\' + delim_open
+        if delim_open in '[(': delim_open = '\\' + delim_open     # noqa: E701
         delim_close = re.escape(sd_close)
-        if delim_close in '[(': delim_close = '\\' + delim_close
+        if delim_close in '[(': delim_close = '\\' + delim_close  # noqa: E701
 
         # Look for Re: et. al. Used later on for MAILGW_SUBJECT_CONTENT_MATCH
         re_re = r"(?P<refwd>%s)\s*" % self.config["MAILGW_REFWD_RE"].pattern
@@ -644,8 +651,8 @@ Emails to Roundup trackers must include a Subject: line!
         q = ''
         if self.matches['quote']:
             q = '"?'
-        args_re = r'(?P<argswhole>%s(?P<args>[^%s]*)%s)%s$' % (delim_open,
-            delim_close, delim_close, q)
+        args_re = r'(?P<argswhole>%s(?P<args>[^%s]*)%s)%s$' % (
+            delim_open, delim_close, delim_close, q)
         m = re.search(args_re, tmpsubject.strip(), re.IGNORECASE | re.VERBOSE)
         if m:
             self.matches.update(m.groupdict())
@@ -766,11 +773,28 @@ Subject was: '%(subject)s'
             nodeid = self.matches['nodeid']
 
         # try in-reply-to to match the message if there's no nodeid
+        # FIXME: possible crash if message linked to multiple issues
+        #    Use the in-reply-to of the current message to find an id
+        #    for the message being replied to.
+        #    Then search the current class (probably issue) for an issue
+        #    that has the parent_message id in the issue's messages
+        #    property. Then use this id as the node to update. HOWEVER if
+        #    the reply to message is linked to multiple issues, I think
+        #    this blows up.
+        #    Linking a message to multiple issues can be used to group
+        #    issues so that an update on a child issue is also reflected
+        #    on a parent issue. As the parent and child may have different
+        #    nosy/watchers.
+
         inreplyto = self.message.get_header('in-reply-to') or ''
         if nodeid is None and inreplyto:
-            l = self.db.getclass('msg').stringFind(messageid=inreplyto)
-            if l:
-                nodeid = self.cl.filter(None, {'messages': l})[0]
+            parent_message = self.db.getclass('msg').stringFind(
+                messageid=inreplyto)
+            # FIXME: if a message is linked to multiple issues, can nodeid
+            # be a list? If so, will this crash??
+            if parent_message:
+                nodeid = self.cl.filter(None,
+                                        {'messages': parent_message})[0]
 
         # but we do need either a title or a nodeid...
         if nodeid is None and not title:
@@ -791,13 +815,13 @@ Subject was: "%(subject)s"
         # activity.
         tmatch_mode = self.config['MAILGW_SUBJECT_CONTENT_MATCH']
         if tmatch_mode != 'never' and nodeid is None and self.matches['refwd']:
-            l = self.cl.stringFind(title=title)
+            title_match_ids = self.cl.stringFind(title=title)
             limit = None
             if (tmatch_mode.startswith('creation') or
                     tmatch_mode.startswith('activity')):
                 limit, interval = tmatch_mode.split(' ', 1)
                 threshold = date.Date('.') - date.Interval(interval)
-            for id in l:
+            for id in title_match_ids:
                 if limit:
                     if threshold < self.cl.get(id, limit):
                         nodeid = id
@@ -869,7 +893,8 @@ Unknown address: %(from_address)s
         '''
         if self.nodeid:
             if not self.db.security.hasPermission('Edit', self.author,
-                    self.classname, itemid=self.nodeid):
+                                                  self.classname,
+                                                  itemid=self.nodeid):
                 raise Unauthorized(_(
                     'You are not permitted to edit %(classname)s.'
                     ) % self.__dict__)
@@ -970,8 +995,8 @@ Subject was: "%(subject)s"
 
         # set the issue title to the subject
         title = title.strip()
-        if (title and 'title' in self.properties and 'title'
-            not in issue_props):
+        if (title and 'title' in self.properties and
+                'title' not in issue_props):
             issue_props['title'] = title
         if (self.nodeid and 'title' in self.properties and not
                 self.config['MAILGW_SUBJECT_UPDATES_TITLE']):
@@ -995,7 +1020,8 @@ Subject was: "%(subject)s"
                 or we will skip PGP processing
             """
             if self.config.PGP_ROLES:
-                return self.db.user.has_role(self.author,
+                return self.db.user.has_role(
+                    self.author,
                     *iter_roles(self.config.PGP_ROLES))
             else:
                 return True
@@ -1039,8 +1065,9 @@ Subject was: "%(subject)s"
                     # we get here. Try decrypting it again if we don't
                     # need signatures.
                     if encr_only:
-                        message = self.message.decrypt(author_address,
-                                               may_be_unsigned=encr_only)
+                        message = self.message.decrypt(
+                            author_address,
+                            may_be_unsigned=encr_only)
                     else:
                         # something failed with the message decryption/sig
                         # chain. Pass the error up.
@@ -1090,8 +1117,11 @@ encrypted."""))
                 else:
                     files.append(fileid)
             # allowed to attach the files to an existing node?
-            if self.nodeid and not self.db.security.hasPermission('Edit',
-                    self.author, self.classname, 'files'):
+            if self.nodeid and \
+               not self.db.security.hasPermission('Edit',
+                                                  self.author,
+                                                  self.classname,
+                                                  'files'):
                 raise Unauthorized(_(
                     'You are not permitted to add files to %(classname)s.'
                     ) % self.__dict__)
@@ -1118,7 +1148,8 @@ encrypted."""))
         messageid = self.message.get_header('message-id')
         # generate a messageid if there isn't one
         if not messageid:
-            messageid = "<%s.%s.%s%s@%s>" % (time.time(),
+            messageid = "<%s.%s.%s%s@%s>" % (
+                time.time(),
                 b2s(base64.b32encode(random_.token_bytes(10))),
                 self.classname, self.nodeid, self.config['MAIL_DOMAIN'])
 
@@ -1139,7 +1170,8 @@ not find a text/plain part to use.
                     'You are not permitted to create messages.'))
 
             try:
-                message_id = self.db.msg.create(author=self.author,
+                message_id = self.db.msg.create(
+                    author=self.author,
                     recipients=self.recipients, date=date.Date('.'),
                     summary=summary, content=content,
                     messageid=messageid, inreplyto=inreplyto, **self.msg_props)
@@ -1149,8 +1181,11 @@ Mail message was rejected by a detector.
 %(error)s
 """) % locals())
             # allowed to attach the message to the existing node?
-            if self.nodeid and not self.db.security.hasPermission('Edit',
-                    self.author, self.classname, 'messages'):
+            if self.nodeid and \
+               not self.db.security.hasPermission('Edit',
+                                                  self.author,
+                                                  self.classname,
+                                                  'messages'):
                 raise Unauthorized(_(
                     'You are not permitted to add messages to %(classname)s.'
                     ) % self.__dict__)
@@ -1174,7 +1209,8 @@ Mail message was rejected by a detector.
                 for prop in self.props.keys():
                     if not self.db.security.hasPermission('Edit', self.author,
                                                           classname, prop):
-                        raise Unauthorized(_('You are not permitted to edit '
+                        raise Unauthorized(_(
+                            'You are not permitted to edit '
                             'property %(prop)s of class %(classname)s.') %
                                            locals())
                 self.cl.set(self.nodeid, **self.props)
@@ -1182,13 +1218,16 @@ Mail message was rejected by a detector.
                 # Check permissions for each property
                 for prop in self.props.keys():
                     if not self.db.security.hasPermission('Create',
-                                        self.author, classname, prop):
-                        raise Unauthorized(_('You are not permitted to set '
+                                                          self.author,
+                                                          classname,
+                                                          prop):
+                        raise Unauthorized(_(
+                            'You are not permitted to set '
                             'property %(prop)s of class %(classname)s.') %
                                            locals())
                 self.nodeid = self.cl.create(**self.props)
-        except (TypeError, IndexError,
-                ValueError, exceptions.Reject) as message:  # noqa: F841
+        except (TypeError, IndexError,                        # noqa: F841
+                ValueError, exceptions.Reject) as message:
             self.mailgw.logger.exception(
                      "Rejecting email due to node creation error:")
             raise MailUsageError(_("""
@@ -1357,7 +1396,7 @@ class MailGW:
     def do_imap(self, server, user='', password='', mailbox='', ssl=0, cram=0):
         ''' Do an IMAP connection
         '''
-        import getpass, imaplib, socket
+        import getpass, imaplib, socket   # noqa: E401
         try:
             if not user:
                 user = my_input('User: ')
@@ -1436,7 +1475,7 @@ class MailGW:
     def _do_pop(self, server, user, password, apop, ssl):
         '''Read a series of messages from the specified POP server.
         '''
-        import getpass, poplib, socket
+        import getpass, poplib, socket   # noqa: E401
         # Monkey-patch poplib to have a large line-limit
         # Seems that in python2.7 poplib applies a line-length limit not
         # just to the lines that take care of the pop3 protocol but also
@@ -1605,14 +1644,15 @@ class MailGW:
         *Translate* test cases in test/test_mailgw.py. This method
         can't be tested directly because it opens the instance
         erasing the database mocked by the test harness.
-        
+
         '''
         # get database handle for handling one email
         self.db = self.instance.open('admin')
 
         language = self.instance.config["MAILGW_LANGUAGE"] or self.instance.config["TRACKER_LANGUAGE"]
-        self.db.i18n = i18n.get_translation(language,
-                          tracker_home=self.instance.config["TRACKER_HOME"])
+        self.db.i18n = i18n.get_translation(
+            language,
+            tracker_home=self.instance.config["TRACKER_HOME"])
 
         global _
         _ = self.db.i18n.gettext
@@ -1697,7 +1737,8 @@ The mail gateway is not properly set up. Please contact
                     cls = cls_lookup.get(current_type, current_type)
                     temp_cl = self.db.getclass(cls)
                     errors, props = setPropArrayFromString(self,
-                        temp_cl, propstring.strip())
+                                                           temp_cl,
+                                                           propstring.strip())
 
                     if errors:
                         mailadmin = self.instance.config['ADMIN_EMAIL']
@@ -1808,8 +1849,9 @@ def uidFromAddress(db, address, create=1, **user_props):
 
         # create!
         try:
-            return db.user.create(username=trying, address=address,
-                realname=realname, roles=db.config.NEW_EMAIL_USER_ROLES,
+            return db.user.create(
+                username=trying, address=address, realname=realname,
+                roles=db.config.NEW_EMAIL_USER_ROLES,
                 password=password.Password(password.generatePassword(),
                                            config=db.config),
                 **user_props)
@@ -1884,7 +1926,7 @@ def parseContent(content, keep_citations=None, keep_body=None,
 
     # extract out the summary from the message
     summary = ''
-    l = []
+    kept_lines = []
     # find last non-empty section for signature matching
     last_nonempty = len(sections) - 1
     while last_nonempty and not sections[last_nonempty]:
@@ -1901,20 +1943,20 @@ def parseContent(content, keep_citations=None, keep_body=None,
             if ns and not quote_1st and lines[0] and not keep_citations:
                 # we drop only first-lines ending in ':' (e.g. 'XXX wrote:')
                 if not lines[0].endswith(':'):
-                    l.append(lines[0])
+                    kept_lines.append(lines[0])
             # see if there's a response somewhere inside this section (ie.
             # no blank line between quoted message and response)
-            for n, line in enumerate(lines[1:]):
+            for _n, line in enumerate(lines[1:]):
                 if line and line[0] not in '>|':
                     break
             else:
                 # we keep quoted bits if specified in the config
                 if keep_citations:
-                    l.append(section)
+                    kept_lines.append(section)
                 continue
             # keep this section - it has reponse stuff in it
             if not keep_citations:
-                lines = lines[n + 1:]
+                lines = lines[_n + 1:]
             section = '\n'.join(lines)
 
         is_last = ns == last_nonempty
@@ -1933,7 +1975,7 @@ def parseContent(content, keep_citations=None, keep_body=None,
             break
 
         # and add the section to the output
-        l.append(section)
+        kept_lines.append(section)
 
     # figure the summary - find the first sentence-ending punctuation or the
     # first whole line, whichever is longest
@@ -1948,7 +1990,7 @@ def parseContent(content, keep_citations=None, keep_body=None,
     # Now reconstitute the message content minus the bits we don't care
     # about.
     if not keep_body:
-        content = '\n\n'.join(l)
+        content = '\n\n'.join(kept_lines)
 
     return summary, content
 
