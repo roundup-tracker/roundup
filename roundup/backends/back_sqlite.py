@@ -8,7 +8,11 @@ for the columns, but sqlite IGNORES these specifications.
 """
 __docformat__ = 'restructuredtext'
 
-import os, marshal, shutil, time, logging
+import logging
+import os
+import shutil
+import time
+
 
 from roundup import hyperdb, date, password
 from roundup.backends import rdbms_common
@@ -75,36 +79,36 @@ class Database(rdbms_common.Database):
     implements_double_precision = False
 
     hyperdb_to_sql_datatypes = {
-        hyperdb.String    : 'VARCHAR(255)',
-        hyperdb.Date      : 'VARCHAR(30)',
-        hyperdb.Link      : 'INTEGER',
-        hyperdb.Interval  : 'VARCHAR(255)',
-        hyperdb.Password  : 'VARCHAR(255)',
-        hyperdb.Boolean   : 'BOOLEAN',
-        hyperdb.Number    : 'REAL',
-        hyperdb.Integer   : 'INTEGER',
+        hyperdb.String    : 'VARCHAR(255)',  # noqa: E203
+        hyperdb.Date      : 'VARCHAR(30)',   # noqa: E203
+        hyperdb.Link      : 'INTEGER',       # noqa: E203
+        hyperdb.Interval  : 'VARCHAR(255)',  # noqa: E203
+        hyperdb.Password  : 'VARCHAR(255)',  # noqa: E203
+        hyperdb.Boolean   : 'BOOLEAN',       # noqa: E203
+        hyperdb.Number    : 'REAL',          # noqa: E203
+        hyperdb.Integer   : 'INTEGER',       # noqa: E203
     }
     hyperdb_to_sql_value = {
-        hyperdb.String    : str,
-        hyperdb.Date      : lambda x: x.serialise(),
-        hyperdb.Link      : int,
-        hyperdb.Interval  : str,
-        hyperdb.Password  : str,
-        hyperdb.Boolean   : int,
-        hyperdb.Integer   : int,
-        hyperdb.Number    : lambda x: x,
-        hyperdb.Multilink : lambda x: x,    # used in journal marshalling
+        hyperdb.String    : str,                      # noqa: E203
+        hyperdb.Date      : lambda x: x.serialise(),  # noqa: E203
+        hyperdb.Link      : int,                      # noqa: E203
+        hyperdb.Interval  : str,                      # noqa: E203
+        hyperdb.Password  : str,                      # noqa: E203
+        hyperdb.Boolean   : int,                      # noqa: E203
+        hyperdb.Integer   : int,                      # noqa: E203
+        hyperdb.Number    : lambda x: x,              # noqa: E203
+        hyperdb.Multilink : lambda x: x,    # used in journal marshalling, # noqa: E203
     }
     sql_to_hyperdb_value = {
-        hyperdb.String    : uany2s,
-        hyperdb.Date      : lambda x: date.Date(str(x)),
-        hyperdb.Link      : str,  # XXX numeric ids
-        hyperdb.Interval  : date.Interval,
-        hyperdb.Password  : lambda x: password.Password(encrypted=x),
-        hyperdb.Boolean   : int,
-        hyperdb.Integer   : int,
-        hyperdb.Number    : rdbms_common._num_cvt,
-        hyperdb.Multilink : lambda x: x,    # used in journal marshalling
+        hyperdb.String    : uany2s,                        # noqa: E203
+        hyperdb.Date      : lambda x: date.Date(str(x)),   # noqa: E203
+        hyperdb.Link      : str,  # XXX numeric ids        # noqa: E203
+        hyperdb.Interval  : date.Interval,                 # noqa: E203
+        hyperdb.Password  : lambda x: password.Password(encrypted=x),  # noqa: E203
+        hyperdb.Boolean   : int,                           # noqa: E203
+        hyperdb.Integer   : int,                           # noqa: E203
+        hyperdb.Number    : rdbms_common._num_cvt,         # noqa: E203
+        hyperdb.Multilink : lambda x: x,    # used in journal marshalling, # noqa: E203
     }
 
     # We're using DBM for managing session info and one-time keys:
@@ -247,8 +251,7 @@ class Database(rdbms_common.Database):
 
     def _add_fts5_table(self):
         self.sql('CREATE virtual TABLE __fts USING fts5(_class, '
-                 '_itemid, _prop, _textblob)'
-        )
+                 '_itemid, _prop, _textblob)')
 
     def fix_version_6_tables(self):
         # note sqlite has no limit on column size so v6 fixes
@@ -386,8 +389,8 @@ class Database(rdbms_common.Database):
                         v = None
                     if name == 'id':
                         retired_id = v
-                    elif name == '__retired__' and retired_id and \
-                         v not in ['0', 0]:
+                    elif (name == '__retired__' and retired_id and
+                          v not in ['0', 0]):
                         v = retired_id
                     d.append(v)
                 self.sql(sql, tuple(d))
@@ -425,12 +428,12 @@ class Database(rdbms_common.Database):
         def list_dir(dir):
             import os
             files = os.listdir(self.dir)
-                # ['db-journal', 'files', 'db']
+            # ['db-journal', 'files', 'db']
             for entry in [''] + files:
                 path = self.dir + '/' + entry
                 stat = os.stat(path)
-                print("file: %s, uid: %s, gid: %s, mode: %o"%(path,
-                                    stat.st_uid, stat.st_gid, stat.st_mode))
+                print("file: %s, uid: %s, gid: %s, mode: %o" % (
+                    path, stat.st_uid, stat.st_gid, stat.st_mode))
 
         # Getting sqlite3.OperationalError: disk I/O error
         # in CI. It happens intermittently. Try to get more
@@ -520,7 +523,7 @@ class Database(rdbms_common.Database):
 
     def create_class(self, spec):
         rdbms_common.Database.create_class(self, spec)
-        sql = 'insert into ids (name, num) values (%s, %s)' %(
+        sql = 'insert into ids (name, num) values (%s, %s)' % (
             self.arg, self.arg)
         vals = (spec.classname, 1)
         self.sql(sql, vals)
