@@ -197,6 +197,7 @@ jobs:
             # python2 case
             pytest -v -r a test/ --cov=roundup
           fi
+          coverage lcov
 
       - name: Upload coverage to Codecov
         # see: https://github.com/codecov/codecov-action#usage
@@ -205,7 +206,12 @@ jobs:
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
 
-      - name: test build_doc
+    - name: Upload coverage to Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: test build_doc
         run: |
           python ./setup.py build_doc
 
@@ -224,3 +230,15 @@ jobs:
       #  run: |
       #     docker build -t roundup-app-rel --build-arg="source=pypi" \
       #         -f scripts/Docker/Dockerfile . 
+
+
+  # in parallel build codecov requires a finish step
+  finish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Coveralls Finished
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.github_token }}
+          parallel-finished: true
