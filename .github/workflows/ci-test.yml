@@ -206,14 +206,14 @@ jobs:
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
 
-    - name: Upload coverage to Coveralls
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload coverage to Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: test build_doc
-        run: |
-          python ./setup.py build_doc
+      - name: test build_doc
+          run: |
+            python ./setup.py build_doc
 
       #- name: test docker build current version ubuntu-latest
       #  if: matrix.python-version == '3.10' && matrix.os == 'ubuntu-latest'
@@ -233,12 +233,12 @@ jobs:
 
 
   # in parallel build codecov requires a finish step
-#  finish:
-#    needs: test
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Coveralls Finished
-#        uses: coverallsapp/github-action@master
-#        with:
-#          github-token: ${{ secrets.github_token }}
-#          parallel-finished: true
+  finish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Coveralls Finished
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.github_token }}
+          parallel-finished: true
