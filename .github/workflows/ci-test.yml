@@ -197,7 +197,6 @@ jobs:
             # python2 case
             pytest -v -r a test/ --cov=roundup
           fi
-          coverage lcov
 
       - name: Upload coverage to Codecov
         # see: https://github.com/codecov/codecov-action#usage
