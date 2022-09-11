@@ -193,7 +193,10 @@ jobs:
               -W "ignore:unclosed:ResourceWarning:roundup.roundup.demo" \
               -W "ignore:unclosed file:ResourceWarning:enum" \
               -v  test/test_actions.py --cov=roundup
-            coverage lcov
+            if [[ "$PYTHON_VERSION" != "3.6" ]]; then
+              # coverage before 3.6 doesn't support lcov output
+              coverage lcov
+            fi
           else
             # python2 case
             pytest -v -r a test/test_actions.py --cov=roundup
@@ -207,8 +210,8 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload coverage to Coveralls
-        # python 2.7 version of codecov can't produce lcov files.
-        if: matrix.python-version != '2.7'
+        # python 2.7 and 3.6 versions of coverage can't produce lcov files.
+        if: matrix.python-version != '2.7' && matrix.python-version != '3.6'
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
