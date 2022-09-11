@@ -193,7 +193,7 @@ jobs:
               -W "ignore:unclosed:ResourceWarning:roundup.roundup.demo" \
               -W "ignore:unclosed file:ResourceWarning:enum" \
               -v  test/ --cov=roundup
-            codecov lcov
+            coverage lcov
           else
             # python2 case
             pytest -v -r a test/ --cov=roundup
