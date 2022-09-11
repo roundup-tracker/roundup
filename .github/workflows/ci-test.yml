@@ -193,6 +193,7 @@ jobs:
               -W "ignore:unclosed:ResourceWarning:roundup.roundup.demo" \
               -W "ignore:unclosed file:ResourceWarning:enum" \
               -v  test/ --cov=roundup
+            codecov lcov
           else
             # python2 case
             pytest -v -r a test/ --cov=roundup
@@ -206,9 +207,13 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload coverage to Coveralls
+        # python 2.7 version of codecov can't produce lcov files.
+        if: matrix.python-version != '2.7'
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: coverage.lcov
+          parallel: run-{{ matrix.python-version }}-{{ matrix.os }}
 
       - name: test build_doc
         run: |
