@@ -212,8 +212,8 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: test build_doc
-          run: |
-            python ./setup.py build_doc
+        run: |
+          python ./setup.py build_doc
 
       #- name: test docker build current version ubuntu-latest
       #  if: matrix.python-version == '3.10' && matrix.os == 'ubuntu-latest'
