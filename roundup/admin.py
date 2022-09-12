@@ -289,7 +289,7 @@ Command help:
                     print(line)
         return 0
 
-    def listTemplates(self):
+    def listTemplates(self, trace_search=False):
         """ List all the available templates.
 
         Look in the following places, where the later rules take precedence:
@@ -327,7 +327,7 @@ Command help:
             for _i in range(N):
                 path = os.path.dirname(path)
             tdir = os.path.join(path, 'share', 'roundup', 'templates')
-            if debug: print(tdir)
+            if debug or trace_search: print(tdir)
             if os.path.isdir(tdir):
                 templates = init.listTemplates(tdir)
                 if debug: print("  Found templates breaking loop")
@@ -349,7 +349,7 @@ Command help:
         # path is /usr/local/lib/python3.10/site-packages
         tdir = os.path.join(path, sys.prefix[1:], 'share',
                             'roundup', 'templates')
-        if debug: print(tdir)
+        if debug or trace_search: print(tdir)
         if os.path.isdir(tdir):
             templates.update(init.listTemplates(tdir))
 
@@ -359,7 +359,7 @@ Command help:
             # path is /usr/local/lib/python3.10/site-packages
             tdir = os.path.join(path, sys.base_prefix[1:], 'local', 'share',
                                 'roundup', 'templates')
-            if debug: print(tdir)
+            if debug or trace_search: print(tdir)
             if os.path.isdir(tdir):
                 templates.update(init.listTemplates(tdir))
                             # path is /usr/local/lib/python3.10/site-packages
@@ -367,7 +367,7 @@ Command help:
 
             tdir = os.path.join(path, sys.base_prefix[1:], 'share',
                                 'roundup', 'templates')
-            if debug: print(tdir)
+            if debug or trace_search: print(tdir)
             if os.path.isdir(tdir):
                 templates.update(init.listTemplates(tdir))
         except AttributeError:
@@ -375,11 +375,11 @@ Command help:
 
         # Try subdirs of the current dir
         templates.update(init.listTemplates(os.getcwd()))
-        if debug: print(os.getcwd() + '/*')
+        if debug or trace_search: print(os.getcwd() + '/*')
             
         # Finally, try the current directory as a template
         template = init.loadTemplateInfo(os.getcwd())
-        if debug: print(os.getcwd() + '/*')
+        if debug or trace_search: print(os.getcwd())
         if template:
             if debug: print("  Found template %s"%template['name'])
             templates[template['name']] = template
@@ -1080,6 +1080,34 @@ Erase it? Y/N: """))
                 print(_('%(nodeid)4s: %(value)s') % locals())
         return 0
 
+    def do_templates(self, args):
+        ''"""Usage: templates [trace_search]
+        List templates and their installed directories.
+
+        With trace_search also list all directories that are
+        searched for templates.
+        """
+        import textwrap
+
+        trace_search = False
+        if args and args[0] == "trace_search":
+            trace_search = True
+
+        templates = self.listTemplates(trace_search=trace_search)
+
+        for name in sorted(list(templates.keys())):
+            templates[name]['description'] = textwrap.fill(
+                "\n".join([ line.lstrip() for line in
+                            templates[name]['description'].split("\n")]),
+                70,
+                subsequent_indent="      "
+            )
+            print("""
+Name: %(name)s
+Path: %(path)s
+Desc: %(description)s
+"""%templates[name])
+
     def do_table(self, args):
         ''"""Usage: table classname [property[,property]*]
         List the instances of a class in tabular form.
@@ -1713,6 +1741,8 @@ Erase it? Y/N: """))
             except UsageError as message:  # noqa: F841
                 print(_('Error: %(message)s') % locals())
                 return 1
+        elif command == "templates":
+            return self.do_templates(args[1:])
 
         # get the tracker
         try:

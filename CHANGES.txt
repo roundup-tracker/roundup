@@ -66,6 +66,10 @@ Features:
 - sqlite databases use WAL mode when *created* to improve read
   concurrency. Existing sqlite database still use rollback journal
   mode. See upgrading.txt for details. (John Rouillard)
+- issue2551233 - create new roundup-admin command "templates"
+  list all template names, location and descriptions. Should help
+  find where /usr/share/roundup/templates is buried during some
+  install mechanisms. (John Rouillard)
 
 2022-07-13 2.2.0
 

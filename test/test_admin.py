@@ -1250,6 +1250,24 @@ Role "user":
         print(expected)
         self.assertEqual(out, expected)
 
+    def testTemplates(self):
+        
+        self.install_init()
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            # command does not require a tracker home. use zZzZ to cause error 
+            sys.argv=['main', '-i', "zZzZ", 'templates' ]
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+
+        for tracker in ['Name: classic\nPath:',
+                        'Name: devel\nPath:',
+                        'Name: jinja2\nPath:',
+                        'Name: minimal\nPath:',
+                        'Name: responsive\nPath:']:
+            self.assertIn(tracker, out)
 
 class anydbmAdminTest(AdminTest, unittest.TestCase):
     backend = 'anydbm'
