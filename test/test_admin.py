@@ -1256,18 +1256,31 @@ Role "user":
         self.admin=AdminTool()
 
         with captured_output() as (out, err):
-            # command does not require a tracker home. use zZzZ to cause error 
+            # command does not require a tracker home. use missing zZzZ
+            # directory to cause error if that changes
             sys.argv=['main', '-i', "zZzZ", 'templates' ]
             ret = self.admin.main()
 
         out = out.getvalue().strip()
 
+        # all 5 standard trackers should be found
         for tracker in ['Name: classic\nPath:',
                         'Name: devel\nPath:',
                         'Name: jinja2\nPath:',
                         'Name: minimal\nPath:',
                         'Name: responsive\nPath:']:
             self.assertIn(tracker, out)
+
+        with captured_output() as (out, err):
+            # command does not require a tracker home. use missing zZzZ
+            # directory to cause error if that changes
+            sys.argv=['main', '-i', "zZzZ", 'templates', 'trace_search' ]
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+
+        expected = "/*\n"
+        self.assertIn(expected, out)
 
 class anydbmAdminTest(AdminTest, unittest.TestCase):
     backend = 'anydbm'
