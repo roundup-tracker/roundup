@@ -790,14 +790,10 @@ class IssueClass:
                 continue
             if isinstance(prop, hyperdb.Link):
                 link = self.db.classes[prop.classname]
-                if value:
-                    key = link.labelprop(default_to_id=1)
-                    if key:
-                        value = link.get(value, key)
-                else:
-                    value = ''
+                key = link.labelprop(default_to_id=1)
+                if key:
+                    value = link.get(value, key)
             elif isinstance(prop, hyperdb.Multilink):
-                if value is None: value = []  # noqa: E701
                 link = self.db.classes[prop.classname]
                 key = link.labelprop(default_to_id=1)
                 if key:
